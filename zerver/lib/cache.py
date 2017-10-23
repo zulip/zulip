@@ -7,7 +7,7 @@ from django.conf import settings
 from django.db.models import Q
 from django.core.cache.backends.base import BaseCache
 
-from typing import Any, Callable, Dict, Iterable, List, Optional, Union, TypeVar, Text
+from typing import Any, Callable, Dict, Iterable, List, Optional, Union, Set, TypeVar, Text
 
 from zerver.lib.utils import statsd, statsd_key, make_safe_digest
 import subprocess
@@ -324,14 +324,10 @@ def user_profile_by_api_key_cache_key(api_key):
 # TODO: Refactor these cache helpers into another file that can import
 # models.py so that python v3 style type annotations can also work.
 
-active_user_dict_fields = [
+realm_user_dict_fields = [
     'id', 'full_name', 'short_name', 'email',
-    'avatar_source', 'avatar_version',
+    'avatar_source', 'avatar_version', 'is_active',
     'is_realm_admin', 'is_bot', 'realm_id', 'timezone']  # type: List[str]
-
-def active_user_dicts_in_realm_cache_key(realm_id):
-    # type: (int) -> Text
-    return u"active_user_dicts_in_realm:%s" % (realm_id,)
 
 def active_user_ids_cache_key(realm_id):
     # type: (int) -> Text
@@ -380,30 +376,33 @@ def flush_user_profile(sender, **kwargs):
     user_profile = kwargs['instance']
     delete_user_profile_caches([user_profile])
 
-    # Invalidate our active_users_in_realm info dict if any user has changed
-    # the fields in the dict or become (in)active
-    if kwargs.get('update_fields') is None or \
-            len(set(active_user_dict_fields + ['is_active', 'email']) &
-                set(kwargs['update_fields'])) > 0:
-        cache_delete(active_user_dicts_in_realm_cache_key(user_profile.realm_id))
+    def changed(fields):
+        # type: (List[str]) -> bool
+        if kwargs.get('update_fields') is None:
+            # adds/deletes should invalidate the cache
+            return True
 
-    if kwargs.get('update_fields') is None or \
-            ('is_active' in kwargs['update_fields']):
+        update_fields = set(kwargs['update_fields'])
+        for f in fields:
+            if f in update_fields:
+                return True
+
+        return False
+
+    if changed(['is_active']):
         cache_delete(active_user_ids_cache_key(user_profile.realm_id))
 
-    if kwargs.get('updated_fields') is None or \
-            'email' in kwargs['update_fields']:
+    if changed(['email', 'full_name', 'short_name', 'id', 'is_mirror_dummy']):
         delete_display_recipient_cache(user_profile)
 
     # Invalidate our bots_in_realm info dict if any bot has
     # changed the fields in the dict or become (in)active
-    if user_profile.is_bot and (kwargs['update_fields'] is None or
-                                (set(bot_dict_fields) & set(kwargs['update_fields']))):
+    if user_profile.is_bot and changed(bot_dict_fields):
         cache_delete(bot_dicts_in_realm_cache_key(user_profile.realm))
 
     # Invalidate realm-wide alert words cache if any user in the realm has changed
     # alert words
-    if kwargs.get('update_fields') is None or "alert_words" in kwargs['update_fields']:
+    if changed(['alert_words']):
         cache_delete(realm_alert_words_cache_key(user_profile.realm))
 
 # Called by models.py to flush various caches whenever we save
@@ -416,7 +415,6 @@ def flush_realm(sender, **kwargs):
     delete_user_profile_caches(users)
 
     if realm.deactivated:
-        cache_delete(active_user_dicts_in_realm_cache_key(realm.id))
         cache_delete(active_user_ids_cache_key(realm.id))
         cache_delete(bot_dicts_in_realm_cache_key(realm))
         cache_delete(realm_alert_words_cache_key(realm))

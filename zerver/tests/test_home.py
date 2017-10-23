@@ -7,8 +7,9 @@ from django.http import HttpResponse
 from django.test import override_settings
 from mock import MagicMock, patch
 from six.moves import urllib
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Text
 
+from zerver.lib.actions import do_create_user
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     HostRequestMock, queries_captured, get_user_messages
@@ -17,7 +18,7 @@ from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_runner import slow
 from zerver.models import (
     get_realm, get_stream, get_user, UserProfile, UserMessage, Recipient,
-    flush_per_request_caches, DefaultStream
+    flush_per_request_caches, DefaultStream, Realm,
 )
 from zerver.views.home import home, sent_time_in_epoch_seconds
 
@@ -128,6 +129,7 @@ class HomeTest(ZulipTestCase):
             "realm_message_retention_days",
             "realm_name",
             "realm_name_changes_disabled",
+            "realm_non_active_users",
             "realm_notifications_stream_id",
             "realm_password_auth_enabled",
             "realm_presence_disabled",
@@ -172,9 +174,11 @@ class HomeTest(ZulipTestCase):
         # Verify succeeds once logged-in
         flush_per_request_caches()
         with queries_captured() as queries:
-            result = self._get_home_page(stream='Denmark')
+            with patch('zerver.lib.cache.cache_set') as cache_mock:
+                result = self._get_home_page(stream='Denmark')
 
-        self.assert_length(queries, 41)
+        self.assert_length(queries, 40)
+        self.assert_length(cache_mock.call_args_list, 9)
 
         html = result.content.decode('utf-8')
 
@@ -361,19 +365,99 @@ class HomeTest(ZulipTestCase):
         page_params = self._get_page_params(result)
         self.assertEqual(page_params['realm_notifications_stream_id'], get_stream('Denmark', realm).id)
 
+    def create_bot(self, owner, bot_email, bot_name):
+        # type: (UserProfile, Text, Text) -> UserProfile
+        user = do_create_user(
+            email=bot_email,
+            password='123',
+            realm=owner.realm,
+            full_name=bot_name,
+            short_name=bot_name,
+            bot_type=UserProfile.DEFAULT_BOT,
+            bot_owner=owner
+        )
+        return user
+
+    def create_non_active_user(self, realm, email, name):
+        # type: (Realm, Text, Text) -> UserProfile
+        user = do_create_user(
+            email=email,
+            password='123',
+            realm=realm,
+            full_name=name,
+            short_name=name,
+            active=False
+        )
+        return user
+
+    @slow('creating users and loading home page')
     def test_people(self):
         # type: () -> None
-        email = self.example_email('hamlet')
+        hamlet = self.example_user('hamlet')
         realm = get_realm('zulip')
-        self.login(email)
+        self.login(hamlet.email)
+
+        for i in range(3):
+            self.create_bot(
+                owner=hamlet,
+                bot_email='bot-%d@zulip.com' % (i,),
+                bot_name='Bot %d' % (i,),
+            )
+
+        for i in range(3):
+            self.create_non_active_user(
+                realm=realm,
+                email='defunct-%d@zulip.com' % (i,),
+                name='Defunct User %d' % (i,),
+            )
+
         result = self._get_home_page()
         page_params = self._get_page_params(result)
-        for params in ['realm_users', 'realm_bots']:
-            users = page_params['realm_users']
-            self.assertTrue(len(users) >= 3)
-            for user in users:
-                self.assertEqual(user['user_id'],
-                                 get_user(user['email'], realm).id)
+
+        '''
+        We send three lists of users.  The first two below are disjoint
+        lists of users, and the records we send for them have identical
+        structure.
+
+        The realm_bots bucket is somewhat redundant, since all bots will
+        be in one of the first two buckets.  They do include fields, however,
+        that normal users don't care about, such as default_sending_stream.
+        '''
+
+        buckets = [
+            'realm_users',
+            'realm_non_active_users',
+            'realm_bots',
+        ]
+
+        for field in buckets:
+            users = page_params[field]
+            self.assertTrue(len(users) >= 3, field)
+            for rec in users:
+                self.assertEqual(rec['user_id'],
+                                 get_user(rec['email'], realm).id)
+                if field == 'realm_bots':
+                    self.assertNotIn('is_bot', rec)
+                    self.assertIn('is_active', rec)
+                    self.assertIn('owner', rec)
+                else:
+                    self.assertIn('is_bot', rec)
+                    self.assertNotIn('is_active', rec)
+
+        active_emails = {p['email'] for p in page_params['realm_users']}
+        non_active_emails = {p['email'] for p in page_params['realm_non_active_users']}
+        bot_emails = {p['email'] for p in page_params['realm_bots']}
+
+        self.assertIn(hamlet.email, active_emails)
+        self.assertIn('defunct-1@zulip.com', non_active_emails)
+
+        # Bots can show up in multiple buckets.
+        self.assertIn('bot-2@zulip.com', bot_emails)
+        self.assertIn('bot-2@zulip.com', active_emails)
+
+        # Make sure nobody got mis-bucketed.
+        self.assertNotIn(hamlet.email, non_active_emails)
+        self.assertNotIn('defunct-1@zulip.com', active_emails)
 
         cross_bots = page_params['cross_realm_bots']
         self.assertEqual(len(cross_bots), 3)

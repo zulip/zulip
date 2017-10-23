@@ -14,7 +14,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.models import (
     get_client, get_realm, get_recipient, get_stream, get_user,
     Message, RealmDomain, Recipient, UserMessage, UserPresence, UserProfile,
-    Realm, Subscription, Stream,
+    Realm, Subscription, Stream, flush_per_request_caches,
 )
 
 from zerver.lib.actions import (
@@ -78,7 +78,7 @@ from zerver.lib.message import (
     UnreadMessagesResult,
 )
 from zerver.lib.test_helpers import POSTRequestMock, get_subscription, \
-    stub_event_queue_user_events
+    stub_event_queue_user_events, queries_captured
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
@@ -458,7 +458,6 @@ class EventsRegisterTest(ZulipTestCase):
         # type: (Dict[str, Any], Dict[str, Any], List[Dict[str, Any]]) -> None
         def normalize(state):
             # type: (Dict[str, Any]) -> None
-            state['realm_users'] = {u['email']: u for u in state['realm_users']}
             for u in state['never_subscribed']:
                 if 'subscribers' in u:
                     u['subscribers'].sort()
@@ -946,6 +945,8 @@ class EventsRegisterTest(ZulipTestCase):
                 ('email', check_string),
                 ('user_id', check_int),
                 ('avatar_url', check_string),
+                ('avatar_url_medium', check_string),
+                ('avatar_source', check_string),
             ])),
         ])
         events = self.do_test(
@@ -1954,6 +1955,75 @@ class EventQueueTest(TestCase):
                           {'id': 1,
                            'type': 'unknown',
                            "timestamp": "1"}])
+
+class FetchQueriesTest(ZulipTestCase):
+    def test_queries(self):
+        # type: () -> None
+        user = self.example_user("hamlet")
+
+        self.login(user.email)
+
+        flush_per_request_caches()
+        with queries_captured() as queries:
+            with mock.patch('zerver.lib.events.always_want') as want_mock:
+                fetch_initial_state_data(
+                    user_profile=user,
+                    event_types=None,
+                    queue_id='x',
+                )
+
+        self.assert_length(queries, 28)
+
+        expected_counts = dict(
+            alert_words=0,
+            attachments=1,
+            custom_profile_fields=1,
+            default_streams=1,
+            hotspots=0,
+            message=1,
+            muted_topics=1,
+            pointer=0,
+            presence=3,
+            realm=0,
+            realm_bot=1,
+            realm_domains=1,
+            realm_embedded_bots=0,
+            realm_emoji=1,
+            realm_filters=1,
+            realm_user=4,
+            stream=2,
+            subscription=5,
+            total_uploads_size=1,
+            update_display_settings=0,
+            update_global_notifications=0,
+            update_message_flags=5,
+            upload_quota=0,
+            zulip_version=0,
+        )
+
+        wanted_event_types = {
+            item[0][0] for item
+            in want_mock.call_args_list
+        }
+
+        self.assertEqual(wanted_event_types, set(expected_counts))
+
+        for event_type in sorted(wanted_event_types):
+            count = expected_counts[event_type]
+            flush_per_request_caches()
+            with queries_captured() as queries:
+                if event_type == 'update_message_flags':
+                    event_types = ['update_message_flags', 'message']
+                else:
+                    event_types = [event_type]
+
+                fetch_initial_state_data(
+                    user_profile=user,
+                    event_types=event_types,
+                    queue_id='x',
+                )
+            self.assert_length(queries, count)
+
 
 class TestEventsRegisterAllPublicStreamsDefaults(ZulipTestCase):
     def setUp(self):

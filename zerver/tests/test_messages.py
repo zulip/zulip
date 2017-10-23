@@ -2328,7 +2328,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         self.assertNotEqual(idle_user_msg_list[-1].content, message)
         with queries_captured() as queries:
             maybe_catch_up_soft_deactivated_user(long_term_idle_user)
-        self.assert_length(queries, 8)
+        self.assert_length(queries, 7)
         self.assertFalse(long_term_idle_user.long_term_idle)
         self.assertEqual(last_realm_audit_log_entry(
             'user_soft_activated').modified_user, long_term_idle_user)
