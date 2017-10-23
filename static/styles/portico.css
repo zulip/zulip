@@ -651,6 +651,9 @@ input.text-error {
 }
 
 .portico-header .dropdown ul li a {
+    display: block;
+    margin: 2px 0px;
+
     transition: none;
     font-size: 0.9em;
     font-weight: 400;
