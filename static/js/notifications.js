@@ -99,6 +99,11 @@ exports.initialize = function () {
 };
 
 exports.permission_state = function () {
+    if (window.Notification === undefined) {
+        // act like notifications are blocked if they do not have access to
+        // the notification API.
+        return "denied";
+    }
     return window.Notification.permission;
 };
 
