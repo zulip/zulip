@@ -538,9 +538,7 @@ CACHES = {
     'database': {
         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
         'LOCATION': 'third_party_api_results',
-        # Basically never timeout.  Setting to 0 isn't guaranteed
-        # to work, see https://code.djangoproject.com/ticket/9595
-        'TIMEOUT': 2000000000,
+        'TIMEOUT': None,
         'OPTIONS': {
             'MAX_ENTRIES': 100000000,
             'CULL_FREQUENCY': 10,
