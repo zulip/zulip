@@ -18,9 +18,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-10-20 17:20+0000\n"
-"PO-Revision-Date: 2017-10-20 17:24+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
+"POT-Creation-Date: 2017-10-20 17:27+0000\n"
+"PO-Revision-Date: 2017-10-20 17:53+0000\n"
+"Last-Translator: Robert Hönig <robhoenig@gmail.com>\n"
 "Language-Team: German (http://www.transifex.com/zulip/zulip/language/de/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1077,17 +1077,17 @@ msgstr "Editier-Verlauf der Nachricht"
 
 #: templates/zerver/navbar.html:5
 msgid "Zulip needs your permission to enable desktop notifications."
-msgstr ""
+msgstr "Zulip benötigt Deine Erlaubnis, um Desktop-Benachrichtigungen zu aktivieren."
 
 #: templates/zerver/navbar.html:8
 msgid "Enable notifications."
-msgstr ""
+msgstr "Benachrichtigungen aktivieren."
 
 #: templates/zerver/navbar.html:12
 msgid ""
 "We recommend allowing notifications. You can fully customize these at any "
 "time in your settings."
-msgstr ""
+msgstr "Wir empfehlen Dir, Benachrichtigungen zu aktivieren. Du kannst sie jederzeit in den Einstellungen Deinen Präferenzen anpassen."
 
 #: templates/zerver/navbar.html:14
 msgid "Enable notifications"
@@ -1095,11 +1095,11 @@ msgstr "Benachrichtigungen aktivieren"
 
 #: templates/zerver/navbar.html:16
 msgid "Ask me later"
-msgstr ""
+msgstr "Frag mich später."
 
 #: templates/zerver/navbar.html:18
 msgid "Never ask on this computer"
-msgstr ""
+msgstr "Auf diesem Computer nie fragen."
 
 #: templates/zerver/navbar.html:45 templates/zerver/navbar.html:46
 msgid "Search"
@@ -1178,7 +1178,7 @@ msgstr "Debug"
 
 #: templates/zerver/navbar.html:6
 msgid "You can fully configure notifications in Zulip') "
-msgstr ""
+msgstr "In Zulip kannst du Benachrichtigungen vollständig konfigurieren')"
 
 #: templates/zerver/portico-header.html:6
 msgid "Zulip"
@@ -1197,7 +1197,7 @@ msgid ""
 "                    Contact this <a href=\"mailto:%(support_email)s\">server's administrator</a>\n"
 "                    if you have any questions.\n"
 "                    "
-msgstr ""
+msgstr "\n                    Diese Zulip-Installation stellt keine Datenschutzerklärung bereit.\n                    Bitte kontaktiere den <a href=\"mailto:%(support_email)s\">Administrator dieses Servers</a>,\n                    falls Du Fragen hast."
 
 #: templates/zerver/realm_creation_failed.html:8
 msgid ""
@@ -1247,7 +1247,12 @@ msgstr "Kürzer ist besser als länger."
 
 #: templates/zerver/register.html:101
 msgid "Organization URL"
-msgstr ""
+msgstr "URL der Organisation"
+
+#: templates/zerver/register.html:108
+#, python-format
+msgid "Use %(external_host)s"
+msgstr "Benutze %(external_host)s"
 
 #: templates/zerver/register.html:132
 msgid "The address you'll use to sign in to your organization."
@@ -1422,7 +1427,7 @@ msgid ""
 "            <span class=\"operator_value\">keyword</span>.\n"
 "        </p>\n"
 "        "
-msgstr ""
+msgstr "\n<p>Du kannst beliebige Kombinationen dieser Such-Operatoren in einer Abfrage kombinieren. Zum Beispiel</p>\n\n        <p>\n            &nbsp; \n            <span class=\"operator\">\n            stream:<span class=\"operator_value\">Streamname</span>\n            sender:<span class=\"operator_value\">nutzer@beispiel.de</span>\n            <span class=\"operator_value\">keyword</span>\n            </span>\n        </p>\n\n        <p>\n            sucht nach Nachrichten von\n            <span class=\"operator_value\">nutzer@beispiel.de</span> \n             im Stream\n            <span class=\"operator_value\">Streamname</span>,\n            die das Stichwort\n            <span class=\"operator_value\">keyword</span>\n            enthalten.\n        </p>"
 
 #: templates/zerver/settings_overlay.html:16
 msgid "Your account"
@@ -1528,7 +1533,7 @@ msgid ""
 "                    Contact this <a href=\"mailto:%(support_email)s\">server's administrator</a>\n"
 "                    if you have any questions.\n"
 "                    "
-msgstr ""
+msgstr "\n                    Diese Zulip-Installation stellt keine Nutzungsbedingungen bereit.\n                    Bitte kontaktiere den <a href=\"mailto:%(support_email)s\">Administrator dieses Servers</a>,\n                    falls Du Fragen hast."
 
 #: templates/zerver/unsubscribe_link_error.html:5
 msgid "Unknown email unsubscribe request"
@@ -1590,7 +1595,7 @@ msgstr "Muss ein Bereichsadministrator sein"
 
 #: zerver/decorator.py:203
 msgid "Invalid subdomain for push notifications bouncer"
-msgstr ""
+msgstr "Ungültige Subdomain für Push-Notification-Bouncer"
 
 #: zerver/decorator.py:212
 msgid "This API is not available to incoming webhook bots."
@@ -1948,12 +1953,12 @@ msgstr "Operator %s nicht unterstützt."
 
 #: zerver/lib/push_notifications.py:285
 msgid "Received 500 from push notification bouncer"
-msgstr ""
+msgstr "Der Push-Notifcation-Bouncer sendet Fehlermeldung 500"
 
 #: zerver/lib/push_notifications.py:293
 #, python-format
 msgid "Push notifications bouncer error: %s"
-msgstr ""
+msgstr "Push-Notification-Bouncer Fehler: %s"
 
 #: zerver/lib/push_notifications.py:379 zilencer/views.py:66
 msgid "Token does not exist"
@@ -2160,7 +2165,7 @@ msgstr "Unbekannte oder fehlende Session"
 
 #: zerver/tornado/socket.py:136
 msgid "CSRF token entry missing from request"
-msgstr ""
+msgstr "Der Eintrag für das CSRF-Token fehlt in der Anfrage"
 
 #: zerver/tornado/socket.py:138
 msgid "CSRF token does not match that in cookie"

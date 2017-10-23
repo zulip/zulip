@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-10-20 17:20+0000\n"
-"PO-Revision-Date: 2017-10-20 17:24+0000\n"
+"POT-Creation-Date: 2017-10-20 17:27+0000\n"
+"PO-Revision-Date: 2017-10-20 17:29+0000\n"
 "Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
 "Language-Team: Portuguese (http://www.transifex.com/zulip/zulip/language/pt/)\n"
 "MIME-Version: 1.0\n"
@@ -1237,6 +1237,11 @@ msgstr ""
 
 #: templates/zerver/register.html:101
 msgid "Organization URL"
+msgstr ""
+
+#: templates/zerver/register.html:108
+#, python-format
+msgid "Use %(external_host)s"
 msgstr ""
 
 #: templates/zerver/register.html:132

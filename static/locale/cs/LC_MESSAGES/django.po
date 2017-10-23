@@ -9,9 +9,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-10-20 17:20+0000\n"
-"PO-Revision-Date: 2017-10-20 17:24+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
+"POT-Creation-Date: 2017-10-20 17:27+0000\n"
+"PO-Revision-Date: 2017-10-21 17:38+0000\n"
+"Last-Translator: fri\n"
 "Language-Team: Czech (http://www.transifex.com/zulip/zulip/language/cs/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -123,7 +123,7 @@ msgstr "Dokumentace k rozboru"
 
 #: templates/confirmation/confirm_email_change.html:8
 msgid "Email changed!"
-msgstr ""
+msgstr "Adresa elektronické pošty změněna!"
 
 #: templates/zerver/about.html:211
 msgid "Avatar"
@@ -312,7 +312,7 @@ msgid ""
 "                        organization first. Please use EmailAuthBackend to create\n"
 "                        your organization and then try again.\n"
 "                        "
-msgstr ""
+msgstr "\n                        Pokoušíte se přihlásit pomocí LDAP, aniž byste nejprve\n                        vytvořil nějakou organizaci. Použijte, prosím, jádro pro\n ověření adresy elektronické pošty k vytvoření vaší organizace,\n a potom to zkuste znovu.\n                        "
 
 #: templates/zerver/confirm_continue_registration.html:10
 msgid "Zulip account not found."
@@ -581,7 +581,7 @@ msgstr "Od této osoby ještě nemáte žádné soukromé zprávy!"
 
 #: templates/zerver/home.html:50
 msgid "You have no group private messages with this person yet!"
-msgstr ""
+msgstr "Od této osoby ještě nemáte žádné soukromé zprávy skupiny!"
 
 #: templates/zerver/home.html:58
 msgid "You have no private messages with these people yet!"
@@ -1005,7 +1005,7 @@ msgstr "Přihlásit se pomocí SSO"
 
 #: templates/zerver/login.html:82
 msgid "Email or username"
-msgstr ""
+msgstr "Adresa elektronické pošty nebo uživatelské jméno"
 
 #: templates/zerver/login.html:84
 msgid "Username"
@@ -1068,17 +1068,17 @@ msgstr "Historie úprav zprávy"
 
 #: templates/zerver/navbar.html:5
 msgid "Zulip needs your permission to enable desktop notifications."
-msgstr ""
+msgstr "Zulip potřebuje vaše dovolení pro povolení oznámení na ploše."
 
 #: templates/zerver/navbar.html:8
 msgid "Enable notifications."
-msgstr ""
+msgstr "Povolit oznámení."
 
 #: templates/zerver/navbar.html:12
 msgid ""
 "We recommend allowing notifications. You can fully customize these at any "
 "time in your settings."
-msgstr ""
+msgstr "Doporučuje se povolit oznámení. tato si můžete kdykoli přizpůsobit v nastavení."
 
 #: templates/zerver/navbar.html:14
 msgid "Enable notifications"
@@ -1086,11 +1086,11 @@ msgstr "Povolit oznámení"
 
 #: templates/zerver/navbar.html:16
 msgid "Ask me later"
-msgstr ""
+msgstr "Zeptat se později"
 
 #: templates/zerver/navbar.html:18
 msgid "Never ask on this computer"
-msgstr ""
+msgstr "Nikdy se neptat na tomto počítači"
 
 #: templates/zerver/navbar.html:45 templates/zerver/navbar.html:46
 msgid "Search"
@@ -1169,7 +1169,7 @@ msgstr "Ladění"
 
 #: templates/zerver/navbar.html:6
 msgid "You can fully configure notifications in Zulip') "
-msgstr ""
+msgstr "Můžete plně přizpůsobit oznámení v Zulipu') "
 
 #: templates/zerver/portico-header.html:6
 msgid "Zulip"
@@ -1188,7 +1188,7 @@ msgid ""
 "                    Contact this <a href=\"mailto:%(support_email)s\">server's administrator</a>\n"
 "                    if you have any questions.\n"
 "                    "
-msgstr ""
+msgstr "\n            Tato instalace Zulipu nemá nastaven postoj k soukromí.\n            Pokud máte jakékoli otázky, spojte se se <a href=\"mailto:%(support_email)s\">správcem tohoto serveru</a>.\n            "
 
 #: templates/zerver/realm_creation_failed.html:8
 msgid ""
@@ -1238,7 +1238,12 @@ msgstr "Kratší je lepší než delší."
 
 #: templates/zerver/register.html:101
 msgid "Organization URL"
-msgstr ""
+msgstr "Adresa (URL) organizace"
+
+#: templates/zerver/register.html:108
+#, python-format
+msgid "Use %(external_host)s"
+msgstr "Použít %(external_host)s"
 
 #: templates/zerver/register.html:132
 msgid "The address you'll use to sign in to your organization."
@@ -1330,7 +1335,7 @@ msgstr "Zúžit na soukromé zprávy s"
 
 #: templates/zerver/search_operators.html:25
 msgid "Narrow to group private messages with"
-msgstr ""
+msgstr "Zúžit na soukromé zprávy skupiny s"
 
 #: templates/zerver/search_operators.html:29
 msgid "Narrow to messages sent by"
@@ -1413,7 +1418,7 @@ msgid ""
 "            <span class=\"operator_value\">keyword</span>.\n"
 "        </p>\n"
 "        "
-msgstr ""
+msgstr "\n        <p>Můžete v jednom dotazu přidat jakékoli spojení těchto vyhledávacích operátorů. Například:</p>\n\n        <p>&nbsp; <span class=\"operator\">skupina:<span class=\"operator_value\">název skupiny</span>\n            sender:<span class=\"operator_value\">uživatel@example.com</span>\n                <span class=\"operator_value\">klíčové slovo</span></span></p>\n\n        <p>bude hledat zprávy odeslané <span class=\"operator_value\">uživatel@example.com</span> skupině\n            <span class=\"operator_value\">název skupiny</span>\n        obsahující klíčové slovo <span class=\"operator_value\">klíčové slovo</span>.</p>\n        "
 
 #: templates/zerver/settings_overlay.html:16
 msgid "Your account"
@@ -1519,7 +1524,7 @@ msgid ""
 "                    Contact this <a href=\"mailto:%(support_email)s\">server's administrator</a>\n"
 "                    if you have any questions.\n"
 "                    "
-msgstr ""
+msgstr "\n            Tato instalace Zulipu nemá nastaven podmínky užití.\n            Pokud máte jakékoli otázky, spojte se se <a href=\"mailto:%(support_email)s\">správcem tohoto serveru</a>.\n            "
 
 #: templates/zerver/unsubscribe_link_error.html:5
 msgid "Unknown email unsubscribe request"
@@ -1581,7 +1586,7 @@ msgstr "Musí být oblastním správcem"
 
 #: zerver/decorator.py:203
 msgid "Invalid subdomain for push notifications bouncer"
-msgstr ""
+msgstr "Neplatná poddoména pro odražeče postoupení oznámení"
 
 #: zerver/decorator.py:212
 msgid "This API is not available to incoming webhook bots."
@@ -1734,7 +1739,7 @@ msgstr "Zpráva nesmí být prázdná"
 
 #: zerver/lib/actions.py:1581
 msgid "Message must not contain null bytes"
-msgstr ""
+msgstr "Zpráva nesmí obsahovat nulové byty"
 
 #: zerver/lib/actions.py:1596
 msgid "Missing topic"
@@ -1829,7 +1834,7 @@ msgstr "Neplatná příloha"
 #: zerver/lib/attachments.py:30
 msgid ""
 "An error occured while deleting the attachment. Please try again later."
-msgstr ""
+msgstr "Při mazání přílohy se vyskytla chyba. Zkuste to, prosím, později znovu."
 
 #: zerver/lib/domains.py:10
 msgid "Domain can't be empty."
@@ -1930,7 +1935,7 @@ msgstr "Řízení verzí"
 
 #: zerver/lib/integrations.py:50
 msgid "Interactive bots"
-msgstr ""
+msgstr "Interaktivní roboti"
 
 #: zerver/lib/narrow.py:12
 #, python-format
@@ -1939,12 +1944,12 @@ msgstr "Operátor %s nepodporován."
 
 #: zerver/lib/push_notifications.py:285
 msgid "Received 500 from push notification bouncer"
-msgstr ""
+msgstr "Přijato 500 od odražeče postoupení oznámení"
 
 #: zerver/lib/push_notifications.py:293
 #, python-format
 msgid "Push notifications bouncer error: %s"
-msgstr ""
+msgstr "Chyba odražeče postoupení oznámení: %s"
 
 #: zerver/lib/push_notifications.py:379 zilencer/views.py:66
 msgid "Token does not exist"
@@ -2151,7 +2156,7 @@ msgstr "Neznámé nebo chybějící sezení"
 
 #: zerver/tornado/socket.py:136
 msgid "CSRF token entry missing from request"
-msgstr ""
+msgstr "V požadavku chybí záznam symbolu CSRF"
 
 #: zerver/tornado/socket.py:138
 msgid "CSRF token does not match that in cookie"
@@ -2514,7 +2519,7 @@ msgstr "Chybné heslo!"
 
 #: zerver/views/user_settings.py:129
 msgid "Check your email for a confirmation link. "
-msgstr ""
+msgstr "Podívejte se do svojí poštovní schránky, zda v ní není potvrzovací odkaz."
 
 #: zerver/views/user_settings.py:159
 #, python-format

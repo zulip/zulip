@@ -10,9 +10,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-10-20 17:20+0000\n"
-"PO-Revision-Date: 2017-10-20 17:24+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
+"POT-Creation-Date: 2017-10-20 17:27+0000\n"
+"PO-Revision-Date: 2017-10-23 22:46+0000\n"
+"Last-Translator: Greg Price <gnprice@gmail.com>\n"
 "Language-Team: Japanese (http://www.transifex.com/zulip/zulip/language/ja/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -124,7 +124,7 @@ msgstr "解析ドキュメント"
 
 #: templates/confirmation/confirm_email_change.html:8
 msgid "Email changed!"
-msgstr ""
+msgstr "メールアドレスを変更しました"
 
 #: templates/zerver/about.html:211
 msgid "Avatar"
@@ -334,7 +334,7 @@ msgid ""
 "                            No account found for %(email)s. Would you like to register instead?\n"
 "\n"
 "                            "
-msgstr ""
+msgstr "\n%(email)sのアカウントがありません。代わりに登録しませんか？"
 
 #: templates/zerver/confirm_continue_registration.html:38
 msgid "Go back to login"
@@ -431,7 +431,7 @@ msgstr "機能"
 
 #: templates/zerver/footer.html:8
 msgid "Plans &amp; pricing"
-msgstr ""
+msgstr "プランと価格"
 
 #: templates/zerver/footer.html:11
 msgid "About"
@@ -439,7 +439,7 @@ msgstr "Zulipについて"
 
 #: templates/zerver/footer.html:16
 msgid "Help &amp; community"
-msgstr ""
+msgstr "ヘルプとコミュニティ"
 
 #: templates/zerver/footer.html:18
 msgid "Help center"
@@ -476,11 +476,11 @@ msgstr "プライバシーポリシー"
 
 #: templates/zerver/footer.html:48
 msgid "Apps &amp; integrations"
-msgstr ""
+msgstr "アプリとインテグレーション"
 
 #: templates/zerver/footer.html:50
 msgid "Desktop &amp; mobile apps"
-msgstr ""
+msgstr "デスクトップアプリとモバイルアプリ"
 
 #: templates/zerver/footer.html:51 templates/zerver/navbar.html:119
 msgid "Integrations"
@@ -582,7 +582,7 @@ msgstr "まだこの人とのプライベートメッセージがありません
 
 #: templates/zerver/home.html:50
 msgid "You have no group private messages with this person yet!"
-msgstr ""
+msgstr "まだこの人とのグループPMがありません！"
 
 #: templates/zerver/home.html:58
 msgid "You have no private messages with these people yet!"
@@ -1006,7 +1006,7 @@ msgstr "SSOで登録"
 
 #: templates/zerver/login.html:82
 msgid "Email or username"
-msgstr ""
+msgstr "メールまたはユーザー名"
 
 #: templates/zerver/login.html:84
 msgid "Username"
@@ -1020,7 +1020,7 @@ msgstr "パスワード"
 #: templates/zerver/login.html:106
 msgid ""
 "You've already registered with this email address. Please sign in below."
-msgstr ""
+msgstr "すでにこのメールアドレスで登録済みです。以下からログインしてください。"
 
 #: templates/zerver/login.html:116
 msgid "Sign in"
@@ -1061,7 +1061,7 @@ msgid ""
 "                            with this <a target=\"_blank\"\n"
 "                                          href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">Markdown-ish\n"
 "                        table syntax</a>."
-msgstr ""
+msgstr "<a target=\"_blank\"\n                                          href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">Markdown風なテーブル構文</a>を使って<a target=\"_blank\"\n                            href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">テーブル</a>を作ることもできます。"
 
 #: templates/zerver/message_history.html:5
 msgid "Message edit history"
@@ -1069,17 +1069,17 @@ msgstr "メッセージの編集履歴"
 
 #: templates/zerver/navbar.html:5
 msgid "Zulip needs your permission to enable desktop notifications."
-msgstr ""
+msgstr "Zulipがデスクトップ通知を有効にするために許可を求めています。"
 
 #: templates/zerver/navbar.html:8
 msgid "Enable notifications."
-msgstr ""
+msgstr "通知を有効"
 
 #: templates/zerver/navbar.html:12
 msgid ""
 "We recommend allowing notifications. You can fully customize these at any "
 "time in your settings."
-msgstr ""
+msgstr "通知を有効にすることをお勧めします。設定でいつでもカスタマイズできます。"
 
 #: templates/zerver/navbar.html:14
 msgid "Enable notifications"
@@ -1087,11 +1087,11 @@ msgstr "通知を有効"
 
 #: templates/zerver/navbar.html:16
 msgid "Ask me later"
-msgstr ""
+msgstr "あとで確認する"
 
 #: templates/zerver/navbar.html:18
 msgid "Never ask on this computer"
-msgstr ""
+msgstr "このコンピューターでは確認しない"
 
 #: templates/zerver/navbar.html:45 templates/zerver/navbar.html:46
 msgid "Search"
@@ -1154,7 +1154,7 @@ msgstr "ユーザーを招待"
 msgid ""
 "Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via "
 "Webathena"
-msgstr ""
+msgstr "Webathena経由でZephyrミラーを実行するために必要とされるKerberosチケットをZulipに許可してください"
 
 #: templates/zerver/navbar.html:152
 msgid "Link with Webathena"
@@ -1209,7 +1209,7 @@ msgid ""
 "            <h1>You're almost there.</h1>\n"
 "            <p>We just need you to do one last thing.</p>\n"
 "            "
-msgstr ""
+msgstr "\n<h1>あと一歩です。</h1>\n<p>最後にもう一つのお願いをします。</p>"
 
 #: templates/zerver/register.html:43
 msgid "Full name or 名前"
@@ -1239,7 +1239,12 @@ msgstr "長いより短い方が良い"
 
 #: templates/zerver/register.html:101
 msgid "Organization URL"
-msgstr ""
+msgstr "組織のURL"
+
+#: templates/zerver/register.html:108
+#, python-format
+msgid "Use %(external_host)s"
+msgstr "%(external_host)sを使用"
 
 #: templates/zerver/register.html:132
 msgid "The address you'll use to sign in to your organization."
@@ -1331,7 +1336,7 @@ msgstr "プライベートメッセージだけ表示"
 
 #: templates/zerver/search_operators.html:25
 msgid "Narrow to group private messages with"
-msgstr ""
+msgstr "特定のグループPMだけ表示: "
 
 #: templates/zerver/search_operators.html:29
 msgid "Narrow to messages sent by"
@@ -1520,7 +1525,7 @@ msgid ""
 "                    Contact this <a href=\"mailto:%(support_email)s\">server's administrator</a>\n"
 "                    if you have any questions.\n"
 "                    "
-msgstr ""
+msgstr "\nこのZulipのインストールはサービス利用規約の設定がありません。もし質問があれば、この <a href=\"mailto:%(support_email)s\">サーバー管理者</a> に連絡してください。"
 
 #: templates/zerver/unsubscribe_link_error.html:5
 msgid "Unknown email unsubscribe request"
@@ -1735,7 +1740,7 @@ msgstr "メッセージを入力する必要があります"
 
 #: zerver/lib/actions.py:1581
 msgid "Message must not contain null bytes"
-msgstr ""
+msgstr "メッセージにNULL文字を含んではいけません"
 
 #: zerver/lib/actions.py:1596
 msgid "Missing topic"
@@ -1757,7 +1762,7 @@ msgstr "ストリーム '%s' への送信は許可されていません"
 
 #: zerver/lib/actions.py:1637
 msgid "Message must have recipients"
-msgstr ""
+msgstr "メッセージは受信者が必要です"
 
 #: zerver/lib/actions.py:1648 zerver/lib/addressee.py:111
 #: zerver/lib/outgoing_webhook.py:147
@@ -1794,7 +1799,7 @@ msgstr "ドメイン外です。"
 
 #: zerver/lib/actions.py:3638
 msgid "Already has an account."
-msgstr ""
+msgstr "アカウントはすでにあります"
 
 #: zerver/lib/actions.py:3673
 msgid "Some emails did not validate, so we didn't send any invitations."
@@ -1846,7 +1851,7 @@ msgstr "ドメインはドット (.) で始める、または終えることが�
 
 #: zerver/lib/domains.py:17
 msgid "Consecutive '.' are not allowed."
-msgstr ""
+msgstr "ドメインは '..' を含むことができません。"
 
 #: zerver/lib/domains.py:19
 msgid "Subdomains cannot start or end with a '-'."
@@ -1859,7 +1864,7 @@ msgstr "ドメインには文字や数字と '.' と '-' だけが使えます�
 #: zerver/lib/emoji.py:27
 #, python-format
 msgid "Emoji '%s' does not exist"
-msgstr ""
+msgstr "絵文字 「%s」は存在しません"
 
 #: zerver/lib/emoji.py:54
 msgid "Must be a realm administrator or emoji author"
@@ -2201,15 +2206,15 @@ msgstr "不正なOTP"
 
 #: zerver/views/auth.py:571 zerver/views/auth.py:599
 msgid "Dev environment not enabled."
-msgstr ""
+msgstr "開発環境が有効ではありません。"
 
 #: zerver/views/auth.py:584 zerver/views/auth.py:628
 msgid "Your realm has been deactivated."
-msgstr ""
+msgstr "realmは無効化されています。"
 
 #: zerver/views/auth.py:587 zerver/views/auth.py:625
 msgid "Your account has been disabled."
-msgstr ""
+msgstr "アカウントは無効化されています。"
 
 #: zerver/views/auth.py:590
 msgid "This user is not registered."
@@ -2237,7 +2242,7 @@ msgstr "サブドメインが必要です"
 
 #: zerver/views/auth.py:724
 msgid "GOOGLE_CLIENT_ID is not configured"
-msgstr ""
+msgstr "GOOGLE_CLIENT_IDは設定されていません"
 
 #: zerver/views/custom_profile_fields.py:33
 #: zerver/views/custom_profile_fields.py:66
@@ -2267,7 +2272,7 @@ msgstr ""
 
 #: zerver/views/invite.py:27
 msgid "You must specify at least one email address."
-msgstr ""
+msgstr "メールアドレスを指定してください。"
 
 #: zerver/views/invite.py:35
 msgid "You must specify at least one stream for invitees to join."
@@ -2286,12 +2291,12 @@ msgstr "不正な絞り込みオペレーター: {desc}"
 #: zerver/views/messages.py:825
 #, python-format
 msgid "No such topic '%s'"
-msgstr ""
+msgstr "トピック '%s' は存在しません"
 
 #: zerver/views/messages.py:950
 #, python-format
 msgid "Unknown realm %s"
-msgstr ""
+msgstr "不明なrealm %s"
 
 #: zerver/views/messages.py:970
 msgid "Missing sender"
@@ -2327,11 +2332,11 @@ msgstr "このメッセージを編集できる期限を過ぎました"
 
 #: zerver/views/messages.py:1087
 msgid "Nothing to change"
-msgstr ""
+msgstr "変更するものがありません"
 
 #: zerver/views/muting.py:22
 msgid "Topic already muted"
-msgstr ""
+msgstr "トピックはすでにミュート中"
 
 #: zerver/views/muting.py:29
 msgid "Topic is not there in the muted_topics list"
@@ -2385,7 +2390,7 @@ msgstr "不正な言語 '%s'"
 
 #: zerver/views/realm.py:51
 msgid "Realm description is too long."
-msgstr ""
+msgstr "realmの説明が長すぎます。"
 
 #: zerver/views/realm.py:53
 msgid "Realm name is too long."
@@ -2393,7 +2398,7 @@ msgstr "realm名が長すぎます。"
 
 #: zerver/views/realm.py:55
 msgid "At least one authentication method must be enabled."
-msgstr ""
+msgstr "有効な認証方法が必要です。"
 
 #: zerver/views/realm_domains.py:29
 msgid "Invalid domain: {}"
@@ -2417,11 +2422,11 @@ msgstr "ファイルは1つだけアップロードしてください。"
 #: zerver/views/upload.py:60 zerver/views/user_settings.py:218
 #, python-format
 msgid "Uploaded file is larger than the allowed limit of %s MB"
-msgstr ""
+msgstr "アップロードファイルはサイズ制限 (%sMB) を超えています。"
 
 #: zerver/views/realm_filters.py:45
 msgid "Filter not found"
-msgstr ""
+msgstr "フィルターが見つかりません"
 
 #: zerver/views/realm_icon.py:19
 msgid "You must upload exactly one icon."
@@ -2478,7 +2483,7 @@ msgstr "ストリームID %d は購読していません"
 
 #: zerver/views/upload.py:42
 msgid "<p>File not found.</p>"
-msgstr ""
+msgstr "<p>ファイルがありません。</p>"
 
 #: zerver/views/upload.py:44
 msgid "<p>You are not authorized to view this file.</p>"
@@ -2491,11 +2496,11 @@ msgstr "ファイルを指定してアップロードしてください。"
 #: zerver/views/upload.py:55 zerver/views/users.py:202
 #: zerver/views/users.py:273
 msgid "You may only upload one file at a time"
-msgstr ""
+msgstr "一度に1つのファイルだけアップロードできます"
 
 #: zerver/views/upload.py:63
 msgid "Upload would exceed your maximum quota."
-msgstr ""
+msgstr "アップロードファイルが上限容量を超えています。"
 
 #: zerver/views/user_settings.py:36 zerver/views/user_settings.py:121
 msgid "Email address changes are disabled in this organization."
@@ -2503,7 +2508,7 @@ msgstr "この組織のメールアドレス変更は無効です。"
 
 #: zerver/views/user_settings.py:94
 msgid "No new data supplied"
-msgstr ""
+msgstr "新しいデータがありません。"
 
 #: zerver/views/user_settings.py:98
 msgid "New password must match confirmation password!"
@@ -2515,7 +2520,7 @@ msgstr "パスワードが間違っています！"
 
 #: zerver/views/user_settings.py:129
 msgid "Check your email for a confirmation link. "
-msgstr ""
+msgstr "確認用リンクを記載したメールをチェックしてください。"
 
 #: zerver/views/user_settings.py:159
 #, python-format
@@ -2537,7 +2542,7 @@ msgstr "組織の管理者だけが無効化できます"
 
 #: zerver/views/users.py:63 zerver/views/users.py:65
 msgid "No such bot"
-msgstr ""
+msgstr "ボットが存在しません"
 
 #: zerver/views/users.py:104
 msgid "Cannot remove the only organization administrator"
@@ -2555,7 +2560,7 @@ msgstr ""
 #: zerver/views/users.py:424
 #, python-format
 msgid "Email '%s' already in use"
-msgstr ""
+msgstr "メールアドレス '%s' は使用中です"
 
 #: zerver/views/zephyr.py:32
 msgid "Could not find Kerberos credential"
@@ -2563,7 +2568,7 @@ msgstr ""
 
 #: zerver/views/zephyr.py:34
 msgid "Webathena login not enabled"
-msgstr ""
+msgstr "Webathenaのログインが有効ではありません"
 
 #: zerver/views/zephyr.py:44
 msgid "Invalid Kerberos cache"
@@ -2592,58 +2597,58 @@ msgstr "コンテンツを入力してください"
 
 #: zerver/webhooks/jira/view.py:263
 msgid "Event is not given by JIRA"
-msgstr ""
+msgstr "JIRAのイベントではありません"
 
 #: zerver/webhooks/librato/view.py:170
 msgid "Malformed JSON input"
-msgstr ""
+msgstr "不正なJSON入力"
 
 #: zerver/webhooks/newrelic/view.py:33
 msgid "Unknown webhook request"
-msgstr ""
+msgstr "不明なwebhookリクエスト"
 
 #: zerver/webhooks/pingdom/view.py:45
 #, python-brace-format
 msgid "Unsupported check_type: {check_type}"
-msgstr ""
+msgstr "サポートしていない check_type: {check_type}"
 
 #: zerver/webhooks/pivotal/view.py:174
 msgid "Unable to handle Pivotal payload"
-msgstr ""
+msgstr "Pivotalのペイロードを処理できません"
 
 #: zerver/webhooks/slack/view.py:24
 msgid "Error: channels_map_to_topics parameter other than 0 or 1"
-msgstr ""
+msgstr "エラー: channels_map_to_topics パラメーターに0と1は設定できません"
 
 #: zerver/webhooks/slack/view.py:30
 msgid "Message from Slack"
-msgstr ""
+msgstr "Slackからのメッセージ"
 
 #: zerver/webhooks/stripe/view.py:160
 msgid "We don't support {} event"
-msgstr ""
+msgstr "{} イベントをサポートしていません"
 
 #: zerver/webhooks/transifex/view.py:24
 msgid "Transifex wrong request"
-msgstr ""
+msgstr "Transifexのリクエストエラー"
 
 #: zerver/webhooks/trello/view/__init__.py:30
 #, python-brace-format
 msgid "Unsupported action_type: {action_type}"
-msgstr ""
+msgstr "サポートしていない action_type: {action_type}"
 
 #: zerver/webhooks/updown/view.py:83
 #, python-format
 msgid "Unsupported Updown event type: %s"
-msgstr ""
+msgstr "サポートしていない Updown event type: %s"
 
 #: zerver/webhooks/wordpress/view.py:42
 msgid "Unknown WordPress webhook action: "
-msgstr ""
+msgstr "不明なWordPress webhookのアクション: "
 
 #: zilencer/views.py:22
 msgid "Must validate with valid Zulip server API key"
-msgstr ""
+msgstr "正しいZulipサーバーでAPIキーを検証する必要があります"
 
 #: zilencer/views.py:27
 msgid "Invalid token type"

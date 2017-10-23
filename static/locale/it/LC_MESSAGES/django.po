@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-10-20 17:27+0000\n"
+"POT-Creation-Date: 2017-10-23 22:50+0000\n"
 "PO-Revision-Date: 2017-09-04 03:34+0000\n"
 "Last-Translator: Greg Price <gnprice@gmail.com>\n"
 "Language-Team: Italian (http://www.transifex.com/zulip/zulip/language/it/)\n"
@@ -484,7 +484,7 @@ msgstr ""
 msgid "Desktop &amp; mobile apps"
 msgstr ""
 
-#: templates/zerver/footer.html:51 templates/zerver/navbar.html:119
+#: templates/zerver/footer.html:51 templates/zerver/navbar.html:117
 msgid "Integrations"
 msgstr ""
 
@@ -746,7 +746,7 @@ msgstr ""
 msgid "Invite"
 msgstr ""
 
-#: templates/zerver/keyboard_shortcuts.html:2 templates/zerver/navbar.html:98
+#: templates/zerver/keyboard_shortcuts.html:2 templates/zerver/navbar.html:96
 msgid "Keyboard shortcuts"
 msgstr ""
 
@@ -1038,7 +1038,7 @@ msgstr ""
 msgid "Sign in with GitHub"
 msgstr ""
 
-#: templates/zerver/markdown_help.html:2 templates/zerver/navbar.html:103
+#: templates/zerver/markdown_help.html:2 templates/zerver/navbar.html:101
 msgid "Message formatting"
 msgstr ""
 
@@ -1076,108 +1076,104 @@ msgid "Message edit history"
 msgstr ""
 
 #: templates/zerver/navbar.html:5
-msgid "Zulip needs your permission to enable desktop notifications."
+msgid ""
+"Zulip needs your permission to\n"
+"        <a class=\"request-desktop-notifications alert-link\">enable desktop "
+"notifications.</a>\n"
+"        "
 msgstr ""
 
-#: templates/zerver/navbar.html:8
-msgid "Enable notifications."
+#: templates/zerver/navbar.html:10
+msgid ""
+"We strongly recommend enabling desktop notifications. They help Zulip keep "
+"your team connected."
 msgstr ""
 
 #: templates/zerver/navbar.html:12
-msgid ""
-"We recommend allowing notifications. You can fully customize these at any "
-"time in your settings."
-msgstr ""
-
-#: templates/zerver/navbar.html:14
 msgid "Enable notifications"
 msgstr ""
 
-#: templates/zerver/navbar.html:16
+#: templates/zerver/navbar.html:14
 msgid "Ask me later"
 msgstr ""
 
-#: templates/zerver/navbar.html:18
+#: templates/zerver/navbar.html:16
 msgid "Never ask on this computer"
 msgstr ""
 
-#: templates/zerver/navbar.html:45 templates/zerver/navbar.html:46
+#: templates/zerver/navbar.html:43 templates/zerver/navbar.html:44
 msgid "Search"
 msgstr "Ricerca"
 
-#: templates/zerver/navbar.html:48
+#: templates/zerver/navbar.html:46
 msgid "Exit search"
 msgstr ""
 
-#: templates/zerver/navbar.html:49
+#: templates/zerver/navbar.html:47
 msgid "Search help"
 msgstr ""
 
-#: templates/zerver/navbar.html:64
+#: templates/zerver/navbar.html:62
 msgid "Menu"
 msgstr ""
 
-#: templates/zerver/navbar.html:76
+#: templates/zerver/navbar.html:74
 msgid "Manage streams"
 msgstr ""
 
-#: templates/zerver/navbar.html:81 templates/zerver/settings_overlay.html:4
+#: templates/zerver/navbar.html:79 templates/zerver/settings_overlay.html:4
 #: templates/zerver/settings_overlay.html:109
 msgid "Settings"
 msgstr ""
 
-#: templates/zerver/navbar.html:87
+#: templates/zerver/navbar.html:85
 msgid "Manage organization"
 msgstr ""
 
-#: templates/zerver/navbar.html:93
+#: templates/zerver/navbar.html:91
 msgid "User documentation"
 msgstr ""
 
-#: templates/zerver/navbar.html:108 templates/zerver/search_operators.html:2
+#: templates/zerver/navbar.html:106 templates/zerver/search_operators.html:2
 msgid "Search operators"
 msgstr ""
 
-#: templates/zerver/navbar.html:114
+#: templates/zerver/navbar.html:112
 msgid "Desktop & mobile apps"
 msgstr ""
 
-#: templates/zerver/navbar.html:124
+#: templates/zerver/navbar.html:122
 msgid "API documentation"
 msgstr ""
 
-#: templates/zerver/navbar.html:130
+#: templates/zerver/navbar.html:128
 msgid "Statistics"
 msgstr ""
 
-#: templates/zerver/navbar.html:137
+#: templates/zerver/navbar.html:135
 msgid "Feedback"
 msgstr ""
 
-#: templates/zerver/navbar.html:144
+#: templates/zerver/navbar.html:142
 msgid "Invite users"
 msgstr ""
 
-#: templates/zerver/navbar.html:150
+#: templates/zerver/navbar.html:148
 msgid ""
 "Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via "
 "Webathena"
 msgstr ""
 
-#: templates/zerver/navbar.html:152
+#: templates/zerver/navbar.html:150
 msgid "Link with Webathena"
 msgstr ""
 
-#: templates/zerver/navbar.html:158 templates/zerver/settings_overlay.html:102
+#: templates/zerver/navbar.html:156 templates/zerver/settings_overlay.html:102
 msgid "Log out"
 msgstr "Logout"
 
-#: templates/zerver/navbar.html:164
+#: templates/zerver/navbar.html:162
 msgid "Debug"
-msgstr ""
-
-#: templates/zerver/navbar.html:6
-msgid "You can fully configure notifications in Zulip') "
 msgstr ""
 
 #: templates/zerver/portico-header.html:6
@@ -1650,49 +1646,49 @@ msgstr ""
 msgid "Access denied"
 msgstr ""
 
-#: zerver/forms.py:55
+#: zerver/forms.py:56
 msgid "Subdomain needs to have length 3 or greater."
 msgstr ""
 
-#: zerver/forms.py:56
+#: zerver/forms.py:57
 msgid "Subdomain cannot start or end with a '-'."
 msgstr ""
 
-#: zerver/forms.py:57
+#: zerver/forms.py:58
 msgid "Subdomain can only have lowercase letters, numbers, and '-'s."
 msgstr ""
 
-#: zerver/forms.py:58
+#: zerver/forms.py:59
 msgid "Subdomain unavailable. Please choose a different one."
 msgstr ""
 
-#: zerver/forms.py:140
+#: zerver/forms.py:141
 #, python-brace-format
 msgid "The organization you are trying to join using {email} does not exist."
 msgstr ""
 
-#: zerver/forms.py:145
+#: zerver/forms.py:146
 #, python-brace-format
 msgid ""
 "Please request an invite for {email} from the organization administrator."
 msgstr ""
 
-#: zerver/forms.py:151
+#: zerver/forms.py:152
 #, python-brace-format
 msgid ""
 "Your email address, {email}, is not in one of the domains that are allowed "
 "to register for accounts in this organization."
 msgstr ""
 
-#: zerver/forms.py:165
+#: zerver/forms.py:166
 msgid "Please use your real email address."
 msgstr ""
 
-#: zerver/forms.py:288
+#: zerver/forms.py:309
 msgid "Add up to 10 comma-separated email addresses."
 msgstr ""
 
-#: zerver/forms.py:294
+#: zerver/forms.py:315
 msgid "Please enter at most 10 emails."
 msgstr ""
 
@@ -1801,8 +1797,8 @@ msgid "Insufficient permission"
 msgstr ""
 
 #: zerver/lib/actions.py:3013 zerver/lib/actions.py:3015
-#: zerver/lib/message.py:415 zerver/lib/message.py:426
-#: zerver/lib/message.py:431 zerver/lib/message.py:435
+#: zerver/lib/message.py:422 zerver/lib/message.py:433
+#: zerver/lib/message.py:438 zerver/lib/message.py:442
 msgid "Invalid message(s)"
 msgstr ""
 
@@ -1894,7 +1890,7 @@ msgstr ""
 msgid "Invalid type parameter"
 msgstr ""
 
-#: zerver/lib/events.py:510
+#: zerver/lib/events.py:522
 msgid "Could not allocate event queue"
 msgstr ""
 
