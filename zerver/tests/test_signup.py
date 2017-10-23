@@ -1703,6 +1703,52 @@ class UserSignUpTest(ZulipTestCase):
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
                                                 'zproject.backends.ZulipDummyBackend'))
+    def test_ldap_auto_registration_on_login(self):
+        # type: () -> None
+        """The most common way for LDAP authentication to be used is with a
+        server that doesn't have a terms-of-service required, in which
+        case we offer a complete single-sign-on experience (where the
+        user just enters their LDAP username and password, and their
+        account is created if it doesn't already exist).
+
+        This test verifies that flow.
+        """
+        password = "testing"
+        email = "newuser@zulip.com"
+        subdomain = "zulip"
+
+        ldap_user_attr_map = {'full_name': 'fn', 'short_name': 'sn'}
+
+        ldap_patcher = patch('django_auth_ldap.config.ldap.initialize')
+        mock_initialize = ldap_patcher.start()
+        mock_ldap = MockLDAP()
+        mock_initialize.return_value = mock_ldap
+
+        full_name = 'New LDAP fullname'
+        mock_ldap.directory = {
+            'uid=newuser,ou=users,dc=zulip,dc=com': {
+                'userPassword': 'testing',
+                'fn': [full_name],
+                'sn': ['shortname'],
+            }
+        }
+
+        with self.settings(
+                POPULATE_PROFILE_VIA_LDAP=True,
+                LDAP_APPEND_DOMAIN='zulip.com',
+                AUTH_LDAP_BIND_PASSWORD='',
+                AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
+
+            self.login_with_return(email, password,
+                                   HTTP_HOST=subdomain + ".testserver")
+
+            user_profile = UserProfile.objects.get(email=email)
+            # Name comes from form which was set by LDAP.
+            self.assertEqual(user_profile.full_name, full_name)
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
+                                                'zproject.backends.ZulipDummyBackend'))
     def test_ldap_registration_when_names_changes_are_disabled(self):
         # type: () -> None
         password = "testing"

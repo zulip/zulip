@@ -1,6 +1,7 @@
 
 from django import forms
 from django.conf import settings
+from django.contrib.auth import authenticate
 from django.contrib.auth.forms import SetPasswordForm, AuthenticationForm, \
     PasswordResetForm
 from django.core.exceptions import ValidationError
@@ -266,6 +267,26 @@ Please contact %s to reactivate this group.""" % (
                             (user_profile.email, get_subdomain(self.request)))
             raise ValidationError(mark_safe(WRONG_SUBDOMAIN_ERROR))
         return email
+
+    def clean(self):
+        # type: () -> Dict[str, Any]
+        username = self.cleaned_data.get('username')
+        password = self.cleaned_data.get('password')
+
+        if username is not None and password:
+            subdomain = get_subdomain(self.request)
+            self.user_cache = authenticate(self.request, username=username, password=password,
+                                           realm_subdomain=subdomain)
+            if self.user_cache is None:
+                raise forms.ValidationError(
+                    self.error_messages['invalid_login'],
+                    code='invalid_login',
+                    params={'username': self.username_field.verbose_name},
+                )
+            else:
+                self.confirm_login_allowed(self.user_cache)
+
+        return self.cleaned_data
 
 class MultiEmailField(forms.Field):
     def to_python(self, emails):
