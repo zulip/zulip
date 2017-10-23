@@ -418,18 +418,20 @@ exports.validate_stream_message_address_info = function (stream_name) {
     switch (check_unsubscribed_stream_for_send(stream_name,
                                                page_params.narrow_stream !== undefined)) {
     case "does-not-exist":
-        response = "<p>The stream <b>" +
-            Handlebars.Utils.escapeExpression(stream_name) + "</b> does not exist.</p>" +
-            "<p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>";
-        compose_error(response, $('#stream'));
+        var translation1;
+        var translation2;
+        translation1=i18n.t("__-para__ The stream __-bold__ __streamname__ __-closebold__ does not exist. __-closepara__",{para:'<p>',closepara:'</p>',bold:'<b>',closebold:'</b>',streamname: Handlebars.Utils.escapeExpression(stream_name)}); 
+        translation2=i18n.t("__-para__ Manage your subscriptions__-link__ on your Streams page__-closelink__.__-closepara__",{para:'<p>',closepara:'</p>',link:'<a href="#streams/all">',closelink:'</a>'});    
+        response=translation1+translation2;
+        compose_error(response, $('#stream'));                                                                                                                   
         return false;
     case "error":
         compose_error(i18n.t("Error checking subscription"), $("#stream"));
         return false;
     case "not-subscribed":
-        response = "<p>You're not subscribed to the stream <b>" +
-            Handlebars.Utils.escapeExpression(stream_name) + "</b>.</p>" +
-            "<p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>";
+        var translation3 =i18n.t("__-para__You're not subscribed to the stream __-bold__ __streamname__ __-closebold__ . __-closepara__",{para:'<p>',closepara:'</p>',bold:'<b>',closebold:'</b>',streamname: Handlebars.Utils.escapeExpression(stream_name)});
+        var translation4 =i18n.t("__-para__Manage your subscriptions__-link__ on your Streams page__-closelink__. __-closepara__",{para:'<p>',closepara:'</p>',link:'<a href="#streams/all">',closelink:'</a>'});
+        response = translation1 + translation2;
         compose_error(response, $('#stream'));
         return false;
     }
