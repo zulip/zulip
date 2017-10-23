@@ -35,6 +35,7 @@ from zerver.lib.message import (
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.retention import move_message_to_archive
 from zerver.lib.send_email import send_email, FromAddress
+from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.topic_mutes import (
     get_topic_mutes,
     add_topic_mute,
@@ -764,8 +765,8 @@ RecipientInfoResult = TypedDict('RecipientInfoResult', {
     'service_bot_tuples': List[Tuple[int, int]],
 })
 
-def get_recipient_info(recipient, sender_id):
-    # type: (Recipient, int) -> RecipientInfoResult
+def get_recipient_info(recipient, sender_id, stream_topic):
+    # type: (Recipient, int, Optional[StreamTopicTarget]) -> RecipientInfoResult
     stream_push_user_ids = set()  # type: Set[int]
 
     if recipient.type == Recipient.PERSONAL:
@@ -783,16 +784,18 @@ def get_recipient_info(recipient, sender_id):
             'push_notifications',
             'in_home_view',
         ).order_by('user_profile_id')
+
         user_ids = [
             row['user_profile_id']
             for row in subscription_rows
         ]
+
         stream_push_user_ids = {
             row['user_profile_id']
             for row in subscription_rows
             # Note: muting a stream overrides stream_push_notify
             if row['push_notifications'] and row['in_home_view']
-        }
+        } - stream_topic.user_ids_muting_topic()
 
     elif recipient.type == Recipient.HUDDLE:
         user_ids = Subscription.objects.filter(
@@ -960,8 +963,20 @@ def do_send_messages(messages_maybe_none):
         message['realm'] = message.get('realm', message['message'].sender.realm)
 
     for message in messages:
-        info = get_recipient_info(message['message'].recipient,
-                                  message['message'].sender_id)
+        if message['message'].recipient.type == Recipient.STREAM:
+            stream_id = message['message'].recipient.type_id
+            stream_topic = StreamTopicTarget(
+                stream_id=stream_id,
+                topic_name=message['message'].topic_name()
+            )
+        else:
+            stream_topic = None
+
+        info = get_recipient_info(
+            recipient=message['message'].recipient,
+            sender_id=message['message'].sender_id,
+            stream_topic=stream_topic,
+        )
 
         message['active_user_ids'] = info['active_user_ids']
         message['push_notify_user_ids'] = info['push_notify_user_ids']
@@ -3248,9 +3263,26 @@ def do_update_message(user_profile, message, subject, propagate_mode,
         if Message.content_has_attachment(prev_content) or Message.content_has_attachment(message.content):
             check_attachment_reference_change(prev_content, message)
 
+        if message.recipient.type == Recipient.STREAM:
+            if subject is not None:
+                new_topic_name = subject
+            else:
+                new_topic_name = message.topic_name()
+
+            stream_topic = StreamTopicTarget(
+                stream_id=stream_id,
+                topic_name=new_topic_name,
+            )
+        else:
+            stream_topic = None
+
         # TODO: We may want a slightly leaner of this function for updates.
-        info = get_recipient_info(message.recipient,
-                                  message.sender_id)
+        info = get_recipient_info(
+            recipient=message.recipient,
+            sender_id=message.sender_id,
+            stream_topic=stream_topic,
+        )
+
         event['push_notify_user_ids'] = list(info['push_notify_user_ids'])
         event['stream_push_user_ids'] = list(info['stream_push_user_ids'])
         event['prior_mention_user_ids'] = list(prior_mention_user_ids)

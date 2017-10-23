@@ -32,6 +32,8 @@ from zerver.lib.actions import (
     do_reactivate_user,
     do_change_is_admin,
 )
+from zerver.lib.topic_mutes import add_topic_mute
+from zerver.lib.stream_topic import StreamTopicTarget
 
 from django.conf import settings
 
@@ -359,12 +361,18 @@ class RecipientInfoTest(ZulipTestCase):
         realm = hamlet.realm
 
         stream_name = 'Test Stream'
+        topic_name = 'test topic'
 
         for user in [hamlet, cordelia, othello]:
             self.subscribe(user, stream_name)
 
         stream = get_stream(stream_name, realm)
         recipient = get_recipient(Recipient.STREAM, stream.id)
+
+        stream_topic = StreamTopicTarget(
+            stream_id=stream.id,
+            topic_name=topic_name,
+        )
 
         sub = get_subscription(stream_name, hamlet)
         sub.push_notifications = True
@@ -373,6 +381,7 @@ class RecipientInfoTest(ZulipTestCase):
         info = get_recipient_info(
             recipient=recipient,
             sender_id=hamlet.id,
+            stream_topic=stream_topic,
         )
 
         all_user_ids = {hamlet.id, cordelia.id, othello.id}
@@ -387,6 +396,22 @@ class RecipientInfoTest(ZulipTestCase):
         )
 
         self.assertEqual(info, expected_info)
+
+        # Now mute Hamlet to omit him from stream_push_user_ids.
+        add_topic_mute(
+            user_profile=hamlet,
+            stream_id=stream.id,
+            recipient_id=recipient.id,
+            topic_name=topic_name,
+        )
+
+        info = get_recipient_info(
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+        )
+
+        self.assertEqual(info['stream_push_user_ids'], set())
 
 class BulkUsersTest(ZulipTestCase):
     def test_client_gravatar_option(self):
