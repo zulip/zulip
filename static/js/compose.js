@@ -429,8 +429,8 @@ exports.validate_stream_message_address_info = function (stream_name) {
         compose_error(i18n.t("Error checking subscription"), $("#stream"));
         return false;
     case "not-subscribed":
-        var translation1 =i18n.t("__-para__You're not subscribed to the stream __-bold__ __streamname__ __-closebold__ . __-closepara__",{para:'<p>',closepara:'</p>',bold:'<b>',closebold:'</b>',streamname: Handlebars.Utils.escapeExpression(stream_name)});
-        var translation2 =i18n.t("__-para__Manage your subscriptions__-link__ on your Streams page__-closelink__. __-closepara__",{para:'<p>',closepara:'</p>',link:'<a href="#streams/all">',closelink:'</a>'});
+        var translation3 =i18n.t("__-para__You're not subscribed to the stream __-bold__ __streamname__ __-closebold__ . __-closepara__",{para:'<p>',closepara:'</p>',bold:'<b>',closebold:'</b>',streamname: Handlebars.Utils.escapeExpression(stream_name)});
+        var translation4 =i18n.t("__-para__Manage your subscriptions__-link__ on your Streams page__-closelink__. __-closepara__",{para:'<p>',closepara:'</p>',link:'<a href="#streams/all">',closelink:'</a>'});
         response = translation1 + translation2;
         compose_error(response, $('#stream'));
         return false;
