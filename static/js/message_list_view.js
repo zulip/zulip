@@ -424,6 +424,15 @@ MessageListView.prototype = {
                 });
             }
 
+            // Display emoji (including realm emoji) as text if
+            // page_params.emoji_alt_code is set
+            if (page_params.emoji_alt_code) {
+                row.find(".emoji").replaceWith(function () {
+                    var text = $(this).attr("title");
+                    return ":" + text + ":";
+                });
+             }
+
             var id = rows.id(row);
             message_edit.maybe_show_edit(row, id);
 
