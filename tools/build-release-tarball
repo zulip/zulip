@@ -2,18 +2,20 @@
 set -eu
 
 usage() {
-    echo "Usage: $0 <ZULIP_VERSION> [--authors-not-required]" >&2
+    echo "Usage: $0 <ZULIP_VERSION> [--authors-not-required] [--full] " >&2
     exit 1
 }
 
-args="$(getopt -o '' -l 'authors-not-required,help' -n "$0" -- "$@")"
+args="$(getopt -o '' -l 'full,authors-not-required,help' -n "$0" -- "$@")"
 eval "set -- $args"
 
 authors_not_required=
+FULL=''
 while true; do
     case "$1" in
         --authors-not-required)
             authors_not_required=--authors-not-required; shift;;
+        --full) FULL=full; shift ;;
         --) shift; break;;
         *) usage;;
     esac
@@ -107,13 +109,19 @@ find prod-static/serve/generated/emoji/images/emoji/ -regex '.*\.[0-9a-f]+\.png'
 echo "$GITID" > build_id
 echo "$version" > version
 
-cd "$BASEDIR"
-pip download --no-deps -r requirements/prod.txt -d $TMPDIR/$prefix/pip_packages
+if [ "$FULL" == "full" ] ;
+then
+    cd "$BASEDIR"
+    pip download --no-deps -r requirements/prod.txt -d $TMPDIR/$prefix/pip_packages
+fi
 
 cd "$TMPDIR"
 
 tar --append -f "$TARBALL" "$prefix/prod-static" "$prefix/build_id" "$prefix/version" "$prefix/staticfiles.json" "$prefix/templates/zerver/emails/compiled" "$prefix/webpack-stats-production.json"
-tar --append -f "$TARBALL" "$prefix/pip_packages"
+if [ "$FULL" == "full" ] ;
+then
+    tar --append -f "$TARBALL" "$prefix/pip_packages"
+fi
 
 rm -rf "$prefix"
 
