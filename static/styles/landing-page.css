@@ -1947,6 +1947,7 @@ nav ul li.active::after {
 
 .portico-landing.integrations .main {
     width: calc(100% - 100px);
+    max-width: 1170px;
     margin: 0 auto;
 
     background-color: #fff;
@@ -2064,7 +2065,7 @@ nav ul li.active::after {
 .portico-landing.integrations .integration-categories-sidebar {
     float: left;
     width: 200px;
-    padding: 0 30px 0 50px;
+    padding: 0 30px 0 0px;
     margin: 0;
 }
 
