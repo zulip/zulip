@@ -1554,6 +1554,8 @@ class UserSignUpTest(ZulipTestCase):
         self.assertIn("organization you are trying to join using {} does "
                       "not exist".format(email), form.errors['email'][0])
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
+                                                'zproject.backends.ZulipDummyBackend'))
     def test_ldap_registration_from_confirmation(self):
         # type: () -> None
         password = "testing"
@@ -1597,7 +1599,6 @@ class UserSignUpTest(ZulipTestCase):
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
-                AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',),
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
             result = self.client_get(confirmation_url)
             self.assertEqual(result.status_code, 200)
@@ -1637,6 +1638,8 @@ class UserSignUpTest(ZulipTestCase):
                                              "newuser@zulip.com"],
                                             result)
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
+                                                'zproject.backends.ZulipDummyBackend'))
     def test_ldap_registration_end_to_end(self):
         # type: () -> None
         password = "testing"
@@ -1672,7 +1675,6 @@ class UserSignUpTest(ZulipTestCase):
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
-                AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',),
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
 
             # Click confirmation link
@@ -1689,16 +1691,18 @@ class UserSignUpTest(ZulipTestCase):
                                              "newuser@zulip.com"],
                                             result)
 
-        # Submit the final form.
-        result = self.submit_reg_form_for_user(email,
-                                               password,
-                                               full_name=full_name,
-                                               # Pass HTTP_HOST for the target subdomain
-                                               HTTP_HOST=subdomain + ".testserver")
-        user_profile = UserProfile.objects.get(email=email)
-        # Name comes from form which was set by LDAP.
-        self.assertEqual(user_profile.full_name, full_name)
+            # Submit the final form.
+            result = self.submit_reg_form_for_user(email,
+                                                   password,
+                                                   full_name=full_name,
+                                                   # Pass HTTP_HOST for the target subdomain
+                                                   HTTP_HOST=subdomain + ".testserver")
+            user_profile = UserProfile.objects.get(email=email)
+            # Name comes from form which was set by LDAP.
+            self.assertEqual(user_profile.full_name, full_name)
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
+                                                'zproject.backends.ZulipDummyBackend'))
     def test_ldap_registration_when_names_changes_are_disabled(self):
         # type: () -> None
         password = "testing"
@@ -1733,7 +1737,6 @@ class UserSignUpTest(ZulipTestCase):
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
-                AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',),
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
 
             # Click confirmation link. This will 'authenticated_full_name'
