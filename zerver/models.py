@@ -165,7 +165,7 @@ class Realm(ModelReprMixin, models.Model):
     COMMUNITY = 2
     org_type = models.PositiveSmallIntegerField(default=CORPORATE)  # type: int
 
-    date_created = models.DateTimeField(default=timezone_now)  # type: datetime.datetime
+    date_created = models.DateTimeField(default=timezone_now)  # type: datetime.datetime , default format: YYYY-MM-DD
     notifications_stream = models.ForeignKey('Stream', related_name='+', null=True, blank=True, on_delete=CASCADE)  # type: Optional[Stream]
     deactivated = models.BooleanField(default=False)  # type: bool
     default_language = models.CharField(default=u'en', max_length=MAX_LANGUAGE_ID_LENGTH)  # type: Text
