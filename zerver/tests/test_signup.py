@@ -250,6 +250,25 @@ class PasswordResetTest(ZulipTestCase):
         self.assertIn("Psst. Word on the street is that you",
                       message.body)
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
+                                                'zproject.backends.ZulipDummyBackend'))
+    def test_ldap_auth_only(self):
+        # type: () -> None
+        """If the email auth backend is not enabled, password reset should do nothing"""
+        email = self.example_email("hamlet")
+        result = self.client_post('/accounts/password/reset/', {'email': email})
+
+        # check the redirect link telling you to check mail for password reset link
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(
+            "/accounts/password/reset/done/"))
+        result = self.client_get(result["Location"])
+
+        self.assert_in_response("Check your email to finish the process.", result)
+
+        from django.core.mail import outbox
+        self.assertEqual(len(outbox), 0)
+
     def test_redirect_endpoints(self):
         # type: () -> None
         '''

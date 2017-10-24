@@ -26,7 +26,7 @@ from zerver.lib.subdomains import get_subdomain, check_subdomain, is_root_domain
 from zerver.lib.users import check_full_name
 from zerver.models import Realm, get_user_profile_by_email, UserProfile, \
     get_realm, email_to_domain, email_allowed_for_realm
-from zproject.backends import password_auth_enabled
+from zproject.backends import email_auth_enabled
 
 import logging
 import re
@@ -191,7 +191,7 @@ class ZulipPasswordResetForm(PasswordResetForm):
         users who don't have a usable password to reset their
         passwords.
         """
-        if not password_auth_enabled:
+        if not email_auth_enabled():
             logging.info("Password reset attempted for %s even though password auth is disabled." % (email,))
             return []
         result = UserProfile.objects.filter(email__iexact=email, is_active=True,
