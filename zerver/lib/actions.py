@@ -902,11 +902,12 @@ def get_recipient_info(recipient, sender_id, stream_topic, possibly_mentioned_us
 
     def get_ids_for(f):
         # type: (Callable[[Dict[str, Any]], bool]) -> Set[int]
+        """Only includes users on the explicit message to line"""
         return {
             row['id']
             for row in rows
             if f(row)
-        }
+        } & message_to_user_id_set
 
     def is_service_bot(row):
         # type: (Dict[str, Any]) -> bool
@@ -919,7 +920,7 @@ def get_recipient_info(recipient, sender_id, stream_topic, possibly_mentioned_us
     # Service bots don't get UserMessage rows.
     um_eligible_user_ids = get_ids_for(
         lambda r: not is_service_bot(r)
-    ) & message_to_user_id_set
+    )
 
     long_term_idle_user_ids = get_ids_for(
         lambda r: r['long_term_idle']
