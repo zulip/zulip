@@ -445,6 +445,43 @@ def do_create_user(email, password, realm, full_name, short_name,
                                newsletter_data=newsletter_data)
     return user_profile
 
+def do_activate_user(user_profile):
+    # type: (UserProfile) -> None
+    user_profile.is_active = True
+    user_profile.is_mirror_dummy = False
+    user_profile.set_unusable_password()
+    user_profile.date_joined = timezone_now()
+    user_profile.tos_version = settings.TOS_VERSION
+    user_profile.save(update_fields=["is_active", "date_joined", "password",
+                                     "is_mirror_dummy", "tos_version"])
+
+    event_time = user_profile.date_joined
+    RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
+                                 event_type='user_activated', event_time=event_time)
+    do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
+                              user_profile.is_bot, event_time)
+
+    notify_created_user(user_profile)
+
+def do_reactivate_user(user_profile, acting_user=None):
+    # type: (UserProfile, Optional[UserProfile]) -> None
+    # Unlike do_activate_user, this is meant for re-activating existing users,
+    # so it doesn't reset their password, etc.
+    user_profile.is_active = True
+    user_profile.save(update_fields=["is_active"])
+
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
+                                 event_type='user_reactivated', event_time=event_time,
+                                 acting_user=acting_user)
+    do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
+                              user_profile.is_bot, event_time)
+
+    notify_created_user(user_profile)
+
+    if user_profile.is_bot:
+        notify_created_bot(user_profile)
+
 def active_humans_in_realm(realm):
     # type: (Realm) -> Sequence[UserProfile]
     return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False)
@@ -2306,43 +2343,6 @@ def do_change_subscription_property(user_profile, sub, stream,
                  stream_id=stream.id,
                  name=stream.name)
     send_event(event, [user_profile.id])
-
-def do_activate_user(user_profile):
-    # type: (UserProfile) -> None
-    user_profile.is_active = True
-    user_profile.is_mirror_dummy = False
-    user_profile.set_unusable_password()
-    user_profile.date_joined = timezone_now()
-    user_profile.tos_version = settings.TOS_VERSION
-    user_profile.save(update_fields=["is_active", "date_joined", "password",
-                                     "is_mirror_dummy", "tos_version"])
-
-    event_time = user_profile.date_joined
-    RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
-                                 event_type='user_activated', event_time=event_time)
-    do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
-                              user_profile.is_bot, event_time)
-
-    notify_created_user(user_profile)
-
-def do_reactivate_user(user_profile, acting_user=None):
-    # type: (UserProfile, Optional[UserProfile]) -> None
-    # Unlike do_activate_user, this is meant for re-activating existing users,
-    # so it doesn't reset their password, etc.
-    user_profile.is_active = True
-    user_profile.save(update_fields=["is_active"])
-
-    event_time = timezone_now()
-    RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
-                                 event_type='user_reactivated', event_time=event_time,
-                                 acting_user=acting_user)
-    do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
-                              user_profile.is_bot, event_time)
-
-    notify_created_user(user_profile)
-
-    if user_profile.is_bot:
-        notify_created_bot(user_profile)
 
 def do_change_password(user_profile, password, commit=True,
                        hashed_password=False):
