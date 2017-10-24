@@ -81,28 +81,18 @@
 .compose_table .pm_recipient {
     position: relative;
     margin-right: 30px;
-    height: 25px;
+    height: 30px;
 }
 
 .compose_table #private-message .you_text {
     position: absolute;
-    height: 25px;
-    line-height: 25px;
+    height: 30px;
+    line-height: 30px;
     padding-top: 0px;
     padding-bottom: 0px;
     width: 4em;
     background: hsl(0, 0%, 27%);
     color: hsl(0, 0%, 100%);
-}
-
-.compose_table .pm_recipient #private_message_recipient {
-    margin-left: 4em;
-    border-left: none;
-    border-radius: 0px 3px 3px 0px;
-    padding-top: 0px;
-    padding-bottom: 0px;
-    height: 23px;
-    line-height: 23px;
 }
 
 .compose_table #private-message .right_part {

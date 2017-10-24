@@ -83,9 +83,12 @@
                                 </td>
                                 <td class="right_part">
                                     <div class="pm_recipient">
-                                        <span class="you_text">{{ _('You and') }}</span>
-                                        <input type="text" class="recipient_box" name="recipient" id="private_message_recipient"
-                                                       value="" placeholder="{{ _('one or more people...') }}" autocomplete="off" tabindex="0"/>
+                                        <span class="you_text">
+                                            <span>{{ _('You and') }}</span>
+                                        </span>
+                                        <div class="pill-container" data-before="{{ _('You and') }}">
+                                          <div class="input" contenteditable="true" id="private_message_recipient" name="recipient"></div>
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
