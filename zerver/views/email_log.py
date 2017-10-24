@@ -3,10 +3,16 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, redirect
 from django.test import Client
 from django.views.decorators.http import require_GET
+from django.views.decorators.csrf import csrf_exempt
 
 from zerver.models import get_realm, get_user
 from zerver.lib.notifications import enqueue_welcome_emails
-import urllib
+from zerver.lib.response import json_success
+from zproject.email_backends import (
+    get_forward_address,
+    set_forward_address,
+)
+from six.moves import urllib
 from confirmation.models import Confirmation, confirmation_url
 
 import os
@@ -17,12 +23,17 @@ client = Client()
 
 def email_page(request):
     # type: (HttpRequest) -> HttpResponse
+    if request.method == 'POST':
+        set_forward_address(request.POST["forward_address"])
+        return json_success()
     try:
         with open(settings.EMAIL_CONTENT_LOG_PATH, "r+") as f:
             content = f.read()
     except FileNotFoundError:
         content = ""
-    return render(request, 'zerver/email_log.html', {'log': content})
+    return render(request, 'zerver/email_log.html',
+                  {'log': content,
+                   'forward_address': get_forward_address()})
 
 def clear_emails(request):
     # type: (HttpRequest) -> HttpResponse
