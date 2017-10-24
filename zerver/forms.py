@@ -227,7 +227,6 @@ class ZulipPasswordResetForm(PasswordResetForm):
                    from_address=FromAddress.NOREPLY, context=context)
 
     def save(self,
-             domain_override=None,  # type: Optional[bool]
              subject_template_name='registration/password_reset_subject.txt',  # type: Text
              email_template_name='registration/password_reset_email.html',  # type: Text
              use_https=False,  # type: bool
@@ -252,16 +251,8 @@ class ZulipPasswordResetForm(PasswordResetForm):
         users = list(self.get_users(email))
 
         for user in users:
-            if not domain_override:
-                current_site = get_current_site(request)
-                site_name = current_site.name
-                domain = current_site.domain
-            else:
-                site_name = domain = domain_override
             context = {
                 'email': email,
-                'domain': domain,
-                'site_name': site_name,
                 'uid': urlsafe_base64_encode(force_bytes(user.id)),
                 'user': user,
                 'token': token_generator.make_token(user),
