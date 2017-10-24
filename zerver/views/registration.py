@@ -228,10 +228,7 @@ def accounts_register(request):
                 realm.subdomain, user_profile.email,))
             return redirect('/')
 
-        # Mark the user as having been just created, so no login email is sent
-        auth_result.just_registered = True
-        do_login(request, auth_result)
-        return HttpResponseRedirect(realm.uri + reverse('zerver.views.home.home'))
+        return login_and_go_to_home(request, auth_result)
 
     return render(
         request,
@@ -254,6 +251,14 @@ def accounts_register(request):
                  'MAX_REALM_SUBDOMAIN_LENGTH': str(Realm.MAX_REALM_SUBDOMAIN_LENGTH)
                  }
     )
+
+def login_and_go_to_home(request, user_profile):
+    # type: (HttpRequest, UserProfile) -> HttpResponse
+
+    # Mark the user as having been just created, so no "new login" email is sent
+    user_profile.just_registered = True
+    do_login(request, user_profile)
+    return HttpResponseRedirect(user_profile.realm.uri + reverse('zerver.views.home.home'))
 
 def create_preregistration_user(email, request, realm_creation=False,
                                 password_required=True):
