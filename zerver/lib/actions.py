@@ -755,8 +755,8 @@ def send_welcome_bot_response(message):
             "Feel free to continue using this space to practice your new messaging "
             "skills. Or, try clicking on some of the stream names to your left!")
 
-def render_incoming_message(message, content, user_ids, realm):
-    # type: (Message, Text, Set[int], Realm) -> Text
+def render_incoming_message(message, content, user_ids, realm, mention_data=None):
+    # type: (Message, Text, Set[int], Realm, Optional[bugdown.MentionData]) -> Text
     realm_alert_words = alert_words_in_realm(realm)
     try:
         rendered_content = render_markdown(
@@ -765,6 +765,7 @@ def render_incoming_message(message, content, user_ids, realm):
             realm=realm,
             realm_alert_words=realm_alert_words,
             user_ids=user_ids,
+            mention_data=mention_data,
         )
     except BugdownRenderingException:
         raise JsonableError(_('Unable to render message'))
@@ -1014,6 +1015,12 @@ def do_send_messages(messages_maybe_none):
         message['realm'] = message.get('realm', message['message'].sender.realm)
 
     for message in messages:
+        mention_data = bugdown.MentionData(
+            realm_id=message['realm'].id,
+            content=message['message'].content,
+        )
+        message['mention_data'] = mention_data
+
         if message['message'].recipient.type == Recipient.STREAM:
             stream_id = message['message'].recipient.type_id
             stream_topic = StreamTopicTarget(
@@ -1040,11 +1047,14 @@ def do_send_messages(messages_maybe_none):
     # Render our messages.
     for message in messages:
         assert message['message'].rendered_content is None
+
         rendered_content = render_incoming_message(
             message['message'],
             message['message'].content,
             message['active_user_ids'],
-            message['realm'])
+            message['realm'],
+            mention_data=message['mention_data'],
+        )
         message['message'].rendered_content = rendered_content
         message['message'].rendered_content_version = bugdown_version
         links_for_embed |= message['message'].links_for_preview
