@@ -223,7 +223,7 @@ exports.update_settings_for_subscribed = function (sub) {
     }
 
     var active_stream = exports.active_stream();
-    if (active_stream.stream_id === sub.id) {
+    if (active_stream.stream_id === sub.stream_id) {
         stream_edit.rerender_subscribers_list(sub);
     }
 
@@ -243,7 +243,7 @@ exports.update_settings_for_unsubscribed = function (sub) {
     stream_edit.hide_sub_settings(sub);
 
     var active_stream = exports.active_stream();
-    if (active_stream.stream_id === sub.id) {
+    if (active_stream.stream_id === sub.stream_id) {
         stream_edit.rerender_subscribers_list(sub);
     }
 
