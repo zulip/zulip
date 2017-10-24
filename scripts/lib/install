@@ -74,12 +74,12 @@ ZULIP_PATH="$(realpath $(dirname $0)/../..)"
 "$ZULIP_PATH"/scripts/lib/check-upstart
 
 # Check for missing SSL certificates early as well
-if [ "$PUPPET_CLASSES" = "zulip::voyager" ] && ! [ -e "/etc/ssl/private/zulip.key" ] || ! [ -e "/etc/ssl/certs/zulip.combined-chain.crt" ]; then
+if [ "$PUPPET_CLASSES" = "zulip::voyager" ] && { ! [ -e "/etc/ssl/private/zulip.key" ] || ! [ -e "/etc/ssl/certs/zulip.combined-chain.crt" ]; }; then
    set +x
    echo
    echo "Could not find SSL certificates!"
    for f in "/etc/ssl/private/zulip.key" "/etc/ssl/certs/zulip.combined-chain.crt"; do
-       [ -e "/etc/ssl/private/zulip.key" ] || echo " - $f is missing!"
+       [ -e "$f" ] || echo " - $f is missing!"
    done
    echo "See http://zulip.readthedocs.io/en/latest/ssl-certificates.html for help."
    echo
