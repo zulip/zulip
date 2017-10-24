@@ -200,9 +200,8 @@ class ZulipPasswordResetForm(PasswordResetForm):
             logging.info("Password reset attempted for %s; no active account." % (email,))
         return result
 
-    def send_mail(self, subject_template_name, email_template_name,
-                  context, from_email, to_email, html_email_template_name=None):
-        # type: (str, str, Dict[str, Any], str, str, str) -> None
+    def send_mail(self, context, from_email, to_email):
+        # type: (Dict[str, Any], str, str) -> None
         """
         Currently we don't support accounts in multiple subdomains using
         a single email address. We override this function so that we do
@@ -245,6 +244,10 @@ class ZulipPasswordResetForm(PasswordResetForm):
 
         Generates a one-use only link for resetting password and sends to the
         user.
+
+        Note: We ignore the various email template arguments (those
+        are an artifact of using Django's password reset framework)
+
         """
         setattr(self, 'request', request)
         email = self.cleaned_data["email"]
@@ -260,10 +263,7 @@ class ZulipPasswordResetForm(PasswordResetForm):
             }
             if extra_email_context is not None:
                 context.update(extra_email_context)
-            self.send_mail(
-                subject_template_name, email_template_name, context, from_email,
-                email, html_email_template_name=html_email_template_name,
-            )
+            self.send_mail(context, from_email, email)
 
 class CreateUserForm(forms.Form):
     full_name = forms.CharField(max_length=100)

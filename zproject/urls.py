@@ -333,8 +333,6 @@ i18n_urls = [
     url(r'^accounts/password/reset/$', password_reset,
         {'post_reset_redirect': '/accounts/password/reset/done/',
          'template_name': 'zerver/reset.html',
-         'email_template_name': '',
-         'subject_template_name': '',
          'password_reset_form': zerver.forms.ZulipPasswordResetForm,
          }, name='django.contrib.auth.views.password_reset'),
     url(r'^accounts/password/reset/done/$', password_reset_done,
