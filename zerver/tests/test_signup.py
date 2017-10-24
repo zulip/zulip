@@ -1657,7 +1657,8 @@ class UserSignUpTest(ZulipTestCase):
         mock_ldap.directory = {
             'uid=newuser,ou=users,dc=zulip,dc=com': {
                 'userPassword': 'testing',
-                'fn': [full_name]
+                'fn': [full_name],
+                'sn': ['shortname'],
             }
         }
 
@@ -1691,7 +1692,19 @@ class UserSignUpTest(ZulipTestCase):
                                              "newuser@zulip.com"],
                                             result)
 
-            # Submit the final form.
+            # Submit the final form with the wrong password.
+            result = self.submit_reg_form_for_user(email,
+                                                   'wrongpassword',
+                                                   full_name=full_name,
+                                                   # Pass HTTP_HOST for the target subdomain
+                                                   HTTP_HOST=subdomain + ".testserver")
+            # Didn't create an account
+            with self.assertRaises(UserProfile.DoesNotExist):
+                user_profile = UserProfile.objects.get(email=email)
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, "/accounts/login/?email=newuser%40zulip.com")
+
+            # Submit the final form with the wrong password.
             result = self.submit_reg_form_for_user(email,
                                                    password,
                                                    full_name=full_name,
@@ -1765,7 +1778,8 @@ class UserSignUpTest(ZulipTestCase):
         mock_ldap.directory = {
             'uid=newuser,ou=users,dc=zulip,dc=com': {
                 'userPassword': 'testing',
-                'fn': ['New LDAP fullname']
+                'fn': ['New LDAP fullname'],
+                'sn': ['New LDAP shortname'],
             }
         }
 
@@ -1795,11 +1809,11 @@ class UserSignUpTest(ZulipTestCase):
                                                    # Pass HTTP_HOST for the target subdomain
                                                    HTTP_HOST=subdomain + ".testserver")
 
-        with patch('zerver.views.registration.name_changes_disabled', return_value=True):
-            result = self.submit_reg_form_for_user(email,
-                                                   password,
-                                                   # Pass HTTP_HOST for the target subdomain
-                                                   HTTP_HOST=subdomain + ".testserver")
+            with patch('zerver.views.registration.name_changes_disabled', return_value=True):
+                result = self.submit_reg_form_for_user(email,
+                                                       password,
+                                                       # Pass HTTP_HOST for the target subdomain
+                                                       HTTP_HOST=subdomain + ".testserver")
             user_profile = UserProfile.objects.get(email=email)
             # Name comes from LDAP session.
             self.assertEqual(user_profile.full_name, 'New LDAP fullname')

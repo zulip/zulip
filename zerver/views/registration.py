@@ -31,7 +31,7 @@ from zerver.lib.onboarding import send_initial_pms, setup_initial_streams, \
 from zerver.lib.response import json_success
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.timezone import get_all_timezones
-from zproject.backends import password_auth_enabled
+from zproject.backends import ldap_auth_enabled, password_auth_enabled, ZulipLDAPAuthBackend
 
 from confirmation.models import Confirmation, RealmCreationKey, ConfirmationKeyException, \
     check_key_is_valid, create_confirmation_link, get_object_from_key, \
@@ -190,7 +190,36 @@ def accounts_register(request):
         except UserProfile.DoesNotExist:
             existing_user_profile = None
 
-        if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
+        return_data = {}  # type: Dict[str, bool]
+        if ldap_auth_enabled(realm):
+            # If the user was authenticated using an external SSO
+            # mechanism like Google or GitHub auth, then authentication
+            # will have already been done before creating the
+            # PreregistrationUser object with password_required=False, and
+            # so we don't need to worry about passwords.
+            #
+            # If instead the realm is using EmailAuthBackend, we will
+            # set their password above.
+            #
+            # But if the realm is using LDAPAuthBackend, we need to verify
+            # their LDAP password (which will, as a side effect, create
+            # the user account) here using authenticate.
+            auth_result = authenticate(request,
+                                       username=email,
+                                       password=password,
+                                       realm_subdomain=realm.subdomain,
+                                       return_data=return_data)
+            if auth_result is None:
+                # TODO: This probably isn't going to give a
+                # user-friendly error message, but it doesn't
+                # particularly matter, because the registration form
+                # is hidden for most users.
+                return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' +
+                                            urllib.parse.quote_plus(email))
+
+            # Since we'll have created a user, we now just log them in.
+            return login_and_go_to_home(request, auth_result)
+        elif existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
             user_profile = existing_user_profile
             do_activate_user(user_profile)
             do_change_password(user_profile, password)
@@ -203,6 +232,10 @@ def accounts_register(request):
                                           timezone=timezone,
                                           newsletter_data={"IP": request.META['REMOTE_ADDR']})
 
+        # Note: Any logic like this must also be replicated in
+        # ZulipLDAPAuthBackend and zerver/views/users.py.  This is
+        # ripe for a refactoring, though care is required to avoid
+        # import loops with zerver/lib/actions.py and zerver/lib/onboarding.py.
         send_initial_pms(user_profile)
 
         if realm_creation:
@@ -217,7 +250,6 @@ def accounts_register(request):
 
         # This dummy_backend check below confirms the user is
         # authenticating to the correct subdomain.
-        return_data = {}  # type: Dict[str, bool]
         auth_result = authenticate(username=user_profile.email,
                                    realm_subdomain=realm.subdomain,
                                    return_data=return_data,
