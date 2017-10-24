@@ -809,8 +809,8 @@ def get_recipient_info(recipient, sender_id, stream_topic):
     if recipient.type == Recipient.PERSONAL:
         # The sender and recipient may be the same id, so
         # de-duplicate using a set.
-        user_ids = list({recipient.type_id, sender_id})
-        assert(len(user_ids) in [1, 2])
+        message_to_user_ids = list({recipient.type_id, sender_id})
+        assert(len(message_to_user_ids) in [1, 2])
 
     elif recipient.type == Recipient.STREAM:
         subscription_rows = Subscription.objects.filter(
@@ -822,7 +822,7 @@ def get_recipient_info(recipient, sender_id, stream_topic):
             'in_home_view',
         ).order_by('user_profile_id')
 
-        user_ids = [
+        message_to_user_ids = [
             row['user_profile_id']
             for row in subscription_rows
         ]
@@ -835,13 +835,16 @@ def get_recipient_info(recipient, sender_id, stream_topic):
         } - stream_topic.user_ids_muting_topic()
 
     elif recipient.type == Recipient.HUDDLE:
-        user_ids = Subscription.objects.filter(
+        message_to_user_ids = Subscription.objects.filter(
             recipient=recipient,
             active=True,
         ).order_by('user_profile_id').values_list('user_profile_id', flat=True)
 
     else:
         raise ValueError('Bad recipient type')
+
+    user_ids = message_to_user_ids
+    # TODO: add mentioned users
 
     if user_ids:
         query = UserProfile.objects.filter(
