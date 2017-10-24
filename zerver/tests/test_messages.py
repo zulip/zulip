@@ -602,6 +602,90 @@ class StreamMessagesTest(ZulipTestCase):
         message = most_recent_message(user_profile)
         assert(UserMessage.objects.get(user_profile=user_profile, message=message).flags.mentioned.is_set)
 
+    def test_unsub_mention(self):
+        # type: () -> None
+        cordelia = self.example_user('cordelia')
+        hamlet = self.example_user('hamlet')
+
+        stream_name = 'Test Stream'
+
+        self.subscribe(hamlet, stream_name)
+
+        UserMessage.objects.filter(
+            user_profile=cordelia
+        ).delete()
+
+        def mention_cordelia():
+            # type: () -> None
+            content = 'test @**Cordelia Lear** rules'
+
+            self.send_message(
+                hamlet.email,
+                stream_name,
+                Recipient.STREAM,
+                content=content
+            )
+
+        def num_cordelia_messages():
+            # type: () -> int
+            return UserMessage.objects.filter(
+                user_profile=cordelia
+            ).count()
+
+        mention_cordelia()
+
+        self.assertEqual(0, num_cordelia_messages())
+
+        # Make sure test isn't too brittle-subscribing
+        # Cordelia and mentioning her should give her a
+        # message.
+        self.subscribe(cordelia, stream_name)
+        mention_cordelia()
+        self.assertEqual(1, num_cordelia_messages())
+
+    def test_message_bot_mentions(self):
+        # type: () -> None
+        cordelia = self.example_user('cordelia')
+        hamlet = self.example_user('hamlet')
+        realm = hamlet.realm
+
+        stream_name = 'Test Stream'
+
+        self.subscribe(hamlet, stream_name)
+
+        normal_bot = do_create_user(
+            email='normal-bot@zulip.com',
+            password='',
+            realm=realm,
+            full_name='Normal Bot',
+            short_name='',
+            active=True,
+            bot_type=UserProfile.DEFAULT_BOT,
+            bot_owner=cordelia,
+        )
+
+        UserMessage.objects.filter(
+            user_profile=normal_bot
+        ).delete()
+
+        content = 'test @**Normal Bot** rules'
+
+        self.send_message(
+            hamlet.email,
+            stream_name,
+            Recipient.STREAM,
+            content=content
+        )
+
+        # As of now, we don't support mentioning
+        # bots who aren't subscribed.
+        self.assertEqual(
+            UserMessage.objects.filter(
+                user_profile=normal_bot
+            ).count(),
+            0
+        )
+
     def test_stream_message_mirroring(self):
         # type: () -> None
         from zerver.lib.actions import do_change_is_admin
