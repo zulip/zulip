@@ -316,10 +316,10 @@ refactor them.
 
         def test_bot(self): # A test case (must start with `test`)
             # Messages we want to test and the expected bot responses.
-            message_response_pairs = {"" : "beep boop",
-                                      "foo" : "beep boop",
-                                      "Hi, my name is abc" : "beep boop"}
-            self.check_expected_responses(message_response_pairs)  # Test the bot with our message_response_pair dict.
+            message_response_pairs = [("", "beep boop"),
+                                      ("foo", "beep boop"),
+                                      ("Hi, my name is abc", "beep boop")]
+            self.check_expected_responses(message_response_pairs)  # Test the bot with our message_response_pair list.
 
 The `helloworld` bot replies with "beep boop" to every message @-mentioning it.
 Note that our helper method `check_expected_responses` adds the @-mention for us - the only
