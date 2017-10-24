@@ -1153,6 +1153,20 @@ def do_send_messages(messages_maybe_none):
             presence_idle_user_ids=presence_idle_user_ids,
         )
 
+        '''
+        TODO:  We may want to limit user_ids to only those users who have
+               UserMessage rows, if only for minor performance reasons.
+
+               For now we queue events for all subscribers/sendees of the
+               message, since downstream code may still do notifications
+               that don't require UserMessage rows.
+
+               Our automated tests have gotten better on this codepath,
+               but we may have coverage gaps, so we should be careful
+               about changing the next line.
+        '''
+        user_ids = message['active_user_ids'] | set(user_flags.keys())
+
         users = [
             dict(
                 id=user_id,
@@ -1160,7 +1174,7 @@ def do_send_messages(messages_maybe_none):
                 always_push_notify=(user_id in message['push_notify_user_ids']),
                 stream_push_notify=(user_id in message['stream_push_user_ids']),
             )
-            for user_id in message['active_user_ids']
+            for user_id in user_ids
         ]
 
         if message['message'].is_stream_message():
