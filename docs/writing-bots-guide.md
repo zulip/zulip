@@ -60,7 +60,7 @@ class MyBotHandler(object):
     def usage(self):
         return '''Your description of the bot'''
 
-    def handle_message(self, message, bot_handler, state_handler):
+    def handle_message(self, message, bot_handler):
         # add your code here
 
 handler_class = MyBotHandler
@@ -190,10 +190,6 @@ handles user message.
 
 * bot_handler - used to interact with the server, e.g. to send a message
 
-* state_handler - used to save states/information of the bot **beta**
-    * use `state_handler.set_state(state)` to set a state (any object)
-    * use `state_handler.get_state()` to retrieve the state set; returns a `NoneType` object if no state is set
-
 #### Return values
 
 None.
@@ -201,7 +197,7 @@ None.
 #### Example implementation
 
  ```
-  def handle_message(self, message, bot_handler, state_handler):
+  def handle_message(self, message, bot_handler):
      original_content = message['content']
      original_sender = message['sender_email']
      new_content = original_content.replace('@followup',
@@ -270,6 +266,76 @@ bot_handler.update_message(dict(
     content=str(self.number), # string with which to update message with
 ))
 ```
+
+### bot_handler.storage
+
+**Note: This feature is under development. Permanent storage in the
+  database of a Zulip server is currently only supported for Zulip's embedded
+  bots. For external bots, all data stored with this feature is lost with
+  the termination of a bot.**
+
+bot_handler.storage allows a bot to permanently store and retrieve data.
+
+#### bot_handler.storage.put
+
+*bot_handler.storage.put(key, value)*
+
+will store the value `value` in the entry `key`.
+
+##### Arguments
+
+* key - a UTF-8 string
+* value - a UTF-8 string
+
+##### Example
+
+```
+bot_handler.storage.put("foo", "bar")  # set entry "foo" to "bar"
+```
+
+#### bot_handler.storage.get
+
+*bot_handler.storage.get(key)*
+
+will retrieve the value for the entry `key`.
+
+###### Arguments
+
+* key - a UTF-8 string
+
+##### Example
+
+```
+bot_handler.storage.put("foo", "bar")
+print(bot_handler.storage.get("foo"))  # print "bar"
+```
+
+#### bot_handler.storage.contains
+
+*bot_handler.storage.contains(key)*
+
+will check if the entry `key` exists.
+
+##### Arguments
+
+* key - a UTF-8 string
+
+##### Example
+
+```
+bot_handler.storage.contains("foo")  # False
+bot_handler.storage.put("foo", "bar")
+bot_handler.storage.contains("foo")  # True
+```
+
+#### bot_handler.storage marshaling
+
+By default, `bot_handler.storage` accepts any object for keys and values, as long as it is
+JSON-able. Internally, the object then gets converted to an UTF-8 string. You can specify
+custom data marshaling by setting the functions `bot_handler.storage.marshal` and
+`bot_handler.storage.demarshal`. These functions parse your data on every call to
+`put` and `get`, respectively.
+
 
 ### Configuration file
 
