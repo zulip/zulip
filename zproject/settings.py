@@ -927,6 +927,7 @@ JS_SPECS = {
             'js/components.js',
             'js/localstorage.js',
             'js/drafts.js',
+            'js/input_pill.js',
             'js/channel.js',
             'js/setup.js',
             'js/unread_ui.js',

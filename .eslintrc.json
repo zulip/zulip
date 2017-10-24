@@ -36,6 +36,7 @@
         "ui_report": false,
         "ui_util": false,
         "lightbox": false,
+        "input_pill": false,
         "stream_color": false,
         "people": false,
         "navigate": false,
