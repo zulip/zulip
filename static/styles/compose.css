@@ -298,8 +298,7 @@ textarea.new_message_textarea {
 }
 
 textarea.new_message_textarea,
-#subject.recipient_box,
-#stream.recipient_box {
+.compose_table .recipient_box {
     border: 1px solid hsl(0, 0%, 86%);
     box-shadow: none;
     -webkit-box-shadow: none;
@@ -307,9 +306,10 @@ textarea.new_message_textarea,
 }
 
 textarea.new_message_textarea:focus,
-#subject.recipient_box:focus,
-#stream.recipient_box:focus {
+.compose_table .recipient_box:focus {
     border: 1px solid hsl(0, 0%, 66%);
+    box-shadow: none;
+    -webkit-box-shadow: none;
 }
 
 #stream.recipient_box:focus {
