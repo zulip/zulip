@@ -477,7 +477,7 @@ Filter.operator_to_prefix = function (operator, negated) {
         return verb + 'messages that are';
 
     case 'group-pm-with':
-        return verb + 'group personal messages with';
+        return verb + 'group private messages including';
     }
     return '';
 };
