@@ -3,6 +3,7 @@ import os
 import re
 import ujson
 
+from subprocess import check_output, CalledProcessError
 from typing import Any, Dict, List, Text
 
 from django.core.management.commands import compilemessages
@@ -72,6 +73,19 @@ class Command(compilemessages.Command):
             else:
                 raise Exception("Unknown language %s" % (locale,))
 
+    def get_locales(self):
+        # type: () -> List[Text]
+        tracked_files = check_output(['git', 'ls-files', 'static/locale'])
+        tracked_files = tracked_files.decode().split()
+        regex = re.compile('static/locale/(\w+)/LC_MESSAGES/django.po')
+        locales = ['en']
+        for tracked_file in tracked_files:
+            matched = regex.search(tracked_file)
+            if matched:
+                locales.append(matched.group(1))
+
+        return locales
+
     def extract_language_options(self):
         # type: () -> None
         locale_path = u"{}/locale".format(settings.STATIC_ROOT)
@@ -79,9 +93,14 @@ class Command(compilemessages.Command):
 
         data = {'languages': []}  # type: Dict[str, List[Dict[str, Any]]]
 
-        locales = os.listdir(locale_path)
-        locales.append(u'en')
-        locales = list(set(locales))
+        try:
+            locales = self.get_locales()
+        except CalledProcessError:
+            # In case we are not under a Git repo, fallback to getting the
+            # locales using listdir().
+            locales = os.listdir(locale_path)
+            locales.append(u'en')
+            locales = list(set(locales))
 
         for locale in locales:
             if locale == 'en':
