@@ -24,6 +24,7 @@ if False:
     # they cannot be imported at runtime due to cyclic dependency.
 
 FuncT = TypeVar('FuncT', bound=Callable[..., Any])
+ReturnT = TypeVar('ReturnT')  # Useful for matching return types via Callable[..., ReturnT]
 
 class NotFoundInCache(Exception):
     pass
@@ -136,9 +137,7 @@ def get_cache_with_key(keyfunc, cache_name=None):
     return decorator
 
 def cache_with_key(keyfunc, cache_name=None, timeout=None, with_statsd_key=None):
-    # type: (Any, Optional[str], Optional[int], Optional[str]) -> Any
-    # This function can't be typed perfectly because returning a generic function
-    # isn't supported in mypy - https://github.com/python/mypy/issues/1551.
+    # type: (Callable[..., Text], Optional[str], Optional[int], Optional[str]) -> Callable[[Callable[..., ReturnT]], Callable[..., ReturnT]]
     """Decorator which applies Django caching to a function.
 
        Decorator argument is a function which computes a cache key
@@ -147,10 +146,10 @@ def cache_with_key(keyfunc, cache_name=None, timeout=None, with_statsd_key=None)
        other uses of caching."""
 
     def decorator(func):
-        # type: (Callable[..., Any]) -> (Callable[..., Any])
+        # type: (Callable[..., ReturnT]) -> Callable[..., ReturnT]
         @wraps(func)
         def func_with_caching(*args, **kwargs):
-            # type: (*Any, **Any) -> Any
+            # type: (*Any, **Any) -> ReturnT
             key = keyfunc(*args, **kwargs)
 
             val = cache_get(key, cache_name=cache_name)
@@ -277,7 +276,7 @@ def generic_bulk_cached_fetch(cache_key_function,  # type: Callable[[ObjKT], Tex
                 if cache_keys[object_id] in cached_objects)
 
 def cache(func):
-    # type: (FuncT) -> FuncT
+    # type: (Callable[..., ReturnT]) -> Callable[..., ReturnT]
     """Decorator which applies Django caching to a function.
 
        Uses a key based on the function's name, filename, and
