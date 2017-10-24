@@ -245,6 +245,10 @@ $(function () {
         ui.switchToFullWidth();
     }
 
+    if (!compose.pills.private_message_recipient) {
+        compose.pills.private_message_recipient = input_pill($("#private_message_recipient").parent());
+    }
+
     // initialize other stuff
     reload.initialize();
     server_events.initialize();

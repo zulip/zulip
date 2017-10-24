@@ -54,6 +54,8 @@ common.then_send_many([
       content:   'personal C' }]);
 
 common.wait_for_receive(function () {
+    casper.capture("var/casper/messages.png");
+
     common.expected_messages('zhome', [
         'Verona > frontend test',
         'Verona > other subject',
