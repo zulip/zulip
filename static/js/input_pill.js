@@ -254,6 +254,12 @@ var input_pill = function ($parent) {
             funcs.removePill(id);
             $next.focus();
         });
+
+        store.$parent.on("click", function (e) {
+            if ($(e.target).is(".pill-container")) {
+                $(this).find(".input").focus();
+            }
+        });
     }());
 
     // the external, user-accessible prototype.
