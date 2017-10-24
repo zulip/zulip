@@ -41,7 +41,7 @@ from zerver.models import Client, Message, Realm, UserPresence, UserProfile, \
     get_user_profile_by_id, \
     get_active_user_dicts_in_realm, realm_filters_for_realm, get_user,\
     get_owned_bot_dicts, custom_profile_fields_for_realm, get_realm_domains
-from zproject.backends import password_auth_enabled
+from zproject.backends import email_auth_enabled, password_auth_enabled
 from version import ZULIP_VERSION
 
 
@@ -138,6 +138,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['realm_presence_disabled'] = user_profile.realm.presence_disabled
         state['realm_show_digest_email'] = user_profile.realm.show_digest_email
         state['realm_is_zephyr_mirror_realm'] = user_profile.realm.is_zephyr_mirror_realm
+        state['realm_email_auth_enabled'] = email_auth_enabled(user_profile.realm)
         state['realm_password_auth_enabled'] = password_auth_enabled(user_profile.realm)
         if user_profile.realm.notifications_stream and not user_profile.realm.notifications_stream.deactivated:
             notifications_stream = user_profile.realm.notifications_stream
@@ -371,6 +372,7 @@ def apply_event(state, event, user_profile, include_subscribers):
                 # is enabled on this server.
                 if key == 'authentication_methods':
                     state['realm_password_auth_enabled'] = (value['Email'] or value['LDAP'])
+                    state['realm_email_auth_enabled'] = value['Email']
     elif event['type'] == "subscription":
         if not include_subscribers and event['op'] in ['peer_add', 'peer_remove']:
             return

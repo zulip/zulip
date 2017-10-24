@@ -112,6 +112,7 @@ class HomeTest(ZulipTestCase):
             "realm_default_streams",
             "realm_description",
             "realm_domains",
+            "realm_email_auth_enabled",
             "realm_email_changes_disabled",
             "realm_embedded_bots",
             "realm_emoji",

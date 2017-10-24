@@ -1356,6 +1356,8 @@ class FetchAuthBackends(ZulipTestCase):
             ('authentication_methods', check_dict_only([
                 ('google', check_bool),
                 ('github', check_bool),
+                ('email', check_bool),
+                ('ldap', check_bool),
                 ('dev', check_bool),
                 ('password', check_bool),
             ])),
@@ -1378,6 +1380,8 @@ class FetchAuthBackends(ZulipTestCase):
                     ('google', check_bool),
                     ('github', check_bool),
                     ('dev', check_bool),
+                    ('email', check_bool),
+                    ('ldap', check_bool),
                     ('password', check_bool),
                 ])),
                 ('email_auth_enabled', check_bool),
@@ -1406,6 +1410,8 @@ class FetchAuthBackends(ZulipTestCase):
                 ('google', check_bool),
                 ('github', check_bool),
                 ('dev', check_bool),
+                ('email', check_bool),
+                ('ldap', check_bool),
                 ('password', check_bool),
             ])),
             ('msg', check_string),
@@ -1419,7 +1425,8 @@ class FetchAuthBackends(ZulipTestCase):
         self.assert_json_success(result)
         data = result.json()
         self.assertEqual(set(data.keys()),
-                         {'msg', 'password', 'github', 'google', 'dev', 'result', 'zulip_version'})
+                         {'msg', 'password', 'github', 'google', 'email', 'ldap',
+                          'dev', 'result', 'zulip_version'})
         for backend in set(data.keys()) - {'msg', 'result', 'zulip_version'}:
             self.assertTrue(isinstance(data[backend], bool))
 
@@ -1436,6 +1443,8 @@ class FetchAuthBackends(ZulipTestCase):
                 'github': False,
                 'google': True,
                 'dev': True,
+                'email': False,
+                'ldap': False,
                 'result': 'success',
                 'zulip_version': ZULIP_VERSION,
             })
@@ -1450,6 +1459,8 @@ class FetchAuthBackends(ZulipTestCase):
                     'password': False,
                     'github': False,
                     'google': True,
+                    'email': False,
+                    'ldap': False,
                     'dev': True,
                     'result': 'success',
                     'zulip_version': ZULIP_VERSION,
@@ -1473,6 +1484,8 @@ class FetchAuthBackends(ZulipTestCase):
                     'password': False,
                     'github': False,
                     'google': False,
+                    'email': False,
+                    'ldap': False,
                     'dev': True,
                     'result': 'success',
                     'zulip_version': ZULIP_VERSION,
@@ -1493,6 +1506,8 @@ class FetchAuthBackends(ZulipTestCase):
                     'password': False,
                     'github': False,
                     'google': False,
+                    'email': False,
+                    'ldap': False,
                     'dev': True,
                     'result': 'success',
                     'zulip_version': ZULIP_VERSION,

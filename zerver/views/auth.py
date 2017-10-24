@@ -35,7 +35,7 @@ from zerver.views.registration import create_preregistration_user, get_realm_fro
 from zerver.signals import email_on_new_login
 from zproject.backends import password_auth_enabled, dev_auth_enabled, \
     github_auth_enabled, google_auth_enabled, ldap_auth_enabled, \
-    ZulipLDAPConfigurationError, ZulipLDAPAuthBackend
+    ZulipLDAPConfigurationError, ZulipLDAPAuthBackend, email_auth_enabled
 from version import ZULIP_VERSION
 
 import hashlib
@@ -669,10 +669,14 @@ def get_auth_backends_data(request):
             raise JsonableError(_("Subdomain required"))
         else:
             realm = None
-    return {"password": password_auth_enabled(realm),
-            "dev": dev_auth_enabled(realm),
-            "github": github_auth_enabled(realm),
-            "google": google_auth_enabled(realm)}
+    return {
+        "password": password_auth_enabled(realm),
+        "dev": dev_auth_enabled(realm),
+        "email": email_auth_enabled(realm),
+        "github": github_auth_enabled(realm),
+        "google": google_auth_enabled(realm),
+        "ldap": ldap_auth_enabled(realm),
+    }
 
 @csrf_exempt
 def api_get_auth_backends(request):
