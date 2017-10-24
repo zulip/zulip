@@ -78,7 +78,7 @@ class DocPageTest(ZulipTestCase):
         self._test('/errors/404/', 'Page not found')
         self._test('/errors/5xx/', 'Internal server error')
 
-        with self.settings(EMAIL_BACKEND='zproject.backends.EmailLogBackEnd'):
+        with self.settings(EMAIL_BACKEND='zproject.email_backends.EmailLogBackEnd'):
             # For reaching full coverage for clear_emails function
             result = self.client_get('/emails/clear/')
             self.assertEqual(result.status_code, 302)

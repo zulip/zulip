@@ -1425,7 +1425,7 @@ elif not EMAIL_HOST and PRODUCTION:
     EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
 elif DEVELOPMENT:
     # In the dev environment, emails are printed to the run-dev.py console.
-    EMAIL_BACKEND = 'zproject.backends.EmailLogBackEnd'
+    EMAIL_BACKEND = 'zproject.email_backends.EmailLogBackEnd'
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
