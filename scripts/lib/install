@@ -73,6 +73,21 @@ ZULIP_PATH="$(realpath $(dirname $0)/../..)"
 # Handle issues around upstart on Ubuntu Xenial
 "$ZULIP_PATH"/scripts/lib/check-upstart
 
+# Try to handle missing SSL certificates early as well
+if [ "$PUPPET_CLASSES" = "zulip::voyager" ] && ! [ -e "/etc/ssl/private/zulip.key" ] || ! [ -e "/etc/ssl/certs/zulip.combined-chain.crt" ]; then
+   set +x
+   echo
+   echo "Could not find SSL certificates!"
+   for f in "/etc/ssl/private/zulip.key" "/etc/ssl/certs/zulip.combined-chain.crt"; do
+       [ -e "/etc/ssl/private/zulip.key" ] || echo " - $f is missing!"
+   done
+   echo "See http://zulip.readthedocs.io/en/latest/ssl-certificates.html for help."
+   echo
+   echo "Once fixed, just rerun scripts/setup/install; it'll pick up from here!"
+   echo
+   exit 1
+fi
+
 apt-get -y dist-upgrade $APT_OPTIONS
 apt-get install -y puppet git python python3 python-six python3-six crudini $ADDITIONAL_PACKAGES
 
@@ -133,7 +148,18 @@ apt-get -y upgrade
 if [ "$has_nginx" = 0 ]; then
     # Check nginx was configured properly now that we've installed it.
     # Most common failure mode is certs not having been installed.
-    nginx -t
+    nginx -t || (
+        set +x
+        echo
+        echo "Verifying the Zulip nginx configuration failed!"
+        echo
+        echo "This is almost always a problem with your SSL certificates."
+        echo "See http://zulip.readthedocs.io/en/latest/ssl-certificates.html for help"
+        echo
+        echo "Once fixed, just rerun scripts/setup/install; it'll pick up from here!"
+        echo
+        exit 1
+    )
     service nginx restart
 fi
 
