@@ -804,6 +804,12 @@ RecipientInfoResult = TypedDict('RecipientInfoResult', {
 
 def get_recipient_info(recipient, sender_id, stream_topic):
     # type: (Recipient, int, Optional[StreamTopicTarget]) -> RecipientInfoResult
+    if recipient.type == Recipient.STREAM:
+        # Anybody calling us w/r/t a stream message needs to supply
+        # stream_topic.  We may eventually want to have different versions
+        # of this function for different message types.
+        assert(stream_topic is not None)
+
     stream_push_user_ids = set()  # type: Set[int]
 
     if recipient.type == Recipient.PERSONAL:
