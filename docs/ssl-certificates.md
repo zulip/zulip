@@ -42,12 +42,29 @@ renew with this command:
 
 If you aren't able to use Let's Encrypt, you can generate a
 self-signed ssl certificate.  We recommend getting a real certificate
-using Let's Encrypt over this approach because your browser (and some of
-the Zulip clients) will complain when connecting to your server that
-the certificate isn't signed.
+using Let's Encrypt over this approach because browsers (and the the
+Zulip apps) will complain when connecting to your server that the
+certificate isn't signed (for good reason: self-signed certificates
+are a security risk!).
 
-Run all of these commands as root. If you're not already logged in as root, use
-`sudo -i` to start an interactive root shell.
+Run all the commands in this section as root. If you're not already
+logged in as root, use `sudo -i` to start an interactive root shell.
+
+The quickest way to create a cert is to use the script we provide:
+
+```
+scripts/setup/generate-self-signed-certs zulip.example.com
+```
+
+from the root of your Zulip directory (replacing `zulip.example.com`
+with the hostname of your server i.e. whatever you're going to set as
+`EXTERNAL_HOST`).
+
+#### Generating a self-signed cert manually
+
+We also document the steps below if you want to create a cert
+manually, which will offer you an opportunity to set your organization
+name (etc.).
 
 ```
 apt-get install openssl
@@ -55,6 +72,9 @@ openssl genrsa -des3 -passout pass:x -out server.pass.key 4096
 openssl rsa -passin pass:x -in server.pass.key -out zulip.key
 rm server.pass.key
 openssl req -new -key zulip.key -out server.csr
+
+# The last step above will ask some questions interactively.
+# Run these after answering the questions about your cert.
 openssl x509 -req -days 365 -in server.csr -signkey zulip.key -out zulip.combined-chain.crt
 rm server.csr
 cp zulip.key /etc/ssl/private/zulip.key
@@ -68,4 +88,4 @@ this will let you finish the installation process.
 
 Finally, if you want to proceed with just an IP address, it is
 possible to finish a Zulip installation that way; just set
-EXTERNAL_HOST to be the IP address.
+`EXTERNAL_HOST` to be the IP address.

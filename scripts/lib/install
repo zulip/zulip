@@ -73,7 +73,7 @@ ZULIP_PATH="$(realpath $(dirname $0)/../..)"
 # Handle issues around upstart on Ubuntu Xenial
 "$ZULIP_PATH"/scripts/lib/check-upstart
 
-# Try to handle missing SSL certificates early as well
+# Check for missing SSL certificates early as well
 if [ "$PUPPET_CLASSES" = "zulip::voyager" ] && ! [ -e "/etc/ssl/private/zulip.key" ] || ! [ -e "/etc/ssl/certs/zulip.combined-chain.crt" ]; then
    set +x
    echo
