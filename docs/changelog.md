@@ -48,8 +48,10 @@ in bursts.
   take several minutes to run.  The upgrade process automatically
   minimizes disruption by running these first, before beginning the
   user-facing downtime.  However, if you'd like to watch the downtime
-  phase of the upgrade closely, we recommend [running them first
-  manually](expensive-migrations.html).
+  phase of the upgrade closely, we recommend
+  [running them first manually](expensive-migrations.html) and as well
+  as the usual trick of
+  [doing an apt upgrade first](prod-maintain-secure-upgrade.html#applying-ubuntu-system-updates).
 
 * We've removed support for an uncommon legacy deployment model where
   a Zulip server served multiple organizations on the same domain.
