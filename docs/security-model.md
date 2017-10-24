@@ -192,7 +192,11 @@ strength allowed is controlled by two settings in
 * Certain Zulip bots can be marked as "API super users"; these special
   bots have the ability to send messages that appear to have been sent
   by another user (an important feature for implementing integrations
-  like the Jabber, IRC, and Zephyr mirrors).
+  like the Jabber, IRC, and Zephyr mirrors).  They also have the
+  ability to see the names of all streams (including private streams).
+
+  They can only be created on the command line (with `manage.py
+  knight --permission=api_super_user`).
 
 ## User-uploaded content
 
