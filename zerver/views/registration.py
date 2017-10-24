@@ -52,7 +52,7 @@ def redirect_and_log_into_subdomain(realm, full_name, email_address,
         reverse('zerver.views.auth.log_into_subdomain')
     ])
 
-    domain = '.' + settings.EXTERNAL_HOST.split(':')[0]
+    domain = settings.EXTERNAL_HOST.split(':')[0]
     response = redirect(subdomain_login_uri)
 
     data = {'name': full_name, 'email': email_address, 'subdomain': realm.subdomain,
