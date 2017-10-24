@@ -286,17 +286,6 @@ class PushNotificationsWorker(QueueProcessingWorker):
         # type: (Mapping[str, Any]) -> None
         handle_push_notification(data['user_profile_id'], data)
 
-def make_feedback_client():
-    # type: () -> Any # Should be zulip.Client, but not necessarily importable
-    sys.path.append(os.path.join(os.path.dirname(__file__), '../../api'))
-    import zulip
-    return zulip.Client(
-        client="ZulipFeedback/0.1",
-        email=settings.DEPLOYMENT_ROLE_NAME,
-        api_key=settings.DEPLOYMENT_ROLE_KEY,
-        verbose=True,
-        site=settings.FEEDBACK_TARGET)
-
 # We probably could stop running this queue worker at all if ENABLE_FEEDBACK is False
 @assign_queue('feedback_messages')
 class FeedbackBot(QueueProcessingWorker):
@@ -307,24 +296,10 @@ class FeedbackBot(QueueProcessingWorker):
 
 @assign_queue('error_reports')
 class ErrorReporter(QueueProcessingWorker):
-    def start(self):
-        # type: () -> None
-        if settings.DEPLOYMENT_ROLE_KEY:
-            self.staging_client = make_feedback_client()
-            self.staging_client._register(
-                'forward_error',
-                method='POST',
-                url='deployments/report_error',
-                make_request=(lambda type, report: {'type': type, 'report': ujson.dumps(report)}),
-            )
-        QueueProcessingWorker.start(self)
-
     def consume(self, event):
         # type: (Mapping[str, Any]) -> None
         logging.info("Processing traceback with type %s for %s" % (event['type'], event.get('user_email')))
-        if settings.DEPLOYMENT_ROLE_KEY:
-            self.staging_client.forward_error(event['type'], event['report'])
-        elif settings.ERROR_REPORTING:
+        if settings.ERROR_REPORTING:
             do_report_error(event['report']['host'], event['type'], event['report'])
 
 @assign_queue('slow_queries', queue_type="loop")

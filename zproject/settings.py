@@ -309,9 +309,6 @@ DEFAULT_SETTINGS.update({
     # Configuration for JWT auth.
     'JWT_AUTH_KEYS': {},
 
-    # TODO: Remove the remains of the legacy "deployment" system.
-    'DEPLOYMENT_ROLE_NAME': "",
-
     # https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-SERVER_EMAIL
     # Django setting for what from address to use in error emails.  We
     # set this to ZULIP_ADMINISTRATOR by default.
@@ -674,8 +671,6 @@ if EMAIL_GATEWAY_PATTERN != "":
     EMAIL_GATEWAY_EXAMPLE = EMAIL_GATEWAY_PATTERN % ("support+abcdefg",)
 else:
     EMAIL_GATEWAY_EXAMPLE = ""
-
-DEPLOYMENT_ROLE_KEY = get_secret("deployment_role_key")
 
 ########################################################################
 # STATSD CONFIGURATION
