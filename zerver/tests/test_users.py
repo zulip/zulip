@@ -445,7 +445,7 @@ class RecipientInfoTest(ZulipTestCase):
             recipient=recipient,
             sender_id=hamlet.id,
             stream_topic=stream_topic,
-            mentioned_user_ids={service_bot.id}
+            possibly_mentioned_user_ids={service_bot.id}
         )
         self.assertEqual(info['service_bot_tuples'], [
             (service_bot.id, UserProfile.EMBEDDED_BOT),

@@ -808,7 +808,7 @@ RecipientInfoResult = TypedDict('RecipientInfoResult', {
     'service_bot_tuples': List[Tuple[int, int]],
 })
 
-def get_recipient_info(recipient, sender_id, stream_topic, mentioned_user_ids=None):
+def get_recipient_info(recipient, sender_id, stream_topic, possibly_mentioned_user_ids=None):
     # type: (Recipient, int, Optional[StreamTopicTarget], Optional[Set[int]]) -> RecipientInfoResult
     if recipient.type == Recipient.STREAM:
         # Anybody calling us w/r/t a stream message needs to supply
@@ -858,8 +858,14 @@ def get_recipient_info(recipient, sender_id, stream_topic, mentioned_user_ids=No
     message_to_user_id_set = set(message_to_user_ids)
 
     user_ids = set(message_to_user_id_set)
-    if mentioned_user_ids:
-        user_ids |= mentioned_user_ids
+    if possibly_mentioned_user_ids:
+        # Important note: Because we haven't rendered bugdown yet, we
+        # don't yet know which of these possibly-mentioned users was
+        # actually mentioned in the message (in other words, the
+        # mention syntax might have been in a code block or otherwise
+        # escaped).  `get_ids_for` will filter these extra user rows
+        # for our data structures not related to bots
+        user_ids |= possibly_mentioned_user_ids
 
     if user_ids:
         query = UserProfile.objects.filter(
@@ -1018,7 +1024,7 @@ def do_send_messages(messages_maybe_none):
             recipient=message['message'].recipient,
             sender_id=message['message'].sender_id,
             stream_topic=stream_topic,
-            mentioned_user_ids=mention_data.get_user_ids(),
+            possibly_mentioned_user_ids=mention_data.get_user_ids(),
         )
 
         message['active_user_ids'] = info['active_user_ids']
