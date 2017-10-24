@@ -3,6 +3,7 @@ var settings_notifications = (function () {
 var exports = {};
 
 var notification_settings = [
+    "enable_all_favicon_dekstop_notifications",
     "enable_desktop_notifications",
     "enable_digest_emails",
     "enable_offline_email_notifications",
