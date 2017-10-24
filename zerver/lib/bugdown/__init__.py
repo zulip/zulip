@@ -1148,7 +1148,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
                 name = match
 
             wildcard = mention.user_mention_matches_wildcard(name)
-            user = db_data['full_name_info'].get(name.lower(), None)
+            user = db_data['mention_data'].get_user(name)
 
             if wildcard:
                 current_message.mentions_wildcard = True
@@ -1549,6 +1549,16 @@ def get_full_name_info(realm_id, full_names):
     }
     return dct
 
+class MentionData(object):
+    def __init__(self, realm_id, content):
+        # type: (int, Text) -> None
+        full_names = possible_mentions(content)
+        self.full_name_info = get_full_name_info(realm_id, full_names)
+
+    def get_user(self, name):
+        # type: (Text) -> Optional[FullNameInfo]
+        return self.full_name_info.get(name.lower(), None)
+
 def get_stream_name_info(realm, stream_names):
     # type: (Realm, Set[Text]) -> Dict[Text, FullNameInfo]
     if not stream_names:
@@ -1575,8 +1585,8 @@ def get_stream_name_info(realm, stream_names):
     return dct
 
 
-def do_convert(content, message=None, message_realm=None, possible_words=None, sent_by_bot=False):
-    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]], Optional[bool]) -> Text
+def do_convert(content, message=None, message_realm=None, possible_words=None, sent_by_bot=False, mention_data=None):
+    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]], Optional[bool], Optional[MentionData]) -> Text
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
     # This logic is a bit convoluted, but the overall goal is to support a range of use cases:
     # * Nothing is passed in other than content -> just run default options (e.g. for docs)
@@ -1623,8 +1633,9 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
         # if there is syntax in the message that might use them, since
         # the fetches are somewhat expensive and these types of syntax
         # are uncommon enough that it's a useful optimization.
-        full_names = possible_mentions(content)
-        full_name_info = get_full_name_info(message_realm.id, full_names)
+
+        if mention_data is None:
+            mention_data = MentionData(message_realm.id, content)
 
         emails = possible_avatar_emails(content)
         email_info = get_email_info(message_realm.id, emails)
@@ -1640,7 +1651,7 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
         db_data = {
             'possible_words': possible_words,
             'email_info': email_info,
-            'full_name_info': full_name_info,
+            'mention_data': mention_data,
             'realm_emoji': realm_emoji,
             'sent_by_bot': sent_by_bot,
             'stream_names': stream_name_info,
@@ -1694,9 +1705,9 @@ def bugdown_stats_finish():
     bugdown_total_requests += 1
     bugdown_total_time += (time.time() - bugdown_time_start)
 
-def convert(content, message=None, message_realm=None, possible_words=None, sent_by_bot=False):
-    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]], Optional[bool]) -> Text
+def convert(content, message=None, message_realm=None, possible_words=None, sent_by_bot=False, mention_data=None):
+    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]], Optional[bool], Optional[MentionData]) -> Text
     bugdown_stats_start()
-    ret = do_convert(content, message, message_realm, possible_words, sent_by_bot)
+    ret = do_convert(content, message, message_realm, possible_words, sent_by_bot, mention_data)
     bugdown_stats_finish()
     return ret
