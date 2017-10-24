@@ -272,7 +272,7 @@ DEFAULT_SETTINGS.update({
 
     # Controls for which links are published in portico footers/headers/etc.
     'EMAIL_DELIVERER_DISABLED': False,
-    'REGISTER_LINK_DISABLED': False,
+    'REGISTER_LINK_DISABLED': None,
     'LOGIN_LINK_DISABLED': False,
     'ABOUT_LINK_DISABLED': False,
     'FIND_TEAM_LINK_DISABLED': True,
@@ -1385,6 +1385,16 @@ if POPULATE_PROFILE_VIA_LDAP and \
     AUTHENTICATION_BACKENDS += ('zproject.backends.ZulipLDAPUserPopulator',)
 else:
     POPULATE_PROFILE_VIA_LDAP = 'zproject.backends.ZulipLDAPAuthBackend' in AUTHENTICATION_BACKENDS or POPULATE_PROFILE_VIA_LDAP
+
+if REGISTER_LINK_DISABLED is None:
+    # The default for REGISTER_LINK_DISABLED is a bit more
+    # complicated: we want it to be disabled by default for people
+    # using the LDAP backend that auto-creates users on login.
+    if (len(AUTHENTICATION_BACKENDS) == 2 and
+        ('zproject.backends.ZulipLDAPAuthBackend' in AUTHENTICATION_BACKENDS)):
+        REGISTER_LINK_DISABLED = True
+    else:
+        REGISTER_LINK_DISABLED = False
 
 ########################################################################
 # SOCIAL AUTHENTICATION SETTINGS
