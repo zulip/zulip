@@ -1,34 +1,30 @@
-
 import logging
 from typing import Any, Dict, List, Set, Tuple, Optional, Text
 
+from apiclient.sample_tools import client as googleapiclient
+from django_auth_ldap.backend import LDAPBackend, _LDAPUser
+import django.contrib.auth
+from django.contrib.auth import authenticate
 from django.contrib.auth.backends import RemoteUserBackend
 from django.conf import settings
-from django.http import HttpResponse
-import django.contrib.auth
 from django.core.mail.backends.base import BaseEmailBackend
 from django.core.mail import EmailMultiAlternatives
+from django.http import HttpResponse
 from django.template import loader
-
-from django_auth_ldap.backend import LDAPBackend, _LDAPUser
-from zerver.lib.actions import do_create_user
-
-from zerver.models import UserProfile, Realm, get_user_profile_by_id, \
-    get_user_profile_by_email, remote_user_to_email, email_to_username, \
-    get_realm
-
-from apiclient.sample_tools import client as googleapiclient
 from oauth2client.crypt import AppIdentityError
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
     GithubTeamOAuth2
 from social_core.exceptions import AuthFailed, SocialAuthBaseException
-from django.contrib.auth import authenticate
-from zerver.lib.users import check_full_name
-from zerver.lib.request import JsonableError
-from zerver.lib.subdomains import check_subdomain, get_subdomain
-
 from social_django.models import DjangoStorage
 from social_django.strategy import DjangoStrategy
+
+from zerver.lib.actions import do_create_user
+from zerver.lib.request import JsonableError
+from zerver.lib.subdomains import check_subdomain, get_subdomain
+from zerver.lib.users import check_full_name
+from zerver.models import UserProfile, Realm, get_user_profile_by_id, \
+    get_user_profile_by_email, remote_user_to_email, email_to_username, \
+    get_realm
 
 def pad_method_dict(method_dict):
     # type: (Dict[Text, bool]) -> Dict[Text, bool]
