@@ -144,6 +144,8 @@ in bursts.
 - Fixed handling of desktop and mobile apps in new-login emails.
 - Fixed caching of source repository in upgrade-zulip-from-git.
 - Fixed numerous minor internationalization bugs.
+- Fixed several bugs with the LDAP authentication backend.
+- Fixed several corner case bugs with push notification.
 - Fixed rendering of realm emoji in missed-message emails.
 - Fixed various endpoints incorrectly using the PUT HTTP method.
 - Fixed bugs in scrolling up using the home key repeatedly.
