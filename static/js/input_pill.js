@@ -14,6 +14,11 @@ var input_pill = function ($parent) {
         pills: [],
         $parent: $parent,
         getKeyFunction: function () {},
+        lastUpdated: null,
+        lastCreated: {
+            keys: null,
+            values: null,
+        },
     };
 
     // a dictionary of internal functions. Some of these are exposed as well,
@@ -83,6 +88,7 @@ var input_pill = function ($parent) {
 
         // the jQuery element representation of the data.
         createPillElement: function (payload) {
+            store.lastUpdated = new Date();
             payload.$element = $("<div class='pill' data-id='" + payload.id + "' tabindex=0>" + payload.value + "<div class='exit'>&times;</div></div>");
             return payload.$element;
         },
@@ -126,6 +132,7 @@ var input_pill = function ($parent) {
 
             if (typeof idx === "number") {
                 store.pills[idx].$element.remove();
+                store.lastUpdated = new Date();
                 return store.pills.splice(idx, 1);
             }
         },
@@ -134,6 +141,7 @@ var input_pill = function ($parent) {
         // to the "backspace" key when the value of the input is empty.
         removeLastPill: function () {
             var pill = store.pills.pop();
+            store.lastUpdated = new Date();
 
             if (pill) {
                 pill.$element.remove();
@@ -151,17 +159,40 @@ var input_pill = function ($parent) {
         },
 
         // returns all hidden keys.
-        keys: function () {
-            return store.pills.map(function (pill) {
-                return pill.key;
-            });
-        },
+        // IMPORTANT: this has a caching mechanism built in to check whether the
+        // store has changed since the keys/values were last retrieved so that
+        // if there are many successive pulls, it doesn't have to map and create
+        // an array every time.
+        // this would normally be a micro-optimization, but our codebase's
+        // typeaheads will ask for the keys possibly hundreds or thousands of
+        // times, so this saves a lot of time.
+        keys: (function () {
+            var keys = [];
+            return function () {
+                if (store.lastUpdated >= store.lastCreated.keys) {
+                    keys = store.pills.map(function (pill) {
+                        return pill.key;
+                    });
+                    store.lastCreated.keys = new Date();
+                }
+
+                return keys;
+            };
+        }()),
 
         // returns all human-readable values.
         values: function () {
-            return store.pills.map(function (pill) {
-                return pill.value;
-            });
+            var values = [];
+            return function () {
+                if (store.lastUpdated >= store.lastCreated.values) {
+                    values = store.pills.map(function (pill) {
+                        return pill.value;
+                    });
+                    store.lastCreated.values = new Date();
+                }
+
+                return values;
+            };
         },
     };
 
