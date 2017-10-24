@@ -64,15 +64,23 @@ initialize();
 
     var human_user_ids = people.get_realm_human_user_ids();
     assert.deepEqual(human_user_ids, [isaac.user_id]);
-    assert.equal(people.realm_user_is_active_human(isaac.user_id), true);
+    assert.equal(people.realm_user_is_active_human_or_bot(isaac.user_id), true);
 
     // Now deactivate isaac
     people.deactivate(isaac);
     person = people.realm_get(email);
     assert(!person);
     assert.equal(people.get_realm_count(), 0);
-    assert.equal(people.realm_user_is_active_human(isaac.user_id), false);
+    assert.equal(people.realm_user_is_active_human_or_bot(isaac.user_id), false);
 
+    var bot_botson = {
+        email: 'botson-bot@example.com',
+        user_id: 35,
+        full_name: 'Bot Botson',
+        is_bot: true,
+    };
+    people.add(bot_botson);
+    assert.equal(people.realm_user_is_active_human_or_bot(bot_botson.user_id), true);
 
     // We can still get their info for non-realm needs.
     person = people.get_by_email(email);

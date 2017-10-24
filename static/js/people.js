@@ -530,8 +530,19 @@ exports.realm_get = function realm_get(email) {
     return realm_people_dict.get(person.user_id);
 };
 
-exports.realm_user_is_active_human = function (id) {
-    return !!realm_people_dict.get(id);
+exports.realm_user_is_active_human_or_bot = function (id) {
+    if (realm_people_dict.get(id) !== undefined) {
+        return true;
+    }
+    // TODO: Technically, we should probably treat deactivated bots
+    // like deactivated users here.  But we don't have the data to do
+    // that.  See #7153 for notes on fixing this.
+    var person = exports.get_person_from_user_id(id);
+    if (person === undefined) {
+        blueslip.error("Unexpectedly invalid user ID in user popover query " + id);
+        return false;
+    }
+    return !!person.is_bot;
 };
 
 exports.get_all_persons = function () {
