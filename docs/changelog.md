@@ -66,7 +66,7 @@ in bursts.
 * We simplified the configuration for our password strength checker to
   be much more intuitive.  If you were using the
   `PASSWORD_MIN_ZXCVBN_QUALITY` setting,
-  [it has been replaced](a116303604e362796afa54b5d923ea5312b2ea23) by
+  [it has been replaced](https://github.com/zulip/zulip/commit/a116303604e362796afa54b5d923ea5312b2ea23) by
   the more intuitive `PASSWORD_MIN_GUESSES`.
 
 **Full feature changelog:**
