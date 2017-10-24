@@ -49,6 +49,8 @@ var zero_counts = {
     private_message_count: 0,
     home_unread_messages: 0,
     mentioned_message_count: 0,
+    alert_word_message_count: 0,
+    stream_push_notify_count: 0,
     stream_count: new Dict(),
     topic_count: new Dict(),
     pm_count: new Dict(),
