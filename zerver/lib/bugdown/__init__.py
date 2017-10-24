@@ -1554,10 +1554,24 @@ class MentionData(object):
         # type: (int, Text) -> None
         full_names = possible_mentions(content)
         self.full_name_info = get_full_name_info(realm_id, full_names)
+        self.user_ids = {
+            row['id']
+            for row in self.full_name_info.values()
+        }
 
     def get_user(self, name):
         # type: (Text) -> Optional[FullNameInfo]
         return self.full_name_info.get(name.lower(), None)
+
+    def get_user_ids(self):
+        # type: () -> Set[int]
+        """
+        Returns the user IDs that might have been mentioned by this
+        content.  Note that because this data structure has not parsed
+        the message and does not know about escaping/code blocks, this
+        will overestimate the list of user ids.
+        """
+        return self.user_ids
 
 def get_stream_name_info(realm, stream_names):
     # type: (Realm, Set[Text]) -> Dict[Text, FullNameInfo]
