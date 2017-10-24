@@ -1391,7 +1391,7 @@ if REGISTER_LINK_DISABLED is None:
     # complicated: we want it to be disabled by default for people
     # using the LDAP backend that auto-creates users on login.
     if (len(AUTHENTICATION_BACKENDS) == 2 and
-        ('zproject.backends.ZulipLDAPAuthBackend' in AUTHENTICATION_BACKENDS)):
+            ('zproject.backends.ZulipLDAPAuthBackend' in AUTHENTICATION_BACKENDS)):
         REGISTER_LINK_DISABLED = True
     else:
         REGISTER_LINK_DISABLED = False
