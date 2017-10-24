@@ -658,10 +658,6 @@ class StreamMessagesTest(ZulipTestCase):
             bot_owner=cordelia,
         )
 
-        UserMessage.objects.filter(
-            user_profile=normal_bot
-        ).delete()
-
         content = 'test @**Normal Bot** rules'
 
         self.send_message(
@@ -671,14 +667,9 @@ class StreamMessagesTest(ZulipTestCase):
             content=content
         )
 
-        # As of now, we don't support mentioning
-        # bots who aren't subscribed.
-        self.assertEqual(
-            UserMessage.objects.filter(
-                user_profile=normal_bot
-            ).count(),
-            0
-        )
+        user_message = most_recent_usermessage(normal_bot)
+        self.assertEqual(user_message.message.content, content)
+        self.assertTrue(user_message.flags.mentioned)
 
     def test_stream_message_mirroring(self):
         # type: () -> None

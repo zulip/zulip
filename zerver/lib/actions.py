@@ -812,6 +812,7 @@ RecipientInfoResult = TypedDict('RecipientInfoResult', {
     'stream_push_user_ids': Set[int],
     'um_eligible_user_ids': Set[int],
     'long_term_idle_user_ids': Set[int],
+    'default_bot_user_ids': Set[int],
     'service_bot_tuples': List[Tuple[int, int]],
 })
 
@@ -933,6 +934,22 @@ def get_recipient_info(recipient, sender_id, stream_topic, possibly_mentioned_us
         lambda r: r['long_term_idle']
     )
 
+    # These two bot data structures need to filter from the full set
+    # of users who either are receiving the message or might have been
+    # mentioned in it, and so can't use get_ids_for.
+    #
+    # Further in the do_send_messages code path, once
+    # `mentioned_user_ids` has been computed via bugdown, we'll filter
+    # these data structures for just those users who are either a
+    # direct recipient or were mentioned; for now, we're just making
+    # sure we have the data we need for that without extra database
+    # queries.
+    default_bot_user_ids = set([
+        row['id']
+        for row in rows
+        if row['is_bot'] and row['bot_type'] == UserProfile.DEFAULT_BOT
+    ])
+
     service_bot_tuples = [
         (row['id'], row['bot_type'])
         for row in rows
@@ -945,11 +962,13 @@ def get_recipient_info(recipient, sender_id, stream_topic, possibly_mentioned_us
         stream_push_user_ids=stream_push_user_ids,
         um_eligible_user_ids=um_eligible_user_ids,
         long_term_idle_user_ids=long_term_idle_user_ids,
+        default_bot_user_ids=default_bot_user_ids,
         service_bot_tuples=service_bot_tuples
     )  # type: RecipientInfoResult
     return info
 
-def get_service_bot_events(sender, service_bot_tuples, mentioned_user_ids, active_user_ids, recipient_type):
+def get_service_bot_events(sender, service_bot_tuples, mentioned_user_ids,
+                           active_user_ids, recipient_type):
     # type: (UserProfile, List[Tuple[int, int]], Set[int], Set[int], int) -> Dict[str, List[Dict[str, Any]]]
 
     event_dict = defaultdict(list)  # type: Dict[str, List[Dict[str, Any]]]
@@ -1040,6 +1059,7 @@ def do_send_messages(messages_maybe_none):
         message['stream_push_user_ids'] = info['stream_push_user_ids']
         message['um_eligible_user_ids'] = info['um_eligible_user_ids']
         message['long_term_idle_user_ids'] = info['long_term_idle_user_ids']
+        message['default_bot_user_ids'] = info['default_bot_user_ids']
         message['service_bot_tuples'] = info['service_bot_tuples']
 
     links_for_embed = set()  # type: Set[Text]
@@ -1057,6 +1077,17 @@ def do_send_messages(messages_maybe_none):
         message['message'].rendered_content = rendered_content
         message['message'].rendered_content_version = bugdown_version
         links_for_embed |= message['message'].links_for_preview
+
+        '''
+        Once we have the actual list of mentioned ids from message
+        rendering, we can patch in "default bots" (aka normal bots)
+        who were directly mentioned in this message as eligible to
+        get UserMessage rows.
+        '''
+        mentioned_user_ids = message['message'].mentions_user_ids
+        default_bot_user_ids = message['default_bot_user_ids']
+        mentioned_bot_user_ids = default_bot_user_ids & mentioned_user_ids
+        message['um_eligible_user_ids'] |= mentioned_bot_user_ids
 
     for message in messages:
         message['message'].update_calculated_fields()
