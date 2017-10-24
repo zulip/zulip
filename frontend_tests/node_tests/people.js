@@ -3,7 +3,9 @@ add_dependencies({
 });
 
 var people = require("js/people.js");
-set_global('blueslip', {});
+set_global('blueslip', {
+    error: function () { return undefined; },
+});
 set_global('page_params', {});
 
 var _ = global._;
@@ -81,6 +83,9 @@ initialize();
     };
     people.add(bot_botson);
     assert.equal(people.realm_user_is_active_human_or_bot(bot_botson.user_id), true);
+
+    // Invalid user ID just returns false
+    assert.equal(people.realm_user_is_active_human_or_bot(123412), false);
 
     // We can still get their info for non-realm needs.
     person = people.get_by_email(email);
