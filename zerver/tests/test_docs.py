@@ -73,21 +73,8 @@ class DocPageTest(ZulipTestCase):
         self._test('/devtools/', 'Useful development URLs')
         self._test('/errors/404/', 'Page not found')
         self._test('/errors/5xx/', 'Internal server error')
-
-        with self.settings(EMAIL_BACKEND='zproject.email_backends.EmailLogBackEnd'), \
-                mock.patch('logging.info', return_value=None):
-            # For reaching full coverage for clear_emails function
-            result = self.client_get('/emails/clear/')
-            self.assertEqual(result.status_code, 302)
-            result = self.client_get(result['Location'])
-            self.assertIn('manually generate most of the emails by clicking', str(result.content))
-
-            result = self.client_get('/emails/generate/')
-            self.assertEqual(result.status_code, 302)
-            self.assertIn('emails', result['Location'])
-
-            self._test('/emails/', 'manually generate most of the emails by clicking')
-            self._test('/register/', 'Sign up for Zulip')
+        self._test('/emails/', 'manually generate most of the emails by clicking')
+        self._test('/register/', 'Sign up for Zulip')
 
         result = self.client_get('/integrations/doc-html/nonexistent_integration', follow=True)
         self.assertEqual(result.status_code, 404)
@@ -239,4 +226,4 @@ class ConfigErrorTest(ZulipTestCase):
         # type: () -> None
         result = self.client_get("/config-error/smtp")
         self.assertEqual(result.status_code, 200)
-        self.assert_in_success_response(["/var/log/zulip"], result)
+        self.assert_in_success_response(["email configuration"], result)

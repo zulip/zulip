@@ -1,13 +1,64 @@
 import logging
 
 from typing import List
+from six.moves import configparser
+
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 from django.conf import settings
 from django.core.mail.backends.base import BaseEmailBackend
 from django.core.mail import EmailMultiAlternatives
 from django.template import loader
 
+def get_forward_address():
+    # type: () -> str
+    config = configparser.ConfigParser()
+    config.read(settings.FORWARD_ADDRESS_CONFIG_FILE)
+    try:
+        return config.get("DEV_EMAIL", "forward_address")
+    except (configparser.NoSectionError, configparser.NoOptionError) as e:
+        return ""
+
+def set_forward_address(forward_address):
+    # type: (str) -> None
+    config = configparser.ConfigParser()
+    config.read(settings.FORWARD_ADDRESS_CONFIG_FILE)
+
+    if not config.has_section("DEV_EMAIL"):
+        config.add_section("DEV_EMAIL")
+    config.set("DEV_EMAIL", "forward_address", forward_address)
+
+    with open(settings.FORWARD_ADDRESS_CONFIG_FILE, "w") as cfgfile:
+            config.write(cfgfile)
+
 class EmailLogBackEnd(BaseEmailBackend):
+    def send_email_smtp(self, email):
+        # type: (EmailMultiAlternatives) -> None
+        from_email = email.from_email
+        to = get_forward_address()
+
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = email.subject
+        msg['From'] = from_email
+        msg['To'] = to
+
+        text = email.body
+        html = email.alternatives[0][0]
+        localhost_email_images_base_uri = settings.ROOT_DOMAIN_URI + '/static/images/emails'
+        czo_email_images_base_uri = 'https://chat.zulip.org/static/images/emails'
+        html = html.replace(localhost_email_images_base_uri, czo_email_images_base_uri)
+
+        msg.attach(MIMEText(text, 'plain'))
+        msg.attach(MIMEText(html, 'html'))
+
+        smtp = smtplib.SMTP(settings.EMAIL_HOST)
+        smtp.starttls()
+        smtp.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
+        smtp.sendmail(from_email, to, msg.as_string())
+        smtp.quit()
+
     def log_email(self, email: EmailMultiAlternatives) -> None:
         """Used in development to record sent emails in a nice HTML log"""
         html_message = 'Missing HTML message'
@@ -38,6 +89,8 @@ class EmailLogBackEnd(BaseEmailBackend):
     def send_messages(self, email_messages: List[EmailMultiAlternatives]) -> int:
         for email in email_messages:
             self.log_email(email)
+            if get_forward_address():
+                self.send_email_smtp(email)
             email_log_url = settings.ROOT_DOMAIN_URI + "/emails"
             logging.info("Emails sent in development are available at %s" % (email_log_url,))
         return len(email_messages)
