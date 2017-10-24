@@ -14,6 +14,7 @@ var input_pill = function ($parent) {
         pills: [],
         $parent: $parent,
         getKeyFunction: function () {},
+        validation: function () {},
         lastUpdated: null,
         lastCreated: {
             keys: null,
@@ -55,7 +56,17 @@ var input_pill = function ($parent) {
             // default `undefined`.
             if (typeof optionalKey === "undefined") {
                 optionalKey = store.getKeyFunction(value, reject);
+
+                if (typeof optionalKey === "object" &&
+                    optionalKey.key !== undefined && optionalKey.value !== undefined) {
+                        value = optionalKey.value;
+                        optionalKey = optionalKey.key;
+                    }
             }
+
+            // now run a separate round of validation, in case they are using
+            // `getKeyFunction` without `reject`, or not using it at all.
+            store.validation(value, optionalKey, reject);
 
             // if the `rejected` global is now true, it means that the user's
             // created pill was not accepted, and we should no longer proceed.
@@ -65,15 +76,6 @@ var input_pill = function ($parent) {
             }
 
             var id = Math.random().toString(16);
-
-            // the user may provide a function to get a key from a value
-            // that is entered, so return whatever value is gotten from
-            // this function.
-            // the default function is noop, so the return type is by
-            // default `undefined`.
-            if (typeof optionalKey === "undefined") {
-                optionalKey = store.getKeyFunction(value);
-            }
 
             var payload = {
                 id: id,
@@ -307,6 +309,10 @@ var input_pill = function ($parent) {
 
         onPillCreate: function (callback) {
             store.getKeyFunction = callback;
+        },
+
+        validate: function (callback) {
+            store.validation = callback;
         },
     };
 
