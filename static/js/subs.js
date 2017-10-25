@@ -523,6 +523,13 @@ exports.change_state = (function () {
         prevent_next = true;
     };
 
+    // this is for cases where we are leaving the state of the subs, and we don't
+    // want a hashchange prevent value from the last session leaking into the
+    // new session.
+    func.reset_state = function () {
+      prevent_next = false;
+    };
+
     return func;
 }());
 
@@ -547,6 +554,7 @@ exports.launch = function (hash) {
 exports.close = function () {
     hashchange.exit_overlay();
     subs.remove_miscategorized_streams();
+    exports.change_state.reset_state();
 };
 
 exports.switch_rows = function (event) {
