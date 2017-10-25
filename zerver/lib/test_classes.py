@@ -20,10 +20,11 @@ from zerver.lib.utils import is_remote_server
 from zerver.lib import cache
 from zerver.tornado.handlers import allocate_handler_id
 from zerver.worker import queue_processors
+from zerver.views.users import add_service
 
 from zerver.lib.actions import (
     check_send_message, create_stream_if_needed, bulk_add_subscriptions,
-    get_display_recipient, bulk_remove_subscriptions
+    get_display_recipient, bulk_remove_subscriptions, do_create_user
 )
 
 from zerver.lib.test_helpers import (
@@ -39,6 +40,7 @@ from zerver.models import (
     Message,
     Realm,
     Recipient,
+    Service,
     Stream,
     Subscription,
     UserMessage,
@@ -276,6 +278,17 @@ class ZulipTestCase(TestCase):
     def notification_bot(self):
         # type: () -> UserProfile
         return get_user('notification-bot@zulip.com', get_realm('zulip'))
+
+    def create_test_bot(self, email, user_profile, full_name, short_name, bot_type, service_name=None):
+        # type: (Text, UserProfile, Text, Text, int, str) -> UserProfile
+        bot_profile = do_create_user(email=email, password='', realm=user_profile.realm,
+                                     full_name=full_name, short_name=short_name,
+                                     bot_type=bot_type, bot_owner=user_profile)
+        if bot_type in (UserProfile.OUTGOING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
+            add_service(name=service_name, user_profile=bot_profile,
+                        base_url='', interface=Service.GENERIC,
+                        token='abcdef')
+        return bot_profile
 
     def login_with_return(self, email, password=None, **kwargs):
         # type: (Text, Optional[Text], **Any) -> HttpResponse
