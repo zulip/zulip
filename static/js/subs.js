@@ -373,10 +373,10 @@ exports.setup_page = function (callback) {
                 { label: i18n.t("Subscribed"), key: "subscribed" },
                 { label: i18n.t("All streams"), key: "all-streams" },
             ],
-            callback: function (value, key) {
+            callback: function (value, key, payload) {
                 // if you aren't on a particular stream (`streams/:id/:name`)
                 // then redirect to `streams/all` when you click "all-streams".
-                if (key === "all-streams") {
+                if (key === "all-streams" && !payload.prevent_hashchange) {
                     window.location.hash = "streams/all";
                 } else if (key === "subscribed") {
                     window.location.hash = "streams/subscribed";
@@ -487,6 +487,14 @@ exports.change_state = (function () {
             } else if (/\d+/.test(hash.arguments[0])) {
                 var stream_row = $(".stream-row[data-stream-id='" + hash.arguments[0] + "']");
                 var streams_list = $(".streams-list")[0];
+
+                var stream = stream_data.get_sub_by_id(hash.arguments[0]);
+
+                if (!stream.subscribed) {
+                  components.toggle.lookup("stream-filter-toggle").goto("all-streams", {
+                      prevent_hashchange: true,
+                  });
+                }
 
                 get_active_data().row.removeClass("active");
                 stream_row.addClass("active");
