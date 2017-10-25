@@ -276,3 +276,13 @@ class TaigaHookTests(WebhookTestCase):
         # type: () -> None
         message = u':cross_mark: Eeshan Garg deleted epic **Zulip is great!**'
         self.send_and_test_stream_message("epic_deleted", u'subject', message)
+
+    def test_taiga_relateduserstory_created(self):
+        # type: () -> None
+        message = u':package: Eeshan Garg added a related user story **A related user story** to the epic **This is Epic!**'
+        self.send_and_test_stream_message("relateduserstory_created", u'subject', message)
+
+    def test_taiga_relateduserstory_deleted(self):
+        # type: () -> None
+        message = u':cross_mark: Eeshan Garg removed a related user story **A related user story, which is epic** from the epic **This is Epic!**'
+        self.send_and_test_stream_message("relateduserstory_deleted", u'subject', message)
