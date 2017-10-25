@@ -233,7 +233,7 @@ def regenerate_bot_api_key(request, user_profile, email):
     )
     return json_success(json_result)
 
-def add_outgoing_webhook_service(name, user_profile, base_url, interface, token):
+def add_service(name, user_profile, base_url=None, interface=None, token=None):
     # type: (Text, UserProfile, Text, int, Text) -> None
     Service.objects.create(name=name,
                            user_profile=user_profile,
@@ -298,11 +298,11 @@ def add_bot_backend(request, user_profile, full_name_raw=REQ("full_name"), short
         upload_avatar_image(user_file, user_profile, bot_profile)
 
     if bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
-        add_outgoing_webhook_service(name=service_name,
-                                     user_profile=bot_profile,
-                                     base_url=payload_url,
-                                     interface=interface_type,
-                                     token=random_api_key())
+        add_service(name=service_name,
+                    user_profile=bot_profile,
+                    base_url=payload_url,
+                    interface=interface_type,
+                    token=random_api_key())
 
     json_result = dict(
         api_key=bot_profile.api_key,
