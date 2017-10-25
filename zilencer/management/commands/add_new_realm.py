@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from zerver.lib.actions import do_create_user, do_create_realm
 from zerver.lib.management import ZulipBaseCommand
-from zerver.lib.onboarding import send_initial_pms, setup_initial_streams, \
+from zerver.lib.onboarding import setup_initial_streams, \
     setup_initial_private_stream, send_initial_realm_messages
 from zerver.models import Realm, UserProfile
 
@@ -21,7 +21,6 @@ class Command(ZulipBaseCommand):
             UserProfile.objects.filter(email__contains='user@').count(),)
         user = do_create_user('%s@%s.zulip.com' % (name, string_id),
                               'password', realm, name, name, is_realm_admin=True)
-        send_initial_pms(user)
         setup_initial_private_stream(user)
 
         send_initial_realm_messages(realm)
