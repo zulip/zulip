@@ -274,6 +274,7 @@
   "Narrow to stream <b>__stream.name__</b>": "Filtrar solo el canal <b>__stream.name__</b>",
   "Narrow to topic <b>__topic_name__</b>": "Filtrar solo el tema <b>__topic_name__</b>",
   "Narrow to your private messages with __display_reply_to__": "Filtrar solo tus mensajes privados con __display_reply_to__",
+  "Never": "Nunca",
   "Never had one? Forgotten it?": "¿Nunca has tenido una? ¿La has olvidado?",
   "New alert word": "Nueva alerta",
   "New password": "Nueva contraseña",

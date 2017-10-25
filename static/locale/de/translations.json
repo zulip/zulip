@@ -274,6 +274,7 @@
   "Narrow to stream <b>__stream.name__</b>": "Begrenze auf den Stream <b>__stream.name__</b>",
   "Narrow to topic <b>__topic_name__</b>": "Auf Thema <b>__topic_name__</b> begrenzen",
   "Narrow to your private messages with __display_reply_to__": "Begrenze auf deine privaten Nachrichten mit __display_reply_to__",
+  "Never": "Nie",
   "Never had one? Forgotten it?": "Du hattest noch nie eins? Oder Du hast es vergessen?",
   "New alert word": "Neues Signalwort",
   "New password": "Neues Passwort",

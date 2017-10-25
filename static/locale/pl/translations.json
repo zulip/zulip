@@ -274,6 +274,7 @@
   "Narrow to stream <b>__stream.name__</b>": "Zawęź do kanału <b>__stream.name__</b>",
   "Narrow to topic <b>__topic_name__</b>": "Zawęź do wątku <b>__topic_name__</b>",
   "Narrow to your private messages with __display_reply_to__": "Zawęź do prywatnych wiadomości z __display_reply_to__",
+  "Never": "",
   "Never had one? Forgotten it?": "",
   "New alert word": "Nowy alert",
   "New password": "Nowe hasło",

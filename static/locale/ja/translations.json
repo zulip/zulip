@@ -274,6 +274,7 @@
   "Narrow to stream <b>__stream.name__</b>": "<b>__stream.name__</b>ストリームだけ表示",
   "Narrow to topic <b>__topic_name__</b>": "<b>__topic_name__</b>トピックだけ表示",
   "Narrow to your private messages with __display_reply_to__": "__display_reply_to__とのプライベートメッセージだけ表示",
+  "Never": "",
   "Never had one? Forgotten it?": "もっていない？忘れた？",
   "New alert word": "新しいアラートワード",
   "New password": "新しいパスワード",

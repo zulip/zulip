@@ -274,6 +274,7 @@
   "Narrow to stream <b>__stream.name__</b>": "筛选频道&quot;<b>__stream.name__</b>&quot;",
   "Narrow to topic <b>__topic_name__</b>": "筛选话题&quot;<b>__topic_name__</b>&quot;",
   "Narrow to your private messages with __display_reply_to__": "筛选和&quot;__display_reply_to__&quot;的私信",
+  "Never": "",
   "Never had one? Forgotten it?": "从来没有？还是忘了？",
   "New alert word": "新建提示信息",
   "New password": "新密码",
