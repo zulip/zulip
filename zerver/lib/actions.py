@@ -353,6 +353,11 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
     notify_new_user(user_profile)
     enqueue_welcome_emails(user_profile)
 
+    # We have an import loop here; it's intentional, because we want
+    # to keep all the onboarding code in zerver/lib/onboarding.py.
+    from zerver.lib.onboarding import send_initial_pms
+    send_initial_pms(user_profile)
+
     if newsletter_data is not None:
         # If the user was created automatically via the API, we may
         # not want to register them for the newsletter
