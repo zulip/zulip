@@ -140,6 +140,7 @@ exports.processing_text = (function () {
         'textarea:focus',
         '#compose-send-button:focus',
         '.editable-section:focus',
+        '.pill-container div:focus',
     ].join(",");
 
     return function () {
