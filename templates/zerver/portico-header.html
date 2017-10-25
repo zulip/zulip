@@ -23,7 +23,7 @@
 
         <div class="column-right top-links">
             {% if user_is_authenticated %}
-            {% include 'zerver/portico-header-dropdown.html' %}
+                {% include 'zerver/portico-header-dropdown.html' %}
             {% else %}
                 {% if login_link_disabled %}
                 {% elif not only_sso %}
