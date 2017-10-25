@@ -18,7 +18,6 @@ from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
     do_change_default_events_register_stream, do_change_default_sending_stream, \
     do_create_user, do_deactivate_user, do_reactivate_user, do_regenerate_api_key
 from zerver.lib.avatar import avatar_url, get_gravatar_url, get_avatar_field
-from zerver.lib.onboarding import send_initial_pms
 from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.upload import upload_avatar_image
@@ -426,8 +425,7 @@ def create_user_backend(request, user_profile, email=REQ(), password=REQ(),
     except UserProfile.DoesNotExist:
         pass
 
-    new_user_profile = do_create_user(email, password, realm, full_name, short_name)
-    send_initial_pms(new_user_profile)
+    do_create_user(email, password, realm, full_name, short_name)
     return json_success()
 
 def generate_client_id():

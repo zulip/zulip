@@ -19,7 +19,6 @@ from social_django.models import DjangoStorage
 from social_django.strategy import DjangoStrategy
 
 from zerver.lib.actions import do_create_user
-from zerver.lib.onboarding import send_initial_pms
 from zerver.lib.request import JsonableError
 from zerver.lib.subdomains import check_subdomain, get_subdomain
 from zerver.lib.users import check_full_name
@@ -473,7 +472,6 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
                 short_name = ldap_user.attrs[short_name_attr][0]
 
             user_profile = do_create_user(username, None, self._realm, full_name, short_name)
-            send_initial_pms(user_profile)
 
             return user_profile, True
 

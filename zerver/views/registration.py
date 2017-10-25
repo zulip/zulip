@@ -26,7 +26,7 @@ from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from zerver.decorator import require_post, has_request_variables, \
     JsonableError, REQ, do_login
-from zerver.lib.onboarding import send_initial_pms, setup_initial_streams, \
+from zerver.lib.onboarding import setup_initial_streams, \
     setup_initial_private_stream, send_initial_realm_messages
 from zerver.lib.response import json_success
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
@@ -231,12 +231,6 @@ def accounts_register(request):
                                           tos_version=settings.TOS_VERSION,
                                           timezone=timezone,
                                           newsletter_data={"IP": request.META['REMOTE_ADDR']})
-
-        # Note: Any logic like this must also be replicated in
-        # ZulipLDAPAuthBackend and zerver/views/users.py.  This is
-        # ripe for a refactoring, though care is required to avoid
-        # import loops with zerver/lib/actions.py and zerver/lib/onboarding.py.
-        send_initial_pms(user_profile)
 
         if realm_creation:
             setup_initial_private_stream(user_profile)

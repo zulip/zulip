@@ -303,6 +303,29 @@ def add_new_user_history(user_profile, streams):
 
     UserMessage.objects.bulk_create(ums_to_create)
 
+def send_initial_pms(user):
+    # type: (UserProfile) -> None
+    organization_setup_text = ""
+    if user.is_realm_admin:
+        organization_setup_text = "* [Read the guide](%s) for getting your organization started with Zulip\n" \
+                                  % (user.realm.uri + "/help/getting-your-organization-started-with-zulip",)
+
+    content = (
+        "Hello, and welcome to Zulip!\n\nThis is a private message from me, Welcome Bot. "
+        "Here are some tips to get you started:\n"
+        "* Download our [Desktop and mobile apps](/apps)\n"
+        "* Customize your account and notifications on your [Settings page](#settings)\n"
+        "* Type `?` to check out Zulip's keyboard shortcuts\n"
+        "%s"
+        "\n"
+        "The most important shortcut is `r` to reply.\n\n"
+        "Practice sending a few messages by replying to this conversation. If you're not into "
+        "keyboards, that's okay too; clicking anywhere on this message will also do the trick!") \
+        % (organization_setup_text,)
+
+    internal_send_private_message(user.realm, get_system_bot(settings.WELCOME_BOT),
+                                  user, content)
+
 # Does the processing for a new user account:
 # * Subscribes to default/invitation streams
 # * Fills in some recent historical messages
@@ -352,7 +375,7 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
 
     notify_new_user(user_profile)
     enqueue_welcome_emails(user_profile)
-
+    send_initial_pms(user_profile)
     if newsletter_data is not None:
         # If the user was created automatically via the API, we may
         # not want to register them for the newsletter
