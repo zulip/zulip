@@ -1,4 +1,4 @@
-<div class="header">
+<div class="header portico-header">
     <div class="header-main" id="top_navbar">
         <div class="column-left">
             <div>
@@ -22,16 +22,23 @@
         </div>
 
         <div class="column-right top-links">
-            {% if login_link_disabled %}
-            {% elif not only_sso %}
-            <a href="{{login_url}}">{{ _('Log in') }}</a>
+            {% if user_is_authenticated %}
+            {% include 'zerver/portico-header-dropdown.html' %}
+            {% else %}
+                {% if login_link_disabled %}
+                {% elif not only_sso %}
+                <a href="{{login_url}}">{{ _('Log in') }}</a>
+                {% endif %}
             {% endif %}
 
             {% if register_link_disabled %}
             {% elif only_sso %}
-            <a href="{{ url('login-sso') }}">{{ _('Log in') }}</a>
+                <a href="{{ url('login-sso') }}">{{ _('Log in') }}</a>
             {% else %}
-            <a href="{{ url('register') }}">{{ _('Register') }}</a>
+                {% if user_is_authenticated %}
+                {% else %}
+                <a href="{{ url('register') }}">{{ _('Register') }}</a>
+                {% endif %}
             {% endif %}
         </div>
     </div>
