@@ -257,7 +257,8 @@ class EmbeddedBotIntegration(Integration):
 EMBEDDED_BOTS = [
     EmbeddedBotIntegration('converter', []),
     EmbeddedBotIntegration('encrypt', []),
-    EmbeddedBotIntegration('virtual_fs', [])
+    EmbeddedBotIntegration('helloworld', []),
+    EmbeddedBotIntegration('virtual_fs', []),
 ]  # type: List[EmbeddedBotIntegration]
 
 WEBHOOK_INTEGRATIONS = [
