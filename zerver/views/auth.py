@@ -512,7 +512,7 @@ def login_page(request, **kwargs):
         extra_context['direct_admins'] = [u for u in users if u.is_realm_admin]
         extra_context['direct_users'] = [u for u in users if not u.is_realm_admin]
 
-        if 'new_realm' in request.POST:
+        if realm and 'new_realm' in request.POST:
             # If we're switching realms, redirect to that realm
             return HttpResponseRedirect(realm.uri)
 
