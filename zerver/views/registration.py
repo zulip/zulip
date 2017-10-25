@@ -75,6 +75,7 @@ def accounts_register(request):
     email = prereg_user.email
     realm_creation = prereg_user.realm_creation
     password_required = prereg_user.password_required
+    is_realm_admin = prereg_user.invited_as_admin or realm_creation
 
     validators.validate_email(email)
     if prereg_user.referred_by:
@@ -226,8 +227,9 @@ def accounts_register(request):
             do_change_full_name(user_profile, full_name, user_profile)
             do_set_user_display_setting(user_profile, 'timezone', timezone)
         else:
+            # TODO: When we clean up this code path, make it respect is_realm_admin.
             user_profile = do_create_user(email, password, realm, full_name, short_name,
-                                          prereg_user=prereg_user, is_realm_admin=realm_creation,
+                                          prereg_user=prereg_user, is_realm_admin=is_realm_admin,
                                           tos_version=settings.TOS_VERSION,
                                           timezone=timezone,
                                           newsletter_data={"IP": request.META['REMOTE_ADDR']})

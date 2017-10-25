@@ -3696,8 +3696,8 @@ class InvitationError(JsonableError):
         self.errors = errors  # type: List[Tuple[Text, str]]
         self.sent_invitations = sent_invitations  # type: bool
 
-def do_invite_users(user_profile, invitee_emails, streams, body=None):
-    # type: (UserProfile, SizedTextIterable, Iterable[Stream], Optional[str]) -> None
+def do_invite_users(user_profile, invitee_emails, streams, invited_as_admin=False, body=None):
+    # type: (UserProfile, SizedTextIterable, Iterable[Stream], Optional[bool], Optional[str]) -> None
     validated_emails = []  # type: List[Text]
     errors = []  # type: List[Tuple[Text, str]]
     skipped = []  # type: List[Tuple[Text, str]]
@@ -3729,7 +3729,7 @@ def do_invite_users(user_profile, invitee_emails, streams, body=None):
     # the PreregistrationUser objects and trigger the email invitations.
     for email in validated_emails:
         # The logged in user is the referrer.
-        prereg_user = PreregistrationUser(email=email, referred_by=user_profile)
+        prereg_user = PreregistrationUser(email=email, referred_by=user_profile, invited_as_admin=invited_as_admin)
 
         prereg_user.save()
         stream_ids = [stream.id for stream in streams]
