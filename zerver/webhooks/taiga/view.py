@@ -64,6 +64,10 @@ templates = {
         'commented': u':thought_balloon: %(user)s commented on epic **%(subject)s**',
         'delete': u':cross_mark: %(user)s deleted epic **%(subject)s**',
     },
+    'relateduserstory': {
+        'create': u':package: %(user)s added a related user story **%(userstory_subject)s** to the epic **%(epic_subject)s**',
+        'delete': u':cross_mark: %(user)s removed a related user story **%(userstory_subject)s** from the epic **%(epic_subject)s**',
+    },
     'userstory': {
         'create': u':package: %(user)s created user story **%(subject)s**.',
         'set_assigned_to': u':busts_in_silhouette: %(user)s assigned user story **%(subject)s** to %(new)s.',
@@ -168,6 +172,17 @@ def parse_comment(message):
 def parse_create_or_delete(message):
     # type: (Mapping[str, Any]) -> Dict[str, Any]
     """ Parses create or delete event. """
+    if message["type"] == 'relateduserstory':
+        return {
+            'type': message["type"],
+            'event': message["action"],
+            'values': {
+                'user': get_owner_name(message),
+                'epic_subject': message['data']['epic']['subject'],
+                'userstory_subject': message['data']['user_story']['subject'],
+            }
+        }
+
     return {
         'type': message["type"],
         'event': message["action"],
