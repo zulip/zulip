@@ -133,10 +133,19 @@ exports.get_keypress_hotkey = function (e) {
     return keypress_mappings[e.which];
 };
 
-exports.processing_text = function () {
-    var selector = 'input:focus,select:focus,textarea:focus,#compose-send-button:focus,.editable-section:focus';
-    return $(selector).length > 0;
-};
+exports.processing_text = (function () {
+    var selector = [
+        'input:focus',
+        'select:focus',
+        'textarea:focus',
+        '#compose-send-button:focus',
+        '.editable-section:focus',
+    ].join(",");
+
+    return function () {
+        return $(selector).length > 0;
+    };
+}());
 
 exports.is_editing_stream_name = function (e) {
     return $(e.target).is(".editable-section");
