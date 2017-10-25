@@ -7,40 +7,51 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
+### 1.7.0 -- 2017-10-25
+
 **Highlights:**
 
-- Migrated the project to run exclusively on Python 3.
-- Completely redesigned the emoji picker with a beautiful new design,
-  with categories, a showcase, and much better data.
-- Completely redesigned the /integrations and /apps pages to be
-  more usable and more attractive.
-- Completely redesigned the onboarding process to more effectively
-  explain Zulip and topics to new users.
-- Added support for iOS mobile push notifications.
-- Overhauled the emails sent by Zulip to be more consistent and
-  readable, and have a nice illustrated visual design.
-- Redesigned several settings subpages to be visually cleaner.
-- Redesigned the /help/ documentation site to have a nice sidebar
-  index.
-- We're now recommending the new electron desktop app to everyone.
-  Users using the legacy desktop app from 2014 will receive a
-  notification encouraging them to upgrade.  We wil likely remove
-  support for the legacy desktop app completely in our next release.
-- Added a new API for fetching unread messages organized by topic to
-  support the mobile apps.  The React Native mobile apps will likely
-  start requiring Zulip 1.7 soon.  We don't intend to break app
-  compatibility with older server versions often, but it makes sense
-  in this case, since the new API is necessary for providing a
-  performant mobile experience.
-- Fixed a number of issues with untranslateable strings.  Zulip is now
-  fully translated into Chinese, Spanish, German, Czech, and Japanese,
-  with significant translations for a number of other languages.
-- Added automatic "soft deactivation", which dramatically improves
-  performance for organizations with a large number of inactive users,
-  without any impact to the experience should those users return.
-  Zulip's performance now scales primarily with number of active
-  users; chat.zulip.org serves 300MAUs and over 3000 total users on a
-  VM with just 8GB of RAM (and its CPU is essentially always idle).
+Web
+- We’ve completely redesigned our onboarding process to explain Zulip,
+  and especially topics, to new users.
+- We’ve built a beautiful new emoji picker with categories, a
+  showcase, and much better data. Note the clean, underscore-free
+  display!
+- The emails sent by Zulip are more consistent, readable, and visually
+  interesting.
+- Chinese (Simplified) and Japanese join Spanish, German, and Czech in
+  having the user interface fully translated, in addition to partial
+  translations for many other languages. We also fixed many small
+  issues where strings weren’t tagged for translation.
+- Many pages have been redesigned to be easier to use and visually
+  cleaner, including the settings pages and the user documentation at
+  /help, /integrations, and /apps.
+
+Mobile and Desktop support
+- Zulip Server 1.7 adds several new APIs that are critical for mobile
+  app performance and that let the app track unread messages. If
+  you’re using the mobile apps at all (iOS or Android), you will
+  definitely want to upgrade to Zulip 1.7.
+- The iOS and Android apps can receive push notifications
+  (configurable, naturally) for events like PMs and @-mentions. While
+  Zulip Server 1.6 has basic support for these, 1.7 brings a new,
+  clearer format to notifications, and gives each user more options
+  for finer-grained control.
+- The new Electron desktop app is out of beta and replaces our legacy
+  desktop apps.
+
+Backend and scaling
+- Zulip now runs exclusively on Python 3.  This is the culmination of
+  an 18-month migration effort.  We are very excited about this!
+- We’ve added an automatic "soft deactivation" process, which
+  dramatically improves performance for organizations with a large
+  number of inactive users, without any impact on those users’
+  experience if they later come back.
+- Zulip's performance at scale has improved significantly. Performance
+  now scales primarily with number of active users (not total
+  users). As an example, chat.zulip.org serves 400 monthly active
+  users and about 3500 total users, on one VM with just 8GB of RAM and
+  a CPU consistently over 90% idle.
 
 **Upgrade notes:**
 
@@ -120,6 +131,7 @@ in bursts.
   "mentions" database queries through new indexes.
 - Upgraded to Django 1.11.x.
 - Upgraded to a more modern version of the SourceSansPro font.
+- Redesigned several settings subpages to be visually cleaner.
 - Redesigned Zulip's error pages to feature cute illustrations.
 - Dramatically improved the user typeahead algorithm to suggest
   relevant users even in large organizations with 1000s of accounts.
