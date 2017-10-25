@@ -31,6 +31,10 @@ p {
     line-height: 1.5;
 }
 
+ul {
+    font-weight: normal;
+}
+
 a,
 a:hover,
 a:visited {
@@ -1807,7 +1811,6 @@ nav ul li.active::after {
 }
 
 .portico-landing.why-page .main li {
-    color: #555;
     line-height: 1.6;
     font-size: 1em;
 }
