@@ -4,6 +4,7 @@ import shutil
 import sys
 import subprocess
 import logging
+import argparse
 
 TARBALL_ARCHIVE_PATH = "/home/zulip/archives"
 os.environ["PYTHONUNBUFFERED"] = "y"
@@ -12,6 +13,10 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, FAIL, WARNING, ENDC, \
     su_to_zulip, get_deployment_lock, release_deployment_lock
 
+parser = argparse.ArgumentParser(description="Script to upgrade Zulip.")
+parser.add_argument('tarball', help='Path to the upgrade tarball')
+args = parser.parse_args()
+
 logging.basicConfig(format="%(asctime)s upgrade-zulip: %(message)s",
                     level=logging.INFO)
 
@@ -19,11 +24,7 @@ if os.getuid() != 0:
     logging.error("Must be run as root.")
     sys.exit(1)
 
-if len(sys.argv) != 2:
-    print(FAIL + "Usage: %s <tarball>" % (sys.argv[0],) + ENDC)
-    sys.exit(1)
-
-tarball_path = sys.argv[1]
+tarball_path = args.tarball
 
 error_rerun_script = "%s/current/scripts/upgrade-zulip %s" % (DEPLOYMENTS_DIR, tarball_path)
 get_deployment_lock(error_rerun_script)
