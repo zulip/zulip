@@ -29,29 +29,23 @@ class BaseDocumentationSpider(scrapy.Spider):
     tags = ('a', 'area', 'img')
     attrs = ('href', 'src')
 
-    def __init__(self, *args, **kwargs):
-        # type: (*Any, **Any) -> None
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super(BaseDocumentationSpider, self).__init__(*args, **kwargs)
         self.has_error = False
 
-    def _set_error_state(self):
-        # type: () -> None
+    def _set_error_state(self) -> None:
         self.has_error = True
 
-    def _has_extension(self, url):
-        # type: (str) -> bool
+    def _has_extension(self, url: str) -> bool:
         return url_has_any_extension(url, self.file_extensions)
 
-    def _is_external_url(self, url):
-        # type: (str) -> bool
+    def _is_external_url(self, url: str) -> bool:
         return url.startswith('http') or self._has_extension(url)
 
-    def check_existing(self, response):
-        # type: (Any) -> None
+    def check_existing(self, response: Any) -> None:
         self.log(response)
 
-    def check_permalink(self, response):
-        # type: (Any) -> None
+    def check_permalink(self, response: Any) -> None:
         self.log(response)
         xpath_template = "//*[@id='{permalink}' or @name='{permalink}']"
         m = re.match(r".+\#(?P<permalink>.*)$", response.request.url)  # Get anchor value.
@@ -64,8 +58,7 @@ class BaseDocumentationSpider(scrapy.Spider):
             raise Exception(
                 "Permalink #{} is not found on page {}".format(permalink, response.request.url))
 
-    def parse(self, response):
-        # type: (Any) -> Generator[Request, None, None]
+    def parse(self, response: Any) -> Generator[Request, None, None]:
         self.log(response)
         for link in LxmlLinkExtractor(deny_domains=self.deny_domains, deny_extensions=['doc'],
                                       tags=self.tags, attrs=self.attrs, deny=self.deny,
@@ -82,20 +75,17 @@ class BaseDocumentationSpider(scrapy.Spider):
             yield Request(link.url, method=method, callback=callback, dont_filter=dont_filter,
                           errback=self.error_callback)
 
-    def retry_request_with_get(self, request):
-        # type: (Request) -> Generator[Request, None, None]
+    def retry_request_with_get(self, request: Request) -> Generator[Request, None, None]:
         request.method = 'GET'
         request.dont_filter = True
         yield request
 
-    def exclude_error(self, url):
-        # type: (str) -> bool
+    def exclude_error(self, url: str) -> bool:
         if url in EXCLUDED_URLS:
             return True
         return False
 
-    def error_callback(self, failure):
-        # type: (Any) -> Optional[Generator[Any, None, None]]
+    def error_callback(self, failure: Any) -> Optional[Generator[Any, None, None]]:
         if hasattr(failure.value, 'response') and failure.value.response:
             response = failure.value.response
             if self.exclude_error(response.url):

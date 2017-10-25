@@ -4,8 +4,7 @@ from typing import List, Any
 
 
 class StatusCommand(Command):
-    def run(self, args, opts):
-        # type: (List[str], Any) -> None
+    def run(self, args: List[str], opts: Any) -> None:
         if len(args) < 1:
             raise UsageError()
         elif len(args) > 1:
