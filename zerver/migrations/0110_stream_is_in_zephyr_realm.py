@@ -4,8 +4,7 @@ from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db import connection, migrations, models
 
-def populate_is_zephyr(apps, schema_editor):
-    # type: (StateApps, DatabaseSchemaEditor) -> None
+def populate_is_zephyr(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     Realm = apps.get_model("zerver", "Realm")
     Stream = apps.get_model("zerver", "Stream")
 

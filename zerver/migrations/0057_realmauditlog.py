@@ -10,8 +10,7 @@ import django.db.models.deletion
 
 from django.utils.timezone import now as timezone_now
 
-def backfill_user_activations_and_deactivations(apps, schema_editor):
-    # type: (StateApps, DatabaseSchemaEditor) -> None
+def backfill_user_activations_and_deactivations(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     migration_time = timezone_now()
     RealmAuditLog = apps.get_model('zerver', 'RealmAuditLog')
     UserProfile = apps.get_model('zerver', 'UserProfile')
@@ -26,8 +25,7 @@ def backfill_user_activations_and_deactivations(apps, schema_editor):
                                      event_type='user_deactivated', event_time=migration_time,
                                      backfilled=True)
 
-def reverse_code(apps, schema_editor):
-    # type: (StateApps, DatabaseSchemaEditor) -> None
+def reverse_code(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     RealmAuditLog = apps.get_model('zerver', 'RealmAuditLog')
     RealmAuditLog.objects.filter(event_type='user_created').delete()
     RealmAuditLog.objects.filter(event_type='user_deactivated').delete()

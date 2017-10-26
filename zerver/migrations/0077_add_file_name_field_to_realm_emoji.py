@@ -25,8 +25,7 @@ from typing import Dict, Text, Tuple, Optional, Union
 from six import binary_type
 
 
-def force_str(s, encoding='utf-8'):
-    # type: (Union[Text, binary_type], Text) -> str
+def force_str(s: Union[Text, binary_type], encoding: Text='utf-8') -> str:
     """converts a string to a native string"""
     if isinstance(s, str):
         return s
@@ -39,23 +38,20 @@ def force_str(s, encoding='utf-8'):
 
 
 class Uploader(object):
-    def __init__(self):
-        # type: () -> None
+    def __init__(self) -> None:
         self.path_template = "{realm_id}/emoji/{emoji_file_name}"
         self.emoji_size = (64, 64)
 
-    def upload_files(self, response, resized_image, dst_path_id):
-        # type: (Response, binary_type, Text) -> None
+    def upload_files(self, response: Response, resized_image: binary_type,
+                     dst_path_id: Text) -> None:
         raise NotImplementedError()
 
-    def get_dst_path_id(self, realm_id, url, emoji_name):
-        # type: (int, Text, Text) -> Tuple[Text,Text]
+    def get_dst_path_id(self, realm_id: int, url: Text, emoji_name: Text) -> Tuple[Text, Text]:
         _, image_ext = os.path.splitext(url)
         file_name = ''.join((emoji_name, image_ext))
         return file_name, self.path_template.format(realm_id=realm_id, emoji_file_name=file_name)
 
-    def resize_emoji(self, image_data):
-        # type: (binary_type) -> Optional[binary_type]
+    def resize_emoji(self, image_data: binary_type) -> Optional[binary_type]:
         im = Image.open(io.BytesIO(image_data))
         format_ = im.format
         if format_ == 'GIF' and im.is_animated:
@@ -65,8 +61,8 @@ class Uploader(object):
         im.save(out, format_)
         return out.getvalue()
 
-    def upload_emoji(self, realm_id, image_url, emoji_name):
-        # type: (int, Text, Text) -> Optional[Text]
+    def upload_emoji(self, realm_id: int, image_url: Text,
+                     emoji_name: Text) -> Optional[Text]:
         file_name, dst_path_id = self.get_dst_path_id(realm_id, image_url, emoji_name)
         if image_url.startswith("/"):
             # Handle relative URLs.
@@ -86,25 +82,22 @@ class Uploader(object):
 
 
 class LocalUploader(Uploader):
-    def __init__(self):
-        # type: () -> None
+    def __init__(self) -> None:
         super(LocalUploader, self).__init__()
 
     @staticmethod
-    def mkdirs(path):
-        # type: (Text) -> None
+    def mkdirs(path: Text) -> None:
         dirname = os.path.dirname(path)
         if not os.path.isdir(dirname):
             os.makedirs(dirname)
 
-    def write_local_file(self, path, file_data):
-        # type: (Text, binary_type) -> None
+    def write_local_file(self, path: Text, file_data: binary_type) -> None:
         self.mkdirs(path)
         with open(path, 'wb') as f:
             f.write(file_data)
 
-    def upload_files(self, response, resized_image, dst_path_id):
-        # type: (Response, binary_type, Text) -> None
+    def upload_files(self, response: Response, resized_image: binary_type,
+                     dst_path_id: Text) -> None:
         dst_file = os.path.join(settings.LOCAL_UPLOADS_DIR, 'avatars', dst_path_id)
         if resized_image:
             self.write_local_file(dst_file, resized_image)
@@ -114,21 +107,20 @@ class LocalUploader(Uploader):
 
 
 class S3Uploader(Uploader):
-    def __init__(self):
-        # type: () -> None
+    def __init__(self) -> None:
         super(S3Uploader, self).__init__()
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
         bucket_name = settings.S3_AVATAR_BUCKET
         self.bucket = conn.get_bucket(bucket_name, validate=False)
 
-    def upload_to_s3(self, path, file_data, headers):
-        # type: (Text, binary_type, Optional[Dict[Text, Text]]) -> None
+    def upload_to_s3(self, path: Text, file_data: binary_type,
+                     headers: Optional[Dict[Text, Text]]) -> None:
         key = Key(self.bucket)
         key.key = path
         key.set_contents_from_string(force_str(file_data), headers=headers)
 
-    def upload_files(self, response, resized_image, dst_path_id):
-        # type: (Response, binary_type, Text) -> None
+    def upload_files(self, response: Response, resized_image: binary_type,
+                     dst_path_id: Text) -> None:
         headers = None  # type: Optional[Dict[Text, Text]]
         content_type = response.headers.get(str("Content-Type")) or guess_type(dst_path_id)[0]
         if content_type:
@@ -139,15 +131,13 @@ class S3Uploader(Uploader):
             self.upload_to_s3(dst_path_id, response.content, headers)
         self.upload_to_s3('.'.join((dst_path_id, 'original')), response.content, headers)
 
-def get_uploader():
-    # type: () -> Uploader
+def get_uploader() -> Uploader:
     if settings.LOCAL_UPLOADS_DIR is None:
         return S3Uploader()
     return LocalUploader()
 
 
-def upload_emoji_to_storage(apps, schema_editor):
-    # type: (StateApps, DatabaseSchemaEditor) -> None
+def upload_emoji_to_storage(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     realm_emoji_model = apps.get_model('zerver', 'RealmEmoji')
     uploader = get_uploader()  # type: Uploader
     for emoji in realm_emoji_model.objects.all():

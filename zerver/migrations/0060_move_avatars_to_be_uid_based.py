@@ -15,8 +15,7 @@ import requests
 import os
 
 
-def mkdirs(path):
-    # type: (Text) -> None
+def mkdirs(path: Text) -> None:
     dirname = os.path.dirname(path)
     if not os.path.isdir(dirname):
         os.makedirs(dirname)
@@ -24,8 +23,7 @@ def mkdirs(path):
 class MissingAvatarException(Exception):
     pass
 
-def move_local_file(type, path_src, path_dst):
-    # type: (Text, Text, Text) -> None
+def move_local_file(type: Text, path_src: Text, path_dst: Text) -> None:
     src_file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, type, path_src)
     dst_file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, type, path_dst)
     if os.path.exists(dst_file_path):
@@ -37,8 +35,7 @@ def move_local_file(type, path_src, path_dst):
     mkdirs(dst_file_path)
     os.rename(src_file_path, dst_file_path)
 
-def move_avatars_to_be_uid_based(apps, schema_editor):
-    # type: (StateApps, DatabaseSchemaEditor) -> None
+def move_avatars_to_be_uid_based(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     user_profile_model = apps.get_model('zerver', 'UserProfile')
     if settings.LOCAL_UPLOADS_DIR is not None:
         for user_profile in user_profile_model.objects.filter(avatar_source=u"U"):
