@@ -72,6 +72,12 @@ a {
 }
 
 a:hover {
+    text-decoration: none;
+}
+
+p a:hover,
+ul a:hover,
+ol a:hover {
     text-decoration: underline;
 }
 
