@@ -1954,6 +1954,10 @@ def set_bot_state(bot_profile, key, value):
         obj.value = value
         obj.save()
 
+def remove_bot_state(bot_profile, key):
+    # type: (UserProfile, Text) -> None
+    removed_ctr, removed_entries = BotUserStateData.objects.get(bot_profile=bot_profile, key=key).delete()
+
 def is_key_in_bot_state(bot_profile, key):
     # type: (UserProfile, Text) -> bool
     return BotUserStateData.objects.filter(bot_profile=bot_profile, key=key).exists()
