@@ -53,27 +53,29 @@ initialize();
     assert.equal(person.email, email);
     person = people.get_by_email(email);
     assert.equal(person.full_name, full_name);
-    person = people.realm_get(email);
+    person = people.get_active_user_for_email(email);
     assert(!person);
     people.add_in_realm(isaac);
     assert.equal(people.get_realm_count(), 1);
-    person = people.realm_get(email);
+    person = people.get_active_user_for_email(email);
     assert.equal(person.email, email);
 
     realm_persons = people.get_realm_persons();
     assert.equal(_.size(realm_persons), 1);
     assert.equal(realm_persons[0].full_name, 'Isaac Newton');
 
-    var human_user_ids = people.get_realm_human_user_ids();
-    assert.deepEqual(human_user_ids, [isaac.user_id]);
+    var active_user_ids = people.get_active_user_ids();
+    assert.deepEqual(active_user_ids, [isaac.user_id]);
     assert.equal(people.realm_user_is_active_human_or_bot(isaac.user_id), true);
+    assert(people.is_valid_email_for_compose(isaac.email));
 
     // Now deactivate isaac
     people.deactivate(isaac);
-    person = people.realm_get(email);
+    person = people.get_active_user_for_email(email);
     assert(!person);
     assert.equal(people.get_realm_count(), 0);
     assert.equal(people.realm_user_is_active_human_or_bot(isaac.user_id), false);
+    assert.equal(people.is_valid_email_for_compose(isaac.email), false);
 
     var bot_botson = {
         email: 'botson-bot@example.com',
@@ -97,7 +99,7 @@ initialize();
 
     // Test undefined people
     assert.equal(people.is_cross_realm_email('unknown@example.com'), undefined);
-    assert.equal(people.realm_get('unknown@example.com'), undefined);
+    assert.equal(people.get_active_user_for_email('unknown@example.com'), undefined);
 
     // Test is_my_user_id function
     assert.equal(people.is_my_user_id(me.user_id), true);
@@ -168,7 +170,7 @@ initialize();
     // now it takes a full person object.  Note that deactivate()
     // won't actually make the user disappear completely.
     people.deactivate(person);
-    person = people.realm_get('mary@example.com');
+    person = people.get_active_user_for_email('mary@example.com');
     assert.equal(person, undefined);
     person = people.get_person_from_user_id(42);
     assert.equal(person.user_id, 42);
@@ -480,7 +482,7 @@ initialize();
 
     // Do sanity checks on our data.
     assert.equal(people.get_by_email(old_email).user_id, user_id);
-    assert.equal(people.realm_get(old_email).user_id, user_id);
+    assert.equal(people.get_active_user_for_email(old_email).user_id, user_id);
     assert (!people.is_cross_realm_email(old_email));
 
     assert.equal(people.get_by_email(new_email), undefined);
@@ -490,7 +492,7 @@ initialize();
 
     // Now look up using the new email.
     assert.equal(people.get_by_email(new_email).user_id, user_id);
-    assert.equal(people.realm_get(new_email).user_id, user_id);
+    assert.equal(people.get_active_user_for_email(new_email).user_id, user_id);
     assert (!people.is_cross_realm_email(new_email));
 
     var all_people = people.get_all_persons();
@@ -652,8 +654,10 @@ initialize();
 
     people.initialize();
 
-    assert.equal(people.realm_get('alice@example.com').full_name, 'Alice');
+    assert.equal(people.get_active_user_for_email('alice@example.com').full_name, 'Alice');
     assert(people.is_cross_realm_email('bot@example.com'));
+    assert(people.is_valid_email_for_compose('bot@example.com'));
+    assert(people.is_valid_email_for_compose('alice@example.com'));
     assert(people.is_my_user_id(42));
 
     assert.equal(global.page_params.realm_users, undefined);
