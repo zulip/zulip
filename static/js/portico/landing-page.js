@@ -169,6 +169,14 @@ var events = function () {
     ScrollTo();
 
     $("a").click(function (e) {
+        // if a user is holding the CMD/CTRL key while clicking a link, they
+        // want to open the link in another browser tab which means that we
+        // should preserve the state of this one. Return out, and don't fade
+        // the page.
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+
         // if the pathname is different than what we are already on, run the
         // custom transition function.
         if (window.location.pathname !== this.pathname && !this.hasAttribute("download") &&
