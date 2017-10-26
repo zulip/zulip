@@ -16,10 +16,11 @@ from confirmation import settings as confirmation_settings
 
 from zerver.forms import HomepageForm, WRONG_SUBDOMAIN_ERROR
 from zerver.lib.actions import do_change_password, gather_subscriptions
-from zerver.views.auth import login_or_register_remote_user
+from zerver.views.auth import login_or_register_remote_user, \
+    redirect_and_log_into_subdomain
 from zerver.views.invite import get_invitee_emails_set
 from zerver.views.registration import confirmation_key, \
-    redirect_and_log_into_subdomain, send_registration_completion_email
+    send_registration_completion_email
 
 from zerver.models import (
     get_realm, get_prereg_user_by_email, get_user, get_recipient,

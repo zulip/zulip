@@ -20,7 +20,7 @@ from six.moves import urllib
 from typing import Any, Dict, List, Optional, Tuple, Text
 
 from confirmation.models import Confirmation, create_confirmation_link
-from zerver.context_processors import zulip_default_context
+from zerver.context_processors import zulip_default_context, get_realm_from_request
 from zerver.forms import HomepageForm, OurAuthenticationForm, \
     WRONG_SUBDOMAIN_ERROR
 from zerver.lib.mobile_auth_otp import is_valid_otp, otp_encrypt_api_key
@@ -30,8 +30,6 @@ from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
 from zerver.lib.validator import validate_login_email
 from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email, Realm, \
     get_realm
-from zerver.views.registration import create_preregistration_user, get_realm_from_request, \
-    redirect_and_log_into_subdomain, redirect_to_deactivation_notice
 from zerver.signals import email_on_new_login
 from zproject.backends import password_auth_enabled, dev_auth_enabled, \
     github_auth_enabled, google_auth_enabled, ldap_auth_enabled, \
@@ -45,6 +43,13 @@ import logging
 import requests
 import time
 import ujson
+
+def create_preregistration_user(email, request, realm_creation=False,
+                                password_required=True):
+    # type: (Text, HttpRequest, bool, bool) -> HttpResponse
+    return PreregistrationUser.objects.create(email=email,
+                                              realm_creation=realm_creation,
+                                              password_required=password_required)
 
 def maybe_send_to_registration(request, email, full_name='', password_required=True):
     # type: (HttpRequest, Text, Text, bool) -> HttpResponse
@@ -460,6 +465,28 @@ def log_into_subdomain(request):
                                          full_name, invalid_subdomain=invalid_subdomain,
                                          is_signup=is_signup)
 
+def redirect_and_log_into_subdomain(realm, full_name, email_address,
+                                    is_signup=False):
+    # type: (Realm, Text, Text, bool) -> HttpResponse
+    subdomain_login_uri = ''.join([
+        realm.uri,
+        reverse('zerver.views.auth.log_into_subdomain')
+    ])
+
+    domain = settings.EXTERNAL_HOST.split(':')[0]
+    response = redirect(subdomain_login_uri)
+
+    data = {'name': full_name, 'email': email_address, 'subdomain': realm.subdomain,
+            'is_signup': is_signup}
+    # Creating a singed cookie so that it cannot be tampered with.
+    # Cookie and the signature expire in 15 seconds.
+    response.set_signed_cookie('subdomain.signature',
+                               ujson.dumps(data),
+                               expires=15,
+                               domain=domain,
+                               salt='zerver.views.auth')
+    return response
+
 def get_dev_users(realm=None, extra_users_count=10):
     # type: (Optional[Realm], int) -> List[UserProfile]
     # Development environments usually have only a few users, but
@@ -485,6 +512,19 @@ def redirect_to_misconfigured_ldap_notice(error_type):
         raise AssertionError("Invalid error type")
 
     return HttpResponseRedirect(url)
+
+def show_deactivation_notice(request):
+    # type: (HttpRequest) -> HttpResponse
+    realm = get_realm_from_request(request)
+    if realm and realm.deactivated:
+        return render(request, "zerver/deactivated.html",
+                      context={"deactivated_domain_name": realm.name})
+
+    return HttpResponseRedirect(reverse('zerver.views.auth.login_page'))
+
+def redirect_to_deactivation_notice():
+    # type: () -> HttpResponse
+    return HttpResponseRedirect(reverse('zerver.views.auth.show_deactivation_notice'))
 
 def login_page(request, **kwargs):
     # type: (HttpRequest, **Any) -> HttpResponse

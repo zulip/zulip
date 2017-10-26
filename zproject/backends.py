@@ -193,8 +193,8 @@ class SocialAuthMixin(ZulipAuthMixin):
         # These functions need to be imported here to avoid cyclic
         # dependency.
         from zerver.views.auth import (login_or_register_remote_user,
-                                       redirect_to_subdomain_login_url)
-        from zerver.views.registration import redirect_and_log_into_subdomain
+                                       redirect_to_subdomain_login_url,
+                                       redirect_and_log_into_subdomain)
 
         return_data = kwargs.get('return_data', {})
 

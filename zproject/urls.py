@@ -360,8 +360,8 @@ i18n_urls = [
     url(r'^accounts/password/done/$', password_reset_complete,
         {'template_name': 'zerver/reset_done.html'}),
     url(r'^accounts/deactivated/',
-        zerver.views.registration.show_deactivation_notice,
-        name='zerver.views.registration.show_deactivation_notice'),
+        zerver.views.auth.show_deactivation_notice,
+        name='zerver.views.auth.show_deactivation_notice'),
 
     # Avatar
     url(r'^avatar/(?P<email_or_id>[\S]+)?/(?P<medium>[\S]+)?', zerver.views.users.avatar,
