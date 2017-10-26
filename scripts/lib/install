@@ -98,6 +98,16 @@ fi
 
 "$ZULIP_PATH"/scripts/lib/install-node
 
+# nginx-specific patch on an existing Ubuntu server
+if [ -e /etc/nginx/nginx.conf ]; then
+    # nginx already exists in the system !
+    # Copy your existing nginx configuration to a backup and then merge the one
+    # created by Zulip into it
+    cp /etc/nginx/nginx.conf /etc/nginx.conf.before-zulip-install
+    # be sure to merge to the right
+    meld /etc/nginx/nginx.conf "$ZULIP_PATH"/puppet/zulip/files/nginx/nginx.conf
+fi
+
 # puppet apply
 mkdir -p /etc/zulip
 (
@@ -160,6 +170,10 @@ if [ "$has_nginx" = 0 ]; then
         echo
         exit 1
     )
+    service nginx restart
+else
+    # be sure to merge to the right
+    meld "$ZULIP_PATH"/puppet/zulip/files/nginx/nginx.conf /etc/nginx/nginx.conf
     service nginx restart
 fi
 
