@@ -211,7 +211,7 @@
 }
 
 .new-style .tab-switcher.large .ind-tab {
-    width: 130px;
+    width: 100%;
 }
 
 .new-style .tab-switcher .ind-tab:not(.selected) {
