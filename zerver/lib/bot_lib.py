@@ -8,7 +8,7 @@ import re
 import importlib
 from zerver.lib.actions import internal_send_message
 from zerver.models import UserProfile, \
-    get_bot_state, set_bot_state, get_bot_state_size, is_key_in_bot_state
+    get_bot_state, set_bot_state, get_bot_state_size, is_key_in_bot_state, remove_bot_state
 from zerver.lib.integrations import EMBEDDED_BOTS
 
 from six.moves import configparser
@@ -66,6 +66,10 @@ class StateHandler(object):
                 raise StateHandlerError("Cannot set state. The value type is {}, but it "
                                         "should be str.".format(type(marshaled_value)))
             set_bot_state(self.user_profile, key, marshaled_value)
+
+    def remove(self, key):
+        # type: (Text) -> None
+        remove_bot_state(self.user_profile, key)
 
     def contains(self, key):
         # type: (Text) -> bool

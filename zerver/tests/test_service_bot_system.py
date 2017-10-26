@@ -193,6 +193,18 @@ class TestServiceBotStateHandler(ZulipTestCase):
         second_storage.put('another big entry', 'x' * (StateHandler.state_size_limit - 40))
         second_storage.put('normal entry', 'abcd')
 
+    def test_entry_removal(self):
+        # type: () -> None
+        storage = StateHandler(self.bot_profile)
+        storage.put('some key', 'some value')
+        storage.put('another key', 'some value')
+        self.assertTrue(storage.contains('some key'))
+        self.assertTrue(storage.contains('another key'))
+        storage.remove('some key')
+        self.assertFalse(storage.contains('some key'))
+        self.assertTrue(storage.contains('another key'))
+        self.assertRaises(BotUserStateData.DoesNotExist, lambda: storage.remove('some key'))
+
 class TestServiceBotEventTriggers(ZulipTestCase):
 
     def setUp(self):
