@@ -96,6 +96,8 @@ from zerver.views.events_register import _default_all_public_streams, _default_n
 from zerver.tornado.event_queue import (
     allocate_client_descriptor,
     clear_client_event_queues_for_testing,
+    get_client_info_for_message_event,
+    process_message_event,
     EventQueue,
 )
 from zerver.tornado.views import get_events_backend
@@ -1955,6 +1957,210 @@ class EventQueueTest(TestCase):
                           {'id': 1,
                            'type': 'unknown',
                            "timestamp": "1"}])
+
+class ClientDescriptorsTest(ZulipTestCase):
+    def test_get_client_info_for_all_public_streams(self):
+        # type: () -> None
+        hamlet = self.example_user('hamlet')
+        realm = hamlet.realm
+
+        clear_client_event_queues_for_testing()
+
+        queue_data = dict(
+            all_public_streams=True,
+            apply_markdown=True,
+            client_type_name='website',
+            event_types=['message'],
+            last_connection_time=time.time(),
+            queue_timeout=0,
+            realm_id=realm.id,
+            user_profile_id=hamlet.id,
+        )
+
+        client = allocate_client_descriptor(queue_data)
+
+        message_event = dict(
+            realm_id=realm.id,
+            stream_name='whatever',
+        )
+
+        client_info = get_client_info_for_message_event(
+            message_event,
+            users=[],
+        )
+
+        self.assertEqual(len(client_info), 1)
+
+        dct = client_info[client.event_queue.id]
+        self.assertEqual(dct['client'].apply_markdown, True)
+        self.assertEqual(dct['client'].user_profile_id, hamlet.id)
+        self.assertEqual(dct['flags'], None)
+        self.assertEqual(dct['is_sender'], False)
+
+        message_event = dict(
+            realm_id=realm.id,
+            stream_name='whatever',
+            sender_queue_id=client.event_queue.id,
+        )
+
+        client_info = get_client_info_for_message_event(
+            message_event,
+            users=[],
+        )
+        dct = client_info[client.event_queue.id]
+        self.assertEqual(dct['is_sender'], True)
+
+    def test_get_client_info_for_normal_users(self):
+        # type: () -> None
+        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user('cordelia')
+        realm = hamlet.realm
+
+        clear_client_event_queues_for_testing()
+
+        queue_data = dict(
+            all_public_streams=False,
+            apply_markdown=True,
+            client_type_name='website',
+            event_types=['message'],
+            last_connection_time=time.time(),
+            queue_timeout=0,
+            realm_id=realm.id,
+            user_profile_id=hamlet.id,
+        )
+
+        client = allocate_client_descriptor(queue_data)
+
+        message_event = dict(
+            realm_id=realm.id,
+            stream_name='whatever',
+        )
+
+        client_info = get_client_info_for_message_event(
+            message_event,
+            users=[
+                dict(id=cordelia.id),
+            ],
+        )
+
+        self.assertEqual(len(client_info), 0)
+
+        client_info = get_client_info_for_message_event(
+            message_event,
+            users=[
+                dict(id=cordelia.id),
+                dict(id=hamlet.id, flags=['mentioned']),
+            ],
+        )
+        self.assertEqual(len(client_info), 1)
+
+        dct = client_info[client.event_queue.id]
+        self.assertEqual(dct['client'].apply_markdown, True)
+        self.assertEqual(dct['client'].user_profile_id, hamlet.id)
+        self.assertEqual(dct['flags'], ['mentioned'])
+        self.assertEqual(dct['is_sender'], False)
+
+    def test_process_message_event_with_mocked_client_info(self):
+        # type: () -> None
+        hamlet = self.example_user("hamlet")
+
+        class MockClient(object):
+            def __init__(self, user_profile_id, apply_markdown):
+                # type: (int, bool) -> None
+                self.user_profile_id = user_profile_id
+                self.apply_markdown = apply_markdown
+                self.client_type_name = 'whatever'
+                self.events = []  # type: List[Dict[str, Any]]
+
+            def accepts_messages(self):
+                # type: () -> bool
+                return True
+
+            def accepts_event(self, event):
+                # type: (Dict[str, Any]) -> bool
+                assert(event['type'] == 'message')
+                return True
+
+            def add_event(self, event):
+                # type: (Dict[str, Any]) -> None
+                self.events.append(event)
+
+        client1 = MockClient(
+            user_profile_id=hamlet.id,
+            apply_markdown=True,
+        )
+
+        client2 = MockClient(
+            user_profile_id=hamlet.id,
+            apply_markdown=False,
+        )
+
+        client_info = {
+            'client:1': dict(
+                client=client1,
+                flags=['starred'],
+            ),
+            'client:2': dict(
+                client=client2,
+                flags=['has_alert_word'],
+            ),
+        }
+
+        sender_id = hamlet.id
+
+        message_event = dict(
+            message_dict_markdown=dict(
+                id=999,
+                content='<b>hello</b>',
+                sender_id=sender_id,
+                type='stream',
+                client='website',
+            ),
+            message_dict_no_markdown=dict(
+                id=999,
+                content='**hello**',
+                sender_id=sender_id,
+                type='stream',
+                client='website',
+            ),
+        )
+
+        # Setting users to `[]` bypasses code we don't care about
+        # for this test--we assume client_info is correct in our mocks,
+        # and we are interested in how messages are put on event queue.
+        users = []  # type: List[Any]
+
+        with mock.patch('zerver.tornado.event_queue.get_client_info_for_message_event',
+                        return_value=client_info):
+            process_message_event(message_event, users)
+
+        self.assertEqual(client1.events, [
+            dict(
+                type='message',
+                message=dict(
+                    type='stream',
+                    sender_id=sender_id,
+                    id=999,
+                    content='<b>hello</b>',
+                    client='website',
+                ),
+                flags=['starred'],
+            ),
+        ])
+
+        self.assertEqual(client2.events, [
+            dict(
+                type='message',
+                message=dict(
+                    type='stream',
+                    sender_id=sender_id,
+                    id=999,
+                    content='**hello**',
+                    client='website',
+                ),
+                flags=['has_alert_word'],
+            ),
+        ])
 
 class FetchQueriesTest(ZulipTestCase):
     def test_queries(self):
