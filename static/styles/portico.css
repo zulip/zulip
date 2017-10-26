@@ -696,6 +696,21 @@ input.text-error {
     margin-left: -3px;
 }
 
+.portico-header .dropdown-pill .realm-name i.fa {
+    position: relative;
+    top: -2px;
+
+    font-size: 0.6em;
+    margin-left: 5px;
+
+    opacity: 0.5;
+    transition: all 0.2s ease;
+}
+
+.portico-header .dropdown-pill:hover .realm-name i.fa {
+    opacity: 1;
+}
+
 .portico-header .dropdown-pill .header-realm-icon {
     width: 26px;
     height: 26px;
