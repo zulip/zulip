@@ -393,7 +393,7 @@ class MessageSenderWorker(QueueProcessingWorker):
         self.redis_client.hmset(redis_key, {'status': 'complete',
                                             'response': resp_content})
 
-        queue_json_publish(server_meta['return_queue'], result, lambda e: None)
+        queue_json_publish(server_meta['return_queue'], result, lambda e: None, call_consume_in_tests=True)
 
 @assign_queue('digest_emails')
 class DigestWorker(QueueProcessingWorker):
