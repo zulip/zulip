@@ -147,11 +147,11 @@ For a quick guide, read on.
 Select a name for your webhook and use it consistently. The examples below are
 for a webhook named 'MyWebHook'.
 
-* `static/images/integrations/logos/mywebhook.png`: An image to represent
-  your integration in the user interface. Generally this Should be the logo of the
+* `static/images/integrations/logos/mywebhook.svg`: An image to represent
+  your integration in the user interface. Generally this should be the logo of the
   platform/server/product you are integrating. See [Documenting your
   integration](#documenting-your-integration) for details.
-* `static/images/integrations/mywebbook/001.png`: A screen capture of your
+* `static/images/integrations/mywebbook/001.svg`: A screen capture of your
   integration for use in the user interface. You can add as many images as needed
   to effectively document your webhook integration. See [Documenting your
   integration](#documenting-your-integration) for details.
