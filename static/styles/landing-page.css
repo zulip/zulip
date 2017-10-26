@@ -510,6 +510,7 @@ nav ul li.active::after {
 .portico-landing.features-app section.messages .image {
     width: calc(100% - 500px - 100px);
     margin: 50px 0px 50px 50px;
+    max-width: 500px;
 }
 
 .portico-landing.features-app section.messages .features {
@@ -2705,6 +2706,21 @@ nav ul li.active::after {
 
     .portico-landing.features-app section .headliner .feature-box {
         width: calc(100% - 200px - 20px);
+    }
+
+    .portico-landing.features-app section.messages {
+        display: block;
+        text-align: center;
+    }
+
+    .portico-landing.features-app section.messages > * {
+        display: inline-block;
+        text-align: left;
+    }
+
+    .portico-landing.features-app section.messages .image {
+        width: 100%;
+        margin: 0;
     }
 
     .portico-landing.plans .compare .padded-content {
