@@ -136,6 +136,9 @@ class AddNewUserHistoryTest(ZulipTestCase):
         streams = Stream.objects.filter(id__in=[sub.recipient.type_id for sub in subs])
         self.send_message(self.example_email('hamlet'), streams[0].name, Recipient.STREAM, "test")
         add_new_user_history(user_profile, streams)
+        last_message = UserMessage.objects.filter(user_profile=user_profile).last()
+        self.assertFalse(last_message.flags.read.is_set)
+
 
 class PasswordResetTest(ZulipTestCase):
     """

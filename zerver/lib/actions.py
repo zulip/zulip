@@ -166,7 +166,7 @@ def private_stream_user_ids(stream_id):
 
     return {sub['user_profile_id'] for sub in subscriptions.values('user_profile_id')}
 
-def bot_owner_user_ids(user_profile):
+def bot_owner_userids(user_profile):
     # type: (UserProfile) -> Set[int]
     is_private_bot = (
         user_profile.default_sending_stream and user_profile.default_sending_stream.invite_only or
@@ -282,13 +282,13 @@ def add_new_user_history(user_profile, streams):
     """Give you the last 1000 messages on your public streams, so you have
     something to look at in your home view once you finish the
     tutorial."""
-    one_week_ago = timezone_now() - datetime.timedelta(weeks=1)
+    # one_week_ago = timezone_now() - datetime.timedelta(weeks=1)
     recipients = Recipient.objects.filter(type=Recipient.STREAM,
                                           type_id__in=[stream.id for stream in streams
                                                        if not stream.invite_only])
-    recent_messages = Message.objects.filter(recipient_id__in=recipients,
-                                             pub_date__gt=one_week_ago).order_by("-id")
-    message_ids_to_use = list(reversed(recent_messages.values_list('id', flat=True)[0:1000]))
+    recent_messages = Message.objects.filter(recipient_id__in=recipients).order_by("-id")
+    last_kmessages = recent_messages.values_list('id', flat=True)[0:1000]
+    message_ids_to_use = list(reversed(last_kmessages))
     if len(message_ids_to_use) == 0:
         return
 
@@ -300,8 +300,9 @@ def add_new_user_history(user_profile, streams):
                                  flags=UserMessage.flags.read)
                      for message_id in message_ids_to_use
                      if message_id not in already_ids]
-
     UserMessage.objects.bulk_create(ums_to_create)
+    last_80 = [ms.message_id for ms in ums_to_create[-80:]]
+    UserMessage.objects.filter(message_id__in=last_80, user_profile=user_profile).update(flags=F('flags').bitand(~UserMessage.flags.read))
 
 # Does the processing for a new user account:
 # * Subscribes to default/invitation streams
@@ -425,7 +426,7 @@ def notify_created_bot(user_profile):
         bot['owner'] = user_profile.bot_owner.email
 
     event = dict(type="realm_bot", op="add", bot=bot)
-    send_event(event, bot_owner_user_ids(user_profile))
+    send_event(event, bot_owner_userids(user_profile))
 
 def do_create_user(email, password, realm, full_name, short_name,
                    active=True, is_realm_admin=False, bot_type=None, bot_owner=None, tos_version=None,
@@ -618,7 +619,7 @@ def do_deactivate_user(user_profile, acting_user=None, _cascade=True):
                      bot=dict(email=user_profile.email,
                               user_id=user_profile.id,
                               full_name=user_profile.full_name))
-        send_event(event, bot_owner_user_ids(user_profile))
+        send_event(event, bot_owner_userids(user_profile))
 
     if _cascade:
         bot_profiles = UserProfile.objects.filter(is_bot=True, is_active=True,
@@ -1106,7 +1107,7 @@ def do_send_messages(messages_maybe_none):
         sender = message['message'].sender
         message_type = message_dict_no_markdown['type']
 
-        presence_idle_user_ids = get_active_presence_idle_user_ids(
+        presence_idle_userids = get_active_presence_idle_userids(
             realm=sender.realm,
             sender_id=sender.id,
             message_type=message_type,
@@ -1119,7 +1120,7 @@ def do_send_messages(messages_maybe_none):
             message=message['message'].id,
             message_dict_markdown=message_dict_markdown,
             message_dict_no_markdown=message_dict_no_markdown,
-            presence_idle_user_ids=presence_idle_user_ids,
+            presence_idle_userids=presence_idle_userids,
         )
 
         users = [
@@ -2399,7 +2400,7 @@ def do_change_full_name(user_profile, full_name, acting_user):
                active_user_ids(user_profile.realm_id))
     if user_profile.is_bot:
         send_event(dict(type='realm_bot', op='update', bot=payload),
-                   bot_owner_user_ids(user_profile))
+                   bot_owner_userids(user_profile))
 
 def do_change_bot_owner(user_profile, bot_owner, acting_user):
     # type: (UserProfile, UserProfile, UserProfile) -> None
@@ -2415,7 +2416,7 @@ def do_change_bot_owner(user_profile, bot_owner, acting_user):
                              user_id=user_profile.id,
                              owner_id=user_profile.bot_owner.id,
                              )),
-               bot_owner_user_ids(user_profile))
+               bot_owner_userids(user_profile))
 
 def do_change_tos_version(user_profile, tos_version):
     # type: (UserProfile, Text) -> None
@@ -2442,7 +2443,7 @@ def do_regenerate_api_key(user_profile, acting_user):
                                  user_id=user_profile.id,
                                  api_key=user_profile.api_key,
                                  )),
-                   bot_owner_user_ids(user_profile))
+                   bot_owner_userids(user_profile))
 
 def do_change_avatar_fields(user_profile, avatar_source):
     # type: (UserProfile, Text) -> None
@@ -2462,7 +2463,7 @@ def do_change_avatar_fields(user_profile, avatar_source):
                                  user_id=user_profile.id,
                                  avatar_url=avatar_url(user_profile),
                                  )),
-                   bot_owner_user_ids(user_profile))
+                   bot_owner_userids(user_profile))
 
     payload = dict(
         email=user_profile.email,
@@ -2528,7 +2529,7 @@ def do_change_default_sending_stream(user_profile, stream, log=True):
                                  user_id=user_profile.id,
                                  default_sending_stream=stream_name,
                                  )),
-                   bot_owner_user_ids(user_profile))
+                   bot_owner_userids(user_profile))
 
 def do_change_default_events_register_stream(user_profile, stream, log=True):
     # type: (UserProfile, Optional[Stream], bool) -> None
@@ -2551,7 +2552,7 @@ def do_change_default_events_register_stream(user_profile, stream, log=True):
                                  user_id=user_profile.id,
                                  default_events_register_stream=stream_name,
                                  )),
-                   bot_owner_user_ids(user_profile))
+                   bot_owner_userids(user_profile))
 
 def do_change_default_all_public_streams(user_profile, value, log=True):
     # type: (UserProfile, bool, bool) -> None
@@ -2568,7 +2569,7 @@ def do_change_default_all_public_streams(user_profile, value, log=True):
                                  user_id=user_profile.id,
                                  default_all_public_streams=user_profile.default_all_public_streams,
                                  )),
-                   bot_owner_user_ids(user_profile))
+                   bot_owner_userids(user_profile))
 
 def do_change_is_admin(user_profile, value, permission='administer'):
     # type: (UserProfile, bool, str) -> None
@@ -2998,7 +2999,8 @@ def do_mark_all_as_read(user_profile):
     ).extra(
         where=[UserMessage.where_unread()]
     )
-
+    msg_ids = msgs.order_by('-id').values_list('message_id')[80:]
+    msgs = UserMessage.objects.filter(message_id__in=msg_ids, user_profile=user_profile)
     count = msgs.update(
         flags=F('flags').bitor(UserMessage.flags.read)
     )
@@ -3323,7 +3325,7 @@ def do_update_message(user_profile, message, subject, propagate_mode,
         event['stream_push_user_ids'] = list(info['stream_push_user_ids'])
         event['prior_mention_user_ids'] = list(prior_mention_user_ids)
         event['mention_user_ids'] = list(mention_user_ids)
-        event['presence_idle_user_ids'] = filter_presence_idle_user_ids(info['active_user_ids'])
+        event['presence_idle_userids'] = filter_presence_idle_userids(info['active_user_ids'])
 
     if subject is not None:
         orig_subject = message.topic_name()
@@ -3592,7 +3594,7 @@ def gather_subscriptions(user_profile):
 
     return (subscribed, unsubscribed)
 
-def get_active_presence_idle_user_ids(realm, sender_id, message_type, active_user_ids, user_flags):
+def get_active_presence_idle_userids(realm, sender_id, message_type, active_user_ids, user_flags):
     # type: (Realm, int, str, Set[int], Dict[int, List[str]]) -> List[int]
     '''
     Given a list of active_user_ids, we build up a subset
@@ -3617,9 +3619,9 @@ def get_active_presence_idle_user_ids(realm, sender_id, message_type, active_use
         if mentioned or private_message:
             user_ids.add(user_id)
 
-    return filter_presence_idle_user_ids(user_ids)
+    return filter_presence_idle_userids(user_ids)
 
-def filter_presence_idle_user_ids(user_ids):
+def filter_presence_idle_userids(user_ids):
     # type: (Set[int]) -> List[int]
     if not user_ids:
         return []
