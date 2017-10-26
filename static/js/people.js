@@ -537,7 +537,7 @@ exports.is_valid_email_for_compose = function (email) {
     return active_user_dict.has(person.user_id);
 };
 
-exports.realm_get = function realm_get(email) {
+exports.get_active_user_for_email = function (email) {
     var person = people.get_by_email(email);
     if (!person) {
         return undefined;
@@ -667,7 +667,7 @@ exports.filter_people_by_search_terms = function (users, search_terms) {
         return filtered_users;
 };
 
-exports.get_by_name = function realm_get(name) {
+exports.get_by_name = function (name) {
     return people_by_name_dict.get(name);
 };
 

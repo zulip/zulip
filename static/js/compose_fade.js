@@ -117,7 +117,7 @@ exports.would_receive_message = function (email) {
     }
 
     if (focused_recipient.type === 'stream') {
-        var user = people.realm_get(email);
+        var user = people.get_active_user_for_email(email);
         var sub = stream_data.get_sub(focused_recipient.stream);
         if (!sub) {
             // If the stream isn't valid, there is no risk of a mix
