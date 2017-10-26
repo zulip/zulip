@@ -545,19 +545,24 @@ exports.get_active_user_for_email = function (email) {
     return active_user_dict.get(person.user_id);
 };
 
-exports.realm_user_is_active_human_or_bot = function (id) {
-    if (active_user_dict.get(id) !== undefined) {
+exports.is_active_user_for_popover = function (user_id) {
+    // For popover menus, we include cross-realm bots as active
+    // users.
+
+    if (cross_realm_dict.get(user_id)) {
         return true;
     }
-    // TODO: Technically, we should probably treat deactivated bots
-    // like deactivated users here.  But we don't have the data to do
-    // that.  See #7153 for notes on fixing this.
-    var person = exports.get_person_from_user_id(id);
-    if (person === undefined) {
-        blueslip.error("Unexpectedly invalid user ID in user popover query " + id);
-        return false;
+    if (active_user_dict.has(user_id)) {
+        return true;
     }
-    return !!person.is_bot;
+
+    // TODO: We can report errors here once we start loading
+    //       deactivated users at page-load time. For now just warn.
+    if (!people_by_user_id_dict.has(user_id)) {
+        blueslip.warn("Unexpectedly invalid user_id in user popover query: " + user_id);
+    }
+
+    return false;
 };
 
 exports.get_all_persons = function () {

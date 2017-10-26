@@ -100,7 +100,7 @@ function show_user_info_popover(element, user, message) {
             sent_by_uri: narrow.by_sender_uri(user.email),
             narrowed: narrow_state.active(),
             private_message_class: "respond_personal_button",
-            is_active: people.realm_user_is_active_human_or_bot(user.user_id),
+            is_active: people.is_active_user_for_popover(user.user_id),
         };
 
         var ypos = elt.offset().top;
@@ -448,7 +448,7 @@ exports.register_click_handlers = function () {
             pm_with_uri: narrow.pm_with_uri(user_email),
             sent_by_uri: narrow.by_sender_uri(user_email),
             private_message_class: "compose_private_message",
-            is_active: people.realm_user_is_active_human_or_bot(user_id),
+            is_active: people.is_active_user_for_popover(user_id),
         };
 
         target.popover({

@@ -66,7 +66,7 @@ initialize();
 
     var active_user_ids = people.get_active_user_ids();
     assert.deepEqual(active_user_ids, [isaac.user_id]);
-    assert.equal(people.realm_user_is_active_human_or_bot(isaac.user_id), true);
+    assert.equal(people.is_active_user_for_popover(isaac.user_id), true);
     assert(people.is_valid_email_for_compose(isaac.email));
 
     // Now deactivate isaac
@@ -74,7 +74,7 @@ initialize();
     person = people.get_active_user_for_email(email);
     assert(!person);
     assert.equal(people.get_realm_count(), 0);
-    assert.equal(people.realm_user_is_active_human_or_bot(isaac.user_id), false);
+    assert.equal(people.is_active_user_for_popover(isaac.user_id), false);
     assert.equal(people.is_valid_email_for_compose(isaac.email), false);
 
     var bot_botson = {
@@ -83,11 +83,17 @@ initialize();
         full_name: 'Bot Botson',
         is_bot: true,
     };
-    people.add(bot_botson);
-    assert.equal(people.realm_user_is_active_human_or_bot(bot_botson.user_id), true);
+    people.add_in_realm(bot_botson);
+    assert.equal(people.is_active_user_for_popover(bot_botson.user_id), true);
 
-    // Invalid user ID just returns false
-    assert.equal(people.realm_user_is_active_human_or_bot(123412), false);
+    // Invalid user ID returns false and warns.
+    var message;
+    blueslip.warn = function (msg) {
+        message = msg;
+    };
+
+    assert.equal(people.is_active_user_for_popover(123412), false);
+    assert.equal(message, 'Unexpectedly invalid user_id in user popover query: 123412');
 
     // We can still get their info for non-realm needs.
     person = people.get_by_email(email);
@@ -175,6 +181,8 @@ initialize();
     person = people.get_person_from_user_id(42);
     assert.equal(person.user_id, 42);
 }());
+
+initialize();
 
 (function test_get_rest_of_realm() {
     var alice1 = {
@@ -655,6 +663,7 @@ initialize();
     people.initialize();
 
     assert.equal(people.get_active_user_for_email('alice@example.com').full_name, 'Alice');
+    assert.equal(people.is_active_user_for_popover(17), true);
     assert(people.is_cross_realm_email('bot@example.com'));
     assert(people.is_valid_email_for_compose('bot@example.com'));
     assert(people.is_valid_email_for_compose('alice@example.com'));
