@@ -525,6 +525,18 @@ exports.small_avatar_url = function (message) {
     return url;
 };
 
+exports.is_valid_email_for_compose = function (email) {
+    if (people.is_cross_realm_email(email)) {
+        return true;
+    }
+
+    var person = people.get_by_email(email);
+    if (!person) {
+        return false;
+    }
+    return active_user_dict.has(person.user_id);
+};
+
 exports.realm_get = function realm_get(email) {
     var person = people.get_by_email(email);
     if (!person) {

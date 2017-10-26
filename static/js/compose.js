@@ -333,16 +333,7 @@ exports.update_email = function (user_id, new_email) {
 
 exports.get_invalid_recipient_emails = function () {
     var private_recipients = util.extract_pm_recipients(compose_state.recipient());
-    var invalid_recipients = [];
-    _.each(private_recipients, function (email) {
-        if (people.realm_get(email) !== undefined) {
-            return;
-        }
-        if (people.is_cross_realm_email(email)) {
-            return;
-        }
-        invalid_recipients.push(email);
-    });
+    var invalid_recipients = _.reject(private_recipients, people.is_valid_email_for_compose);
 
     return invalid_recipients;
 };

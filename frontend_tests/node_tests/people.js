@@ -67,6 +67,7 @@ initialize();
     var active_user_ids = people.get_active_user_ids();
     assert.deepEqual(active_user_ids, [isaac.user_id]);
     assert.equal(people.realm_user_is_active_human_or_bot(isaac.user_id), true);
+    assert(people.is_valid_email_for_compose(isaac.email));
 
     // Now deactivate isaac
     people.deactivate(isaac);
@@ -74,6 +75,7 @@ initialize();
     assert(!person);
     assert.equal(people.get_realm_count(), 0);
     assert.equal(people.realm_user_is_active_human_or_bot(isaac.user_id), false);
+    assert.equal(people.is_valid_email_for_compose(isaac.email), false);
 
     var bot_botson = {
         email: 'botson-bot@example.com',
@@ -654,6 +656,8 @@ initialize();
 
     assert.equal(people.realm_get('alice@example.com').full_name, 'Alice');
     assert(people.is_cross_realm_email('bot@example.com'));
+    assert(people.is_valid_email_for_compose('bot@example.com'));
+    assert(people.is_valid_email_for_compose('alice@example.com'));
     assert(people.is_my_user_id(42));
 
     assert.equal(global.page_params.realm_users, undefined);
