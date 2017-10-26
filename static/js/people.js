@@ -553,9 +553,8 @@ exports.get_realm_persons = function () {
     return realm_people_dict.values();
 };
 
-exports.get_realm_human_user_ids = function () {
-    // This returns user_ids for all non-bot users
-    // in the realm.
+exports.get_active_user_ids = function () {
+    // This includes active users and active bots.
     return realm_people_dict.keys();
 };
 

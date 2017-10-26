@@ -64,8 +64,8 @@ initialize();
     assert.equal(_.size(realm_persons), 1);
     assert.equal(realm_persons[0].full_name, 'Isaac Newton');
 
-    var human_user_ids = people.get_realm_human_user_ids();
-    assert.deepEqual(human_user_ids, [isaac.user_id]);
+    var active_user_ids = people.get_active_user_ids();
+    assert.deepEqual(active_user_ids, [isaac.user_id]);
     assert.equal(people.realm_user_is_active_human_or_bot(isaac.user_id), true);
 
     // Now deactivate isaac
