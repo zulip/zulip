@@ -20,14 +20,13 @@ import time
 import ujson
 
 @internal_notify_view(True)
-def notify(request):
-    # type: (HttpRequest) -> HttpResponse
+def notify(request: HttpRequest) -> HttpResponse:
     process_notification(ujson.loads(request.POST['data']))
     return json_success()
 
 @has_request_variables
-def cleanup_event_queue(request, user_profile, queue_id=REQ()):
-    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
+def cleanup_event_queue(request: HttpRequest, user_profile: UserProfile,
+                        queue_id: Text=REQ()) -> HttpResponse:
     client = get_client_descriptor(str(queue_id))
     if client is None:
         raise BadEventQueueIdError(queue_id)

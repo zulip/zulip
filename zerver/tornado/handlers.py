@@ -25,30 +25,26 @@ from zerver.tornado.descriptors import get_descriptor_by_handler_id
 from typing import Any, Callable, Dict, List, Optional
 
 current_handler_id = 0
-handlers = {}  # type: Dict[int, AsyncDjangoHandler]
+handlers = {}  # type: Dict[int, 'AsyncDjangoHandler']
 
-def get_handler_by_id(handler_id):
-    # type: (int) -> AsyncDjangoHandler
+def get_handler_by_id(handler_id: int) -> 'AsyncDjangoHandler':
     return handlers[handler_id]
 
-def allocate_handler_id(handler):
-    # type: (AsyncDjangoHandler) -> int
+def allocate_handler_id(handler: 'AsyncDjangoHandler') -> int:
     global current_handler_id
     handlers[current_handler_id] = handler
     handler.handler_id = current_handler_id
     current_handler_id += 1
     return handler.handler_id
 
-def clear_handler_by_id(handler_id):
-    # type: (int) -> None
+def clear_handler_by_id(handler_id: int) -> None:
     del handlers[handler_id]
 
-def handler_stats_string():
-    # type: () -> str
+def handler_stats_string() -> str:
     return "%s handlers, latest ID %s" % (len(handlers), current_handler_id)
 
-def finish_handler(handler_id, event_queue_id, contents, apply_markdown):
-    # type: (int, str, List[Dict[str, Any]], bool) -> None
+def finish_handler(handler_id: int, event_queue_id: str,
+                   contents: List[Dict[str, Any]], apply_markdown: bool) -> None:
     err_msg = "Got error finishing handler for queue %s" % (event_queue_id,)
     try:
         # We call async_request_restart here in case we are
@@ -80,8 +76,7 @@ def finish_handler(handler_id, event_queue_id, contents, apply_markdown):
 class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
     initLock = Lock()
 
-    def __init__(self, *args, **kwargs):
-        # type: (*Any, **Any) -> None
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super(AsyncDjangoHandler, self).__init__(*args, **kwargs)
 
         # Set up middleware if needed. We couldn't do this earlier, because
@@ -97,13 +92,11 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         # be cleared when the handler finishes its response
         allocate_handler_id(self)
 
-    def __repr__(self):
-        # type: () -> str
+    def __repr__(self) -> str:
         descriptor = get_descriptor_by_handler_id(self.handler_id)
         return "AsyncDjangoHandler<%s, %s>" % (self.handler_id, descriptor)
 
-    def load_middleware(self):
-        # type: () -> None
+    def load_middleware(self) -> None:
         """
         Populate middleware lists from settings.MIDDLEWARE. This is copied
         from Django. This uses settings.MIDDLEWARE setting with the old
@@ -149,8 +142,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         # as a flag for initialization being complete.
         self._middleware_chain = handler
 
-    def get(self, *args, **kwargs):
-        # type: (*Any, **Any) -> None
+    def get(self, *args: Any, **kwargs: Any) -> None:
         environ = WSGIContainer.environ(self.request)
         environ['PATH_INFO'] = urllib.parse.unquote(environ['PATH_INFO'])
         request = WSGIRequest(environ)
@@ -177,27 +169,22 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         self.write(response.content)
         self.finish()
 
-    def head(self, *args, **kwargs):
-        # type: (*Any, **Any) -> None
+    def head(self, *args: Any, **kwargs: Any) -> None:
         self.get(*args, **kwargs)
 
-    def post(self, *args, **kwargs):
-        # type: (*Any, **Any) -> None
+    def post(self, *args: Any, **kwargs: Any) -> None:
         self.get(*args, **kwargs)
 
-    def delete(self, *args, **kwargs):
-        # type: (*Any, **Any) -> None
+    def delete(self, *args: Any, **kwargs: Any) -> None:
         self.get(*args, **kwargs)
 
-    def on_connection_close(self):
-        # type: () -> None
+    def on_connection_close(self) -> None:
         client_descriptor = get_descriptor_by_handler_id(self.handler_id)
         if client_descriptor is not None:
             client_descriptor.disconnect_handler(client_closed=True)
 
     # Based on django.core.handlers.base: get_response
-    def get_response(self, request):
-        # type: (HttpRequest) -> HttpResponse
+    def get_response(self, request: HttpRequest) -> HttpResponse:
         "Returns an HttpResponse object for the given HttpRequest"
         try:
             try:
@@ -321,8 +308,8 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         return response
 
     ### Copied from get_response (above in this file)
-    def apply_response_middleware(self, request, response, resolver):
-        # type: (HttpRequest, HttpResponse, urlresolvers.RegexURLResolver) -> HttpResponse
+    def apply_response_middleware(self, request: HttpRequest, response: HttpResponse,
+                                  resolver: urlresolvers.RegexURLResolver) -> HttpResponse:
         try:
             # Apply response middleware, regardless of the response
             for middleware_method in self._response_middleware:
@@ -335,8 +322,8 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
 
         return response
 
-    def zulip_finish(self, response, request, apply_markdown):
-        # type: (Dict[str, Any], HttpRequest, bool) -> None
+    def zulip_finish(self, response: Dict[str, Any], request: HttpRequest,
+                     apply_markdown: bool) -> None:
         # Make sure that Markdown rendering really happened, if requested.
         # This is a security issue because it's where we escape HTML.
         # c.f. ticket #64

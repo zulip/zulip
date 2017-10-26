@@ -9,8 +9,7 @@ try:
     from django.middleware.csrf import _compare_salted_tokens
 except ImportError:
     # This function was added in Django 1.10.
-    def _compare_salted_tokens(token1, token2):
-        # type: (str, str) -> bool
+    def _compare_salted_tokens(token1: str, token2: str) -> bool:
         return token1 == token2
 
 import sockjs.tornado
@@ -34,8 +33,7 @@ from zerver.tornado.exceptions import BadEventQueueIdError
 
 logger = logging.getLogger('zulip.socket')
 
-def get_user_profile(session_id):
-    # type: (Optional[Text]) -> Optional[UserProfile]
+def get_user_profile(session_id: Optional[Text]) -> Optional[UserProfile]:
     if session_id is None:
         return None
 
@@ -50,14 +48,12 @@ def get_user_profile(session_id):
     except (UserProfile.DoesNotExist, KeyError):
         return None
 
-connections = dict()  # type: Dict[Union[int, str], SocketConnection]
+connections = dict()  # type: Dict[Union[int, str], 'SocketConnection']
 
-def get_connection(id):
-    # type: (Union[int, str]) -> Optional[SocketConnection]
+def get_connection(id: Union[int, str]) -> Optional['SocketConnection']:
     return connections.get(id)
 
-def register_connection(id, conn):
-    # type: (Union[int, str], SocketConnection) -> None
+def register_connection(id: Union[int, str], conn: 'SocketConnection') -> None:
     # Kill any old connections if they exist
     if id in connections:
         connections[id].close()
@@ -65,28 +61,24 @@ def register_connection(id, conn):
     conn.client_id = id
     connections[conn.client_id] = conn
 
-def deregister_connection(conn):
-    # type: (SocketConnection) -> None
+def deregister_connection(conn: 'SocketConnection') -> None:
     assert conn.client_id is not None
     del connections[conn.client_id]
 
 redis_client = get_redis_client()
 
-def req_redis_key(req_id):
-    # type: (Text) -> Text
+def req_redis_key(req_id: Text) -> Text:
     return u'socket_req_status:%s' % (req_id,)
 
 class CloseErrorInfo(object):
-    def __init__(self, status_code, err_msg):
-        # type: (int, str) -> None
+    def __init__(self, status_code: int, err_msg: str) -> None:
         self.status_code = status_code
         self.err_msg = err_msg
 
 class SocketConnection(sockjs.tornado.SockJSConnection):
     client_id = None  # type: Optional[Union[int, str]]
 
-    def on_open(self, info):
-        # type: (ConnectionInfo) -> None
+    def on_open(self, info: ConnectionInfo) -> None:
         log_data = dict(extra='[transport=%s]' % (self.session.transport_name,))
         record_request_start_data(log_data)
 
@@ -108,8 +100,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
             ioloop.add_callback(self.close)
             return
 
-        def auth_timeout():
-            # type: () -> None
+        def auth_timeout() -> None:
             self.close_info = CloseErrorInfo(408, "Timeout while waiting for authentication")
             self.close()
 
@@ -117,8 +108,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
         write_log_line(log_data, path='/socket/open', method='SOCKET',
                        remote_ip=info.ip, email='unknown', client_name='?')
 
-    def authenticate_client(self, msg):
-        # type: (Dict[str, Any]) -> None
+    def authenticate_client(self, msg: Dict[str, Any]) -> None:
         if self.authenticated:
             self.session.send_message({'req_id': msg['req_id'], 'type': 'response',
                                        'response': {'result': 'error',
@@ -173,8 +163,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
         ioloop = tornado.ioloop.IOLoop.instance()
         ioloop.remove_timeout(self.timeout_handle)
 
-    def on_message(self, msg_raw):
-        # type: (str) -> None
+    def on_message(self, msg_raw: str) -> None:
         log_data = dict(extra='[transport=%s' % (self.session.transport_name,))
         record_request_start_data(log_data)
         msg = ujson.loads(msg_raw)
@@ -233,8 +222,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
                                                  request_environ=dict(REMOTE_ADDR=self.session.conn_info.ip))),
                            fake_message_sender)
 
-    def on_close(self):
-        # type: () -> None
+    def on_close(self) -> None:
         log_data = dict(extra='[transport=%s]' % (self.session.transport_name,))
         record_request_start_data(log_data)
         if self.close_info is not None:
@@ -252,8 +240,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
 
         self.did_close = True
 
-def fake_message_sender(event):
-    # type: (Dict[str, Any]) -> None
+def fake_message_sender(event: Dict[str, Any]) -> None:
     """This function is used only for Casper and backend tests, where
     rabbitmq is disabled"""
     log_data = dict()  # type: Dict[str, Any]
@@ -280,8 +267,7 @@ def fake_message_sender(event):
               'server_meta': server_meta}
     respond_send_message(result)
 
-def respond_send_message(data):
-    # type: (Mapping[str, Any]) -> None
+def respond_send_message(data: Mapping[str, Any]) -> None:
     log_data = data['server_meta']['log_data']
     record_request_restart_data(log_data)
 
@@ -314,6 +300,5 @@ sockjs_router = sockjs.tornado.SockJSRouter(SocketConnection, "/sockjs",
                                             {'sockjs_url': 'https://%s/static/third/sockjs/sockjs-0.3.4.js' % (
                                                 settings.EXTERNAL_HOST,),
                                              'disabled_transports': ['eventsource', 'htmlfile']})
-def get_sockjs_router():
-    # type: () -> sockjs.tornado.SockJSRouter
+def get_sockjs_router() -> sockjs.tornado.SockJSRouter:
     return sockjs_router

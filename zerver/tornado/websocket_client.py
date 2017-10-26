@@ -40,8 +40,7 @@ class WebsocketClient(object):
         self.scheme_dict = {'http': 'ws', 'https': 'wss'}
         self.ws = None  # type: Optional[WebSocketClientConnection]
 
-    def _login(self):
-        # type: () -> Dict[str,str]
+    def _login(self) -> Dict[str, str]:
 
         # Ideally, we'd migrate this to use API auth instead of
         # stealing cookies, but this works for now.
@@ -57,14 +56,13 @@ class WebsocketClient(object):
             settings.SESSION_COOKIE_NAME: session.session_key,
             settings.CSRF_COOKIE_NAME: _get_new_csrf_token()}
 
-    def _get_cookie_header(self, cookies):
-        # type: (Dict[Any, Any]) -> str
+    def _get_cookie_header(self, cookies: Dict[Any, Any]) -> str:
         return ';'.join(
             ["{}={}".format(name, value) for name, value in cookies.items()])
 
     @gen.coroutine
-    def _websocket_auth(self, queue_events_data, cookies):
-        # type: (Dict[str, Dict[str, str]], SimpleCookie) -> Generator[str, str, None]
+    def _websocket_auth(self, queue_events_data: Dict[str, Dict[str, str]],
+                        cookies: SimpleCookie) -> Generator[str, str, None]:
         message = {
             "req_id": self._get_request_id(),
             "type": "auth",
@@ -80,15 +78,13 @@ class WebsocketClient(object):
         response_message = yield self.ws.read_message()
         raise gen.Return([response_ack, response_message])
 
-    def _get_queue_events(self, cookies_header):
-        # type: (str) -> Dict[str, str]
+    def _get_queue_events(self, cookies_header: str) -> Dict[str, str]:
         url = urljoin(self.parsed_host_url.geturl(), '/json/events?dont_block=true')
         response = requests.get(url, headers={'Cookie': cookies_header}, verify=self.validate_ssl)
         return response.json()
 
     @gen.engine
-    def connect(self):
-        # type: () -> Generator[str, WebSocketClientConnection, None]
+    def connect(self) -> Generator[str, WebSocketClientConnection, None]:
         try:
             request = HTTPRequest(url=self._get_websocket_url(), validate_cert=self.validate_ssl)
             request.headers.add('Cookie', self.cookie_str)
@@ -102,8 +98,9 @@ class WebsocketClient(object):
         IOLoop.instance().stop()
 
     @gen.coroutine
-    def send_message(self, client, type, subject, stream, private_message_recepient, content=""):
-        # type: (str, str, str, str, str, str) -> Generator[str, WebSocketClientConnection, None]
+    def send_message(self, client: str, type: str, subject: str, stream: str,
+                     private_message_recepient: str,
+                     content: str="") -> Generator[str, WebSocketClientConnection, None]:
         user_message = {
             "req_id": self._get_request_id(),
             "type": "request",
@@ -126,17 +123,14 @@ class WebsocketClient(object):
         response_message = yield self.ws.read_message()
         raise gen.Return([response_ack, response_message])
 
-    def run(self):
-        # type: () -> None
+    def run(self) -> None:
         self.ioloop_instance.add_callback(self.connect)
         self.ioloop_instance.start()
 
-    def _get_websocket_url(self):
-        # type: () -> str
+    def _get_websocket_url(self) -> str:
         return '{}://{}{}'.format(self.scheme_dict[self.parsed_host_url.scheme],
                                   self.parsed_host_url.netloc, self.sockjs_url)
 
-    def _get_request_id(self):
-        # type: () -> Iterable[str]
+    def _get_request_id(self) -> Iterable[str]:
         self.request_id_number += 1
         return ':'.join((self.events_data['queue_id'], str(self.request_id_number)))
