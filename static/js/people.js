@@ -5,7 +5,7 @@ var exports = {};
 var people_dict;
 var people_by_name_dict;
 var people_by_user_id_dict;
-var realm_people_dict;
+var active_user_dict;
 var cross_realm_dict;
 var pm_recipient_count_dict;
 var my_user_id;
@@ -21,7 +21,10 @@ exports.init = function () {
     people_by_name_dict = new Dict({fold_case: true});
     people_by_user_id_dict = new Dict();
 
-    realm_people_dict = new Dict();
+    // The next dictionary includes all active users (human/user)
+    // in our realm, but it excludes non-active users and
+    // cross-realm bots.
+    active_user_dict = new Dict();
     cross_realm_dict = new Dict(); // keyed by user_id
     pm_recipient_count_dict = new Dict();
 };
@@ -57,7 +60,7 @@ exports.get_by_email = function (email) {
 exports.get_realm_count = function () {
     // This returns the number of active people in our realm.  It should
     // exclude bots and deactivated users.
-    return realm_people_dict.num_items();
+    return active_user_dict.num_items();
 };
 
 exports.id_matches_email_operand = function (user_id, email) {
@@ -527,11 +530,11 @@ exports.realm_get = function realm_get(email) {
     if (!person) {
         return undefined;
     }
-    return realm_people_dict.get(person.user_id);
+    return active_user_dict.get(person.user_id);
 };
 
 exports.realm_user_is_active_human_or_bot = function (id) {
-    if (realm_people_dict.get(id) !== undefined) {
+    if (active_user_dict.get(id) !== undefined) {
         return true;
     }
     // TODO: Technically, we should probably treat deactivated bots
@@ -550,12 +553,12 @@ exports.get_all_persons = function () {
 };
 
 exports.get_realm_persons = function () {
-    return realm_people_dict.values();
+    return active_user_dict.values();
 };
 
 exports.get_active_user_ids = function () {
     // This includes active users and active bots.
-    return realm_people_dict.keys();
+    return active_user_dict.keys();
 };
 
 exports.is_cross_realm_email = function (email) {
@@ -668,7 +671,7 @@ function people_cmp(person1, person2) {
 
 exports.get_rest_of_realm = function get_rest_of_realm() {
     var people_minus_you = [];
-    realm_people_dict.each(function (person) {
+    active_user_dict.each(function (person) {
         if (!exports.is_current_user(person.email)) {
             people_minus_you.push({email: person.email,
                                    user_id: person.user_id,
@@ -696,7 +699,7 @@ exports.add = function add(person) {
 };
 
 exports.add_in_realm = function (person) {
-    realm_people_dict.set(person.user_id, person);
+    active_user_dict.set(person.user_id, person);
     exports.add(person);
 };
 
@@ -704,7 +707,7 @@ exports.deactivate = function (person) {
     // We don't fully remove a person from all of our data
     // structures, because deactivated users can be part
     // of somebody's PM list.
-    realm_people_dict.del(person.user_id);
+    active_user_dict.del(person.user_id);
 };
 
 exports.extract_people_from_message = function (message) {
