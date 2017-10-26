@@ -2,6 +2,7 @@
 # high-level documentation on how this system works.
 from typing import cast, AbstractSet, Any, Callable, Dict, List, \
     Mapping, MutableMapping, Optional, Iterable, Sequence, Set, Text, Union
+from mypy_extensions import TypedDict
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
@@ -728,10 +729,60 @@ def maybe_enqueue_notifications(user_profile_id, message_id, private_message,
 
     return notified
 
+ClientInfo = TypedDict('ClientInfo', {
+    'client': ClientDescriptor,
+    'flags': Optional[Iterable[str]],
+    'is_sender': bool,
+})
+
+def get_client_info_for_message_event(event_template, users):
+    # type: (Mapping[str, Any], Iterable[Mapping[str, Any]]) -> Dict[str, ClientInfo]
+
+    '''
+    Return client info for all the clients interested in a message.
+    This basically includes clients for users who are recipients
+    of the message, with some nuances for bots that auto-subscribe
+    to all streams, plus users who may be mentioned, etc.
+    '''
+
+    send_to_clients = {}  # type: Dict[str, ClientInfo]
+
+    sender_queue_id = event_template.get('sender_queue_id', None)  # type: Optional[str]
+
+    def is_sender_client(client):
+        # type: (ClientDescriptor) -> bool
+        return (sender_queue_id is not None) and client.event_queue.id == sender_queue_id
+
+    # If we're on a public stream, look for clients (typically belonging to
+    # bots) that are registered to get events for ALL streams.
+    if 'stream_name' in event_template and not event_template.get("invite_only"):
+        realm_id = event_template['realm_id']
+        for client in get_client_descriptors_for_realm_all_streams(realm_id):
+            send_to_clients[client.event_queue.id] = dict(
+                client=client,
+                flags=None,
+                is_sender=is_sender_client(client)
+            )
+
+    for user_data in users:
+        user_profile_id = user_data['id']  # type: int
+        flags = user_data.get('flags', [])  # type: Iterable[str]
+
+        for client in get_client_descriptors_for_user(user_profile_id):
+            send_to_clients[client.event_queue.id] = dict(
+                client=client,
+                flags=flags,
+                is_sender=is_sender_client(client)
+            )
+
+    return send_to_clients
+
+
 def process_message_event(event_template, users):
     # type: (Mapping[str, Any], Iterable[Mapping[str, Any]]) -> None
+    send_to_clients = get_client_info_for_message_event(event_template, users)
+
     presence_idle_user_ids = set(event_template.get('presence_idle_user_ids', []))
-    sender_queue_id = event_template.get('sender_queue_id', None)  # type: Optional[str]
     message_dict_markdown = event_template['message_dict_markdown']  # type: Dict[str, Any]
     message_dict_no_markdown = event_template['message_dict_no_markdown']  # type: Dict[str, Any]
     sender_id = message_dict_markdown['sender_id']  # type: int
@@ -739,26 +790,12 @@ def process_message_event(event_template, users):
     message_type = message_dict_markdown['type']  # type: str
     sending_client = message_dict_markdown['client']  # type: Text
 
-    # To remove duplicate clients: Maps queue ID to {'client': Client, 'flags': flags}
-    send_to_clients = {}  # type: Dict[str, Dict[str, Any]]
-
     # Extra user-specific data to include
     extra_user_data = {}  # type: Dict[int, Any]
-
-    if 'stream_name' in event_template and not event_template.get("invite_only"):
-        for client in get_client_descriptors_for_realm_all_streams(event_template['realm_id']):
-            send_to_clients[client.event_queue.id] = {'client': client, 'flags': None}
-            if sender_queue_id is not None and client.event_queue.id == sender_queue_id:
-                send_to_clients[client.event_queue.id]['is_sender'] = True
 
     for user_data in users:
         user_profile_id = user_data['id']  # type: int
         flags = user_data.get('flags', [])  # type: Iterable[str]
-
-        for client in get_client_descriptors_for_user(user_profile_id):
-            send_to_clients[client.event_queue.id] = {'client': client, 'flags': flags}
-            if sender_queue_id is not None and client.event_queue.id == sender_queue_id:
-                send_to_clients[client.event_queue.id]['is_sender'] = True
 
         # If the recipient was offline and the message was a single or group PM to them
         # or they were @-notified potentially notify more immediately
