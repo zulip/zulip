@@ -421,7 +421,7 @@ nav ul li.active::after {
 }
 
 .portico-landing.features-app section.hero .copy {
-    width: 800px;
+    max-width: 800px;
     margin: 0 auto;
 
     text-align: center;
@@ -436,7 +436,7 @@ nav ul li.active::after {
     font-size: 1.8em;
     margin: 30px auto 0 auto;
 
-    width: 600px;
+    max-width: 600px;
     line-height: 1.3;
 }
 
@@ -514,7 +514,7 @@ nav ul li.active::after {
 }
 
 .portico-landing.features-app section.messages .features {
-    width: 500px;
+    max-width: 500px;
 }
 
 .portico-landing.features-app section.messages .features h2 {
@@ -2920,6 +2920,14 @@ nav ul li.active::after {
         width: calc(100% - 100px);
     }
 
+    .portico-landing.features-app section.hero {
+        padding: 50px;
+    }
+
+    .portico-landing.features-app section.hero h1 {
+        font-size: 3em;
+    }
+
     .portico-landing.integrations .main,
     .main {
         width: auto;
@@ -3227,6 +3235,22 @@ nav ul li.active::after {
 }
 
 @media (max-width: 550px) {
+    .portico-landing.features-app section.hero {
+        padding: 50px 20px 20px;
+    }
+
+    .portico-landing.features-app section.messages {
+        padding: 0px 20px;
+    }
+
+    .portico-landing.features-app section.messages h2 {
+        font-size: 2em;
+    }
+
+    .portico-landing.features-app section.messages .features .feature-block {
+        margin: 20px 0px;
+    }
+
     .portico-landing.integrations .searchbar-reset {
         width: 100%;
     }
