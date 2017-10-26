@@ -310,8 +310,8 @@ def add_new_user_history(user_profile, streams):
 # * Deactivates PreregistrationUser objects
 # * subscribe the user to newsletter if newsletter_data is specified
 def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None,
-                           default_stream_group_names=[]):
-    # type: (UserProfile, Optional[PreregistrationUser], Optional[Dict[str, str]], List[str]) -> None
+                           default_stream_groups=[]):
+    # type: (UserProfile, Optional[PreregistrationUser], Optional[Dict[str, str]], List[DefaultStreamGroup]) -> None
     mit_beta_user = user_profile.realm.is_zephyr_mirror_realm
     if prereg_user is not None:
         streams = prereg_user.streams.all()
@@ -324,12 +324,8 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None,
     # add the default streams
     if len(streams) == 0:
         streams = get_default_subs(user_profile)
-    for default_stream_group_name in default_stream_group_names:
-        try:
-            default_stream_group = DefaultStreamGroup.objects.get(name=default_stream_group_name, realm=user_profile.realm)
-        except DefaultStreamGroup.DoesNotExist:
-            raise JsonableError(_('Invalid default stream group %s' % (default_stream_group_name,)))
 
+    for default_stream_group in default_stream_groups:
         default_stream_group_streams = default_stream_group.streams.all()
         for stream in default_stream_group_streams:
             if stream not in streams:
@@ -436,8 +432,9 @@ def do_create_user(email, password, realm, full_name, short_name,
                    timezone=u"", avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
                    default_sending_stream=None, default_events_register_stream=None,
                    default_all_public_streams=None, prereg_user=None,
-                   newsletter_data=None, default_stream_group_names=[]):
-    # type: (Text, Optional[Text], Realm, Text, Text, bool, bool, Optional[int], Optional[UserProfile], Optional[Text], Text, Text, Optional[Stream], Optional[Stream], bool, Optional[PreregistrationUser], Optional[Dict[str, str]], List[str]) -> UserProfile
+                   newsletter_data=None, default_stream_groups=[]):
+    # type: (Text, Optional[Text], Realm, Text, Text, bool, bool, Optional[int], Optional[UserProfile], Optional[Text], Text, Text, Optional[Stream], Optional[Stream], bool, Optional[PreregistrationUser], Optional[Dict[str, str]], List[DefaultStreamGroup]) -> UserProfile
+
     user_profile = create_user(email=email, password=password, realm=realm,
                                full_name=full_name, short_name=short_name,
                                active=active, is_realm_admin=is_realm_admin,
@@ -459,7 +456,7 @@ def do_create_user(email, password, realm, full_name, short_name,
     else:
         process_new_human_user(user_profile, prereg_user=prereg_user,
                                newsletter_data=newsletter_data,
-                               default_stream_group_names=default_stream_group_names)
+                               default_stream_groups=default_stream_groups)
     return user_profile
 
 def do_activate_user(user_profile):
@@ -2777,6 +2774,18 @@ def do_set_user_display_setting(user_profile, setting_name, setting_value):
                        timezone=user_profile.timezone)
         send_event(dict(type='realm_user', op='update', person=payload),
                    active_user_ids(user_profile.realm_id))
+
+def lookup_default_stream_groups(default_stream_group_names, realm):
+    # type: (List[str], Realm) -> List[DefaultStreamGroup]
+    default_stream_groups = []
+    for group_name in default_stream_group_names:
+        try:
+            default_stream_group = DefaultStreamGroup.objects.get(
+                name=group_name, realm=realm)
+        except DefaultStreamGroup.DoesNotExist:
+            raise JsonableError(_('Invalid default stream group %s' % (group_name,)))
+        default_stream_groups.append(default_stream_group)
+    return default_stream_groups
 
 def set_default_streams(realm, stream_dict):
     # type: (Realm, Dict[Text, Dict[Text, Any]]) -> None

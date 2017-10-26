@@ -20,7 +20,7 @@ from zerver.lib.events import do_events_register
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
     do_activate_user, do_create_user, do_create_realm, \
     user_email_is_unique, compute_mit_user_fullname, validate_email_for_realm, \
-    do_set_user_display_setting
+    do_set_user_display_setting, lookup_default_stream_groups
 from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
     CreateUserForm, FindMyTeamForm
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
@@ -180,7 +180,8 @@ def accounts_register(request):
 
         full_name = form.cleaned_data['full_name']
         short_name = email_to_username(email)
-        default_stream_groups = request.POST.getlist('default_stream_group')
+        default_stream_group_names = request.POST.getlist('default_stream_group')
+        default_stream_groups = lookup_default_stream_groups(default_stream_group_names, realm)
 
         timezone = u""
         if 'timezone' in request.POST and request.POST['timezone'] in get_all_timezones():
@@ -232,7 +233,7 @@ def accounts_register(request):
                                           tos_version=settings.TOS_VERSION,
                                           timezone=timezone,
                                           newsletter_data={"IP": request.META['REMOTE_ADDR']},
-                                          default_stream_group_names=default_stream_groups)
+                                          default_stream_groups=default_stream_groups)
 
         if realm_creation:
             setup_initial_private_stream(user_profile)
