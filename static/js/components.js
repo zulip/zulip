@@ -24,7 +24,7 @@ exports.toggle = (function () {
             opts.values.forEach(function (value, i) {
                 // create a tab with a tab-id so they don't have to be referenced
                 // by text value which can be inconsistent.
-                var tab = $("<div class='ind-tab' data-tab-key='" + value.key + "' data-tab-id='" + i + "'>" + value.label + "</div>");
+                var tab = $("<div class='ind-tab' data-tab-key='" + value.key + "' data-tab-id='" + i + "' tabindex='0'>" + value.label + "</div>");
 
                 // add proper classes for styling in CSS.
                 if (i === 0) {
@@ -56,6 +56,22 @@ exports.toggle = (function () {
                     if (meta.last_value !== opts.values[id].label) {
                         meta.last_value = opts.values[id].label;
                         opts.callback(meta.last_value, opts.values[id].key, {});
+                    }
+                }
+                $(this).focus();
+            });
+
+            meta.$ind_tab.keydown(function (e) {
+                var key = e.which || e.keyCode;
+                var idx = $(this).data("tab-id");
+
+                if (key === 37) {
+                    if (idx > 0) {
+                        $(this).prev().click();
+                    }
+                } else if (key === 39) {
+                    if (idx < opts.values.length - 1) {
+                        $(this).next().click();
                     }
                 }
             });
@@ -90,15 +106,18 @@ exports.toggle = (function () {
                 });
 
                 var idx = opts.values.indexOf(value);
+                var $this_tab = meta.$ind_tab.filter("[data-tab-id='" + idx + "']");
 
                 if (idx !== -1 && idx !== meta.last_value) {
                     meta.$ind_tab.removeClass("selected");
-                    meta.$ind_tab.filter("[data-tab-id='" + idx + "']").addClass("selected");
+                    $this_tab.addClass("selected");
 
                     opts.callback(value.label, value.key, payload || {});
 
                     meta.last_value = idx;
                 }
+
+                $this_tab.focus();
             },
         };
 
