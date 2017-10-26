@@ -668,13 +668,41 @@ input.text-error {
     margin-right: 5px;
 }
 
-.header-realm-icon {
-    width: 26px;
-    height: 26px;
-    border-radius: 6px;
-    box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.2);
+.portico-header .dropdown-pill {
+    border: 1px solid rgba(0,0,0,0.2);
+    border-radius: 4px;
+
+    font-weight: 400;
 
     cursor: pointer;
+}
+
+.portico-header .dropdown-pill .realm-name {
+    display: inline-block;
+    vertical-align: top;
+
+    margin: 0px 5px 0px -4px;
+    padding: 1px 0px 1px 5px;
+
+    border-left: 1px solid rgba(0,0,0,0.2);
+
+    font-size: 0.9em;
+    font-weight: 600;
+
+    line-height: 1.6;
+}
+
+.portico-page-container .portico-header .dropdown-pill .realm-name {
+    margin-left: -3px;
+}
+
+.portico-header .dropdown-pill .header-realm-icon {
+    width: 26px;
+    height: 26px;
+
+    vertical-align: top;
+
+    border-radius: 4px 0px 0px 4px;
 }
 
 .app {
