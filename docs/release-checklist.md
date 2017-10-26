@@ -40,4 +40,6 @@ preparing a new release.
 
 ### Post-release
 
-* Update `ZULIP_VERSION` in `version.py` to e.g. `1.6.0+git`.
+* Update `ZULIP_VERSION` in `version.py` to e.g. `1.6.0+git`.  Also
+  update `docs/conf.py`.
+* Consider removing a few old releases from ReadTheDocs.
