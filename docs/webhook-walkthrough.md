@@ -366,8 +366,10 @@ Or, use curl:
 Markdown/Jinja2 framework that includes macros for common instructions in
 Zulip's webhooks/integrations documentation.
 
-See [Documenting your integration](integration-guide.html#documenting-your-integration)
-for further details, including how to easily create the message screenshot.
+See
+[our guide on documenting an integration](integration-docs-guide.html)
+for further details, including how to easily create the message
+screenshot.
 
 ## Step 5: Preparing a pull request to zulip/zulip
 
