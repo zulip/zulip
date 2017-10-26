@@ -1030,6 +1030,7 @@ nav ul li.active::after {
 
 .faqs .faq .answer {
     margin: 20px 0px 0px 0px;
+    font-weight: 300;
 }
 
 .screen .line {
