@@ -83,14 +83,12 @@ class Command(ZulipBaseCommand):
     of recipients of messages in the realm, hardware, etc."""
 
     # Fix support for multi-line usage
-    def create_parser(self, *args, **kwargs):
-        # type: (*Any, **Any) -> ArgumentParser
+    def create_parser(self, *args: Any, **kwargs: Any) -> ArgumentParser:
         parser = super(Command, self).create_parser(*args, **kwargs)
         parser.formatter_class = RawTextHelpFormatter
         return parser
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--output',
                             dest='output_dir',
                             action="store",
@@ -103,8 +101,7 @@ class Command(ZulipBaseCommand):
                             help='Threads to use in exporting UserMessage objects in parallel')
         self.add_realm_args(parser, True)
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
 

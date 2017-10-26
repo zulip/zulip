@@ -11,8 +11,7 @@ from zerver.models import UserProfile
 class Command(ZulipBaseCommand):
     help = "Deactivate a user, including forcibly logging them out."
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('-f', '--for-real',
                             dest='for_real',
                             action='store_true',
@@ -22,8 +21,7 @@ class Command(ZulipBaseCommand):
                             help='email of user to deactivate')
         self.add_realm_args(parser)
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)
         user_profile = self.get_user(options['email'], realm)
 

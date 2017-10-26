@@ -17,8 +17,7 @@ from zerver.models import (
     UserProfile
 )
 
-def get_unread_messages(user_profile):
-    # type: (UserProfile) -> List[Dict[str, Any]]
+def get_unread_messages(user_profile: UserProfile) -> List[Dict[str, Any]]:
     user_msgs = UserMessage.objects.filter(
         user_profile=user_profile,
         message__recipient__type=Recipient.STREAM
@@ -42,8 +41,7 @@ def get_unread_messages(user_profile):
 
     return result
 
-def get_muted_streams(user_profile, stream_ids):
-    # type: (UserProfile, Set[int]) -> Set[int]
+def get_muted_streams(user_profile: UserProfile, stream_ids: Set[int]) -> Set[int]:
     rows = Subscription.objects.filter(
         user_profile=user_profile,
         recipient__type_id__in=stream_ids,
@@ -57,8 +55,7 @@ def get_muted_streams(user_profile, stream_ids):
 
     return muted_stream_ids
 
-def show_all_unread(user_profile):
-    # type: (UserProfile) -> None
+def show_all_unread(user_profile: UserProfile) -> None:
     unreads = get_unread_messages(user_profile)
 
     stream_ids = {row['stream_id'] for row in unreads}
@@ -78,14 +75,12 @@ def show_all_unread(user_profile):
 class Command(ZulipBaseCommand):
     help = """Show unread counts for a particular user."""
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('email', metavar='<email>', type=str,
                             help='email address to spelunk')
         self.add_realm_args(parser)
 
-    def handle(self, *args, **options):
-        # type: (*Any, **str) -> None
+    def handle(self, *args: Any, **options: str) -> None:
         realm = self.get_realm(options)
         email = options['email']
         try:

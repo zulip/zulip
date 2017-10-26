@@ -9,8 +9,7 @@ from zerver.models import get_stream, Subscription, Recipient, get_recipient, Me
 
 from argparse import ArgumentParser
 
-def bulk_delete_cache_keys(message_ids_to_clear):
-    # type: (List[int]) -> None
+def bulk_delete_cache_keys(message_ids_to_clear: List[int]) -> None:
     while len(message_ids_to_clear) > 0:
         batch = message_ids_to_clear[0:5000]
 
@@ -24,16 +23,14 @@ def bulk_delete_cache_keys(message_ids_to_clear):
 class Command(ZulipBaseCommand):
     help = """Merge two streams."""
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('stream_to_keep', type=str,
                             help='name of stream to keep')
         parser.add_argument('stream_to_destroy', type=str,
                             help='name of stream to merge into the stream being kept')
         self.add_realm_args(parser, True)
 
-    def handle(self, *args, **options):
-        # type: (*Any, **str) -> None
+    def handle(self, *args: Any, **options: str) -> None:
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
         stream_to_keep = get_stream(options["stream_to_keep"], realm)

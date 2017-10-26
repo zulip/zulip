@@ -25,8 +25,7 @@ account this way.
 Omit both <email> and <full name> for interactive user creation.
 """
 
-    def add_arguments(self, parser):
-        # type: (argparse.ArgumentParser) -> None
+    def add_arguments(self, parser: argparse.ArgumentParser) -> None:
         parser.add_argument('--this-user-has-accepted-the-tos',
                             dest='tos',
                             action="store_true",
@@ -52,8 +51,7 @@ Omit both <email> and <full name> for interactive user creation.
                             help='full name of new user')
         self.add_realm_args(parser, True, "The name of the existing realm to which to add the user.")
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         if not options["tos"]:
             raise CommandError("""You must confirm that this user has accepted the
 Terms of Service by passing --this-user-has-accepted-the-tos.""")

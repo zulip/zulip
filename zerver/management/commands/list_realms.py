@@ -15,16 +15,14 @@ Usage examples:
 ./manage.py list_realms
 ./manage.py list_realms --all"""
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--all",
                             dest="all",
                             action="store_true",
                             default=False,
                             help="Print all the configuration settings of the realms.")
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         realms = Realm.objects.all()
 
         outer_format = "%-5s %-40s %-40s"

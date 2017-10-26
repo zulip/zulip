@@ -12,8 +12,7 @@ from scripts.lib.zulip_tools import get_dev_uuid_var_path
 class Command(BaseCommand):
     help = "Get status of migrations."
 
-    def add_arguments(self, parser):
-        # type: (argparse.ArgumentParser) -> None
+    def add_arguments(self, parser: argparse.ArgumentParser) -> None:
         parser.add_argument('app_label', nargs='?',
                             help='App label of an application to synchronize the state.')
 
@@ -24,8 +23,7 @@ class Command(BaseCommand):
         parser.add_argument('--output', action='store',
                             help='Path to store the status to (default to stdout).')
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         result = get_migration_status(**options)
         if options['output'] is not None:
             uuid_var_path = get_dev_uuid_var_path()

@@ -15,8 +15,7 @@ from zerver.lib.management import ZulipBaseCommand, CommandError
 class Command(ZulipBaseCommand):
     help = """Send email to specified email address."""
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--entire-server', action="store_true", default=False,
                             help="Send to every user on the server. ")
         self.add_user_list_args(parser,
@@ -24,8 +23,7 @@ class Command(ZulipBaseCommand):
                                 all_users_help="Send to every user on the realm.")
         self.add_realm_args(parser)
 
-    def handle(self, *args, **options):
-        # type: (*Any, **str) -> None
+    def handle(self, *args: Any, **options: str) -> None:
         if options["entire_server"]:
             users = UserProfile.objects.filter(is_active=True, is_bot=False,
                                                is_mirror_dummy=False)

@@ -16,16 +16,15 @@ class Command(BaseCommand):
 
     Usage: ./manage.py [--trim] check_redis"""
 
-    def add_arguments(self, parser):
-        # type: (CommandParser) -> None
+    def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument('-t', '--trim',
                             dest='trim',
                             default=False,
                             action='store_true',
                             help="Actually trim excess")
 
-    def _check_within_range(self, key, count_func, trim_func=None):
-        # type: (str, Callable[[], int], Optional[Callable[[str, int], None]]) -> None
+    def _check_within_range(self, key: str, count_func: Callable[[], int],
+                            trim_func: Optional[Callable[[str, int], None]]=None) -> None:
         user_id = int(key.split(':')[1])
         try:
             user = get_user_profile_by_id(user_id)
@@ -46,8 +45,7 @@ than max_api_calls! (trying to trim) %s %s" % (key, count))
                 client.expire(key, max_api_window(entity))
                 trim_func(key, max_calls)
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         if not settings.RATE_LIMITING:
             print("This machine is not using redis or rate limiting, aborting")
             exit(1)

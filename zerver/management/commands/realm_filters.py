@@ -22,8 +22,7 @@ Example: ./manage.py realm_filters --realm=zulip --op=remove '#(?P<id>[0-9]{2,8}
 Example: ./manage.py realm_filters --realm=zulip --op=show
 """
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--op',
                             dest='op',
                             type=str,
@@ -35,8 +34,7 @@ Example: ./manage.py realm_filters --realm=zulip --op=show
                             help="format string to substitute")
         self.add_realm_args(parser, True)
 
-    def handle(self, *args, **options):
-        # type: (*Any, **str) -> None
+    def handle(self, *args: Any, **options: str) -> None:
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
         if options["op"] == "show":

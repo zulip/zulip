@@ -18,14 +18,12 @@ class Command(BaseCommand):
     Usage: ./manage.py generate_realm_creation_link """
 
     # Fix support for multi-line usage
-    def create_parser(self, *args, **kwargs):
-        # type: (*Any, **Any) -> ArgumentParser
+    def create_parser(self, *args: Any, **kwargs: Any) -> ArgumentParser:
         parser = super(Command, self).create_parser(*args, **kwargs)
         parser.formatter_class = RawTextHelpFormatter
         return parser
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         try:
             # first check if the db has been initalized
             Realm.objects.first()

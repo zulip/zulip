@@ -13,8 +13,7 @@ from argparse import ArgumentParser
 
 settings.TORNADO_SERVER = None
 
-def create_users(realm, name_list, bot_type=None):
-    # type: (Realm, Iterable[Tuple[Text, Text]], int) -> None
+def create_users(realm: Realm, name_list: Iterable[Tuple[Text, Text]], bot_type: int=None) -> None:
     user_set = set()
     for full_name, email in name_list:
         short_name = email_to_username(email)
@@ -24,16 +23,14 @@ def create_users(realm, name_list, bot_type=None):
 class Command(BaseCommand):
     help = "Populate an initial database for Zulip Voyager"
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--extra-users',
                             dest='extra_users',
                             type=int,
                             default=0,
                             help='The number of extra users to create')
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         realm = Realm.objects.create(string_id=settings.INTERNAL_BOT_DOMAIN.split('.')[0])
 
         names = [(settings.FEEDBACK_BOT_NAME, settings.FEEDBACK_BOT)]

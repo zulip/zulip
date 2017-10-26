@@ -36,8 +36,7 @@ Run this command under supervisor. This is for SMTP email delivery.
 Usage: ./manage.py deliver_email
 """
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
 
         if settings.EMAIL_DELIVERER_DISABLED:
             while True:

@@ -18,8 +18,7 @@ from zerver.lib.management import ZulipBaseCommand
 class Command(ZulipBaseCommand):
     help = """Soft activate/deactivate users. Users are recognised by there emails here."""
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         self.add_realm_args(parser)
         parser.add_argument('-d', '--deactivate',
                             dest='deactivate',
@@ -38,8 +37,7 @@ class Command(ZulipBaseCommand):
         parser.add_argument('users', metavar='<users>', type=str, nargs='*', default=[],
                             help="This option can be used to specify a list of user emails to soft activate/deactivate.")
 
-    def handle(self, *args, **options):
-        # type: (*Any, **str) -> None
+    def handle(self, *args: Any, **options: str) -> None:
         if settings.STAGING:
             print('This is a Staging server. Suppressing management command.')
             sys.exit(0)

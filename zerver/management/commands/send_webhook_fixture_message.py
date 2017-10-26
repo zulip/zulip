@@ -22,8 +22,7 @@ Example:
 
 """
 
-    def add_arguments(self, parser):
-        # type: (CommandParser) -> None
+    def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument('-f', '--fixture',
                             dest='fixture',
                             type=str,
@@ -38,8 +37,7 @@ Example:
 
         self.add_realm_args(parser, help="Specify which realm/subdomain to connect to; default is zulip")
 
-    def handle(self, **options):
-        # type: (**str) -> None
+    def handle(self, **options: str) -> None:
         if options['fixture'] is None or options['url'] is None:
             self.print_help('./manage.py', 'send_webhook_fixture_message')
             exit(1)
@@ -62,10 +60,8 @@ Example:
             print('Error status %s: %s' % (result.status_code, result.content))
             exit(1)
 
-    def _does_fixture_path_exist(self, fixture_path):
-        # type: (str) -> bool
+    def _does_fixture_path_exist(self, fixture_path: str) -> bool:
         return os.path.exists(fixture_path)
 
-    def _get_fixture_as_json(self, fixture_path):
-        # type: (str) -> str
+    def _get_fixture_as_json(self, fixture_path: str) -> str:
         return ujson.dumps(ujson.loads(open(fixture_path).read()))

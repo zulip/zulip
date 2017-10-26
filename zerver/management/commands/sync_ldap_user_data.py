@@ -13,8 +13,7 @@ from zerver.lib.logging_util import create_logger
 logger = create_logger(__name__, settings.LDAP_SYNC_LOG_PATH, 'INFO')
 
 # Run this on a cronjob to pick up on name changes.
-def sync_ldap_user_data():
-    # type: () -> None
+def sync_ldap_user_data() -> None:
     logger.info("Starting update.")
     backend = ZulipLDAPUserPopulator()
     for u in UserProfile.objects.select_related().filter(is_active=True, is_bot=False).all():
@@ -30,6 +29,5 @@ def sync_ldap_user_data():
     logger.info("Finished update.")
 
 class Command(BaseCommand):
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         sync_ldap_user_data()
