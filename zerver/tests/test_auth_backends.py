@@ -498,7 +498,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
         request.session = {}
         request.user = self.user_profile
         self.backend.strategy.request = request
-        session_data = {'subdomain': False, 'is_signup': '1'}
+        session_data = {'subdomain': Realm.SUBDOMAIN_FOR_ROOT_DOMAIN, 'is_signup': '1'}
         self.backend.strategy.session_get = lambda k: session_data.get(k)
 
         def do_auth(*args, **kwargs):
@@ -524,7 +524,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
         request.session = {}
         request.user = self.user_profile
         self.backend.strategy.request = request
-        session_data = {'subdomain': False, 'is_signup': '1'}
+        session_data = {'subdomain': Realm.SUBDOMAIN_FOR_ROOT_DOMAIN, 'is_signup': '1'}
         self.backend.strategy.session_get = lambda k: session_data.get(k)
 
         def do_auth(*args, **kwargs):
@@ -570,7 +570,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
         request.session = {}
         request.user = self.user_profile
         self.backend.strategy.request = request
-        session_data = {'subdomain': False, 'is_signup': '1'}
+        session_data = {'subdomain': Realm.SUBDOMAIN_FOR_ROOT_DOMAIN, 'is_signup': '1'}
         self.backend.strategy.session_get = lambda k: session_data.get(k)
 
         def do_auth(*args, **kwargs):
@@ -595,7 +595,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
         request.session = {}
         request.user = self.user_profile
         self.backend.strategy.request = request
-        session_data = {'subdomain': False, 'is_signup': '0'}
+        session_data = {'subdomain': Realm.SUBDOMAIN_FOR_ROOT_DOMAIN, 'is_signup': '0'}
         self.backend.strategy.session_get = lambda k: session_data.get(k)
 
         def do_auth(*args, **kwargs):

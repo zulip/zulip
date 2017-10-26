@@ -221,9 +221,17 @@ class SocialAuthMixin(ZulipAuthMixin):
         full_name = self.get_full_name(*args, **kwargs)
         is_signup = strategy.session_get('is_signup') == '1'
 
-        subdomain = strategy.session_get('subdomain')
         mobile_flow_otp = strategy.session_get('mobile_flow_otp')
-        if not subdomain or mobile_flow_otp is not None:
+        subdomain = strategy.session_get('subdomain')
+        if not subdomain:
+            # At least in our tests, this can be None; and it's not
+            # clear what the exact semantics of `session_get` are or
+            # what values it might return.  Historically we treated
+            # any falsy value here as the root domain, so defensively
+            # continue that behavior.
+            subdomain = Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
+        if (subdomain == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
+                or mobile_flow_otp is not None):
             return login_or_register_remote_user(request, email_address,
                                                  user_profile, full_name,
                                                  invalid_subdomain=bool(invalid_subdomain),
