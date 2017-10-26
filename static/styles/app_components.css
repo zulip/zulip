@@ -199,6 +199,10 @@
     align-items: center;
 }
 
+.new-style .tab-switcher .ind-tab:focus {
+    outline: none;
+}
+
 .informational-overlays .tab-switcher {
     display: flex;
 }
