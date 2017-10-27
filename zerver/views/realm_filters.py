@@ -5,8 +5,9 @@ from django.http import HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.translation import ugettext as _
 
-from zerver.decorator import has_request_variables, REQ, require_realm_admin
+from zerver.decorator import require_realm_admin
 from zerver.lib.actions import do_add_realm_filter, do_remove_realm_filter
+from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_success, json_error
 from zerver.lib.rest import rest_dispatch as _rest_dispatch
 from zerver.lib.validator import check_string

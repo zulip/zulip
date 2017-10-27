@@ -13,6 +13,7 @@ from django.conf import settings
 from zerver.forms import OurAuthenticationForm
 from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
     do_reactivate_user, do_reactivate_realm
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_helpers import (
     HostRequestMock,
@@ -25,7 +26,7 @@ from zerver.lib.response import json_response
 from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.request import \
     REQ, has_request_variables, RequestVariableMissingError, \
-    RequestVariableConversionError, JsonableError
+    RequestVariableConversionError
 from zerver.decorator import (
     api_key_only_webhook_view,
     authenticated_json_post_view, authenticated_json_view,

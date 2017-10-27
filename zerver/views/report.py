@@ -5,9 +5,9 @@ from typing import Any, Dict, Optional, Text
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import authenticated_json_post_view, has_request_variables, REQ, \
-    to_non_negative_int
+from zerver.decorator import authenticated_json_post_view, to_non_negative_int
 from zerver.lib.bugdown import privacy_clean_markdown
+from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_success
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.unminify import SourceMap

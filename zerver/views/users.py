@@ -10,15 +10,16 @@ from django.shortcuts import redirect, render
 from django.conf import settings
 from six.moves import map
 
-from zerver.decorator import has_request_variables, REQ, JsonableError, \
-    require_realm_admin, zulip_login_required
+from zerver.decorator import require_realm_admin, zulip_login_required
 from zerver.forms import CreateUserForm
 from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
     do_change_is_admin, do_change_default_all_public_streams, \
     do_change_default_events_register_stream, do_change_default_sending_stream, \
     do_create_user, do_deactivate_user, do_reactivate_user, do_regenerate_api_key
 from zerver.lib.avatar import avatar_url, get_gravatar_url, get_avatar_field
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.integrations import EMBEDDED_BOTS
+from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.upload import upload_avatar_image

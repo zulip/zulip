@@ -4,7 +4,7 @@ from django.http import HttpResponse, HttpRequest
 from typing import List, Text
 from zerver.models import UserProfile
 
-from zerver.decorator import has_request_variables, REQ
+from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_list, check_string
 

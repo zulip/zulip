@@ -7,8 +7,8 @@ from django.db import IntegrityError, connection
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
-from zerver.decorator import has_request_variables, REQ, require_realm_admin, \
-    human_users_only
+from zerver.decorator import require_realm_admin, human_users_only
+from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.actions import (try_add_realm_custom_profile_field,
                                 do_remove_realm_custom_profile_field,
                                 try_update_realm_custom_profile_field,

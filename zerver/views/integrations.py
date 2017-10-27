@@ -9,9 +9,9 @@ from django.shortcuts import render
 import os
 import ujson
 
-from zerver.decorator import has_request_variables, REQ
 from zerver.lib import bugdown
 from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, HUBOT_LOZENGES
+from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.subdomains import get_subdomain
 from zerver.models import Realm
 from zerver.templatetags.app_filters import render_markdown_path
