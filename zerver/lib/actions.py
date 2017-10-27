@@ -762,8 +762,8 @@ def send_welcome_bot_response(message):
             "Feel free to continue using this space to practice your new messaging "
             "skills. Or, try clicking on some of the stream names to your left!")
 
-def render_incoming_message(message, content, user_ids, realm):
-    # type: (Message, Text, Set[int], Realm) -> Text
+def render_incoming_message(message, content, user_ids, realm, mention_data=None):
+    # type: (Message, Text, Set[int], Realm, Optional[bugdown.MentionData]) -> Text
     realm_alert_words = alert_words_in_realm(realm)
     try:
         rendered_content = render_markdown(
@@ -772,6 +772,7 @@ def render_incoming_message(message, content, user_ids, realm):
             realm=realm,
             realm_alert_words=realm_alert_words,
             user_ids=user_ids,
+            mention_data=mention_data,
         )
     except BugdownRenderingException:
         raise JsonableError(_('Unable to render message'))
@@ -811,11 +812,12 @@ RecipientInfoResult = TypedDict('RecipientInfoResult', {
     'stream_push_user_ids': Set[int],
     'um_eligible_user_ids': Set[int],
     'long_term_idle_user_ids': Set[int],
+    'default_bot_user_ids': Set[int],
     'service_bot_tuples': List[Tuple[int, int]],
 })
 
-def get_recipient_info(recipient, sender_id, stream_topic):
-    # type: (Recipient, int, Optional[StreamTopicTarget]) -> RecipientInfoResult
+def get_recipient_info(recipient, sender_id, stream_topic, possibly_mentioned_user_ids=None):
+    # type: (Recipient, int, Optional[StreamTopicTarget], Optional[Set[int]]) -> RecipientInfoResult
     if recipient.type == Recipient.STREAM:
         # Anybody calling us w/r/t a stream message needs to supply
         # stream_topic.  We may eventually want to have different versions
@@ -861,8 +863,17 @@ def get_recipient_info(recipient, sender_id, stream_topic):
     else:
         raise ValueError('Bad recipient type')
 
-    user_ids = message_to_user_ids
-    # TODO: add mentioned users
+    message_to_user_id_set = set(message_to_user_ids)
+
+    user_ids = set(message_to_user_id_set)
+    if possibly_mentioned_user_ids:
+        # Important note: Because we haven't rendered bugdown yet, we
+        # don't yet know which of these possibly-mentioned users was
+        # actually mentioned in the message (in other words, the
+        # mention syntax might have been in a code block or otherwise
+        # escaped).  `get_ids_for` will filter these extra user rows
+        # for our data structures not related to bots
+        user_ids |= possibly_mentioned_user_ids
 
     if user_ids:
         query = UserProfile.objects.filter(
@@ -879,7 +890,7 @@ def get_recipient_info(recipient, sender_id, stream_topic):
         # need this codepath to be fast (it's part of sending messages)
         query = query_for_ids(
             query=query,
-            user_ids=user_ids,
+            user_ids=sorted(list(user_ids)),
             field='id'
         )
         rows = list(query)
@@ -895,15 +906,16 @@ def get_recipient_info(recipient, sender_id, stream_topic):
     active_user_ids = {
         row['id']
         for row in rows
-    }
+    } & message_to_user_id_set
 
     def get_ids_for(f):
         # type: (Callable[[Dict[str, Any]], bool]) -> Set[int]
+        """Only includes users on the explicit message to line"""
         return {
             row['id']
             for row in rows
             if f(row)
-        }
+        } & message_to_user_id_set
 
     def is_service_bot(row):
         # type: (Dict[str, Any]) -> bool
@@ -922,6 +934,22 @@ def get_recipient_info(recipient, sender_id, stream_topic):
         lambda r: r['long_term_idle']
     )
 
+    # These two bot data structures need to filter from the full set
+    # of users who either are receiving the message or might have been
+    # mentioned in it, and so can't use get_ids_for.
+    #
+    # Further in the do_send_messages code path, once
+    # `mentioned_user_ids` has been computed via bugdown, we'll filter
+    # these data structures for just those users who are either a
+    # direct recipient or were mentioned; for now, we're just making
+    # sure we have the data we need for that without extra database
+    # queries.
+    default_bot_user_ids = set([
+        row['id']
+        for row in rows
+        if row['is_bot'] and row['bot_type'] == UserProfile.DEFAULT_BOT
+    ])
+
     service_bot_tuples = [
         (row['id'], row['bot_type'])
         for row in rows
@@ -934,12 +962,13 @@ def get_recipient_info(recipient, sender_id, stream_topic):
         stream_push_user_ids=stream_push_user_ids,
         um_eligible_user_ids=um_eligible_user_ids,
         long_term_idle_user_ids=long_term_idle_user_ids,
+        default_bot_user_ids=default_bot_user_ids,
         service_bot_tuples=service_bot_tuples
     )  # type: RecipientInfoResult
     return info
 
-def get_service_bot_events(sender, service_bot_tuples, mentioned_user_ids, recipient_type):
-    # type: (UserProfile, List[Tuple[int, int]], Set[int], int) -> Dict[str, List[Dict[str, Any]]]
+def get_service_bot_events(sender, service_bot_tuples, mentioned_user_ids, active_user_ids, recipient_type):
+    # type: (UserProfile, List[Tuple[int, int]], Set[int], Set[int], int) -> Dict[str, List[Dict[str, Any]]]
 
     event_dict = defaultdict(list)  # type: Dict[str, List[Dict[str, Any]]]
 
@@ -947,27 +976,6 @@ def get_service_bot_events(sender, service_bot_tuples, mentioned_user_ids, recip
     # Service events.
     if sender.is_bot:
         return event_dict
-
-    if recipient_type == Recipient.STREAM:
-        known_ids = {user_profile_id for user_profile_id, bot_type in service_bot_tuples}
-        unknown_ids = mentioned_user_ids - known_ids
-        if unknown_ids:
-            '''
-            If we mention a service bot in a stream message, we should notify
-            them.  If the bot also happens to be subscribed to the stream, then
-            they would have already been in `service_bot_tuples`, but if
-            they are not subscribed to the stream, we need to go find them
-            in the follow up query below.  Also, it's important to filter
-            for service bots only.
-            '''
-            query = UserProfile.objects.filter(
-                id__in=unknown_ids,
-                is_active=True,
-                is_bot=True,
-                bot_type__in=UserProfile.SERVICE_BOT_TYPES,
-            ).values('id', 'bot_type')
-            tups = [(row['id'], row['bot_type']) for row in query]
-            service_bot_tuples += tups
 
     for user_profile_id, bot_type in service_bot_tuples:
         if bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
@@ -980,12 +988,14 @@ def get_service_bot_events(sender, service_bot_tuples, mentioned_user_ids, recip
                 (user_profile_id, bot_type))
             continue
 
+        is_stream = (recipient_type == Recipient.STREAM)
+
         # Mention triggers, primarily for stream messages
         if user_profile_id in mentioned_user_ids:
             trigger = 'mention'
         # PM triggers for personal and huddle messsages
-        elif recipient_type != Recipient.STREAM:
-            trigger = 'private_message'
+        elif (not is_stream) and (user_profile_id in active_user_ids):
+                trigger = 'private_message'
         else:
             continue
 
@@ -1021,6 +1031,12 @@ def do_send_messages(messages_maybe_none):
         message['realm'] = message.get('realm', message['message'].sender.realm)
 
     for message in messages:
+        mention_data = bugdown.MentionData(
+            realm_id=message['realm'].id,
+            content=message['message'].content,
+        )
+        message['mention_data'] = mention_data
+
         if message['message'].recipient.type == Recipient.STREAM:
             stream_id = message['message'].recipient.type_id
             stream_topic = StreamTopicTarget(
@@ -1034,6 +1050,7 @@ def do_send_messages(messages_maybe_none):
             recipient=message['message'].recipient,
             sender_id=message['message'].sender_id,
             stream_topic=stream_topic,
+            possibly_mentioned_user_ids=mention_data.get_user_ids(),
         )
 
         message['active_user_ids'] = info['active_user_ids']
@@ -1041,20 +1058,35 @@ def do_send_messages(messages_maybe_none):
         message['stream_push_user_ids'] = info['stream_push_user_ids']
         message['um_eligible_user_ids'] = info['um_eligible_user_ids']
         message['long_term_idle_user_ids'] = info['long_term_idle_user_ids']
+        message['default_bot_user_ids'] = info['default_bot_user_ids']
         message['service_bot_tuples'] = info['service_bot_tuples']
 
     links_for_embed = set()  # type: Set[Text]
     # Render our messages.
     for message in messages:
         assert message['message'].rendered_content is None
+
         rendered_content = render_incoming_message(
             message['message'],
             message['message'].content,
             message['active_user_ids'],
-            message['realm'])
+            message['realm'],
+            mention_data=message['mention_data'],
+        )
         message['message'].rendered_content = rendered_content
         message['message'].rendered_content_version = bugdown_version
         links_for_embed |= message['message'].links_for_preview
+
+        '''
+        Once we have the actual list of mentioned ids from message
+        rendering, we can patch in "default bots" (aka normal bots)
+        who were directly mentioned in this message as eligible to
+        get UserMessage rows.
+        '''
+        mentioned_user_ids = message['message'].mentions_user_ids
+        default_bot_user_ids = message['default_bot_user_ids']
+        mentioned_bot_user_ids = default_bot_user_ids & mentioned_user_ids
+        message['um_eligible_user_ids'] |= mentioned_bot_user_ids
 
     for message in messages:
         message['message'].update_calculated_fields()
@@ -1084,6 +1116,7 @@ def do_send_messages(messages_maybe_none):
                 sender=message['message'].sender,
                 service_bot_tuples=message['service_bot_tuples'],
                 mentioned_user_ids=mentioned_user_ids,
+                active_user_ids=message['active_user_ids'],
                 recipient_type=message['message'].recipient.type,
             )
 
@@ -1118,6 +1151,20 @@ def do_send_messages(messages_maybe_none):
             presence_idle_user_ids=presence_idle_user_ids,
         )
 
+        '''
+        TODO:  We may want to limit user_ids to only those users who have
+               UserMessage rows, if only for minor performance reasons.
+
+               For now we queue events for all subscribers/sendees of the
+               message, since downstream code may still do notifications
+               that don't require UserMessage rows.
+
+               Our automated tests have gotten better on this codepath,
+               but we may have coverage gaps, so we should be careful
+               about changing the next line.
+        '''
+        user_ids = message['active_user_ids'] | set(user_flags.keys())
+
         users = [
             dict(
                 id=user_id,
@@ -1125,7 +1172,7 @@ def do_send_messages(messages_maybe_none):
                 always_push_notify=(user_id in message['push_notify_user_ids']),
                 stream_push_notify=(user_id in message['stream_push_user_ids']),
             )
-            for user_id in message['active_user_ids']
+            for user_id in user_ids
         ]
 
         if message['message'].recipient.type == Recipient.STREAM:

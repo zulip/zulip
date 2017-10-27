@@ -68,7 +68,7 @@ import DNS
 import mock
 import time
 import ujson
-from typing import Any, Dict, List, Optional, Text
+from typing import Any, Dict, List, Optional, Set, Text
 
 from collections import namedtuple
 
@@ -596,6 +596,20 @@ class StreamMessagesTest(ZulipTestCase):
         message = most_recent_message(user_profile)
         assert(UserMessage.objects.get(user_profile=user_profile, message=message).flags.mentioned.is_set)
 
+    def _send_stream_message(self, email, stream_name, content):
+        # type: (Text, Text, Text) -> Set[int]
+        with mock.patch('zerver.lib.actions.send_event') as m:
+            self.send_message(
+                email,
+                stream_name,
+                Recipient.STREAM,
+                content=content
+            )
+        self.assertEqual(m.call_count, 1)
+        users = m.call_args[0][1]
+        user_ids = {u['id'] for u in users}
+        return user_ids
+
     def test_unsub_mention(self):
         # type: () -> None
         cordelia = self.example_user('cordelia')
@@ -610,15 +624,15 @@ class StreamMessagesTest(ZulipTestCase):
         ).delete()
 
         def mention_cordelia():
-            # type: () -> None
+            # type: () -> Set[int]
             content = 'test @**Cordelia Lear** rules'
 
-            self.send_message(
-                hamlet.email,
-                stream_name,
-                Recipient.STREAM,
+            user_ids = self._send_stream_message(
+                email=hamlet.email,
+                stream_name=stream_name,
                 content=content
             )
+            return user_ids
 
         def num_cordelia_messages():
             # type: () -> int
@@ -626,15 +640,16 @@ class StreamMessagesTest(ZulipTestCase):
                 user_profile=cordelia
             ).count()
 
-        mention_cordelia()
-
+        user_ids = mention_cordelia()
         self.assertEqual(0, num_cordelia_messages())
+        self.assertNotIn(cordelia.id, user_ids)
 
         # Make sure test isn't too brittle-subscribing
         # Cordelia and mentioning her should give her a
         # message.
         self.subscribe(cordelia, stream_name)
-        mention_cordelia()
+        user_ids = mention_cordelia()
+        self.assertIn(cordelia.id, user_ids)
         self.assertEqual(1, num_cordelia_messages())
 
     def test_message_bot_mentions(self):
@@ -658,27 +673,18 @@ class StreamMessagesTest(ZulipTestCase):
             bot_owner=cordelia,
         )
 
-        UserMessage.objects.filter(
-            user_profile=normal_bot
-        ).delete()
-
         content = 'test @**Normal Bot** rules'
 
-        self.send_message(
-            hamlet.email,
-            stream_name,
-            Recipient.STREAM,
+        user_ids = self._send_stream_message(
+            email=hamlet.email,
+            stream_name=stream_name,
             content=content
         )
 
-        # As of now, we don't support mentioning
-        # bots who aren't subscribed.
-        self.assertEqual(
-            UserMessage.objects.filter(
-                user_profile=normal_bot
-            ).count(),
-            0
-        )
+        self.assertIn(normal_bot.id, user_ids)
+        user_message = most_recent_usermessage(normal_bot)
+        self.assertEqual(user_message.message.content, content)
+        self.assertTrue(user_message.flags.mentioned)
 
     def test_stream_message_mirroring(self):
         # type: () -> None

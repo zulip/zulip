@@ -31,6 +31,7 @@ from zerver.lib.actions import (
     do_deactivate_user,
     do_reactivate_user,
     do_change_is_admin,
+    do_create_user,
 )
 from zerver.lib.topic_mutes import add_topic_mute
 from zerver.lib.stream_topic import StreamTopicTarget
@@ -408,6 +409,7 @@ class RecipientInfoTest(ZulipTestCase):
             stream_push_user_ids={hamlet.id},
             um_eligible_user_ids=all_user_ids,
             long_term_idle_user_ids=set(),
+            default_bot_user_ids=set(),
             service_bot_tuples=[],
         )
 
@@ -428,6 +430,46 @@ class RecipientInfoTest(ZulipTestCase):
         )
 
         self.assertEqual(info['stream_push_user_ids'], set())
+
+        # Add a service bot.
+        service_bot = do_create_user(
+            email='service-bot@zulip.com',
+            password='',
+            realm=realm,
+            full_name='',
+            short_name='',
+            active=True,
+            bot_type=UserProfile.EMBEDDED_BOT,
+        )
+
+        info = get_recipient_info(
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+            possibly_mentioned_user_ids={service_bot.id}
+        )
+        self.assertEqual(info['service_bot_tuples'], [
+            (service_bot.id, UserProfile.EMBEDDED_BOT),
+        ])
+
+        # Add a normal bot.
+        normal_bot = do_create_user(
+            email='normal-bot@zulip.com',
+            password='',
+            realm=realm,
+            full_name='',
+            short_name='',
+            active=True,
+            bot_type=UserProfile.DEFAULT_BOT,
+        )
+
+        info = get_recipient_info(
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+            possibly_mentioned_user_ids={service_bot.id, normal_bot.id}
+        )
+        self.assertEqual(info['default_bot_user_ids'], {normal_bot.id})
 
 class BulkUsersTest(ZulipTestCase):
     def test_client_gravatar_option(self):

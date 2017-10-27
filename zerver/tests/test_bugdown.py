@@ -201,6 +201,18 @@ class BugdownMiscTest(ZulipTestCase):
             id=fred2.id
         ))
 
+    def test_mention_data(self):
+        # type: () -> None
+        realm = get_realm('zulip')
+        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user('cordelia')
+        content = '@**King Hamlet** @**Cordelia lear**'
+        mention_data = bugdown.MentionData(realm.id, content)
+        self.assertEqual(mention_data.get_user_ids(), {hamlet.id, cordelia.id})
+
+        user = mention_data.get_user('king hamLET')
+        self.assertEqual(user['email'], hamlet.email)
+
 class BugdownTest(ZulipTestCase):
     def load_bugdown_tests(self):
         # type: () -> Tuple[Dict[Text, Any], List[List[Text]]]
