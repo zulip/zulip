@@ -70,8 +70,7 @@ subprocess.check_call(['rm', '-f'] + glob.glob('var/casper/casper-failure*.png')
 
 LOG_FILE = 'var/casper/server.log'
 
-def run_tests(files, external_host):
-    # type: (Iterable[str], str) -> None
+def run_tests(files: Iterable[str], external_host: str) -> None:
     test_dir = os.path.join(ZULIP_PATH, 'frontend_tests/casper_tests')
     test_files = []
     for file in files:
