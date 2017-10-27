@@ -220,11 +220,11 @@ class TestCrossRealmPMs(ZulipTestCase):
         support_bot = self.create_user(support_email)
 
         # Users can PM themselves
-        self.send_message(user1_email, user1_email, Recipient.PERSONAL)
+        self.send_personal_message(user1_email, user1_email)
         assert_message_received(user1, user1)
 
         # Users on the same realm can PM each other
-        self.send_message(user1_email, user1a_email, Recipient.PERSONAL)
+        self.send_personal_message(user1_email, user1a_email)
         assert_message_received(user1a, user1)
 
         # Cross-realm bots in the zulip.com realm can PM any realm
@@ -238,13 +238,13 @@ class TestCrossRealmPMs(ZulipTestCase):
         assert_message_received(user2, feedback_bot)
 
         # All users can PM cross-realm bots in the zulip.com realm
-        self.send_message(user1_email, feedback_email, Recipient.PERSONAL)
+        self.send_personal_message(user1_email, feedback_email)
         assert_message_received(feedback_bot, user1)
 
         # Users can PM cross-realm bots on non-zulip realms.
         # (The support bot represents some theoretical bot that we may
         # create in the future that does not have zulip.com as its realm.)
-        self.send_message(user1_email, [support_email], Recipient.PERSONAL)
+        self.send_personal_message(user1_email, support_email)
         assert_message_received(support_bot, user1)
 
         # Allow sending PMs to two different cross-realm bots simultaneously.
@@ -253,36 +253,37 @@ class TestCrossRealmPMs(ZulipTestCase):
         # prevent them from sending multiple bots at once.  We may revisit
         # this if it's a nuisance for huddles.)
         self.send_message(user1_email, [feedback_email, support_email],
-                          Recipient.PERSONAL)
+                          Recipient.HUDDLE)
         assert_message_received(feedback_bot, user1)
         assert_message_received(support_bot, user1)
 
         # Prevent old loophole where I could send PMs to other users as long
         # as I copied a cross-realm bot from the same realm.
         with assert_invalid_email():
-            self.send_message(user1_email, [user3_email, support_email], Recipient.PERSONAL)
+            self.send_message(user1_email, [user3_email, support_email],
+                              Recipient.HUDDLE)
 
         # Users on three different realms can't PM each other,
         # even if one of the users is a cross-realm bot.
         with assert_invalid_email():
             self.send_message(user1_email, [user2_email, feedback_email],
-                              Recipient.PERSONAL)
+                              Recipient.HUDDLE)
 
         with assert_invalid_email():
             self.send_message(feedback_email, [user1_email, user2_email],
-                              Recipient.PERSONAL)
+                              Recipient.HUDDLE)
 
         # Users on the different realms can not PM each other
         with assert_invalid_email():
-            self.send_message(user1_email, user2_email, Recipient.PERSONAL)
+            self.send_personal_message(user1_email, user2_email)
 
         # Users on non-zulip realms can't PM "ordinary" Zulip users
         with assert_invalid_email():
-            self.send_message(user1_email, "hamlet@zulip.com", Recipient.PERSONAL)
+            self.send_personal_message(user1_email, "hamlet@zulip.com")
 
         # Users on three different realms can not PM each other
         with assert_invalid_email():
-            self.send_message(user1_email, [user2_email, user3_email], Recipient.PERSONAL)
+            self.send_message(user1_email, [user2_email, user3_email], Recipient.HUDDLE)
 
 class ExtractedRecipientsTest(TestCase):
     def test_extract_recipients(self):
@@ -320,7 +321,7 @@ class PersonalMessagesTest(ZulipTestCase):
         self.register(test_email, "test")
         user_profile = self.nonreg_user('test')
         old_messages_count = message_stream_count(user_profile)
-        self.send_message(test_email, test_email, Recipient.PERSONAL)
+        self.send_personal_message(test_email, test_email)
         new_messages_count = message_stream_count(user_profile)
         self.assertEqual(new_messages_count, old_messages_count + 1)
 
@@ -353,7 +354,7 @@ class PersonalMessagesTest(ZulipTestCase):
         for user_profile in old_user_profiles:
             old_messages.append(message_stream_count(user_profile))
 
-        self.send_message(test_email, test_email, Recipient.PERSONAL)
+        self.send_personal_message(test_email, test_email)
 
         new_messages = []
         for user_profile in old_user_profiles:
@@ -384,7 +385,7 @@ class PersonalMessagesTest(ZulipTestCase):
         for user_profile in other_user_profiles:
             old_other_messages.append(message_stream_count(user_profile))
 
-        self.send_message(sender_email, receiver_email, Recipient.PERSONAL, content)
+        self.send_personal_message(sender_email, receiver_email, content)
 
         # Users outside the conversation don't get the message.
         new_other_messages = []
@@ -1370,8 +1371,11 @@ class EditMessageTest(ZulipTestCase):
     def test_fetch_raw_message(self):
         # type: () -> None
         self.login(self.example_email("hamlet"))
-        msg_id = self.send_message(self.example_email("hamlet"), self.example_email("cordelia"), Recipient.PERSONAL,
-                                   subject="editing", content="**before** edit")
+        msg_id = self.send_personal_message(
+            from_email=self.example_email("hamlet"),
+            to_email=self.example_email("cordelia"),
+            content="**before** edit",
+        )
         result = self.client_get('/json/messages/' + str(msg_id))
         self.assert_json_success(result)
         self.assertEqual(result.json()['raw_content'], '**before** edit')
@@ -2015,8 +2019,9 @@ class StarTests(ZulipTestCase):
         POST /json/messages/flags.
         """
         self.login(self.example_email("hamlet"))
-        message_ids = [self.send_message(self.example_email("hamlet"), self.example_email("hamlet"),
-                                         Recipient.PERSONAL, "test")]
+        message_ids = [self.send_personal_message(self.example_email("hamlet"),
+                                                  self.example_email("hamlet"),
+                                                  "test")]
 
         # Star a message.
         result = self.change_star(message_ids)
@@ -2052,14 +2057,24 @@ class StarTests(ZulipTestCase):
         other_message_ids = [
             self.send_stream_message(self.example_email("hamlet"), stream_name, "test_unused"),
         ]
-        received_message_ids = [self.send_message(self.example_email("hamlet"), [self.example_email("cordelia")],
-                                                  Recipient.PERSONAL, "test_received")]
+        received_message_ids = [
+            self.send_personal_message(
+                self.example_email("hamlet"),
+                self.example_email("cordelia"),
+                "test_received"
+            ),
+        ]
 
         # Now login as another user who wasn't on that stream
         self.login(self.example_email("cordelia"))
         # Send a message to yourself to make sure we have at least one with the read flag
-        sent_message_ids = [self.send_message(self.example_email("cordelia"), [self.example_email("cordelia")],
-                                              Recipient.PERSONAL, "test_read_message")]
+        sent_message_ids = [
+            self.send_personal_message(
+                self.example_email("cordelia"),
+                self.example_email("cordelia"),
+                "test_read_message",
+            ),
+        ]
         result = self.client_post("/json/messages/flags",
                                   {"messages": ujson.dumps(sent_message_ids),
                                    "op": "add",
@@ -2104,8 +2119,13 @@ class StarTests(ZulipTestCase):
         POST /json/messages/flags.
         """
         self.login(self.example_email("hamlet"))
-        message_ids = [self.send_message(self.example_email("hamlet"), self.example_email("hamlet"),
-                                         Recipient.PERSONAL, "test")]
+        message_ids = [
+            self.send_personal_message(
+                self.example_email("hamlet"),
+                self.example_email("hamlet"),
+                "test",
+            ),
+        ]
 
         # Starring private messages you didn't receive fails.
         self.login(self.example_email("cordelia"))
@@ -2567,8 +2587,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
 
         def send_personal_message(content):
             # type: (str) -> None
-            self.send_message(sender, self.example_email("hamlet"),
-                              Recipient.PERSONAL, content)
+            self.send_personal_message(sender, self.example_email("hamlet"), content)
 
         long_term_idle_user = self.example_user('hamlet')
         self.send_stream_message(long_term_idle_user.email, stream_name)

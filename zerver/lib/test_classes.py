@@ -409,6 +409,18 @@ class ZulipTestCase(TestCase):
             content, forged=False, forged_timestamp=None,
             forwarder_user_profile=sender, realm=sender.realm, **kwargs)
 
+    def send_personal_message(self, from_email, to_email, content=u"test content"):
+        # type: (Text, Text, Text) -> int
+        sender = get_user_profile_by_email(from_email)
+
+        recipient_list = [to_email]
+        (sending_client, _) = Client.objects.get_or_create(name="test suite")
+
+        return check_send_message(
+            sender, sending_client, 'private', recipient_list, None,
+            content
+        )
+
     def send_stream_message(self, sender_email, stream_name,
                             content=u"test content", topic_name=u"test"):
         # type: (Text, Text, Text, Text) -> int
