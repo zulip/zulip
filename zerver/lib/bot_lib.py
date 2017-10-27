@@ -91,7 +91,7 @@ class EmbeddedBotHandler(object):
             recipients = message['to'] if message['type'] == 'stream' else ','.join(message['to'])
             internal_send_message(realm=self.user_profile.realm, sender_email=self.user_profile.email,
                                   recipient_type_name=message['type'], recipients=recipients,
-                                  subject=message.get('subject', None), content=message['content'])
+                                  topic_name=message.get('subject', None), content=message['content'])
         else:
             self._rate_limit.show_error_and_exit()
 
