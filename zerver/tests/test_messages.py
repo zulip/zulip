@@ -50,7 +50,7 @@ from zerver.models import (
 
 from zerver.lib.actions import (
     check_message,
-    check_send_message,
+    check_send_stream_message,
     do_deactivate_user,
     do_set_realm_property,
     extract_recipients,
@@ -537,17 +537,11 @@ class StreamMessagesTest(ZulipTestCase):
             self.subscribe(user_profile, "Denmark")
 
         sender = self.example_user('hamlet')
-        message_type_name = "stream"
         sending_client = make_client(name="test suite")
-        stream = 'Denmark'
-        subject = 'foo'
+        stream_name = 'Denmark'
+        topic_name = 'foo'
         content = 'whatever'
         realm = sender.realm
-
-        def send_message():
-            # type: () -> None
-            check_send_message(sender, sending_client, message_type_name, [stream],
-                               subject, content, forwarder_user_profile=sender, realm=realm)
 
         # To get accurate count of the queries, we should make sure that
         # caches don't come into play. If we count queries while caches are
@@ -555,9 +549,15 @@ class StreamMessagesTest(ZulipTestCase):
         # persistent, so our test can also fail if cache is invalidated
         # during the course of the unit test.
         flush_per_request_caches()
-        cache_delete(get_stream_cache_key(stream, realm.id))
+        cache_delete(get_stream_cache_key(stream_name, realm.id))
         with queries_captured() as queries:
-            send_message()
+            check_send_stream_message(
+                sender=sender,
+                client=sending_client,
+                stream_name=stream_name,
+                topic=topic_name,
+                body=content,
+            )
 
         self.assert_length(queries, 13)
 
