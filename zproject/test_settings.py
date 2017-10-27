@@ -114,10 +114,12 @@ else:
 
     def set_loglevel(logger_name, level):
         LOGGING['loggers'].setdefault(logger_name, {})['level'] = level
+        LOGGING['loggers'].setdefault(logger_name, {})['propagate'] = False
     set_loglevel('zulip.requests', 'CRITICAL')
     set_loglevel('zulip.management', 'CRITICAL')
     set_loglevel('django.request', 'ERROR')
     set_loglevel('fakeldap', 'ERROR')
+    set_loglevel('zulip.send_email', 'ERROR')
 
 # Enable file:/// hyperlink support by default in tests
 ENABLE_FILE_LINKS = True
