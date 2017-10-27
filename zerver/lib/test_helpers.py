@@ -158,12 +158,12 @@ def queries_captured(include_savepoints=False):
 
     def cursor_execute(self, sql, params=()):
         # type: (TimeTrackingCursor, NonBinaryStr, Iterable[Any]) -> None
-        return wrapper_execute(self, super().execute, sql, params)  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
+        return wrapper_execute(self, super(TimeTrackingCursor, self).execute, sql, params)  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
     TimeTrackingCursor.execute = cursor_execute  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
 
     def cursor_executemany(self, sql, params=()):
         # type: (TimeTrackingCursor, NonBinaryStr, Iterable[Any]) -> None
-        return wrapper_execute(self, super().executemany, sql, params)  # type: ignore # https://github.com/JukkaL/mypy/issues/1167 # nocoverage -- doesn't actually get used in tests
+        return wrapper_execute(self, super(TimeTrackingCursor, self).executemany, sql, params)  # type: ignore # https://github.com/JukkaL/mypy/issues/1167 # nocoverage -- doesn't actually get used in tests
     TimeTrackingCursor.executemany = cursor_executemany  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
 
     yield queries
