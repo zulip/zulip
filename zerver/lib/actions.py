@@ -1079,6 +1079,12 @@ def do_send_messages(messages_maybe_none, email_gateway=False):
         message['message'].rendered_content_version = bugdown_version
         links_for_embed |= message['message'].links_for_preview
 
+        # Add members of the mentioned user groups into `mentions_user_ids`.
+        mention_data = message['mention_data']
+        for group_id in message['message'].mentions_user_group_ids:
+            members = message['mention_data'].get_group_members(group_id)
+            message['message'].mentions_user_ids.update(members)
+
         '''
         Once we have the actual list of mentioned ids from message
         rendering, we can patch in "default bots" (aka normal bots)

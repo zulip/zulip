@@ -19,7 +19,7 @@ import ujson
 import xml.etree.cElementTree as etree
 from xml.etree.cElementTree import Element, SubElement
 
-from collections import deque
+from collections import deque, defaultdict
 
 import requests
 
@@ -45,6 +45,7 @@ from zerver.models import (
     realm_filters_for_realm,
     UserProfile,
     UserGroup,
+    UserGroupMembership,
 )
 import zerver.lib.mention as mention
 from zerver.lib.tex import render_tex
@@ -1602,6 +1603,13 @@ class MentionData:
 
         user_group_names = possible_user_group_mentions(content)
         self.user_group_name_info = get_user_group_name_info(realm_id, user_group_names)
+        group_ids = [group.id for group in self.user_group_name_info.values()]
+        membership = UserGroupMembership.objects.filter(user_group_id__in=group_ids)
+        self.user_group_members = defaultdict(list)  # type: Dict[int, List[int]]
+        for info in membership.values('user_group_id', 'user_profile_id'):
+            group_id = info['user_group_id']
+            user_profile_id = info['user_profile_id']
+            self.user_group_members[group_id].append(user_profile_id)
 
     def get_user(self, name):
         # type: (Text) -> Optional[FullNameInfo]
@@ -1620,6 +1628,10 @@ class MentionData:
     def get_user_group(self, name):
         # type: (Text) -> Optional[UserGroup]
         return self.user_group_name_info.get(name.lower(), None)
+
+    def get_group_members(self, user_group_id):
+        # type: (int) -> List[int]
+        return self.user_group_members.get(user_group_id, [])
 
 def get_user_group_name_info(realm_id, user_group_names):
     # type: (int, Set[Text]) -> Dict[Text, UserGroup]
