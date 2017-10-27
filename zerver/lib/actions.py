@@ -903,11 +903,6 @@ def get_recipient_info(recipient, sender_id, stream_topic, possibly_mentioned_us
         #       this `else` clause and just `assert(user_ids)`.
         rows = []
 
-    active_user_ids = {
-        row['id']
-        for row in rows
-    } & message_to_user_id_set
-
     def get_ids_for(f):
         # type: (Callable[[Dict[str, Any]], bool]) -> Set[int]
         """Only includes users on the explicit message to line"""
@@ -921,6 +916,7 @@ def get_recipient_info(recipient, sender_id, stream_topic, possibly_mentioned_us
         # type: (Dict[str, Any]) -> bool
         return row['is_bot'] and (row['bot_type'] in UserProfile.SERVICE_BOT_TYPES)
 
+    active_user_ids = get_ids_for(lambda r: True)
     push_notify_user_ids = get_ids_for(
         lambda r: r['enable_online_push_notifications']
     )
