@@ -55,7 +55,7 @@ docutils==0.14
 first==2.0.1              # via pip-tools
 gitdb==0.6.4
 gitlint==0.8.2
-google-api-python-client==1.6.3
+google-api-python-client==1.6.4
 h2==2.6.2                 # via hyper
 hpack==3.0.0              # via h2
 html2text==2016.9.19
