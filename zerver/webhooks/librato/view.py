@@ -68,7 +68,7 @@ class LibratoWebhookParser(object):
 class LibratoWebhookHandler(LibratoWebhookParser):
     def __init__(self, payload, attachments):
         # type: (Dict[str, Any], List[Dict[str, Any]]) -> None
-        super(LibratoWebhookHandler, self).__init__(payload, attachments)
+        super().__init__(payload, attachments)
         self.payload_available_types = {
             ALERT_CLEAR: self.handle_alert_clear_message,
             ALERT_VIOLATION: self.handle_alert_violation_message

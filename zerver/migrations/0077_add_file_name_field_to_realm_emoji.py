@@ -83,7 +83,7 @@ class Uploader(object):
 
 class LocalUploader(Uploader):
     def __init__(self) -> None:
-        super(LocalUploader, self).__init__()
+        super().__init__()
 
     @staticmethod
     def mkdirs(path: Text) -> None:
@@ -108,7 +108,7 @@ class LocalUploader(Uploader):
 
 class S3Uploader(Uploader):
     def __init__(self) -> None:
-        super(S3Uploader, self).__init__()
+        super().__init__()
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
         bucket_name = settings.S3_AVATAR_BUCKET
         self.bucket = conn.get_bucket(bucket_name, validate=False)

@@ -19,7 +19,7 @@ Example: ./manage.py realm_emoji --realm=zulip.com --op=show
 
     # Fix support for multi-line usage
     def create_parser(self, *args: Any, **kwargs: Any) -> CommandParser:
-        parser = super(Command, self).create_parser(*args, **kwargs)
+        parser = super().create_parser(*args, **kwargs)
         parser.formatter_class = RawTextHelpFormatter
         return parser
 

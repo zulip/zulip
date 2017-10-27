@@ -189,7 +189,7 @@ class WorkerTest(ZulipTestCase):
         class TestWorker(queue_processors.QueueProcessingWorker):
             def __init__(self):
                 # type: () -> None
-                super(TestWorker, self).__init__()
+                super().__init__()
 
             def consume(self, data):
                 # type: (Mapping[str, Any]) -> None
@@ -203,7 +203,7 @@ class WorkerTest(ZulipTestCase):
         class TestWorker(queue_processors.QueueProcessingWorker):
             def __init__(self):
                 # type: () -> None
-                super(TestWorker, self).__init__()
+                super().__init__()
 
         with self.assertRaises(queue_processors.WorkerDeclarationException):
             worker = TestWorker()

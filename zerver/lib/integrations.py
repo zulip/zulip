@@ -118,7 +118,7 @@ class BotIntegration(Integration):
     def __init__(self, name, categories, logo=None, secondary_line_text=None,
                  display_name=None, doc=None):
         # type: (str, List[str], Optional[str], Optional[str], Optional[str], Optional[str]) -> None
-        super(BotIntegration, self).__init__(
+        super().__init__(
             name,
             client_name=name,
             categories=categories,
@@ -160,7 +160,7 @@ class WebhookIntegration(Integration):
         # type: (str, List[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[bool]) -> None
         if client_name is None:
             client_name = self.DEFAULT_CLIENT_NAME.format(name=name.title())
-        super(WebhookIntegration, self).__init__(
+        super().__init__(
             name,
             client_name,
             categories,
@@ -205,7 +205,7 @@ class HubotLozenge(Integration):
         if git_url is None:
             git_url = self.GIT_URL_TEMPLATE.format(name)
         self.git_url = git_url
-        super(HubotLozenge, self).__init__(
+        super().__init__(
             name, name, categories,
             logo=logo, display_name=display_name,
             legacy=legacy
@@ -221,7 +221,7 @@ class GithubIntegration(WebhookIntegration):
         # type: (str, List[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[bool]) -> None
         url = self.DEFAULT_URL.format(name='github')
 
-        super(GithubIntegration, self).__init__(
+        super().__init__(
             name,
             categories,
             client_name=client_name,
@@ -251,7 +251,7 @@ class EmbeddedBotIntegration(Integration):
         # type: (str, *Any, **Any) -> None
         assert kwargs.get("client_name") is None
         client_name = self.DEFAULT_CLIENT_NAME.format(name=name.title())
-        super(EmbeddedBotIntegration, self).__init__(
+        super().__init__(
             name, client_name, *args, **kwargs)
 
 EMBEDDED_BOTS = [

@@ -28,11 +28,11 @@ class TimeTrackingCursor(cursor):
 
     def execute(self, query, vars=None):
         # type: (NonBinaryStr, Optional[ParamsT]) -> TimeTrackingCursor
-        return wrapper_execute(self, super(TimeTrackingCursor, self).execute, query, vars)
+        return wrapper_execute(self, super().execute, query, vars)
 
     def executemany(self, query, vars):
         # type: (NonBinaryStr, Iterable[Any]) -> TimeTrackingCursor
-        return wrapper_execute(self, super(TimeTrackingCursor, self).executemany, query, vars)
+        return wrapper_execute(self, super().executemany, query, vars)
 
 class TimeTrackingConnection(connection):
     """A psycopg2 connection class that uses TimeTrackingCursors."""
@@ -40,7 +40,7 @@ class TimeTrackingConnection(connection):
     def __init__(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
         self.queries = []  # type: List[Dict[str, str]]
-        super(TimeTrackingConnection, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def cursor(self, *args, **kwargs):
         # type: (*Any, **Any) -> TimeTrackingCursor

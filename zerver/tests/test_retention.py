@@ -19,7 +19,7 @@ class TestRetentionLib(ZulipTestCase):
 
     def setUp(self):
         # type: () -> None
-        super(TestRetentionLib, self).setUp()
+        super().setUp()
         self.zulip_realm = self._set_realm_message_retention_value('zulip', 30)
         self.mit_realm = self._set_realm_message_retention_value('zephyr', 100)
 
@@ -118,7 +118,7 @@ class TestMoveMessageToArchive(ZulipTestCase):
 
     def setUp(self):
         # type: () -> None
-        super(TestMoveMessageToArchive, self).setUp()
+        super().setUp()
         self.sender = 'hamlet@zulip.com'
         self.recipient = 'cordelia@zulip.com'
 

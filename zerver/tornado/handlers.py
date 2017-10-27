@@ -77,7 +77,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
     initLock = Lock()
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super(AsyncDjangoHandler, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # Set up middleware if needed. We couldn't do this earlier, because
         # settings weren't available.

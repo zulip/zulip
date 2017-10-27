@@ -175,7 +175,7 @@ class TextTestResult(runner.TextTestResult):
     """
     def __init__(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
-        super(TextTestResult, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.failed_tests = []  # type: List[str]
 
     def addInfo(self, test, msg):
@@ -400,7 +400,7 @@ class ParallelTestSuite(django_runner.ParallelTestSuite):
 
     def __init__(self, suite, processes, failfast):
         # type: (TestSuite, int, bool) -> None
-        super(ParallelTestSuite, self).__init__(suite, processes, failfast)
+        super().__init__(suite, processes, failfast)
         self.subsuites = SubSuiteList(self.subsuites)  # type: SubSuiteList
 
 class Runner(DiscoverRunner):
@@ -445,7 +445,7 @@ class Runner(DiscoverRunner):
         settings.DATABASES['default']['NAME'] = settings.BACKEND_DATABASE_TEMPLATE
         # We create/destroy the test databases in run_tests to avoid
         # duplicate work when running in parallel mode.
-        return super(Runner, self).setup_test_environment(*args, **kwargs)
+        return super().setup_test_environment(*args, **kwargs)
 
     def teardown_test_environment(self, *args, **kwargs):
         # type: (*Any, **Any) -> Any
@@ -456,7 +456,7 @@ class Runner(DiscoverRunner):
             # destroy settings.BACKEND_DATABASE_TEMPLATE; we don't want that.
             # So run this only in serial mode.
             destroy_test_databases()
-        return super(Runner, self).teardown_test_environment(*args, **kwargs)
+        return super().teardown_test_environment(*args, **kwargs)
 
     def run_tests(self, test_labels, extra_tests=None,
                   full_suite=False, **kwargs):
@@ -533,9 +533,9 @@ class SubSuiteList(list):
     def __init__(self, suites):
         # type: (List[TestSuite]) -> None
         serialized_suites = [serialize_suite(s) for s in suites]
-        super(SubSuiteList, self).__init__(serialized_suites)
+        super().__init__(serialized_suites)
 
     def __getitem__(self, index):
         # type: (Any) -> Any
-        suite = super(SubSuiteList, self).__getitem__(index)
+        suite = super().__getitem__(index)
         return deserialize_suite(suite)

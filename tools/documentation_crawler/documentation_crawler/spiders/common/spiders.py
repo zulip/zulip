@@ -30,7 +30,7 @@ class BaseDocumentationSpider(scrapy.Spider):
     attrs = ('href', 'src')
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super(BaseDocumentationSpider, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.has_error = False
 
     def _set_error_state(self) -> None:

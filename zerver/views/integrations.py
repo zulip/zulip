@@ -42,7 +42,7 @@ def add_api_uri_context(context, request):
 class ApiURLView(TemplateView):
     def get_context_data(self, **kwargs):
         # type: (**Any) -> Dict[str, str]
-        context = super(ApiURLView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         add_api_uri_context(context, self.request)
         return context
 
@@ -65,7 +65,7 @@ class HelpView(ApiURLView):
     def get_context_data(self, **kwargs):
         # type: (**Any) -> Dict[str, Any]
         article = kwargs["article"]
-        context = super(HelpView, self).get_context_data()  # type: Dict[str, Any]
+        context = super().get_context_data()  # type: Dict[str, Any]
         path = self.get_path(article)
         try:
             loader.get_template(path)
@@ -81,7 +81,7 @@ class HelpView(ApiURLView):
     def get(self, request, article=""):
         # type: (HttpRequest, str) -> HttpResponse
         path = self.get_path(article)
-        result = super(HelpView, self).get(self, article=article)
+        result = super().get(self, article=article)
         try:
             loader.get_template(path)
         except loader.TemplateDoesNotExist:
@@ -123,7 +123,7 @@ class IntegrationView(ApiURLView):
 
     def get_context_data(self, **kwargs):
         # type: (**Any) -> Dict[str, Any]
-        context = super(IntegrationView, self).get_context_data(**kwargs)  # type: Dict[str, Any]
+        context = super().get_context_data(**kwargs)  # type: Dict[str, Any]
         add_integrations_context(context)
         return context
 
