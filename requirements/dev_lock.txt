@@ -44,12 +44,12 @@ decorator==4.1.2          # via ipython, traitlets
 defusedxml==0.5.0
 dicttoxml==1.7.4          # via moto
 diff-match-patch==20121119
-django-auth-ldap==1.2.15
+django-auth-ldap==1.2.16
 django-bitfield==1.9.3
 django-pipeline==1.6.13
 django-statsd-mozilla==0.4.0
 django-webpack-loader==0.5.0
-django==1.11.6            # via django-auth-ldap, django-bitfield
+django==1.11.6
 docopt==0.6.2
 docutils==0.14
 first==2.0.1              # via pip-tools
