@@ -187,3 +187,6 @@ social-auth-app-django==1.2.0
 
 # Needed for messages' rendered content parsing in push notifications.
 lxml==4.0.0
+
+# One occurance left in home.py
+simplejson==3.11.1
