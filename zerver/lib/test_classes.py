@@ -421,6 +421,19 @@ class ZulipTestCase(TestCase):
             content
         )
 
+    def send_huddle_message(self, from_email, to_emails, content=u"test content"):
+        # type: (Text, List[Text], Text) -> int
+        sender = get_user_profile_by_email(from_email)
+
+        assert(len(to_emails) >= 2)
+
+        (sending_client, _) = Client.objects.get_or_create(name="test suite")
+
+        return check_send_message(
+            sender, sending_client, 'private', to_emails, None,
+            content
+        )
+
     def send_stream_message(self, sender_email, stream_name,
                             content=u"test content", topic_name=u"test"):
         # type: (Text, Text, Text, Text) -> int

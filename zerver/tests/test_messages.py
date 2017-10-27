@@ -252,26 +252,22 @@ class TestCrossRealmPMs(ZulipTestCase):
         # already individually send PMs to cross-realm bots, we shouldn't
         # prevent them from sending multiple bots at once.  We may revisit
         # this if it's a nuisance for huddles.)
-        self.send_message(user1_email, [feedback_email, support_email],
-                          Recipient.HUDDLE)
+        self.send_huddle_message(user1_email, [feedback_email, support_email])
         assert_message_received(feedback_bot, user1)
         assert_message_received(support_bot, user1)
 
         # Prevent old loophole where I could send PMs to other users as long
         # as I copied a cross-realm bot from the same realm.
         with assert_invalid_email():
-            self.send_message(user1_email, [user3_email, support_email],
-                              Recipient.HUDDLE)
+            self.send_huddle_message(user1_email, [user3_email, support_email])
 
         # Users on three different realms can't PM each other,
         # even if one of the users is a cross-realm bot.
         with assert_invalid_email():
-            self.send_message(user1_email, [user2_email, feedback_email],
-                              Recipient.HUDDLE)
+            self.send_huddle_message(user1_email, [user2_email, feedback_email])
 
         with assert_invalid_email():
-            self.send_message(feedback_email, [user1_email, user2_email],
-                              Recipient.HUDDLE)
+            self.send_huddle_message(feedback_email, [user1_email, user2_email])
 
         # Users on the different realms can not PM each other
         with assert_invalid_email():
@@ -283,7 +279,7 @@ class TestCrossRealmPMs(ZulipTestCase):
 
         # Users on three different realms can not PM each other
         with assert_invalid_email():
-            self.send_message(user1_email, [user2_email, user3_email], Recipient.HUDDLE)
+            self.send_huddle_message(user1_email, [user2_email, user3_email])
 
 class ExtractedRecipientsTest(TestCase):
     def test_extract_recipients(self):
