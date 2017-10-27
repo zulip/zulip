@@ -13,8 +13,7 @@ from .compressors import minified_js
 from zerver.templatetags.app_filters import display_list, render_markdown_path
 
 
-def environment(**options):
-    # type: (**Any) -> Environment
+def environment(**options: Any) -> Environment:
     env = Environment(**options)
     env.globals.update({
         'static': staticfiles_storage.url,

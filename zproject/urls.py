@@ -560,8 +560,7 @@ if settings.DEVELOPMENT:
 # tests to fail
 urlpatterns = i18n_patterns(*i18n_urls) + urls + legacy_urls
 
-def handler400(request, exception):
-    # type: (HttpRequest, Exception) -> HttpResponse
+def handler400(request: HttpRequest, exception: Exception) -> HttpResponse:
     #
     # This behaves exactly like the default Django implementation in
     # the case where you haven't made a template "400.html", which we

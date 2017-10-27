@@ -8,8 +8,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template import loader
 
 class EmailLogBackEnd(BaseEmailBackend):
-    def log_email(self, email):
-        # type: (EmailMultiAlternatives) -> None
+    def log_email(self, email: EmailMultiAlternatives) -> None:
         """Used in development to record sent emails in a nice HTML log"""
         html_message = 'Missing HTML message'
         if len(email.alternatives) > 0:
@@ -36,8 +35,7 @@ class EmailLogBackEnd(BaseEmailBackend):
         with open(settings.EMAIL_CONTENT_LOG_PATH, "w+") as f:
             f.write(new_email + previous_emails)
 
-    def send_messages(self, email_messages):
-        # type: (List[EmailMultiAlternatives]) -> int
+    def send_messages(self, email_messages: List[EmailMultiAlternatives]) -> int:
         for email in email_messages:
             self.log_email(email)
             email_log_url = settings.ROOT_DOMAIN_URI + "/emails"
