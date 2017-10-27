@@ -18,8 +18,7 @@ from typing import Any, Dict
 
 # This is currently only used for confirming PreregistrationUser.
 # Do not add other confirmation paths here.
-def confirm(request, confirmation_key):
-    # type: (HttpRequest, str) -> HttpResponse
+def confirm(request: HttpRequest, confirmation_key: str) -> HttpResponse:
     try:
         get_object_from_key(confirmation_key, Confirmation.USER_REGISTRATION)
     except ConfirmationKeyException:

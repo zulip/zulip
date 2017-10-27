@@ -28,27 +28,24 @@ class ConfirmationKeyException(Exception):
     EXPIRED = 2
     DOES_NOT_EXIST = 3
 
-    def __init__(self, error_type):
-        # type: (int) -> None
+    def __init__(self, error_type: int) -> None:
         super().__init__()
         self.error_type = error_type
 
-def render_confirmation_key_error(request, exception):
-    # type: (HttpRequest, ConfirmationKeyException) -> HttpResponse
+def render_confirmation_key_error(request: HttpRequest, exception: ConfirmationKeyException) -> HttpResponse:
     if exception.error_type == ConfirmationKeyException.WRONG_LENGTH:
         return render(request, 'confirmation/link_malformed.html')
     if exception.error_type == ConfirmationKeyException.EXPIRED:
         return render(request, 'confirmation/link_expired.html')
     return render(request, 'confirmation/link_does_not_exist.html')
 
-def generate_key():
-    # type: () -> str
+def generate_key() -> str:
     generator = SystemRandom()
     # 24 characters * 5 bits of entropy/character = 120 bits of entropy
     return ''.join(generator.choice(string.ascii_lowercase + string.digits) for _ in range(24))
 
-def get_object_from_key(confirmation_key, confirmation_type):
-    # type: (str, int) -> Union[MultiuseInvite, PreregistrationUser, EmailChangeStatus, UserProfile]
+def get_object_from_key(confirmation_key: str,
+                        confirmation_type: int) -> Union[MultiuseInvite, PreregistrationUser, EmailChangeStatus]:
     # Confirmation keys used to be 40 characters
     if len(confirmation_key) not in (24, 40):
         raise ConfirmationKeyException(ConfirmationKeyException.WRONG_LENGTH)
@@ -68,15 +65,17 @@ def get_object_from_key(confirmation_key, confirmation_type):
         obj.save(update_fields=['status'])
     return obj
 
-def create_confirmation_link(obj, host, confirmation_type, url_args=None):
-    # type: (Union[ContentType, int], str, int, Optional[Dict[str, str]]) -> str
+def create_confirmation_link(obj: Union[ContentType, int], host: str,
+                             confirmation_type: int,
+                             url_args: Optional[Dict[str, str]]=None) -> str:
     key = generate_key()
     Confirmation.objects.create(content_object=obj, date_sent=timezone_now(), confirmation_key=key,
                                 type=confirmation_type)
     return confirmation_url(key, host, confirmation_type, url_args)
 
-def confirmation_url(confirmation_key, host, confirmation_type, url_args=None):
-    # type: (str, str, int, Optional[Dict[str, str]]) -> str
+def confirmation_url(confirmation_key: str, host: str,
+                     confirmation_type: int,
+                     url_args: Optional[Dict[str, str]]=None) -> str:
     if url_args is None:
         url_args = {}
     url_args['confirmation_key'] = confirmation_key
@@ -99,13 +98,12 @@ class Confirmation(models.Model):
     MULTIUSE_INVITE = 6
     type = models.PositiveSmallIntegerField()  # type: int
 
-    def __str__(self):
-        # type: () -> Text
+    def __str__(self) -> Text:
         return '<Confirmation: %s>' % (self.content_object,)
 
 class ConfirmationType(object):
-    def __init__(self, url_name, validity_in_days=settings.CONFIRMATION_LINK_DEFAULT_VALIDITY_DAYS):
-        # type: (str, int) -> None
+    def __init__(self, url_name: str,
+                 validity_in_days: int=settings.CONFIRMATION_LINK_DEFAULT_VALIDITY_DAYS) -> None:
         self.url_name = url_name
         self.validity_in_days = validity_in_days
 
@@ -123,8 +121,7 @@ _properties = {
 # Confirmation pathways for which there is no content_object that we need to
 # keep track of.
 
-def check_key_is_valid(creation_key):
-    # type: (Text) -> bool
+def check_key_is_valid(creation_key: Text) -> bool:
     if not RealmCreationKey.objects.filter(creation_key=creation_key).exists():
         return False
     days_sofar = (timezone_now() - RealmCreationKey.objects.get(creation_key=creation_key).date_created).days
@@ -133,8 +130,7 @@ def check_key_is_valid(creation_key):
         return True
     return False
 
-def generate_realm_creation_url():
-    # type: () -> Text
+def generate_realm_creation_url() -> Text:
     key = generate_key()
     RealmCreationKey.objects.create(creation_key=key, date_created=timezone_now())
     return u'%s%s%s' % (settings.EXTERNAL_URI_SCHEME,
