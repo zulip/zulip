@@ -421,7 +421,7 @@ class PersonalMessagesTest(ZulipTestCase):
 
 class StreamMessagesTest(ZulipTestCase):
 
-    def assert_stream_message(self, stream_name, subject="test subject",
+    def assert_stream_message(self, stream_name, subject="test topic",
                               content="test content"):
         # type: (Text, Text, Text) -> None
         """
@@ -1600,7 +1600,7 @@ class EditMessageTest(ZulipTestCase):
         self.login(self.example_email("hamlet"))
         hamlet = self.example_user('hamlet')
         msg_id = self.send_message(self.example_email("hamlet"), "Scotland", Recipient.STREAM,
-                                   subject="subject 1", content="content 1")
+                                   subject="topic 1", content="content 1")
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
             'content': 'content 2',
@@ -1615,23 +1615,23 @@ class EditMessageTest(ZulipTestCase):
 
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
-            'subject': 'subject 2',
+            'subject': 'topic 2',
         })
         self.assert_json_success(result)
         history = ujson.loads(Message.objects.get(id=msg_id).edit_history)
-        self.assertEqual(history[0]['prev_subject'], 'subject 1')
+        self.assertEqual(history[0]['prev_subject'], 'topic 1')
         self.assertEqual(history[0]['user_id'], hamlet.id)
         self.assertEqual(set(history[0].keys()), {u'timestamp', u'prev_subject', u'user_id'})
 
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
             'content': 'content 3',
-            'subject': 'subject 3',
+            'subject': 'topic 3',
         })
         self.assert_json_success(result)
         history = ujson.loads(Message.objects.get(id=msg_id).edit_history)
         self.assertEqual(history[0]['prev_content'], 'content 2')
-        self.assertEqual(history[0]['prev_subject'], 'subject 2')
+        self.assertEqual(history[0]['prev_subject'], 'topic 2')
         self.assertEqual(history[0]['user_id'], hamlet.id)
         self.assertEqual(set(history[0].keys()),
                          {u'timestamp', u'prev_subject', u'prev_content', u'user_id',
@@ -1649,17 +1649,17 @@ class EditMessageTest(ZulipTestCase):
         self.login(self.example_email("iago"))
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
-            'subject': 'subject 4',
+            'subject': 'topic 4',
         })
         self.assert_json_success(result)
         history = ujson.loads(Message.objects.get(id=msg_id).edit_history)
-        self.assertEqual(history[0]['prev_subject'], 'subject 3')
+        self.assertEqual(history[0]['prev_subject'], 'topic 3')
         self.assertEqual(history[0]['user_id'], self.example_user('iago').id)
 
         history = ujson.loads(Message.objects.get(id=msg_id).edit_history)
-        self.assertEqual(history[0]['prev_subject'], 'subject 3')
-        self.assertEqual(history[2]['prev_subject'], 'subject 2')
-        self.assertEqual(history[3]['prev_subject'], 'subject 1')
+        self.assertEqual(history[0]['prev_subject'], 'topic 3')
+        self.assertEqual(history[2]['prev_subject'], 'topic 2')
+        self.assertEqual(history[3]['prev_subject'], 'topic 1')
         self.assertEqual(history[1]['prev_content'], 'content 3')
         self.assertEqual(history[2]['prev_content'], 'content 2')
         self.assertEqual(history[4]['prev_content'], 'content 1')
@@ -1684,14 +1684,14 @@ class EditMessageTest(ZulipTestCase):
             i += 1
             self.assertEqual(expected_entries, set(entry.keys()))
         self.assertEqual(len(message_history), 6)
-        self.assertEqual(message_history[0]['prev_topic'], 'subject 3')
-        self.assertEqual(message_history[0]['topic'], 'subject 4')
-        self.assertEqual(message_history[1]['topic'], 'subject 3')
-        self.assertEqual(message_history[2]['topic'], 'subject 3')
-        self.assertEqual(message_history[2]['prev_topic'], 'subject 2')
-        self.assertEqual(message_history[3]['topic'], 'subject 2')
-        self.assertEqual(message_history[3]['prev_topic'], 'subject 1')
-        self.assertEqual(message_history[4]['topic'], 'subject 1')
+        self.assertEqual(message_history[0]['prev_topic'], 'topic 3')
+        self.assertEqual(message_history[0]['topic'], 'topic 4')
+        self.assertEqual(message_history[1]['topic'], 'topic 3')
+        self.assertEqual(message_history[2]['topic'], 'topic 3')
+        self.assertEqual(message_history[2]['prev_topic'], 'topic 2')
+        self.assertEqual(message_history[3]['topic'], 'topic 2')
+        self.assertEqual(message_history[3]['prev_topic'], 'topic 1')
+        self.assertEqual(message_history[4]['topic'], 'topic 1')
 
         self.assertEqual(message_history[0]['content'], 'content 4')
         self.assertEqual(message_history[1]['content'], 'content 4')
@@ -1703,7 +1703,7 @@ class EditMessageTest(ZulipTestCase):
         self.assertEqual(message_history[4]['prev_content'], 'content 1')
 
         self.assertEqual(message_history[5]['content'], 'content 1')
-        self.assertEqual(message_history[5]['topic'], 'subject 1')
+        self.assertEqual(message_history[5]['topic'], 'topic 1')
 
     def test_edit_message_content_limit(self):
         # type: () -> None
