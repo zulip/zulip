@@ -592,8 +592,8 @@ class HomeTest(ZulipTestCase):
                 result = self._get_home_page()
             self._sanity_check(result)
 
-    def send_stream_message(self, content, sender_name='iago',
-                            stream_name='Denmark', subject='foo'):
+    def send_test_message(self, content, sender_name='iago',
+                          stream_name='Denmark', subject='foo'):
         # type: (str, str, str, str) -> None
         sender = self.example_email(sender_name)
         self.send_message(sender, stream_name, Recipient.STREAM,
@@ -612,7 +612,7 @@ class HomeTest(ZulipTestCase):
         long_term_idle_user = self.example_user('hamlet')
         self.login(long_term_idle_user.email)
         message = 'Test Message 1'
-        self.send_stream_message(message)
+        self.send_test_message(message)
         with queries_captured() as queries:
             self.assertEqual(self.soft_activate_and_get_unread_count(), 1)
         query_count = len(queries)
@@ -624,7 +624,7 @@ class HomeTest(ZulipTestCase):
 
         self.login(long_term_idle_user.email)
         message = 'Test Message 2'
-        self.send_stream_message(message)
+        self.send_test_message(message)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assertNotEqual(idle_user_msg_list[-1].content, message)
         with queries_captured() as queries:
@@ -640,11 +640,11 @@ class HomeTest(ZulipTestCase):
         long_term_idle_user = self.example_user('hamlet')
         # We are sending this message to ensure that long_term_idle_user has
         # at least one UserMessage row.
-        self.send_stream_message('Testing', sender_name='hamlet')
+        self.send_test_message('Testing', sender_name='hamlet')
         do_soft_deactivate_users([long_term_idle_user])
 
         message = 'Test Message 1'
-        self.send_stream_message(message)
+        self.send_test_message(message)
         self.login(long_term_idle_user.email)
         with queries_captured() as queries:
             self.assertEqual(self.soft_activate_and_get_unread_count(), 2)
@@ -655,7 +655,7 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(idle_user_msg_list[-1].content, message)
 
         message = 'Test Message 2'
-        self.send_stream_message(message)
+        self.send_test_message(message)
         with queries_captured() as queries:
             self.assertEqual(self.soft_activate_and_get_unread_count(), 3)
         # Test here for query count to be at least 5 less than previous count.
@@ -668,7 +668,7 @@ class HomeTest(ZulipTestCase):
         do_soft_deactivate_users([long_term_idle_user])
 
         message = 'Test Message 3'
-        self.send_stream_message(message)
+        self.send_test_message(message)
         self.login(long_term_idle_user.email)
         with queries_captured() as queries:
             self.assertEqual(self.soft_activate_and_get_unread_count(), 4)
@@ -679,7 +679,7 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(idle_user_msg_list[-1].content, message)
 
         message = 'Test Message 4'
-        self.send_stream_message(message)
+        self.send_test_message(message)
         with queries_captured() as queries:
             self.assertEqual(self.soft_activate_and_get_unread_count(), 5)
         self.assertGreaterEqual(query_count - len(queries), 5)

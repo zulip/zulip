@@ -448,8 +448,8 @@ class StreamMessagesTest(ZulipTestCase):
                                if not user_profile.is_bot]
         a_subscriber_email = non_bot_subscribers[0].email
         self.login(a_subscriber_email)
-        self.send_message(a_subscriber_email, stream_name, Recipient.STREAM,
-                          content=content, subject=topic_name)
+        self.send_stream_message(a_subscriber_email, stream_name,
+                                 content=content, topic_name=topic_name)
 
         # Did all of the subscribers get the message?
         new_subscriber_messages = []
@@ -565,8 +565,8 @@ class StreamMessagesTest(ZulipTestCase):
         # type: () -> None
         user_profile = self.example_user('iago')
         self.subscribe(user_profile, "Denmark")
-        self.send_message(self.example_email("hamlet"), "Denmark", Recipient.STREAM,
-                          content="whatever", subject="my topic")
+        self.send_stream_message(self.example_email("hamlet"), "Denmark",
+                                 content="whatever", topic_name="my topic")
         message = most_recent_message(user_profile)
         row = MessageDict.get_raw_db_rows([message.id])[0]
         dct = MessageDict.build_dict_from_raw_db_row(row)
@@ -580,8 +580,8 @@ class StreamMessagesTest(ZulipTestCase):
         # type: () -> None
         user_profile = self.example_user('iago')
         self.subscribe(user_profile, "Denmark")
-        self.send_message(self.example_email("hamlet"), "Denmark", Recipient.STREAM,
-                          content="whatever", subject="my topic")
+        self.send_stream_message(self.example_email("hamlet"), "Denmark",
+                                 content="whatever", topic_name="my topic")
         message = most_recent_message(user_profile)
         self.assertEqual(str(message),
                          u'<Message: Denmark / my topic / '
@@ -591,8 +591,8 @@ class StreamMessagesTest(ZulipTestCase):
         # type: () -> None
         user_profile = self.example_user('iago')
         self.subscribe(user_profile, "Denmark")
-        self.send_message(self.example_email("hamlet"), "Denmark", Recipient.STREAM,
-                          content="test @**Iago** rules")
+        self.send_stream_message(self.example_email("hamlet"), "Denmark",
+                                 content="test @**Iago** rules")
         message = most_recent_message(user_profile)
         assert(UserMessage.objects.get(user_profile=user_profile, message=message).flags.mentioned.is_set)
 
@@ -613,11 +613,10 @@ class StreamMessagesTest(ZulipTestCase):
             # type: () -> None
             content = 'test @**Cordelia Lear** rules'
 
-            self.send_message(
+            self.send_stream_message(
                 hamlet.email,
                 stream_name,
-                Recipient.STREAM,
-                content=content
+                content=content,
             )
 
         def num_cordelia_messages():
@@ -660,10 +659,9 @@ class StreamMessagesTest(ZulipTestCase):
 
         content = 'test @**Normal Bot** rules'
 
-        self.send_message(
+        self.send_stream_message(
             hamlet.email,
             stream_name,
-            Recipient.STREAM,
             content=content
         )
 
@@ -1353,8 +1351,8 @@ class EditMessageTest(ZulipTestCase):
         """This is also tested by a client test, but here we can verify
         the cache against the database"""
         self.login(self.example_email("hamlet"))
-        msg_id = self.send_message(self.example_email("hamlet"), "Scotland", Recipient.STREAM,
-                                   subject="editing", content="before edit")
+        msg_id = self.send_stream_message(self.example_email("hamlet"), "Scotland",
+                                          topic_name="editing", content="before edit")
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
             'content': 'after edit'
@@ -1396,8 +1394,8 @@ class EditMessageTest(ZulipTestCase):
         self.login(user_profile.email)
         stream = self.make_stream('public_stream')
         self.subscribe(user_profile, stream.name)
-        msg_id = self.send_message(user_profile.email, stream.name, Recipient.STREAM,
-                                   subject="test", content="test")
+        msg_id = self.send_stream_message(user_profile.email, stream.name,
+                                          topic_name="test", content="test")
         result = self.client_get('/json/messages/' + str(msg_id))
         self.assert_json_success(result)
 
@@ -1411,8 +1409,8 @@ class EditMessageTest(ZulipTestCase):
         self.login(user_profile.email)
         stream = self.make_stream('private_stream', invite_only=True)
         self.subscribe(user_profile, stream.name)
-        msg_id = self.send_message(user_profile.email, stream.name, Recipient.STREAM,
-                                   subject="test", content="test")
+        msg_id = self.send_stream_message(user_profile.email, stream.name,
+                                          topic_name="test", content="test")
         result = self.client_get('/json/messages/' + str(msg_id))
         self.assert_json_success(result)
         self.login(self.example_email("othello"))
@@ -1422,8 +1420,8 @@ class EditMessageTest(ZulipTestCase):
     def test_edit_message_no_permission(self):
         # type: () -> None
         self.login(self.example_email("hamlet"))
-        msg_id = self.send_message(self.example_email("iago"), "Scotland", Recipient.STREAM,
-                                   subject="editing", content="before edit")
+        msg_id = self.send_stream_message(self.example_email("iago"), "Scotland",
+                                          topic_name="editing", content="before edit")
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
             'content': 'content after edit',
@@ -1433,8 +1431,8 @@ class EditMessageTest(ZulipTestCase):
     def test_edit_message_no_changes(self):
         # type: () -> None
         self.login(self.example_email("hamlet"))
-        msg_id = self.send_message(self.example_email("hamlet"), "Scotland", Recipient.STREAM,
-                                   subject="editing", content="before edit")
+        msg_id = self.send_stream_message(self.example_email("hamlet"), "Scotland",
+                                          topic_name="editing", content="before edit")
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
         })
@@ -1443,8 +1441,8 @@ class EditMessageTest(ZulipTestCase):
     def test_edit_message_no_topic(self):
         # type: () -> None
         self.login(self.example_email("hamlet"))
-        msg_id = self.send_message(self.example_email("hamlet"), "Scotland", Recipient.STREAM,
-                                   subject="editing", content="before edit")
+        msg_id = self.send_stream_message(self.example_email("hamlet"), "Scotland",
+                                          topic_name="editing", content="before edit")
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
             'subject': ' '
@@ -1454,8 +1452,8 @@ class EditMessageTest(ZulipTestCase):
     def test_edit_message_no_content(self):
         # type: () -> None
         self.login(self.example_email("hamlet"))
-        msg_id = self.send_message(self.example_email("hamlet"), "Scotland", Recipient.STREAM,
-                                   subject="editing", content="before edit")
+        msg_id = self.send_stream_message(self.example_email("hamlet"), "Scotland",
+                                          topic_name="editing", content="before edit")
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
             'content': ' '
@@ -1471,11 +1469,10 @@ class EditMessageTest(ZulipTestCase):
         self.login(self.example_email("hamlet"))
 
         # Single-line edit
-        msg_id_1 = self.send_message(self.example_email("hamlet"),
-                                     "Denmark",
-                                     Recipient.STREAM,
-                                     subject="editing",
-                                     content="content before edit")
+        msg_id_1 = self.send_stream_message(self.example_email("hamlet"),
+                                            "Denmark",
+                                            topic_name="editing",
+                                            content="content before edit")
 
         new_content_1 = 'content after edit'
         result_1 = self.client_patch("/json/messages/" + str(msg_id_1), {
@@ -1502,11 +1499,11 @@ class EditMessageTest(ZulipTestCase):
         self.login(self.example_email("hamlet"))
 
         # Single-line edit
-        msg_id_1 = self.send_message(self.example_email("hamlet"),
-                                     "Scotland",
-                                     Recipient.STREAM,
-                                     subject="editing",
-                                     content="content before edit")
+        msg_id_1 = self.send_stream_message(
+            self.example_email("hamlet"),
+            "Scotland",
+            topic_name="editing",
+            content="content before edit")
         new_content_1 = 'content after edit'
         result_1 = self.client_patch("/json/messages/" + str(msg_id_1), {
             'message_id': msg_id_1, 'content': new_content_1
@@ -1534,13 +1531,13 @@ class EditMessageTest(ZulipTestCase):
                          '<p>content before edit</p>')
 
         # Edits on new lines
-        msg_id_2 = self.send_message(self.example_email("hamlet"),
-                                     "Scotland",
-                                     Recipient.STREAM,
-                                     subject="editing",
-                                     content=('content before edit, line 1\n'
-                                              '\n'
-                                              'content before edit, line 3'))
+        msg_id_2 = self.send_stream_message(
+            self.example_email("hamlet"),
+            "Scotland",
+            topic_name="editing",
+            content=('content before edit, line 1\n'
+                     '\n'
+                     'content before edit, line 3'))
         new_content_2 = ('content before edit, line 1\n'
                          'content after edit, line 2\n'
                          'content before edit, line 3')
@@ -1582,8 +1579,8 @@ class EditMessageTest(ZulipTestCase):
         self.subscribe(hamlet, 'Scotland')
         self.subscribe(cordelia, 'Scotland')
 
-        msg_id = self.send_message(hamlet.email, 'Scotland', Recipient.STREAM,
-                                   content='@**Cordelia Lear**')
+        msg_id = self.send_stream_message(hamlet.email, 'Scotland',
+                                          content='@**Cordelia Lear**')
 
         user_info = get_user_info_for_message_updates(msg_id)
         message_user_ids = user_info['message_user_ids']
@@ -1599,8 +1596,8 @@ class EditMessageTest(ZulipTestCase):
         history data structures."""
         self.login(self.example_email("hamlet"))
         hamlet = self.example_user('hamlet')
-        msg_id = self.send_message(self.example_email("hamlet"), "Scotland", Recipient.STREAM,
-                                   subject="topic 1", content="content 1")
+        msg_id = self.send_stream_message(self.example_email("hamlet"), "Scotland",
+                                          topic_name="topic 1", content="content 1")
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
             'content': 'content 2',
@@ -1747,8 +1744,8 @@ class EditMessageTest(ZulipTestCase):
 
         self.login(self.example_email("iago"))
         # send a message in the past
-        id_ = self.send_message(self.example_email("iago"), "Scotland", Recipient.STREAM,
-                                content="content", subject="subject")
+        id_ = self.send_stream_message(self.example_email("iago"), "Scotland",
+                                       content="content", topic_name="subject")
         message = Message.objects.get(id=id_)
         message.pub_date = message.pub_date - datetime.timedelta(seconds=180)
         message.save()
@@ -1778,16 +1775,16 @@ class EditMessageTest(ZulipTestCase):
     def test_propagate_topic_forward(self):
         # type: () -> None
         self.login(self.example_email("hamlet"))
-        id1 = self.send_message(self.example_email("hamlet"), "Scotland", Recipient.STREAM,
-                                subject="topic1")
-        id2 = self.send_message(self.example_email("iago"), "Scotland", Recipient.STREAM,
-                                subject="topic1")
-        id3 = self.send_message(self.example_email("iago"), "Rome", Recipient.STREAM,
-                                subject="topic1")
-        id4 = self.send_message(self.example_email("hamlet"), "Scotland", Recipient.STREAM,
-                                subject="topic2")
-        id5 = self.send_message(self.example_email("iago"), "Scotland", Recipient.STREAM,
-                                subject="topic1")
+        id1 = self.send_stream_message(self.example_email("hamlet"), "Scotland",
+                                       topic_name="topic1")
+        id2 = self.send_stream_message(self.example_email("iago"), "Scotland",
+                                       topic_name="topic1")
+        id3 = self.send_stream_message(self.example_email("iago"), "Rome",
+                                       topic_name="topic1")
+        id4 = self.send_stream_message(self.example_email("hamlet"), "Scotland",
+                                       topic_name="topic2")
+        id5 = self.send_stream_message(self.example_email("iago"), "Scotland",
+                                       topic_name="topic1")
 
         result = self.client_patch("/json/messages/" + str(id1), {
             'message_id': id1,
@@ -1805,18 +1802,18 @@ class EditMessageTest(ZulipTestCase):
     def test_propagate_all_topics(self):
         # type: () -> None
         self.login(self.example_email("hamlet"))
-        id1 = self.send_message(self.example_email("hamlet"), "Scotland", Recipient.STREAM,
-                                subject="topic1")
-        id2 = self.send_message(self.example_email("hamlet"), "Scotland", Recipient.STREAM,
-                                subject="topic1")
-        id3 = self.send_message(self.example_email("iago"), "Rome", Recipient.STREAM,
-                                subject="topic1")
-        id4 = self.send_message(self.example_email("hamlet"), "Scotland", Recipient.STREAM,
-                                subject="topic2")
-        id5 = self.send_message(self.example_email("iago"), "Scotland", Recipient.STREAM,
-                                subject="topic1")
-        id6 = self.send_message(self.example_email("iago"), "Scotland", Recipient.STREAM,
-                                subject="topic3")
+        id1 = self.send_stream_message(self.example_email("hamlet"), "Scotland",
+                                       topic_name="topic1")
+        id2 = self.send_stream_message(self.example_email("hamlet"), "Scotland",
+                                       topic_name="topic1")
+        id3 = self.send_stream_message(self.example_email("iago"), "Rome",
+                                       topic_name="topic1")
+        id4 = self.send_stream_message(self.example_email("hamlet"), "Scotland",
+                                       topic_name="topic2")
+        id5 = self.send_stream_message(self.example_email("iago"), "Scotland",
+                                       topic_name="topic1")
+        id6 = self.send_stream_message(self.example_email("iago"), "Scotland",
+                                       topic_name="topic3")
 
         result = self.client_patch("/json/messages/" + str(id2), {
             'message_id': id2,
@@ -2048,11 +2045,13 @@ class StarTests(ZulipTestCase):
         stream_name = "new_stream"
         self.subscribe(self.example_user("hamlet"), stream_name)
         self.login(self.example_email("hamlet"))
-        message_ids = [self.send_message(self.example_email("hamlet"), stream_name,
-                                         Recipient.STREAM, "test")]
+        message_ids = [
+            self.send_stream_message(self.example_email("hamlet"), stream_name, "test"),
+        ]
         # Send a second message so we can verify it isn't modified
-        other_message_ids = [self.send_message(self.example_email("hamlet"), stream_name,
-                                               Recipient.STREAM, "test_unused")]
+        other_message_ids = [
+            self.send_stream_message(self.example_email("hamlet"), stream_name, "test_unused"),
+        ]
         received_message_ids = [self.send_message(self.example_email("hamlet"), [self.example_email("cordelia")],
                                                   Recipient.PERSONAL, "test_received")]
 
@@ -2119,8 +2118,9 @@ class StarTests(ZulipTestCase):
         self.make_stream(stream_name, invite_only=True)
         self.subscribe(self.example_user("hamlet"), stream_name)
         self.login(self.example_email("hamlet"))
-        message_ids = [self.send_message(self.example_email("hamlet"), stream_name,
-                                         Recipient.STREAM, "test")]
+        message_ids = [
+            self.send_stream_message(self.example_email("hamlet"), stream_name, "test"),
+        ]
 
         # Starring private stream messages you received works
         result = self.change_star(message_ids)
@@ -2139,8 +2139,8 @@ class StarTests(ZulipTestCase):
         test_email = self.example_email('hamlet')
         self.login(test_email)
         content = "Test message for star"
-        self.send_message(test_email, "Verona", Recipient.STREAM,
-                          content=content)
+        self.send_stream_message(test_email, "Verona",
+                                 content=content)
 
         sent_message = UserMessage.objects.filter(
             user_profile=self.example_user('hamlet')
@@ -2190,7 +2190,7 @@ class AttachmentTest(ZulipTestCase):
                "http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py.... Some more...." + \
                "http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py"
 
-        self.send_message(user_profile.email, "Denmark", Recipient.STREAM, body, "test")
+        self.send_stream_message(user_profile.email, "Denmark", body, "test")
 
         for file_name, path_id, size in dummy_files:
             attachment = Attachment.objects.get(path_id=path_id)
@@ -2253,10 +2253,9 @@ class LogDictTest(ZulipTestCase):
         topic_name = 'Copenhagen'
         content = 'find me some good coffee shops'
         # self.login(self.example_email("hamlet"))
-        message_id = self.send_message(email, stream_name,
-                                       message_type=Recipient.STREAM,
-                                       subject=topic_name,
-                                       content=content)
+        message_id = self.send_stream_message(email, stream_name,
+                                              topic_name=topic_name,
+                                              content=content)
         message = Message.objects.get(id=message_id)
         dct = message.to_log_dict()
 
@@ -2347,22 +2346,22 @@ class DeleteMessageTest(ZulipTestCase):
     def test_delete_message_by_owner(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
-        msg_id = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM)
+        msg_id = self.send_stream_message("hamlet@zulip.com", "Scotland")
         result = self.client_delete('/json/messages/{msg_id}'.format(msg_id=msg_id))
         self.assert_json_error(result, "You don't have permission to edit this message")
 
     def test_delete_message_by_realm_admin(self):
         # type: () -> None
         self.login("iago@zulip.com")
-        msg_id = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM)
+        msg_id = self.send_stream_message("hamlet@zulip.com", "Scotland")
         result = self.client_delete('/json/messages/{msg_id}'.format(msg_id=msg_id))
         self.assert_json_success(result)
 
     def test_delete_message_second_time(self):
         # type: () -> None
         self.login("iago@zulip.com")
-        msg_id = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
-                                   subject="editing", content="before edit")
+        msg_id = self.send_stream_message("hamlet@zulip.com", "Scotland",
+                                          topic_name="editing", content="before edit")
         self.client_delete('/json/messages/{msg_id}'.format(msg_id=msg_id))
         result = self.client_delete('/json/messages/{msg_id}'.format(msg_id=msg_id))
         self.assert_json_error(result, "Invalid message(s)")
@@ -2388,13 +2387,12 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         long_term_idle_user = self.example_user('hamlet')
         # We are sending this message to ensure that long_term_idle_user has
         # at least one UserMessage row.
-        self.send_message(long_term_idle_user.email, stream_name,
-                          Recipient.STREAM)
+        self.send_stream_message(long_term_idle_user.email, stream_name)
         do_soft_deactivate_users([long_term_idle_user])
 
         message = 'Test Message 1'
-        self.send_message(sender, stream_name, Recipient.STREAM,
-                          message, subject)
+        self.send_stream_message(sender, stream_name,
+                                 message, subject)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         idle_user_msg_count = len(idle_user_msg_list)
         self.assertNotEqual(idle_user_msg_list[-1].content, message)
@@ -2432,8 +2430,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
                                           sending_client = sending_client)
 
         long_term_idle_user = self.example_user('hamlet')
-        self.send_message(long_term_idle_user.email, stream_name,
-                          Recipient.STREAM)
+        self.send_stream_message(long_term_idle_user.email, stream_name)
         do_soft_deactivate_users([long_term_idle_user])
 
         # Test that add_missing_messages() in simplest case of adding a
@@ -2565,8 +2562,8 @@ class SoftDeactivationMessageTest(ZulipTestCase):
 
         def send_stream_message(content):
             # type: (str) -> None
-            self.send_message(sender, stream_name, Recipient.STREAM,
-                              content, subject)
+            self.send_stream_message(sender, stream_name,
+                                     content, subject)
 
         def send_personal_message(content):
             # type: (str) -> None
@@ -2574,8 +2571,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
                               Recipient.PERSONAL, content)
 
         long_term_idle_user = self.example_user('hamlet')
-        self.send_message(long_term_idle_user.email, stream_name,
-                          Recipient.STREAM)
+        self.send_stream_message(long_term_idle_user.email, stream_name)
         do_soft_deactivate_users([long_term_idle_user])
 
         def assert_um_count(user, count):
