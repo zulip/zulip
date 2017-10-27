@@ -244,17 +244,7 @@ def reverse_on_root(viewname, args=None, kwargs=None):
     # type: (str, List[str], Dict[str, str]) -> str
     return settings.ROOT_DOMAIN_URI + reverse(viewname, args=args, kwargs=kwargs)
 
-def start_google_oauth2(request):
-    # type: (HttpRequest) -> HttpResponse
-    url = reverse('zerver.views.auth.send_oauth_request_to_google')
-
-    if not (settings.GOOGLE_OAUTH2_CLIENT_ID and settings.GOOGLE_OAUTH2_CLIENT_SECRET):
-        return redirect_to_config_error("google")
-
-    is_signup = bool(request.GET.get('is_signup'))
-    return redirect_to_main_site(request, url, is_signup=is_signup)
-
-def redirect_to_main_site(request, url, is_signup=False):
+def oauth_redirect_to_root(request, url, is_signup=False):
     # type: (HttpRequest, Text, bool) -> HttpResponse
     main_site_uri = settings.ROOT_DOMAIN_URI + url
     params = {
@@ -272,18 +262,28 @@ def redirect_to_main_site(request, url, is_signup=False):
 
     return redirect(main_site_uri + '?' + urllib.parse.urlencode(params))
 
+def start_google_oauth2(request):
+    # type: (HttpRequest) -> HttpResponse
+    url = reverse('zerver.views.auth.send_oauth_request_to_google')
+
+    if not (settings.GOOGLE_OAUTH2_CLIENT_ID and settings.GOOGLE_OAUTH2_CLIENT_SECRET):
+        return redirect_to_config_error("google")
+
+    is_signup = bool(request.GET.get('is_signup'))
+    return oauth_redirect_to_root(request, url, is_signup=is_signup)
+
 def start_social_login(request, backend):
     # type: (HttpRequest, Text) -> HttpResponse
     backend_url = reverse('social:begin', args=[backend])
     if (backend == "github") and not (settings.SOCIAL_AUTH_GITHUB_KEY and settings.SOCIAL_AUTH_GITHUB_SECRET):
         return redirect_to_config_error("github")
 
-    return redirect_to_main_site(request, backend_url)
+    return oauth_redirect_to_root(request, backend_url)
 
 def start_social_signup(request, backend):
     # type: (HttpRequest, Text) -> HttpResponse
     backend_url = reverse('social:begin', args=[backend])
-    return redirect_to_main_site(request, backend_url, is_signup=True)
+    return oauth_redirect_to_root(request, backend_url, is_signup=True)
 
 def send_oauth_request_to_google(request):
     # type: (HttpRequest) -> HttpResponse
