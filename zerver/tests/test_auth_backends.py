@@ -730,13 +730,6 @@ class GoogleOAuthTest(ZulipTestCase):
         return result
 
 class GoogleSubdomainLoginTest(GoogleOAuthTest):
-    def get_signed_subdomain_cookie(self, data):
-        # type: (Dict[str, Any]) -> Dict[str, str]
-        key = 'subdomain.signature'
-        salt = key + 'zerver.views.auth'
-        value = ujson.dumps(data)
-        return {key: signing.get_cookie_signer(salt=salt).sign(value)}
-
     def test_google_oauth2_start(self):
         # type: () -> None
         result = self.client_get('/accounts/login/google/', subdomain="zulip")
@@ -817,15 +810,23 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn('Zulip on Android', mail.outbox[0].body)
 
+    def get_log_into_subdomain(self, data, *, salt=None, subdomain='zulip'):
+        # type: (Dict[str, Any], Optional[str], str) -> HttpResponse
+        key = 'subdomain.signature'
+        if salt is None:
+            salt = key + 'zerver.views.auth'
+        value = ujson.dumps(data)
+        cookie = {key: signing.get_cookie_signer(salt=salt).sign(value)}
+        self.client.cookies = SimpleCookie(cookie)
+        return self.client_get('/accounts/login/subdomain/', subdomain=subdomain)
+
     def test_log_into_subdomain(self):
         # type: () -> None
         data = {'name': 'Full Name',
                 'email': self.example_email("hamlet"),
                 'subdomain': 'zulip',
                 'is_signup': False}
-
-        self.client.cookies = SimpleCookie(self.get_signed_subdomain_cookie(data))
-        result = self.client_get('/accounts/login/subdomain/', subdomain="zulip")
+        result = self.get_log_into_subdomain(data)
         self.assertEqual(result.status_code, 302)
         user_profile = self.example_user('hamlet')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
@@ -835,9 +836,18 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         with mock.patch(
                 'zerver.views.auth.authenticate_remote_user',
                 return_value=(None, {'invalid_subdomain': True})):
-            result = self.client_get('/accounts/login/subdomain/', subdomain="zulip")
+            result = self.get_log_into_subdomain(data)
             self.assertEqual(result.status_code, 302)
             self.assertTrue(result['Location'].endswith, '?subdomain=1')
+
+    def test_log_into_subdomain_when_signature_is_bad(self):
+        # type: () -> None
+        data = {'name': 'Full Name',
+                'email': self.example_email("hamlet"),
+                'subdomain': 'zulip',
+                'is_signup': False}
+        result = self.get_log_into_subdomain(data, salt='nonsense')
+        self.assertEqual(result.status_code, 400)
 
     def test_log_into_subdomain_when_is_signup_is_true(self):
         # type: () -> None
@@ -845,9 +855,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                 'email': self.example_email("hamlet"),
                 'subdomain': 'zulip',
                 'is_signup': True}
-
-        self.client.cookies = SimpleCookie(self.get_signed_subdomain_cookie(data))
-        result = self.client_get('/accounts/login/subdomain/', subdomain="zulip")
+        result = self.get_log_into_subdomain(data)
         self.assertEqual(result.status_code, 200)
         self.assert_in_response('hamlet@zulip.com already has an account', result)
 
@@ -857,9 +865,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                 'email': 'new@zulip.com',
                 'subdomain': 'zulip',
                 'is_signup': True}
-
-        self.client.cookies = SimpleCookie(self.get_signed_subdomain_cookie(data))
-        result = self.client_get('/accounts/login/subdomain/', subdomain="zulip")
+        result = self.get_log_into_subdomain(data)
         self.assertEqual(result.status_code, 302)
         confirmation = Confirmation.objects.all().first()
         confirmation_key = confirmation.confirmation_key
@@ -893,10 +899,8 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
             stream, _ = create_stream_if_needed(realm, stream_name)
             streams.append(stream)
 
-        self.client.cookies = SimpleCookie(self.get_signed_subdomain_cookie(data))
-
         # Without the invite link, we can't create an account due to invite_required
-        result = self.client_get('/accounts/login/subdomain/', subdomain="zulip")
+        result = self.get_log_into_subdomain(data)
         self.assertEqual(result.status_code, 200)
         self.assert_in_success_response(['Sign up for Zulip'], result)
 
@@ -911,7 +915,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         result = self.client_get(invite_link, subdomain="zulip")
         self.assert_in_success_response(['Sign up for Zulip'], result)
 
-        result = self.client_get('/accounts/login/subdomain/', subdomain="zulip")
+        result = self.client_get('/accounts/login/subdomain/', subdomain='zulip')
         self.assertEqual(result.status_code, 302)
 
         confirmation = Confirmation.objects.all().last()
@@ -945,9 +949,8 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                 'subdomain': 'zulip',
                 'is_signup': False}
 
-        self.client.cookies = SimpleCookie(self.get_signed_subdomain_cookie(data))
         with mock.patch('logging.warning'):
-            result = self.client_get('/accounts/login/subdomain/', subdomain="zulip")
+            result = self.get_log_into_subdomain(data)
             self.assertEqual(result.status_code, 200)
             self.assert_in_response("Please click the following button if you "
                                     "wish to register", result)
@@ -986,20 +989,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         data = {'name': 'Full Name',
                 'email': self.example_email("hamlet"),
                 'subdomain': 'zephyr'}
-
-        self.client.cookies = SimpleCookie(self.get_signed_subdomain_cookie(data))
-        result = self.client_get('/accounts/login/subdomain/', subdomain="zulip")
-        self.assertEqual(result.status_code, 400)
-
-    def test_log_into_subdomain_when_signature_is_bad(self):
-        # type: () -> None
-        self.client.cookies = SimpleCookie({'subdomain.signature': 'invlaid'})
-        result = self.client_get('/accounts/login/subdomain/', subdomain="zulip")
-        self.assertEqual(result.status_code, 400)
-
-    def test_log_into_subdomain_when_state_is_not_passed(self):
-        # type: () -> None
-        result = self.client_get('/accounts/login/subdomain/', subdomain="zulip")
+        result = self.get_log_into_subdomain(data)
         self.assertEqual(result.status_code, 400)
 
     def test_google_oauth2_registration(self):
