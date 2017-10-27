@@ -12,8 +12,7 @@ from zerver.models import UserProfile
 
 
 @require_realm_admin
-def upload_icon(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
+def upload_icon(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
 
     if len(request.FILES) != 1:
         return json_error(_("You must upload exactly one icon."))
@@ -33,8 +32,7 @@ def upload_icon(request, user_profile):
 
 
 @require_realm_admin
-def delete_icon_backend(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
+def delete_icon_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     # We don't actually delete the icon because it might still
     # be needed if the URL was cached and it is rewrited
     # in any case after next update.
@@ -46,8 +44,7 @@ def delete_icon_backend(request, user_profile):
     return json_success(json_result)
 
 
-def get_icon_backend(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
+def get_icon_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     url = realm_icon_url(user_profile.realm)
 
     # We can rely on the url already having query parameters. Because

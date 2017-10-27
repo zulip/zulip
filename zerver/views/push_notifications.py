@@ -16,8 +16,7 @@ from zerver.lib.response import json_success, json_error
 from zerver.lib.validator import check_string, check_list, check_bool
 from zerver.models import PushDeviceToken, UserProfile
 
-def validate_token(token_str, kind):
-    # type: (bytes, int) -> None
+def validate_token(token_str: bytes, kind: int) -> None:
     if token_str == '' or len(token_str) > 4096:
         raise JsonableError(_('Empty or invalid length token'))
     if kind == PushDeviceToken.APNS:
@@ -38,24 +37,24 @@ def add_apns_device_token(request, user_profile, token=REQ(),
 
 @human_users_only
 @has_request_variables
-def add_android_reg_id(request, user_profile, token=REQ()):
-    # type: (HttpRequest, UserProfile, bytes) -> HttpResponse
+def add_android_reg_id(request: HttpRequest, user_profile: UserProfile,
+                       token: bytes=REQ()) -> HttpResponse:
     validate_token(token, PushDeviceToken.GCM)
     add_push_device_token(user_profile, token, PushDeviceToken.GCM)
     return json_success()
 
 @human_users_only
 @has_request_variables
-def remove_apns_device_token(request, user_profile, token=REQ()):
-    # type: (HttpRequest, UserProfile, bytes) -> HttpResponse
+def remove_apns_device_token(request: HttpRequest, user_profile: UserProfile,
+                             token: bytes=REQ()) -> HttpResponse:
     validate_token(token, PushDeviceToken.APNS)
     remove_push_device_token(user_profile, token, PushDeviceToken.APNS)
     return json_success()
 
 @human_users_only
 @has_request_variables
-def remove_android_reg_id(request, user_profile, token=REQ()):
-    # type: (HttpRequest, UserProfile, bytes) -> HttpResponse
+def remove_android_reg_id(request: HttpRequest, user_profile: UserProfile,
+                          token: bytes=REQ()) -> HttpResponse:
     validate_token(token, PushDeviceToken.GCM)
     remove_push_device_token(user_profile, token, PushDeviceToken.GCM)
     return json_success()

@@ -14,8 +14,7 @@ from zerver.models import realm_filters_for_realm, UserProfile, RealmFilter
 
 
 # Custom realm filters
-def list_filters(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
+def list_filters(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     filters = realm_filters_for_realm(user_profile.realm_id)
     return json_success({'filters': filters})
 
@@ -37,8 +36,8 @@ def create_filter(request, user_profile, pattern=REQ(),
 
 
 @require_realm_admin
-def delete_filter(request, user_profile, filter_id):
-    # type: (HttpRequest, UserProfile, int) -> HttpResponse
+def delete_filter(request: HttpRequest, user_profile: UserProfile,
+                  filter_id: int) -> HttpResponse:
     try:
         do_remove_realm_filter(realm=user_profile.realm, id=filter_id)
     except RealmFilter.DoesNotExist:

@@ -13,16 +13,15 @@ from zerver.models import RealmDomain, UserProfile, get_realm_domains
 
 from typing import Text
 
-def list_realm_domains(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> (HttpResponse)
+def list_realm_domains(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     domains = get_realm_domains(user_profile.realm)
     return json_success({'domains': domains})
 
 @require_realm_admin
 @has_request_variables
-def create_realm_domain(request, user_profile, domain=REQ(validator=check_string),
-                        allow_subdomains=REQ(validator=check_bool)):
-    # type: (HttpRequest, UserProfile, Text, bool) -> (HttpResponse)
+def create_realm_domain(request: HttpRequest, user_profile: UserProfile,
+                        domain: Text=REQ(validator=check_string),
+                        allow_subdomains: bool=REQ(validator=check_bool)) -> HttpResponse:
     domain = domain.strip().lower()
     try:
         validate_domain(domain)
@@ -35,9 +34,8 @@ def create_realm_domain(request, user_profile, domain=REQ(validator=check_string
 
 @require_realm_admin
 @has_request_variables
-def patch_realm_domain(request, user_profile, domain,
-                       allow_subdomains=REQ(validator=check_bool)):
-    # type: (HttpRequest, UserProfile, Text, bool) -> (HttpResponse)
+def patch_realm_domain(request: HttpRequest, user_profile: UserProfile, domain: Text,
+                       allow_subdomains: bool=REQ(validator=check_bool)) -> HttpResponse:
     try:
         realm_domain = RealmDomain.objects.get(realm=user_profile.realm, domain=domain)
         do_change_realm_domain(realm_domain, allow_subdomains)
@@ -47,8 +45,8 @@ def patch_realm_domain(request, user_profile, domain,
 
 @require_realm_admin
 @has_request_variables
-def delete_realm_domain(request, user_profile, domain):
-    # type: (HttpRequest, UserProfile, Text) -> (HttpResponse)
+def delete_realm_domain(request: HttpRequest, user_profile: UserProfile,
+                        domain: Text) -> HttpResponse:
     try:
         realm_domain = RealmDomain.objects.get(realm=user_profile.realm, domain=domain)
         do_remove_realm_domain(realm_domain)

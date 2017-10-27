@@ -21,8 +21,7 @@ import os
 js_source_map = None
 
 # Read the source map information for decoding JavaScript backtraces.
-def get_js_source_map():
-    # type: () -> Optional[SourceMap]
+def get_js_source_map() -> Optional[SourceMap]:
     global js_source_map
     if not js_source_map and not (settings.DEVELOPMENT or settings.TEST_SUITE):
         js_source_map = SourceMap([
