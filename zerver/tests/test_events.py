@@ -1018,6 +1018,7 @@ class EventsRegisterTest(ZulipTestCase):
         for prop in Realm.property_types:
             self.do_set_realm_property_test(prop)
 
+    @slow("Runs a large matrix of tests")
     def test_change_realm_authentication_methods(self):
         # type: () -> None
         schema_checker = self.check_events_dict([
@@ -1077,6 +1078,7 @@ class EventsRegisterTest(ZulipTestCase):
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
+    @slow("Runs a matrix of 6 queries to the /home view")
     def test_change_realm_message_edit_settings(self):
         # type: () -> None
         schema_checker = self.check_events_dict([
@@ -1521,10 +1523,12 @@ class EventsRegisterTest(ZulipTestCase):
         error = peer_add_schema_checker('events[1]', events[1])
         self.assert_on_error(error)
 
+    @slow("Actually several tests combined together")
     def test_subscribe_events(self):
         # type: () -> None
         self.do_test_subscribe_events(include_subscribers=True)
 
+    @slow("Actually several tests combined together")
     def test_subscribe_events_no_include_subscribers(self):
         # type: () -> None
         self.do_test_subscribe_events(include_subscribers=False)
