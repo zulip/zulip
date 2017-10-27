@@ -11,8 +11,7 @@ from zerver.models import UserMessage, UserProfile
 class Command(BaseCommand):
     help = """Script to mark all messages as unread."""
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         assert settings.DEVELOPMENT
         UserMessage.objects.all().update(flags=F('flags').bitand(~UserMessage.flags.read))
         UserProfile.objects.all().update(pointer=0)
