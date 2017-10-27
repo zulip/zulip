@@ -7,8 +7,9 @@ import time
 import re
 import importlib
 from zerver.lib.actions import internal_send_message
-from zerver.models import UserProfile, \
-    get_bot_state, set_bot_state, get_bot_state_size, is_key_in_bot_state, remove_bot_state
+from zerver.models import UserProfile
+from zerver.lib.bot_storage import get_bot_state, set_bot_state, \
+    is_key_in_bot_state, get_bot_state_size, remove_bot_state
 from zerver.lib.integrations import EMBEDDED_BOTS
 
 from six.moves import configparser
