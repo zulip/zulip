@@ -987,6 +987,19 @@ def get_service_bot_events(sender, service_bot_tuples, mentioned_user_ids,
 
         is_stream = (recipient_type == Recipient.STREAM)
 
+        # Important note: service_bot_tuples may contain service bots
+        # who were not actually mentioned in the message (e.g. if
+        # mention syntax for that bot appeared in a code block).
+        # Thus, it is important to filter any users who aren't part of
+        # either mentioned_user_ids (the actual mentioned users) or
+        # active_user_ids (the actual recipients).
+        #
+        # So even though this is implied by the logic below, we filter
+        # these not-actually-mentioned users here, to help keep[ this
+        # function future-proof.
+        if user_profile_id not in mentioned_user_ids and user_profile_id not in active_user_ids:
+            continue
+
         # Mention triggers, primarily for stream messages
         if user_profile_id in mentioned_user_ids:
             trigger = 'mention'
