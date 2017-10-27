@@ -1023,10 +1023,16 @@ class TestHumanUsersOnlyDecorator(ZulipTestCase):
     def test_human_only_endpoints(self):
         # type: () -> None
         post_endpoints = [
-            "/api/v1/users/me/presence",
             "/api/v1/users/me/apns_device_token",
             "/api/v1/users/me/android_gcm_reg_id",
+            "/api/v1/users/me/enter-sends",
             "/api/v1/users/me/hotspots",
+            "/api/v1/users/me/presence",
+            "/api/v1/users/me/tutorial_status",
+            "/api/v1/report/error",
+            "/api/v1/report/send_times",
+            "/api/v1/report/narrow_times",
+            "/api/v1/report/unnarrow_times",
         ]
         for endpoint in post_endpoints:
             result = self.client_post(endpoint, **self.api_auth('default-bot@zulip.com'))

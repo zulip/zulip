@@ -5,7 +5,8 @@ from typing import Any, Dict, Optional, Text
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import authenticated_json_post_view, to_non_negative_int
+from zerver.decorator import authenticated_json_post_view, human_users_only, \
+    to_non_negative_int
 from zerver.lib.bugdown import privacy_clean_markdown
 from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_success
@@ -30,6 +31,7 @@ def get_js_source_map() -> Optional[SourceMap]:
         ])
     return js_source_map
 
+@human_users_only
 @has_request_variables
 def report_send_times(request, user_profile,
                       time=REQ(converter=to_non_negative_int),
@@ -52,6 +54,7 @@ def report_send_times(request, user_profile,
         statsd.incr('render_disparity')
     return json_success()
 
+@human_users_only
 @has_request_variables
 def report_narrow_times(request, user_profile,
                         initial_core=REQ(converter=to_non_negative_int),
@@ -65,6 +68,7 @@ def report_narrow_times(request, user_profile,
     statsd.timing("narrow.network.%s" % (base_key,), network)
     return json_success()
 
+@human_users_only
 @has_request_variables
 def report_unnarrow_times(request, user_profile,
                           initial_core=REQ(converter=to_non_negative_int),
@@ -76,6 +80,7 @@ def report_unnarrow_times(request, user_profile,
     statsd.timing("unnarrow.initial_free.%s" % (base_key,), initial_free)
     return json_success()
 
+@human_users_only
 @has_request_variables
 def report_error(request, user_profile, message=REQ(), stacktrace=REQ(),
                  ui_message=REQ(validator=check_bool), user_agent=REQ(),
