@@ -19,7 +19,8 @@ def validate_entity(entity: Union[UserProfile, RemoteZulipServer]) -> None:
     if not isinstance(entity, RemoteZulipServer):
         raise JsonableError(_("Must validate with valid Zulip server API key"))
 
-def validate_bouncer_token_request(entity: Union[UserProfile, RemoteZulipServer], token: bytes, kind: int) -> None:
+def validate_bouncer_token_request(entity: Union[UserProfile, RemoteZulipServer],
+                                   token: bytes, kind: int) -> None:
     if kind not in [RemotePushDeviceToken.APNS, RemotePushDeviceToken.GCM]:
         raise JsonableError(_("Invalid token type"))
     validate_entity(entity)

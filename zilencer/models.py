@@ -5,7 +5,7 @@ from django.db import models
 
 import zerver.models
 
-def get_remote_server_by_uuid(uuid: Text) -> RemoteZulipServer:
+def get_remote_server_by_uuid(uuid: Text) -> 'RemoteZulipServer':
     return RemoteZulipServer.objects.get(uuid=uuid)
 
 class RemoteZulipServer(models.Model):

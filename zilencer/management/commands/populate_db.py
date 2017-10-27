@@ -30,7 +30,9 @@ settings.CACHES['default'] = {
     'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
 }
 
-def create_users(realm: Realm, name_list: Iterable[Tuple[Text, Text]], bot_type: Optional[int]=None, bot_owner: Optional[UserProfile]=None) -> None:
+def create_users(realm: Realm, name_list: Iterable[Tuple[Text, Text]],
+                 bot_type: Optional[int]=None,
+                 bot_owner: Optional[UserProfile]=None) -> None:
     user_set = set()  # type: Set[Tuple[Text, Text, Text, bool]]
     for full_name, email in name_list:
         short_name = email_to_username(email)
@@ -404,7 +406,8 @@ def get_recipient_by_id(rid: int) -> Recipient:
 # - multiple personals converastions
 # - multiple messages per subject
 # - both single and multi-line content
-def send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any], Callable[[str], Any], int]) -> int:
+def send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any],
+                              Callable[[str], Any], int]) -> int:
     (tot_messages, personals_pairs, options, output, random_seed) = data
     random.seed(random_seed)
 
