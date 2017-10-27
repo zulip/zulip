@@ -9,13 +9,11 @@ class Command(BaseCommand):
     Usage: ./manage.py render_messages <destination> <--amount>
     """
 
-    def add_arguments(self, parser):
-        # type: (CommandParser) -> None
+    def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument('dump1', help='First file to compare')
         parser.add_argument('dump2', help='Second file to compare')
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         total_count = 0
         changed_count = 0
         with open(options['dump1'], 'r') as dump1, open(options['dump2'], 'r') as dump2:

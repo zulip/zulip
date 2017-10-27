@@ -13,13 +13,11 @@ from zerver.views.messages import get_messages_backend
 request_logger = LogRequests()
 
 class MockSession:
-    def __init__(self):
-        # type: () -> None
+    def __init__(self) -> None:
         self.modified = False
 
 class MockRequest(HttpRequest):
-    def __init__(self, user):
-        # type: (UserProfile) -> None
+    def __init__(self, user: UserProfile) -> None:
         self.user = user
         self.path = '/'
         self.method = "POST"
@@ -33,12 +31,10 @@ class MockRequest(HttpRequest):
         self.GET = {}  # type: Dict[Any, Any]
         self.session = MockSession()
 
-    def get_full_path(self):
-        # type: () -> str
+    def get_full_path(self) -> str:
         return self.path
 
-def profile_request(request):
-    # type: (HttpRequest) -> HttpResponse
+def profile_request(request: HttpRequest) -> HttpResponse:
     request_logger.process_request(request)
     prof = cProfile.Profile()
     prof.enable()
@@ -51,13 +47,11 @@ def profile_request(request):
     return ret
 
 class Command(ZulipBaseCommand):
-    def add_arguments(self, parser):
-        # type: (CommandParser) -> None
+    def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument("email", metavar="<email>", type=str, help="Email address of the user")
         self.add_realm_args(parser)
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)
         user = self.get_user(options["email"], realm)
         profile_request(MockRequest(user))

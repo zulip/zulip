@@ -9,8 +9,7 @@ from zerver.models import Realm, UserProfile
 class Command(ZulipBaseCommand):
     help = """Add a new realm and initial user for manual testing of the onboarding process."""
 
-    def handle(self, **options):
-        # type: (**Any) -> None
+    def handle(self, **options: Any) -> None:
         string_id = 'realm%02d' % (
             Realm.objects.filter(string_id__startswith='realm').count(),)
         realm = do_create_realm(string_id, string_id)
