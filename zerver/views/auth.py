@@ -240,6 +240,10 @@ def google_oauth2_csrf(request, value):
     token = _unsalt_cipher_token(get_token(request))
     return hmac.new(token.encode('utf-8'), value.encode("utf-8"), hashlib.sha256).hexdigest()
 
+def reverse_on_root(viewname, args=None, kwargs=None):
+    # type: (str, List[str], Dict[str, str]) -> str
+    return settings.ROOT_DOMAIN_URI + reverse(viewname, args=args, kwargs=kwargs)
+
 def start_google_oauth2(request):
     # type: (HttpRequest) -> HttpResponse
     url = reverse('zerver.views.auth.send_oauth_request_to_google')
@@ -252,11 +256,7 @@ def start_google_oauth2(request):
 
 def redirect_to_main_site(request, url, is_signup=False):
     # type: (HttpRequest, Text, bool) -> HttpResponse
-    main_site_uri = ''.join((
-        settings.EXTERNAL_URI_SCHEME,
-        settings.EXTERNAL_HOST,
-        url,
-    ))
+    main_site_uri = settings.ROOT_DOMAIN_URI + url
     params = {
         'subdomain': get_subdomain(request),
         'is_signup': '1' if is_signup else '0',
@@ -305,11 +305,7 @@ def send_oauth_request_to_google(request):
     params = {
         'response_type': 'code',
         'client_id': settings.GOOGLE_OAUTH2_CLIENT_ID,
-        'redirect_uri': ''.join((
-            settings.EXTERNAL_URI_SCHEME,
-            settings.EXTERNAL_HOST,
-            reverse('zerver.views.auth.finish_google_oauth2'),
-        )),
+        'redirect_uri': reverse_on_root('zerver.views.auth.finish_google_oauth2'),
         'scope': 'profile email',
         'state': csrf_state,
     }
@@ -345,11 +341,7 @@ def finish_google_oauth2(request):
             'code': request.GET.get('code'),
             'client_id': settings.GOOGLE_OAUTH2_CLIENT_ID,
             'client_secret': settings.GOOGLE_OAUTH2_CLIENT_SECRET,
-            'redirect_uri': ''.join((
-                settings.EXTERNAL_URI_SCHEME,
-                settings.EXTERNAL_HOST,
-                reverse('zerver.views.auth.finish_google_oauth2'),
-            )),
+            'redirect_uri': reverse_on_root('zerver.views.auth.finish_google_oauth2'),
             'grant_type': 'authorization_code',
         },
     )
