@@ -1706,13 +1706,13 @@ def check_message(sender, client, addressee,
         stream_name = stream_name.strip()
         check_stream_name(stream_name)
 
-        subject_name = addressee.topic()
-        if subject_name is None:
+        topic_name = addressee.topic()
+        if topic_name is None:
             raise JsonableError(_("Missing topic"))
-        subject = subject_name.strip()
-        if subject == "":
+        topic_name = topic_name.strip()
+        if topic_name == "":
             raise JsonableError(_("Topic can't be empty"))
-        subject = truncate_topic(subject)
+        topic_name = truncate_topic(topic_name)
 
         try:
             stream = get_stream(stream_name, realm)
@@ -1767,7 +1767,7 @@ def check_message(sender, client, addressee,
     message.content = message_content
     message.recipient = recipient
     if addressee.is_stream():
-        message.subject = subject
+        message.subject = topic_name
     if forged and forged_timestamp is not None:
         # Forged messages come with a timestamp
         message.pub_date = timestamp_to_datetime(forged_timestamp)
