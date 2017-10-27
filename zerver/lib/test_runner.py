@@ -238,7 +238,7 @@ def process_instrumented_calls(func):
     for call in test_helpers.INSTRUMENTED_CALLS:
         func(call)
 
-SerializedSubsuite = Tuple[Type[Iterable[TestCase]], List[str]]
+SerializedSubsuite = Tuple[Type['TestSuite'], List[str]]
 SubsuiteArgs = Tuple[Type['RemoteTestRunner'], int, SerializedSubsuite, bool]
 
 def run_subsuite(args):
@@ -514,9 +514,9 @@ def serialize_suite(suite):
     return type(suite), get_test_names(suite)
 
 def deserialize_suite(args):
-    # type: (Tuple[Type[Iterable[TestCase]], List[str]]) -> Iterable[TestCase]
+    # type: (Tuple[Type[TestSuite], List[str]]) -> TestSuite
     suite_class, test_names = args
-    suite = suite_class()  # type: ignore  # Gives abstract type error.
+    suite = suite_class()
     tests = TestLoader().loadTestsFromNames(test_names)
     for test in get_tests_from_suite(tests):
         suite.addTest(test)

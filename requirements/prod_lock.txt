@@ -53,7 +53,7 @@ jedi==0.10.2              # via ipython
 jinja2==2.9.6
 lxml==4.1.0
 markdown-include==0.5.1
-markdown==2.6.9
+markdown==2.6.9           # via markdown-include
 markupsafe==1.0
 mock==2.0.0
 mypy_extensions==0.3.0
@@ -76,7 +76,7 @@ pyasn1-modules==0.1.5
 pyasn1==0.3.7
 pycparser==2.18           # via cffi
 pycrypto==2.6.1
-pygments==2.2.0
+pygments==2.2.0           # via ipython
 pyjwt==1.5.3
 pyldap==2.4.37
 pylibmc==1.5.2
