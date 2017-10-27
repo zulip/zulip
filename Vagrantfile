@@ -120,6 +120,10 @@ fi
 # shell warning (it'll be wrong, since the shell is dying anyway)
 export SKIP_VENV_SHELL_WARNING=1
 
+# End `set -x`, so that the end of provision doesn't look like an error
+# message after a successful run.
+set +x
+
 # Provision the development environment
 ln -nsf /srv/zulip ~/zulip
 /srv/zulip/tools/provision
