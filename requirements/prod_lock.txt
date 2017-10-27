@@ -22,61 +22,61 @@ beautifulsoup4==4.6.0
 boto==2.48.0
 cchardet==2.1.1
 certifi==2017.7.27.1
-cffi==1.11.0
+cffi==1.11.2
 chardet==3.0.4
-cryptography==2.0.3
+cryptography==2.1.2
 cssselect==1.0.1          # via premailer
 cssutils==1.0.2           # via premailer
 decorator==4.1.2          # via ipython, traitlets
 defusedxml==0.5.0
 diff-match-patch==20121119
-django-auth-ldap==1.2.15
+django-auth-ldap==1.2.16
 django-bitfield==1.9.3
 django-pipeline==1.6.13
 django-statsd-mozilla==0.4.0
 django-webpack-loader==0.5.0
-django==1.11.5
+django==1.11.6
 docopt==0.6.2
 gitdb==0.6.4
-google-api-python-client==1.6.3
+google-api-python-client==1.6.4
 h2==2.6.2                 # via hyper
 hpack==3.0.0              # via h2
-html2text==2016.9.19
+html2text==2017.10.4
 httplib2==0.10.3
 hyper==0.7.0              # via apns2
 hyperframe==3.2.0         # via h2, hyper
 idna==2.6                 # via cryptography, requests
 ijson==2.3
 ipython-genutils==0.2.0   # via traitlets
-ipython==6.2.0
+ipython==6.2.1
 jedi==0.10.2              # via ipython
 jinja2==2.9.6
-lxml==4.0.0
+lxml==4.1.0
 markdown-include==0.5.1
-markdown==2.6.9           # via markdown-include
+markdown==2.6.9
 markupsafe==1.0
 mock==2.0.0
 mypy_extensions==0.3.0
 ndg-httpsclient==0.4.3
 oauth2client==4.1.2
-oauthlib==2.0.4
+oauthlib==2.0.6
 olefile==0.44             # via pillow
 pbr==3.1.1                # via mock
 pexpect==4.2.1            # via ipython
 pickleshare==0.7.4        # via ipython
 pika==0.11.0
-pillow==4.2.1
+pillow==4.3.0
 polib==1.0.8
 premailer==3.1.1
 prompt-toolkit==1.0.15    # via ipython
-psycopg2==2.7.3.1
+psycopg2==2.7.3.2
 ptyprocess==0.5.2         # via pexpect
 py3dns==3.1.0
-pyasn1-modules==0.0.11
-pyasn1==0.3.2
+pyasn1-modules==0.1.5
+pyasn1==0.3.7
 pycparser==2.18           # via cffi
 pycrypto==2.6.1
-pygments==2.2.0           # via ipython
+pygments==2.2.0
 pyjwt==1.5.3
 pyldap==2.4.37
 pylibmc==1.5.2
@@ -93,7 +93,7 @@ requests==2.18.4          # via premailer, python-gcm, python-twitter, requests-
 rsa==3.4.2
 simplegeneric==0.8.1      # via ipython
 simplejson==3.11.1
-six==1.10.0
+six==1.11.0
 smmap==0.9.0
 social-auth-app-django==1.2.0
 social-auth-core==1.4.0   # via social-auth-app-django
