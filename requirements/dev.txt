@@ -38,6 +38,6 @@ snakeviz==0.4.2
 transifex-client==0.12.4
 
 # Needed for updating the locked pip dependencies
-pip-tools==1.9.0
+pip-tools==1.10.1
 
 -r mypy.txt
