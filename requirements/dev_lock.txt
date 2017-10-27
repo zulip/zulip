@@ -74,7 +74,7 @@ jinja2==2.9.6
 jmespath==0.9.3           # via boto3, botocore
 lxml==4.1.0
 markdown-include==0.5.1
-markdown==2.6.9           # via markdown-include
+markdown==2.6.9
 markupsafe==1.0
 mock==2.0.0
 moto==1.1.10
@@ -95,7 +95,7 @@ pip-tools==1.10.1
 polib==1.0.8
 premailer==3.1.1
 prompt-toolkit==1.0.15    # via ipython
-psycopg2==2.7.3.1
+psycopg2==2.7.3.2
 ptyprocess==0.5.2         # via pexpect
 py3dns==3.1.0
 pyaml==17.8.0             # via moto
