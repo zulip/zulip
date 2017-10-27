@@ -1606,7 +1606,7 @@ def check_send_private_message(sender, client, receiving_user, body):
 # check_send_message:
 # Returns the id of the sent message.  Has same argspec as check_message.
 def check_send_message(sender, client, message_type_name, message_to,
-                       subject_name, message_content, realm=None, forged=False,
+                       topic_name, message_content, realm=None, forged=False,
                        forged_timestamp=None, forwarder_user_profile=None, local_id=None,
                        sender_queue_id=None):
     # type: (UserProfile, Client, Text, Sequence[Text], Optional[Text], Text, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[Text], Optional[Text]) -> int
@@ -1615,7 +1615,7 @@ def check_send_message(sender, client, message_type_name, message_to,
         sender,
         message_type_name,
         message_to,
-        subject_name)
+        topic_name)
 
     message = check_message(sender, client, addressee,
                             message_content, realm, forged, forged_timestamp,
