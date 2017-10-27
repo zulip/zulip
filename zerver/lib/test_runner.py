@@ -93,7 +93,7 @@ def report_slow_tests():
 def enforce_timely_test_completion(test_method, test_name, delay, result):
     # type: (Any, str, float, TestResult) -> None
     if hasattr(test_method, 'slowness_reason'):
-        max_delay = 1.1  # seconds
+        max_delay = 2.0  # seconds
     else:
         max_delay = 0.4  # seconds
 
