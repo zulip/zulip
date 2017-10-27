@@ -850,15 +850,15 @@ PIPELINE = {
         },
         'apple_sprite': {
             'source_filenames': (
-                'generated/emoji/google_sprite.css',
+                'generated/emoji/apple_sprite.css',
             ),
-            'output_filename': 'min/google_sprite.css',
+            'output_filename': 'min/apple_sprite.css',
         },
         'emojione_sprite': {
             'source_filenames': (
-                'generated/emoji/google_sprite.css',
+                'generated/emoji/emojione_sprite.css',
             ),
-            'output_filename': 'min/google_sprite.css',
+            'output_filename': 'min/emojione_sprite.css',
         },
         'google_sprite': {
             'source_filenames': (
@@ -868,9 +868,9 @@ PIPELINE = {
         },
         'twitter_sprite': {
             'source_filenames': (
-                'generated/emoji/google_sprite.css',
+                'generated/emoji/twitter_sprite.css',
             ),
-            'output_filename': 'min/google_sprite.css',
+            'output_filename': 'min/twitter_sprite.css',
         },
     },
     'JAVASCRIPT': {},
