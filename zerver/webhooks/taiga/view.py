@@ -66,7 +66,8 @@ templates = {
     },
     'relateduserstory': {
         'create': u':package: %(user)s added a related user story **%(userstory_subject)s** to the epic **%(epic_subject)s**',
-        'delete': u':cross_mark: %(user)s removed a related user story **%(userstory_subject)s** from the epic **%(epic_subject)s**',
+        'delete': (u':cross_mark: %(user)s removed a related user story ' +
+                   u'**%(userstory_subject)s** from the epic **%(epic_subject)s**'),
     },
     'userstory': {
         'create': u':package: %(user)s created user story **%(subject)s**.',

@@ -1308,8 +1308,11 @@ class Bugdown(markdown.Extension):
         md.inlinePatterns.add('avatar', Avatar(AVATAR_REGEX), '>backtick')
         md.inlinePatterns.add('gravatar', Avatar(GRAVATAR_REGEX), '>backtick')
 
-        md.inlinePatterns.add('stream_subscribe_button',
-                              StreamSubscribeButton(r'!_stream_subscribe_button\((?P<stream_name>(?:[^)\\]|\\\)|\\)*)\)'), '>backtick')
+        md.inlinePatterns.add(
+            'stream_subscribe_button',
+            StreamSubscribeButton(
+                r'!_stream_subscribe_button\((?P<stream_name>(?:[^)\\]|\\\)|\\)*)\)'),
+            '>backtick')
         md.inlinePatterns.add(
             'modal_link',
             ModalLink(r'!modal_link\((?P<relative_url>[^)]*), (?P<text>[^)]*)\)'),

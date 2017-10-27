@@ -62,7 +62,8 @@ RespondAsynchronously = _RespondAsynchronously()
 def asynchronous(method):
     # type: (Callable[..., Union[HttpResponse, _RespondAsynchronously]]) -> Callable[..., Union[HttpResponse, _RespondAsynchronously]]
     # TODO: this should be the correct annotation when mypy gets fixed: type:
-    #   (Callable[[HttpRequest, base.BaseHandler, Sequence[Any], Dict[str, Any]], Union[HttpResponse, _RespondAsynchronously]]) ->
+    #   (Callable[[HttpRequest, base.BaseHandler, Sequence[Any], Dict[str, Any]],
+    #     Union[HttpResponse, _RespondAsynchronously]]) ->
     #   Callable[[HttpRequest, Sequence[Any], Dict[str, Any]], Union[HttpResponse, _RespondAsynchronously]]
     # TODO: see https://github.com/python/mypy/issues/1655
     @wraps(method)

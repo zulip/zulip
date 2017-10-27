@@ -527,7 +527,9 @@ def handle_push_notification(user_profile_id, missed_message):
 
                 def failure_processor(event):
                     # type: (Dict[str, Any]) -> None
-                    logging.warning("Maximum retries exceeded for trigger:%s event:push_notification" % (event['user_profile_id']))
+                    logging.warning(
+                        "Maximum retries exceeded for trigger:%s event:push_notification" % (
+                            event['user_profile_id']))
                 retry_event('missedmessage_mobile_notifications', missed_message,
                             failure_processor)
 
@@ -547,4 +549,5 @@ def handle_push_notification(user_profile_id, missed_message):
             send_android_push_notification(android_devices, gcm_payload)
 
     except UserMessage.DoesNotExist:
-        logging.error("Could not find UserMessage with message_id %s" % (missed_message['message_id'],))
+        logging.error("Could not find UserMessage with message_id %s" % (
+            missed_message['message_id'],))

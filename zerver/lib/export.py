@@ -1187,7 +1187,8 @@ def export_messages_single_user(user_profile, output_dir, chunk_size=1000):
     min_id = -1
     dump_file_id = 1
     while True:
-        actual_query = user_message_query.select_related("message", "message__sending_client").filter(id__gt=min_id)[0:chunk_size]
+        actual_query = user_message_query.select_related(
+            "message", "message__sending_client").filter(id__gt=min_id)[0:chunk_size]
         user_message_chunk = [um for um in actual_query]
         user_message_ids = set(um.id for um in user_message_chunk)
 
