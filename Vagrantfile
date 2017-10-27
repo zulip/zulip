@@ -108,7 +108,7 @@ set -o pipefail
 # If the host is running SELinux remount the /sys/fs/selinux directory as read only,
 # needed for apt-get to work.
 if [ -d "/sys/fs/selinux" ]; then
-  sudo mount -o remount,ro /sys/fs/selinux
+    sudo mount -o remount,ro /sys/fs/selinux
 fi
 
 # Set default locale, this prevents errors if the user has another locale set.
@@ -126,8 +126,8 @@ ln -nsf /srv/zulip ~/zulip
 
 # Run any custom provision hooks the user has configured
 if [ -f /srv/zulip/tools/custom_provision ]; then
-  chmod +x /srv/zulip/tools/custom_provision
-  /srv/zulip/tools/custom_provision
+    chmod +x /srv/zulip/tools/custom_provision
+    /srv/zulip/tools/custom_provision
 fi
 SCRIPT
 
