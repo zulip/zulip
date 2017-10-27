@@ -844,7 +844,9 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                 'email': self.example_email("hamlet"),
                 'subdomain': 'zulip',
                 'is_signup': False}
-        result = self.get_log_into_subdomain(data, key='nonsense')
+        with mock.patch('logging.warning') as mock_warning:
+            result = self.get_log_into_subdomain(data, key='nonsense')
+            mock_warning.assert_called_with("Subdomain cookie: Bad signature.")
         self.assertEqual(result.status_code, 400)
 
     def test_log_into_subdomain_when_signature_is_expired(self):
@@ -856,7 +858,9 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         with mock.patch('django.core.signing.time.time', return_value=time.time() - 45):
             token = signing.dumps(data, salt=_subdomain_token_salt)
         url_path = reverse('zerver.views.auth.log_into_subdomain', args=[token])
-        result = self.client_get(url_path, subdomain='zulip')
+        with mock.patch('logging.warning') as mock_warning:
+            result = self.client_get(url_path, subdomain='zulip')
+            mock_warning.assert_called_once()
         self.assertEqual(result.status_code, 400)
 
     def test_log_into_subdomain_when_is_signup_is_true(self):
@@ -1000,7 +1004,9 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         data = {'name': 'Full Name',
                 'email': self.example_email("hamlet"),
                 'subdomain': 'zephyr'}
-        result = self.get_log_into_subdomain(data)
+        with mock.patch('logging.warning') as mock_warning:
+            result = self.get_log_into_subdomain(data)
+            mock_warning.assert_called_with("Login attempt on invalid subdomain")
         self.assertEqual(result.status_code, 400)
 
     def test_google_oauth2_registration(self):
