@@ -41,6 +41,7 @@ from zerver.views.messages import (
 )
 
 from typing import Dict, List, Mapping, Sequence, Tuple, Generic, Union, Any, Optional, Text
+import mock
 import os
 import re
 import ujson
@@ -243,7 +244,11 @@ class NarrowBuilderTest(ZulipTestCase):
     def test_add_term_using_group_pm_operator_and_not_the_same_user_as_operand(self):
         # type: () -> None
         term = dict(operator='group-pm-with', operand=self.example_email("othello"))
-        self._do_add_term_test(term, 'WHERE recipient_id != recipient_id')
+        with mock.patch("sqlalchemy.util.warn") as mock_warn:
+            self._do_add_term_test(term, 'WHERE recipient_id != recipient_id')
+
+            # SQLalchemy warns because this query is a tautology.
+            mock_warn.assert_called_once()
 
     def test_add_term_using_group_pm_operator_not_the_same_user_as_operand_and_negated(self):  # NEGATED
         # type: () -> None
