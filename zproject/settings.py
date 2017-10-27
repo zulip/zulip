@@ -1385,7 +1385,9 @@ if POPULATE_PROFILE_VIA_LDAP and \
    'zproject.backends.ZulipLDAPAuthBackend' not in AUTHENTICATION_BACKENDS:
     AUTHENTICATION_BACKENDS += ('zproject.backends.ZulipLDAPUserPopulator',)
 else:
-    POPULATE_PROFILE_VIA_LDAP = 'zproject.backends.ZulipLDAPAuthBackend' in AUTHENTICATION_BACKENDS or POPULATE_PROFILE_VIA_LDAP
+    POPULATE_PROFILE_VIA_LDAP = (
+        'zproject.backends.ZulipLDAPAuthBackend' in AUTHENTICATION_BACKENDS or
+        POPULATE_PROFILE_VIA_LDAP)
 
 if REGISTER_LINK_DISABLED is None:
     # The default for REGISTER_LINK_DISABLED is a bit more

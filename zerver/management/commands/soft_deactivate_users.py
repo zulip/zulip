@@ -33,9 +33,9 @@ class Command(ZulipBaseCommand):
         parser.add_argument('--inactive-for',
                             type=int,
                             default=28,
-                            help='Specify the number of days of user inactivity that user should be marked soft_deactviated')
+                            help='Number of days of inactivity before soft-deactivation')
         parser.add_argument('users', metavar='<users>', type=str, nargs='*', default=[],
-                            help="This option can be used to specify a list of user emails to soft activate/deactivate.")
+                            help="A list of user emails to soft activate/deactivate.")
 
     def handle(self, *args: Any, **options: str) -> None:
         if settings.STAGING:

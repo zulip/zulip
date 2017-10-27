@@ -40,7 +40,8 @@ ACTIONS_TO_MESSAGE_MAPPER = {
     CHANGE_LIST: u'moved {card_url_template} from {old_list} to {new_list}.',
     CHANGE_NAME: u'renamed the card from "{old_name}" to {card_url_template}.',
     SET_DESC: u'set description for {card_url_template} to\n~~~ quote\n{desc}\n~~~\n',
-    CHANGE_DESC: u'changed description for {card_url_template} from\n~~~ quote\n{old_desc}\n~~~\nto\n~~~ quote\n{desc}\n~~~\n',
+    CHANGE_DESC: (u'changed description for {card_url_template} from\n' +
+                  '~~~ quote\n{old_desc}\n~~~\nto\n~~~ quote\n{desc}\n~~~\n'),
     REMOVE_DESC: u'removed description from {card_url_template}.',
     ARCHIVE: u'archived {card_url_template}.',
     REOPEN: u'reopened {card_url_template}.',

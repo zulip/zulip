@@ -20,7 +20,8 @@ def list_realm_domains(request, user_profile):
 
 @require_realm_admin
 @has_request_variables
-def create_realm_domain(request, user_profile, domain=REQ(validator=check_string), allow_subdomains=REQ(validator=check_bool)):
+def create_realm_domain(request, user_profile, domain=REQ(validator=check_string),
+                        allow_subdomains=REQ(validator=check_bool)):
     # type: (HttpRequest, UserProfile, Text, bool) -> (HttpResponse)
     domain = domain.strip().lower()
     try:
@@ -34,7 +35,8 @@ def create_realm_domain(request, user_profile, domain=REQ(validator=check_string
 
 @require_realm_admin
 @has_request_variables
-def patch_realm_domain(request, user_profile, domain, allow_subdomains=REQ(validator=check_bool)):
+def patch_realm_domain(request, user_profile, domain,
+                       allow_subdomains=REQ(validator=check_bool)):
     # type: (HttpRequest, UserProfile, Text, bool) -> (HttpResponse)
     try:
         realm_domain = RealmDomain.objects.get(realm=user_profile.realm, domain=domain)

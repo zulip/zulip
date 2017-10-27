@@ -494,7 +494,8 @@ class EmbeddedBotWorker(QueueProcessingWorker):
         for service in services:
             bot_handler = get_bot_handler(str(service.name))
             if bot_handler is None:
-                logging.error("Error: User %s has bot with invalid embedded bot service %s" % (user_profile_id, service.name))
+                logging.error("Error: User %s has bot with invalid embedded bot service %s" % (
+                    user_profile_id, service.name))
                 continue
             bot_handler.handle_message(
                 message=message,

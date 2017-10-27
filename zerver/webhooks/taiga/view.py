@@ -1,5 +1,4 @@
-"""
-Taiga integration for Zulip.
+"""Taiga integration for Zulip.
 
 Tips for notification output:
 
@@ -14,8 +13,9 @@ etc. If no there's no meaningful emoji for certain event, the defaults are used:
 - :clipboard: - all other events connected to tasks
 - :bulb: - all other events connected to issues
 
-*Text formatting*: if there has been a change of a property, the new value should always be in bold; otherwise the
-subject of US/task should be in bold.
+*Text formatting*: if there has been a change of a property, the new
+value should always be in bold; otherwise the subject of US/task
+should be in bold.
 """
 
 from typing import Any, Dict, List, Mapping, Optional, Tuple, Text
@@ -65,7 +65,8 @@ templates = {
         'delete': u':cross_mark: %(user)s deleted epic **%(subject)s**',
     },
     'relateduserstory': {
-        'create': u':package: %(user)s added a related user story **%(userstory_subject)s** to the epic **%(epic_subject)s**',
+        'create': (u':package: %(user)s added a related user story '
+                   u'**%(userstory_subject)s** to the epic **%(epic_subject)s**'),
         'delete': (u':cross_mark: %(user)s removed a related user story ' +
                    u'**%(userstory_subject)s** from the epic **%(epic_subject)s**'),
     },
