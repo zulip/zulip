@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import mock
 import os
 import subprocess
 
@@ -78,7 +79,8 @@ class DocPageTest(ZulipTestCase):
         self._test('/errors/404/', 'Page not found')
         self._test('/errors/5xx/', 'Internal server error')
 
-        with self.settings(EMAIL_BACKEND='zproject.email_backends.EmailLogBackEnd'):
+        with self.settings(EMAIL_BACKEND='zproject.email_backends.EmailLogBackEnd'), \
+                mock.patch('logging.info', return_value=None):
             # For reaching full coverage for clear_emails function
             result = self.client_get('/emails/clear/')
             self.assertEqual(result.status_code, 302)

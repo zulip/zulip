@@ -1,3 +1,5 @@
+import logging
+
 from typing import List
 
 from django.conf import settings
@@ -39,5 +41,5 @@ class EmailLogBackEnd(BaseEmailBackend):
         for email in email_messages:
             self.log_email(email)
             email_log_url = settings.ROOT_DOMAIN_URI + "/emails"
-            print("You can access all the emails sent in development environment by visiting ", email_log_url)
+            logging.info("Emails sent in development are available at ", email_log_url)
         return len(email_messages)
