@@ -46,9 +46,9 @@ class CountStat(object):
         else:  # frequency == CountStat.DAY
             self.interval = timedelta(days=1)
 
-    def __unicode__(self):
+    def __str__(self):
         # type: () -> Text
-        return u"<CountStat: %s>" % (self.property,)
+        return "<CountStat: %s>" % (self.property,)
 
 class LoggingCountStat(CountStat):
     def __init__(self, property, output_table, frequency):

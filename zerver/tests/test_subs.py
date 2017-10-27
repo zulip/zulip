@@ -2146,7 +2146,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assert_adding_subscriptions_for_principal(invitee_email, invitee_realm, invite_streams)
         subscription = self.get_subscription(user_profile, invite_streams[0])
 
-        with mock.patch('zerver.models.Recipient.__unicode__', return_value='recip'):
+        with mock.patch('zerver.models.Recipient.__str__', return_value='recip'):
             self.assertEqual(str(subscription),
                              u'<Subscription: '
                              '<UserProfile: %s <Realm: zulip 1>> -> recip>' % (self.example_email('iago'),))
