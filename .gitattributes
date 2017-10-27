@@ -1,6 +1,7 @@
 *   text=auto eol=lf
 *.gif binary
 *.jpg binary
+*.jpeg binary
 *.eot binary
 *.woff binary
 *.woff2 binary
