@@ -212,6 +212,7 @@ class HomeTest(ZulipTestCase):
         realm_bots_actual_keys = sorted([str(key) for key in page_params['realm_bots'][0].keys()])
         self.assertEqual(realm_bots_actual_keys, realm_bots_expected_keys)
 
+    @slow("Creates and subscribes 10 users in a loop.  Should use bulk queries.")
     def test_num_queries_with_streams(self):
         # type: () -> None
         main_user = self.example_user('hamlet')
@@ -635,6 +636,7 @@ class HomeTest(ZulipTestCase):
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assertEqual(idle_user_msg_list[-1].content, message)
 
+    @slow("Loads home page data several times testing different cases")
     def test_multiple_user_soft_deactivations(self):
         # type: () -> None
         long_term_idle_user = self.example_user('hamlet')
