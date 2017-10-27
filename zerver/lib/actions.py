@@ -1864,10 +1864,10 @@ def internal_prep_private_message(realm, sender, recipient_user, content):
     )
 
 def internal_send_message(realm, sender_email, recipient_type_name, recipients,
-                          subject, content):
+                          topic_name, content):
     # type: (Realm, Text, str, Text, Text, Text) -> None
     msg = internal_prep_message(realm, sender_email, recipient_type_name, recipients,
-                                subject, content)
+                                topic_name, content)
 
     # internal_prep_message encountered an error
     if msg is None:
