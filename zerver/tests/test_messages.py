@@ -421,7 +421,7 @@ class PersonalMessagesTest(ZulipTestCase):
 
 class StreamMessagesTest(ZulipTestCase):
 
-    def assert_stream_message(self, stream_name, subject="test topic",
+    def assert_stream_message(self, stream_name, topic_name="test topic",
                               content="test content"):
         # type: (Text, Text, Text) -> None
         """
@@ -449,7 +449,7 @@ class StreamMessagesTest(ZulipTestCase):
         a_subscriber_email = non_bot_subscribers[0].email
         self.login(a_subscriber_email)
         self.send_message(a_subscriber_email, stream_name, Recipient.STREAM,
-                          content=content, subject=subject)
+                          content=content, subject=topic_name)
 
         # Did all of the subscribers get the message?
         new_subscriber_messages = []
@@ -722,7 +722,7 @@ class StreamMessagesTest(ZulipTestCase):
                                                        realm=realm)[0:3]:
             self.subscribe(user_profile, stream.name)
 
-        self.assert_stream_message(non_ascii_stream_name, subject=u"hümbüǵ",
+        self.assert_stream_message(non_ascii_stream_name, topic_name=u"hümbüǵ",
                                    content=u"hümbüǵ")
 
 class MessageDictTest(ZulipTestCase):
