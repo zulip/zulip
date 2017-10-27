@@ -100,6 +100,11 @@ $provision_script = <<SCRIPT
 set -x
 set -e
 set -o pipefail
+
+# Code should go here, rather than tools/provision, only if it is
+# something that we don't want to happen when running provision in a
+# development environment not using Vagrant.
+
 # If the host is running SELinux remount the /sys/fs/selinux directory as read only,
 # needed for apt-get to work.
 if [ -d "/sys/fs/selinux" ]; then
@@ -110,6 +115,10 @@ fi
 if ! grep -q 'LC_ALL=en_US.UTF-8' /etc/default/locale; then
     echo "LC_ALL=en_US.UTF-8" | sudo tee -a /etc/default/locale
 fi
+
+# Set an environment variable, so that we won't print the virtualenv
+# shell warning (it'll be wrong, since the shell is dying anyway)
+export SKIP_VENV_SHELL_WARNING=1
 
 # Provision the development environment
 ln -nsf /srv/zulip ~/zulip
