@@ -113,17 +113,10 @@ class ZulipTestCase(TestCase):
     def set_http_host(self, kwargs):
         # type: (Dict[str, Any]) -> None
         if 'subdomain' in kwargs:
-            if kwargs['subdomain'] != "":
-                kwargs["HTTP_HOST"] = "%s.%s" % (kwargs["subdomain"], settings.EXTERNAL_HOST)
-            else:
-                kwargs["HTTP_HOST"] = settings.EXTERNAL_HOST
+            kwargs['HTTP_HOST'] = Realm.host_for_subdomain(kwargs['subdomain'])
             del kwargs['subdomain']
         elif 'HTTP_HOST' not in kwargs:
-            if self.DEFAULT_SUBDOMAIN == "":
-                kwargs["HTTP_HOST"] = settings.EXTERNAL_HOST
-            else:
-                kwargs["HTTP_HOST"] = "%s.%s" % (self.DEFAULT_SUBDOMAIN,
-                                                 settings.EXTERNAL_HOST,)
+            kwargs['HTTP_HOST'] = Realm.host_for_subdomain(self.DEFAULT_SUBDOMAIN)
 
     @instrument_url
     def client_patch(self, url, info={}, **kwargs):

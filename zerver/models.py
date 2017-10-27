@@ -276,8 +276,13 @@ class Realm(ModelReprMixin, models.Model):
     @property
     def host(self):
         # type: () -> str
-        if self.subdomain not in [None, ""]:
-            return "%s.%s" % (self.subdomain, settings.EXTERNAL_HOST)
+        return self.host_for_subdomain(self.subdomain)
+
+    @staticmethod
+    def host_for_subdomain(subdomain):
+        # type: (str) -> str
+        if subdomain not in [None, ""]:
+            return "%s.%s" % (subdomain, settings.EXTERNAL_HOST)
         return settings.EXTERNAL_HOST
 
     @property
