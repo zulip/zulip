@@ -1761,7 +1761,8 @@ class TestJWTLogin(ZulipTestCase):
         # type: () -> None
         payload = {'user': 'hamlet', 'realm': 'zulip.com'}
         with self.settings(JWT_AUTH_KEYS={'acme': 'key'}):
-            with mock.patch('zerver.views.auth.get_subdomain', return_value='acme'):
+            with mock.patch('zerver.views.auth.get_subdomain', return_value='acme'), \
+                    mock.patch('logging.warning'):
                 auth_key = settings.JWT_AUTH_KEYS['acme']
                 web_token = jwt.encode(payload, auth_key).decode('utf8')
 
@@ -1774,7 +1775,8 @@ class TestJWTLogin(ZulipTestCase):
         # type: () -> None
         payload = {'user': 'hamlet', 'realm': 'zulip.com'}
         with self.settings(JWT_AUTH_KEYS={'': 'key'}):
-            with mock.patch('zerver.views.auth.get_subdomain', return_value=''):
+            with mock.patch('zerver.views.auth.get_subdomain', return_value=''), \
+                    mock.patch('logging.warning'):
                 auth_key = settings.JWT_AUTH_KEYS['']
                 web_token = jwt.encode(payload, auth_key).decode('utf8')
 
