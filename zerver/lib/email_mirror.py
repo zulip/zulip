@@ -102,8 +102,8 @@ def get_missed_message_token_from_address(address):
 def create_missed_message_address(user_profile, message):
     # type: (UserProfile, Message) -> str
     if settings.EMAIL_GATEWAY_PATTERN == '':
-        logging.warning("EMAIL_GATEWAY_PATTERN is an empty string, using "
-                        "NOREPLY_EMAIL_ADDRESS in the 'from' field.")
+        logger.warning("EMAIL_GATEWAY_PATTERN is an empty string, using "
+                       "NOREPLY_EMAIL_ADDRESS in the 'from' field.")
         return FromAddress.NOREPLY
 
     if message.recipient.type == Recipient.PERSONAL:
@@ -187,7 +187,7 @@ def send_to_missed_message_address(address, message):
     internal_send_message(user_profile.realm, user_profile.email,
                           recipient_type_name, recipient_str,
                           subject_b.decode('utf-8'), body)
-    logging.info("Successfully processed email from %s to %s" % (
+    logger.info("Successfully processed email from %s to %s" % (
         user_profile.email, recipient_str))
 
 ## Sending the Zulip ##
@@ -318,7 +318,7 @@ def process_stream_message(to, subject, message, debug_info):
     body = construct_zulip_body(message, stream.realm)
     debug_info["stream"] = stream
     send_zulip(settings.EMAIL_GATEWAY_BOT, stream, subject, body)
-    logging.info("Successfully processed email to %s (%s)" % (
+    logger.info("Successfully processed email to %s (%s)" % (
         stream.name, stream.realm.string_id))
 
 def process_missed_message(to, message, pre_checked):

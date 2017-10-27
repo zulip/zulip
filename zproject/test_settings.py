@@ -121,6 +121,7 @@ else:
     set_loglevel('fakeldap', 'ERROR')
     set_loglevel('zulip.send_email', 'ERROR')
     set_loglevel('zerver.lib.digest', 'ERROR')
+    set_loglevel('zerver.lib.email_mirror', 'ERROR')
 
 # Enable file:/// hyperlink support by default in tests
 ENABLE_FILE_LINKS = True
