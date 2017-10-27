@@ -14,7 +14,7 @@ orig_poll_impl = select.epoll
 
 class InstrumentedPollIOLoop(PollIOLoop):
     def initialize(self, **kwargs):  # type: ignore # TODO investigate likely buggy monkey patching here
-        super(InstrumentedPollIOLoop, self).initialize(impl=InstrumentedPoll(), **kwargs)
+        super().initialize(impl=InstrumentedPoll(), **kwargs)
 
 def instrument_tornado_ioloop() -> None:
     IOLoop.configure(InstrumentedPollIOLoop)

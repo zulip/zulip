@@ -298,7 +298,7 @@ class TestProcessCountStat(AnalyticsTestCase):
 class TestCountStats(AnalyticsTestCase):
     def setUp(self):
         # type: () -> None
-        super(TestCountStats, self).setUp()
+        super().setUp()
         # This tests two things for each of the queries/CountStats: Handling
         # more than 1 realm, and the time bounds (time_start and time_end in
         # the queries).
@@ -812,7 +812,7 @@ class TestDeleteStats(AnalyticsTestCase):
 class TestActiveUsersAudit(AnalyticsTestCase):
     def setUp(self):
         # type: () -> None
-        super(TestActiveUsersAudit, self).setUp()
+        super().setUp()
         self.user = self.create_user()
         self.stat = COUNT_STATS['active_users_audit:is_bot:day']
         self.current_property = self.stat.property
@@ -975,7 +975,7 @@ class TestActiveUsersAudit(AnalyticsTestCase):
 class TestRealmActiveHumans(AnalyticsTestCase):
     def setUp(self):
         # type: () -> None
-        super(TestRealmActiveHumans, self).setUp()
+        super().setUp()
         self.stat = COUNT_STATS['realm_active_humans::day']
         self.current_property = self.stat.property
 

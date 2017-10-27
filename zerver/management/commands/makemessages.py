@@ -71,7 +71,7 @@ def strip_whitespaces(src: Text) -> Text:
 class Command(makemessages.Command):
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        super(Command, self).add_arguments(parser)
+        super().add_arguments(parser)
         parser.add_argument('--frontend-source', type=str,
                             default='static/templates',
                             help='Name of the Handlebars template directory')
@@ -123,7 +123,7 @@ class Command(makemessages.Command):
             ignore_patterns = options.get('ignore_patterns', [])
             ignore_patterns.append('docs/*')
             options['ignore_patterns'] = ignore_patterns
-            super(Command, self).handle(*args, **options)
+            super().handle(*args, **options)
         finally:
             template.endblock_re = old_endblock_re
             template.block_re = old_block_re

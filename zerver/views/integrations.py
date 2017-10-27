@@ -42,7 +42,7 @@ def add_api_uri_context(context, request):
 class ApiURLView(TemplateView):
     def get_context_data(self, **kwargs):
         # type: (**Any) -> Dict[str, str]
-        context = super(ApiURLView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         add_api_uri_context(context, self.request)
         return context
 
@@ -122,7 +122,7 @@ class IntegrationView(ApiURLView):
 
     def get_context_data(self, **kwargs):
         # type: (**Any) -> Dict[str, Any]
-        context = super(IntegrationView, self).get_context_data(**kwargs)  # type: Dict[str, Any]
+        context = super().get_context_data(**kwargs)  # type: Dict[str, Any]
         add_integrations_context(context)
         return context
 

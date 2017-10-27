@@ -1034,7 +1034,7 @@ class UListProcessor(markdown.blockprocessors.UListProcessor):
         # this class, so that bulleted lists (and only bulleted lists)
         # work off 2-space indentation.
         parser.markdown.tab_length = 2
-        super(UListProcessor, self).__init__(parser)
+        super().__init__(parser)
         parser.markdown.tab_length = 4
 
 class ListIndentProcessor(markdown.blockprocessors.ListIndentProcessor):
@@ -1050,7 +1050,7 @@ class ListIndentProcessor(markdown.blockprocessors.ListIndentProcessor):
         # this class, so that bulleted lists (and only bulleted lists)
         # work off 2-space indentation.
         parser.markdown.tab_length = 2
-        super(ListIndentProcessor, self).__init__(parser)
+        super().__init__(parser)
         parser.markdown.tab_length = 4
 
 class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
@@ -1260,7 +1260,7 @@ class Bugdown(markdown.Extension):
             "realm": [kwargs['realm'], "Realm name"]
         }
 
-        super(Bugdown, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def extendMarkdown(self, md, md_globals):
         # type: (markdown.Markdown, Dict[str, Any]) -> None

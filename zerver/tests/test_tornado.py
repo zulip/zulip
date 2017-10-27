@@ -42,14 +42,14 @@ from typing import Any, Callable, Dict, Generator, Optional, Text, List, cast
 class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
     def setUp(self):
         # type: () -> None
-        super(TornadoWebTestCase, self).setUp()
+        super().setUp()
         signals.request_started.disconnect(close_old_connections)
         signals.request_finished.disconnect(close_old_connections)
         self.session_cookie = None  # type: Optional[Dict[Text, Text]]
 
     def tearDown(self):
         # type: () -> None
-        super(TornadoWebTestCase, self).tearDown()
+        super().tearDown()
         self.session_cookie = None  # type: Optional[Dict[Text, Text]]
 
     @override_settings(DEBUG=False)
@@ -87,7 +87,7 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
 
     def login(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
-        super(TornadoWebTestCase, self).login(*args, **kwargs)
+        super().login(*args, **kwargs)
         session_cookie = settings.SESSION_COOKIE_NAME
         session_key = self.client.session.session_key
         self.session_cookie = {
@@ -157,11 +157,11 @@ class WebSocketBaseTestCase(AsyncHTTPTestCase, ZulipTestCase):
     def setUp(self):
         # type: () -> None
         settings.RUNNING_INSIDE_TORNADO = True
-        super(WebSocketBaseTestCase, self).setUp()
+        super().setUp()
 
     def tearDown(self):
         # type: () -> None
-        super(WebSocketBaseTestCase, self).tearDown()
+        super().tearDown()
         settings.RUNNING_INSIDE_TORNADO = False
 
     @gen.coroutine
