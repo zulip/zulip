@@ -18,9 +18,9 @@ class FillState(models.Model):
 
     last_modified = models.DateTimeField(auto_now=True)  # type: datetime.datetime
 
-    def __unicode__(self):
+    def __str__(self):
         # type: () -> Text
-        return u"<FillState: %s %s %s>" % (self.property, self.end_time, self.state)
+        return "<FillState: %s %s %s>" % (self.property, self.end_time, self.state)
 
 # The earliest/starting end_time in FillState
 # We assume there is at least one realm
@@ -42,9 +42,9 @@ def last_successful_fill(property):
 class Anomaly(models.Model):
     info = models.CharField(max_length=1000)  # type: Text
 
-    def __unicode__(self):
+    def __str__(self):
         # type: () -> Text
-        return u"<Anomaly: %s... %s>" % (self.info, self.id)
+        return "<Anomaly: %s... %s>" % (self.info, self.id)
 
 class BaseCount(models.Model):
     # Note: When inheriting from BaseCount, you may want to rearrange
@@ -64,9 +64,9 @@ class InstallationCount(BaseCount):
     class Meta(object):
         unique_together = ("property", "subgroup", "end_time")
 
-    def __unicode__(self):
+    def __str__(self):
         # type: () -> Text
-        return u"<InstallationCount: %s %s %s>" % (self.property, self.subgroup, self.value)
+        return "<InstallationCount: %s %s %s>" % (self.property, self.subgroup, self.value)
 
 class RealmCount(BaseCount):
     realm = models.ForeignKey(Realm)
@@ -75,9 +75,9 @@ class RealmCount(BaseCount):
         unique_together = ("realm", "property", "subgroup", "end_time")
         index_together = ["property", "end_time"]
 
-    def __unicode__(self):
+    def __str__(self):
         # type: () -> Text
-        return u"<RealmCount: %s %s %s %s>" % (self.realm, self.property, self.subgroup, self.value)
+        return "<RealmCount: %s %s %s %s>" % (self.realm, self.property, self.subgroup, self.value)
 
 class UserCount(BaseCount):
     user = models.ForeignKey(UserProfile)
@@ -89,9 +89,9 @@ class UserCount(BaseCount):
         # aggregating from users to realms
         index_together = ["property", "realm", "end_time"]
 
-    def __unicode__(self):
+    def __str__(self):
         # type: () -> Text
-        return u"<UserCount: %s %s %s %s>" % (self.user, self.property, self.subgroup, self.value)
+        return "<UserCount: %s %s %s %s>" % (self.user, self.property, self.subgroup, self.value)
 
 class StreamCount(BaseCount):
     stream = models.ForeignKey(Stream)
@@ -103,6 +103,6 @@ class StreamCount(BaseCount):
         # aggregating from streams to realms
         index_together = ["property", "realm", "end_time"]
 
-    def __unicode__(self):
+    def __str__(self):
         # type: () -> Text
-        return u"<StreamCount: %s %s %s %s %s>" % (self.stream, self.property, self.subgroup, self.value, self.id)
+        return "<StreamCount: %s %s %s %s %s>" % (self.stream, self.property, self.subgroup, self.value, self.id)

@@ -623,7 +623,7 @@ class BugdownTest(ZulipTestCase):
                                    url_format_string=url_format_string)
         realm_filter.save()
         self.assertEqual(
-            realm_filter.__unicode__(),
+            realm_filter.__str__(),
             '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
             ' https://trac.zulip.net/ticket/%(id)s>')
 

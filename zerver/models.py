@@ -222,9 +222,9 @@ class Realm(models.Model):
                 ret[k] = v
         return ret
 
-    def __unicode__(self):
+    def __str__(self):
         # type: () -> Text
-        return u"<Realm: %s %s>" % (self.string_id, self.id)
+        return "<Realm: %s %s>" % (self.string_id, self.id)
 
     @cache_with_key(get_realm_emoji_cache_key, timeout=3600*24*7)
     def get_emoji(self):
@@ -383,9 +383,9 @@ class RealmEmoji(models.Model):
     class Meta(object):
         unique_together = ("realm", "name")
 
-    def __unicode__(self):
+    def __str__(self):
         # type: () -> Text
-        return u"<RealmEmoji(%s): %s %s>" % (self.realm.string_id, self.name, self.file_name)
+        return "<RealmEmoji(%s): %s %s>" % (self.realm.string_id, self.name, self.file_name)
 
 def get_realm_emoji_uncached(realm):
     # type: (Realm) -> Dict[Text, Dict[str, Any]]
@@ -442,9 +442,9 @@ class RealmFilter(models.Model):
     class Meta(object):
         unique_together = ("realm", "pattern")
 
-    def __unicode__(self):
+    def __str__(self):
         # type: () -> Text
-        return u"<RealmFilter(%s): %s %s>" % (self.realm.string_id, self.pattern, self.url_format_string)
+        return "<RealmFilter(%s): %s %s>" % (self.realm.string_id, self.pattern, self.url_format_string)
 
 def get_realm_filters_cache_key(realm_id):
     # type: (int) -> Text
@@ -703,9 +703,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         else:
             return False
 
-    def __unicode__(self):
+    def __str__(self):
         # type: () -> Text
-        return u"<UserProfile: %s %s>" % (self.email, self.realm)
+        return "<UserProfile: %s %s>" % (self.email, self.realm)
 
     @property
     def is_incoming_webhook(self):
@@ -890,9 +890,9 @@ class Stream(models.Model):
     date_created = models.DateTimeField(default=timezone_now)  # type: datetime.datetime
     deactivated = models.BooleanField(default=False)  # type: bool
 
-    def __unicode__(self):
+    def __str__(self):
         # type: () -> Text
-        return u"<Stream: %s>" % (self.name,)
+        return "<Stream: %s>" % (self.name,)
 
     def is_public(self):
         # type: () -> bool
@@ -942,10 +942,10 @@ class Recipient(models.Model):
         # Raises KeyError if invalid
         return self._type_names[self.type]
 
-    def __unicode__(self):
+    def __str__(self):
         # type: () -> Text
         display_recipient = get_display_recipient(self)
-        return u"<Recipient: %s (%d, %s)>" % (display_recipient, self.type_id, self.type)
+        return "<Recipient: %s (%d, %s)>" % (display_recipient, self.type_id, self.type)
 
 class MutedTopic(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
@@ -956,16 +956,16 @@ class MutedTopic(models.Model):
     class Meta(object):
         unique_together = ('user_profile', 'stream', 'topic_name')
 
-    def __unicode__(self):
+    def __str__(self):
         # type: () -> Text
-        return u"<MutedTopic: (%s, %s, %s)>" % (self.user_profile.email, self.stream.name, self.topic_name)
+        return "<MutedTopic: (%s, %s, %s)>" % (self.user_profile.email, self.stream.name, self.topic_name)
 
 class Client(models.Model):
     name = models.CharField(max_length=30, db_index=True, unique=True)  # type: Text
 
-    def __unicode__(self):
+    def __str__(self):
         # type: () -> Text
-        return u"<Client: %s>" % (self.name,)
+        return "<Client: %s>" % (self.name,)
 
 get_client_cache = {}  # type: Dict[Text, Client]
 def get_client(name):
@@ -1123,11 +1123,11 @@ class AbstractMessage(models.Model):
     class Meta(object):
         abstract = True
 
-    def __unicode__(self):
+    def __str__(self):
         # type: () -> Text
         display_recipient = get_display_recipient(self.recipient)
-        return u"<%s: %s / %s / %r>" % (self.__class__.__name__, display_recipient,
-                                        self.subject, self.sender)
+        return "<%s: %s / %s / %r>" % (self.__class__.__name__, display_recipient,
+                                       self.subject, self.sender)
 
 
 class ArchivedMessage(AbstractMessage):
@@ -1330,11 +1330,11 @@ class AbstractUserMessage(models.Model):
             if flags & (2 ** i)
         ]
 
-    def __unicode__(self):
+    def __str__(self):
         # type: () -> Text
         display_recipient = get_display_recipient(self.message.recipient)
-        return u"<%s: %s / %s (%s)>" % (self.__class__.__name__, display_recipient,
-                                        self.user_profile.email, self.flags_list())
+        return "<%s: %s / %s (%s)>" % (self.__class__.__name__, display_recipient,
+                                       self.user_profile.email, self.flags_list())
 
 
 class ArchivedUserMessage(AbstractUserMessage):
@@ -1373,9 +1373,9 @@ class AbstractAttachment(models.Model):
     class Meta(object):
         abstract = True
 
-    def __unicode__(self):
+    def __str__(self):
         # type: () -> Text
-        return u"<%s: %s>" % (self.__class__.__name__, self.file_name,)
+        return "<%s: %s>" % (self.__class__.__name__, self.file_name,)
 
 
 class ArchivedAttachment(AbstractAttachment):
@@ -1455,9 +1455,9 @@ class Subscription(models.Model):
     class Meta(object):
         unique_together = ("user_profile", "recipient")
 
-    def __unicode__(self):
+    def __str__(self):
         # type: () -> Text
-        return u"<Subscription: %r -> %s>" % (self.user_profile, self.recipient)
+        return "<Subscription: %r -> %s>" % (self.user_profile, self.recipient)
 
 @cache_with_key(user_profile_by_id_cache_key, timeout=3600*24*7)
 def get_user_profile_by_id(uid):
@@ -1839,8 +1839,8 @@ class ScheduledEmail(AbstractScheduledJob):
 
     def __str__(self):
         # type: () -> Text
-        return u"<ScheduledEmail: %s %s %s>" % (self.type, self.user or self.address,
-                                                self.scheduled_timestamp)
+        return "<ScheduledEmail: %s %s %s>" % (self.type, self.user or self.address,
+                                               self.scheduled_timestamp)
 
 EMAIL_TYPES = {
     'followup_day1': ScheduledEmail.WELCOME,
@@ -1862,12 +1862,12 @@ class RealmAuditLog(models.Model):
     backfilled = models.BooleanField(default=False)  # type: bool
     extra_data = models.TextField(null=True)  # type: Optional[Text]
 
-    def __unicode__(self):
+    def __str__(self):
         # type: () -> str
         if self.modified_user is not None:
-            return u"<RealmAuditLog: %s %s %s>" % (self.modified_user, self.event_type, self.event_time)
+            return "<RealmAuditLog: %s %s %s>" % (self.modified_user, self.event_type, self.event_time)
         if self.modified_stream is not None:
-            return u"<RealmAuditLog: %s %s %s>" % (self.modified_stream, self.event_type, self.event_time)
+            return "<RealmAuditLog: %s %s %s>" % (self.modified_stream, self.event_type, self.event_time)
         return "<RealmAuditLog: %s %s %s>" % (self.realm, self.event_type, self.event_time)
 
 class UserHotspot(models.Model):

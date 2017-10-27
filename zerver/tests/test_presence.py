@@ -53,10 +53,10 @@ class TestClientModel(ZulipTestCase):
     def test_client_stringification(self):
         # type: () -> None
         '''
-        This test is designed to cover __unicode__ method for Client.
+        This test is designed to cover __str__ method for Client.
         '''
         client = make_client('some_client')
-        self.assertEqual(str(client), u'<Client: some_client>')
+        self.assertEqual(str(client), '<Client: some_client>')
 
 class UserPresenceModelTests(ZulipTestCase):
     def test_date_logic(self):
