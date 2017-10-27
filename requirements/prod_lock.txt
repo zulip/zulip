@@ -53,7 +53,7 @@ jedi==0.10.2              # via ipython
 jinja2==2.9.6
 lxml==4.1.0
 markdown-include==0.5.1
-markdown==2.6.9           # via markdown-include
+markdown==2.6.9
 markupsafe==1.0
 mock==2.0.0
 mypy_extensions==0.3.0
@@ -69,14 +69,14 @@ pillow==4.3.0
 polib==1.0.8
 premailer==3.1.1
 prompt-toolkit==1.0.15    # via ipython
-psycopg2==2.7.3.1
+psycopg2==2.7.3.2
 ptyprocess==0.5.2         # via pexpect
 py3dns==3.1.0
 pyasn1-modules==0.0.11
 pyasn1==0.3.2
 pycparser==2.18           # via cffi
 pycrypto==2.6.1
-pygments==2.2.0           # via ipython
+pygments==2.2.0
 pyjwt==1.5.3
 pyldap==2.4.37
 pylibmc==1.5.2
