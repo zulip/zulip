@@ -5,11 +5,11 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 from typing import List, Optional, Set, Text
 
-from zerver.decorator import authenticated_json_post_view
-from zerver.lib.actions import do_invite_users, \
-    get_default_subs, internal_send_message
+from zerver.decorator import authenticated_json_post_view, require_realm_admin, to_non_negative_int
+from zerver.lib.actions import do_invite_users, do_revoke_user_invite, do_resend_user_invite_email, \
+    get_default_subs, internal_send_message, do_get_user_invites
 from zerver.lib.request import REQ, has_request_variables, JsonableError
-from zerver.lib.response import json_success, json_error
+from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.validator import check_string, check_list
 from zerver.models import PreregistrationUser, Stream, UserProfile
@@ -50,6 +50,38 @@ def invite_users_backend(request, user_profile,
 
     do_invite_users(user_profile, invitee_emails, streams, body)
     return json_success()
+
+@require_realm_admin
+def get_user_invites(request, user_profile):
+    # type: (HttpRequest, UserProfile) -> HttpResponse
+    all_users = do_get_user_invites(user_profile)
+
+    # ret = {'invites': all_users,
+    #   "result": "success",
+    #   "msg": ""}
+    return json_success(data={'invites': all_users})
+
+@require_realm_admin
+@has_request_variables
+def revoke_user_invite(request, user_profile, prereg_id=REQ(converter=to_non_negative_int)):
+    # type: (HttpRequest, UserProfile, int) -> HttpResponse
+    if do_revoke_user_invite(prereg_id, user_profile.realm_id):
+        return json_success()
+    else:
+        raise JsonableError(_("Cannot revoke the invitation, the invite was not found."))
+
+@require_realm_admin
+@has_request_variables
+def resend_user_invite_email(request, user_profile, prereg_id=REQ(converter=to_non_negative_int)):
+    # type: (HttpRequest, UserProfile, int) -> HttpResponse
+    timestamp = do_resend_user_invite_email(prereg_id, user_profile.realm_id)
+    if timestamp:
+        # ret = {'timestamp': timestamp,
+        #   "result": "success",
+        #   "msg": ""}
+        return json_success(data={'timestamp': timestamp})
+    else:
+        raise JsonableError(_("Cannot resend the invitation email, the invite was not found."))
 
 def get_invitee_emails_set(invitee_emails_raw):
     # type: (str) -> Set[str]

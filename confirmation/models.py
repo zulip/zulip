@@ -62,6 +62,12 @@ def get_object_from_key(confirmation_key):
         raise ConfirmationKeyException(ConfirmationKeyException.EXPIRED)
 
     obj = confirmation.content_object
+    # Revoke invite currently deletes the PreregistrationUser object linked
+    # to the invite_id, which leaves a Confirmation object with a
+    # missing content_object. This is something that should be changed, probably.
+    # This is a temporary fix as a workaround for this issue
+    if obj is None:
+        raise ConfirmationKeyException(ConfirmationKeyException.EXPIRED)
     if hasattr(obj, "status"):
         obj.status = getattr(settings, 'STATUS_ACTIVE', 1)
         obj.save(update_fields=['status'])
