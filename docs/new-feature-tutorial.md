@@ -151,7 +151,7 @@ boolean field, `mandatory_topics`, to the Realm model in
 
 # zerver/models.py
 
-class Realm(ModelReprMixin, models.Model):
+class Realm(models.Model):
     # ...
     restricted_to_domain = models.BooleanField(default=True) # type: bool
     invite_required = models.BooleanField(default=False) # type: bool
@@ -169,7 +169,7 @@ dictionary.
 
 # zerver/models.py
 
-class Realm(ModelReprMixin, models.Model)
+class Realm(models.Model)
   # ...
   # Define the types of the various automatically managed properties
     property_types = dict(

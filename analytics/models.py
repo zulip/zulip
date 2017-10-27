@@ -1,14 +1,13 @@
 from django.db import models
 
 from zerver.models import Realm, UserProfile, Stream, Recipient
-from zerver.lib.str_utils import ModelReprMixin
 from zerver.lib.timestamp import floor_to_day
 
 import datetime
 
 from typing import Optional, Tuple, Union, Dict, Any, Text
 
-class FillState(ModelReprMixin, models.Model):
+class FillState(models.Model):
     property = models.CharField(max_length=40, unique=True)  # type: Text
     end_time = models.DateTimeField()  # type: datetime.datetime
 
@@ -40,14 +39,14 @@ def last_successful_fill(property):
     return fillstate.end_time - datetime.timedelta(hours=1)
 
 # would only ever make entries here by hand
-class Anomaly(ModelReprMixin, models.Model):
+class Anomaly(models.Model):
     info = models.CharField(max_length=1000)  # type: Text
 
     def __unicode__(self):
         # type: () -> Text
         return u"<Anomaly: %s... %s>" % (self.info, self.id)
 
-class BaseCount(ModelReprMixin, models.Model):
+class BaseCount(models.Model):
     # Note: When inheriting from BaseCount, you may want to rearrange
     # the order of the columns in the migration to make sure they
     # match how you'd like the table to be arranged.
