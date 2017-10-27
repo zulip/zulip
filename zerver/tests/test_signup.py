@@ -48,7 +48,7 @@ from zerver.lib.notifications import enqueue_welcome_emails, \
     one_click_unsubscribe_link
 from zerver.lib.subdomains import is_root_domain_available
 from zerver.lib.test_helpers import find_pattern_in_email, find_key_by_email, queries_captured, \
-    HostRequestMock, unsign_subdomain_cookie
+    HostRequestMock, load_subdomain_token
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
@@ -73,14 +73,14 @@ class RedirectAndLogIntoSubdomainTestCase(ZulipTestCase):
         name = 'Hamlet'
         email = self.example_email("hamlet")
         response = redirect_and_log_into_subdomain(realm, name, email)
-        data = unsign_subdomain_cookie(response)
+        data = load_subdomain_token(response)
         self.assertDictEqual(data, {'name': name, 'email': email,
                                     'subdomain': realm.subdomain,
                                     'is_signup': False})
 
         response = redirect_and_log_into_subdomain(realm, name, email,
                                                    is_signup=True)
-        data = unsign_subdomain_cookie(response)
+        data = load_subdomain_token(response)
         self.assertDictEqual(data, {'name': name, 'email': email,
                                     'subdomain': realm.subdomain,
                                     'is_signup': True})
@@ -1194,6 +1194,7 @@ class RealmCreationTest(ZulipTestCase):
 
             result = self.submit_reg_form_for_user(email, password, realm_subdomain=string_id)
             self.assertEqual(result.status_code, 302)
+            self.assertTrue(result["Location"].startswith('http://zuliptest.testserver/accounts/login/subdomain/'))
 
             # Make sure the realm is created
             realm = get_realm(string_id)
@@ -1205,8 +1206,6 @@ class RealmCreationTest(ZulipTestCase):
             self.assertEqual(realm.org_type, Realm.CORPORATE)
             self.assertEqual(realm.restricted_to_domain, False)
             self.assertEqual(realm.invite_required, True)
-
-            self.assertTrue(result["Location"].endswith("/"))
 
             # Check welcome messages
             for stream_name, text, message_count in [
@@ -1329,7 +1328,7 @@ class RealmCreationTest(ZulipTestCase):
                                                realm_subdomain = 'a-0',
                                                realm_name = realm_name)
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, 'http://a-0.testserver/accounts/login/subdomain/')
+        self.assertTrue(result.url.startswith('http://a-0.testserver/accounts/login/subdomain/'))
 
     @override_settings(OPEN_REALM_CREATION=True)
     def test_subdomain_restrictions_root_domain(self):
@@ -1355,7 +1354,7 @@ class RealmCreationTest(ZulipTestCase):
                                                realm_subdomain = '',
                                                realm_name = realm_name)
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, 'http://testserver/accounts/login/subdomain/')
+        self.assertTrue(result.url.startswith('http://testserver/accounts/login/subdomain/'))
 
     @override_settings(OPEN_REALM_CREATION=True)
     def test_subdomain_restrictions_root_domain_option(self):
@@ -1383,7 +1382,7 @@ class RealmCreationTest(ZulipTestCase):
                                                realm_in_root_domain = 'true',
                                                realm_name = realm_name)
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, 'http://testserver/accounts/login/subdomain/')
+        self.assertTrue(result.url.startswith('http://testserver/accounts/login/subdomain/'))
 
     def test_is_root_domain_available(self):
         # type: () -> None

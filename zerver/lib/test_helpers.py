@@ -10,7 +10,7 @@ from django.test.client import (
     BOUNDARY, MULTIPART_CONTENT, encode_multipart,
 )
 from django.template import loader
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.db.utils import IntegrityError
 
 from zerver.lib.avatar import avatar_url
@@ -476,10 +476,8 @@ def get_all_templates():
 
     return templates
 
-def unsign_subdomain_cookie(result):
+def load_subdomain_token(response):
     # type: (HttpResponse) -> Dict[str, Any]
-    key = 'subdomain.signature'
-    salt = key + 'zerver.views.auth'
-    cookie = result.cookies.get(key)
-    value = signing.get_cookie_signer(salt=salt).unsign(cookie.value, max_age=15)
-    return ujson.loads(value)
+    assert isinstance(response, HttpResponseRedirect)
+    token = response.url.rsplit('/', 1)[1]
+    return signing.loads(token, salt='zerver.views.auth.log_into_subdomain')

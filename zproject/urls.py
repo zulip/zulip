@@ -327,7 +327,7 @@ i18n_urls = [
         name='zerver.views.auth.send_oauth_request_to_google'),
     url(r'^accounts/login/google/done/$', zerver.views.auth.finish_google_oauth2,
         name='zerver.views.auth.finish_google_oauth2'),
-    url(r'^accounts/login/subdomain/$', zerver.views.auth.log_into_subdomain,
+    url(r'^accounts/login/subdomain/([^/]+)$', zerver.views.auth.log_into_subdomain,
         name='zerver.views.auth.log_into_subdomain'),
     url(r'^accounts/login/local/$', zerver.views.auth.dev_direct_login,
         name='zerver.views.auth.dev_direct_login'),

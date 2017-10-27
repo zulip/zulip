@@ -15,6 +15,7 @@ from django.core.urlresolvers import reverse
 import jwt
 import mock
 import re
+import time
 
 from zerver.forms import HomepageForm
 from zerver.lib.actions import (
@@ -49,7 +50,8 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     ZulipLDAPConfigurationError
 
 from zerver.views.auth import (maybe_send_to_registration,
-                               login_or_register_remote_user)
+                               login_or_register_remote_user,
+                               _subdomain_token_salt)
 from version import ZULIP_VERSION
 
 from social_core.exceptions import AuthFailed, AuthStateForbidden
@@ -61,7 +63,7 @@ from social_core.backends.github import GithubOrganizationOAuth2, GithubTeamOAut
 from six.moves import urllib
 from six.moves.http_cookies import SimpleCookie
 import ujson
-from zerver.lib.test_helpers import MockLDAP, unsign_subdomain_cookie
+from zerver.lib.test_helpers import MockLDAP, load_subdomain_token
 
 class AuthBackendTest(ZulipTestCase):
     def get_username(self, email_to_username=None):
@@ -368,7 +370,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
             response = dict(email=self.email, name=self.name)
             result = self.backend.do_auth(response=response)
             assert(result is not None)
-            self.assertEqual('http://zulip.testserver/accounts/login/subdomain/', result.url)
+            self.assertTrue(result.url.startswith('http://zulip.testserver/accounts/login/subdomain/'))
 
     def test_github_backend_do_auth_for_default(self):
         # type: () -> None
@@ -747,7 +749,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         account_response = ResponseMock(200, account_data)
         result = self.google_oauth2_test(token_response, account_response, subdomain='zulip')
 
-        data = unsign_subdomain_cookie(result)
+        data = load_subdomain_token(result)
         self.assertEqual(data['email'], self.example_email("hamlet"))
         self.assertEqual(data['name'], 'Full Name')
         self.assertEqual(data['subdomain'], 'zulip')
@@ -755,7 +757,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         parsed_url = urllib.parse.urlparse(result.url)
         uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
                                  parsed_url.path)
-        self.assertEqual(uri, 'http://zulip.testserver/accounts/login/subdomain/')
+        self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
 
     def test_google_oauth2_no_fullname(self):
         # type: () -> None
@@ -766,7 +768,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         account_response = ResponseMock(200, account_data)
         result = self.google_oauth2_test(token_response, account_response, subdomain='zulip')
 
-        data = unsign_subdomain_cookie(result)
+        data = load_subdomain_token(result)
         self.assertEqual(data['email'], self.example_email("hamlet"))
         self.assertEqual(data['name'], 'Test User')
         self.assertEqual(data['subdomain'], 'zulip')
@@ -774,7 +776,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         parsed_url = urllib.parse.urlparse(result.url)
         uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
                                  parsed_url.path)
-        self.assertEqual(uri, 'http://zulip.testserver/accounts/login/subdomain/')
+        self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
 
     def test_google_oauth2_mobile_success(self):
         # type: () -> None
@@ -810,15 +812,11 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn('Zulip on Android', mail.outbox[0].body)
 
-    def get_log_into_subdomain(self, data, *, salt=None, subdomain='zulip'):
+    def get_log_into_subdomain(self, data, *, key=None, subdomain='zulip'):
         # type: (Dict[str, Any], Optional[str], str) -> HttpResponse
-        key = 'subdomain.signature'
-        if salt is None:
-            salt = key + 'zerver.views.auth'
-        value = ujson.dumps(data)
-        cookie = {key: signing.get_cookie_signer(salt=salt).sign(value)}
-        self.client.cookies = SimpleCookie(cookie)
-        return self.client_get('/accounts/login/subdomain/', subdomain=subdomain)
+        token = signing.dumps(data, salt=_subdomain_token_salt, key=key)
+        url_path = reverse('zerver.views.auth.log_into_subdomain', args=[token])
+        return self.client_get(url_path, subdomain=subdomain)
 
     def test_log_into_subdomain(self):
         # type: () -> None
@@ -846,7 +844,19 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                 'email': self.example_email("hamlet"),
                 'subdomain': 'zulip',
                 'is_signup': False}
-        result = self.get_log_into_subdomain(data, salt='nonsense')
+        result = self.get_log_into_subdomain(data, key='nonsense')
+        self.assertEqual(result.status_code, 400)
+
+    def test_log_into_subdomain_when_signature_is_expired(self):
+        # type: () -> None
+        data = {'name': 'Full Name',
+                'email': self.example_email("hamlet"),
+                'subdomain': 'zulip',
+                'is_signup': False}
+        with mock.patch('django.core.signing.time.time', return_value=time.time() - 45):
+            token = signing.dumps(data, salt=_subdomain_token_salt)
+        url_path = reverse('zerver.views.auth.log_into_subdomain', args=[token])
+        result = self.client_get(url_path, subdomain='zulip')
         self.assertEqual(result.status_code, 400)
 
     def test_log_into_subdomain_when_is_signup_is_true(self):
@@ -915,7 +925,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         result = self.client_get(invite_link, subdomain="zulip")
         self.assert_in_success_response(['Sign up for Zulip'], result)
 
-        result = self.client_get('/accounts/login/subdomain/', subdomain='zulip')
+        result = self.get_log_into_subdomain(data)
         self.assertEqual(result.status_code, 302)
 
         confirmation = Confirmation.objects.all().last()
@@ -977,8 +987,9 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         result = self.google_oauth2_test(token_response, account_response,
                                          subdomain='zephyr')
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "http://zephyr.testserver/accounts/login/subdomain/")
-        result = self.client_get('/accounts/login/subdomain/', subdomain="zephyr")
+        self.assertTrue(result.url.startswith("http://zephyr.testserver/accounts/login/subdomain/"))
+        result = self.client_get(result.url.replace('http://zephyr.testserver', ''),
+                                 subdomain="zephyr")
         self.assertEqual(result.status_code, 302)
         result = self.client_get('/accounts/login/?subdomain=1', subdomain="zephyr")
         self.assert_in_success_response(["Your Zulip account is not a member of the organization associated with this subdomain."],
@@ -1005,7 +1016,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         result = self.google_oauth2_test(token_response, account_response, subdomain='zulip',
                                          is_signup='1')
 
-        data = unsign_subdomain_cookie(result)
+        data = load_subdomain_token(result)
         name = 'Full Name'
         self.assertEqual(data['email'], email)
         self.assertEqual(data['name'], name)
@@ -1014,7 +1025,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         parsed_url = urllib.parse.urlparse(result.url)
         uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
                                  parsed_url.path)
-        self.assertEqual(uri, 'http://zulip.testserver/accounts/login/subdomain/')
+        self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
 
         result = self.client_get(result.url)
         self.assertEqual(result.status_code, 302)

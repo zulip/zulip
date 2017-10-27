@@ -424,22 +424,20 @@ def authenticate_remote_user(realm, email_address):
                                 return_data=return_data)
     return user_profile, return_data
 
-def log_into_subdomain(request):
-    # type: (HttpRequest) -> HttpResponse
+_subdomain_token_salt = 'zerver.views.auth.log_into_subdomain'
+
+def log_into_subdomain(request, token):
+    # type: (HttpRequest, Text) -> HttpResponse
     try:
-        # Discard state if older than 15 seconds
-        state = request.get_signed_cookie('subdomain.signature',
-                                          salt='zerver.views.auth',
-                                          max_age=15)
-    except KeyError:
-        logging.warning('Missing subdomain signature cookie.')
+        data = signing.loads(token, salt=_subdomain_token_salt, max_age=15)
+    except signing.SignatureExpired as e:
+        logging.warning('Subdomain cookie: {}'.format(e))
         return HttpResponse(status=400)
     except signing.BadSignature:
-        logging.warning('Subdomain cookie has bad signature.')
+        logging.warning('Subdomain cookie: Bad signature.')
         return HttpResponse(status=400)
 
     subdomain = get_subdomain(request)
-    data = ujson.loads(state)
     if data['subdomain'] != subdomain:
         logging.warning('Login attempt on invalid subdomain')
         return HttpResponse(status=400)
@@ -468,24 +466,12 @@ def log_into_subdomain(request):
 def redirect_and_log_into_subdomain(realm, full_name, email_address,
                                     is_signup=False):
     # type: (Realm, Text, Text, bool) -> HttpResponse
-    subdomain_login_uri = ''.join([
-        realm.uri,
-        reverse('zerver.views.auth.log_into_subdomain')
-    ])
-
-    domain = settings.EXTERNAL_HOST.split(':')[0]
-    response = redirect(subdomain_login_uri)
-
     data = {'name': full_name, 'email': email_address, 'subdomain': realm.subdomain,
             'is_signup': is_signup}
-    # Creating a singed cookie so that it cannot be tampered with.
-    # Cookie and the signature expire in 15 seconds.
-    response.set_signed_cookie('subdomain.signature',
-                               ujson.dumps(data),
-                               expires=15,
-                               domain=domain,
-                               salt='zerver.views.auth')
-    return response
+    token = signing.dumps(data, salt=_subdomain_token_salt)
+    subdomain_login_uri = (realm.uri
+                           + reverse('zerver.views.auth.log_into_subdomain', args=[token]))
+    return redirect(subdomain_login_uri)
 
 def get_dev_users(realm=None, extra_users_count=10):
     # type: (Optional[Realm], int) -> List[UserProfile]
