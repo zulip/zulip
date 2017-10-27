@@ -228,8 +228,9 @@ def accounts_register(request):
             do_change_password(user_profile, password)
             do_change_full_name(user_profile, full_name, user_profile)
             do_set_user_display_setting(user_profile, 'timezone', timezone)
+            # TODO: When we clean up the `do_activate_user` code path,
+            # make it respect invited_as_admin / is_realm_admin.
         else:
-            # TODO: When we clean up this code path, make it respect is_realm_admin.
             user_profile = do_create_user(email, password, realm, full_name, short_name,
                                           prereg_user=prereg_user, is_realm_admin=is_realm_admin,
                                           tos_version=settings.TOS_VERSION,
