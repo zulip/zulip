@@ -1677,8 +1677,6 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
         # https://trac.zulip.net/ticket/345
         return timeout(5, _md_engine.convert, content)
     except Exception:
-        from zerver.lib.actions import internal_send_message
-
         cleaned = privacy_clean_markdown(content)
 
         # Output error to log as well as sending a zulip and email

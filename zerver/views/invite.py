@@ -7,7 +7,7 @@ from typing import List, Optional, Set, Text
 
 from zerver.decorator import authenticated_json_post_view
 from zerver.lib.actions import do_invite_users, \
-    get_default_subs, internal_send_message
+    get_default_subs
 from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.streams import access_stream_by_name
