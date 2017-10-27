@@ -120,6 +120,7 @@ else:
     set_loglevel('django.request', 'ERROR')
     set_loglevel('fakeldap', 'ERROR')
     set_loglevel('zulip.send_email', 'ERROR')
+    set_loglevel('zerver.lib.digest', 'ERROR')
 
 # Enable file:/// hyperlink support by default in tests
 ENABLE_FILE_LINKS = True
