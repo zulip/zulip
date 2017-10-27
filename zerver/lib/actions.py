@@ -1606,7 +1606,7 @@ def check_send_private_message(sender, client, receiving_user, body):
 # check_send_message:
 # Returns the id of the sent message.  Has same argspec as check_message.
 def check_send_message(sender, client, message_type_name, message_to,
-                       subject_name, message_content, realm=None, forged=False,
+                       topic_name, message_content, realm=None, forged=False,
                        forged_timestamp=None, forwarder_user_profile=None, local_id=None,
                        sender_queue_id=None):
     # type: (UserProfile, Client, Text, Sequence[Text], Optional[Text], Text, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[Text], Optional[Text]) -> int
@@ -1615,7 +1615,7 @@ def check_send_message(sender, client, message_type_name, message_to,
         sender,
         message_type_name,
         message_to,
-        subject_name)
+        topic_name)
 
     message = check_message(sender, client, addressee,
                             message_content, realm, forged, forged_timestamp,
@@ -1706,13 +1706,13 @@ def check_message(sender, client, addressee,
         stream_name = stream_name.strip()
         check_stream_name(stream_name)
 
-        subject_name = addressee.topic()
-        if subject_name is None:
+        topic_name = addressee.topic()
+        if topic_name is None:
             raise JsonableError(_("Missing topic"))
-        subject = subject_name.strip()
-        if subject == "":
+        topic_name = topic_name.strip()
+        if topic_name == "":
             raise JsonableError(_("Topic can't be empty"))
-        subject = truncate_topic(subject)
+        topic_name = truncate_topic(topic_name)
 
         try:
             stream = get_stream(stream_name, realm)
@@ -1767,7 +1767,7 @@ def check_message(sender, client, addressee,
     message.content = message_content
     message.recipient = recipient
     if addressee.is_stream():
-        message.subject = subject
+        message.subject = topic_name
     if forged and forged_timestamp is not None:
         # Forged messages come with a timestamp
         message.pub_date = timestamp_to_datetime(forged_timestamp)
@@ -1813,7 +1813,7 @@ def _internal_prep_message(realm, sender, addressee, content):
     return None
 
 def internal_prep_message(realm, sender_email, recipient_type_name, recipients,
-                          subject, content):
+                          topic_name, content):
     # type: (Realm, Text, str, Text, Text, Text) -> Optional[Dict[str, Any]]
     """
     See _internal_prep_message for details of how this works.
@@ -1825,7 +1825,7 @@ def internal_prep_message(realm, sender_email, recipient_type_name, recipients,
         sender,
         recipient_type_name,
         parsed_recipients,
-        subject,
+        topic_name,
         realm=realm)
 
     return _internal_prep_message(
@@ -1864,10 +1864,10 @@ def internal_prep_private_message(realm, sender, recipient_user, content):
     )
 
 def internal_send_message(realm, sender_email, recipient_type_name, recipients,
-                          subject, content):
+                          topic_name, content):
     # type: (Realm, Text, str, Text, Text, Text) -> None
     msg = internal_prep_message(realm, sender_email, recipient_type_name, recipients,
-                                subject, content)
+                                topic_name, content)
 
     # internal_prep_message encountered an error
     if msg is None:
@@ -3271,7 +3271,7 @@ def do_update_embedded_data(user_profile, message, content, rendered_content):
 
 # We use transaction.atomic to support select_for_update in the attachment codepath.
 @transaction.atomic
-def do_update_message(user_profile, message, subject, propagate_mode,
+def do_update_message(user_profile, message, topic_name, propagate_mode,
                       content, rendered_content,
                       prior_mention_user_ids, mention_user_ids):
     # type: (UserProfile, Message, Optional[Text], str, Optional[Text], Optional[Text], Set[int], Set[int]) -> int
@@ -3293,7 +3293,7 @@ def do_update_message(user_profile, message, subject, propagate_mode,
     # Set first_rendered_content to be the oldest version of the
     # rendered content recorded; which is the current version if the
     # content hasn't been edited before.  Note that because one could
-    # have edited just the subject, not every edit history event
+    # have edited just the topic_name, not every edit history event
     # contains a prev_rendered_content element.
     first_rendered_content = message.rendered_content
     if message.edit_history is not None:
@@ -3337,8 +3337,8 @@ def do_update_message(user_profile, message, subject, propagate_mode,
             check_attachment_reference_change(prev_content, message)
 
         if message.recipient.type == Recipient.STREAM:
-            if subject is not None:
-                new_topic_name = subject
+            if topic_name is not None:
+                new_topic_name = topic_name
             else:
                 new_topic_name = message.topic_name()
 
@@ -3362,19 +3362,19 @@ def do_update_message(user_profile, message, subject, propagate_mode,
         event['mention_user_ids'] = list(mention_user_ids)
         event['presence_idle_user_ids'] = filter_presence_idle_user_ids(info['active_user_ids'])
 
-    if subject is not None:
-        orig_subject = message.topic_name()
-        subject = truncate_topic(subject)
-        event["orig_subject"] = orig_subject
+    if topic_name is not None:
+        orig_topic_name = message.topic_name()
+        topic_name = truncate_topic(topic_name)
+        event["orig_subject"] = orig_topic_name
         event["propagate_mode"] = propagate_mode
-        message.subject = subject
+        message.subject = topic_name
         event["stream_id"] = message.recipient.type_id
-        event["subject"] = subject
-        event['subject_links'] = bugdown.subject_links(message.sender.realm_id, subject)
-        edit_history_event["prev_subject"] = orig_subject
+        event["subject"] = topic_name
+        event['subject_links'] = bugdown.subject_links(message.sender.realm_id, topic_name)
+        edit_history_event["prev_subject"] = orig_topic_name
 
         if propagate_mode in ["change_later", "change_all"]:
-            propagate_query = Q(recipient = message.recipient, subject = orig_subject)
+            propagate_query = Q(recipient = message.recipient, subject = orig_topic_name)
             # We only change messages up to 2 days in the past, to avoid hammering our
             # DB by changing an unbounded amount of messages
             if propagate_mode == 'change_all':
@@ -3389,12 +3389,12 @@ def do_update_message(user_profile, message, subject, propagate_mode,
 
             # Evaluate the query before running the update
             messages_list = list(messages)
-            messages.update(subject=subject)
+            messages.update(subject=topic_name)
 
             for m in messages_list:
                 # The cached ORM object is not changed by messages.update()
                 # and the remote cache update requires the new value
-                m.subject = subject
+                m.subject = topic_name
 
             changed_messages += messages_list
 

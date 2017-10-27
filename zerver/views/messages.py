@@ -928,7 +928,7 @@ def send_message_backend(request, user_profile,
                          message_type_name = REQ('type'),
                          message_to = REQ('to', converter=extract_recipients, default=[]),
                          forged = REQ(default=False),
-                         subject_name = REQ('subject', lambda x: x.strip(), None),
+                         topic_name = REQ('subject', lambda x: x.strip(), None),
                          message_content = REQ('content'),
                          realm_str = REQ('realm_str', default=None),
                          local_id = REQ(default=None),
@@ -984,7 +984,7 @@ def send_message_backend(request, user_profile,
         sender = user_profile
 
     ret = check_send_message(sender, client, message_type_name, message_to,
-                             subject_name, message_content, forged=forged,
+                             topic_name, message_content, forged=forged,
                              forged_timestamp = request.POST.get('time'),
                              forwarder_user_profile=user_profile, realm=realm,
                              local_id=local_id, sender_queue_id=queue_id)
