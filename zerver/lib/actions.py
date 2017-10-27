@@ -1813,7 +1813,7 @@ def _internal_prep_message(realm, sender, addressee, content):
     return None
 
 def internal_prep_message(realm, sender_email, recipient_type_name, recipients,
-                          subject, content):
+                          topic_name, content):
     # type: (Realm, Text, str, Text, Text, Text) -> Optional[Dict[str, Any]]
     """
     See _internal_prep_message for details of how this works.
@@ -1825,7 +1825,7 @@ def internal_prep_message(realm, sender_email, recipient_type_name, recipients,
         sender,
         recipient_type_name,
         parsed_recipients,
-        subject,
+        topic_name,
         realm=realm)
 
     return _internal_prep_message(
