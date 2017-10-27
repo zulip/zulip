@@ -15,8 +15,8 @@
 import sys
 import os
 import shlex
-if False:
-    from typing import Any, Dict, List, Optional
+
+from typing import Any, Dict, List, Optional
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -206,8 +206,7 @@ html_static_path = ['_static']
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'zulip-contributor-docsdoc'
 
-def setup(app):
-    # type: (Any) -> None
+def setup(app: Any) -> None:
 
     # overrides for wide tables in RTD theme
     app.add_stylesheet('theme_overrides.css')  # path relative to _static

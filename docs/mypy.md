@@ -14,8 +14,7 @@ using in Zulip:
 ```
 user_dict = {} # type: Dict[str, UserProfile]
 
-def get_user(email, realm):
-    # type: (str, Realm) -> UserProfile
+def get_user(email: str, realm: Realm) -> UserProfile:
     ... # Actual code of the function here
 ```
 
