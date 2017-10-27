@@ -159,7 +159,7 @@ class WebSocketBaseTestCase(AsyncHTTPTestCase, ZulipTestCase):
 
     def tearDown(self):
         # type: () -> None
-        super(WebSocketBaseTestCase, self).setUp()
+        super(WebSocketBaseTestCase, self).tearDown()
         settings.RUNNING_INSIDE_TORNADO = False
 
     @gen.coroutine
