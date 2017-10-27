@@ -14,6 +14,7 @@ from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.db import close_old_connections
 from django.core import signals
+from django.test import override_settings
 from tornado.gen import Return
 from tornado.httpclient import HTTPRequest, HTTPResponse
 
@@ -51,6 +52,7 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
         super(TornadoWebTestCase, self).tearDown()
         self.session_cookie = None  # type: Optional[Dict[Text, Text]]
 
+    @override_settings(DEBUG=False)
     def get_app(self):
         # type: () -> Application
         return create_tornado_application()
@@ -184,6 +186,7 @@ class WebSocketBaseTestCase(AsyncHTTPTestCase, ZulipTestCase):
         self.wait()
 
 class TornadoTestCase(WebSocketBaseTestCase):
+    @override_settings(DEBUG=False)
     def get_app(self):
         # type: () -> Application
         """ Return tornado app to launch for test cases
