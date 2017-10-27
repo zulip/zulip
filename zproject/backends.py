@@ -447,7 +447,8 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             if settings.LDAP_EMAIL_ATTR is not None:
                 # Get email from ldap attributes.
                 if settings.LDAP_EMAIL_ATTR not in ldap_user.attrs:
-                    raise ZulipLDAPException("LDAP user doesn't have the needed %s attribute" % (settings.LDAP_EMAIL_ATTR,))
+                    raise ZulipLDAPException("LDAP user doesn't have the needed %s attribute" % (
+                        settings.LDAP_EMAIL_ATTR,))
 
                 username = ldap_user.attrs[settings.LDAP_EMAIL_ATTR][0]
 

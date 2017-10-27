@@ -54,7 +54,8 @@ class Command(BaseCommand):
         email_gateway_bot.save()
 
         self.stdout.write("Successfully populated database with initial data.\n")
-        self.stdout.write("Please run ./manage.py generate_realm_creation_link to generate link for creating organization")
+        self.stdout.write("Please run ./manage.py generate_realm_creation_link "
+                          "to generate link for creating organization")
 
     site = Site.objects.get_current()
     site.domain = settings.EXTERNAL_HOST

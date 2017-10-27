@@ -40,7 +40,8 @@ def api_opsgenie_webhook(request, user_profile,
     if 'message' in payload['alert']:
         info['additional_info'] += "Message: *{}*\n".format(payload['alert']['message'])
     body = ''
-    body_template = "**OpsGenie: [Alert for {integration_name}.](https://app.opsgenie.com/alert/V2#/show/{alert_id})**\n" \
+    body_template = "**OpsGenie: [Alert for {integration_name}.]" \
+                    "(https://app.opsgenie.com/alert/V2#/show/{alert_id})**\n" \
                     "Type: *{alert_type}*\n" \
                     "{additional_info}" \
                     "{tags}"

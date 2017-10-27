@@ -458,7 +458,8 @@ def apply_event(state, event, user_profile, include_subscribers):
     elif event['type'] == "presence":
         # TODO: Add user_id to presence update events / state format!
         presence_user_profile = get_user(event['email'], user_profile.realm)
-        state['presences'][event['email']] = UserPresence.get_status_dict_by_user(presence_user_profile)[event['email']]
+        state['presences'][event['email']] = UserPresence.get_status_dict_by_user(
+            presence_user_profile)[event['email']]
     elif event['type'] == "update_message":
         # We don't return messages in /register, so we don't need to
         # do anything for content updates, but we may need to update

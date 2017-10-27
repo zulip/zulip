@@ -83,7 +83,8 @@ class Command(ZulipBaseCommand):
                     user_emails_found = [user.email for user in users_to_deactivate]
                     for user in user_emails:
                         if user not in user_emails_found:
-                            raise Exception('User with email %s was not found. Check if the email is correct.' % (user))
+                            raise Exception('User with email %s was not found. '
+                                            'Check if the email is correct.' % (user,))
                 print('Soft deactivating forcefully...')
             else:
                 if realm is not None:

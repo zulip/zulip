@@ -294,7 +294,8 @@ class MessageDict(object):
         if rendered_content is not None:
             obj['rendered_content'] = rendered_content
         else:
-            obj['rendered_content'] = u'<p>[Zulip note: Sorry, we could not understand the formatting of your message]</p>'
+            obj['rendered_content'] = (u'<p>[Zulip note: Sorry, we could not ' +
+                                       u'understand the formatting of your message]</p>')
 
         if rendered_content is not None:
             obj['is_me_message'] = Message.is_status_message(content, rendered_content)
