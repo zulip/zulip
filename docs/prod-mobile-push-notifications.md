@@ -41,7 +41,7 @@ Please follow the instructions carefully:
   (normally they're only sent if you're idle, which isn't ideal for
   this sort of testing).
 * On an Android device, download and login to the
-[Zulip Android app](https://play.google.com/store/apps/details?id=com.zulip.android).
+[Zulip Android app](https://play.google.com/store/apps/details?id=com.zulipmobile).
 If you were already logged in before configuring the server, you'll
 need to logout first, since the app only registers for push
 notifications on login.
