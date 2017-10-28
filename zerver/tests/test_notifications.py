@@ -336,7 +336,23 @@ class TestMissedMessages(ZulipTestCase):
         msg_id = self.send_message(self.example_email('othello'), self.example_email('hamlet'),
                                    Recipient.PERSONAL,
                                    'Extremely personal message with a realm emoji :green_tick:!')
-        body = '<img alt=":green_tick:" style="height: 20px;" src="http://zulip.testserver/user_avatars/1/emoji/green_tick.png" title="green tick">'
+        body = '<img alt=":green_tick:" src="http://zulip.testserver/user_avatars/1/emoji/green_tick.png" title="green tick" style="height: 20px;">'
+        subject = 'Othello, the Moor of Venice sent you a message'
+        self._test_cases(tokens, msg_id, body, subject, send_as_user=False, verify_html_body=True)
+
+    @patch('zerver.lib.email_mirror.generate_random_token')
+    def test_emojiset_in_missed_message(self, mock_random_token):
+        # type: (MagicMock) -> None
+        tokens = self._get_tokens()
+        mock_random_token.side_effect = tokens
+
+        hamlet = self.example_user('hamlet')
+        hamlet.emojiset = 'apple'
+        hamlet.save(update_fields=['emojiset'])
+        msg_id = self.send_message(self.example_email('othello'), self.example_email('hamlet'),
+                                   Recipient.PERSONAL,
+                                   'Extremely personal message with a hamburger :hamburger:!')
+        body = '<img alt=":hamburger:" src="http://zulip.testserver/static/generated/emoji/images-apple-64/1f354.png" title="hamburger" style="height: 20px;">'
         subject = 'Othello, the Moor of Venice sent you a message'
         self._test_cases(tokens, msg_id, body, subject, send_as_user=False, verify_html_body=True)
 
@@ -442,8 +458,7 @@ class TestMissedMessages(ZulipTestCase):
         # An emoji.
         test_data = '<p>See <span class="emoji emoji-26c8" title="cloud with lightning and rain">' + \
                     ':cloud_with_lightning_and_rain:</span>.</p>'
-        actual_output = fix_emojis(test_data, "http://example.com")
-        expected_output = '<p>See <img src="http://example.com/static/generated/emoji/images-google-64/26c8.png" ' + \
-                          'title="cloud with lightning and rain" alt=":cloud_with_lightning_and_rain:" ' + \
-                          'style="height: 20px;">.</p>'
+        actual_output = fix_emojis(test_data, "http://example.com", "google")
+        expected_output = '<p>See <img alt=":cloud_with_lightning_and_rain:" src="http://example.com/static/generated/emoji/images-google-64/26c8.png" ' + \
+                          'title="cloud with lightning and rain" style="height: 20px;">.</p>'
         self.assertEqual(actual_output, expected_output)

@@ -1,5 +1,7 @@
 set_global('$', global.make_zjquery());
-set_global('page_params', {});
+set_global('page_params', {
+    emojiset: 'google',
+});
 set_global('upload_widget', {});
 
 add_dependencies({
