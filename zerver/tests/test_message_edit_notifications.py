@@ -48,10 +48,9 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
         self.login(hamlet.email)
 
-        message_id = self.send_message(
+        message_id = self.send_personal_message(
             hamlet.email,
             cordelia.email,
-            Recipient.PERSONAL,
             content='no mention'
         )
 
@@ -76,10 +75,9 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         self.subscribe(hamlet, 'Scotland')
         self.subscribe(cordelia, 'Scotland')
 
-        message_id = self.send_message(
+        message_id = self.send_stream_message(
             hamlet.email,
             'Scotland',
-            Recipient.STREAM,
             content=content,
         )
 
