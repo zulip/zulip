@@ -1056,6 +1056,10 @@ def get_stream_recipient(stream_id):
     # type: (int) -> Recipient
     return get_recipient(Recipient.STREAM, stream_id)
 
+def get_personal_recipient(user_profile_id):
+    # type: (int) -> Recipient
+    return get_recipient(Recipient.PERSONAL, user_profile_id)
+
 def get_huddle_recipient(user_profile_ids):
     # type: (Set[int]) -> Recipient
 

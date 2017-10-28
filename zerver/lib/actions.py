@@ -46,7 +46,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     UserHotspot, \
     Client, DefaultStream, DefaultStreamGroup, UserPresence, PushDeviceToken, \
     ScheduledEmail, MAX_SUBJECT_LENGTH, \
-    MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
+    MAX_MESSAGE_LENGTH, get_client, get_stream, get_personal_recipient, get_huddle, \
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
     get_realm, bulk_get_recipients, get_stream_recipient, \
     email_allowed_for_realm, email_to_username, display_recipient_cache_key, \
@@ -756,7 +756,7 @@ def create_mirror_user_if_needed(realm, email, email_to_fullname):
 def send_welcome_bot_response(message):
     # type: (MutableMapping[str, Any]) -> None
     welcome_bot = get_system_bot(settings.WELCOME_BOT)
-    human_recipient = get_recipient(Recipient.PERSONAL, message['message'].sender.id)
+    human_recipient = get_personal_recipient(message['message'].sender.id)
     if Message.objects.filter(sender=welcome_bot, recipient=human_recipient).count() < 2:
         internal_send_private_message(
             message['realm'], welcome_bot, message['message'].sender,
@@ -1499,7 +1499,7 @@ def get_recipient_from_user_ids(recipient_profile_ids, not_forged_mirror_message
         recipient_profile_ids.add(sender.id)
         return get_huddle_recipient(recipient_profile_ids)
     else:
-        return get_recipient(Recipient.PERSONAL, list(recipient_profile_ids)[0])
+        return get_personal_recipient(list(recipient_profile_ids)[0])
 
 def validate_recipient_user_profiles(user_profiles, sender):
     # type: (List[UserProfile], UserProfile) -> Set[int]

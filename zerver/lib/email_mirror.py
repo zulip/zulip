@@ -18,7 +18,7 @@ from zerver.lib.utils import generate_random_token
 from zerver.lib.str_utils import force_text
 from zerver.lib.send_email import FromAddress
 from zerver.models import Stream, Recipient, \
-    get_user_profile_by_id, get_display_recipient, get_recipient, \
+    get_user_profile_by_id, get_display_recipient, get_personal_recipient, \
     Message, Realm, UserProfile, get_system_bot
 from six import binary_type
 import talon
@@ -108,7 +108,7 @@ def create_missed_message_address(user_profile, message):
 
     if message.recipient.type == Recipient.PERSONAL:
         # We need to reply to the sender so look up their personal recipient_id
-        recipient_id = get_recipient(Recipient.PERSONAL, message.sender_id).id
+        recipient_id = get_personal_recipient(message.sender_id).id
     else:
         recipient_id = message.recipient_id
 
