@@ -1480,6 +1480,9 @@ def create_streams_if_needed(realm, stream_dicts):
 def get_recipient_from_user_ids(recipient_profile_ids, not_forged_mirror_message, forwarder_user_profile, sender):
     # type: (Set[int], bool, Optional[UserProfile], UserProfile) -> Recipient
 
+    # Avoid mutating the passed in set of recipient_profile_ids.
+    recipient_profile_ids = set(recipient_profile_ids)
+
     # If the private message is just between the sender and
     # another person, force it to be a personal internally
 
