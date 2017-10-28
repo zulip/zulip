@@ -14,21 +14,10 @@ you need:
   production installation.
 * At least 2GB RAM and 10 GB disk space (4GB and 2 CPUs recommended for 100+ users).
 * A DNS name, an SSL certificate, and credentials for sending email.
+  For most users, you can just use our handy `--certbot` option to
+  generate the SSL certificate.
 
-## Step 1: Install SSL Certificates
-
-Zulip runs over `https` only, and requires SSL certificates in order to
-work. It looks for the certificates in `/etc/ssl/private/zulip.key`
-and `/etc/ssl/certs/zulip.combined-chain.crt`.  Note that Zulip uses
-`nginx` as its webserver and thus [expects a chained certificate
-bundle](http://nginx.org/en/docs/http/configuring_https_servers.html).
-
-If you need an SSL certificate, see [our SSL certificate
-documentation](ssl-certificates.html).  If you already have an SSL
-certificate, just install (or symlink) it into place at the above
-paths, and move on to the next step.
-
-## Step 2: Download and install latest release
+## Step 1: Download the latest release
 
 Download and unpack [the latest built server
 tarball](https://www.zulip.org/dist/releases/zulip-server-latest.tar.gz)
@@ -43,20 +32,28 @@ tar -xf zulip-server-latest.tar.gz
 If you'd like to verify the download, we
 [publish the sha256sums of our release tarballs](https://www.zulip.org/dist/releases/SHA256SUMS.txt).
 
-Then, run the Zulip install script:
+## Step 2: Install Zulip
+
+Most users will want Zulip to automatically obtain an SSL certificate
+for their server using [Certbot](https://certbot.eff.org/).  In that
+case, you can run the installer as follows:
+
 ```
-sudo -s  # If not already root
-./zulip-server-*/scripts/setup/install
+sudo -i  # If not already root
+./zulip-server-*/scripts/setup/install --certbot \
+    --email=username@example.com --hostname=zulip.example.com
 ```
 
-This may take a while to run, since it will install a large number of
-dependencies.
+This will take a while to run, since it will install a large number of
+dependencies from the pypi and npm repositories.
 
 The Zulip install script is designed to be idempotent, so if it fails,
 you can just rerun it after correcting the issue that caused it to
 fail.  Also note that it automatically logs a transcript to
 `/var/log/zulip/install.log`; please include a copy of that file in
 any bug reports.
+
+#### What the installer does
 
 The install script does several things:
 * Creates `zulip` user, which the various Zulip servers will run as,
@@ -70,20 +67,18 @@ symbolic link to it.
 * Configures the various third-party services Zulip uses, including
 Postgres, RabbitMQ, Memcached and Redis.
 
-## Step 3: Configure Zulip
+#### Providing your own SSL certificate
 
-Configure the Zulip server instance by editing `/etc/zulip/settings.py` and
-providing values for the mandatory settings, which are all found under the
-heading `### MANDATORY SETTINGS`.  These settings include:
+If you'd like to use an SSL certificate that you obtained not using
+Certbot way (e.g. issued by your corporate certificate authority),
+[our ssl certificate documentation](ssl-certificates.html) covers what
+you need to do.
 
-- `EXTERNAL_HOST`: the user-accessible domain name for your
-  Zulip installation (i.e., what users will type in their web
-  browser). This should of course match the DNS name you configured to
-  point to your server and for which you configured SSL certificates.
+## Step 3: Configure outgoing email
 
-- `ZULIP_ADMINISTRATOR`: the email address of the person or team
-  maintaining this installation and who will get support and error
-  emails.
+Configure the Zulip server instance by editing
+`/etc/zulip/settings.py` to enable your server's ability to send
+outgoing emails:
 
 - `EMAIL_HOST`, `EMAIL_HOST_USER`: credentials for an outgoing email
   (aka "SMTP") server that Zulip can use to send emails.  See

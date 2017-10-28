@@ -21,16 +21,34 @@ su zulip -c /home/zulip/deployments/current/scripts/restart-server
 
 ## Specific settings
 
+### Domain and Email settings
+
+`EXTERNAL_HOST`: the user-accessible domain name for your Zulip
+installation (i.e., what users will type in their web browser). This
+should of course match the DNS name you configured to point to your
+server and for which you configured SSL certificates.  If you passed
+`--hostname` to the installer, this will be prefilled with that value.
+
+`ZULIP_ADMINISTRATOR`: the email address of the person or team
+maintaining this installation and who will get support and error
+emails.  If you passed `--email` to the installer, this will be
+prefilled with that value.
+
 ### Authentication Backends
 
-`AUTHENTICATION_BACKENDS` is a list of enabled authentication mechanisms. By
-default the email backend is enabled.
+`AUTHENTICATION_BACKENDS`: Zulip supports a wide range of popular
+options for authenticating users to your server, including Google
+Auth, GitHub Auth, LDAP, REMOTE_USER, and more.  Note, however, that
+the default (email) backend must be used when creating a new
+organization.
 
-If you want an additional or different authentication backend, you will need to
-uncomment one or more and then do any additional configuration required for
-that backend as documented in the `settings.py` file. See
-the [section on Authentication](../production/authentication-methods.html) for more detail on the available
-authentication backends and how to configure them.
+If you want an additional or different authentication backend, you
+will need to uncomment one or more and then do any additional
+configuration required for that backend as documented in the
+`settings.py` file. See the
+[section on Authentication](../production/authentication-methods.html) for more
+detail on the available authentication backends and how to configure
+them.
 
 ### Mobile and desktop apps
 

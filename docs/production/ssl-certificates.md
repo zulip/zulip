@@ -1,10 +1,23 @@
-# SSL Certificates
+# Installing SSL Certificates
 
 To keep your communications secure, Zulip runs over HTTPS only.
-You'll need an SSL/TLS certificate.  Fortunately, as of 2017 new
-options can make getting and maintaining a genuine,
-trusted-by-browsers certificate no longer the chore (nor expense)
-that it used to be.
+You'll need an SSL/TLS certificate.
+
+Fortunately, as of 2017 new options can make getting and maintaining a
+genuine, trusted-by-browsers certificate no longer the chore (nor
+expense) that it used to be.
+
+## Manual install
+
+Zulip looks for SSL certificate files in `/etc/ssl/private/zulip.key`
+and `/etc/ssl/certs/zulip.combined-chain.crt`.  Because Zulip uses
+`nginx` as its web server, it [expects a chained certificate
+bundle](http://nginx.org/en/docs/http/configuring_https_servers.html).
+
+If you already have an SSL certificate, just install (or symlink) it
+into place at the above paths.
+
+If not, read on.
 
 ## Using Certbot / Let's Encrypt
 

@@ -66,18 +66,22 @@ save yourself the work of upgrading in a few months.
 #### Domain name
 
 You should already have a domain name available for your Zulip
-production instance. In order to generate valid SSL certificates with Let's
-Encrypt, and to enable other services such as Google Authentication, you'll
-need to update the domain's A record to point to your production server.
+production instance. In order to generate valid SSL certificates with
+Certbot, and to enable other services such as Google Authentication,
+you'll need to update the domain's A record to point to your
+production server.
 
 ## Credentials needed
 
 #### SSL Certificate
 
 * An SSL certificate for the host you're putting this on (e.g.,
-  zulip.example.com).  If you don't have an SSL solution already, read
-  about [getting an SSL certificate for free](ssl-certificates.html) using
-  Let's Encrypt.
+  zulip.example.com).  Unless you have your own certificate authority,
+  you should be able to just use the `--certbot` option in the Zulip
+  installer to automatically generate one for free using
+  [Certbot](https://certbot.eff.org/).  Additional options are
+  documented in our
+  [SSL certificate documentation](ssl-certificates.html).
 
 #### Outgoing email
 
