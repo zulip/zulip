@@ -38,8 +38,7 @@ from zerver.lib.bugdown.fenced_code import FENCE_RE
 from zerver.lib.camo import get_camo_url
 from zerver.lib.mention import possible_mentions
 from zerver.lib.timeout import timeout, TimeoutExpired
-from zerver.lib.cache import (
-    cache_with_key, cache_get_many, cache_set_many, NotFoundInCache)
+from zerver.lib.cache import cache_with_key, NotFoundInCache
 from zerver.lib.url_preview import preview as link_preview
 from zerver.models import (
     all_realm_filters,
