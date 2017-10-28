@@ -1124,6 +1124,17 @@ class Message(AbstractMessage):
         """
         return self.subject
 
+    def is_stream_message(self):
+        # type: () -> bool
+        '''
+        Find out whether a message is a stream message by
+        looking up its recipient.type.  TODO: Make this
+        an easier operation by denormalizing the message
+        type onto Message, either explicity (message.type)
+        or implicitly (message.stream_id is not None).
+        '''
+        return self.recipient.type == Recipient.STREAM
+
     def get_realm(self):
         # type: () -> Realm
         return self.sender.realm

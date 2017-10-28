@@ -299,7 +299,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
         'name': user_profile.full_name,
         'messages': build_message_list(user_profile, missed_messages),
         'message_count': message_count,
-        'mention': missed_messages[0].recipient.type == Recipient.STREAM,
+        'mention': missed_messages[0].is_stream_message(),
         'unsubscribe_link': unsubscribe_link,
     })
 
@@ -419,7 +419,7 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
 
     for msg_list in messages_by_recipient_subject.values():
         msg = min(msg_list, key=lambda msg: msg.pub_date)
-        if msg.recipient.type == Recipient.STREAM:
+        if msg.is_stream_message():
             msg_list.extend(get_context_for_message(msg))
 
     # Send an email per recipient subject pair
