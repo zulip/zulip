@@ -111,7 +111,6 @@ def zulip_default_context(request):
         'privacy_policy': settings.PRIVACY_POLICY,
         'login_url': settings.HOME_NOT_LOGGED_IN,
         'only_sso': settings.ONLY_SSO,
-        'external_api_path': settings.EXTERNAL_HOST + "/api",
         'external_api_uri': settings.EXTERNAL_API_URI,
         'external_host': settings.EXTERNAL_HOST,
         'external_uri_scheme': settings.EXTERNAL_URI_SCHEME,
