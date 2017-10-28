@@ -48,7 +48,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     ScheduledEmail, MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
-    get_realm, bulk_get_recipients, \
+    get_realm, bulk_get_recipients, get_stream_recipient, \
     email_allowed_for_realm, email_to_username, display_recipient_cache_key, \
     get_user_profile_by_email, get_user, get_stream_cache_key, \
     UserActivityInterval, active_user_ids, get_active_streams, \
@@ -1723,7 +1723,7 @@ def check_message(sender, client, addressee,
         except Stream.DoesNotExist:
             send_pm_if_empty_stream(sender, None, stream_name, realm)
             raise JsonableError(_("Stream '%(stream_name)s' does not exist") % {'stream_name': escape(stream_name)})
-        recipient = get_recipient(Recipient.STREAM, stream.id)
+        recipient = get_stream_recipient(stream.id)
 
         if not stream.invite_only:
             # This is a public stream
@@ -2649,7 +2649,7 @@ def do_rename_stream(stream, new_name, log=True):
                    'realm': stream.realm.string_id,
                    'new_name': new_name})
 
-    recipient = get_recipient(Recipient.STREAM, stream.id)
+    recipient = get_stream_recipient(stream.id)
     messages = Message.objects.filter(recipient=recipient).only("id")
 
     # Update the display recipient and stream, which are easy single
@@ -3061,7 +3061,7 @@ def do_mark_stream_messages_as_read(user_profile, stream, topic_name=None):
         user_profile=user_profile
     )
 
-    recipient = get_recipient(Recipient.STREAM, stream.id)
+    recipient = get_stream_recipient(stream.id)
     msgs = msgs.filter(message__recipient=recipient)
 
     if topic_name:

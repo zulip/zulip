@@ -1052,6 +1052,10 @@ def get_recipient(type, type_id):
     # type: (int, int) -> Recipient
     return Recipient.objects.get(type_id=type_id, type=type)
 
+def get_stream_recipient(stream_id):
+    # type: (int) -> Recipient
+    return get_recipient(Recipient.STREAM, stream_id)
+
 def bulk_get_recipients(type, type_ids):
     # type: (int, List[int]) -> Dict[int, Any]
     def cache_key_function(type_id):

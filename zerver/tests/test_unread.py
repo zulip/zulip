@@ -6,8 +6,8 @@ from django.db import connection
 
 from zerver.models import (
     get_realm,
-    get_recipient,
     get_stream,
+    get_stream_recipient,
     get_user,
     Recipient,
     Stream,
@@ -366,7 +366,7 @@ class FixUnreadTests(ZulipTestCase):
         def mute_stream(stream_name):
             # type: (Text) -> None
             stream = get_stream(stream_name, realm)
-            recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
+            recipient = get_stream_recipient(stream.id)
             subscription = Subscription.objects.get(
                 user_profile=user,
                 recipient=recipient
@@ -377,7 +377,7 @@ class FixUnreadTests(ZulipTestCase):
         def mute_topic(stream_name, topic_name):
             # type: (Text, Text) -> None
             stream = get_stream(stream_name, realm)
-            recipient = get_recipient(Recipient.STREAM, stream.id)
+            recipient = get_stream_recipient(stream.id)
 
             add_topic_mute(
                 user_profile=user,

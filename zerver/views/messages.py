@@ -43,7 +43,7 @@ from zerver.lib.validator import \
 from zerver.models import Message, UserProfile, Stream, Subscription, \
     Realm, RealmDomain, Recipient, UserMessage, bulk_get_recipients, get_recipient, \
     get_stream, parse_usermessage_flags, email_to_domain, get_realm, get_active_streams, \
-    get_user_including_cross_realm
+    get_user_including_cross_realm, get_stream_recipient
 
 from sqlalchemy import func
 from sqlalchemy.sql import select, join, column, literal_column, literal, and_, \
@@ -237,7 +237,7 @@ class NarrowBuilder(object):
             cond = column("recipient_id").in_([recipient.id for recipient in recipients_map.values()])
             return query.where(maybe_negate(cond))
 
-        recipient = get_recipient(Recipient.STREAM, type_id=stream.id)
+        recipient = get_stream_recipient(stream.id)
         cond = column("recipient_id") == recipient.id
         return query.where(maybe_negate(cond))
 

@@ -14,7 +14,7 @@ from zerver.lib.realm_icon import realm_icon_url
 from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     Recipient, Realm, UserMessage, DefaultStream, RealmEmoji, RealmDomain, \
     RealmFilter, PreregistrationUser, UserActivity, \
-    UserPresence, get_recipient, name_changes_disabled, email_to_username, \
+    UserPresence, get_stream_recipient, name_changes_disabled, email_to_username, \
     get_realm_domains
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import update_user_presence, do_change_tos_version, \
@@ -202,7 +202,7 @@ def home_real(request):
 
     if narrow_stream is not None:
         # In narrow_stream context, initial pointer is just latest message
-        recipient = get_recipient(Recipient.STREAM, narrow_stream.id)
+        recipient = get_stream_recipient(narrow_stream.id)
         try:
             initial_pointer = Message.objects.filter(recipient=recipient).order_by('id').reverse()[0].id
         except IndexError:
