@@ -14,8 +14,8 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
 
     def test_pm_to_embedded_bot(self):
         # type: () -> None
-        self.send_message(self.user_profile.email, self.bot_profile.email,
-                          message_type=Recipient.PERSONAL, content="help")
+        self.send_personal_message(self.user_profile.email, self.bot_profile.email,
+                                   content="help")
         last_message = self.get_last_message()
         self.assertEqual(last_message.content, "beep boop")
         self.assertEqual(last_message.sender_id, self.bot_profile.id)
@@ -28,8 +28,9 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
 
     def test_stream_message_to_embedded_bot(self):
         # type: () -> None
-        self.send_message(self.user_profile.email, "Denmark", Recipient.STREAM,
-                          content="@**{}** foo".format(self.bot_profile.full_name), subject="bar")
+        self.send_stream_message(self.user_profile.email, "Denmark",
+                                 content="@**{}** foo".format(self.bot_profile.full_name),
+                                 topic_name="bar")
         last_message = self.get_last_message()
         self.assertEqual(last_message.content, "beep boop")
         self.assertEqual(last_message.sender_id, self.bot_profile.id)
@@ -39,7 +40,7 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
 
     def test_stream_message_not_to_embedded_bot(self):
         # type: () -> None
-        self.send_message(self.user_profile.email, "Denmark", Recipient.STREAM,
-                          content="foo", subject="bar")
+        self.send_stream_message(self.user_profile.email, "Denmark",
+                                 content="foo", topic_name="bar")
         last_message = self.get_last_message()
         self.assertEqual(last_message.content, "foo")
