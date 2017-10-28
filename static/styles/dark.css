@@ -373,3 +373,9 @@ body.dark-mode .empty-star:hover {
 body.dark-mode #out-of-view-notification {
     border: 1px solid 1px solid hsl(144, 45%, 62%);
 }
+
+@-moz-document url-prefix() {
+    body.dark-mode #settings_page select {
+        background-color: hsla(0, 0%, 0%, 0.2);
+    }
+}
