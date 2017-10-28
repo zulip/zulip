@@ -120,7 +120,6 @@ def zulip_default_context(request):
         'realm_icon': realm_icon,
         'realm_description': realm_description,
         'root_domain_uri': settings.ROOT_DOMAIN_URI,
-        'api_site_required': True,
         'email_gateway_example': settings.EMAIL_GATEWAY_EXAMPLE,
         'apps_page_url': apps_page_url,
         'open_realm_creation': settings.OPEN_REALM_CREATION,

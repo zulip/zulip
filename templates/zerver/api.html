@@ -106,24 +106,24 @@ Sample steps to do:
 
 <h4>Stream message</h4>
 <div class="codehilite"><pre>zulip-send --stream Denmark --subject Castle \
---user othello-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5{% if api_site_required %} \
---site={{ external_api_uri_subdomain }}{% endif %}</pre></div>
+--user othello-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 \
+--site={{ external_api_uri_subdomain }}</pre></div>
 
 <h4>Private message</h4>
 <div class="codehilite"><pre>zulip-send hamlet@example.com \
---user othello-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5{% if api_site_required %} \
---site={{ external_api_uri_subdomain }}{% endif %}</pre></div>
+--user othello-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 \
+--site={{ external_api_uri_subdomain }}</pre></div>
 
 <h4>Passing in the message on the command-line</h4>
 <p>If you'd like, you can also provide the message on the command-line with the <code>-m</code> flag, as follows:</p>
 <div class="codehilite"><pre>zulip-send --stream Denmark --subject Castle \
 -m <span class="s2">"Something is rotten in the state of Denmark."</span> \
---user othello-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5{% if api_site_required %} \
---site={{ external_api_uri_subdomain }}{% endif %}
+--user othello-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 \
+--site={{ external_api_uri_subdomain }}
 </pre></div>
 
-      <p>You can omit the <code>user</code>{% if api_site_required %}, <code>api-key</code>, and
-      <code>site</code>{% else %} and <code>api-key</code>{% endif %} arguments if you have a
+      <p>You can omit the <code>user</code>, <code>api-key</code>, and
+      <code>site</code> arguments if you have a
       <code>~/.zuliprc</code> file.
       </p>
       <p>See also the <a href="/api/endpoints">full API endpoint documentation.</a></p>
@@ -192,7 +192,7 @@ Sample steps to do:
 <div class="codehilite"><pre><span class="k">[api]</span>
 <span class="na">key</span><span class="o">=</span><span class="s">BOT_API_KEY</span>
 <span class="na">email</span><span class="o">=</span><span class="s">BOT_EMAIL_ADDRESS</span>
-{% if api_site_required %}<span class="na">site</span><span class="o">=</span><span class="s">{{ external_api_uri_subdomain }}</span>{% endif %}</pre></div>
+<span class="na">site</span><span class="o">=</span><span class="s">{{ external_api_uri_subdomain }}</span></pre></div>
 
     <p>Additionally, you can also specify the parameters as environment variables as follows:</p>
 <div class="codehilite"><pre><span></span><span class="nb">export</span> <span class="nv">ZULIP_CONFIG</span><span class="o">=</span>/path/to/zulipconfig
