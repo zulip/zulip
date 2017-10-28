@@ -575,9 +575,9 @@ def client_is_exempt_from_rate_limiting(request):
              settings.DEBUG_RATE_LIMITING))
 
 def internal_notify_view(is_tornado_view):
-    # type: (bool) ->  Callable[..., HttpResponse]
-    # This function can't be typed perfectly because returning a generic function
-    # isn't supported in mypy - https://github.com/python/mypy/issues/1551.
+    # type: (bool) ->  Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]
+    # The typing here could be improved by using the Extended Callable types:
+    # https://mypy.readthedocs.io/en/latest/kinds_of_types.html#extended-callable-types
     """Used for situations where something running on the Zulip server
     needs to make a request to the (other) Django/Tornado processes running on
     the server."""
