@@ -2255,7 +2255,7 @@ class InviteOnlyStreamTest(ZulipTestCase):
 
         email = self.example_email("cordelia")
         with self.assertRaises(JsonableError):
-            self.send_message(email, "Saxony", Recipient.STREAM)
+            self.send_stream_message(email, "Saxony")
 
     def test_list_respects_invite_only_bit(self):
         # type: () -> None
