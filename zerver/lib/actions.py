@@ -46,9 +46,9 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     UserHotspot, \
     Client, DefaultStream, DefaultStreamGroup, UserPresence, PushDeviceToken, \
     ScheduledEmail, MAX_SUBJECT_LENGTH, \
-    MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
+    MAX_MESSAGE_LENGTH, get_client, get_stream, get_personal_recipient, get_huddle, \
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
-    get_realm, bulk_get_recipients, \
+    get_realm, bulk_get_recipients, get_stream_recipient, \
     email_allowed_for_realm, email_to_username, display_recipient_cache_key, \
     get_user_profile_by_email, get_user, get_stream_cache_key, \
     UserActivityInterval, active_user_ids, get_active_streams, \
@@ -58,7 +58,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     Reaction, EmailChangeStatus, CustomProfileField, \
     custom_profile_fields_for_realm, \
     CustomProfileFieldValue, validate_attachment_request, get_system_bot, \
-    get_display_recipient_by_id, query_for_ids
+    get_display_recipient_by_id, query_for_ids, get_huddle_recipient
 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import avatar_url
@@ -756,7 +756,7 @@ def create_mirror_user_if_needed(realm, email, email_to_fullname):
 def send_welcome_bot_response(message):
     # type: (MutableMapping[str, Any]) -> None
     welcome_bot = get_system_bot(settings.WELCOME_BOT)
-    human_recipient = get_recipient(Recipient.PERSONAL, message['message'].sender.id)
+    human_recipient = get_personal_recipient(message['message'].sender.id)
     if Message.objects.filter(sender=welcome_bot, recipient=human_recipient).count() < 2:
         internal_send_private_message(
             message['realm'], welcome_bot, message['message'].sender,
@@ -1049,7 +1049,7 @@ def do_send_messages(messages_maybe_none):
         )
         message['mention_data'] = mention_data
 
-        if message['message'].recipient.type == Recipient.STREAM:
+        if message['message'].is_stream_message():
             stream_id = message['message'].recipient.type_id
             stream_topic = StreamTopicTarget(
                 stream_id=stream_id,
@@ -1173,7 +1173,7 @@ def do_send_messages(messages_maybe_none):
             for user_id in message['active_user_ids']
         ]
 
-        if message['message'].recipient.type == Recipient.STREAM:
+        if message['message'].is_stream_message():
             # Note: This is where authorization for single-stream
             # get_updates happens! We only attach stream data to the
             # notify new_message request if it's a public stream,
@@ -1283,7 +1283,7 @@ def create_user_messages(message, um_eligible_user_ids, long_term_idle_user_ids,
     user_messages = []
     for um in ums_to_create:
         if (um.user_profile_id in long_term_idle_user_ids and
-                message.recipient.type == Recipient.STREAM and
+                message.is_stream_message() and
                 int(um.flags) == 0):
             continue
         user_messages.append(um)
@@ -1480,6 +1480,9 @@ def create_streams_if_needed(realm, stream_dicts):
 def get_recipient_from_user_ids(recipient_profile_ids, not_forged_mirror_message, forwarder_user_profile, sender):
     # type: (Set[int], bool, Optional[UserProfile], UserProfile) -> Recipient
 
+    # Avoid mutating the passed in set of recipient_profile_ids.
+    recipient_profile_ids = set(recipient_profile_ids)
+
     # If the private message is just between the sender and
     # another person, force it to be a personal internally
 
@@ -1494,10 +1497,9 @@ def get_recipient_from_user_ids(recipient_profile_ids, not_forged_mirror_message
     if len(recipient_profile_ids) > 1:
         # Make sure the sender is included in huddle messages
         recipient_profile_ids.add(sender.id)
-        huddle = get_huddle(list(recipient_profile_ids))
-        return get_recipient(Recipient.HUDDLE, huddle.id)
+        return get_huddle_recipient(recipient_profile_ids)
     else:
-        return get_recipient(Recipient.PERSONAL, list(recipient_profile_ids)[0])
+        return get_personal_recipient(list(recipient_profile_ids)[0])
 
 def validate_recipient_user_profiles(user_profiles, sender):
     # type: (List[UserProfile], UserProfile) -> Set[int]
@@ -1723,7 +1725,7 @@ def check_message(sender, client, addressee,
         except Stream.DoesNotExist:
             send_pm_if_empty_stream(sender, None, stream_name, realm)
             raise JsonableError(_("Stream '%(stream_name)s' does not exist") % {'stream_name': escape(stream_name)})
-        recipient = get_recipient(Recipient.STREAM, stream.id)
+        recipient = get_stream_recipient(stream.id)
 
         if not stream.invite_only:
             # This is a public stream
@@ -2649,7 +2651,7 @@ def do_rename_stream(stream, new_name, log=True):
                    'realm': stream.realm.string_id,
                    'new_name': new_name})
 
-    recipient = get_recipient(Recipient.STREAM, stream.id)
+    recipient = get_stream_recipient(stream.id)
     messages = Message.objects.filter(recipient=recipient).only("id")
 
     # Update the display recipient and stream, which are easy single
@@ -3061,7 +3063,7 @@ def do_mark_stream_messages_as_read(user_profile, stream, topic_name=None):
         user_profile=user_profile
     )
 
-    recipient = get_recipient(Recipient.STREAM, stream.id)
+    recipient = get_stream_recipient(stream.id)
     msgs = msgs.filter(message__recipient=recipient)
 
     if topic_name:
@@ -3287,7 +3289,7 @@ def do_update_message(user_profile, message, topic_name, propagate_mode,
     }  # type: Dict[str, Any]
     changed_messages = [message]
 
-    if message.recipient.type == Recipient.STREAM:
+    if message.is_stream_message():
         stream_id = message.recipient.type_id
         event['stream_name'] = Stream.objects.get(id=stream_id).name
 
@@ -3337,7 +3339,7 @@ def do_update_message(user_profile, message, topic_name, propagate_mode,
         if Message.content_has_attachment(prev_content) or Message.content_has_attachment(message.content):
             check_attachment_reference_change(prev_content, message)
 
-        if message.recipient.type == Recipient.STREAM:
+        if message.is_stream_message():
             if topic_name is not None:
                 new_topic_name = topic_name
             else:
@@ -4071,7 +4073,7 @@ def do_claim_attachments(message):
         path_id = attachment_url_to_path_id(url)
         user_profile = message.sender
         is_message_realm_public = False
-        if message.recipient.type == Recipient.STREAM:
+        if message.is_stream_message():
             is_message_realm_public = Stream.objects.get(id=message.recipient.type_id).is_public()
 
         if not validate_attachment_request(user_profile, path_id):

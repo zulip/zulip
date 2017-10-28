@@ -9,9 +9,9 @@ from sqlalchemy.sql import (
 from sqlalchemy.sql import compiler
 
 from zerver.models import (
-    Realm, Recipient, Stream, Subscription, UserProfile, Attachment,
-    get_display_recipient, get_recipient, get_realm, get_stream, get_user,
-    Reaction, UserMessage
+    Realm, Stream, Subscription, UserProfile, Attachment,
+    get_display_recipient, get_personal_recipient, get_realm, get_stream, get_user,
+    Reaction, UserMessage, get_stream_recipient,
 )
 from zerver.lib.message import (
     MessageDict,
@@ -59,12 +59,12 @@ def fix_ws(s):
 def get_recipient_id_for_stream_name(realm, stream_name):
     # type: (Realm, Text) -> Text
     stream = get_stream(stream_name, realm)
-    return get_recipient(Recipient.STREAM, stream.id).id
+    return get_stream_recipient(stream.id).id
 
 def mute_stream(realm, user_profile, stream_name):
     # type: (Realm, Text, Text) -> None
     stream = get_stream(stream_name, realm)
-    recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
+    recipient = get_stream_recipient(stream.id)
     subscription = Subscription.objects.get(recipient=recipient, user_profile=user_profile)
     subscription.in_home_view = False
     subscription.save()
@@ -472,11 +472,11 @@ class GetOldMessagesTest(ZulipTestCase):
         query_ids = {}  # type: Dict[Text, int]
 
         scotland_stream = get_stream('Scotland', hamlet_user.realm)
-        query_ids['scotland_recipient'] = get_recipient(Recipient.STREAM, scotland_stream.id).id
+        query_ids['scotland_recipient'] = get_stream_recipient(scotland_stream.id).id
         query_ids['hamlet_id'] = hamlet_user.id
         query_ids['othello_id'] = othello_user.id
-        query_ids['hamlet_recipient'] = get_recipient(Recipient.PERSONAL, hamlet_user.id).id
-        query_ids['othello_recipient'] = get_recipient(Recipient.PERSONAL, othello_user.id).id
+        query_ids['hamlet_recipient'] = get_personal_recipient(hamlet_user.id).id
+        query_ids['othello_recipient'] = get_personal_recipient(othello_user.id).id
 
         return query_ids
 
@@ -586,8 +586,7 @@ class GetOldMessagesTest(ZulipTestCase):
             [self.example_email("iago"), self.example_email("cordelia")],
         )
         personals = [m for m in get_user_messages(self.example_user('hamlet'))
-                     if m.recipient.type == Recipient.PERSONAL or
-                     m.recipient.type == Recipient.HUDDLE]
+                     if not m.is_stream_message()]
         for personal in personals:
             emails = dr_emails(get_display_recipient(personal.recipient))
 
@@ -675,7 +674,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.subscribe(self.example_user("hamlet"), 'Scotland')
         self.send_stream_message(self.example_email("hamlet"), "Scotland")
         messages = get_user_messages(self.example_user('hamlet'))
-        stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
+        stream_messages = [msg for msg in messages if msg.is_stream_message()]
         stream_name = get_display_recipient(stream_messages[0].recipient)
         stream_id = stream_messages[0].recipient.id
 
@@ -712,7 +711,7 @@ class GetOldMessagesTest(ZulipTestCase):
                                              subdomain="zephyr")
 
         messages = get_user_messages(self.mit_user("starnine"))
-        stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
+        stream_messages = [msg for msg in messages if msg.is_stream_message()]
 
         self.assertEqual(len(result["messages"]), 2)
         for i, message in enumerate(result["messages"]):
@@ -751,7 +750,7 @@ class GetOldMessagesTest(ZulipTestCase):
             subdomain="zephyr")
 
         messages = get_user_messages(mit_user_profile)
-        stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
+        stream_messages = [msg for msg in messages if msg.is_stream_message()]
         self.assertEqual(len(result["messages"]), 5)
         for i, message in enumerate(result["messages"]):
             self.assertEqual(message["type"], "stream")
@@ -793,7 +792,7 @@ class GetOldMessagesTest(ZulipTestCase):
             subdomain="zephyr")
 
         messages = get_user_messages(mit_user_profile)
-        stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
+        stream_messages = [msg for msg in messages if msg.is_stream_message()]
         self.assertEqual(len(result["messages"]), 7)
         for i, message in enumerate(result["messages"]):
             self.assertEqual(message["type"], "stream")
@@ -1385,7 +1384,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(len(queries), 1)
 
         stream = get_stream('Scotland', realm)
-        recipient_id = get_recipient(Recipient.STREAM, stream.id).id
+        recipient_id = get_stream_recipient(stream.id).id
         cond = '''AND NOT (recipient_id = {scotland} AND upper(subject) = upper('golf'))'''.format(scotland=recipient_id)
         self.assertIn(cond, queries[0]['sql'])
 

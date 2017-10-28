@@ -1052,6 +1052,24 @@ def get_recipient(type, type_id):
     # type: (int, int) -> Recipient
     return Recipient.objects.get(type_id=type_id, type=type)
 
+def get_stream_recipient(stream_id):
+    # type: (int) -> Recipient
+    return get_recipient(Recipient.STREAM, stream_id)
+
+def get_personal_recipient(user_profile_id):
+    # type: (int) -> Recipient
+    return get_recipient(Recipient.PERSONAL, user_profile_id)
+
+def get_huddle_recipient(user_profile_ids):
+    # type: (Set[int]) -> Recipient
+
+    # The caller should ensure that user_profile_ids includes
+    # the sender.  Note that get_huddle hits the cache, and then
+    # we hit another cache to get the recipient.  We may want to
+    # unify our caching strategy here.
+    huddle = get_huddle(list(user_profile_ids))
+    return get_recipient(Recipient.HUDDLE, huddle.id)
+
 def bulk_get_recipients(type, type_ids):
     # type: (int, List[int]) -> Dict[int, Any]
     def cache_key_function(type_id):
@@ -1105,6 +1123,17 @@ class Message(AbstractMessage):
         eventual switch over to a separate topic table.
         """
         return self.subject
+
+    def is_stream_message(self):
+        # type: () -> bool
+        '''
+        Find out whether a message is a stream message by
+        looking up its recipient.type.  TODO: Make this
+        an easier operation by denormalizing the message
+        type onto Message, either explicity (message.type)
+        or implicitly (message.stream_id is not None).
+        '''
+        return self.recipient.type == Recipient.STREAM
 
     def get_realm(self):
         # type: () -> Realm

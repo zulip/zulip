@@ -41,9 +41,9 @@ from zerver.lib.utils import statsd
 from zerver.lib.validator import \
     check_list, check_int, check_dict, check_string, check_bool
 from zerver.models import Message, UserProfile, Stream, Subscription, \
-    Realm, RealmDomain, Recipient, UserMessage, bulk_get_recipients, get_recipient, \
+    Realm, RealmDomain, Recipient, UserMessage, bulk_get_recipients, get_personal_recipient, \
     get_stream, parse_usermessage_flags, email_to_domain, get_realm, get_active_streams, \
-    get_user_including_cross_realm
+    get_user_including_cross_realm, get_stream_recipient
 
 from sqlalchemy import func
 from sqlalchemy.sql import select, join, column, literal_column, literal, and_, \
@@ -237,7 +237,7 @@ class NarrowBuilder(object):
             cond = column("recipient_id").in_([recipient.id for recipient in recipients_map.values()])
             return query.where(maybe_negate(cond))
 
-        recipient = get_recipient(Recipient.STREAM, type_id=stream.id)
+        recipient = get_stream_recipient(stream.id)
         cond = column("recipient_id") == recipient.id
         return query.where(maybe_negate(cond))
 
@@ -321,7 +321,7 @@ class NarrowBuilder(object):
             return query.where(maybe_negate(cond))
         else:
             # Personal message
-            self_recipient = get_recipient(Recipient.PERSONAL, type_id=self.user_profile.id)
+            self_recipient = get_personal_recipient(self.user_profile.id)
             if operand == self.user_profile.email:
                 # Personals with self
                 cond = and_(column("sender_id") == self.user_profile.id,
@@ -334,7 +334,7 @@ class NarrowBuilder(object):
             except UserProfile.DoesNotExist:
                 raise BadNarrowOperator('unknown user ' + operand)
 
-            narrow_recipient = get_recipient(Recipient.PERSONAL, narrow_profile.id)
+            narrow_recipient = get_personal_recipient(narrow_profile.id)
             cond = or_(and_(column("sender_id") == narrow_profile.id,
                             column("recipient_id") == self_recipient.id),
                        and_(column("sender_id") == self.user_profile.id,

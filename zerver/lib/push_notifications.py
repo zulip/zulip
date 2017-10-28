@@ -392,9 +392,9 @@ def get_alert_from_message(message):
         return "New private group message from %s" % (sender_str,)
     elif message.recipient.type == Recipient.PERSONAL and message.trigger == 'private_message':
         return "New private message from %s" % (sender_str,)
-    elif message.recipient.type == Recipient.STREAM and message.trigger == 'mentioned':
+    elif message.is_stream_message() and message.trigger == 'mentioned':
         return "New mention from %s" % (sender_str,)
-    elif (message.recipient.type == Recipient.STREAM and
+    elif (message.is_stream_message() and
             (message.trigger == 'stream_push_notify' and message.stream_name)):
         return "New stream message from %s in %s" % (sender_str, message.stream_name,)
     else:
@@ -481,7 +481,7 @@ def get_gcm_payload(user_profile, message):
         'sender_avatar_url': absolute_avatar_url(message.sender),
     }
 
-    if message.recipient.type == Recipient.STREAM:
+    if message.is_stream_message():
         android_data['recipient_type'] = "stream"
         android_data['stream'] = get_display_recipient(message.recipient)
         android_data['topic'] = message.subject

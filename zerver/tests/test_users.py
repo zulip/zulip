@@ -19,7 +19,7 @@ from zerver.lib.test_runner import slow
 
 from zerver.models import UserProfile, Recipient, \
     Realm, RealmDomain, UserActivity, \
-    get_user, get_realm, get_client, get_stream, get_recipient, \
+    get_user, get_realm, get_client, get_stream, get_stream_recipient, \
     Message, get_context_for_message, ScheduledEmail
 
 from zerver.lib.avatar import avatar_url
@@ -384,7 +384,7 @@ class RecipientInfoTest(ZulipTestCase):
             self.subscribe(user, stream_name)
 
         stream = get_stream(stream_name, realm)
-        recipient = get_recipient(Recipient.STREAM, stream.id)
+        recipient = get_stream_recipient(stream.id)
 
         stream_topic = StreamTopicTarget(
             stream_id=stream.id,

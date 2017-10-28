@@ -12,7 +12,7 @@ from django.test import TestCase
 from django.utils.timezone import now as timezone_now
 
 from zerver.models import (
-    get_client, get_realm, get_recipient, get_stream, get_user,
+    get_client, get_realm, get_stream_recipient, get_stream, get_user,
     Message, RealmDomain, Recipient, UserMessage, UserPresence, UserProfile,
     Realm, Subscription, Stream, flush_per_request_caches,
 )
@@ -945,7 +945,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('muted_topics', check_list(check_list(check_string, 2))),
         ])
         stream = get_stream('Denmark', self.user_profile.realm)
-        recipient = get_recipient(Recipient.STREAM, stream.id)
+        recipient = get_stream_recipient(stream.id)
         events = self.do_test(lambda: do_mute_topic(
             self.user_profile, stream, recipient, "topic"))
         error = muted_topics_checker('events[0]', events[0])
@@ -1755,7 +1755,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         def mute_topic(user_profile, stream_name, topic_name):
             # type: (UserProfile, Text, Text) -> None
             stream = get_stream(stream_name, realm)
-            recipient = get_recipient(Recipient.STREAM, stream.id)
+            recipient = get_stream_recipient(stream.id)
 
             add_topic_mute(
                 user_profile=user_profile,

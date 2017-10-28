@@ -25,7 +25,7 @@ from zerver.worker import queue_processors
 
 from zerver.lib.actions import (
     check_send_message, create_stream_if_needed, bulk_add_subscriptions,
-    get_display_recipient, bulk_remove_subscriptions
+    get_display_recipient, bulk_remove_subscriptions, get_stream_recipient,
 )
 
 from zerver.models import (
@@ -240,7 +240,7 @@ def most_recent_message(user_profile):
 def get_subscription(stream_name, user_profile):
     # type: (Text, UserProfile) -> Subscription
     stream = get_stream(stream_name, user_profile.realm)
-    recipient = get_recipient(Recipient.STREAM, stream.id)
+    recipient = get_stream_recipient(stream.id)
     return Subscription.objects.get(user_profile=user_profile,
                                     recipient=recipient, active=True)
 

@@ -7,7 +7,7 @@ from django.utils.translation import ugettext as _
 from zerver.lib.actions import check_stream_name, create_streams_if_needed
 from zerver.lib.request import JsonableError
 from zerver.models import UserProfile, Stream, Subscription, \
-    Realm, Recipient, bulk_get_recipients, get_recipient, get_stream, \
+    Realm, Recipient, bulk_get_recipients, get_stream_recipient, get_stream, \
     bulk_get_streams, get_realm_stream
 
 def access_stream_for_delete(user_profile, stream_id):
@@ -42,7 +42,7 @@ def access_stream_common(user_profile, stream, error):
     if stream.realm_id != user_profile.realm_id:
         raise JsonableError(error)
 
-    recipient = get_recipient(Recipient.STREAM, stream.id)
+    recipient = get_stream_recipient(stream.id)
 
     try:
         sub = Subscription.objects.get(user_profile=user_profile,
