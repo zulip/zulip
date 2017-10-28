@@ -258,10 +258,11 @@ def generic_bulk_cached_fetch(cache_key_function,  # type: Callable[[ObjKT], Tex
     cache_keys = {}  # type: Dict[ObjKT, Text]
     for object_id in object_ids:
         cache_keys[object_id] = cache_key_function(object_id)
-    cached_objects = cache_get_many([cache_keys[object_id]
-                                     for object_id in object_ids])
-    for (key, val) in cached_objects.items():
-        cached_objects[key] = extractor(cached_objects[key][0])
+    cached_objects_compressed = cache_get_many([cache_keys[object_id]
+                                                for object_id in object_ids])
+    cached_objects = {}  # type: Dict[Text, ItemT]
+    for (key, val) in cached_objects_compressed.items():
+        cached_objects[key] = extractor(cached_objects_compressed[key][0])
     needed_ids = [object_id for object_id in object_ids if
                   cache_keys[object_id] not in cached_objects]
     db_objects = query_function(needed_ids)
