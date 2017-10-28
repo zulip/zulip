@@ -227,6 +227,11 @@ def cache_delete_many(items, cache_name=None):
         KEY_PREFIX + item for item in items)
     remote_cache_stats_finish()
 
+# generic_bulk_cached_fetch and its helpers
+ObjKT = TypeVar('ObjKT', int, Text)
+ItemT = Any  # https://github.com/python/mypy/issues/1721
+CompressedItemT = Any  # https://github.com/python/mypy/issues/1721
+
 # Required Arguments are as follows:
 # * object_ids: The list of object ids to look up
 # * cache_key_function: object_id => cache key
@@ -241,9 +246,6 @@ def cache_delete_many(items, cache_name=None):
 # * cache_transformer: Function mapping an object from database =>
 #   value for cache (in case the values that we're caching are some
 #   function of the objects, not the objects themselves)
-ObjKT = TypeVar('ObjKT', int, Text)
-ItemT = Any  # https://github.com/python/mypy/issues/1721
-CompressedItemT = Any  # https://github.com/python/mypy/issues/1721
 def generic_bulk_cached_fetch(cache_key_function,  # type: Callable[[ObjKT], Text]
                               query_function,  # type: Callable[[List[ObjKT]], Iterable[Any]]
                               object_ids,  # type: Iterable[ObjKT]
