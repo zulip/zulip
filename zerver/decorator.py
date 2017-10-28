@@ -258,9 +258,9 @@ def access_user_by_api_key(request, api_key, email=None):
 
 # Use this for webhook views that don't get an email passed in.
 def api_key_only_webhook_view(client_name):
-    # type: (Text) ->  Callable[..., HttpResponse]
-    # This function can't be typed perfectly because returning a generic function
-    # isn't supported in mypy - https://github.com/python/mypy/issues/1551.
+    # type: (Text) ->  Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]
+    # TODO The typing here could be improved by using the Extended Callable types:
+    # https://mypy.readthedocs.io/en/latest/kinds_of_types.html#extended-callable-types
     def _wrapped_view_func(view_func):
         # type: (Callable[..., HttpResponse]) -> Callable[..., HttpResponse]
         @csrf_exempt
