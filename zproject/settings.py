@@ -603,10 +603,8 @@ else:
 # API/BOT SETTINGS
 ########################################################################
 
-if "EXTERNAL_API_PATH" not in vars():
-    EXTERNAL_API_PATH = EXTERNAL_HOST + "/api"
-EXTERNAL_API_URI = EXTERNAL_URI_SCHEME + EXTERNAL_API_PATH
 ROOT_DOMAIN_URI = EXTERNAL_URI_SCHEME + EXTERNAL_HOST
+EXTERNAL_API_URI = ROOT_DOMAIN_URI + "/api"
 
 if "NAGIOS_BOT_HOST" not in vars():
     NAGIOS_BOT_HOST = EXTERNAL_HOST

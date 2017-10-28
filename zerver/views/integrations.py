@@ -27,10 +27,10 @@ def add_api_uri_context(context, request):
         display_subdomain = 'yourZulipDomain'
         html_settings_links = False
     if display_subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
-        external_api_path_subdomain = '%s.%s' % (display_subdomain,
-                                                 settings.EXTERNAL_API_PATH)
+        external_api_path_subdomain = '%s.%s/api' % (display_subdomain,
+                                                 settings.EXTERNAL_HOST)
     else:
-        external_api_path_subdomain = settings.EXTERNAL_API_PATH
+        external_api_path_subdomain = settings.EXTERNAL_HOST + "/api"
 
     external_api_uri_subdomain = '%s%s' % (settings.EXTERNAL_URI_SCHEME,
                                            external_api_path_subdomain)
