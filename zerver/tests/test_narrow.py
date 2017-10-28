@@ -586,8 +586,7 @@ class GetOldMessagesTest(ZulipTestCase):
             [self.example_email("iago"), self.example_email("cordelia")],
         )
         personals = [m for m in get_user_messages(self.example_user('hamlet'))
-                     if m.recipient.type == Recipient.PERSONAL or
-                     m.recipient.type == Recipient.HUDDLE]
+                     if not m.is_stream_message()]
         for personal in personals:
             emails = dr_emails(get_display_recipient(personal.recipient))
 
@@ -675,7 +674,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.subscribe(self.example_user("hamlet"), 'Scotland')
         self.send_stream_message(self.example_email("hamlet"), "Scotland")
         messages = get_user_messages(self.example_user('hamlet'))
-        stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
+        stream_messages = [msg for msg in messages if msg.is_stream_message()]
         stream_name = get_display_recipient(stream_messages[0].recipient)
         stream_id = stream_messages[0].recipient.id
 
@@ -712,7 +711,7 @@ class GetOldMessagesTest(ZulipTestCase):
                                              subdomain="zephyr")
 
         messages = get_user_messages(self.mit_user("starnine"))
-        stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
+        stream_messages = [msg for msg in messages if msg.is_stream_message()]
 
         self.assertEqual(len(result["messages"]), 2)
         for i, message in enumerate(result["messages"]):
@@ -751,7 +750,7 @@ class GetOldMessagesTest(ZulipTestCase):
             subdomain="zephyr")
 
         messages = get_user_messages(mit_user_profile)
-        stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
+        stream_messages = [msg for msg in messages if msg.is_stream_message()]
         self.assertEqual(len(result["messages"]), 5)
         for i, message in enumerate(result["messages"]):
             self.assertEqual(message["type"], "stream")
@@ -793,7 +792,7 @@ class GetOldMessagesTest(ZulipTestCase):
             subdomain="zephyr")
 
         messages = get_user_messages(mit_user_profile)
-        stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
+        stream_messages = [msg for msg in messages if msg.is_stream_message()]
         self.assertEqual(len(result["messages"]), 7)
         for i, message in enumerate(result["messages"]):
             self.assertEqual(message["type"], "stream")

@@ -1049,7 +1049,7 @@ def do_send_messages(messages_maybe_none):
         )
         message['mention_data'] = mention_data
 
-        if message['message'].recipient.type == Recipient.STREAM:
+        if message['message'].is_stream_message():
             stream_id = message['message'].recipient.type_id
             stream_topic = StreamTopicTarget(
                 stream_id=stream_id,
@@ -1173,7 +1173,7 @@ def do_send_messages(messages_maybe_none):
             for user_id in message['active_user_ids']
         ]
 
-        if message['message'].recipient.type == Recipient.STREAM:
+        if message['message'].is_stream_message():
             # Note: This is where authorization for single-stream
             # get_updates happens! We only attach stream data to the
             # notify new_message request if it's a public stream,
@@ -1283,7 +1283,7 @@ def create_user_messages(message, um_eligible_user_ids, long_term_idle_user_ids,
     user_messages = []
     for um in ums_to_create:
         if (um.user_profile_id in long_term_idle_user_ids and
-                message.recipient.type == Recipient.STREAM and
+                message.is_stream_message() and
                 int(um.flags) == 0):
             continue
         user_messages.append(um)
@@ -3289,7 +3289,7 @@ def do_update_message(user_profile, message, topic_name, propagate_mode,
     }  # type: Dict[str, Any]
     changed_messages = [message]
 
-    if message.recipient.type == Recipient.STREAM:
+    if message.is_stream_message():
         stream_id = message.recipient.type_id
         event['stream_name'] = Stream.objects.get(id=stream_id).name
 
@@ -3339,7 +3339,7 @@ def do_update_message(user_profile, message, topic_name, propagate_mode,
         if Message.content_has_attachment(prev_content) or Message.content_has_attachment(message.content):
             check_attachment_reference_change(prev_content, message)
 
-        if message.recipient.type == Recipient.STREAM:
+        if message.is_stream_message():
             if topic_name is not None:
                 new_topic_name = topic_name
             else:
@@ -4073,7 +4073,7 @@ def do_claim_attachments(message):
         path_id = attachment_url_to_path_id(url)
         user_profile = message.sender
         is_message_realm_public = False
-        if message.recipient.type == Recipient.STREAM:
+        if message.is_stream_message():
             is_message_realm_public = Stream.objects.get(id=message.recipient.type_id).is_public()
 
         if not validate_attachment_request(user_profile, path_id):
