@@ -23,7 +23,7 @@ from zerver.views.registration import confirmation_key, \
     send_registration_completion_email
 
 from zerver.models import (
-    get_realm, get_prereg_user_by_email, get_user, get_recipient,
+    get_realm, get_prereg_user_by_email, get_user, get_stream_recipient,
     PreregistrationUser, Realm, RealmDomain, Recipient, Message,
     ScheduledEmail, UserProfile, UserMessage,
     Stream, Subscription, flush_per_request_caches
@@ -1223,7 +1223,7 @@ class RealmCreationTest(ZulipTestCase):
                     ('new members', 'stream is', 1),
                     ('zulip', 'Here is', 3)]:
                 stream = get_stream(stream_name, realm)
-                recipient = get_recipient(Recipient.STREAM, stream.id)
+                recipient = get_stream_recipient(stream.id)
                 messages = Message.objects.filter(recipient=recipient).order_by('pub_date')
                 self.assertEqual(len(messages), message_count)
                 self.assertIn(text, messages[0].content)

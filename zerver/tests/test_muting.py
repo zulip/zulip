@@ -10,8 +10,8 @@ from zerver.lib.stream_topic import StreamTopicTarget
 
 from zerver.models import (
     get_realm,
-    get_recipient,
     get_stream,
+    get_stream_recipient,
     get_user,
     Recipient,
     UserProfile,
@@ -30,7 +30,7 @@ class MutedTopicsTests(ZulipTestCase):
         cordelia  = self.example_user('cordelia')
         realm = hamlet.realm
         stream = get_stream(u'Verona', realm)
-        recipient = get_recipient(Recipient.STREAM, stream.id)
+        recipient = get_stream_recipient(stream.id)
         topic_name = 'teST topic'
 
         stream_topic_target = StreamTopicTarget(
@@ -83,7 +83,7 @@ class MutedTopicsTests(ZulipTestCase):
 
         realm = self.user_profile.realm
         stream = get_stream(u'Verona', realm)
-        recipient = get_recipient(Recipient.STREAM, stream.id)
+        recipient = get_stream_recipient(stream.id)
         add_topic_mute(
             user_profile=self.user_profile,
             stream_id=stream.id,
@@ -107,7 +107,7 @@ class MutedTopicsTests(ZulipTestCase):
 
         realm = self.user_profile.realm
         stream = get_stream(u'Verona', realm)
-        recipient = get_recipient(Recipient.STREAM, stream.id)
+        recipient = get_stream_recipient(stream.id)
         add_topic_mute(
             user_profile=self.user_profile,
             stream_id=stream.id,
