@@ -753,7 +753,8 @@ def get_messages_backend(request, user_profile,
     for message_id in message_ids:
         msg_dict = message_dicts[message_id]
         msg_dict.update({"flags": user_message_flags[message_id]})
-        msg_dict.update(search_fields.get(message_id, {}))
+        if message_id in search_fields:
+            msg_dict.update(search_fields[message_id])
         # Make sure that we never send message edit history to clients
         # in realms with allow_edit_history disabled.
         if "edit_history" in msg_dict and not user_profile.realm.allow_edit_history:
