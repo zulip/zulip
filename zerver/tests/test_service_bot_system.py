@@ -209,7 +209,6 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             def check_values_passed(queue_name, trigger_event, x, call_consume_in_tests):
                 # type: (Any, Union[Mapping[Any, Any], Any], Callable[[Any], None], bool) -> None
                 self.assertEqual(queue_name, expected_queue_name)
-                self.assertEqual(trigger_event["failed_tries"], 0)
                 self.assertEqual(trigger_event["message"]["content"], content)
                 self.assertEqual(trigger_event["message"]["display_recipient"], recipient)
                 self.assertEqual(trigger_event["message"]["sender_email"], self.user_profile.email)
@@ -264,7 +263,6 @@ class TestServiceBotEventTriggers(ZulipTestCase):
                 self.assertEqual(queue_name, expected_queue_name)
                 self.assertEqual(trigger_event["user_profile_id"], self.bot_profile.id)
                 self.assertEqual(trigger_event["trigger"], "private_message")
-                self.assertEqual(trigger_event["failed_tries"], 0)
                 self.assertEqual(trigger_event["message"]["sender_email"], sender_email)
                 display_recipients = [
                     trigger_event["message"]["display_recipient"][0]["email"],
@@ -311,7 +309,6 @@ class TestServiceBotEventTriggers(ZulipTestCase):
                 self.assertIn(trigger_event["user_profile_id"], profile_ids)
                 profile_ids.remove(trigger_event["user_profile_id"])
                 self.assertEqual(trigger_event["trigger"], "private_message")
-                self.assertEqual(trigger_event["failed_tries"], 0)
                 self.assertEqual(trigger_event["message"]["sender_email"], sender_email)
                 self.assertEqual(trigger_event["message"]["type"], u'private')
             mock_queue_json_publish.side_effect = check_values_passed

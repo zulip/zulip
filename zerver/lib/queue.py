@@ -312,7 +312,8 @@ def queue_json_publish(queue_name, event, processor, call_consume_in_tests=False
 
 def retry_event(queue_name, event, failure_processor):
     # type: (str, Dict[str, Any], Callable[[Dict[str, Any]], None]) -> None
-    assert 'failed_tries' in event
+    if 'failed_tries' not in event:
+        event['failed_tries'] = 0
     event['failed_tries'] += 1
     if event['failed_tries'] > MAX_REQUEST_RETRIES:
         failure_processor(event)

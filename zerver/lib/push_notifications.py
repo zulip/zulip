@@ -522,9 +522,6 @@ def handle_push_notification(user_profile_id, missed_message):
                                               apns_payload,
                                               gcm_payload)
             except requests.ConnectionError:
-                if 'failed_tries' not in missed_message:
-                    missed_message['failed_tries'] = 0
-
                 def failure_processor(event):
                     # type: (Dict[str, Any]) -> None
                     logging.warning(
