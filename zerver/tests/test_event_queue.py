@@ -139,7 +139,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
 
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
             # To test the missed_message hook, we first need to send a message
-            msg_id = self.send_message(self.example_email("iago"), "Denmark", Recipient.STREAM)
+            msg_id = self.send_stream_message(self.example_email("iago"), "Denmark")
 
             # Verify that nothing happens if you call it as not the
             # "last client descriptor", in which case the function
@@ -160,7 +160,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         # Clear the event queue, before repeating with a private message
         client_descriptor.event_queue.pop()
         self.assertTrue(client_descriptor.event_queue.empty())
-        msg_id = self.send_message(self.example_email("iago"), [email], Recipient.PERSONAL)
+        msg_id = self.send_personal_message(self.example_email("iago"), email)
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
             missedmessage_hook(user_profile.id, client_descriptor, True)
             mock_enqueue.assert_called_once()
@@ -173,8 +173,8 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         # Clear the event queue, now repeat with a mention
         client_descriptor.event_queue.pop()
         self.assertTrue(client_descriptor.event_queue.empty())
-        msg_id = self.send_message(self.example_email("iago"), "Denmark", Recipient.STREAM,
-                                   content="@**King Hamlet** what's up?")
+        msg_id = self.send_stream_message(self.example_email("iago"), "Denmark",
+                                          content="@**King Hamlet** what's up?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
             # Clear the event queue, before repeating with a private message
             missedmessage_hook(user_profile.id, client_descriptor, True)
@@ -193,8 +193,8 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         sub.save()
         client_descriptor.event_queue.pop()
         self.assertTrue(client_descriptor.event_queue.empty())
-        msg_id = self.send_message(self.example_email("iago"), "Denmark", Recipient.STREAM,
-                                   content="what's up everyone?")
+        msg_id = self.send_stream_message(self.example_email("iago"), "Denmark",
+                                          content="what's up everyone?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
             # Clear the event queue, before repeating with a private message
             missedmessage_hook(user_profile.id, client_descriptor, True)
@@ -210,8 +210,8 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         client_descriptor.event_queue.pop()
         self.assertTrue(client_descriptor.event_queue.empty())
         do_mute_topic(user_profile, stream, sub.recipient, "mutingtest")
-        msg_id = self.send_message(self.example_email("iago"), "Denmark", Recipient.STREAM,
-                                   content="what's up everyone?", subject="mutingtest")
+        msg_id = self.send_stream_message(self.example_email("iago"), "Denmark",
+                                          content="what's up everyone?", topic_name="mutingtest")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
             # Clear the event queue, before repeating with a private message
             missedmessage_hook(user_profile.id, client_descriptor, True)
@@ -228,8 +228,8 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         self.assertTrue(client_descriptor.event_queue.empty())
         sub.in_home_view = False
         sub.save()
-        msg_id = self.send_message(self.example_email("iago"), "Denmark", Recipient.STREAM,
-                                   content="what's up everyone?")
+        msg_id = self.send_stream_message(self.example_email("iago"), "Denmark",
+                                          content="what's up everyone?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
             # Clear the event queue, before repeating with a private message
             missedmessage_hook(user_profile.id, client_descriptor, True)

@@ -21,6 +21,7 @@ from zerver.lib.actions import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
     check_add_realm_emoji,
+    check_send_message,
     check_send_typing_notification,
     do_add_alert_words,
     do_add_default_stream,
@@ -285,8 +286,17 @@ class GetEventsTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assert_length(events, 0)
 
-        local_id = 10.01
-        self.send_message(email, recipient_email, Recipient.PERSONAL, "hello", local_id=local_id, sender_queue_id=queue_id)
+        local_id = '10.01'
+        check_send_message(
+            sender=user_profile,
+            client=get_client('whatever'),
+            message_type_name='private',
+            message_to=[recipient_email],
+            topic_name=None,
+            message_content='hello',
+            local_id=local_id,
+            sender_queue_id=queue_id,
+        )
 
         result = self.tornado_call(get_events_backend, user_profile,
                                    {"queue_id": queue_id,
@@ -304,9 +314,18 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(events[0]["message"]["display_recipient"][1]["is_mirror_dummy"], False)
 
         last_event_id = events[0]["id"]
-        local_id += 0.01
+        local_id = '10.02'
 
-        self.send_message(email, recipient_email, Recipient.PERSONAL, "hello", local_id=local_id, sender_queue_id=queue_id)
+        check_send_message(
+            sender=user_profile,
+            client=get_client('whatever'),
+            message_type_name='private',
+            message_to=[recipient_email],
+            topic_name=None,
+            message_content='hello',
+            local_id=local_id,
+            sender_queue_id=queue_id,
+        )
 
         result = self.tornado_call(get_events_backend, user_profile,
                                    {"queue_id": queue_id,
@@ -365,8 +384,8 @@ class GetEventsTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assert_length(events, 0)
 
-        self.send_message(email, self.example_email("othello"), Recipient.PERSONAL, "hello")
-        self.send_message(email, "Denmark", Recipient.STREAM, "hello")
+        self.send_personal_message(email, self.example_email("othello"), "hello")
+        self.send_stream_message(email, "Denmark", "hello")
 
         result = self.tornado_call(get_events_backend, user_profile,
                                    {"queue_id": queue_id,
@@ -522,20 +541,18 @@ class EventsRegisterTest(ZulipTestCase):
         for i in range(3):
             content = 'mentioning... @**' + user.full_name + '** hello ' + str(i)
             self.do_test(
-                lambda: self.send_message(self.example_email('cordelia'),
-                                          "Verona",
-                                          Recipient.STREAM,
-                                          content)
+                lambda: self.send_stream_message(self.example_email('cordelia'),
+                                                 "Verona",
+                                                 content)
 
             )
 
     def test_pm_send_message_events(self):
         # type: () -> None
         self.do_test(
-            lambda: self.send_message(self.example_email('cordelia'),
-                                      self.example_email('hamlet'),
-                                      Recipient.PERSONAL,
-                                      'hola')
+            lambda: self.send_personal_message(self.example_email('cordelia'),
+                                               self.example_email('hamlet'),
+                                               'hola')
 
         )
 
@@ -546,10 +563,9 @@ class EventsRegisterTest(ZulipTestCase):
             self.example_email('othello'),
         ]
         self.do_test(
-            lambda: self.send_message(self.example_email('cordelia'),
-                                      huddle,
-                                      Recipient.HUDDLE,
-                                      'hola')
+            lambda: self.send_huddle_message(self.example_email('cordelia'),
+                                             huddle,
+                                             'hola')
 
         )
 
@@ -581,7 +597,7 @@ class EventsRegisterTest(ZulipTestCase):
         ])
 
         events = self.do_test(
-            lambda: self.send_message(self.example_email("hamlet"), "Verona", Recipient.STREAM, "hello"),
+            lambda: self.send_stream_message(self.example_email("hamlet"), "Verona", "hello"),
         )
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
@@ -663,7 +679,11 @@ class EventsRegisterTest(ZulipTestCase):
             ('operation', equals("add")),
         ])
 
-        message = self.send_message(self.example_email("cordelia"), self.example_email("hamlet"), Recipient.PERSONAL, "hello")
+        message = self.send_personal_message(
+            self.example_email("cordelia"),
+            self.example_email("hamlet"),
+            "hello",
+        )
         user_profile = self.example_user('hamlet')
         events = self.do_test(
             lambda: do_update_message_flags(user_profile, 'add', 'starred', [message]),
@@ -692,10 +712,9 @@ class EventsRegisterTest(ZulipTestCase):
         mention = '@**' + user_profile.full_name + '**'
 
         for content in ['hello', mention]:
-            message = self.send_message(
+            message = self.send_stream_message(
                 self.example_email('cordelia'),
                 "Verona",
-                Recipient.STREAM,
                 content
             )
 
@@ -706,14 +725,13 @@ class EventsRegisterTest(ZulipTestCase):
 
     def test_send_message_to_existing_recipient(self):
         # type: () -> None
-        self.send_message(
+        self.send_stream_message(
             self.example_email('cordelia'),
             "Verona",
-            Recipient.STREAM,
             "hello 1"
         )
         self.do_test(
-            lambda: self.send_message("cordelia@zulip.com", "Verona", Recipient.STREAM, "hello 2"),
+            lambda: self.send_stream_message("cordelia@zulip.com", "Verona", "hello 2"),
             state_change_expected=True,
         )
 
@@ -733,7 +751,7 @@ class EventsRegisterTest(ZulipTestCase):
             ])),
         ])
 
-        message_id = self.send_message(self.example_email("hamlet"), "Verona", Recipient.STREAM, "hello")
+        message_id = self.send_stream_message(self.example_email("hamlet"), "Verona", "hello")
         message = Message.objects.get(id=message_id)
         events = self.do_test(
             lambda: do_add_reaction(
@@ -759,7 +777,7 @@ class EventsRegisterTest(ZulipTestCase):
             ])),
         ])
 
-        message_id = self.send_message(self.example_email("hamlet"), "Verona", Recipient.STREAM, "hello")
+        message_id = self.send_stream_message(self.example_email("hamlet"), "Verona", "hello")
         message = Message.objects.get(id=message_id)
         do_add_reaction(self.user_profile, message, "tada")
         events = self.do_test(
@@ -1668,7 +1686,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('message_id', check_int),
             ('sender', check_string),
         ])
-        msg_id = self.send_message("hamlet@zulip.com", "Verona", Recipient.STREAM)
+        msg_id = self.send_stream_message("hamlet@zulip.com", "Verona")
         message = Message.objects.get(id=msg_id)
         events = self.do_test(
             lambda: do_delete_message(self.user_profile, message),
@@ -1683,7 +1701,7 @@ class EventsRegisterTest(ZulipTestCase):
         # Delete all historical messages for this user
         user_profile = self.example_user('hamlet')
         UserMessage.objects.filter(user_profile=user_profile).delete()
-        msg_id = self.send_message("hamlet@zulip.com", "Verona", Recipient.STREAM)
+        msg_id = self.send_stream_message("hamlet@zulip.com", "Verona")
         message = Message.objects.get(id=msg_id)
         self.do_test(
             lambda: do_delete_message(self.user_profile, message),
@@ -1758,22 +1776,27 @@ class FetchInitialStateDataTest(ZulipTestCase):
         assert(sender_email < user_profile.email)
         assert(user_profile.email < othello.email)
 
-        pm1_message_id = self.send_message(sender_email, user_profile.email, Recipient.PERSONAL, "hello1")
-        pm2_message_id = self.send_message(sender_email, user_profile.email, Recipient.PERSONAL, "hello2")
+        pm1_message_id = self.send_personal_message(sender_email, user_profile.email, "hello1")
+        pm2_message_id = self.send_personal_message(sender_email, user_profile.email, "hello2")
 
         muted_stream = self.subscribe(user_profile, 'Muted Stream')
         mute_stream(user_profile, muted_stream)
         mute_topic(user_profile, 'Denmark', 'muted-topic')
 
-        stream_message_id = self.send_message(sender_email, "Denmark", Recipient.STREAM, "hello")
-        muted_stream_message_id = self.send_message(sender_email, "Muted Stream", Recipient.STREAM, "hello")
-        muted_topic_message_id = self.send_message(sender_email, "Denmark", Recipient.STREAM,
-                                                   subject="muted-topic", content="hello")
+        stream_message_id = self.send_stream_message(sender_email, "Denmark", "hello")
+        muted_stream_message_id = self.send_stream_message(sender_email, "Muted Stream", "hello")
+        muted_topic_message_id = self.send_stream_message(
+            sender_email,
+            "Denmark",
+            topic_name="muted-topic",
+            content="hello",
+        )
 
-        huddle_message_id = self.send_message(sender_email,
-                                              [user_profile.email, othello.email],
-                                              Recipient.HUDDLE,
-                                              'hello3')
+        huddle_message_id = self.send_huddle_message(
+            sender_email,
+            [user_profile.email, othello.email],
+            'hello3',
+        )
 
         def get_unread_data():
             # type: () -> UnreadMessagesResult

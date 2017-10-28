@@ -50,7 +50,7 @@ class QueryUtilTest(ZulipTestCase):
                       self.example_email('hamlet'),
                       self.example_email('iago')]:
             for _ in range(5):
-                self.send_message(email, self.example_email('othello'), Recipient.PERSONAL)
+                self.send_personal_message(email, self.example_email('othello'))
 
     @slow('creates lots of data')
     def test_query_chunker(self):

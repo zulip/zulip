@@ -173,8 +173,8 @@ class PreviewTestCase(ZulipTestCase):
         # type: () -> None
         email = self.example_email('hamlet')
         self.login(email)
-        msg_id = self.send_message(email, "Scotland", Recipient.STREAM,
-                                   subject="editing", content="original")
+        msg_id = self.send_stream_message(email, "Scotland",
+                                          topic_name="editing", content="original")
 
         url = 'http://test.org/'
         response = MockPythonResponse(self.open_graph_html, 200)
@@ -204,9 +204,11 @@ class PreviewTestCase(ZulipTestCase):
         # type: (str, bool, bool) -> Message
         url = 'http://test.org/'
         with mock.patch('zerver.lib.actions.queue_json_publish') as patched:
-            msg_id = self.send_message(
-                sender_email, self.example_email('cordelia'),
-                Recipient.PERSONAL, subject="url", content=url)
+            msg_id = self.send_personal_message(
+                sender_email,
+                self.example_email('cordelia'),
+                content=url,
+            )
             if queue_should_run:
                 patched.assert_called_once()
                 queue = patched.call_args[0][0]
@@ -281,9 +283,11 @@ class PreviewTestCase(ZulipTestCase):
     def test_http_error_get_data(self):
         # type: () -> None
         url = 'http://test.org/'
-        msg_id = self.send_message(
-            self.example_email('hamlet'), self.example_email('cordelia'),
-            Recipient.PERSONAL, subject="url", content=url)
+        msg_id = self.send_personal_message(
+            self.example_email('hamlet'),
+            self.example_email('cordelia'),
+            content=url,
+        )
         msg = Message.objects.select_related("sender").get(id=msg_id)
         event = {
             'message_id': msg_id,

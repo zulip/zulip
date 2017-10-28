@@ -136,7 +136,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
         subs = Subscription.objects.select_related("recipient").filter(
             user_profile=user_profile, recipient__type=Recipient.STREAM)
         streams = Stream.objects.filter(id__in=[sub.recipient.type_id for sub in subs])
-        self.send_message(self.example_email('hamlet'), streams[0].name, Recipient.STREAM, "test")
+        self.send_stream_message(self.example_email('hamlet'), streams[0].name, "test")
         add_new_user_history(user_profile, streams)
 
 class PasswordResetTest(ZulipTestCase):
@@ -597,10 +597,18 @@ class InviteUserTest(InviteUserBase):
         private_stream_name = "Secret"
         self.make_stream(private_stream_name, invite_only=True)
         self.subscribe(user_profile, private_stream_name)
-        public_msg_id = self.send_message(self.example_email("hamlet"), "Denmark", Recipient.STREAM,
-                                          "Public topic", "Public message")
-        secret_msg_id = self.send_message(self.example_email("hamlet"), private_stream_name, Recipient.STREAM,
-                                          "Secret topic", "Secret message")
+        public_msg_id = self.send_stream_message(
+            self.example_email("hamlet"),
+            "Denmark",
+            topic_name="Public topic",
+            content="Public message",
+        )
+        secret_msg_id = self.send_stream_message(
+            self.example_email("hamlet"),
+            private_stream_name,
+            topic_name="Secret topic",
+            content="Secret message",
+        )
         invitee = self.nonreg_email('alice')
         self.assert_json_success(self.invite(invitee, [private_stream_name, "Denmark"]))
         self.assertTrue(find_key_by_email(invitee))

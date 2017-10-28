@@ -594,11 +594,11 @@ class HomeTest(ZulipTestCase):
             self._sanity_check(result)
 
     def send_test_message(self, content, sender_name='iago',
-                          stream_name='Denmark', subject='foo'):
+                          stream_name='Denmark', topic_name='foo'):
         # type: (str, str, str, str) -> None
         sender = self.example_email(sender_name)
-        self.send_message(sender, stream_name, Recipient.STREAM,
-                          content, subject)
+        self.send_stream_message(sender, stream_name,
+                                 content=content, topic_name=topic_name)
 
     def soft_activate_and_get_unread_count(self, stream='Denmark', topic='foo'):
         # type: (str, str) -> int
