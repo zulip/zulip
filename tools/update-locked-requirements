@@ -45,6 +45,7 @@ EOF
 
 OUTPUT_PROD_FILE='requirements/prod_lock.txt'
 OUTPUT_DEV_FILE='requirements/dev_lock.txt'
+OUTPUT_THUMBOR_FILE='requirements/thumbor_lock.txt'
 
 # Parse arguments.
 if [ $# -gt 0 ]; then
@@ -70,3 +71,4 @@ fi
 
 compile_requirements requirements/prod.txt $OUTPUT_PROD_FILE
 compile_requirements requirements/dev.txt $OUTPUT_DEV_FILE
+compile_requirements requirements/thumbor.txt $OUTPUT_THUMBOR_FILE py2

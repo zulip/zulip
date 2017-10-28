@@ -37,6 +37,14 @@ VENV_DEPENDENCIES = [
     "libpq-dev",            # Needed by psycopg2
 ]
 
+THUMBOR_VENV_DEPENDENCIES = [
+    "libcurl4-openssl-dev",
+    "libjpeg-dev",
+    "libjasper-dev",
+    "libpng-dev",
+    "gifsicle",
+]
+
 def install_venv_deps(requirements_file):
     # type: (str) -> None
     pip_requirements = os.path.join(ZULIP_PATH, "requirements", "pip.txt")
