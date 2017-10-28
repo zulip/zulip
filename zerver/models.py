@@ -1056,6 +1056,16 @@ def get_stream_recipient(stream_id):
     # type: (int) -> Recipient
     return get_recipient(Recipient.STREAM, stream_id)
 
+def get_huddle_recipient(user_profile_ids):
+    # type: (Set[int]) -> Recipient
+
+    # The caller should ensure that user_profile_ids includes
+    # the sender.  Note that get_huddle hits the cache, and then
+    # we hit another cache to get the recipient.  We may want to
+    # unify our caching strategy here.
+    huddle = get_huddle(list(user_profile_ids))
+    return get_recipient(Recipient.HUDDLE, huddle.id)
+
 def bulk_get_recipients(type, type_ids):
     # type: (int, List[int]) -> Dict[int, Any]
     def cache_key_function(type_id):
