@@ -10,7 +10,7 @@ from sqlalchemy.sql import compiler
 
 from zerver.models import (
     Realm, Recipient, Stream, Subscription, UserProfile, Attachment,
-    get_display_recipient, get_recipient, get_realm, get_stream, get_user,
+    get_display_recipient, get_personal_recipient, get_realm, get_stream, get_user,
     Reaction, UserMessage, get_stream_recipient,
 )
 from zerver.lib.message import (
@@ -475,8 +475,8 @@ class GetOldMessagesTest(ZulipTestCase):
         query_ids['scotland_recipient'] = get_stream_recipient(scotland_stream.id).id
         query_ids['hamlet_id'] = hamlet_user.id
         query_ids['othello_id'] = othello_user.id
-        query_ids['hamlet_recipient'] = get_recipient(Recipient.PERSONAL, hamlet_user.id).id
-        query_ids['othello_recipient'] = get_recipient(Recipient.PERSONAL, othello_user.id).id
+        query_ids['hamlet_recipient'] = get_personal_recipient(hamlet_user.id).id
+        query_ids['othello_recipient'] = get_personal_recipient(othello_user.id).id
 
         return query_ids
 
