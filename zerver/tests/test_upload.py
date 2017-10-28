@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
-from django.test import TestCase, override_settings
+from django.test import TestCase
 from unittest import skip
 
 from zerver.lib.avatar import (
@@ -14,6 +14,7 @@ from zerver.lib.test_helpers import (
     avatar_disk_path,
     get_test_image_file,
     POSTRequestMock,
+    use_s3_backend,
 )
 from zerver.lib.test_runner import slow
 from zerver.lib.upload import sanitize_name, S3UploadBackend, \
@@ -47,9 +48,7 @@ import base64
 from datetime import timedelta
 from django.utils.timezone import now as timezone_now
 
-from moto import mock_s3_deprecated
-
-from typing import Any, Callable, TypeVar, Text
+from typing import Any, Callable, Text
 
 def destroy_uploads():
     # type: () -> None
@@ -971,21 +970,6 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
     def tearDown(self):
         # type: () -> None
         destroy_uploads()
-
-FuncT = TypeVar('FuncT', bound=Callable[..., None])
-
-def use_s3_backend(method):
-    # type: (FuncT) -> FuncT
-    @mock_s3_deprecated
-    @override_settings(LOCAL_UPLOADS_DIR=None)
-    def new_method(*args, **kwargs):
-        # type: (*Any, **Any) -> Any
-        zerver.lib.upload.upload_backend = S3UploadBackend()
-        try:
-            return method(*args, **kwargs)
-        finally:
-            zerver.lib.upload.upload_backend = LocalUploadBackend()
-    return new_method
 
 class S3Test(ZulipTestCase):
 
