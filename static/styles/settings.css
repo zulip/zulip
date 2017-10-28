@@ -1371,3 +1371,12 @@ thead .actions {
     opacity: 0.5;
     margin-left: 2px;
 }
+
+@-moz-document url-prefix() {
+    #settings_page select {
+        -moz-appearance: none;
+        background: url('../images/dropdown.png') right / 20px;
+        background-repeat: no-repeat;
+        padding-right: 20px;
+    }
+}
