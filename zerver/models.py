@@ -75,7 +75,7 @@ def query_for_ids(query, user_ids, field):
 
 # Doing 1000 remote cache requests to get_display_recipient is quite slow,
 # so add a local cache as well as the remote cache cache.
-per_request_display_recipient_cache = {}  # type: Dict[int, List[Dict[str, Any]]]
+per_request_display_recipient_cache = {}  # type: Dict[int, Union[Text, List[Dict[str, Any]]]]
 def get_display_recipient_by_id(recipient_id, recipient_type, recipient_type_id):
     # type: (int, int, Optional[int]) -> Union[Text, List[Dict[str, Any]]]
     """
