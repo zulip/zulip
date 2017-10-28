@@ -388,8 +388,13 @@ class HomeTest(ZulipTestCase):
             realm=realm,
             full_name=name,
             short_name=name,
-            active=False
         )
+
+        # Doing a full-stack deactivation would be expensive here,
+        # and we really only need to flip the flag to get a valid
+        # test.
+        user.is_active = False
+        user.save()
         return user
 
     @slow('creating users and loading home page')

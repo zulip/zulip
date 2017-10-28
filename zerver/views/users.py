@@ -297,7 +297,7 @@ def add_bot_backend(request, user_profile, full_name_raw=REQ("full_name"), short
 
     bot_profile = do_create_user(email=email, password='',
                                  realm=user_profile.realm, full_name=full_name,
-                                 short_name=short_name, active=True,
+                                 short_name=short_name,
                                  bot_type=bot_type,
                                  bot_owner=user_profile,
                                  avatar_source=avatar_source,

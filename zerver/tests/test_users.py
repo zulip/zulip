@@ -438,7 +438,6 @@ class RecipientInfoTest(ZulipTestCase):
             realm=realm,
             full_name='',
             short_name='',
-            active=True,
             bot_type=UserProfile.EMBEDDED_BOT,
         )
 
@@ -459,7 +458,6 @@ class RecipientInfoTest(ZulipTestCase):
             realm=realm,
             full_name='',
             short_name='',
-            active=True,
             bot_type=UserProfile.DEFAULT_BOT,
         )
 

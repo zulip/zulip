@@ -649,7 +649,6 @@ class StreamMessagesTest(ZulipTestCase):
             realm=realm,
             full_name='Normal Bot',
             short_name='',
-            active=True,
             bot_type=UserProfile.DEFAULT_BOT,
             bot_owner=cordelia,
         )
@@ -2313,7 +2312,6 @@ class CheckMessageTest(ZulipTestCase):
             realm=parent.realm,
             full_name='',
             short_name='',
-            active=True,
             bot_type=UserProfile.DEFAULT_BOT,
             bot_owner=parent
         )
