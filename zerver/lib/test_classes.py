@@ -381,27 +381,6 @@ class ZulipTestCase(TestCase):
             recipient__type=Recipient.STREAM)
         return [cast(Text, get_display_recipient(sub.recipient)) for sub in subs]
 
-    def send_message(self, sender_name, raw_recipients, message_type,
-                     content=u"test content", subject=u"test", **kwargs):
-        # type: (Text, Union[Text, List[Text]], int, Text, Text, **Any) -> int
-        sender = get_user_profile_by_email(sender_name)
-        if message_type in [Recipient.PERSONAL, Recipient.HUDDLE]:
-            message_type_name = "private"
-        elif message_type == Recipient.STREAM:
-            message_type_name = "stream"
-        else:
-            raise AssertionError("Recipient type should be an Recipient.STREAM type enum")
-        if isinstance(raw_recipients, str):
-            recipient_list = [raw_recipients]
-        else:
-            recipient_list = raw_recipients
-        (sending_client, _) = Client.objects.get_or_create(name="test suite")
-
-        return check_send_message(
-            sender, sending_client, message_type_name, recipient_list, subject,
-            content, forged=False, forged_timestamp=None,
-            forwarder_user_profile=sender, realm=sender.realm, **kwargs)
-
     def send_personal_message(self, from_email, to_email, content=u"test content"):
         # type: (Text, Text, Text) -> int
         sender = get_user_profile_by_email(from_email)
