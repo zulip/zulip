@@ -519,7 +519,7 @@ class GetProfileTest(ZulipTestCase):
         # type: (str) -> Dict[Text, Any]
         # Assumes all users are example users in realm 'zulip'
         user_profile = self.example_user(user_id)
-        self.send_message(user_profile.email, "Verona", Recipient.STREAM, "hello")
+        self.send_stream_message(user_profile.email, "Verona", "hello")
 
         result = self.client_get("/api/v1/users/me", **self.api_auth(user_profile.email))
 
@@ -590,8 +590,8 @@ class GetProfileTest(ZulipTestCase):
         Ensure GET /users/me returns a proper pointer id after the pointer is updated
         """
 
-        id1 = self.send_message(self.example_email("othello"), "Verona", Recipient.STREAM)
-        id2 = self.send_message(self.example_email("othello"), "Verona", Recipient.STREAM)
+        id1 = self.send_stream_message(self.example_email("othello"), "Verona")
+        id2 = self.send_stream_message(self.example_email("othello"), "Verona")
 
         json = self.common_get_profile("hamlet")
 
