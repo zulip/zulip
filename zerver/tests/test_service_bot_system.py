@@ -217,10 +217,9 @@ class TestServiceBotEventTriggers(ZulipTestCase):
                 self.assertEqual(trigger_event['user_profile_id'], self.bot_profile.id)
             mock_queue_json_publish.side_effect = check_values_passed
 
-            self.send_message(
+            self.send_stream_message(
                 self.user_profile.email,
                 'Denmark',
-                Recipient.STREAM,
                 content)
             self.assertTrue(mock_queue_json_publish.called)
 
@@ -228,9 +227,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
     def test_no_trigger_on_stream_message_without_mention(self, mock_queue_json_publish):
         # type: (mock.Mock) -> None
         sender_email = self.user_profile.email
-        recipients = "Denmark"
-        message_type = Recipient.STREAM
-        self.send_message(sender_email, recipients, message_type)
+        self.send_stream_message(sender_email, "Denmark")
         self.assertFalse(mock_queue_json_publish.called)
 
     @mock.patch('zerver.lib.actions.queue_json_publish')
@@ -240,10 +237,9 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             self.bot_profile.bot_type = bot_type
             self.bot_profile.save()
 
-            self.send_message(
+            self.send_stream_message(
                 self.second_bot_profile.email,
                 'Denmark',
-                Recipient.STREAM,
                 u'@**FooBot** foo bar!!!')
             self.assertFalse(mock_queue_json_publish.called)
 
@@ -256,7 +252,6 @@ class TestServiceBotEventTriggers(ZulipTestCase):
 
             sender_email = self.user_profile.email
             recipient_email = self.bot_profile.email
-            message_type = Recipient.PERSONAL
 
             def check_values_passed(queue_name, trigger_event, x, call_consume_in_tests):
                 # type: (Any, Union[Mapping[Any, Any], Any], Callable[[Any], None], bool) -> None
@@ -272,7 +267,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
                 self.assertTrue(recipient_email in display_recipients)
             mock_queue_json_publish.side_effect = check_values_passed
 
-            self.send_message(sender_email, recipient_email, message_type, subject='', content='test')
+            self.send_personal_message(sender_email, recipient_email, 'test')
             self.assertTrue(mock_queue_json_publish.called)
 
     @mock.patch('zerver.lib.actions.queue_json_publish')
@@ -284,8 +279,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
 
             sender_email = self.second_bot_profile.email
             recipient_email = self.bot_profile.email
-            message_type = Recipient.PERSONAL
-            self.send_message(sender_email, recipient_email, message_type)
+            self.send_personal_message(sender_email, recipient_email)
             self.assertFalse(mock_queue_json_publish.called)
 
     @mock.patch('zerver.lib.actions.queue_json_publish')
@@ -300,7 +294,6 @@ class TestServiceBotEventTriggers(ZulipTestCase):
 
             sender_email = self.user_profile.email
             recipient_emails = [self.bot_profile.email, self.second_bot_profile.email]
-            message_type = Recipient.HUDDLE
             profile_ids = [self.bot_profile.id, self.second_bot_profile.id]
 
             def check_values_passed(queue_name, trigger_event, x, call_consume_in_tests):
@@ -313,7 +306,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
                 self.assertEqual(trigger_event["message"]["type"], u'private')
             mock_queue_json_publish.side_effect = check_values_passed
 
-            self.send_message(sender_email, recipient_emails, message_type, subject='', content='test')
+            self.send_huddle_message(sender_email, recipient_emails, 'test')
             self.assertEqual(mock_queue_json_publish.call_count, 2)
             mock_queue_json_publish.reset_mock()
 
@@ -326,6 +319,5 @@ class TestServiceBotEventTriggers(ZulipTestCase):
 
             sender_email = self.second_bot_profile.email
             recipient_emails = [self.user_profile.email, self.bot_profile.email]
-            message_type = Recipient.HUDDLE
-            self.send_message(sender_email, recipient_emails, message_type)
+            self.send_huddle_message(sender_email, recipient_emails)
             self.assertFalse(mock_queue_json_publish.called)
