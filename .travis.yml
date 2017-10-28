@@ -33,6 +33,7 @@ cache:
     - $HOME/zulip-npm-cache
     - $HOME/zulip-emoji-cache
     - $HOME/node
+    - $HOME/misc
 env:
   global:
     - BOTO_CONFIG=/tmp/nowhere
