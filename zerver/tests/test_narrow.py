@@ -9,7 +9,7 @@ from sqlalchemy.sql import (
 from sqlalchemy.sql import compiler
 
 from zerver.models import (
-    Realm, Recipient, Stream, Subscription, UserProfile, Attachment,
+    Realm, Stream, Subscription, UserProfile, Attachment,
     get_display_recipient, get_personal_recipient, get_realm, get_stream, get_user,
     Reaction, UserMessage, get_stream_recipient,
 )
@@ -64,7 +64,7 @@ def get_recipient_id_for_stream_name(realm, stream_name):
 def mute_stream(realm, user_profile, stream_name):
     # type: (Realm, Text, Text) -> None
     stream = get_stream(stream_name, realm)
-    recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
+    recipient = get_stream_recipient(stream.id)
     subscription = Subscription.objects.get(recipient=recipient, user_profile=user_profile)
     subscription.in_home_view = False
     subscription.save()
