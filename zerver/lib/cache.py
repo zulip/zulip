@@ -7,7 +7,7 @@ from django.conf import settings
 from django.db.models import Q
 from django.core.cache.backends.base import BaseCache
 
-from typing import Any, Callable, Dict, Iterable, List, Optional, Union, Set, TypeVar, Text
+from typing import cast, Any, Callable, Dict, Iterable, List, Optional, Union, Set, TypeVar, Text, Tuple
 
 from zerver.lib.utils import statsd, statsd_key, make_safe_digest
 import subprocess
@@ -19,7 +19,7 @@ import os
 import hashlib
 
 if False:
-    from zerver.models import UserProfile, Realm, Message
+    from zerver.models import UserProfile, Stream, Realm, Message
     # These modules have to be imported for type annotations but
     # they cannot be imported at runtime due to cyclic dependency.
 
@@ -227,10 +227,22 @@ def cache_delete_many(items, cache_name=None):
         KEY_PREFIX + item for item in items)
     remote_cache_stats_finish()
 
-# generic_bulk_cached_fetch and its helpers
-ObjKT = TypeVar('ObjKT', int, Text)
-ItemT = Any  # https://github.com/python/mypy/issues/1721
-CompressedItemT = Any  # https://github.com/python/mypy/issues/1721
+# Generic_bulk_cached fetch and its helpers
+ObjKT = TypeVar('ObjKT')
+ItemT = TypeVar('ItemT')
+CompressedItemT = TypeVar('CompressedItemT')
+
+def default_extractor(obj: CompressedItemT) -> ItemT:
+    return obj  # type: ignore # Need a type assert that ItemT=CompressedItemT
+
+def default_setter(obj: ItemT) -> CompressedItemT:
+    return obj  # type: ignore # Need a type assert that ItemT=CompressedItemT
+
+def default_id_fetcher(obj: ItemT) -> ObjKT:
+    return obj.id  # type: ignore # Need ItemT/CompressedItemT typevars to be a Django protocol
+
+def default_cache_transformer(obj: ItemT) -> ItemT:
+    return obj
 
 # Required Arguments are as follows:
 # * object_ids: The list of object ids to look up
@@ -246,20 +258,20 @@ CompressedItemT = Any  # https://github.com/python/mypy/issues/1721
 # * cache_transformer: Function mapping an object from database =>
 #   value for cache (in case the values that we're caching are some
 #   function of the objects, not the objects themselves)
-def generic_bulk_cached_fetch(cache_key_function,  # type: Callable[[ObjKT], Text]
-                              query_function,  # type: Callable[[List[ObjKT]], Iterable[Any]]
-                              object_ids,  # type: Iterable[ObjKT]
-                              extractor=lambda obj: obj,  # type: Callable[[CompressedItemT], ItemT]
-                              setter=lambda obj: obj,  # type: Callable[[ItemT], CompressedItemT]
-                              id_fetcher=lambda obj: obj.id,  # type: Callable[[Any], ObjKT]
-                              cache_transformer=lambda obj: obj  # type: Callable[[Any], ItemT]
-                              ):
-    # type: (...) -> Dict[ObjKT, Any]
+def generic_bulk_cached_fetch(
+        cache_key_function: Callable[[ObjKT], Text],
+        query_function: Callable[[List[ObjKT]], Iterable[Any]],
+        object_ids: Iterable[ObjKT],
+        extractor: Callable[[CompressedItemT], ItemT] = default_extractor,
+        setter: Callable[[ItemT], CompressedItemT] = default_setter,
+        id_fetcher: Callable[[ItemT], ObjKT] = default_id_fetcher,
+        cache_transformer: Callable[[ItemT], ItemT] = default_cache_transformer
+) -> Dict[ObjKT, ItemT]:
     cache_keys = {}  # type: Dict[ObjKT, Text]
     for object_id in object_ids:
         cache_keys[object_id] = cache_key_function(object_id)
     cached_objects_compressed = cache_get_many([cache_keys[object_id]
-                                                for object_id in object_ids])
+                                                for object_id in object_ids])  # type: Dict[Text, Tuple[CompressedItemT]]
     cached_objects = {}  # type: Dict[Text, ItemT]
     for (key, val) in cached_objects_compressed.items():
         cached_objects[key] = extractor(cached_objects_compressed[key][0])
@@ -267,7 +279,7 @@ def generic_bulk_cached_fetch(cache_key_function,  # type: Callable[[ObjKT], Tex
                   cache_keys[object_id] not in cached_objects]
     db_objects = query_function(needed_ids)
 
-    items_for_remote_cache = {}  # type: Dict[Text, Any]
+    items_for_remote_cache = {}  # type: Dict[Text, Tuple[CompressedItemT]]
     for obj in db_objects:
         key = cache_keys[id_fetcher(obj)]
         item = cache_transformer(obj)
