@@ -58,7 +58,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     Reaction, EmailChangeStatus, CustomProfileField, \
     custom_profile_fields_for_realm, \
     CustomProfileFieldValue, validate_attachment_request, get_system_bot, \
-    get_display_recipient_by_id, query_for_ids
+    get_display_recipient_by_id, query_for_ids, get_huddle_recipient
 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import avatar_url
@@ -1494,8 +1494,7 @@ def get_recipient_from_user_ids(recipient_profile_ids, not_forged_mirror_message
     if len(recipient_profile_ids) > 1:
         # Make sure the sender is included in huddle messages
         recipient_profile_ids.add(sender.id)
-        huddle = get_huddle(list(recipient_profile_ids))
-        return get_recipient(Recipient.HUDDLE, huddle.id)
+        return get_huddle_recipient(recipient_profile_ids)
     else:
         return get_recipient(Recipient.PERSONAL, list(recipient_profile_ids)[0])
 
