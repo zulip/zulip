@@ -34,6 +34,10 @@ from zerver.lib.message import (
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.retention import move_message_to_archive
 from zerver.lib.send_email import send_email, FromAddress
+from zerver.lib.stream_subscription import (
+    get_active_subscriptions_for_stream_id,
+    num_subscribers_for_stream_id,
+)
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.topic_mutes import (
     get_topic_mutes,
@@ -159,11 +163,7 @@ def private_stream_user_ids(stream_id):
     # type: (int) -> Set[int]
 
     # TODO: Find similar queries elsewhere and de-duplicate this code.
-    subscriptions = Subscription.objects.filter(
-        recipient__type=Recipient.STREAM,
-        recipient__type_id=stream_id,
-        active=True)
-
+    subscriptions = get_active_subscriptions_for_stream_id(stream_id)
     return {sub['user_profile_id'] for sub in subscriptions.values('user_profile_id')}
 
 def bot_owner_user_ids(user_profile):
@@ -632,10 +632,7 @@ def do_deactivate_stream(stream, log=True):
     # Get the affected user ids *before* we deactivate everybody.
     affected_user_ids = can_access_stream_user_ids(stream)
 
-    Subscription.objects.select_related('user_profile').filter(
-        recipient__type=Recipient.STREAM,
-        recipient__type_id=stream.id,
-        active=True).update(active=False)
+    get_active_subscriptions_for_stream_id(stream.id).update(active=False)
 
     was_invite_only = stream.invite_only
     stream.deactivated = True
@@ -1648,7 +1645,7 @@ def send_pm_if_empty_stream(sender, stream, stream_name, realm):
         return
 
     if stream is not None:
-        num_subscribers = stream.num_subscribers()
+        num_subscribers = num_subscribers_for_stream_id(stream.id)
         if num_subscribers > 0:
             return
 
@@ -2012,10 +2009,9 @@ def get_subscribers_query(stream, requesting_user):
     # Note that non-active users may still have "active" subscriptions, because we
     # want to be able to easily reactivate them with their old subscriptions.  This
     # is why the query here has to look at the UserProfile.is_active flag.
-    subscriptions = Subscription.objects.filter(recipient__type=Recipient.STREAM,
-                                                recipient__type_id=stream.id,
-                                                user_profile__is_active=True,
-                                                active=True)
+    subscriptions = get_active_subscriptions_for_stream_id(stream.id).filter(
+        user_profile__is_active=True
+    )
     return subscriptions
 
 def get_subscribers(stream, requesting_user=None):

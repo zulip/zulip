@@ -29,6 +29,11 @@ from zerver.lib.streams import (
     access_stream_by_id, access_stream_by_name
 )
 
+from zerver.lib.stream_subscription import (
+    get_active_subscriptions_for_stream_id,
+    num_subscribers_for_stream_id,
+)
+
 from zerver.lib.test_runner import (
     slow
 )
@@ -201,11 +206,8 @@ class StreamAdminTest(ZulipTestCase):
 
         result = self.client_delete('/json/streams/%d' % (stream.id,))
         self.assert_json_success(result)
-        subscription_exists = Subscription.objects.filter(
+        subscription_exists = get_active_subscriptions_for_stream_id(stream.id).filter(
             user_profile=user_profile,
-            recipient__type_id=stream.id,
-            recipient__type=Recipient.STREAM,
-            active=True,
         ).exists()
         self.assertFalse(subscription_exists)
 
@@ -1646,7 +1648,7 @@ class SubscriptionAPITest(ZulipTestCase):
                 self.assertEqual(ev['event']['op'], 'peer_add')
 
         stream = get_stream('multi_user_stream', realm)
-        self.assertEqual(stream.num_subscribers(), 2)
+        self.assertEqual(num_subscribers_for_stream_id(stream.id), 2)
 
         # Now add ourselves
         events = []
@@ -1675,7 +1677,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(add_peer_event['event']['user_id'], self.user_profile.id)
 
         stream = get_stream('multi_user_stream', realm)
-        self.assertEqual(stream.num_subscribers(), 3)
+        self.assertEqual(num_subscribers_for_stream_id(stream.id), 3)
 
         # Finally, add othello.
         events = []
@@ -2104,9 +2106,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # We can't see invite-only streams here
         self.assert_json_error(result, "Invalid stream name 'Saxony'", status_code=404)
         # Importantly, we are not now subscribed
-        self.assertEqual(Subscription.objects.filter(
-            recipient__type=Recipient.STREAM,
-            recipient__type_id=stream.id).count(), 1)
+        self.assertEqual(num_subscribers_for_stream_id(stream.id), 1)
 
         # A user who is subscribed still sees the stream exists
         self.login(self.example_email("cordelia"))
