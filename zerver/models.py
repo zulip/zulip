@@ -1093,6 +1093,17 @@ def bulk_get_recipients(type, type_ids):
     return generic_bulk_cached_fetch(cache_key_function, query_function, type_ids,
                                      id_fetcher=lambda recipient: recipient.type_id)
 
+def get_stream_recipients(stream_ids):
+    # type: (List[int]) -> List[Recipient]
+
+    '''
+    We could call bulk_get_recipients(...).values() here, but it actually
+    leads to an extra query in test mode.
+    '''
+    return Recipient.objects.filter(
+        type=Recipient.STREAM,
+        type_id__in=stream_ids,
+    )
 
 class AbstractMessage(ModelReprMixin, models.Model):
     sender = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile

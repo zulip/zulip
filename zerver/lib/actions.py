@@ -48,7 +48,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     ScheduledEmail, MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_personal_recipient, get_huddle, \
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
-    get_realm, bulk_get_recipients, get_stream_recipient, \
+    get_realm, bulk_get_recipients, get_stream_recipient, get_stream_recipients, \
     email_allowed_for_realm, email_to_username, display_recipient_cache_key, \
     get_user_profile_by_email, get_user, get_stream_cache_key, \
     UserActivityInterval, active_user_ids, get_active_streams, \
@@ -283,9 +283,9 @@ def add_new_user_history(user_profile, streams):
     something to look at in your home view once you finish the
     tutorial."""
     one_week_ago = timezone_now() - datetime.timedelta(weeks=1)
-    recipients = Recipient.objects.filter(type=Recipient.STREAM,
-                                          type_id__in=[stream.id for stream in streams
-                                                       if not stream.invite_only])
+
+    stream_ids = [stream.id for stream in streams if not stream.invite_only]
+    recipients = get_stream_recipients(stream_ids)
     recent_messages = Message.objects.filter(recipient_id__in=recipients,
                                              pub_date__gt=one_week_ago).order_by("-id")
     message_ids_to_use = list(reversed(recent_messages.values_list('id', flat=True)[0:1000]))
