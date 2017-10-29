@@ -1,6 +1,13 @@
 from typing import (Dict, List, Text, Set)
+from django.db.models.query import QuerySet
 
-from zerver.models import MutedTopic
+from zerver.lib.stream_subscription import (
+    get_active_subscriptions_for_stream_id,
+)
+
+from zerver.models import (
+    MutedTopic,
+)
 
 class StreamTopicTarget(object):
     '''
@@ -26,3 +33,7 @@ class StreamTopicTarget(object):
             row['user_profile_id']
             for row in query
         }
+
+    def get_active_subscriptions(self):
+        # type: () -> QuerySet
+        return get_active_subscriptions_for_stream_id(self.stream_id)

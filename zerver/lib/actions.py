@@ -830,10 +830,7 @@ def get_recipient_info(recipient, sender_id, stream_topic, possibly_mentioned_us
         assert(len(message_to_user_ids) in [1, 2])
 
     elif recipient.type == Recipient.STREAM:
-        subscription_rows = Subscription.objects.filter(
-            recipient=recipient,
-            active=True,
-        ).values(
+        subscription_rows = stream_topic.get_active_subscriptions().values(
             'user_profile_id',
             'push_notifications',
             'in_home_view',
