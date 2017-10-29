@@ -37,6 +37,7 @@ from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
     get_active_subscriptions_for_stream_ids,
+    get_bulk_stream_subscriber_info,
     get_stream_subscriptions_for_user,
     get_stream_subscriptions_for_users,
     num_subscribers_for_stream_id,
@@ -2274,28 +2275,44 @@ def bulk_remove_subscriptions(users, streams, acting_user=None):
     # type: (Iterable[UserProfile], Iterable[Stream], Optional[UserProfile]) -> Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
 
     users = list(users)
+    streams = list(streams)
 
-    recipients_map = bulk_get_recipients(Recipient.STREAM,
-                                         [stream.id for stream in streams])  # type: Mapping[int, Recipient]
-    stream_map = {}  # type: Dict[int, Stream]
-    for stream in streams:
-        stream_map[recipients_map[stream.id].id] = stream
+    stream_dict = {stream.id: stream for stream in streams}
 
-    subs_by_user = dict((user_profile.id, []) for user_profile in users)  # type: Dict[int, List[Subscription]]
-    for sub in Subscription.objects.select_related("user_profile").filter(user_profile__in=users,
-                                                                          recipient__in=list(recipients_map.values()),
-                                                                          active=True):
-        subs_by_user[sub.user_profile_id].append(sub)
+    existing_subs_by_user = get_bulk_stream_subscriber_info(users, stream_dict)
+
+    def get_non_subscribed_tups():
+        # type: () -> List[Tuple[UserProfile, Stream]]
+        stream_ids = {stream.id for stream in streams}
+
+        not_subscribed = []  # type: List[Tuple[UserProfile, Stream]]
+
+        for user_profile in users:
+            user_sub_stream_info = existing_subs_by_user[user_profile.id]
+
+            subscribed_stream_ids = {
+                stream.id
+                for (sub, stream) in user_sub_stream_info
+            }
+            not_subscribed_stream_ids = stream_ids - subscribed_stream_ids
+
+            for stream_id in not_subscribed_stream_ids:
+                stream = stream_dict[stream_id]
+                not_subscribed.append((user_profile, stream))
+
+        return not_subscribed
+
+    not_subscribed = get_non_subscribed_tups()
 
     subs_to_deactivate = []  # type: List[Tuple[Subscription, Stream]]
-    not_subscribed = []  # type: List[Tuple[UserProfile, Stream]]
-    for user_profile in users:
-        recipients_to_unsub = set([recipient.id for recipient in recipients_map.values()])
-        for sub in subs_by_user[user_profile.id]:
-            recipients_to_unsub.remove(sub.recipient_id)
-            subs_to_deactivate.append((sub, stream_map[sub.recipient_id]))
-        for recipient_id in recipients_to_unsub:
-            not_subscribed.append((user_profile, stream_map[recipient_id]))
+    sub_ids_to_deactivate = []  # type: List[int]
+
+    # This loop just flattens out our data into big lists for
+    # bulk operations.
+    for tup_list in existing_subs_by_user.values():
+        for (sub, stream) in tup_list:
+            subs_to_deactivate.append((sub, stream))
+            sub_ids_to_deactivate.append(sub.id)
 
     our_realm = users[0].realm
 
@@ -2303,8 +2320,9 @@ def bulk_remove_subscriptions(users, streams, acting_user=None):
     # transaction isolation level.
     with transaction.atomic():
         occupied_streams_before = list(get_occupied_streams(our_realm))
-        Subscription.objects.filter(id__in=[sub.id for (sub, stream_name) in
-                                            subs_to_deactivate]).update(active=False)
+        Subscription.objects.filter(
+            id__in=sub_ids_to_deactivate,
+        ) .update(active=False)
         occupied_streams_after = list(get_occupied_streams(our_realm))
 
     # Log Subscription Activities in RealmAuditLog
@@ -2373,8 +2391,10 @@ def bulk_remove_subscriptions(users, streams, acting_user=None):
                              user_id=removed_user.id)
                 send_event(event, peer_user_ids)
 
-    return ([(sub.user_profile, stream) for (sub, stream) in subs_to_deactivate],
-            not_subscribed)
+    return (
+        [(sub.user_profile, stream) for (sub, stream) in subs_to_deactivate],
+        not_subscribed,
+    )
 
 def log_subscription_property_change(user_email, stream_name, property, value):
     # type: (Text, Text, Text, Any) -> None
