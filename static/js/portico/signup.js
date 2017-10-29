@@ -23,7 +23,7 @@ $(function () {
 
     function checkRealm (email_value) {
         $.ajax({
-          url: "/json/check_realm/"  email_value,
+          url: "/json/check_realm/" + email_value,
           dataType: "json",
         }).done(function (data) {
             if (data.message === "OK") {
