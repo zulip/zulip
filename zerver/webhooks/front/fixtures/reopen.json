@@ -1,0 +1,94 @@
+{
+    "_links": {
+        "self": "https://api2.frontapp.com/events/evt_11b11v5"
+    },
+    "id": "evt_11b11v5",
+    "type": "reopen",
+    "emitted_at": 1509004087.285,
+    "conversation": {
+        "_links": {
+            "self": "https://api2.frontapp.com/conversations/cnv_a73yq9",
+            "related": {
+                "events": "https://api2.frontapp.com/conversations/cnv_a73yq9/events",
+                "followers": "https://api2.frontapp.com/conversations/cnv_a73yq9/followers",
+                "messages": "https://api2.frontapp.com/conversations/cnv_a73yq9/messages",
+                "comments": "https://api2.frontapp.com/conversations/cnv_a73yq9/comments",
+                "inboxes": "https://api2.frontapp.com/conversations/cnv_a73yq9/inboxes"
+            }
+        },
+        "id": "cnv_a73yq9",
+        "subject": "Welcome to Front!",
+        "status": "unassigned",
+        "assignee": null,
+        "recipient": {
+            "_links": {
+                "related": {
+                    "contact": null
+                }
+            },
+            "handle": "team@frontapp.com",
+            "role": "from"
+        },
+        "tags": [],
+        "last_message": {
+            "_links": {
+                "self": "https://api2.frontapp.com/messages/msg_i3rc2h",
+                "related": {
+                    "conversation": "https://api2.frontapp.com/conversations/cnv_a73yq9"
+                }
+            },
+            "id": "msg_i3rc2h",
+            "type": "email",
+            "is_inbound": true,
+            "created_at": 1509000250.793,
+            "blurb": "Hi there, I’m so glad you decided to try Front! Learning Front is quick and easy: we've kept the simplicity of email, with powerful workflow and collaboration features. To show you how it works, we've",
+            "body": "Hi there, <br />\n<br />\nI’m so glad you decided to try Front! <br />\n<br />\nLearning Front is quick and easy: we've kept the simplicity of email, with powerful workflow and collaboration features. To show you how it works, we've setup a demo inbox. You have five messages waiting for you from Cailen, our Head of Customer Experience. He’ll show you around <img front-emoji-shortcode=\":smiley:\" src=\"https://dl.frontapp.com/emoji-data-idx256/img-apple-64/1f603.png\" alt=\"smiling face\" style=\"width: 1.4em; height: 1.4em; vertical-align: text-bottom; Margin-bottom: -1px; width: 1.4em; height: 1.4em; vertical-align: text-bottom; Margin-bottom: -1px;\" /> <br />\n<br />\nHave fun! <br />\n<br />\nMathilde <br />\nCEO, Front\n",
+            "text": "Hi there, \n\nI’m so glad you decided to try Front! \n\nLearning Front is quick and easy: we've kept the simplicity of email, with powerful workflow and collaboration features. To show you how it works, we've setup a demo inbox. You have five messages waiting for you from Cailen, our Head of Customer Experience. He’ll show you around \n\nHave fun! \n\nMathilde \nCEO, Front",
+            "metadata": {},
+            "author": null,
+            "recipients": [
+                {
+                    "_links": {
+                        "related": {
+                            "contact": null
+                        }
+                    },
+                    "handle": "team@frontapp.com",
+                    "role": "from"
+                },
+                {
+                    "_links": {
+                        "related": {
+                            "contact": null
+                        }
+                    },
+                    "handle": "3gvl-i_mtheowner2904@in.frontapp.com",
+                    "role": "to"
+                }
+            ],
+            "attachments": []
+        },
+        "created_at": 1509000851.604
+    },
+    "source": {
+        "_meta": {
+            "type": "teammate"
+        },
+        "data": {
+            "_links": {
+                "self": "https://api2.frontapp.com/teammates/tea_2q21",
+                "related": {
+                    "inboxes": "https://api2.frontapp.com/teammates/tea_2q21/inboxes",
+                    "conversations": "https://api2.frontapp.com/teammates/tea_2q21/conversations"
+                }
+            },
+            "id": "tea_2q21",
+            "email": "www.rrawat555@gmail.com",
+            "username": "www_rrawat555",
+            "first_name": "Rishabh",
+            "last_name": "Rawat",
+            "is_admin": true,
+            "is_available": true
+        }
+    }
+}

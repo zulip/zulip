@@ -1,0 +1,105 @@
+{
+    "_links": {
+        "self": "https://api2.frontapp.com/events/evt_11b53ip"
+    },
+    "id": "evt_11b53ip",
+    "type": "unassign",
+    "emitted_at": 1509005046.206,
+    "conversation": {
+        "_links": {
+            "self": "https://api2.frontapp.com/conversations/cnv_a73yu9",
+            "related": {
+                "events": "https://api2.frontapp.com/conversations/cnv_a73yu9/events",
+                "followers": "https://api2.frontapp.com/conversations/cnv_a73yu9/followers",
+                "messages": "https://api2.frontapp.com/conversations/cnv_a73yu9/messages",
+                "comments": "https://api2.frontapp.com/conversations/cnv_a73yu9/comments",
+                "inboxes": "https://api2.frontapp.com/conversations/cnv_a73yu9/inboxes"
+            }
+        },
+        "id": "cnv_a73yu9",
+        "subject": "Enable popular integrations",
+        "status": "unassigned",
+        "assignee": null,
+        "recipient": {
+            "_links": {
+                "related": {
+                    "contact": null
+                }
+            },
+            "handle": "team@frontapp.com",
+            "role": "from"
+        },
+        "tags": [
+            {
+                "_links": {
+                    "self": "https://api2.frontapp.com/tags/tag_mmkx",
+                    "related": {
+                        "conversations": "https://api2.frontapp.com/tags/tag_mmkx/conversations"
+                    }
+                },
+                "id": "tag_mmkx",
+                "name": "Urgent"
+            }
+        ],
+        "last_message": {
+            "_links": {
+                "self": "https://api2.frontapp.com/messages/msg_i3rc8h",
+                "related": {
+                    "conversation": "https://api2.frontapp.com/conversations/cnv_a73yu9"
+                }
+            },
+            "id": "msg_i3rc8h",
+            "type": "email",
+            "is_inbound": true,
+            "created_at": 1508998752.693,
+            "blurb": "Hi there! Connecting other apps with Front helps you spend more time on what matters to you and less time copying data between platforms 🙌 Our Integrations directory shows you how popular apps like I",
+            "body": "Hi there! <br /><br />\n\nConnecting other apps with Front helps you spend more time on what matters to you and less time copying data between platforms 🙌  <br /><br />\n\nOur <a href=\"https://app.frontapp.com/settings/integrations\" target=\"_blank\">Integrations directory</a> shows you how popular apps like Intercom, Slack, and Asana work with Front ⚡️ <br />\n\nSelect the integration you're looking for from the list, learn more about how it works, and follow our simple setup instructions from there. <br />\n\nIf we don’t have an integration with the app you’re looking for, let us know! <br /><br />\n\nCailen\n",
+            "text": "Hi there! \n\nConnecting other apps with Front helps you spend more time on what matters to you and less time copying data between platforms 🙌 \n\nOur Integrations directory shows you how popular apps like Intercom, Slack, and Asana work with Front ⚡️ \nSelect the integration you're looking for from the list, learn more about how it works, and follow our simple setup instructions from there. \nIf we don’t have an integration with the app you’re looking for, let us know! \n\nCailen",
+            "metadata": {},
+            "author": null,
+            "recipients": [
+                {
+                    "_links": {
+                        "related": {
+                            "contact": null
+                        }
+                    },
+                    "handle": "team@frontapp.com",
+                    "role": "from"
+                },
+                {
+                    "_links": {
+                        "related": {
+                            "contact": "https://api2.frontapp.com/contacts/ctc_4l69bd"
+                        }
+                    },
+                    "handle": "3gvl-i_mtheowner2904@in.frontapp.com",
+                    "role": "to"
+                }
+            ],
+            "attachments": []
+        },
+        "created_at": 1509000853.415
+    },
+    "source": {
+        "_meta": {
+            "type": "teammate"
+        },
+        "data": {
+            "_links": {
+                "self": "https://api2.frontapp.com/teammates/tea_2q21",
+                "related": {
+                    "inboxes": "https://api2.frontapp.com/teammates/tea_2q21/inboxes",
+                    "conversations": "https://api2.frontapp.com/teammates/tea_2q21/conversations"
+                }
+            },
+            "id": "tea_2q21",
+            "email": "www.rrawat555@gmail.com",
+            "username": "www_rrawat555",
+            "first_name": "Rishabh",
+            "last_name": "Rawat",
+            "is_admin": true,
+            "is_available": true
+        }
+    }
+}
