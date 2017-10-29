@@ -573,9 +573,9 @@ class StreamAdminTest(ZulipTestCase):
             "privstream", subscribed=False, invite_only=True)
         self.delete_stream(priv_stream)
 
-    def attempt_unsubscribe_of_principal(self, is_admin=False, is_subbed=True,
+    def attempt_unsubscribe_of_principal(self, query_count, is_admin=False, is_subbed=True,
                                          invite_only=False, other_user_subbed=True):
-        # type: (bool, bool, bool, bool) -> HttpResponse
+        # type: (int, bool, bool, bool, bool) -> HttpResponse
 
         # Set up the main user, who is in most cases an admin.
         user_profile = self.example_user('hamlet')
@@ -598,10 +598,12 @@ class StreamAdminTest(ZulipTestCase):
         if other_user_subbed:
             self.subscribe(other_user_profile, stream_name)
 
-        result = self.client_delete(
-            "/json/users/me/subscriptions",
-            {"subscriptions": ujson.dumps([stream_name]),
-             "principals": ujson.dumps([other_email])})
+        with queries_captured() as queries:
+            result = self.client_delete(
+                "/json/users/me/subscriptions",
+                {"subscriptions": ujson.dumps([stream_name]),
+                 "principals": ujson.dumps([other_email])})
+        self.assert_length(queries, query_count)
 
         # If the removal succeeded, then assert that Cordelia is no longer subscribed.
         if result.status_code not in [400]:
@@ -616,7 +618,7 @@ class StreamAdminTest(ZulipTestCase):
         If you're not an admin, you can't remove other people from streams.
         """
         result = self.attempt_unsubscribe_of_principal(
-            is_admin=False, is_subbed=True, invite_only=False,
+            query_count=3, is_admin=False, is_subbed=True, invite_only=False,
             other_user_subbed=True)
         self.assert_json_error(
             result, "This action requires administrative rights")
@@ -628,7 +630,7 @@ class StreamAdminTest(ZulipTestCase):
         those you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            is_admin=True, is_subbed=True, invite_only=False,
+            query_count=15, is_admin=True, is_subbed=True, invite_only=False,
             other_user_subbed=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
@@ -641,7 +643,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            is_admin=True, is_subbed=True, invite_only=True,
+            query_count=15, is_admin=True, is_subbed=True, invite_only=True,
             other_user_subbed=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
@@ -654,7 +656,7 @@ class StreamAdminTest(ZulipTestCase):
         streams you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            is_admin=True, is_subbed=False, invite_only=True,
+            query_count=5, is_admin=True, is_subbed=False, invite_only=True,
             other_user_subbed=True)
         self.assert_json_error(result, "Cannot administer invite-only streams this way")
 
@@ -714,7 +716,7 @@ class StreamAdminTest(ZulipTestCase):
         fails gracefully.
         """
         result = self.attempt_unsubscribe_of_principal(
-            is_admin=True, is_subbed=False, invite_only=False,
+            query_count=12, is_admin=True, is_subbed=False, invite_only=False,
             other_user_subbed=False)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 0)
