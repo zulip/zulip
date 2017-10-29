@@ -45,6 +45,7 @@ else:
 
 FuncT = TypeVar('FuncT', bound=Callable[..., Any])
 ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
+ReturnT = TypeVar('ReturnT')
 
 ## logger setup
 webhook_logger = create_logger(
@@ -631,16 +632,16 @@ def to_utc_datetime(timestamp):
     return timestamp_to_datetime(float(timestamp))
 
 def statsd_increment(counter, val=1):
-    # type: (Text, int) -> Callable[[Callable[..., Any]], Callable[..., Any]]
+    # type: (Text, int) -> Callable[[Callable[..., ReturnT]], Callable[..., ReturnT]]
     """Increments a statsd counter on completion of the
     decorated function.
 
     Pass the name of the counter to this decorator-returning function."""
     def wrapper(func):
-        # type: (Callable[..., Any]) -> Callable[..., Any]
+        # type: (Callable[..., ReturnT]) -> Callable[..., ReturnT]
         @wraps(func)
         def wrapped_func(*args, **kwargs):
-            # type: (*Any, **Any) -> Any
+            # type: (*Any, **Any) -> ReturnT
             ret = func(*args, **kwargs)
             statsd.incr(counter, val)
             return ret
