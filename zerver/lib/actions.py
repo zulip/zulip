@@ -37,6 +37,7 @@ from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
     get_active_subscriptions_for_stream_ids,
+    get_stream_subscriptions_for_user,
     num_subscribers_for_stream_id,
 )
 from zerver.lib.stream_topic import StreamTopicTarget
@@ -1876,9 +1877,7 @@ def internal_send_private_message(realm, sender, recipient_user, content):
 
 def pick_color(user_profile):
     # type: (UserProfile) -> Text
-    subs = Subscription.objects.filter(user_profile=user_profile,
-                                       active=True,
-                                       recipient__type=Recipient.STREAM)
+    subs = get_stream_subscriptions_for_user(user_profile).filter(active=True)
     return pick_color_helper(user_profile, subs)
 
 def pick_color_helper(user_profile, subs):
@@ -3486,10 +3485,7 @@ def decode_email_address(email):
 # subscriptions, so it's worth optimizing.
 def gather_subscriptions_helper(user_profile, include_subscribers=True):
     # type: (UserProfile, bool) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]
-    sub_dicts = Subscription.objects.filter(
-        user_profile    = user_profile,
-        recipient__type = Recipient.STREAM
-    ).values(
+    sub_dicts = get_stream_subscriptions_for_user(user_profile).values(
         "recipient_id", "in_home_view", "color", "desktop_notifications",
         "audible_notifications", "push_notifications", "active", "pin_to_top"
     ).order_by("recipient_id")
@@ -4021,9 +4017,9 @@ def do_get_streams(user_profile, include_public=True, include_subscribed=True,
     query = get_occupied_streams(user_profile.realm)
 
     if not include_all_active:
-        user_subs = Subscription.objects.select_related("recipient").filter(
-            active=True, user_profile=user_profile,
-            recipient__type=Recipient.STREAM)
+        user_subs = get_stream_subscriptions_for_user(user_profile).filter(
+            active=True,
+        ).select_related('recipient')
 
         if include_subscribed:
             recipient_check = Q(id__in=[sub.recipient.type_id for sub in user_subs])

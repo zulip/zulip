@@ -28,6 +28,10 @@ from zerver.lib.actions import (
     check_send_stream_message,
 )
 
+from zerver.lib.stream_subscription import (
+    get_stream_subscriptions_for_user,
+)
+
 from zerver.lib.test_helpers import (
     instrument_url, find_key_by_email,
 )
@@ -375,10 +379,9 @@ class ZulipTestCase(TestCase):
         Helper function to get the stream names for a user
         """
         user_profile = get_user(email, realm)
-        subs = Subscription.objects.filter(
-            user_profile=user_profile,
+        subs = get_stream_subscriptions_for_user(user_profile).filter(
             active=True,
-            recipient__type=Recipient.STREAM)
+        )
         return [cast(Text, get_display_recipient(sub.recipient)) for sub in subs]
 
     def send_personal_message(self, from_email, to_email, content=u"test content"):

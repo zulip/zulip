@@ -12,6 +12,9 @@ import zerver.lib.bugdown as bugdown
 from zerver.lib.cache import cache_with_key, to_dict_cache_key
 from zerver.lib.request import JsonableError
 from zerver.lib.str_utils import force_bytes, dict_with_str_keys
+from zerver.lib.stream_subscription import (
+    get_stream_subscriptions_for_user,
+)
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic_mutes import (
     build_topic_mute_checker,
@@ -593,9 +596,7 @@ def aggregate_message_dict(input_dict, lookup_fields, collect_senders):
 
 def get_inactive_recipient_ids(user_profile):
     # type: (UserProfile) -> List[int]
-    rows = Subscription.objects.filter(
-        user_profile=user_profile,
-        recipient__type=Recipient.STREAM,
+    rows = get_stream_subscriptions_for_user(user_profile).filter(
         active=False,
     ).values(
         'recipient_id'
@@ -607,9 +608,7 @@ def get_inactive_recipient_ids(user_profile):
 
 def get_muted_stream_ids(user_profile):
     # type: (UserProfile) -> List[int]
-    rows = Subscription.objects.filter(
-        user_profile=user_profile,
-        recipient__type=Recipient.STREAM,
+    rows = get_stream_subscriptions_for_user(user_profile).filter(
         active=True,
         in_home_view=False,
     ).values(
