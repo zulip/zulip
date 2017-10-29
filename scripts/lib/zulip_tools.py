@@ -210,19 +210,20 @@ def get_recent_deployments(threshold_days):
     recent = set()
     threshold_date = datetime.datetime.now() - datetime.timedelta(days=threshold_days)
     for dir_name in os.listdir(DEPLOYMENTS_DIR):
-        if not os.path.isdir(os.path.join(DEPLOYMENTS_DIR, dir_name)):
+        target_dir = os.path.join(DEPLOYMENTS_DIR, dir_name)
+        if not os.path.isdir(target_dir):
             # Skip things like uwsgi sockets, symlinks, etc.
             continue
-        if not os.path.exists(os.path.join(DEPLOYMENTS_DIR, dir_name, "zerver")):
+        if not os.path.exists(os.path.join(target_dir, "zerver")):
             # Skip things like "lock" that aren't actually a deployment directory
             continue
         try:
             date = datetime.datetime.strptime(dir_name, TIMESTAMP_FORMAT)
             if date >= threshold_date:
-                recent.add(os.path.join(DEPLOYMENTS_DIR, dir_name))
+                recent.add(target_dir)
         except ValueError:
             # Always include deployments whose name is not in the format of a timestamp.
-            recent.add(os.path.join(DEPLOYMENTS_DIR, dir_name))
+            recent.add(target_dir)
     if os.path.exists("/root/zulip"):
         recent.add("/root/zulip")
     return recent
