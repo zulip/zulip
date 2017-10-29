@@ -67,16 +67,16 @@ def deactivate_stream_backend(request, user_profile, stream_id):
 @require_realm_admin
 @has_request_variables
 def add_default_stream(request, user_profile, stream_name=REQ()):
-    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
-    (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
+    # type: (HttpRequest, UserProfile, REQ[str]) -> HttpResponse
+    (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name._)
     do_add_default_stream(stream)
     return json_success()
 
 @require_realm_admin
 @has_request_variables
 def remove_default_stream(request, user_profile, stream_name=REQ()):
-    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
-    (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
+    # type: (HttpRequest, UserProfile, REQ[str]) -> HttpResponse
+    (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name._)
     do_remove_default_stream(stream)
     return json_success()
 
@@ -86,22 +86,22 @@ def update_stream_backend(request, user_profile, stream_id,
                           description=REQ(validator=check_string, default=None),
                           is_private=REQ(validator=check_bool, default=None),
                           new_name=REQ(validator=check_string, default=None)):
-    # type: (HttpRequest, UserProfile, int, Optional[Text], Optional[bool], Optional[Text]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, int, REQ[Optional[Text]], REQ[Optional[bool]], REQ[Optional[Text]]) -> HttpResponse
     (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
 
-    if description is not None:
-        do_change_stream_description(stream, description)
-    if new_name is not None:
-        new_name = new_name.strip()
-        if stream.name == new_name:
+    if description._ is not None:
+        do_change_stream_description(stream, description._)
+    if new_name._ is not None:
+        new_name._ = new_name._.strip()
+        if stream.name == new_name._:
             return json_error(_("Stream already has that name!"))
-        if stream.name.lower() != new_name.lower():
+        if stream.name.lower() != new_name._.lower():
             # Check that the stream name is available (unless we are
             # are only changing the casing of the stream name).
-            check_stream_name_available(user_profile.realm, new_name)
-        do_rename_stream(stream, new_name)
-    if is_private is not None:
-        do_change_stream_invite_only(stream, is_private)
+            check_stream_name_available(user_profile.realm, new_name._)
+        do_rename_stream(stream, new_name._)
+    if is_private._ is not None:
+        do_change_stream_invite_only(stream, is_private._)
     return json_success()
 
 def list_subscriptions_backend(request, user_profile):
@@ -114,13 +114,13 @@ FuncKwargPair = Tuple[Callable[..., HttpResponse], Dict[str, Iterable[Any]]]
 def update_subscriptions_backend(request, user_profile,
                                  delete=REQ(validator=check_list(check_string), default=[]),
                                  add=REQ(validator=check_list(check_dict([('name', check_string)])), default=[])):
-    # type: (HttpRequest, UserProfile, Iterable[Text], Iterable[Mapping[str, Any]]) -> HttpResponse
-    if not add and not delete:
+    # type: (HttpRequest, UserProfile, REQ[Iterable[Text]], REQ[Iterable[Mapping[str, Any]]]) -> HttpResponse
+    if not add._ and not delete._:
         return json_error(_('Nothing to do. Specify at least one of "add" or "delete".'))
 
     method_kwarg_pairs = [
-        (add_subscriptions_backend, dict(streams_raw=add)),
-        (remove_subscriptions_backend, dict(streams_raw=delete))
+        (add_subscriptions_backend, dict(streams_raw=add._)),
+        (remove_subscriptions_backend, dict(streams_raw=delete._))
     ]  # type: List[FuncKwargPair]
     return compose_views(request, user_profile, method_kwarg_pairs)
 
@@ -149,17 +149,17 @@ def compose_views(request, user_profile, method_kwarg_pairs):
 def remove_subscriptions_backend(request, user_profile,
                                  streams_raw = REQ("subscriptions", validator=check_list(check_string)),
                                  principals = REQ(validator=check_list(check_string), default=None)):
-    # type: (HttpRequest, UserProfile, Iterable[Text], Optional[Iterable[Text]]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, REQ[Iterable[Text]], REQ[Optional[Iterable[Text]]]) -> HttpResponse
 
-    removing_someone_else = principals and \
-        set(principals) != set((user_profile.email,))
+    removing_someone_else = principals._ and \
+        set(principals._) != set((user_profile.email,))
     if removing_someone_else and not user_profile.is_realm_admin:
         # You can only unsubscribe other people from a stream if you are a realm
         # admin.
         return json_error(_("This action requires administrative rights"))
 
     streams_as_dict = []
-    for stream_name in streams_raw:
+    for stream_name in streams_raw._:
         streams_as_dict.append({"name": stream_name.strip()})
 
     streams, __ = list_to_streams(streams_as_dict, user_profile)
@@ -171,9 +171,9 @@ def remove_subscriptions_backend(request, user_profile,
             # invite-only stream you're not on.
             return json_error(_("Cannot administer invite-only streams this way"))
 
-    if principals:
+    if principals._:
         people_to_unsub = set(principal_to_user_profile(
-            user_profile, principal) for principal in principals)
+            user_profile, principal) for principal in principals._)
     else:
         people_to_unsub = set([user_profile])
 
@@ -227,15 +227,15 @@ def add_subscriptions_backend(request, user_profile,
                               announce = REQ(validator=check_bool, default=False),
                               principals = REQ(validator=check_list(check_string), default=[]),
                               authorization_errors_fatal = REQ(validator=check_bool, default=True)):
-    # type: (HttpRequest, UserProfile, Iterable[Mapping[str, Text]], bool, bool, List[Text], bool) -> HttpResponse
+    # type: (HttpRequest, UserProfile, REQ[Iterable[Mapping[str, Text]]], REQ[bool], REQ[bool], REQ[List[Text]], REQ[bool]) -> HttpResponse
     stream_dicts = []
-    for stream_dict in streams_raw:
+    for stream_dict in streams_raw._:
         stream_dict_copy = {}  # type: Dict[str, Any]
         for field in stream_dict:
             stream_dict_copy[field] = stream_dict[field]
         # Strip the stream name here.
         stream_dict_copy['name'] = stream_dict_copy['name'].strip()
-        stream_dict_copy["invite_only"] = invite_only
+        stream_dict_copy["invite_only"] = invite_only._
         stream_dicts.append(stream_dict_copy)
 
     # Validation of the streams arguments, including enforcement of
@@ -245,15 +245,15 @@ def add_subscriptions_backend(request, user_profile,
         list_to_streams(stream_dicts, user_profile, autocreate=True)
     authorized_streams, unauthorized_streams = \
         filter_stream_authorization(user_profile, existing_streams)
-    if len(unauthorized_streams) > 0 and authorization_errors_fatal:
+    if len(unauthorized_streams) > 0 and authorization_errors_fatal._:
         return json_error(_("Unable to access stream (%s).") % unauthorized_streams[0].name)
     # Newly created streams are also authorized for the creator
     streams = authorized_streams + created_streams
 
-    if len(principals) > 0:
+    if len(principals._) > 0:
         if user_profile.realm.is_zephyr_mirror_realm and not all(stream.invite_only for stream in streams):
             return json_error(_("You can only invite other Zephyr mirroring users to invite-only streams."))
-        subscribers = set(principal_to_user_profile(user_profile, principal) for principal in principals)
+        subscribers = set(principal_to_user_profile(user_profile, principal) for principal in principals._)
     else:
         subscribers = set([user_profile])
 
@@ -279,7 +279,7 @@ def add_subscriptions_backend(request, user_profile,
     # Inform the user if someone else subscribed them to stuff,
     # or if a new stream was created with the "announce" option.
     notifications = []
-    if len(principals) > 0 and result["subscribed"]:
+    if len(principals._) > 0 and result["subscribed"]:
         for email, subscribed_stream_names in result["subscribed"].items():
             if email == user_profile.email:
                 # Don't send a Zulip if you invited yourself.
@@ -309,7 +309,7 @@ def add_subscriptions_backend(request, user_profile,
                     recipient_user=email_to_user_profile[email],
                     content=msg))
 
-    if announce and len(created_streams) > 0:
+    if announce._ and len(created_streams) > 0:
         notifications_stream = user_profile.realm.get_notifications_stream()
         if notifications_stream is not None:
             if len(created_streams) > 1:
@@ -339,7 +339,7 @@ def add_subscriptions_backend(request, user_profile,
 
     result["subscribed"] = dict(result["subscribed"])
     result["already_subscribed"] = dict(result["already_subscribed"])
-    if not authorization_errors_fatal:
+    if not authorization_errors_fatal._:
         result["unauthorized"] = [s.name for s in unauthorized_streams]
     return json_success(result)
 

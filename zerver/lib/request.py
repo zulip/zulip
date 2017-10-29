@@ -15,6 +15,8 @@ from zerver.lib.exceptions import JsonableError, ErrorCode
 
 from django.http import HttpRequest, HttpResponse
 
+from typing import Any, TypeVar, Callable, Union, Optional, Generic
+
 class RequestVariableMissingError(JsonableError):
     code = ErrorCode.REQUEST_VARIABLE_MISSING
     data_fields = ['var_name']
@@ -42,8 +44,10 @@ class RequestVariableConversionError(JsonableError):
         # type: () -> str
         return _("Bad value for '{var_name}': {bad_value}")
 
+ConvertT = TypeVar('ConvertT')
+
 # Used in conjunction with @has_request_variables, below
-class REQ(object):
+class REQ(Generic[ConvertT]):
     # NotSpecified is a sentinel value for determining whether a
     # default value was specified for a request variable.  We can't
     # use None because that could be a valid, user-specified default
@@ -53,7 +57,8 @@ class REQ(object):
 
     def __init__(self, whence=None, converter=None, default=NotSpecified,
                  validator=None, argument_type=None):
-        # type: (str, Callable[Any, Any], Any, Callable[Any, Any], str) -> None
+        # type: (Optional[str], Optional[Callable[[str], ConvertT]], Union[ConvertT, _NotSpecified], Optional[Callable[..., Optional[str]]], Optional[str]) -> None
+        # NOTE: validator could be more tightly typed but for compound forms
         """whence: the name of the request variable that should be used
         for this parameter.  Defaults to a request variable of the
         same name as the parameter.
@@ -79,6 +84,7 @@ class REQ(object):
         self.validator = validator
         self.default = default
         self.argument_type = argument_type
+        self._ = None  # type: ConvertT
 
         if converter and validator:
             # Not user-facing, so shouldn't be tagged for translation
@@ -101,14 +107,14 @@ class REQ(object):
 # expected to call json_error or json_success, as it uses json_error
 # internally when it encounters an error
 def has_request_variables(view_func):
-    # type: (Callable[[HttpRequest, *Any, **Any], HttpResponse]) -> Callable[[HttpRequest, *Any, **Any], HttpResponse]
+    # type: (Callable[..., HttpResponse]) -> Callable[..., HttpResponse]
     num_params = view_func.__code__.co_argcount
-    if view_func.__defaults__ is None:
+    if view_func.__defaults__ is None:  # type: ignore
         num_default_params = 0
     else:
-        num_default_params = len(view_func.__defaults__)
+        num_default_params = len(view_func.__defaults__)  # type: ignore
     default_param_names = view_func.__code__.co_varnames[num_params - num_default_params:]
-    default_param_values = view_func.__defaults__
+    default_param_values = view_func.__defaults__  # type: ignore
     if default_param_values is None:
         default_param_values = []
 
@@ -169,7 +175,7 @@ def has_request_variables(view_func):
                 if error:
                     raise JsonableError(error)
 
-            kwargs[param.func_var_name] = val
+            kwargs[param.func_var_name]._ = val
 
         return view_func(request, *args, **kwargs)
 

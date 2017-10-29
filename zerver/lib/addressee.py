@@ -4,7 +4,6 @@ from typing import Iterable, List, Optional, Sequence, Text
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext as _
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.request import JsonableError
 from zerver.models import (
     Realm,
     UserProfile,
