@@ -30,6 +30,13 @@ def get_stream_subscriptions_for_user(user_profile):
         recipient__type=Recipient.STREAM,
     )
 
+def get_stream_subscriptions_for_users(user_profiles):
+    # type: (List[UserProfile]) -> QuerySet
+    return Subscription.objects.filter(
+        user_profile__in=user_profiles,
+        recipient__type=Recipient.STREAM,
+    )
+
 def num_subscribers_for_stream_id(stream_id):
     # type: (int) -> int
     return get_active_subscriptions_for_stream_id(stream_id).filter(
