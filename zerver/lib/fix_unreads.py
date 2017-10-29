@@ -63,7 +63,7 @@ def update_unread_flags(cursor, user_message_ids):
 
 
 def get_timing(message, f):
-    # type: (str, Callable) -> None
+    # type: (str, Callable[[], None]) -> None
     start = time.time()
     logger.info(message)
     f()
