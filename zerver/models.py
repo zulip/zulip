@@ -1070,6 +1070,15 @@ def get_huddle_recipient(user_profile_ids):
     huddle = get_huddle(list(user_profile_ids))
     return get_recipient(Recipient.HUDDLE, huddle.id)
 
+def get_huddle_user_ids(recipient):
+    # type: (Recipient) -> List[int]
+    assert(recipient.type == Recipient.HUDDLE)
+
+    return Subscription.objects.filter(
+        recipient=recipient,
+        active=True,
+    ).order_by('user_profile_id').values_list('user_profile_id', flat=True)
+
 def bulk_get_recipients(type, type_ids):
     # type: (int, List[int]) -> Dict[int, Any]
     def cache_key_function(type_id):

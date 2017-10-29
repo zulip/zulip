@@ -56,7 +56,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     get_owned_bot_dicts, stream_name_in_use, \
     get_old_unclaimed_attachments, get_cross_realm_emails, \
     Reaction, EmailChangeStatus, CustomProfileField, \
-    custom_profile_fields_for_realm, \
+    custom_profile_fields_for_realm, get_huddle_user_ids, \
     CustomProfileFieldValue, validate_attachment_request, get_system_bot, \
     get_display_recipient_by_id, query_for_ids, get_huddle_recipient
 
@@ -797,10 +797,7 @@ def get_typing_user_profiles(recipient, sender_id):
         assert(len(user_ids) in [1, 2])
 
     elif recipient.type == Recipient.HUDDLE:
-        user_ids = Subscription.objects.filter(
-            recipient=recipient,
-            active=True,
-        ).order_by('user_profile_id').values_list('user_profile_id', flat=True)
+        user_ids = get_huddle_user_ids(recipient)
 
     else:
         raise ValueError('Bad recipient type')
@@ -857,10 +854,7 @@ def get_recipient_info(recipient, sender_id, stream_topic, possibly_mentioned_us
         } - stream_topic.user_ids_muting_topic()
 
     elif recipient.type == Recipient.HUDDLE:
-        message_to_user_ids = Subscription.objects.filter(
-            recipient=recipient,
-            active=True,
-        ).order_by('user_profile_id').values_list('user_profile_id', flat=True)
+        message_to_user_ids = get_huddle_user_ids(recipient)
 
     else:
         raise ValueError('Bad recipient type')
