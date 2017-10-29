@@ -36,6 +36,7 @@ from zerver.lib.retention import move_message_to_archive
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
+    get_active_subscriptions_for_stream_ids,
     num_subscribers_for_stream_id,
 )
 from zerver.lib.stream_topic import StreamTopicTarget
@@ -2085,11 +2086,10 @@ def get_peer_user_ids_for_stream_change(stream, altered_user_ids, subscribed_use
 
 def get_user_ids_for_streams(streams):
     # type: (Iterable[Stream]) -> Dict[int, List[int]]
-    all_subs = Subscription.objects.filter(
-        recipient__type=Recipient.STREAM,
-        recipient__type_id__in=[stream.id for stream in streams],
+    stream_ids = [stream.id for stream in streams]
+
+    all_subs = get_active_subscriptions_for_stream_ids(stream_ids).filter(
         user_profile__is_active=True,
-        active=True
     ).values(
         'recipient__type_id',
         'user_profile_id',
