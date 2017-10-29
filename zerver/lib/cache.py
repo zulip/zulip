@@ -23,7 +23,6 @@ if False:
     # These modules have to be imported for type annotations but
     # they cannot be imported at runtime due to cyclic dependency.
 
-FuncT = TypeVar('FuncT', bound=Callable[..., Any])
 ReturnT = TypeVar('ReturnT')  # Useful for matching return types via Callable[..., ReturnT]
 
 class NotFoundInCache(Exception):
