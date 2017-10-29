@@ -155,21 +155,25 @@ specified repository to a directory under `/home/zulip/deployments`
 (where release tarball are unpacked), build the compiled static assets
 from source, and switches to the new version.
 
-### Upgrading from Zulip 1.6 and older
+### Upgrading using Git from Zulip 1.6 and older
 
-If you're currently using Zulip older than 1.7, you will need to
-add `zulip::static_asset_compiler` to your `/etc/zulip/zulip.conf`
-file's `puppet_classes` entry, like this:
+If you're are upgrading from a Git repository, and you currently have
+Zulip 1.6 or older installed, you will need to install the
+dependencies for building Zulip's static assets.  To do this, add
+`zulip::static_asset_compiler` to your `/etc/zulip/zulip.conf` file's
+`puppet_classes` entry, like this:
 
 ```
 puppet_classes = zulip::voyager, zulip::static_asset_compiler
 ```
 
-Then, run `scripts/zulip-puppet-apply` to install the dependencies for
-building Zulip's static assets.  Once you've upgraded to Zulip 1.7 or
-above, you can safely remove `zulip::static_asset_compiler` from
-`puppet_classes` to clean it up; in Zulip 1.7 and above, it is a
-dependency of `zulip::voyager`.
+and run `scripts/zulip-puppet-apply`.  After approving the changes,
+you'll be able to use `upgrade-zulip-from-git`.
+
+After you've upgraded to Zulip 1.7 or above, you can safely remove
+`zulip::static_asset_compiler` from `puppet_classes`; in Zulip 1.7 and
+above, it is a dependency of `zulip::voyager` and thus these
+dependencies are installed by default.
 
 ## Backups
 
