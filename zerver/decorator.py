@@ -712,11 +712,9 @@ def rate_limit(domain='all'):
         return wrapped_func
     return wrapper
 
-def return_success_on_head_request(view_func):
-    # type: (Callable) -> Callable
+def return_success_on_head_request(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
     @wraps(view_func)
-    def _wrapped_view_func(request, *args, **kwargs):
-        # type: (HttpResponse, *Any, **Any) -> Callable
+    def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         if request.method == 'HEAD':
             return json_success()
         return view_func(request, *args, **kwargs)
