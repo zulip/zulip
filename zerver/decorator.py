@@ -43,7 +43,6 @@ else:
     get_remote_server_by_uuid = Mock()
     RemoteZulipServer = Mock()  # type: ignore # https://github.com/JukkaL/mypy/issues/1188
 
-FuncT = TypeVar('FuncT', bound=Callable[..., Any])
 ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
 ReturnT = TypeVar('ReturnT')
 

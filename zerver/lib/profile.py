@@ -2,12 +2,11 @@
 import cProfile
 
 from functools import wraps
-from typing import Any
+from typing import Any, TypeVar, Callable
 
-from zerver.decorator import FuncT
+ReturnT = TypeVar('ReturnT')
 
-def profiled(func):
-    # type: (FuncT) -> FuncT
+def profiled(func: Callable[..., ReturnT]) -> Callable[..., ReturnT]:
     """
     This decorator should obviously be used only in a dev environment.
     It works best when surrounding a function that you expect to be
@@ -25,11 +24,10 @@ def profiled(func):
 
     """
     @wraps(func)
-    def wrapped_func(*args, **kwargs):
-        # type: (*Any, **Any) -> Any
+    def wrapped_func(*args: Any, **kwargs: Any) -> ReturnT:
         fn = func.__name__ + ".profile"
         prof = cProfile.Profile()
-        retval = prof.runcall(func, *args, **kwargs)  # type: Any
+        retval = prof.runcall(func, *args, **kwargs)  # type: ReturnT
         prof.dump_stats(fn)
         return retval
-    return wrapped_func  # type: ignore # https://github.com/python/mypy/issues/1927
+    return wrapped_func
