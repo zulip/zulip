@@ -224,6 +224,9 @@ def get_recent_deployments(threshold_days):
         except ValueError:
             # Always include deployments whose name is not in the format of a timestamp.
             recent.add(target_dir)
+            # If it is a symlink then include the target as well.
+            if os.path.islink(target_dir):
+                recent.add(os.path.realpath(target_dir))
     if os.path.exists("/root/zulip"):
         recent.add("/root/zulip")
     return recent
