@@ -260,6 +260,7 @@ def build_custom_checkers(by_lang):
          'bad_lines': ["'foo':bar", "'foo':1"]},
         {'pattern': "^\s+#\w",
          'strip': '\n',
+         'exclude': set(['tools/droplets/create.py']),
          'description': 'Missing whitespace after "#"',
          'good_lines': ['a = b # some operation', '1+2 #  3 is the result'],
          'bad_lines': [' #some operation', '  #not valid!!!']},
