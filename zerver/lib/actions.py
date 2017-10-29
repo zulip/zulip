@@ -2879,6 +2879,14 @@ def notify_default_streams(realm_id):
     )
     send_event(event, active_user_ids(realm_id))
 
+def notify_default_stream_groups(realm):
+    # type: (Realm) -> None
+    event = dict(
+        type="default_stream_groups",
+        default_stream_groups=default_stream_groups_to_dicts_sorted(get_default_stream_groups_for_realm(realm))
+    )
+    send_event(event, active_user_ids(realm.id))
+
 def do_add_default_stream(stream):
     # type: (Stream) -> None
     realm_id = stream.realm_id
@@ -2894,10 +2902,73 @@ def do_remove_default_stream(stream):
     DefaultStream.objects.filter(realm_id=realm_id, stream_id=stream_id).delete()
     notify_default_streams(realm_id)
 
+def do_create_default_stream_group(realm, group_name, streams):
+    # type: (Realm, Text, List[Stream]) -> None
+    default_streams = get_default_streams_for_realm(realm.id)
+    for stream in streams:
+        if stream in default_streams:
+            raise JsonableError(_("%s is a default stream and cannot be added to %s") % (stream.name, group_name))
+
+    try:
+        DefaultStreamGroup.objects.get(name=group_name, realm=realm)
+    except DefaultStreamGroup.DoesNotExist:
+        group = DefaultStreamGroup.objects.create(name=group_name, realm=realm)
+        group.streams = streams
+        group.save()
+        notify_default_stream_groups(realm)
+    else:
+        raise JsonableError(_("Default stream group %s already exists") % (group_name,))
+
+def do_add_streams_to_default_stream_group(realm, group_name, streams):
+    # type: (Realm, Text, List[Stream]) -> None
+    default_streams = get_default_streams_for_realm(realm.id)
+    try:
+        group = DefaultStreamGroup.objects.get(name=group_name, realm=realm)
+    except DefaultStreamGroup.DoesNotExist:
+        raise JsonableError(_("Default stream group %s does not exist") % (group_name,))
+
+    for stream in streams:
+        if stream in default_streams:
+            raise JsonableError(_("%s is a default stream and cannot be added to %s") % (stream.name, group_name))
+        if stream in group.streams.all():
+            raise JsonableError(_("Stream %s is already present in  default stream group %s")
+                                % (stream.name, group_name))
+        group.streams.add(stream)
+
+    group.save()
+    notify_default_stream_groups(realm)
+
+def do_remove_streams_from_default_stream_group(realm, group_name, streams):
+    # type: (Realm, Text, List[Stream]) -> None
+    try:
+        group = DefaultStreamGroup.objects.get(name=group_name, realm=realm)
+    except DefaultStreamGroup.DoesNotExist:
+        raise JsonableError(_("Default stream group %s does not exist") % (group_name,))
+
+    for stream in streams:
+        if stream not in group.streams.all():
+            raise JsonableError(_("Stream %s is not present in default stream group %s") % (stream.name, group_name))
+        group.streams.remove(stream)
+
+    group.save()
+    notify_default_stream_groups(realm)
+
+def do_remove_default_stream_group(realm, group_name):
+    # type: (Realm, Text) -> None
+    try:
+        DefaultStreamGroup.objects.filter(name=group_name, realm=realm).delete()
+    except DefaultStreamGroup.DoesNotExist:
+        raise JsonableError(_("Default stream group %s does not exist") % (group_name,))
+    notify_default_stream_groups(realm)
+
 def get_default_streams_for_realm(realm_id):
     # type: (int) -> List[Stream]
     return [default.stream for default in
             DefaultStream.objects.select_related("stream", "stream__realm").filter(realm_id=realm_id)]
+
+def get_default_stream_groups_for_realm(realm):
+    # type: (int) -> List[DefaultStreamGroup]
+    return DefaultStreamGroup.objects.filter(realm=realm)
 
 def get_default_subs(user_profile):
     # type: (UserProfile) -> List[Stream]
@@ -2909,6 +2980,10 @@ def get_default_subs(user_profile):
 def streams_to_dicts_sorted(streams):
     # type: (List[Stream]) -> List[Dict[str, Any]]
     return sorted([stream.to_dict() for stream in streams], key=lambda elt: elt["name"])
+
+def default_stream_groups_to_dicts_sorted(groups):
+    # type: (List[Stream]) -> List[Dict[str, Any]]
+    return sorted([group.to_dict() for group in groups], key=lambda elt: elt["name"])
 
 def do_update_user_activity_interval(user_profile, log_time):
     # type: (UserProfile, datetime.datetime) -> None

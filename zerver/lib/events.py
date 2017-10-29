@@ -32,8 +32,10 @@ from zerver.lib.topic_mutes import get_topic_mutes
 from zerver.lib.actions import (
     validate_user_access_to_subscribers_helper,
     do_get_streams, get_default_streams_for_realm,
+    get_default_stream_groups_for_realm,
     gather_subscriptions_helper, get_cross_realm_dicts,
-    get_status_dict, streams_to_dicts_sorted
+    get_status_dict, streams_to_dicts_sorted,
+    default_stream_groups_to_dicts_sorted
 )
 from zerver.lib.upload import get_total_uploads_size_for_user
 from zerver.tornado.event_queue import request_event_queue, get_user_events
@@ -208,6 +210,9 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['streams'] = do_get_streams(user_profile)
     if want('default_streams'):
         state['realm_default_streams'] = streams_to_dicts_sorted(get_default_streams_for_realm(user_profile.realm_id))
+    if want('default_stream_groups'):
+        state['realm_default_stream_groups'] = default_stream_groups_to_dicts_sorted(
+            get_default_stream_groups_for_realm(user_profile.realm))
 
     if want('update_display_settings'):
         for prop in UserProfile.property_types:
@@ -370,6 +375,8 @@ def apply_event(state, event, user_profile, include_subscribers):
             state['streams'] = [s for s in state['streams'] if s["stream_id"] not in stream_ids]
     elif event['type'] == 'default_streams':
         state['realm_default_streams'] = event['default_streams']
+    elif event['type'] == 'default_stream_groups':
+        state['realm_default_stream_groups'] = event['default_stream_groups']
     elif event['type'] == 'realm':
         if event['op'] == "update":
             field = 'realm_' + event['property']
