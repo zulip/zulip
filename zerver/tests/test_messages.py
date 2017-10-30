@@ -1522,8 +1522,8 @@ class EditMessageTest(ZulipTestCase):
                          '<p>content after edit</p>')
         self.assertEqual(message_history_1[1]['content_html_diff'],
                          ('<p>content '
+                          '<span class="highlight_text_inserted">after</span> '
                           '<span class="highlight_text_deleted">before</span>'
-                          '<span class="highlight_text_inserted">after</span>'
                           ' edit</p>'))
         # Check content of message before edit.
         self.assertEqual(message_history_1[1]['prev_rendered_content'],
@@ -1559,15 +1559,47 @@ class EditMessageTest(ZulipTestCase):
                           'content after edit, line 2<br>\n'
                           'content before edit, line 3</p>'))
         self.assertEqual(message_history_2[1]['content_html_diff'],
-                         ('<p>content before edit, line 1</p>'
-                          '<span class="highlight_text_deleted">\n'
-                          '</span><p><span class="highlight_text_inserted">\n'
-                          'content after edit, line 2</span><br>'
-                          '<span class="highlight_text_inserted">\n'
-                          '</span>content before edit, line 3</p>'))
+                         ('<p>content before edit, line 1<br> '
+                          'content <span class="highlight_text_inserted">after edit, line 2<br> '
+                          'content</span> before edit, line 3</p>'))
         self.assertEqual(message_history_2[1]['prev_rendered_content'],
                          ('<p>content before edit, line 1</p>\n'
                           '<p>content before edit, line 3</p>'))
+
+    def test_edit_link(self):
+        # type: () -> None
+        # Link editing
+        self.login(self.example_email("hamlet"))
+        msg_id_1 = self.send_stream_message(
+            self.example_email("hamlet"),
+            "Scotland",
+            topic_name="editing",
+            content="Here is a link to [zulip](www.zulip.org).")
+        new_content_1 = 'Here is a link to [zulip](www.zulipchat.com).'
+        result_1 = self.client_patch("/json/messages/" + str(msg_id_1), {
+            'message_id': msg_id_1, 'content': new_content_1
+        })
+        self.assert_json_success(result_1)
+
+        message_edit_history_1 = self.client_get(
+            "/json/messages/" + str(msg_id_1) + "/history")
+        json_response_1 = ujson.loads(
+            message_edit_history_1.content.decode('utf-8'))
+        message_history_1 = json_response_1['message_history']
+
+        # Check content of message after edit.
+        self.assertEqual(message_history_1[0]['rendered_content'],
+                         '<p>Here is a link to '
+                         '<a href="http://www.zulip.org" target="_blank" title="http://www.zulip.org">zulip</a>.</p>')
+        self.assertEqual(message_history_1[1]['rendered_content'],
+                         '<p>Here is a link to '
+                         '<a href="http://www.zulipchat.com" target="_blank" title="http://www.zulipchat.com">zulip</a>.</p>')
+        self.assertEqual(message_history_1[1]['content_html_diff'],
+                         ('<p>Here is a link to <a href="http://www.zulipchat.com" '
+                          'target="_blank" title="http://www.zulipchat.com">zulip '
+                          '<span class="highlight_text_inserted"> Link: http://www.zulipchat.com .'
+                          '</span> <span class="highlight_text_deleted"> Link: http://www.zulip.org .'
+                          '</span> </a></p>'))
 
     def test_user_info_for_updates(self):
         # type: () -> None
