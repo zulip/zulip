@@ -119,12 +119,14 @@ class TestServiceBotStateHandler(ZulipTestCase):
         self.assertEqual(storage.get('some other key'), 'some other value')
         self.assertTrue(storage.contains('some key'))
         self.assertFalse(storage.contains('nonexistent key'))
-        self.assertRaises(BotUserStateData.DoesNotExist, lambda: storage.get('nonexistent key'))
+        self.assertRaisesMessage(StateError,
+                                 "Cannot get state. <UserProfile: embedded-bot-1@zulip.com <Realm: zulip 1>> "
+                                 "doesn't have an entry with the key 'nonexistent key'.",
+                                 lambda: storage.get('nonexistent key'))
         storage.put('some key', 'a new value')
         self.assertEqual(storage.get('some key'), 'a new value')
-
         second_storage = StateHandler(self.second_bot_profile)
-        self.assertRaises(BotUserStateData.DoesNotExist, lambda: second_storage.get('some key'))
+        self.assertRaises(StateError, lambda: second_storage.get('some key'))
         second_storage.put('some key', 'yet another value')
         self.assertEqual(storage.get('some key'), 'a new value')
         self.assertEqual(second_storage.get('some key'), 'yet another value')
