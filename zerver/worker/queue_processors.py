@@ -338,7 +338,7 @@ class SlowQueryWorker(QueueProcessingWorker):
 class MessageSenderWorker(QueueProcessingWorker):
     def __init__(self):
         # type: () -> None
-        super(MessageSenderWorker, self).__init__()
+        super().__init__()
         self.redis_client = get_redis_client()
         self.handler = BaseHandler()
         self.handler.load_middleware()

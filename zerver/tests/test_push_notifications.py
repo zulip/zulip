@@ -50,12 +50,12 @@ class BouncerTestCase(ZulipTestCase):
                                    hostname="demo.example.com",
                                    last_updated=now())
         server.save()
-        super(BouncerTestCase, self).setUp()
+        super().setUp()
 
     def tearDown(self):
         # type: () -> None
         RemoteZulipServer.objects.filter(uuid=self.server_uuid).delete()
-        super(BouncerTestCase, self).tearDown()
+        super().tearDown()
 
     def bounce_request(self, *args, **kwargs):
         # type: (*Any, **Any) -> HttpResponse
@@ -265,7 +265,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
 class PushNotificationTest(BouncerTestCase):
     def setUp(self):
         # type: () -> None
-        super(PushNotificationTest, self).setUp()
+        super().setUp()
         self.user_profile = self.example_user('hamlet')
         self.tokens = [u'aaaa', u'bbbb']
         for token in self.tokens:
@@ -921,7 +921,7 @@ class TestPushApi(ZulipTestCase):
 class GCMTest(PushNotificationTest):
     def setUp(self):
         # type: () -> None
-        super(GCMTest, self).setUp()
+        super().setUp()
         apn.gcm = gcm.GCM('fake key')
         self.gcm_tokens = [u'1111', u'2222']
         for token in self.gcm_tokens:

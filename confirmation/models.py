@@ -30,7 +30,7 @@ class ConfirmationKeyException(Exception):
 
     def __init__(self, error_type):
         # type: (int) -> None
-        super(ConfirmationKeyException, self).__init__()
+        super().__init__()
         self.error_type = error_type
 
 def render_confirmation_key_error(request, exception):

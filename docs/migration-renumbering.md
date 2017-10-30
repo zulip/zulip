@@ -92,7 +92,7 @@ To fix them run './manage.py makemigrations --merge'
 <output skipped>
 
   File "/srv/zulip/zerver/lib/db.py", line 33, in execute
-    return wrapper_execute(self, super(TimeTrackingCursor, self).execute, query, vars)
+    return wrapper_execute(self, super().execute, query, vars)
   File "/srv/zulip/zerver/lib/db.py", line 20, in wrapper_execute
     return action(sql, params)
 django.db.utils.ProgrammingError: relation "zerver_realmfilter" does not exist

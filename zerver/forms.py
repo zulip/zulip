@@ -94,7 +94,7 @@ class RegistrationForm(forms.Form):
         self.realm_creation = kwargs['realm_creation']
         del kwargs['realm_creation']
 
-        super(RegistrationForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if settings.TERMS_OF_SERVICE:
             self.fields['terms'] = forms.BooleanField(required=True)
         self.fields['realm_name'] = forms.CharField(
@@ -131,7 +131,7 @@ class HomepageForm(forms.Form):
         # type: (*Any, **Any) -> None
         self.realm = kwargs.pop('realm', None)
         self.from_multiuse_invite = kwargs.pop('from_multiuse_invite', False)
-        super(HomepageForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def clean_email(self):
         # type: () -> str
@@ -331,7 +331,7 @@ class MultiEmailField(forms.Field):
     def validate(self, emails):
         # type: (List[Text]) -> None
         """Check if value consists only of valid emails."""
-        super(MultiEmailField, self).validate(emails)
+        super().validate(emails)
         for email in emails:
             validate_email(email)
 

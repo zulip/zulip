@@ -25,7 +25,7 @@ class Command(compilemessages.Command):
             # version
             settings.STATIC_ROOT = os.path.join(settings.DEPLOY_ROOT, "static")
             settings.LOCALE_PATHS = (os.path.join(settings.DEPLOY_ROOT, 'static/locale'),)
-        super(Command, self).handle(*args, **options)
+        super().handle(*args, **options)
         self.extract_language_options()
         self.create_language_name_map()
 

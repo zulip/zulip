@@ -403,7 +403,7 @@ class EventsRegisterTest(ZulipTestCase):
 
     def setUp(self):
         # type: () -> None
-        super(EventsRegisterTest, self).setUp()
+        super().setUp()
         self.user_profile = self.example_user('hamlet')
 
     def create_bot(self, email):

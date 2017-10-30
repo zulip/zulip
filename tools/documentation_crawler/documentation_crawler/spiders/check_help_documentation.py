@@ -24,7 +24,7 @@ class HelpDocumentationSpider(BaseDocumentationSpider):
     help_images_static_dir = get_help_images_dir(help_images_path)
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super(HelpDocumentationSpider, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.static_images = set()  # type: Set
 
     def _is_external_url(self, url: str) -> bool:
