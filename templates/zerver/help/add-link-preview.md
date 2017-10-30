@@ -1,8 +1,9 @@
 # Add a link preview
 
 !!! warn ""
-    Note: This feature is on by default but [can be disabled by organization
-    administrators.](/help/allow-image-link-previews)
+
+    Note: This feature is off by default for website links but [can be
+    enabled by organization administrators.](/help/allow-image-link-previews)
 
 Links in messages are expanded to an inline preview in Zulip, letting you and
 others conveniently see more information about the link being shared.

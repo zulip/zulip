@@ -2,7 +2,7 @@
 
 {!admin-only.md!}
 
-By default, when a user uploads or links to an image or links to a website, a
+By default, when a user uploads or links to an image, a
 preview of the content will be shown. You can choose to disable previews of
 images and links separately.
 
