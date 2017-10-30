@@ -4,7 +4,7 @@ Next, on your {{ settings_html|safe }}, create a bot.
 
 Construct a webhook URL like the following:
 
-`{{ external_api_uri_subdomain }}/v1/external/zendesk?ticket_title={% raw %}{{ ticket.title }}&ticket_id={{ ticket.id }}{% endraw %}`
+`{{ api_url }}/v1/external/zendesk?ticket_title={% raw %}{{ ticket.title }}&ticket_id={{ ticket.id }}{% endraw %}`
 
 {!append-stream-name.md!}
 

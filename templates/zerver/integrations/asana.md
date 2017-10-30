@@ -6,7 +6,7 @@ Next, on your {{ settings_html|safe }}, create a bot for Asana.
 Construct the URL for the Asana bot using the bot API key and
 stream name, like so:
 
-`{{ external_api_uri_subdomain }}/v1/external/zapier?api_key=abcdefgh&stream=asana`
+`{{ api_url }}/v1/external/zapier?api_key=abcdefgh&stream=asana`
 
 Start by setting up a [Zapier](https://zapier.com/) account.
 

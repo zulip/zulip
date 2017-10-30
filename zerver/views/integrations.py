@@ -27,16 +27,15 @@ def add_api_uri_context(context, request):
         display_subdomain = 'yourZulipDomain'
         html_settings_links = False
     if display_subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
-        external_api_path_subdomain = '%s.%s/api' % (display_subdomain,
+        api_url_scheme_relative = '%s.%s/api' % (display_subdomain,
                                                  settings.EXTERNAL_HOST)
     else:
-        external_api_path_subdomain = settings.EXTERNAL_HOST + "/api"
+        api_url_scheme_relative = settings.EXTERNAL_HOST + "/api"
 
-    external_api_uri_subdomain = '%s%s' % (settings.EXTERNAL_URI_SCHEME,
-                                           external_api_path_subdomain)
+    api_url = '%s%s' % (settings.EXTERNAL_URI_SCHEME, api_url_scheme_relative)
 
-    context['external_api_path_subdomain'] = external_api_path_subdomain
-    context['external_api_uri_subdomain'] = external_api_uri_subdomain
+    context['api_url_scheme_relative'] = api_url_scheme_relative
+    context['api_url'] = api_url
     context["html_settings_links"] = html_settings_links
 
 class ApiURLView(TemplateView):
@@ -151,11 +150,11 @@ def api_endpoint_docs(request):
     langs = set()
     for call in calls:
         call["endpoint"] = "%s/v1/%s" % (
-            context["external_api_uri_subdomain"],
+            context["api_url"],
             call["endpoint"])
         call["example_request"]["curl"] = call["example_request"]["curl"].replace(
             "https://api.zulip.com",
-            context["external_api_uri_subdomain"])
+            context["api_url"])
         response = call['example_response']
         if '\n' not in response:
             # For 1-line responses, pretty-print them

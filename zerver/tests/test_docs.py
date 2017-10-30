@@ -119,8 +119,8 @@ class IntegrationTest(TestCase):
         # type: () -> None
         context = dict()  # type: Dict[str, Any]
         add_api_uri_context(context, HostRequestMock())
-        self.assertEqual(context["external_api_path_subdomain"], "testserver/api")
-        self.assertEqual(context["external_api_uri_subdomain"], "http://testserver/api")
+        self.assertEqual(context["api_url_scheme_relative"], "testserver/api")
+        self.assertEqual(context["api_url"], "http://testserver/api")
         self.assertTrue(context["html_settings_links"])
 
     @override_settings(ROOT_DOMAIN_LANDING_PAGE=True)
@@ -128,8 +128,8 @@ class IntegrationTest(TestCase):
         # type: () -> None
         context = dict()  # type: Dict[str, Any]
         add_api_uri_context(context, HostRequestMock())
-        self.assertEqual(context["external_api_path_subdomain"], "yourZulipDomain.testserver/api")
-        self.assertEqual(context["external_api_uri_subdomain"], "http://yourZulipDomain.testserver/api")
+        self.assertEqual(context["api_url_scheme_relative"], "yourZulipDomain.testserver/api")
+        self.assertEqual(context["api_url"], "http://yourZulipDomain.testserver/api")
         self.assertFalse(context["html_settings_links"])
 
     def test_api_url_view_subdomains_full(self):
@@ -137,8 +137,8 @@ class IntegrationTest(TestCase):
         context = dict()  # type: Dict[str, Any]
         request = HostRequestMock(host="mysubdomain.testserver")
         add_api_uri_context(context, request)
-        self.assertEqual(context["external_api_path_subdomain"], "mysubdomain.testserver/api")
-        self.assertEqual(context["external_api_uri_subdomain"], "http://mysubdomain.testserver/api")
+        self.assertEqual(context["api_url_scheme_relative"], "mysubdomain.testserver/api")
+        self.assertEqual(context["api_url"], "http://mysubdomain.testserver/api")
         self.assertTrue(context["html_settings_links"])
 
     def test_integration_view_html_settings_links(self):

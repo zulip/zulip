@@ -17,7 +17,7 @@ Fill in the form like this:
 
 * **Name**: Zulip
 * **Authentication Method**: Basic Auth
-* **URL**: `{{ external_api_uri_subdomain }}/v1/external/deskdotcom`
+* **URL**: `{{ api_url }}/v1/external/deskdotcom`
 * **User name**: *your bot's user name, e.g.* `desk-bot@yourdomain.com`
 * **Password**: *your bot's API key*
 

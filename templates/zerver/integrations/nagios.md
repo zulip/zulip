@@ -14,7 +14,7 @@ on your Nagios server:
 [api]
 email = NAGIOS_BOT_EMAIL_ADDRESS
 key = NAGIOS_BOT_API_KEY
-site = {{ external_api_uri_subdomain }}
+site = {{ api_url }}
 ```
 
 Copy `integrations/nagios/zulip_nagios.cfg` to `/etc/nagios3/conf.d`
