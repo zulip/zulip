@@ -10,7 +10,7 @@ from zerver.models import (
 )
 
 def get_active_subscriptions_for_stream_id(stream_id):
-    # type: (int) -> QuerySet
+    # type: (int) -> QuerySet[Subscription]
     return Subscription.objects.filter(
         recipient__type=Recipient.STREAM,
         recipient__type_id=stream_id,
@@ -18,7 +18,7 @@ def get_active_subscriptions_for_stream_id(stream_id):
     )
 
 def get_active_subscriptions_for_stream_ids(stream_ids):
-    # type: (List[int]) -> QuerySet
+    # type: (List[int]) -> QuerySet[Subscription]
     return Subscription.objects.filter(
         recipient__type=Recipient.STREAM,
         recipient__type_id__in=stream_ids,
@@ -26,14 +26,14 @@ def get_active_subscriptions_for_stream_ids(stream_ids):
     )
 
 def get_stream_subscriptions_for_user(user_profile):
-    # type: (UserProfile) -> QuerySet
+    # type: (UserProfile) -> QuerySet[Subscription]
     return Subscription.objects.filter(
         user_profile=user_profile,
         recipient__type=Recipient.STREAM,
     )
 
 def get_stream_subscriptions_for_users(user_profiles):
-    # type: (List[UserProfile]) -> QuerySet
+    # type: (List[UserProfile]) -> QuerySet[Subscription]
     return Subscription.objects.filter(
         user_profile__in=user_profiles,
         recipient__type=Recipient.STREAM,
