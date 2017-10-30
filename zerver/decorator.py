@@ -30,7 +30,7 @@ import logging
 from io import BytesIO
 from six.moves import zip, urllib
 
-from typing import Union, Any, Callable, Sequence, Dict, Optional, TypeVar, Text, cast
+from typing import Union, Any, Callable, Sequence, Dict, Optional, TypeVar, Text, Tuple, cast
 from zerver.lib.str_utils import force_bytes
 from zerver.lib.logging_util import create_logger
 
@@ -73,6 +73,20 @@ def asynchronous(method):
     if getattr(method, 'csrf_exempt', False):
         wrapper.csrf_exempt = True  # type: ignore # https://github.com/JukkaL/mypy/issues/1170
     return wrapper
+
+def cachify(method):
+    # type: (Callable) -> Callable
+    dct = {}  # type: Dict[Tuple, Any]
+
+    def cache_wrapper(*args):
+        # type: (*Any) -> Any
+        tup = tuple(args)
+        if tup in dct:
+            return dct[tup]
+        result = method(*args)
+        dct[tup] = result
+        return result
+    return cache_wrapper
 
 def update_user_activity(request, user_profile, query):
     # type: (HttpRequest, UserProfile, Optional[str]) -> None

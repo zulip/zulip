@@ -29,7 +29,7 @@ from zerver.lib.request import \
     RequestVariableConversionError
 from zerver.decorator import (
     api_key_only_webhook_view,
-    authenticate_notify,
+    authenticate_notify, cachify,
     get_client_name, internal_notify_view, is_local_addr,
     rate_limit, validate_api_key, logged_in_and_active,
     return_success_on_head_request
@@ -1254,6 +1254,70 @@ class RestAPITest(ZulipTestCase):
                                  HTTP_ACCEPT='text/html')
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith("/login/?next=/json/users"))
+
+class CacheTestCase(ZulipTestCase):
+    def test_cachify_basics(self):
+        # type: () -> None
+
+        @cachify
+        def add(w, x, y, z):
+            # type: (Any, Any, Any, Any) -> Any
+            return w + x + y + z
+
+        for i in range(2):
+            self.assertEqual(add(1, 2, 4, 8), 15)
+            self.assertEqual(add('a', 'b', 'c', 'd'), 'abcd')
+
+    def test_cachify_is_per_call(self):
+        # type: () -> None
+
+        def test_greetings(greeting):
+            # type: (Text) -> Tuple[List[Text], List[Text]]
+
+            result_log = []  # type: List[Text]
+            work_log = []  # type: List[Text]
+
+            @cachify
+            def greet(first_name, last_name):
+                # type: (Text, Text) -> Text
+                msg = '%s %s %s' % (greeting, first_name, last_name)
+                work_log.append(msg)
+                return msg
+
+            result_log.append(greet('alice', 'smith'))
+            result_log.append(greet('bob', 'barker'))
+            result_log.append(greet('alice', 'smith'))
+            result_log.append(greet('cal', 'johnson'))
+
+            return (work_log, result_log)
+
+        work_log, result_log = test_greetings('hello')
+        self.assertEqual(work_log, [
+            'hello alice smith',
+            'hello bob barker',
+            'hello cal johnson',
+        ])
+
+        self.assertEqual(result_log, [
+            'hello alice smith',
+            'hello bob barker',
+            'hello alice smith',
+            'hello cal johnson',
+        ])
+
+        work_log, result_log = test_greetings('goodbye')
+        self.assertEqual(work_log, [
+            'goodbye alice smith',
+            'goodbye bob barker',
+            'goodbye cal johnson',
+        ])
+
+        self.assertEqual(result_log, [
+            'goodbye alice smith',
+            'goodbye bob barker',
+            'goodbye alice smith',
+            'goodbye cal johnson',
+        ])
 
 class TestUserAgentParsing(ZulipTestCase):
     def test_user_agent_parsing(self):
