@@ -26,16 +26,13 @@ def add_api_uri_context(context, request):
     else:
         display_subdomain = 'yourZulipDomain'
         html_settings_links = False
-    if display_subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
-        api_url_scheme_relative = '%s.%s/api' % (display_subdomain,
-                                                 settings.EXTERNAL_HOST)
-    else:
-        api_url_scheme_relative = settings.EXTERNAL_HOST + "/api"
 
-    api_url = '%s%s' % (settings.EXTERNAL_URI_SCHEME, api_url_scheme_relative)
+    display_host = Realm.host_for_subdomain(display_subdomain)
+    api_url_scheme_relative = display_host + "/api"
+    api_url = settings.EXTERNAL_URI_SCHEME + api_url_scheme_relative
 
-    context['api_url_scheme_relative'] = api_url_scheme_relative
     context['api_url'] = api_url
+    context['api_url_scheme_relative'] = api_url_scheme_relative
     context["html_settings_links"] = html_settings_links
 
 class ApiURLView(TemplateView):
