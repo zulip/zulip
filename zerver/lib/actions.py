@@ -2273,6 +2273,8 @@ def notify_subscriptions_removed(user_profile, streams, no_log=False):
 def bulk_remove_subscriptions(users, streams, acting_user=None):
     # type: (Iterable[UserProfile], Iterable[Stream], Optional[UserProfile]) -> Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
 
+    users = list(users)
+
     recipients_map = bulk_get_recipients(Recipient.STREAM,
                                          [stream.id for stream in streams])  # type: Mapping[int, Recipient]
     stream_map = {}  # type: Dict[int, Stream]
@@ -2295,13 +2297,15 @@ def bulk_remove_subscriptions(users, streams, acting_user=None):
         for recipient_id in recipients_to_unsub:
             not_subscribed.append((user_profile, stream_map[recipient_id]))
 
+    our_realm = users[0].realm
+
     # TODO: XXX: This transaction really needs to be done at the serializeable
     # transaction isolation level.
     with transaction.atomic():
-        occupied_streams_before = list(get_occupied_streams(user_profile.realm))
+        occupied_streams_before = list(get_occupied_streams(our_realm))
         Subscription.objects.filter(id__in=[sub.id for (sub, stream_name) in
                                             subs_to_deactivate]).update(active=False)
-        occupied_streams_after = list(get_occupied_streams(user_profile.realm))
+        occupied_streams_after = list(get_occupied_streams(our_realm))
 
     # Log Subscription Activities in RealmAuditLog
     event_time = timezone_now()
@@ -2327,7 +2331,7 @@ def bulk_remove_subscriptions(users, streams, acting_user=None):
         event = dict(type="stream", op="vacate",
                      streams=[stream.to_dict()
                               for stream in new_vacant_public_streams])
-        send_event(event, active_user_ids(user_profile.realm_id))
+        send_event(event, active_user_ids(our_realm.id))
     if new_vacant_private_streams:
         # Deactivate any newly-vacant private streams
         for stream in new_vacant_private_streams:
