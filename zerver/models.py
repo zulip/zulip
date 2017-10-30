@@ -1624,7 +1624,7 @@ class UserPresence(models.Model):
 
     @staticmethod
     def get_status_dict_by_user(user_profile):
-        # type: (UserProfile) -> Dict[Text, Dict[Any, Any]]
+        # type: (UserProfile) -> Dict[str, Dict[str, Any]]
         query = UserPresence.objects.filter(user_profile=user_profile).values(
             'client__name',
             'status',
@@ -1643,7 +1643,7 @@ class UserPresence(models.Model):
 
     @staticmethod
     def get_status_dict_by_realm(realm_id):
-        # type: (int) -> Dict[Text, Dict[Any, Any]]
+        # type: (int) -> Dict[str, Dict[str, Any]]
         user_profile_ids = UserProfile.objects.filter(
             realm_id=realm_id,
             is_active=True,
@@ -1692,9 +1692,9 @@ class UserPresence(models.Model):
 
     @staticmethod
     def get_status_dicts_for_rows(presence_rows, mobile_user_ids):
-        # type: (List[Dict[str, Any]], Set[int]) -> Dict[Text, Dict[Any, Any]]
+        # type: (List[Dict[str, Any]], Set[int]) -> Dict[str, Dict[str, Any]]
 
-        info_row_dct = defaultdict(list)  # type: DefaultDict[Text, List[Dict[str, Any]]]
+        info_row_dct = defaultdict(list)  # type: DefaultDict[str, List[Dict[str, Any]]]
         for row in presence_rows:
             email = row['user_profile__email']
             client_name = row['client__name']
