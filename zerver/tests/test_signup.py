@@ -173,7 +173,8 @@ class PasswordResetTest(ZulipTestCase):
         self.assertIn(FromAddress.NOREPLY, from_email)
 
         # Visit the password reset link.
-        password_reset_url = self.get_confirmation_url_from_outbox(email, "(\S+)")
+        password_reset_url = self.get_confirmation_url_from_outbox(
+            email, url_pattern=settings.EXTERNAL_HOST + "(\S+)")
         result = self.client_get(password_reset_url)
         self.assertEqual(result.status_code, 200)
 

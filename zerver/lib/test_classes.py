@@ -344,13 +344,15 @@ class ZulipTestCase(TestCase):
             payload['realm_in_root_domain'] = realm_in_root_domain
         return self.client_post('/accounts/register/', payload, **kwargs)
 
-    def get_confirmation_url_from_outbox(self, email_address, path_pattern="(\S+)>"):
+    def get_confirmation_url_from_outbox(self, email_address, *, url_pattern=None):
         # type: (Text, Text) -> Text
         from django.core.mail import outbox
+        if url_pattern is None:
+            # This is a bit of a crude heuristic, but good enough for most tests.
+            url_pattern = settings.EXTERNAL_HOST + "(\S+)>"
         for message in reversed(outbox):
             if email_address in message.to:
-                return re.search(settings.EXTERNAL_HOST + path_pattern,
-                                 message.body).groups()[0]
+                return re.search(url_pattern, message.body).groups()[0]
         else:
             raise AssertionError("Couldn't find a confirmation email.")
 
