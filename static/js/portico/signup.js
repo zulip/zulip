@@ -58,6 +58,51 @@ const Segments = ($parent) => {
     };
 };
 
+var validateInputPartial = (function () {
+    // when the body is ready, add the "animationend" functionality.
+    $(function () {
+        // when any of the `.shake` elements stop animating, remove them so that
+        // the animation can be re-triggered again.
+        $("body").on("animationend", ".shake", function () {
+            $(this).removeClass("shake");
+        });
+    });
+
+    return function ($parent, callback) {
+        var is_invalid = false;
+
+        // find all the forms of inputs that we can validate.
+        $parent.find("input, select, textarea").each(function () {
+            // check the validity of each with the HTML5 validation API.
+            var is_valid = this.checkValidity();
+            var $this = $(this);
+            var $parent = $this.closest(".input-box");
+            var $label = $parent.find(".text");
+
+            // if there is no supplied error and the input IS required, supply
+            // a sample error.
+            if (!$label.data("error") && $this.attr("required") === "required") {
+                $label.attr("data-error", "(This field is required.)");
+            }
+
+            is_invalid = !is_valid || is_invalid;
+
+            // add red/shake animation if invalid.
+            if (!is_valid) {
+                $this.addClass("shake")
+                    .closest(".input-box").addClass("error");
+                return;
+            }
+
+            $this.closest(".input-box").removeClass("error");
+        });
+
+        if (!is_invalid) {
+            callback();
+        }
+    };
+}());
+
 $(function () {
     // NB: this file is included on multiple pages.  In each context,
     // some of the jQuery selectors below will return empty lists.

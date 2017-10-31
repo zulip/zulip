@@ -238,6 +238,13 @@ html {
     font-weight: 600;
 }
 
+.input-box.error .text::after {
+    content: attr(data-error);
+    margin-left: 5px;
+    color: #de7171;
+    font-size: 0.8em;
+}
+
 .account-creation {
     font-weight: 400;
 }
@@ -811,6 +818,10 @@ button.login-google-button {
 
     margin-top: 20px;
     margin-right: 10px;
+}
+
+form input.shake {
+    color: #de7171;
 }
 
 /* -- media queries -- */
