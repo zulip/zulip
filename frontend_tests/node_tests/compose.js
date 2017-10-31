@@ -1085,6 +1085,12 @@ function test_with_mock_socket(test_params) {
     }());
 
     (function test_video_link_compose_clicked() {
+        // Hackishly pretend caret is the same as val, since we don't
+        // have a cursor anyway.
+        $('#new_message_content').caret = function (x) {
+            $('#new_message_content').val(x);
+        };
+
         var handler = $("#compose").get_on_handler("click", "#video_link");
         assert.equal($('#new_message_content').val(), '');
 
