@@ -880,7 +880,7 @@ class GetOldMessagesTest(ZulipTestCase):
             ('meetings', 'please bring your laptops to take notes'),
             ('dinner', 'Anybody staying late tonight?'),
             ('urltest', 'https://google.com'),
-            (u'日本', u'こんにちは。今日はいい天気ですね。'),
+            (u'日本', u'こんに ちは 。 今日は いい 天気ですね。'),
             (u'日本', u'今朝はごはんを食べました。'),
             (u'日本', u'昨日、日本 のお菓子を送りました。'),
             ('english', u'I want to go to 日本!'),
@@ -982,6 +982,21 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertIn(
             english_message['match_content'],
             u'<p>I want to go to <span class="highlight">日本</span>!</p>')
+
+        # Multiple search operands with unicode
+        multi_search_narrow = [
+            dict(operator='search', operand='ちは'),
+            dict(operator='search', operand='今日は'),
+        ]
+        multi_search_result = self.get_and_check_messages(dict(
+            narrow=ujson.dumps(multi_search_narrow),
+            anchor=next_message_id,
+            num_after=10,
+            num_before=0,
+        ))
+        self.assertEqual(len(multi_search_result['messages']), 1)
+        self.assertEqual(multi_search_result['messages'][0]['match_content'],
+                         '<p>こんに <span class="highlight">ちは</span> 。 <span class="highlight">今日は</span> いい 天気ですね。</p>')
 
     @override_settings(USING_PGROONGA=False)
     def test_get_messages_with_search_not_subscribed(self):
@@ -1094,6 +1109,21 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(len(multi_search_result['messages']), 1)
         self.assertEqual(multi_search_result['messages'][0]['match_content'],
                          '<p><span class="highlight">Can</span> you <span class="highlight">speak</span> <a href="https://en.wikipedia.org/wiki/Japanese" target="_blank" title="https://en.wikipedia.org/wiki/Japanese">https://en.<span class="highlight">wiki</span>pedia.org/<span class="highlight">wiki</span>/Japanese</a>?</p>')
+
+        # Multiple search operands with unicode
+        multi_search_narrow = [
+            dict(operator='search', operand='朝は'),
+            dict(operator='search', operand='べました'),
+        ]
+        multi_search_result = self.get_and_check_messages(dict(
+            narrow=ujson.dumps(multi_search_narrow),
+            anchor=next_message_id,
+            num_after=10,
+            num_before=0,
+        ))
+        self.assertEqual(len(multi_search_result['messages']), 1)
+        self.assertEqual(multi_search_result['messages'][0]['match_content'],
+                         '<p>今<span class="highlight">朝は</span>ごはんを食<span class="highlight">べました</span>。</p>')
 
         narrow = [dict(operator='search', operand='https://google.com')]
         link_search_result = self.get_and_check_messages(dict(
