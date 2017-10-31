@@ -56,7 +56,7 @@ class DocPageTest(ZulipTestCase):
         self._test('/api-new/', 'We hear you like APIs')
         self._test('/api-new/api-keys', 'you can use its email and API key')
         self._test('/api-new/installation-instructions', 'Python Installation')
-        self._test('/team/', '30 year industry veterans')
+        self._test('/team/', 'industry veterans')
         self._test('/history/', 'Cambridge, Massachusetts')
         # Test the i18n version of one of these pages.
         self._test('/en/history/', 'Cambridge, Massachusetts')
@@ -186,7 +186,7 @@ class AboutPageTest(ZulipTestCase):
         # type: () -> None
         result = self.client_get('/team/')
         self.assert_in_success_response(
-            ['Contributors', 'commits', '@timabbott'],
+            ['Our amazing community', 'commits', '@timabbott'],
             result
         )
 
