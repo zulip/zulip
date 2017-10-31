@@ -2,6 +2,14 @@ html {
     min-height: 500px;
 }
 
+[data-stage] {
+    display: none;
+}
+
+[data-stage].show {
+    display: block;
+}
+
 .flex {
     display: flex;
     padding: 80px 0px;
@@ -244,6 +252,88 @@ html {
     color: #de7171;
     font-size: 0.8em;
 }
+
+/* -- stream bundles -- */
+.stream-bundles {
+    width: 700px;
+    font-size: 1rem;
+
+    line-height: 1.2;
+}
+
+.stream-bundles .bundle {
+    margin: 10px 0px;
+    padding: 10px;
+
+    background: #fff;
+    border: 2px solid hsla(199, 37%, 19%, 0.15);
+    border-radius: 4px;
+
+    cursor: pointer;
+}
+
+.stream-bundles .bundle.selected {
+    border: 2px solid hsla(199, 37%, 19%, 0.7);
+}
+
+.stream-bundles .bundle h3 {
+    margin: 0;
+    letter-spacing: -0.03em;
+    line-height: normal;
+}
+
+.stream-bundles .bundle .description {
+    margin: 5px 0 0 0;
+
+    opacity: 0.7;
+    font-size: 1em;
+    font-weight: normal;
+}
+
+.stream-bundles .bundle a {
+    text-decoration: none;
+
+    opacity: 0.5;
+}
+
+.stream-bundles .bundle a:hover {
+    text-decoration: underline;
+}
+
+.stream-bundles .bundle .stream-list {
+    margin-top: 10px;
+}
+
+.stream-bundles .bundle .stream-list .text {
+    display: inline-block;
+    padding: 3px 0px;
+
+    font-size: 0.9em;
+    font-weight: 500;
+}
+
+.stream-bundles .bundle .stream-list .pills {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.stream-bundles .bundle .stream-list .pills .pill {
+    display: inline-block;
+    padding: 3px 5px;
+
+    font-size: 0.9em;
+    font-weight: 500;
+    border-radius: 4px;
+    background-color: hsla(199, 37%, 19%, 0.5);
+    color: hsl(196, 18%, 95%);
+
+    cursor: default;
+}
+
+.stream-bundles .bundle .stream-list .pills .pill::before {
+    content: "#";
+}
+/* -- end stream bundles -- */
 
 .account-creation {
     font-weight: 400;

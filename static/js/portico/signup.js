@@ -123,7 +123,7 @@ $(function () {
         };
     }
 
-    $('#registration, #password_reset').validate({
+    $('#password_reset').validate({
         rules: {
             password:      'password_strength',
             new_password1: 'password_strength',
@@ -182,4 +182,7 @@ $(function () {
     $("#realm_in_root_domain").change(function () {
         show_subdomain_section($(this).is(":checked"));
     });
+
+    Segments($("#registration"))
+        .validate(0, validateInputPartial);
 });
