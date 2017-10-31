@@ -63,9 +63,9 @@ HEARTBEAT_MIN_FREQ_SECS = 45
 
 class ClientDescriptor:
     def __init__(self, user_profile_id, user_profile_email, realm_id, event_queue,
-                 event_types, client_type_name, apply_markdown=True,
+                 event_types, client_type_name, apply_markdown=True, client_gravatar=True,
                  all_public_streams=False, lifespan_secs=0, narrow=[]):
-        # type: (int, Text, int, EventQueue, Optional[Sequence[str]], Text, bool, bool, int, Iterable[Sequence[Text]]) -> None
+        # type: (int, Text, int, EventQueue, Optional[Sequence[str]], Text, bool, bool, bool, int, Iterable[Sequence[Text]]) -> None
         # These objects are serialized on shutdown and restored on restart.
         # If fields are added or semantics are changed, temporary code must be
         # added to load_event_queues() to update the restored objects.
@@ -80,6 +80,7 @@ class ClientDescriptor:
         self.event_types = event_types
         self.last_connection_time = time.time()
         self.apply_markdown = apply_markdown
+        self.client_gravatar = client_gravatar
         self.all_public_streams = all_public_streams
         self.client_type_name = client_type_name
         self._timeout_handle = None  # type: Any # TODO: should be return type of ioloop.add_timeout
@@ -102,6 +103,7 @@ class ClientDescriptor:
                     event_types=self.event_types,
                     last_connection_time=self.last_connection_time,
                     apply_markdown=self.apply_markdown,
+                    client_gravatar=self.client_gravatar,
                     all_public_streams=self.all_public_streams,
                     narrow=self.narrow,
                     client_type_name=self.client_type_name)
@@ -120,10 +122,23 @@ class ClientDescriptor:
         if 'client_type' in d:
             # Temporary migration for the rename of client_type to client_type_name
             d['client_type_name'] = d['client_type']
-        ret = cls(d['user_profile_id'], d['user_profile_email'], d['realm_id'],
-                  EventQueue.from_dict(d['event_queue']), d['event_types'],
-                  d['client_type_name'], d['apply_markdown'], d['all_public_streams'],
-                  d['queue_timeout'], d.get('narrow', []))
+        if 'client_gravatar' not in d:
+            # Temporary migration for the addition of the client_gravatar field
+            d['client_gravatar'] = False
+
+        ret = cls(
+            d['user_profile_id'],
+            d['user_profile_email'],
+            d['realm_id'],
+            EventQueue.from_dict(d['event_queue']),
+            d['event_types'],
+            d['client_type_name'],
+            d['apply_markdown'],
+            d['client_gravatar'],
+            d['all_public_streams'],
+            d['queue_timeout'],
+            d.get('narrow', [])
+        )
         ret.last_connection_time = d['last_connection_time']
         return ret
 
@@ -568,13 +583,14 @@ def extract_json_response(resp):
     else:
         return resp.json  # type: ignore # mypy trusts the stub, not the runtime type checking of this fn
 
-def request_event_queue(user_profile, user_client, apply_markdown,
+def request_event_queue(user_profile, user_client, apply_markdown, client_gravatar,
                         queue_lifespan_secs, event_types=None, all_public_streams=False,
                         narrow=[]):
-    # type: (UserProfile, Client, bool, int, Optional[Iterable[str]], bool, Iterable[Sequence[Text]]) -> Optional[str]
+    # type: (UserProfile, Client, bool, bool, int, Optional[Iterable[str]], bool, Iterable[Sequence[Text]]) -> Optional[str]
     if settings.TORNADO_SERVER:
         req = {'dont_block': 'true',
                'apply_markdown': ujson.dumps(apply_markdown),
+               'client_gravatar': ujson.dumps(client_gravatar),
                'all_public_streams': ujson.dumps(all_public_streams),
                'client': 'internal',
                'user_client': user_client.name,
@@ -835,13 +851,7 @@ def process_message_event(event_template, users):
             # message data unnecessarily
             continue
 
-        '''
-        In this codepath we do net yet optimize for clients
-        that can compute their own gravatar URLs.
-        '''
-        client_gravatar = False
-
-        message_dict = get_client_payload(client.apply_markdown, client_gravatar)
+        message_dict = get_client_payload(client.apply_markdown, client.client_gravatar)
 
         # Make sure Zephyr mirroring bots know whether stream is invite-only
         if "mirror" in client.client_type_name and event_template.get("invite_only"):

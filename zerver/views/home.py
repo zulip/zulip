@@ -114,7 +114,8 @@ def home_real(request):
             narrow.append(["topic", narrow_topic])
 
     register_ret = do_events_register(user_profile, request.client,
-                                      apply_markdown=True, narrow=narrow)
+                                      apply_markdown=True, client_gravatar=False,
+                                      narrow=narrow)
     user_has_messages = (register_ret['max_message_id'] != -1)
 
     # Reset our don't-spam-users-with-email counter since the

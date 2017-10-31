@@ -238,6 +238,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
             'client_type_name': 'website',
             'new_queue_data': {
                 'apply_markdown': True,
+                'client_gravatar': False,
                 'narrow': [],
                 'user_profile_email': user_profile.email,
                 'all_public_streams': False,

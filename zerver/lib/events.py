@@ -520,10 +520,10 @@ def apply_event(state, event, user_profile, include_subscribers):
     else:
         raise AssertionError("Unexpected event type %s" % (event['type'],))
 
-def do_events_register(user_profile, user_client, apply_markdown=True,
+def do_events_register(user_profile, user_client, apply_markdown=True, client_gravatar=False,
                        event_types=None, queue_lifespan_secs=0, all_public_streams=False,
                        include_subscribers=True, narrow=[], fetch_event_types=None):
-    # type: (UserProfile, Client, bool, Optional[Iterable[str]], int, bool, bool, Iterable[Sequence[Text]], Optional[Iterable[str]]) -> Dict[str, Any]
+    # type: (UserProfile, Client, bool, bool, Optional[Iterable[str]], int, bool, bool, Iterable[Sequence[Text]], Optional[Iterable[str]]) -> Dict[str, Any]
 
     # Technically we don't need to check this here because
     # build_narrow_filter will check it, but it's nicer from an error
@@ -532,7 +532,7 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
 
     # Note that we pass event_types, not fetch_event_types here, since
     # that's what controls which future events are sent.
-    queue_id = request_event_queue(user_profile, user_client, apply_markdown,
+    queue_id = request_event_queue(user_profile, user_client, apply_markdown, client_gravatar,
                                    queue_lifespan_secs, event_types, all_public_streams,
                                    narrow=narrow)
 

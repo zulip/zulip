@@ -260,6 +260,7 @@ class GetEventsTest(ZulipTestCase):
 
         result = self.tornado_call(get_events_backend, user_profile,
                                    {"apply_markdown": ujson.dumps(True),
+                                    "client_gravatar": ujson.dumps(True),
                                     "event_types": ujson.dumps(["message"]),
                                     "user_client": "website",
                                     "dont_block": ujson.dumps(True),
@@ -269,6 +270,7 @@ class GetEventsTest(ZulipTestCase):
 
         recipient_result = self.tornado_call(get_events_backend, recipient_user_profile,
                                              {"apply_markdown": ujson.dumps(True),
+                                              "client_gravatar": ujson.dumps(True),
                                               "event_types": ujson.dumps(["message"]),
                                               "user_client": "website",
                                               "dont_block": ujson.dumps(True),
@@ -364,13 +366,14 @@ class GetEventsTest(ZulipTestCase):
         email = user_profile.email
         self.login(email)
 
-        def get_message(apply_markdown):
-            # type: (bool) -> Dict[str, Any]
+        def get_message(apply_markdown, client_gravatar):
+            # type: (bool, bool) -> Dict[str, Any]
             result = self.tornado_call(
                 get_events_backend,
                 user_profile,
                 dict(
                     apply_markdown=ujson.dumps(apply_markdown),
+                    client_gravatar=ujson.dumps(client_gravatar),
                     event_types=ujson.dumps(["message"]),
                     narrow=ujson.dumps([["stream", "denmark"]]),
                     user_client="website",
@@ -406,13 +409,25 @@ class GetEventsTest(ZulipTestCase):
             self.assertEqual(events[0]["type"], "message")
             return events[0]['message']
 
-        message = get_message(apply_markdown=False)
+        message = get_message(apply_markdown=False, client_gravatar=False)
         self.assertEqual(message["display_recipient"], "Denmark")
         self.assertEqual(message["content"], "**hello**")
+        self.assertIn('gravatar.com', message["avatar_url"])
 
-        message = get_message(apply_markdown=True)
+        message = get_message(apply_markdown=True, client_gravatar=False)
         self.assertEqual(message["display_recipient"], "Denmark")
         self.assertEqual(message["content"], "<p><strong>hello</strong></p>")
+        self.assertIn('gravatar.com', message["avatar_url"])
+
+        message = get_message(apply_markdown=False, client_gravatar=True)
+        self.assertEqual(message["display_recipient"], "Denmark")
+        self.assertEqual(message["content"], "**hello**")
+        self.assertEqual(message["avatar_url"], None)
+
+        message = get_message(apply_markdown=True, client_gravatar=True)
+        self.assertEqual(message["display_recipient"], "Denmark")
+        self.assertEqual(message["content"], "<p><strong>hello</strong></p>")
+        self.assertEqual(message["avatar_url"], None)
 
 class EventsRegisterTest(ZulipTestCase):
 
@@ -439,9 +454,10 @@ class EventsRegisterTest(ZulipTestCase):
             ])),
         ])
 
-    def do_test(self, action, event_types=None, include_subscribers=True, state_change_expected=True,
-                num_events=1):
-        # type: (Callable[[], Any], Optional[List[str]], bool, bool, int) -> List[Dict[str, Any]]
+    def do_test(self, action, event_types=None,
+                include_subscribers=True, state_change_expected=True,
+                client_gravatar=False, num_events=1):
+        # type: (Callable[[], Any], Optional[List[str]], bool, bool, bool, int) -> List[Dict[str, Any]]
 
         '''
         Make sure we have a clean slate of client descriptors for these tests.
@@ -457,6 +473,7 @@ class EventsRegisterTest(ZulipTestCase):
                  event_types = event_types,
                  client_type_name = "website",
                  apply_markdown = True,
+                 client_gravatar = client_gravatar,
                  all_public_streams = False,
                  queue_timeout = 600,
                  last_connection_time = time.time(),
@@ -586,34 +603,52 @@ class EventsRegisterTest(ZulipTestCase):
 
     def test_stream_send_message_events(self):
         # type: () -> None
-        schema_checker = self.check_events_dict([
-            ('type', equals('message')),
-            ('flags', check_list(None)),
-            ('message', self.check_events_dict([
-                ('avatar_url', check_string),
-                ('client', check_string),
-                ('content', check_string),
-                ('content_type', equals('text/html')),
-                ('display_recipient', check_string),
-                ('is_me_message', check_bool),
-                ('reactions', check_list(None)),
-                ('recipient_id', check_int),
-                ('sender_realm_str', check_string),
-                ('sender_email', check_string),
-                ('sender_full_name', check_string),
-                ('sender_id', check_int),
-                ('sender_short_name', check_string),
-                ('stream_id', check_int),
-                ('subject', check_string),
-                ('subject_links', check_list(None)),
-                ('timestamp', check_int),
-                ('type', check_string),
-            ])),
-        ])
+        def check_none(var_name, val):
+            # type: (str, Any) -> Optional[str]
+            assert(val is None)
+            return None
+
+        def get_checker(check_gravatar):
+            # type: (Validator) -> Validator
+            schema_checker = self.check_events_dict([
+                ('type', equals('message')),
+                ('flags', check_list(None)),
+                ('message', self.check_events_dict([
+                    ('avatar_url', check_gravatar),
+                    ('client', check_string),
+                    ('content', check_string),
+                    ('content_type', equals('text/html')),
+                    ('display_recipient', check_string),
+                    ('is_me_message', check_bool),
+                    ('reactions', check_list(None)),
+                    ('recipient_id', check_int),
+                    ('sender_realm_str', check_string),
+                    ('sender_email', check_string),
+                    ('sender_full_name', check_string),
+                    ('sender_id', check_int),
+                    ('sender_short_name', check_string),
+                    ('stream_id', check_int),
+                    ('subject', check_string),
+                    ('subject_links', check_list(None)),
+                    ('timestamp', check_int),
+                    ('type', check_string),
+                ])),
+            ])
+            return schema_checker
 
         events = self.do_test(
             lambda: self.send_stream_message(self.example_email("hamlet"), "Verona", "hello"),
+            client_gravatar=False,
         )
+        schema_checker = get_checker(check_gravatar=check_string)
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        events = self.do_test(
+            lambda: self.send_stream_message(self.example_email("hamlet"), "Verona", "hello"),
+            client_gravatar=True,
+        )
+        schema_checker = get_checker(check_gravatar=check_none)
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -2011,6 +2046,7 @@ class ClientDescriptorsTest(ZulipTestCase):
         queue_data = dict(
             all_public_streams=True,
             apply_markdown=True,
+            client_gravatar=True,
             client_type_name='website',
             event_types=['message'],
             last_connection_time=time.time(),
@@ -2035,6 +2071,7 @@ class ClientDescriptorsTest(ZulipTestCase):
 
         dct = client_info[client.event_queue.id]
         self.assertEqual(dct['client'].apply_markdown, True)
+        self.assertEqual(dct['client'].client_gravatar, True)
         self.assertEqual(dct['client'].user_profile_id, hamlet.id)
         self.assertEqual(dct['flags'], None)
         self.assertEqual(dct['is_sender'], False)
@@ -2058,13 +2095,14 @@ class ClientDescriptorsTest(ZulipTestCase):
         cordelia = self.example_user('cordelia')
         realm = hamlet.realm
 
-        def test_get_info(apply_markdown):
-            # type: (bool) -> None
+        def test_get_info(apply_markdown, client_gravatar):
+            # type: (bool, bool) -> None
             clear_client_event_queues_for_testing()
 
             queue_data = dict(
                 all_public_streams=False,
                 apply_markdown=apply_markdown,
+                client_gravatar=client_gravatar,
                 client_type_name='website',
                 event_types=['message'],
                 last_connection_time=time.time(),
@@ -2074,7 +2112,6 @@ class ClientDescriptorsTest(ZulipTestCase):
             )
 
             client = allocate_client_descriptor(queue_data)
-
             message_event = dict(
                 realm_id=realm.id,
                 stream_name='whatever',
@@ -2100,22 +2137,27 @@ class ClientDescriptorsTest(ZulipTestCase):
 
             dct = client_info[client.event_queue.id]
             self.assertEqual(dct['client'].apply_markdown, apply_markdown)
+            self.assertEqual(dct['client'].client_gravatar, client_gravatar)
             self.assertEqual(dct['client'].user_profile_id, hamlet.id)
             self.assertEqual(dct['flags'], ['mentioned'])
             self.assertEqual(dct['is_sender'], False)
 
-        test_get_info(apply_markdown=False)
-        test_get_info(apply_markdown=True)
+        test_get_info(apply_markdown=False, client_gravatar=False)
+        test_get_info(apply_markdown=True, client_gravatar=False)
+
+        test_get_info(apply_markdown=False, client_gravatar=True)
+        test_get_info(apply_markdown=True, client_gravatar=True)
 
     def test_process_message_event_with_mocked_client_info(self):
         # type: () -> None
         hamlet = self.example_user("hamlet")
 
         class MockClient:
-            def __init__(self, user_profile_id, apply_markdown):
-                # type: (int, bool) -> None
+            def __init__(self, user_profile_id, apply_markdown, client_gravatar):
+                # type: (int, bool, bool) -> None
                 self.user_profile_id = user_profile_id
                 self.apply_markdown = apply_markdown
+                self.client_gravatar = client_gravatar
                 self.client_type_name = 'whatever'
                 self.events = []  # type: List[Dict[str, Any]]
 
@@ -2135,11 +2177,25 @@ class ClientDescriptorsTest(ZulipTestCase):
         client1 = MockClient(
             user_profile_id=hamlet.id,
             apply_markdown=True,
+            client_gravatar=False,
         )
 
         client2 = MockClient(
             user_profile_id=hamlet.id,
             apply_markdown=False,
+            client_gravatar=False,
+        )
+
+        client3 = MockClient(
+            user_profile_id=hamlet.id,
+            apply_markdown=True,
+            client_gravatar=True,
+        )
+
+        client4 = MockClient(
+            user_profile_id=hamlet.id,
+            apply_markdown=False,
+            client_gravatar=True,
         )
 
         client_info = {
@@ -2150,6 +2206,14 @@ class ClientDescriptorsTest(ZulipTestCase):
             'client:2': dict(
                 client=client2,
                 flags=['has_alert_word'],
+            ),
+            'client:3': dict(
+                client=client3,
+                flags=[],
+            ),
+            'client:4': dict(
+                client=client4,
+                flags=[],
             ),
         }
 
@@ -2169,8 +2233,8 @@ class ClientDescriptorsTest(ZulipTestCase):
                 #       that they can compute their own gravatar URLs.
                 sender_email=sender.email,
                 sender_realm_id=sender.realm_id,
-                sender_avatar_source=None,
-                sender_avatar_version=sender.avatar_version,
+                sender_avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
+                sender_avatar_version=1,
                 sender_is_mirror_dummy=None,
                 raw_display_recipient=None,
                 recipient_type=None,
@@ -2224,6 +2288,40 @@ class ClientDescriptorsTest(ZulipTestCase):
                     client='website',
                 ),
                 flags=['has_alert_word'],
+            ),
+        ])
+
+        self.assertEqual(client3.events, [
+            dict(
+                type='message',
+                message=dict(
+                    type='stream',
+                    sender_id=sender.id,
+                    sender_email=sender.email,
+                    avatar_url=None,
+                    id=999,
+                    content='<b>hello</b>',
+                    content_type='text/html',
+                    client='website',
+                ),
+                flags=[],
+            ),
+        ])
+
+        self.assertEqual(client4.events, [
+            dict(
+                type='message',
+                message=dict(
+                    type='stream',
+                    sender_id=sender.id,
+                    sender_email=sender.email,
+                    avatar_url=None,
+                    id=999,
+                    content='**hello**',
+                    content_type='text/x-markdown',
+                    client='website',
+                ),
+                flags=[],
             ),
         ])
 

@@ -43,12 +43,13 @@ def get_events_backend(request, user_profile, handler,
                        last_event_id = REQ(converter=int, default=None),
                        queue_id = REQ(default=None),
                        apply_markdown = REQ(default=False, validator=check_bool),
+                       client_gravatar = REQ(default=False, validator=check_bool),
                        all_public_streams = REQ(default=False, validator=check_bool),
                        event_types = REQ(default=None, validator=check_list(check_string)),
                        dont_block = REQ(default=False, validator=check_bool),
                        narrow = REQ(default=[], validator=check_list(None)),
                        lifespan_secs = REQ(default=0, converter=int)):
-    # type: (HttpRequest, UserProfile, BaseHandler, Optional[Client], Optional[int], Optional[List[Text]], bool, bool, Optional[Text], bool, Iterable[Sequence[Text]], int) -> Union[HttpResponse, _RespondAsynchronously]
+    # type: (HttpRequest, UserProfile, BaseHandler, Optional[Client], Optional[int], Optional[List[Text]], bool, bool, bool, Optional[Text], bool, Iterable[Sequence[Text]], int) -> Union[HttpResponse, _RespondAsynchronously]
     if user_client is None:
         user_client = request.client
 
@@ -73,6 +74,7 @@ def get_events_backend(request, user_profile, handler,
             event_types = event_types,
             client_type_name = user_client.name,
             apply_markdown = apply_markdown,
+            client_gravatar = client_gravatar,
             all_public_streams = all_public_streams,
             queue_timeout = lifespan_secs,
             last_connection_time = time.time(),

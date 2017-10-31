@@ -129,6 +129,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
 
         result = self.tornado_call(get_events_backend, user_profile,
                                    {"apply_markdown": ujson.dumps(True),
+                                    "client_gravatar": ujson.dumps(True),
                                     "event_types": ujson.dumps(["message"]),
                                     "user_client": "website",
                                     "dont_block": ujson.dumps(True),
