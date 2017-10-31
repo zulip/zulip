@@ -41,7 +41,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                             <input id="id_full_name" class="required" type="text" name="full_name"
                             value="{% if full_name %}{{ full_name }}{% elif form.full_name.value() %}{{ form.full_name.value() }}{% endif %}"
                             maxlength={{ MAX_NAME_LENGTH }} placeholder="{% trans %}Full name or 名前{% endtrans %}" required />
-                            <label for="id_full_name" class="inline-block label-title text" data-error="{{ _('Please enter a valid full name.')}}">{{ _('Full name') }}</label>
+                            <label for="id_full_name" class="inline-block label-title text" data-error="({{ _('Please enter a valid full name.')}})">{{ _('Full name') }}</label>
                             {% if form.full_name.errors %}
                                 {% for error in form.full_name.errors %}
                                 <p class="help-inline text-error">{{ error }}</p>
@@ -57,7 +57,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                                maxlength={{ MAX_PASSWORD_LENGTH }}
                                data-min-length="{{password_min_length}}"
                                data-min-guesses="{{password_min_guesses}}" required />
-                        <label for="id_password" class="inline-block text" data-error="{{ _('Please enter a valid password.')}}">{{ _('Password') }}</label>
+                        <label for="id_password" class="inline-block text" data-error="({{ _('Please enter a valid password.')}})">{{ _('Password') }}</label>
                         {% if full_name %}
                         <span class="help-inline">
                             {{ _('This is used for mobile applications and other tools that require a password.') }}
@@ -162,10 +162,40 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 </div>
 
                 <div class="register-button-box">
+                    <button class="register-button next" type="submit" next-stage>{{ _('Next') }}</button>
+                </div>
+            </div>
+            {% if default_stream_groups %}
+
+            <div data-stage="1">
+                <section>
+                    <div class="stream-bundles">
+                        <div class="bundle-category">
+                            <h1>Popular Streams</h1>
+                            {% for default_stream_group in default_stream_groups %}
+                            <div class="bundle">
+                                <h3>{{ default_stream_group.name }}</h3>
+                                <p class="description">{{ default_stream_group.description }} <a>Read more →</a></p>
+                                <div class="stream-list">
+                                    <div class="text">Streams like</div>
+                                    <div class="pills">
+                                        {% for stream in default_stream_group.streams.all() %}
+                                        <div class="pill">{{ stream.name }}</div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </section>
+
+                <div class="register-button-box">
                     <button class="register-button" type="submit">{{ _('Register') }}</button>
                     <input type="hidden" name="next" value="{{ next }}" />
                 </div>
             </div>
+            {% endif %}
         </form>
 
     </div>

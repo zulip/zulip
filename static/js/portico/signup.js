@@ -183,6 +183,10 @@ $(function () {
         show_subdomain_section($(this).is(":checked"));
     });
 
+    $(".register-button.next").click(function (e) {
+        e.preventDefault();
+    });
+
     Segments($("#registration"))
         .validate(0, validateInputPartial);
 });
