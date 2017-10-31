@@ -24,7 +24,8 @@ from typing import Any, Callable, Dict, Generator, Iterable, Optional
 class WebsocketClient(object):
     def __init__(self, host_url, sockjs_url, sender_email, run_on_start, validate_ssl=True,
                  **run_kwargs):
-        # type: (str, str, str, Callable, bool, **Any) -> None
+        # NOTE: Callable should take a WebsocketClient & kwargs, but this is not standardised
+        # type: (str, str, str, Callable[..., None], bool, **Any) -> None
         self.validate_ssl = validate_ssl
         self.auth_email = sender_email
         self.user_profile = get_system_bot(sender_email)
