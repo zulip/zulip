@@ -119,7 +119,7 @@ _properties = {
                                                    validity_in_days=settings.INVITATION_LINK_VALIDITY_DAYS)
 }
 
-# Conirmation pathways for which there is no content_object that we need to
+# Confirmation pathways for which there is no content_object that we need to
 # keep track of.
 
 def check_key_is_valid(creation_key):
