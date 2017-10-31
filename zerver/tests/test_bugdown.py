@@ -1168,6 +1168,30 @@ class BugdownTest(ZulipTestCase):
                           '<p>I am writing this message to test something. I am writing this message to test something.</p>'
         self.assertEqual(converted, expected_output)
 
+    def test_normal_link(self):
+        # type: () -> None
+        realm = get_realm("zulip")
+        sender_user_profile = self.example_user('othello')
+        message = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = "http://example.com/#settings/"
+
+        self.assertEqual(
+            bugdown.convert(msg, message_realm=realm, message=message),
+            '<p><a href="http://example.com/#settings/" target="_blank" title="http://example.com/#settings/">http://example.com/#settings/</a></p>'
+        )
+
+    def test_relative_link(self):
+        # type: () -> None
+        realm = get_realm("zulip")
+        sender_user_profile = self.example_user('othello')
+        message = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = "http://zulip.testserver/#narrow/stream/hello"
+
+        self.assertEqual(
+            bugdown.convert(msg, message_realm=realm, message=message),
+            '<p><a href="#narrow/stream/hello" title="#narrow/stream/hello">http://zulip.testserver/#narrow/stream/hello</a></p>'
+        )
+
 class BugdownApiTests(ZulipTestCase):
     def test_render_message_api(self):
         # type: () -> None
