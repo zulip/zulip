@@ -8,7 +8,7 @@ import os
 import zerver.forms
 from zproject import dev_urls
 from zproject.legacy_urls import legacy_urls
-from zerver.views.integrations import IntegrationView, APIView, MarkdownDirectoryView
+from zerver.views.integrations import IntegrationView, MarkdownDirectoryView
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from zerver.webhooks import github_dispatcher
 
@@ -417,7 +417,6 @@ i18n_urls = [
         name='zerver.views.registration.accounts_home_from_multiuse_invite'),
 
     # API and integrations documentation
-    url(r'^api/$', APIView.as_view(template_name='zerver/api.html')),
     url(r'^api/endpoints/$', zerver.views.integrations.api_endpoint_docs,
         name='zerver.views.integrations.api_endpoint_docs'),
     url(r'^integrations/doc-html/(?P<integration_name>[^/]*)$',
@@ -546,6 +545,9 @@ urls += [url(r'^', include('social_django.urls', namespace='social'))]
 urls += [url(r'^help/(?P<article>.*)$',
              MarkdownDirectoryView.as_view(template_name='zerver/help/main.html',
                                            path_template='/zerver/help/%s.md'))]
+urls += [url(r'^api/(?P<article>[-\w]*\/?)$',
+             MarkdownDirectoryView.as_view(template_name='zerver/api/main.html',
+                                           path_template='/zerver/api/%s.md'))]
 
 if settings.DEVELOPMENT:
     urls += dev_urls.urls

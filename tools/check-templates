@@ -63,6 +63,7 @@ def check_html_templates(templates, all_dups):
         'id_terms',
         'send_confirm',
         'register',
+        'footer',
     ]
     bad_ids_dict = {ids: fns for ids, fns in template_id_dict.items()
                     if (ids not in IGNORE_IDS) and len(fns) > 1}
@@ -97,7 +98,6 @@ def check_html_templates(templates, all_dups):
             # These use various whitespace-dependent formatting that
             # prevent cleaning them.
             'templates/corporate/zephyr-mirror.html',
-            'templates/zerver/api.html',
             'templates/zerver/api_endpoints.html',
             # These just need to be reindented
             'templates/zerver/login.html',
@@ -112,7 +112,6 @@ def check_html_templates(templates, all_dups):
         'templates/analytics/activity.html',
         'templates/analytics/stats.html',
         'templates/corporate/zephyr-mirror.html',
-        'templates/zerver/api.html',
         'templates/zerver/compose.html',
         'templates/zerver/hello.html',
         'templates/zerver/index.html',
