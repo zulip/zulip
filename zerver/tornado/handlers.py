@@ -81,7 +81,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
 
         # Set up middleware if needed. We couldn't do this earlier, because
         # settings weren't available.
-        self._request_middleware = None  # type: Optional[List[Callable]]
+        self._request_middleware = None  # type: Optional[List[Callable[[HttpRequest], HttpResponse]]]
         self.initLock.acquire()
         # Check that middleware is still uninitialised.
         if self._request_middleware is None:
@@ -108,11 +108,11 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         the old logic. The added advantage is that due to this our event
         system code doesn't change.
         """
-        self._request_middleware = []  # type: Optional[List[Callable]]
-        self._view_middleware = []  # type: List[Callable]
-        self._template_response_middleware = []  # type: List[Callable]
-        self._response_middleware = []  # type: List[Callable]
-        self._exception_middleware = []  # type: List[Callable]
+        self._request_middleware = []  # type: Optional[List[Callable[[HttpRequest], HttpResponse]]]
+        self._view_middleware = []  # type: List[Callable[[HttpRequest, Callable[..., HttpResponse], List[str], Dict[str, Any]], Optional[HttpResponse]]]
+        self._template_response_middleware = []  # type: List[Callable[[HttpRequest, HttpResponse], HttpResponse]]
+        self._response_middleware = []  # type: List[Callable[[HttpRequest, HttpResponse], HttpResponse]]
+        self._exception_middleware = []  # type: List[Callable[[HttpRequest, Exception], Optional[HttpResponse]]]
 
         handler = convert_exception_to_response(self._legacy_get_response)
         for middleware_path in settings.MIDDLEWARE:
@@ -216,9 +216,9 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
 
                 # Apply view middleware
                 if response is None:
-                    for middleware_method in self._view_middleware:
-                        response = middleware_method(request, callback, callback_args,
-                                                     callback_kwargs)
+                    for view_middleware_method in self._view_middleware:
+                        response = view_middleware_method(request, callback,
+                                                          callback_args, callback_kwargs)
                         if response:
                             break
 
@@ -235,8 +235,8 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                         # If the view raised an exception, run it through exception
                         # middleware, and if the exception middleware returns a
                         # response, use that. Otherwise, reraise the exception.
-                        for middleware_method in self._exception_middleware:
-                            response = middleware_method(request, e)
+                        for exception_middleware_method in self._exception_middleware:
+                            response = exception_middleware_method(request, e)
                             if response:
                                 break
                         if response is None:
@@ -253,8 +253,8 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                 # If the response supports deferred rendering, apply template
                 # response middleware and the render the response
                 if hasattr(response, 'render') and callable(response.render):
-                    for middleware_method in self._template_response_middleware:
-                        response = middleware_method(request, response)
+                    for template_middleware_method in self._template_response_middleware:
+                        response = template_middleware_method(request, response)
                     response = response.render()
 
             except http.Http404 as e:
