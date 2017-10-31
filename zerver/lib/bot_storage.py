@@ -5,25 +5,12 @@ from zerver.models import BotUserStateData, UserProfile, Length
 
 from typing import Text, Optional
 
+class StateHandlerError(Exception):
+    pass
+
 def get_bot_state(bot_profile, key):
     # type: (UserProfile, Text) -> Text
     return BotUserStateData.objects.get(bot_profile=bot_profile, key=key).value
-
-def set_bot_state(bot_profile, key, value):
-    # type: (UserProfile, Text, Text) -> None
-    obj, created = BotUserStateData.objects.get_or_create(bot_profile=bot_profile, key=key,
-                                                          defaults={'value': value})
-    if not created:
-        obj.value = value
-        obj.save()
-
-def remove_bot_state(bot_profile, key):
-    # type: (UserProfile, Text) -> None
-    removed_ctr, removed_entries = BotUserStateData.objects.get(bot_profile=bot_profile, key=key).delete()
-
-def is_key_in_bot_state(bot_profile, key):
-    # type: (UserProfile, Text) -> bool
-    return BotUserStateData.objects.filter(bot_profile=bot_profile, key=key).exists()
 
 def get_bot_state_size(bot_profile, key=None):
     # type: (UserProfile, Optional[Text]) -> int
@@ -36,3 +23,35 @@ def get_bot_state_size(bot_profile, key=None):
             return len(key) + len(BotUserStateData.objects.get(bot_profile=bot_profile, key=key).value)
         except BotUserStateData.DoesNotExist:
             return 0
+
+def set_bot_state(bot_profile, key, value):
+    # type: (UserProfile, Text, Text) -> None
+    from zerver.lib.bot_lib import StateHandler
+    state_size_limit = StateHandler.state_size_limit
+
+    old_entry_size = get_bot_state_size(bot_profile, key)
+    new_entry_size = len(key) + len(value)
+    old_state_size = get_bot_state_size(bot_profile)
+    new_state_size = old_state_size + (new_entry_size - old_entry_size)
+    if new_state_size > state_size_limit:
+        raise StateHandlerError("Cannot set state. Request would require {} bytes storage. "
+                                "The current storage limit is {}.".format(new_state_size,
+                                                                          state_size_limit))
+    elif type(key) is not str:
+        raise StateHandlerError("Cannot set state. The key type is {}, but it should be str.".format(type(key)))
+    elif type(value) is not str:
+        raise StateHandlerError("Cannot set state. The value type is {}, but it should be str.".format(type(value)))
+    else:
+        obj, created = BotUserStateData.objects.get_or_create(bot_profile=bot_profile, key=key,
+                                                              defaults={'value': value})
+        if not created:
+            obj.value = value
+            obj.save()
+
+def remove_bot_state(bot_profile, key):
+    # type: (UserProfile, Text) -> None
+    removed_ctr, removed_entries = BotUserStateData.objects.get(bot_profile=bot_profile, key=key).delete()
+
+def is_key_in_bot_state(bot_profile, key):
+    # type: (UserProfile, Text) -> bool
+    return BotUserStateData.objects.filter(bot_profile=bot_profile, key=key).exists()

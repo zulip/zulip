@@ -8,7 +8,8 @@ from zerver.lib.actions import (
     do_create_user,
     get_service_bot_events,
 )
-from zerver.lib.bot_lib import StateHandler, StateHandlerError
+from zerver.lib.bot_lib import StateHandler
+from zerver.lib.bot_storage import StateHandlerError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
     get_realm,

@@ -34,8 +34,6 @@ def get_bot_handler(service_name):
     bot_module = importlib.import_module(bot_module_name)  # type: Any
     return bot_module.handler_class()
 
-class StateHandlerError(Exception):
-    pass
 
 class StateHandler:
     state_size_limit = 10000000   # type: int # TODO: Store this in the server configuration model.
@@ -52,21 +50,7 @@ class StateHandler:
 
     def put(self, key, value):
         # type: (Text, Text) -> None
-        old_entry_size = get_bot_state_size(self.user_profile, key)
-        new_entry_size = len(key) + len(value)
-        old_state_size = get_bot_state_size(self.user_profile)
-        new_state_size = old_state_size + (new_entry_size - old_entry_size)
-        if new_state_size > self.state_size_limit:
-            raise StateHandlerError("Cannot set state. Request would require {} bytes storage. "
-                                    "The current storage limit is {}.".format(new_state_size, self.state_size_limit))
-        elif type(key) is not str:
-            raise StateHandlerError("Cannot set state. The key type is {}, but it should be str.".format(type(key)))
-        else:
-            marshaled_value = self.marshal(value)
-            if type(marshaled_value) is not str:
-                raise StateHandlerError("Cannot set state. The value type is {}, but it "
-                                        "should be str.".format(type(marshaled_value)))
-            set_bot_state(self.user_profile, key, marshaled_value)
+        set_bot_state(self.user_profile, key, self.marshal(value))
 
     def remove(self, key):
         # type: (Text) -> None
