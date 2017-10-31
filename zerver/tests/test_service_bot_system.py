@@ -150,10 +150,13 @@ class TestServiceBotStateHandler(ZulipTestCase):
         # Reduce maximal state size for faster test string construction.
         StateHandler.state_size_limit = 100
         storage = StateHandler(self.bot_profile)
+        # Disable marshaling for storing a string whose size is equivalent to the size of the stored object.
+        storage.marshal = lambda obj: obj
+        storage.demarshal = lambda obj: obj
         key = 'capacity-filling entry'
         storage.put(key, 'x' * (StateHandler.state_size_limit - len(key)))
 
-        with self.assertRaisesMessage(StateHandlerError, "Cannot set state. Request would require 134 bytes storage. "
+        with self.assertRaisesMessage(StateHandlerError, "Cannot set state. Request would require 132 bytes storage. "
                                                          "The current storage limit is 100."):
             storage.put('too much data', 'a few bits too long')
 
