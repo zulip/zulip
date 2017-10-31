@@ -76,12 +76,10 @@ Configure the Zulip server instance by editing `/etc/zulip/settings.py` and
 providing values for the mandatory settings, which are all found under the
 heading `### MANDATORY SETTINGS`.  These settings include:
 
-- `EXTERNAL_HOST`: the user-accessible Zulip domain name for your
+- `EXTERNAL_HOST`: the user-accessible domain name for your
   Zulip installation (i.e., what users will type in their web
   browser). This should of course match the DNS name you configured to
   point to your server and for which you configured SSL certificates.
-  If you plan to use multiple domains, add the others to
-  `ALLOWED_HOSTS`.
 
 - `ZULIP_ADMINISTRATOR`: the email address of the person or team
   maintaining this installation and who will get support and error

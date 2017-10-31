@@ -115,6 +115,9 @@ else:
 # prod_settings_template.py, and in the initial /etc/zulip/settings.py on a new
 # install of the Zulip server.
 DEFAULT_SETTINGS = {
+    # Extra HTTP "Host" values to allow (standard ones added below)
+    'ALLOWED_HOSTS': [],
+
     # Basic email settings
     'EMAIL_HOST': None,
     'NOREPLY_EMAIL_ADDRESS': "noreply@" + EXTERNAL_HOST.split(":")[0],
@@ -352,9 +355,6 @@ for setting_name, setting_val in DEFAULT_SETTINGS.items():
     if setting_name not in vars():
         vars()[setting_name] = setting_val
 
-# Extend ALLOWED_HOSTS with localhost (needed to RPC to Tornado).
-ALLOWED_HOSTS += ['127.0.0.1', 'localhost']
-
 # These are the settings that we will check that the user has filled in for
 # production deployments before starting the app.  It consists of a series
 # of pairs of (setting name, default value that it must be changed from)
@@ -408,6 +408,12 @@ DEPLOY_ROOT = os.path.join(os.path.realpath(os.path.dirname(__file__)), '..')
 DEVELOPMENT_LOG_DIRECTORY = os.path.join(DEPLOY_ROOT, 'var', 'log')
 # Make redirects work properly behind a reverse proxy
 USE_X_FORWARDED_HOST = True
+
+# Extend ALLOWED_HOSTS with localhost (needed to RPC to Tornado),
+ALLOWED_HOSTS += ['127.0.0.1', 'localhost']
+# and with hosts corresponding to EXTERNAL_HOST.
+ALLOWED_HOSTS += [EXTERNAL_HOST.split(":")[0],
+                  '.' + EXTERNAL_HOST.split(":")[0]]
 
 MIDDLEWARE = (
     # With the exception of it's dependencies,
