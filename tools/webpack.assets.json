@@ -1,6 +1,5 @@
 {
     "activity": "./static/third/sorttable/sorttable.js",
-    "api": "./static/js/portico/api.js",
     "portico": [
         "./static/js/portico/header.js"
     ],
@@ -16,11 +15,6 @@
     "help": [
             "./node_modules/perfect-scrollbar/dist/js/perfect-scrollbar.jquery.js",
             "./static/js/portico/help.js"
-    ],
-    "api": [
-        "./node_modules/perfect-scrollbar/dist/js/perfect-scrollbar.jquery.js",
-        "./static/js/portico/api.js",
-        "./static/js/portico/help.js"
     ],
     "katex": "./node_modules/katex/dist/katex.min.js",
     "landing-page": "./static/js/portico/landing-page.js",

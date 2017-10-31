@@ -1,5 +1,28 @@
 const Ps = require('perfect-scrollbar');
 
+function registerCodeSection($codeSection) {
+    const $li = $codeSection.find("ul.nav li");
+    const $blocks = $codeSection.find(".blocks div");
+
+    $li.click(function () {
+        const language = this.dataset.language;
+
+        $li.removeClass("active");
+        $li.filter("[data-language="+language+"]").addClass("active");
+
+        $blocks.removeClass("active");
+        $blocks.filter("[data-language="+language+"]").addClass("active");
+    });
+
+    $li.eq(0).click();
+}
+
+function render_code_sections() {
+    $(".code-section").each(function () {
+        registerCodeSection($(this));
+    });
+}
+
 (function () {
     var html_map = {};
     var loading = {
@@ -86,4 +109,6 @@ const Ps = require('perfect-scrollbar');
             $(".sidebar.show").toggleClass("show");
         }
     });
+
+    render_code_sections();
 }());
