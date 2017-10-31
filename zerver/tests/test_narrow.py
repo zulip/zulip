@@ -962,7 +962,7 @@ class GetOldMessagesTest(ZulipTestCase):
             anchor=next_message_id,
             num_after=10,
             num_before=0,
-        ))  # type: Dict[str, Dict]
+        ))
         self.assertEqual(len(result['messages']), 4)
         messages = result['messages']
 
@@ -982,7 +982,6 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertIn(
             english_message['match_content'],
             u'<p>I want to go to <span class="highlight">日本</span>!</p>')
-
 
     @override_settings(USING_PGROONGA=False)
     def test_get_messages_with_search_not_subscribed(self):
