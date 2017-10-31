@@ -35,6 +35,7 @@ function render_code_sections() {
             $html.find(".back-to-home").remove();
 
             callback($html.html().trim());
+            render_code_sections();
         });
     };
 
@@ -62,6 +63,7 @@ function render_code_sections() {
         if (html_map[path]) {
             $(".markdown .content").html(html_map[path]);
             Ps.update(container);
+            render_code_sections();
         } else {
             loading.name = path;
 
