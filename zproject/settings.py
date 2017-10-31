@@ -159,6 +159,10 @@ DEFAULT_SETTINGS = {
     'ENABLE_FEEDBACK': PRODUCTION,
     'FEEDBACK_EMAIL': None,
 
+    # Max state storage per user
+    # TODO: Add this to zproject/prod_settings_template.py once stateful bots are fully functional.
+    'USER_STATE_SIZE_LIMIT': 10000000,
+
     # External service configuration
     'CAMO_URI': '',
     'MEMCACHED_LOCATION': '127.0.0.1:11211',

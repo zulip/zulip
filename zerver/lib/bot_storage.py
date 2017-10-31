@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db.models import Sum
 from django.db.models.query import F
 from django.db.models.functions import Length
@@ -26,9 +27,7 @@ def get_bot_state_size(bot_profile, key=None):
 
 def set_bot_state(bot_profile, key, value):
     # type: (UserProfile, Text, Text) -> None
-    from zerver.lib.bot_lib import StateHandler
-    state_size_limit = StateHandler.state_size_limit
-
+    state_size_limit = settings.USER_STATE_SIZE_LIMIT
     old_entry_size = get_bot_state_size(bot_profile, key)
     new_entry_size = len(key) + len(value)
     old_state_size = get_bot_state_size(bot_profile)

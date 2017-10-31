@@ -4,6 +4,9 @@ import json
 import mock
 from typing import Any, Union, Mapping, Callable
 
+from django.conf import settings
+from django.test import override_settings
+
 from zerver.lib.actions import (
     do_create_user,
     get_service_bot_events,
@@ -146,23 +149,26 @@ class TestServiceBotStateHandler(ZulipTestCase):
                                                   "<class 'dict'>, but it should be str."):
             storage.put(serializable_obj, 'some value')  # type: ignore # We intend to test an invalid type.
 
+    # Reduce maximal state size for faster test string construction.
+    @override_settings(USER_STATE_SIZE_LIMIT=100)
     def test_storage_limit(self):
         # type: () -> None
-        # Reduce maximal state size for faster test string construction.
-        StateHandler.state_size_limit = 100
         storage = StateHandler(self.bot_profile)
-        # Disable marshaling for storing a string whose size is equivalent to the size of the stored object.
+
+        # Disable marshaling for storing a string whose size is
+        # equivalent to the size of the stored object.
         storage.marshal = lambda obj: obj
         storage.demarshal = lambda obj: obj
+
         key = 'capacity-filling entry'
-        storage.put(key, 'x' * (StateHandler.state_size_limit - len(key)))
+        storage.put(key, 'x' * (settings.USER_STATE_SIZE_LIMIT - len(key)))
 
         with self.assertRaisesMessage(StateError, "Cannot set state. Request would require 132 bytes storage. "
                                                   "The current storage limit is 100."):
             storage.put('too much data', 'a few bits too long')
 
         second_storage = StateHandler(self.second_bot_profile)
-        second_storage.put('another big entry', 'x' * (StateHandler.state_size_limit - 40))
+        second_storage.put('another big entry', 'x' * (settings.USER_STATE_SIZE_LIMIT - 40))
         second_storage.put('normal entry', 'abcd')
 
     def test_entry_removal(self):
