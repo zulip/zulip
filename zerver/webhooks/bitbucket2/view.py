@@ -5,9 +5,10 @@ from six.moves import zip
 from typing import Any, Callable, Dict, List, Optional, Text
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
+from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success, json_error
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
+from zerver.lib.request import REQ, has_request_variables
 from zerver.models import UserProfile
 from zerver.lib.webhooks.git import get_push_commits_event_message, SUBJECT_WITH_BRANCH_TEMPLATE,\
     get_force_push_commits_event_message, get_remove_branch_event_message, get_pull_request_event_message,\

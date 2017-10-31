@@ -6,10 +6,11 @@ from django.db.models import Q
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 
-from zerver.models import UserProfile, get_user, Realm
+from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success, json_error
-from zerver.decorator import api_key_only_webhook_view, has_request_variables, REQ
+from zerver.lib.request import REQ, has_request_variables
+from zerver.models import UserProfile, get_user, Realm
 
 import logging
 import re
