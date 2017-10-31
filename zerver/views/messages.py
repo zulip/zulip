@@ -6,7 +6,7 @@ from django.core import validators
 from django.core.exceptions import ValidationError
 from django.db import connection
 from django.http import HttpRequest, HttpResponse
-from typing import Dict, List, Set, Text, Any, AnyStr, Callable, Iterable, \
+from typing import Dict, List, Set, Text, Any, Callable, Iterable, \
     Optional, Tuple, Union
 from zerver.lib.str_utils import force_text, force_bytes
 from zerver.lib.exceptions import JsonableError, ErrorCode
@@ -415,37 +415,53 @@ class NarrowBuilder(object):
 # whereas the offsets from tsearch_extras are in bytes, so we
 # have to account for both cases in the logic below.
 def highlight_string(text, locs):
-    # type: (AnyStr, Iterable[Tuple[int, int]]) -> Text
-    string = force_text(text)
+    # type: (Text, Iterable[Tuple[int, int]]) -> Text
     highlight_start = u'<span class="highlight">'
     highlight_stop = u'</span>'
     pos = 0
-    result = u''
+    result = ''
     in_tag = False
+
+    text_utf8 = text.encode('utf8')
+
     for loc in locs:
         (offset, length) = loc
-        if not settings.USING_PGROONGA:
-            # Here we convert to bytes temporarily so that we can
-            # convert the offsets in locs from being an offset in
-            # bytes to an offset in characters.
-            prefix = force_bytes(text)[:offset]
-            match = force_bytes(text)[offset:offset + length]
-            offset = offset - len(prefix) + len(force_text(prefix))
-            length = length - len(match) + len(force_text(match))
-        for character in string[pos:offset + length]:
-            if character == u'<':
+
+        # These indexes are in byte space for tsearch,
+        # and they are in string space for pgroonga.
+        prefix_start = pos
+        prefix_end = offset
+        match_start = offset
+        match_end = offset + length
+
+        if settings.USING_PGROONGA:
+            prefix = text[prefix_start:prefix_end]
+            match = text[match_start:match_end]
+        else:
+            prefix = text_utf8[prefix_start:prefix_end].decode()
+            match = text_utf8[match_start:match_end].decode()
+
+        for character in (prefix + match):
+            if character == '<':
                 in_tag = True
-            elif character == u'>':
+            elif character == '>':
                 in_tag = False
         if in_tag:
-            result += string[pos:offset + length]
+            result += prefix
+            result += match
         else:
-            result += string[pos:offset]
+            result += prefix
             result += highlight_start
-            result += string[offset:offset + length]
+            result += match
             result += highlight_stop
-        pos = offset + length
-    result += string[pos:]
+        pos = match_end
+
+    if settings.USING_PGROONGA:
+        final_frag = text[pos:]
+    else:
+        final_frag = text_utf8[pos:].decode()
+
+    result += final_frag
     return result
 
 def get_search_fields(rendered_content, subject, content_matches, subject_matches):
