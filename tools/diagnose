@@ -15,7 +15,7 @@ from scripts.lib.zulip_tools import get_dev_uuid_var_path
 UUID_VAR_PATH = get_dev_uuid_var_path()
 
 def run(check_func):
-    # type: (Callable) -> None
+    # type: (Callable[[], bool]) -> None
     '''
     This decorator simply runs functions.  It makes it more
     convenient to add new checks without a big main() function.
