@@ -19,22 +19,6 @@ from typing import Optional
 # EXTERNAL_HOST to e.g. zulip.example.com:1234 here.
 EXTERNAL_HOST = 'zulip.example.com'
 
-# A comma-separated list of strings representing the host/domain names
-# that your users will enter in their browsers to access your Zulip
-# server. This is a security measure to prevent an attacker from
-# poisoning caches and triggering password reset emails with links to
-# malicious hosts by submitting requests with a fake HTTP Host
-# header. See Django's documentation here:
-# <https://docs.djangoproject.com/en/1.9/ref/settings/#allowed-hosts>.
-# Zulip adds 'localhost' and '127.0.0.1' to the list automatically.
-#
-# The default should work unless you are using multiple hostnames or
-# connecting directly to your server's IP address.  If this is set
-# wrong, all requests will get a 400 "Bad Request" error.
-#
-# Note that these should just be hostnames, without port numbers.
-ALLOWED_HOSTS = [EXTERNAL_HOST.split(":")[0]]
-
 # The email address for the person or team who maintains the Zulip
 # installation. Note that this is a public-facing email address; it may
 # appear on 404 pages, is used as the sender's address for many automated
@@ -87,6 +71,18 @@ EMAIL_USE_TLS = True
 # this setting.
 # The address should have no newlines.
 #PHYSICAL_ADDRESS = ''
+
+# A comma-separated list of strings representing the host/domain names
+# that your users can enter in their browsers to access Zulip.
+# This is a security measure; for details, see the Django documentation:
+# https://docs.djangoproject.com/en/1.11/ref/settings/#allowed-hosts
+#
+# Zulip automatically adds to this list 'localhost', '127.0.0.1', and
+# patterns representing EXTERNAL_HOST and subdomains of it.  If you are
+# accessing your server by other hostnames, list them here.
+#
+# Note that these should just be hostnames, without port numbers.
+#ALLOWED_HOSTS = ['zulip-alias.example.com']
 
 ### AUTHENTICATION SETTINGS
 #
