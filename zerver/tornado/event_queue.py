@@ -784,17 +784,17 @@ def process_message_event(event_template, users):
     send_to_clients = get_client_info_for_message_event(event_template, users)
 
     presence_idle_user_ids = set(event_template.get('presence_idle_user_ids', []))
-    message_dict = event_template['message_dict']  # type: Dict[str, Any]
+    wide_dict = event_template['message_dict']  # type: Dict[str, Any]
 
-    sender_id = message_dict['sender_id']  # type: int
-    message_id = message_dict['id']  # type: int
-    message_type = message_dict['type']  # type: str
-    sending_client = message_dict['client']  # type: Text
+    sender_id = wide_dict['sender_id']  # type: int
+    message_id = wide_dict['id']  # type: int
+    message_type = wide_dict['type']  # type: str
+    sending_client = wide_dict['client']  # type: Text
 
-    message_dict_html = copy.deepcopy(message_dict)
+    message_dict_html = copy.deepcopy(wide_dict)
     MessageDict.finalize_payload(message_dict_html, apply_markdown=True)
 
-    message_dict_text = copy.deepcopy(message_dict)
+    message_dict_text = copy.deepcopy(wide_dict)
     MessageDict.finalize_payload(message_dict_text, apply_markdown=False)
 
     # Extra user-specific data to include
