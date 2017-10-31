@@ -178,9 +178,9 @@ $(function () {
 
     $("#main_div").on("click", ".message_reaction", function (e) {
         e.stopPropagation();
-        var emoji_name = $(this).attr('data-emoji-name');
+        var local_id = $(this).attr('data-reaction-id');
         var message_id = rows.get_message_id(this);
-        reactions.toggle_emoji_reaction(message_id, emoji_name);
+        reactions.process_reaction_click(message_id, local_id);
     });
 
     $("#main_div").on("click", "a.stream", function (e) {
