@@ -1,3 +1,63 @@
+const Segments = ($parent) => {
+    const $segments = $parent.find("[data-stage]");
+    const callbacks = {
+        change: {},
+        validate: {},
+    };
+
+    $segments.eq(0).addClass("show");
+
+    $parent.on("click", "[next-stage]", function () {
+        const $stage = $(this).closest("[data-stage]");
+        const id = $stage.data("stage");
+
+        if (typeof callbacks.validate[id] === "function") {
+            let is_valid = false;
+
+            callbacks.validate[id]($stage, () => is_valid = true);
+
+            if (is_valid === false) {
+                return;
+            }
+        }
+
+        $stage.addClass("fade-out");
+    });
+
+    $segments.on("transitionend", function (e) {
+        // cast to integer and add one.
+        const id = 1 + +$(this).data("stage");
+
+        if ($(this).hasClass("fade-out")) {
+            $(this).removeClass("fade-out show");
+
+            setTimeout(function () {
+                $segments.filter("[data-stage='" + id + "']").addClass("show");
+                if (typeof callbacks.change[id] === "function") {
+                    callbacks.change[id]();
+                }
+            }, 300);
+        }
+    });
+
+    return {
+        display: function (idx) {
+            $segments.filter("[data-stage='" + (idx - 1) + "']").addClass("fade-out");
+            return this;
+        },
+
+        change: function (idx, func) {
+            callbacks.change[idx] = func;
+            return this;
+        },
+
+        validate: function (idx, func) {
+            callbacks.validate[idx] = func;
+            return this;
+        },
+    };
+};
+
 $(function () {
     // NB: this file is included on multiple pages.  In each context,
     // some of the jQuery selectors below will return empty lists.
