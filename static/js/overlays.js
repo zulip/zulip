@@ -49,6 +49,8 @@ exports.active_modal = function () {
 };
 
 exports.open_overlay = function (opts) {
+    popovers.hide_all();
+
     if (!opts.name || !opts.overlay || !opts.on_close) {
         blueslip.error('Programming error in open_overlay');
         return;
