@@ -852,7 +852,10 @@ function render(template_name, args) {
 
 (function message_reaction() {
     var args = {
+        class: 'message_reaction',
         emoji_name: 'smile',
+        emoji_code: '1f604',
+        local_id: 'unicode_emoji,smile,1f604',
         message_id: '1',
     };
 
@@ -861,8 +864,10 @@ function render(template_name, args) {
     html += render('message_reaction', args);
     html += '</div>';
 
+    var reaction = $(html).find(".message_reaction");
+    assert.equal(reaction.data("reaction-id"), "unicode_emoji,smile,1f604");
+    assert(reaction.find(".emoji").hasClass("emoji-1f604"));
     global.write_handlebars_output("message_reaction", html);
-    assert($(html).find(".message_reaction").has(".emoji .emoji-smile"));
 }());
 
 (function more_topics() {
