@@ -33,14 +33,14 @@
       "input": "\n```\nfenced code\n```\n\n```inline code```\n",
       "expected_output": "<div class=\"codehilite\"><pre><span></span>fenced code\n</pre></div>\n\n\n<p><code>inline code</code></p>",
       "bugdown_matches_marked": true,
-      "test_content": "fenced code\n\n\n\ninline code"
+      "text_content": "fenced code\n\n\n\ninline code"
     },
     {
       "name": "hanging_multi_codeblock",
       "input": "Hamlet said:\n~~~~\ndef speak(self):\n    x = 1\n# Comment to make this code block longer to test Trac #1162\n~~~~\n\nThen he mentioned ````y = 4 + x**2```` and\n~~~~\ndef foobar(self):\n    return self.baz()",
       "expected_output": "<p>Hamlet said:</p>\n<div class=\"codehilite\"><pre><span></span>def speak(self):\n    x = 1\n# Comment to make this code block longer to test Trac #1162\n</pre></div>\n\n\n<p>Then he mentioned <code>y = 4 + x**2</code> and</p>\n<div class=\"codehilite\"><pre><span></span>def foobar(self):\n    return self.baz()\n</pre></div>",
       "bugdown_matches_marked": true,
-      "test_content": "Hamlet said:\ndef speak(self):\n    x = 1\n# Comment to make this code block longer to test Trac #1162\n\n\n\nThen he mentioned y = 4 + x**2 and\ndef foobar(self):\n    return self.baz()\n"
+      "text_content": "Hamlet said:\ndef speak(self):\n    x = 1\n# Comment to make this code block longer to test Trac #1162\n\n\n\nThen he mentioned y = 4 + x**2 and\ndef foobar(self):\n    return self.baz()\n"
     },
     {
       "name": "fenced_quote",
