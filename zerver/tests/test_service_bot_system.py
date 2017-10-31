@@ -9,7 +9,7 @@ from zerver.lib.actions import (
     get_service_bot_events,
 )
 from zerver.lib.bot_lib import StateHandler
-from zerver.lib.bot_storage import StateHandlerError
+from zerver.lib.bot_storage import StateError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
     get_realm,
@@ -139,11 +139,11 @@ class TestServiceBotStateHandler(ZulipTestCase):
         storage.marshal = lambda obj: obj
         storage.demarshal = lambda obj: obj
         serializable_obj = {'foo': 'bar', 'baz': [42, 'cux']}
-        with self.assertRaisesMessage(StateHandlerError, "Cannot set state. The value type is "
-                                                         "<class 'dict'>, but it should be str."):
+        with self.assertRaisesMessage(StateError, "Cannot set state. The value type is "
+                                                  "<class 'dict'>, but it should be str."):
             storage.put('some key', serializable_obj)  # type: ignore # We intend to test an invalid type.
-        with self.assertRaisesMessage(StateHandlerError, "Cannot set state. The key type is "
-                                                         "<class 'dict'>, but it should be str."):
+        with self.assertRaisesMessage(StateError, "Cannot set state. The key type is "
+                                                  "<class 'dict'>, but it should be str."):
             storage.put(serializable_obj, 'some value')  # type: ignore # We intend to test an invalid type.
 
     def test_storage_limit(self):
@@ -157,8 +157,8 @@ class TestServiceBotStateHandler(ZulipTestCase):
         key = 'capacity-filling entry'
         storage.put(key, 'x' * (StateHandler.state_size_limit - len(key)))
 
-        with self.assertRaisesMessage(StateHandlerError, "Cannot set state. Request would require 132 bytes storage. "
-                                                         "The current storage limit is 100."):
+        with self.assertRaisesMessage(StateError, "Cannot set state. Request would require 132 bytes storage. "
+                                                  "The current storage limit is 100."):
             storage.put('too much data', 'a few bits too long')
 
         second_storage = StateHandler(self.second_bot_profile)

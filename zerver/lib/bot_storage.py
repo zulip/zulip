@@ -5,7 +5,7 @@ from zerver.models import BotUserStateData, UserProfile, Length
 
 from typing import Text, Optional
 
-class StateHandlerError(Exception):
+class StateError(Exception):
     pass
 
 def get_bot_state(bot_profile, key):
@@ -34,13 +34,13 @@ def set_bot_state(bot_profile, key, value):
     old_state_size = get_bot_state_size(bot_profile)
     new_state_size = old_state_size + (new_entry_size - old_entry_size)
     if new_state_size > state_size_limit:
-        raise StateHandlerError("Cannot set state. Request would require {} bytes storage. "
-                                "The current storage limit is {}.".format(new_state_size,
-                                                                          state_size_limit))
+        raise StateError("Cannot set state. Request would require {} bytes storage. "
+                         "The current storage limit is {}.".format(new_state_size,
+                                                                   state_size_limit))
     elif type(key) is not str:
-        raise StateHandlerError("Cannot set state. The key type is {}, but it should be str.".format(type(key)))
+        raise StateError("Cannot set state. The key type is {}, but it should be str.".format(type(key)))
     elif type(value) is not str:
-        raise StateHandlerError("Cannot set state. The value type is {}, but it should be str.".format(type(value)))
+        raise StateError("Cannot set state. The value type is {}, but it should be str.".format(type(value)))
     else:
         obj, created = BotUserStateData.objects.get_or_create(bot_profile=bot_profile, key=key,
                                                               defaults={'value': value})
