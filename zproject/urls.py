@@ -425,7 +425,7 @@ i18n_urls = [
         name="zerver.views.integrations.integration_doc"),
     url(r'^integrations/(.*)', IntegrationView.as_view()),
     url(r'^team/$', zerver.views.users.team_view),
-    url(r'^about/$', TemplateView.as_view(template_name='zerver/about.html')),
+    url(r'^history/$', TemplateView.as_view(template_name='zerver/history.html')),
     url(r'^apps/(.*)', zerver.views.home.apps_view, name='zerver.views.home.apps_view'),
     url(r'^plans/$', TemplateView.as_view(template_name='zerver/plans.html'), name='plans'),
 
