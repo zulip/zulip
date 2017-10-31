@@ -79,7 +79,7 @@ class LibratoWebhookHandler(LibratoWebhookParser):
         }
 
     def find_handle_method(self):
-        # type: () -> Callable
+        # type: () -> Callable[[], Text]
         for available_type in self.payload_available_types:
             if self.payload.get(available_type):
                 return self.payload_available_types[available_type]
