@@ -31,8 +31,12 @@ def get_caches_in_use(threshold_days):
         caches_in_use.add(CURRENT_CACHE)
 
     for path in setups_to_check:
-        for filename in os.listdir(os.path.join(path, "requirements")):
-            requirements_file = os.path.join(path, "requirements", filename)
+        reqs_dir = os.path.join(path, "requirements")
+        # Incase the directory doesn't contain a requirements directory skip it.
+        if not os.path.exists(reqs_dir):
+            continue
+        for filename in os.listdir(reqs_dir):
+            requirements_file = os.path.join(reqs_dir, filename)
             deps = expand_reqs(requirements_file)
             hash_val = hash_deps(deps)
             caches_in_use.add(os.path.join(VENV_CACHE_DIR, hash_val))
