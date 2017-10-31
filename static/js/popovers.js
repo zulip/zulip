@@ -100,6 +100,7 @@ function show_user_info_popover(element, user, message) {
             sent_by_uri: narrow.by_sender_uri(user.email),
             narrowed: narrow_state.active(),
             private_message_class: "respond_personal_button",
+            is_active: people.is_active_user_for_popover(user.user_id),
         };
 
         var ypos = elt.offset().top;
@@ -117,11 +118,11 @@ function show_user_info_popover(element, user, message) {
 
         elt.popover({
             placement: placement,
-            template:  templates.render('user_info_popover',   {class: "message-info-popover"}),
-            title:     templates.render('user_info_popover_title',
-                                        {user_avatar: "avatar/" + user.email}),
-            content:   templates.render('user_info_popover_content', args),
-            trigger:   "manual",
+            template: templates.render('user_info_popover', {class: "message-info-popover"}),
+            title: templates.render('user_info_popover_title',
+                                    {user_avatar: "avatar/" + user.email}),
+            content: templates.render('user_info_popover_content', args),
+            trigger: "manual",
         });
         elt.popover("show");
 
@@ -447,13 +448,14 @@ exports.register_click_handlers = function () {
             pm_with_uri: narrow.pm_with_uri(user_email),
             sent_by_uri: narrow.by_sender_uri(user_email),
             private_message_class: "compose_private_message",
+            is_active: people.is_active_user_for_popover(user_id),
         };
 
         target.popover({
-            template:  templates.render('user_info_popover',   {class: "user_popover"}),
-            title:     templates.render('user_info_popover_title', {user_avatar: "avatar/" + user_email}),
-            content:   templates.render('user_info_popover_content', args),
-            trigger:   "manual",
+            template: templates.render('user_info_popover', {class: "user_popover"}),
+            title: templates.render('user_info_popover_title', {user_avatar: "avatar/" + user_email}),
+            content: templates.render('user_info_popover_content', args),
+            trigger: "manual",
             fixed: true,
             placement: userlist_placement === "left" ? "right" : "left",
         });

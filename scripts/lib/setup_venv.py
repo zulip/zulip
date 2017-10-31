@@ -1,6 +1,5 @@
 
 import os
-import sys
 import subprocess
 from scripts.lib.zulip_tools import run, ENDC, WARNING
 from scripts.lib.hash_reqs import expand_reqs

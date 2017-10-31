@@ -8,7 +8,7 @@ import os
 import zerver.forms
 from zproject import dev_urls
 from zproject.legacy_urls import legacy_urls
-from zerver.views.integrations import IntegrationView, APIView, HelpView
+from zerver.views.integrations import IntegrationView, APIView, MarkdownDirectoryView
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from zerver.webhooks import github_dispatcher
 
@@ -46,144 +46,7 @@ from zerver.lib.rest import rest_dispatch
 #
 #   - Likewise for the local dev server in tools/run-dev.py.
 
-# These views serve pages (HTML). As such, their internationalization
-# must depend on the url.
-#
-# If you're adding a new page to the website (as opposed to a new
-# endpoint for use by code), you should add it here.
-i18n_urls = [
-    url(r'^$', zerver.views.home.home, name='zerver.views.home.home'),
-    # We have a desktop-specific landing page in case we change our /
-    # to not log in in the future. We don't want to require a new
-    # desktop app build for everyone in that case
-    url(r'^desktop_home/$', zerver.views.home.desktop_home, name='zerver.views.home.desktop_home'),
-
-    url(r'^accounts/login/sso/$', zerver.views.auth.remote_user_sso, name='login-sso'),
-    url(r'^accounts/login/jwt/$', zerver.views.auth.remote_user_jwt, name='login-jwt'),
-    url(r'^accounts/login/social/(\w+)$', zerver.views.auth.start_social_login, name='login-social'),
-    url(r'^accounts/login/google/$', zerver.views.auth.start_google_oauth2, name='zerver.views.auth.start_google_oauth2'),
-    url(r'^accounts/login/google/send/$',
-        zerver.views.auth.send_oauth_request_to_google,
-        name='zerver.views.auth.send_oauth_request_to_google'),
-    url(r'^accounts/login/google/done/$', zerver.views.auth.finish_google_oauth2, name='zerver.views.auth.finish_google_oauth2'),
-    url(r'^accounts/login/subdomain/$', zerver.views.auth.log_into_subdomain, name='zerver.views.auth.log_into_subdomain'),
-    url(r'^accounts/login/local/$', zerver.views.auth.dev_direct_login, name='zerver.views.auth.dev_direct_login'),
-    # We have two entries for accounts/login to allow reverses on the Django
-    # view we're wrapping to continue to function.
-    url(r'^accounts/login/', zerver.views.auth.login_page, {'template_name': 'zerver/login.html'}, name='zerver.views.auth.login_page'),
-    url(r'^accounts/login/', login, {'template_name': 'zerver/login.html'},
-        name='django.contrib.auth.views.login'),
-    url(r'^accounts/logout/', zerver.views.auth.logout_then_login, name='zerver.views.auth.logout_then_login'),
-
-    url(r'^accounts/webathena_kerberos_login/',
-        zerver.views.zephyr.webathena_kerberos_login,
-        name='zerver.views.zephyr.webathena_kerberos_login'),
-
-    url(r'^accounts/password/reset/$', password_reset,
-        {'post_reset_redirect': '/accounts/password/reset/done/',
-         'template_name': 'zerver/reset.html',
-         'email_template_name': '',
-         'subject_template_name': '',
-         'password_reset_form': zerver.forms.ZulipPasswordResetForm,
-         }, name='django.contrib.auth.views.password_reset'),
-    url(r'^accounts/password/reset/done/$', password_reset_done,
-        {'template_name': 'zerver/reset_emailed.html'}),
-    url(r'^accounts/password/reset/(?P<uidb64>[0-9A-Za-z]+)/(?P<token>.+)/$',
-        password_reset_confirm,
-        {'post_reset_redirect': '/accounts/password/done/',
-         'template_name': 'zerver/reset_confirm.html',
-         'set_password_form': zerver.forms.LoggingSetPasswordForm},
-        name='django.contrib.auth.views.password_reset_confirm'),
-    url(r'^accounts/password/done/$', password_reset_complete,
-        {'template_name': 'zerver/reset_done.html'}),
-    url(r'^accounts/deactivated/',
-        zerver.views.registration.show_deactivation_notice,
-        name='zerver.views.registration.show_deactivation_notice'),
-
-    # Avatar
-    url(r'^avatar/(?P<email_or_id>[\S]+)?/(?P<medium>[\S]+)?', zerver.views.users.avatar, name='zerver.views.users.avatar'),
-    url(r'^avatar/(?P<email_or_id>[\S]+)?', zerver.views.users.avatar, name='zerver.views.users.avatar'),
-
-    # Registration views, require a confirmation ID.
-    url(r'^accounts/register/social/(\w+)$',
-        zerver.views.auth.start_social_signup,
-        name='signup-social'),
-    url(r'^accounts/home/', zerver.views.registration.accounts_home,
-        name='zerver.views.registration.accounts_home'),
-    url(r'^accounts/send_confirm/(?P<email>[\S]+)?',
-        TemplateView.as_view(template_name='zerver/accounts_send_confirm.html'), name='send_confirm'),
-    url(r'^accounts/register/', zerver.views.registration.accounts_register,
-        name='zerver.views.registration.accounts_register'),
-    url(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)', confirmation.views.confirm, name='confirmation.views.confirm'),
-
-    url(r'^accounts/confirm_new_email/(?P<confirmation_key>[\w]+)',
-        zerver.views.user_settings.confirm_email_change,
-        name='zerver.views.user_settings.confirm_email_change'),
-
-    # Email unsubscription endpoint. Allows for unsubscribing from various types of emails,
-    # including the welcome emails (day 1 & 2), missed PMs, etc.
-    url(r'^accounts/unsubscribe/(?P<email_type>[\w]+)/(?P<confirmation_key>[\w]+)',
-        zerver.views.unsubscribe.email_unsubscribe, name='zerver.views.unsubscribe.email_unsubscribe'),
-
-    # Portico-styled page used to provide email confirmation of terms acceptance.
-    url(r'^accounts/accept_terms/$', zerver.views.home.accounts_accept_terms, name='zerver.views.home.accounts_accept_terms'),
-
-    # Find your account
-    url(r'^accounts/find/$', zerver.views.registration.find_account, name='zerver.views.registration.find_account'),
-
-    # Realm Creation
-    url(r'^create_realm/$', zerver.views.registration.create_realm, name='zerver.views.create_realm'),
-    url(r'^create_realm/(?P<creation_key>[\w]+)$', zerver.views.registration.create_realm, name='zerver.views.create_realm'),
-
-    # Login/registration
-    url(r'^register/$', zerver.views.registration.accounts_home, name='register'),
-    url(r'^login/$', zerver.views.auth.login_page, {'template_name': 'zerver/login.html'}, name='zerver.views.auth.login_page'),
-
-    url(r'^join/(?P<confirmation_key>\S+)/$', zerver.views.registration.accounts_home_from_multiuse_invite,
-        name='zerver.views.registration.accounts_home_from_multiuse_invite'),
-
-    # API and integrations documentation
-    url(r'^api/$', APIView.as_view(template_name='zerver/api.html')),
-    url(r'^api/endpoints/$', zerver.views.integrations.api_endpoint_docs, name='zerver.views.integrations.api_endpoint_docs'),
-    url(r'^integrations/doc-html/(?P<integration_name>[^/]*)$', zerver.views.integrations.integration_doc,
-        name="zerver.views.integrations.integration_doc"),
-    url(r'^integrations/(.*)', IntegrationView.as_view()),
-    url(r'^about/$', zerver.views.users.about_view),
-    url(r'^apps/(.*)', zerver.views.home.apps_view, name='zerver.views.home.apps_view'),
-    url(r'^plans/$', TemplateView.as_view(template_name='zerver/plans.html'), name='plans'),
-
-    # Landing page, features pages, signup form, etc.
-    url(r'^hello/$', TemplateView.as_view(template_name='zerver/hello.html'), name='landing-page'),
-    url(r'^new-user/$', RedirectView.as_view(url='/hello', permanent=True)),
-    url(r'^features/$', TemplateView.as_view(template_name='zerver/features.html')),
-    url(r'^why-zulip/$', TemplateView.as_view(template_name='zerver/why-zulip.html')),
-    url(r'^for/open-source/$', TemplateView.as_view(template_name='zerver/for-open-source.html')),
-    url(r'^for/companies/$', TemplateView.as_view(template_name='zerver/for-companies.html')),
-    url(r'^for/working-groups-and-communities/$', TemplateView.as_view(template_name='zerver/for-working-groups-and-communities.html')),
-
-    # Terms of Service and privacy pages.
-    url(r'^terms/$', TemplateView.as_view(template_name='zerver/terms.html'), name='terms'),
-    url(r'^privacy/$', TemplateView.as_view(template_name='zerver/privacy.html'), name='privacy'),
-
-    url(r'^config-error/google$', TemplateView.as_view(
-        template_name='zerver/config_error.html',),
-        {'google_error': True},),
-    url(r'^config-error/github$', TemplateView.as_view(
-        template_name='zerver/config_error.html',),
-        {'github_error': True},),
-    url(r'^config-error/smtp$', TemplateView.as_view(
-        template_name='zerver/config_error.html',),
-        {'smtp_error': True},),
-    url(r'^config-error/ldap$', TemplateView.as_view(
-        template_name='zerver/config_error.html',),
-        {'ldap_error_realm_is_none': True},
-        name='ldap_error_realm_is_none'),
-]
-
-# Make a copy of i18n_urls so that they appear without prefix for english
-urls = list(i18n_urls)
-
-# These endpoints constitute the redesigned API (V1), which uses:
+# These endpoints constitute the currently designed API (V1), which uses:
 # * REST verbs
 # * Basic auth (username:password is email:apiKey)
 # * Take and return json-formatted data
@@ -192,14 +55,16 @@ urls = list(i18n_urls)
 # please add it here.
 # See rest_dispatch in zerver.lib.rest for an explanation of auth methods used
 #
-# All of these paths are accessed by either a /json or /api/v1 prefix
+# All of these paths are accessed by either a /json or /api/v1 prefix;
+# e.g. `PATCH /json/realm` or `PATCH /api/v1/realm`.
 v1_api_and_json_patterns = [
     # realm-level calls
     url(r'^realm$', rest_dispatch,
         {'PATCH': 'zerver.views.realm.update_realm'}),
 
     # Returns a 204, used by desktop app to verify connectivity status
-    url(r'generate_204$', zerver.views.registration.generate_204, name='zerver.views.registration.generate_204'),
+    url(r'generate_204$', zerver.views.registration.generate_204,
+        name='zerver.views.registration.generate_204'),
 
     # realm/domains -> zerver.views.realm_domains
     url(r'^realm/domains$', rest_dispatch,
@@ -265,7 +130,12 @@ v1_api_and_json_patterns = [
 
     # invites -> zerver.views.invite
     url(r'^invites$', rest_dispatch,
-        {'POST': 'zerver.views.invite.invite_users_backend'}),
+        {'GET': 'zerver.views.invite.get_user_invites',
+         'POST': 'zerver.views.invite.invite_users_backend'}),
+    url(r'^invites/(?P<prereg_id>[0-9]+)$', rest_dispatch,
+        {'DELETE': 'zerver.views.invite.revoke_user_invite'}),
+    url(r'^invites/(?P<prereg_id>[0-9]+)/resend$', rest_dispatch,
+        {'POST': 'zerver.views.invite.resend_user_invite_email'}),
 
     # mark messages as read (in bulk)
     url(r'^mark_all_as_read$', rest_dispatch,
@@ -421,7 +291,174 @@ v1_api_and_json_patterns = [
     url(r'^events$', rest_dispatch,
         {'GET': 'zerver.tornado.views.get_events_backend',
          'DELETE': 'zerver.tornado.views.cleanup_event_queue'}),
+
+    # report -> zerver.views.report
+    url(r'^report/error$', rest_dispatch,
+        {'POST': 'zerver.views.report.report_error'}),
+    url(r'^report/send_times$', rest_dispatch,
+        {'POST': 'zerver.views.report.report_send_times'}),
+    url(r'^report/narrow_times$', rest_dispatch,
+        {'POST': 'zerver.views.report.report_narrow_times'}),
+    url(r'^report/unnarrow_times$', rest_dispatch,
+        {'POST': 'zerver.views.report.report_unnarrow_times'}),
 ]
+
+# These views serve pages (HTML). As such, their internationalization
+# must depend on the url.
+#
+# If you're adding a new page to the website (as opposed to a new
+# endpoint for use by code), you should add it here.
+i18n_urls = [
+    url(r'^$', zerver.views.home.home, name='zerver.views.home.home'),
+    # We have a desktop-specific landing page in case we change our /
+    # to not log in in the future. We don't want to require a new
+    # desktop app build for everyone in that case
+    url(r'^desktop_home/$', zerver.views.home.desktop_home,
+        name='zerver.views.home.desktop_home'),
+
+    url(r'^accounts/login/sso/$', zerver.views.auth.remote_user_sso, name='login-sso'),
+    url(r'^accounts/login/jwt/$', zerver.views.auth.remote_user_jwt, name='login-jwt'),
+    url(r'^accounts/login/social/(\w+)$', zerver.views.auth.start_social_login,
+        name='login-social'),
+    url(r'^accounts/login/google/$', zerver.views.auth.start_google_oauth2,
+        name='zerver.views.auth.start_google_oauth2'),
+    url(r'^accounts/login/google/send/$',
+        zerver.views.auth.send_oauth_request_to_google,
+        name='zerver.views.auth.send_oauth_request_to_google'),
+    url(r'^accounts/login/google/done/$', zerver.views.auth.finish_google_oauth2,
+        name='zerver.views.auth.finish_google_oauth2'),
+    url(r'^accounts/login/subdomain/([^/]+)$', zerver.views.auth.log_into_subdomain,
+        name='zerver.views.auth.log_into_subdomain'),
+    url(r'^accounts/login/local/$', zerver.views.auth.dev_direct_login,
+        name='zerver.views.auth.dev_direct_login'),
+    # We have two entries for accounts/login to allow reverses on the Django
+    # view we're wrapping to continue to function.
+    url(r'^accounts/login/', zerver.views.auth.login_page,
+        {'template_name': 'zerver/login.html'}, name='zerver.views.auth.login_page'),
+    url(r'^accounts/login/', login, {'template_name': 'zerver/login.html'},
+        name='django.contrib.auth.views.login'),
+    url(r'^accounts/logout/', zerver.views.auth.logout_then_login,
+        name='zerver.views.auth.logout_then_login'),
+
+    url(r'^accounts/webathena_kerberos_login/',
+        zerver.views.zephyr.webathena_kerberos_login,
+        name='zerver.views.zephyr.webathena_kerberos_login'),
+
+    url(r'^accounts/password/reset/$', password_reset,
+        {'post_reset_redirect': '/accounts/password/reset/done/',
+         'template_name': 'zerver/reset.html',
+         'password_reset_form': zerver.forms.ZulipPasswordResetForm,
+         }, name='django.contrib.auth.views.password_reset'),
+    url(r'^accounts/password/reset/done/$', password_reset_done,
+        {'template_name': 'zerver/reset_emailed.html'}),
+    url(r'^accounts/password/reset/(?P<uidb64>[0-9A-Za-z]+)/(?P<token>.+)/$',
+        password_reset_confirm,
+        {'post_reset_redirect': '/accounts/password/done/',
+         'template_name': 'zerver/reset_confirm.html',
+         'set_password_form': zerver.forms.LoggingSetPasswordForm},
+        name='django.contrib.auth.views.password_reset_confirm'),
+    url(r'^accounts/password/done/$', password_reset_complete,
+        {'template_name': 'zerver/reset_done.html'}),
+    url(r'^accounts/deactivated/',
+        zerver.views.auth.show_deactivation_notice,
+        name='zerver.views.auth.show_deactivation_notice'),
+
+    # Avatar
+    url(r'^avatar/(?P<email_or_id>[\S]+)?/(?P<medium>[\S]+)?', zerver.views.users.avatar,
+        name='zerver.views.users.avatar'),
+    url(r'^avatar/(?P<email_or_id>[\S]+)?', zerver.views.users.avatar,
+        name='zerver.views.users.avatar'),
+
+    # Registration views, require a confirmation ID.
+    url(r'^accounts/register/social/(\w+)$',
+        zerver.views.auth.start_social_signup,
+        name='signup-social'),
+    url(r'^accounts/home/', zerver.views.registration.accounts_home,
+        name='zerver.views.registration.accounts_home'),
+    url(r'^accounts/send_confirm/(?P<email>[\S]+)?',
+        TemplateView.as_view(template_name='zerver/accounts_send_confirm.html'),
+        name='send_confirm'),
+    url(r'^accounts/register/', zerver.views.registration.accounts_register,
+        name='zerver.views.registration.accounts_register'),
+    url(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)',
+        confirmation.views.confirm, name='confirmation.views.confirm'),
+
+    url(r'^accounts/confirm_new_email/(?P<confirmation_key>[\w]+)',
+        zerver.views.user_settings.confirm_email_change,
+        name='zerver.views.user_settings.confirm_email_change'),
+
+    # Email unsubscription endpoint. Allows for unsubscribing from various types of emails,
+    # including the welcome emails (day 1 & 2), missed PMs, etc.
+    url(r'^accounts/unsubscribe/(?P<email_type>[\w]+)/(?P<confirmation_key>[\w]+)',
+        zerver.views.unsubscribe.email_unsubscribe,
+        name='zerver.views.unsubscribe.email_unsubscribe'),
+
+    # Portico-styled page used to provide email confirmation of terms acceptance.
+    url(r'^accounts/accept_terms/$', zerver.views.home.accounts_accept_terms,
+        name='zerver.views.home.accounts_accept_terms'),
+
+    # Find your account
+    url(r'^accounts/find/$', zerver.views.registration.find_account,
+        name='zerver.views.registration.find_account'),
+
+    # Realm Creation
+    url(r'^create_realm/$', zerver.views.registration.create_realm,
+        name='zerver.views.create_realm'),
+    url(r'^create_realm/(?P<creation_key>[\w]+)$',
+        zerver.views.registration.create_realm, name='zerver.views.create_realm'),
+
+    # Login/registration
+    url(r'^register/$', zerver.views.registration.accounts_home, name='register'),
+    url(r'^login/$', zerver.views.auth.login_page, {'template_name': 'zerver/login.html'},
+        name='zerver.views.auth.login_page'),
+
+    url(r'^join/(?P<confirmation_key>\S+)/$',
+        zerver.views.registration.accounts_home_from_multiuse_invite,
+        name='zerver.views.registration.accounts_home_from_multiuse_invite'),
+
+    # API and integrations documentation
+    url(r'^api/$', APIView.as_view(template_name='zerver/api.html')),
+    url(r'^api/endpoints/$', zerver.views.integrations.api_endpoint_docs,
+        name='zerver.views.integrations.api_endpoint_docs'),
+    url(r'^integrations/doc-html/(?P<integration_name>[^/]*)$',
+        zerver.views.integrations.integration_doc,
+        name="zerver.views.integrations.integration_doc"),
+    url(r'^integrations/(.*)', IntegrationView.as_view()),
+    url(r'^about/$', zerver.views.users.about_view),
+    url(r'^apps/(.*)', zerver.views.home.apps_view, name='zerver.views.home.apps_view'),
+    url(r'^plans/$', TemplateView.as_view(template_name='zerver/plans.html'), name='plans'),
+
+    # Landing page, features pages, signup form, etc.
+    url(r'^hello/$', TemplateView.as_view(template_name='zerver/hello.html'), name='landing-page'),
+    url(r'^new-user/$', RedirectView.as_view(url='/hello', permanent=True)),
+    url(r'^features/$', TemplateView.as_view(template_name='zerver/features.html')),
+    url(r'^why-zulip/$', TemplateView.as_view(template_name='zerver/why-zulip.html')),
+    url(r'^for/open-source/$', TemplateView.as_view(template_name='zerver/for-open-source.html')),
+    url(r'^for/companies/$', TemplateView.as_view(template_name='zerver/for-companies.html')),
+    url(r'^for/working-groups-and-communities/$',
+        TemplateView.as_view(template_name='zerver/for-working-groups-and-communities.html')),
+
+    # Terms of Service and privacy pages.
+    url(r'^terms/$', TemplateView.as_view(template_name='zerver/terms.html'), name='terms'),
+    url(r'^privacy/$', TemplateView.as_view(template_name='zerver/privacy.html'), name='privacy'),
+
+    url(r'^config-error/google$', TemplateView.as_view(
+        template_name='zerver/config_error.html',),
+        {'google_error': True},),
+    url(r'^config-error/github$', TemplateView.as_view(
+        template_name='zerver/config_error.html',),
+        {'github_error': True},),
+    url(r'^config-error/smtp$', TemplateView.as_view(
+        template_name='zerver/config_error.html',),
+        {'smtp_error': True},),
+    url(r'^config-error/ldap$', TemplateView.as_view(
+        template_name='zerver/config_error.html',),
+        {'ldap_error_realm_is_none': True},
+        name='ldap_error_realm_is_none'),
+]
+
+# Make a copy of i18n_urls so that they appear without prefix for english
+urls = list(i18n_urls)
 
 # Include the dual-use patterns twice
 urls += [
@@ -458,19 +495,23 @@ urls += [
     # like the requested subdomains'd realm icon (if known).
     url(r'^api/v1/server_settings', zerver.views.auth.api_get_server_settings),
     # This is a deprecated old version of api/v1/server_settings that only returns auth backends.
-    url(r'^api/v1/get_auth_backends', zerver.views.auth.api_get_auth_backends, name='zerver.views.auth.api_get_auth_backends'),
+    url(r'^api/v1/get_auth_backends', zerver.views.auth.api_get_auth_backends,
+        name='zerver.views.auth.api_get_auth_backends'),
 
     # used by mobile apps to check if they are compatible with the server
     url(r'^compatibility$', zerver.views.compatibility.check_compatibility),
 
     # This json format view used by the mobile apps accepts a username
     # password/pair and returns an API key.
-    url(r'^api/v1/fetch_api_key$', zerver.views.auth.api_fetch_api_key, name='zerver.views.auth.api_fetch_api_key'),
+    url(r'^api/v1/fetch_api_key$', zerver.views.auth.api_fetch_api_key,
+        name='zerver.views.auth.api_fetch_api_key'),
 
     # This is for the signing in through the devAuthBackEnd on mobile apps.
-    url(r'^api/v1/dev_fetch_api_key$', zerver.views.auth.api_dev_fetch_api_key, name='zerver.views.auth.api_dev_fetch_api_key'),
+    url(r'^api/v1/dev_fetch_api_key$', zerver.views.auth.api_dev_fetch_api_key,
+        name='zerver.views.auth.api_dev_fetch_api_key'),
     # This is for fetching the emails of the admins and the users.
-    url(r'^api/v1/dev_get_emails$', zerver.views.auth.api_dev_get_emails, name='zerver.views.auth.api_dev_get_emails'),
+    url(r'^api/v1/dev_get_emails$', zerver.views.auth.api_dev_get_emails,
+        name='zerver.views.auth.api_dev_get_emails'),
 
     # Used to present the GOOGLE_CLIENT_ID to mobile apps
     url(r'^api/v1/fetch_google_client_id$',
@@ -502,7 +543,12 @@ urls += [
 urls += [url(r'^', include('social_django.urls', namespace='social'))]
 
 # User documentation site
-urls += [url(r'^help/(?P<article>.*)$', HelpView.as_view(template_name='zerver/help/main.html'))]
+urls += [url(r'^help/(?P<article>.*)$',
+             MarkdownDirectoryView.as_view(template_name='zerver/help/main.html',
+                                           path_template='/zerver/help/%s.md'))]
+urls += [url(r'^api-new/(?P<article>[-\w]*\/?)$',
+             MarkdownDirectoryView.as_view(template_name='zerver/api/main.html',
+                                           path_template='/zerver/api/%s.md'))]
 
 if settings.DEVELOPMENT:
     urls += dev_urls.urls

@@ -20,22 +20,20 @@ from six.moves import urllib
 from typing import Any, Dict, List, Optional, Tuple, Text
 
 from confirmation.models import Confirmation, create_confirmation_link
-from zerver.context_processors import zulip_default_context
+from zerver.context_processors import zulip_default_context, get_realm_from_request
 from zerver.forms import HomepageForm, OurAuthenticationForm, \
     WRONG_SUBDOMAIN_ERROR
 from zerver.lib.mobile_auth_otp import is_valid_otp, otp_encrypt_api_key
 from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
-from zerver.lib.utils import get_subdomain, is_subdomain_root_or_alias
+from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
 from zerver.lib.validator import validate_login_email
 from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email, Realm, \
     get_realm
-from zerver.views.registration import create_preregistration_user, get_realm_from_request, \
-    redirect_and_log_into_subdomain, redirect_to_deactivation_notice
 from zerver.signals import email_on_new_login
 from zproject.backends import password_auth_enabled, dev_auth_enabled, \
     github_auth_enabled, google_auth_enabled, ldap_auth_enabled, \
-    ZulipLDAPConfigurationError, ZulipLDAPAuthBackend
+    ZulipLDAPConfigurationError, ZulipLDAPAuthBackend, email_auth_enabled
 from version import ZULIP_VERSION
 
 import hashlib
@@ -45,6 +43,13 @@ import logging
 import requests
 import time
 import ujson
+
+def create_preregistration_user(email, request, realm_creation=False,
+                                password_required=True):
+    # type: (Text, HttpRequest, bool, bool) -> HttpResponse
+    return PreregistrationUser.objects.create(email=email,
+                                              realm_creation=realm_creation,
+                                              password_required=password_required)
 
 def maybe_send_to_registration(request, email, full_name='', password_required=True):
     # type: (HttpRequest, Text, Text, bool) -> HttpResponse
@@ -235,23 +240,13 @@ def google_oauth2_csrf(request, value):
     token = _unsalt_cipher_token(get_token(request))
     return hmac.new(token.encode('utf-8'), value.encode("utf-8"), hashlib.sha256).hexdigest()
 
-def start_google_oauth2(request):
-    # type: (HttpRequest) -> HttpResponse
-    url = reverse('zerver.views.auth.send_oauth_request_to_google')
+def reverse_on_root(viewname, args=None, kwargs=None):
+    # type: (str, List[str], Dict[str, str]) -> str
+    return settings.ROOT_DOMAIN_URI + reverse(viewname, args=args, kwargs=kwargs)
 
-    if not (settings.GOOGLE_OAUTH2_CLIENT_ID and settings.GOOGLE_OAUTH2_CLIENT_SECRET):
-        return redirect_to_config_error("google")
-
-    is_signup = bool(request.GET.get('is_signup'))
-    return redirect_to_main_site(request, url, is_signup=is_signup)
-
-def redirect_to_main_site(request, url, is_signup=False):
+def oauth_redirect_to_root(request, url, is_signup=False):
     # type: (HttpRequest, Text, bool) -> HttpResponse
-    main_site_uri = ''.join((
-        settings.EXTERNAL_URI_SCHEME,
-        settings.EXTERNAL_HOST,
-        url,
-    ))
+    main_site_uri = settings.ROOT_DOMAIN_URI + url
     params = {
         'subdomain': get_subdomain(request),
         'is_signup': '1' if is_signup else '0',
@@ -267,18 +262,28 @@ def redirect_to_main_site(request, url, is_signup=False):
 
     return redirect(main_site_uri + '?' + urllib.parse.urlencode(params))
 
+def start_google_oauth2(request):
+    # type: (HttpRequest) -> HttpResponse
+    url = reverse('zerver.views.auth.send_oauth_request_to_google')
+
+    if not (settings.GOOGLE_OAUTH2_CLIENT_ID and settings.GOOGLE_OAUTH2_CLIENT_SECRET):
+        return redirect_to_config_error("google")
+
+    is_signup = bool(request.GET.get('is_signup'))
+    return oauth_redirect_to_root(request, url, is_signup=is_signup)
+
 def start_social_login(request, backend):
     # type: (HttpRequest, Text) -> HttpResponse
     backend_url = reverse('social:begin', args=[backend])
     if (backend == "github") and not (settings.SOCIAL_AUTH_GITHUB_KEY and settings.SOCIAL_AUTH_GITHUB_SECRET):
         return redirect_to_config_error("github")
 
-    return redirect_to_main_site(request, backend_url)
+    return oauth_redirect_to_root(request, backend_url)
 
 def start_social_signup(request, backend):
     # type: (HttpRequest, Text) -> HttpResponse
     backend_url = reverse('social:begin', args=[backend])
-    return redirect_to_main_site(request, backend_url, is_signup=True)
+    return oauth_redirect_to_root(request, backend_url, is_signup=True)
 
 def send_oauth_request_to_google(request):
     # type: (HttpRequest) -> HttpResponse
@@ -300,11 +305,7 @@ def send_oauth_request_to_google(request):
     params = {
         'response_type': 'code',
         'client_id': settings.GOOGLE_OAUTH2_CLIENT_ID,
-        'redirect_uri': ''.join((
-            settings.EXTERNAL_URI_SCHEME,
-            settings.EXTERNAL_HOST,
-            reverse('zerver.views.auth.finish_google_oauth2'),
-        )),
+        'redirect_uri': reverse_on_root('zerver.views.auth.finish_google_oauth2'),
         'scope': 'profile email',
         'state': csrf_state,
     }
@@ -340,11 +341,7 @@ def finish_google_oauth2(request):
             'code': request.GET.get('code'),
             'client_id': settings.GOOGLE_OAUTH2_CLIENT_ID,
             'client_secret': settings.GOOGLE_OAUTH2_CLIENT_SECRET,
-            'redirect_uri': ''.join((
-                settings.EXTERNAL_URI_SCHEME,
-                settings.EXTERNAL_HOST,
-                reverse('zerver.views.auth.finish_google_oauth2'),
-            )),
+            'redirect_uri': reverse_on_root('zerver.views.auth.finish_google_oauth2'),
             'grant_type': 'authorization_code',
         },
     )
@@ -419,22 +416,20 @@ def authenticate_remote_user(realm, email_address):
                                 return_data=return_data)
     return user_profile, return_data
 
-def log_into_subdomain(request):
-    # type: (HttpRequest) -> HttpResponse
+_subdomain_token_salt = 'zerver.views.auth.log_into_subdomain'
+
+def log_into_subdomain(request, token):
+    # type: (HttpRequest, Text) -> HttpResponse
     try:
-        # Discard state if older than 15 seconds
-        state = request.get_signed_cookie('subdomain.signature',
-                                          salt='zerver.views.auth',
-                                          max_age=15)
-    except KeyError:
-        logging.warning('Missing subdomain signature cookie.')
+        data = signing.loads(token, salt=_subdomain_token_salt, max_age=15)
+    except signing.SignatureExpired as e:
+        logging.warning('Subdomain cookie: {}'.format(e))
         return HttpResponse(status=400)
     except signing.BadSignature:
-        logging.warning('Subdomain cookie has bad signature.')
+        logging.warning('Subdomain cookie: Bad signature.')
         return HttpResponse(status=400)
 
     subdomain = get_subdomain(request)
-    data = ujson.loads(state)
     if data['subdomain'] != subdomain:
         logging.warning('Login attempt on invalid subdomain')
         return HttpResponse(status=400)
@@ -459,6 +454,16 @@ def log_into_subdomain(request):
     return login_or_register_remote_user(request, email_address, user_profile,
                                          full_name, invalid_subdomain=invalid_subdomain,
                                          is_signup=is_signup)
+
+def redirect_and_log_into_subdomain(realm, full_name, email_address,
+                                    is_signup=False):
+    # type: (Realm, Text, Text, bool) -> HttpResponse
+    data = {'name': full_name, 'email': email_address, 'subdomain': realm.subdomain,
+            'is_signup': is_signup}
+    token = signing.dumps(data, salt=_subdomain_token_salt)
+    subdomain_login_uri = (realm.uri
+                           + reverse('zerver.views.auth.log_into_subdomain', args=[token]))
+    return redirect(subdomain_login_uri)
 
 def get_dev_users(realm=None, extra_users_count=10):
     # type: (Optional[Realm], int) -> List[UserProfile]
@@ -486,6 +491,19 @@ def redirect_to_misconfigured_ldap_notice(error_type):
 
     return HttpResponseRedirect(url)
 
+def show_deactivation_notice(request):
+    # type: (HttpRequest) -> HttpResponse
+    realm = get_realm_from_request(request)
+    if realm and realm.deactivated:
+        return render(request, "zerver/deactivated.html",
+                      context={"deactivated_domain_name": realm.name})
+
+    return HttpResponseRedirect(reverse('zerver.views.auth.login_page'))
+
+def redirect_to_deactivation_notice():
+    # type: () -> HttpResponse
+    return HttpResponseRedirect(reverse('zerver.views.auth.show_deactivation_notice'))
+
 def login_page(request, **kwargs):
     # type: (HttpRequest, **Any) -> HttpResponse
     if request.user.is_authenticated:
@@ -512,8 +530,9 @@ def login_page(request, **kwargs):
         extra_context['direct_admins'] = [u for u in users if u.is_realm_admin]
         extra_context['direct_users'] = [u for u in users if not u.is_realm_admin]
 
-        if 'new_realm' in request.POST:
-            # If we're switching realms, redirect to that realm
+        if realm and 'new_realm' in request.POST:
+            # If we're switching realms, redirect to that realm, but
+            # only if it actually exists.
             return HttpResponseRedirect(realm.uri)
 
     try:
@@ -659,7 +678,7 @@ def get_auth_backends_data(request):
         realm = Realm.objects.get(string_id=subdomain)
     except Realm.DoesNotExist:
         # If not the root subdomain, this is an error
-        if subdomain != "":
+        if subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
             raise JsonableError(_("Invalid subdomain"))
         # With the root subdomain, it's an error or not depending
         # whether ROOT_DOMAIN_LANDING_PAGE (which indicates whether
@@ -669,10 +688,14 @@ def get_auth_backends_data(request):
             raise JsonableError(_("Subdomain required"))
         else:
             realm = None
-    return {"password": password_auth_enabled(realm),
-            "dev": dev_auth_enabled(realm),
-            "github": github_auth_enabled(realm),
-            "google": google_auth_enabled(realm)}
+    return {
+        "password": password_auth_enabled(realm),
+        "dev": dev_auth_enabled(realm),
+        "email": email_auth_enabled(realm),
+        "github": github_auth_enabled(realm),
+        "google": google_auth_enabled(realm),
+        "ldap": ldap_auth_enabled(realm),
+    }
 
 @csrf_exempt
 def api_get_auth_backends(request):

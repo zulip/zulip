@@ -15,7 +15,7 @@ from zerver.lib.test_classes import (
 )
 
 from zerver.models import (
-    get_recipient,
+    get_stream_recipient,
     Recipient,
     Subscription,
     UserPresence,
@@ -48,10 +48,9 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
         self.login(hamlet.email)
 
-        message_id = self.send_message(
+        message_id = self.send_personal_message(
             hamlet.email,
             cordelia.email,
-            Recipient.PERSONAL,
             content='no mention'
         )
 
@@ -76,10 +75,9 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         self.subscribe(hamlet, 'Scotland')
         self.subscribe(cordelia, 'Scotland')
 
-        message_id = self.send_message(
+        message_id = self.send_stream_message(
             hamlet.email,
             'Scotland',
-            Recipient.STREAM,
             content=content,
         )
 
@@ -171,6 +169,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             stream_name='Scotland',
             always_push_notify=False,
             idle=True,
+            already_notified={},
         )
 
         self.assertEqual(info['enqueue_kwargs'], expected_enqueue_kwargs)
@@ -183,21 +182,13 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         mobile_event = queue_messages[0]['event']
 
         self.assertEqual(mobile_event['user_profile_id'], cordelia.id)
-        self.assertEqual(mobile_event['triggers'], dict(
-            stream_push_notify=False,
-            private_message=False,
-            mentioned=True,
-        ))
+        self.assertEqual(mobile_event['trigger'], 'mentioned')
 
         self.assertEqual(queue_messages[1]['queue_name'], 'missedmessage_emails')
         email_event = queue_messages[1]['event']
 
         self.assertEqual(email_event['user_profile_id'], cordelia.id)
-        self.assertEqual(email_event['triggers'], dict(
-            stream_push_notify=False,
-            private_message=False,
-            mentioned=True,
-        ))
+        self.assertEqual(email_event['trigger'], 'mentioned')
 
     def test_second_mention_is_ignored(self):
         # type: () -> None
@@ -220,7 +211,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         '''
         cordelia = self.example_user('cordelia')
         stream = self.subscribe(cordelia, 'Scotland')
-        recipient = get_recipient(Recipient.STREAM, stream.id)
+        recipient = get_stream_recipient(stream.id)
         cordelia_subscription = Subscription.objects.get(
             user_profile_id=cordelia.id,
             recipient=recipient,
@@ -337,6 +328,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             stream_name='Scotland',
             always_push_notify=True,
             idle=False,
+            already_notified={},
         )
 
         self.assertEqual(info['enqueue_kwargs'], expected_enqueue_kwargs)
@@ -374,6 +366,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             stream_name='Scotland',
             always_push_notify=True,
             idle=False,
+            already_notified={},
         )
 
         self.assertEqual(info['enqueue_kwargs'], expected_enqueue_kwargs)
@@ -411,6 +404,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             stream_name='Scotland',
             always_push_notify=False,
             idle=True,
+            already_notified={},
         )
         self.assertEqual(info['enqueue_kwargs'], expected_enqueue_kwargs)
 
@@ -445,6 +439,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             stream_name='Scotland',
             always_push_notify=False,
             idle=False,
+            already_notified={},
         )
         self.assertEqual(info['enqueue_kwargs'], expected_enqueue_kwargs)
 

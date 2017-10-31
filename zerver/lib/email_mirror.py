@@ -18,7 +18,7 @@ from zerver.lib.utils import generate_random_token
 from zerver.lib.str_utils import force_text
 from zerver.lib.send_email import FromAddress
 from zerver.models import Stream, Recipient, \
-    get_user_profile_by_id, get_display_recipient, get_recipient, \
+    get_user_profile_by_id, get_display_recipient, get_personal_recipient, \
     Message, Realm, UserProfile, get_system_bot
 from six import binary_type
 import talon
@@ -102,13 +102,13 @@ def get_missed_message_token_from_address(address):
 def create_missed_message_address(user_profile, message):
     # type: (UserProfile, Message) -> str
     if settings.EMAIL_GATEWAY_PATTERN == '':
-        logging.warning("EMAIL_GATEWAY_PATTERN is an empty string, using "
-                        "NOREPLY_EMAIL_ADDRESS in the 'from' field.")
+        logger.warning("EMAIL_GATEWAY_PATTERN is an empty string, using "
+                       "NOREPLY_EMAIL_ADDRESS in the 'from' field.")
         return FromAddress.NOREPLY
 
     if message.recipient.type == Recipient.PERSONAL:
         # We need to reply to the sender so look up their personal recipient_id
-        recipient_id = get_recipient(Recipient.PERSONAL, message.sender_id).id
+        recipient_id = get_personal_recipient(message.sender_id).id
     else:
         recipient_id = message.recipient_id
 
@@ -152,6 +152,7 @@ def construct_zulip_body(message, realm):
     body = body.replace("\x00", "")
     body = filter_footer(body)
     body += extract_and_upload_attachments(message, realm)
+    body = body.strip()
     if not body:
         body = '(No email body)'
     return body
@@ -186,7 +187,7 @@ def send_to_missed_message_address(address, message):
     internal_send_message(user_profile.realm, user_profile.email,
                           recipient_type_name, recipient_str,
                           subject_b.decode('utf-8'), body)
-    logging.info("Successfully processed email from %s to %s" % (
+    logger.info("Successfully processed email from %s to %s" % (
         user_profile.email, recipient_str))
 
 ## Sending the Zulip ##
@@ -317,7 +318,7 @@ def process_stream_message(to, subject, message, debug_info):
     body = construct_zulip_body(message, stream.realm)
     debug_info["stream"] = stream
     send_zulip(settings.EMAIL_GATEWAY_BOT, stream, subject, body)
-    logging.info("Successfully processed email to %s (%s)" % (
+    logger.info("Successfully processed email to %s (%s)" % (
         stream.name, stream.realm.string_id))
 
 def process_missed_message(to, message, pre_checked):
@@ -383,6 +384,7 @@ def mirror_email_message(data):
             "message": data['msg_text'],
             "rcpt_to": rcpt_to
         },
-        lambda x: None
+        lambda x: None,
+        call_consume_in_tests=True
     )
     return {"status": "success"}

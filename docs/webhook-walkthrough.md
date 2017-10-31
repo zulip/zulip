@@ -58,7 +58,6 @@ python file, `zerver/webhooks/mywebhook/view.py`.
 The Hello World integration is in `zerver/webhooks/helloworld/view.py`:
 
 ```
-from __future__ import absolute_import
 from django.utils.translation import ugettext as _
 from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success, json_error
@@ -342,7 +341,7 @@ Next, on your {{ settings_html|safe }}, create a Hello World bot.
 Construct the URL for the Hello World bot using the API key and
 stream name:
 
-`{{ external_api_uri_subdomain }}/v1/external/helloworld?api_key=abcdefgh&stream=test`
+`{{ api_url }}/v1/external/helloworld?api_key=abcdefgh&stream=test`
 
 
 To trigger a notification using this webhook, use
@@ -367,8 +366,10 @@ Or, use curl:
 Markdown/Jinja2 framework that includes macros for common instructions in
 Zulip's webhooks/integrations documentation.
 
-See [Documenting your integration](integration-guide.html#documenting-your-integration)
-for further details, including how to easily create the message screenshot.
+See
+[our guide on documenting an integration](integration-docs-guide.html)
+for further details, including how to easily create the message
+screenshot.
 
 ## Step 5: Preparing a pull request to zulip/zulip
 

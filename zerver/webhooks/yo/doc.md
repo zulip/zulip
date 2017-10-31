@@ -5,7 +5,7 @@ First, on your {{ settings_html|safe }}, create a bot for
 {{ integration_display_name }} bot using the bot API key
 and the email address associated with your Zulip account:
 
-`{{ external_api_uri_subdomain }}{{ integration_url }}?api_key=abcdefgh&email=awesome@zulip.example.com`
+`{{ api_url }}{{ integration_url }}?api_key=abcdefgh&email=awesome@zulip.example.com`
 
 Modify the parameters of the URL above, where `api_key` is the API key
 of your Zulip bot.

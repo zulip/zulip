@@ -29,7 +29,6 @@ import logging
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from zerver.lib.queue import queue_json_publish
 from zerver.lib.email_mirror import logger, process_message, \
     extract_and_validate, ZulipEmailForwardError, \
     mark_missed_message_address_as_used, is_missed_message_address
@@ -50,8 +49,7 @@ logger.setLevel(logging.DEBUG)
 logger.addHandler(file_handler)
 
 
-def get_imap_messages():
-    # type: () -> Generator[Message, None, None]
+def get_imap_messages() -> Generator[Message, None, None]:
     mbox = IMAP4_SSL(settings.EMAIL_GATEWAY_IMAP_SERVER, settings.EMAIL_GATEWAY_IMAP_PORT)
     mbox.login(settings.EMAIL_GATEWAY_LOGIN, settings.EMAIL_GATEWAY_PASSWORD)
     try:
@@ -74,8 +72,7 @@ def get_imap_messages():
 class Command(BaseCommand):
     help = __doc__
 
-    def handle(self, *args, **options):
-        # type: (*Any, **str) -> None
+    def handle(self, *args: Any, **options: str) -> None:
         # We're probably running from cron, try to batch-process mail
         if (not settings.EMAIL_GATEWAY_BOT or not settings.EMAIL_GATEWAY_LOGIN or
             not settings.EMAIL_GATEWAY_PASSWORD or not settings.EMAIL_GATEWAY_IMAP_SERVER or

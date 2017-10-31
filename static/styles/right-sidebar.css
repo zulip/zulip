@@ -38,6 +38,10 @@
     list-style-type: none;
 }
 
+#user_presences .arrow {
+    top: 0px;
+}
+
 #group-pm-title {
     margin: 10px 0px 0px 0px;
     display: inline-block;
@@ -48,12 +52,12 @@
     display: block;
     width: 8px;
     height: 8px;
+    margin: 0px 5px;
     border-radius: 50%;
     border: 1px solid;
     float: left;
     position: relative;
     top: 5px;
-    margin-right: 0.5em;
 }
 
 .user_active .user-status-indicator,
@@ -66,12 +70,12 @@
     border-color: hsl(29, 84%, 51%);
     background-color: hsl(29, 84%, 51%);
 
-    background: -moz-linear-gradient(top,  hsla(0, 0%, 100%, 0.0) 50%, hsla(29, 84%, 51%, 1.0) 50%); /* FF3.6+ */
+    background: -moz-linear-gradient(top, hsla(0, 0%, 100%, 0.0) 50%, hsla(29, 84%, 51%, 1.0) 50%); /* FF3.6+ */
     background: -webkit-gradient(linear, left top, left bottom, color-stop(50%,hsla(0, 0%, 100%, 0.0)), color-stop(50%,hsla(29, 84%, 51%, 1.0))); /* Chrome,Safari4+ */
-    background: -webkit-linear-gradient(top,  hsla(0, 0%, 100%, 0.0) 50%, hsla(29, 84%, 51%, 1.0) 50%); /* Chrome10+,Safari5.1+ */
-    background: -o-linear-gradient(top,  hsla(0, 0%, 100%, 0.0) 50%, hsla(29, 84%, 51%, 1.0) 50%); /* Opera 11.10+ */
-    background: -ms-linear-gradient(top,  hsla(0, 0%, 100%, 0.0) 50%, hsla(29, 84%, 51%, 1.0) 50%); /* IE10+ */
-    background: linear-gradient(to bottom,  hsla(0, 0%, 100%, 0.0) 50%, hsla(29, 84%, 51%, 1.0) 50%); /* W3C */
+    background: -webkit-linear-gradient(top, hsla(0, 0%, 100%, 0.0) 50%, hsla(29, 84%, 51%, 1.0) 50%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top, hsla(0, 0%, 100%, 0.0) 50%, hsla(29, 84%, 51%, 1.0) 50%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top, hsla(0, 0%, 100%, 0.0) 50%, hsla(29, 84%, 51%, 1.0) 50%); /* IE10+ */
+    background: linear-gradient(to bottom, hsla(0, 0%, 100%, 0.0) 50%, hsla(29, 84%, 51%, 1.0) 50%); /* W3C */
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#ec7e18',GradientType=0 ); /* IE6-9 */
 }
 
@@ -100,7 +104,7 @@
 }
 
 .user_sidebar_entry .selectable_sidebar_block {
-    width: 218px;
+    width: 208px;
     display: block;
 }
 
@@ -132,7 +136,7 @@
 }
 
 .group-pms-sidebar-entry.group-with-count .selectable_sidebar_block {
-    width: 170px;
+    width: 185px;
 }
 
 .selectable_sidebar_block {
@@ -142,7 +146,7 @@
 .user_sidebar_entry .count,
 .group-pms-sidebar-entry .count {
     position: absolute;
-    right: 25px;
+    right: 29px;
     top: 4px;
     padding: 1px 4px 2px 4px;
     background: hsl(105, 2%, 50%);
@@ -156,7 +160,7 @@
 }
 
 .group-pms-sidebar-entry .count {
-    right: 2px;
+    right: 29px;
 }
 
 .user_sidebar_entry .count,

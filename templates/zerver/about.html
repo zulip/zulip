@@ -35,6 +35,9 @@
                     sprinted on Zulip during the 4-day event!
                 </div>
 
+                {% include 'zerver/team.html' %}
+
+
                 <h1>About Zulip</h1>
 
                 <p>
@@ -206,7 +209,7 @@
                             {% for person in group %}
                                 {% if person %}
                                 <div class="person">
-                                    <a href="https://github.com/{{ person.name }}" target="_blank">
+                                    <a href="https://github.com/{{ person.name }}" target="_blank" class="no-underline">
                                         <div class="avatar">
                                             <img class="avatar_img" src="{{ person.avatar }}" alt="{{ _('Avatar') }}" />
                                         </div>

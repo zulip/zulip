@@ -14,6 +14,7 @@ from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.db import close_old_connections
 from django.core import signals
+from django.test import override_settings
 from tornado.gen import Return
 from tornado.httpclient import HTTPRequest, HTTPResponse
 
@@ -41,16 +42,17 @@ from typing import Any, Callable, Dict, Generator, Optional, Text, List, cast
 class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
     def setUp(self):
         # type: () -> None
-        super(TornadoWebTestCase, self).setUp()
+        super().setUp()
         signals.request_started.disconnect(close_old_connections)
         signals.request_finished.disconnect(close_old_connections)
         self.session_cookie = None  # type: Optional[Dict[Text, Text]]
 
     def tearDown(self):
         # type: () -> None
-        super(TornadoWebTestCase, self).tearDown()
+        super().tearDown()
         self.session_cookie = None  # type: Optional[Dict[Text, Text]]
 
+    @override_settings(DEBUG=False)
     def get_app(self):
         # type: () -> Application
         return create_tornado_application()
@@ -85,7 +87,7 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
 
     def login(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
-        super(TornadoWebTestCase, self).login(*args, **kwargs)
+        super().login(*args, **kwargs)
         session_cookie = settings.SESSION_COOKIE_NAME
         session_key = self.client.session.session_key
         self.session_cookie = {
@@ -155,11 +157,11 @@ class WebSocketBaseTestCase(AsyncHTTPTestCase, ZulipTestCase):
     def setUp(self):
         # type: () -> None
         settings.RUNNING_INSIDE_TORNADO = True
-        super(WebSocketBaseTestCase, self).setUp()
+        super().setUp()
 
     def tearDown(self):
         # type: () -> None
-        super(WebSocketBaseTestCase, self).setUp()
+        super().tearDown()
         settings.RUNNING_INSIDE_TORNADO = False
 
     @gen.coroutine
@@ -176,14 +178,11 @@ class WebSocketBaseTestCase(AsyncHTTPTestCase, ZulipTestCase):
     def close(self, ws):
         # type: (Any) -> None
         """Close a websocket connection and wait for the server side.
-
-        If we don't wait here, there are sometimes leak warnings in the
-        tests.
         """
         ws.close()
-        self.wait()
 
 class TornadoTestCase(WebSocketBaseTestCase):
+    @override_settings(DEBUG=False)
     def get_app(self):
         # type: () -> Application
         """ Return tornado app to launch for test cases
@@ -302,7 +301,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
         ws = yield self.ws_connect('/sockjs/366/v8nw22qe/websocket', cookie_header=cookie_header)
         response = yield ws.read_message()
         self.assertEqual(response, 'o')
-        self.close(ws)
+        yield self.close(ws)
 
     @gen_test
     def test_tornado_auth(self):
@@ -336,7 +335,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
                  },
                  "type": "response"}
             ])
-        self.close(ws)
+        yield self.close(ws)
 
     @gen_test
     def test_sending_private_message(self):
@@ -371,7 +370,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
         ack_resp = yield ws.read_message()
         msg_resp = yield ws.read_message()
         self._check_message_sending(request_id, ack_resp, msg_resp, user_profile, queue_events_data)
-        self.close(ws)
+        yield self.close(ws)
 
     @gen_test
     def test_sending_stream_message(self):
@@ -406,4 +405,4 @@ class TornadoTestCase(WebSocketBaseTestCase):
         ack_resp = yield ws.read_message()
         msg_resp = yield ws.read_message()
         self._check_message_sending(request_id, ack_resp, msg_resp, user_profile, queue_events_data)
-        self.close(ws)
+        yield self.close(ws)

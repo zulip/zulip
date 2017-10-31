@@ -1,4 +1,3 @@
-from six.moves import range
 from typing import Callable, List, Tuple, Union
 
 ####### Helpers

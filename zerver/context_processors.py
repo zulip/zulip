@@ -17,7 +17,7 @@ from zproject.backends import (
 )
 from zerver.lib.bugdown import convert
 from zerver.lib.send_email import FromAddress
-from zerver.lib.utils import get_subdomain
+from zerver.lib.subdomains import get_subdomain
 from zerver.lib.realm_icon import get_realm_icon_url
 
 from version import ZULIP_VERSION
@@ -72,7 +72,8 @@ def zulip_default_context(request):
     about_link_disabled = settings.ABOUT_LINK_DISABLED
     find_team_link_disabled = settings.FIND_TEAM_LINK_DISABLED
 
-    if settings.ROOT_DOMAIN_LANDING_PAGE and get_subdomain(request) == "":
+    if (settings.ROOT_DOMAIN_LANDING_PAGE
+            and get_subdomain(request) == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN):
         register_link_disabled = True
         login_link_disabled = True
         about_link_disabled = True
@@ -110,8 +111,6 @@ def zulip_default_context(request):
         'privacy_policy': settings.PRIVACY_POLICY,
         'login_url': settings.HOME_NOT_LOGGED_IN,
         'only_sso': settings.ONLY_SSO,
-        'external_api_path': settings.EXTERNAL_API_PATH,
-        'external_api_uri': settings.EXTERNAL_API_URI,
         'external_host': settings.EXTERNAL_HOST,
         'external_uri_scheme': settings.EXTERNAL_URI_SCHEME,
         'realm_invite_required': realm_invite_required,
@@ -120,7 +119,6 @@ def zulip_default_context(request):
         'realm_icon': realm_icon,
         'realm_description': realm_description,
         'root_domain_uri': settings.ROOT_DOMAIN_URI,
-        'api_site_required': settings.EXTERNAL_API_PATH != "api.zulip.com",
         'email_gateway_example': settings.EMAIL_GATEWAY_EXAMPLE,
         'apps_page_url': apps_page_url,
         'open_realm_creation': settings.OPEN_REALM_CREATION,

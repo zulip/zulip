@@ -3,7 +3,6 @@ import optparse
 import os
 import subprocess
 import sys
-import ujson
 from typing import Dict
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -13,6 +12,9 @@ ROOT_DIR = os.path.dirname(TOOLS_DIR)
 # check for the venv
 from tools.lib import sanity_check
 sanity_check.check_venv(__file__)
+
+# Import this after we do the sanity_check so it doesn't crash.
+import ujson
 
 USAGE = '''
     tools/test-js-with-node                      - to run all tests

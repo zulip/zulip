@@ -5,15 +5,14 @@ from django.db import migrations
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
-def fix_realm_string_ids(apps, schema_editor):
-    # type: (StateApps, DatabaseSchemaEditor) -> None
+def fix_realm_string_ids(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     Realm = apps.get_model('zerver', 'Realm')
-    if Realm.objects.count() != 2:
+    if Realm.objects.filter(deactivated=False).count() != 2:
         return
 
     zulip_realm = Realm.objects.get(string_id="zulip")
     try:
-        user_realm = Realm.objects.exclude(id=zulip_realm.id)[0]
+        user_realm = Realm.objects.filter(deactivated=False).exclude(id=zulip_realm.id)[0]
     except Realm.DoesNotExist:
         return
 

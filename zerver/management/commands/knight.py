@@ -13,8 +13,7 @@ class Command(ZulipBaseCommand):
 ONLY perform this on customer request from an authorized person.
 """
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('-f', '--for-real',
                             dest='ack',
                             action="store_true",
@@ -34,8 +33,7 @@ ONLY perform this on customer request from an authorized person.
                             help="email of user to knight")
         self.add_realm_args(parser, True)
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         email = options['email']
         realm = self.get_realm(options)
 

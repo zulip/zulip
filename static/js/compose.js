@@ -333,16 +333,7 @@ exports.update_email = function (user_id, new_email) {
 
 exports.get_invalid_recipient_emails = function () {
     var private_recipients = util.extract_pm_recipients(compose_state.recipient());
-    var invalid_recipients = [];
-    _.each(private_recipients, function (email) {
-        if (people.realm_get(email) !== undefined) {
-            return;
-        }
-        if (people.is_cross_realm_email(email)) {
-            return;
-        }
-        invalid_recipients.push(email);
-    });
+    var invalid_recipients = _.reject(private_recipients, people.is_valid_email_for_compose);
 
     return invalid_recipients;
 };
@@ -658,6 +649,15 @@ exports.initialize = function () {
         }
         $("#preview_content").html(preview_html);
     }
+
+    $('#compose').on('click', '#video_link', function (e) {
+        e.preventDefault();
+
+        var video_call_id = util.random_int(100000000000000, 999999999999999);
+        var video_call_link = 'https://meet.jit.si/' +  video_call_id;
+        var video_call_link_text = '[' + _('Click to join video call') + '](' + video_call_link + ')';
+        compose_state.insert_syntax_and_focus(video_call_link_text);
+    });
 
     $("#compose").on("click", "#markdown_preview", function (e) {
         e.preventDefault();

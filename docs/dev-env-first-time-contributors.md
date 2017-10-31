@@ -16,12 +16,12 @@ Contents:
 * [Step 2: Get Zulip code](#step-2-get-zulip-code)
 * [Step 3: Start the development environment](#step-3-start-the-development-environment)
 * [Step 4: Developing](#step-4-developing)
-* [Troubleshooting & Common Errors](#troubleshooting--common-errors)
+* [Troubleshooting and Common Errors](#troubleshooting-and-common-errors)
 * [Specifying a proxy](#specifying-a-proxy)
 
 **If you encounter errors installing the Zulip development
 environment,** check
-[Troubleshooting & Common Errors](#troubleshooting--common-errors). If
+[Troubleshooting and Common Errors](#troubleshooting-and-common-errors). If
 that doesn't help, please visit
 [#provision help](https://chat.zulip.org/#narrow/stream/provision.20help)
 in the [Zulip development community server](chat-zulip-org.html) for
@@ -330,7 +330,7 @@ provisioning if your Internet connection is unreliable.  To retry, you
 can use `vagrant provision` (`vagrant up` will just boot the guest
 without provisioning after the first time).  Other common issues are
 documented in the
-[Troubleshooting & Common Errors](#troubleshooting--common-errors)
+[Troubleshooting and Common Errors](#troubleshooting-and-common-errors)
 section.  If that doesn't help, please visit
 [#provision help](https://chat.zulip.org/#narrow/stream/provision.20help)
 in the [Zulip development community server](chat-zulip-org.html) for
@@ -384,7 +384,7 @@ Congrats, you're now inside the Zulip development environment!
 You can confirm this by looking at the command prompt, which starts
 with `(zulip-py3-venv)vagrant@`.  If it just starts with `vagrant@`, your
 provisioning failed and you should look at the
-[troubleshooting section](#troubleshooting--common-errors).
+[troubleshooting section](#troubleshooting-and-common-errors).
 
 Next, start the Zulip server:
 
@@ -585,7 +585,7 @@ Next, read the following to learn more about developing for Zulip:
 run the full test suite against any branches you push to your fork,
 which can help you optimize your development workflow).
 
-### Troubleshooting & Common Errors
+### Troubleshooting and Common Errors
 
 Below you'll find a list of common errors and their solutions.  Most
 issues are resolved by just provisioning again (by running `./tools/provision`

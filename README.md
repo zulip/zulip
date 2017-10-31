@@ -71,8 +71,8 @@ This is documented in [the developer installation guide][dev-install].
 
 ## Running Zulip in production
 
-Zulip in production supports Ubuntu 14.04 Trusty and Ubuntu 16.04
-Xenial. We're happy to support work to enable Zulip to run on
+Zulip in production supports Ubuntu 16.04 Xenial and Ubuntu 14.04
+Trusty. We're happy to support work to enable Zulip to run on
 additional platforms. The installation process is
 [documented here](https://zulip.readthedocs.io/en/latest/prod.html).
 

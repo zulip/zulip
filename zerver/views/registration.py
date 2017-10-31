@@ -12,26 +12,29 @@ from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 from django.core import validators
 from zerver.context_processors import get_realm_from_request
-from zerver.models import UserProfile, Realm, Stream, PreregistrationUser, MultiuseInvite, \
+from zerver.models import UserProfile, Realm, Stream, MultiuseInvite, \
     name_changes_disabled, email_to_username, email_allowed_for_realm, \
-    get_realm, get_user_profile_by_email
+    get_realm, get_user_profile_by_email, get_default_stream_groups
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
     do_activate_user, do_create_user, do_create_realm, \
     user_email_is_unique, compute_mit_user_fullname, validate_email_for_realm, \
-    do_set_user_display_setting
+    do_set_user_display_setting, lookup_default_stream_groups
 from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
     CreateUserForm, FindMyTeamForm
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from zerver.decorator import require_post, has_request_variables, \
     JsonableError, REQ, do_login
-from zerver.lib.onboarding import send_initial_pms, setup_initial_streams, \
+from zerver.lib.onboarding import setup_initial_streams, \
     setup_initial_private_stream, send_initial_realm_messages
 from zerver.lib.response import json_success
-from zerver.lib.utils import get_subdomain
+from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.timezone import get_all_timezones
-from zproject.backends import password_auth_enabled
+from zerver.views.auth import create_preregistration_user, \
+    redirect_and_log_into_subdomain, \
+    redirect_to_deactivation_notice
+from zproject.backends import ldap_auth_enabled, password_auth_enabled, ZulipLDAPAuthBackend
 
 from confirmation.models import Confirmation, RealmCreationKey, ConfirmationKeyException, \
     check_key_is_valid, create_confirmation_link, get_object_from_key, \
@@ -44,28 +47,6 @@ import ujson
 
 from six.moves import urllib
 
-def redirect_and_log_into_subdomain(realm, full_name, email_address,
-                                    is_signup=False):
-    # type: (Realm, Text, Text, bool) -> HttpResponse
-    subdomain_login_uri = ''.join([
-        realm.uri,
-        reverse('zerver.views.auth.log_into_subdomain')
-    ])
-
-    domain = '.' + settings.EXTERNAL_HOST.split(':')[0]
-    response = redirect(subdomain_login_uri)
-
-    data = {'name': full_name, 'email': email_address, 'subdomain': realm.subdomain,
-            'is_signup': is_signup}
-    # Creating a singed cookie so that it cannot be tampered with.
-    # Cookie and the signature expire in 15 seconds.
-    response.set_signed_cookie('subdomain.signature',
-                               ujson.dumps(data),
-                               expires=15,
-                               domain=domain,
-                               salt='zerver.views.auth')
-    return response
-
 @require_post
 def accounts_register(request):
     # type: (HttpRequest) -> HttpResponse
@@ -75,6 +56,7 @@ def accounts_register(request):
     email = prereg_user.email
     realm_creation = prereg_user.realm_creation
     password_required = prereg_user.password_required
+    is_realm_admin = prereg_user.invited_as_admin or realm_creation
 
     validators.validate_email(email)
     if prereg_user.referred_by:
@@ -180,6 +162,8 @@ def accounts_register(request):
 
         full_name = form.cleaned_data['full_name']
         short_name = email_to_username(email)
+        default_stream_group_names = request.POST.getlist('default_stream_group')
+        default_stream_groups = lookup_default_stream_groups(default_stream_group_names, realm)
 
         timezone = u""
         if 'timezone' in request.POST and request.POST['timezone'] in get_all_timezones():
@@ -190,20 +174,50 @@ def accounts_register(request):
         except UserProfile.DoesNotExist:
             existing_user_profile = None
 
-        if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
+        return_data = {}  # type: Dict[str, bool]
+        if ldap_auth_enabled(realm):
+            # If the user was authenticated using an external SSO
+            # mechanism like Google or GitHub auth, then authentication
+            # will have already been done before creating the
+            # PreregistrationUser object with password_required=False, and
+            # so we don't need to worry about passwords.
+            #
+            # If instead the realm is using EmailAuthBackend, we will
+            # set their password above.
+            #
+            # But if the realm is using LDAPAuthBackend, we need to verify
+            # their LDAP password (which will, as a side effect, create
+            # the user account) here using authenticate.
+            auth_result = authenticate(request,
+                                       username=email,
+                                       password=password,
+                                       realm_subdomain=realm.subdomain,
+                                       return_data=return_data)
+            if auth_result is None:
+                # TODO: This probably isn't going to give a
+                # user-friendly error message, but it doesn't
+                # particularly matter, because the registration form
+                # is hidden for most users.
+                return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' +
+                                            urllib.parse.quote_plus(email))
+
+            # Since we'll have created a user, we now just log them in.
+            return login_and_go_to_home(request, auth_result)
+        elif existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
             user_profile = existing_user_profile
             do_activate_user(user_profile)
             do_change_password(user_profile, password)
             do_change_full_name(user_profile, full_name, user_profile)
             do_set_user_display_setting(user_profile, 'timezone', timezone)
+            # TODO: When we clean up the `do_activate_user` code path,
+            # make it respect invited_as_admin / is_realm_admin.
         else:
             user_profile = do_create_user(email, password, realm, full_name, short_name,
-                                          prereg_user=prereg_user, is_realm_admin=realm_creation,
+                                          prereg_user=prereg_user, is_realm_admin=is_realm_admin,
                                           tos_version=settings.TOS_VERSION,
                                           timezone=timezone,
-                                          newsletter_data={"IP": request.META['REMOTE_ADDR']})
-
-        send_initial_pms(user_profile)
+                                          newsletter_data={"IP": request.META['REMOTE_ADDR']},
+                                          default_stream_groups=default_stream_groups)
 
         if realm_creation:
             setup_initial_private_stream(user_profile)
@@ -217,7 +231,6 @@ def accounts_register(request):
 
         # This dummy_backend check below confirms the user is
         # authenticating to the correct subdomain.
-        return_data = {}  # type: Dict[str, bool]
         auth_result = authenticate(username=user_profile.email,
                                    realm_subdomain=realm.subdomain,
                                    return_data=return_data,
@@ -228,10 +241,7 @@ def accounts_register(request):
                 realm.subdomain, user_profile.email,))
             return redirect('/')
 
-        # Mark the user as having been just created, so no login email is sent
-        auth_result.just_registered = True
-        do_login(request, auth_result)
-        return HttpResponseRedirect(realm.uri + reverse('zerver.views.home.home'))
+        return login_and_go_to_home(request, auth_result)
 
     return render(
         request,
@@ -247,6 +257,8 @@ def accounts_register(request):
                  'creating_new_team': realm_creation,
                  'password_required': password_auth_enabled(realm) and password_required,
                  'password_auth_enabled': password_auth_enabled(realm),
+                 'root_domain_available': is_root_domain_available(),
+                 'default_stream_groups': get_default_stream_groups(realm),
                  'MAX_REALM_NAME_LENGTH': str(Realm.MAX_REALM_NAME_LENGTH),
                  'MAX_NAME_LENGTH': str(UserProfile.MAX_NAME_LENGTH),
                  'MAX_PASSWORD_LENGTH': str(form.MAX_PASSWORD_LENGTH),
@@ -254,12 +266,13 @@ def accounts_register(request):
                  }
     )
 
-def create_preregistration_user(email, request, realm_creation=False,
-                                password_required=True):
-    # type: (Text, HttpRequest, bool, bool) -> HttpResponse
-    return PreregistrationUser.objects.create(email=email,
-                                              realm_creation=realm_creation,
-                                              password_required=password_required)
+def login_and_go_to_home(request, user_profile):
+    # type: (HttpRequest, UserProfile) -> HttpResponse
+
+    # Mark the user as having been just created, so no "new login" email is sent
+    user_profile.just_registered = True
+    do_login(request, user_profile)
+    return HttpResponseRedirect(user_profile.realm.uri + reverse('zerver.views.home.home'))
 
 def send_registration_completion_email(email, request, realm_creation=False, streams=None):
     # type: (str, HttpRequest, bool, Optional[List[Stream]]) -> None
@@ -328,20 +341,6 @@ def create_realm(request, creation_key=None):
 def confirmation_key(request):
     # type: (HttpRequest) -> HttpResponse
     return json_success(request.session.get('confirmation_key'))
-
-
-def show_deactivation_notice(request):
-    # type: (HttpRequest) -> HttpResponse
-    realm = get_realm_from_request(request)
-    if realm and realm.deactivated:
-        return render(request, "zerver/deactivated.html",
-                      context={"deactivated_domain_name": realm.name})
-
-    return HttpResponseRedirect(reverse('zerver.views.auth.login_page'))
-
-def redirect_to_deactivation_notice():
-    # type: () -> HttpResponse
-    return HttpResponseRedirect(reverse('zerver.views.registration.show_deactivation_notice'))
 
 def accounts_home(request, multiuse_object=None):
     # type: (HttpRequest, Optional[MultiuseInvite]) -> HttpResponse

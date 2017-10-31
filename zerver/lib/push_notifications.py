@@ -388,14 +388,14 @@ def get_alert_from_message(message):
     Determine what alert string to display based on the missed messages.
     """
     sender_str = message.sender.full_name
-    if message.recipient.type == Recipient.HUDDLE and message.triggers['private_message']:
+    if message.recipient.type == Recipient.HUDDLE and message.trigger == 'private_message':
         return "New private group message from %s" % (sender_str,)
-    elif message.recipient.type == Recipient.PERSONAL and message.triggers['private_message']:
+    elif message.recipient.type == Recipient.PERSONAL and message.trigger == 'private_message':
         return "New private message from %s" % (sender_str,)
-    elif message.recipient.type == Recipient.STREAM and message.triggers['mentioned']:
+    elif message.is_stream_message() and message.trigger == 'mentioned':
         return "New mention from %s" % (sender_str,)
-    elif (message.recipient.type == Recipient.STREAM and
-            (message.triggers['stream_push_notify'] and message.stream_name)):
+    elif (message.is_stream_message() and
+            (message.trigger == 'stream_push_notify' and message.stream_name)):
         return "New stream message from %s in %s" % (sender_str, message.stream_name,)
     else:
         return "New Zulip mentions and private messages from %s" % (sender_str,)
@@ -428,9 +428,12 @@ def get_mobile_push_content(rendered_content):
         plain_text += elem.tail or ""
         return plain_text
 
-    elem = LH.fromstring(rendered_content)
-    plain_text = process(elem)
-    return plain_text
+    if settings.PUSH_NOTIFICATION_REDACT_CONTENT:
+        return "***REDACTED***"
+    else:
+        elem = LH.fromstring(rendered_content)
+        plain_text = process(elem)
+        return plain_text
 
 def truncate_content(content):
     # type: (Text) -> Text
@@ -478,7 +481,7 @@ def get_gcm_payload(user_profile, message):
         'sender_avatar_url': absolute_avatar_url(message.sender),
     }
 
-    if message.recipient.type == Recipient.STREAM:
+    if message.is_stream_message():
         android_data['recipient_type'] = "stream"
         android_data['stream'] = get_display_recipient(message.recipient)
         android_data['topic'] = message.subject
@@ -503,12 +506,7 @@ def handle_push_notification(user_profile_id, missed_message):
         umessage = UserMessage.objects.get(user_profile=user_profile,
                                            message__id=missed_message['message_id'])
         message = umessage.message
-        triggers = missed_message['triggers']
-        message.triggers = {
-            'private_message': triggers['private_message'],
-            'mentioned': triggers['mentioned'],
-            'stream_push_notify': triggers['stream_push_notify'],
-        }
+        message.trigger = missed_message['trigger']
         message.stream_name = missed_message.get('stream_name', None)
 
         if umessage.flags.read:
@@ -524,12 +522,11 @@ def handle_push_notification(user_profile_id, missed_message):
                                               apns_payload,
                                               gcm_payload)
             except requests.ConnectionError:
-                if 'failed_tries' not in missed_message:
-                    missed_message['failed_tries'] = 0
-
                 def failure_processor(event):
                     # type: (Dict[str, Any]) -> None
-                    logging.warning("Maximum retries exceeded for trigger:%s event:push_notification" % (event['user_profile_id']))
+                    logging.warning(
+                        "Maximum retries exceeded for trigger:%s event:push_notification" % (
+                            event['user_profile_id']))
                 retry_event('missedmessage_mobile_notifications', missed_message,
                             failure_processor)
 
@@ -549,4 +546,5 @@ def handle_push_notification(user_profile_id, missed_message):
             send_android_push_notification(android_devices, gcm_payload)
 
     except UserMessage.DoesNotExist:
-        logging.error("Could not find UserMessage with message_id %s" % (missed_message['message_id'],))
+        logging.error("Could not find UserMessage with message_id %s" % (
+            missed_message['message_id'],))

@@ -8,6 +8,7 @@ To install the latest stable release (recommended for most users),
 find your operating system below.  If you're interested in an early
 look at the newest features, consider the [beta releases](#beta-releases).
 
+<!-- This heading is linked to directly from /apps; change with caution -->
 ## Installing on macOS
 
 ### Disk image (recommended)
@@ -27,6 +28,7 @@ If you have Homebrew installed and prefer to use it, here's how.
 3. The app will update automatically to future versions.
    (`brew upgrade` will also work, if you prefer.)
 
+<!-- This heading is linked to directly from /apps; change with caution -->
 ## Installing on Windows
 
 ### Installer (recommended)
@@ -46,6 +48,7 @@ If you have Homebrew installed and prefer to use it, here's how.
 4. The app will NOT update automatically. You can repeat these steps
    to upgrade to future versions. <!-- TODO fact check -->
 
+<!-- This heading is linked to directly from /apps; change with caution -->
 ## Installing on Linux
 
 ### apt (recommended for Ubuntu or Debian 8+)

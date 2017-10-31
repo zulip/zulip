@@ -8,7 +8,7 @@ from django.test import TestCase
 
 from zerver.lib.test_helpers import (
     queries_captured, simulated_empty_cache,
-    tornado_redirected_to_list,
+    tornado_redirected_to_list, get_subscription,
     most_recent_message, make_client, avatar_disk_path,
     get_test_image_file
 )
@@ -19,7 +19,7 @@ from zerver.lib.test_runner import slow
 
 from zerver.models import UserProfile, Recipient, \
     Realm, RealmDomain, UserActivity, \
-    get_user, get_realm, get_client, get_stream, \
+    get_user, get_realm, get_client, get_stream, get_stream_recipient, \
     Message, get_context_for_message, ScheduledEmail
 
 from zerver.lib.avatar import avatar_url
@@ -27,14 +27,19 @@ from zerver.lib.email_mirror import create_missed_message_address
 from zerver.lib.send_email import send_future_email
 from zerver.lib.actions import (
     get_emails_from_user_ids,
+    get_recipient_info,
     do_deactivate_user,
     do_reactivate_user,
     do_change_is_admin,
+    do_create_user,
 )
+from zerver.lib.topic_mutes import add_topic_mute
+from zerver.lib.stream_topic import StreamTopicTarget
 
 from django.conf import settings
 
 import datetime
+import mock
 import os
 import sys
 import time
@@ -257,6 +262,21 @@ class UserProfileTest(ZulipTestCase):
         self.assertEqual(dct[hamlet.id], self.example_email("hamlet"))
         self.assertEqual(dct[othello.id], self.example_email("othello"))
 
+    def test_cache_invalidation(self):
+        # type: () -> None
+        hamlet = self.example_user('hamlet')
+        with mock.patch('zerver.lib.cache.delete_display_recipient_cache') as m:
+            hamlet.full_name = 'Hamlet Junior'
+            hamlet.save(update_fields=["full_name"])
+
+        self.assertTrue(m.called)
+
+        with mock.patch('zerver.lib.cache.delete_display_recipient_cache') as m:
+            hamlet.long_term_idle = True
+            hamlet.save(update_fields=["long_term_idle"])
+
+        self.assertFalse(m.called)
+
 class ActivateTest(ZulipTestCase):
     def test_basics(self):
         # type: () -> None
@@ -348,6 +368,107 @@ class ActivateTest(ZulipTestCase):
         do_deactivate_user(user)
         self.assertEqual(ScheduledEmail.objects.count(), 0)
 
+class RecipientInfoTest(ZulipTestCase):
+    def test_stream_recipient_info(self):
+        # type: () -> None
+        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user('cordelia')
+        othello = self.example_user('othello')
+
+        realm = hamlet.realm
+
+        stream_name = 'Test Stream'
+        topic_name = 'test topic'
+
+        for user in [hamlet, cordelia, othello]:
+            self.subscribe(user, stream_name)
+
+        stream = get_stream(stream_name, realm)
+        recipient = get_stream_recipient(stream.id)
+
+        stream_topic = StreamTopicTarget(
+            stream_id=stream.id,
+            topic_name=topic_name,
+        )
+
+        sub = get_subscription(stream_name, hamlet)
+        sub.push_notifications = True
+        sub.save()
+
+        info = get_recipient_info(
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+        )
+
+        all_user_ids = {hamlet.id, cordelia.id, othello.id}
+
+        expected_info = dict(
+            active_user_ids=all_user_ids,
+            push_notify_user_ids=set(),
+            stream_push_user_ids={hamlet.id},
+            um_eligible_user_ids=all_user_ids,
+            long_term_idle_user_ids=set(),
+            default_bot_user_ids=set(),
+            service_bot_tuples=[],
+        )
+
+        self.assertEqual(info, expected_info)
+
+        # Now mute Hamlet to omit him from stream_push_user_ids.
+        add_topic_mute(
+            user_profile=hamlet,
+            stream_id=stream.id,
+            recipient_id=recipient.id,
+            topic_name=topic_name,
+        )
+
+        info = get_recipient_info(
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+        )
+
+        self.assertEqual(info['stream_push_user_ids'], set())
+
+        # Add a service bot.
+        service_bot = do_create_user(
+            email='service-bot@zulip.com',
+            password='',
+            realm=realm,
+            full_name='',
+            short_name='',
+            bot_type=UserProfile.EMBEDDED_BOT,
+        )
+
+        info = get_recipient_info(
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+            possibly_mentioned_user_ids={service_bot.id}
+        )
+        self.assertEqual(info['service_bot_tuples'], [
+            (service_bot.id, UserProfile.EMBEDDED_BOT),
+        ])
+
+        # Add a normal bot.
+        normal_bot = do_create_user(
+            email='normal-bot@zulip.com',
+            password='',
+            realm=realm,
+            full_name='',
+            short_name='',
+            bot_type=UserProfile.DEFAULT_BOT,
+        )
+
+        info = get_recipient_info(
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+            possibly_mentioned_user_ids={service_bot.id, normal_bot.id}
+        )
+        self.assertEqual(info['default_bot_user_ids'], {normal_bot.id})
+
 class BulkUsersTest(ZulipTestCase):
     def test_client_gravatar_option(self):
         # type: () -> None
@@ -396,7 +517,7 @@ class GetProfileTest(ZulipTestCase):
         # type: (str) -> Dict[Text, Any]
         # Assumes all users are example users in realm 'zulip'
         user_profile = self.example_user(user_id)
-        self.send_message(user_profile.email, "Verona", Recipient.STREAM, "hello")
+        self.send_stream_message(user_profile.email, "Verona", "hello")
 
         result = self.client_get("/api/v1/users/me", **self.api_auth(user_profile.email))
 
@@ -467,8 +588,8 @@ class GetProfileTest(ZulipTestCase):
         Ensure GET /users/me returns a proper pointer id after the pointer is updated
         """
 
-        id1 = self.send_message(self.example_email("othello"), "Verona", Recipient.STREAM)
-        id2 = self.send_message(self.example_email("othello"), "Verona", Recipient.STREAM)
+        id1 = self.send_stream_message(self.example_email("othello"), "Verona")
+        id2 = self.send_stream_message(self.example_email("othello"), "Verona")
 
         json = self.common_get_profile("hamlet")
 

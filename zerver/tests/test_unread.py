@@ -6,8 +6,8 @@ from django.db import connection
 
 from zerver.models import (
     get_realm,
-    get_recipient,
     get_stream,
+    get_stream_recipient,
     get_user,
     Recipient,
     Stream,
@@ -42,7 +42,7 @@ class PointerTest(ZulipTestCase):
         """
         self.login(self.example_email("hamlet"))
         self.assertEqual(self.example_user('hamlet').pointer, -1)
-        msg_id = self.send_message(self.example_email("othello"), "Verona", Recipient.STREAM)
+        msg_id = self.send_stream_message(self.example_email("othello"), "Verona")
         result = self.client_post("/json/users/me/pointer", {"pointer": msg_id})
         self.assert_json_success(result)
         self.assertEqual(self.example_user('hamlet').pointer, msg_id)
@@ -55,7 +55,7 @@ class PointerTest(ZulipTestCase):
         user = self.example_user('hamlet')
         email = user.email
         self.assertEqual(user.pointer, -1)
-        msg_id = self.send_message(self.example_email("othello"), "Verona", Recipient.STREAM)
+        msg_id = self.send_stream_message(self.example_email("othello"), "Verona")
         result = self.client_post("/api/v1/users/me/pointer", {"pointer": msg_id},
                                   **self.api_auth(email))
         self.assert_json_success(result)
@@ -113,8 +113,8 @@ class PointerTest(ZulipTestCase):
         self.assert_json_success(result)
 
         # Send a new message (this will be unread)
-        new_message_id = self.send_message(self.example_email("othello"), "Verona",
-                                           Recipient.STREAM, "test")
+        new_message_id = self.send_stream_message(self.example_email("othello"), "Verona",
+                                                  "test")
 
         # If we call get_messages with use_first_unread_anchor=True, we
         # should get the message we just sent
@@ -180,17 +180,17 @@ class UnreadCountTests(ZulipTestCase):
     def setUp(self):
         # type: () -> None
         self.unread_msg_ids = [
-            self.send_message(
-                self.example_email("iago"), self.example_email("hamlet"), Recipient.PERSONAL, "hello"),
-            self.send_message(
-                self.example_email("iago"), self.example_email("hamlet"), Recipient.PERSONAL, "hello2")]
+            self.send_personal_message(
+                self.example_email("iago"), self.example_email("hamlet"), "hello"),
+            self.send_personal_message(
+                self.example_email("iago"), self.example_email("hamlet"), "hello2")]
 
     # Sending a new message results in unread UserMessages being created
     def test_new_message(self):
         # type: () -> None
         self.login(self.example_email("hamlet"))
         content = "Test message for unset read bit"
-        last_msg = self.send_message(self.example_email("hamlet"), "Verona", Recipient.STREAM, content)
+        last_msg = self.send_stream_message(self.example_email("hamlet"), "Verona", content)
         user_messages = list(UserMessage.objects.filter(message=last_msg))
         self.assertEqual(len(user_messages) > 0, True)
         for um in user_messages:
@@ -235,8 +235,8 @@ class UnreadCountTests(ZulipTestCase):
         stream = self.subscribe(user_profile, "test_stream")
         self.subscribe(self.example_user("cordelia"), "test_stream")
 
-        message_id = self.send_message(self.example_email("hamlet"), "test_stream", Recipient.STREAM, "hello")
-        unrelated_message_id = self.send_message(self.example_email("hamlet"), "Denmark", Recipient.STREAM, "hello")
+        message_id = self.send_stream_message(self.example_email("hamlet"), "test_stream", "hello")
+        unrelated_message_id = self.send_stream_message(self.example_email("hamlet"), "Denmark", "hello")
 
         events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
@@ -294,8 +294,8 @@ class UnreadCountTests(ZulipTestCase):
         user_profile = self.example_user('hamlet')
         self.subscribe(user_profile, "test_stream")
 
-        message_id = self.send_message(self.example_email("hamlet"), "test_stream", Recipient.STREAM, "hello", "test_topic")
-        unrelated_message_id = self.send_message(self.example_email("hamlet"), "Denmark", Recipient.STREAM, "hello", "Denmark2")
+        message_id = self.send_stream_message(self.example_email("hamlet"), "test_stream", "hello", "test_topic")
+        unrelated_message_id = self.send_stream_message(self.example_email("hamlet"), "Denmark", "hello", "Denmark2")
         events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
             result = self.client_post("/json/mark_topic_as_read", {
@@ -344,11 +344,10 @@ class FixUnreadTests(ZulipTestCase):
 
         def send_message(stream_name, topic_name):
             # type: (Text, Text) -> int
-            msg_id = self.send_message(
+            msg_id = self.send_stream_message(
                 self.example_email("othello"),
                 stream_name,
-                Recipient.STREAM,
-                subject=topic_name)
+                topic_name=topic_name)
             um = UserMessage.objects.get(
                 user_profile=user,
                 message_id=msg_id)
@@ -367,7 +366,7 @@ class FixUnreadTests(ZulipTestCase):
         def mute_stream(stream_name):
             # type: (Text) -> None
             stream = get_stream(stream_name, realm)
-            recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
+            recipient = get_stream_recipient(stream.id)
             subscription = Subscription.objects.get(
                 user_profile=user,
                 recipient=recipient
@@ -378,7 +377,7 @@ class FixUnreadTests(ZulipTestCase):
         def mute_topic(stream_name, topic_name):
             # type: (Text, Text) -> None
             stream = get_stream(stream_name, realm)
-            recipient = get_recipient(Recipient.STREAM, stream.id)
+            recipient = get_stream_recipient(stream.id)
 
             add_topic_mute(
                 user_profile=user,

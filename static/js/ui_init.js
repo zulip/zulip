@@ -273,6 +273,7 @@ $(function () {
     compose.initialize();
     hotspots.initialize();
     ui.initialize();
+    desktop_notifications_panel.initialize();
 });
 
 

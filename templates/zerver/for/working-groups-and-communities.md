@@ -8,7 +8,7 @@ the organization. In such an organization, making it easy for someone to
 participate when they don't have time to read everything can be the
 difference between a robust, growing community and one that stagnates.
 
-Some of Zulip's earliest users were part-time organizatons, so we have given
+Some of Zulip's earliest users were part-time organizations, so we have given
 a lot of thought to the problems such groups face. Zulip's topic-based
 threading
 

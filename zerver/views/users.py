@@ -10,14 +10,16 @@ from django.shortcuts import redirect, render
 from django.conf import settings
 from six.moves import map
 
-from zerver.decorator import has_request_variables, REQ, JsonableError, \
-    require_realm_admin, zulip_login_required
+from zerver.decorator import require_realm_admin, zulip_login_required
 from zerver.forms import CreateUserForm
 from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
     do_change_is_admin, do_change_default_all_public_streams, \
     do_change_default_events_register_stream, do_change_default_sending_stream, \
     do_create_user, do_deactivate_user, do_reactivate_user, do_regenerate_api_key
 from zerver.lib.avatar import avatar_url, get_gravatar_url, get_avatar_field
+from zerver.lib.exceptions import JsonableError
+from zerver.lib.integrations import EMBEDDED_BOTS
+from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.upload import upload_avatar_image
@@ -233,7 +235,8 @@ def regenerate_bot_api_key(request, user_profile, email):
     )
     return json_success(json_result)
 
-def add_outgoing_webhook_service(name, user_profile, base_url, interface, token):
+# Adds an outgoing webhook or embedded bot service.
+def add_service(name, user_profile, base_url=None, interface=None, token=None):
     # type: (Text, UserProfile, Text, int, Text) -> None
     Service.objects.create(name=name,
                            user_profile=user_profile,
@@ -244,18 +247,26 @@ def add_outgoing_webhook_service(name, user_profile, base_url, interface, token)
 @has_request_variables
 def add_bot_backend(request, user_profile, full_name_raw=REQ("full_name"), short_name_raw=REQ("short_name"),
                     bot_type=REQ(validator=check_int, default=UserProfile.DEFAULT_BOT),
-                    payload_url=REQ(validator=check_url, default=None),
+                    payload_url=REQ(validator=check_url, default=""),
+                    service_name=REQ(default=None),
                     interface_type=REQ(validator=check_int, default=Service.GENERIC),
                     default_sending_stream_name=REQ('default_sending_stream', default=None),
                     default_events_register_stream_name=REQ('default_events_register_stream', default=None),
                     default_all_public_streams=REQ(validator=check_bool, default=None)):
-    # type: (HttpRequest, UserProfile, Text, Text, int, Optional[Text], int, Optional[Text], Optional[Text], Optional[bool]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Text, Text, int, Optional[Text], Optional[Text], int, Optional[Text], Optional[Text], Optional[bool]) -> HttpResponse
     short_name = check_short_name(short_name_raw)
-    service_name = short_name
+    service_name = service_name or short_name
     short_name += "-bot"
     full_name = check_full_name(full_name_raw)
     email = '%s@%s' % (short_name, user_profile.realm.get_bot_domain())
     form = CreateUserForm({'full_name': full_name, 'email': email})
+
+    if bot_type == UserProfile.EMBEDDED_BOT:
+        if not settings.EMBEDDED_BOTS_ENABLED:
+            return json_error(_("Embedded bots are not enabled."))
+        if service_name not in [bot.name for bot in EMBEDDED_BOTS]:
+            return json_error(_("Invalid embedded bot name."))
+
     if not form.is_valid():
         # We validate client-side as well
         return json_error(_('Bad name or username'))
@@ -286,7 +297,7 @@ def add_bot_backend(request, user_profile, full_name_raw=REQ("full_name"), short
 
     bot_profile = do_create_user(email=email, password='',
                                  realm=user_profile.realm, full_name=full_name,
-                                 short_name=short_name, active=True,
+                                 short_name=short_name,
                                  bot_type=bot_type,
                                  bot_owner=user_profile,
                                  avatar_source=avatar_source,
@@ -297,12 +308,12 @@ def add_bot_backend(request, user_profile, full_name_raw=REQ("full_name"), short
         user_file = list(request.FILES.values())[0]
         upload_avatar_image(user_file, user_profile, bot_profile)
 
-    if bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
-        add_outgoing_webhook_service(name=service_name,
-                                     user_profile=bot_profile,
-                                     base_url=payload_url,
-                                     interface=interface_type,
-                                     token=random_api_key())
+    if bot_type in (UserProfile.OUTGOING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
+        add_service(name=service_name,
+                    user_profile=bot_profile,
+                    base_url=payload_url,
+                    interface=interface_type,
+                    token=random_api_key())
 
     json_result = dict(
         api_key=bot_profile.api_key,

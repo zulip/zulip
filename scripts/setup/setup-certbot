@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+
+set -e
+
+usage() {
+  echo "Usage: $0 <domain name> <email>" >&2
+  exit 1
+}
+
+if [ "$EUID" -ne 0 ]; then
+    echo "Error: This script must be run as root" >&2
+    exit 1
+fi
+
+args="$(getopt -o '' --long help,hostname:,email: -n "$0" -- "$@")"
+eval "set -- $args"
+while true; do
+    case "$1" in
+        --hostname)
+            DOMAIN="$2"
+            shift
+            shift
+            ;;
+        --email)
+            EMAIL="$2"
+            shift
+            shift
+            ;;
+        --help)
+            show_help=1
+            shift
+            ;;
+        --)
+            break
+            ;;
+    esac
+done
+
+if [ -n "$show_help" ]; then
+    usage
+fi
+
+# For reference https://certbot.eff.org/all-instructions/#debian-other-nginx
+# We download to /root as a reasonably safe place with only root having access
+wget https://dl.eff.org/certbot-auto -O /root/certbot-auto
+chmod a+x /root/certbot-auto
+
+/root/certbot-auto --nginx certonly -d "$DOMAIN" -m "$EMAIL" --agree-tos --non-interactive
+
+# Link the generated cert to the path read by Zulip
+ln -nsf /etc/letsencrypt/live/"$DOMAIN"/privkey.pem /etc/ssl/private/zulip.key
+ln -nsf /etc/letsencrypt/live/"$DOMAIN"/fullchain.pem /etc/ssl/certs/zulip.combined-chain.crt
+
+echo "Certbot SSL certificate configuration succeeded."

@@ -9,7 +9,6 @@ from functools import wraps
 import smtplib
 import socket
 
-from zulip_bots.lib import ExternalBotHandler, StateHandler
 from django.conf import settings
 from django.db import connection
 from django.core.handlers.wsgi import WSGIRequest
@@ -287,17 +286,6 @@ class PushNotificationsWorker(QueueProcessingWorker):
         # type: (Mapping[str, Any]) -> None
         handle_push_notification(data['user_profile_id'], data)
 
-def make_feedback_client():
-    # type: () -> Any # Should be zulip.Client, but not necessarily importable
-    sys.path.append(os.path.join(os.path.dirname(__file__), '../../api'))
-    import zulip
-    return zulip.Client(
-        client="ZulipFeedback/0.1",
-        email=settings.DEPLOYMENT_ROLE_NAME,
-        api_key=settings.DEPLOYMENT_ROLE_KEY,
-        verbose=True,
-        site=settings.FEEDBACK_TARGET)
-
 # We probably could stop running this queue worker at all if ENABLE_FEEDBACK is False
 @assign_queue('feedback_messages')
 class FeedbackBot(QueueProcessingWorker):
@@ -308,24 +296,10 @@ class FeedbackBot(QueueProcessingWorker):
 
 @assign_queue('error_reports')
 class ErrorReporter(QueueProcessingWorker):
-    def start(self):
-        # type: () -> None
-        if settings.DEPLOYMENT_ROLE_KEY:
-            self.staging_client = make_feedback_client()
-            self.staging_client._register(
-                'forward_error',
-                method='POST',
-                url='deployments/report_error',
-                make_request=(lambda type, report: {'type': type, 'report': ujson.dumps(report)}),
-            )
-        QueueProcessingWorker.start(self)
-
     def consume(self, event):
         # type: (Mapping[str, Any]) -> None
         logging.info("Processing traceback with type %s for %s" % (event['type'], event.get('user_email')))
-        if settings.DEPLOYMENT_ROLE_KEY:
-            self.staging_client.forward_error(event['type'], event['report'])
-        elif settings.ERROR_REPORTING:
+        if settings.ERROR_REPORTING:
             do_report_error(event['report']['host'], event['type'], event['report'])
 
 @assign_queue('slow_queries', queue_type="loop")
@@ -364,7 +338,7 @@ class SlowQueryWorker(QueueProcessingWorker):
 class MessageSenderWorker(QueueProcessingWorker):
     def __init__(self):
         # type: () -> None
-        super(MessageSenderWorker, self).__init__()
+        super().__init__()
         self.redis_client = get_redis_client()
         self.handler = BaseHandler()
         self.handler.load_middleware()
@@ -419,6 +393,8 @@ class MessageSenderWorker(QueueProcessingWorker):
         self.redis_client.hmset(redis_key, {'status': 'complete',
                                             'response': resp_content})
 
+        # Since this sends back to Tornado, we can't use
+        # call_consume_in_tests here.
         queue_json_publish(server_meta['return_queue'], result, lambda e: None)
 
 @assign_queue('digest_emails')
@@ -506,11 +482,6 @@ class EmbeddedBotWorker(QueueProcessingWorker):
         # type: (UserProfile) -> EmbeddedBotHandler
         return EmbeddedBotHandler(user_profile)
 
-    # TODO: Handle stateful bots properly
-    def get_state_handler(self):
-        # type: () -> StateHandler
-        return StateHandler()
-
     def consume(self, event):
         # type: (Mapping[str, Any]) -> None
         user_profile_id = event['user_profile_id']
@@ -523,9 +494,10 @@ class EmbeddedBotWorker(QueueProcessingWorker):
         for service in services:
             bot_handler = get_bot_handler(str(service.name))
             if bot_handler is None:
-                logging.error("Error: User %s has bot with invalid embedded bot service %s" % (user_profile_id, service.name))
+                logging.error("Error: User %s has bot with invalid embedded bot service %s" % (
+                    user_profile_id, service.name))
                 continue
             bot_handler.handle_message(
                 message=message,
                 bot_handler=self.get_bot_api_client(user_profile),
-                state_handler=self.get_state_handler())
+                state_handler=None)

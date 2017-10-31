@@ -2,8 +2,8 @@
 # /tools/update-locked-requirements to update requirements/dev_lock.txt
 # and requirements/prod_lock.txt.
 # See requirements/README.md for more detail.
-# Django itself; we use a slightly patched version
-Django==1.11.5
+# Django itself
+Django==1.11.6
 
 # needed for mypy TypedDict
 mypy_extensions==0.3.0
@@ -17,10 +17,10 @@ MarkupSafe==1.0
 Pygments==2.2.0
 
 # Needed for manage.py
-ipython==6.2.0
+ipython==6.2.1
 
 # Needed for Image Processing
-Pillow==4.2.1
+Pillow==4.3.0
 
 # Needed for building complex DB queries
 SQLAlchemy==1.1.14
@@ -40,13 +40,13 @@ boto==2.48.0
 certifi==2017.7.27.1
 
 # Used for scrapy as well as argon2
-cffi==1.11.0
+cffi==1.11.2
 
 chardet==3.0.4
 
 # Pinned version because older versions don't compile on newer Linux.
 # Not actually a direct dependency.
-cryptography==2.0.3
+cryptography==2.1.2
 
 # Needed for integrations
 defusedxml==0.5.0
@@ -55,7 +55,7 @@ defusedxml==0.5.0
 diff-match-patch==20121119
 
 # Needed for LDAP support
-django-auth-ldap==1.2.15
+django-auth-ldap==1.2.16
 
 # Django extension providing bitfield support
 django-bitfield==1.9.3
@@ -71,10 +71,10 @@ python-gcm==0.4
 gitdb==0.6.4
 
 # Needed for Google Apps mobile auth
-google-api-python-client==1.6.3
+google-api-python-client==1.6.4
 
 # Needed for the email mirror
-html2text==2016.9.19
+html2text==2017.10.4
 httplib2==0.10.3
 -e git+https://github.com/zulip/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#egg=talon==1.2.10.zulip1
 
@@ -91,7 +91,7 @@ markdown-include==0.5.1
 mock==2.0.0
 
 oauth2client==4.1.2
-oauthlib==2.0.4
+oauthlib==2.0.6
 
 # Enhanced HTTPS support for httplib and urllib2 using PyOpenSSL
 # Needed by requests to send https request to some sites.
@@ -101,10 +101,10 @@ ndg-httpsclient==0.4.3
 pika==0.11.0
 
 # Needed to access our database
-psycopg2==2.7.3.1
+psycopg2==2.7.3.2
 
-pyasn1==0.3.2
-pyasn1-modules==0.0.11
+pyasn1==0.3.7
+pyasn1-modules==0.1.5
 pycrypto==2.6.1
 
 # Needed for memcached usage
@@ -122,8 +122,11 @@ redis==2.10.6
 requests_oauthlib==0.8.0
 rsa==3.4.2
 
+# Needed for its HTML encoder for page_params
+simplejson==3.11.1
+
 # Needed for Python 2+3 compatibility
-six==1.10.0
+six==1.11.0
 smmap==0.9.0
 
 # Needed for Tornado websockets support
@@ -165,13 +168,13 @@ ijson==2.3
 
 # Needed for link preview
 beautifulsoup4==4.6.0
--e git+https://github.com/zulip/pyoembed.git@d6d34a6a73404ef6bffe79109da68feb224ef8c6#egg=pyoembed==0.1.1.zulip1
+-e git+https://github.com/zulip/pyoembed.git@8a4855b5bbf83e18283d6e6e5d8fe401ede14923#egg=pyoembed==0.1.1.zulip2
 
 # The Zulip API bindings, from its own repository.
 # We integrate with these tightly, so often it makes sense to pin a
 # version from Git rather than a release.
--e "git+https://github.com/zulip/python-zulip-api.git@0.3.5#egg=zulip==0.3.5_git&subdirectory=zulip"
--e "git+https://github.com/zulip/python-zulip-api.git@0.3.5#egg=zulip_bots==0.3.5+git&subdirectory=zulip_bots"
+-e "git+https://github.com/zulip/python-zulip-api.git@0.3.7#egg=zulip==0.3.7_git&subdirectory=zulip"
+-e "git+https://github.com/zulip/python-zulip-api.git@0.3.7#egg=zulip_bots==0.3.7+git&subdirectory=zulip_bots"
 
 # Used for Hesiod lookups, etc.
 py3dns==3.1.0
@@ -183,4 +186,7 @@ pyldap==2.4.37
 social-auth-app-django==1.2.0
 
 # Needed for messages' rendered content parsing in push notifications.
-lxml==4.0.0
+lxml==4.1.0
+
+# One occurance left in home.py
+simplejson==3.11.1

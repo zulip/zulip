@@ -4,7 +4,6 @@
 
 {% block customhead %}
 {{ super() }}
-{{ render_bundle('api') }}
 {% endblock %}
 
 {% block portico_content %}
@@ -61,4 +60,10 @@
         </div>
         {% endfor %}
     {% endautoescape %}
+    <script>
+        $('a[data-toggle="tab"]').on('shown', function (e) {
+            $("." + $(e.target).data("class")).show();
+            $("." + $(e.relatedTarget).data("class")).hide();
+        });
+    </script>
 {% endblock %}

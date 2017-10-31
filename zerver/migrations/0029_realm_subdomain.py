@@ -6,8 +6,7 @@ from django.db.migrations.state import StateApps
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 
-def set_subdomain_of_default_realm(apps, schema_editor):
-    # type: (StateApps, DatabaseSchemaEditor) -> None
+def set_subdomain_of_default_realm(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     if settings.DEVELOPMENT:
         Realm = apps.get_model('zerver', 'Realm')
         try:

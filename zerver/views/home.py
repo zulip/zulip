@@ -14,7 +14,7 @@ from zerver.lib.realm_icon import realm_icon_url
 from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     Recipient, Realm, UserMessage, DefaultStream, RealmEmoji, RealmDomain, \
     RealmFilter, PreregistrationUser, UserActivity, \
-    UserPresence, get_recipient, name_changes_disabled, email_to_username, \
+    UserPresence, get_stream_recipient, name_changes_disabled, email_to_username, \
     get_realm_domains
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import update_user_presence, do_change_tos_version, \
@@ -24,7 +24,8 @@ from zerver.lib.i18n import get_language_list, get_language_name, \
     get_language_list_for_templates
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.lib.streams import access_stream_by_name
-from zerver.lib.utils import statsd, get_subdomain
+from zerver.lib.subdomains import get_subdomain
+from zerver.lib.utils import statsd
 
 import calendar
 import datetime
@@ -78,7 +79,7 @@ def home(request):
     # page, not the login form, on the root domain
 
     subdomain = get_subdomain(request)
-    if subdomain != "":
+    if subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
         return home_real(request)
 
     return render(request, 'zerver/hello.html')
@@ -158,8 +159,7 @@ def home_real(request):
     url_lang = '/{}'.format(request.LANGUAGE_CODE)
     if not request.path.startswith(url_lang):
         translation.activate(default_language)
-
-    request.session[translation.LANGUAGE_SESSION_KEY] = default_language
+        request.session[translation.LANGUAGE_SESSION_KEY] = translation.get_language()
 
     # Pass parameters to the client-side JavaScript code.
     # These end up in a global JavaScript Object named 'page_params'.
@@ -202,7 +202,7 @@ def home_real(request):
 
     if narrow_stream is not None:
         # In narrow_stream context, initial pointer is just latest message
-        recipient = get_recipient(Recipient.STREAM, narrow_stream.id)
+        recipient = get_stream_recipient(narrow_stream.id)
         try:
             initial_pointer = Message.objects.filter(recipient=recipient).order_by('id').reverse()[0].id
         except IndexError:

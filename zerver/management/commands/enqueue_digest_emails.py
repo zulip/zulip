@@ -17,7 +17,6 @@ class Command(BaseCommand):
 in a while.
 """
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         cutoff = timezone_now() - datetime.timedelta(days=DIGEST_CUTOFF)
         enqueue_emails(cutoff)

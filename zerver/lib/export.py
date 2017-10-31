@@ -23,8 +23,6 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserPresence, UserActivity, UserActivityInterval, \
     get_display_recipient, Attachment, get_system_bot
 from zerver.lib.parallel import run_parallel
-from zerver.lib.utils import mkdir_p
-from six.moves import range
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 # Custom mypy types follow:
@@ -334,7 +332,7 @@ def export_from_config(response, config, seed_object=None, context=None):
         rows = list(query)
 
     elif config.id_source:
-        # In this mode,  we are the figurative Blog, and we now
+        # In this mode, we are the figurative Blog, and we now
         # need to look at the current response to get all the
         # blog ids from the Article rows we fetched previously.
         model = config.model
@@ -941,7 +939,7 @@ def export_uploads_from_local(realm, local_dir, output_dir):
     for attachment in Attachment.objects.filter(realm_id=realm.id):
         local_path = os.path.join(local_dir, attachment.path_id)
         output_path = os.path.join(output_dir, attachment.path_id)
-        mkdir_p(os.path.dirname(output_path))
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
         subprocess.check_call(["cp", "-a", local_path, output_path])
         stat = os.stat(local_path)
         record = dict(realm_id=attachment.realm_id,
@@ -985,7 +983,7 @@ def export_avatars_from_local(realm, local_dir, output_dir):
                 user.email, local_path))
             fn = os.path.relpath(local_path, local_dir)
             output_path = os.path.join(output_dir, fn)
-            mkdir_p(str(os.path.dirname(output_path)))
+            os.makedirs(str(os.path.dirname(output_path)), exist_ok=True)
             subprocess.check_call(["cp", "-a", str(local_path), str(output_path)])
             stat = os.stat(local_path)
             record = dict(realm_id=realm.id,
@@ -1189,7 +1187,8 @@ def export_messages_single_user(user_profile, output_dir, chunk_size=1000):
     min_id = -1
     dump_file_id = 1
     while True:
-        actual_query = user_message_query.select_related("message", "message__sending_client").filter(id__gt=min_id)[0:chunk_size]
+        actual_query = user_message_query.select_related(
+            "message", "message__sending_client").filter(id__gt=min_id)[0:chunk_size]
         user_message_chunk = [um for um in actual_query]
         user_message_ids = set(um.id for um in user_message_chunk)
 
@@ -1293,6 +1292,15 @@ def fix_bitfield_keys(data, table, field_name):
     for item in data[table]:
         item[field_name] = item[field_name + '_mask']
         del item[field_name + '_mask']
+
+def fix_realm_authentication_bitfield(data, table, field_name):
+    # type: (TableData, TableName, Field) -> None
+    """Used to fixup the authentication_methods bitfield to be a string"""
+    for item in data[table]:
+        values_as_bitstring = ''.join(['1' if field[1] else '0' for field in
+                                       item[field_name]])
+        values_as_int = int(values_as_bitstring, 2)
+        item[field_name] = values_as_int
 
 def bulk_import_model(data, model, table, dump_file_id=None):
     # type: (TableData, Any, TableName, str) -> None
@@ -1425,6 +1433,7 @@ def do_import_realm(import_dir):
 
     convert_to_id_fields(data, 'zerver_realm', 'notifications_stream')
     fix_datetime_fields(data, 'zerver_realm')
+    fix_realm_authentication_bitfield(data, 'zerver_realm', 'authentication_methods')
     realm = Realm(**data['zerver_realm'][0])
     if realm.notifications_stream_id is not None:
         notifications_stream_id = int(realm.notifications_stream_id)  # type: Optional[int]

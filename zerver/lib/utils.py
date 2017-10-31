@@ -12,8 +12,7 @@ import sys
 from time import sleep
 
 from django.conf import settings
-from django.http import HttpRequest
-from six.moves import range, map, zip_longest
+from six.moves import map, zip_longest
 from zerver.lib.str_utils import force_text
 
 T = TypeVar('T')
@@ -117,17 +116,6 @@ def generate_random_token(length):
     # type: (int) -> str
     return str(base64.b16encode(os.urandom(length // 2)).decode('utf-8').lower())
 
-def mkdir_p(path):
-    # type: (str) -> None
-    # Python doesn't have an analog to `mkdir -p` < Python 3.2.
-    try:
-        os.makedirs(path)
-    except OSError as e:
-        if e.errno == errno.EEXIST and os.path.isdir(path):
-            pass
-        else:
-            raise
-
 def query_chunker(queries, id_collector=None, chunk_size=1000, db_chunk_size=None):
     # type: (List[Any], Set[int], int, int) -> Iterable[Any]
     '''
@@ -184,35 +172,6 @@ def query_chunker(queries, id_collector=None, chunk_size=1000, db_chunk_size=Non
         id_collector.update(tup_ids)
 
         yield [row for row_id, i, row in tup_chunk]
-
-def _extract_subdomain(request):
-    # type: (HttpRequest) -> Text
-    domain = request.get_host().lower()
-    index = domain.find("." + settings.EXTERNAL_HOST)
-    if index == -1:
-        return ""
-    return domain[0:index]
-
-def get_subdomain(request):
-    # type: (HttpRequest) -> Text
-    subdomain = _extract_subdomain(request)
-    if subdomain in settings.ROOT_SUBDOMAIN_ALIASES:
-        return ""
-    return subdomain
-
-def is_subdomain_root_or_alias(request):
-    # type: (HttpRequest) -> bool
-    subdomain = _extract_subdomain(request)
-    return not subdomain or subdomain in settings.ROOT_SUBDOMAIN_ALIASES
-
-def check_subdomain(realm_subdomain, user_subdomain):
-    # type: (Optional[Text], Optional[Text]) -> bool
-    if realm_subdomain is not None:
-        if (realm_subdomain == "" and user_subdomain is None):
-            return True
-        if realm_subdomain != user_subdomain:
-            return False
-    return True
 
 def split_by(array, group_size, filler):
     # type: (List[Any], int, Any) -> List[List[Any]]

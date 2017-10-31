@@ -2,6 +2,7 @@
 # high-level documentation on how this system works.
 from typing import cast, AbstractSet, Any, Callable, Dict, List, \
     Mapping, MutableMapping, Optional, Iterable, Sequence, Set, Text, Union
+from mypy_extensions import TypedDict
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
@@ -27,6 +28,7 @@ from zerver.tornado.handlers import clear_handler_by_id, get_handler_by_id, \
     finish_handler, handler_stats_string
 from zerver.lib.utils import statsd
 from zerver.middleware import async_request_restart
+from zerver.lib.message import MessageDict
 from zerver.lib.narrow import build_narrow_filter
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.request import JsonableError
@@ -673,8 +675,14 @@ def missedmessage_hook(user_profile_id, client, last_for_client):
         idle = True
 
         message_id = event['message']['id']
+        # Pass on the information on whether a push or email notification was already sent.
+        already_notified = dict(
+            push_notified = event.get("push_notified", False),
+            email_notified = event.get("email_notified", False),
+        )
         maybe_enqueue_notifications(user_profile_id, message_id, private_message, mentioned,
-                                    stream_push_notify, stream_name, always_push_notify, idle)
+                                    stream_push_notify, stream_name, always_push_notify, idle,
+                                    already_notified)
 
 def receiver_is_off_zulip(user_profile_id):
     # type: (int) -> bool
@@ -687,8 +695,8 @@ def receiver_is_off_zulip(user_profile_id):
 
 def maybe_enqueue_notifications(user_profile_id, message_id, private_message,
                                 mentioned, stream_push_notify, stream_name,
-                                always_push_notify, idle):
-    # type: (int, int, bool, bool, bool, Optional[str], bool, bool) -> Dict[str, bool]
+                                always_push_notify, idle, already_notified):
+    # type: (int, int, bool, bool, bool, Optional[str], bool, bool, Dict[str, bool]) -> Dict[str, bool]
     """This function has a complete unit test suite in
     `test_enqueue_notifications` that should be expanded as we add
     more features here."""
@@ -696,14 +704,18 @@ def maybe_enqueue_notifications(user_profile_id, message_id, private_message,
 
     if (idle or always_push_notify) and (private_message or mentioned or stream_push_notify):
         notice = build_offline_notification(user_profile_id, message_id)
-        notice['triggers'] = {
-            'private_message': private_message,
-            'mentioned': mentioned,
-            'stream_push_notify': stream_push_notify,
-        }
+        if private_message:
+            notice['trigger'] = 'private_message'
+        elif mentioned:
+            notice['trigger'] = 'mentioned'
+        elif stream_push_notify:
+            notice['trigger'] = 'stream_push_notify'
+        else:
+            raise AssertionError("Unknown notification trigger!")
         notice['stream_name'] = stream_name
-        queue_json_publish("missedmessage_mobile_notifications", notice, lambda notice: None)
-        notified['push_notified'] = True
+        if not already_notified.get("push_notified"):
+            queue_json_publish("missedmessage_mobile_notifications", notice, lambda notice: None)
+            notified['push_notified'] = True
 
     # Send missed_message emails if a private message or a
     # mention.  Eventually, we'll add settings to allow email
@@ -712,42 +724,85 @@ def maybe_enqueue_notifications(user_profile_id, message_id, private_message,
     if idle and (private_message or mentioned):
         # We require RabbitMQ to do this, as we can't call the email handler
         # from the Tornado process. So if there's no rabbitmq support do nothing
-        queue_json_publish("missedmessage_emails", notice, lambda notice: None)
-        notified['email_notified'] = True
+        if not already_notified.get("email_notified"):
+            queue_json_publish("missedmessage_emails", notice, lambda notice: None)
+            notified['email_notified'] = True
 
     return notified
 
-def process_message_event(event_template, users):
-    # type: (Mapping[str, Any], Iterable[Mapping[str, Any]]) -> None
-    presence_idle_user_ids = set(event_template.get('presence_idle_user_ids', []))
+ClientInfo = TypedDict('ClientInfo', {
+    'client': ClientDescriptor,
+    'flags': Optional[Iterable[str]],
+    'is_sender': bool,
+})
+
+def get_client_info_for_message_event(event_template, users):
+    # type: (Mapping[str, Any], Iterable[Mapping[str, Any]]) -> Dict[str, ClientInfo]
+
+    '''
+    Return client info for all the clients interested in a message.
+    This basically includes clients for users who are recipients
+    of the message, with some nuances for bots that auto-subscribe
+    to all streams, plus users who may be mentioned, etc.
+    '''
+
+    send_to_clients = {}  # type: Dict[str, ClientInfo]
+
     sender_queue_id = event_template.get('sender_queue_id', None)  # type: Optional[str]
-    message_dict_markdown = event_template['message_dict_markdown']  # type: Dict[str, Any]
-    message_dict_no_markdown = event_template['message_dict_no_markdown']  # type: Dict[str, Any]
-    sender_id = message_dict_markdown['sender_id']  # type: int
-    message_id = message_dict_markdown['id']  # type: int
-    message_type = message_dict_markdown['type']  # type: str
-    sending_client = message_dict_markdown['client']  # type: Text
 
-    # To remove duplicate clients: Maps queue ID to {'client': Client, 'flags': flags}
-    send_to_clients = {}  # type: Dict[str, Dict[str, Any]]
+    def is_sender_client(client):
+        # type: (ClientDescriptor) -> bool
+        return (sender_queue_id is not None) and client.event_queue.id == sender_queue_id
 
-    # Extra user-specific data to include
-    extra_user_data = {}  # type: Dict[int, Any]
-
+    # If we're on a public stream, look for clients (typically belonging to
+    # bots) that are registered to get events for ALL streams.
     if 'stream_name' in event_template and not event_template.get("invite_only"):
-        for client in get_client_descriptors_for_realm_all_streams(event_template['realm_id']):
-            send_to_clients[client.event_queue.id] = {'client': client, 'flags': None}
-            if sender_queue_id is not None and client.event_queue.id == sender_queue_id:
-                send_to_clients[client.event_queue.id]['is_sender'] = True
+        realm_id = event_template['realm_id']
+        for client in get_client_descriptors_for_realm_all_streams(realm_id):
+            send_to_clients[client.event_queue.id] = dict(
+                client=client,
+                flags=None,
+                is_sender=is_sender_client(client)
+            )
 
     for user_data in users:
         user_profile_id = user_data['id']  # type: int
         flags = user_data.get('flags', [])  # type: Iterable[str]
 
         for client in get_client_descriptors_for_user(user_profile_id):
-            send_to_clients[client.event_queue.id] = {'client': client, 'flags': flags}
-            if sender_queue_id is not None and client.event_queue.id == sender_queue_id:
-                send_to_clients[client.event_queue.id]['is_sender'] = True
+            send_to_clients[client.event_queue.id] = dict(
+                client=client,
+                flags=flags,
+                is_sender=is_sender_client(client)
+            )
+
+    return send_to_clients
+
+
+def process_message_event(event_template, users):
+    # type: (Mapping[str, Any], Iterable[Mapping[str, Any]]) -> None
+    send_to_clients = get_client_info_for_message_event(event_template, users)
+
+    presence_idle_user_ids = set(event_template.get('presence_idle_user_ids', []))
+    message_dict = event_template['message_dict']  # type: Dict[str, Any]
+
+    sender_id = message_dict['sender_id']  # type: int
+    message_id = message_dict['id']  # type: int
+    message_type = message_dict['type']  # type: str
+    sending_client = message_dict['client']  # type: Text
+
+    message_dict_html = copy.deepcopy(message_dict)
+    MessageDict.finalize_payload(message_dict_html, apply_markdown=True)
+
+    message_dict_text = copy.deepcopy(message_dict)
+    MessageDict.finalize_payload(message_dict_text, apply_markdown=False)
+
+    # Extra user-specific data to include
+    extra_user_data = {}  # type: Dict[int, Any]
+
+    for user_data in users:
+        user_profile_id = user_data['id']  # type: int
+        flags = user_data.get('flags', [])  # type: Iterable[str]
 
         # If the recipient was offline and the message was a single or group PM to them
         # or they were @-notified potentially notify more immediately
@@ -763,7 +818,7 @@ def process_message_event(event_template, users):
             stream_name = event_template.get('stream_name')
             result = maybe_enqueue_notifications(user_profile_id, message_id, private_message,
                                                  mentioned, stream_push_notify, stream_name,
-                                                 always_push_notify, idle)
+                                                 always_push_notify, idle, {})
             result['stream_push_notify'] = stream_push_notify
             extra_user_data[user_profile_id] = result
 
@@ -780,9 +835,9 @@ def process_message_event(event_template, users):
             continue
 
         if client.apply_markdown:
-            message_dict = message_dict_markdown
+            message_dict = message_dict_html
         else:
-            message_dict = message_dict_no_markdown
+            message_dict = message_dict_text
 
         # Make sure Zephyr mirroring bots know whether stream is invite-only
         if "mirror" in client.client_type_name and event_template.get("invite_only"):
@@ -909,6 +964,7 @@ def maybe_enqueue_notifications_for_message_update(user_profile_id,
         stream_name=stream_name,
         always_push_notify=always_push_notify,
         idle=idle,
+        already_notified={},
     )
 
 def process_notification(notice):

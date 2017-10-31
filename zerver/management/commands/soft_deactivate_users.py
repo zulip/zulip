@@ -18,8 +18,7 @@ from zerver.lib.management import ZulipBaseCommand
 class Command(ZulipBaseCommand):
     help = """Soft activate/deactivate users. Users are recognised by there emails here."""
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         self.add_realm_args(parser)
         parser.add_argument('-d', '--deactivate',
                             dest='deactivate',
@@ -34,12 +33,11 @@ class Command(ZulipBaseCommand):
         parser.add_argument('--inactive-for',
                             type=int,
                             default=28,
-                            help='Specify the number of days of user inactivity that user should be marked soft_deactviated')
+                            help='Number of days of inactivity before soft-deactivation')
         parser.add_argument('users', metavar='<users>', type=str, nargs='*', default=[],
-                            help="This option can be used to specify a list of user emails to soft activate/deactivate.")
+                            help="A list of user emails to soft activate/deactivate.")
 
-    def handle(self, *args, **options):
-        # type: (*Any, **str) -> None
+    def handle(self, *args: Any, **options: str) -> None:
         if settings.STAGING:
             print('This is a Staging server. Suppressing management command.')
             sys.exit(0)
@@ -85,7 +83,8 @@ class Command(ZulipBaseCommand):
                     user_emails_found = [user.email for user in users_to_deactivate]
                     for user in user_emails:
                         if user not in user_emails_found:
-                            raise Exception('User with email %s was not found. Check if the email is correct.' % (user))
+                            raise Exception('User with email %s was not found. '
+                                            'Check if the email is correct.' % (user,))
                 print('Soft deactivating forcefully...')
             else:
                 if realm is not None:

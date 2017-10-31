@@ -9,8 +9,7 @@ from django.db import migrations, models
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
-def populate_new_fields(apps, schema_editor):
-    # type: (StateApps, DatabaseSchemaEditor) -> None
+def populate_new_fields(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     # Open the JSON file which contains the data to be used for migration.
     MIGRATION_DATA_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "management", "data")
     path_to_unified_reactions = os.path.join(MIGRATION_DATA_PATH, "unified_reactions.json")

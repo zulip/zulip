@@ -1,18 +1,22 @@
 from contextlib import contextmanager
-from typing import (cast, Any, Callable, Dict, Generator, Iterable, Iterator, List, Mapping,
-                    Optional, Set, Sized, Tuple, Union, IO, Text)
+from typing import (
+    cast, Any, Callable, Dict, Generator, Iterable, Iterator, List, Mapping,
+    Optional, Set, Sized, Tuple, Union, IO, Text, TypeVar
+)
 
 from django.core import signing
 from django.core.urlresolvers import LocaleRegexURLResolver
 from django.conf import settings
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.test.client import (
     BOUNDARY, MULTIPART_CONTENT, encode_multipart,
 )
 from django.template import loader
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.db.utils import IntegrityError
 
+import zerver.lib.upload
+from zerver.lib.upload import S3UploadBackend, LocalUploadBackend
 from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import get_cache_backend
 from zerver.lib.initial_password import initial_password
@@ -25,7 +29,7 @@ from zerver.worker import queue_processors
 
 from zerver.lib.actions import (
     check_send_message, create_stream_if_needed, bulk_add_subscriptions,
-    get_display_recipient, bulk_remove_subscriptions
+    get_display_recipient, bulk_remove_subscriptions, get_stream_recipient,
 )
 
 from zerver.models import (
@@ -56,6 +60,7 @@ import unittest
 from six.moves import urllib
 from six import binary_type
 from zerver.lib.str_utils import NonBinaryStr
+from moto import mock_s3_deprecated
 
 from contextlib import contextmanager
 import fakeldap
@@ -240,7 +245,7 @@ def most_recent_message(user_profile):
 def get_subscription(stream_name, user_profile):
     # type: (Text, UserProfile) -> Subscription
     stream = get_stream(stream_name, user_profile.realm)
-    recipient = get_recipient(Recipient.STREAM, stream.id)
+    recipient = get_stream_recipient(stream.id)
     return Subscription.objects.get(user_profile=user_profile,
                                     recipient=recipient, active=True)
 
@@ -476,10 +481,23 @@ def get_all_templates():
 
     return templates
 
-def unsign_subdomain_cookie(result):
+def load_subdomain_token(response):
     # type: (HttpResponse) -> Dict[str, Any]
-    key = 'subdomain.signature'
-    salt = key + 'zerver.views.auth'
-    cookie = result.cookies.get(key)
-    value = signing.get_cookie_signer(salt=salt).unsign(cookie.value, max_age=15)
-    return ujson.loads(value)
+    assert isinstance(response, HttpResponseRedirect)
+    token = response.url.rsplit('/', 1)[1]
+    return signing.loads(token, salt='zerver.views.auth.log_into_subdomain')
+
+FuncT = TypeVar('FuncT', bound=Callable[..., None])
+
+def use_s3_backend(method):
+    # type: (FuncT) -> FuncT
+    @mock_s3_deprecated
+    @override_settings(LOCAL_UPLOADS_DIR=None)
+    def new_method(*args, **kwargs):
+        # type: (*Any, **Any) -> Any
+        zerver.lib.upload.upload_backend = S3UploadBackend()
+        try:
+            return method(*args, **kwargs)
+        finally:
+            zerver.lib.upload.upload_backend = LocalUploadBackend()
+    return new_method

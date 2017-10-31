@@ -1,11 +1,14 @@
 # Hosting multiple organizations
 
-The vast majority of Zulip servers host just a single organization.
-This article documents what's involved in hosting multiple Zulip
-organizations on a single server.
+The vast majority of Zulip servers host just a single organization (or
+"realm", as the Zulip code calls organizations).  This article
+documents what's involved in hosting multiple Zulip organizations on a
+single server.
 
 Throughout this article, we'll assume you're working on a zulip server
-with hostname `zulip.example.com`.
+with hostname `zulip.example.com`.  You may also find the more
+[technically focused article on realms](realms.html) to be useful
+reading.
 
 ## Subdomains
 
@@ -47,3 +50,17 @@ Most Zulip servers host a single Zulip organization on the root domain
 involves the organization having the empty string (`''`) as its
 "subdomain".  You can mix having an organization on the root domain
 and some others on subdomains (e.g. `it.zulip.example.com`).
+
+### The system bot realm
+
+This is very much an implementation detail, but worth documenting to
+avoid confusion as to why there's an extra realm when inspecting the
+Zulip database.
+
+Every Zulip server comes with 1 realm that isn't created by users: the
+`zulip` realm.  By default, this realm only contains the Zulip "system
+bots".  You can get a list of these on your system via
+`./scripts/get-django-setting INTERNAL_BOTS`, but this is where bots
+like "Notification Bot", "Welcome Bot", etc. exist.  In the future,
+we're considering moving these bots to exist in every realm, so that
+we wouldn't need the system realm anymore.

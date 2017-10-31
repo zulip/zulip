@@ -236,6 +236,8 @@ def delete_avatar_backend(request, user_profile):
     )
     return json_success(json_result)
 
+# We don't use @human_users_only here, because there are use cases for
+# a bot regenerating its own API key.
 @has_request_variables
 def regenerate_api_key(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse
@@ -245,6 +247,7 @@ def regenerate_api_key(request, user_profile):
     )
     return json_success(json_result)
 
+@human_users_only
 @has_request_variables
 def change_enter_sends(request, user_profile,
                        enter_sends=REQ(validator=check_bool)):

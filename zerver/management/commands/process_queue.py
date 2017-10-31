@@ -13,8 +13,7 @@ import logging
 import threading
 
 class Command(BaseCommand):
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--queue_name', metavar='<queue name>', type=str,
                             help="queue to process")
         parser.add_argument('--worker_num', metavar='<worker number>', type=int, nargs='?', default=0,
@@ -28,13 +27,11 @@ class Command(BaseCommand):
 
     help = "Runs a queue processing worker"
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         logging.basicConfig()
         logger = logging.getLogger('process_queue')
 
-        def exit_with_three(signal, frame):
-            # type: (int, FrameType) -> None
+        def exit_with_three(signal: int, frame: FrameType) -> None:
             """
             This process is watched by Django's autoreload, so exiting
             with status code 3 will cause this process to restart.
@@ -50,8 +47,7 @@ class Command(BaseCommand):
                 logger.error("Cannot run a queue processor when USING_RABBITMQ is False!")
             sys.exit(1)
 
-        def run_threaded_workers(queues, logger):
-            # type: (List[str], logging.Logger) -> None
+        def run_threaded_workers(queues: List[str], logger: logging.Logger) -> None:
             cnt = 0
             for queue_name in queues:
                 if not settings.DEVELOPMENT:
@@ -77,8 +73,7 @@ class Command(BaseCommand):
             worker = get_worker(queue_name)
             worker.setup()
 
-            def signal_handler(signal, frame):
-                # type: (int, FrameType) -> None
+            def signal_handler(signal: int, frame: FrameType) -> None:
                 logger.info("Worker %d disconnecting from queue %s" % (worker_num, queue_name))
                 worker.stop()
                 sys.exit(0)
@@ -89,13 +84,11 @@ class Command(BaseCommand):
             worker.start()
 
 class Threaded_worker(threading.Thread):
-    def __init__(self, queue_name):
-        # type: (str) -> None
+    def __init__(self, queue_name: str) -> None:
         threading.Thread.__init__(self)
         self.worker = get_worker(queue_name)
 
-    def run(self):
-        # type: () -> None
+    def run(self) -> None:
         self.worker.setup()
         logging.debug('starting consuming ' + self.worker.queue_name)
         self.worker.start()

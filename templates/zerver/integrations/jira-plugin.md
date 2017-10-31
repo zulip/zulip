@@ -28,7 +28,7 @@ default in the Java installation shipped with JIRA, you will need to
 tell JIRA about the certificate.
 
 1. Navigate to **Administration > System > Configure SSL** and in the
-   **Import SSL Certificates** field, enter `{{ external_api_uri_subdomain }}`.
+   **Import SSL Certificates** field, enter `{{ api_url }}`.
 
 2. After clicking **Save Certificates**, follow the on-screen
    instructions and restart JIRA for it to recognize the proper

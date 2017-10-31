@@ -20,8 +20,7 @@ class Command(BaseCommand):
 This command should be used only on a newly created, empty Zulip instance to
 import a database dump from one or more JSON files."""
 
-    def add_arguments(self, parser):
-        # type: (CommandParser) -> None
+    def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument('--destroy-rebuild-database',
                             dest='destroy_rebuild_database',
                             default=False,
@@ -39,8 +38,7 @@ import a database dump from one or more JSON files."""
                             help="list of JSON exports to import")
         parser.formatter_class = argparse.RawTextHelpFormatter
 
-    def new_instance_check(self, model):
-        # type: (Model) -> None
+    def new_instance_check(self, model: Model) -> None:
         count = model.objects.count()
         if count:
             print("Zulip instance is not empty, found %d rows in %s table. "
@@ -48,13 +46,11 @@ import a database dump from one or more JSON files."""
             print("You may use --destroy-rebuild-database to destroy and rebuild the database prior to import.")
             exit(1)
 
-    def do_destroy_and_rebuild_database(self, db_name):
-        # type: (str) -> None
+    def do_destroy_and_rebuild_database(self, db_name: str) -> None:
         call_command('flush', verbosity=0, interactive=False)
         subprocess.check_call([os.path.join(settings.DEPLOY_ROOT, "scripts/setup/flush-memcached")])
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         models_to_import = [Realm, Stream, UserProfile, Recipient, Subscription,
                             Client, Message, UserMessage, Huddle, DefaultStream, RealmDomain,
                             RealmFilter]

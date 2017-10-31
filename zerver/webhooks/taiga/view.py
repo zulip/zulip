@@ -1,5 +1,4 @@
-"""
-Taiga integration for Zulip.
+"""Taiga integration for Zulip.
 
 Tips for notification output:
 
@@ -14,8 +13,9 @@ etc. If no there's no meaningful emoji for certain event, the defaults are used:
 - :clipboard: - all other events connected to tasks
 - :bulb: - all other events connected to issues
 
-*Text formatting*: if there has been a change of a property, the new value should always be in bold; otherwise the
-subject of US/task should be in bold.
+*Text formatting*: if there has been a change of a property, the new
+value should always be in bold; otherwise the subject of US/task
+should be in bold.
 """
 
 from typing import Any, Dict, List, Mapping, Optional, Tuple, Text
@@ -49,6 +49,27 @@ def api_taiga_webhook(request, user_profile, message=REQ(argument_type='body'),
     return json_success()
 
 templates = {
+    'epic': {
+        'create': u':package: %(user)s created epic **%(subject)s**',
+        'set_assigned_to': u':busts_in_silhouette: %(user)s assigned epic **%(subject)s** to %(new)s.',
+        'unset_assigned_to': u':busts_in_silhouette: %(user)s unassigned epic **%(subject)s**',
+        'changed_assigned_to': u':busts_in_silhouette: %(user)s reassigned epic **%(subject)s**'
+        ' from %(old)s to %(new)s.',
+        'blocked': u':lock: %(user)s blocked epic **%(subject)s**',
+        'unblocked': u':unlock: %(user)s unblocked epic **%(subject)s**',
+        'changed_status': u':chart_increasing: %(user)s changed status of epic **%(subject)s**'
+        ' from %(old)s to %(new)s.',
+        'renamed': u':notebook: %(user)s renamed epic from **%(old)s** to **%(new)s**',
+        'description_diff': u':notebook: %(user)s updated description of epic **%(subject)s**',
+        'commented': u':thought_balloon: %(user)s commented on epic **%(subject)s**',
+        'delete': u':cross_mark: %(user)s deleted epic **%(subject)s**',
+    },
+    'relateduserstory': {
+        'create': (u':package: %(user)s added a related user story '
+                   u'**%(userstory_subject)s** to the epic **%(epic_subject)s**'),
+        'delete': (u':cross_mark: %(user)s removed a related user story ' +
+                   u'**%(userstory_subject)s** from the epic **%(epic_subject)s**'),
+    },
     'userstory': {
         'create': u':package: %(user)s created user story **%(subject)s**.',
         'set_assigned_to': u':busts_in_silhouette: %(user)s assigned user story **%(subject)s** to %(new)s.',
@@ -153,6 +174,17 @@ def parse_comment(message):
 def parse_create_or_delete(message):
     # type: (Mapping[str, Any]) -> Dict[str, Any]
     """ Parses create or delete event. """
+    if message["type"] == 'relateduserstory':
+        return {
+            'type': message["type"],
+            'event': message["action"],
+            'values': {
+                'user': get_owner_name(message),
+                'epic_subject': message['data']['epic']['subject'],
+                'userstory_subject': message['data']['user_story']['subject'],
+            }
+        }
+
     return {
         'type': message["type"],
         'event': message["action"],

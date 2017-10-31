@@ -12,6 +12,9 @@ exports.actively_scrolling = function () {
 
 exports.replace_emoji_with_text = function (element) {
     element.find(".emoji").replaceWith(function () {
+        if ($(this).is("img")) {
+            return $(this).attr("alt");
+        }
         return $(this).text();
     });
 };

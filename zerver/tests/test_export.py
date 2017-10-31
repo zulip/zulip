@@ -8,7 +8,6 @@ import shutil
 import ujson
 
 from mock import patch, MagicMock
-from six.moves import range
 from typing import Any, Dict, List, Set
 
 from zerver.lib.actions import (
@@ -24,7 +23,6 @@ from zerver.lib.upload import (
     upload_message_image,
 )
 from zerver.lib.utils import (
-    mkdir_p,
     query_chunker,
 )
 from zerver.lib.test_classes import (
@@ -52,7 +50,7 @@ class QueryUtilTest(ZulipTestCase):
                       self.example_email('hamlet'),
                       self.example_email('iago')]:
             for _ in range(5):
-                self.send_message(email, self.example_email('othello'), Recipient.PERSONAL)
+                self.send_personal_message(email, self.example_email('othello'))
 
     @slow('creates lots of data')
     def test_query_chunker(self):
@@ -186,7 +184,7 @@ class ExportTest(ZulipTestCase):
         # type: () -> str
         output_dir = 'var/test-export'
         rm_tree(output_dir)
-        mkdir_p(output_dir)
+        os.makedirs(output_dir, exist_ok=True)
         return output_dir
 
     def _export_realm(self, realm, exportable_user_ids=None):

@@ -29,6 +29,11 @@ from zerver.lib.streams import (
     access_stream_by_id, access_stream_by_name
 )
 
+from zerver.lib.stream_subscription import (
+    get_active_subscriptions_for_stream_id,
+    num_subscribers_for_stream_id,
+)
+
 from zerver.lib.test_runner import (
     slow
 )
@@ -57,7 +62,7 @@ from django.http import HttpResponse
 import mock
 import random
 import ujson
-from six.moves import range, urllib, zip
+from six.moves import urllib, zip
 
 class TestCreateStreams(ZulipTestCase):
     def test_creating_streams(self):
@@ -201,11 +206,8 @@ class StreamAdminTest(ZulipTestCase):
 
         result = self.client_delete('/json/streams/%d' % (stream.id,))
         self.assert_json_success(result)
-        subscription_exists = Subscription.objects.filter(
+        subscription_exists = get_active_subscriptions_for_stream_id(stream.id).filter(
             user_profile=user_profile,
-            recipient__type_id=stream.id,
-            recipient__type=Recipient.STREAM,
-            active=True,
         ).exists()
         self.assertFalse(subscription_exists)
 
@@ -571,9 +573,9 @@ class StreamAdminTest(ZulipTestCase):
             "privstream", subscribed=False, invite_only=True)
         self.delete_stream(priv_stream)
 
-    def attempt_unsubscribe_of_principal(self, is_admin=False, is_subbed=True,
+    def attempt_unsubscribe_of_principal(self, query_count, is_admin=False, is_subbed=True,
                                          invite_only=False, other_user_subbed=True):
-        # type: (bool, bool, bool, bool) -> HttpResponse
+        # type: (int, bool, bool, bool, bool) -> HttpResponse
 
         # Set up the main user, who is in most cases an admin.
         user_profile = self.example_user('hamlet')
@@ -596,10 +598,12 @@ class StreamAdminTest(ZulipTestCase):
         if other_user_subbed:
             self.subscribe(other_user_profile, stream_name)
 
-        result = self.client_delete(
-            "/json/users/me/subscriptions",
-            {"subscriptions": ujson.dumps([stream_name]),
-             "principals": ujson.dumps([other_email])})
+        with queries_captured() as queries:
+            result = self.client_delete(
+                "/json/users/me/subscriptions",
+                {"subscriptions": ujson.dumps([stream_name]),
+                 "principals": ujson.dumps([other_email])})
+        self.assert_length(queries, query_count)
 
         # If the removal succeeded, then assert that Cordelia is no longer subscribed.
         if result.status_code not in [400]:
@@ -614,7 +618,7 @@ class StreamAdminTest(ZulipTestCase):
         If you're not an admin, you can't remove other people from streams.
         """
         result = self.attempt_unsubscribe_of_principal(
-            is_admin=False, is_subbed=True, invite_only=False,
+            query_count=3, is_admin=False, is_subbed=True, invite_only=False,
             other_user_subbed=True)
         self.assert_json_error(
             result, "This action requires administrative rights")
@@ -626,7 +630,7 @@ class StreamAdminTest(ZulipTestCase):
         those you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            is_admin=True, is_subbed=True, invite_only=False,
+            query_count=14, is_admin=True, is_subbed=True, invite_only=False,
             other_user_subbed=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
@@ -639,7 +643,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            is_admin=True, is_subbed=True, invite_only=True,
+            query_count=14, is_admin=True, is_subbed=True, invite_only=True,
             other_user_subbed=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
@@ -652,7 +656,7 @@ class StreamAdminTest(ZulipTestCase):
         streams you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            is_admin=True, is_subbed=False, invite_only=True,
+            query_count=5, is_admin=True, is_subbed=False, invite_only=True,
             other_user_subbed=True)
         self.assert_json_error(result, "Cannot administer invite-only streams this way")
 
@@ -712,7 +716,7 @@ class StreamAdminTest(ZulipTestCase):
         fails gracefully.
         """
         result = self.attempt_unsubscribe_of_principal(
-            is_admin=True, is_subbed=False, invite_only=False,
+            query_count=11, is_admin=True, is_subbed=False, invite_only=False,
             other_user_subbed=False)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 0)
@@ -1629,7 +1633,7 @@ class SubscriptionAPITest(ZulipTestCase):
                     streams_to_sub,
                     dict(principals=ujson.dumps([user1.email, user2.email])),
                 )
-        self.assert_length(queries, 41)
+        self.assert_length(queries, 40)
 
         self.assert_length(events, 7)
         for ev in [x for x in events if x['event']['type'] not in ('message', 'stream')]:
@@ -1646,7 +1650,7 @@ class SubscriptionAPITest(ZulipTestCase):
                 self.assertEqual(ev['event']['op'], 'peer_add')
 
         stream = get_stream('multi_user_stream', realm)
-        self.assertEqual(stream.num_subscribers(), 2)
+        self.assertEqual(num_subscribers_for_stream_id(stream.id), 2)
 
         # Now add ourselves
         events = []
@@ -1675,7 +1679,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(add_peer_event['event']['user_id'], self.user_profile.id)
 
         stream = get_stream('multi_user_stream', realm)
-        self.assertEqual(stream.num_subscribers(), 3)
+        self.assertEqual(num_subscribers_for_stream_id(stream.id), 3)
 
         # Finally, add othello.
         events = []
@@ -2104,9 +2108,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # We can't see invite-only streams here
         self.assert_json_error(result, "Invalid stream name 'Saxony'", status_code=404)
         # Importantly, we are not now subscribed
-        self.assertEqual(Subscription.objects.filter(
-            recipient__type=Recipient.STREAM,
-            recipient__type_id=stream.id).count(), 1)
+        self.assertEqual(num_subscribers_for_stream_id(stream.id), 1)
 
         # A user who is subscribed still sees the stream exists
         self.login(self.example_email("cordelia"))
@@ -2255,7 +2257,7 @@ class InviteOnlyStreamTest(ZulipTestCase):
 
         email = self.example_email("cordelia")
         with self.assertRaises(JsonableError):
-            self.send_message(email, "Saxony", Recipient.STREAM)
+            self.send_stream_message(email, "Saxony")
 
     def test_list_respects_invite_only_bit(self):
         # type: () -> None

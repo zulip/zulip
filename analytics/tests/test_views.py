@@ -15,7 +15,6 @@ from datetime import datetime, timedelta
 import mock
 import ujson
 
-from six.moves import range
 from typing import List, Dict, Optional
 
 class TestStatsEndpoint(ZulipTestCase):

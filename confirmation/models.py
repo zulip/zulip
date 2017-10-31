@@ -2,8 +2,6 @@
 
 # Copyright: (c) 2008, Jarek Zgoda <jarek.zgoda@gmail.com>
 
-from __future__ import absolute_import
-
 __revision__ = '$Id: models.py 28 2009-10-22 15:03:02Z jarek.zgoda $'
 
 import datetime
@@ -22,7 +20,6 @@ from zerver.lib.send_email import send_email
 from zerver.lib.utils import generate_random_token
 from zerver.models import PreregistrationUser, EmailChangeStatus, MultiuseInvite
 from random import SystemRandom
-from six.moves import range
 import string
 from typing import Any, Dict, Optional, Text, Union
 
@@ -33,7 +30,7 @@ class ConfirmationKeyException(Exception):
 
     def __init__(self, error_type):
         # type: (int) -> None
-        super(ConfirmationKeyException, self).__init__()
+        super().__init__()
         self.error_type = error_type
 
 def render_confirmation_key_error(request, exception):

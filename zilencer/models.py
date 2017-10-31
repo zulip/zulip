@@ -21,4 +21,8 @@ class RemoteZulipServer(models.Model):
 class RemotePushDeviceToken(zerver.models.AbstractPushDeviceToken):
     server = models.ForeignKey(RemoteZulipServer)  # type: RemoteZulipServer
     # The user id on the remote server for this device device this is
-    user_id = models.BigIntegerField()  # type: int
+    user_id = models.BigIntegerField(db_index=True)  # type: int
+    token = models.CharField(max_length=4096, db_index=True)  # type: bytes
+
+    class Meta(object):
+        unique_together = ("server", "token")

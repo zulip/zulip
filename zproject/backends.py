@@ -1,34 +1,27 @@
-
 import logging
 from typing import Any, Dict, List, Set, Tuple, Optional, Text
 
+from apiclient.sample_tools import client as googleapiclient
+from django_auth_ldap.backend import LDAPBackend, _LDAPUser
+import django.contrib.auth
+from django.contrib.auth import authenticate
 from django.contrib.auth.backends import RemoteUserBackend
 from django.conf import settings
 from django.http import HttpResponse
-import django.contrib.auth
-from django.core.mail.backends.base import BaseEmailBackend
-from django.core.mail import EmailMultiAlternatives
-from django.template import loader
-
-from django_auth_ldap.backend import LDAPBackend, _LDAPUser
-from zerver.lib.actions import do_create_user
-
-from zerver.models import UserProfile, Realm, get_user_profile_by_id, \
-    get_user_profile_by_email, remote_user_to_email, email_to_username, \
-    get_realm
-
-from apiclient.sample_tools import client as googleapiclient
 from oauth2client.crypt import AppIdentityError
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
     GithubTeamOAuth2
 from social_core.exceptions import AuthFailed, SocialAuthBaseException
-from django.contrib.auth import authenticate
-from zerver.lib.users import check_full_name
-from zerver.lib.request import JsonableError
-from zerver.lib.utils import check_subdomain, get_subdomain
-
 from social_django.models import DjangoStorage
 from social_django.strategy import DjangoStrategy
+
+from zerver.lib.actions import do_create_user
+from zerver.lib.request import JsonableError
+from zerver.lib.subdomains import user_matches_subdomain, get_subdomain
+from zerver.lib.users import check_full_name
+from zerver.models import UserProfile, Realm, get_user_profile_by_id, \
+    get_user_profile_by_email, remote_user_to_email, email_to_username, \
+    get_realm
 
 def pad_method_dict(method_dict):
     # type: (Dict[Text, bool]) -> Dict[Text, bool]
@@ -184,8 +177,8 @@ class SocialAuthMixin(ZulipAuthMixin):
             return_data["inactive_realm"] = True
             return None
 
-        if not check_subdomain(kwargs.get("realm_subdomain"),
-                               user_profile.realm.subdomain):
+        if not user_matches_subdomain(kwargs.get("realm_subdomain"),
+                                      user_profile):
             return_data["invalid_subdomain"] = True
             return None
 
@@ -200,8 +193,8 @@ class SocialAuthMixin(ZulipAuthMixin):
         # These functions need to be imported here to avoid cyclic
         # dependency.
         from zerver.views.auth import (login_or_register_remote_user,
-                                       redirect_to_subdomain_login_url)
-        from zerver.views.registration import redirect_and_log_into_subdomain
+                                       redirect_to_subdomain_login_url,
+                                       redirect_and_log_into_subdomain)
 
         return_data = kwargs.get('return_data', {})
 
@@ -228,19 +221,25 @@ class SocialAuthMixin(ZulipAuthMixin):
         full_name = self.get_full_name(*args, **kwargs)
         is_signup = strategy.session_get('is_signup') == '1'
 
-        subdomain = strategy.session_get('subdomain')
         mobile_flow_otp = strategy.session_get('mobile_flow_otp')
-        if not subdomain or mobile_flow_otp is not None:
+        subdomain = strategy.session_get('subdomain')
+        if not subdomain:
+            # At least in our tests, this can be None; and it's not
+            # clear what the exact semantics of `session_get` are or
+            # what values it might return.  Historically we treated
+            # any falsy value here as the root domain, so defensively
+            # continue that behavior.
+            subdomain = Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
+        if (subdomain == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
+                or mobile_flow_otp is not None):
             return login_or_register_remote_user(request, email_address,
                                                  user_profile, full_name,
                                                  invalid_subdomain=bool(invalid_subdomain),
                                                  mobile_flow_otp=mobile_flow_otp,
                                                  is_signup=is_signup)
-        try:
-            realm = Realm.objects.get(string_id=subdomain)
-        except Realm.DoesNotExist:
+        realm = get_realm(subdomain)
+        if realm is None:
             return redirect_to_subdomain_login_url()
-
         return redirect_and_log_into_subdomain(realm, full_name, email_address,
                                                is_signup=is_signup)
 
@@ -252,7 +251,7 @@ class SocialAuthMixin(ZulipAuthMixin):
         """
         try:
             # Call the auth_complete method of social_core.backends.oauth.BaseOAuth2
-            return super(SocialAuthMixin, self).auth_complete(*args, **kwargs)  # type: ignore # monkey-patching
+            return super().auth_complete(*args, **kwargs)  # type: ignore # monkey-patching
         except AuthFailed:
             return None
         except SocialAuthBaseException as e:
@@ -272,7 +271,7 @@ class ZulipDummyBackend(ZulipAuthMixin):
             user_profile = common_get_active_user_by_email(username)
             if user_profile is None:
                 return None
-            if not check_subdomain(realm_subdomain, user_profile.realm.subdomain):
+            if not user_matches_subdomain(realm_subdomain, user_profile):
                 if return_data is not None:
                     return_data["invalid_subdomain"] = True
                 return None
@@ -308,7 +307,7 @@ class EmailAuthBackend(ZulipAuthMixin):
                 return_data['email_auth_disabled'] = True
             return None
         if user_profile.check_password(password):
-            if not check_subdomain(realm_subdomain, user_profile.realm.subdomain):
+            if not user_matches_subdomain(realm_subdomain, user_profile):
                 if return_data is not None:
                     return_data["invalid_subdomain"] = True
                 return None
@@ -348,7 +347,7 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
             if user_profile.realm.deactivated:
                 return_data["inactive_realm"] = True
                 return None
-            if not check_subdomain(realm_subdomain, user_profile.realm.subdomain):
+            if not user_matches_subdomain(realm_subdomain, user_profile):
                 return_data["invalid_subdomain"] = True
                 return None
             if not google_auth_enabled(realm=user_profile.realm):
@@ -371,7 +370,7 @@ class ZulipRemoteUserBackend(RemoteUserBackend):
         user_profile = common_get_active_user_by_email(email)
         if user_profile is None:
             return None
-        if not check_subdomain(realm_subdomain, user_profile.realm.subdomain):
+        if not user_matches_subdomain(realm_subdomain, user_profile):
             return None
         if not auth_enabled_helper([u"RemoteUser"], user_profile.realm):
             return None
@@ -434,7 +433,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
                                                                  password=password)
             if user_profile is None:
                 return None
-            if not check_subdomain(realm_subdomain, user_profile.realm.subdomain):
+            if not user_matches_subdomain(realm_subdomain, user_profile):
                 return None
             return user_profile
         except Realm.DoesNotExist:
@@ -448,7 +447,8 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             if settings.LDAP_EMAIL_ATTR is not None:
                 # Get email from ldap attributes.
                 if settings.LDAP_EMAIL_ATTR not in ldap_user.attrs:
-                    raise ZulipLDAPException("LDAP user doesn't have the needed %s attribute" % (settings.LDAP_EMAIL_ATTR,))
+                    raise ZulipLDAPException("LDAP user doesn't have the needed %s attribute" % (
+                        settings.LDAP_EMAIL_ATTR,))
 
                 username = ldap_user.attrs[settings.LDAP_EMAIL_ATTR][0]
 
@@ -476,6 +476,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
                 short_name = ldap_user.attrs[short_name_attr][0]
 
             user_profile = do_create_user(username, None, self._realm, full_name, short_name)
+
             return user_profile, True
 
 # Just like ZulipLDAPAuthBackend, but doesn't let you log in.
@@ -578,40 +579,3 @@ AUTH_BACKEND_NAME_MAP = {
     u'LDAP': ZulipLDAPAuthBackend,
     u'RemoteUser': ZulipRemoteUserBackend,
 }  # type: Dict[Text, Any]
-
-class EmailLogBackEnd(BaseEmailBackend):
-    def log_email(self, email):
-        # type: (EmailMultiAlternatives) -> None
-        """Used in development to record sent emails in a nice HTML log"""
-        html_message = 'Missing HTML message'
-        if len(email.alternatives) > 0:
-            html_message = email.alternatives[0][0]
-
-        context = {
-            'subject': email.subject,
-            'from_email': email.from_email,
-            'recipients': email.to,
-            'body': email.body,
-            'html_message': html_message
-        }
-
-        new_email = loader.render_to_string('zerver/email.html', context)
-
-        # Read in the pre-existing log, so that we can add the new entry
-        # at the top.
-        try:
-            with open(settings.EMAIL_CONTENT_LOG_PATH, "r") as f:
-                previous_emails = f.read()
-        except FileNotFoundError:
-            previous_emails = ""
-
-        with open(settings.EMAIL_CONTENT_LOG_PATH, "w+") as f:
-            f.write(new_email + previous_emails)
-
-    def send_messages(self, email_messages):
-        # type: (List[EmailMultiAlternatives]) -> int
-        for email in email_messages:
-            self.log_email(email)
-            email_log_url = settings.ROOT_DOMAIN_URI + "/emails"
-            print("You can access all the emails sent in development environment by visiting ", email_log_url)
-        return len(email_messages)

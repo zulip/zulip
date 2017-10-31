@@ -1,5 +1,3 @@
-from __future__ import division
-
 from django.core.management.base import BaseCommand, CommandParser
 from django.utils.timezone import now as timezone_now
 from django.db.models import F, Max
@@ -22,7 +20,6 @@ import random
 import os
 import ujson
 import itertools
-from six.moves import range
 from typing import Any, Callable, Dict, List, Iterable, Mapping, Optional, Sequence, Set, Tuple, Text
 
 settings.TORNADO_SERVER = None

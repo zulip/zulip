@@ -9,9 +9,8 @@
 
 from collections import defaultdict
 from itertools import permutations, chain
-import ujson
 
-from six.moves import range, zip
+from six.moves import zip
 from typing import Any, Dict, List, Text
 
 # Emojisets that we currently support.

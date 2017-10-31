@@ -23,7 +23,7 @@ function get_email_of_subscribers(subscribers) {
     return emails;
 }
 
-function rerender_subscribers_list(sub) {
+exports.rerender_subscribers_list = function (sub) {
     var emails = get_email_of_subscribers(sub.subscribers);
     var subscribers_list = list_render.get("stream_subscribers/" + sub.stream_id);
 
@@ -35,7 +35,7 @@ function rerender_subscribers_list(sub) {
         subscribers_list.render();
         ui.update_scrollbar($(".subscriber_list_container"));
     }
-}
+};
 
 exports.hide_sub_settings = function (sub) {
     var $settings = $(".subscription_settings[data-stream-id='" + sub.stream_id + "']");
@@ -585,12 +585,12 @@ $(function () {
 
     $(document).on('peer_subscribe.zulip', function (e, data) {
         var sub = stream_data.get_sub(data.stream_name);
-        rerender_subscribers_list(sub);
+        exports.rerender_subscribers_list(sub);
     });
 
     $(document).on('peer_unsubscribe.zulip', function (e, data) {
         var sub = stream_data.get_sub(data.stream_name);
-        rerender_subscribers_list(sub);
+        exports.rerender_subscribers_list(sub);
     });
 
 });

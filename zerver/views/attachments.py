@@ -1,6 +1,5 @@
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import REQ
 from zerver.models import UserProfile
 from zerver.lib.validator import check_int
 from zerver.lib.response import json_success
@@ -13,7 +12,7 @@ def list_by_user(request, user_profile):
     return json_success({"attachments": user_attachments(user_profile)})
 
 
-def remove(request, user_profile, attachment_id=REQ(validator=check_int)):
+def remove(request, user_profile, attachment_id):
     # type: (HttpRequest, UserProfile, int) -> HttpResponse
     attachment = access_attachment_by_id(user_profile, attachment_id,
                                          needs_owner=True)

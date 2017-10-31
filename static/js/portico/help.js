@@ -1,5 +1,28 @@
 const Ps = require('perfect-scrollbar');
 
+function registerCodeSection($codeSection) {
+    const $li = $codeSection.find("ul.nav li");
+    const $blocks = $codeSection.find(".blocks div");
+
+    $li.click(function () {
+        const language = this.dataset.language;
+
+        $li.removeClass("active");
+        $li.filter("[data-language="+language+"]").addClass("active");
+
+        $blocks.removeClass("active");
+        $blocks.filter("[data-language="+language+"]").addClass("active");
+    });
+
+    $li.eq(0).click();
+}
+
+function render_code_sections() {
+    $(".code-section").each(function () {
+        registerCodeSection($(this));
+    });
+}
+
 (function () {
     var html_map = {};
     var loading = {
@@ -7,41 +30,43 @@ const Ps = require('perfect-scrollbar');
     };
     var no_of_images = 0;
     var no_of_loaded_images = 0;
-    function scroll_to_anchor_once_images_ready() {
-        var imgs = document.images;
-        no_of_loaded_images = 0;
-        no_of_images = ( imgs && imgs.length ) || 0;
-        if (( !imgs ) || no_of_images == 0 ) {
-            scroll_to_anchor(window.location.href);
-        }
-        [].forEach.call( imgs, function( img ) {
-            img.addEventListener( 'load', scroll_when_ready, false );
-        } );
-    }
-    function scroll_when_ready() {
-        no_of_loaded_images++;
-        if ( no_of_loaded_images === no_of_images ) {
-            scroll_to_anchor(window.location.href);
-        }
-    }
-    
-    var scroll_to_anchor = function(path) {
+
+    function scroll_to_anchor(path) {
         var container = $(".markdown")[0];
         var path_split = path.split("#");
-        if (path_split.length==2) {
+        if (path_split.length === 2) {
             document.getElementById(path_split[1]).scrollIntoView();
-            console.log(container.scrollTop);
-        }
-        else {
+        } else {
                container.scrollTop = 0;
         }
     }
+
+    function scroll_when_ready() {
+        no_of_loaded_images+=1;
+        if (no_of_loaded_images === no_of_images) {
+            scroll_to_anchor(window.location.href);
+        }
+    }
+
+    function scroll_to_anchor_once_images_ready() {
+        var imgs = document.images;
+        no_of_loaded_images = 0;
+        no_of_images = (imgs && imgs.length) || 0;
+        if ((!imgs) || no_of_images === 0) {
+            scroll_to_anchor(window.location.href);
+        }
+        [].forEach.call(imgs, function (img) {
+            img.addEventListener('load', scroll_when_ready, false);
+        });
+    }
+
     var fetch_page = function (path, callback) {
         $.get(path, function (res) {
             var $html = $(res).find(".markdown .content");
             $html.find(".back-to-home").remove();
 
             callback($html.html().trim());
+            render_code_sections();
         });
     };
 
@@ -70,6 +95,7 @@ const Ps = require('perfect-scrollbar');
             $(".markdown .content").html(html_map[path]);
             scroll_to_anchor_once_images_ready();
             Ps.update(container);
+            render_code_sections();
         } else {
             loading.name = path;
             fetch_page(path, function (res) {
@@ -117,4 +143,6 @@ const Ps = require('perfect-scrollbar');
             $(".sidebar.show").toggleClass("show");
         }
     });
+
+    render_code_sections();
 }());

@@ -12,8 +12,7 @@ class Command(BaseCommand):
               numerical value indicating the limit of how old the attachment can be.
               One week is taken as the default value."""
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('-w', '--weeks',
                             dest='delta_weeks',
                             default=1,
@@ -25,8 +24,7 @@ class Command(BaseCommand):
                             default=False,
                             help="Actually remove the files from the storage.")
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         delta_weeks = options['delta_weeks']
         print("Deleting unclaimed attached files older than %s" % (delta_weeks,))
         print("")

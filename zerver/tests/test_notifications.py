@@ -10,7 +10,6 @@ from django.http import HttpResponse
 from django.test import override_settings
 from email.utils import formataddr
 from mock import patch, MagicMock
-from six.moves import range
 from typing import Any, Dict, List, Text
 
 from zerver.lib.notifications import fix_emojis, \
@@ -67,9 +66,13 @@ class TestMissedMessages(ZulipTestCase):
         mock_random_token.side_effect = tokens
 
         for i in range(0, 11):
-            self.send_message(self.example_email('othello'), "Denmark", Recipient.STREAM, str(i))
-        self.send_message(self.example_email('othello'), "Denmark", Recipient.STREAM, '11', subject='test2')
-        msg_id = self.send_message(self.example_email('othello'), "denmark", Recipient.STREAM, '@**King Hamlet**')
+            self.send_stream_message(self.example_email('othello'), "Denmark", content=str(i))
+        self.send_stream_message(
+            self.example_email('othello'), "Denmark",
+            '11', topic_name='test2')
+        msg_id = self.send_stream_message(
+            self.example_email('othello'), "denmark",
+            '@**King Hamlet**')
         body = 'Denmark > test Othello, the Moor of Venice 1 2 3 4 5 6 7 8 9 10 @**King Hamlet**'
         subject = 'Othello, the Moor of Venice mentioned you'
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
@@ -81,8 +84,10 @@ class TestMissedMessages(ZulipTestCase):
         mock_random_token.side_effect = tokens
 
         for i in range(0, 3):
-            self.send_message(self.example_email('cordelia'), "Denmark", Recipient.STREAM, str(i))
-        msg_id = self.send_message(self.example_email('othello'), "Denmark", Recipient.STREAM, '@**King Hamlet**')
+            self.send_stream_message(self.example_email('cordelia'), "Denmark", str(i))
+        msg_id = self.send_stream_message(
+            self.example_email('othello'), "Denmark",
+            '@**King Hamlet**')
         body = 'Denmark > test Cordelia Lear 0 1 2 Othello, the Moor of Venice @**King Hamlet**'
         subject = 'Othello, the Moor of Venice mentioned you'
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
@@ -93,9 +98,11 @@ class TestMissedMessages(ZulipTestCase):
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
-        msg_id = self.send_message(self.example_email('othello'), self.example_email('hamlet'),
-                                   Recipient.PERSONAL,
-                                   'Extremely personal message!')
+        msg_id = self.send_personal_message(
+            self.example_email('othello'),
+            self.example_email('hamlet'),
+            'Extremely personal message!',
+        )
         body = 'You and Othello, the Moor of Venice Extremely personal message!'
         subject = 'Othello, the Moor of Venice sent you a message'
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
@@ -106,9 +113,11 @@ class TestMissedMessages(ZulipTestCase):
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
-        msg_id = self.send_message(self.example_email('othello'), self.example_email('hamlet'),
-                                   Recipient.PERSONAL,
-                                   'Extremely personal message!')
+        msg_id = self.send_personal_message(
+            self.example_email('othello'),
+            self.example_email('hamlet'),
+            'Extremely personal message!',
+        )
         body = 'Or just reply to this email.'
         subject = 'Othello, the Moor of Venice sent you a message'
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
@@ -119,9 +128,11 @@ class TestMissedMessages(ZulipTestCase):
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
-        msg_id = self.send_message(self.example_email('othello'), self.example_email('hamlet'),
-                                   Recipient.PERSONAL,
-                                   'Extremely personal message!')
+        msg_id = self.send_personal_message(
+            self.example_email('othello'),
+            self.example_email('hamlet'),
+            'Extremely personal message!',
+        )
         body = 'Please do not reply to this automated message.'
         subject = 'Othello, the Moor of Venice sent you a message'
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
@@ -132,10 +143,14 @@ class TestMissedMessages(ZulipTestCase):
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
-        msg_id = self.send_message(self.example_email('othello'),
-                                   [self.example_email('hamlet'), self.example_email('iago')],
-                                   Recipient.HUDDLE,
-                                   'Group personal message!')
+        msg_id = self.send_huddle_message(
+            self.example_email('othello'),
+            [
+                self.example_email('hamlet'),
+                self.example_email('iago'),
+            ],
+            'Group personal message!',
+        )
 
         body = ('You and Iago, Othello, the Moor of Venice Othello,'
                 ' the Moor of Venice Group personal message')
@@ -148,10 +163,15 @@ class TestMissedMessages(ZulipTestCase):
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
-        msg_id = self.send_message(self.example_email('othello'),
-                                   [self.example_email('hamlet'), self.example_email('iago'), self.example_email('cordelia')],
-                                   Recipient.HUDDLE,
-                                   'Group personal message!')
+        msg_id = self.send_huddle_message(
+            self.example_email('othello'),
+            [
+                self.example_email('hamlet'),
+                self.example_email('iago'),
+                self.example_email('cordelia'),
+            ],
+            'Group personal message!',
+        )
 
         body = ('You and Cordelia Lear, Iago, Othello, the Moor of Venice Othello,'
                 ' the Moor of Venice Group personal message')
@@ -164,13 +184,12 @@ class TestMissedMessages(ZulipTestCase):
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
-        msg_id = self.send_message(self.example_email('othello'),
-                                   [self.example_email('hamlet'),
-                                    self.example_email('iago'),
-                                    self.example_email('cordelia'),
-                                    self.example_email('prospero')],
-                                   Recipient.HUDDLE,
-                                   'Group personal message!')
+        msg_id = self.send_huddle_message(self.example_email('othello'),
+                                          [self.example_email('hamlet'),
+                                           self.example_email('iago'),
+                                           self.example_email('cordelia'),
+                                           self.example_email('prospero')],
+                                          'Group personal message!')
 
         body = ('You and Cordelia Lear, Iago, Othello, the Moor of Venice, Prospero from The Tempest'
                 ' Othello, the Moor of Venice Group personal message')
@@ -183,8 +202,9 @@ class TestMissedMessages(ZulipTestCase):
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
-        msg_id = self.send_message(self.example_email('othello'), "denmark", Recipient.STREAM,
-                                   '@**King Hamlet** to be deleted')
+        msg_id = self.send_stream_message(
+            self.example_email('othello'), "denmark",
+            '@**King Hamlet** to be deleted')
 
         hamlet = self.example_user('hamlet')
         email = self.example_email('othello')
@@ -201,10 +221,9 @@ class TestMissedMessages(ZulipTestCase):
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
-        msg_id = self.send_message(self.example_email('othello'),
-                                   self.example_email('hamlet'),
-                                   Recipient.PERSONAL,
-                                   'Extremely personal message! to be deleted!')
+        msg_id = self.send_personal_message(self.example_email('othello'),
+                                            self.example_email('hamlet'),
+                                            'Extremely personal message! to be deleted!')
 
         hamlet = self.example_user('hamlet')
         email = self.example_email('othello')
@@ -221,10 +240,14 @@ class TestMissedMessages(ZulipTestCase):
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
-        msg_id = self.send_message(self.example_email('othello'),
-                                   [self.example_email('hamlet'),
-                                    self.example_email('iago')],
-                                   Recipient.PERSONAL, 'Group personal message!')
+        msg_id = self.send_huddle_message(
+            self.example_email('othello'),
+            [
+                self.example_email('hamlet'),
+                self.example_email('iago'),
+            ],
+            'Group personal message!',
+        )
 
         hamlet = self.example_user('hamlet')
         iago = self.example_user('iago')
@@ -334,10 +357,26 @@ class TestMissedMessages(ZulipTestCase):
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
-        msg_id = self.send_message(self.example_email('othello'), self.example_email('hamlet'),
-                                   Recipient.PERSONAL,
-                                   'Extremely personal message with a realm emoji :green_tick:!')
-        body = '<img alt=":green_tick:" style="height: 20px;" src="http://zulip.testserver/user_avatars/1/emoji/green_tick.png" title="green tick">'
+        msg_id = self.send_personal_message(
+            self.example_email('othello'), self.example_email('hamlet'),
+            'Extremely personal message with a realm emoji :green_tick:!')
+        body = '<img alt=":green_tick:" src="http://zulip.testserver/user_avatars/1/emoji/green_tick.png" title="green tick" style="height: 20px;">'
+        subject = 'Othello, the Moor of Venice sent you a message'
+        self._test_cases(tokens, msg_id, body, subject, send_as_user=False, verify_html_body=True)
+
+    @patch('zerver.lib.email_mirror.generate_random_token')
+    def test_emojiset_in_missed_message(self, mock_random_token):
+        # type: (MagicMock) -> None
+        tokens = self._get_tokens()
+        mock_random_token.side_effect = tokens
+
+        hamlet = self.example_user('hamlet')
+        hamlet.emojiset = 'apple'
+        hamlet.save(update_fields=['emojiset'])
+        msg_id = self.send_personal_message(
+            self.example_email('othello'), self.example_email('hamlet'),
+            'Extremely personal message with a hamburger :hamburger:!')
+        body = '<img alt=":hamburger:" src="http://zulip.testserver/static/generated/emoji/images-apple-64/1f354.png" title="hamburger" style="height: 20px;">'
         subject = 'Othello, the Moor of Venice sent you a message'
         self._test_cases(tokens, msg_id, body, subject, send_as_user=False, verify_html_body=True)
 
@@ -347,9 +386,9 @@ class TestMissedMessages(ZulipTestCase):
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
-        msg_id = self.send_message(self.example_email('othello'), self.example_email('hamlet'),
-                                   Recipient.PERSONAL,
-                                   'Come and join us in #**Verona**.')
+        msg_id = self.send_personal_message(
+            self.example_email('othello'), self.example_email('hamlet'),
+            'Come and join us in #**Verona**.')
         body = '<a class="stream" data-stream-id="5" href="http://zulip.testserver/#narrow/stream/Verona">#Verona</a'
         subject = 'Othello, the Moor of Venice sent you a message'
         self._test_cases(tokens, msg_id, body, subject, send_as_user=False, verify_html_body=True)
@@ -361,14 +400,12 @@ class TestMissedMessages(ZulipTestCase):
         mock_random_token.side_effect = tokens
 
         hamlet = self.example_user('hamlet')
-        msg_id_1 = self.send_message(self.example_email('othello'),
-                                     hamlet.email,
-                                     Recipient.PERSONAL,
-                                     'Personal Message 1')
-        msg_id_2 = self.send_message(self.example_email('iago'),
-                                     hamlet.email,
-                                     Recipient.PERSONAL,
-                                     'Personal Message 2')
+        msg_id_1 = self.send_personal_message(self.example_email('othello'),
+                                              hamlet.email,
+                                              'Personal Message 1')
+        msg_id_2 = self.send_personal_message(self.example_email('iago'),
+                                              hamlet.email,
+                                              'Personal Message 2')
 
         handle_missedmessage_emails(hamlet.id, [
             {'message_id': msg_id_1},
@@ -443,8 +480,7 @@ class TestMissedMessages(ZulipTestCase):
         # An emoji.
         test_data = '<p>See <span class="emoji emoji-26c8" title="cloud with lightning and rain">' + \
                     ':cloud_with_lightning_and_rain:</span>.</p>'
-        actual_output = fix_emojis(test_data, "http://example.com")
-        expected_output = '<p>See <img src="http://example.com/static/generated/emoji/images-google-64/26c8.png" ' + \
-                          'title="cloud with lightning and rain" alt=":cloud_with_lightning_and_rain:" ' + \
-                          'style="height: 20px;">.</p>'
+        actual_output = fix_emojis(test_data, "http://example.com", "google")
+        expected_output = '<p>See <img alt=":cloud_with_lightning_and_rain:" src="http://example.com/static/generated/emoji/images-google-64/26c8.png" ' + \
+                          'title="cloud with lightning and rain" style="height: 20px;">.</p>'
         self.assertEqual(actual_output, expected_output)

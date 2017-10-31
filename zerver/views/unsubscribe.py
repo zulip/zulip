@@ -9,8 +9,8 @@ from zerver.lib.actions import do_change_notification_settings, clear_scheduled_
 from zerver.models import UserProfile, ScheduledEmail
 from zerver.context_processors import common_context
 
-def process_unsubscribe(request, token, subscription_type, unsubscribe_function):
-    # type: (HttpRequest, str, str, Callable[[UserProfile], None]) -> HttpResponse
+def process_unsubscribe(request: HttpRequest, token: str, subscription_type: str,
+                        unsubscribe_function: Callable[[UserProfile], None]) -> HttpResponse:
     try:
         confirmation = Confirmation.objects.get(confirmation_key=token)
     except Confirmation.DoesNotExist:
@@ -25,16 +25,13 @@ def process_unsubscribe(request, token, subscription_type, unsubscribe_function)
 # Email unsubscribe functions. All have the function signature
 # processor(user_profile).
 
-def do_missedmessage_unsubscribe(user_profile):
-    # type: (UserProfile) -> None
+def do_missedmessage_unsubscribe(user_profile: UserProfile) -> None:
     do_change_notification_settings(user_profile, 'enable_offline_email_notifications', False)
 
-def do_welcome_unsubscribe(user_profile):
-    # type: (UserProfile) -> None
+def do_welcome_unsubscribe(user_profile: UserProfile) -> None:
     clear_scheduled_emails(user_profile.id, ScheduledEmail.WELCOME)
 
-def do_digest_unsubscribe(user_profile):
-    # type: (UserProfile) -> None
+def do_digest_unsubscribe(user_profile: UserProfile) -> None:
     do_change_notification_settings(user_profile, 'enable_digest_emails', False)
 
 # The keys are part of the URL for the unsubscribe link and must be valid
@@ -48,8 +45,8 @@ email_unsubscribers = {
 }
 
 # Login NOT required. These are for one-click unsubscribes.
-def email_unsubscribe(request, email_type, confirmation_key):
-    # type: (HttpRequest, str, str) -> HttpResponse
+def email_unsubscribe(request: HttpRequest, email_type: str,
+                      confirmation_key: str) -> HttpResponse:
     if email_type in email_unsubscribers:
         display_name, unsubscribe_function = email_unsubscribers[email_type]
         return process_unsubscribe(request, confirmation_key, display_name, unsubscribe_function)

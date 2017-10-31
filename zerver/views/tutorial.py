@@ -1,11 +1,13 @@
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import has_request_variables, REQ
+from zerver.decorator import human_users_only
+from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_string
 from zerver.models import UserProfile
 
+@human_users_only
 @has_request_variables
 def set_tutorial_status(request, user_profile,
                         status=REQ(validator=check_string)):

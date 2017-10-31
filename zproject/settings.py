@@ -115,9 +115,10 @@ else:
 # prod_settings_template.py, and in the initial /etc/zulip/settings.py on a new
 # install of the Zulip server.
 DEFAULT_SETTINGS = {
-    # Basic Django email settings
+    # Basic email settings
     'EMAIL_HOST': None,
     'NOREPLY_EMAIL_ADDRESS': "noreply@" + EXTERNAL_HOST.split(":")[0],
+    'PHYSICAL_ADDRESS': '',
 
     # Google auth
     'GOOGLE_OAUTH2_CLIENT_ID': None,
@@ -179,8 +180,10 @@ DEFAULT_SETTINGS = {
     'PASSWORD_MIN_LENGTH': 6,
     'PASSWORD_MIN_GUESSES': 10000,
     'PUSH_NOTIFICATION_BOUNCER_URL': None,
+    'PUSH_NOTIFICATION_REDACT_CONTENT': False,
     'RATE_LIMITING': True,
     'SEND_LOGIN_EMAILS': True,
+    'EMBEDDED_BOTS_ENABLED': False,
 }
 
 # These settings are not documented in prod_settings_template.py.
@@ -270,7 +273,7 @@ DEFAULT_SETTINGS.update({
 
     # Controls for which links are published in portico footers/headers/etc.
     'EMAIL_DELIVERER_DISABLED': False,
-    'REGISTER_LINK_DISABLED': False,
+    'REGISTER_LINK_DISABLED': None,
     'LOGIN_LINK_DISABLED': False,
     'ABOUT_LINK_DISABLED': False,
     'FIND_TEAM_LINK_DISABLED': True,
@@ -306,9 +309,6 @@ DEFAULT_SETTINGS.update({
 
     # Configuration for JWT auth.
     'JWT_AUTH_KEYS': {},
-
-    # TODO: Remove the remains of the legacy "deployment" system.
-    'DEPLOYMENT_ROLE_NAME': "",
 
     # https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-SERVER_EMAIL
     # Django setting for what from address to use in error emails.  We
@@ -536,9 +536,10 @@ CACHES = {
     'database': {
         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
         'LOCATION': 'third_party_api_results',
-        # Basically never timeout.  Setting to 0 isn't guaranteed
-        # to work, see https://code.djangoproject.com/ticket/9595
-        'TIMEOUT': 2000000000,
+        # This cache shouldn't timeout; we're really just using the
+        # cache API to store the results of requests to third-party
+        # APIs like the Twitter API permanently.
+        'TIMEOUT': None,
         'OPTIONS': {
             'MAX_ENTRIES': 100000000,
             'CULL_FREQUENCY': 10,
@@ -602,9 +603,6 @@ else:
 # API/BOT SETTINGS
 ########################################################################
 
-if "EXTERNAL_API_PATH" not in vars():
-    EXTERNAL_API_PATH = EXTERNAL_HOST + "/api"
-EXTERNAL_API_URI = EXTERNAL_URI_SCHEME + EXTERNAL_API_PATH
 ROOT_DOMAIN_URI = EXTERNAL_URI_SCHEME + EXTERNAL_HOST
 
 if "NAGIOS_BOT_HOST" not in vars():
@@ -671,8 +669,6 @@ if EMAIL_GATEWAY_PATTERN != "":
     EMAIL_GATEWAY_EXAMPLE = EMAIL_GATEWAY_PATTERN % ("support+abcdefg",)
 else:
     EMAIL_GATEWAY_EXAMPLE = ""
-
-DEPLOYMENT_ROLE_KEY = get_secret("deployment_role_key")
 
 ########################################################################
 # STATSD CONFIGURATION
@@ -851,15 +847,15 @@ PIPELINE = {
         },
         'apple_sprite': {
             'source_filenames': (
-                'generated/emoji/google_sprite.css',
+                'generated/emoji/apple_sprite.css',
             ),
-            'output_filename': 'min/google_sprite.css',
+            'output_filename': 'min/apple_sprite.css',
         },
         'emojione_sprite': {
             'source_filenames': (
-                'generated/emoji/google_sprite.css',
+                'generated/emoji/emojione_sprite.css',
             ),
-            'output_filename': 'min/google_sprite.css',
+            'output_filename': 'min/emojione_sprite.css',
         },
         'google_sprite': {
             'source_filenames': (
@@ -869,9 +865,9 @@ PIPELINE = {
         },
         'twitter_sprite': {
             'source_filenames': (
-                'generated/emoji/google_sprite.css',
+                'generated/emoji/twitter_sprite.css',
             ),
-            'output_filename': 'min/google_sprite.css',
+            'output_filename': 'min/twitter_sprite.css',
         },
     },
     'JAVASCRIPT': {},
@@ -1019,6 +1015,7 @@ JS_SPECS = {
             'js/settings_users.js',
             'js/settings_streams.js',
             'js/settings_filters.js',
+            'js/settings_invites.js',
             'js/settings.js',
             'js/admin_sections.js',
             'js/admin.js',
@@ -1034,6 +1031,7 @@ JS_SPECS = {
             'js/ui_init.js',
             'js/emoji_picker.js',
             'js/compose_ui.js',
+            'js/desktop_notifications_panel.js'
         ],
         'output_filename': 'min/app.js'
     },
@@ -1385,7 +1383,19 @@ if POPULATE_PROFILE_VIA_LDAP and \
    'zproject.backends.ZulipLDAPAuthBackend' not in AUTHENTICATION_BACKENDS:
     AUTHENTICATION_BACKENDS += ('zproject.backends.ZulipLDAPUserPopulator',)
 else:
-    POPULATE_PROFILE_VIA_LDAP = 'zproject.backends.ZulipLDAPAuthBackend' in AUTHENTICATION_BACKENDS or POPULATE_PROFILE_VIA_LDAP
+    POPULATE_PROFILE_VIA_LDAP = (
+        'zproject.backends.ZulipLDAPAuthBackend' in AUTHENTICATION_BACKENDS or
+        POPULATE_PROFILE_VIA_LDAP)
+
+if REGISTER_LINK_DISABLED is None:
+    # The default for REGISTER_LINK_DISABLED is a bit more
+    # complicated: we want it to be disabled by default for people
+    # using the LDAP backend that auto-creates users on login.
+    if (len(AUTHENTICATION_BACKENDS) == 2 and
+            ('zproject.backends.ZulipLDAPAuthBackend' in AUTHENTICATION_BACKENDS)):
+        REGISTER_LINK_DISABLED = True
+    else:
+        REGISTER_LINK_DISABLED = False
 
 ########################################################################
 # SOCIAL AUTHENTICATION SETTINGS
@@ -1416,7 +1426,7 @@ elif not EMAIL_HOST and PRODUCTION:
     EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
 elif DEVELOPMENT:
     # In the dev environment, emails are printed to the run-dev.py console.
-    EMAIL_BACKEND = 'zproject.backends.EmailLogBackEnd'
+    EMAIL_BACKEND = 'zproject.email_backends.EmailLogBackEnd'
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 

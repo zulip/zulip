@@ -8,7 +8,7 @@ var exports = {};
 exports.encodeHashComponent = function (str) {
     return encodeURIComponent(str)
         .replace(/\./g, '%2E')
-        .replace(/%/g,  '.');
+        .replace(/%/g, '.');
 };
 
 exports.encode_operand = function (operator, operand) {

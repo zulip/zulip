@@ -21,7 +21,6 @@ This is run as part of the nagios health check for the deliver_email command.
 Usage: ./manage.py print_email_delivery_backlog
 """
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         print(ScheduledEmail.objects.filter(
             scheduled_timestamp__lte=timezone_now()-timedelta(minutes=1)).count())

@@ -6,8 +6,7 @@ from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db import connection, migrations
 
-def convert_muted_topics(apps, schema_editor):
-    # type: (StateApps, DatabaseSchemaEditor) -> None
+def convert_muted_topics(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     stream_query = '''
         SELECT
             zerver_stream.name,

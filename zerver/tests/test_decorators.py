@@ -13,6 +13,7 @@ from django.conf import settings
 from zerver.forms import OurAuthenticationForm
 from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
     do_reactivate_user, do_reactivate_realm
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_helpers import (
     HostRequestMock,
@@ -25,7 +26,7 @@ from zerver.lib.response import json_response
 from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.request import \
     REQ, has_request_variables, RequestVariableMissingError, \
-    RequestVariableConversionError, JsonableError
+    RequestVariableConversionError
 from zerver.decorator import (
     api_key_only_webhook_view,
     authenticated_json_post_view, authenticated_json_view,
@@ -1022,10 +1023,16 @@ class TestHumanUsersOnlyDecorator(ZulipTestCase):
     def test_human_only_endpoints(self):
         # type: () -> None
         post_endpoints = [
-            "/api/v1/users/me/presence",
             "/api/v1/users/me/apns_device_token",
             "/api/v1/users/me/android_gcm_reg_id",
+            "/api/v1/users/me/enter-sends",
             "/api/v1/users/me/hotspots",
+            "/api/v1/users/me/presence",
+            "/api/v1/users/me/tutorial_status",
+            "/api/v1/report/error",
+            "/api/v1/report/send_times",
+            "/api/v1/report/narrow_times",
+            "/api/v1/report/unnarrow_times",
         ]
         for endpoint in post_endpoints:
             result = self.client_post(endpoint, **self.api_auth('default-bot@zulip.com'))

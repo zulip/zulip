@@ -5,11 +5,11 @@ from django.http import HttpResponse, HttpRequest
 
 from zilencer.models import RemotePushDeviceToken, RemoteZulipServer
 
-from zerver.decorator import has_request_variables, REQ
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import send_android_push_notification, \
     send_apple_push_notification
-from zerver.lib.request import JsonableError
 from zerver.lib.response import json_error, json_success
+from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.validator import check_dict, check_int
 from zerver.models import UserProfile, PushDeviceToken, Realm
 from zerver.views.push_notifications import validate_token

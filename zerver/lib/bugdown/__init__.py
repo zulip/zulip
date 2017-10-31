@@ -38,8 +38,7 @@ from zerver.lib.bugdown.fenced_code import FENCE_RE
 from zerver.lib.camo import get_camo_url
 from zerver.lib.mention import possible_mentions
 from zerver.lib.timeout import timeout, TimeoutExpired
-from zerver.lib.cache import (
-    cache_with_key, cache_get_many, cache_set_many, NotFoundInCache)
+from zerver.lib.cache import cache_with_key, NotFoundInCache
 from zerver.lib.url_preview import preview as link_preview
 from zerver.models import (
     all_realm_filters,
@@ -55,7 +54,7 @@ import zerver.lib.alert_words as alert_words
 import zerver.lib.mention as mention
 from zerver.lib.str_utils import force_str, force_text
 from zerver.lib.tex import render_tex
-from six.moves import range, html_parser
+from six.moves import html_parser
 
 FullNameInfo = TypedDict('FullNameInfo', {
     'id': int,
@@ -1035,7 +1034,7 @@ class UListProcessor(markdown.blockprocessors.UListProcessor):
         # this class, so that bulleted lists (and only bulleted lists)
         # work off 2-space indentation.
         parser.markdown.tab_length = 2
-        super(UListProcessor, self).__init__(parser)
+        super().__init__(parser)
         parser.markdown.tab_length = 4
 
 class ListIndentProcessor(markdown.blockprocessors.ListIndentProcessor):
@@ -1051,7 +1050,7 @@ class ListIndentProcessor(markdown.blockprocessors.ListIndentProcessor):
         # this class, so that bulleted lists (and only bulleted lists)
         # work off 2-space indentation.
         parser.markdown.tab_length = 2
-        super(ListIndentProcessor, self).__init__(parser)
+        super().__init__(parser)
         parser.markdown.tab_length = 4
 
 class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
@@ -1148,7 +1147,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
                 name = match
 
             wildcard = mention.user_mention_matches_wildcard(name)
-            user = db_data['full_name_info'].get(name.lower(), None)
+            user = db_data['mention_data'].get_user(name)
 
             if wildcard:
                 current_message.mentions_wildcard = True
@@ -1261,7 +1260,7 @@ class Bugdown(markdown.Extension):
             "realm": [kwargs['realm'], "Realm name"]
         }
 
-        super(Bugdown, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def extendMarkdown(self, md, md_globals):
         # type: (markdown.Markdown, Dict[str, Any]) -> None
@@ -1308,8 +1307,11 @@ class Bugdown(markdown.Extension):
         md.inlinePatterns.add('avatar', Avatar(AVATAR_REGEX), '>backtick')
         md.inlinePatterns.add('gravatar', Avatar(GRAVATAR_REGEX), '>backtick')
 
-        md.inlinePatterns.add('stream_subscribe_button',
-                              StreamSubscribeButton(r'!_stream_subscribe_button\((?P<stream_name>(?:[^)\\]|\\\)|\\)*)\)'), '>backtick')
+        md.inlinePatterns.add(
+            'stream_subscribe_button',
+            StreamSubscribeButton(
+                r'!_stream_subscribe_button\((?P<stream_name>(?:[^)\\]|\\\)|\\)*)\)'),
+            '>backtick')
         md.inlinePatterns.add(
             'modal_link',
             ModalLink(r'!modal_link\((?P<relative_url>[^)]*), (?P<text>[^)]*)\)'),
@@ -1546,6 +1548,30 @@ def get_full_name_info(realm_id, full_names):
     }
     return dct
 
+class MentionData(object):
+    def __init__(self, realm_id, content):
+        # type: (int, Text) -> None
+        full_names = possible_mentions(content)
+        self.full_name_info = get_full_name_info(realm_id, full_names)
+        self.user_ids = {
+            row['id']
+            for row in self.full_name_info.values()
+        }
+
+    def get_user(self, name):
+        # type: (Text) -> Optional[FullNameInfo]
+        return self.full_name_info.get(name.lower(), None)
+
+    def get_user_ids(self):
+        # type: () -> Set[int]
+        """
+        Returns the user IDs that might have been mentioned by this
+        content.  Note that because this data structure has not parsed
+        the message and does not know about escaping/code blocks, this
+        will overestimate the list of user ids.
+        """
+        return self.user_ids
+
 def get_stream_name_info(realm, stream_names):
     # type: (Realm, Set[Text]) -> Dict[Text, FullNameInfo]
     if not stream_names:
@@ -1572,8 +1598,8 @@ def get_stream_name_info(realm, stream_names):
     return dct
 
 
-def do_convert(content, message=None, message_realm=None, possible_words=None, sent_by_bot=False):
-    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]], Optional[bool]) -> Text
+def do_convert(content, message=None, message_realm=None, possible_words=None, sent_by_bot=False, mention_data=None):
+    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]], Optional[bool], Optional[MentionData]) -> Text
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
     # This logic is a bit convoluted, but the overall goal is to support a range of use cases:
     # * Nothing is passed in other than content -> just run default options (e.g. for docs)
@@ -1620,8 +1646,9 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
         # if there is syntax in the message that might use them, since
         # the fetches are somewhat expensive and these types of syntax
         # are uncommon enough that it's a useful optimization.
-        full_names = possible_mentions(content)
-        full_name_info = get_full_name_info(message_realm.id, full_names)
+
+        if mention_data is None:
+            mention_data = MentionData(message_realm.id, content)
 
         emails = possible_avatar_emails(content)
         email_info = get_email_info(message_realm.id, emails)
@@ -1637,7 +1664,7 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
         db_data = {
             'possible_words': possible_words,
             'email_info': email_info,
-            'full_name_info': full_name_info,
+            'mention_data': mention_data,
             'realm_emoji': realm_emoji,
             'sent_by_bot': sent_by_bot,
             'stream_names': stream_name_info,
@@ -1649,8 +1676,6 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
         # https://trac.zulip.net/ticket/345
         return timeout(5, _md_engine.convert, content)
     except Exception:
-        from zerver.lib.actions import internal_send_message
-
         cleaned = privacy_clean_markdown(content)
 
         # Output error to log as well as sending a zulip and email
@@ -1691,9 +1716,9 @@ def bugdown_stats_finish():
     bugdown_total_requests += 1
     bugdown_total_time += (time.time() - bugdown_time_start)
 
-def convert(content, message=None, message_realm=None, possible_words=None, sent_by_bot=False):
-    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]], Optional[bool]) -> Text
+def convert(content, message=None, message_realm=None, possible_words=None, sent_by_bot=False, mention_data=None):
+    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]], Optional[bool], Optional[MentionData]) -> Text
     bugdown_stats_start()
-    ret = do_convert(content, message, message_realm, possible_words, sent_by_bot)
+    ret = do_convert(content, message, message_realm, possible_words, sent_by_bot, mention_data)
     bugdown_stats_finish()
     return ret

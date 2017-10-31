@@ -12,15 +12,16 @@ from django.test import TestCase
 from django.utils.timezone import now as timezone_now
 
 from zerver.models import (
-    get_client, get_realm, get_recipient, get_stream, get_user,
+    get_client, get_realm, get_stream_recipient, get_stream, get_user,
     Message, RealmDomain, Recipient, UserMessage, UserPresence, UserProfile,
-    Realm, Subscription, Stream,
+    Realm, Subscription, Stream, flush_per_request_caches,
 )
 
 from zerver.lib.actions import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
     check_add_realm_emoji,
+    check_send_message,
     check_send_typing_notification,
     do_add_alert_words,
     do_add_default_stream,
@@ -78,7 +79,7 @@ from zerver.lib.message import (
     UnreadMessagesResult,
 )
 from zerver.lib.test_helpers import POSTRequestMock, get_subscription, \
-    stub_event_queue_user_events
+    stub_event_queue_user_events, queries_captured
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
@@ -96,6 +97,8 @@ from zerver.views.events_register import _default_all_public_streams, _default_n
 from zerver.tornado.event_queue import (
     allocate_client_descriptor,
     clear_client_event_queues_for_testing,
+    get_client_info_for_message_event,
+    process_message_event,
     EventQueue,
 )
 from zerver.tornado.views import get_events_backend
@@ -104,7 +107,6 @@ from collections import OrderedDict
 import mock
 import time
 import ujson
-from six.moves import range
 
 
 class LogEventsTest(ZulipTestCase):
@@ -284,8 +286,17 @@ class GetEventsTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assert_length(events, 0)
 
-        local_id = 10.01
-        self.send_message(email, recipient_email, Recipient.PERSONAL, "hello", local_id=local_id, sender_queue_id=queue_id)
+        local_id = '10.01'
+        check_send_message(
+            sender=user_profile,
+            client=get_client('whatever'),
+            message_type_name='private',
+            message_to=[recipient_email],
+            topic_name=None,
+            message_content='hello',
+            local_id=local_id,
+            sender_queue_id=queue_id,
+        )
 
         result = self.tornado_call(get_events_backend, user_profile,
                                    {"queue_id": queue_id,
@@ -303,9 +314,18 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(events[0]["message"]["display_recipient"][1]["is_mirror_dummy"], False)
 
         last_event_id = events[0]["id"]
-        local_id += 0.01
+        local_id = '10.02'
 
-        self.send_message(email, recipient_email, Recipient.PERSONAL, "hello", local_id=local_id, sender_queue_id=queue_id)
+        check_send_message(
+            sender=user_profile,
+            client=get_client('whatever'),
+            message_type_name='private',
+            message_to=[recipient_email],
+            topic_name=None,
+            message_content='hello',
+            local_id=local_id,
+            sender_queue_id=queue_id,
+        )
 
         result = self.tornado_call(get_events_backend, user_profile,
                                    {"queue_id": queue_id,
@@ -364,8 +384,8 @@ class GetEventsTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assert_length(events, 0)
 
-        self.send_message(email, self.example_email("othello"), Recipient.PERSONAL, "hello")
-        self.send_message(email, "Denmark", Recipient.STREAM, "hello")
+        self.send_personal_message(email, self.example_email("othello"), "hello")
+        self.send_stream_message(email, "Denmark", "hello")
 
         result = self.tornado_call(get_events_backend, user_profile,
                                    {"queue_id": queue_id,
@@ -383,7 +403,7 @@ class EventsRegisterTest(ZulipTestCase):
 
     def setUp(self):
         # type: () -> None
-        super(EventsRegisterTest, self).setUp()
+        super().setUp()
         self.user_profile = self.example_user('hamlet')
 
     def create_bot(self, email):
@@ -459,7 +479,6 @@ class EventsRegisterTest(ZulipTestCase):
         # type: (Dict[str, Any], Dict[str, Any], List[Dict[str, Any]]) -> None
         def normalize(state):
             # type: (Dict[str, Any]) -> None
-            state['realm_users'] = {u['email']: u for u in state['realm_users']}
             for u in state['never_subscribed']:
                 if 'subscribers' in u:
                     u['subscribers'].sort()
@@ -522,20 +541,18 @@ class EventsRegisterTest(ZulipTestCase):
         for i in range(3):
             content = 'mentioning... @**' + user.full_name + '** hello ' + str(i)
             self.do_test(
-                lambda: self.send_message(self.example_email('cordelia'),
-                                          "Verona",
-                                          Recipient.STREAM,
-                                          content)
+                lambda: self.send_stream_message(self.example_email('cordelia'),
+                                                 "Verona",
+                                                 content)
 
             )
 
     def test_pm_send_message_events(self):
         # type: () -> None
         self.do_test(
-            lambda: self.send_message(self.example_email('cordelia'),
-                                      self.example_email('hamlet'),
-                                      Recipient.PERSONAL,
-                                      'hola')
+            lambda: self.send_personal_message(self.example_email('cordelia'),
+                                               self.example_email('hamlet'),
+                                               'hola')
 
         )
 
@@ -546,10 +563,9 @@ class EventsRegisterTest(ZulipTestCase):
             self.example_email('othello'),
         ]
         self.do_test(
-            lambda: self.send_message(self.example_email('cordelia'),
-                                      huddle,
-                                      Recipient.HUDDLE,
-                                      'hola')
+            lambda: self.send_huddle_message(self.example_email('cordelia'),
+                                             huddle,
+                                             'hola')
 
         )
 
@@ -581,7 +597,7 @@ class EventsRegisterTest(ZulipTestCase):
         ])
 
         events = self.do_test(
-            lambda: self.send_message(self.example_email("hamlet"), "Verona", Recipient.STREAM, "hello"),
+            lambda: self.send_stream_message(self.example_email("hamlet"), "Verona", "hello"),
         )
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
@@ -663,7 +679,11 @@ class EventsRegisterTest(ZulipTestCase):
             ('operation', equals("add")),
         ])
 
-        message = self.send_message(self.example_email("cordelia"), self.example_email("hamlet"), Recipient.PERSONAL, "hello")
+        message = self.send_personal_message(
+            self.example_email("cordelia"),
+            self.example_email("hamlet"),
+            "hello",
+        )
         user_profile = self.example_user('hamlet')
         events = self.do_test(
             lambda: do_update_message_flags(user_profile, 'add', 'starred', [message]),
@@ -692,10 +712,9 @@ class EventsRegisterTest(ZulipTestCase):
         mention = '@**' + user_profile.full_name + '**'
 
         for content in ['hello', mention]:
-            message = self.send_message(
+            message = self.send_stream_message(
                 self.example_email('cordelia'),
                 "Verona",
-                Recipient.STREAM,
                 content
             )
 
@@ -706,14 +725,13 @@ class EventsRegisterTest(ZulipTestCase):
 
     def test_send_message_to_existing_recipient(self):
         # type: () -> None
-        self.send_message(
+        self.send_stream_message(
             self.example_email('cordelia'),
             "Verona",
-            Recipient.STREAM,
             "hello 1"
         )
         self.do_test(
-            lambda: self.send_message("cordelia@zulip.com", "Verona", Recipient.STREAM, "hello 2"),
+            lambda: self.send_stream_message("cordelia@zulip.com", "Verona", "hello 2"),
             state_change_expected=True,
         )
 
@@ -733,7 +751,7 @@ class EventsRegisterTest(ZulipTestCase):
             ])),
         ])
 
-        message_id = self.send_message(self.example_email("hamlet"), "Verona", Recipient.STREAM, "hello")
+        message_id = self.send_stream_message(self.example_email("hamlet"), "Verona", "hello")
         message = Message.objects.get(id=message_id)
         events = self.do_test(
             lambda: do_add_reaction(
@@ -759,7 +777,7 @@ class EventsRegisterTest(ZulipTestCase):
             ])),
         ])
 
-        message_id = self.send_message(self.example_email("hamlet"), "Verona", Recipient.STREAM, "hello")
+        message_id = self.send_stream_message(self.example_email("hamlet"), "Verona", "hello")
         message = Message.objects.get(id=message_id)
         do_add_reaction(self.user_profile, message, "tada")
         events = self.do_test(
@@ -927,7 +945,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('muted_topics', check_list(check_list(check_string, 2))),
         ])
         stream = get_stream('Denmark', self.user_profile.realm)
-        recipient = get_recipient(Recipient.STREAM, stream.id)
+        recipient = get_stream_recipient(stream.id)
         events = self.do_test(lambda: do_mute_topic(
             self.user_profile, stream, recipient, "topic"))
         error = muted_topics_checker('events[0]', events[0])
@@ -947,6 +965,8 @@ class EventsRegisterTest(ZulipTestCase):
                 ('email', check_string),
                 ('user_id', check_int),
                 ('avatar_url', check_string),
+                ('avatar_url_medium', check_string),
+                ('avatar_source', check_string),
             ])),
         ])
         events = self.do_test(
@@ -1016,6 +1036,7 @@ class EventsRegisterTest(ZulipTestCase):
         for prop in Realm.property_types:
             self.do_set_realm_property_test(prop)
 
+    @slow("Runs a large matrix of tests")
     def test_change_realm_authentication_methods(self):
         # type: () -> None
         schema_checker = self.check_events_dict([
@@ -1075,6 +1096,7 @@ class EventsRegisterTest(ZulipTestCase):
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
+    @slow("Runs a matrix of 6 queries to the /home view")
     def test_change_realm_message_edit_settings(self):
         # type: () -> None
         schema_checker = self.check_events_dict([
@@ -1519,10 +1541,12 @@ class EventsRegisterTest(ZulipTestCase):
         error = peer_add_schema_checker('events[1]', events[1])
         self.assert_on_error(error)
 
+    @slow("Actually several tests combined together")
     def test_subscribe_events(self):
         # type: () -> None
         self.do_test_subscribe_events(include_subscribers=True)
 
+    @slow("Actually several tests combined together")
     def test_subscribe_events_no_include_subscribers(self):
         # type: () -> None
         self.do_test_subscribe_events(include_subscribers=False)
@@ -1662,7 +1686,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('message_id', check_int),
             ('sender', check_string),
         ])
-        msg_id = self.send_message("hamlet@zulip.com", "Verona", Recipient.STREAM)
+        msg_id = self.send_stream_message("hamlet@zulip.com", "Verona")
         message = Message.objects.get(id=msg_id)
         events = self.do_test(
             lambda: do_delete_message(self.user_profile, message),
@@ -1677,7 +1701,7 @@ class EventsRegisterTest(ZulipTestCase):
         # Delete all historical messages for this user
         user_profile = self.example_user('hamlet')
         UserMessage.objects.filter(user_profile=user_profile).delete()
-        msg_id = self.send_message("hamlet@zulip.com", "Verona", Recipient.STREAM)
+        msg_id = self.send_stream_message("hamlet@zulip.com", "Verona")
         message = Message.objects.get(id=msg_id)
         self.do_test(
             lambda: do_delete_message(self.user_profile, message),
@@ -1731,7 +1755,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         def mute_topic(user_profile, stream_name, topic_name):
             # type: (UserProfile, Text, Text) -> None
             stream = get_stream(stream_name, realm)
-            recipient = get_recipient(Recipient.STREAM, stream.id)
+            recipient = get_stream_recipient(stream.id)
 
             add_topic_mute(
                 user_profile=user_profile,
@@ -1752,22 +1776,27 @@ class FetchInitialStateDataTest(ZulipTestCase):
         assert(sender_email < user_profile.email)
         assert(user_profile.email < othello.email)
 
-        pm1_message_id = self.send_message(sender_email, user_profile.email, Recipient.PERSONAL, "hello1")
-        pm2_message_id = self.send_message(sender_email, user_profile.email, Recipient.PERSONAL, "hello2")
+        pm1_message_id = self.send_personal_message(sender_email, user_profile.email, "hello1")
+        pm2_message_id = self.send_personal_message(sender_email, user_profile.email, "hello2")
 
         muted_stream = self.subscribe(user_profile, 'Muted Stream')
         mute_stream(user_profile, muted_stream)
         mute_topic(user_profile, 'Denmark', 'muted-topic')
 
-        stream_message_id = self.send_message(sender_email, "Denmark", Recipient.STREAM, "hello")
-        muted_stream_message_id = self.send_message(sender_email, "Muted Stream", Recipient.STREAM, "hello")
-        muted_topic_message_id = self.send_message(sender_email, "Denmark", Recipient.STREAM,
-                                                   subject="muted-topic", content="hello")
+        stream_message_id = self.send_stream_message(sender_email, "Denmark", "hello")
+        muted_stream_message_id = self.send_stream_message(sender_email, "Muted Stream", "hello")
+        muted_topic_message_id = self.send_stream_message(
+            sender_email,
+            "Denmark",
+            topic_name="muted-topic",
+            content="hello",
+        )
 
-        huddle_message_id = self.send_message(sender_email,
-                                              [user_profile.email, othello.email],
-                                              Recipient.HUDDLE,
-                                              'hello3')
+        huddle_message_id = self.send_huddle_message(
+            sender_email,
+            [user_profile.email, othello.email],
+            'hello3',
+        )
 
         def get_unread_data():
             # type: () -> UnreadMessagesResult
@@ -1955,6 +1984,286 @@ class EventQueueTest(TestCase):
                           {'id': 1,
                            'type': 'unknown',
                            "timestamp": "1"}])
+
+class ClientDescriptorsTest(ZulipTestCase):
+    def test_get_client_info_for_all_public_streams(self):
+        # type: () -> None
+        hamlet = self.example_user('hamlet')
+        realm = hamlet.realm
+
+        clear_client_event_queues_for_testing()
+
+        queue_data = dict(
+            all_public_streams=True,
+            apply_markdown=True,
+            client_type_name='website',
+            event_types=['message'],
+            last_connection_time=time.time(),
+            queue_timeout=0,
+            realm_id=realm.id,
+            user_profile_id=hamlet.id,
+        )
+
+        client = allocate_client_descriptor(queue_data)
+
+        message_event = dict(
+            realm_id=realm.id,
+            stream_name='whatever',
+        )
+
+        client_info = get_client_info_for_message_event(
+            message_event,
+            users=[],
+        )
+
+        self.assertEqual(len(client_info), 1)
+
+        dct = client_info[client.event_queue.id]
+        self.assertEqual(dct['client'].apply_markdown, True)
+        self.assertEqual(dct['client'].user_profile_id, hamlet.id)
+        self.assertEqual(dct['flags'], None)
+        self.assertEqual(dct['is_sender'], False)
+
+        message_event = dict(
+            realm_id=realm.id,
+            stream_name='whatever',
+            sender_queue_id=client.event_queue.id,
+        )
+
+        client_info = get_client_info_for_message_event(
+            message_event,
+            users=[],
+        )
+        dct = client_info[client.event_queue.id]
+        self.assertEqual(dct['is_sender'], True)
+
+    def test_get_client_info_for_normal_users(self):
+        # type: () -> None
+        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user('cordelia')
+        realm = hamlet.realm
+
+        clear_client_event_queues_for_testing()
+
+        queue_data = dict(
+            all_public_streams=False,
+            apply_markdown=True,
+            client_type_name='website',
+            event_types=['message'],
+            last_connection_time=time.time(),
+            queue_timeout=0,
+            realm_id=realm.id,
+            user_profile_id=hamlet.id,
+        )
+
+        client = allocate_client_descriptor(queue_data)
+
+        message_event = dict(
+            realm_id=realm.id,
+            stream_name='whatever',
+        )
+
+        client_info = get_client_info_for_message_event(
+            message_event,
+            users=[
+                dict(id=cordelia.id),
+            ],
+        )
+
+        self.assertEqual(len(client_info), 0)
+
+        client_info = get_client_info_for_message_event(
+            message_event,
+            users=[
+                dict(id=cordelia.id),
+                dict(id=hamlet.id, flags=['mentioned']),
+            ],
+        )
+        self.assertEqual(len(client_info), 1)
+
+        dct = client_info[client.event_queue.id]
+        self.assertEqual(dct['client'].apply_markdown, True)
+        self.assertEqual(dct['client'].user_profile_id, hamlet.id)
+        self.assertEqual(dct['flags'], ['mentioned'])
+        self.assertEqual(dct['is_sender'], False)
+
+    def test_process_message_event_with_mocked_client_info(self):
+        # type: () -> None
+        hamlet = self.example_user("hamlet")
+
+        class MockClient(object):
+            def __init__(self, user_profile_id, apply_markdown):
+                # type: (int, bool) -> None
+                self.user_profile_id = user_profile_id
+                self.apply_markdown = apply_markdown
+                self.client_type_name = 'whatever'
+                self.events = []  # type: List[Dict[str, Any]]
+
+            def accepts_messages(self):
+                # type: () -> bool
+                return True
+
+            def accepts_event(self, event):
+                # type: (Dict[str, Any]) -> bool
+                assert(event['type'] == 'message')
+                return True
+
+            def add_event(self, event):
+                # type: (Dict[str, Any]) -> None
+                self.events.append(event)
+
+        client1 = MockClient(
+            user_profile_id=hamlet.id,
+            apply_markdown=True,
+        )
+
+        client2 = MockClient(
+            user_profile_id=hamlet.id,
+            apply_markdown=False,
+        )
+
+        client_info = {
+            'client:1': dict(
+                client=client1,
+                flags=['starred'],
+            ),
+            'client:2': dict(
+                client=client2,
+                flags=['has_alert_word'],
+            ),
+        }
+
+        sender_id = hamlet.id
+
+        message_event = dict(
+            message_dict=dict(
+                id=999,
+                content='**hello**',
+                rendered_content='<b>hello</b>',
+                sender_id=sender_id,
+                type='stream',
+                client='website',
+
+                # NOTE: Some of these fields are clutter, but some
+                #       will be useful when we let clients specify
+                #       that they can compute their own gravatar URLs.
+                sender_realm_id=None,
+                sender_avatar_source=None,
+                sender_avatar_version=None,
+                sender_is_mirror_dummy=None,
+                raw_display_recipient=None,
+                recipient_type=None,
+                recipient_type_id=None,
+            ),
+        )
+
+        # Setting users to `[]` bypasses code we don't care about
+        # for this test--we assume client_info is correct in our mocks,
+        # and we are interested in how messages are put on event queue.
+        users = []  # type: List[Any]
+
+        with mock.patch('zerver.tornado.event_queue.get_client_info_for_message_event',
+                        return_value=client_info):
+            process_message_event(message_event, users)
+
+        self.assertEqual(client1.events, [
+            dict(
+                type='message',
+                message=dict(
+                    type='stream',
+                    sender_id=sender_id,
+                    id=999,
+                    content='<b>hello</b>',
+                    content_type='text/html',
+                    client='website',
+                ),
+                flags=['starred'],
+            ),
+        ])
+
+        self.assertEqual(client2.events, [
+            dict(
+                type='message',
+                message=dict(
+                    type='stream',
+                    sender_id=sender_id,
+                    id=999,
+                    content='**hello**',
+                    content_type='text/x-markdown',
+                    client='website',
+                ),
+                flags=['has_alert_word'],
+            ),
+        ])
+
+class FetchQueriesTest(ZulipTestCase):
+    def test_queries(self):
+        # type: () -> None
+        user = self.example_user("hamlet")
+
+        self.login(user.email)
+
+        flush_per_request_caches()
+        with queries_captured() as queries:
+            with mock.patch('zerver.lib.events.always_want') as want_mock:
+                fetch_initial_state_data(
+                    user_profile=user,
+                    event_types=None,
+                    queue_id='x',
+                )
+
+        self.assert_length(queries, 28)
+
+        expected_counts = dict(
+            alert_words=0,
+            attachments=1,
+            custom_profile_fields=1,
+            default_streams=1,
+            hotspots=0,
+            message=1,
+            muted_topics=1,
+            pointer=0,
+            presence=3,
+            realm=0,
+            realm_bot=1,
+            realm_domains=1,
+            realm_embedded_bots=0,
+            realm_emoji=1,
+            realm_filters=1,
+            realm_user=4,
+            stream=2,
+            subscription=5,
+            total_uploads_size=1,
+            update_display_settings=0,
+            update_global_notifications=0,
+            update_message_flags=5,
+            upload_quota=0,
+            zulip_version=0,
+        )
+
+        wanted_event_types = {
+            item[0][0] for item
+            in want_mock.call_args_list
+        }
+
+        self.assertEqual(wanted_event_types, set(expected_counts))
+
+        for event_type in sorted(wanted_event_types):
+            count = expected_counts[event_type]
+            flush_per_request_caches()
+            with queries_captured() as queries:
+                if event_type == 'update_message_flags':
+                    event_types = ['update_message_flags', 'message']
+                else:
+                    event_types = [event_type]
+
+                fetch_initial_state_data(
+                    user_profile=user,
+                    event_types=event_types,
+                    queue_id='x',
+                )
+            self.assert_length(queries, count)
+
 
 class TestEventsRegisterAllPublicStreamsDefaults(ZulipTestCase):
     def setUp(self):

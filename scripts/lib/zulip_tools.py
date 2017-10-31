@@ -100,17 +100,6 @@ if __name__ == '__main__':
     if cmd == 'make_deploy_path':
         print(make_deploy_path())
 
-def mkdir_p(path):
-    # type: (str) -> None
-    # Python doesn't have an analog to `mkdir -p` < Python 3.2.
-    try:
-        os.makedirs(path)
-    except OSError as e:
-        if e.errno == errno.EEXIST and os.path.isdir(path):
-            pass
-        else:
-            raise
-
 def get_dev_uuid_var_path(create_if_missing=False):
     # type: (bool) -> str
     zulip_path = os.path.realpath(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
@@ -129,7 +118,7 @@ def get_dev_uuid_var_path(create_if_missing=False):
             raise AssertionError("Missing UUID file; please run tools/provision!")
 
     result_path = os.path.join(zulip_path, "var", zulip_uuid)
-    mkdir_p(result_path)
+    os.makedirs(result_path, exist_ok=True)
     return result_path
 
 def get_deployment_lock(error_rerun_script):
@@ -210,19 +199,23 @@ def get_recent_deployments(threshold_days):
     recent = set()
     threshold_date = datetime.datetime.now() - datetime.timedelta(days=threshold_days)
     for dir_name in os.listdir(DEPLOYMENTS_DIR):
-        if not os.path.isdir(os.path.join(DEPLOYMENTS_DIR, dir_name)):
+        target_dir = os.path.join(DEPLOYMENTS_DIR, dir_name)
+        if not os.path.isdir(target_dir):
             # Skip things like uwsgi sockets, symlinks, etc.
             continue
-        if not os.path.exists(os.path.join(DEPLOYMENTS_DIR, dir_name, "zerver")):
+        if not os.path.exists(os.path.join(target_dir, "zerver")):
             # Skip things like "lock" that aren't actually a deployment directory
             continue
         try:
             date = datetime.datetime.strptime(dir_name, TIMESTAMP_FORMAT)
             if date >= threshold_date:
-                recent.add(os.path.join(DEPLOYMENTS_DIR, dir_name))
+                recent.add(target_dir)
         except ValueError:
             # Always include deployments whose name is not in the format of a timestamp.
-            recent.add(os.path.join(DEPLOYMENTS_DIR, dir_name))
+            recent.add(target_dir)
+            # If it is a symlink then include the target as well.
+            if os.path.islink(target_dir):
+                recent.add(os.path.realpath(target_dir))
     if os.path.exists("/root/zulip"):
         recent.add("/root/zulip")
     return recent

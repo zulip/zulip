@@ -102,16 +102,43 @@ def relative_to_full_url(base_url, content):
 
     return content
 
-def fix_emojis(content, base_url):
-    # type: (Text, Text) -> Text
-    # Convert the emoji spans to img tags.
-    content = re.sub(
-        r'<span class=\"emoji emoji-(\S+)\" title=\"([^\"]+)\">(\S+)</span>',
-        r'<img src="' + base_url + r'/static/generated/emoji/images-google-64/\1.png" ' +
-        r'title="\2" alt="\3" style="height: 20px;">',
-        content)
-    content = content.replace(' class="emoji"', ' style="height: 20px;"')
+def fix_emojis(content, base_url, emojiset):
+    # type: (Text, Text, Text) -> Text
+    def make_emoji_img_elem(emoji_span_elem):
+        # type: (Any) -> Any
+        # Can't be annotated properly due to:
+        # type: ignore # https://github.com/python/typeshed/issues/525
+        # Convert the emoji spans to img tags.
+        classes = emoji_span_elem.get('class')
+        match = re.search('emoji-(?P<emoji_code>\S+)', classes)
+        emoji_code = match.group('emoji_code')
+        emoji_name = emoji_span_elem.get('title')
+        alt_code = emoji_span_elem.text
+        image_url = base_url + '/static/generated/emoji/images-%(emojiset)s-64/%(emoji_code)s.png' % {
+            'emojiset': emojiset,
+            'emoji_code': emoji_code
+        }
+        img_elem = lxml.html.fromstring(      # type: ignore # https://github.com/python/typeshed/issues/525
+            '<img alt="%(alt_code)s" src="%(image_url)s" title="%(title)s">' % {
+                'alt_code': alt_code,
+                'image_url': image_url,
+                'title': emoji_name,
+            })
+        img_elem.set('style', 'height: 20px;')
+        img_elem.tail = emoji_span_elem.tail
+        return img_elem
 
+    fragment = lxml.html.fromstring(content)    # type: ignore # https://github.com/python/typeshed/issues/525
+    for elem in fragment.cssselect('span.emoji'):
+        parent = elem.getparent()
+        img_elem = make_emoji_img_elem(elem)
+        parent.replace(elem, img_elem)
+
+    for realm_emoji in fragment.cssselect('.emoji'):
+        del realm_emoji.attrib['class']
+        realm_emoji.set('style', 'height: 20px;')
+
+    content = lxml.html.tostring(fragment).decode('utf-8')  # type: ignore # https://github.com/python/typeshed/issues/525
     return content
 
 def build_message_list(user_profile, messages):
@@ -153,7 +180,7 @@ def build_message_list(user_profile, messages):
         assert message.rendered_content is not None
         html = message.rendered_content
         html = relative_to_full_url(user_profile.realm.uri, html)
-        html = fix_emojis(html, user_profile.realm.uri)
+        html = fix_emojis(html, user_profile.realm.uri, user_profile.emojiset)
 
         return {'plain': plain, 'html': html}
 
@@ -272,7 +299,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
         'name': user_profile.full_name,
         'messages': build_message_list(user_profile, missed_messages),
         'message_count': message_count,
-        'mention': missed_messages[0].recipient.type == Recipient.STREAM,
+        'mention': missed_messages[0].is_stream_message(),
         'unsubscribe_link': unsubscribe_link,
     })
 
@@ -353,7 +380,8 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
         'from_address': from_address,
         'reply_to_email': formataddr((reply_to_name, reply_to_address)),
         'context': context}
-    queue_json_publish("missedmessage_email_senders", email_dict, send_email_from_dict)
+    queue_json_publish("missedmessage_email_senders", email_dict, send_email_from_dict,
+                       call_consume_in_tests=True)
 
     user_profile.last_reminder = timezone_now()
     user_profile.save(update_fields=['last_reminder'])
@@ -391,7 +419,7 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
 
     for msg_list in messages_by_recipient_subject.values():
         msg = min(msg_list, key=lambda msg: msg.pub_date)
-        if msg.recipient.type == Recipient.STREAM:
+        if msg.is_stream_message():
             msg_list.extend(get_context_for_message(msg))
 
     # Send an email per recipient subject pair
@@ -445,7 +473,7 @@ def enqueue_welcome_emails(user):
     })
     send_future_email(
         "zerver/emails/followup_day1", to_user_id=user.id, from_name=from_name,
-        from_address=from_address, context=context, delay=datetime.timedelta(hours=1))
+        from_address=from_address, context=context)
     send_future_email(
         "zerver/emails/followup_day2", to_user_id=user.id, from_name=from_name,
         from_address=from_address, context=context, delay=datetime.timedelta(days=1))

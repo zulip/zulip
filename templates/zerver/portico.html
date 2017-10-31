@@ -11,6 +11,10 @@
 {{ render_bundle('translations') }}
 {% endblock %}
 
+{% block porticocustomhead %}
+{{ render_bundle('portico') }}
+{% endblock %}
+
 {% block content %}
 <div class="portico-container" data-platform="{{ platform }}">
     <div class="portico-wrap">

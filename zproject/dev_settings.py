@@ -28,10 +28,13 @@ NOTIFICATION_BOT = "notification-bot@zulip.com"
 ERROR_BOT = "error-bot@zulip.com"
 NEW_USER_BOT = "new-user-bot@zulip.com"
 EMAIL_GATEWAY_BOT = "emailgateway@zulip.com"
+PHYSICAL_ADDRESS = "Zulip Headquarters, 123 Octo Stream, South Pacific Ocean"
 EXTRA_INSTALLED_APPS = ["zilencer", "analytics"]
 # Disable Camo in development
 CAMO_URI = ''
 OPEN_REALM_CREATION = True
+
+EMBEDDED_BOTS_ENABLED = True
 
 SAVE_FRONTEND_STACKTRACES = True
 EVENT_LOGS_ENABLED = True

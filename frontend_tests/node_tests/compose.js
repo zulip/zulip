@@ -624,6 +624,10 @@ function test_raw_file_drop(raw_drop_func) {
     assert(compose_actions_start_checked);
     assert.equal($("#new_message_content").val(), 'Old content new contents');
     assert(compose_ui_autosize_textarea_checked);
+
+    // Now test the insert syntax code
+    $('#new_message_content').caret = noop;
+    compose_state.insert_syntax_and_focus('funtimes');
 }
 
 (function test_initialize() {
@@ -1078,6 +1082,23 @@ function test_with_mock_socket(test_params) {
         };
         handler(event);
         assert(compose_file_input_clicked);
+    }());
+
+    (function test_video_link_compose_clicked() {
+        // Hackishly pretend caret is the same as val, since we don't
+        // have a cursor anyway.
+        $('#new_message_content').caret = function (x) {
+            $('#new_message_content').val(x);
+        };
+
+        var handler = $("#compose").get_on_handler("click", "#video_link");
+        assert.equal($('#new_message_content').val(), '');
+
+        handler(event);
+
+        // video link ids consist of 15 random digits
+        var video_link_regex = /\[Click to join video call\]\(https:\/\/meet.jit.si\/\d{15}\)/;
+        assert(video_link_regex.test($('#new_message_content').val()));
     }());
 
     (function test_markdown_preview_compose_clicked() {

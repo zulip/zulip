@@ -75,7 +75,7 @@ class ReactionEmojiTest(ZulipTestCase):
         """
         stream_name = "Saxony"
         self.subscribe(self.example_user("cordelia"), stream_name)
-        message_id = self.send_message(self.example_email("cordelia"), stream_name, Recipient.STREAM)
+        message_id = self.send_stream_message(self.example_email("cordelia"), stream_name)
 
         user_profile = self.example_user('hamlet')
         sender = user_profile.email

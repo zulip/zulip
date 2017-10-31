@@ -106,8 +106,10 @@ exports.mark_subscribed = function (sub, subscribers, color) {
         stream_data.set_subscribers(sub, subscribers);
     }
 
-    subs.update_settings_for_subscribed(sub);
-    subs.actually_filter_streams();
+    if (overlays.streams_open()) {
+        subs.update_settings_for_subscribed(sub);
+        subs.actually_filter_streams();
+    }
 
     if (narrow_state.is_for_stream_id(sub.stream_id)) {
         current_msg_list.update_trailing_bookend();
@@ -127,8 +129,9 @@ exports.mark_unsubscribed = function (sub) {
     } else if (sub.subscribed) {
         stream_data.unsubscribe_myself(sub);
 
-        subs.update_settings_for_unsubscribed(sub);
-
+        if (overlays.streams_open()) {
+            subs.update_settings_for_unsubscribed(sub);
+        }
     } else {
         // Already unsubscribed
         return;

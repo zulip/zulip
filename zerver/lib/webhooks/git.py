@@ -12,11 +12,13 @@ COMMIT_OR_COMMITS = u"commit{}"
 
 PUSH_PUSHED_TEXT_WITH_URL = u"[pushed]({compare_url}) {number_of_commits} {commit_or_commits}"
 PUSH_PUSHED_TEXT_WITHOUT_URL = u"pushed {number_of_commits} {commit_or_commits}"
-PUSH_COMMITS_MESSAGE_TEMPLATE_WITH_COMMITTERS = u"""{user_name} {pushed_text} to branch {branch_name}. {committers_details}.
+
+PUSH_COMMITS_BASE = '{user_name} {pushed_text} to branch {branch_name}.'
+PUSH_COMMITS_MESSAGE_TEMPLATE_WITH_COMMITTERS = PUSH_COMMITS_BASE + u""" {committers_details}.
 
 {commits_data}
 """
-PUSH_COMMITS_MESSAGE_TEMPLATE_WITHOUT_COMMITTERS = u"""{user_name} {pushed_text} to branch {branch_name}.
+PUSH_COMMITS_MESSAGE_TEMPLATE_WITHOUT_COMMITTERS = PUSH_COMMITS_BASE + u"""
 
 {commits_data}
 """
@@ -45,7 +47,8 @@ TAG_WITH_URL_TEMPLATE = u"[{tag_name}]({tag_url})"
 TAG_WITHOUT_URL_TEMPLATE = u"{tag_name}"
 
 
-def get_push_commits_event_message(user_name, compare_url, branch_name, commits_data, is_truncated=False, deleted=False):
+def get_push_commits_event_message(user_name, compare_url, branch_name,
+                                   commits_data, is_truncated=False, deleted=False):
     # type: (Text, Optional[Text], Text, List[Dict[str, Any]], Optional[bool], Optional[bool]) -> Text
     if not commits_data and deleted:
         return PUSH_DELETE_BRANCH_MESSAGE_TEMPLATE.format(

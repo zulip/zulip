@@ -50,6 +50,7 @@
         "settings_users": false,
         "settings_streams": false,
         "settings_filters": false,
+        "settings_invites": false,
         "settings": false,
         "resize": false,
         "loading": false,
@@ -154,7 +155,8 @@
         "emoji_picker": false,
         "hotspots": false,
         "compose_ui": false,
-        "common": false
+        "common": false,
+        "desktop_notifications_panel": false
     },
     "rules": {
         "array-callback-return": "error",

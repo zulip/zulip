@@ -27,6 +27,10 @@ from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, FAIL, WARNING, ENDC, make_d
 logging.basicConfig(format="%(asctime)s upgrade-zulip-from-git: %(message)s",
                     level=logging.INFO)
 
+if os.getuid() != 0:
+    logging.error("Must be run as root.")
+    sys.exit(1)
+
 if len(sys.argv) != 2:
     print(FAIL + "Usage: upgrade-zulip-from-git refname" + ENDC)
     sys.exit(1)
@@ -63,7 +67,7 @@ try:
 
     subprocess.check_call(["ln", '-nsf', deploy_path, os.path.join(DEPLOYMENTS_DIR, "next")])
 
-    subprocess.check_call(["sudo", os.path.join(deploy_path, "scripts", "lib", "upgrade-zulip-stage-2"),
+    subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "upgrade-zulip-stage-2"),
                            deploy_path, "--from-git"] + deploy_options)
 finally:
     release_deployment_lock()

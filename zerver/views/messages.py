@@ -41,9 +41,9 @@ from zerver.lib.utils import statsd
 from zerver.lib.validator import \
     check_list, check_int, check_dict, check_string, check_bool
 from zerver.models import Message, UserProfile, Stream, Subscription, \
-    Realm, RealmDomain, Recipient, UserMessage, bulk_get_recipients, get_recipient, \
+    Realm, RealmDomain, Recipient, UserMessage, bulk_get_recipients, get_personal_recipient, \
     get_stream, parse_usermessage_flags, email_to_domain, get_realm, get_active_streams, \
-    get_user_including_cross_realm
+    get_user_including_cross_realm, get_stream_recipient
 
 from sqlalchemy import func
 from sqlalchemy.sql import select, join, column, literal_column, literal, and_, \
@@ -237,7 +237,7 @@ class NarrowBuilder(object):
             cond = column("recipient_id").in_([recipient.id for recipient in recipients_map.values()])
             return query.where(maybe_negate(cond))
 
-        recipient = get_recipient(Recipient.STREAM, type_id=stream.id)
+        recipient = get_stream_recipient(stream.id)
         cond = column("recipient_id") == recipient.id
         return query.where(maybe_negate(cond))
 
@@ -321,7 +321,7 @@ class NarrowBuilder(object):
             return query.where(maybe_negate(cond))
         else:
             # Personal message
-            self_recipient = get_recipient(Recipient.PERSONAL, type_id=self.user_profile.id)
+            self_recipient = get_personal_recipient(self.user_profile.id)
             if operand == self.user_profile.email:
                 # Personals with self
                 cond = and_(column("sender_id") == self.user_profile.id,
@@ -334,7 +334,7 @@ class NarrowBuilder(object):
             except UserProfile.DoesNotExist:
                 raise BadNarrowOperator('unknown user ' + operand)
 
-            narrow_recipient = get_recipient(Recipient.PERSONAL, narrow_profile.id)
+            narrow_recipient = get_personal_recipient(narrow_profile.id)
             cond = or_(and_(column("sender_id") == narrow_profile.id,
                             column("recipient_id") == self_recipient.id),
                        and_(column("sender_id") == self.user_profile.id,
@@ -562,10 +562,10 @@ def get_messages_backend(request, user_profile,
                          num_before = REQ(converter=to_non_negative_int),
                          num_after = REQ(converter=to_non_negative_int),
                          narrow = REQ('narrow', converter=narrow_parameter, default=None),
-                         use_first_unread_anchor = REQ(default=False, converter=ujson.loads),
-                         apply_markdown=REQ(default=True,
-                                            converter=ujson.loads)):
-    # type: (HttpRequest, UserProfile, int, int, int, Optional[List[Dict[str, Any]]], bool, bool) -> HttpResponse
+                         use_first_unread_anchor = REQ(validator=check_bool, default=False),
+                         client_gravatar = REQ(validator=check_bool, default=False),
+                         apply_markdown = REQ(validator=check_bool, default=True)):
+    # type: (HttpRequest, UserProfile, int, int, int, Optional[List[Dict[str, Any]]], bool, bool, bool) -> HttpResponse
     include_history = ok_to_include_history(narrow, user_profile.realm)
 
     if include_history and not use_first_unread_anchor:
@@ -737,10 +737,10 @@ def get_messages_backend(request, user_profile,
                 search_fields[message_id] = get_search_fields(rendered_content, subject,
                                                               content_matches, subject_matches)
 
-    cache_transformer = lambda row: MessageDict.build_dict_from_raw_db_row(row, apply_markdown)
+    cache_transformer = MessageDict.build_dict_from_raw_db_row
     id_fetcher = lambda row: row['id']
 
-    message_dicts = generic_bulk_cached_fetch(lambda message_id: to_dict_cache_key_id(message_id, apply_markdown),
+    message_dicts = generic_bulk_cached_fetch(to_dict_cache_key_id,
                                               MessageDict.get_raw_db_rows,
                                               message_ids,
                                               id_fetcher=id_fetcher,
@@ -753,14 +753,15 @@ def get_messages_backend(request, user_profile,
     for message_id in message_ids:
         msg_dict = message_dicts[message_id]
         msg_dict.update({"flags": user_message_flags[message_id]})
-        msg_dict.update(search_fields.get(message_id, {}))
+        if message_id in search_fields:
+            msg_dict.update(search_fields[message_id])
         # Make sure that we never send message edit history to clients
         # in realms with allow_edit_history disabled.
         if "edit_history" in msg_dict and not user_profile.realm.allow_edit_history:
             del msg_dict["edit_history"]
         message_list.append(msg_dict)
 
-    MessageDict.post_process_dicts(message_list)
+    MessageDict.post_process_dicts(message_list, apply_markdown, client_gravatar)
 
     statsd.incr('loaded_old_messages', len(message_list))
     ret = {'messages': message_list,
@@ -928,7 +929,7 @@ def send_message_backend(request, user_profile,
                          message_type_name = REQ('type'),
                          message_to = REQ('to', converter=extract_recipients, default=[]),
                          forged = REQ(default=False),
-                         subject_name = REQ('subject', lambda x: x.strip(), None),
+                         topic_name = REQ('subject', lambda x: x.strip(), None),
                          message_content = REQ('content'),
                          realm_str = REQ('realm_str', default=None),
                          local_id = REQ(default=None),
@@ -984,7 +985,7 @@ def send_message_backend(request, user_profile,
         sender = user_profile
 
     ret = check_send_message(sender, client, message_type_name, message_to,
-                             subject_name, message_content, forged=forged,
+                             topic_name, message_content, forged=forged,
                              forged_timestamp = request.POST.get('time'),
                              forwarder_user_profile=user_profile, realm=realm,
                              local_id=local_id, sender_queue_id=queue_id)
@@ -1130,7 +1131,7 @@ def update_message_backend(request, user_profile,
             # `render_incoming_message` call earlier in this function.
             'message_realm_id': user_profile.realm_id,
             'urls': links_for_embed}
-        queue_json_publish('embed_links', event_data, lambda x: None)
+        queue_json_publish('embed_links', event_data, lambda x: None, call_consume_in_tests=True)
     return json_success()
 
 

@@ -7,7 +7,7 @@ from django.conf import settings
 from django.db.models import Q
 from django.core.cache.backends.base import BaseCache
 
-from typing import Any, Callable, Dict, Iterable, List, Optional, Union, TypeVar, Text
+from typing import cast, Any, Callable, Dict, Iterable, List, Optional, Union, Set, TypeVar, Text, Tuple
 
 from zerver.lib.utils import statsd, statsd_key, make_safe_digest
 import subprocess
@@ -19,11 +19,11 @@ import os
 import hashlib
 
 if False:
-    from zerver.models import UserProfile, Realm, Message
+    from zerver.models import UserProfile, Stream, Realm, Message
     # These modules have to be imported for type annotations but
     # they cannot be imported at runtime due to cyclic dependency.
 
-FuncT = TypeVar('FuncT', bound=Callable[..., Any])
+ReturnT = TypeVar('ReturnT')  # Useful for matching return types via Callable[..., ReturnT]
 
 class NotFoundInCache(Exception):
     pass
@@ -136,9 +136,7 @@ def get_cache_with_key(keyfunc, cache_name=None):
     return decorator
 
 def cache_with_key(keyfunc, cache_name=None, timeout=None, with_statsd_key=None):
-    # type: (Any, Optional[str], Optional[int], Optional[str]) -> Any
-    # This function can't be typed perfectly because returning a generic function
-    # isn't supported in mypy - https://github.com/python/mypy/issues/1551.
+    # type: (Callable[..., Text], Optional[str], Optional[int], Optional[str]) -> Callable[[Callable[..., ReturnT]], Callable[..., ReturnT]]
     """Decorator which applies Django caching to a function.
 
        Decorator argument is a function which computes a cache key
@@ -147,10 +145,10 @@ def cache_with_key(keyfunc, cache_name=None, timeout=None, with_statsd_key=None)
        other uses of caching."""
 
     def decorator(func):
-        # type: (Callable[..., Any]) -> (Callable[..., Any])
+        # type: (Callable[..., ReturnT]) -> Callable[..., ReturnT]
         @wraps(func)
         def func_with_caching(*args, **kwargs):
-            # type: (*Any, **Any) -> Any
+            # type: (*Any, **Any) -> ReturnT
             key = keyfunc(*args, **kwargs)
 
             val = cache_get(key, cache_name=cache_name)
@@ -228,6 +226,23 @@ def cache_delete_many(items, cache_name=None):
         KEY_PREFIX + item for item in items)
     remote_cache_stats_finish()
 
+# Generic_bulk_cached fetch and its helpers
+ObjKT = TypeVar('ObjKT')
+ItemT = TypeVar('ItemT')
+CompressedItemT = TypeVar('CompressedItemT')
+
+def default_extractor(obj: CompressedItemT) -> ItemT:
+    return obj  # type: ignore # Need a type assert that ItemT=CompressedItemT
+
+def default_setter(obj: ItemT) -> CompressedItemT:
+    return obj  # type: ignore # Need a type assert that ItemT=CompressedItemT
+
+def default_id_fetcher(obj: ItemT) -> ObjKT:
+    return obj.id  # type: ignore # Need ItemT/CompressedItemT typevars to be a Django protocol
+
+def default_cache_transformer(obj: ItemT) -> ItemT:
+    return obj
+
 # Required Arguments are as follows:
 # * object_ids: The list of object ids to look up
 # * cache_key_function: object_id => cache key
@@ -242,30 +257,28 @@ def cache_delete_many(items, cache_name=None):
 # * cache_transformer: Function mapping an object from database =>
 #   value for cache (in case the values that we're caching are some
 #   function of the objects, not the objects themselves)
-ObjKT = TypeVar('ObjKT', int, Text)
-ItemT = Any  # https://github.com/python/mypy/issues/1721
-CompressedItemT = Any  # https://github.com/python/mypy/issues/1721
-def generic_bulk_cached_fetch(cache_key_function,  # type: Callable[[ObjKT], Text]
-                              query_function,  # type: Callable[[List[ObjKT]], Iterable[Any]]
-                              object_ids,  # type: Iterable[ObjKT]
-                              extractor=lambda obj: obj,  # type: Callable[[CompressedItemT], ItemT]
-                              setter=lambda obj: obj,  # type: Callable[[ItemT], CompressedItemT]
-                              id_fetcher=lambda obj: obj.id,  # type: Callable[[Any], ObjKT]
-                              cache_transformer=lambda obj: obj  # type: Callable[[Any], ItemT]
-                              ):
-    # type: (...) -> Dict[ObjKT, Any]
+def generic_bulk_cached_fetch(
+        cache_key_function: Callable[[ObjKT], Text],
+        query_function: Callable[[List[ObjKT]], Iterable[Any]],
+        object_ids: Iterable[ObjKT],
+        extractor: Callable[[CompressedItemT], ItemT] = default_extractor,
+        setter: Callable[[ItemT], CompressedItemT] = default_setter,
+        id_fetcher: Callable[[ItemT], ObjKT] = default_id_fetcher,
+        cache_transformer: Callable[[ItemT], ItemT] = default_cache_transformer
+) -> Dict[ObjKT, ItemT]:
     cache_keys = {}  # type: Dict[ObjKT, Text]
     for object_id in object_ids:
         cache_keys[object_id] = cache_key_function(object_id)
-    cached_objects = cache_get_many([cache_keys[object_id]
-                                     for object_id in object_ids])
-    for (key, val) in cached_objects.items():
-        cached_objects[key] = extractor(cached_objects[key][0])
+    cached_objects_compressed = cache_get_many([cache_keys[object_id]
+                                                for object_id in object_ids])  # type: Dict[Text, Tuple[CompressedItemT]]
+    cached_objects = {}  # type: Dict[Text, ItemT]
+    for (key, val) in cached_objects_compressed.items():
+        cached_objects[key] = extractor(cached_objects_compressed[key][0])
     needed_ids = [object_id for object_id in object_ids if
                   cache_keys[object_id] not in cached_objects]
     db_objects = query_function(needed_ids)
 
-    items_for_remote_cache = {}  # type: Dict[Text, Any]
+    items_for_remote_cache = {}  # type: Dict[Text, Tuple[CompressedItemT]]
     for obj in db_objects:
         key = cache_keys[id_fetcher(obj)]
         item = cache_transformer(obj)
@@ -277,7 +290,7 @@ def generic_bulk_cached_fetch(cache_key_function,  # type: Callable[[ObjKT], Tex
                 if cache_keys[object_id] in cached_objects)
 
 def cache(func):
-    # type: (FuncT) -> FuncT
+    # type: (Callable[..., ReturnT]) -> Callable[..., ReturnT]
     """Decorator which applies Django caching to a function.
 
        Uses a key based on the function's name, filename, and
@@ -324,14 +337,14 @@ def user_profile_by_api_key_cache_key(api_key):
 # TODO: Refactor these cache helpers into another file that can import
 # models.py so that python v3 style type annotations can also work.
 
-active_user_dict_fields = [
+realm_user_dict_fields = [
     'id', 'full_name', 'short_name', 'email',
-    'avatar_source', 'avatar_version',
+    'avatar_source', 'avatar_version', 'is_active',
     'is_realm_admin', 'is_bot', 'realm_id', 'timezone']  # type: List[str]
 
-def active_user_dicts_in_realm_cache_key(realm_id):
+def realm_user_dicts_cache_key(realm_id):
     # type: (int) -> Text
-    return u"active_user_dicts_in_realm:%s" % (realm_id,)
+    return u"realm_user_dicts:%s" % (realm_id,)
 
 def active_user_ids_cache_key(realm_id):
     # type: (int) -> Text
@@ -380,30 +393,38 @@ def flush_user_profile(sender, **kwargs):
     user_profile = kwargs['instance']
     delete_user_profile_caches([user_profile])
 
+    def changed(fields):
+        # type: (List[str]) -> bool
+        if kwargs.get('update_fields') is None:
+            # adds/deletes should invalidate the cache
+            return True
+
+        update_fields = set(kwargs['update_fields'])
+        for f in fields:
+            if f in update_fields:
+                return True
+
+        return False
+
     # Invalidate our active_users_in_realm info dict if any user has changed
     # the fields in the dict or become (in)active
-    if kwargs.get('update_fields') is None or \
-            len(set(active_user_dict_fields + ['is_active', 'email']) &
-                set(kwargs['update_fields'])) > 0:
-        cache_delete(active_user_dicts_in_realm_cache_key(user_profile.realm_id))
+    if changed(realm_user_dict_fields):
+        cache_delete(realm_user_dicts_cache_key(user_profile.realm_id))
 
-    if kwargs.get('update_fields') is None or \
-            ('is_active' in kwargs['update_fields']):
+    if changed(['is_active']):
         cache_delete(active_user_ids_cache_key(user_profile.realm_id))
 
-    if kwargs.get('updated_fields') is None or \
-            'email' in kwargs['update_fields']:
+    if changed(['email', 'full_name', 'short_name', 'id', 'is_mirror_dummy']):
         delete_display_recipient_cache(user_profile)
 
     # Invalidate our bots_in_realm info dict if any bot has
     # changed the fields in the dict or become (in)active
-    if user_profile.is_bot and (kwargs['update_fields'] is None or
-                                (set(bot_dict_fields) & set(kwargs['update_fields']))):
+    if user_profile.is_bot and changed(bot_dict_fields):
         cache_delete(bot_dicts_in_realm_cache_key(user_profile.realm))
 
     # Invalidate realm-wide alert words cache if any user in the realm has changed
     # alert words
-    if kwargs.get('update_fields') is None or "alert_words" in kwargs['update_fields']:
+    if changed(['alert_words']):
         cache_delete(realm_alert_words_cache_key(user_profile.realm))
 
 # Called by models.py to flush various caches whenever we save
@@ -416,7 +437,7 @@ def flush_realm(sender, **kwargs):
     delete_user_profile_caches(users)
 
     if realm.deactivated:
-        cache_delete(active_user_dicts_in_realm_cache_key(realm.id))
+        cache_delete(realm_user_dicts_cache_key(realm.id))
         cache_delete(active_user_ids_cache_key(realm.id))
         cache_delete(bot_dicts_in_realm_cache_key(realm))
         cache_delete(realm_alert_words_cache_key(realm))
@@ -441,17 +462,15 @@ def flush_stream(sender, **kwargs):
            Q(default_events_register_stream=stream)).exists():
         cache_delete(bot_dicts_in_realm_cache_key(stream.realm))
 
-# TODO: Rename to_dict_cache_key_id and to_dict_cache_key
-def to_dict_cache_key_id(message_id, apply_markdown):
-    # type: (int, bool) -> Text
-    return u'message_dict:%d:%d' % (message_id, apply_markdown)
+def to_dict_cache_key_id(message_id):
+    # type: (int) -> Text
+    return u'message_dict:%d' % (message_id,)
 
-def to_dict_cache_key(message, apply_markdown):
-    # type: (Message, bool) -> Text
-    return to_dict_cache_key_id(message.id, apply_markdown)
+def to_dict_cache_key(message):
+    # type: (Message) -> Text
+    return to_dict_cache_key_id(message.id)
 
 def flush_message(sender, **kwargs):
     # type: (Any, **Any) -> None
     message = kwargs['instance']
-    cache_delete(to_dict_cache_key(message, False))
-    cache_delete(to_dict_cache_key(message, True))
+    cache_delete(to_dict_cache_key_id(message.id))

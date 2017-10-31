@@ -12,8 +12,8 @@ import zerver.models
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
-def migrate_existing_attachment_data(apps, schema_editor):
-    # type: (StateApps, DatabaseSchemaEditor) -> None
+def migrate_existing_attachment_data(apps: StateApps,
+                                     schema_editor: DatabaseSchemaEditor) -> None:
     Attachment = apps.get_model('zerver', 'Attachment')
     Recipient = apps.get_model('zerver', 'Recipient')
     Stream = apps.get_model('zerver', 'Stream')

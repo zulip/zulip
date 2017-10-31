@@ -177,7 +177,7 @@ class ExceptionFreeTornadoConnection(pika.adapters.TornadoConnection):
     def _adapter_disconnect(self):
         # type: () -> None
         try:
-            super(ExceptionFreeTornadoConnection, self)._adapter_disconnect()
+            super()._adapter_disconnect()
         except (pika.exceptions.ProbableAuthenticationError,
                 pika.exceptions.ProbableAccessDeniedError,
                 pika.exceptions.IncompatibleProtocolError) as e:
@@ -190,7 +190,7 @@ class TornadoQueueClient(SimpleQueueClient):
     # https://pika.readthedocs.io/en/0.9.8/examples/asynchronous_consumer_example.html
     def __init__(self):
         # type: () -> None
-        super(TornadoQueueClient, self).__init__()
+        super().__init__()
         # Enable rabbitmq heartbeat since TornadoConection can process them
         self.rabbitmq_heartbeat = None
         self._on_open_cbs = []  # type: List[Callable[[], None]]
@@ -312,7 +312,8 @@ def queue_json_publish(queue_name, event, processor, call_consume_in_tests=False
 
 def retry_event(queue_name, event, failure_processor):
     # type: (str, Dict[str, Any], Callable[[Dict[str, Any]], None]) -> None
-    assert 'failed_tries' in event
+    if 'failed_tries' not in event:
+        event['failed_tries'] = 0
     event['failed_tries'] += 1
     if event['failed_tries'] > MAX_REQUEST_RETRIES:
         failure_processor(event)

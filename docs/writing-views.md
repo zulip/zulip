@@ -150,8 +150,8 @@ arguments for.
 Here's an example:
 
 ``` py
-from zerver.decorator import has_request_variables, REQ, JsonableError, \
-    require_realm_admin
+from zerver.decorator import require_realm_admin
+from zerver.lib.request import has_request_variables, REQ
 
 @require_realm_admin
 @has_request_variables

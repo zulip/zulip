@@ -12,6 +12,9 @@ import zerver.lib.bugdown as bugdown
 from zerver.lib.cache import cache_with_key, to_dict_cache_key
 from zerver.lib.request import JsonableError
 from zerver.lib.str_utils import force_bytes, dict_with_str_keys
+from zerver.lib.stream_subscription import (
+    get_stream_subscriptions_for_user,
+)
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic_mutes import (
     build_topic_mute_checker,
@@ -74,48 +77,80 @@ def stringify_message_dict(message_dict):
     # type: (Dict[str, Any]) -> binary_type
     return zlib.compress(force_bytes(ujson.dumps(message_dict)))
 
-def message_to_dict(message, apply_markdown):
-    # type: (Message, bool) -> Dict[str, Any]
-    json = message_to_dict_json(message, apply_markdown)
-    obj = extract_message_dict(json)
-    MessageDict.post_process_dicts([obj])
-    return obj
-
 @cache_with_key(to_dict_cache_key, timeout=3600*24)
-def message_to_dict_json(message, apply_markdown):
-    # type: (Message, bool) -> binary_type
-    return MessageDict.to_dict_uncached(message, apply_markdown)
+def message_to_dict_json(message):
+    # type: (Message) -> binary_type
+    return MessageDict.to_dict_uncached(message)
 
 class MessageDict(object):
     @staticmethod
-    def post_process_dicts(objs):
-        # type: (List[Dict[str, Any]]) -> None
+    def wide_dict(message):
+        # type: (Message) -> Dict[str, Any]
+        '''
+        The next two lines get the cachable field related
+        to our message object, with the side effect of
+        populating the cache.
+        '''
+        json = message_to_dict_json(message)
+        obj = extract_message_dict(json)
+
+        '''
+        In this codepath we do net yet optimize for clients
+        that can compute their own gravatar URLs.
+        '''
+        client_gravatar = False
+
+        '''
+        The steps below are similar to what we do in
+        post_process_dicts(), except we don't call finalize_payload(),
+        since that step happens later in the queue
+        processor.
+        '''
+        MessageDict.bulk_hydrate_sender_info([obj])
+        MessageDict.hydrate_recipient_info(obj)
+        MessageDict.set_sender_avatar(obj, client_gravatar)
+
+        return obj
+
+    @staticmethod
+    def post_process_dicts(objs, apply_markdown, client_gravatar):
+        # type: (List[Dict[str, Any]], bool, bool) -> None
         MessageDict.bulk_hydrate_sender_info(objs)
 
         for obj in objs:
             MessageDict.hydrate_recipient_info(obj)
-            MessageDict.set_sender_avatar(obj)
-
-            del obj['sender_realm_id']
-            del obj['sender_avatar_source']
-            del obj['sender_avatar_version']
-
-            del obj['raw_display_recipient']
-            del obj['recipient_type']
-            del obj['recipient_type_id']
-            del obj['sender_is_mirror_dummy']
+            MessageDict.set_sender_avatar(obj, client_gravatar)
+            MessageDict.finalize_payload(obj, apply_markdown)
 
     @staticmethod
-    def to_dict_uncached(message, apply_markdown):
-        # type: (Message, bool) -> binary_type
-        dct = MessageDict.to_dict_uncached_helper(message, apply_markdown)
+    def finalize_payload(obj, apply_markdown):
+        # type: (Dict[str, Any], bool) -> None
+        if apply_markdown:
+            obj['content_type'] = 'text/html'
+            obj['content'] = obj['rendered_content']
+        else:
+            obj['content_type'] = 'text/x-markdown'
+
+        del obj['rendered_content']
+        del obj['sender_realm_id']
+        del obj['sender_avatar_source']
+        del obj['sender_avatar_version']
+
+        del obj['raw_display_recipient']
+        del obj['recipient_type']
+        del obj['recipient_type_id']
+        del obj['sender_is_mirror_dummy']
+
+    @staticmethod
+    def to_dict_uncached(message):
+        # type: (Message) -> binary_type
+        dct = MessageDict.to_dict_uncached_helper(message)
         return stringify_message_dict(dct)
 
     @staticmethod
-    def to_dict_uncached_helper(message, apply_markdown):
-        # type: (Message, bool) -> Dict[str, Any]
+    def to_dict_uncached_helper(message):
+        # type: (Message) -> Dict[str, Any]
         return MessageDict.build_message_dict(
-            apply_markdown = apply_markdown,
             message = message,
             message_id = message.id,
             last_edit_time = message.last_edit_time,
@@ -165,14 +200,13 @@ class MessageDict(object):
         return sew_messages_and_reactions(messages, reactions)
 
     @staticmethod
-    def build_dict_from_raw_db_row(row, apply_markdown):
-        # type: (Dict[str, Any], bool) -> Dict[str, Any]
+    def build_dict_from_raw_db_row(row):
+        # type: (Dict[str, Any]) -> Dict[str, Any]
         '''
         row is a row from a .values() call, and it needs to have
         all the relevant fields populated
         '''
         return MessageDict.build_message_dict(
-            apply_markdown = apply_markdown,
             message = None,
             message_id = row['id'],
             last_edit_time = row['last_edit_time'],
@@ -193,7 +227,6 @@ class MessageDict(object):
 
     @staticmethod
     def build_message_dict(
-            apply_markdown,
             message,
             message_id,
             last_edit_time,
@@ -211,11 +244,12 @@ class MessageDict(object):
             recipient_type_id,
             reactions
     ):
-        # type: (bool, Optional[Message], int, Optional[datetime.datetime], Optional[Text], Text, Text, datetime.datetime, Optional[Text], Optional[int], int, int, Text, int, int, int, List[Dict[str, Any]]) -> Dict[str, Any]
+        # type: (Optional[Message], int, Optional[datetime.datetime], Optional[Text], Text, Text, datetime.datetime, Optional[Text], Optional[int], int, int, Text, int, int, int, List[Dict[str, Any]]) -> Dict[str, Any]
 
         obj = dict(
             id                = message_id,
             sender_id         = sender_id,
+            content           = content,
             recipient_type_id = recipient_type_id,
             recipient_type    = recipient_type,
             recipient_id      = recipient_id,
@@ -238,38 +272,33 @@ class MessageDict(object):
             assert edit_history is not None
             obj['edit_history'] = ujson.loads(edit_history)
 
-        if apply_markdown:
-            if Message.need_to_render_content(rendered_content, rendered_content_version, bugdown.version):
-                if message is None:
-                    # We really shouldn't be rendering objects in this method, but there is
-                    # a scenario where we upgrade the version of bugdown and fail to run
-                    # management commands to re-render historical messages, and then we
-                    # need to have side effects.  This method is optimized to not need full
-                    # blown ORM objects, but the bugdown renderer is unfortunately highly
-                    # coupled to Message, and we also need to persist the new rendered content.
-                    # If we don't have a message object passed in, we get one here.  The cost
-                    # of going to the DB here should be overshadowed by the cost of rendering
-                    # and updating the row.
-                    # TODO: see #1379 to eliminate bugdown dependencies
-                    message = Message.objects.select_related().get(id=message_id)
+        if Message.need_to_render_content(rendered_content, rendered_content_version, bugdown.version):
+            if message is None:
+                # We really shouldn't be rendering objects in this method, but there is
+                # a scenario where we upgrade the version of bugdown and fail to run
+                # management commands to re-render historical messages, and then we
+                # need to have side effects.  This method is optimized to not need full
+                # blown ORM objects, but the bugdown renderer is unfortunately highly
+                # coupled to Message, and we also need to persist the new rendered content.
+                # If we don't have a message object passed in, we get one here.  The cost
+                # of going to the DB here should be overshadowed by the cost of rendering
+                # and updating the row.
+                # TODO: see #1379 to eliminate bugdown dependencies
+                message = Message.objects.select_related().get(id=message_id)
 
-                assert message is not None  # Hint for mypy.
-                # It's unfortunate that we need to have side effects on the message
-                # in some cases.
-                rendered_content = render_markdown(message, content, realm=message.get_realm())
-                message.rendered_content = rendered_content
-                message.rendered_content_version = bugdown.version
-                message.save_rendered_content()
+            assert message is not None  # Hint for mypy.
+            # It's unfortunate that we need to have side effects on the message
+            # in some cases.
+            rendered_content = render_markdown(message, content, realm=message.get_realm())
+            message.rendered_content = rendered_content
+            message.rendered_content_version = bugdown.version
+            message.save_rendered_content()
 
-            if rendered_content is not None:
-                obj['content'] = rendered_content
-            else:
-                obj['content'] = u'<p>[Zulip note: Sorry, we could not understand the formatting of your message]</p>'
-
-            obj['content_type'] = 'text/html'
+        if rendered_content is not None:
+            obj['rendered_content'] = rendered_content
         else:
-            obj['content'] = content
-            obj['content_type'] = 'text/x-markdown'
+            obj['rendered_content'] = (u'<p>[Zulip note: Sorry, we could not ' +
+                                       u'understand the formatting of your message]</p>')
 
         if rendered_content is not None:
             obj['is_me_message'] = Message.is_status_message(content, rendered_content)
@@ -366,16 +395,13 @@ class MessageDict(object):
             obj['stream_id'] = recipient_type_id
 
     @staticmethod
-    def set_sender_avatar(obj):
-        # type: (Dict[str, Any]) -> None
+    def set_sender_avatar(obj, client_gravatar):
+        # type: (Dict[str, Any], bool) -> None
         sender_id = obj['sender_id']
         sender_realm_id = obj['sender_realm_id']
         sender_email = obj['sender_email']
         sender_avatar_source = obj['sender_avatar_source']
         sender_avatar_version = obj['sender_avatar_version']
-
-        # TODO: Make client_gravatar configurable.
-        client_gravatar = False
 
         obj['avatar_url'] = get_avatar_field(
             user_id=sender_id,
@@ -438,8 +464,8 @@ def access_message(user_profile, message_id):
     # stream in your realm, so return the message, user_message pair
     return (message, user_message)
 
-def render_markdown(message, content, realm=None, realm_alert_words=None, user_ids=None):
-    # type: (Message, Text, Optional[Realm], Optional[RealmAlertWords], Optional[Set[int]]) -> Text
+def render_markdown(message, content, realm=None, realm_alert_words=None, user_ids=None, mention_data=None):
+    # type: (Message, Text, Optional[Realm], Optional[RealmAlertWords], Optional[Set[int]], Optional[bugdown.MentionData]) -> Text
     """Return HTML for given markdown. Bugdown may add properties to the
     message object such as `mentions_user_ids` and `mentions_wildcard`.
     These are only on this Django object and are not saved in the
@@ -474,9 +500,14 @@ def render_markdown(message, content, realm=None, realm_alert_words=None, user_i
         sent_by_bot = get_user_profile_by_id(message.sender_id).is_bot
 
     # DO MAIN WORK HERE -- call bugdown to convert
-    rendered_content = bugdown.convert(content, message=message, message_realm=realm,
-                                       possible_words=possible_words,
-                                       sent_by_bot=sent_by_bot)
+    rendered_content = bugdown.convert(
+        content,
+        message=message,
+        message_realm=realm,
+        possible_words=possible_words,
+        sent_by_bot=sent_by_bot,
+        mention_data=mention_data,
+    )
 
     if message is not None:
         message.user_ids_with_alert_words = set()
@@ -565,9 +596,7 @@ def aggregate_message_dict(input_dict, lookup_fields, collect_senders):
 
 def get_inactive_recipient_ids(user_profile):
     # type: (UserProfile) -> List[int]
-    rows = Subscription.objects.filter(
-        user_profile=user_profile,
-        recipient__type=Recipient.STREAM,
+    rows = get_stream_subscriptions_for_user(user_profile).filter(
         active=False,
     ).values(
         'recipient_id'
@@ -579,9 +608,7 @@ def get_inactive_recipient_ids(user_profile):
 
 def get_muted_stream_ids(user_profile):
     # type: (UserProfile) -> List[int]
-    rows = Subscription.objects.filter(
-        user_profile=user_profile,
-        recipient__type=Recipient.STREAM,
+    rows = get_stream_subscriptions_for_user(user_profile).filter(
         active=True,
         in_home_view=False,
     ).values(

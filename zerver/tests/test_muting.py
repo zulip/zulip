@@ -6,7 +6,17 @@ from mock import patch
 from typing import Any, Dict
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import get_realm, get_user, get_stream, get_recipient, Recipient
+from zerver.lib.stream_topic import StreamTopicTarget
+
+from zerver.models import (
+    get_realm,
+    get_stream,
+    get_stream_recipient,
+    get_user,
+    Recipient,
+    UserProfile,
+)
+
 from zerver.lib.topic_mutes import (
     add_topic_mute,
     get_topic_mutes,
@@ -14,6 +24,40 @@ from zerver.lib.topic_mutes import (
 )
 
 class MutedTopicsTests(ZulipTestCase):
+    def test_user_ids_muting_topic(self):
+        # type: () -> None
+        hamlet = self.example_user('hamlet')
+        cordelia  = self.example_user('cordelia')
+        realm = hamlet.realm
+        stream = get_stream(u'Verona', realm)
+        recipient = get_stream_recipient(stream.id)
+        topic_name = 'teST topic'
+
+        stream_topic_target = StreamTopicTarget(
+            stream_id=stream.id,
+            topic_name=topic_name,
+        )
+
+        user_ids = stream_topic_target.user_ids_muting_topic()
+        self.assertEqual(user_ids, set())
+
+        def mute_user(user):
+            # type: (UserProfile) -> None
+            add_topic_mute(
+                user_profile=user,
+                stream_id=stream.id,
+                recipient_id=recipient.id,
+                topic_name='test TOPIC',
+            )
+
+        mute_user(hamlet)
+        user_ids = stream_topic_target.user_ids_muting_topic()
+        self.assertEqual(user_ids, {hamlet.id})
+
+        mute_user(cordelia)
+        user_ids = stream_topic_target.user_ids_muting_topic()
+        self.assertEqual(user_ids, {hamlet.id, cordelia.id})
+
     def test_add_muted_topic(self):
         # type: () -> None
         email = self.example_email('hamlet')
@@ -39,7 +83,7 @@ class MutedTopicsTests(ZulipTestCase):
 
         realm = self.user_profile.realm
         stream = get_stream(u'Verona', realm)
-        recipient = get_recipient(Recipient.STREAM, stream.id)
+        recipient = get_stream_recipient(stream.id)
         add_topic_mute(
             user_profile=self.user_profile,
             stream_id=stream.id,
@@ -63,7 +107,7 @@ class MutedTopicsTests(ZulipTestCase):
 
         realm = self.user_profile.realm
         stream = get_stream(u'Verona', realm)
-        recipient = get_recipient(Recipient.STREAM, stream.id)
+        recipient = get_stream_recipient(stream.id)
         add_topic_mute(
             user_profile=self.user_profile,
             stream_id=stream.id,

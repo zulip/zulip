@@ -13,16 +13,14 @@ import sys
 class Command(ZulipBaseCommand):
     help = """Change the stream name for a realm."""
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('old_name', metavar='<old name>', type=str,
                             help='name of stream to be renamed')
         parser.add_argument('new_name', metavar='<new name>', type=str,
                             help='new name to rename the stream to')
         self.add_realm_args(parser, True)
 
-    def handle(self, *args, **options):
-        # type: (*Any, **str) -> None
+    def handle(self, *args: Any, **options: str) -> None:
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
         old_name = options['old_name']
