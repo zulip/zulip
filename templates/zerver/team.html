@@ -1,65 +1,131 @@
-<div class="team">
-    <h1>The Team</h1>
-    <p>
-        Over 305 people have contributed to the Zulip codebase, from
-        high school students to 30 year industry veterans, from people
-        launching new careers to people looking for community.  Meet
-        the leadership below.
-    </p>
-    <div class="team-profiles">
-        <!-- Tim -->
-        <div class="profile bdfl">
-            <img class="profile-picture" src="/static/images/team/tim.png" alt="" />
-            <div class="profile-information">
-                <div class="profile-name">Tim Abbott</div>
-                <div class="profile-role">Founder and project leader</div>
-                <div class="profile-description">
-                    <p>
-                        Before Zulip, Tim was a founder and CTO of
-                        Ksplice, which provided rebootless linux
-                        kernel updates (a feat many previously thought
-                        impossible) to over 100,000 production
-                        servers. He was also the youngest ever
-                        Architect at Oracle, one of the most senior
-                        engineers at Dropbox and has been active in
-                        the open source community for over a
-                        decade. Tim has three degrees from MIT, and
-                        lives in San Francisco with his wife and
-                        daughter.
-                    </p>
+{% extends "zerver/portico.html" %}
 
+{% block title %}
+<title>Zulip: the best group chat for open source projects</title>
+{% endblock %}
+
+{% block customhead %}
+{{ super() }}
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% stylesheet 'portico' %}
+{% stylesheet 'landing-page' %}
+{{ render_bundle('landing-page') }}
+
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+
+<div class="portico-landing why-page no-slide">
+    <div class="hero bg-pycon drone">
+        <div class="bg-dimmer"></div>
+        <div class="content">
+            <h1 class="center">About the Zulip project</h1>
+            <p>Learn about the history of the Zulip project and community!</p>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="team">
+            <h1>The Team</h1>
+            <h2>Zulip Core Team</h2>
+            <p>
+                Over 305 people have contributed to the Zulip codebase, from
+                high school students to 30 year industry veterans, from people
+                launching new careers to people looking for community.  Meet
+                the leadership below.
+            </p>
+            <div class="team-profiles">
+                <!-- Tim -->
+                <div class="profile bdfl">
+                    <img class="profile-picture" src="/static/images/team/tim.png" alt="" />
+                    <div class="profile-information">
+                        <div class="profile-name">Tim Abbott</div>
+                        <div class="profile-role">Founder and project leader</div>
+                        <div class="profile-description">
+                            <p>
+                                Before Zulip, Tim was a founder and CTO of
+                                Ksplice, which provided rebootless linux
+                                kernel updates (a feat many previously thought
+                                impossible) to over 100,000 production
+                                servers. He was also the youngest ever
+                                Architect at Oracle, one of the most senior
+                                engineers at Dropbox and has been active in
+                                the open source community for over a
+                                decade. Tim has three degrees from MIT, and
+                                lives in San Francisco with his wife and
+                                daughter.
+                            </p>
+
+                        </div>
+                    </div>
+                </div>
+                <!-- Rishi -->
+                <div class="profile">
+                    <img class="profile-picture" src="/static/images/team/rishi.png" alt="" />
+                    <div class="profile-name">Rishi Gupta</div>
+                    <div class="profile-role">Product</div>
+                </div>
+                <!-- Brock -->
+                <div class="profile">
+                    <img class="profile-picture" src="/static/images/team/brock.jpg" alt="" />
+                    <div class="profile-name">Brock Whittaker</div>
+                    <div class="profile-role">Web</div>
+                </div>
+                <!-- Steve -->
+                <div class="profile">
+                    <img class="profile-picture" src="/static/images/team/steve.png" alt="" />
+                    <div class="profile-name">Steve Howell</div>
+                    <div class="profile-role">Full Stack</div>
+                </div>
+                <!-- Greg -->
+                <div class="profile">
+                    <img class="profile-picture" src="/static/images/team/greg.png" alt="" />
+                    <div class="profile-name">Greg Price</div>
+                    <div class="profile-role">Infrastructure</div>
+                </div>
+                <!-- Boris -->
+                <div class="profile">
+                    <img class="profile-picture" src="/static/images/team/boris.jpg" alt="" />
+                    <div class="profile-name">Boris Yankov</div>
+                    <div class="profile-role">Mobile</div>
                 </div>
             </div>
-        </div>
-        <!-- Rishi -->
-        <div class="profile">
-            <img class="profile-picture" src="/static/images/team/rishi.png" alt="" />
-            <div class="profile-name">Rishi Gupta</div>
-            <div class="profile-role">Product</div>
-        </div>
-        <!-- Brock -->
-        <div class="profile">
-            <img class="profile-picture" src="/static/images/team/brock.jpg" alt="" />
-            <div class="profile-name">Brock Whittaker</div>
-            <div class="profile-role">Web</div>
-        </div>
-        <!-- Steve -->
-        <div class="profile">
-            <img class="profile-picture" src="/static/images/team/steve.png" alt="" />
-            <div class="profile-name">Steve Howell</div>
-            <div class="profile-role">Full Stack</div>
-        </div>
-        <!-- Greg -->
-        <div class="profile">
-            <img class="profile-picture" src="/static/images/team/greg.png" alt="" />
-            <div class="profile-name">Greg Price</div>
-            <div class="profile-role">Infrastructure</div>
-        </div>
-        <!-- Boris -->
-        <div class="profile">
-            <img class="profile-picture" src="/static/images/team/boris.jpg" alt="" />
-            <div class="profile-name">Boris Yankov</div>
-            <div class="profile-role">Mobile</div>
+
+            <div class="contributors">
+                <h2>Contributors</h2>
+                <p>
+                    Here, we recognize the top 100 contributors to
+                    the Zulip server project on GitHub.
+                </p>
+
+                {% for row in data %}
+                    {% for group in (row[0:3], row[3:6]) %}
+                        {% for person in group %}
+                            {% if person %}
+                            <div class="person">
+                                <a href="https://github.com/{{ person.name }}" target="_blank" class="no-underline">
+                                    <div class="avatar">
+                                        <img class="avatar_img" src="{{ person.avatar }}" alt="{{ _('Avatar') }}" />
+                                    </div>
+                                    <div class='info'>
+                                        <b>@{{ person.name }}</b><br />
+                                        {{ person.commits }} commits
+                                    </div>
+                                </a>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                {% endfor %}
+
+                <p class="last-updated">
+                    Statistic last updated: {{ date }}
+                </p>
+            </div>
         </div>
     </div>
 </div>
+{% endblock %}

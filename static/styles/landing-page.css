@@ -1847,12 +1847,20 @@ nav ul li.active::after {
     color: #888;
 }
 
+.portico-landing.why-page .team h2 {
+    margin-top: 20px;
+}
+
 .portico-landing.why-page .bg-pycon {
     position: relative;
 
     background-image: url(/static/images/landing-page/pycon.jpg);
     background-size: cover;
     background-position: center;
+}
+
+.portico-landing.why-page .bg-pycon.drone {
+    background-image: url(/static/images/landing-page/pycon-drone.jpg);
 }
 
 .portico-landing.why-page .bg-pycon .bg-dimmer {
