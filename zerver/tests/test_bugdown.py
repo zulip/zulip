@@ -228,8 +228,15 @@ class BugdownTest(ZulipTestCase):
     def test_bugdown_fixtures(self):
         # type: () -> None
         format_tests, linkify_tests = self.load_bugdown_tests()
+        valid_keys = set(['name', "input", "expected_output",
+                          "bugdown_matches_marked",
+                          "backend_only_rendering",
+                          "marked_expected_output", "text_content"])
 
         for name, test in format_tests.items():
+            # Check that there aren't any unexpected keys as those are often typos
+            self.assertEqual(len(set(test.keys()) - valid_keys), 0)
+
             converted = bugdown_convert(test['input'])
 
             print("Running Bugdown test %s" % (name,))
