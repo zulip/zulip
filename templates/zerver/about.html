@@ -35,9 +35,6 @@
                     sprinted on Zulip during the 4-day event!
                 </div>
 
-                {% include 'zerver/team.html' %}
-
-
                 <h1>About Zulip</h1>
 
                 <p>
@@ -196,38 +193,6 @@
                         over 325 developers</a>.
                     </li>
                 </ul>
-
-                <div class="contributors">
-                    <h2>Contributors</h2>
-                    <p>
-                        Here, we recognize the top 100 contributors to
-                        the Zulip server project on GitHub.
-                    </p>
-
-                    {% for row in data %}
-                        {% for group in (row[0:3], row[3:6]) %}
-                            {% for person in group %}
-                                {% if person %}
-                                <div class="person">
-                                    <a href="https://github.com/{{ person.name }}" target="_blank" class="no-underline">
-                                        <div class="avatar">
-                                            <img class="avatar_img" src="{{ person.avatar }}" alt="{{ _('Avatar') }}" />
-                                        </div>
-                                        <div class='info'>
-                                            <b>@{{ person.name }}</b><br />
-                                            {{ person.commits }} commits
-                                        </div>
-                                    </a>
-                                </div>
-                                {% endif %}
-                            {% endfor %}
-                        {% endfor %}
-                    {% endfor %}
-
-                    <p class="last-updated">
-                        Statistic last updated: {{ date }}
-                    </p>
-                </div>
             </div>
         </div>
     </div>

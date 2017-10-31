@@ -461,14 +461,13 @@ def get_profile_backend(request, user_profile):
 
     return json_success(result)
 
-def about_view(request):
+def team_view(request):
     # type: (HttpRequest) -> HttpResponse
-
     with open(settings.CONTRIBUTORS_DATA) as f:
         data = ujson.load(f)
 
     return render(
         request,
-        'zerver/about.html',
+        'zerver/team.html',
         context=data,
     )
