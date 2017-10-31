@@ -23,7 +23,7 @@ import tornado.ioloop
 import random
 import traceback
 from zerver.models import UserProfile, Client
-from zerver.decorator import RespondAsynchronously
+from zerver.decorator import RespondAsynchronously, cachify
 from zerver.tornado.handlers import clear_handler_by_id, get_handler_by_id, \
     finish_handler, handler_stats_string
 from zerver.lib.utils import statsd
@@ -791,11 +791,12 @@ def process_message_event(event_template, users):
     message_type = wide_dict['type']  # type: str
     sending_client = wide_dict['client']  # type: Text
 
-    message_dict_html = copy.deepcopy(wide_dict)
-    MessageDict.finalize_payload(message_dict_html, apply_markdown=True)
-
-    message_dict_text = copy.deepcopy(wide_dict)
-    MessageDict.finalize_payload(message_dict_text, apply_markdown=False)
+    @cachify
+    def get_client_payload(apply_markdown, client_gravatar):
+        # type: (bool, bool) -> Mapping[str, Any]
+        dct = copy.deepcopy(wide_dict)
+        MessageDict.finalize_payload(dct, apply_markdown, client_gravatar)
+        return dct
 
     # Extra user-specific data to include
     extra_user_data = {}  # type: Dict[int, Any]
@@ -834,10 +835,13 @@ def process_message_event(event_template, users):
             # message data unnecessarily
             continue
 
-        if client.apply_markdown:
-            message_dict = message_dict_html
-        else:
-            message_dict = message_dict_text
+        '''
+        In this codepath we do net yet optimize for clients
+        that can compute their own gravatar URLs.
+        '''
+        client_gravatar = False
+
+        message_dict = get_client_payload(client.apply_markdown, client_gravatar)
 
         # Make sure Zephyr mirroring bots know whether stream is invite-only
         if "mirror" in client.client_type_name and event_template.get("invite_only"):

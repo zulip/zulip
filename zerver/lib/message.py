@@ -95,12 +95,6 @@ class MessageDict:
         obj = extract_message_dict(json)
 
         '''
-        In this codepath we do net yet optimize for clients
-        that can compute their own gravatar URLs.
-        '''
-        client_gravatar = False
-
-        '''
         The steps below are similar to what we do in
         post_process_dicts(), except we don't call finalize_payload(),
         since that step happens later in the queue
@@ -108,7 +102,6 @@ class MessageDict:
         '''
         MessageDict.bulk_hydrate_sender_info([obj])
         MessageDict.hydrate_recipient_info(obj)
-        MessageDict.set_sender_avatar(obj, client_gravatar)
 
         return obj
 
@@ -119,12 +112,13 @@ class MessageDict:
 
         for obj in objs:
             MessageDict.hydrate_recipient_info(obj)
-            MessageDict.set_sender_avatar(obj, client_gravatar)
-            MessageDict.finalize_payload(obj, apply_markdown)
+            MessageDict.finalize_payload(obj, apply_markdown, client_gravatar)
 
     @staticmethod
-    def finalize_payload(obj, apply_markdown):
-        # type: (Dict[str, Any], bool) -> None
+    def finalize_payload(obj, apply_markdown, client_gravatar):
+        # type: (Dict[str, Any], bool, bool) -> None
+        MessageDict.set_sender_avatar(obj, client_gravatar)
+
         if apply_markdown:
             obj['content_type'] = 'text/html'
             obj['content'] = obj['rendered_content']

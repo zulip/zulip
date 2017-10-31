@@ -2133,23 +2133,24 @@ class ClientDescriptorsTest(ZulipTestCase):
             ),
         }
 
-        sender_id = hamlet.id
+        sender = hamlet
 
         message_event = dict(
             message_dict=dict(
                 id=999,
                 content='**hello**',
                 rendered_content='<b>hello</b>',
-                sender_id=sender_id,
+                sender_id=sender.id,
                 type='stream',
                 client='website',
 
                 # NOTE: Some of these fields are clutter, but some
                 #       will be useful when we let clients specify
                 #       that they can compute their own gravatar URLs.
-                sender_realm_id=None,
+                sender_email=sender.email,
+                sender_realm_id=sender.realm_id,
                 sender_avatar_source=None,
-                sender_avatar_version=None,
+                sender_avatar_version=sender.avatar_version,
                 sender_is_mirror_dummy=None,
                 raw_display_recipient=None,
                 recipient_type=None,
@@ -2166,12 +2167,21 @@ class ClientDescriptorsTest(ZulipTestCase):
                         return_value=client_info):
             process_message_event(message_event, users)
 
+        # We are not closely examining avatar_url at this point, so
+        # just sanity check them and then delete the keys so that
+        # upcoming comparisons work.
+        for client in [client1, client2]:
+            message = client.events[0]['message']
+            self.assertIn('gravatar.com', message['avatar_url'])
+            message.pop('avatar_url')
+
         self.assertEqual(client1.events, [
             dict(
                 type='message',
                 message=dict(
                     type='stream',
-                    sender_id=sender_id,
+                    sender_id=sender.id,
+                    sender_email=sender.email,
                     id=999,
                     content='<b>hello</b>',
                     content_type='text/html',
@@ -2186,7 +2196,8 @@ class ClientDescriptorsTest(ZulipTestCase):
                 type='message',
                 message=dict(
                     type='stream',
-                    sender_id=sender_id,
+                    sender_id=sender.id,
+                    sender_email=sender.email,
                     id=999,
                     content='**hello**',
                     content_type='text/x-markdown',
