@@ -880,6 +880,10 @@ class GetOldMessagesTest(ZulipTestCase):
             ('meetings', 'please bring your laptops to take notes'),
             ('dinner', 'Anybody staying late tonight?'),
             ('urltest', 'https://google.com'),
+            (u'日本', u'こんにちは。今日はいい天気ですね。'),
+            (u'日本', u'今朝はごはんを食べました。'),
+            (u'日本', u'昨日、日本 のお菓子を送りました。'),
+            ('english', u'I want to go to 日本!'),
         ]
 
         next_message_id = self.get_last_message().id + 1
@@ -948,6 +952,36 @@ class GetOldMessagesTest(ZulipTestCase):
         ))  # type: Dict[str, Dict]
         self.assertEqual(len(multi_search_result['messages']), 1)
         self.assertEqual(multi_search_result['messages'][0]['match_content'], '<p><span class="highlight">discuss</span> lunch <span class="highlight">after</span> lunch</p>')
+
+        # Test searching in messages with unicode characters
+        narrow = [
+            dict(operator='search', operand=u'日本'),
+        ]
+        result = self.get_and_check_messages(dict(
+            narrow=ujson.dumps(narrow),
+            anchor=next_message_id,
+            num_after=10,
+            num_before=0,
+        ))  # type: Dict[str, Dict]
+        self.assertEqual(len(result['messages']), 4)
+        messages = result['messages']
+
+        japanese_message = [m for m in messages if m['subject'] == u'日本'][-1]
+        self.assertEqual(
+            japanese_message['match_subject'],
+            u'<span class="highlight">日本</span>')
+        self.assertEqual(
+            japanese_message['match_content'],
+            u'<p>昨日、<span class="highlight">日本</span>' +
+            u' のお菓子を送りました。</p>')
+
+        english_message = [m for m in messages if m['subject'] == 'english'][0]
+        self.assertEqual(
+            english_message['match_subject'],
+            'english')
+        self.assertIn(
+            english_message['match_content'],
+            u'<p>I want to go to <span class="highlight">日本</span>!</p>')
 
     @override_settings(USING_PGROONGA=False)
     def test_get_messages_with_search_not_subscribed(self):

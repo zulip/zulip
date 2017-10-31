@@ -8,7 +8,7 @@ from django.db import connection
 from django.http import HttpRequest, HttpResponse
 from typing import Dict, List, Set, Text, Any, AnyStr, Callable, Iterable, \
     Optional, Tuple, Union
-from zerver.lib.str_utils import force_text
+from zerver.lib.str_utils import force_text, force_bytes
 from zerver.lib.exceptions import JsonableError, ErrorCode
 from zerver.lib.html_diff import highlight_html_differences
 from zerver.decorator import authenticated_json_post_view, has_request_variables, \
@@ -411,9 +411,9 @@ class NarrowBuilder(object):
         cond = column("search_tsvector").op("@@")(tsquery)
         return query.where(maybe_negate(cond))
 
-# Apparently, the offsets we get from tsearch_extras are counted in
-# unicode characters, not in bytes, so we do our processing with text,
-# not bytes.
+# The offsets we get from PGroonga are counted in characters
+# whereas the offsets from tsearch_extras are in bytes, so we
+# have to account for both of them seperately
 def highlight_string(text, locs):
     # type: (AnyStr, Iterable[Tuple[int, int]]) -> Text
     string = force_text(text)
@@ -424,6 +424,11 @@ def highlight_string(text, locs):
     in_tag = False
     for loc in locs:
         (offset, length) = loc
+        if not settings.USING_PGROONGA:
+            prefix = force_bytes(text)[:offset]
+            match = force_bytes(text)[offset:offset + length]
+            offset -= len(prefix) - len(force_text(prefix))
+            length -= len(match) - len(force_text(match))
         for character in string[pos:offset + length]:
             if character == u'<':
                 in_tag = True
