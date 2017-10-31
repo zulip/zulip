@@ -1,7 +1,8 @@
 from functools import partial
+from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success
-from zerver.decorator import api_key_only_webhook_view, REQ, has_request_variables
+from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.webhooks.git import get_push_commits_event_message, EMPTY_SHA,\
     get_remove_branch_event_message, get_pull_request_event_message,\
     get_issue_event_message, SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE,\

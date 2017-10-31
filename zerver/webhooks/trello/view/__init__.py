@@ -3,11 +3,11 @@ import ujson
 from typing import Mapping, Any, Tuple, Text, Optional
 from django.utils.translation import ugettext as _
 from django.http import HttpRequest, HttpResponse
+from zerver.decorator import api_key_only_webhook_view, return_success_on_head_request
 from zerver.lib.actions import check_send_stream_message
-from zerver.decorator import return_success_on_head_request
 from zerver.lib.response import json_success, json_error
+from zerver.lib.request import REQ, has_request_variables
 from zerver.models import UserProfile
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 
 from .card_actions import SUPPORTED_CARD_ACTIONS, process_card_action
 from .board_actions import SUPPORTED_BOARD_ACTIONS, process_board_action

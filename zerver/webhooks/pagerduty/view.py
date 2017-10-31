@@ -1,8 +1,9 @@
 # Webhooks for external integrations.
 
+from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
+from zerver.lib.request import REQ, has_request_variables
 from zerver.models import Client, UserProfile
 
 from django.http import HttpRequest, HttpResponse

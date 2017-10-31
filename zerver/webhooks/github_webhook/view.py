@@ -3,11 +3,11 @@ import logging
 from functools import partial
 from typing import Any, Callable, Text, Dict, Optional
 from django.http import HttpRequest, HttpResponse
+from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success
-from zerver.lib.request import JsonableError
+from zerver.lib.request import JsonableError, REQ, has_request_variables
 from zerver.models import UserProfile
-from zerver.decorator import api_key_only_webhook_view, REQ, has_request_variables
 
 from zerver.lib.webhooks.git import get_issue_event_message, SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE,\
     get_pull_request_event_message, SUBJECT_WITH_BRANCH_TEMPLATE,\
