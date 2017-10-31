@@ -3,7 +3,7 @@ from functools import partial
 import random
 
 from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, \
-    Text, Type, cast, Union
+    Text, Type, cast, Union, TypeVar
 from unittest import loader, runner  # type: ignore  # Mypy cannot pick these up.
 from unittest.result import TestResult
 
@@ -38,8 +38,10 @@ if False:
 
 _worker_id = 0  # Used to identify the worker process.
 
+ReturnT = TypeVar('ReturnT')  # Constrain return type to match
+
 def slow(slowness_reason):
-    # type: (str) -> Callable[[Callable], Callable]
+    # type: (str) -> Callable[[Callable[..., ReturnT]], Callable[..., ReturnT]]
     '''
     This is a decorate that annotates a test as being "known
     to be slow."  The decorator will set expected_run_time and slowness_reason
@@ -47,7 +49,7 @@ def slow(slowness_reason):
     as needed, e.g. to exclude these tests in "fast" mode.
     '''
     def decorator(f):
-        # type: (Any) -> Any
+        # type: (Any) -> ReturnT
         f.slowness_reason = slowness_reason
         return f
 
