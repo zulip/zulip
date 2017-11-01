@@ -970,6 +970,10 @@ input[type=checkbox].inline-block {
     -moz-osx-font-smoothing: grayscale;
 }
 
+#settings_page .table-striped thead th.active.descend:after {
+    content: " \f0d7";
+}
+
 #settings_page input.search {
     font-size: 0.9rem;
     margin: 0px 0px 20px 0px;
