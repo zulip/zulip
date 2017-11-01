@@ -10,6 +10,7 @@ from zerver.lib.actions import internal_send_message
 from zerver.models import UserProfile
 from zerver.lib.bot_storage import get_bot_state, set_bot_state, \
     is_key_in_bot_state, get_bot_state_size, remove_bot_state
+from zerver.lib.bot_config import get_bot_config
 from zerver.lib.integrations import EMBEDDED_BOTS
 
 import configparser
@@ -98,11 +99,6 @@ class EmbeddedBotHandler:
                 sender_email=message['sender_email'],
             ))
 
-    def get_config_info(self, bot_name, section=None):
-        # type: (str, Optional[str]) -> Dict[str, Any]
-        conf_file_path = os.path.realpath(os.path.join(
-            our_dir, '..', 'bots', bot_name, bot_name + '.conf'))
-        section = section or bot_name
-        config = configparser.ConfigParser()
-        config.readfp(open(conf_file_path))  # type: ignore # likely typeshed issue
-        return dict(config.items(section))
+    def get_config_info(self):
+        # type: () -> Dict[Text, Text]
+        return get_bot_config(self.user_profile)
