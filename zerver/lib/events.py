@@ -32,7 +32,8 @@ from zerver.lib.actions import (
     validate_user_access_to_subscribers_helper,
     do_get_streams, get_default_streams_for_realm,
     gather_subscriptions_helper, get_cross_realm_dicts,
-    get_status_dict, streams_to_dicts_sorted
+    get_status_dict, streams_to_dicts_sorted,
+    default_stream_groups_to_dicts_sorted
 )
 from zerver.lib.upload import get_total_uploads_size_for_user
 from zerver.lib.user_groups import user_groups_in_realm_serialized
@@ -40,7 +41,8 @@ from zerver.tornado.event_queue import request_event_queue, get_user_events
 from zerver.models import Client, Message, Realm, UserPresence, UserProfile, \
     get_user_profile_by_id, \
     get_realm_user_dicts, realm_filters_for_realm, get_user,\
-    get_owned_bot_dicts, custom_profile_fields_for_realm, get_realm_domains
+    get_owned_bot_dicts, custom_profile_fields_for_realm, get_realm_domains, \
+    get_default_stream_groups
 from zproject.backends import email_auth_enabled, password_auth_enabled
 from version import ZULIP_VERSION
 
@@ -231,6 +233,9 @@ def fetch_initial_state_data(user_profile, event_types, queue_id, client_gravata
         state['streams'] = do_get_streams(user_profile)
     if want('default_streams'):
         state['realm_default_streams'] = streams_to_dicts_sorted(get_default_streams_for_realm(user_profile.realm_id))
+    if want('default_stream_groups'):
+        state['realm_default_stream_groups'] = default_stream_groups_to_dicts_sorted(
+            get_default_stream_groups(user_profile.realm))
 
     if want('update_display_settings'):
         for prop in UserProfile.property_types:
@@ -396,6 +401,8 @@ def apply_event(state, event, user_profile, client_gravatar, include_subscribers
             state['streams'] = [s for s in state['streams'] if s["stream_id"] not in stream_ids]
     elif event['type'] == 'default_streams':
         state['realm_default_streams'] = event['default_streams']
+    elif event['type'] == 'default_stream_groups':
+        state['realm_default_stream_groups'] = event['default_stream_groups']
     elif event['type'] == 'realm':
         if event['op'] == "update":
             field = 'realm_' + event['property']

@@ -111,6 +111,7 @@ class HomeTest(ZulipTestCase):
             "realm_bots",
             "realm_create_stream_by_admins_only",
             "realm_default_language",
+            "realm_default_stream_groups",
             "realm_default_streams",
             "realm_description",
             "realm_domains",
@@ -180,7 +181,7 @@ class HomeTest(ZulipTestCase):
             with patch('zerver.lib.cache.cache_set') as cache_mock:
                 result = self._get_home_page(stream='Denmark')
 
-        self.assert_length(queries, 41)
+        self.assert_length(queries, 42)
         self.assert_length(cache_mock.call_args_list, 10)
 
         html = result.content.decode('utf-8')
@@ -245,7 +246,7 @@ class HomeTest(ZulipTestCase):
         with queries_captured() as queries2:
             result = self._get_home_page()
 
-        self.assert_length(queries2, 35)
+        self.assert_length(queries2, 36)
 
         # Do a sanity check that our new streams were in the payload.
         html = result.content.decode('utf-8')
