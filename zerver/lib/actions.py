@@ -4,6 +4,7 @@ from typing import (
 )
 from mypy_extensions import TypedDict
 
+import django.db.utils
 from django.contrib.contenttypes.models import ContentType
 from django.utils.html import escape
 from django.utils.translation import ugettext as _
@@ -48,6 +49,7 @@ from zerver.lib.topic_mutes import (
     add_topic_mute,
     remove_topic_mute,
 )
+from zerver.lib.user_groups import create_user_group
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
     RealmDomain, \
     Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, \
@@ -4183,3 +4185,10 @@ def do_update_user_custom_profile_data(user_profile, data):
             update_or_create(user_profile=user_profile,
                              field_id=field['id'],
                              defaults={'value': field['value']})
+
+def check_add_user_group(realm, name, initial_members, description):
+    # type: (Realm, Text, List[UserProfile], Text) -> None
+    try:
+        create_user_group(name, initial_members, realm, description=description)
+    except django.db.utils.IntegrityError:
+        raise JsonableError(_("User group '%s' already exists." % (name,)))

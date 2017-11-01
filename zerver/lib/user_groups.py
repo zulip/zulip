@@ -1,8 +1,17 @@
 from __future__ import absolute_import
 
 from django.db import transaction
+from django.utils.translation import ugettext as _
+from zerver.lib.exceptions import JsonableError
 from zerver.models import UserProfile, Realm, UserGroupMembership, UserGroup
 from typing import Dict, Iterable, List, Text
+
+def access_user_group_by_id(user_group_id: int, realm: Realm) -> UserGroup:
+    try:
+        user_group = UserGroup.objects.get(id=user_group_id, realm=realm)
+    except UserGroup.DoesNotExist:
+        raise JsonableError(_("Invalid user group"))
+    return user_group
 
 def user_groups_in_realm(realm):
     # type: (Realm) -> List[UserGroup]

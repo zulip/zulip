@@ -1,10 +1,11 @@
-from typing import Text
+from typing import List, Text
 
 from django.utils.translation import ugettext as _
 
 from zerver.lib.actions import do_change_full_name
 from zerver.lib.request import JsonableError
-from zerver.models import UserProfile, Service
+from zerver.models import UserProfile, Service, Realm, \
+    get_user_profile_by_id
 
 def check_full_name(full_name_raw):
     # type: (Text) -> Text
@@ -43,3 +44,20 @@ def check_valid_interface_type(interface_type):
     # type: (int) -> None
     if interface_type not in Service.ALLOWED_INTERFACE_TYPES:
         raise JsonableError(_('Invalid interface type'))
+
+def user_ids_to_users(user_ids: List[int], realm: Realm) -> List[UserProfile]:
+    # TODO: Change this to do a single bulk query with
+    # generic_bulk_cached_fetch; it'll be faster.
+    #
+    # TODO: Consider adding a flag to control whether deactivated
+    # users should be included.
+    user_profiles = []
+    for user_id in user_ids:
+        try:
+            user_profile = get_user_profile_by_id(user_id)
+        except UserProfile.DoesNotExist:
+            raise JsonableError(_("Invalid user ID: %s" % (user_id,)))
+        if user_profile.realm != realm:
+            raise JsonableError(_("Invalid user ID: %s" % (user_id,)))
+        user_profiles.append(user_profile)
+    return user_profiles

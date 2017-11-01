@@ -24,6 +24,7 @@ from zerver.models import UserProfile, Recipient, \
 
 from zerver.lib.avatar import avatar_url
 from zerver.lib.email_mirror import create_missed_message_address
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.send_email import send_future_email
 from zerver.lib.actions import (
     get_emails_from_user_ids,
@@ -35,6 +36,7 @@ from zerver.lib.actions import (
 )
 from zerver.lib.topic_mutes import add_topic_mute
 from zerver.lib.stream_topic import StreamTopicTarget
+from zerver.lib.users import user_ids_to_users
 
 from django.conf import settings
 
@@ -264,6 +266,18 @@ class UserProfileTest(ZulipTestCase):
             hamlet.save(update_fields=["long_term_idle"])
 
         self.assertFalse(m.called)
+
+    def test_user_ids_to_users(self) -> None:
+        real_user_ids = [
+            self.example_user('hamlet').id,
+            self.example_user('cordelia').id,
+        ]
+
+        user_ids_to_users(real_user_ids, get_realm("zulip"))
+        with self.assertRaises(JsonableError):
+            user_ids_to_users([1234], get_realm("zephyr"))
+        with self.assertRaises(JsonableError):
+            user_ids_to_users(real_user_ids, get_realm("zephyr"))
 
 class ActivateTest(ZulipTestCase):
     def test_basics(self) -> None:

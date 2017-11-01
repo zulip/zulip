@@ -27,6 +27,7 @@ import zerver.views.zephyr
 import zerver.views.users
 import zerver.views.unsubscribe
 import zerver.views.integrations
+import zerver.views.user_groups
 import zerver.views.user_settings
 import zerver.views.muting
 import zerver.views.streams
@@ -213,6 +214,10 @@ v1_api_and_json_patterns = [
     url(r'^users/me/android_gcm_reg_id$', rest_dispatch,
         {'POST': 'zerver.views.push_notifications.add_android_reg_id',
          'DELETE': 'zerver.views.push_notifications.remove_android_reg_id'}),
+
+    # user_groups -> zerver.views.user_groups
+    url(r'^user_groups/create$', rest_dispatch,
+        {'POST': 'zerver.views.user_groups.add_user_group'}),
 
     # users/me -> zerver.views.user_settings
     url(r'^users/me/api_key/regenerate$', rest_dispatch,

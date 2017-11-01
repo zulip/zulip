@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from typing import Any, List, Optional, Text
 
+import ujson
 import django
 import mock
 
@@ -55,3 +56,39 @@ class UserGroupTestCase(ZulipTestCase):
         with mock.patch('zerver.lib.user_groups.remove_user_from_user_group',
                         side_effect=Exception):
             self.assertFalse(check_remove_user_from_user_group(othello, user_group))
+
+class UserGroupAPITestCase(ZulipTestCase):
+    def test_user_group_create(self):
+        # type: () -> None
+        hamlet = self.example_user('hamlet')
+
+        # Test success
+        self.login(self.example_email("hamlet"))
+        params = {
+            'name': 'support',
+            'members': ujson.dumps([hamlet.id]),
+            'description': 'Support team',
+        }
+        result = self.client_post('/json/user_groups/create', info=params)
+        self.assert_json_success(result)
+        self.assert_length(UserGroup.objects.all(), 1)
+
+        # Test invalid member error
+        params = {
+            'name': 'backend',
+            'members': ujson.dumps([1111]),
+            'description': 'Backend team',
+        }
+        result = self.client_post('/json/user_groups/create', info=params)
+        self.assert_json_error(result, "Invalid user ID: 1111")
+        self.assert_length(UserGroup.objects.all(), 1)
+
+        # Test we cannot add hamlet again
+        params = {
+            'name': 'support',
+            'members': ujson.dumps([hamlet.id]),
+            'description': 'Support team',
+        }
+        result = self.client_post('/json/user_groups/create', info=params)
+        self.assert_json_error(result, "User group 'support' already exists.")
+        self.assert_length(UserGroup.objects.all(), 1)
