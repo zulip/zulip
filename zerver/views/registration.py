@@ -338,6 +338,7 @@ def create_realm(request, creation_key=None):
                   context={'form': form, 'current_url': request.get_full_path},
                   )
 
+# This is used only by the casper test in 00-realm-creation.js.
 def confirmation_key(request):
     # type: (HttpRequest) -> HttpResponse
     return json_success(request.session.get('confirmation_key'))
