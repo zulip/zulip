@@ -33,10 +33,11 @@ def check_remove_user_from_user_group(user_profile, user_group):
     except Exception:
         return False
 
-def create_user_group(name, members, realm):
-    # type: (Text, List[UserProfile], Realm) -> UserGroup
+def create_user_group(name, members, realm, description=''):
+    # type: (Text, List[UserProfile], Realm, Text) -> UserGroup
     with transaction.atomic():
-        user_group = UserGroup.objects.create(name=name, realm=realm)
+        user_group = UserGroup.objects.create(name=name, realm=realm,
+                                              description=description)
         UserGroupMembership.objects.bulk_create([
             UserGroupMembership(user_profile=member, user_group=user_group)
             for member in members

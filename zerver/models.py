@@ -763,6 +763,7 @@ class UserGroup(models.Model):
     name = models.CharField(max_length=100)
     members = models.ManyToManyField(UserProfile, through='UserGroupMembership')
     realm = models.ForeignKey(Realm)
+    description = models.CharField(max_length=1024, default=u'')  # type: Text
 
     class Meta:
         unique_together = (('realm', 'name'),)
