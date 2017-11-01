@@ -809,7 +809,7 @@ class PreregistrationUser(models.Model):
     password_required = models.BooleanField(default=True)
 
     # status: whether an object has been confirmed.
-    #   if confirmed, set to confirmation.settings.STATUS_ACTIVE
+    # if confirmed, set to Confirmation.USED
     status = models.IntegerField(default=0)  # type: int
 
     realm = models.ForeignKey(Realm, null=True, on_delete=CASCADE)  # type: Optional[Realm]
@@ -828,7 +828,7 @@ class EmailChangeStatus(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
 
     # status: whether an object has been confirmed.
-    #   if confirmed, set to confirmation.settings.STATUS_ACTIVE
+    # if confirmed, set to Confirmation.USED
     status = models.IntegerField(default=0)  # type: int
 
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm

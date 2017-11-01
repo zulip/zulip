@@ -12,7 +12,6 @@ from zerver.lib.test_helpers import MockLDAP
 
 from confirmation.models import Confirmation, create_confirmation_link, MultiuseInvite, \
     generate_key, confirmation_url
-from confirmation import settings as confirmation_settings
 
 from zerver.forms import HomepageForm, WRONG_SUBDOMAIN_ERROR
 from zerver.lib.actions import do_change_password, gather_subscriptions
@@ -864,9 +863,7 @@ class InvitationsTestCase(InviteUserBase):
         """
 
         days_to_activate = getattr(settings, 'ACCOUNT_ACTIVATION_DAYS', "Wrong")
-        active_value = getattr(confirmation_settings, 'STATUS_ACTIVE', "Wrong")
         self.assertNotEqual(days_to_activate, "Wrong")
-        self.assertNotEqual(active_value, "Wrong")
 
         self.login(self.example_email("iago"))
         user_profile = self.example_user("iago")
@@ -878,7 +875,7 @@ class InvitationsTestCase(InviteUserBase):
         prereg_user_two.save()
         PreregistrationUser.objects.filter(id=prereg_user_two.id).update(invited_at=expired_datetime)
         prereg_user_three = PreregistrationUser(email="TestThree@zulip.com",
-                                                referred_by=user_profile, status=active_value)
+                                                referred_by=user_profile, status=Confirmation.USED)
         prereg_user_three.save()
 
         result = self.client_get("/json/invites")
@@ -1489,6 +1486,11 @@ class UserSignUpTest(ZulipTestCase):
         user_profile = self.nonreg_user('newguy')
         self.assertEqual(user_profile.default_language, realm.default_language)
         self.assertEqual(user_profile.timezone, timezone)
+
+        # Try signing up again with the same confirmation link
+        result = self.client_get(confirmation_url)
+        self.assert_in_response("Whoops. The confirmation link has expired.", result)
+
         from django.core.mail import outbox
         outbox.pop()
 

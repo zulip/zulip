@@ -26,7 +26,7 @@ from zerver.lib.timezone import get_all_timezones
 from zerver.models import UserProfile, Realm, name_changes_disabled, \
     EmailChangeStatus
 from confirmation.models import get_object_from_key, render_confirmation_key_error, \
-    ConfirmationKeyException
+    ConfirmationKeyException, Confirmation
 
 @zulip_login_required
 def confirm_email_change(request, confirmation_key):
@@ -38,6 +38,9 @@ def confirm_email_change(request, confirmation_key):
     confirmation_key = confirmation_key.lower()
     try:
         obj = get_object_from_key(confirmation_key)
+        obj.status = Confirmation.USED
+        obj.save()
+
     except ConfirmationKeyException as exception:
         return render_confirmation_key_error(request, exception)
 

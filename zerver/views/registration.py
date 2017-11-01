@@ -147,6 +147,9 @@ def accounts_register(request):
             form['password'].field.required = False
 
     if form.is_valid():
+        prereg_user.status = Confirmation.USED
+        prereg_user.save(update_fields=["status"])
+
         if password_auth_enabled(realm):
             password = form.cleaned_data['password']
         else:
@@ -359,6 +362,9 @@ def accounts_home(request, multiuse_object=None):
     if request.method == 'POST':
         form = HomepageForm(request.POST, realm=realm, from_multiuse_invite=from_multiuse_invite)
         if form.is_valid():
+            if hasattr(multiuse_object, "status"):
+                multiuse_object.status = Confirmation.USED
+                multiuse_object.save()
             email = form.cleaned_data['email']
             try:
                 send_registration_completion_email(email, request, streams=streams_to_subscribe)

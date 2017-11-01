@@ -80,7 +80,6 @@ from django.core.mail import EmailMessage
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link
-from confirmation import settings as confirmation_settings
 from six.moves import filter
 from six.moves import map
 from six import unichr
@@ -352,14 +351,6 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None,
                 user_profile.email,
             )
         )
-    # Mark any other PreregistrationUsers that are STATUS_ACTIVE as
-    # inactive so we can keep track of the PreregistrationUser we
-    # actually used for analytics
-    if prereg_user is not None:
-        PreregistrationUser.objects.filter(email__iexact=user_profile.email).exclude(
-            id=prereg_user.id).update(status=0)
-    else:
-        PreregistrationUser.objects.filter(email__iexact=user_profile.email).update(status=0)
 
     notify_new_user(user_profile)
     enqueue_welcome_emails(user_profile)
@@ -3818,10 +3809,8 @@ def do_invite_users(user_profile, invitee_emails, streams, invite_as_admin=False
 def do_get_user_invites(user_profile):
     # type: (UserProfile) -> List[Dict[str, Any]]
     days_to_activate = getattr(settings, 'ACCOUNT_ACTIVATION_DAYS', 7)
-    active_value = getattr(confirmation_settings, 'STATUS_ACTIVE', 1)
-
     lowest_datetime = timezone_now() - datetime.timedelta(days=days_to_activate)
-    prereg_users = PreregistrationUser.objects.exclude(status=active_value).filter(
+    prereg_users = PreregistrationUser.objects.exclude(status=Confirmation.USED).filter(
         invited_at__gte=lowest_datetime,
         referred_by__realm=user_profile.realm)
 
