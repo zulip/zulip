@@ -66,7 +66,8 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     Reaction, EmailChangeStatus, CustomProfileField, \
     custom_profile_fields_for_realm, get_huddle_user_ids, \
     CustomProfileFieldValue, validate_attachment_request, get_system_bot, \
-    get_display_recipient_by_id, query_for_ids, get_huddle_recipient
+    get_display_recipient_by_id, query_for_ids, get_huddle_recipient, \
+    get_default_stream_groups
 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import avatar_url
@@ -1625,6 +1626,17 @@ def check_stream_name(stream_name):
         if ord(i) == 0:
             raise JsonableError(_("Stream name '%s' contains NULL (0x00) characters." % (stream_name)))
 
+def check_default_stream_group_name(group_name: Text) -> None:
+    if group_name.strip() == "":
+        raise JsonableError(_("Invalid default stream group name '%s'" % (group_name)))
+    if len(group_name) > DefaultStreamGroup.MAX_NAME_LENGTH:
+        raise JsonableError(_("Default stream group name too long (limit: %s characters)"
+                            % (DefaultStreamGroup.MAX_NAME_LENGTH)))
+    for i in group_name:
+        if ord(i) == 0:
+            raise JsonableError(_("Default stream group name '%s' contains NULL (0x00) characters."
+                                % (group_name)))
+
 def send_pm_if_empty_stream(sender, stream, stream_name, realm):
     # type: (UserProfile, Optional[Stream], Text, Realm) -> None
     """If a bot sends a message to a stream that doesn't exist or has no
@@ -2865,6 +2877,13 @@ def notify_default_streams(realm_id):
     )
     send_event(event, active_user_ids(realm_id))
 
+def notify_default_stream_groups(realm: Realm) -> None:
+    event = dict(
+        type="default_stream_groups",
+        default_stream_groups=default_stream_groups_to_dicts_sorted(get_default_stream_groups(realm))
+    )
+    send_event(event, active_user_ids(realm.id))
+
 def do_add_default_stream(stream):
     # type: (Stream) -> None
     realm_id = stream.realm_id
@@ -2879,6 +2898,61 @@ def do_remove_default_stream(stream):
     stream_id = stream.id
     DefaultStream.objects.filter(realm_id=realm_id, stream_id=stream_id).delete()
     notify_default_streams(realm_id)
+
+def do_create_default_stream_group(realm: Realm, group_name: Text, streams: List[Stream]) -> None:
+    default_streams = get_default_streams_for_realm(realm.id)
+    for stream in streams:
+        if stream in default_streams:
+            raise JsonableError(_("'%s' is a default stream and cannot be added to '%s'") % (stream.name, group_name))
+
+    check_default_stream_group_name(group_name)
+    (group, created) = DefaultStreamGroup.objects.get_or_create(name=group_name, realm=realm)
+    if not created:
+        raise JsonableError(_("Default stream group '%s' already exists") % (group_name,))
+
+    group.streams = streams
+    group.save()
+    notify_default_stream_groups(realm)
+
+def do_add_streams_to_default_stream_group(realm: Realm, group_name: Text, streams: List[Stream]) -> None:
+    try:
+        group = DefaultStreamGroup.objects.get(name=group_name, realm=realm)
+    except DefaultStreamGroup.DoesNotExist:
+        raise JsonableError(_("Default stream group '%s' does not exist") % (group_name,))
+
+    default_streams = get_default_streams_for_realm(realm.id)
+    for stream in streams:
+        if stream in default_streams:
+            raise JsonableError(_("'%s' is a default stream and cannot be added to '%s'") % (stream.name, group_name))
+        if stream in group.streams.all():
+            raise JsonableError(_("Stream '%s' is already present in default stream group '%s'")
+                                % (stream.name, group_name))
+        group.streams.add(stream)
+
+    group.save()
+    notify_default_stream_groups(realm)
+
+def do_remove_streams_from_default_stream_group(realm: Realm, group_name: Text, streams: List[Stream]) -> None:
+    try:
+        group = DefaultStreamGroup.objects.get(name=group_name, realm=realm)
+    except DefaultStreamGroup.DoesNotExist:
+        raise JsonableError(_("Default stream group '%s' does not exist") % (group_name,))
+
+    for stream in streams:
+        if stream not in group.streams.all():
+            raise JsonableError(_("Stream '%s' is not present in default stream group '%s'")
+                                % (stream.name, group_name))
+        group.streams.remove(stream)
+
+    group.save()
+    notify_default_stream_groups(realm)
+
+def do_remove_default_stream_group(realm: Realm, group_name: Text) -> None:
+    try:
+        DefaultStreamGroup.objects.filter(name=group_name, realm=realm).delete()
+    except DefaultStreamGroup.DoesNotExist:
+        raise JsonableError(_("Default stream group '%s' does not exist") % (group_name,))
+    notify_default_stream_groups(realm)
 
 def get_default_streams_for_realm(realm_id):
     # type: (int) -> List[Stream]
@@ -2895,6 +2969,9 @@ def get_default_subs(user_profile):
 def streams_to_dicts_sorted(streams):
     # type: (List[Stream]) -> List[Dict[str, Any]]
     return sorted([stream.to_dict() for stream in streams], key=lambda elt: elt["name"])
+
+def default_stream_groups_to_dicts_sorted(groups: List[DefaultStreamGroup]) -> List[Dict[str, Any]]:
+    return sorted([group.to_dict() for group in groups], key=lambda elt: elt["name"])
 
 def do_update_user_activity_interval(user_profile, log_time):
     # type: (UserProfile, datetime.datetime) -> None
