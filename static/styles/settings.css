@@ -960,7 +960,7 @@ input[type=checkbox].inline-block {
 }
 
 #settings_page .table-striped thead th.active:after {
-    content: " \f0d7";
+    content: " \f0d8";
     white-space: pre;
     display: inline-block;
     font: normal normal normal 12px/1 FontAwesome;
