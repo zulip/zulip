@@ -965,14 +965,14 @@ input[type=checkbox].inline-block {
 }
 
 #settings_page .table-striped thead th.active:after {
-  content: " \f0d7";
-  white-space: pre;
-  display: inline-block;
-  font: normal normal normal 12px/1 FontAwesome;
-  font-size: inherit;
-  text-rendering: auto;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    content: " \f0d7";
+    white-space: pre;
+    display: inline-block;
+    font: normal normal normal 12px/1 FontAwesome;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 #settings_page input.search {
