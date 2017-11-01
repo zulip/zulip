@@ -11,7 +11,7 @@ from mock import patch, MagicMock
 from zerver.lib.test_helpers import MockLDAP
 
 from confirmation.models import Confirmation, create_confirmation_link, MultiuseInvite, \
-    generate_key, confirmation_url
+    generate_key, confirmation_url, get_object_from_key, ConfirmationKeyException
 from confirmation import settings as confirmation_settings
 
 from zerver.forms import HomepageForm, WRONG_SUBDOMAIN_ERROR
@@ -855,6 +855,17 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         email_jobs_to_deliver = ScheduledEmail.objects.filter(
             scheduled_timestamp__lte=timezone_now(), type=ScheduledEmail.INVITATION_REMINDER)
         self.assertEqual(len(email_jobs_to_deliver), 0)
+
+    # make sure users can't take a valid confirmation key from another
+    # pathway and use it with the invitation url route
+    # Mainly a test of get_object_from_key, rather than of the invitation pathway
+    def test_confirmation_key_of_wrong_type(self):
+        # type: () -> None
+        user = self.example_user('hamlet')
+        registration_key = create_confirmation_link(user, 'host', Confirmation.USER_REGISTRATION).split('/')[-1]
+        with self.assertRaises(ConfirmationKeyException) as exception:
+            get_object_from_key(registration_key, Confirmation.INVITATION)
+            self.assertEqual(exception.error_type, ConfirmationKeyException.DOES_NOT_EXIST)
 
 class InvitationsTestCase(InviteUserBase):
     def test_successful_get_open_invitations(self):

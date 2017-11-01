@@ -21,9 +21,12 @@ from typing import Any, Dict
 def confirm(request, confirmation_key):
     # type: (HttpRequest, str) -> HttpResponse
     try:
-        get_object_from_key(confirmation_key)
-    except ConfirmationKeyException as exception:
-        return render_confirmation_key_error(request, exception)
+        get_object_from_key(confirmation_key, Confirmation.USER_REGISTRATION)
+    except ConfirmationKeyException:
+        try:
+            get_object_from_key(confirmation_key, Confirmation.INVITATION)
+        except ConfirmationKeyException as exception:
+            return render_confirmation_key_error(request, exception)
 
     return render(request, 'confirmation/confirm_preregistrationuser.html',
                   context={

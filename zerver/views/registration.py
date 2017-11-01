@@ -385,7 +385,7 @@ def accounts_home_from_multiuse_invite(request, confirmation_key):
     # type: (HttpRequest, str) -> HttpResponse
     multiuse_object = None
     try:
-        multiuse_object = get_object_from_key(confirmation_key)
+        multiuse_object = get_object_from_key(confirmation_key, Confirmation.MULTIUSE_INVITE)
         # Required for oAuth2
         request.session["multiuse_object_key"] = confirmation_key
     except ConfirmationKeyException as exception:
