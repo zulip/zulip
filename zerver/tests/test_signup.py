@@ -1107,9 +1107,10 @@ class EmailUnsubscribeTests(ZulipTestCase):
     def test_error_unsubscribe(self):
         # type: () -> None
 
-        # An invalid insubscribe token "test123" produces an error.
+        # An invalid insubscribe token "test123" produces an error, in this
+        # case, a link malformed error.
         result = self.client_get('/accounts/unsubscribe/missed_messages/test123')
-        self.assert_in_response('Unknown email unsubscribe request', result)
+        self.assert_in_response('Make sure you copied the link', result)
 
         # An unknown message type "fake" produces an error.
         user_profile = self.example_user('hamlet')
