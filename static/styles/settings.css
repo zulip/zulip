@@ -867,10 +867,6 @@ input[type=checkbox].inline-block {
 }
 /* -- new settings overlay -- */
 #settings_page {
-    min-height: 550px;
-}
-
-#settings_page {
     height: 95vh;
     width: 97vw;
     max-width: 1024px;
@@ -890,7 +886,6 @@ input[type=checkbox].inline-block {
     position: relative;
     width: 250px;
     height: 100%;
-    min-height: 550px;
     overflow-y: auto;
     border-top-left-radius: 4px;
     border-right: 1px solid hsl(0, 0%, 93%);
@@ -1227,6 +1222,16 @@ input[type=text]#settings_search {
     }
 }
 
+@media (max-height: 530px) {
+    #settings_page .sidebar .sidebar-bottom-anchor {
+        position: static;
+    }
+
+    #settings_page .sidebar .sidebar-bottom-anchor .border-top {
+        border: none;
+    }
+}
+
 @media (max-width: 700px) {
     #settings_page .settings-header.mobile {
         display: block;
@@ -1242,6 +1247,13 @@ input[type=text]#settings_search {
 
     #settings_page .content-wrapper.right {
         top: 47px;
+    }
+
+    #settings_page .sidebar {
+        float: left;
+        position: relative;
+        width: 250px;
+        height: 100%;
     }
 }
 
