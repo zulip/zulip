@@ -207,8 +207,7 @@ li.hidden-filter {
 .topic-name {
     display: block;
     line-height: 1.3em;
-    width: 100%;
-    max-width: 158px;
+    width: calc(100% - 5px);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -313,7 +312,16 @@ ul.filters li.out_of_home_view li.muted_topic {
 }
 
 #stream_filters .subscription_block .stream-name {
-    overflow-wrap: break-word;
+    display: inline-block;
+    width: calc(100% - 50px);
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+
+    line-height: 1;
+    position: relative;
+    top: 2px;
 }
 
 #stream_filters .subscription_block.stream-with-count {
