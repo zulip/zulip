@@ -11,8 +11,9 @@ from zerver.lib.actions import (
     do_create_user,
     get_service_bot_events,
 )
-from zerver.lib.bot_lib import StateHandler
+from zerver.lib.bot_lib import StateHandler, EmbeddedBotHandler
 from zerver.lib.bot_storage import StateError
+from zerver.lib.bot_config import set_bot_config, ConfigError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
     get_realm,
@@ -175,6 +176,42 @@ class TestServiceBotStateHandler(ZulipTestCase):
         self.assertFalse(storage.contains('some key'))
         self.assertTrue(storage.contains('another key'))
         self.assertRaises(StateError, lambda: storage.remove('some key'))
+
+class TestServiceBotConfigHandler(ZulipTestCase):
+    def setUp(self):
+        # type: () -> None
+        self.user_profile = self.example_user("othello")
+        self.bot_profile = self.create_test_bot('embedded-bot@zulip.testserver', self.user_profile, 'Embedded bot',
+                                                'embedded', UserProfile.EMBEDDED_BOT, service_name='helloworld')
+        self.bot_handler = EmbeddedBotHandler(self.bot_profile)
+
+    def test_basic_storage_and_retrieval(self):
+        # type: () -> None
+        config_dict = {"entry 1": "value 1", "entry 2": "value 2"}
+        for key, value in config_dict.items():
+            set_bot_config(self.bot_profile, key, value)
+        self.assertEqual(self.bot_handler.get_config_info(), config_dict)
+
+        config_update = {"entry 2": "new value", "entry 3": "value 3"}
+        for key, value in config_update.items():
+            set_bot_config(self.bot_profile, key, value)
+        config_dict.update(config_update)
+        self.assertEqual(self.bot_handler.get_config_info(), config_dict)
+
+    @override_settings(BOT_CONFIG_SIZE_LIMIT=100)
+    def test_config_entry_limit(self):
+        # type: () -> None
+        set_bot_config(self.bot_profile, "some key", 'x' * (settings.BOT_CONFIG_SIZE_LIMIT-8))
+        self.assertRaisesMessage(ConfigError,
+                                 "Cannot store configuration. Request would require 101 characters. "
+                                 "The current configuration size limit is 100 characters.",
+                                 lambda: set_bot_config(self.bot_profile, "some key", 'x' * (settings.BOT_CONFIG_SIZE_LIMIT-8+1)))
+        set_bot_config(self.bot_profile, "some key", 'x' * (settings.BOT_CONFIG_SIZE_LIMIT-20))
+        set_bot_config(self.bot_profile, "another key", 'x')
+        self.assertRaisesMessage(ConfigError,
+                                 "Cannot store configuration. Request would require 116 characters. "
+                                 "The current configuration size limit is 100 characters.",
+                                 lambda: set_bot_config(self.bot_profile, "yet another key", 'x'))
 
 class TestServiceBotEventTriggers(ZulipTestCase):
 
