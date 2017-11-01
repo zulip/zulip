@@ -183,8 +183,13 @@ var list_render = (function () {
 
             // `do_not_display` will signal to not update the DOM, likely because in
             // the next function it will be updated in the DOM.
-            sort: function (sorting_function, prop, map, do_not_display) {
+            sort: function (sorting_function, prop, map, do_not_display, reverse) {
                 meta.prop = prop;
+
+                if (reverse === true) {
+                    // simple mutable array reversal.
+                    meta.filtered_list.reverse();
+                }
 
                 if (typeof sorting_function === "function") {
                     meta.sorting_function = sorting_function;
@@ -197,17 +202,18 @@ var list_render = (function () {
                     }
                 }
 
-                if (meta.sorting_function) {
+                // we do not want to sort if we are just looking to reverse.
+                if (meta.sorting_function && !reverse) {
                     meta.filtered_list = meta.filtered_list.sort(meta.sorting_function);
+                }
 
-                    if (!do_not_display) {
-                        // clear and re-initialize the list with the newly filtered subset
-                        // of items.
-                        prototype.init();
+                if (!do_not_display) {
+                    // clear and re-initialize the list with the newly filtered subset
+                    // of items.
+                    prototype.init();
 
-                        if (opts.filter.onupdate) {
-                            opts.filter.onupdate();
-                        }
+                    if (opts.filter.onupdate) {
+                        opts.filter.onupdate();
                     }
                 }
             },
@@ -372,6 +378,13 @@ $(function () {
         }
 
         if ($this.hasClass("active")) {
+            if (!$this.hasClass("descend")) {
+                $this.addClass("descend");
+            } else {
+                $this.removeClass("descend");
+            }
+
+            list.sort(undefined, undefined, undefined, undefined, true);
             // Table has already been sorted by this property; do not re-sort.
             return;
         }
