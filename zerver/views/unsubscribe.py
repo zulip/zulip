@@ -4,19 +4,19 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from typing import Callable
 
-from confirmation.models import Confirmation
+from confirmation.models import Confirmation, get_object_from_key, \
+    render_confirmation_key_error, ConfirmationKeyException
 from zerver.lib.actions import do_change_notification_settings, clear_scheduled_emails
 from zerver.models import UserProfile, ScheduledEmail
 from zerver.context_processors import common_context
 
-def process_unsubscribe(request: HttpRequest, token: str, subscription_type: str,
+def process_unsubscribe(request: HttpRequest, confirmation_key: str, subscription_type: str,
                         unsubscribe_function: Callable[[UserProfile], None]) -> HttpResponse:
     try:
-        confirmation = Confirmation.objects.get(confirmation_key=token)
-    except Confirmation.DoesNotExist:
-        return render(request, 'zerver/unsubscribe_link_error.html')
+        user_profile = get_object_from_key(confirmation_key, Confirmation.UNSUBSCRIBE)
+    except ConfirmationKeyException as exception:
+        return render_confirmation_key_error(request, exception)
 
-    user_profile = confirmation.content_object
     unsubscribe_function(user_profile)
     context = common_context(user_profile)
     context.update({"subscription_type": subscription_type})

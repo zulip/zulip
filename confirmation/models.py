@@ -18,7 +18,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.lib.send_email import send_email
 from zerver.lib.utils import generate_random_token
-from zerver.models import PreregistrationUser, EmailChangeStatus, MultiuseInvite
+from zerver.models import PreregistrationUser, EmailChangeStatus, MultiuseInvite, UserProfile
 from random import SystemRandom
 import string
 from typing import Any, Dict, Optional, Text, Union
@@ -48,7 +48,7 @@ def generate_key():
     return ''.join(generator.choice(string.ascii_lowercase + string.digits) for _ in range(24))
 
 def get_object_from_key(confirmation_key, confirmation_type):
-    # type: (str, int) -> Union[MultiuseInvite, PreregistrationUser, EmailChangeStatus]
+    # type: (str, int) -> Union[MultiuseInvite, PreregistrationUser, EmailChangeStatus, UserProfile]
     # Confirmation keys used to be 40 characters
     if len(confirmation_key) not in (24, 40):
         raise ConfirmationKeyException(ConfirmationKeyException.WRONG_LENGTH)

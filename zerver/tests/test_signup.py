@@ -863,9 +863,9 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         # type: () -> None
         user = self.example_user('hamlet')
         registration_key = create_confirmation_link(user, 'host', Confirmation.USER_REGISTRATION).split('/')[-1]
-        with self.assertRaises(ConfirmationKeyException) as exception:
+        with self.assertRaises(ConfirmationKeyException) as cm:
             get_object_from_key(registration_key, Confirmation.INVITATION)
-            self.assertEqual(exception.error_type, ConfirmationKeyException.DOES_NOT_EXIST)
+        self.assertEqual(cm.exception.error_type, ConfirmationKeyException.DOES_NOT_EXIST)
 
 class InvitationsTestCase(InviteUserBase):
     def test_successful_get_open_invitations(self):
@@ -1107,9 +1107,10 @@ class EmailUnsubscribeTests(ZulipTestCase):
     def test_error_unsubscribe(self):
         # type: () -> None
 
-        # An invalid insubscribe token "test123" produces an error.
+        # An invalid insubscribe token "test123" produces an error, in this
+        # case, a link malformed error.
         result = self.client_get('/accounts/unsubscribe/missed_messages/test123')
-        self.assert_in_response('Unknown email unsubscribe request', result)
+        self.assert_in_response('Make sure you copied the link', result)
 
         # An unknown message type "fake" produces an error.
         user_profile = self.example_user('hamlet')
