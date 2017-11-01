@@ -47,13 +47,14 @@ def generate_key():
     # 24 characters * 5 bits of entropy/character = 120 bits of entropy
     return ''.join(generator.choice(string.ascii_lowercase + string.digits) for _ in range(24))
 
-def get_object_from_key(confirmation_key):
-    # type: (str) -> Union[MultiuseInvite, PreregistrationUser, EmailChangeStatus]
+def get_object_from_key(confirmation_key, confirmation_type):
+    # type: (str, int) -> Union[MultiuseInvite, PreregistrationUser, EmailChangeStatus]
     # Confirmation keys used to be 40 characters
     if len(confirmation_key) not in (24, 40):
         raise ConfirmationKeyException(ConfirmationKeyException.WRONG_LENGTH)
     try:
-        confirmation = Confirmation.objects.get(confirmation_key=confirmation_key)
+        confirmation = Confirmation.objects.get(confirmation_key=confirmation_key,
+                                                type=confirmation_type)
     except Confirmation.DoesNotExist:
         raise ConfirmationKeyException(ConfirmationKeyException.DOES_NOT_EXIST)
 
