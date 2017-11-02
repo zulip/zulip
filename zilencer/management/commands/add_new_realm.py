@@ -1,4 +1,3 @@
-from django.core.management.base import BaseCommand
 from zerver.lib.actions import do_create_user, do_create_realm
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.onboarding import setup_initial_streams, \
