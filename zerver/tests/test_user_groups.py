@@ -13,7 +13,8 @@ from zerver.lib.user_groups import (
     get_user_groups,
     user_groups_in_realm,
 )
-from zerver.models import UserProfile, UserGroup, get_realm, Realm
+from zerver.models import UserProfile, UserGroup, get_realm, Realm, \
+    UserGroupMembership
 
 class UserGroupTestCase(ZulipTestCase):
     def create_user_group_for_test(self, group_name,
@@ -122,4 +123,28 @@ class UserGroupAPITestCase(ZulipTestCase):
         # Test when invalid user group is supplied
         params = {'name': 'help'}
         result = self.client_patch('/json/user_groups/1111', info=params)
+        self.assert_json_error(result, "Invalid user group")
+
+    def test_user_group_delete(self):
+        # type: () -> None
+        hamlet = self.example_user('hamlet')
+        self.login(self.example_email("hamlet"))
+        params = {
+            'name': 'support',
+            'members': ujson.dumps([hamlet.id]),
+            'description': 'Support team',
+        }
+        self.client_post('/json/user_groups/create', info=params)
+        user_group = UserGroup.objects.first()
+
+        # Test success
+        self.assertEqual(UserGroup.objects.count(), 1)
+        self.assertEqual(UserGroupMembership.objects.count(), 1)
+        result = self.client_delete('/json/user_groups/{}'.format(user_group.id))
+        self.assert_json_success(result)
+        self.assertEqual(UserGroup.objects.count(), 0)
+        self.assertEqual(UserGroupMembership.objects.count(), 0)
+
+        # Test when invalid user group is supplied
+        result = self.client_delete('/json/user_groups/1111')
         self.assert_json_error(result, "Invalid user group")

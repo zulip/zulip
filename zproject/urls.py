@@ -219,7 +219,8 @@ v1_api_and_json_patterns = [
     url(r'^user_groups/create$', rest_dispatch,
         {'POST': 'zerver.views.user_groups.add_user_group'}),
     url(r'^user_groups/(?P<user_group_id>\d+)$', rest_dispatch,
-        {'PATCH': 'zerver.views.user_groups.edit_user_group'}),
+        {'PATCH': 'zerver.views.user_groups.edit_user_group',
+         'DELETE': 'zerver.views.user_groups.delete_user_group'}),
 
     # users/me -> zerver.views.user_settings
     url(r'^users/me/api_key/regenerate$', rest_dispatch,

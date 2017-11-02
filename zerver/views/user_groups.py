@@ -45,3 +45,10 @@ def edit_user_group(request, user_profile,
         result['description'] = _("Description successfully updated.")
 
     return json_success(result)
+
+@has_request_variables
+def delete_user_group(request, user_profile, user_group_id=REQ(validator=check_int)):
+    # type: (HttpRequest, UserProfile, int) -> HttpResponse
+    user_group = access_user_group_by_id(user_group_id, user_profile.realm)
+    user_group.delete()
+    return json_success()
