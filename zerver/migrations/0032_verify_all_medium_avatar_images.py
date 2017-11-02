@@ -26,7 +26,7 @@ def patched_user_avatar_path(user_profile: UserProfile) -> Text:
 @patch('zerver.lib.upload.user_avatar_path', patched_user_avatar_path)
 def verify_medium_avatar_image(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     user_profile_model = apps.get_model('zerver', 'UserProfile')
-    for user_profile in user_profile_model.objects.filter(avatar_source=u"U"):
+    for user_profile in user_profile_model.objects.filter(avatar_source="U"):
         upload_backend.ensure_medium_avatar_image(user_profile)
 
 
