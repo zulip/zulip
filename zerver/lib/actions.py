@@ -68,7 +68,8 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     Reaction, EmailChangeStatus, CustomProfileField, \
     custom_profile_fields_for_realm, get_huddle_user_ids, \
     CustomProfileFieldValue, validate_attachment_request, get_system_bot, \
-    get_display_recipient_by_id, query_for_ids, get_huddle_recipient
+    get_display_recipient_by_id, query_for_ids, get_huddle_recipient, \
+    UserGroup
 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import avatar_url
@@ -4192,3 +4193,13 @@ def check_add_user_group(realm, name, initial_members, description):
         create_user_group(name, initial_members, realm, description=description)
     except django.db.utils.IntegrityError:
         raise JsonableError(_("User group '%s' already exists." % (name,)))
+
+def do_update_user_group_name(user_group, name):
+    # type: (UserGroup, Text) -> None
+    user_group.name = name
+    user_group.save(update_fields=['name'])
+
+def do_update_user_group_description(user_group, description):
+    # type: (UserGroup, Text) -> None
+    user_group.description = description
+    user_group.save(update_fields=['description'])

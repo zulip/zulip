@@ -92,3 +92,34 @@ class UserGroupAPITestCase(ZulipTestCase):
         result = self.client_post('/json/user_groups/create', info=params)
         self.assert_json_error(result, "User group 'support' already exists.")
         self.assert_length(UserGroup.objects.all(), 1)
+
+    def test_user_group_update(self):
+        # type: () -> None
+        hamlet = self.example_user('hamlet')
+        self.login(self.example_email("hamlet"))
+        params = {
+            'name': 'support',
+            'members': ujson.dumps([hamlet.id]),
+            'description': 'Support team',
+        }
+        self.client_post('/json/user_groups/create', info=params)
+        user_group = UserGroup.objects.first()
+
+        # Test success
+        params = {
+            'name': 'help',
+            'description': 'Troubleshooting team',
+        }
+        result = self.client_patch('/json/user_groups/{}'.format(user_group.id), info=params)
+        self.assert_json_success(result)
+        self.assertEqual(result.json()['name'], 'Name successfully updated.')
+        self.assertEqual(result.json()['description'], 'Description successfully updated.')
+
+        # Test when new data is not supplied.
+        result = self.client_patch('/json/user_groups/{}'.format(user_group.id), info={})
+        self.assert_json_error(result, "No new data supplied")
+
+        # Test when invalid user group is supplied
+        params = {'name': 'help'}
+        result = self.client_patch('/json/user_groups/1111', info=params)
+        self.assert_json_error(result, "Invalid user group")
