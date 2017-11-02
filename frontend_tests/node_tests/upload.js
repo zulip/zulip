@@ -93,11 +93,15 @@ var upload_opts = upload.options({ mode: "compose" });
     function test(i, response, textbox_val) {
         var compose_ui_autosize_textarea_checked = false;
         var compose_actions_start_checked = false;
+        var syntax_to_insert;
 
         function setup() {
             $("#compose-textarea").val('');
             compose_ui.autosize_textarea = function () {
                 compose_ui_autosize_textarea_checked = true;
+            };
+            compose_ui.insert_syntax_and_focus = function (syntax) {
+                syntax_to_insert = syntax;
             };
             compose_state.set_message_type();
             global.compose_actions = {
@@ -116,8 +120,8 @@ var upload_opts = upload.options({ mode: "compose" });
         }
 
         function assert_side_effects() {
-            assert.equal($("#compose-textarea").val(), textbox_val);
             if (response.uri) {
+                assert.equal(syntax_to_insert, textbox_val);
                 assert(compose_actions_start_checked);
                 assert(compose_ui_autosize_textarea_checked);
                 assert.equal($("#compose-send-button").prop('disabled'), false);
@@ -131,8 +135,8 @@ var upload_opts = upload.options({ mode: "compose" });
         assert_side_effects();
     }
 
-    var msg_1 = '[pasted image](https://foo.com/uploads/122456) ';
-    var msg_2 = '[foobar.jpeg](https://foo.com/user_uploads/foobar.jpeg) ';
+    var msg_1 = '[pasted image](https://foo.com/uploads/122456)';
+    var msg_2 = '[foobar.jpeg](https://foo.com/user_uploads/foobar.jpeg)';
 
     test(-1, {}, '');
     test(-1, {uri: 'https://foo.com/uploads/122456'}, msg_1);
