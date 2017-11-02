@@ -1,16 +1,14 @@
 
-from argparse import ArgumentParser
-
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
 
 from analytics.lib.counts import COUNT_STATS, CountStat, do_drop_all_analytics_tables
 from analytics.lib.fixtures import generate_time_series_data
 from analytics.lib.time_utils import time_range
-from analytics.models import BaseCount, InstallationCount, RealmCount, \
-    UserCount, StreamCount, FillState
+from analytics.models import BaseCount, RealmCount, \
+    UserCount, FillState
 from zerver.lib.timestamp import floor_to_day
-from zerver.models import Realm, UserProfile, Stream, Message, Client, \
+from zerver.models import Realm, UserProfile, Client, \
     RealmAuditLog
 
 from datetime import datetime, timedelta
