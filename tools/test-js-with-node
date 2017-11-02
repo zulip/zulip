@@ -3,7 +3,7 @@ import optparse
 import os
 import subprocess
 import sys
-from typing import Dict
+from typing import Dict, Any
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
@@ -110,7 +110,7 @@ except OSError:
     raise
 
 def check_line_coverage(line_coverage, line_mapping, log=True):
-    # type: (Dict, Dict, bool) -> bool
+    # type: (Dict[Any, Any], Dict[Any, Any], bool) -> bool
     missing_lines = []
     for line in line_coverage:
         if line_coverage[line] == 0:
