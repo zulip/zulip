@@ -1,17 +1,9 @@
-from zerver.models import UserProfile
-
 from typing import Any, Callable, Dict, List, Optional, Text
 
 from zerver.models import (
-    bulk_get_recipients,
-    bulk_get_streams,
     get_stream_recipient,
     get_stream,
-    get_recipient,
-    get_stream,
     MutedTopic,
-    Recipient,
-    Stream,
     UserProfile
 )
 from sqlalchemy.sql import (
@@ -22,8 +14,6 @@ from sqlalchemy.sql import (
     or_,
     Selectable
 )
-
-import ujson
 
 def get_topic_mutes(user_profile):
     # type: (UserProfile) -> List[List[Text]]
