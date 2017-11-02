@@ -12,6 +12,7 @@ from zerver.lib.user_groups import (
     create_user_group,
     get_user_groups,
     user_groups_in_realm,
+    get_memberships_of_users,
 )
 from zerver.models import UserProfile, UserGroup, get_realm, Realm, \
     UserGroupMembership
@@ -148,3 +149,59 @@ class UserGroupAPITestCase(ZulipTestCase):
         # Test when invalid user group is supplied
         result = self.client_delete('/json/user_groups/1111')
         self.assert_json_error(result, "Invalid user group")
+
+    def test_update_members_of_user_group(self):
+        # type: () -> None
+        hamlet = self.example_user('hamlet')
+        self.login(self.example_email("hamlet"))
+        params = {
+            'name': 'support',
+            'members': ujson.dumps([hamlet.id]),
+            'description': 'Support team',
+        }
+        self.client_post('/json/user_groups/create', info=params)
+        user_group = UserGroup.objects.first()
+
+        # Test add members
+        self.assertEqual(UserGroupMembership.objects.count(), 1)
+        othello = self.example_user('othello')
+        add = [othello.id]
+        params = {'add': ujson.dumps(add)}
+        result = self.client_post('/json/user_groups/{}/members'.format(user_group.id),
+                                  info=params)
+        self.assert_json_success(result)
+        self.assertEqual(UserGroupMembership.objects.count(), 2)
+        members = get_memberships_of_users(user_group, [hamlet, othello])
+        self.assertEqual(len(members), 2)
+
+        # Test adding a member already there.
+        result = self.client_post('/json/user_groups/{}/members'.format(user_group.id),
+                                  info=params)
+        self.assert_json_error(result, "User 6 is already a member of this group")
+        self.assertEqual(UserGroupMembership.objects.count(), 2)
+        members = get_memberships_of_users(user_group, [hamlet, othello])
+        self.assertEqual(len(members), 2)
+
+        # Test remove members
+        params = {'delete': ujson.dumps([hamlet.id, othello.id])}
+        result = self.client_post('/json/user_groups/{}/members'.format(user_group.id),
+                                  info=params)
+        self.assert_json_success(result)
+        self.assertEqual(UserGroupMembership.objects.count(), 0)
+        members = get_memberships_of_users(user_group, [hamlet, othello])
+        self.assertEqual(len(members), 0)
+
+        # Test remove a member that's already removed; arguably we should make this an error.
+        params = {'delete': ujson.dumps([hamlet.id, othello.id])}
+        result = self.client_post('/json/user_groups/{}/members'.format(user_group.id),
+                                  info=params)
+        self.assert_json_success(result)
+        self.assertEqual(UserGroupMembership.objects.count(), 0)
+        members = get_memberships_of_users(user_group, [hamlet, othello])
+        self.assertEqual(len(members), 0)
+
+        # Test when nothing is provided
+        result = self.client_post('/json/user_groups/{}/members'.format(user_group.id),
+                                  info={})
+        msg = 'Nothing to do. Specify at least one of "add" or "delete".'
+        self.assert_json_error(result, msg)

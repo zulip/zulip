@@ -69,7 +69,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     custom_profile_fields_for_realm, get_huddle_user_ids, \
     CustomProfileFieldValue, validate_attachment_request, get_system_bot, \
     get_display_recipient_by_id, query_for_ids, get_huddle_recipient, \
-    UserGroup
+    UserGroup, UserGroupMembership
 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import avatar_url
@@ -4203,3 +4203,16 @@ def do_update_user_group_description(user_group, description):
     # type: (UserGroup, Text) -> None
     user_group.description = description
     user_group.save(update_fields=['description'])
+
+def bulk_add_members_to_user_group(user_group_id, user_profiles):
+    # type: (int, List[UserProfile]) -> None
+    memberships = [UserGroupMembership(user_group_id=user_group_id,
+                                       user_profile=user_profile)
+                   for user_profile in user_profiles]
+    UserGroupMembership.objects.bulk_create(memberships)
+
+def remove_members_from_user_group(user_group_id, user_profiles):
+    # type: (int, List[UserProfile]) -> None
+    UserGroupMembership.objects.filter(
+        user_group_id=user_group_id,
+        user_profile__in=user_profiles).delete()

@@ -1,4 +1,5 @@
-from typing import Any, Optional, Tuple, List, Set, Iterable, Mapping, Callable, Dict, Text
+from typing import Any, Optional, Tuple, List, Set, Iterable, Mapping, Callable, Dict, Text, \
+    Union
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
@@ -107,7 +108,7 @@ def list_subscriptions_backend(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse
     return json_success({"subscriptions": gather_subscriptions(user_profile)[0]})
 
-FuncKwargPair = Tuple[Callable[..., HttpResponse], Dict[str, Iterable[Any]]]
+FuncKwargPair = Tuple[Callable[..., HttpResponse], Dict[str, Union[int, Iterable[Any]]]]
 
 @has_request_variables
 def update_subscriptions_backend(request, user_profile,

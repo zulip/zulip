@@ -52,3 +52,9 @@ def create_user_group(name, members, realm, description=''):
             for member in members
         ])
         return user_group
+
+def get_memberships_of_users(user_group, members):
+    # type: (UserGroup, List[UserProfile]) -> List[int]
+    return list(UserGroupMembership.objects.filter(
+        user_group=user_group,
+        user_profile__in=members).values_list('user_profile_id', flat=True))
