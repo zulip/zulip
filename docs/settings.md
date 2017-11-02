@@ -112,48 +112,7 @@ maximize convenience of testing all of Zulip's features; they should
 be enabled by default in production if we expect most Zulip sites to
 want those settings.
 
-#### Testing Google & GitHub authentication
-
-In order to set up Google or GitHub authentication in the development
-environment, you'll have to go through the steps detailed in
-`prod_settings_template.py` with some changes. Here is the full
-procedure:
-
-##### Google
-
-* Visit https://console.developers.google.com, click on Credentials on
-the left sidebar and create a Oauth2 client ID that allows redirects
-to `https://localhost:9991/accounts/login/google/done/`.
-
-* Go to the Library (left sidebar), then under "Social APIs" click on
-"Google+ API" and click the button to enable the API.
-
-* Uncomment `'zproject.backends.GoogleMobileOauth2Backend'` in
-`AUTHENTICATION_BACKENDS` in `dev_settings.py`.
-
-* Uncomment `GOOGLE_OAUTH2_CLIENT_ID` in `prod_settings_template.py` &
-assign it the Client ID you got from Google.
-
-* Put the Client Secret you got from Google as
-`google_oauth2_client_secret` in `dev-secrets.conf`.
-
-##### GitHub
-
-* Register an OAuth2 application with GitHub at one of
-https://github.com/settings/developers or
-https://github.com/organizations/ORGNAME/settings/developers.
-Specify `http://localhost:9991/complete/github/` as the callback URL.
-
-* Uncomment `'zproject.backends.GitHubAuthBackend'` in
-`AUTHENTICATION_BACKENDS` in `dev_settings.py`.
-
-* Uncomment `SOCIAL_AUTH_GITHUB_KEY` in `prod_settings_template.py` &
-assign it the Client ID you got from GitHub.
-
-* Put the Client Secret you got from GitHub as
-`social_auth_github_secret` in `dev-secrets.conf`.
-
-#### Testing non-default settings
+### Testing non-default settings
 
 You can write tests for settings using e.g. `with
 self.settings(GOOGLE_CLIENT_ID=None)`.  However, this only works for
