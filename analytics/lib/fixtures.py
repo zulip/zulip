@@ -1,9 +1,5 @@
-from zerver.models import Realm, UserProfile, Stream, Message
-from analytics.models import InstallationCount, RealmCount, UserCount, StreamCount
 from analytics.lib.counts import CountStat
-from analytics.lib.time_utils import time_range
 
-from datetime import datetime
 from math import sqrt
 from random import gauss, random, seed
 from typing import List
