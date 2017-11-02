@@ -36,8 +36,7 @@ from markdown.extensions import codehilite
 from zerver.lib.bugdown import fenced_code
 from zerver.lib.bugdown.fenced_code import FENCE_RE
 from zerver.lib.camo import get_camo_url
-from zerver.lib.mention import possible_mentions, \
-    possible_user_group_mentions, extract_user_group
+from zerver.lib.mention import possible_mentions
 from zerver.lib.timeout import timeout, TimeoutExpired
 from zerver.lib.cache import cache_with_key, NotFoundInCache
 from zerver.lib.url_preview import preview as link_preview
@@ -50,7 +49,6 @@ from zerver.models import (
     RealmFilter,
     realm_filters_for_realm,
     UserProfile,
-    UserGroup,
 )
 import zerver.lib.alert_words as alert_words
 import zerver.lib.mention as mention
@@ -1172,30 +1170,6 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
             return el
         return None
 
-class UserGroupMentionPattern(markdown.inlinepatterns.Pattern):
-    def handleMatch(self, m):
-        # type: (Match[Text]) -> Optional[Element]
-        match = m.group(2)
-
-        if current_message and db_data is not None:
-            name = extract_user_group(match)
-            user_group = db_data['mention_data'].get_user_group(name)
-            if user_group:
-                current_message.mentions_user_group_ids.add(user_group.id)
-                name = user_group.name
-                user_group_id = str(user_group.id)
-            else:
-                # Don't highlight @-mentions that don't refer to a valid user
-                # group.
-                return None
-
-            el = markdown.util.etree.Element("span")
-            el.set('class', 'user-group-mention')
-            el.set('data-user-group-id', user_group_id)
-            el.text = "@%s" % (name,)
-            return el
-        return None
-
 class StreamPattern(VerbosePattern):
     def find_stream_by_name(self, name):
         # type: (Match[Text]) -> Optional[Dict[str, Any]]
@@ -1343,9 +1317,6 @@ class Bugdown(markdown.Extension):
             ModalLink(r'!modal_link\((?P<relative_url>[^)]*), (?P<text>[^)]*)\)'),
             '>avatar')
         md.inlinePatterns.add('usermention', UserMentionPattern(mention.find_mentions), '>backtick')
-        md.inlinePatterns.add('usergroupmention',
-                              UserGroupMentionPattern(mention.user_group_mentions),
-                              '>backtick')
         md.inlinePatterns.add('stream', StreamPattern(STREAM_LINK_REGEX), '>backtick')
         md.inlinePatterns.add('tex', Tex(r'\B\$\$(?P<body>[^ _$](\\\$|[^$])*)(?! )\$\$\B'), '>backtick')
         md.inlinePatterns.add('emoji', Emoji(EMOJI_REGEX), '_end')
@@ -1587,9 +1558,6 @@ class MentionData(object):
             for row in self.full_name_info.values()
         }
 
-        user_group_names = possible_user_group_mentions(content)
-        self.user_group_name_info = get_user_group_name_info(realm_id, user_group_names)
-
     def get_user(self, name):
         # type: (Text) -> Optional[FullNameInfo]
         return self.full_name_info.get(name.lower(), None)
@@ -1603,20 +1571,6 @@ class MentionData(object):
         will overestimate the list of user ids.
         """
         return self.user_ids
-
-    def get_user_group(self, name):
-        # type: (Text) -> Optional[UserGroup]
-        return self.user_group_name_info.get(name.lower(), None)
-
-def get_user_group_name_info(realm_id, user_group_names):
-    # type: (int, Set[Text]) -> Dict[Text, UserGroup]
-    if not user_group_names:
-        return dict()
-
-    rows = UserGroup.objects.filter(realm_id=realm_id,
-                                    name__in=user_group_names)
-    dct = {row.name.lower(): row for row in rows}
-    return dct
 
 def get_stream_name_info(realm, stream_names):
     # type: (Realm, Set[Text]) -> Dict[Text, FullNameInfo]

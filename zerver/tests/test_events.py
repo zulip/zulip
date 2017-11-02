@@ -25,7 +25,7 @@ from zerver.lib.actions import (
     check_send_typing_notification,
     do_add_alert_words,
     do_add_default_stream,
-    do_add_reaction_legacy,
+    do_add_reaction,
     do_add_realm_domain,
     do_add_realm_filter,
     do_change_avatar_fields,
@@ -50,7 +50,7 @@ from zerver.lib.actions import (
     do_regenerate_api_key,
     do_remove_alert_words,
     do_remove_default_stream,
-    do_remove_reaction_legacy,
+    do_remove_reaction,
     do_remove_realm_domain,
     do_remove_realm_emoji,
     do_remove_realm_filter,
@@ -735,7 +735,7 @@ class EventsRegisterTest(ZulipTestCase):
             state_change_expected=True,
         )
 
-    def test_add_reaction_legacy(self):
+    def test_send_reaction(self):
         # type: () -> None
         schema_checker = self.check_events_dict([
             ('type', equals('reaction')),
@@ -754,14 +754,14 @@ class EventsRegisterTest(ZulipTestCase):
         message_id = self.send_stream_message(self.example_email("hamlet"), "Verona", "hello")
         message = Message.objects.get(id=message_id)
         events = self.do_test(
-            lambda: do_add_reaction_legacy(
+            lambda: do_add_reaction(
                 self.user_profile, message, "tada"),
             state_change_expected=False,
         )
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
-    def test_remove_reaction_legacy(self):
+    def test_remove_reaction(self):
         # type: () -> None
         schema_checker = self.check_events_dict([
             ('type', equals('reaction')),
@@ -779,9 +779,9 @@ class EventsRegisterTest(ZulipTestCase):
 
         message_id = self.send_stream_message(self.example_email("hamlet"), "Verona", "hello")
         message = Message.objects.get(id=message_id)
-        do_add_reaction_legacy(self.user_profile, message, "tada")
+        do_add_reaction(self.user_profile, message, "tada")
         events = self.do_test(
-            lambda: do_remove_reaction_legacy(
+            lambda: do_remove_reaction(
                 self.user_profile, message, "tada"),
             state_change_expected=False,
         )

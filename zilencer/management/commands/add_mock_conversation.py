@@ -4,7 +4,7 @@
 from django.core.management.base import BaseCommand
 from zerver.lib.actions import create_stream_if_needed, \
     internal_prep_stream_message, do_create_user, do_send_messages, \
-    do_add_reaction_legacy, bulk_add_subscriptions, do_change_avatar_fields
+    do_add_reaction, bulk_add_subscriptions, do_change_avatar_fields
 from zerver.lib.upload import upload_avatar_image
 from zerver.models import get_realm, UserProfile, Message
 
@@ -87,7 +87,7 @@ From image editing program:
         message_ids = do_send_messages(messages)
 
         preview_message = Message.objects.get(id__in=message_ids, content__icontains='image previews')
-        do_add_reaction_legacy(starr, preview_message, 'whale')
+        do_add_reaction(starr, preview_message, 'whale')
 
         twitter_message = Message.objects.get(id__in=message_ids, content__icontains='gvanrossum')
         # Setting up a twitter integration in dev is a decent amount of work. If you need
@@ -105,7 +105,7 @@ From image editing program:
 
         # Put a short pause between the whale reaction and this, so that the
         # thumbs_up shows up second
-        do_add_reaction_legacy(starr, preview_message, 'thumbs_up')
+        do_add_reaction(starr, preview_message, 'thumbs_up')
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
