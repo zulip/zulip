@@ -124,7 +124,7 @@ class S3Uploader(Uploader):
         headers = None  # type: Optional[Dict[Text, Text]]
         content_type = response.headers.get(str("Content-Type")) or guess_type(dst_path_id)[0]
         if content_type:
-            headers = {u'Content-Type': content_type}
+            headers = {'Content-Type': content_type}
         if resized_image:
             self.upload_to_s3(dst_path_id, resized_image, headers)
         else:

@@ -38,7 +38,7 @@ def move_local_file(type: Text, path_src: Text, path_dst: Text) -> None:
 def move_avatars_to_be_uid_based(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     user_profile_model = apps.get_model('zerver', 'UserProfile')
     if settings.LOCAL_UPLOADS_DIR is not None:
-        for user_profile in user_profile_model.objects.filter(avatar_source=u"U"):
+        for user_profile in user_profile_model.objects.filter(avatar_source="U"):
             src_file_name = user_avatar_hash(user_profile.email)
             dst_file_name = user_avatar_path(user_profile)
             try:
@@ -49,13 +49,13 @@ def move_avatars_to_be_uid_based(apps: StateApps, schema_editor: DatabaseSchemaE
                 # If the user's avatar is missing, it's probably
                 # because they previously changed their email address.
                 # So set them to have a gravatar instead.
-                user_profile.avatar_source = u"G"
+                user_profile.avatar_source = "G"
                 user_profile.save(update_fields=["avatar_source"])
     else:
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
         bucket_name = settings.S3_AVATAR_BUCKET
         bucket = conn.get_bucket(bucket_name, validate=False)
-        for user_profile in user_profile_model.objects.filter(avatar_source=u"U"):
+        for user_profile in user_profile_model.objects.filter(avatar_source="U"):
             uid_hash_path = user_avatar_path(user_profile)
             email_hash_path = user_avatar_hash(user_profile.email)
             if bucket.get_key(uid_hash_path):
@@ -65,7 +65,7 @@ def move_avatars_to_be_uid_based(apps: StateApps, schema_editor: DatabaseSchemaE
                 # If the user's avatar is missing, it's probably
                 # because they previously changed their email address.
                 # So set them to have a gravatar instead.
-                user_profile.avatar_source = u"G"
+                user_profile.avatar_source = "G"
                 user_profile.save(update_fields=["avatar_source"])
                 continue
 
@@ -82,7 +82,7 @@ def move_avatars_to_be_uid_based(apps: StateApps, schema_editor: DatabaseSchemaE
         # From an error handling sanity perspective, it's best to
         # start deleting after everything is copied, so that recovery
         # from failures is easy (just rerun one loop or the other).
-        for user_profile in user_profile_model.objects.filter(avatar_source=u"U"):
+        for user_profile in user_profile_model.objects.filter(avatar_source="U"):
             bucket.delete_key(user_avatar_hash(user_profile.email) + ".original")
             bucket.delete_key(user_avatar_hash(user_profile.email) + "-medium.png")
             bucket.delete_key(user_avatar_hash(user_profile.email))
