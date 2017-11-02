@@ -97,38 +97,47 @@ AUTHENTICATION_BACKENDS = (
     # 'zproject.backends.ZulipRemoteUserBackend',  # Local SSO, setup docs on readthedocs
 )
 
-# To enable Google authentication, you need to do the following:
+# To set up Google authentication, you'll need to do the following:
 #
-# (1) Visit https://console.developers.google.com, click on Credentials on
-# the left sidebar and create a Oauth2 client ID
-# e.g. https://zulip.example.com/accounts/login/google/done/.
+# (1) Visit https://console.developers.google.com/ , navigate to
+# "APIs & Services" > "Credentials", and create a "Project" which will
+# correspond to your Zulip instance.
 #
-# (2) Go to the Library (left sidebar), then under "Social APIs" click on
-# "Google+ API" and click the button to enable the API.
+# (2) Navigate to "APIs & services" > "Library", and find the
+# "Google+ API".  Choose "Enable".
 #
-# (3) put your client secret as "google_oauth2_client_secret" in
-# zulip-secrets.conf, and your client ID right here:
-# GOOGLE_OAUTH2_CLIENT_ID=<your client ID from Google>
+# (3) Return to "Credentials", and select "Create credentials".
+# Choose "OAuth client ID", and follow prompts to create a consent
+# screen.  Fill in "Authorized redirect URIs" with a value like
+#   https://zulip.example.com/accounts/login/google/done/
+# based on your value for EXTERNAL_HOST.
+#
+# (4) You should get a client ID and a client secret. Copy them.
+# Use the client ID as `GOOGLE_OAUTH2_CLIENT_ID` here, and put the
+# client secret in zulip-secrets.conf as `google_oauth2_client_secret`.
+#GOOGLE_OAUTH2_CLIENT_ID = <your client ID from Google>
 
-
-# To enable GitHub authentication, you will need to need to do the following:
+# To set up GitHub authentication, you'll need to do the following:
 #
 # (1) Register an OAuth2 application with GitHub at one of:
 #   https://github.com/settings/developers
 #   https://github.com/organizations/ORGNAME/settings/developers
-# Specify e.g. https://zulip.example.com/complete/github/ as the callback URL.
+# Fill in "Callback URL" with a value like
+#   https://zulip.example.com/complete/github/ as
+# based on your value for EXTERNAL_HOST.
 #
-# (2) Put your "Client ID" as SOCIAL_AUTH_GITHUB_KEY below and your
-# "Client secret" as social_auth_github_secret in
-# /etc/zulip/zulip-secrets.conf.
-# SOCIAL_AUTH_GITHUB_KEY = <your client ID from GitHub>
-#
-# (3) You can also configure the GitHub integration to only allow
-# members of a particular GitHub team or organization to login to your
-# Zulip server using GitHub authentication; to enable this, set one of the
-# two parameters below:
-# SOCIAL_AUTH_GITHUB_TEAM_ID = <your team id>
-# SOCIAL_AUTH_GITHUB_ORG_NAME = <your org name>
+# (2) You should get a page with settings for your new application,
+# showing a client ID and a client secret.  Use the client ID as
+# `SOCIAL_AUTH_GITHUB_KEY` here, and put the client secret in
+# zulip-secrets.conf as `social_auth_github_secret`.
+#SOCIAL_AUTH_GITHUB_KEY = <your client ID from GitHub>
+
+# (3) Optionally, you can configure the GitHub integration to only
+# allow members of a particular GitHub team or organization to log
+# into your Zulip server through GitHub authentication.  To enable
+# this, set one of the two parameters below:
+#SOCIAL_AUTH_GITHUB_TEAM_ID = <your team id>
+#SOCIAL_AUTH_GITHUB_ORG_NAME = <your org name>
 
 
 # If you are using the ZulipRemoteUserBackend authentication backend,
