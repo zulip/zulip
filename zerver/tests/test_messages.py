@@ -328,12 +328,12 @@ class PersonalMessagesTest(ZulipTestCase):
 
         with mock.patch('zerver.models.get_display_recipient', return_value='recip'):
             self.assertEqual(str(message),
-                             '<Message: recip /  / '
+                             u'<Message: recip /  / '
                              '<UserProfile: test@zulip.com <Realm: zulip 1>>>')
 
             user_message = most_recent_usermessage(user_profile)
             self.assertEqual(str(user_message),
-                             '<UserMessage: recip / test@zulip.com ([])>'
+                             u'<UserMessage: recip / test@zulip.com ([])>'
                              )
 
     @slow("checks several profiles")

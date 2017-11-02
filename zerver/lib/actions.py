@@ -1335,7 +1335,7 @@ def notify_reaction_update(user_profile, message, reaction, op):
     ums = UserMessage.objects.filter(message=message.id)
     send_event(event, [um.user_profile_id for um in ums])
 
-def do_add_reaction_legacy(user_profile, message, emoji_name):
+def do_add_reaction(user_profile, message, emoji_name):
     # type: (UserProfile, Message, Text) -> None
     (emoji_code, reaction_type) = emoji_name_to_emoji_code(user_profile.realm, emoji_name)
     reaction = Reaction(user_profile=user_profile, message=message,
@@ -1344,7 +1344,7 @@ def do_add_reaction_legacy(user_profile, message, emoji_name):
     reaction.save()
     notify_reaction_update(user_profile, message, reaction, "add")
 
-def do_remove_reaction_legacy(user_profile, message, emoji_name):
+def do_remove_reaction(user_profile, message, emoji_name):
     # type: (UserProfile, Message, Text) -> None
     reaction = Reaction.objects.filter(user_profile=user_profile,
                                        message=message,

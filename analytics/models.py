@@ -1,13 +1,14 @@
 from django.db import models
 
 from zerver.models import Realm, UserProfile, Stream, Recipient
+from zerver.lib.str_utils import ModelReprMixin
 from zerver.lib.timestamp import floor_to_day
 
 import datetime
 
 from typing import Optional, Tuple, Union, Dict, Any, Text
 
-class FillState(models.Model):
+class FillState(ModelReprMixin, models.Model):
     property = models.CharField(max_length=40, unique=True)  # type: Text
     end_time = models.DateTimeField()  # type: datetime.datetime
 
@@ -18,9 +19,9 @@ class FillState(models.Model):
 
     last_modified = models.DateTimeField(auto_now=True)  # type: datetime.datetime
 
-    def __str__(self):
+    def __unicode__(self):
         # type: () -> Text
-        return "<FillState: %s %s %s>" % (self.property, self.end_time, self.state)
+        return u"<FillState: %s %s %s>" % (self.property, self.end_time, self.state)
 
 # The earliest/starting end_time in FillState
 # We assume there is at least one realm
@@ -39,14 +40,14 @@ def last_successful_fill(property):
     return fillstate.end_time - datetime.timedelta(hours=1)
 
 # would only ever make entries here by hand
-class Anomaly(models.Model):
+class Anomaly(ModelReprMixin, models.Model):
     info = models.CharField(max_length=1000)  # type: Text
 
-    def __str__(self):
+    def __unicode__(self):
         # type: () -> Text
-        return "<Anomaly: %s... %s>" % (self.info, self.id)
+        return u"<Anomaly: %s... %s>" % (self.info, self.id)
 
-class BaseCount(models.Model):
+class BaseCount(ModelReprMixin, models.Model):
     # Note: When inheriting from BaseCount, you may want to rearrange
     # the order of the columns in the migration to make sure they
     # match how you'd like the table to be arranged.
@@ -64,9 +65,9 @@ class InstallationCount(BaseCount):
     class Meta(object):
         unique_together = ("property", "subgroup", "end_time")
 
-    def __str__(self):
+    def __unicode__(self):
         # type: () -> Text
-        return "<InstallationCount: %s %s %s>" % (self.property, self.subgroup, self.value)
+        return u"<InstallationCount: %s %s %s>" % (self.property, self.subgroup, self.value)
 
 class RealmCount(BaseCount):
     realm = models.ForeignKey(Realm)
@@ -75,9 +76,9 @@ class RealmCount(BaseCount):
         unique_together = ("realm", "property", "subgroup", "end_time")
         index_together = ["property", "end_time"]
 
-    def __str__(self):
+    def __unicode__(self):
         # type: () -> Text
-        return "<RealmCount: %s %s %s %s>" % (self.realm, self.property, self.subgroup, self.value)
+        return u"<RealmCount: %s %s %s %s>" % (self.realm, self.property, self.subgroup, self.value)
 
 class UserCount(BaseCount):
     user = models.ForeignKey(UserProfile)
@@ -89,9 +90,9 @@ class UserCount(BaseCount):
         # aggregating from users to realms
         index_together = ["property", "realm", "end_time"]
 
-    def __str__(self):
+    def __unicode__(self):
         # type: () -> Text
-        return "<UserCount: %s %s %s %s>" % (self.user, self.property, self.subgroup, self.value)
+        return u"<UserCount: %s %s %s %s>" % (self.user, self.property, self.subgroup, self.value)
 
 class StreamCount(BaseCount):
     stream = models.ForeignKey(Stream)
@@ -103,6 +104,6 @@ class StreamCount(BaseCount):
         # aggregating from streams to realms
         index_together = ["property", "realm", "end_time"]
 
-    def __str__(self):
+    def __unicode__(self):
         # type: () -> Text
-        return "<StreamCount: %s %s %s %s %s>" % (self.stream, self.property, self.subgroup, self.value, self.id)
+        return u"<StreamCount: %s %s %s %s %s>" % (self.stream, self.property, self.subgroup, self.value, self.id)

@@ -96,34 +96,14 @@ restart the server.
 ### Applying Ubuntu system updates
 
 The Zulip upgrade script will automatically run `apt-get update` and
-then `apt-get upgrade`, to make sure you have any new versions of
-dependencies (this will also update system packages).  We assume that
-you will install Ubuntu security updates regularly, according to your
-usual security practices for an Ubuntu server.
+then `apt-get upgrade`.  If you'd like to minimize downtime, you
+should do an apt upgrade before running the Zulip upgrade script (and
+then restart the server and check everything is working) before
+running the upgrade script.
 
-If you'd like to minimize downtime when installing a Zulip server
-upgrade, you may want to do an `apt-get upgrade` (and then restart the
-server and check everything is working) before running the Zulip
-upgrade script.
-
-There's one `apt` package to be careful about: upgrading `postgresql`
-while the server is running may result in an outage (basically,
-`postgresql` might stop accepting new queries but refuse to shut down
-while waiting for connections from the Zulip server to shut down).
-While this only happens sometimes, it can be hard to fix for someone
-who isn't comfortable managing a `postgresql` database [1].  You can
-avoid that possibility with the following procedure (run as root):
-
-```
-apt-get update
-supervisorctl stop all
-apt-get upgrade -y
-supervisorctl start all
-```
-
-[1] If this happens to you, just stop the Zulip server, restart
-postgres, and then start the Zulip server again, and you'll be back in
-business.
+Also note that you are responsible for running this on your system on
+a regular basis between Zulip upgrades to ensure that your system is
+up to date with the latest upstream security patches.
 
 ### API and your Zulip URL
 

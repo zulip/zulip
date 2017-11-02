@@ -98,7 +98,7 @@ class Confirmation(models.Model):
     MULTIUSE_INVITE = 6
     type = models.PositiveSmallIntegerField()  # type: int
 
-    def __str__(self):
+    def __unicode__(self):
         # type: () -> Text
         return '<Confirmation: %s>' % (self.content_object,)
 

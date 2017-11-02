@@ -183,13 +183,8 @@ var list_render = (function () {
 
             // `do_not_display` will signal to not update the DOM, likely because in
             // the next function it will be updated in the DOM.
-            sort: function (sorting_function, prop, map, do_not_display, reverse) {
+            sort: function (sorting_function, prop, map, do_not_display) {
                 meta.prop = prop;
-
-                if (reverse === true) {
-                    // simple mutable array reversal.
-                    meta.filtered_list.reverse();
-                }
 
                 if (typeof sorting_function === "function") {
                     meta.sorting_function = sorting_function;
@@ -202,18 +197,17 @@ var list_render = (function () {
                     }
                 }
 
-                // we do not want to sort if we are just looking to reverse.
-                if (meta.sorting_function && !reverse) {
+                if (meta.sorting_function) {
                     meta.filtered_list = meta.filtered_list.sort(meta.sorting_function);
-                }
 
-                if (!do_not_display) {
-                    // clear and re-initialize the list with the newly filtered subset
-                    // of items.
-                    prototype.init();
+                    if (!do_not_display) {
+                        // clear and re-initialize the list with the newly filtered subset
+                        // of items.
+                        prototype.init();
 
-                    if (opts.filter.onupdate) {
-                        opts.filter.onupdate();
+                        if (opts.filter.onupdate) {
+                            opts.filter.onupdate();
+                        }
                     }
                 }
             },
@@ -352,15 +346,12 @@ $(function () {
     you MUST specify the `data-list-render` in the `.progressive-table-wrapper`
     otherwise it will not know what `list_render` instance to look up.
 
-    <table>
-        <tr>
-            <td data-sort="alphabetic" data-sort-prop="name">
-            <td data-sort="numeric" data-sort-prop="age">
-        </tr>
-    </table>
     <div class="progressive-table-wrapper" data-list-render="some-list">
         <table>
-            <tbody></tbody>
+            <tr>
+                <td data-sort="alphabetic" data-sort-prop="name">
+                <td data-sort="numeric" data-sort-prop="age">
+            </tr>
         </table>
     </div>
     */
@@ -368,7 +359,7 @@ $(function () {
         var $this = $(this);
         var sort_type = $this.data("sort");
         var prop_name = $this.data("sort-prop");
-        var list_name = $this.parents("table").next(".progressive-table-wrapper").data("list-render");
+        var list_name = $this.closest(".progressive-table-wrapper").data("list-render");
 
         var list = list_render.get(list_name);
 
@@ -377,23 +368,8 @@ $(function () {
             return;
         }
 
-        if ($this.hasClass("active")) {
-            if (!$this.hasClass("descend")) {
-                $this.addClass("descend");
-            } else {
-                $this.removeClass("descend");
-            }
-
-            list.sort(undefined, undefined, undefined, undefined, true);
-            // Table has already been sorted by this property; do not re-sort.
-            return;
-        }
-
         // if `prop_name` is defined, it will trigger the generic codepath,
         // and not if it is undefined.
         list.sort(sort_type, prop_name);
-
-        $this.siblings(".active").removeClass("active");
-        $this.addClass("active");
     });
 });
