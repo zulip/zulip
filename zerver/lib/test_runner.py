@@ -236,7 +236,7 @@ class RemoteTestResult(django_runner.RemoteTestResult):
         self.events.append(('addInstrumentation', self.test_index, data))
 
 def process_instrumented_calls(func):
-    # type: (Callable) -> None
+    # type: (Callable[[Dict[str, Any]], None]) -> None
     for call in test_helpers.INSTRUMENTED_CALLS:
         func(call)
 
