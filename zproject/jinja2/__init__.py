@@ -4,9 +4,7 @@ from typing import Any
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.template.defaultfilters import slugify, pluralize
 from django.core.urlresolvers import reverse
-from django.template.loader import render_to_string
 from django.utils import translation
-from django.http import HttpResponse
 from jinja2 import Environment
 
 from .compressors import minified_js
