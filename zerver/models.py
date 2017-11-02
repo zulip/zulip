@@ -1126,7 +1126,7 @@ class AbstractMessage(models.Model):
     def __str__(self):
         # type: () -> Text
         display_recipient = get_display_recipient(self.recipient)
-        return "<%s: %s / %s / %r>" % (self.__class__.__name__, display_recipient,
+        return "<%s: %s / %s / %s>" % (self.__class__.__name__, display_recipient,
                                        self.subject, self.sender)
 
 
@@ -1457,7 +1457,7 @@ class Subscription(models.Model):
 
     def __str__(self):
         # type: () -> Text
-        return "<Subscription: %r -> %s>" % (self.user_profile, self.recipient)
+        return "<Subscription: %s -> %s>" % (self.user_profile, self.recipient)
 
 @cache_with_key(user_profile_by_id_cache_key, timeout=3600*24*7)
 def get_user_profile_by_id(uid):
