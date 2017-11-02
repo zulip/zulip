@@ -20,7 +20,6 @@ from zerver.lib.send_email import send_email, EmailNotDeliveredException
 
 import time
 from zerver.lib.logging_util import create_logger
-from datetime import datetime
 from ujson import loads
 from typing import Any
 

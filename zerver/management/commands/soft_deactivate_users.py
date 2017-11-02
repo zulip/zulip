@@ -1,13 +1,11 @@
 
-from django.db import connection
 from django.conf import settings
-from django.utils.timezone import now as timezone_now
 
 from typing import Any, List, Dict
 from argparse import ArgumentParser
 import sys
 
-from zerver.models import UserProfile, UserMessage, Realm, RealmAuditLog
+from zerver.models import UserProfile, Realm
 from zerver.lib.soft_deactivation import (
     do_soft_deactivate_users, do_soft_activate_users,
     get_users_for_soft_deactivation, logger
