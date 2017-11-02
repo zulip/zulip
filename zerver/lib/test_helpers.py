@@ -90,7 +90,7 @@ def stub_event_queue_user_events(event_queue_return, user_events_return):
 
 @contextmanager
 def simulated_queue_client(client):
-    # type: (Callable) -> Iterator[None]
+    # type: (Callable[..., Any]) -> Iterator[None]
     real_SimpleQueueClient = queue_processors.SimpleQueueClient
     queue_processors.SimpleQueueClient = client  # type: ignore # https://github.com/JukkaL/mypy/issues/1152
     yield
@@ -143,7 +143,7 @@ def queries_captured(include_savepoints=False):
     queries = []  # type: List[Dict[str, Union[str, binary_type]]]
 
     def wrapper_execute(self, action, sql, params=()):
-        # type: (TimeTrackingCursor, Callable, NonBinaryStr, Iterable[Any]) -> None
+        # type: (TimeTrackingCursor, Callable[[NonBinaryStr, Iterable[Any]], None], NonBinaryStr, Iterable[Any]) -> None
         cache = get_cache_backend(None)
         cache.clear()
         start = time.time()
