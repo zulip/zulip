@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
 from django.core.management.base import BaseCommand
 from zerver.lib.actions import create_stream_if_needed, \
     internal_prep_stream_message, do_create_user, do_send_messages, \
@@ -8,8 +7,6 @@ from zerver.lib.actions import create_stream_if_needed, \
 from zerver.lib.upload import upload_avatar_image
 from zerver.models import get_realm, UserProfile, Message
 
-import argparse
-from datetime import datetime
 from typing import Any, Dict, List
 
 class Command(BaseCommand):
