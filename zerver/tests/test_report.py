@@ -19,13 +19,13 @@ def fix_params(raw_params):
 
 class StatsMock(object):
     def __init__(self, settings):
-        # type: (Callable) -> None
+        # type: (Callable[..., Any]) -> None
         self.settings = settings
         self.real_impl = statsd
         self.func_calls = []  # type: List[Tuple[str, Iterable[Any]]]
 
     def __getattr__(self, name):
-        # type: (str) -> Callable
+        # type: (str) -> Callable[..., Any]
         def f(*args):
             # type: (*Any) -> None
             with self.settings(STATSD_HOST=''):
