@@ -204,7 +204,7 @@ class BaseWebsocketHandler(WebSocketHandler):
         self.client = None  # type: Any
 
     def get(self, *args, **kwargs):
-        # type: (*Any, **Any) -> Optional[Callable]
+        # type: (*Any, **Any) -> Optional[Callable[..., Any]]
         # use get method from WebsocketHandler
         return super().get(*args, **kwargs)
 
@@ -236,7 +236,7 @@ class BaseWebsocketHandler(WebSocketHandler):
             self.write_message(message, False)
 
     def on_message(self, message, binary=False):
-        # type: (str, bool) -> Optional[Callable]
+        # type: (str, bool) -> Optional[Callable[..., Any]]
         if not self.client:
             # close websocket proxy connection if no connection with target websocket server
             return self.close()
@@ -260,7 +260,7 @@ class BaseWebsocketHandler(WebSocketHandler):
 class CombineHandler(BaseWebsocketHandler):
 
     def get(self, *args, **kwargs):
-        # type: (*Any, **Any) -> Optional[Callable]
+        # type: (*Any, **Any) -> Optional[Callable[..., Any]]
         if self.request.headers.get("Upgrade", "").lower() == 'websocket':
             return super().get(*args, **kwargs)
         return None
