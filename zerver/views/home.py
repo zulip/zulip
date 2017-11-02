@@ -114,7 +114,7 @@ def home_real(request):
             narrow.append(["topic", narrow_topic])
 
     register_ret = do_events_register(user_profile, request.client,
-                                      apply_markdown=True, client_gravatar=False,
+                                      apply_markdown=True, client_gravatar=True,
                                       narrow=narrow)
     user_has_messages = (register_ret['max_message_id'] != -1)
 
