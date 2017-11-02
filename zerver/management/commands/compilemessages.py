@@ -81,8 +81,8 @@ class Command(compilemessages.Command):
         return locales
 
     def extract_language_options(self) -> None:
-        locale_path = u"{}/locale".format(settings.STATIC_ROOT)
-        output_path = u"{}/language_options.json".format(locale_path)
+        locale_path = "{}/locale".format(settings.STATIC_ROOT)
+        output_path = "{}/language_options.json".format(locale_path)
 
         data = {'languages': []}  # type: Dict[str, List[Dict[str, Any]]]
 
@@ -92,7 +92,7 @@ class Command(compilemessages.Command):
             # In case we are not under a Git repo, fallback to getting the
             # locales using listdir().
             locales = os.listdir(locale_path)
-            locales.append(u'en')
+            locales.append('en')
             locales = list(set(locales))
 
         for locale in locales:
