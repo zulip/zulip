@@ -480,7 +480,7 @@ def narrow_parameter(json):
         return None
 
     def convert_term(elem):
-        # type: (Union[Dict, List]) -> Dict[str, Any]
+        # type: (Union[Dict[str, Any], List[str]]) -> Dict[str, Any]
 
         # We have to support a legacy tuple format.
         if isinstance(elem, list):
