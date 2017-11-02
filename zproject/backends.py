@@ -50,11 +50,11 @@ def auth_enabled_helper(backends_to_check, realm):
 
 def ldap_auth_enabled(realm=None):
     # type: (Optional[Realm]) -> bool
-    return auth_enabled_helper([u'LDAP'], realm)
+    return auth_enabled_helper(['LDAP'], realm)
 
 def email_auth_enabled(realm=None):
     # type: (Optional[Realm]) -> bool
-    return auth_enabled_helper([u'Email'], realm)
+    return auth_enabled_helper(['Email'], realm)
 
 def password_auth_enabled(realm=None):
     # type: (Optional[Realm]) -> bool
@@ -62,21 +62,21 @@ def password_auth_enabled(realm=None):
 
 def dev_auth_enabled(realm=None):
     # type: (Optional[Realm]) -> bool
-    return auth_enabled_helper([u'Dev'], realm)
+    return auth_enabled_helper(['Dev'], realm)
 
 def google_auth_enabled(realm=None):
     # type: (Optional[Realm]) -> bool
-    return auth_enabled_helper([u'Google'], realm)
+    return auth_enabled_helper(['Google'], realm)
 
 def github_auth_enabled(realm=None):
     # type: (Optional[Realm]) -> bool
-    return auth_enabled_helper([u'GitHub'], realm)
+    return auth_enabled_helper(['GitHub'], realm)
 
 def any_oauth_backend_enabled(realm=None):
     # type: (Optional[Realm]) -> bool
     """Used by the login page process to determine whether to show the
     'OR' for login with Google"""
-    return auth_enabled_helper([u'GitHub', u'Google'], realm)
+    return auth_enabled_helper(['GitHub', 'Google'], realm)
 
 def require_email_format_usernames(realm=None):
     # type: (Optional[Realm]) -> bool
@@ -372,7 +372,7 @@ class ZulipRemoteUserBackend(RemoteUserBackend):
             return None
         if not user_matches_subdomain(realm_subdomain, user_profile):
             return None
-        if not auth_enabled_helper([u"RemoteUser"], user_profile.realm):
+        if not auth_enabled_helper(["RemoteUser"], user_profile.realm):
             return None
         return user_profile
 
@@ -498,7 +498,7 @@ class DevAuthBackend(ZulipAuthMixin):
         return user_profile
 
 class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
-    auth_backend_name = u"GitHub"
+    auth_backend_name = "GitHub"
 
     def get_email_address(self, *args, **kwargs):
         # type: (*Any, **Any) -> Optional[Text]
@@ -572,10 +572,10 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
         return self.process_do_auth(user_profile, *args, **kwargs)
 
 AUTH_BACKEND_NAME_MAP = {
-    u'Dev': DevAuthBackend,
-    u'Email': EmailAuthBackend,
-    u'GitHub': GitHubAuthBackend,
-    u'Google': GoogleMobileOauth2Backend,
-    u'LDAP': ZulipLDAPAuthBackend,
-    u'RemoteUser': ZulipRemoteUserBackend,
+    'Dev': DevAuthBackend,
+    'Email': EmailAuthBackend,
+    'GitHub': GitHubAuthBackend,
+    'Google': GoogleMobileOauth2Backend,
+    'LDAP': ZulipLDAPAuthBackend,
+    'RemoteUser': ZulipRemoteUserBackend,
 }  # type: Dict[Text, Any]
