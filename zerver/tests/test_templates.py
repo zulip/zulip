@@ -27,7 +27,7 @@ class get_form_value(object):
         return self._value
 
 
-class DummyForm(dict):
+class DummyForm(Dict[str, Any]):
     pass
 
 
