@@ -16,7 +16,7 @@ import ujson
 from typing import Any, Dict, List, Optional, Tuple, Union, Text
 
 
-class TicketDict(dict):
+class TicketDict(Dict[str, Any]):
     """
     A helper class to turn a dictionary with ticket information into
     an object where each of the keys is an attribute for easy access.
