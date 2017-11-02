@@ -82,13 +82,23 @@
             </div>
         </div>
 
-        <div class="input-group">
-            <label for="emojiset_select">{{t "Emoji style" }}:</label>
-            <select name="emojiset_select" id="emojiset_select">
+        <h3 class="light">Emoji settings</h3>
+        <div class="input-group side-padded-container">
+            <label>{{t "Emoji style" }}:</label>
+            <div class="emojiset_choices">
                 {{#each page_params.emojiset_choices}}
-                <option value={{@key}}>{{this}}</option>
+                <label>
+                    <input type="radio" class="emojiset_choice" name="emojiset_group" value="{{@key}}" />
+                    {{this}}
+                    <span>
+                        <img class="emoji" src="/static/generated/emoji/images-{{@key}}-64/1f642.png" />
+                        <img class="emoji" src="/static/generated/emoji/images-{{@key}}-64/1f44d.png" />
+                        <img class="emoji" src="/static/generated/emoji/images-{{@key}}-64/1f680.png" />
+                        <img class="emoji" src="/static/generated/emoji/images-{{@key}}-64/1f4a9.png" />
+                    </span>
+                </label>
                 {{/each}}
-            </select>
+            </div>
             <div id="emojiset_spinner"></div>
         </div>
     </form>

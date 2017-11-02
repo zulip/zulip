@@ -837,6 +837,24 @@ input[type=checkbox].inline-block {
     white-space: normal;
 }
 
+.emojiset_choices {
+    padding-left: 20px;
+    width: 230px;
+}
+
+.emojiset_choices .emoji {
+    height: 22px;
+    width: 22px;
+}
+
+.emojiset_choices label {
+    line-height: 2em;
+}
+
+.emojiset_choices span {
+    float: right;
+}
+
 .open-user-form {
     min-width: initial !important;
 }
