@@ -61,6 +61,10 @@ POST_MIGRATION_CACHE_FLUSHING = True  # type: bool
 # Enable inline open graph preview in development for now
 INLINE_URL_EMBED_PREVIEW = True
 
+# Keys for testing OAuth live, belonging to greg@zulipchat.com.
+GOOGLE_OAUTH2_CLIENT_ID = '846058479714-pq9tm13j4p6blhv22s6ohoqmf6tu2ee1.apps.googleusercontent.com'
+SOCIAL_AUTH_GITHUB_KEY = '101594a50459573e2ede'
+
 # Don't require anything about password strength in development
 PASSWORD_MIN_LENGTH = 0
 PASSWORD_MIN_GUESSES = 0
