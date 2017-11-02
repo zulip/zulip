@@ -135,7 +135,7 @@ class TestMoveMessageToArchive(ZulipTestCase):
             create_attachment(file_name, path_id, user_profile, size)
 
     def _check_messages_before_archiving(self, msg_id):
-        # type: (int) -> List
+        # type: (int) -> List[int]
         user_messages_ids_before = list(UserMessage.objects.filter(
             message_id=msg_id).order_by('id').values_list('id', flat=True))
         self.assertEqual(ArchivedUserMessage.objects.count(), 0)
