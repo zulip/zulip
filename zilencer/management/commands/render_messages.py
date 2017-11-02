@@ -1,6 +1,6 @@
 import os
 import ujson
-from typing import Any, Generator
+from typing import Any, Iterator
 
 from django.core.management.base import BaseCommand, CommandParser
 from django.db.models import QuerySet
@@ -10,7 +10,7 @@ from zerver.models import Message
 
 
 def queryset_iterator(queryset, chunksize=5000):
-    # type: (QuerySet, int) -> Generator
+    # type: (QuerySet, int) -> Iterator[Any]
     queryset = queryset.order_by('id')
     while queryset.exists():
         for row in queryset[:chunksize]:
