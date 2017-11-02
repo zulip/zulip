@@ -527,7 +527,7 @@ def deserialize_suite(args):
 class RemoteTestRunner(django_runner.RemoteTestRunner):
     resultclass = RemoteTestResult
 
-class SubSuiteList(list):
+class SubSuiteList(List[Tuple[Type[TestSuite], List[str]]]):
     """
     This class allows us to avoid changing the main logic of
     ParallelTestSuite and still make it serializable.
