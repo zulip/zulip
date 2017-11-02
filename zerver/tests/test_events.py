@@ -364,40 +364,55 @@ class GetEventsTest(ZulipTestCase):
         email = user_profile.email
         self.login(email)
 
-        result = self.tornado_call(get_events_backend, user_profile,
-                                   {"apply_markdown": ujson.dumps(True),
-                                    "event_types": ujson.dumps(["message"]),
-                                    "narrow": ujson.dumps([["stream", "denmark"]]),
-                                    "user_client": "website",
-                                    "dont_block": ujson.dumps(True),
-                                    })
-        self.assert_json_success(result)
-        queue_id = ujson.loads(result.content)["queue_id"]
+        def get_message(apply_markdown):
+            # type: (bool) -> Dict[str, Any]
+            result = self.tornado_call(
+                get_events_backend,
+                user_profile,
+                dict(
+                    apply_markdown=ujson.dumps(apply_markdown),
+                    event_types=ujson.dumps(["message"]),
+                    narrow=ujson.dumps([["stream", "denmark"]]),
+                    user_client="website",
+                    dont_block=ujson.dumps(True),
+                )
+            )
 
-        result = self.tornado_call(get_events_backend, user_profile,
-                                   {"queue_id": queue_id,
-                                    "user_client": "website",
-                                    "last_event_id": -1,
-                                    "dont_block": ujson.dumps(True),
-                                    })
-        events = ujson.loads(result.content)["events"]
-        self.assert_json_success(result)
-        self.assert_length(events, 0)
+            self.assert_json_success(result)
+            queue_id = ujson.loads(result.content)["queue_id"]
 
-        self.send_personal_message(email, self.example_email("othello"), "hello")
-        self.send_stream_message(email, "Denmark", "hello")
+            result = self.tornado_call(get_events_backend, user_profile,
+                                       {"queue_id": queue_id,
+                                        "user_client": "website",
+                                        "last_event_id": -1,
+                                        "dont_block": ujson.dumps(True),
+                                        })
+            events = ujson.loads(result.content)["events"]
+            self.assert_json_success(result)
+            self.assert_length(events, 0)
 
-        result = self.tornado_call(get_events_backend, user_profile,
-                                   {"queue_id": queue_id,
-                                    "user_client": "website",
-                                    "last_event_id": -1,
-                                    "dont_block": ujson.dumps(True),
-                                    })
-        events = ujson.loads(result.content)["events"]
-        self.assert_json_success(result)
-        self.assert_length(events, 1)
-        self.assertEqual(events[0]["type"], "message")
-        self.assertEqual(events[0]["message"]["display_recipient"], "Denmark")
+            self.send_personal_message(email, self.example_email("othello"), "hello")
+            self.send_stream_message(email, "Denmark", "**hello**")
+
+            result = self.tornado_call(get_events_backend, user_profile,
+                                       {"queue_id": queue_id,
+                                        "user_client": "website",
+                                        "last_event_id": -1,
+                                        "dont_block": ujson.dumps(True),
+                                        })
+            events = ujson.loads(result.content)["events"]
+            self.assert_json_success(result)
+            self.assert_length(events, 1)
+            self.assertEqual(events[0]["type"], "message")
+            return events[0]['message']
+
+        message = get_message(apply_markdown=False)
+        self.assertEqual(message["display_recipient"], "Denmark")
+        self.assertEqual(message["content"], "**hello**")
+
+        message = get_message(apply_markdown=True)
+        self.assertEqual(message["display_recipient"], "Denmark")
+        self.assertEqual(message["content"], "<p><strong>hello</strong></p>")
 
 class EventsRegisterTest(ZulipTestCase):
 
