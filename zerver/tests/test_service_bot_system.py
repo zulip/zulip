@@ -183,7 +183,7 @@ class TestServiceBotStateHandler(ZulipTestCase):
         storage.remove('some key')
         self.assertFalse(storage.contains('some key'))
         self.assertTrue(storage.contains('another key'))
-        self.assertRaises(BotUserStateData.DoesNotExist, lambda: storage.remove('some key'))
+        self.assertRaises(StateError, lambda: storage.remove('some key'))
 
 class TestServiceBotEventTriggers(ZulipTestCase):
 

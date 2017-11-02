@@ -52,7 +52,10 @@ def set_bot_state(bot_profile, key, value):
 
 def remove_bot_state(bot_profile, key):
     # type: (UserProfile, Text) -> None
-    removed_ctr, removed_entries = BotUserStateData.objects.get(bot_profile=bot_profile, key=key).delete()
+    try:
+        BotUserStateData.objects.get(bot_profile=bot_profile, key=key).delete()
+    except BotUserStateData.DoesNotExist:
+        raise StateError("Cannot remove state. The key {} does not exist.".format(key))
 
 def is_key_in_bot_state(bot_profile, key):
     # type: (UserProfile, Text) -> bool
