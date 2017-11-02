@@ -395,15 +395,15 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         return False
 
     def get_all_permissions(self, user, obj=None):
-        # type: (Optional[UserProfile], Any) -> Set
+        # type: (Optional[UserProfile], Any) -> Set[Any]
         # Using Any type is safe because we are not doing anything with
-        # the arguments.
+        # the arguments and always return empty set.
         return set()
 
     def get_group_permissions(self, user, obj=None):
-        # type: (Optional[UserProfile], Any) -> Set
+        # type: (Optional[UserProfile], Any) -> Set[Any]
         # Using Any type is safe because we are not doing anything with
-        # the arguments.
+        # the arguments and always return empty set.
         return set()
 
     def django_to_ldap_username(self, username):
