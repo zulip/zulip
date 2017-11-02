@@ -12,7 +12,7 @@ instrument_tornado_ioloop()
 from django.core.management.base import BaseCommand, CommandError, CommandParser
 from tornado import ioloop
 from tornado.log import app_log
-from typing import Callable
+from typing import Callable, Any
 
 from zerver.lib.debug import interactive_debug_listen
 from zerver.tornado.application import create_tornado_application, \
@@ -28,7 +28,7 @@ if settings.USING_RABBITMQ:
     from zerver.lib.queue import get_queue_client
 
 
-def handle_callback_exception(callback: Callable) -> None:
+def handle_callback_exception(callback: Callable[..., Any]) -> None:
     logging.exception("Exception in callback")
     app_log.error("Exception in callback %r", callback, exc_info=True)
 
