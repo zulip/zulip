@@ -487,7 +487,7 @@ class ZulipTestCase(TestCase):
         self.assertEqual(self.get_json_error(result, status_code=status_code), msg)
 
     def assert_length(self, items, count):
-        # type: (List, int) -> None
+        # type: (List[Any], int) -> None
         actual_count = len(items)
         if actual_count != count:  # nocoverage
             print('ITEMS:\n')
