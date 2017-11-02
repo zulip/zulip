@@ -1,7 +1,6 @@
 import sys
 
 from argparse import ArgumentParser
-from django.db import connection
 from django.core.management.base import BaseCommand
 
 from analytics.lib.counts import do_drop_all_analytics_tables

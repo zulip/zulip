@@ -1,6 +1,5 @@
 from argparse import ArgumentParser
 import datetime
-import pytz
 from typing import Any
 
 from django.core.management.base import BaseCommand
