@@ -24,7 +24,7 @@ from zerver.worker.queue_processors import QueueProcessingWorker
 captured_request = None  # type: Optional[HttpRequest]
 captured_exc_info = None
 def capture_and_throw(domain=None):
-    # type: (Optional[Text]) -> Callable
+    # type: (Optional[Text]) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]
     def wrapper(view_func):
         # type: (Callable[..., HttpResponse]) -> Callable[..., HttpResponse]
         @wraps(view_func)
