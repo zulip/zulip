@@ -491,7 +491,8 @@ class EventsRegisterTest(ZulipTestCase):
         self.assertTrue(len(events) == num_events)
 
         before = ujson.dumps(hybrid_state)
-        apply_events(hybrid_state, events, self.user_profile, include_subscribers=include_subscribers)
+        apply_events(hybrid_state, events, self.user_profile,
+                     client_gravatar=True, include_subscribers=include_subscribers)
         after = ujson.dumps(hybrid_state)
 
         if state_change_expected:
@@ -949,7 +950,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('person', check_dict_only([
                 ('user_id', check_int),
                 ('email', check_string),
-                ('avatar_url', check_string),
+                ('avatar_url', check_none_or(check_string)),
                 ('full_name', check_string),
                 ('is_admin', check_bool),
                 ('is_bot', check_bool),
