@@ -93,7 +93,7 @@ the `[WIP]`.
 you submit a pull request, but you can also run them all in your
 development environment following the instructions in the [testing
 docs][doc-test]. You can also try out [our new desktop
-client][electron], which is in alpha; we'd appreciate testing and
+client][electron], which is now out of beta; we'd appreciate testing and
 [feedback](https://github.com/zulip/zulip-electron/issues/new).
 
 * **Developer Documentation**.  Zulip has a growing collection of
