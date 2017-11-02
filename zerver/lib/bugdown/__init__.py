@@ -404,8 +404,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         return False
 
     def dropbox_image(self, url):
-        # type: (Text) -> Optional[Dict]
-        # TODO: specify details of returned Dict
+        # type: (Text) -> Optional[Dict[str, Any]]
+        # TODO: The returned Dict could possibly be a TypedDict in future.
         parsed_url = urllib.parse.urlparse(url)
         if (parsed_url.netloc == 'dropbox.com' or parsed_url.netloc.endswith('.dropbox.com')):
             is_album = parsed_url.path.startswith('/sc/') or parsed_url.path.startswith('/photos/')
