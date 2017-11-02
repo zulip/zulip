@@ -603,7 +603,7 @@ def request_event_queue(user_profile, user_client, apply_markdown,
     return None
 
 def get_user_events(user_profile, queue_id, last_event_id):
-    # type: (UserProfile, str, int) -> List[Dict]
+    # type: (UserProfile, str, int) -> List[Dict[Any, Any]]
     if settings.TORNADO_SERVER:
         resp = requests_client.get(settings.TORNADO_SERVER + '/api/v1/events',
                                    auth=requests.auth.HTTPBasicAuth(
