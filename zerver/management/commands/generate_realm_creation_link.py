@@ -1,7 +1,6 @@
 
 from argparse import ArgumentParser, RawTextHelpFormatter
 from typing import Any
-from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import ProgrammingError
 from confirmation.models import generate_realm_creation_url

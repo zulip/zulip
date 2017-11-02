@@ -37,7 +37,6 @@ import re
 import glob
 import json
 
-import django
 from django.core.management.commands import makemessages
 from django.template.base import BLOCK_TAG_START, BLOCK_TAG_END
 from django.conf import settings

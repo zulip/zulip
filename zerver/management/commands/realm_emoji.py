@@ -3,7 +3,7 @@ from argparse import RawTextHelpFormatter
 from typing import Any
 
 from argparse import ArgumentParser
-from django.core.management.base import BaseCommand, CommandParser
+from django.core.management.base import CommandParser
 from zerver.lib.actions import check_add_realm_emoji, do_remove_realm_emoji
 from zerver.lib.management import ZulipBaseCommand
 import sys

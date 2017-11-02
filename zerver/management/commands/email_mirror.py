@@ -29,9 +29,7 @@ import logging
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from zerver.lib.email_mirror import logger, process_message, \
-    extract_and_validate, ZulipEmailForwardError, \
-    mark_missed_message_address_as_used, is_missed_message_address
+from zerver.lib.email_mirror import logger, process_message
 
 import email
 from email.message import Message
