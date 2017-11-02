@@ -56,6 +56,16 @@ exports.insert_syntax_and_focus = function (syntax) {
     // where the cursor was and focusing the area.  Mostly a thin
     // wrapper around $.caret.
     var textarea = $('#new_message_content');
+    if ($(textarea).val().length) {
+        var last_char = $(textarea).val()[$(textarea).val().length-1];
+        if (!(last_char === ' ' || last_char === '\n' || last_char === '\t')) {
+            syntax = ` ${syntax}`;
+        }
+    }
+     if (syntax[syntax.length-1] !== ' '){
+         syntax = `${syntax} `;
+     }
+
     textarea.caret(syntax);
     textarea.focus();
 };
