@@ -15,7 +15,7 @@
    variables by running:
 
 ```
-export HUBOT_ZULIP_SITE="{{ api_url_scheme_relative }}"
+export HUBOT_ZULIP_SITE="{{ api_url }}"
 export HUBOT_ZULIP_BOT="hubot-bot@example.com"
 export HUBOT_ZULIP_API_KEY="your_key"
 ```
