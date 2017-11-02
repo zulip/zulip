@@ -35,7 +35,7 @@ from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
-from zerver.lib.test_helpers import POSTRequestMock
+from zerver.lib.test_helpers import POSTRequestMock, find_invite_key_by_email
 from zerver.models import \
     get_realm, email_to_username, UserProfile, \
     PreregistrationUser, Realm, get_user, MultiuseInvite
@@ -897,6 +897,95 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.assert_in_success_response(['id_full_name'], result)
 
     def test_log_into_subdomain_when_using_invite_link(self):
+        # type: () -> None
+        invitee = 'new@zulip.com'
+        data = {'name': 'New User Name',
+                'email': invitee,
+                'subdomain': 'zulip',
+                'is_signup': True}
+
+        realm = get_realm("zulip")
+        realm.invite_required = True
+        realm.save()
+
+        stream_names = ["new_stream_1", "new_stream_2"]
+        streams = []
+        for stream_name in set(stream_names):
+            stream, _ = create_stream_if_needed(realm, stream_name)
+            streams.append(stream)
+
+        # Without the invite link, we can't create an account due to invite_required
+        result = self.get_log_into_subdomain(data)
+        self.assertEqual(result.status_code, 200)
+        result = self.client_post("/json/invites",
+                                  {"invitee_emails": invitee,
+                                   "stream": stream_names,
+                                   "custom_body": ""})
+        self.assert_json_success(result)
+
+        self.assertTrue(find_invite_key_by_email(invitee))
+        invite_link = self.get_confirmation_url_from_outbox(invitee)
+
+        result = self.client_get(invite_link, subdomain="zulip")
+        self.assertEqual(result.status_code, 200)
+
+        result = self.client_get('/accounts/login/subdomain/', subdomain="zulip")
+        self.assertEqual(result.status_code, 302)
+        confirmation = Confirmation.objects.all().last()
+        confirmation_key = confirmation.confirmation_key
+        self.assertIn('do_confirm/' + confirmation_key, result.url)
+
+        result = self.client_get(result.url)
+        self.assert_in_response('action="/accounts/register/"', result)
+        data2 = {"from_confirmation": "1",
+                 "full_name": data['name'],
+                 "key": confirmation_key}
+        result = self.client_post('/accounts/register/', data2, subdomain="zulip")
+        self.assert_in_response("You're almost there", result)
+
+        # Verify that the user is asked for name but not password
+        self.assert_not_in_success_response(['id_password'], result)
+        self.assert_in_success_response(['id_full_name'], result)
+        # Click confirm registration button.
+
+        result = self.client_post(
+            '/accounts/register/',
+            {'full_name': 'New User Name',
+             'key': confirmation_key,
+             'terms': True})
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(sorted(self.get_streams('new@zulip.com', realm)), stream_names)
+
+        # This is a special case in which user open the invite in two browsers
+        # completes the signup in one and try to sign up using Google in the other browser.
+
+        result = self.client_get(invite_link, subdomain="zulip")
+        self.assertEqual(result.status_code, 200)
+
+        invitee2 = "new2@zulip.com"
+        data3 = {'name': 'New User Name',
+                 'email': invitee2,
+                 'subdomain': 'zulip',
+                 'is_signup': True}
+
+        result = self.get_log_into_subdomain(data3)
+        self.assertEqual(result.status_code, 200)
+        self.login(self.example_email("hamlet"))
+
+        self.client_post("/json/invites", {"invitee_emails": invitee2,
+                                           "stream": stream_names,
+                                           "custom_body": ""})
+
+        invite_link = self.get_confirmation_url_from_outbox(invitee2)
+        self.client_get(invite_link, subdomain="zulip")
+        prereg_user = Confirmation.objects.all().last().content_object
+
+        prereg_user.status = getattr(settings, "STATUS_ACTIVE", 1)
+        prereg_user.save(update_fields=["status"])
+        result = self.client_get('/accounts/login/subdomain/', subdomain="zulip")
+        self.assert_in_success_response(["Whoops. The confirmation link has expired."], result)
+
+    def test_log_into_subdomain_when_using_multiuse_invite_link(self):
         # type: () -> None
         data = {'name': 'New User Name',
                 'email': 'new@zulip.com',

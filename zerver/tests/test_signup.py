@@ -46,8 +46,9 @@ from zerver.lib.mobile_auth_otp import xor_hex_strings, ascii_to_hex, \
 from zerver.lib.notifications import enqueue_welcome_emails, \
     one_click_unsubscribe_link
 from zerver.lib.subdomains import is_root_domain_available
-from zerver.lib.test_helpers import find_pattern_in_email, find_key_by_email, queries_captured, \
-    HostRequestMock, load_subdomain_token
+from zerver.lib.test_helpers import find_pattern_in_email, \
+    find_account_confirmation_key_by_email, find_invite_key_by_email, \
+    queries_captured, HostRequestMock, load_subdomain_token
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
@@ -462,18 +463,6 @@ class InviteUserBase(ZulipTestCase):
                                  "custom_body": body})
 
 class InviteUserTest(InviteUserBase):
-    def test_successful_invite_user(self):
-        # type: () -> None
-        """
-        A call to /json/invites with valid parameters causes an invitation
-        email to be sent.
-        """
-        self.login(self.example_email("hamlet"))
-        invitee = "alice-test@zulip.com"
-        self.assert_json_success(self.invite(invitee, ["Denmark"]))
-        self.assertTrue(find_key_by_email(invitee))
-        self.check_sent_emails([invitee], custom_from_name="Hamlet")
-
     def test_successful_invite_user_as_admin_from_admin_account(self):
         # type: () -> None
         """
@@ -483,7 +472,7 @@ class InviteUserTest(InviteUserBase):
         self.login(self.example_email('iago'))
         invitee = self.nonreg_email('alice')
         self.assert_json_success(self.invite(invitee, ["Denmark"], invite_as_admin="true"))
-        self.assertTrue(find_key_by_email(invitee))
+        self.assertTrue(find_invite_key_by_email(invitee))
 
         self.submit_reg_form_for_user(invitee, "password")
         invitee_profile = self.nonreg_user('alice')
@@ -499,6 +488,68 @@ class InviteUserTest(InviteUserBase):
         invitee = self.nonreg_email('alice')
         response = self.invite(invitee, ["Denmark"], invite_as_admin="true")
         self.assert_json_error(response, "Must be a realm administrator")
+
+    def test_successful_invite_user(self):
+        # type: () -> None
+        """
+        A call to /json/invites with valid parameters causes an invitation
+        email to be sent.
+        """
+        realm = get_realm("zulip")
+        realm.invite_required = True
+        realm.save()
+
+        self.login(self.example_email("hamlet"))
+        invitee = "alice-test@zulip.com"
+        password = "verystrongpasswordthatyoucantguess"
+        self.assert_json_success(self.invite(invitee, ["Denmark"]))
+        self.assertTrue(find_invite_key_by_email(invitee))
+        self.check_sent_emails([invitee], custom_from_name="Hamlet")
+
+        confirmation_url = self.get_confirmation_url_from_outbox(invitee)
+        result = self.client_get(confirmation_url)
+        self.assert_in_success_response(["Sign up with Google"], result)
+        self.client_post(confirmation_url, {'email': invitee})
+        result = self.submit_reg_form_for_user(invitee, password, invited=True)
+        self.assertEqual(result.status_code, 302)
+
+        result = self.client_get(confirmation_url)
+        self.assert_in_response("Whoops. The confirmation link has expired.", result)
+
+    def test_successful_invite_user_signup_with_different_email(self):
+        # type: () -> None
+        realm = get_realm("zulip")
+        realm.invite_required = True
+        realm.save()
+
+        self.login(self.example_email("hamlet"))
+        invitee = "alice-test@zulip.com"
+        invitee_alternate_email = "alice-test-2@zulip.com"
+        password = "verystrongpasswordthatyoucantguess"
+        self.assert_json_success(self.invite(invitee, ["Denmark"]))
+        self.assertTrue(find_invite_key_by_email(invitee))
+        self.check_sent_emails([invitee], custom_from_name="Hamlet")
+
+        confirmation_url = self.get_confirmation_url_from_outbox(invitee)
+        result = self.client_get(confirmation_url)
+        self.assert_in_success_response(["Sign up with Google"], result)
+        result = self.client_post(confirmation_url, {'email': invitee_alternate_email})
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith("/accounts/send_confirm/%s" % (invitee_alternate_email,)))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started.", result)
+
+        confirmation_url_2 = self.get_confirmation_url_from_outbox(invitee_alternate_email)
+        result = self.client_get(confirmation_url_2)
+        self.assertEqual(result.status_code, 200)
+        result = self.submit_reg_form_for_user(invitee_alternate_email, password)
+        self.assertEqual(result.status_code, 302)
+
+        result = self.client_get(confirmation_url)
+        self.assert_in_response("Whoops. The confirmation link has expired.", result)
+
+        result = self.client_get(confirmation_url_2)
+        self.assert_in_response("Whoops. The confirmation link has expired.", result)
 
     def test_successful_invite_user_with_custom_body(self):
         # type: () -> None
@@ -523,7 +574,7 @@ class InviteUserTest(InviteUserBase):
         email = "alice-test@zulip.com"
         invitee = "Alice Test <{}>".format(email)
         self.assert_json_success(self.invite(invitee, ["Denmark"]))
-        self.assertTrue(find_key_by_email(email))
+        self.assertTrue(find_invite_key_by_email(email))
         self.check_sent_emails([email], custom_from_name="Hamlet")
 
     def test_successful_invite_user_with_name_and_normal_one(self):
@@ -537,8 +588,8 @@ class InviteUserTest(InviteUserBase):
         email2 = "bob-test@zulip.com"
         invitee = "Alice Test <{}>, {}".format(email, email2)
         self.assert_json_success(self.invite(invitee, ["Denmark"]))
-        self.assertTrue(find_key_by_email(email))
-        self.assertTrue(find_key_by_email(email2))
+        self.assertTrue(find_invite_key_by_email(email))
+        self.assertTrue(find_invite_key_by_email(email2))
         self.check_sent_emails([email, email2], custom_from_name="Hamlet")
 
     def test_require_realm_admin(self):
@@ -560,8 +611,8 @@ class InviteUserTest(InviteUserBase):
         # Now verify an administrator can do it
         self.login("iago@zulip.com")
         self.assert_json_success(self.invite(invitee, ["Denmark"]))
-        self.assertTrue(find_key_by_email(email))
-        self.assertTrue(find_key_by_email(email2))
+        self.assertTrue(find_invite_key_by_email(email))
+        self.assertTrue(find_invite_key_by_email(email2))
         self.check_sent_emails([email, email2])
 
     def test_successful_invite_user_with_notifications_stream(self):
@@ -579,7 +630,7 @@ class InviteUserTest(InviteUserBase):
         self.login(self.example_email("hamlet"))
         invitee = 'alice-test@zulip.com'
         self.assert_json_success(self.invite(invitee, ['Denmark']))
-        self.assertTrue(find_key_by_email(invitee))
+        self.assertTrue(find_invite_key_by_email(invitee))
         self.check_sent_emails([invitee])
 
         prereg_user = get_prereg_user_by_email(invitee)
@@ -611,9 +662,9 @@ class InviteUserTest(InviteUserBase):
         )
         invitee = self.nonreg_email('alice')
         self.assert_json_success(self.invite(invitee, [private_stream_name, "Denmark"]))
-        self.assertTrue(find_key_by_email(invitee))
+        self.assertTrue(find_invite_key_by_email(invitee))
 
-        self.submit_reg_form_for_user(invitee, "password")
+        self.submit_reg_form_for_user(invitee, "password", invited=True)
         invitee_profile = self.nonreg_user('alice')
         invitee_msg_ids = [um.message_id for um in
                            UserMessage.objects.filter(user_profile=invitee_profile)]
@@ -649,7 +700,7 @@ class InviteUserTest(InviteUserBase):
 
 earl-test@zulip.com""", ["Denmark"]))
         for user in ("bob", "carol", "dave", "earl"):
-            self.assertTrue(find_key_by_email("%s-test@zulip.com" % (user,)))
+            self.assertTrue(find_invite_key_by_email("%s-test@zulip.com" % (user,)))
         self.check_sent_emails(["bob-test@zulip.com", "carol-test@zulip.com",
                                 "dave-test@zulip.com", "earl-test@zulip.com"])
 
@@ -789,7 +840,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         zulip_realm.restricted_to_domain = True
         zulip_realm.save()
 
-        result = self.submit_reg_form_for_user("foo@example.com", "password")
+        result = self.submit_reg_form_for_user("foo@example.com", "password", invited=True)
         self.assertEqual(result.status_code, 200)
         self.assert_in_response("only allows users with e-mail", result)
 
@@ -817,8 +868,9 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         current_user_email = self.example_email(referrer_user)
         self.login(current_user_email)
         invitee_email = self.nonreg_email('alice')
-        self.assert_json_success(self.invite(invitee_email, ["Denmark"]))
-        self.assertTrue(find_key_by_email(invitee_email))
+        response = self.invite(invitee_email, ["Denmark"])
+        self.assert_json_success(response)
+        self.assertTrue(find_invite_key_by_email(invitee_email))
         self.check_sent_emails([invitee_email])
 
         data = {"email": invitee_email, "referrer_email": current_user_email}
@@ -1558,7 +1610,7 @@ class UserSignUpTest(ZulipTestCase):
             result = self.client_post(
                 '/accounts/register/',
                 {'full_name': 'New User',
-                 'key': find_key_by_email(email),
+                 'key': find_account_confirmation_key_by_email(email),
                  'terms': True})
 
         # User should now be logged in.
@@ -1590,7 +1642,7 @@ class UserSignUpTest(ZulipTestCase):
         result = self.client_post(
             '/accounts/register/',
             {'password': password,
-             'key': find_key_by_email(email),
+             'key': find_account_confirmation_key_by_email(email),
              'terms': True,
              'from_confirmation': '1'})
         self.assert_in_success_response(["You're almost there."], result)
@@ -1622,7 +1674,7 @@ class UserSignUpTest(ZulipTestCase):
         result = self.client_post(
             '/accounts/register/',
             {'password': password,
-             'key': find_key_by_email(email),
+             'key': find_account_confirmation_key_by_email(email),
              'terms': True,
              'full_name': "New Guy",
              'from_confirmation': '1'})
@@ -1660,7 +1712,7 @@ class UserSignUpTest(ZulipTestCase):
                     '/accounts/register/',
                     {'password': password,
                      'full_name': 'New User',
-                     'key': find_key_by_email(email),
+                     'key': find_account_confirmation_key_by_email(email),
                      'terms': True})
         mock_error.assert_called_once()
         self.assertEqual(result.status_code, 302)
@@ -2042,7 +2094,7 @@ class UserSignUpTest(ZulipTestCase):
             result = self.client_get(confirmation_url)
             self.assertEqual(result.status_code, 200)
 
-            key = find_key_by_email(email),
+            key = find_account_confirmation_key_by_email(email),
             confirmation = Confirmation.objects.get(confirmation_key=key[0])
             prereg_user = confirmation.content_object
             prereg_user.realm_creation = True

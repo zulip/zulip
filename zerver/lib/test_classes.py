@@ -33,7 +33,8 @@ from zerver.lib.stream_subscription import (
 )
 
 from zerver.lib.test_helpers import (
-    instrument_url, find_key_by_email,
+    instrument_url, find_account_confirmation_key_by_email,
+    find_invite_key_by_email
 )
 
 from zerver.models import (
@@ -316,10 +317,10 @@ class ZulipTestCase(TestCase):
         return self.submit_reg_form_for_user(email, password, **kwargs)
 
     def submit_reg_form_for_user(self, email, password, realm_name="Zulip Test",
-                                 realm_subdomain="zuliptest",
+                                 realm_subdomain="zuliptest", invited=False,
                                  from_confirmation='', full_name=None, timezone=u'',
                                  realm_in_root_domain=None, **kwargs):
-        # type: (Text, Text, Optional[Text], Optional[Text], Optional[Text], Optional[Text], Optional[Text], Optional[Text], **Any) -> HttpResponse
+        # type: (Text, Text, Optional[Text], Optional[Text], bool, Optional[Text], Optional[Text], Optional[Text], Optional[Text], **Any) -> HttpResponse
         """
         Stage two of the two-step registration process.
 
@@ -330,12 +331,18 @@ class ZulipTestCase(TestCase):
         """
         if full_name is None:
             full_name = email.replace("@", "_")
+
+        if invited:
+            key = find_invite_key_by_email(email)
+        else:
+            key = find_account_confirmation_key_by_email(email)
+
         payload = {
             'full_name': full_name,
             'password': password,
             'realm_name': realm_name,
             'realm_subdomain': realm_subdomain,
-            'key': find_key_by_email(email),
+            'key': key,
             'timezone': timezone,
             'terms': True,
             'from_confirmation': from_confirmation,

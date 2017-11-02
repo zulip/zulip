@@ -412,9 +412,11 @@ i18n_urls = [
     url(r'^login/$', zerver.views.auth.login_page, {'template_name': 'zerver/login.html'},
         name='zerver.views.auth.login_page'),
 
-    url(r'^join/(?P<confirmation_key>\S+)/$',
-        zerver.views.registration.accounts_home_from_multiuse_invite,
-        name='zerver.views.registration.accounts_home_from_multiuse_invite'),
+    url(r'^join/(?P<confirmation_key>\S+)$', zerver.views.registration.accounts_home,
+        name='zerver.views.registration.invite'),
+
+    url(r'^multiuse_invite/(?P<confirmation_key>\S+)$', zerver.views.registration.accounts_home,
+        name='zerver.views.registration.multiuse_invite'),
 
     # API and integrations documentation
     url(r'^api/$', APIView.as_view(template_name='zerver/api.html')),

@@ -130,7 +130,7 @@ class HomepageForm(forms.Form):
     def __init__(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
         self.realm = kwargs.pop('realm', None)
-        self.from_multiuse_invite = kwargs.pop('from_multiuse_invite', False)
+        self.from_invite = kwargs.pop('from_invite', False)
         super().__init__(*args, **kwargs)
 
     def clean_email(self):
@@ -141,14 +141,14 @@ class HomepageForm(forms.Form):
 
         # Otherwise, the user is trying to join a specific realm.
         realm = self.realm
-        from_multiuse_invite = self.from_multiuse_invite
+        from_invite = self.from_invite
 
         if realm is None:
             raise ValidationError(_("The organization you are trying to "
                                     "join using {email} does not "
                                     "exist.").format(email=email))
 
-        if not from_multiuse_invite and realm.invite_required:
+        if not from_invite and realm.invite_required:
             raise ValidationError(_("Please request an invite for {email} "
                                     "from the organization "
                                     "administrator.").format(email=email))

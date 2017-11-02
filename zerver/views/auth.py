@@ -19,7 +19,9 @@ from django.core import signing
 from six.moves import urllib
 from typing import Any, Dict, List, Optional, Tuple, Text
 
-from confirmation.models import Confirmation, create_confirmation_link
+from confirmation.models import Confirmation, create_confirmation_link, \
+    ConfirmationKeyException, render_confirmation_key_error, \
+    get_object_from_key
 from zerver.context_processors import zulip_default_context, get_realm_from_request
 from zerver.forms import HomepageForm, OurAuthenticationForm, \
     WRONG_SUBDOMAIN_ERROR
@@ -55,17 +57,20 @@ def maybe_send_to_registration(request, email, full_name='', password_required=T
     # type: (HttpRequest, Text, Text, bool) -> HttpResponse
 
     realm = get_realm_from_request(request)
-    from_multiuse_invite = False
-    multiuse_obj = None
+    from_invite = False
+    invite_object = None
     streams_to_subscribe = None
-    multiuse_object_key = request.session.get("multiuse_object_key", None)
-    if multiuse_object_key is not None:
-        from_multiuse_invite = True
-        multiuse_obj = Confirmation.objects.get(confirmation_key=multiuse_object_key).content_object
-        realm = multiuse_obj.realm
-        streams_to_subscribe = multiuse_obj.streams.all()
+    invite_object_key = request.session.get("invite_object_key", None)
+    if invite_object_key is not None:
+        from_invite = True
+        try:
+            invite_object = get_object_from_key(invite_object_key)
+            realm = invite_object.referred_by.realm
+            streams_to_subscribe = invite_object.streams.all()
+        except ConfirmationKeyException as exception:
+            return render_confirmation_key_error(request, exception)
 
-    form = HomepageForm({'email': email}, realm=realm, from_multiuse_invite=from_multiuse_invite)
+    form = HomepageForm({'email': email}, realm=realm, from_invite=from_invite)
     request.verified_email = None
     if form.is_valid():
         # Construct a PreregistrationUser object and send the user over to
@@ -80,16 +85,15 @@ def maybe_send_to_registration(request, email, full_name='', password_required=T
         else:
             prereg_user = create_preregistration_user(email, request,
                                                       password_required=password_required)
-
-        if multiuse_object_key is not None:
-            del request.session["multiuse_object_key"]
+        if invite_object_key is not None:
+            del request.session["invite_object_key"]
             request.session.modified = True
             if streams_to_subscribe is not None:
                 prereg_user.streams = streams_to_subscribe
             prereg_user.save()
-            if hasattr(multiuse_obj, "status"):
-                multiuse_obj.status = Confirmation.USED
-                multiuse_obj.save()
+            if hasattr(invite_object, "status"):
+                invite_object.status = Confirmation.USED
+                invite_object.save()
 
         return redirect("".join((
             create_confirmation_link(prereg_user, request.get_host(), Confirmation.USER_REGISTRATION),
@@ -102,7 +106,7 @@ def maybe_send_to_registration(request, email, full_name='', password_required=T
         return render(request,
                       'zerver/accounts_home.html',
                       context={'form': form, 'current_url': lambda: url,
-                               'from_multiuse_invite': from_multiuse_invite},
+                               'from_invite': from_invite},
                       )
 
 def redirect_to_subdomain_login_url():

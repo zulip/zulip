@@ -345,28 +345,46 @@ def confirmation_key(request):
     # type: (HttpRequest) -> HttpResponse
     return json_success(request.session.get('confirmation_key'))
 
-def accounts_home(request, multiuse_object=None):
+def multiuse_invite(request, confirmation_key):
+    accounts_home(request, confirmation_key)
+
+def invite(request, confirmation_key):
+    accounts_home(request, confirmation_key)
+
+def accounts_home(request, confirmation_key=None):
     # type: (HttpRequest, Optional[MultiuseInvite]) -> HttpResponse
     realm = get_realm(get_subdomain(request))
     if realm and realm.deactivated:
         return redirect_to_deactivation_notice()
 
-    from_multiuse_invite = False
+    from_invite = False
     streams_to_subscribe = None
+    invite_object = None
 
-    if multiuse_object:
-        realm = multiuse_object.realm
-        streams_to_subscribe = multiuse_object.streams.all()
-        from_multiuse_invite = True
+    if confirmation_key is not None:
+        try:
+            invite_object = get_object_from_key(confirmation_key)
+            realm = invite_object.referred_by.realm
+            streams_to_subscribe = invite_object.streams.all()
+            from_invite = True
+            request.session["invite_object_key"] = confirmation_key
+        except ConfirmationKeyException as exception:
+            realm = get_realm_from_request(request)
+            if realm is None or realm.invite_required:
+                return render_confirmation_key_error(request, exception)
 
     if request.method == 'POST':
-        form = HomepageForm(request.POST, realm=realm, from_multiuse_invite=from_multiuse_invite)
+        form = HomepageForm(request.POST, realm=realm, from_invite=from_invite)
         if form.is_valid():
-            if hasattr(multiuse_object, "status"):
-                multiuse_object.status = Confirmation.USED
-                multiuse_object.save()
+            if hasattr(invite_object, "status"):
+                invite_object.status = Confirmation.USED
+                invite_object.save()
             email = form.cleaned_data['email']
             try:
+                if hasattr(invite_object, "email") and invite_object.email == email:
+                    return render(request, 'confirmation/confirm_preregistrationuser.html',
+                                  context={'key': confirmation_key})
+
                 send_registration_completion_email(email, request, streams=streams_to_subscribe)
             except smtplib.SMTPException as e:
                 logging.error('Error in accounts_home: %s' % (str(e),))
@@ -384,21 +402,8 @@ def accounts_home(request, multiuse_object=None):
     return render(request,
                   'zerver/accounts_home.html',
                   context={'form': form, 'current_url': request.get_full_path,
-                           'from_multiuse_invite': from_multiuse_invite},
+                           'from_invite': from_invite},
                   )
-
-def accounts_home_from_multiuse_invite(request, confirmation_key):
-    # type: (HttpRequest, str) -> HttpResponse
-    multiuse_object = None
-    try:
-        multiuse_object = get_object_from_key(confirmation_key)
-        # Required for oAuth2
-        request.session["multiuse_object_key"] = confirmation_key
-    except ConfirmationKeyException as exception:
-        realm = get_realm_from_request(request)
-        if realm is None or realm.invite_required:
-            return render_confirmation_key_error(request, exception)
-    return accounts_home(request, multiuse_object=multiuse_object)
 
 def generate_204(request):
     # type: (HttpRequest) -> HttpResponse

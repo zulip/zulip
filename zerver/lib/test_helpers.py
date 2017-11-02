@@ -204,10 +204,19 @@ def make_client(name):
     client, _ = Client.objects.get_or_create(name=name)
     return client
 
-def find_key_by_email(address):
+def find_account_confirmation_key_by_email(address):
     # type: (Text) -> Optional[Text]
     from django.core.mail import outbox
     key_regex = re.compile("accounts/do_confirm/([a-z0-9]{24})>")
+    for message in reversed(outbox):
+        if address in message.to:
+            return key_regex.search(message.body).groups()[0]
+    return None  # nocoverage -- in theory a test might want this case, but none do
+
+def find_invite_key_by_email(address):
+    # type: (Text) -> Optional[Text]
+    from django.core.mail import outbox
+    key_regex = re.compile("join/([a-z0-9]{24})>")
     for message in reversed(outbox):
         if address in message.to:
             return key_regex.search(message.body).groups()[0]
