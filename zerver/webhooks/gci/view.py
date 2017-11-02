@@ -18,7 +18,7 @@ def get_abandon_event_body(payload):
     # type: (Dict[Text, Any]) -> Text
     return GCI_MESSAGE_TEMPLATE.format(
         actor=payload['task_claimed_by'],
-        action='{}ed'.format(payload['type']),
+        action='{}ed'.format(payload['event_type']),
         task_name=payload['task_definition_name'],
         task_url=payload['task_definition_url'],
     )
@@ -27,7 +27,7 @@ def get_submit_event_body(payload):
     # type: (Dict[Text, Any]) -> Text
     return GCI_MESSAGE_TEMPLATE.format(
         actor=payload['task_claimed_by'],
-        action='{}ted'.format(payload['type']),
+        action='{}ted'.format(payload['event_type']),
         task_name=payload['task_definition_name'],
         task_url=payload['task_definition_url'],
     )
@@ -36,7 +36,7 @@ def get_comment_event_body(payload):
     # type: (Dict[Text, Any]) -> Text
     return GCI_MESSAGE_TEMPLATE.format(
         actor=payload['author'],
-        action='{}ed on'.format(payload['type']),
+        action='{}ed on'.format(payload['event_type']),
         task_name=payload['task_definition_name'],
         task_url=payload['task_definition_url'],
     )
@@ -45,7 +45,7 @@ def get_claim_event_body(payload):
     # type: (Dict[Text, Any]) -> Text
     return GCI_MESSAGE_TEMPLATE.format(
         actor=payload['task_claimed_by'],
-        action='{}ed'.format(payload['type']),
+        action='{}ed'.format(payload['event_type']),
         task_name=payload['task_definition_name'],
         task_url=payload['task_definition_url'],
     )
@@ -54,7 +54,7 @@ def get_approve_event_body(payload):
     # type: (Dict[Text, Any]) -> Text
     return GCI_MESSAGE_TEMPLATE.format(
         actor=payload['author'],
-        action='{}d'.format(payload['type']),
+        action='{}d'.format(payload['event_type']),
         task_name=payload['task_definition_name'],
         task_url=payload['task_definition_url'],
     )
@@ -86,7 +86,7 @@ EVENTS_FUNCTION_MAPPER = {
 
 def get_event(payload):
     # type: (Dict[Text, Any]) -> Optional[Text]
-    event = payload['type']
+    event = payload['event_type']
     if event in EVENTS_FUNCTION_MAPPER:
         return event
 
