@@ -42,6 +42,8 @@ class RequestVariableConversionError(JsonableError):
         # type: () -> str
         return _("Bad value for '{var_name}': {bad_value}")
 
+ConvertT = TypeVar('ConvertT')
+
 # Used in conjunction with @has_request_variables, below
 class REQ(object):
     # NotSpecified is a sentinel value for determining whether a
@@ -53,7 +55,7 @@ class REQ(object):
 
     def __init__(self, whence=None, converter=None, default=NotSpecified,
                  validator=None, argument_type=None):
-        # type: (str, Callable[Any, Any], Any, Callable[Any, Any], str) -> None
+        # type: (str, Callable[[str], ConvertT], ConvertT, Callable[[str], ConvertT], str) -> None
         """whence: the name of the request variable that should be used
         for this parameter.  Defaults to a request variable of the
         same name as the parameter.
