@@ -25,7 +25,7 @@ class HelpDocumentationSpider(BaseDocumentationSpider):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.static_images = set()  # type: Set
+        self.static_images = set()  # type: Set[str]
 
     def _is_external_url(self, url: str) -> bool:
         is_external = url.startswith('http') and 'localhost:9981/help' not in url
