@@ -84,9 +84,9 @@ def always_want(msg_type):
 # all event types.  Whenever you add new code to this function, you
 # should also add corresponding events for changes in the data
 # structures and new code to apply_events (and add a test in EventsRegisterTest).
-def fetch_initial_state_data(user_profile, event_types, queue_id,
+def fetch_initial_state_data(user_profile, event_types, queue_id, client_gravatar,
                              include_subscribers=True):
-    # type: (UserProfile, Optional[Iterable[str]], str, bool) -> Dict[str, Any]
+    # type: (UserProfile, Optional[Iterable[str]], str, bool, bool) -> Dict[str, Any]
     state = {'queue_id': queue_id}  # type: Dict[str, Any]
 
     if event_types is None:
@@ -171,8 +171,16 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
     if want('realm_user'):
         state['raw_users'] = get_raw_user_data(user_profile.realm_id)
         state['avatar_source'] = user_profile.avatar_source
-        state['avatar_url_medium'] = avatar_url(user_profile, medium=True)
-        state['avatar_url'] = avatar_url(user_profile)
+        state['avatar_url_medium'] = avatar_url(
+            user_profile,
+            medium=True,
+            client_gravatar=client_gravatar,
+        )
+        state['avatar_url'] = avatar_url(
+            user_profile,
+            medium=False,
+            client_gravatar=client_gravatar,
+        )
         state['can_create_streams'] = user_profile.can_create_streams()
         state['cross_realm_bots'] = list(get_cross_realm_dicts())
         state['is_admin'] = user_profile.is_realm_admin
@@ -549,6 +557,7 @@ def do_events_register(user_profile, user_client, apply_markdown=True, client_gr
     maybe_catch_up_soft_deactivated_user(user_profile)
 
     ret = fetch_initial_state_data(user_profile, event_types_set, queue_id,
+                                   client_gravatar=client_gravatar,
                                    include_subscribers=include_subscribers)
 
     # Apply events that came in while we were fetching initial data
