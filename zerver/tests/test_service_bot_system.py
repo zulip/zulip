@@ -193,9 +193,6 @@ class TestServiceBotEventTriggers(ZulipTestCase):
                                                  bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
                                                  bot_owner=self.user_profile)
 
-        # TODO: In future versions this won't be required
-        self.subscribe(self.bot_profile, 'Denmark')
-
     @mock.patch('zerver.lib.actions.queue_json_publish')
     def test_trigger_on_stream_mention_from_user(self, mock_queue_json_publish):
         # type: (mock.Mock) -> None
