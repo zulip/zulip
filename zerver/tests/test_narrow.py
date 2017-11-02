@@ -446,7 +446,7 @@ class IncludeHistoryTest(ZulipTestCase):
 class GetOldMessagesTest(ZulipTestCase):
 
     def get_and_check_messages(self, modified_params, **kwargs):
-        # type: (Dict[str, Union[str, int]], **Any) -> Dict[str, Dict]
+        # type: (Dict[str, Union[str, int]], **Any) -> Dict[str, Any]
         post_params = {"anchor": 1, "num_before": 1, "num_after": 1}  # type: Dict[str, Union[str, int]]
         post_params.update(modified_params)
         payload = self.client_get("/json/messages", dict(post_params),
@@ -907,7 +907,7 @@ class GetOldMessagesTest(ZulipTestCase):
             anchor=next_message_id,
             num_before=0,
             num_after=10,
-        ))  # type: Dict[str, Dict]
+        ))  # type: Dict[str, Any]
         self.assertEqual(len(result['messages']), 2)
         messages = result['messages']
 
@@ -917,7 +917,7 @@ class GetOldMessagesTest(ZulipTestCase):
             anchor=next_message_id,
             num_before=0,
             num_after=10,
-        ))  # type: Dict[str, Dict]
+        ))  # type: Dict[str, Any]
         self.assertEqual(len(link_search_result['messages']), 1)
         self.assertEqual(link_search_result['messages'][0]['match_content'],
                          '<p><a href="https://google.com" target="_blank" title="https://google.com">https://<span class="highlight">google.com</span></a></p>')
@@ -949,7 +949,7 @@ class GetOldMessagesTest(ZulipTestCase):
             anchor=next_message_id,
             num_after=10,
             num_before=0,
-        ))  # type: Dict[str, Dict]
+        ))  # type: Dict[str, Any]
         self.assertEqual(len(multi_search_result['messages']), 1)
         self.assertEqual(multi_search_result['messages'][0]['match_content'], '<p><span class="highlight">discuss</span> lunch <span class="highlight">after</span> lunch</p>')
 
@@ -1022,7 +1022,7 @@ class GetOldMessagesTest(ZulipTestCase):
             anchor=0,
             num_after=10,
             num_before=10,
-        ))  # type: Dict[str, Dict]
+        ))  # type: Dict[str, Any]
         self.assertEqual(len(stream_search_result['messages']), 1)
         self.assertEqual(stream_search_result['messages'][0]['match_content'],
                          '<p>Public <span class="highlight">special</span> content!</p>')
@@ -1069,7 +1069,7 @@ class GetOldMessagesTest(ZulipTestCase):
             anchor=next_message_id,
             num_after=10,
             num_before=0,
-        ))  # type: Dict[str, Dict]
+        ))  # type: Dict[str, Any]
         self.assertEqual(len(result['messages']), 4)
         messages = result['messages']
 
@@ -1105,7 +1105,7 @@ class GetOldMessagesTest(ZulipTestCase):
             anchor=next_message_id,
             num_after=10,
             num_before=0,
-        ))  # type: Dict[str, Dict]
+        ))  # type: Dict[str, Any]
         self.assertEqual(len(multi_search_result['messages']), 1)
         self.assertEqual(multi_search_result['messages'][0]['match_content'],
                          '<p><span class="highlight">Can</span> you <span class="highlight">speak</span> <a href="https://en.wikipedia.org/wiki/Japanese" target="_blank" title="https://en.wikipedia.org/wiki/Japanese">https://en.<span class="highlight">wiki</span>pedia.org/<span class="highlight">wiki</span>/Japanese</a>?</p>')
@@ -1131,7 +1131,7 @@ class GetOldMessagesTest(ZulipTestCase):
             anchor=next_message_id,
             num_after=10,
             num_before=0,
-        ))  # type: Dict[str, Dict]
+        ))  # type: Dict[str, Any]
         self.assertEqual(len(link_search_result['messages']), 1)
         self.assertEqual(link_search_result['messages'][0]['match_content'],
                          '<p><a href="https://google.com" target="_blank" title="https://google.com"><span class="highlight">https://google.com</span></a></p>')
@@ -1183,7 +1183,7 @@ class GetOldMessagesTest(ZulipTestCase):
         narrow = [dict(operator='sender', operand=self.example_email("cordelia"))]
         result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow),
                                                   anchor=anchor, num_before=0,
-                                                  num_after=0))  # type: Dict[str, Dict]
+                                                  num_after=0))  # type: Dict[str, Any]
         self.assertEqual(len(result['messages']), 1)
 
         narrow = [dict(operator='is', operand='mentioned')]
@@ -1655,7 +1655,7 @@ class GetOldMessagesTest(ZulipTestCase):
             narrow=ujson.dumps(narrow),
             anchor=next_message_id,
             num_after=10,
-        ))  # type: Dict[str, Dict]
+        ))  # type: Dict[str, Any]
         self.assertEqual(len(result['messages']), 0)
 
         narrow = [
