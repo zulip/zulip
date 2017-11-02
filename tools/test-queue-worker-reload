@@ -35,7 +35,7 @@ successful_worker_launches = [
 ]
 
 def check_worker_launch(logfile):
-    # type: (IO) -> Text
+    # type: (IO[str]) -> Text
     def check(content):
         # type: (str) -> bool
         flag = True
