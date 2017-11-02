@@ -2058,49 +2058,54 @@ class ClientDescriptorsTest(ZulipTestCase):
         cordelia = self.example_user('cordelia')
         realm = hamlet.realm
 
-        clear_client_event_queues_for_testing()
+        def test_get_info(apply_markdown):
+            # type: (bool) -> None
+            clear_client_event_queues_for_testing()
 
-        queue_data = dict(
-            all_public_streams=False,
-            apply_markdown=True,
-            client_type_name='website',
-            event_types=['message'],
-            last_connection_time=time.time(),
-            queue_timeout=0,
-            realm_id=realm.id,
-            user_profile_id=hamlet.id,
-        )
+            queue_data = dict(
+                all_public_streams=False,
+                apply_markdown=apply_markdown,
+                client_type_name='website',
+                event_types=['message'],
+                last_connection_time=time.time(),
+                queue_timeout=0,
+                realm_id=realm.id,
+                user_profile_id=hamlet.id,
+            )
 
-        client = allocate_client_descriptor(queue_data)
+            client = allocate_client_descriptor(queue_data)
 
-        message_event = dict(
-            realm_id=realm.id,
-            stream_name='whatever',
-        )
+            message_event = dict(
+                realm_id=realm.id,
+                stream_name='whatever',
+            )
 
-        client_info = get_client_info_for_message_event(
-            message_event,
-            users=[
-                dict(id=cordelia.id),
-            ],
-        )
+            client_info = get_client_info_for_message_event(
+                message_event,
+                users=[
+                    dict(id=cordelia.id),
+                ],
+            )
 
-        self.assertEqual(len(client_info), 0)
+            self.assertEqual(len(client_info), 0)
 
-        client_info = get_client_info_for_message_event(
-            message_event,
-            users=[
-                dict(id=cordelia.id),
-                dict(id=hamlet.id, flags=['mentioned']),
-            ],
-        )
-        self.assertEqual(len(client_info), 1)
+            client_info = get_client_info_for_message_event(
+                message_event,
+                users=[
+                    dict(id=cordelia.id),
+                    dict(id=hamlet.id, flags=['mentioned']),
+                ],
+            )
+            self.assertEqual(len(client_info), 1)
 
-        dct = client_info[client.event_queue.id]
-        self.assertEqual(dct['client'].apply_markdown, True)
-        self.assertEqual(dct['client'].user_profile_id, hamlet.id)
-        self.assertEqual(dct['flags'], ['mentioned'])
-        self.assertEqual(dct['is_sender'], False)
+            dct = client_info[client.event_queue.id]
+            self.assertEqual(dct['client'].apply_markdown, apply_markdown)
+            self.assertEqual(dct['client'].user_profile_id, hamlet.id)
+            self.assertEqual(dct['flags'], ['mentioned'])
+            self.assertEqual(dct['is_sender'], False)
+
+        test_get_info(apply_markdown=False)
+        test_get_info(apply_markdown=True)
 
     def test_process_message_event_with_mocked_client_info(self):
         # type: () -> None
