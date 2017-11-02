@@ -6,12 +6,9 @@ from mypy_extensions import TypedDict
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
-from django.utils.timezone import now as timezone_now
 from collections import deque
-import datetime
 import os
 import time
-import socket
 import logging
 import ujson
 import requests
@@ -21,9 +18,8 @@ import signal
 import tornado.autoreload
 import tornado.ioloop
 import random
-import traceback
 from zerver.models import UserProfile, Client
-from zerver.decorator import RespondAsynchronously, cachify
+from zerver.decorator import cachify
 from zerver.tornado.handlers import clear_handler_by_id, get_handler_by_id, \
     finish_handler, handler_stats_string
 from zerver.lib.utils import statsd
@@ -32,7 +28,6 @@ from zerver.lib.message import MessageDict
 from zerver.lib.narrow import build_narrow_filter
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.request import JsonableError
-from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
 from zerver.tornado.exceptions import BadEventQueueIdError
 import copy
