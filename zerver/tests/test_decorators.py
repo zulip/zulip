@@ -187,7 +187,7 @@ class DecoratorTestCase(TestCase):
         # type: () -> None
         @has_request_variables
         def get_payload(request, payload=REQ(argument_type='body')):
-            # type: (HttpRequest, Dict[str, Dict]) -> Dict[str, Dict]
+            # type: (HttpRequest, Dict[str, Any]) -> Dict[str, Any]
             return payload
 
         class MockRequest(object):
@@ -207,7 +207,7 @@ class DecoratorTestCase(TestCase):
         with self.assertRaises(Exception) as cm:
             @has_request_variables
             def test(request, payload=REQ(argument_type="invalid")):
-                # type: (HttpRequest, Dict[str, Dict]) -> None
+                # type: (HttpRequest, Any) -> None  # Any is ok; exception should occur in decorator
                 pass  # nocoverage # this function isn't meant to be called
             test(request)
 
@@ -953,7 +953,7 @@ class TestInternalNotifyView(TestCase):
 
     class Request(object):
         def __init__(self, POST, META):
-            # type: (Dict, Dict) -> None
+            # type: (Dict[str, Any], Dict[str, Any]) -> None
             self.POST = POST
             self.META = META
             self.method = 'POST'
