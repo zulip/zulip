@@ -60,7 +60,7 @@
       "name": "complexly_nested_quote",
       "input": "I heard about this second hand...\n~~~ quote\n\nHe said:\n~~~ quote\nThe customer is complaining.\n\nThey looked at this code:\n``` \ndef hello(): print 'hello\n```\nThey would prefer:\n~~~\ndef hello()\n  puts 'hello'\nend\n~~~\n\nPlease advise.\n~~~\n\nShe said:\n~~~ quote\nJust send them this:\n```\necho \"hello\n\"\n```\n~~~",
       "expected_output": "<p>I heard about this second hand...</p>\n<blockquote>\n<p>He said:</p>\n<blockquote>\n<p>The customer is complaining.</p>\n<p>They looked at this code:</p>\n<div class=\"codehilite\"><pre><span></span>def hello(): print &#39;hello\n</pre></div>\n\n\n<p>They would prefer:</p>\n</blockquote>\n<p>def hello()<br>\n  puts 'hello'<br>\nend</p>\n</blockquote>\n<p>Please advise.</p>\n<div class=\"codehilite\"><pre><span></span>She said:\n~~~ quote\nJust send them this:\n```\necho &quot;hello\n&quot;\n```\n</pre></div>",
-      "bugdown_matches_marked": false,
+      "marked_expected_output": "<p>I heard about this second hand...</p>\n<blockquote>\n<p>He said:</p>\n<blockquote>\n<p>The customer is complaining.</p>\n<p>They looked at this code:</p>\n<div class=\"codehilite\"><pre><span></span>def hello(): print &#39;hello\n</pre></div>\n\n\n<p>They would prefer:</p>\n</blockquote>\n<p>def hello()<br>\n  puts &#39;hello&#39;<br>\nend</p>\n</blockquote>\n<p>Please advise.</p>\n<div class=\"codehilite\"><pre><span></span>\nShe said:\n~~~ quote\nJust send them this:\n```\necho &quot;hello\n&quot;\n```\n</pre></div>",
       "text_content": "I heard about this second hand...\n\nHe said:\n\nThe customer is complaining.\nThey looked at this code:\ndef hello(): print 'hello\n\n\n\nThey would prefer:\n\ndef hello()\n  puts 'hello'\nend\n\nPlease advise.\nShe said:\n~~~ quote\nJust send them this:\n```\necho \"hello\n\"\n```\n"
     },
     {
@@ -74,7 +74,7 @@
       "name": "dangerous_block",
       "input": "xxxxxx xxxxx xxxxxxxx xxxx. x xxxx xxxxxxxxxx:\n\n```\"xxxx xxxx\\xxxxx\\xxxxxx\"```\n\nxxx xxxx xxxxx:```xx.xxxxxxx(x'^xxxx$', xx.xxxxxxxxx)```\n\nxxxxxxx'x xxxx xxxxxxxxxx ```'xxxx'```, xxxxx xxxxxxxxx xxxxx ^ xxx $ xxxxxx xxxxx xxxxxxxxxxxx xxx xxxx xx x xxxx xx xxxx xx xxx xxxxx xxxxxx?",
       "expected_output": "<p>xxxxxx xxxxx xxxxxxxx xxxx. x xxxx xxxxxxxxxx:</p>\n<p><code>\"xxxx xxxx\\xxxxx\\xxxxxx\"</code></p>\n<p>xxx xxxx xxxxx:<code>xx.xxxxxxx(x'^xxxx$', xx.xxxxxxxxx)</code></p>\n<p>xxxxxxx'x xxxx xxxxxxxxxx <code>'xxxx'</code>, xxxxx xxxxxxxxx xxxxx ^ xxx $ xxxxxx xxxxx xxxxxxxxxxxx xxx xxxx xx x xxxx xx xxxx xx xxx xxxxx xxxxxx?</p>",
-      "bugdown_matches_marked": false,
+      "marked_expected_output": "<p>xxxxxx xxxxx xxxxxxxx xxxx. x xxxx xxxxxxxxxx:</p>\n<p><code>&quot;xxxx xxxx\\xxxxx\\xxxxxx&quot;</code></p>\n<p>xxx xxxx xxxxx:<code>xx.xxxxxxx(x&#39;^xxxx$&#39;, xx.xxxxxxxxx)</code></p>\n<p>xxxxxxx&#39;x xxxx xxxxxxxxxx <code>&#39;xxxx&#39;</code>, xxxxx xxxxxxxxx xxxxx ^ xxx $ xxxxxx xxxxx xxxxxxxxxxxx xxx xxxx xx x xxxx xx xxxx xx xxx xxxxx xxxxxx?</p>",
       "text_content": "xxxxxx xxxxx xxxxxxxx xxxx. x xxxx xxxxxxxxxx:\n\"xxxx xxxx\\xxxxx\\xxxxxx\"\nxxx xxxx xxxxx:xx.xxxxxxx(x'^xxxx$', xx.xxxxxxxxx)\nxxxxxxx'x xxxx xxxxxxxxxx 'xxxx', xxxxx xxxxxxxxx xxxxx ^ xxx $ xxxxxx xxxxx xxxxxxxxxxxx xxx xxxx xx x xxxx xx xxxx xx xxx xxxxx xxxxxx?"
     },
     {
@@ -116,7 +116,7 @@
       "name": "ulist_hanging_mixed",
       "input": "Plain list\n\n* Alpha\n\n* Beta\n\nThen hang it off:\n* Ypsilon\n* Zeta",
       "expected_output": "<p>Plain list</p>\n<ul>\n<li>\n<p>Alpha</p>\n</li>\n<li>\n<p>Beta</p>\n</li>\n</ul>\n<p>Then hang it off:</p>\n<ul>\n<li>Ypsilon</li>\n<li>Zeta</li>\n</ul>",
-      "bugdown_matches_marked": false,
+      "marked_expected_output": "<p>Plain list</p>\n<ul>\n<li><p>Alpha</p>\n</li>\n<li><p>Beta</p>\n</li>\n</ul>\n<p>Then hang it off:</p>\n<ul>\n<li>Ypsilon</li>\n<li>Zeta</li>\n</ul>",
       "text_content": "Plain list\n\n\nAlpha\n\n\nBeta\n\n\nThen hang it off:\n\nYpsilon\nZeta\n"
     },
     {
@@ -273,7 +273,7 @@
       "name": "multiline_strong",
       "input": "You can check out **any time you'd like\nBut you can never leave**",
       "expected_output": "<p>You can check out **any time you'd like<br>\nBut you can never leave**</p>",
-      "bugdown_matches_marked": false,
+      "marked_expected_output": "<p>You can check out <strong>any time you&#39;d like<br>\nBut you can never leave</strong></p>",
       "text_content": "You can check out **any time you'd like\nBut you can never leave**"
     },
     {
@@ -424,7 +424,7 @@
       "name": "safe_html_with_simple_script_tag",
       "input": "<script>alert(1)</script>",
       "expected_output": "<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>",
-      "bugdown_matches_marked": false,
+      "marked_expected_output": "<p>&lt;script&gt;alert(1)&lt;/script&gt;\n\n</p>",
       "text_content": "<script>alert(1)<\/script>"
     },
     {
@@ -445,7 +445,7 @@
       "name": "safe_html_messed_up_complexly_nested_script_tags",
       "input": "<scr<script></script>ipt type=\"text/javascript\">alert(\"foo\");</<script></script>script<del></del>>",
       "expected_output": "<p>&lt;scr&lt;script&gt;&lt;/script&gt;ipt type=\"text/javascript\"&gt;alert(\"foo\");&lt;/&lt;script&gt;&lt;/script&gt;script&lt;del&gt;&lt;/del&gt;&gt;</p>",
-      "bugdown_matches_marked": false
+      "marked_expected_output": "<p>&lt;scr&lt;script&gt;&lt;/script&gt;ipt type=&quot;text/javascript&quot;&gt;alert(&quot;foo&quot;);&lt;/&lt;script&gt;&lt;/script&gt;script&lt;del&gt;&lt;/del&gt;&gt;</p>"
     },
     {
       "name": "safe_html_unclosed_tag",
@@ -477,7 +477,7 @@
       "name": "modal_link",
       "input": "!modal_link(#settings, Settings page)",
       "expected_output": "<p><a href=\"#settings\" title=\"#settings\">Settings page</a></p>",
-      "bugdown_matches_marked": false,
+      "marked_expected_output": "<p>!modal_link(#settings, Settings page)</p>",
       "text_content": "Settings page"
     },
     {
@@ -519,7 +519,7 @@
       "name": "stream_subscribe_button",
       "input": "!_stream_subscribe_button(streamname)",
       "expected_output": "<p><span class=\"inline-subscribe\" data-stream-name=\"streamname\"><button class=\"inline-subscribe-button btn\">Subscribe to streamname</button><span class=\"inline-subscribe-error\"></span></span></p>",
-      "bugdown_matches_marked": false,
+      "marked_expected_output": "<p>!_stream_subscribe_button(streamname)</p>",
       "text_content": "Subscribe to streamname"
     },
     {
@@ -533,7 +533,7 @@
       "name": "tex_inline",
       "input": "$$1 \\oplus 0 = 1$$",
       "expected_output": "<p><span class=\"katex\"><span class=\"katex-mathml\"><math><semantics><mrow><mn>1</mn><mo>⊕</mo><mn>0</mn><mo>=</mo><mn>1</mn></mrow><annotation encoding=\"application/x-tex\">1 \\oplus 0 = 1</annotation></semantics></math></span><span aria-hidden=\"true\" class=\"katex-html\"><span class=\"strut\" style=\"height:0.64444em;\"></span><span class=\"strut bottom\" style=\"height:0.72777em;vertical-align:-0.08333em;\"></span><span class=\"base textstyle uncramped\"><span class=\"mord mathrm\">1</span><span class=\"mbin\">⊕</span><span class=\"mord mathrm\">0</span><span class=\"mrel\">=</span><span class=\"mord mathrm\">1</span></span></span></span></p>",
-      "bugdown_matches_marked": false
+      "marked_expected_output": "<p><span class=\"katex\"><span class=\"katex-mathml\"><math><semantics><mrow><mn>1</mn><mo>⊕</mo><mn>0</mn><mo>=</mo><mn>1</mn></mrow><annotation encoding=\"application/x-tex\">1 \\oplus 0 = 1</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"strut\" style=\"height:0.64444em;\"></span><span class=\"strut bottom\" style=\"height:0.72777em;vertical-align:-0.08333em;\"></span><span class=\"base textstyle uncramped\"><span class=\"mord mathrm\">1</span><span class=\"mbin\">⊕</span><span class=\"mord mathrm\">0</span><span class=\"mrel\">=</span><span class=\"mord mathrm\">1</span></span></span></span></p>"
     },
     {
       "name": "tex_complex",
@@ -569,7 +569,7 @@
       "name": "tex_money",
       "input": "Tickets are $5 to $20 for youth, $10-$30 for adults, so we are hoping to bring in $500 from the event ($$x \\approx 500\\$$$)",
       "expected_output": "<p>Tickets are $5 to $20 for youth, $10-$30 for adults, so we are hoping to bring in $500 from the event (<span class=\"katex\"><span class=\"katex-mathml\"><math><semantics><mrow><mi>x</mi><mo>≈</mo><mn>5</mn><mn>0</mn><mn>0</mn><mi mathvariant=\"normal\">$</mi></mrow><annotation encoding=\"application/x-tex\">x \\approx 500\\$</annotation></semantics></math></span><span aria-hidden=\"true\" class=\"katex-html\"><span class=\"strut\" style=\"height:0.75em;\"></span><span class=\"strut bottom\" style=\"height:0.80556em;vertical-align:-0.05556em;\"></span><span class=\"base textstyle uncramped\"><span class=\"mord mathit\">x</span><span class=\"mrel\">≈</span><span class=\"mord mathrm\">5</span><span class=\"mord mathrm\">0</span><span class=\"mord mathrm\">0</span><span class=\"mord mathrm\">$</span></span></span></span>)</p>",
-      "bugdown_matches_marked": false
+      "marked_expected_output": "<p>Tickets are $5 to $20 for youth, $10-$30 for adults, so we are hoping to bring in $500 from the event (<span class=\"katex\"><span class=\"katex-mathml\"><math><semantics><mrow><mi>x</mi><mo>≈</mo><mn>5</mn><mn>0</mn><mn>0</mn><mi mathvariant=\"normal\">$</mi></mrow><annotation encoding=\"application/x-tex\">x \\approx 500\\$</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"strut\" style=\"height:0.75em;\"></span><span class=\"strut bottom\" style=\"height:0.80556em;vertical-align:-0.05556em;\"></span><span class=\"base textstyle uncramped\"><span class=\"mord mathit\">x</span><span class=\"mrel\">≈</span><span class=\"mord mathrm\">5</span><span class=\"mord mathrm\">0</span><span class=\"mord mathrm\">0</span><span class=\"mord mathrm\">$</span></span></span></span>)</p>"
     },
     {
       "name": "tex_dollar_smiley",
@@ -599,7 +599,7 @@
       "name": "tex_error_safe_script_tag",
       "input": "$$\\<script type='text/javascript'>alert('xss');</script>$$\n\n~~~math\n\\<script type='text/javascript'>alert('xss');</script>\n~~~",
       "expected_output": "<p><span class=\"tex-error\">$$\\&lt;script type='text/javascript'&gt;alert('xss');&lt;/script&gt;$$</span></p>\n<p><span class=\"tex-error\">\\&lt;script type=&#39;text/javascript&#39;&gt;alert(&#39;xss&#39;);&lt;/script&gt;</span></p>",
-      "bugdown_matches_marked": false
+      "marked_expected_output": "<p><span class=\"tex-error\">$$\\&lt;script type=&#39;text/javascript&#39;&gt;alert(&#39;xss&#39;);&lt;/script&gt;$$</span></p>\n<span class=\"tex-error\">\\&lt;script type=&#39;text/javascript&#39;&gt;alert(&#39;xss&#39;);&lt;/script&gt;</span>"
     }
   ],
   "linkify_tests": [
