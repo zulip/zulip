@@ -23,7 +23,7 @@ from zerver.models import (
     Realm,
 )
 
-import datetime
+from datetime import timedelta, datetime
 from email.utils import formataddr
 import lxml.html
 import re
@@ -31,6 +31,7 @@ import subprocess
 import ujson
 import urllib
 from collections import defaultdict
+import pytz
 
 def one_click_unsubscribe_link(user_profile: UserProfile, email_type: str) -> str:
     """
@@ -434,6 +435,25 @@ def log_digest_event(msg: Text) -> None:
     logging.basicConfig(filename=settings.DIGEST_LOG_PATH, level=logging.INFO)
     logging.info(msg)
 
+def followup_day2_email_delay(user: UserProfile) -> timedelta:
+    days_to_delay = 2
+    user_tz = user.timezone
+    if user_tz == '':
+        user_tz = 'UTC'
+    signup_day = user.date_joined.astimezone(pytz.timezone(user_tz)).isoweekday()
+    if signup_day == 5:
+        # If the day is Friday then delay should be till Monday
+        days_to_delay = 3
+    elif signup_day == 4:
+        # If the day is Thursday then delay should be till Friday
+        days_to_delay = 1
+
+    # The delay should be 1 hour before the above calculated delay as
+    # our goal is to maximize the chance that this email is near the top
+    # of the user's inbox when the user sits down to deal with their inbox,
+    # or comes in while they are dealing with their inbox.
+    return timedelta(days=days_to_delay, hours=-1)
+
 def enqueue_welcome_emails(user: UserProfile) -> None:
     from zerver.context_processors import common_context
     if settings.WELCOME_EMAIL_SENDER is not None:
@@ -457,7 +477,7 @@ def enqueue_welcome_emails(user: UserProfile) -> None:
         from_address=from_address, context=context)
     send_future_email(
         "zerver/emails/followup_day2", user.realm, to_user_id=user.id, from_name=from_name,
-        from_address=from_address, context=context, delay=datetime.timedelta(days=1))
+        from_address=from_address, context=context, delay=followup_day2_email_delay(user))
 
 def convert_html_to_markdown(html: Text) -> Text:
     # On Linux, the tool installs as html2markdown, and there's a command called

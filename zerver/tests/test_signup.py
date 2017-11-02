@@ -47,7 +47,7 @@ from zerver.lib.actions import (
 from zerver.lib.mobile_auth_otp import xor_hex_strings, ascii_to_hex, \
     otp_encrypt_api_key, is_valid_otp, hex_to_ascii, otp_decrypt_api_key
 from zerver.lib.notifications import enqueue_welcome_emails, \
-    one_click_unsubscribe_link
+    one_click_unsubscribe_link, followup_day2_email_delay
 from zerver.lib.subdomains import is_root_domain_available
 from zerver.lib.test_helpers import find_key_by_email, queries_captured, \
     HostRequestMock, load_subdomain_token
@@ -67,6 +67,7 @@ from typing import Any, Dict, List, Optional, Set, Text
 
 import urllib
 import os
+import pytz
 
 class RedirectAndLogIntoSubdomainTestCase(ZulipTestCase):
     def test_cookie_data(self) -> None:
@@ -2505,3 +2506,25 @@ class LoginOrAskForRegistrationTestCase(ZulipTestCase):
         self.assertEqual(user_id, user_profile.id)
         self.assertEqual(response.status_code, 302)
         self.assertIn('http://zulip.testserver', response.url)
+
+class FollowupEmailTest(ZulipTestCase):
+    def test_followup_day2_email(self) -> None:
+        user_profile = self.example_user('hamlet')
+        # Test date_joined == Sunday
+        user_profile.date_joined = datetime.datetime(2018, 1, 7, 1, 0, 0, 0, pytz.UTC)
+        self.assertEqual(followup_day2_email_delay(user_profile), datetime.timedelta(days=2, hours=-1))
+        # Test date_joined == Tuesday
+        user_profile.date_joined = datetime.datetime(2018, 1, 2, 1, 0, 0, 0, pytz.UTC)
+        self.assertEqual(followup_day2_email_delay(user_profile), datetime.timedelta(days=2, hours=-1))
+        # Test date_joined == Thursday
+        user_profile.date_joined = datetime.datetime(2018, 1, 4, 1, 0, 0, 0, pytz.UTC)
+        self.assertEqual(followup_day2_email_delay(user_profile), datetime.timedelta(days=1, hours=-1))
+        # Test date_joined == Friday
+        user_profile.date_joined = datetime.datetime(2018, 1, 5, 1, 0, 0, 0, pytz.UTC)
+        self.assertEqual(followup_day2_email_delay(user_profile), datetime.timedelta(days=3, hours=-1))
+
+        # Time offset of America/Phoenix is -07:00
+        user_profile.timezone = 'America/Phoenix'
+        # Test date_joined == Friday in UTC, but Thursday in the user's timezone
+        user_profile.date_joined = datetime.datetime(2018, 1, 5, 1, 0, 0, 0, pytz.UTC)
+        self.assertEqual(followup_day2_email_delay(user_profile), datetime.timedelta(days=1, hours=-1))
