@@ -59,6 +59,15 @@ def get_approve_event_body(payload):
         task_url=payload['task_definition_url'],
     )
 
+def get_needswork_event_body(payload):
+    # type: (Dict[Text, Any]) -> Text
+    template = "{} for more work.".format(GCI_MESSAGE_TEMPLATE.rstrip('.'))
+    return template.format(
+        actor=payload['author'],
+        action='submitted',
+        task_name=payload['task_definition_name'],
+        task_url=payload['task_definition_url'],
+    )
 
 @api_key_only_webhook_view("Google-Code-In")
 @has_request_variables
@@ -78,10 +87,11 @@ def api_gci_webhook(request, user_profile, stream=REQ(default='gci'),
 
 EVENTS_FUNCTION_MAPPER = {
     'abandon': get_abandon_event_body,
-    'comment': get_comment_event_body,
-    'submit': get_submit_event_body,
-    'claim': get_claim_event_body,
     'approve': get_approve_event_body,
+    'claim': get_claim_event_body,
+    'comment': get_comment_event_body,
+    'needswork': get_needswork_event_body,
+    'submit': get_submit_event_body,
 }
 
 def get_event(payload):
