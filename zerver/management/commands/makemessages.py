@@ -46,8 +46,8 @@ from django.utils.translation import template
 
 from zerver.lib.str_utils import force_text
 
-strip_whitespace_right = re.compile(u"(%s-?\\s*(trans|pluralize).*?-%s)\\s+" % (BLOCK_TAG_START, BLOCK_TAG_END), re.U)
-strip_whitespace_left = re.compile(u"\\s+(%s-\\s*(endtrans|pluralize).*?-?%s)" % (
+strip_whitespace_right = re.compile("(%s-?\\s*(trans|pluralize).*?-%s)\\s+" % (BLOCK_TAG_START, BLOCK_TAG_END), re.U)
+strip_whitespace_left = re.compile("\\s+(%s-\\s*(endtrans|pluralize).*?-?%s)" % (
                                    BLOCK_TAG_START, BLOCK_TAG_END), re.U)
 
 regexes = ['{{#tr .*?}}([\s\S]*?){{/tr}}',  # '.' doesn't match '\n' by default
@@ -64,8 +64,8 @@ multiline_js_comment = re.compile("/\*.*?\*/", re.DOTALL)
 singleline_js_comment = re.compile("//.*?\n")
 
 def strip_whitespaces(src: Text) -> Text:
-    src = strip_whitespace_left.sub(u'\\1', src)
-    src = strip_whitespace_right.sub(u'\\1', src)
+    src = strip_whitespace_left.sub('\\1', src)
+    src = strip_whitespace_right.sub('\\1', src)
     return src
 
 class Command(makemessages.Command):
