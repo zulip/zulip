@@ -403,7 +403,11 @@ class ParallelTestSuite(django_runner.ParallelTestSuite):
     def __init__(self, suite, processes, failfast):
         # type: (TestSuite, int, bool) -> None
         super().__init__(suite, processes, failfast)
-        self.subsuites = SubSuiteList(self.subsuites)  # type: SubSuiteList
+        # We can't specify a consistent type for self.subsuites, since
+        # the whole idea here is to monkey-patch that so we can use
+        # most of django_runner.ParallelTestSuite with our own suite
+        # definitions.
+        self.subsuites = SubSuiteList(self.subsuites)  # type: ignore # Type of self.subsuites changes.
 
 class Runner(DiscoverRunner):
     test_suite = TestSuite
@@ -527,7 +531,7 @@ def deserialize_suite(args):
 class RemoteTestRunner(django_runner.RemoteTestRunner):
     resultclass = RemoteTestResult
 
-class SubSuiteList(list):
+class SubSuiteList(List[Tuple[Type[TestSuite], List[str]]]):
     """
     This class allows us to avoid changing the main logic of
     ParallelTestSuite and still make it serializable.
