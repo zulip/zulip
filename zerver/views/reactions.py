@@ -3,7 +3,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 from typing import Text
 
-from zerver.decorator import authenticated_json_post_view,\
+from zerver.decorator import \
     has_request_variables, REQ, to_non_negative_int
 from zerver.lib.actions import do_add_reaction_legacy,\
     do_remove_reaction_legacy

@@ -7,7 +7,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 
-from zerver.decorator import authenticated_json_post_view, has_request_variables, \
+from zerver.decorator import has_request_variables, \
     zulip_login_required, REQ, human_users_only
 from zerver.lib.actions import do_change_password, \
     do_change_enter_sends, do_change_notification_settings, \

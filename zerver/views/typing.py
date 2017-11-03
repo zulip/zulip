@@ -2,8 +2,7 @@
 from django.http import HttpRequest, HttpResponse
 from typing import List, Text
 
-from zerver.decorator import authenticated_json_post_view,\
-    has_request_variables, REQ, JsonableError
+from zerver.decorator import has_request_variables, REQ, JsonableError
 from zerver.lib.actions import check_send_typing_notification, \
     extract_recipients
 from zerver.lib.response import json_success

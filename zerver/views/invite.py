@@ -5,7 +5,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 from typing import List, Optional, Set, Text
 
-from zerver.decorator import authenticated_json_post_view, require_realm_admin, to_non_negative_int
+from zerver.decorator import require_realm_admin, to_non_negative_int
 from zerver.lib.actions import do_invite_users, do_revoke_user_invite, do_resend_user_invite_email, \
     get_default_subs, do_get_user_invites
 from zerver.lib.request import REQ, has_request_variables, JsonableError
