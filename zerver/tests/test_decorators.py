@@ -103,13 +103,13 @@ class DecoratorTestCase(TestCase):
         # type: () -> None
 
         def my_converter(data):
-            # type: (str) -> List[str]
+            # type: (str) -> List[int]
             lst = ujson.loads(data)
             if not isinstance(lst, list):
                 raise ValueError('not a list')
             if 13 in lst:
                 raise JsonableError('13 is an unlucky number!')
-            return lst
+            return [int(elem) for elem in lst]
 
         @has_request_variables
         def get_total(request, numbers=REQ(converter=my_converter)):
@@ -149,7 +149,7 @@ class DecoratorTestCase(TestCase):
         with self.assertRaisesRegex(AssertionError, "converter and validator are mutually exclusive"):
             @has_request_variables
             def get_total(request, numbers=REQ(validator=check_list(check_int),
-                                               converter=lambda: None)):
+                                               converter=lambda x: [])):
                 # type: (HttpRequest, Iterable[int]) -> int
                 return sum(numbers)  # nocoverage -- isn't intended to be run
 
