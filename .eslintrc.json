@@ -18,6 +18,7 @@
         "Dropbox": false,
         "SockJS": false,
         "marked": false,
+        "md5": false,
         "moment": false,
         "i18n": false,
         "DynamicText": false,

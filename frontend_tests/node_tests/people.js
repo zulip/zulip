@@ -1,12 +1,13 @@
-add_dependencies({
-    util: 'js/util.js',
-});
+zrequire('util');
+zrequire('people');
 
-var people = require("js/people.js");
 set_global('blueslip', {
     error: function () { return undefined; },
 });
 set_global('page_params', {});
+set_global('md5', function (s) {
+    return 'md5-' + s;
+});
 
 var _ = global._;
 
@@ -392,6 +393,23 @@ initialize();
         'athens@example.com');
     assert.equal(people.small_avatar_url(message),
         'legacy.png&s=50');
+
+    message = {
+        avatar_url: undefined,
+        sender_id: maria.user_id,
+    };
+    assert.equal(people.small_avatar_url(message),
+        'https://secure.gravatar.com/avatar/md5-athens@example.com?d=identicon&s=50'
+    );
+
+    message = {
+        avatar_url: undefined,
+        sender_email: 'foo@example.com',
+        sender_id: 9999999,
+    };
+    assert.equal(people.small_avatar_url(message),
+        'https://secure.gravatar.com/avatar/md5-foo@example.com?d=identicon&s=50'
+    );
 
     message = {
         type: 'private',

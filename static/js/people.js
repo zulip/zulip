@@ -508,14 +508,29 @@ exports.small_avatar_url = function (message) {
         person = exports.get_person_from_user_id(message.sender_id);
     }
 
+    var email;
+
     // The first time we encounter a sender in a message, we may
     // not have person.avatar_url set, but if we do, then use that.
-    if (person && person.avatar_url) {
+    if (person) {
         url = person.avatar_url;
-    } else if (message.avatar_url) {
-        // Here we fall back to using the avatar_url from the message
-        // itself.
+        email = person.email;
+    }
+
+    // Try to get info from the message if we didn't have a `person` object
+    // or if the avatar was missing. We do this verbosely to avoid false
+    // positives on line coverage (we don't do branch checking).
+    if (!url) {
         url = message.avatar_url;
+    }
+
+    if (!email) {
+        email = message.sender_email;
+    }
+
+    if (!url) {
+        var hash = md5(email);
+        url = 'https://secure.gravatar.com/avatar/' + hash + '?d=identicon';
     }
 
     if (url) {

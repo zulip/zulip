@@ -7,6 +7,7 @@
   "dependencies": {
     "@types/node": "8.0.34",
     "@types/webpack": "3.0.13",
+    "blueimp-md5": "2.10.0",
     "clipboard": "1.5.16",
     "emoji-datasource": "3.0.0",
     "emoji-datasource-apple": "3.0.0",
