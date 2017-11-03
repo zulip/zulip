@@ -102,12 +102,12 @@ def _get_unversioned_gravatar_url(email, medium):
     if settings.ENABLE_GRAVATAR:
         gravitar_query_suffix = "&s=%s" % (MEDIUM_AVATAR_SIZE,) if medium else ""
         hash_key = gravatar_hash(email)
-        return u"https://secure.gravatar.com/avatar/%s?d=identicon%s" % (hash_key, gravitar_query_suffix)
+        return "https://secure.gravatar.com/avatar/%s?d=identicon%s" % (hash_key, gravitar_query_suffix)
     return settings.DEFAULT_AVATAR_URI+'?x=x'
 
 def _get_unversioned_avatar_url(user_profile_id, avatar_source, realm_id, email=None, medium=False):
     # type: (int, Text, int, Optional[Text], bool) -> Text
-    if avatar_source == u'U':
+    if avatar_source == 'U':
         hash_key = user_avatar_path_from_ids(user_profile_id, realm_id)
         return upload_backend.get_avatar_url(hash_key, medium=medium)
     assert email is not None

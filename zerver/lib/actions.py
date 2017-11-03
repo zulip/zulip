@@ -151,7 +151,7 @@ def log_event(event):
 
     with lockfile(template % ('lock',)):
         with open(template % ('events',), 'a') as log:
-            log.write(force_str(ujson.dumps(event) + u'\n'))
+            log.write(force_str(ujson.dumps(event) + '\n'))
 
 def can_access_stream_user_ids(stream):
     # type: (Stream) -> Set[int]
@@ -3732,7 +3732,7 @@ def user_email_is_unique(email):
     # type: (Text) -> None
     try:
         get_user_profile_by_email(email)
-        raise ValidationError(u'%s already has an account' % (email,))
+        raise ValidationError('%s already has an account' % (email,))
     except UserProfile.DoesNotExist:
         pass
 
@@ -3746,10 +3746,10 @@ def validate_email_for_realm(target_realm, email):
     if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
         # Mirror dummy users to be activated must be inactive
         if existing_user_profile.is_active:
-            raise ValidationError(u'%s already has an account' % (email,))
+            raise ValidationError('%s already has an account' % (email,))
     elif existing_user_profile:
         # Other users should not already exist at all.
-        raise ValidationError(u'%s already has an account' % (email,))
+        raise ValidationError('%s already has an account' % (email,))
 
 def validate_email(user_profile, email):
     # type: (UserProfile, Text) -> Tuple[Optional[str], Optional[str]]

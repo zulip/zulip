@@ -1,12 +1,12 @@
 from typing import Optional, Any, Dict, List, Text, Tuple
 from collections import defaultdict
-SUBJECT_WITH_BRANCH_TEMPLATE = u'{repo} / {branch}'
-SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE = u'{repo} / {type} #{id} {title}'
+SUBJECT_WITH_BRANCH_TEMPLATE = '{repo} / {branch}'
+SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE = '{repo} / {type} #{id} {title}'
 
 EMPTY_SHA = '0000000000000000000000000000000000000000'
 
 COMMITS_LIMIT = 20
-COMMIT_ROW_TEMPLATE = u'* {commit_msg} ([{commit_short_sha}]({commit_url}))\n'
+COMMIT_ROW_TEMPLATE = '* {commit_msg} ([{commit_short_sha}]({commit_url}))\n'
 COMMITS_MORE_THAN_LIMIT_TEMPLATE = u"[and {commits_number} more commit(s)]"
 COMMIT_OR_COMMITS = u"commit{}"
 
@@ -69,7 +69,7 @@ def get_push_commits_event_message(user_name, compare_url, branch_name,
     pushed_text_message = pushed_message_template.format(
         compare_url=compare_url,
         number_of_commits=len(commits_data),
-        commit_or_commits=COMMIT_OR_COMMITS.format(u's' if len(commits_data) > 1 else u''))
+        commit_or_commits=COMMIT_OR_COMMITS.format('s' if len(commits_data) > 1 else ''))
 
     committers_items = get_all_committers(commits_data)  # type: List[Tuple[str, int]]
     if len(committers_items) == 1 and user_name == committers_items[0][0]:
@@ -192,7 +192,7 @@ def get_commits_comment_action_message(user_name, action, commit_url, sha, messa
 
 def get_commits_content(commits_data, is_truncated=False):
     # type: (List[Dict[str, Any]], Optional[bool]) -> Text
-    commits_content = u''
+    commits_content = ''
     for commit in commits_data[:COMMITS_LIMIT]:
         commits_content += COMMIT_ROW_TEMPLATE.format(
             commit_short_sha=get_short_sha(commit['sha']),

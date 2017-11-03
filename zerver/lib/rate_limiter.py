@@ -19,7 +19,7 @@ import logging
 client = get_redis_client()
 rules = settings.RATE_LIMITING_RULES  # type: List[Tuple[int, int]]
 
-KEY_PREFIX = u''
+KEY_PREFIX = ''
 
 class RateLimitedObject(object):
     def get_keys(self):
@@ -59,7 +59,7 @@ class RateLimitedUser(RateLimitedObject):
 def bounce_redis_key_prefix_for_testing(test_name):
     # type: (Text) -> None
     global KEY_PREFIX
-    KEY_PREFIX = test_name + u':' + Text(os.getpid()) + u':'
+    KEY_PREFIX = test_name + ':' + Text(os.getpid()) + ':'
 
 def max_api_calls(entity):
     # type: (RateLimitedObject) -> int

@@ -52,13 +52,13 @@ DEFAULT_EMOJI_SIZE = 64
 # "file name" is the original filename provided by the user run
 # through a sanitization function.
 
-attachment_url_re = re.compile(u'[/\-]user[\-_]uploads[/\.-].*?(?=[ )]|\Z)')
+attachment_url_re = re.compile('[/\-]user[\-_]uploads[/\.-].*?(?=[ )]|\Z)')
 
 def attachment_url_to_path_id(attachment_url):
     # type: (Text) -> Text
-    path_id_raw = re.sub(u'[/\-]user[\-_]uploads[/\.-]', u'', attachment_url)
+    path_id_raw = re.sub('[/\-]user[\-_]uploads[/\.-]', '', attachment_url)
     # Remove any extra '.' after file extension. These are probably added by the user
-    return re.sub(u'[.]+$', u'', path_id_raw, re.M)
+    return re.sub('[.]+$', '', path_id_raw, re.M)
 
 def sanitize_name(raw_value):
     # type: (NonBinaryStr) -> Text
@@ -194,7 +194,7 @@ def upload_image_to_s3(
     key.set_metadata("realm_id", str(user_profile.realm_id))
 
     if content_type is not None:
-        headers = {u'Content-Type': content_type}  # type: Optional[Dict[Text, Text]]
+        headers = {'Content-Type': content_type}  # type: Optional[Dict[Text, Text]]
     else:
         headers = None
 
