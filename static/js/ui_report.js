@@ -18,22 +18,33 @@ exports.message = function (response, status_box, cls, type) {
         type = ' ';
     }
 
+    // Note we use html() below, since we can rely on our callers escaping HTML
+    // via i18n.t when interpolating data.
     if (type === 'subscriptions-status') {
         status_box.removeClass(common.status_classes).addClass(cls).children('#response')
-              .text(response).stop(true).fadeTo(0, 1);
+              .html(response).stop(true).fadeTo(0, 1);
     } else {
         status_box.removeClass(common.status_classes).addClass(cls)
-              .text(response).stop(true).fadeTo(0, 1);
+              .html(response).stop(true).fadeTo(0, 1);
     }
 
     status_box.addClass("show");
 };
 
+function escape(html) {
+  return html
+    .toString()
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 exports.error = function (response, xhr, status_box, type) {
     if (xhr && xhr.status.toString().charAt(0) === "4") {
         // Only display the error response for 4XX, where we've crafted
         // a nice response.
-        response += ": " + JSON.parse(xhr.responseText).msg;
+        response += ": " + escape(JSON.parse(xhr.responseText).msg);
     }
 
     exports.message(response, status_box, 'alert-error', type);
