@@ -68,9 +68,8 @@ var keypress_mappings = {
     58: {name: 'toggle_reactions_popover', message_view_only: true}, // ':'
     63: {name: 'show_shortcuts', message_view_only: false}, // '?'
     64: {name: 'compose_reply_with_mention', message_view_only: true}, // '@'
-    65: {name: 'stream_cycle_backward', message_view_only: true}, // 'A'
     67: {name: 'compose_private_message', message_view_only: true}, // 'C'
-    68: {name: 'stream_cycle_forward', message_view_only: true}, // 'D'
+    68: {name: 'restore_latest_draft', message_view_only: false}, // 'D'
     71: {name: 'G_end', message_view_only: true}, // 'G'
     74: {name: 'vim_page_down', message_view_only: true}, // 'J'
     75: {name: 'vim_page_up', message_view_only: true}, // 'K'
@@ -579,11 +578,8 @@ exports.process_hotkey = function (e, hotkey) {
         case 'show_shortcuts': // Show keyboard shortcuts page
             ui.maybe_show_keyboard_shortcuts();
             return true;
-        case 'stream_cycle_backward':
-            narrow.stream_cycle_backward();
-            return true;
-        case 'stream_cycle_forward':
-            narrow.stream_cycle_forward();
+        case 'restore_latest_draft':
+            drafts.restore_draft_for_hotkey();
             return true;
         case 'view_selected_stream':
             if (overlays.streams_open()) {

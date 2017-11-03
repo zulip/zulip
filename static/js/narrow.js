@@ -300,39 +300,6 @@ exports.activate_stream_for_cycle_hotkey = function (stream_name) {
     exports.activate(filter_expr, opts);
 };
 
-
-exports.stream_cycle_backward = function () {
-    var curr_stream = narrow_state.stream();
-
-    if (!curr_stream) {
-        return;
-    }
-
-    var stream_name = topic_generator.get_prev_stream(curr_stream);
-
-    if (!stream_name) {
-        return;
-    }
-
-    exports.activate_stream_for_cycle_hotkey(stream_name);
-};
-
-exports.stream_cycle_forward = function () {
-    var curr_stream = narrow_state.stream();
-
-    if (!curr_stream) {
-        return;
-    }
-
-    var stream_name = topic_generator.get_next_stream(curr_stream);
-
-    if (!stream_name) {
-        return;
-    }
-
-    exports.activate_stream_for_cycle_hotkey(stream_name);
-};
-
 exports.narrow_to_next_topic = function () {
     var curr_info = exports.stream_topic();
 

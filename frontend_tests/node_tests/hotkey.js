@@ -215,8 +215,7 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('w', 'activity.initiate_search');
     assert_mapping('q', 'stream_list.initiate_search');
 
-    assert_mapping('A', 'narrow.stream_cycle_backward');
-    assert_mapping('D', 'narrow.stream_cycle_forward');
+    assert_mapping('D', 'restore_latest_draft');
 
     assert_mapping('c', 'compose_actions.start');
     assert_mapping('C', 'compose_actions.start');
@@ -252,6 +251,7 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('-', 'condense.toggle_collapse');
     assert_mapping('r', 'compose_actions.respond_to_message');
     assert_mapping('R', 'compose_actions.respond_to_message', true);
+    assert_mapping('D', 'drafts.restore_draft_for_hotkey');
     assert_mapping('j', 'navigate.down');
     assert_mapping('J', 'navigate.page_down');
     assert_mapping('k', 'navigate.up');
