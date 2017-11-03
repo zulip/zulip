@@ -1275,7 +1275,8 @@ class Bugdown(markdown.Extension):
         # define default configs
         self.config = {
             "realm_filters": [kwargs['realm_filters'], "Realm-specific filters for realm"],
-            "realm": [kwargs['realm'], "Realm name"]
+            "realm": [kwargs['realm'], "Realm name"],
+            "code_block_processor_disabled": [kwargs['code_block_processor_disabled'], "Disabled for email gateway"]
         }
 
         super().__init__(*args, **kwargs)
@@ -1283,6 +1284,9 @@ class Bugdown(markdown.Extension):
     def extendMarkdown(self, md, md_globals):
         # type: (markdown.Markdown, Dict[str, Any]) -> None
         del md.preprocessors['reference']
+
+        if self.getConfig('code_block_processor_disabled'):
+            del md.parser.blockprocessors['code']
 
         for k in ('image_link', 'image_reference', 'automail',
                   'autolink', 'link', 'reference', 'short_reference',
@@ -1421,7 +1425,7 @@ class Bugdown(markdown.Extension):
                 if k not in ["paragraph"]:
                     del md.parser.blockprocessors[k]
 
-md_engines = {}  # type: Dict[int, markdown.Markdown]
+md_engines = {}  # type: Dict[Tuple[int, bool], markdown.Markdown]
 realm_filter_data = {}  # type: Dict[int, List[Tuple[Text, Text, int]]]
 
 class EscapeHtml(markdown.Extension):
@@ -1431,7 +1435,7 @@ class EscapeHtml(markdown.Extension):
         del md.inlinePatterns['html']
 
 def make_md_engine(key, opts):
-    # type: (int, Dict[str, Any]) -> None
+    # type: (Tuple[int, bool], Dict[str, Any]) -> None
     md_engines[key] = markdown.Markdown(
         output_format = 'html',
         extensions    = [
@@ -1444,7 +1448,8 @@ def make_md_engine(key, opts):
             fenced_code.makeExtension(),
             EscapeHtml(),
             Bugdown(realm_filters=opts["realm_filters"][0],
-                    realm=opts["realm"][0])])
+                    realm=opts["realm"][0],
+                    code_block_processor_disabled=opts["code_block_processor_disabled"][0])])
 
 def subject_links(realm_filters_key, subject):
     # type: (int, Text) -> List[Text]
@@ -1458,35 +1463,41 @@ def subject_links(realm_filters_key, subject):
             matches += [realm_filter[1] % m.groupdict()]
     return matches
 
-def make_realm_filters(realm_filters_key, filters):
-    # type: (int, List[Tuple[Text, Text, int]]) -> None
+def make_realm_filters(realm_filters_key, filters, email_gateway):
+    # type: (int, List[Tuple[Text, Text, int]], bool) -> None
     global md_engines, realm_filter_data
-    if realm_filters_key in md_engines:
-        del md_engines[realm_filters_key]
+    md_engine_key = (realm_filters_key, email_gateway)
+    if md_engine_key in md_engines:
+        del md_engines[md_engine_key]
     realm_filter_data[realm_filters_key] = filters
 
     # Because of how the Markdown config API works, this has confusing
     # large number of layers of dicts/arrays :(
-    make_md_engine(realm_filters_key,
+    make_md_engine(md_engine_key,
                    {"realm_filters": [
                        filters, "Realm-specific filters for realm_filters_key %s" % (realm_filters_key,)],
-                    "realm": [realm_filters_key, "Realm name"]})
+                    "realm": [realm_filters_key, "Realm name"],
+                    "code_block_processor_disabled": [email_gateway, 'Disabled for email mirror']})
 
-def maybe_update_realm_filters(realm_filters_key):
-    # type: (Optional[int]) -> None
+def maybe_update_realm_filters(realm_filters_key, email_gateway):
+    # type: (Optional[int], bool) -> None
     # If realm_filters_key is None, load all filters
     if realm_filters_key is None:
         all_filters = all_realm_filters()
         all_filters[DEFAULT_BUGDOWN_KEY] = []
         for realm_filters_key, filters in all_filters.items():
-            make_realm_filters(realm_filters_key, filters)
+            make_realm_filters(realm_filters_key, filters, email_gateway)
         # Hack to ensure that getConfig("realm") is right for mirrored Zephyrs
-        make_realm_filters(ZEPHYR_MIRROR_BUGDOWN_KEY, [])
+        make_realm_filters(ZEPHYR_MIRROR_BUGDOWN_KEY, [], False)
     else:
         realm_filters = realm_filters_for_realm(realm_filters_key)
-        if realm_filters_key not in realm_filter_data or realm_filter_data[realm_filters_key] != realm_filters:
-            # Data has changed, re-load filters
-            make_realm_filters(realm_filters_key, realm_filters)
+        if realm_filters_key not in realm_filter_data or    \
+                realm_filter_data[realm_filters_key] != realm_filters or    \
+                (realm_filters_key, email_gateway) not in md_engines:
+            # Either realm filters data has changed or an email message has been
+            # forwarded to an realm by the email gateway for which the markdown
+            # engine specific to the email gateway hasn't been populated.
+            make_realm_filters(realm_filters_key, realm_filters, email_gateway)
 
 # We want to log Markdown parser failures, but shouldn't log the actual input
 # message for privacy reasons.  The compromise is to replace all alphanumeric
@@ -1636,8 +1647,9 @@ def get_stream_name_info(realm, stream_names):
     return dct
 
 
-def do_convert(content, message=None, message_realm=None, possible_words=None, sent_by_bot=False, mention_data=None):
-    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]], Optional[bool], Optional[MentionData]) -> Text
+def do_convert(content, message=None, message_realm=None, possible_words=None, sent_by_bot=False,
+               mention_data=None, email_gateway=False):
+    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]], Optional[bool], Optional[MentionData], Optional[bool]) -> Text
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
     # This logic is a bit convoluted, but the overall goal is to support a range of use cases:
     # * Nothing is passed in other than content -> just run default options (e.g. for docs)
@@ -1657,15 +1669,19 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
         # delivered via zephyr_mirror
         realm_filters_key = ZEPHYR_MIRROR_BUGDOWN_KEY
 
-    maybe_update_realm_filters(realm_filters_key)
+    maybe_update_realm_filters(realm_filters_key, email_gateway)
+    md_engine_key = (realm_filters_key, email_gateway)
 
-    if realm_filters_key in md_engines:
-        _md_engine = md_engines[realm_filters_key]
+    if md_engine_key in md_engines:
+        _md_engine = md_engines[md_engine_key]
+    elif realm_filters_key is not None and email_gateway:
+        maybe_update_realm_filters(realm_filters_key, email_gateway)
+        _md_engine = md_engines[md_engine_key]
     else:
         if DEFAULT_BUGDOWN_KEY not in md_engines:
-            maybe_update_realm_filters(realm_filters_key=None)
+            maybe_update_realm_filters(realm_filters_key=None, email_gateway=False)
 
-        _md_engine = md_engines[DEFAULT_BUGDOWN_KEY]
+        _md_engine = md_engines[(DEFAULT_BUGDOWN_KEY, email_gateway)]
     # Reset the parser; otherwise it will get slower over time.
     _md_engine.reset()
 
@@ -1754,9 +1770,10 @@ def bugdown_stats_finish():
     bugdown_total_requests += 1
     bugdown_total_time += (time.time() - bugdown_time_start)
 
-def convert(content, message=None, message_realm=None, possible_words=None, sent_by_bot=False, mention_data=None):
-    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]], Optional[bool], Optional[MentionData]) -> Text
+def convert(content, message=None, message_realm=None, possible_words=None, sent_by_bot=False,
+            mention_data=None, email_gateway=False):
+    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]], Optional[bool], Optional[MentionData], Optional[bool]) -> Text
     bugdown_stats_start()
-    ret = do_convert(content, message, message_realm, possible_words, sent_by_bot, mention_data)
+    ret = do_convert(content, message, message_realm, possible_words, sent_by_bot, mention_data, email_gateway)
     bugdown_stats_finish()
     return ret
