@@ -32,7 +32,7 @@ def api_travis_webhook(request, user_profile,
                            ('status_message', check_string),
                            ('compare_url', check_string),
                        ]))):
-    # type: (HttpRequest, UserProfile, str, str, str, Dict[str, str]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, str, str, bool, Dict[str, str]) -> HttpResponse
 
     message_status = message['status_message']
     if ignore_pull_requests and message['type'] == 'pull_request':
