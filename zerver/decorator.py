@@ -74,14 +74,16 @@ def asynchronous(method):
         wrapper.csrf_exempt = True  # type: ignore # https://github.com/JukkaL/mypy/issues/1170
     return wrapper
 
-def update_user_activity(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> None
+def update_user_activity(request, user_profile, query):
+    # type: (HttpRequest, UserProfile, Optional[str]) -> None
     # update_active_status also pushes to rabbitmq, and it seems
     # redundant to log that here as well.
     if request.META["PATH_INFO"] == '/json/users/me/presence':
         return
 
-    if hasattr(request, '_query'):
+    if query is not None:
+        pass
+    elif hasattr(request, '_query'):
         query = request._query
     else:
         query = request.META['PATH_INFO']
@@ -155,15 +157,15 @@ def get_client_name(request, is_browser_view):
         else:
             return "Unspecified"
 
-def process_client(request, user_profile, is_browser_view=False, client_name=None,
-                   remote_server_request=False):
-    # type: (HttpRequest, UserProfile, bool, Optional[Text], bool) -> None
+def process_client(request, user_profile, *, is_browser_view=False, client_name=None,
+                   remote_server_request=False, query=None):
+    # type: (HttpRequest, UserProfile, bool, Optional[Text], bool, Optional[Text]) -> None
     if client_name is None:
         client_name = get_client_name(request, is_browser_view)
 
     request.client = get_client(client_name)
     if not remote_server_request:
-        update_user_activity(request, user_profile)
+        update_user_activity(request, user_profile, query)
 
 class InvalidZulipServerError(JsonableError):
     code = ErrorCode.INVALID_ZULIP_SERVER
@@ -379,8 +381,8 @@ def add_logging_data(view_func):
     def _wrapped_view_func(request, *args, **kwargs):
         # type: (HttpRequest, *Any, **Any) -> HttpResponse
         request._email = request.user.email
-        request._query = view_func.__name__
-        process_client(request, request.user, is_browser_view=True)
+        process_client(request, request.user, is_browser_view=True,
+                       query=view_func.__name__)
         return rate_limit()(view_func)(request, *args, **kwargs)
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
