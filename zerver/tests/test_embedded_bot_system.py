@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from unittest.mock import patch
 from typing import Any, Dict, Tuple, Text, Optional
 
 from zerver.lib.test_classes import ZulipTestCase
@@ -44,3 +45,17 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
                                  content="foo", topic_name="bar")
         last_message = self.get_last_message()
         self.assertEqual(last_message.content, "foo")
+
+class TestEmbeddedBotFailures(ZulipTestCase):
+    @patch("logging.error")
+    def test_invalid_embedded_bot_service(self, logging_error_mock):
+        # type: () -> None
+        user_profile = self.example_user("othello")
+        bot_profile = self.create_test_bot('embedded-bot@zulip.testserver', user_profile, 'Embedded bot',
+                                           'embedded', UserProfile.EMBEDDED_BOT, service_name='nonexistent_service')
+        mention_bot_message = "@**{}** foo".format(bot_profile.full_name)
+        self.send_stream_message(user_profile.email, "Denmark",
+                                 content=mention_bot_message,
+                                 topic_name="bar")
+        last_message = self.get_last_message()
+        self.assertEqual(last_message.content, mention_bot_message)
