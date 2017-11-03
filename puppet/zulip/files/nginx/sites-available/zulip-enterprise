@@ -28,5 +28,6 @@ server {
         alias /home/zulip/local-static;
     }
 
+    include /etc/nginx/zulip-include/certbot;
     include /etc/nginx/zulip-include/app;
 }

@@ -39,6 +39,8 @@ server {
         proxy_pass https://staging;
         include /etc/nginx/zulip-include/proxy_longpolling;
     }
+
+    include /etc/nginx/zulip-include/certbot;
 }
 
 server {
@@ -65,6 +67,8 @@ server {
         proxy_pass https://prod;
         include /etc/nginx/zulip-include/proxy_longpolling;
     }
+
+    include /etc/nginx/zulip-include/certbot;
 }
 
 server {
@@ -79,4 +83,6 @@ server {
         proxy_pass http://127.0.0.1:9292;
         include /etc/nginx/zulip-include/proxy;
     }
+
+    include /etc/nginx/zulip-include/certbot;
 }
