@@ -527,7 +527,8 @@ def authenticate_log_and_execute_json(request, view_func, *args, **kwargs):
     if user_profile.is_incoming_webhook:
         raise JsonableError(_("Webhook bots can only access webhooks"))
 
-    process_client(request, user_profile, is_browser_view=True)
+    process_client(request, user_profile, is_browser_view=True,
+                   query=view_func.__name__)
     request._email = user_profile.email
     return rate_limit()(view_func)(request, user_profile, *args, **kwargs)
 
