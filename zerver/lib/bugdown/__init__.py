@@ -119,7 +119,7 @@ def image_preview_enabled_for_realm():
 def list_of_tlds():
     # type: () -> List[Text]
     # HACK we manually blacklist a few domains
-    blacklist = [u'PY\n', u"MD\n"]
+    blacklist = ['PY\n', "MD\n"]
 
     # tlds-alpha-by-domain.txt comes from http://data.iana.org/TLD/tlds-alpha-by-domain.txt
     tlds_file = os.path.join(os.path.dirname(__file__), 'tlds-alpha-by-domain.txt')
@@ -269,10 +269,10 @@ def fetch_tweet_data(tweet_id):
                 return None
     return res
 
-HEAD_START_RE = re.compile(u'^head[ >]')
-HEAD_END_RE = re.compile(u'^/head[ >]')
-META_START_RE = re.compile(u'^meta[ >]')
-META_END_RE = re.compile(u'^/meta[ >]')
+HEAD_START_RE = re.compile('^head[ >]')
+HEAD_END_RE = re.compile('^/head[ >]')
+META_START_RE = re.compile('^meta[ >]')
+META_END_RE = re.compile('^/meta[ >]')
 
 def fetch_open_graph_image(url):
     # type: (Text) -> Optional[Dict[str, Any]]
@@ -510,13 +510,13 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         # Build dicts for mentions
         for user_mention in user_mentions:
             screen_name = user_mention['screen_name']
-            mention_string = u'@' + screen_name
+            mention_string = '@' + screen_name
             for match in re.finditer(re.escape(mention_string), text, re.IGNORECASE):
                 to_process.append({
                     'type': 'mention',
                     'start': match.start(),
                     'end': match.end(),
-                    'url': u'https://twitter.com/' + force_text(urllib.parse.quote(force_str(screen_name))),
+                    'url': 'https://twitter.com/' + force_text(urllib.parse.quote(force_str(screen_name))),
                     'text': mention_string,
                 })
         # Build dicts for media
@@ -612,7 +612,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             tweet.append(p)
 
             span = markdown.util.etree.SubElement(tweet, 'span')
-            span.text = u"- %s (@%s)" % (user['name'], user['screen_name'])
+            span.text = "- %s (@%s)" % (user['name'], user['screen_name'])
 
             # Add image previews
             for media_item in media:
@@ -629,7 +629,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                     if size['h'] < self.TWITTER_MAX_IMAGE_HEIGHT:
                         break
 
-                media_url = u'%s:%s' % (media_item['media_url_https'], size_name)
+                media_url = '%s:%s' % (media_item['media_url_https'], size_name)
                 img_div = markdown.util.etree.SubElement(tweet, 'div')
                 img_div.set('class', 'twitter-image')
                 img_a = markdown.util.etree.SubElement(img_div, 'a')
@@ -777,17 +777,17 @@ with open(path_to_codepoint_to_name) as codepoint_to_name_file:
 # \u2b00-\u2bff         - Miscellaneous Symbols and Arrows
 # \u3000-\u303f         - CJK Symbols and Punctuation
 # \u3200-\u32ff         - Enclosed CJK Letters and Months
-unicode_emoji_regex = u'(?P<syntax>['\
-    u'\U0001F100-\U0001F64F'    \
-    u'\U0001F680-\U0001F6FF'    \
-    u'\U0001F900-\U0001F9FF'    \
-    u'\u2000-\u206F'            \
-    u'\u2300-\u27BF'            \
-    u'\u2900-\u297F'            \
-    u'\u2B00-\u2BFF'            \
-    u'\u3000-\u303F'            \
-    u'\u3200-\u32FF'            \
-    u'])'
+unicode_emoji_regex = '(?P<syntax>['\
+    '\U0001F100-\U0001F64F'    \
+    '\U0001F680-\U0001F6FF'    \
+    '\U0001F900-\U0001F9FF'    \
+    '\u2000-\u206F'            \
+    '\u2300-\u27BF'            \
+    '\u2900-\u297F'            \
+    '\u2B00-\u2BFF'            \
+    '\u3000-\u303F'            \
+    '\u3200-\u32FF'            \
+    '])'
 # The equivalent JS regex is \ud83c[\udd00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff]|
 # \ud83e[\udd00-\uddff]|[\u2000-\u206f]|[\u2300-\u27bf]|[\u2b00-\u2bff]|[\u3000-\u303f]|
 # [\u3200-\u32ff]. See below comments for explanation. The JS regex is used by marked.js for
@@ -913,7 +913,7 @@ class Tex(markdown.inlinepatterns.Pattern):
             span.text = '$$' + match.group('body') + '$$'
             return span
 
-upload_title_re = re.compile(u"^(https?://[^/]*)?(/user_uploads/\\d+)(/[^/]*)?/[^/]*/(?P<filename>[^/]*)$")
+upload_title_re = re.compile("^(https?://[^/]*)?(/user_uploads/\\d+)(/[^/]*)?/[^/]*/(?P<filename>[^/]*)$")
 def url_filename(url):
     # type: (Text) -> Text
     """Extract the filename if a URL is an uploaded file, or return the original URL"""
@@ -1011,7 +1011,7 @@ class VerbosePattern(markdown.inlinepatterns.Pattern):
         # Now replace with the real regex compiled with the flags we want.
 
         self.pattern = pattern
-        self.compiled_re = re.compile(u"^(.*?)%s(.*?)$" % pattern,
+        self.compiled_re = re.compile("^(.*?)%s(.*?)$" % pattern,
                                       re.DOTALL | re.UNICODE | re.VERBOSE)
 
 class AutoLink(VerbosePattern):
@@ -1027,7 +1027,7 @@ class UListProcessor(markdown.blockprocessors.UListProcessor):
         '+' or '-' as a bullet character."""
 
     TAG = 'ul'
-    RE = re.compile(u'^[ ]{0,3}[*][ ]+(.*)')
+    RE = re.compile('^[ ]{0,3}[*][ ]+(.*)')
 
     def __init__(self, parser):
         # type: (Any) -> None
@@ -1063,8 +1063,8 @@ class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
         directly after a line of text, and inserts a newline between
         to satisfy Markdown"""
 
-    LI_RE = re.compile(u'^[ ]{0,3}[*][ ]+(.*)', re.MULTILINE)
-    HANGING_ULIST_RE = re.compile(u'^.+\\n([ ]{0,3}[*][ ]+.*)', re.MULTILINE)
+    LI_RE = re.compile('^[ ]{0,3}[*][ ]+(.*)', re.MULTILINE)
+    HANGING_ULIST_RE = re.compile('^.+\\n([ ]{0,3}[*][ ]+.*)', re.MULTILINE)
 
     def run(self, lines):
         # type: (List[Text]) -> List[Text]
@@ -1221,7 +1221,7 @@ class StreamPattern(VerbosePattern):
             # provide more clarity to API clients.
             el.set('href', '/#narrow/stream/{stream_name}'.format(
                 stream_name=urllib.parse.quote(force_str(name))))
-            el.text = u'#{stream_name}'.format(stream_name=name)
+            el.text = '#{stream_name}'.format(stream_name=name)
             return el
         return None
 
@@ -1250,7 +1250,7 @@ class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
 
             for word in realm_words:
                 escaped = re.escape(word.lower())
-                match_re = re.compile(u'(?:%s)%s(?:%s)' %
+                match_re = re.compile('(?:%s)%s(?:%s)' %
                                       (allowed_before_punctuation,
                                        escaped,
                                        allowed_after_punctuation))
@@ -1502,7 +1502,7 @@ def maybe_update_realm_filters(realm_filters_key):
 #
 # We also use repr() to improve reproducibility, and to escape terminal control
 # codes, which can do surprisingly nasty things.
-_privacy_re = re.compile(u'\\w', flags=re.UNICODE)
+_privacy_re = re.compile('\\w', flags=re.UNICODE)
 def privacy_clean_markdown(content):
     # type: (Text) -> Text
     return repr(_privacy_re.sub('x', content))

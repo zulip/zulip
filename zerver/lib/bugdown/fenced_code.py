@@ -106,8 +106,8 @@ FENCE_RE = re.compile(u"""
     """, re.VERBOSE)
 
 
-CODE_WRAP = u'<pre><code%s>%s\n</code></pre>'
-LANG_TAG = u' class="%s"'
+CODE_WRAP = '<pre><code%s>%s\n</code></pre>'
+LANG_TAG = ' class="%s"'
 
 class FencedCodeExtension(markdown.Extension):
 

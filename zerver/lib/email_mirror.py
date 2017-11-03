@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 def redact_stream(error_message):
     # type: (Text) -> Text
     domain = settings.EMAIL_GATEWAY_PATTERN.rsplit('@')[-1]
-    stream_match = re.search(u'\\b(.*?)@' + domain, error_message)
+    stream_match = re.search('\\b(.*?)@' + domain, error_message)
     if stream_match:
         stream_name = stream_match.groups()[0]
         return error_message.replace(stream_name, "X" * len(stream_name))
@@ -129,7 +129,7 @@ def create_missed_message_address(user_profile, message):
         pipeline.expire(key, 60 * 60 * 24 * 5)
         pipeline.execute()
 
-    address = u'mm' + token
+    address = 'mm' + token
     return settings.EMAIL_GATEWAY_PATTERN % (address,)
 
 
@@ -173,7 +173,7 @@ def send_to_missed_message_address(address, message):
     # Testing with basestring so we don't depend on the list return type from
     # get_display_recipient
     if not isinstance(display_recipient, str):
-        recipient_str = u','.join([user['email'] for user in display_recipient])
+        recipient_str = ','.join([user['email'] for user in display_recipient])
     else:
         recipient_str = display_recipient
 
