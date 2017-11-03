@@ -45,7 +45,7 @@ fi
 wget https://dl.eff.org/certbot-auto -O /root/certbot-auto
 chmod a+x /root/certbot-auto
 
-/root/certbot-auto --nginx certonly -d "$DOMAIN" -m "$EMAIL" --agree-tos --non-interactive
+/root/certbot-auto --standalone certonly -d "$DOMAIN" -m "$EMAIL" --agree-tos --non-interactive
 
 # Link the generated cert to the path read by Zulip
 ln -nsf /etc/letsencrypt/live/"$DOMAIN"/privkey.pem /etc/ssl/private/zulip.key
