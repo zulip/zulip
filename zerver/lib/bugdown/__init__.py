@@ -1347,7 +1347,10 @@ class Bugdown(markdown.Extension):
                               UserGroupMentionPattern(mention.user_group_mentions),
                               '>backtick')
         md.inlinePatterns.add('stream', StreamPattern(STREAM_LINK_REGEX), '>backtick')
-        md.inlinePatterns.add('tex', Tex(r'\B\$\$(?P<body>[^ _$](\\\$|[^$])*)(?! )\$\$\B'), '>backtick')
+        md.inlinePatterns.add(
+            'tex',
+            Tex(r'\B(?<!\$)\$\$(?P<body>[^\n_$](\\\$|[^$\n])*)\$\$(?!\$)\B'),
+            '>backtick')
         md.inlinePatterns.add('emoji', Emoji(EMOJI_REGEX), '_end')
         md.inlinePatterns.add('unicodeemoji', UnicodeEmoji(unicode_emoji_regex), '_end')
         md.inlinePatterns.add('link', AtomicLinkPattern(markdown.inlinepatterns.LINK_RE, md), '>avatar')

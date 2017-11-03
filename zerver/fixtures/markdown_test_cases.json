@@ -571,6 +571,18 @@
       "expected_output": "<p>Tickets are $5 to $20 for youth, $10-$30 for adults, so we are hoping to bring in $500 from the event (<span class=\"katex\"><span class=\"katex-mathml\"><math><semantics><mrow><mi>x</mi><mo>≈</mo><mn>5</mn><mn>0</mn><mn>0</mn><mi mathvariant=\"normal\">$</mi></mrow><annotation encoding=\"application/x-tex\">x \\approx 500\\$</annotation></semantics></math></span><span aria-hidden=\"true\" class=\"katex-html\"><span class=\"strut\" style=\"height:0.75em;\"></span><span class=\"strut bottom\" style=\"height:0.80556em;vertical-align:-0.05556em;\"></span><span class=\"base textstyle uncramped\"><span class=\"mord mathit\">x</span><span class=\"mrel\">≈</span><span class=\"mord mathrm\">5</span><span class=\"mord mathrm\">0</span><span class=\"mord mathrm\">0</span><span class=\"mord mathrm\">$</span></span></span></span>)</p>",
       "bugdown_matches_marked": false
     },
+	{
+	  "name": "tex_inline_permissive_spacing",
+	  "input": "$$    x =  7   $$",
+	  "marked_expected_output": "<p><span class=\"katex\"><span class=\"katex-mathml\"><math><semantics><mrow><mi>x</mi><mo>=</mo><mn>7</mn></mrow><annotation encoding=\"application/x-tex\">    x =  7   </annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"strut\" style=\"height:0.64444em;\"></span><span class=\"strut bottom\" style=\"height:0.64444em;vertical-align:0em;\"></span><span class=\"base textstyle uncramped\"><span class=\"mord mathit\">x</span><span class=\"mrel\">=</span><span class=\"mord mathrm\">7</span></span></span></span></p>",
+      "expected_output": "<p><span class=\"katex\"><span class=\"katex-mathml\"><math><semantics><mrow><mi>x</mi><mo>=</mo><mn>7</mn></mrow><annotation encoding=\"application/x-tex\">    x =  7   </annotation></semantics></math></span><span aria-hidden=\"true\" class=\"katex-html\"><span class=\"strut\" style=\"height:0.64444em;\"></span><span class=\"strut bottom\" style=\"height:0.64444em;vertical-align:0em;\"></span><span class=\"base textstyle uncramped\"><span class=\"mord mathit\">x</span><span class=\"mrel\">=</span><span class=\"mord mathrm\">7</span></span></span></span></p>"
+	},
+	{
+	  "name": "tex_inline_prohibited_newline",
+	  "input": "$$x=3\ny=4$$",
+	  "expected_output": "<p>$$x=3<br>\ny=4$$</p>",
+	  "bugdown_matches_marked": true
+	},
     {
       "name": "tex_dollar_smiley",
       "input": "$$_$$ is a fun money-related smiley!",
