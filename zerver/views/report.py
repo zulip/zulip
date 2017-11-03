@@ -5,7 +5,7 @@ from typing import Any, Dict, Optional, Text
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import authenticated_json_post_view, human_users_only, \
+from zerver.decorator import human_users_only, \
     to_non_negative_int
 from zerver.lib.bugdown import privacy_clean_markdown
 from zerver.lib.request import has_request_variables, REQ

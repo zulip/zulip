@@ -9,7 +9,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 
-from zerver.decorator import authenticated_json_post_view, human_users_only
+from zerver.decorator import human_users_only
 from zerver.lib.actions import get_status_dict, update_user_presence
 from zerver.lib.request import has_request_variables, REQ, JsonableError
 from zerver.lib.response import json_success, json_error

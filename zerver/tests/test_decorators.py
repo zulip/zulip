@@ -29,7 +29,6 @@ from zerver.lib.request import \
     RequestVariableConversionError
 from zerver.decorator import (
     api_key_only_webhook_view,
-    authenticated_json_post_view, authenticated_json_view,
     authenticate_notify,
     get_client_name, internal_notify_view, is_local_addr,
     rate_limit, validate_api_key, logged_in_and_active,
