@@ -220,7 +220,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
                                                  return_queue="tornado_return",
                                                  log_data=log_data,
                                                  request_environ=dict(REMOTE_ADDR=self.session.conn_info.ip))),
-                           fake_message_sender, call_consume_in_tests=True)
+                           lambda x: None, call_consume_in_tests=True)
 
     def on_close(self) -> None:
         log_data = dict(extra='[transport=%s]' % (self.session.transport_name,))
@@ -239,33 +239,6 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
                            client_name='?')
 
         self.did_close = True
-
-def fake_message_sender(event: Dict[str, Any]) -> None:
-    """This function is used only for Casper and backend tests, where
-    rabbitmq is disabled"""
-    log_data = dict()  # type: Dict[str, Any]
-    record_request_start_data(log_data)
-
-    req = event['request']
-    try:
-        sender = get_user_profile_by_id(event['server_meta']['user_id'])
-        client = get_client("website")
-
-        msg_id = check_send_message(sender, client, req['type'],
-                                    extract_recipients(req['to']),
-                                    req['subject'], req['content'],
-                                    local_id=req.get('local_id', None),
-                                    sender_queue_id=req.get('queue_id', None))
-        resp = {"result": "success", "msg": "", "id": msg_id}
-    except JsonableError as e:
-        resp = {"result": "error", "msg": str(e)}
-
-    server_meta = event['server_meta']
-    server_meta.update({'worker_log_data': log_data,
-                        'time_request_finished': time.time()})
-    result = {'response': resp, 'req_id': event['req_id'],
-              'server_meta': server_meta}
-    respond_send_message(result)
 
 def respond_send_message(data: Mapping[str, Any]) -> None:
     log_data = data['server_meta']['log_data']
