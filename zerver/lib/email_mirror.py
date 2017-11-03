@@ -203,7 +203,8 @@ def send_zulip(sender, stream, topic, content):
         "stream",
         stream.name,
         topic[:60],
-        content[:2000])
+        content[:2000],
+        email_gateway=True)
 
 def valid_stream(stream_name, token):
     # type: (Text, Text) -> bool

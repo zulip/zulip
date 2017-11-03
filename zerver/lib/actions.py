@@ -763,8 +763,8 @@ def send_welcome_bot_response(message):
             "Feel free to continue using this space to practice your new messaging "
             "skills. Or, try clicking on some of the stream names to your left!")
 
-def render_incoming_message(message, content, user_ids, realm, mention_data=None):
-    # type: (Message, Text, Set[int], Realm, Optional[bugdown.MentionData]) -> Text
+def render_incoming_message(message, content, user_ids, realm, mention_data=None, email_gateway=False):
+    # type: (Message, Text, Set[int], Realm, Optional[bugdown.MentionData], Optional[bool]) -> Text
     realm_alert_words = alert_words_in_realm(realm)
     try:
         rendered_content = render_markdown(
@@ -774,6 +774,7 @@ def render_incoming_message(message, content, user_ids, realm, mention_data=None
             realm_alert_words=realm_alert_words,
             user_ids=user_ids,
             mention_data=mention_data,
+            email_gateway=email_gateway,
         )
     except BugdownRenderingException:
         raise JsonableError(_('Unable to render message'))
@@ -1008,8 +1009,8 @@ def get_service_bot_events(sender, service_bot_tuples, mentioned_user_ids,
 
     return event_dict
 
-def do_send_messages(messages_maybe_none):
-    # type: (Sequence[Optional[MutableMapping[str, Any]]]) -> List[int]
+def do_send_messages(messages_maybe_none, email_gateway=False):
+    # type: (Sequence[Optional[MutableMapping[str, Any]]], Optional[bool]) -> List[int]
     # Filter out messages which didn't pass internal_prep_message properly
     messages = [message for message in messages_maybe_none if message is not None]
 
@@ -1072,6 +1073,7 @@ def do_send_messages(messages_maybe_none):
             message['active_user_ids'],
             message['realm'],
             mention_data=message['mention_data'],
+            email_gateway=email_gateway,
         )
         message['message'].rendered_content = rendered_content
         message['message'].rendered_content_version = bugdown_version
@@ -1869,8 +1871,8 @@ def internal_prep_private_message(realm, sender, recipient_user, content):
     )
 
 def internal_send_message(realm, sender_email, recipient_type_name, recipients,
-                          topic_name, content):
-    # type: (Realm, Text, str, Text, Text, Text) -> None
+                          topic_name, content, email_gateway=False):
+    # type: (Realm, Text, str, Text, Text, Text, Optional[bool]) -> None
     msg = internal_prep_message(realm, sender_email, recipient_type_name, recipients,
                                 topic_name, content)
 
@@ -1878,7 +1880,7 @@ def internal_send_message(realm, sender_email, recipient_type_name, recipients,
     if msg is None:
         return
 
-    do_send_messages([msg])
+    do_send_messages([msg], email_gateway=email_gateway)
 
 def internal_send_private_message(realm, sender, recipient_user, content):
     # type: (Realm, UserProfile, UserProfile, Text) -> None

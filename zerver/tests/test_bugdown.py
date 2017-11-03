@@ -275,7 +275,9 @@ class BugdownTest(ZulipTestCase):
             realm = Realm.objects.create(string_id='file_links_test')
             bugdown.make_md_engine(
                 realm.id,
-                {'realm_filters': [[], u'file_links_test.example.com'], 'realm': [u'file_links_test.example.com', 'Realm name']})
+                {'realm_filters': [[], u'file_links_test.example.com'],
+                 'realm': [u'file_links_test.example.com', 'Realm name'],
+                 'code_block_processor_disabled': [False, 'Disabled for email gateway']})
             converted = bugdown.convert(msg, message_realm=realm)
             self.assertEqual(converted, '<p>Check out this file file:///Volumes/myserver/Users/Shared/pi.py</p>')
 
@@ -659,7 +661,7 @@ class BugdownTest(ZulipTestCase):
         realm_filter.save()
 
         bugdown.realm_filter_data = {}
-        bugdown.maybe_update_realm_filters(None)
+        bugdown.maybe_update_realm_filters(None, False)
         all_filters = bugdown.realm_filter_data
         zulip_filters = all_filters[realm.id]
         self.assertEqual(len(zulip_filters), 1)
@@ -1145,6 +1147,27 @@ class BugdownTest(ZulipTestCase):
             converted,
             'javascript://example.com/invalidURL',
         )
+
+    def test_disabled_code_block_processor(self):
+        # type: () -> None
+        msg = "Hello,\n\n" +  \
+              "    I am writing this message to test something. I am writing this message to test something."
+        converted = bugdown_convert(msg)
+        expected_output = '<p>Hello,</p>\n' +   \
+                          '<div class="codehilite"><pre><span></span>I am writing this message to test something. I am writing this message to test something.\n' +     \
+                          '</pre></div>'
+        self.assertEqual(converted, expected_output)
+
+        realm = Realm.objects.create(string_id='code_block_processor_test')
+        bugdown.make_md_engine(
+            realm.id,
+            {'realm_filters': [[], u'file_links_test.example.com'],
+             'realm': [u'file_links_test.example.com', 'Realm name'],
+             'code_block_processor_disabled': [True, 'Disabled for email gateway']})
+        converted = bugdown.convert(msg, message_realm=realm, email_gateway=True)
+        expected_output = '<p>Hello,</p>\n' +     \
+                          '<p>I am writing this message to test something. I am writing this message to test something.</p>'
+        self.assertEqual(converted, expected_output)
 
 class BugdownApiTests(ZulipTestCase):
     def test_render_message_api(self):
