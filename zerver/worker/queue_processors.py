@@ -171,6 +171,26 @@ class QueueProcessingWorker:
         # type: () -> None
         self.q.stop_consuming()
 
+class LoopQueueProcessingWorker(QueueProcessingWorker):
+    sleep_delay = 0
+
+    def start(self) -> None:
+        while True:
+            # TODO: Probably it'd be better to share code with consume_wrapper()
+            events = self.q.drain_queue(self.queue_name, json=True)
+            try:
+                self.consume_batch(events)
+            finally:
+                reset_queries()
+            time.sleep(self.sleep_delay)
+
+    def consume_batch(self, event: List[Dict[str, Any]]) -> None:
+        raise NotImplementedError
+
+    def consume(self, event: Dict[str, Any]) -> None:
+        """In LoopQueueProcessingWorker, consume is used just for automated tests"""
+        self.consume_batch([event])
+
 @assign_queue('signups')
 class SignupWorker(QueueProcessingWorker):
     def consume(self, data):
@@ -250,24 +270,21 @@ class UserPresenceWorker(QueueProcessingWorker):
         do_update_user_presence(user_profile, client, log_time, status)
 
 @assign_queue('missedmessage_emails', queue_type="loop")
-class MissedMessageWorker(QueueProcessingWorker):
-    def start(self):
-        # type: () -> None
-        while True:
-            missed_events = self.q.drain_queue("missedmessage_emails", json=True)
-            by_recipient = defaultdict(list)  # type: Dict[int, List[Dict[str, Any]]]
+class MissedMessageWorker(LoopQueueProcessingWorker):
+    # Aggregate all messages received every 2 minutes to let someone finish sending a batch
+    # of messages
+    sleep_delay = 2 * 60
 
-            for event in missed_events:
-                logging.debug("Received missedmessage_emails event: %s" % (event,))
-                by_recipient[event['user_profile_id']].append(event)
+    def consume_batch(self, missed_events: List[Dict[str, Any]]) -> None:
+        missed_events = self.q.drain_queue("missedmessage_emails", json=True)
+        by_recipient = defaultdict(list)  # type: Dict[int, List[Dict[str, Any]]]
 
-            for user_profile_id, events in by_recipient.items():
-                handle_missedmessage_emails(user_profile_id, events)
+        for event in missed_events:
+            logging.debug("Received missedmessage_emails event: %s" % (event,))
+            by_recipient[event['user_profile_id']].append(event)
 
-            reset_queries()
-            # Aggregate all messages received every 2 minutes to let someone finish sending a batch
-            # of messages
-            time.sleep(2 * 60)
+        for user_profile_id, events in by_recipient.items():
+            handle_missedmessage_emails(user_profile_id, events)
 
 @assign_queue('missedmessage_email_senders')
 class MissedMessageSendingWorker(QueueProcessingWorker):
@@ -303,18 +320,12 @@ class ErrorReporter(QueueProcessingWorker):
             do_report_error(event['report']['host'], event['type'], event['report'])
 
 @assign_queue('slow_queries', queue_type="loop")
-class SlowQueryWorker(QueueProcessingWorker):
-    def start(self):
-        # type: () -> None
-        while True:
-            self.process_one_batch()
-            # Aggregate all slow query messages in 1-minute chunks to avoid message spam
-            time.sleep(1 * 60)
+class SlowQueryWorker(LoopQueueProcessingWorker):
+    # Sleep 1 minute between checking the queue
+    sleep_delay = 60 * 1
 
-    def process_one_batch(self):
-        # type: () -> None
-        slow_queries = self.q.drain_queue("slow_queries", json=True)
-
+    def consume_batch(self, slow_queries):
+        # type: (List[Dict[str, Any]]) -> None
         for query in slow_queries:
             logging.info("Slow query: %s" % (query))
 
@@ -331,8 +342,6 @@ class SlowQueryWorker(QueueProcessingWorker):
             error_bot_realm = get_system_bot(settings.ERROR_BOT).realm
             internal_send_message(error_bot_realm, settings.ERROR_BOT,
                                   "stream", "logs", topic, content)
-
-        reset_queries()
 
 @assign_queue("message_sender")
 class MessageSenderWorker(QueueProcessingWorker):
