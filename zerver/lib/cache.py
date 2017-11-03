@@ -61,12 +61,12 @@ def get_or_create_key_prefix():
         #
         # Having a fixed key is OK since we don't support running
         # multiple copies of the casper tests at the same time anyway.
-        return u'casper_tests:'
+        return 'casper_tests:'
     elif settings.TEST_SUITE:
         # The Python tests overwrite KEY_PREFIX on each test, but use
         # this codepath as well, just to save running the more complex
         # code below for reading the normal key prefix.
-        return u'django_tests_unused:'
+        return 'django_tests_unused:'
 
     # directory `var` should exist in production
     subprocess.check_call(["mkdir", "-p", os.path.join(settings.DEPLOY_ROOT, "var")])
@@ -102,7 +102,7 @@ KEY_PREFIX = get_or_create_key_prefix()  # type: Text
 def bounce_key_prefix_for_testing(test_name):
     # type: (Text) -> None
     global KEY_PREFIX
-    KEY_PREFIX = test_name + u':' + Text(os.getpid()) + u':'
+    KEY_PREFIX = test_name + ':' + Text(os.getpid()) + ':'
     # We are taking the hash of the KEY_PREFIX to decrease the size of the key.
     # Memcached keys should have a length of less than 256.
     KEY_PREFIX = hashlib.sha1(KEY_PREFIX.encode('utf-8')).hexdigest()
@@ -316,7 +316,7 @@ def user_profile_by_email_cache_key(email):
     # See the comment in zerver/lib/avatar_hash.py:gravatar_hash for why we
     # are proactively encoding email addresses even though they will
     # with high likelihood be ASCII-only for the foreseeable future.
-    return u'user_profile_by_email:%s' % (make_safe_digest(email.strip()),)
+    return 'user_profile_by_email:%s' % (make_safe_digest(email.strip()),)
 
 def user_profile_cache_key(email, realm):
     # type: (Text, Realm) -> Text
@@ -464,7 +464,7 @@ def flush_stream(sender, **kwargs):
 
 def to_dict_cache_key_id(message_id):
     # type: (int) -> Text
-    return u'message_dict:%d' % (message_id,)
+    return 'message_dict:%d' % (message_id,)
 
 def to_dict_cache_key(message):
     # type: (Message) -> Text

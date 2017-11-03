@@ -53,7 +53,7 @@ def get_language_list_for_templates(default_language):
             lang = language_list[ind]
             percent = name = lang['name']
             if 'percent_translated' in lang:
-                percent = u"{} ({}%)".format(name, lang['percent_translated'])
+                percent = "{} ({}%)".format(name, lang['percent_translated'])
 
             selected = False
             if default_language in (lang['code'], lang['locale']):

@@ -215,35 +215,35 @@ class ZulipTestCase(TestCase):
         return django_client.get(url, info, **kwargs)
 
     example_user_map = dict(
-        hamlet=u'hamlet@zulip.com',
-        cordelia=u'cordelia@zulip.com',
-        iago=u'iago@zulip.com',
-        prospero=u'prospero@zulip.com',
-        othello=u'othello@zulip.com',
-        AARON=u'AARON@zulip.com',
-        aaron=u'aaron@zulip.com',
-        ZOE=u'ZOE@zulip.com',
-        webhook_bot=u'webhook-bot@zulip.com',
-        welcome_bot=u'welcome-bot@zulip.com',
-        outgoing_webhook_bot=u'outgoing-webhook@zulip.com'
+        hamlet='hamlet@zulip.com',
+        cordelia='cordelia@zulip.com',
+        iago='iago@zulip.com',
+        prospero='prospero@zulip.com',
+        othello='othello@zulip.com',
+        AARON='AARON@zulip.com',
+        aaron='aaron@zulip.com',
+        ZOE='ZOE@zulip.com',
+        webhook_bot='webhook-bot@zulip.com',
+        welcome_bot='welcome-bot@zulip.com',
+        outgoing_webhook_bot='outgoing-webhook@zulip.com'
     )
 
     mit_user_map = dict(
-        sipbtest=u"sipbtest@mit.edu",
-        starnine=u"starnine@mit.edu",
-        espuser=u"espuser@mit.edu",
+        sipbtest="sipbtest@mit.edu",
+        starnine="starnine@mit.edu",
+        espuser="espuser@mit.edu",
     )
 
     # Non-registered test users
     nonreg_user_map = dict(
-        test=u'test@zulip.com',
-        test1=u'test1@zulip.com',
-        alice=u'alice@zulip.com',
-        newuser=u'newuser@zulip.com',
-        bob=u'bob@zulip.com',
-        cordelia=u'cordelia@zulip.com',
-        newguy=u'newguy@zulip.com',
-        me=u'me@zulip.com',
+        test='test@zulip.com',
+        test1='test1@zulip.com',
+        alice='alice@zulip.com',
+        newuser='newuser@zulip.com',
+        bob='bob@zulip.com',
+        cordelia='cordelia@zulip.com',
+        newguy='newguy@zulip.com',
+        me='me@zulip.com',
     )
 
     def nonreg_user(self, name):
@@ -317,7 +317,7 @@ class ZulipTestCase(TestCase):
 
     def submit_reg_form_for_user(self, email, password, realm_name="Zulip Test",
                                  realm_subdomain="zuliptest",
-                                 from_confirmation='', full_name=None, timezone=u'',
+                                 from_confirmation='', full_name=None, timezone='',
                                  realm_in_root_domain=None, **kwargs):
         # type: (Text, Text, Optional[Text], Optional[Text], Optional[Text], Optional[Text], Optional[Text], Optional[Text], **Any) -> HttpResponse
         """
@@ -370,9 +370,9 @@ class ZulipTestCase(TestCase):
                 api_key = get_user_profile_by_email(identifier).api_key
             API_KEYS[identifier] = api_key
 
-        credentials = u"%s:%s" % (identifier, api_key)
+        credentials = "%s:%s" % (identifier, api_key)
         return {
-            'HTTP_AUTHORIZATION': u'Basic ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
+            'HTTP_AUTHORIZATION': 'Basic ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
         }
 
     def get_streams(self, email, realm):
@@ -386,7 +386,7 @@ class ZulipTestCase(TestCase):
         )
         return [cast(Text, get_display_recipient(sub.recipient)) for sub in subs]
 
-    def send_personal_message(self, from_email, to_email, content=u"test content"):
+    def send_personal_message(self, from_email, to_email, content="test content"):
         # type: (Text, Text, Text) -> int
         sender = get_user_profile_by_email(from_email)
 
@@ -398,7 +398,7 @@ class ZulipTestCase(TestCase):
             content
         )
 
-    def send_huddle_message(self, from_email, to_emails, content=u"test content"):
+    def send_huddle_message(self, from_email, to_emails, content="test content"):
         # type: (Text, List[Text], Text) -> int
         sender = get_user_profile_by_email(from_email)
 
@@ -412,7 +412,7 @@ class ZulipTestCase(TestCase):
         )
 
     def send_stream_message(self, sender_email, stream_name,
-                            content=u"test content", topic_name=u"test"):
+                            content="test content", topic_name="test"):
         # type: (Text, Text, Text, Text) -> int
         sender = get_user_profile_by_email(sender_email)
 

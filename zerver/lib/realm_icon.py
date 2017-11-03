@@ -12,7 +12,7 @@ def realm_icon_url(realm):
 
 def get_realm_icon_url(realm):
     # type: (Realm) -> Text
-    if realm.icon_source == u'U':
+    if realm.icon_source == 'U':
         return upload_backend.get_realm_icon_url(realm.id, realm.icon_version)
     elif settings.ENABLE_GRAVATAR:
         hash_key = gravatar_hash(realm.string_id)
