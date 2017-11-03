@@ -7,7 +7,7 @@ from django.contrib.auth.views import login as django_login_page, \
     logout_then_login as django_logout_then_login
 from django.core.urlresolvers import reverse
 from zerver.decorator import authenticated_json_post_view, require_post, \
-    process_client, do_login
+    process_client, do_login, log_view_func
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, \
     HttpResponseNotFound
 from django.middleware.csrf import get_token
@@ -172,6 +172,7 @@ def login_or_register_remote_user(request, remote_username, user_profile, full_n
     do_login(request, user_profile)
     return HttpResponseRedirect(user_profile.realm.uri)
 
+@log_view_func
 def remote_user_sso(request):
     # type: (HttpRequest) -> HttpResponse
     try:
@@ -189,6 +190,7 @@ def remote_user_sso(request):
     return login_or_register_remote_user(request, remote_user, user_profile)
 
 @csrf_exempt
+@log_view_func
 def remote_user_jwt(request):
     # type: (HttpRequest) -> HttpResponse
     subdomain = get_subdomain(request)
@@ -311,6 +313,7 @@ def send_oauth_request_to_google(request):
     }
     return redirect(google_uri + urllib.parse.urlencode(params))
 
+@log_view_func
 def finish_google_oauth2(request):
     # type: (HttpRequest) -> HttpResponse
     error = request.GET.get('error')
@@ -418,6 +421,7 @@ def authenticate_remote_user(realm, email_address):
 
 _subdomain_token_salt = 'zerver.views.auth.log_into_subdomain'
 
+@log_view_func
 def log_into_subdomain(request, token):
     # type: (HttpRequest, Text) -> HttpResponse
     try:
