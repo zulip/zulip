@@ -519,7 +519,7 @@ inline.zulip = merge({}, inline.breaks, {
   stream: /^#\*\*([^\*]+)\*\*/,
   avatar: /^!avatar\(([^)]+)\)/,
   gravatar: /^!gravatar\(([^)]+)\)/,
-  tex: /^(\$\$([^ _$](\\\$|[^$])*)(?! )\$\$)\B/,
+  tex: /^(\$\$([^\n_$](\\\$|[^\n$])*)\$\$(?!\$))\B/,
   realm_filters: [],
   text: replace(inline.breaks.text)
     ('|', '|(\ud83c[\udd00-\udfff]|\ud83d[\udc00-\ude4f]|' +
@@ -527,6 +527,7 @@ inline.zulip = merge({}, inline.breaks, {
           '[\u2000-\u206F]|[\u2300-\u27BF]|[\u2B00-\u2BFF]|' +
           '[\u3000-\u303F]|[\u3200-\u32FF])|')
     (']|', '#@:]|')
+    ('^[', '^^\\${3,}|^^[')
     ()
 });
 
