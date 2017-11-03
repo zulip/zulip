@@ -220,7 +220,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
                                                  return_queue="tornado_return",
                                                  log_data=log_data,
                                                  request_environ=dict(REMOTE_ADDR=self.session.conn_info.ip))),
-                           fake_message_sender)
+                           fake_message_sender, call_consume_in_tests=True)
 
     def on_close(self) -> None:
         log_data = dict(extra='[transport=%s]' % (self.session.transport_name,))

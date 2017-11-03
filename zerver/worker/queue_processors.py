@@ -33,7 +33,7 @@ from zerver.lib.send_email import send_future_email, send_email_from_dict, \
     FromAddress, EmailNotDeliveredException
 from zerver.lib.email_mirror import process_message as mirror_email
 from zerver.decorator import JsonableError
-from zerver.tornado.socket import req_redis_key
+from zerver.tornado.socket import req_redis_key, respond_send_message
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.lib.db import reset_queries
 from zerver.lib.redis_utils import get_redis_client
@@ -393,9 +393,8 @@ class MessageSenderWorker(QueueProcessingWorker):
         self.redis_client.hmset(redis_key, {'status': 'complete',
                                             'response': resp_content})
 
-        # Since this sends back to Tornado, we can't use
-        # call_consume_in_tests here.
-        queue_json_publish(server_meta['return_queue'], result, lambda e: None)
+        queue_json_publish(server_meta['return_queue'], result,
+                           respond_send_message)
 
 @assign_queue('digest_emails')
 class DigestWorker(QueueProcessingWorker):
