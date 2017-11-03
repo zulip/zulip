@@ -375,6 +375,15 @@ def do_login(request, user_profile):
     request._email = user_profile.email
     process_client(request, user_profile, is_browser_view=True)
 
+def log_view_func(view_func):
+    # type: (ViewFuncT) -> ViewFuncT
+    @wraps(view_func)
+    def _wrapped_view_func(request, *args, **kwargs):
+        # type: (HttpRequest, *Any, **Any) -> HttpResponse
+        request._query = view_func.__name__
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
+
 def add_logging_data(view_func):
     # type: (ViewFuncT) -> ViewFuncT
     @wraps(view_func)
