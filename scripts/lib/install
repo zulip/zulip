@@ -82,10 +82,6 @@ ZULIP_PATH="$(realpath $(dirname $0)/../..)"
 # Handle issues around upstart on Ubuntu Xenial
 "$ZULIP_PATH"/scripts/lib/check-upstart
 
-if [ -n "$USE_CERTBOT" ]; then
-    "$ZULIP_PATH"/scripts/setup/setup-certbot --hostname "$EXTERNAL_HOST" --email "$ZULIP_ADMINISTRATOR"
-fi
-
 # Check for missing SSL certificates early as well
 if [ "$PUPPET_CLASSES" = "zulip::voyager" ] && { ! [ -e "/etc/ssl/private/zulip.key" ] || ! [ -e "/etc/ssl/certs/zulip.combined-chain.crt" ]; }; then
    set +x
@@ -136,6 +132,10 @@ mkdir -p /etc/zulip
     fi
 ) > /etc/zulip/zulip.conf
 "$ZULIP_PATH"/scripts/zulip-puppet-apply -f
+
+if [ -n "$USE_CERTBOT" ]; then
+    "$ZULIP_PATH"/scripts/setup/setup-certbot --hostname "$EXTERNAL_HOST" --email "$ZULIP_ADMINISTRATOR"
+fi
 
 # Detect which features were selected for the below
 set +e
