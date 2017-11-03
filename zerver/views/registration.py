@@ -338,6 +338,7 @@ def create_realm(request, creation_key=None):
                   context={'form': form, 'current_url': request.get_full_path},
                   )
 
+# This is used only by the casper test in 00-realm-creation.js.
 def confirmation_key(request):
     # type: (HttpRequest) -> HttpResponse
     return json_success(request.session.get('confirmation_key'))
@@ -385,7 +386,7 @@ def accounts_home_from_multiuse_invite(request, confirmation_key):
     # type: (HttpRequest, str) -> HttpResponse
     multiuse_object = None
     try:
-        multiuse_object = get_object_from_key(confirmation_key)
+        multiuse_object = get_object_from_key(confirmation_key, Confirmation.MULTIUSE_INVITE)
         # Required for oAuth2
         request.session["multiuse_object_key"] = confirmation_key
     except ConfirmationKeyException as exception:
