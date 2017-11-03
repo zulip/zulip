@@ -14,10 +14,9 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import get_realm, get_user
 
 class ResponseMock(object):
-    def __init__(self, status_code, data, content):
-        # type: (int, Any, str) -> None
+    def __init__(self, status_code, content):
+        # type: (int, Any) -> None
         self.status_code = status_code
-        self.data = data
         self.content = content
 
 def request_exception_error(http_method, final_url, data, **request_kwargs):
@@ -63,14 +62,14 @@ class DoRestCallTests(ZulipTestCase):
     @mock.patch('zerver.lib.outgoing_webhook.succeed_with_message')
     def test_successful_request(self, mock_succeed_with_message):
         # type: (mock.Mock) -> None
-        response = ResponseMock(200, {"message": "testing"}, '')
+        response = ResponseMock(200)
         with mock.patch('requests.request', return_value=response):
             do_rest_call(self.rest_operation, None, self.mock_event, service_handler, None)
             self.assertTrue(mock_succeed_with_message.called)
 
     def test_retry_request(self):
         # type: (mock.Mock) -> None
-        response = ResponseMock(500, {"message": "testing"}, '')
+        response = ResponseMock(500)
 
         self.mock_event['failed_tries'] = 3
         with mock.patch('requests.request', return_value=response):
@@ -85,7 +84,7 @@ The webhook got a response with status code *500*.''')
     @mock.patch('zerver.lib.outgoing_webhook.fail_with_message')
     def test_fail_request(self, mock_fail_with_message):
         # type: (mock.Mock) -> None
-        response = ResponseMock(400, {"message": "testing"}, '')
+        response = ResponseMock(400)
         with mock.patch('requests.request', return_value=response):
             do_rest_call(self.rest_operation, None, self.mock_event, service_handler, None)
             bot_owner_notification = self.get_last_message()
