@@ -225,7 +225,7 @@ def get_file_info(request, user_file):
     if content_type is None:
         guessed_type = guess_type(uploaded_file_name)[0]
         if guessed_type is not None:
-            content_type = force_text(guessed_type)
+            content_type = guessed_type
     else:
         extension = guess_extension(content_type)
         if extension is not None:
