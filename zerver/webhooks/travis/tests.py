@@ -7,7 +7,7 @@ from zerver.models import get_realm, get_user
 
 class TravisHookTests(WebhookTestCase):
     STREAM_NAME = 'travis'
-    URL_TEMPLATE = u"/api/v1/external/travis?stream={stream}&api_key={api_key}&topic=builds"
+    URL_TEMPLATE = "/api/v1/external/travis?stream={stream}&api_key={api_key}&topic=builds"
     FIXTURE_DIR_NAME = 'travis'
     TOPIC = 'builds'
 
@@ -18,10 +18,10 @@ class TravisHookTests(WebhookTestCase):
         The subject describes the repo and Stash "project". The
         content describes the commits pushed.
         """
-        expected_message = (u"Author: josh_mandel\nBuild status: Passed :thumbsup:\n"
-                            u"Details: [changes](https://github.com/hl7-fhir/fhir-sv"
-                            u"n/compare/6dccb98bcfd9...6c457d366a31), [build log](ht"
-                            u"tps://travis-ci.org/hl7-fhir/fhir-svn/builds/92495257)")
+        expected_message = ("Author: josh_mandel\nBuild status: Passed :thumbsup:\n"
+                            "Details: [changes](https://github.com/hl7-fhir/fhir-sv"
+                            "n/compare/6dccb98bcfd9...6c457d366a31), [build log](ht"
+                            "tps://travis-ci.org/hl7-fhir/fhir-svn/builds/92495257)")
 
         self.send_and_test_stream_message(
             'build',
@@ -43,10 +43,10 @@ class TravisHookTests(WebhookTestCase):
 
     def test_travis_pull_requests_are_not_ignored_when_applicable(self) -> None:
         self.url = "{}&ignore_pull_requests=false".format(self.build_webhook_url())
-        expected_message = (u"Author: josh_mandel\nBuild status: Passed :thumbsup:\n"
-                            u"Details: [changes](https://github.com/hl7-fhir/fhir-sv"
-                            u"n/compare/6dccb98bcfd9...6c457d366a31), [build log](ht"
-                            u"tps://travis-ci.org/hl7-fhir/fhir-svn/builds/92495257)")
+        expected_message = ("Author: josh_mandel\nBuild status: Passed :thumbsup:\n"
+                            "Details: [changes](https://github.com/hl7-fhir/fhir-sv"
+                            "n/compare/6dccb98bcfd9...6c457d366a31), [build log](ht"
+                            "tps://travis-ci.org/hl7-fhir/fhir-svn/builds/92495257)")
 
         self.send_and_test_stream_message(
             'pull_request',

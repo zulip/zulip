@@ -49,93 +49,93 @@ def api_taiga_webhook(request: HttpRequest, user_profile: UserProfile,
 
 templates = {
     'epic': {
-        'create': u':package: %(user)s created epic **%(subject)s**',
-        'set_assigned_to': u':busts_in_silhouette: %(user)s assigned epic **%(subject)s** to %(new)s.',
-        'unset_assigned_to': u':busts_in_silhouette: %(user)s unassigned epic **%(subject)s**',
-        'changed_assigned_to': u':busts_in_silhouette: %(user)s reassigned epic **%(subject)s**'
+        'create': ':package: %(user)s created epic **%(subject)s**',
+        'set_assigned_to': ':busts_in_silhouette: %(user)s assigned epic **%(subject)s** to %(new)s.',
+        'unset_assigned_to': ':busts_in_silhouette: %(user)s unassigned epic **%(subject)s**',
+        'changed_assigned_to': ':busts_in_silhouette: %(user)s reassigned epic **%(subject)s**'
         ' from %(old)s to %(new)s.',
-        'blocked': u':lock: %(user)s blocked epic **%(subject)s**',
-        'unblocked': u':unlock: %(user)s unblocked epic **%(subject)s**',
-        'changed_status': u':chart_increasing: %(user)s changed status of epic **%(subject)s**'
+        'blocked': ':lock: %(user)s blocked epic **%(subject)s**',
+        'unblocked': ':unlock: %(user)s unblocked epic **%(subject)s**',
+        'changed_status': ':chart_increasing: %(user)s changed status of epic **%(subject)s**'
         ' from %(old)s to %(new)s.',
-        'renamed': u':notebook: %(user)s renamed epic from **%(old)s** to **%(new)s**',
-        'description_diff': u':notebook: %(user)s updated description of epic **%(subject)s**',
-        'commented': u':thought_balloon: %(user)s commented on epic **%(subject)s**',
-        'delete': u':cross_mark: %(user)s deleted epic **%(subject)s**',
+        'renamed': ':notebook: %(user)s renamed epic from **%(old)s** to **%(new)s**',
+        'description_diff': ':notebook: %(user)s updated description of epic **%(subject)s**',
+        'commented': ':thought_balloon: %(user)s commented on epic **%(subject)s**',
+        'delete': ':cross_mark: %(user)s deleted epic **%(subject)s**',
     },
     'relateduserstory': {
-        'create': (u':package: %(user)s added a related user story '
-                   u'**%(userstory_subject)s** to the epic **%(epic_subject)s**'),
-        'delete': (u':cross_mark: %(user)s removed a related user story ' +
-                   u'**%(userstory_subject)s** from the epic **%(epic_subject)s**'),
+        'create': (':package: %(user)s added a related user story '
+                   '**%(userstory_subject)s** to the epic **%(epic_subject)s**'),
+        'delete': (':cross_mark: %(user)s removed a related user story ' +
+                   '**%(userstory_subject)s** from the epic **%(epic_subject)s**'),
     },
     'userstory': {
-        'create': u':package: %(user)s created user story **%(subject)s**.',
-        'set_assigned_to': u':busts_in_silhouette: %(user)s assigned user story **%(subject)s** to %(new)s.',
-        'unset_assigned_to': u':busts_in_silhouette: %(user)s unassigned user story **%(subject)s**.',
-        'changed_assigned_to': u':busts_in_silhouette: %(user)s reassigned user story **%(subject)s**'
+        'create': ':package: %(user)s created user story **%(subject)s**.',
+        'set_assigned_to': ':busts_in_silhouette: %(user)s assigned user story **%(subject)s** to %(new)s.',
+        'unset_assigned_to': ':busts_in_silhouette: %(user)s unassigned user story **%(subject)s**.',
+        'changed_assigned_to': ':busts_in_silhouette: %(user)s reassigned user story **%(subject)s**'
         ' from %(old)s to %(new)s.',
-        'points': u':game_die: %(user)s changed estimation of user story **%(subject)s**.',
-        'blocked': u':lock: %(user)s blocked user story **%(subject)s**.',
-        'unblocked': u':unlock: %(user)s unblocked user story **%(subject)s**.',
-        'set_milestone': u':calendar: %(user)s added user story **%(subject)s** to sprint %(new)s.',
-        'unset_milestone': u':calendar: %(user)s removed user story **%(subject)s** from sprint %(old)s.',
-        'changed_milestone': u':calendar: %(user)s changed sprint of user story **%(subject)s** from %(old)s'
+        'points': ':game_die: %(user)s changed estimation of user story **%(subject)s**.',
+        'blocked': ':lock: %(user)s blocked user story **%(subject)s**.',
+        'unblocked': ':unlock: %(user)s unblocked user story **%(subject)s**.',
+        'set_milestone': ':calendar: %(user)s added user story **%(subject)s** to sprint %(new)s.',
+        'unset_milestone': ':calendar: %(user)s removed user story **%(subject)s** from sprint %(old)s.',
+        'changed_milestone': ':calendar: %(user)s changed sprint of user story **%(subject)s** from %(old)s'
         ' to %(new)s.',
-        'changed_status': u':chart_with_upwards_trend: %(user)s changed status of user story **%(subject)s**'
+        'changed_status': ':chart_with_upwards_trend: %(user)s changed status of user story **%(subject)s**'
         ' from %(old)s to %(new)s.',
-        'closed': u':checkered_flag: %(user)s closed user story **%(subject)s**.',
-        'reopened': u':package: %(user)s reopened user story **%(subject)s**.',
-        'renamed': u':notebook: %(user)s renamed user story from %(old)s to **%(new)s**.',
-        'description_diff': u':notebook: %(user)s updated description of user story **%(subject)s**.',
-        'commented': u':thought_balloon: %(user)s commented on user story **%(subject)s**.',
-        'delete': u':x: %(user)s deleted user story **%(subject)s**.'
+        'closed': ':checkered_flag: %(user)s closed user story **%(subject)s**.',
+        'reopened': ':package: %(user)s reopened user story **%(subject)s**.',
+        'renamed': ':notebook: %(user)s renamed user story from %(old)s to **%(new)s**.',
+        'description_diff': ':notebook: %(user)s updated description of user story **%(subject)s**.',
+        'commented': ':thought_balloon: %(user)s commented on user story **%(subject)s**.',
+        'delete': ':x: %(user)s deleted user story **%(subject)s**.'
     },
     'milestone': {
-        'create': u':calendar: %(user)s created sprint **%(subject)s**.',
-        'renamed': u':notebook: %(user)s renamed sprint from %(old)s to **%(new)s**.',
-        'estimated_start': u':calendar: %(user)s changed estimated start of sprint **%(subject)s**'
+        'create': ':calendar: %(user)s created sprint **%(subject)s**.',
+        'renamed': ':notebook: %(user)s renamed sprint from %(old)s to **%(new)s**.',
+        'estimated_start': ':calendar: %(user)s changed estimated start of sprint **%(subject)s**'
         ' from %(old)s to %(new)s.',
-        'estimated_finish': u':calendar: %(user)s changed estimated finish of sprint **%(subject)s**'
+        'estimated_finish': ':calendar: %(user)s changed estimated finish of sprint **%(subject)s**'
         ' from %(old)s to %(new)s.',
-        'delete': u':x: %(user)s deleted sprint **%(subject)s**.'
+        'delete': ':x: %(user)s deleted sprint **%(subject)s**.'
     },
     'task': {
-        'create': u':clipboard: %(user)s created task **%(subject)s**.',
-        'set_assigned_to': u':busts_in_silhouette: %(user)s assigned task **%(subject)s** to %(new)s.',
-        'unset_assigned_to': u':busts_in_silhouette: %(user)s unassigned task **%(subject)s**.',
-        'changed_assigned_to': u':busts_in_silhouette: %(user)s reassigned task **%(subject)s**'
+        'create': ':clipboard: %(user)s created task **%(subject)s**.',
+        'set_assigned_to': ':busts_in_silhouette: %(user)s assigned task **%(subject)s** to %(new)s.',
+        'unset_assigned_to': ':busts_in_silhouette: %(user)s unassigned task **%(subject)s**.',
+        'changed_assigned_to': ':busts_in_silhouette: %(user)s reassigned task **%(subject)s**'
         ' from %(old)s to %(new)s.',
-        'blocked': u':lock: %(user)s blocked task **%(subject)s**.',
-        'unblocked': u':unlock: %(user)s unblocked task **%(subject)s**.',
-        'set_milestone': u':calendar: %(user)s added task **%(subject)s** to sprint %(new)s.',
-        'changed_milestone': u':calendar: %(user)s changed sprint of task '
+        'blocked': ':lock: %(user)s blocked task **%(subject)s**.',
+        'unblocked': ':unlock: %(user)s unblocked task **%(subject)s**.',
+        'set_milestone': ':calendar: %(user)s added task **%(subject)s** to sprint %(new)s.',
+        'changed_milestone': ':calendar: %(user)s changed sprint of task '
                              '**%(subject)s** from %(old)s to %(new)s.',
-        'changed_status': u':chart_with_upwards_trend: %(user)s changed status of task **%(subject)s**'
+        'changed_status': ':chart_with_upwards_trend: %(user)s changed status of task **%(subject)s**'
         ' from %(old)s to %(new)s.',
-        'renamed': u':notebook: %(user)s renamed task %(old)s to **%(new)s**.',
-        'description_diff': u':notebook: %(user)s updated description of task **%(subject)s**.',
-        'commented': u':thought_balloon: %(user)s commented on task **%(subject)s**.',
-        'delete': u':x: %(user)s deleted task **%(subject)s**.',
-        'changed_us': u':clipboard: %(user)s moved task **%(subject)s** from user story %(old)s to %(new)s.'
+        'renamed': ':notebook: %(user)s renamed task %(old)s to **%(new)s**.',
+        'description_diff': ':notebook: %(user)s updated description of task **%(subject)s**.',
+        'commented': ':thought_balloon: %(user)s commented on task **%(subject)s**.',
+        'delete': ':x: %(user)s deleted task **%(subject)s**.',
+        'changed_us': ':clipboard: %(user)s moved task **%(subject)s** from user story %(old)s to %(new)s.'
     },
     'issue': {
-        'create': u':bulb: %(user)s created issue **%(subject)s**.',
-        'set_assigned_to': u':busts_in_silhouette: %(user)s assigned issue **%(subject)s** to %(new)s.',
-        'unset_assigned_to': u':busts_in_silhouette: %(user)s unassigned issue **%(subject)s**.',
-        'changed_assigned_to': u':busts_in_silhouette: %(user)s reassigned issue **%(subject)s**'
+        'create': ':bulb: %(user)s created issue **%(subject)s**.',
+        'set_assigned_to': ':busts_in_silhouette: %(user)s assigned issue **%(subject)s** to %(new)s.',
+        'unset_assigned_to': ':busts_in_silhouette: %(user)s unassigned issue **%(subject)s**.',
+        'changed_assigned_to': ':busts_in_silhouette: %(user)s reassigned issue **%(subject)s**'
         ' from %(old)s to %(new)s.',
-        'changed_priority': u':rocket: %(user)s changed priority of issue '
+        'changed_priority': ':rocket: %(user)s changed priority of issue '
                             '**%(subject)s** from %(old)s to %(new)s.',
-        'changed_severity': u':warning: %(user)s changed severity of issue '
+        'changed_severity': ':warning: %(user)s changed severity of issue '
                             '**%(subject)s** from %(old)s to %(new)s.',
-        'changed_status': u':chart_with_upwards_trend: %(user)s changed status of issue **%(subject)s**'
+        'changed_status': ':chart_with_upwards_trend: %(user)s changed status of issue **%(subject)s**'
                            ' from %(old)s to %(new)s.',
-        'changed_type': u':bulb: %(user)s changed type of issue **%(subject)s** from %(old)s to %(new)s.',
-        'renamed': u':notebook: %(user)s renamed issue %(old)s to **%(new)s**.',
-        'description_diff': u':notebook: %(user)s updated description of issue **%(subject)s**.',
-        'commented': u':thought_balloon: %(user)s commented on issue **%(subject)s**.',
-        'delete': u':x: %(user)s deleted issue **%(subject)s**.'
+        'changed_type': ':bulb: %(user)s changed type of issue **%(subject)s** from %(old)s to %(new)s.',
+        'renamed': ':notebook: %(user)s renamed issue %(old)s to **%(new)s**.',
+        'description_diff': ':notebook: %(user)s updated description of issue **%(subject)s**.',
+        'commented': ':thought_balloon: %(user)s commented on issue **%(subject)s**.',
+        'delete': ':x: %(user)s deleted issue **%(subject)s**.'
     },
 }
 

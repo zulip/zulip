@@ -8,18 +8,18 @@ from zerver.webhooks.appfollow.view import convert_markdown
 
 class AppFollowHookTests(WebhookTestCase):
     STREAM_NAME = 'appfollow'
-    URL_TEMPLATE = u"/api/v1/external/appfollow?stream={stream}&api_key={api_key}"
+    URL_TEMPLATE = "/api/v1/external/appfollow?stream={stream}&api_key={api_key}"
 
     def test_sample(self) -> None:
         expected_subject = "Webhook integration was successful."
-        expected_message = u"""Webhook integration was successful.
+        expected_message = """Webhook integration was successful.
 Test User / Acme (Google Play)"""
         self.send_and_test_stream_message('sample', expected_subject, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
     def test_reviews(self) -> None:
         expected_subject = "Acme - Group chat"
-        expected_message = u"""Acme - Group chat
+        expected_message = """Acme - Group chat
 App Store, Acme Technologies, Inc.
 ★★★★★ United States
 **Great for Information Management**

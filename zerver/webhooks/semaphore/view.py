@@ -32,7 +32,7 @@ def api_semaphore_webhook(request: HttpRequest, user_profile: UserProfile,
     if event == "build":
         build_url = payload["build_url"]
         build_number = payload["build_number"]
-        content = u"[build %s](%s): %s\n" % (build_number, build_url, result)
+        content = "[build %s](%s): %s\n" % (build_number, build_url, result)
 
     elif event == "deploy":
         build_url = payload["build_html_url"]
@@ -40,15 +40,15 @@ def api_semaphore_webhook(request: HttpRequest, user_profile: UserProfile,
         deploy_url = payload["html_url"]
         deploy_number = payload["number"]
         server_name = payload["server_name"]
-        content = u"[deploy %s](%s) of [build %s](%s) on server %s: %s\n" % \
+        content = "[deploy %s](%s) of [build %s](%s) on server %s: %s\n" % \
                   (deploy_number, deploy_url, build_number, build_url, server_name, result)
 
     else:  # should never get here
-        content = u"%s: %s\n" % (event, result)
+        content = "%s: %s\n" % (event, result)
 
     content += "!avatar(%s) [`%s`](%s): %s" % (author_email, commit_id[:7],
                                                commit_url, message)
-    subject = u"%s/%s" % (project_name, branch_name)
+    subject = "%s/%s" % (project_name, branch_name)
 
     check_send_stream_message(user_profile, request.client, stream, subject, content)
     return json_success()

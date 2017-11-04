@@ -200,7 +200,7 @@ def get_fork_body(payload: Dict[str, Any]) -> str:
 
 def get_commit_comment_body(payload: Dict[str, Any]) -> Text:
     comment = payload['comment']
-    action = u'[commented]({})'.format(comment['links']['html']['href'])
+    action = '[commented]({})'.format(comment['links']['html']['href'])
     return get_commits_comment_action_message(
         get_user_username(payload),
         action,

@@ -65,7 +65,7 @@ def build_pagerduty_formatdict(message: Dict[str, Any]) -> Dict[str, Any]:
     trigger_description = message['data']['incident']['trigger_summary_data'].get('description', '')
     if trigger_description:
         trigger_message.append(trigger_description)
-    format_dict['trigger_message'] = u'\n'.join(trigger_message)
+    format_dict['trigger_message'] = '\n'.join(trigger_message)
     return format_dict
 
 
@@ -76,10 +76,10 @@ def send_raw_pagerduty_json(user_profile: UserProfile,
                             topic: Optional[Text]) -> None:
     subject = topic or 'pagerduty'
     body = (
-        u'Unknown pagerduty message\n'
-        u'```\n'
-        u'%s\n'
-        u'```') % (ujson.dumps(message, indent=2),)
+        'Unknown pagerduty message\n'
+        '```\n'
+        '%s\n'
+        '```') % (ujson.dumps(message, indent=2),)
     check_send_stream_message(user_profile, client, stream, subject, body)
 
 
@@ -90,23 +90,23 @@ def send_formated_pagerduty(user_profile: UserProfile,
                             format_dict: Dict[str, Any],
                             topic: Optional[Text]) -> None:
     if message_type in ('incident.trigger', 'incident.unacknowledge'):
-        template = (u':imp: Incident '
-                    u'[{incident_num}]({incident_url}) {action} by '
-                    u'[{service_name}]({service_url}) and assigned to '
-                    u'[{assigned_to_username}@]({assigned_to_url})\n\n>{trigger_message}')
+        template = (':imp: Incident '
+                    '[{incident_num}]({incident_url}) {action} by '
+                    '[{service_name}]({service_url}) and assigned to '
+                    '[{assigned_to_username}@]({assigned_to_url})\n\n>{trigger_message}')
 
     elif message_type == 'incident.resolve' and format_dict['resolved_by_url']:
-        template = (u':grinning: Incident '
-                    u'[{incident_num}]({incident_url}) resolved by '
-                    u'[{resolved_by_username}@]({resolved_by_url})\n\n>{trigger_message}')
+        template = (':grinning: Incident '
+                    '[{incident_num}]({incident_url}) resolved by '
+                    '[{resolved_by_username}@]({resolved_by_url})\n\n>{trigger_message}')
     elif message_type == 'incident.resolve' and not format_dict['resolved_by_url']:
-        template = (u':grinning: Incident '
-                    u'[{incident_num}]({incident_url}) resolved\n\n>{trigger_message}')
+        template = (':grinning: Incident '
+                    '[{incident_num}]({incident_url}) resolved\n\n>{trigger_message}')
     else:
-        template = (u':no_good: Incident [{incident_num}]({incident_url}) '
-                    u'{action} by [{assigned_to_username}@]({assigned_to_url})\n\n>{trigger_message}')
+        template = (':no_good: Incident [{incident_num}]({incident_url}) '
+                    '{action} by [{assigned_to_username}@]({assigned_to_url})\n\n>{trigger_message}')
 
-    subject = topic or u'incident {incident_num}'.format(**format_dict)
+    subject = topic or 'incident {incident_num}'.format(**format_dict)
     body = template.format(**format_dict)
 
     check_send_stream_message(user_profile, client, stream, subject, body)

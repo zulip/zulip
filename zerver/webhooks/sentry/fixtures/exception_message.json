@@ -132,7 +132,7 @@
               ]
             },
             "'v'": {
-              "'message'": "u'This is a test message generated using ``raven test``'",
+              "'message'": "'This is a test message generated using ``raven test``'",
               "'params'": [
               ]
             },
@@ -143,19 +143,19 @@
             "'self'": "<raven.base.Client object at 0x107bb8210>",
             "'data'": {
               "'sentry.interfaces.Message'": {
-                "'message'": "u'This is a test message generated using ``raven test``'",
+                "'message'": "'This is a test message generated using ``raven test``'",
                 "'params'": [
                 ]
               },
-              "'message'": "u'This is a test message generated using ``raven test``'"
+              "'message'": "'This is a test message generated using ``raven test``'"
             },
             "'result'": {
               "'sentry.interfaces.Message'": {
-                "'message'": "u'This is a test message generated using ``raven test``'",
+                "'message'": "'This is a test message generated using ``raven test``'",
                 "'params'": [
                 ]
               },
-              "'message'": "u'This is a test message generated using ``raven test``'"
+              "'message'": "'This is a test message generated using ``raven test``'"
             },
             "'kwargs'": {
               "'message'": "'This is a test message generated using ``raven test``'",

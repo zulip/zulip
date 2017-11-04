@@ -25,7 +25,7 @@ def get_push_event_body(payload: Dict[str, Any]) -> Text:
     return get_normal_push_event_body(payload)
 
 def get_normal_push_event_body(payload: Dict[str, Any]) -> Text:
-    compare_url = u'{}/compare/{}...{}'.format(
+    compare_url = '{}/compare/{}...{}'.format(
         get_repository_homepage(payload),
         payload['before'],
         payload['after']
@@ -120,7 +120,7 @@ def get_objects_assignee(payload: Dict[str, Any]) -> Optional[Text]:
 
 def get_commented_commit_event_body(payload: Dict[str, Any]) -> Text:
     comment = payload['object_attributes']
-    action = u'[commented]({})'.format(comment['url'])
+    action = '[commented]({})'.format(comment['url'])
     return get_commits_comment_action_message(
         get_issue_user_name(payload),
         action,
@@ -131,8 +131,8 @@ def get_commented_commit_event_body(payload: Dict[str, Any]) -> Text:
 
 def get_commented_merge_request_event_body(payload: Dict[str, Any]) -> Text:
     comment = payload['object_attributes']
-    action = u'[commented]({}) on'.format(comment['url'])
-    url = u'{}/merge_requests/{}'.format(
+    action = '[commented]({}) on'.format(comment['url'])
+    url = '{}/merge_requests/{}'.format(
         payload['project'].get('web_url'),
         payload['merge_request'].get('iid')
     )
@@ -147,8 +147,8 @@ def get_commented_merge_request_event_body(payload: Dict[str, Any]) -> Text:
 
 def get_commented_issue_event_body(payload: Dict[str, Any]) -> Text:
     comment = payload['object_attributes']
-    action = u'[commented]({}) on'.format(comment['url'])
-    url = u'{}/issues/{}'.format(
+    action = '[commented]({}) on'.format(comment['url'])
+    url = '{}/issues/{}'.format(
         payload['project'].get('web_url'),
         payload['issue'].get('iid')
     )
@@ -163,8 +163,8 @@ def get_commented_issue_event_body(payload: Dict[str, Any]) -> Text:
 
 def get_commented_snippet_event_body(payload: Dict[str, Any]) -> Text:
     comment = payload['object_attributes']
-    action = u'[commented]({}) on'.format(comment['url'])
-    url = u'{}/snippets/{}'.format(
+    action = '[commented]({}) on'.format(comment['url'])
+    url = '{}/snippets/{}'.format(
         payload['project'].get('web_url'),
         payload['snippet'].get('id')
     )
@@ -178,7 +178,7 @@ def get_commented_snippet_event_body(payload: Dict[str, Any]) -> Text:
     )
 
 def get_wiki_page_event_body(payload: Dict[str, Any], action: Text) -> Text:
-    return u"{} {} [Wiki Page \"{}\"]({}).".format(
+    return "{} {} [Wiki Page \"{}\"]({}).".format(
         get_issue_user_name(payload),
         action,
         payload['object_attributes'].get('title'),
@@ -193,7 +193,7 @@ def get_build_hook_event_body(payload: Dict[str, Any]) -> Text:
         action = 'started'
     else:
         action = 'changed status to {}'.format(build_status)
-    return u"Build {} from {} stage {}.".format(
+    return "Build {} from {} stage {}.".format(
         payload.get('build_name'),
         payload.get('build_stage'),
         action
@@ -212,10 +212,10 @@ def get_pipeline_event_body(payload: Dict[str, Any]) -> Text:
     else:
         action = 'changed status to {}'.format(pipeline_status)
 
-    builds_status = u""
+    builds_status = ""
     for build in payload['builds']:
-        builds_status += u"* {} - {}\n".format(build.get('name'), build.get('status'))
-    return u"Pipeline {} with build(s):\n{}.".format(action, builds_status[:-1])
+        builds_status += "* {} - {}\n".format(build.get('name'), build.get('status'))
+    return "Pipeline {} with build(s):\n{}.".format(action, builds_status[:-1])
 
 def get_repo_name(payload: Dict[str, Any]) -> Text:
     return payload['project']['name']
@@ -285,11 +285,11 @@ def get_body_based_on_event(event: str) -> Any:
 
 def get_subject_based_on_event(event: str, payload: Dict[str, Any]) -> Text:
     if event == 'Push Hook':
-        return u"{} / {}".format(get_repo_name(payload), get_branch_name(payload))
+        return "{} / {}".format(get_repo_name(payload), get_branch_name(payload))
     elif event == 'Build Hook':
-        return u"{} / {}".format(payload['repository'].get('name'), get_branch_name(payload))
+        return "{} / {}".format(payload['repository'].get('name'), get_branch_name(payload))
     elif event == 'Pipeline Hook':
-        return u"{} / {}".format(
+        return "{} / {}".format(
             get_repo_name(payload),
             payload['object_attributes'].get('ref').replace('refs/heads/', ''))
     elif event.startswith('Merge Request Hook'):
@@ -350,4 +350,4 @@ def get_event(request: HttpRequest, payload: Dict[str, Any], branches: Optional[
 
     if event in list(EVENT_FUNCTION_MAPPER.keys()):
         return event
-    raise UnknownEventType(u'Event {} is unknown and cannot be handled'.format(event))
+    raise UnknownEventType('Event {} is unknown and cannot be handled'.format(event))

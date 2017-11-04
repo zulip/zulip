@@ -73,7 +73,7 @@ def github_issues_content(payload: Mapping[Text, Any]) -> Text:
 def github_object_commented_content(payload: Mapping[Text, Any], type: Text) -> Text:
     comment = payload['comment']
     issue = payload['issue']
-    action = u'[commented]({}) on'.format(comment['html_url'])
+    action = '[commented]({}) on'.format(comment['html_url'])
 
     return get_pull_request_event_message(
         comment['user']['login'],
@@ -105,7 +105,7 @@ def get_pull_request_or_issue_subject(repository: Mapping[Text, Any],
 
 def github_generic_subject(noun: Text, topic_focus: Text, blob: Mapping[Text, Any]) -> Text:
     # issue and pull_request objects have the same fields we're interested in
-    return u'%s: %s %d: %s' % (topic_focus, noun, blob['number'], blob['title'])
+    return '%s: %s %d: %s' % (topic_focus, noun, blob['number'], blob['title'])
 
 def api_github_v1(user_profile: UserProfile,
                   event: Text,
@@ -178,7 +178,7 @@ def api_github_v2(user_profile: UserProfile, event: Text, payload: Mapping[Text,
         subject = updated_topic_focus
 
         comment = payload['comment']
-        action = u'[commented]({})'.format(comment['html_url'])
+        action = '[commented]({})'.format(comment['html_url'])
         content = get_commits_comment_action_message(
             comment['user']['login'],
             action,
@@ -188,7 +188,7 @@ def api_github_v2(user_profile: UserProfile, event: Text, payload: Mapping[Text,
         )
 
     else:
-        raise UnknownEventType(u'Event %s is unknown and cannot be handled' % (event,))
+        raise UnknownEventType('Event %s is unknown and cannot be handled' % (event,))
 
     return target_stream, subject, content
 

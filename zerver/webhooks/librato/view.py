@@ -98,23 +98,23 @@ class LibratoWebhookHandler(LibratoWebhookParser):
         return content
 
     def handle_snapshots(self) -> Text:
-        content = u''
+        content = ''
         for attachment in self.attachments:
             content += self.handle_snapshot(attachment)
         return content
 
     def handle_snapshot(self, snapshot: Dict[str, Any]) -> Text:
-        snapshot_template = u"**{author_name}** sent a [snapshot]({image_url}) of [metric]({title})"
+        snapshot_template = "**{author_name}** sent a [snapshot]({image_url}) of [metric]({title})"
         author_name, image_url, title = self.parse_snapshot(snapshot)
         content = snapshot_template.format(author_name=author_name, image_url=image_url, title=title)
         return content
 
     def handle_alert_violation_message(self) -> Text:
-        alert_violation_template = u"Alert [alert_name]({alert_url}) has triggered! "
+        alert_violation_template = "Alert [alert_name]({alert_url}) has triggered! "
         alert_id, alert_name, alert_url, alert_runbook_url = self.parse_alert()
         content = alert_violation_template.format(alert_name=alert_name, alert_url=alert_url)
         if alert_runbook_url:
-            alert_runbook_template = u"[Reaction steps]({alert_runbook_url})"
+            alert_runbook_template = "[Reaction steps]({alert_runbook_url})"
             content += alert_runbook_template.format(alert_runbook_url=alert_runbook_url)
         content += self.generate_conditions_and_violations()
         return content
@@ -122,7 +122,7 @@ class LibratoWebhookHandler(LibratoWebhookParser):
     def generate_conditions_and_violations(self) -> Text:
         conditions = self.parse_conditions()
         violations = self.parse_violations()
-        content = u""
+        content = ""
         for condition, violation in zip(conditions, violations):
             content += self.generate_violated_metric_condition(violation, condition)
         return content
@@ -131,14 +131,14 @@ class LibratoWebhookHandler(LibratoWebhookParser):
                                            condition: Dict[str, Any]) -> Text:
         summary_function, threshold, condition_type, duration = self.parse_condition(condition)
         metric_name, recorded_at = self.parse_violation(violation)
-        metric_condition_template = (u"\n>Metric `{metric_name}`, {summary_function} "
+        metric_condition_template = ("\n>Metric `{metric_name}`, {summary_function} "
                                      "was {condition_type} {threshold}")
         content = metric_condition_template.format(
             metric_name=metric_name, summary_function=summary_function, condition_type=condition_type,
             threshold=threshold)
         if duration:
-            content += u" by {duration}s".format(duration=duration)
-        content += u", recorded at {recorded_at} UTC".format(recorded_at=recorded_at)
+            content += " by {duration}s".format(duration=duration)
+        content += ", recorded at {recorded_at} UTC".format(recorded_at=recorded_at)
         return content
 
 @api_key_only_webhook_view('Librato')

@@ -24,7 +24,7 @@ def api_bitbucket_webhook(request: HttpRequest, user_profile: UserProfile,
             'name': payload.get('user'),
             'sha': commit.get('raw_node'),
             'message': commit.get('message'),
-            'url': u'{}{}commits/{}'.format(
+            'url': '{}{}commits/{}'.format(
                 payload.get('canon_url'),
                 repository.get('absolute_url'),
                 commit.get('raw_node'))
@@ -36,7 +36,7 @@ def api_bitbucket_webhook(request: HttpRequest, user_profile: UserProfile,
         # Bitbucket doesn't give us enough information to really give
         # a useful message :/
         subject = repository['name']
-        content = (u"%s [force pushed](%s)"
+        content = ("%s [force pushed](%s)"
                    % (payload['user'],
                       payload['canon_url'] + repository['absolute_url']))
     else:

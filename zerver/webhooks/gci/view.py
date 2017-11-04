@@ -8,8 +8,8 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.models import UserProfile
 
-GCI_MESSAGE_TEMPLATE = u'**{actor}** {action} the task [{task_name}]({task_url}).'
-GCI_SUBJECT_TEMPLATE = u'{student_name}'
+GCI_MESSAGE_TEMPLATE = '**{actor}** {action} the task [{task_name}]({task_url}).'
+GCI_SUBJECT_TEMPLATE = '{student_name}'
 
 
 def build_instance_url(instance_id: str) -> str:
@@ -133,7 +133,7 @@ def get_event(payload: Dict[Text, Any]) -> Optional[Text]:
     if event in EVENTS_FUNCTION_MAPPER:
         return event
 
-    raise UnknownEventType(u"Event '{}' is unknown and cannot be handled".format(event))  # nocoverage
+    raise UnknownEventType("Event '{}' is unknown and cannot be handled".format(event))  # nocoverage
 
 def get_body_based_on_event(event: Text) -> Any:
     return EVENTS_FUNCTION_MAPPER[event]

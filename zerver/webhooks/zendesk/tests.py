@@ -5,7 +5,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 class ZenDeskHookTests(WebhookTestCase):
     STREAM_NAME = 'zendesk'
-    URL_TEMPLATE = u"/api/v1/external/zendesk"
+    URL_TEMPLATE = "/api/v1/external/zendesk"
 
     DEFAULT_TICKET_TITLE = 'User can\'t login'
     TICKET_TITLE = DEFAULT_TICKET_TITLE

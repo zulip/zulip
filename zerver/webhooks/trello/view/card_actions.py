@@ -4,58 +4,58 @@ from typing import Any, Dict, Mapping, MutableMapping, Optional, Text, Tuple
 from .exceptions import UnknownUpdateCardAction
 
 SUPPORTED_CARD_ACTIONS = [
-    u'updateCard',
-    u'createCard',
-    u'addLabelToCard',
-    u'removeLabelFromCard',
-    u'addMemberToCard',
-    u'removeMemberFromCard',
-    u'addAttachmentToCard',
-    u'addChecklistToCard',
-    u'commentCard'
+    'updateCard',
+    'createCard',
+    'addLabelToCard',
+    'removeLabelFromCard',
+    'addMemberToCard',
+    'removeMemberFromCard',
+    'addAttachmentToCard',
+    'addChecklistToCard',
+    'commentCard'
 ]
 
-CREATE = u'createCard'
-CHANGE_LIST = u'changeList'
-CHANGE_NAME = u'changeName'
-SET_DESC = u'setDesc'
-CHANGE_DESC = u'changeDesc'
-REMOVE_DESC = u'removeDesc'
-ARCHIVE = u'archiveCard'
-REOPEN = u'reopenCard'
-SET_DUE_DATE = u'setDueDate'
-CHANGE_DUE_DATE = u'changeDueDate'
-REMOVE_DUE_DATE = u'removeDueDate'
-ADD_LABEL = u'addLabelToCard'
-REMOVE_LABEL = u'removeLabelFromCard'
-ADD_MEMBER = u'addMemberToCard'
-REMOVE_MEMBER = u'removeMemberFromCard'
-ADD_ATTACHMENT = u'addAttachmentToCard'
-ADD_CHECKLIST = u'addChecklistToCard'
-COMMENT = u'commentCard'
+CREATE = 'createCard'
+CHANGE_LIST = 'changeList'
+CHANGE_NAME = 'changeName'
+SET_DESC = 'setDesc'
+CHANGE_DESC = 'changeDesc'
+REMOVE_DESC = 'removeDesc'
+ARCHIVE = 'archiveCard'
+REOPEN = 'reopenCard'
+SET_DUE_DATE = 'setDueDate'
+CHANGE_DUE_DATE = 'changeDueDate'
+REMOVE_DUE_DATE = 'removeDueDate'
+ADD_LABEL = 'addLabelToCard'
+REMOVE_LABEL = 'removeLabelFromCard'
+ADD_MEMBER = 'addMemberToCard'
+REMOVE_MEMBER = 'removeMemberFromCard'
+ADD_ATTACHMENT = 'addAttachmentToCard'
+ADD_CHECKLIST = 'addChecklistToCard'
+COMMENT = 'commentCard'
 
-TRELLO_CARD_URL_TEMPLATE = u'[{card_name}]({card_url})'
+TRELLO_CARD_URL_TEMPLATE = '[{card_name}]({card_url})'
 
 ACTIONS_TO_MESSAGE_MAPPER = {
-    CREATE: u'created {card_url_template}.',
-    CHANGE_LIST: u'moved {card_url_template} from {old_list} to {new_list}.',
-    CHANGE_NAME: u'renamed the card from "{old_name}" to {card_url_template}.',
-    SET_DESC: u'set description for {card_url_template} to\n~~~ quote\n{desc}\n~~~\n',
-    CHANGE_DESC: (u'changed description for {card_url_template} from\n' +
+    CREATE: 'created {card_url_template}.',
+    CHANGE_LIST: 'moved {card_url_template} from {old_list} to {new_list}.',
+    CHANGE_NAME: 'renamed the card from "{old_name}" to {card_url_template}.',
+    SET_DESC: 'set description for {card_url_template} to\n~~~ quote\n{desc}\n~~~\n',
+    CHANGE_DESC: ('changed description for {card_url_template} from\n' +
                   '~~~ quote\n{old_desc}\n~~~\nto\n~~~ quote\n{desc}\n~~~\n'),
-    REMOVE_DESC: u'removed description from {card_url_template}.',
-    ARCHIVE: u'archived {card_url_template}.',
-    REOPEN: u'reopened {card_url_template}.',
-    SET_DUE_DATE: u'set due date for {card_url_template} to {due_date}.',
-    CHANGE_DUE_DATE: u'changed due date for {card_url_template} from {old_due_date} to {due_date}.',
-    REMOVE_DUE_DATE: u'removed the due date from {card_url_template}.',
-    ADD_LABEL: u'added a {color} label with \"{text}\" to {card_url_template}.',
-    REMOVE_LABEL: u'removed a {color} label with \"{text}\" from {card_url_template}.',
-    ADD_MEMBER: u'added {member_name} to {card_url_template}.',
-    REMOVE_MEMBER: u'removed {member_name} from {card_url_template}.',
-    ADD_ATTACHMENT: u'added [{attachment_name}]({attachment_url}) to {card_url_template}.',
-    ADD_CHECKLIST: u'added the {checklist_name} checklist to {card_url_template}.',
-    COMMENT: u'commented on {card_url_template}\n~~~ quote\n{text}\n~~~\n'
+    REMOVE_DESC: 'removed description from {card_url_template}.',
+    ARCHIVE: 'archived {card_url_template}.',
+    REOPEN: 'reopened {card_url_template}.',
+    SET_DUE_DATE: 'set due date for {card_url_template} to {due_date}.',
+    CHANGE_DUE_DATE: 'changed due date for {card_url_template} from {old_due_date} to {due_date}.',
+    REMOVE_DUE_DATE: 'removed the due date from {card_url_template}.',
+    ADD_LABEL: 'added a {color} label with \"{text}\" to {card_url_template}.',
+    REMOVE_LABEL: 'removed a {color} label with \"{text}\" from {card_url_template}.',
+    ADD_MEMBER: 'added {member_name} to {card_url_template}.',
+    REMOVE_MEMBER: 'removed {member_name} from {card_url_template}.',
+    ADD_ATTACHMENT: 'added [{attachment_name}]({attachment_url}) to {card_url_template}.',
+    ADD_CHECKLIST: 'added the {checklist_name} checklist to {card_url_template}.',
+    COMMENT: 'commented on {card_url_template}\n~~~ quote\n{text}\n~~~\n'
 }
 
 def prettify_date(date_string: str) -> str:
@@ -108,7 +108,7 @@ def get_subject(payload: Mapping[str, Any]) -> Text:
 def get_body(payload: Mapping[str, Any], action_type: Text) -> Text:
     message_body = ACTIONS_TO_FILL_BODY_MAPPER[action_type](payload, action_type)
     creator = payload['action']['memberCreator'].get('fullName')
-    return u'{full_name} {rest}'.format(full_name=creator, rest=message_body)
+    return '{full_name} {rest}'.format(full_name=creator, rest=message_body)
 
 def get_added_checklist_body(payload: Mapping[str, Any], action_type: Text) -> Text:
     data = {
@@ -199,7 +199,7 @@ def get_filled_card_url_template(payload: Mapping[str, Any]) -> Text:
     return TRELLO_CARD_URL_TEMPLATE.format(card_name=get_card_name(payload), card_url=get_card_url(payload))
 
 def get_card_url(payload: Mapping[str, Any]) -> Text:
-    return u'https://trello.com/c/{}'.format(get_action_data(payload)['card'].get('shortLink'))
+    return 'https://trello.com/c/{}'.format(get_action_data(payload)['card'].get('shortLink'))
 
 def get_message_body(action_type: Text) -> Text:
     return ACTIONS_TO_MESSAGE_MAPPER[action_type]

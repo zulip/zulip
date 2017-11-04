@@ -10,16 +10,16 @@ class HelloWorldHookTests(WebhookTestCase):
 
     # Note: Include a test function per each distinct message condition your integration supports
     def test_hello_message(self) -> None:
-        expected_subject = u"Hello World"
-        expected_message = u"Hello! I am happy to be here! :smile:\nThe Wikipedia featured article for today is **[Marilyn Monroe](https://en.wikipedia.org/wiki/Marilyn_Monroe)**"
+        expected_subject = "Hello World"
+        expected_message = "Hello! I am happy to be here! :smile:\nThe Wikipedia featured article for today is **[Marilyn Monroe](https://en.wikipedia.org/wiki/Marilyn_Monroe)**"
 
         # use fixture named helloworld_hello
         self.send_and_test_stream_message('hello', expected_subject, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
     def test_goodbye_message(self) -> None:
-        expected_subject = u"Hello World"
-        expected_message = u"Hello! I am happy to be here! :smile:\nThe Wikipedia featured article for today is **[Goodbye](https://en.wikipedia.org/wiki/Goodbye)**"
+        expected_subject = "Hello World"
+        expected_message = "Hello! I am happy to be here! :smile:\nThe Wikipedia featured article for today is **[Goodbye](https://en.wikipedia.org/wiki/Goodbye)**"
 
         # use fixture named helloworld_goodbye
         self.send_and_test_stream_message('goodbye', expected_subject, expected_message,
