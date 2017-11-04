@@ -6,8 +6,7 @@ class FreshdeskHookTests(WebhookTestCase):
     STREAM_NAME = 'freshdesk'
     URL_TEMPLATE = u"/api/v1/external/freshdesk?stream={stream}"
 
-    def test_ticket_creation(self):
-        # type: () -> None
+    def test_ticket_creation(self) -> None:
         """
         Messages are generated on ticket creation through Freshdesk's
         "Dispatch'r" service.
@@ -24,8 +23,7 @@ Priority: **High**
 Status: **Pending**"""
         self.send_and_test_stream_message('ticket_created', expected_subject, expected_message, content_type="application/x-www-form-urlencoded", **self.api_auth(self.TEST_USER_EMAIL))
 
-    def test_status_change(self):
-        # type: () -> None
+    def test_status_change(self) -> None:
         """
         Messages are generated when a ticket's status changes through
         Freshdesk's "Observer" service.
@@ -38,8 +36,7 @@ Status: **Resolved** => **Waiting on Customer**"""
                                           content_type="application/x-www-form-urlencoded",
                                           **self.api_auth(self.TEST_USER_EMAIL))
 
-    def test_priority_change(self):
-        # type: () -> None
+    def test_priority_change(self) -> None:
         """
         Messages are generated when a ticket's priority changes through
         Freshdesk's "Observer" service.
@@ -52,8 +49,7 @@ Priority: **High** => **Low**"""
                                           content_type="application/x-www-form-urlencoded",
                                           **self.api_auth(self.TEST_USER_EMAIL))
 
-    def note_change(self, fixture, note_type):
-        # type: (Text, Text) -> None
+    def note_change(self, fixture: Text, note_type: Text) -> None:
         """
         Messages are generated when a note gets added to a ticket through
         Freshdesk's "Observer" service.
@@ -64,16 +60,13 @@ Priority: **High** => **Low**"""
                                           content_type="application/x-www-form-urlencoded",
                                           **self.api_auth(self.TEST_USER_EMAIL))
 
-    def test_private_note_change(self):
-        # type: () -> None
+    def test_private_note_change(self) -> None:
         self.note_change("private_note", "private")
 
-    def test_public_note_change(self):
-        # type: () -> None
+    def test_public_note_change(self) -> None:
         self.note_change("public_note", "public")
 
-    def test_inline_image(self):
-        # type: () -> None
+    def test_inline_image(self) -> None:
         """
         Freshdesk sends us descriptions as HTML, so we have to make the
         descriptions Zulip markdown-friendly while still doing our best to
@@ -85,6 +78,5 @@ Priority: **High** => **Low**"""
                                           content_type="application/x-www-form-urlencoded",
                                           **self.api_auth(self.TEST_USER_EMAIL))
 
-    def get_body(self, fixture_name):
-        # type: (Text) -> Text
+    def get_body(self, fixture_name: Text) -> Text:
         return self.fixture_data("freshdesk", fixture_name, file_type="json")

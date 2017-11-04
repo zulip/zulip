@@ -6,8 +6,7 @@ from .github.view import api_github_landing
 # Since this dispatcher is an API-style endpoint, it needs to be
 # explicitly marked as CSRF-exempt
 @csrf_exempt
-def api_github_webhook_dispatch(request):
-    # type: (HttpRequest) -> HttpResponse
+def api_github_webhook_dispatch(request: HttpRequest) -> HttpResponse:
     if request.META.get('HTTP_X_GITHUB_EVENT'):
         return api_github_webhook(request)
     else:

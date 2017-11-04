@@ -17,12 +17,10 @@ import ujson
 from typing import Dict, List, Optional, Tuple, Text
 
 
-def api_pivotal_webhook_v3(request, user_profile, stream):
-    # type: (HttpRequest, UserProfile, Text) -> Tuple[Text, Text]
+def api_pivotal_webhook_v3(request: HttpRequest, user_profile: UserProfile, stream: Text) -> Tuple[Text, Text]:
     payload = xml_fromstring(request.body)
 
-    def get_text(attrs):
-        # type: (List[str]) -> str
+    def get_text(attrs: List[str]) -> str:
         start = payload
         try:
             for attr in attrs:
@@ -72,8 +70,7 @@ def api_pivotal_webhook_v3(request, user_profile, stream):
             more_info)
     return subject, content
 
-def api_pivotal_webhook_v5(request, user_profile, stream):
-    # type: (HttpRequest, UserProfile, Text) -> Tuple[Text, Text]
+def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile, stream: Text) -> Tuple[Text, Text]:
     payload = ujson.loads(request.body)
 
     event_type = payload["kind"]
@@ -97,8 +94,7 @@ def api_pivotal_webhook_v5(request, user_profile, stream):
     content = ""
     subject = "#%s: %s" % (story_id, story_name)
 
-    def extract_comment(change):
-        # type: (Dict[str, Dict]) -> Optional[Text]
+    def extract_comment(change: Dict[str, Dict]) -> Optional[Text]:
         if change.get("kind") == "comment":
             return change.get("new_values", {}).get("text", None)
         return None
@@ -162,8 +158,7 @@ def api_pivotal_webhook_v5(request, user_profile, stream):
 
 @api_key_only_webhook_view("Pivotal")
 @has_request_variables
-def api_pivotal_webhook(request, user_profile, stream=REQ()):
-    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
+def api_pivotal_webhook(request: HttpRequest, user_profile: UserProfile, stream: Text=REQ()) -> HttpResponse:
     subject = content = None
     try:
         subject, content = api_pivotal_webhook_v3(request, user_profile, stream)

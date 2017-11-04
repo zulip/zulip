@@ -13,8 +13,7 @@ from zerver.models import UserProfile, Realm
 import logging
 import ujson
 
-def guess_zulip_user_from_teamcity(teamcity_username, realm):
-    # type: (str, Realm) -> Optional[UserProfile]
+def guess_zulip_user_from_teamcity(teamcity_username: str, realm: Realm) -> Optional[UserProfile]:
     try:
         # Try to find a matching user in Zulip
         # We search a user's full name, short name,
@@ -29,8 +28,7 @@ def guess_zulip_user_from_teamcity(teamcity_username, realm):
     except IndexError:
         return None
 
-def get_teamcity_property_value(property_list, name):
-    # type: (List[Dict[str, str]], str) -> Optional[str]
+def get_teamcity_property_value(property_list: List[Dict[str, str]], name: str) -> Optional[str]:
     for property in property_list:
         if property['name'] == name:
             return property['value']

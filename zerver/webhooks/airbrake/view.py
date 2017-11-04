@@ -23,12 +23,10 @@ def api_airbrake_webhook(request, user_profile,
                               stream, subject, body)
     return json_success()
 
-def get_subject(payload):
-    # type: (Dict[str, Any]) -> str
+def get_subject(payload: Dict[str, Any]) -> str:
     return AIRBRAKE_SUBJECT_TEMPLATE.format(project_name=payload['error']['project']['name'])
 
-def get_body(payload):
-    # type: (Dict[str, Any]) -> str
+def get_body(payload: Dict[str, Any]) -> str:
     data = {
         'error_url': payload['airbrake_error_url'],
         'error_class': payload['error']['error_class'],

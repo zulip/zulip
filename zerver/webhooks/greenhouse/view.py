@@ -12,8 +12,7 @@ import ujson
 
 MESSAGE_TEMPLATE = "Applying for role:\n{}\n**Emails:**\n{}\n\n>**Attachments:**\n{}"
 
-def dict_list_to_string(some_list):
-    # type: (List[Any]) -> str
+def dict_list_to_string(some_list: List[Any]) -> str:
     internal_template = ''
     for item in some_list:
         item_type = item.get('type', '').title()
@@ -25,8 +24,7 @@ def dict_list_to_string(some_list):
             internal_template += "[{}]({})\n".format(item_type, item_url)
     return internal_template
 
-def message_creator(action, application):
-    # type: (str, Dict[str, Any]) -> str
+def message_creator(action: str, application: Dict[str, Any]) -> str:
     message = MESSAGE_TEMPLATE.format(
         application['jobs'][0]['name'],
         dict_list_to_string(application['candidate']['email_addresses']),

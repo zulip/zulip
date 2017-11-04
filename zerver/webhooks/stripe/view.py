@@ -164,8 +164,7 @@ def api_stripe_webhook(request, user_profile,
 
     return json_success()
 
-def amount(amount, currency):
-    # type: (int, str) -> str
+def amount(amount: int, currency: str) -> str:
     # zero-decimal currencies
     zero_decimal_currencies = ["bif", "djf", "jpy", "krw", "pyg", "vnd", "xaf",
                                "xpf", "clp", "gnf", "kmf", "mga", "rwf", "vuv", "xof"]
