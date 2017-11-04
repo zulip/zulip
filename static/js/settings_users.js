@@ -243,7 +243,7 @@ exports.on_load_success = function (realm_people_data) {
 
         if ($("#deactivation_user_modal .email").html() !== email) {
             blueslip.error("User deactivation canceled due to non-matching fields.");
-            ui_report.message("Deactivation encountered an error. Please reload and try again.",
+            ui_report.message(i18n.t("Deactivation encountered an error. Please reload and try again."),
                $("#home-error"), 'alert-error');
         }
         $("#deactivation_user_modal").modal("hide");
