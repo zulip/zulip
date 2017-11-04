@@ -139,7 +139,9 @@ templates = {
 }
 
 
-def get_old_and_new_values(change_type: str, message: Mapping[str, Any]) -> Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]]]:
+return_type = Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]]]
+def get_old_and_new_values(change_type: str,
+                           message: Mapping[str, Any]) -> return_type:
     """ Parses the payload and finds previous and current value of change_type."""
     if change_type in ['subject', 'name', 'estimated_finish', 'estimated_start']:
         old = message["change"]["diff"][change_type]["from"]

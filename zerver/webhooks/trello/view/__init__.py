@@ -16,7 +16,10 @@ from .exceptions import UnsupportedAction
 @api_key_only_webhook_view('Trello')
 @return_success_on_head_request
 @has_request_variables
-def api_trello_webhook(request: HttpRequest, user_profile: UserProfile, payload: Mapping[str, Any]=REQ(argument_type='body'), stream: Text=REQ(default='trello')) -> HttpResponse:
+def api_trello_webhook(request: HttpRequest,
+                       user_profile: UserProfile,
+                       payload: Mapping[str, Any]=REQ(argument_type='body'),
+                       stream: Text=REQ(default='trello')) -> HttpResponse:
     payload = ujson.loads(request.body)
     action_type = payload['action'].get('type')
     try:

@@ -93,7 +93,9 @@ def get_pull_request_or_issue_assignee(object_payload: Mapping[Text, Any]) -> Op
         return assignee_dict.get('login')
     return None
 
-def get_pull_request_or_issue_subject(repository: Mapping[Text, Any], payload_object: Mapping[Text, Any], type: Text) -> Text:
+def get_pull_request_or_issue_subject(repository: Mapping[Text, Any],
+                                      payload_object: Mapping[Text, Any],
+                                      type: Text) -> Text:
     return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
         repo=repository['name'],
         type=type,
@@ -105,7 +107,12 @@ def github_generic_subject(noun: Text, topic_focus: Text, blob: Mapping[Text, An
     # issue and pull_request objects have the same fields we're interested in
     return u'%s: %s %d: %s' % (topic_focus, noun, blob['number'], blob['title'])
 
-def api_github_v1(user_profile: UserProfile, event: Text, payload: Mapping[Text, Any], branches: Text, stream: Text, **kwargs: Any) -> Tuple[Text, Text, Text]:
+def api_github_v1(user_profile: UserProfile,
+                  event: Text,
+                  payload: Mapping[Text, Any],
+                  branches: Text,
+                  stream: Text,
+                  **kwargs: Any) -> Tuple[Text, Text, Text]:
     """
     processes github payload with version 1 field specification
     `payload` comes in unmodified from github

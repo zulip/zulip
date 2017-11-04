@@ -68,7 +68,11 @@ def build_pagerduty_formatdict(message: Dict[str, Any]) -> Dict[str, Any]:
     return format_dict
 
 
-def send_raw_pagerduty_json(user_profile: UserProfile, client: Client, stream: Text, message: Dict[str, Any], topic: Optional[Text]) -> None:
+def send_raw_pagerduty_json(user_profile: UserProfile,
+                            client: Client,
+                            stream: Text,
+                            message: Dict[str, Any],
+                            topic: Optional[Text]) -> None:
     subject = topic or 'pagerduty'
     body = (
         u'Unknown pagerduty message\n'
@@ -78,7 +82,12 @@ def send_raw_pagerduty_json(user_profile: UserProfile, client: Client, stream: T
     check_send_stream_message(user_profile, client, stream, subject, body)
 
 
-def send_formated_pagerduty(user_profile: UserProfile, client: Client, stream: Text, message_type: Text, format_dict: Dict[str, Any], topic: Optional[Text]) -> None:
+def send_formated_pagerduty(user_profile: UserProfile,
+                            client: Client,
+                            stream: Text,
+                            message_type: Text,
+                            format_dict: Dict[str, Any],
+                            topic: Optional[Text]) -> None:
     if message_type in ('incident.trigger', 'incident.unacknowledge'):
         template = (u':imp: Incident '
                     u'[{incident_num}]({incident_url}) {action} by '

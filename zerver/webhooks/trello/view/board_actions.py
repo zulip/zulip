@@ -67,7 +67,9 @@ def get_change_name_body(payload: Mapping[str, Any], action_type: Text) -> Text:
     return fill_appropriate_message_content(payload, action_type, data)
 
 
-def fill_appropriate_message_content(payload: Mapping[str, Any], action_type: Text, data: Optional[Dict[str, Any]]=None) -> Text:
+def fill_appropriate_message_content(payload: Mapping[str, Any],
+                                     action_type: Text,
+                                     data: Optional[Dict[str, Any]]=None) -> Text:
     data = {} if data is None else data
     data['board_url_template'] = data.get('board_url_template', get_filled_board_url_template(payload))
     message_body = get_message_body(action_type)
