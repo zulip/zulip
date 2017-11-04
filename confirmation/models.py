@@ -143,10 +143,10 @@ def check_key_is_valid(creation_key: Text) -> bool:
 def generate_realm_creation_url() -> Text:
     key = generate_key()
     RealmCreationKey.objects.create(creation_key=key, date_created=timezone_now())
-    return u'%s%s%s' % (settings.EXTERNAL_URI_SCHEME,
-                        settings.EXTERNAL_HOST,
-                        reverse('zerver.views.create_realm',
-                                kwargs={'creation_key': key}))
+    return '%s%s%s' % (settings.EXTERNAL_URI_SCHEME,
+                       settings.EXTERNAL_HOST,
+                       reverse('zerver.views.create_realm',
+                               kwargs={'creation_key': key}))
 
 class RealmCreationKey(models.Model):
     creation_key = models.CharField('activation key', max_length=40)
