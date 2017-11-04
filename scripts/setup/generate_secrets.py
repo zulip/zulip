@@ -71,7 +71,7 @@ def generate_secrets(development=False):
 
     lines = []  # type: List[Text]
     if len(current_conf) == 0:
-        lines = [u'[secrets]\n']
+        lines = ['[secrets]\n']
 
     def need_secret(name):
         # type: (str) -> bool
