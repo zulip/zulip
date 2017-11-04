@@ -22,7 +22,6 @@ from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 from zerver.lib.test_runner import slow
-from zerver.lib.str_utils import force_str
 from zerver.models import (
     realm_in_local_realm_filters_cache,
     flush_per_request_caches,
@@ -1015,7 +1014,7 @@ class BugdownTest(ZulipTestCase):
             render_markdown(msg, content),
             u'<p><a class="stream" data-stream-id="{s.id}" href="/#narrow/stream/{url}">#{s.name}</a></p>'.format(
                 s=uni,
-                url=urllib.parse.quote(force_str(uni.name))
+                url=urllib.parse.quote(uni.name)
             ))
 
     def test_stream_invalid(self):
