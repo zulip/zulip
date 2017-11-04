@@ -179,8 +179,8 @@ class NarrowBuilder:
         Escape user input to place in a regex
 
         Python's re.escape escapes unicode characters in a way which postgres
-        fails on, u'\u03bb' to u'\\\u03bb'. This function will correctly escape
-        them for postgres, u'\u03bb' to u'\\u03bb'.
+        fails on, '\u03bb' to '\\\u03bb'. This function will correctly escape
+        them for postgres, '\u03bb' to '\\u03bb'.
         """
         s = list(pattern)
         for i, c in enumerate(s):
@@ -398,8 +398,8 @@ class NarrowBuilder:
 # whereas the offsets from tsearch_extras are in bytes, so we
 # have to account for both cases in the logic below.
 def highlight_string(text: Text, locs: Iterable[Tuple[int, int]]) -> Text:
-    highlight_start = u'<span class="highlight">'
-    highlight_stop = u'</span>'
+    highlight_start = '<span class="highlight">'
+    highlight_stop = '</span>'
     pos = 0
     result = ''
     in_tag = False

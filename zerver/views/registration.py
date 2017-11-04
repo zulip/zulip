@@ -184,7 +184,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         default_stream_group_names = request.POST.getlist('default_stream_group')
         default_stream_groups = lookup_default_stream_groups(default_stream_group_names, realm)
 
-        timezone = u""
+        timezone = ""
         if 'timezone' in request.POST and request.POST['timezone'] in get_all_timezones():
             timezone = request.POST['timezone']
 
