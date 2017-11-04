@@ -90,6 +90,7 @@ function ajaxSubscribeForCreation(stream_name, description, principals, invite_o
             $("#create_stream_name").val("");
             $("#create_stream_description").val("");
             $("#subscriptions-status").hide();
+            loading.destroy_indicator($('#stream_creating_indicator'));
             // The rest of the work is done via the subscribe event we will get
         },
         error: function (xhr) {
@@ -104,6 +105,7 @@ function ajaxSubscribeForCreation(stream_name, description, principals, invite_o
             // TODO: This next line does nothing.  See #4647.
             ui_report.error(i18n.t("Error creating stream"), xhr,
                             $("#subscriptions-status"), 'subscriptions-status');
+            loading.destroy_indicator($('#stream_creating_indicator'));
         },
     });
 }
@@ -157,6 +159,8 @@ function create_stream() {
 
     var announce = (!!page_params.notifications_stream &&
         $('#announce-new-stream input').prop('checked'));
+
+    loading.make_indicator($('#stream_creating_indicator'), {text: i18n.t('Creating stream...')});
 
     ajaxSubscribeForCreation(stream_name,
         description,

@@ -768,6 +768,21 @@ form#add_new_subscription {
     margin: 0px;
 }
 
+#stream_creation_form #stream_creating_indicator:not(:empty) {
+    position: absolute;
+    width: 100% !important;
+    height: calc(100% - 105px) !important;
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    background: hsla(0, 0%, 100%, 0.9);
+    z-index: 1;
+}
+
+#stream_creation_form #stream_creating_indicator .loading_indicator_text {
+    font-weight: 400;
+}
+
 #subscription_overlay .inner-box {
     margin: 20px;
 }
