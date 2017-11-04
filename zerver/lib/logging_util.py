@@ -10,7 +10,6 @@ import traceback
 from typing import Optional
 from datetime import datetime, timedelta
 from django.conf import settings
-from zerver.lib.str_utils import force_bytes
 from logging import Logger
 
 # Adapted http://djangosnippets.org/snippets/2242/ by user s29 (October 25, 2010)
@@ -37,10 +36,10 @@ class _RateLimitFilter:
 
             if use_cache:
                 if record.exc_info is not None:
-                    tb = force_bytes('\n'.join(traceback.format_exception(*record.exc_info)))
+                    tb = '\n'.join(traceback.format_exception(*record.exc_info))
                 else:
-                    tb = force_bytes('%s' % (record,))
-                key = self.__class__.__name__.upper() + hashlib.sha1(tb).hexdigest()
+                    tb = str(record)
+                key = self.__class__.__name__.upper() + hashlib.sha1(tb.encode()).hexdigest()
                 duplicate = cache.get(key) == 1
                 if not duplicate:
                     cache.set(key, 1, rate)
