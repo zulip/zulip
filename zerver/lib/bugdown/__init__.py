@@ -47,7 +47,7 @@ from zerver.models import (
     UserGroup,
 )
 import zerver.lib.mention as mention
-from zerver.lib.str_utils import force_str, force_text
+from zerver.lib.str_utils import force_str
 from zerver.lib.tex import render_tex
 
 FullNameInfo = TypedDict('FullNameInfo', {
@@ -508,7 +508,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                     'type': 'mention',
                     'start': match.start(),
                     'end': match.end(),
-                    'url': 'https://twitter.com/' + force_text(urllib.parse.quote(force_str(screen_name))),
+                    'url': 'https://twitter.com/' + urllib.parse.quote(force_str(screen_name)),
                     'text': mention_string,
                 })
         # Build dicts for media
