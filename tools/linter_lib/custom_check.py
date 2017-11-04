@@ -11,8 +11,7 @@ from .printer import print_err, colors
 
 from typing import cast, Any, Callable, Dict, List, Optional, Tuple, Iterable
 
-RuleList = List[Dict[str, Any]]  # mypy currently requires Aliases at global scope
-# https://github.com/python/mypy/issues/3145
+RuleList = List[Dict[str, Any]]
 
 def custom_check_file(fn, identifier, rules, color, skip_rules=None, max_length=None):
     # type: (str, str, RuleList, str, Optional[Iterable[str]], Optional[int]) -> bool
