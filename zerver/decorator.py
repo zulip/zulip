@@ -31,7 +31,6 @@ from io import BytesIO
 import urllib
 
 from typing import Union, Any, Callable, Sequence, Dict, Optional, TypeVar, Text, Tuple, cast
-from zerver.lib.str_utils import force_bytes
 from zerver.lib.logging_util import create_logger
 
 # This is a hack to ensure that RemoteZulipServer always exists even
@@ -491,7 +490,7 @@ def authenticated_rest_api_view(is_webhook=False):
                 # case insensitive per RFC 1945
                 if auth_type.lower() != "basic":
                     return json_error(_("This endpoint requires HTTP basic authentication."))
-                role, api_key = base64.b64decode(force_bytes(credentials)).decode('utf-8').split(":")
+                role, api_key = base64.b64decode(credentials).decode('utf-8').split(":")
             except ValueError:
                 return json_unauthorized(_("Invalid authorization header for basic auth"))
             except KeyError:
