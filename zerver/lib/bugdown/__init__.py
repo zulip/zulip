@@ -643,7 +643,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         # type: (Element) -> Optional[Tuple[Text, Text]]
         if e.tag == "a":
             if e.text is not None:
-                return (e.get("href"), force_text(e.text))
+                return (e.get("href"), e.text)
             return (e.get("href"), e.get("href"))
         return None
 
