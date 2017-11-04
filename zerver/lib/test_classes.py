@@ -13,7 +13,6 @@ from django.http import HttpResponse
 from django.db.utils import IntegrityError
 
 from zerver.lib.initial_password import initial_password
-from zerver.lib.str_utils import force_text
 from zerver.lib.utils import is_remote_server
 from zerver.views.users import add_service
 
@@ -509,8 +508,11 @@ class ZulipTestCase(TestCase):
 
     def fixture_data(self, type, action, file_type='json'):
         # type: (Text, Text, Text) -> Text
-        return force_text(open(os.path.join(os.path.dirname(__file__),
-                                            "../webhooks/%s/fixtures/%s.%s" % (type, action, file_type))).read())
+        fn = os.path.join(
+            os.path.dirname(__file__),
+            "../webhooks/%s/fixtures/%s.%s" % (type, action, file_type)
+        )
+        return open(fn).read()
 
     def make_stream(self, stream_name, realm=None, invite_only=False):
         # type: (Text, Optional[Realm], Optional[bool]) -> Stream
