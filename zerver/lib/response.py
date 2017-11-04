@@ -3,7 +3,6 @@ from django.http import HttpResponse, HttpResponseNotAllowed
 import ujson
 
 from typing import Optional, Any, Dict, List, Text
-from zerver.lib.str_utils import force_bytes
 from zerver.lib.exceptions import JsonableError
 
 class HttpResponseUnauthorized(HttpResponse):
@@ -22,16 +21,16 @@ class HttpResponseUnauthorized(HttpResponse):
 def json_unauthorized(message, www_authenticate=None):
     # type: (Text, Optional[Text]) -> HttpResponse
     resp = HttpResponseUnauthorized("zulip", www_authenticate=www_authenticate)
-    resp.content = force_bytes(ujson.dumps({"result": "error",
-                                            "msg": message}) + "\n")
+    resp.content = (ujson.dumps({"result": "error",
+                                 "msg": message}) + "\n").encode()
     return resp
 
 def json_method_not_allowed(methods):
     # type: (List[Text]) -> HttpResponseNotAllowed
     resp = HttpResponseNotAllowed(methods)
-    resp.content = force_bytes(ujson.dumps({"result": "error",
-                                            "msg": "Method Not Allowed",
-                                            "allowed_methods": methods}))
+    resp.content = ujson.dumps({"result": "error",
+                                "msg": "Method Not Allowed",
+                                "allowed_methods": methods}).encode()
     return resp
 
 def json_response(res_type="success", msg="", data=None, status=200):
