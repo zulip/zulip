@@ -66,11 +66,6 @@ def force_str(s, encoding='utf-8'):
     else:
         raise TypeError("force_str expects a string type")
 
-def dict_with_str_keys(dct, encoding='utf-8'):
-    # type: (Mapping[NonBinaryStr, Any], str) -> Dict[str, Any]
-    """applies force_str on the keys of a dict (non-recursively)"""
-    return {force_str(key, encoding): value for key, value in dct.items()}
-
 class ModelReprMixin:
     """
     This mixin provides a python 2 and 3 compatible way of handling string representation of a model.
