@@ -43,7 +43,6 @@ cssselect==1.0.1          # via parsel, premailer, scrapy
 cssutils==1.0.2           # via premailer
 decorator==4.1.2          # via ipython, traitlets
 defusedxml==0.5.0
-diff-match-patch==20121119
 django-auth-ldap==1.2.16
 django-bitfield==1.9.3
 django-pipeline==1.6.13
