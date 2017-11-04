@@ -164,14 +164,14 @@ def gather_new_streams(user_profile: UserProfile,
         new_streams = list(get_active_streams(user_profile.realm).filter(
             invite_only=False, date_created__gt=threshold))
 
-    base_url = u"%s/#narrow/stream/" % (user_profile.realm.uri,)
+    base_url = "%s/#narrow/stream/" % (user_profile.realm.uri,)
 
     streams_html = []
     streams_plain = []
 
     for stream in new_streams:
         narrow_url = base_url + hash_util_encode(stream.name)
-        stream_link = u"<a href='%s'>%s</a>" % (narrow_url, stream.name)
+        stream_link = "<a href='%s'>%s</a>" % (narrow_url, stream.name)
         streams_html.append(stream_link)
         streams_plain.append(stream.name)
 

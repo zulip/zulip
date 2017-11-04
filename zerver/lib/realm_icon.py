@@ -14,6 +14,6 @@ def get_realm_icon_url(realm: Realm) -> Text:
         return upload_backend.get_realm_icon_url(realm.id, realm.icon_version)
     elif settings.ENABLE_GRAVATAR:
         hash_key = gravatar_hash(realm.string_id)
-        return u"https://secure.gravatar.com/avatar/%s?d=identicon" % (hash_key,)
+        return "https://secure.gravatar.com/avatar/%s?d=identicon" % (hash_key,)
     else:
         return settings.DEFAULT_AVATAR_URI+'?version=0'

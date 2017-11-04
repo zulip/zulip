@@ -74,7 +74,7 @@ class ModelReprMixin:
     def __unicode__(self) -> Text:
         # Originally raised an exception, but Django (e.g. the ./manage.py shell)
         # was catching the exception and not displaying any sort of error
-        return u"Implement __unicode__ in your subclass of ModelReprMixin!"
+        return "Implement __unicode__ in your subclass of ModelReprMixin!"
 
     def __str__(self) -> str:
         return force_str(self.__unicode__())

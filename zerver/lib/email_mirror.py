@@ -41,20 +41,20 @@ def report_to_zulip(error_message: Text) -> None:
         return
     error_bot = get_system_bot(settings.ERROR_BOT)
     error_stream = Stream.objects.get(name="errors", realm=error_bot.realm)
-    send_zulip(settings.ERROR_BOT, error_stream, u"email mirror error",
-               u"""~~~\n%s\n~~~""" % (error_message,))
+    send_zulip(settings.ERROR_BOT, error_stream, "email mirror error",
+               """~~~\n%s\n~~~""" % (error_message,))
 
 def log_and_report(email_message: message.Message, error_message: Text, debug_info: Dict[str, Any]) -> None:
     scrubbed_error = u"Sender: %s\n%s" % (email_message.get("From"),
                                           redact_stream(error_message))
 
     if "to" in debug_info:
-        scrubbed_error = u"Stream: %s\n%s" % (redact_stream(debug_info["to"]),
-                                              scrubbed_error)
+        scrubbed_error = "Stream: %s\n%s" % (redact_stream(debug_info["to"]),
+                                             scrubbed_error)
 
     if "stream" in debug_info:
-        scrubbed_error = u"Realm: %s\n%s" % (debug_info["stream"].realm.string_id,
-                                             scrubbed_error)
+        scrubbed_error = "Realm: %s\n%s" % (debug_info["stream"].realm.string_id,
+                                            scrubbed_error)
 
     logger.error(scrubbed_error)
     report_to_zulip(scrubbed_error)
@@ -260,13 +260,13 @@ def extract_and_upload_attachments(message: message.Message, realm: Realm) -> Te
                                               attachment,
                                               user_profile,
                                               target_realm=realm)
-                formatted_link = u"[%s](%s)" % (filename, s3_url)
+                formatted_link = "[%s](%s)" % (filename, s3_url)
                 attachment_links.append(formatted_link)
             else:
                 logger.warning("Payload is not bytes (invalid attachment %s in message from %s)." %
                                (filename, message.get("From")))
 
-    return u"\n".join(attachment_links)
+    return "\n".join(attachment_links)
 
 def extract_and_validate(email: Text) -> Stream:
     temp = decode_email_address(email)
@@ -322,7 +322,7 @@ def process_message(message: message.Message, rcpt_to: Optional[Text]=None, pre_
         try:
             subject = encoded_subject.decode(encoding)
         except (UnicodeDecodeError, LookupError):
-            subject = u"(unreadable subject)"
+            subject = "(unreadable subject)"
 
     debug_info = {}
 

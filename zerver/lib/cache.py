@@ -289,7 +289,7 @@ def cache(func: Callable[..., ReturnT]) -> Callable[..., ReturnT]:
     return cache_with_key(keyfunc)(func)
 
 def display_recipient_cache_key(recipient_id: int) -> Text:
-    return u"display_recipient_dict:%d" % (recipient_id,)
+    return "display_recipient_dict:%d" % (recipient_id,)
 
 def user_profile_by_email_cache_key(email: Text) -> Text:
     # See the comment in zerver/lib/avatar_hash.py:gravatar_hash for why we
@@ -306,13 +306,13 @@ def user_profile_cache_key(email, realm):
     return user_profile_cache_key_id(email, realm.id)
 
 def bot_profile_cache_key(email: Text) -> Text:
-    return u"bot_profile:%s" % (make_safe_digest(email.strip()))
+    return "bot_profile:%s" % (make_safe_digest(email.strip()))
 
 def user_profile_by_id_cache_key(user_profile_id: int) -> Text:
-    return u"user_profile_by_id:%s" % (user_profile_id,)
+    return "user_profile_by_id:%s" % (user_profile_id,)
 
 def user_profile_by_api_key_cache_key(api_key: Text) -> Text:
-    return u"user_profile_by_api_key:%s" % (api_key,)
+    return "user_profile_by_api_key:%s" % (api_key,)
 
 # TODO: Refactor these cache helpers into another file that can import
 # models.py so that python v3 style type annotations can also work.
@@ -323,10 +323,10 @@ realm_user_dict_fields = [
     'is_realm_admin', 'is_bot', 'realm_id', 'timezone']  # type: List[str]
 
 def realm_user_dicts_cache_key(realm_id: int) -> Text:
-    return u"realm_user_dicts:%s" % (realm_id,)
+    return "realm_user_dicts:%s" % (realm_id,)
 
 def active_user_ids_cache_key(realm_id: int) -> Text:
-    return u"active_user_ids:%s" % (realm_id,)
+    return "active_user_ids:%s" % (realm_id,)
 
 bot_dict_fields = ['id', 'full_name', 'short_name', 'bot_type', 'email',
                    'is_active', 'default_sending_stream__name',
@@ -338,10 +338,10 @@ bot_dict_fields = ['id', 'full_name', 'short_name', 'bot_type', 'email',
 
 def bot_dicts_in_realm_cache_key(realm):
     # type: (Realm) -> Text
-    return u"bot_dicts_in_realm:%s" % (realm.id,)
+    return "bot_dicts_in_realm:%s" % (realm.id,)
 
 def get_stream_cache_key(stream_name: Text, realm_id: int) -> Text:
-    return u"stream_by_realm_and_name:%s:%s" % (
+    return "stream_by_realm_and_name:%s:%s" % (
         realm_id, make_safe_digest(stream_name.strip().lower()))
 
 def delete_user_profile_caches(user_profiles):
@@ -423,7 +423,7 @@ def flush_realm(sender: Any, **kwargs: Any) -> None:
 
 def realm_alert_words_cache_key(realm):
     # type: (Realm) -> Text
-    return u"realm_alert_words:%s" % (realm.string_id,)
+    return "realm_alert_words:%s" % (realm.string_id,)
 
 def realm_first_visible_message_id_cache_key(realm):
     # type: (Realm) -> Text

@@ -439,7 +439,7 @@ def create_users(realm: Realm, name_list: Iterable[Tuple[Text, Text]], bot_type:
 def do_create_user(email: Text, password: Optional[Text], realm: Realm, full_name: Text,
                    short_name: Text, is_realm_admin: bool=False, bot_type: Optional[int]=None,
                    bot_owner: Optional[UserProfile]=None, tos_version: Optional[Text]=None,
-                   timezone: Text=u"", avatar_source: Text=UserProfile.AVATAR_FROM_GRAVATAR,
+                   timezone: Text="", avatar_source: Text=UserProfile.AVATAR_FROM_GRAVATAR,
                    default_sending_stream: Optional[Stream]=None,
                    default_events_register_stream: Optional[Stream]=None,
                    default_all_public_streams: bool=None,
@@ -1916,7 +1916,7 @@ def _internal_prep_message(realm: Realm,
         return check_message(sender, get_client("Internal"), addressee,
                              content, realm=realm)
     except JsonableError as e:
-        logging.exception(u"Error queueing internal message by %s: %s" % (sender.email, e))
+        logging.exception("Error queueing internal message by %s: %s" % (sender.email, e))
 
     return None
 
@@ -3919,7 +3919,7 @@ def do_send_confirmation_email(invitee: PreregistrationUser,
     activation_url = create_confirmation_link(invitee, referrer.realm.host, Confirmation.INVITATION)
     context = {'referrer': referrer, 'activate_url': activation_url,
                'referrer_realm_name': referrer.realm.name}
-    from_name = u"%s (via Zulip)" % (referrer.full_name,)
+    from_name = "%s (via Zulip)" % (referrer.full_name,)
     send_email('zerver/emails/invitation', to_email=invitee.email, from_name=from_name,
                from_address=FromAddress.NOREPLY, context=context)
 

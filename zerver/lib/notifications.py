@@ -50,17 +50,17 @@ def hash_util_encode(string: Text) -> Text:
 
 def pm_narrow_url(realm: Realm, participants: List[Text]) -> Text:
     participants.sort()
-    base_url = u"%s/#narrow/pm-with/" % (realm.uri,)
+    base_url = "%s/#narrow/pm-with/" % (realm.uri,)
     return base_url + hash_util_encode(",".join(participants))
 
 def stream_narrow_url(realm: Realm, stream: Text) -> Text:
-    base_url = u"%s/#narrow/stream/" % (realm.uri,)
+    base_url = "%s/#narrow/stream/" % (realm.uri,)
     return base_url + hash_util_encode(stream)
 
 def topic_narrow_url(realm: Realm, stream: Text, topic: Text) -> Text:
-    base_url = u"%s/#narrow/stream/" % (realm.uri,)
-    return u"%s%s/topic/%s" % (base_url, hash_util_encode(stream),
-                               hash_util_encode(topic))
+    base_url = "%s/#narrow/stream/" % (realm.uri,)
+    return "%s%s/topic/%s" % (base_url, hash_util_encode(stream),
+                              hash_util_encode(topic))
 
 def relative_to_full_url(base_url: Text, content: Text) -> Text:
     # Convert relative URLs to absolute URLs.
@@ -177,23 +177,23 @@ def build_message_list(user_profile: UserProfile, messages: List[Message]) -> Li
     def message_header(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
         disp_recipient = get_display_recipient(message.recipient)
         if message.recipient.type == Recipient.PERSONAL:
-            header = u"You and %s" % (message.sender.full_name,)
+            header = "You and %s" % (message.sender.full_name,)
             html_link = pm_narrow_url(user_profile.realm, [message.sender.email])
-            header_html = u"<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
+            header_html = "<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
         elif message.recipient.type == Recipient.HUDDLE:
             assert not isinstance(disp_recipient, Text)
             other_recipients = [r['full_name'] for r in disp_recipient
                                 if r['email'] != user_profile.email]
-            header = u"You and %s" % (", ".join(other_recipients),)
+            header = "You and %s" % (", ".join(other_recipients),)
             html_link = pm_narrow_url(user_profile.realm, [r["email"] for r in disp_recipient
                                       if r["email"] != user_profile.email])
-            header_html = u"<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
+            header_html = "<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
         else:
             assert isinstance(disp_recipient, Text)
-            header = u"%s > %s" % (disp_recipient, message.topic_name())
+            header = "%s > %s" % (disp_recipient, message.topic_name())
             stream_link = stream_narrow_url(user_profile.realm, disp_recipient)
             topic_link = topic_narrow_url(user_profile.realm, disp_recipient, message.subject)
-            header_html = u"<a href='%s'>%s</a> > <a href='%s'>%s</a>" % (
+            header_html = "<a href='%s'>%s</a> > <a href='%s'>%s</a>" % (
                 stream_link, disp_recipient, topic_link, message.subject)
         return {"plain": header,
                 "html": header_html,
@@ -317,14 +317,14 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
                             if r['id'] != user_profile.id]
         context.update({'group_pm': True})
         if len(other_recipients) == 2:
-            huddle_display_name = u"%s" % (" and ".join(other_recipients))
+            huddle_display_name = "%s" % (" and ".join(other_recipients))
             context.update({'huddle_display_name': huddle_display_name})
         elif len(other_recipients) == 3:
-            huddle_display_name = u"%s, %s, and %s" % (
+            huddle_display_name = "%s, %s, and %s" % (
                 other_recipients[0], other_recipients[1], other_recipients[2])
             context.update({'huddle_display_name': huddle_display_name})
         else:
-            huddle_display_name = u"%s, and %s others" % (
+            huddle_display_name = "%s, and %s others" % (
                 ', '.join(other_recipients[:2]), len(other_recipients) - 2)
             context.update({'huddle_display_name': huddle_display_name})
     elif (missed_messages[0].recipient.type == Recipient.PERSONAL):
@@ -481,5 +481,5 @@ def convert_html_to_markdown(html: Text) -> Text:
     # ugly. Run a regex over the resulting description, turning links of the
     # form `![](http://foo.com/image.png?12345)` into
     # `[image.png](http://foo.com/image.png)`.
-    return re.sub(u"!\\[\\]\\((\\S*)/(\\S*)\\?(\\S*)\\)",
-                  u"[\\2](\\1/\\2)", markdown)
+    return re.sub("!\\[\\]\\((\\S*)/(\\S*)\\?(\\S*)\\)",
+                  "[\\2](\\1/\\2)", markdown)
