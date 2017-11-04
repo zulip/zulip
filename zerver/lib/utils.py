@@ -12,7 +12,6 @@ from time import sleep
 from itertools import zip_longest
 
 from django.conf import settings
-from zerver.lib.str_utils import force_text
 
 T = TypeVar('T')
 
@@ -93,7 +92,7 @@ def make_safe_digest(string, hash_func=hashlib.sha1):
     """
     # hashlib.sha1, md5, etc. expect bytes, so non-ASCII strings must
     # be encoded.
-    return force_text(hash_func(string.encode('utf-8')).hexdigest())
+    return hash_func(string.encode('utf-8')).hexdigest()
 
 
 def log_statsd_event(name):
