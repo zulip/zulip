@@ -15,7 +15,7 @@ from zerver.lib.cache import (
     to_dict_cache_key_id,
 )
 from zerver.lib.request import JsonableError
-from zerver.lib.str_utils import force_bytes, dict_with_str_keys
+from zerver.lib.str_utils import dict_with_str_keys
 from zerver.lib.stream_subscription import (
     get_stream_subscriptions_for_user,
 )
@@ -115,7 +115,7 @@ def extract_message_dict(message_bytes):
 
 def stringify_message_dict(message_dict):
     # type: (Dict[str, Any]) -> bytes
-    return zlib.compress(force_bytes(ujson.dumps(message_dict)))
+    return zlib.compress(ujson.dumps(message_dict).encode())
 
 @cache_with_key(to_dict_cache_key, timeout=3600*24)
 def message_to_dict_json(message):
