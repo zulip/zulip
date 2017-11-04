@@ -149,7 +149,7 @@ def log_event(event):
 
     with lockfile(template % ('lock',)):
         with open(template % ('events',), 'a') as log:
-            log.write(force_str(ujson.dumps(event) + '\n'))
+            log.write(ujson.dumps(event) + '\n')
 
 def can_access_stream_user_ids(stream):
     # type: (Stream) -> Set[int]
