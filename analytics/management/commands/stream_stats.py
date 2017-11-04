@@ -36,7 +36,8 @@ class Command(BaseCommand):
                     continue
                 print("%25s" % (stream.name,), end=' ')
                 recipient = Recipient.objects.filter(type=Recipient.STREAM, type_id=stream.id)
-                print("%10d" % (len(Subscription.objects.filter(recipient=recipient, active=True)),), end=' ')
+                print("%10d" % (len(Subscription.objects.filter(recipient=recipient,
+                                                                active=True)),), end=' ')
                 num_messages = len(Message.objects.filter(recipient=recipient))
                 print("%12d" % (num_messages,))
             print("%d invite-only streams" % (invite_only_count,))

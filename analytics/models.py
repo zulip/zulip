@@ -105,4 +105,5 @@ class StreamCount(BaseCount):
 
     def __str__(self):
         # type: () -> Text
-        return "<StreamCount: %s %s %s %s %s>" % (self.stream, self.property, self.subgroup, self.value, self.id)
+        return "<StreamCount: %s %s %s %s %s>" % (
+            self.stream, self.property, self.subgroup, self.value, self.id)

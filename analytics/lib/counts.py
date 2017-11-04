@@ -177,7 +177,8 @@ def do_aggregate_to_summary_table(stat, end_time):
         start = time.time()
         cursor.execute(realmcount_query, {'end_time': end_time})
         end = time.time()
-        logger.info("%s RealmCount aggregation (%dms/%sr)" % (stat.property, (end-start)*1000, cursor.rowcount))
+        logger.info("%s RealmCount aggregation (%dms/%sr)" % (
+            stat.property, (end - start) * 1000, cursor.rowcount))
 
     # Aggregate into InstallationCount
     installationcount_query = """
@@ -194,7 +195,8 @@ def do_aggregate_to_summary_table(stat, end_time):
     start = time.time()
     cursor.execute(installationcount_query, {'end_time': end_time})
     end = time.time()
-    logger.info("%s InstallationCount aggregation (%dms/%sr)" % (stat.property, (end-start)*1000, cursor.rowcount))
+    logger.info("%s InstallationCount aggregation (%dms/%sr)" % (
+        stat.property, (end - start) * 1000, cursor.rowcount))
     cursor.close()
 
 ## Utility functions called from outside counts.py ##
@@ -294,7 +296,8 @@ count_message_by_user_query = """
     INSERT INTO analytics_usercount
         (user_id, realm_id, value, property, subgroup, end_time)
     SELECT
-        zerver_userprofile.id, zerver_userprofile.realm_id, count(*), '%(property)s', %(subgroup)s, %%(time_end)s
+        zerver_userprofile.id, zerver_userprofile.realm_id, count(*),
+        '%(property)s', %(subgroup)s, %%(time_end)s
     FROM zerver_userprofile
     JOIN zerver_message
     ON
@@ -336,7 +339,9 @@ count_message_type_by_user_query = """
         LEFT JOIN zerver_stream
         ON
             zerver_recipient.type_id = zerver_stream.id
-        GROUP BY zerver_userprofile.realm_id, zerver_userprofile.id, zerver_recipient.type, zerver_stream.invite_only
+        GROUP BY
+            zerver_userprofile.realm_id, zerver_userprofile.id,
+            zerver_recipient.type, zerver_stream.invite_only
     ) AS subquery
     GROUP BY realm_id, id, message_type
 """
