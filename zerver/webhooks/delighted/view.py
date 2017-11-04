@@ -9,8 +9,7 @@ from django.http import HttpRequest, HttpResponse
 from six import text_type
 from typing import Dict, Any, Optional
 
-def body_template(score):
-    # type: (int) -> str
+def body_template(score: int) -> str:
     if score >= 7:
         return 'Kudos! You have a new promoter.\n>Score of {score}/10 from {email}\n>{comment}'
     else:

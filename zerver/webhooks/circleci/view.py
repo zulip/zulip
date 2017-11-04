@@ -29,12 +29,10 @@ def api_circleci_webhook(request, user_profile, payload=REQ(argument_type='body'
     check_send_stream_message(user_profile, request.client, stream, subject, body)
     return json_success()
 
-def get_subject(payload):
-    # type: (Dict[str, Any]) -> Text
+def get_subject(payload: Dict[str, Any]) -> Text:
     return CIRCLECI_SUBJECT_TEMPLATE.format(repository_name=payload['reponame'])
 
-def get_body(payload):
-    # type: (Dict[str, Any]) -> Text
+def get_body(payload: Dict[str, Any]) -> Text:
     data = {
         'build_url': payload['build_url'],
         'username': payload['username'],
@@ -43,8 +41,7 @@ def get_body(payload):
     }
     return CIRCLECI_MESSAGE_TEMPLATE.format(**data)
 
-def get_status(payload):
-    # type: (Dict[str, Any]) -> Text
+def get_status(payload: Dict[str, Any]) -> Text:
     status = payload['status']
     if payload['previous'] and payload['previous']['status'] == FAILED_STATUS and status == FAILED_STATUS:
         return u'is still failing'

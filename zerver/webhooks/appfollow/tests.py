@@ -9,16 +9,14 @@ class AppFollowHookTests(WebhookTestCase):
     STREAM_NAME = 'appfollow'
     URL_TEMPLATE = u"/api/v1/external/appfollow?stream={stream}&api_key={api_key}"
 
-    def test_sample(self):
-        # type: () -> None
+    def test_sample(self) -> None:
         expected_subject = "Webhook integration was successful."
         expected_message = u"""Webhook integration was successful.
 Test User / Acme (Google Play)"""
         self.send_and_test_stream_message('sample', expected_subject, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def test_reviews(self):
-        # type: () -> None
+    def test_reviews(self) -> None:
         expected_subject = "Acme - Group chat"
         expected_message = u"""Acme - Group chat
 App Store, Acme Technologies, Inc.
@@ -30,20 +28,16 @@ Acme enables me to manage the flow of information quite well. I only wish I coul
         self.send_and_test_stream_message('review', expected_subject, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def get_body(self, fixture_name):
-        # type: (Text) -> Text
+    def get_body(self, fixture_name: Text) -> Text:
         return self.fixture_data("appfollow", fixture_name, file_type="json")
 
 class ConvertMarkdownTest(TestCase):
-    def test_convert_bold(self):
-        # type: () -> None
+    def test_convert_bold(self) -> None:
         self.assertEqual(convert_markdown("*test message*"), "**test message**")
 
-    def test_convert_italics(self):
-        # type: () -> None
+    def test_convert_italics(self) -> None:
         self.assertEqual(convert_markdown("_test message_"), "*test message*")
         self.assertEqual(convert_markdown("_  spaced message _"), "  *spaced message* ")
 
-    def test_convert_strikethrough(self):
-        # type: () -> None
+    def test_convert_strikethrough(self) -> None:
         self.assertEqual(convert_markdown("~test message~"), "~~test message~~")

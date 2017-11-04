@@ -22,15 +22,13 @@ from django.http import HttpRequest, HttpResponse
 ZULIP_TEST_REPO_NAME = 'zulip-test'
 ZULIP_TEST_REPO_ID = 6893087
 
-def is_test_repository(repository):
-    # type: (Mapping[Text, Any]) -> bool
+def is_test_repository(repository: Mapping[Text, Any]) -> bool:
     return repository['name'] == ZULIP_TEST_REPO_NAME and repository['id'] == ZULIP_TEST_REPO_ID
 
 class UnknownEventType(Exception):
     pass
 
-def github_pull_request_content(payload):
-    # type: (Mapping[Text, Any]) -> Text
+def github_pull_request_content(payload: Mapping[Text, Any]) -> Text:
     pull_request = payload['pull_request']
     action = get_pull_request_or_issue_action(payload)
 
@@ -52,8 +50,7 @@ def github_pull_request_content(payload):
         pull_request['number']
     )
 
-def github_issues_content(payload):
-    # type: (Mapping[Text, Any]) -> Text
+def github_issues_content(payload: Mapping[Text, Any]) -> Text:
     issue = payload['issue']
     action = get_pull_request_or_issue_action(payload)
 
@@ -73,8 +70,7 @@ def github_issues_content(payload):
         issue['number'],
     )
 
-def github_object_commented_content(payload, type):
-    # type: (Mapping[Text, Any], Text) -> Text
+def github_object_commented_content(payload: Mapping[Text, Any], type: Text) -> Text:
     comment = payload['comment']
     issue = payload['issue']
     action = u'[commented]({}) on'.format(comment['html_url'])
@@ -88,19 +84,18 @@ def github_object_commented_content(payload, type):
         type=type
     )
 
-def get_pull_request_or_issue_action(payload):
-    # type: (Mapping[Text, Any]) -> Text
+def get_pull_request_or_issue_action(payload: Mapping[Text, Any]) -> Text:
     return 'synchronized' if payload['action'] == 'synchronize' else payload['action']
 
-def get_pull_request_or_issue_assignee(object_payload):
-    # type: (Mapping[Text, Any]) -> Optional[Text]
+def get_pull_request_or_issue_assignee(object_payload: Mapping[Text, Any]) -> Optional[Text]:
     assignee_dict = object_payload.get('assignee')
     if assignee_dict:
         return assignee_dict.get('login')
     return None
 
-def get_pull_request_or_issue_subject(repository, payload_object, type):
-    # type: (Mapping[Text, Any], Mapping[Text, Any], Text) -> Text
+def get_pull_request_or_issue_subject(repository: Mapping[Text, Any],
+                                      payload_object: Mapping[Text, Any],
+                                      type: Text) -> Text:
     return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
         repo=repository['name'],
         type=type,
@@ -108,13 +103,16 @@ def get_pull_request_or_issue_subject(repository, payload_object, type):
         title=payload_object['title']
     )
 
-def github_generic_subject(noun, topic_focus, blob):
-    # type: (Text, Text, Mapping[Text, Any]) -> Text
+def github_generic_subject(noun: Text, topic_focus: Text, blob: Mapping[Text, Any]) -> Text:
     # issue and pull_request objects have the same fields we're interested in
     return u'%s: %s %d: %s' % (topic_focus, noun, blob['number'], blob['title'])
 
-def api_github_v1(user_profile, event, payload, branches, stream, **kwargs):
-    # type: (UserProfile, Text, Mapping[Text, Any], Text, Text, **Any) -> Tuple[Text, Text, Text]
+def api_github_v1(user_profile: UserProfile,
+                  event: Text,
+                  payload: Mapping[Text, Any],
+                  branches: Text,
+                  stream: Text,
+                  **kwargs: Any) -> Tuple[Text, Text, Text]:
     """
     processes github payload with version 1 field specification
     `payload` comes in unmodified from github
@@ -298,8 +296,7 @@ def build_message_from_gitlog(user_profile, name, ref, commits, before, after,
 
     return subject, content
 
-def _transform_commits_list_to_common_format(commits):
-    # type: (List[Dict[str, Any]]) -> List[Dict[str, str]]
+def _transform_commits_list_to_common_format(commits: List[Dict[str, Any]]) -> List[Dict[str, str]]:
     new_commits_list = []
     for commit in commits:
         new_commits_list.append({

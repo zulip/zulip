@@ -23,8 +23,7 @@ PAGER_DUTY_EVENT_NAMES = {
     'incident.delegate': 'delineated',
 }
 
-def build_pagerduty_formatdict(message):
-    # type: (Dict[str, Any]) -> Dict[str, Any]
+def build_pagerduty_formatdict(message: Dict[str, Any]) -> Dict[str, Any]:
     # Normalize the message dict, after this all keys will exist. I would
     # rather some strange looking messages than dropping pages.
 
@@ -69,8 +68,11 @@ def build_pagerduty_formatdict(message):
     return format_dict
 
 
-def send_raw_pagerduty_json(user_profile, client, stream, message, topic):
-    # type: (UserProfile, Client, Text, Dict[str, Any], Optional[Text]) -> None
+def send_raw_pagerduty_json(user_profile: UserProfile,
+                            client: Client,
+                            stream: Text,
+                            message: Dict[str, Any],
+                            topic: Optional[Text]) -> None:
     subject = topic or 'pagerduty'
     body = (
         u'Unknown pagerduty message\n'
@@ -80,8 +82,12 @@ def send_raw_pagerduty_json(user_profile, client, stream, message, topic):
     check_send_stream_message(user_profile, client, stream, subject, body)
 
 
-def send_formated_pagerduty(user_profile, client, stream, message_type, format_dict, topic):
-    # type: (UserProfile, Client, Text, Text, Dict[str, Any], Optional[Text]) -> None
+def send_formated_pagerduty(user_profile: UserProfile,
+                            client: Client,
+                            stream: Text,
+                            message_type: Text,
+                            format_dict: Dict[str, Any],
+                            topic: Optional[Text]) -> None:
     if message_type in ('incident.trigger', 'incident.unacknowledge'):
         template = (u':imp: Incident '
                     u'[{incident_num}]({incident_url}) {action} by '

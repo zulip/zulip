@@ -139,8 +139,9 @@ templates = {
 }
 
 
-def get_old_and_new_values(change_type, message):
-    # type: (str, Mapping[str, Any]) -> Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]]]
+return_type = Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]]]
+def get_old_and_new_values(change_type: str,
+                           message: Mapping[str, Any]) -> return_type:
     """ Parses the payload and finds previous and current value of change_type."""
     if change_type in ['subject', 'name', 'estimated_finish', 'estimated_start']:
         old = message["change"]["diff"][change_type]["from"]
@@ -160,8 +161,7 @@ def get_old_and_new_values(change_type, message):
     return old, new
 
 
-def parse_comment(message):
-    # type: (Mapping[str, Any]) -> Dict[str, Any]
+def parse_comment(message: Mapping[str, Any]) -> Dict[str, Any]:
     """ Parses the comment to issue, task or US. """
     return {
         'event': 'commented',
@@ -172,8 +172,7 @@ def parse_comment(message):
         }
     }
 
-def parse_create_or_delete(message):
-    # type: (Mapping[str, Any]) -> Dict[str, Any]
+def parse_create_or_delete(message: Mapping[str, Any]) -> Dict[str, Any]:
     """ Parses create or delete event. """
     if message["type"] == 'relateduserstory':
         return {
@@ -196,8 +195,7 @@ def parse_create_or_delete(message):
     }
 
 
-def parse_change_event(change_type, message):
-    # type: (str, Mapping[str, Any]) -> Optional[Dict[str, Any]]
+def parse_change_event(change_type: str, message: Mapping[str, Any]) -> Optional[Dict[str, Any]]:
     """ Parses change event. """
     evt = {}  # type: Dict[str, Any]
     values = {
@@ -264,8 +262,7 @@ def parse_change_event(change_type, message):
     return evt
 
 
-def parse_message(message):
-    # type: (Mapping[str, Any]) -> List[Dict[str, Any]]
+def parse_message(message: Mapping[str, Any]) -> List[Dict[str, Any]]:
     """ Parses the payload by delegating to specialized functions. """
     events = []
     if message["action"] in ['create', 'delete']:
@@ -281,16 +278,13 @@ def parse_message(message):
 
     return events
 
-def generate_content(data):
-    # type: (Mapping[str, Any]) -> str
+def generate_content(data: Mapping[str, Any]) -> str:
     """ Gets the template string and formats it with parsed data. """
     return templates[data['type']][data['event']] % data['values']
 
-def get_owner_name(message):
-    # type: (Mapping[str, Any]) -> str
+def get_owner_name(message: Mapping[str, Any]) -> str:
     return message["by"]["full_name"]
 
-def get_subject(message):
-    # type: (Mapping[str, Any]) -> str
+def get_subject(message: Mapping[str, Any]) -> str:
     data = message["data"]
     return data.get("subject", data.get("name"))

@@ -17,8 +17,7 @@ class DeskDotComHookTests(WebhookTestCase):
     URL_TEMPLATE = "/api/v1/external/deskdotcom"
     FIXTURE_DIR_NAME = 'deskdotcom'
 
-    def test_static_text_message(self):
-        # type: () -> None
+    def test_static_text_message(self) -> None:
 
         expected_subject = u"static text notification"
         expected_message = u"This is a custom action."
@@ -27,8 +26,7 @@ class DeskDotComHookTests(WebhookTestCase):
                                           content_type="application/x-www-form-urlencoded",
                                           **self.api_auth(self.TEST_USER_EMAIL))
 
-    def test_case_updated_message(self):
-        # type: () -> None
+    def test_case_updated_message(self) -> None:
         expected_subject = u"case updated notification"
         expected_message = (u"Case 2 updated. "
                             u"Link: <a href='https://deskdotcomtest.desk.com/web/agent/case/2'>"
@@ -38,8 +36,7 @@ class DeskDotComHookTests(WebhookTestCase):
                                           content_type="application/x-www-form-urlencoded",
                                           **self.api_auth(self.TEST_USER_EMAIL))
 
-    def test_unicode_text_italian(self):
-        # type: () -> None
+    def test_unicode_text_italian(self) -> None:
 
         expected_subject = u"case updated notification"
         expected_message = (u"Case 2 updated. "
@@ -50,8 +47,7 @@ class DeskDotComHookTests(WebhookTestCase):
                                           content_type="application/x-www-form-urlencoded",
                                           **self.api_auth(self.TEST_USER_EMAIL))
 
-    def test_unicode_text_japanese(self):
-        # type: () -> None
+    def test_unicode_text_japanese(self) -> None:
 
         expected_subject = u"case updated notification"
         expected_message = (u"Case 2 updated. "
@@ -62,6 +58,5 @@ class DeskDotComHookTests(WebhookTestCase):
                                           content_type="application/x-www-form-urlencoded",
                                           **self.api_auth(self.TEST_USER_EMAIL))
 
-    def get_body(self, fixture_name):
-        # type: (Text) -> Text
+    def get_body(self, fixture_name: Text) -> Text:
         return self.fixture_data("deskdotcom", fixture_name, file_type="txt")

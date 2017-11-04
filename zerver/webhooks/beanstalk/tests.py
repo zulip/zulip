@@ -9,8 +9,7 @@ class BeanstalkHookTests(WebhookTestCase):
     STREAM_NAME = 'commits'
     URL_TEMPLATE = u"/api/v1/external/beanstalk"
 
-    def test_git_single(self):
-        # type: () -> None
+    def test_git_single(self) -> None:
         expected_subject = "work-test / master"
         expected_message = """Leo Franchi [pushed](http://lfranchi-svn.beanstalkapp.com/work-test) 1 commit to branch master.
 
@@ -19,8 +18,7 @@ class BeanstalkHookTests(WebhookTestCase):
                                           content_type=None,
                                           **self.api_auth(self.TEST_USER_EMAIL))
 
-    def test_git_single_filtered_by_branches(self):
-        # type: () -> None
+    def test_git_single_filtered_by_branches(self) -> None:
         self.url = self.build_webhook_url(branches='master,development')
         expected_subject = "work-test / master"
         expected_message = """Leo Franchi [pushed](http://lfranchi-svn.beanstalkapp.com/work-test) 1 commit to branch master.
@@ -30,8 +28,7 @@ class BeanstalkHookTests(WebhookTestCase):
                                           content_type=None,
                                           **self.api_auth(self.TEST_USER_EMAIL))
 
-    def test_git_multiple_committers(self):
-        # type: () -> None
+    def test_git_multiple_committers(self) -> None:
         expected_subject = "work-test / master"
         expected_message = """Leo Franchi [pushed](http://lfranchi-svn.beanstalkapp.com/work-test) 3 commits to branch master. Commits by Leo Franchi (2) and Tomasz Kolek (1).
 
@@ -42,8 +39,7 @@ class BeanstalkHookTests(WebhookTestCase):
                                           content_type=None,
                                           **self.api_auth(self.TEST_USER_EMAIL))
 
-    def test_git_multiple_committers_filtered_by_branches(self):
-        # type: () -> None
+    def test_git_multiple_committers_filtered_by_branches(self) -> None:
         self.url = self.build_webhook_url(branches='master,development')
         expected_subject = "work-test / master"
         expected_message = """Leo Franchi [pushed](http://lfranchi-svn.beanstalkapp.com/work-test) 3 commits to branch master. Commits by Leo Franchi (2) and Tomasz Kolek (1).
@@ -55,8 +51,7 @@ class BeanstalkHookTests(WebhookTestCase):
                                           content_type=None,
                                           **self.api_auth(self.TEST_USER_EMAIL))
 
-    def test_git_multiple(self):
-        # type: () -> None
+    def test_git_multiple(self) -> None:
         expected_subject = "work-test / master"
         expected_message = """Leo Franchi [pushed](http://lfranchi-svn.beanstalkapp.com/work-test) 3 commits to branch master.
 
@@ -67,8 +62,7 @@ class BeanstalkHookTests(WebhookTestCase):
                                           content_type=None,
                                           **self.api_auth(self.TEST_USER_EMAIL))
 
-    def test_git_multiple_filtered_by_branches(self):
-        # type: () -> None
+    def test_git_multiple_filtered_by_branches(self) -> None:
         self.url = self.build_webhook_url(branches='master,development')
         expected_subject = "work-test / master"
         expected_message = """Leo Franchi [pushed](http://lfranchi-svn.beanstalkapp.com/work-test) 3 commits to branch master.
@@ -80,8 +74,7 @@ class BeanstalkHookTests(WebhookTestCase):
                                           content_type=None,
                                           **self.api_auth(self.TEST_USER_EMAIL))
 
-    def test_git_more_than_limit(self):
-        # type: () -> None
+    def test_git_more_than_limit(self) -> None:
         commits_info = "* add some stuff ([e50508d](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/e50508df))\n"
         expected_subject = "work-test / master"
         expected_message = """Leo Franchi [pushed](http://lfranchi-svn.beanstalkapp.com/work-test) 50 commits to branch master.
@@ -91,8 +84,7 @@ class BeanstalkHookTests(WebhookTestCase):
                                           content_type=None,
                                           **self.api_auth(self.TEST_USER_EMAIL))
 
-    def test_git_more_than_limit_filtered_by_branches(self):
-        # type: () -> None
+    def test_git_more_than_limit_filtered_by_branches(self) -> None:
         self.url = self.build_webhook_url(branches='master,development')
         commits_info = "* add some stuff ([e50508d](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/e50508df))\n"
         expected_subject = "work-test / master"
@@ -104,8 +96,7 @@ class BeanstalkHookTests(WebhookTestCase):
                                           **self.api_auth(self.TEST_USER_EMAIL))
 
     @patch('zerver.webhooks.beanstalk.view.check_send_stream_message')
-    def test_git_single_filtered_by_branches_ignore(self, check_send_stream_message_mock):
-        # type: (MagicMock) -> None
+    def test_git_single_filtered_by_branches_ignore(self, check_send_stream_message_mock: MagicMock) -> None:
         self.url = self.build_webhook_url(branches='changes,development')
         payload = self.get_body('git_singlecommit')
         result = self.client_post(self.url, payload,
@@ -146,8 +137,7 @@ class BeanstalkHookTests(WebhookTestCase):
         self.assertFalse(check_send_stream_message_mock.called)
         self.assert_json_success(result)
 
-    def test_svn_addremove(self):
-        # type: () -> None
+    def test_svn_addremove(self) -> None:
         expected_subject = "svn r3"
         expected_message = """Leo Franchi pushed [revision 3](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/3):
 
@@ -156,8 +146,7 @@ class BeanstalkHookTests(WebhookTestCase):
                                           content_type=None,
                                           **self.api_auth(self.TEST_USER_EMAIL))
 
-    def test_svn_changefile(self):
-        # type: () -> None
+    def test_svn_changefile(self) -> None:
         expected_subject = "svn r2"
         expected_message = """Leo Franchi pushed [revision 2](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/2):
 
@@ -166,6 +155,5 @@ class BeanstalkHookTests(WebhookTestCase):
                                           content_type=None,
                                           **self.api_auth(self.TEST_USER_EMAIL))
 
-    def get_body(self, fixture_name):
-        # type: (Text) -> Dict[str, Text]
+    def get_body(self, fixture_name: Text) -> Dict[str, Text]:
         return {'payload': self.fixture_data('beanstalk', fixture_name)}
