@@ -6,7 +6,6 @@ from django.template import Library, loader, engines
 from django.utils.safestring import mark_safe
 from django.utils.lru_cache import lru_cache
 
-from zerver.lib.utils import force_text
 import zerver.lib.bugdown.fenced_code
 
 import markdown
