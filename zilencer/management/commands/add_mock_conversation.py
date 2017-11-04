@@ -69,7 +69,8 @@ From image editing program:
              'content': "I'm also a big fan of inline link, tweet, video, and image previews. "
              "Check out this picture of Çet Whalin[](/static/images/features/whale.png)!"},
             {'sender': starr,
-             'content': "I just set up a custom linkifier, so `#1234` becomes [#1234](github.com/zulip/zulip/1234), "
+             'content': "I just set up a custom linkifier, "
+                        "so `#1234` becomes [#1234](github.com/zulip/zulip/1234), "
              "a link to the corresponding GitHub issue."},
             {'sender': twitter_bot,
              'content': 'https://twitter.com/gvanrossum/status/786661035637772288'},
