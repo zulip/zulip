@@ -11,7 +11,7 @@ import unicodedata
 
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.exceptions import JsonableError, ErrorCode
-from zerver.lib.str_utils import force_text, force_str, NonBinaryStr
+from zerver.lib.str_utils import force_str, NonBinaryStr
 
 from boto.s3.bucket import Bucket
 from boto.s3.key import Key
@@ -240,7 +240,7 @@ def get_file_info(request, user_file):
 def get_signed_upload_url(path):
     # type: (Text) -> Text
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-    return force_text(conn.generate_url(15, 'GET', bucket=settings.S3_AUTH_UPLOADS_BUCKET, key=force_str(path)))
+    return conn.generate_url(15, 'GET', bucket=settings.S3_AUTH_UPLOADS_BUCKET, key=force_str(path))
 
 def get_realm_for_filename(path):
     # type: (Text) -> Optional[int]
