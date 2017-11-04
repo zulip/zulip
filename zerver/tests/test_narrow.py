@@ -20,7 +20,6 @@ from zerver.lib.narrow import (
     build_narrow_filter,
 )
 from zerver.lib.request import JsonableError
-from zerver.lib.str_utils import force_bytes
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.test_helpers import (
     POSTRequestMock,

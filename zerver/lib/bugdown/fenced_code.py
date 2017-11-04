@@ -81,7 +81,6 @@ import subprocess
 import markdown
 from django.utils.html import escape
 from markdown.extensions.codehilite import CodeHilite, CodeHiliteExtension
-from zerver.lib.str_utils import force_bytes
 from zerver.lib.tex import render_tex
 from typing import Any, Dict, Iterable, List, MutableSequence, Optional, Tuple, Union, Text
 
