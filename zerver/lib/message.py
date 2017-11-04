@@ -15,7 +15,6 @@ from zerver.lib.cache import (
     to_dict_cache_key_id,
 )
 from zerver.lib.request import JsonableError
-from zerver.lib.str_utils import dict_with_str_keys
 from zerver.lib.stream_subscription import (
     get_stream_subscriptions_for_user,
 )
@@ -111,7 +110,7 @@ def sew_messages_and_reactions(messages, reactions):
 
 def extract_message_dict(message_bytes):
     # type: (bytes) -> Dict[str, Any]
-    return dict_with_str_keys(ujson.loads(zlib.decompress(message_bytes).decode("utf-8")))
+    return ujson.loads(zlib.decompress(message_bytes).decode("utf-8"))
 
 def stringify_message_dict(message_dict):
     # type: (Dict[str, Any]) -> bytes
