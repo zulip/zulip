@@ -170,7 +170,7 @@ exports.set_up = function () {
     $("#do_deactivate_stream_button").click(function () {
         if ($("#deactivation_stream_modal .stream_name").text() !== $(".active_stream_row").find('.stream_name').text()) {
             blueslip.error("Stream deactivation canceled due to non-matching fields.");
-            ui_report.message("Deactivation encountered an error. Please reload and try again.",
+            ui_report.message(i18n.t("Deactivation encountered an error. Please reload and try again."),
                $("#home-error"), 'alert-error');
         }
         $("#deactivation_stream_modal").modal("hide");
