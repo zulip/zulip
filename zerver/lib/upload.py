@@ -186,7 +186,7 @@ def upload_image_to_s3(
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
     bucket = get_bucket(conn, bucket_name)
     key = Key(bucket)
-    key.key = force_str(file_name)
+    key.key = file_name
     key.set_metadata("user_profile_id", str(user_profile.id))
     key.set_metadata("realm_id", str(user_profile.realm_id))
 
@@ -240,7 +240,7 @@ def get_file_info(request, user_file):
 def get_signed_upload_url(path):
     # type: (Text) -> Text
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-    return conn.generate_url(15, 'GET', bucket=settings.S3_AUTH_UPLOADS_BUCKET, key=force_str(path))
+    return conn.generate_url(15, 'GET', bucket=settings.S3_AUTH_UPLOADS_BUCKET, key=path)
 
 def get_realm_for_filename(path):
     # type: (Text) -> Optional[int]
