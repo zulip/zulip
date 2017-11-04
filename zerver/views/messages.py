@@ -8,7 +8,7 @@ from django.db import connection
 from django.http import HttpRequest, HttpResponse
 from typing import Dict, List, Set, Text, Any, Callable, Iterable, \
     Optional, Tuple, Union
-from zerver.lib.str_utils import force_text, force_bytes
+from zerver.lib.str_utils import force_text
 from zerver.lib.exceptions import JsonableError, ErrorCode
 from zerver.lib.html_diff import highlight_html_differences
 from zerver.decorator import has_request_variables, \
