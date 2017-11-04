@@ -34,10 +34,10 @@ class TranslationTestCase(ZulipTestCase):
         return response
 
     def test_accept_language_header(self) -> None:
-        languages = [('en', u'Sign up'),
-                     ('de', u'Registrieren'),
-                     ('sr', u'Упишите се'),
-                     ('zh-hans', u'注册'),
+        languages = [('en', 'Sign up'),
+                     ('de', 'Registrieren'),
+                     ('sr', 'Упишите се'),
+                     ('zh-hans', '注册'),
                      ]
 
         for lang, word in languages:
@@ -46,10 +46,10 @@ class TranslationTestCase(ZulipTestCase):
             self.assert_in_response(word, response)
 
     def test_cookie(self) -> None:
-        languages = [('en', u'Sign up'),
-                     ('de', u'Registrieren'),
-                     ('sr', u'Упишите се'),
-                     ('zh-hans', u'注册'),
+        languages = [('en', 'Sign up'),
+                     ('de', 'Registrieren'),
+                     ('sr', 'Упишите се'),
+                     ('zh-hans', '注册'),
                      ]
 
         for lang, word in languages:
@@ -61,10 +61,10 @@ class TranslationTestCase(ZulipTestCase):
             self.assert_in_response(word, response)
 
     def test_i18n_urls(self) -> None:
-        languages = [('en', u'Sign up'),
-                     ('de', u'Registrieren'),
-                     ('sr', u'Упишите се'),
-                     ('zh-hans', u'注册'),
+        languages = [('en', 'Sign up'),
+                     ('de', 'Registrieren'),
+                     ('sr', 'Упишите се'),
+                     ('zh-hans', '注册'),
                      ]
 
         for lang, word in languages:
@@ -86,7 +86,7 @@ class JsonTranslationTestCase(ZulipTestCase):
         result = self.client_post("/json/invites",
                                   HTTP_ACCEPT_LANGUAGE='de')
 
-        expected_error = u"this arg is bad: 'invitee_emails' (translated to German)"
+        expected_error = "this arg is bad: 'invitee_emails' (translated to German)"
         self.assert_json_error_contains(result,
                                         expected_error,
                                         status_code=400)

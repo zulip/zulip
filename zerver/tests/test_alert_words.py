@@ -26,7 +26,7 @@ from typing import Text
 import ujson
 
 class AlertWordTests(ZulipTestCase):
-    interesting_alert_word_list = ['alert', 'multi-word word', u'☃']
+    interesting_alert_word_list = ['alert', 'multi-word word', '☃']
 
     def test_internal_endpoint(self) -> None:
         user_name = "cordelia"

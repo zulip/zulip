@@ -245,7 +245,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         d1_attachment = Attachment.objects.get(path_id = d1_path_id)
         d1_attachment.create_time = two_week_ago
         d1_attachment.save()
-        self.assertEqual(str(d1_attachment), u'<Attachment: dummy_1.txt>')
+        self.assertEqual(str(d1_attachment), '<Attachment: dummy_1.txt>')
         d2_attachment = Attachment.objects.get(path_id = d2_path_id)
         d2_attachment.create_time = two_week_ago
         d2_attachment.save()
@@ -907,7 +907,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_file_upload_local(self) -> None:
         user_profile = self.example_user('hamlet')
-        uri = upload_message_image(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
+        uri = upload_message_image('dummy.txt', len(b'zulip!'), 'text/plain', b'zulip!', user_profile)
 
         base = '/user_uploads/'
         self.assertEqual(base, uri[:len(base)])
@@ -938,7 +938,7 @@ class S3Test(ZulipTestCase):
         bucket = conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
 
         user_profile = self.example_user('hamlet')
-        uri = upload_message_image(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
+        uri = upload_message_image('dummy.txt', len(b'zulip!'), 'text/plain', b'zulip!', user_profile)
 
         base = '/user_uploads/'
         self.assertEqual(base, uri[:len(base)])
@@ -960,7 +960,7 @@ class S3Test(ZulipTestCase):
         conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
 
         user_profile = self.example_user('hamlet')
-        uri = upload_message_image(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
+        uri = upload_message_image('dummy.txt', len(b'zulip!'), 'text/plain', b'zulip!', user_profile)
 
         path_id = re.sub('/user_uploads/', '', uri)
         self.assertTrue(delete_message_image(path_id))
@@ -1034,13 +1034,13 @@ class UploadTitleTests(TestCase):
 
 class SanitizeNameTests(TestCase):
     def test_file_name(self) -> None:
-        self.assertEqual(sanitize_name(u'test.txt'), u'test.txt')
-        self.assertEqual(sanitize_name(u'.hidden'), u'.hidden')
-        self.assertEqual(sanitize_name(u'.hidden.txt'), u'.hidden.txt')
-        self.assertEqual(sanitize_name(u'tarball.tar.gz'), u'tarball.tar.gz')
-        self.assertEqual(sanitize_name(u'.hidden_tarball.tar.gz'), u'.hidden_tarball.tar.gz')
-        self.assertEqual(sanitize_name(u'Testing{}*&*#().ta&&%$##&&r.gz'), u'Testing.tar.gz')
-        self.assertEqual(sanitize_name(u'*testingfile?*.txt'), u'testingfile.txt')
-        self.assertEqual(sanitize_name(u'snowman☃.txt'), u'snowman.txt')
-        self.assertEqual(sanitize_name(u'테스트.txt'), u'테스트.txt')
-        self.assertEqual(sanitize_name(u'~/."\`\?*"u0`000ssh/test.t**{}ar.gz'), u'.u0000sshtest.tar.gz')
+        self.assertEqual(sanitize_name('test.txt'), 'test.txt')
+        self.assertEqual(sanitize_name('.hidden'), '.hidden')
+        self.assertEqual(sanitize_name('.hidden.txt'), '.hidden.txt')
+        self.assertEqual(sanitize_name('tarball.tar.gz'), 'tarball.tar.gz')
+        self.assertEqual(sanitize_name('.hidden_tarball.tar.gz'), '.hidden_tarball.tar.gz')
+        self.assertEqual(sanitize_name('Testing{}*&*#().ta&&%$##&&r.gz'), 'Testing.tar.gz')
+        self.assertEqual(sanitize_name('*testingfile?*.txt'), 'testingfile.txt')
+        self.assertEqual(sanitize_name('snowman☃.txt'), 'snowman.txt')
+        self.assertEqual(sanitize_name('테스트.txt'), '테스트.txt')
+        self.assertEqual(sanitize_name('~/."\`\?*"u0`000ssh/test.t**{}ar.gz'), '.u0000sshtest.tar.gz')

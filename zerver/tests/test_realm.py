@@ -30,14 +30,14 @@ class RealmTest(ZulipTestCase):
         by checking the cache to ensure that the new value is there."""
         self.example_user('hamlet')
         realm = get_realm('zulip')
-        new_name = u'Zed You Elle Eye Pea'
+        new_name = 'Zed You Elle Eye Pea'
         do_set_realm_property(realm, 'name', new_name)
         self.assertEqual(get_realm(realm.string_id).name, new_name)
         self.assert_user_profile_cache_gets_new_name(self.example_user('hamlet'), new_name)
 
     def test_update_realm_name_events(self) -> None:
         realm = get_realm('zulip')
-        new_name = u'Puliz'
+        new_name = 'Puliz'
         events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
             do_set_realm_property(realm, 'name', new_name)
@@ -51,7 +51,7 @@ class RealmTest(ZulipTestCase):
 
     def test_update_realm_description_events(self) -> None:
         realm = get_realm('zulip')
-        new_description = u'zulip dev group'
+        new_description = 'zulip dev group'
         events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
             do_set_realm_property(realm, 'description', new_description)
@@ -67,7 +67,7 @@ class RealmTest(ZulipTestCase):
         email = self.example_email("iago")
         self.login(email)
         realm = get_realm('zulip')
-        new_description = u'zulip dev group'
+        new_description = 'zulip dev group'
         data = dict(description=ujson.dumps(new_description))
         events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
@@ -85,7 +85,7 @@ class RealmTest(ZulipTestCase):
         ))
 
     def test_realm_description_length(self) -> None:
-        new_description = u'A' * 1001
+        new_description = 'A' * 1001
         data = dict(description=ujson.dumps(new_description))
 
         # create an admin user
@@ -98,7 +98,7 @@ class RealmTest(ZulipTestCase):
         self.assertNotEqual(realm.description, new_description)
 
     def test_realm_name_length(self) -> None:
-        new_name = u'A' * (Realm.MAX_REALM_NAME_LENGTH + 1)
+        new_name = 'A' * (Realm.MAX_REALM_NAME_LENGTH + 1)
         data = dict(name=ujson.dumps(new_name))
 
         # create an admin user
@@ -296,10 +296,10 @@ class RealmAPITest(ZulipTestCase):
 
         bool_tests = [False, True]  # type: List[bool]
         test_values = dict(
-            default_language=[u'de', u'en'],
-            description=[u'Realm description', u'New description'],
+            default_language=['de', 'en'],
+            description=['Realm description', 'New description'],
             message_retention_days=[10, 20],
-            name=[u'Zulip', u'New Name'],
+            name=['Zulip', 'New Name'],
             waiting_period_threshold=[10, 20],
         )  # type: Dict[str, Any]
         vals = test_values.get(name)

@@ -766,17 +766,17 @@ class GetOldMessagesTest(ZulipTestCase):
         # We need to susbcribe to a stream and then send a message to
         # it to ensure that we actually have a stream message in this
         # narrow view.
-        lambda_stream_name = u"\u03bb-stream"
+        lambda_stream_name = "\u03bb-stream"
         stream = self.subscribe(self.mit_user("starnine"), lambda_stream_name)
         self.assertTrue(stream.is_in_zephyr_realm)
 
-        lambda_stream_d_name = u"\u03bb-stream.d"
+        lambda_stream_d_name = "\u03bb-stream.d"
         self.subscribe(self.mit_user("starnine"), lambda_stream_d_name)
 
-        self.send_stream_message(self.mit_email("starnine"), u"\u03bb-stream", sender_realm="zephyr")
-        self.send_stream_message(self.mit_email("starnine"), u"\u03bb-stream.d", sender_realm="zephyr")
+        self.send_stream_message(self.mit_email("starnine"), "\u03bb-stream", sender_realm="zephyr")
+        self.send_stream_message(self.mit_email("starnine"), "\u03bb-stream.d", sender_realm="zephyr")
 
-        narrow = [dict(operator='stream', operand=u'\u03bb-stream')]
+        narrow = [dict(operator='stream', operand='\u03bb-stream')]
         result = self.get_and_check_messages(dict(num_after=2,
                                                   narrow=ujson.dumps(narrow)),
                                              subdomain="zephyr")
@@ -802,18 +802,18 @@ class GetOldMessagesTest(ZulipTestCase):
         # it to ensure that we actually have a stream message in this
         # narrow view.
         self.subscribe(mit_user_profile, "Scotland")
-        self.send_stream_message(email, "Scotland", topic_name=u"\u03bb-topic",
+        self.send_stream_message(email, "Scotland", topic_name="\u03bb-topic",
                                  sender_realm="zephyr")
-        self.send_stream_message(email, "Scotland", topic_name=u"\u03bb-topic.d",
+        self.send_stream_message(email, "Scotland", topic_name="\u03bb-topic.d",
                                  sender_realm="zephyr")
-        self.send_stream_message(email, "Scotland", topic_name=u"\u03bb-topic.d.d",
+        self.send_stream_message(email, "Scotland", topic_name="\u03bb-topic.d.d",
                                  sender_realm="zephyr")
-        self.send_stream_message(email, "Scotland", topic_name=u"\u03bb-topic.d.d.d",
+        self.send_stream_message(email, "Scotland", topic_name="\u03bb-topic.d.d.d",
                                  sender_realm="zephyr")
-        self.send_stream_message(email, "Scotland", topic_name=u"\u03bb-topic.d.d.d.d",
+        self.send_stream_message(email, "Scotland", topic_name="\u03bb-topic.d.d.d.d",
                                  sender_realm="zephyr")
 
-        narrow = [dict(operator='topic', operand=u'\u03bb-topic')]
+        narrow = [dict(operator='topic', operand='\u03bb-topic')]
         result = self.get_and_check_messages(
             dict(num_after=100, narrow=ujson.dumps(narrow)),
             subdomain="zephyr")
@@ -839,22 +839,22 @@ class GetOldMessagesTest(ZulipTestCase):
         self.login(email, realm=mit_user_profile.realm)
         self.subscribe(mit_user_profile, "Scotland")
 
-        self.send_stream_message(email, "Scotland", topic_name=u".d.d",
+        self.send_stream_message(email, "Scotland", topic_name=".d.d",
                                  sender_realm="zephyr")
-        self.send_stream_message(email, "Scotland", topic_name=u"PERSONAL",
+        self.send_stream_message(email, "Scotland", topic_name="PERSONAL",
                                  sender_realm="zephyr")
-        self.send_stream_message(email, "Scotland", topic_name=u'(instance "").d',
+        self.send_stream_message(email, "Scotland", topic_name='(instance "").d',
                                  sender_realm="zephyr")
-        self.send_stream_message(email, "Scotland", topic_name=u".d.d.d",
+        self.send_stream_message(email, "Scotland", topic_name=".d.d.d",
                                  sender_realm="zephyr")
-        self.send_stream_message(email, "Scotland", topic_name=u"personal.d",
+        self.send_stream_message(email, "Scotland", topic_name="personal.d",
                                  sender_realm="zephyr")
-        self.send_stream_message(email, "Scotland", topic_name=u'(instance "")',
+        self.send_stream_message(email, "Scotland", topic_name='(instance "")',
                                  sender_realm="zephyr")
-        self.send_stream_message(email, "Scotland", topic_name=u".d.d.d.d",
+        self.send_stream_message(email, "Scotland", topic_name=".d.d.d.d",
                                  sender_realm="zephyr")
 
-        narrow = [dict(operator='topic', operand=u'personal.d.d')]
+        narrow = [dict(operator='topic', operand='personal.d.d')]
         result = self.get_and_check_messages(
             dict(num_before=50,
                  num_after=50,
@@ -932,7 +932,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(len(list(messages.keys())), 1)
         message = messages[str(good_id)]
         self.assertEqual(message['match_content'],
-                         u'<p><span class="highlight">KEYWORDMATCH</span> and should work</p>')
+                         '<p><span class="highlight">KEYWORDMATCH</span> and should work</p>')
 
     @override_settings(USING_PGROONGA=False)
     def test_get_messages_with_search(self) -> None:
@@ -945,10 +945,10 @@ class GetOldMessagesTest(ZulipTestCase):
             ('meetings', 'please bring your laptops to take notes'),
             ('dinner', 'Anybody staying late tonight?'),
             ('urltest', 'https://google.com'),
-            (u'日本', u'こんに ちは 。 今日は いい 天気ですね。'),
-            (u'日本', u'今朝はごはんを食べました。'),
-            (u'日本', u'昨日、日本 のお菓子を送りました。'),
-            ('english', u'I want to go to 日本!'),
+            ('日本', 'こんに ちは 。 今日は いい 天気ですね。'),
+            ('日本', '今朝はごはんを食べました。'),
+            ('日本', '昨日、日本 のお菓子を送りました。'),
+            ('english', 'I want to go to 日本!'),
         ]
 
         next_message_id = self.get_last_message().id + 1
@@ -1020,7 +1020,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         # Test searching in messages with unicode characters
         narrow = [
-            dict(operator='search', operand=u'日本'),
+            dict(operator='search', operand='日本'),
         ]
         result = self.get_and_check_messages(dict(
             narrow=ujson.dumps(narrow),
@@ -1031,14 +1031,14 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(len(result['messages']), 4)
         messages = result['messages']
 
-        japanese_message = [m for m in messages if m['subject'] == u'日本'][-1]
+        japanese_message = [m for m in messages if m['subject'] == '日本'][-1]
         self.assertEqual(
             japanese_message['match_subject'],
-            u'<span class="highlight">日本</span>')
+            '<span class="highlight">日本</span>')
         self.assertEqual(
             japanese_message['match_content'],
-            u'<p>昨日、<span class="highlight">日本</span>' +
-            u' のお菓子を送りました。</p>')
+            '<p>昨日、<span class="highlight">日本</span>' +
+            ' のお菓子を送りました。</p>')
 
         english_message = [m for m in messages if m['subject'] == 'english'][0]
         self.assertEqual(
@@ -1046,7 +1046,7 @@ class GetOldMessagesTest(ZulipTestCase):
             'english')
         self.assertIn(
             english_message['match_content'],
-            u'<p>I want to go to <span class="highlight">日本</span>!</p>')
+            '<p>I want to go to <span class="highlight">日本</span>!</p>')
 
         # Multiple search operands with unicode
         multi_search_narrow = [
@@ -1118,10 +1118,10 @@ class GetOldMessagesTest(ZulipTestCase):
         next_message_id = self.get_last_message().id + 1
 
         messages_to_search = [
-            (u'日本語', u'こんにちは。今日はいい天気ですね。'),
-            (u'日本語', u'今朝はごはんを食べました。'),
-            (u'日本語', u'昨日、日本のお菓子を送りました。'),
-            ('english', u'I want to go to 日本!'),
+            ('日本語', 'こんにちは。今日はいい天気ですね。'),
+            ('日本語', '今朝はごはんを食べました。'),
+            ('日本語', '昨日、日本のお菓子を送りました。'),
+            ('english', 'I want to go to 日本!'),
             ('english', 'Can you speak https://en.wikipedia.org/wiki/Japanese?'),
             ('english', 'https://google.com'),
         ]
@@ -1145,7 +1145,7 @@ class GetOldMessagesTest(ZulipTestCase):
                 """)
 
         narrow = [
-            dict(operator='search', operand=u'日本'),
+            dict(operator='search', operand='日本'),
         ]
         result = self.get_and_check_messages(dict(
             narrow=ujson.dumps(narrow),
@@ -1156,14 +1156,14 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(len(result['messages']), 4)
         messages = result['messages']
 
-        japanese_message = [m for m in messages if m['subject'] == u'日本語'][-1]
+        japanese_message = [m for m in messages if m['subject'] == '日本語'][-1]
         self.assertEqual(
             japanese_message['match_subject'],
-            u'<span class="highlight">日本</span>語')
+            '<span class="highlight">日本</span>語')
         self.assertEqual(
             japanese_message['match_content'],
-            u'<p>昨日、<span class="highlight">日本</span>の' +
-            u'お菓子を送りました。</p>')
+            '<p>昨日、<span class="highlight">日本</span>の' +
+            'お菓子を送りました。</p>')
 
         english_message = [m for m in messages if m['subject'] == 'english'][0]
         self.assertEqual(
@@ -1174,8 +1174,8 @@ class GetOldMessagesTest(ZulipTestCase):
             # NOTE: The whitespace here is off due to a pgroonga bug.
             # This bug is a pgroonga regression and according to one of
             # the author, this should be fixed in its next release.
-            [u'<p>I want to go to <span class="highlight">日本</span>!</p>',  # This is correct.
-             u'<p>I want to go to<span class="highlight"> 日本</span>!</p>', ])
+            ['<p>I want to go to <span class="highlight">日本</span>!</p>',  # This is correct.
+             '<p>I want to go to<span class="highlight"> 日本</span>!</p>', ])
 
         # Should not crash when multiple search operands are present
         multi_search_narrow = [

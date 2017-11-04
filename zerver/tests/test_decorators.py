@@ -1163,11 +1163,11 @@ class ReturnSuccessOnHeadRequestDecorator(ZulipTestCase):
 
         @return_success_on_head_request
         def test_function(request: HttpRequest) -> HttpResponse:
-            return json_response(msg=u'from_test_function')  # nocoverage. isn't meant to be called
+            return json_response(msg='from_test_function')  # nocoverage. isn't meant to be called
 
         response = test_function(request)
         self.assert_json_success(response)
-        self.assertNotEqual(ujson.loads(response.content).get('msg'), u'from_test_function')
+        self.assertNotEqual(ujson.loads(response.content).get('msg'), 'from_test_function')
 
     def test_returns_normal_response_if_request_method_is_not_head(self) -> None:
             class HeadRequest:
@@ -1177,10 +1177,10 @@ class ReturnSuccessOnHeadRequestDecorator(ZulipTestCase):
 
             @return_success_on_head_request
             def test_function(request: HttpRequest) -> HttpResponse:
-                return json_response(msg=u'from_test_function')
+                return json_response(msg='from_test_function')
 
             response = test_function(request)
-            self.assertEqual(ujson.loads(response.content).get('msg'), u'from_test_function')
+            self.assertEqual(ujson.loads(response.content).get('msg'), 'from_test_function')
 
 class RestAPITest(ZulipTestCase):
     def test_method_not_allowed(self) -> None:

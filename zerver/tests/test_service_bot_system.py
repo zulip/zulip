@@ -345,7 +345,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             self.bot_profile.bot_type = bot_type
             self.bot_profile.save()
 
-            content = u'@**FooBot** foo bar!!!'
+            content = '@**FooBot** foo bar!!!'
             recipient = 'Denmark'
             trigger = 'mention'
             message_type = Recipient._type_names[Recipient.STREAM]
@@ -383,7 +383,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             self.send_stream_message(
                 self.second_bot_profile.email,
                 'Denmark',
-                u'@**FooBot** foo bar!!!')
+                '@**FooBot** foo bar!!!')
             self.assertFalse(mock_queue_json_publish.called)
 
     @mock.patch('zerver.lib.actions.queue_json_publish')
@@ -445,7 +445,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
                 profile_ids.remove(trigger_event["user_profile_id"])
                 self.assertEqual(trigger_event["trigger"], "private_message")
                 self.assertEqual(trigger_event["message"]["sender_email"], sender_email)
-                self.assertEqual(trigger_event["message"]["type"], u'private')
+                self.assertEqual(trigger_event["message"]["type"], 'private')
             mock_queue_json_publish.side_effect = check_values_passed
 
             self.send_huddle_message(sender_email, recipient_emails, 'test')

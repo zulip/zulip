@@ -14,8 +14,8 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
 
     def setUp(self) -> None:
         self.event = {
-            u'command': '@**test**',
-            u'message': {
+            'command': '@**test**',
+            'message': {
                 'content': 'test_content',
             }
         }
@@ -53,11 +53,11 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
 
     def setUp(self) -> None:
         self.event = {
-            u'command': '@**test**',
-            u'user_profile_id': 12,
-            u'service_name': 'test-service',
-            u'trigger': 'mention',
-            u'message': {
+            'command': '@**test**',
+            'user_profile_id': 12,
+            'service_name': 'test-service',
+            'trigger': 'mention',
+            'message': {
                 'content': 'test_content',
                 'type': 'stream',
                 'sender_realm_str': 'zulip',

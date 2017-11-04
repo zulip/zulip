@@ -39,7 +39,7 @@ class TestMissedMessages(ZulipTestCase):
         hamlet = self.example_user('hamlet')
         handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
         if settings.EMAIL_GATEWAY_PATTERN != "":
-            reply_to_addresses = [settings.EMAIL_GATEWAY_PATTERN % (u'mm' + t) for t in tokens]
+            reply_to_addresses = [settings.EMAIL_GATEWAY_PATTERN % ('mm' + t) for t in tokens]
             reply_to_emails = [formataddr(("Zulip", address)) for address in reply_to_addresses]
         else:
             reply_to_emails = ["noreply@testserver"]

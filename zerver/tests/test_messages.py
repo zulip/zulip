@@ -408,7 +408,7 @@ class PersonalMessagesTest(ZulipTestCase):
         Sending a PM containing non-ASCII characters succeeds.
         """
         self.login(self.example_email("hamlet"))
-        self.assert_personal(self.example_email("hamlet"), self.example_email("othello"), u"hümbüǵ")
+        self.assert_personal(self.example_email("hamlet"), self.example_email("othello"), "hümbüǵ")
 
 class StreamMessagesTest(ZulipTestCase):
 
@@ -569,7 +569,7 @@ class StreamMessagesTest(ZulipTestCase):
                                  content="whatever", topic_name="my topic")
         message = most_recent_message(user_profile)
         self.assertEqual(str(message),
-                         u'<Message: Denmark / my topic / '
+                         '<Message: Denmark / my topic / '
                          '<UserProfile: hamlet@zulip.com <Realm: zulip 1>>>')
 
     def test_message_mentions(self) -> None:
@@ -702,15 +702,15 @@ class StreamMessagesTest(ZulipTestCase):
         self.login(self.example_email("hamlet"))
 
         # Subscribe everyone to a stream with non-ASCII characters.
-        non_ascii_stream_name = u"hümbüǵ"
+        non_ascii_stream_name = "hümbüǵ"
         realm = get_realm("zulip")
         stream = self.make_stream(non_ascii_stream_name)
         for user_profile in UserProfile.objects.filter(is_active=True, is_bot=False,
                                                        realm=realm)[0:3]:
             self.subscribe(user_profile, stream.name)
 
-        self.assert_stream_message(non_ascii_stream_name, topic_name=u"hümbüǵ",
-                                   content=u"hümbüǵ")
+        self.assert_stream_message(non_ascii_stream_name, topic_name="hümbüǵ",
+                                   content="hümbüǵ")
 
 class MessageDictTest(ZulipTestCase):
     @slow('builds lots of messages')
@@ -718,7 +718,7 @@ class MessageDictTest(ZulipTestCase):
         sender = self.example_user('othello')
         receiver = self.example_user('hamlet')
         pm_recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
-        stream_name = u'Çiğdem'
+        stream_name = 'Çiğdem'
         stream = self.make_stream(stream_name)
         stream_recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
         sending_client = make_client(name="test suite")
@@ -859,7 +859,7 @@ class SewMessageAndReactionTest(ZulipTestCase):
         sender = self.example_user('othello')
         receiver = self.example_user('hamlet')
         pm_recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
-        stream_name = u'Çiğdem'
+        stream_name = 'Çiğdem'
         stream = self.make_stream(stream_name)
         stream_recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
         sending_client = make_client(name="test suite")
@@ -1163,7 +1163,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         self.login(self.example_email("hamlet"))
         post_data = {"type": "stream", "to": "Verona", "client": "test suite",
-                     "content": u"  I like null bytes \x00 in my content", "subject": "Test subject"}
+                     "content": "  I like null bytes \x00 in my content", "subject": "Test subject"}
         result = self.client_post("/json/messages", post_data)
         self.assert_json_error(result, "Message must not contain null bytes")
 
@@ -1744,8 +1744,8 @@ class EditMessageTest(ZulipTestCase):
         self.assertEqual(history[0]['prev_content'], 'content 1')
         self.assertEqual(history[0]['user_id'], hamlet.id)
         self.assertEqual(set(history[0].keys()),
-                         {u'timestamp', u'prev_content', u'user_id',
-                          u'prev_rendered_content', u'prev_rendered_content_version'})
+                         {'timestamp', 'prev_content', 'user_id',
+                          'prev_rendered_content', 'prev_rendered_content_version'})
 
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
@@ -1755,7 +1755,7 @@ class EditMessageTest(ZulipTestCase):
         history = ujson.loads(Message.objects.get(id=msg_id).edit_history)
         self.assertEqual(history[0]['prev_subject'], 'topic 1')
         self.assertEqual(history[0]['user_id'], hamlet.id)
-        self.assertEqual(set(history[0].keys()), {u'timestamp', u'prev_subject', u'user_id'})
+        self.assertEqual(set(history[0].keys()), {'timestamp', 'prev_subject', 'user_id'})
 
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
@@ -1768,8 +1768,8 @@ class EditMessageTest(ZulipTestCase):
         self.assertEqual(history[0]['prev_subject'], 'topic 2')
         self.assertEqual(history[0]['user_id'], hamlet.id)
         self.assertEqual(set(history[0].keys()),
-                         {u'timestamp', u'prev_subject', u'prev_content', u'user_id',
-                          u'prev_rendered_content', u'prev_rendered_content_version'})
+                         {'timestamp', 'prev_subject', 'prev_content', 'user_id',
+                          'prev_rendered_content', 'prev_rendered_content_version'})
 
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
@@ -1808,7 +1808,7 @@ class EditMessageTest(ZulipTestCase):
         message_history = list(reversed(json_response['message_history']))
         i = 0
         for entry in message_history:
-            expected_entries = {u'content', u'rendered_content', u'topic', u'timestamp', u'user_id'}
+            expected_entries = {'content', 'rendered_content', 'topic', 'timestamp', 'user_id'}
             if i in {0, 2, 3}:
                 expected_entries.add('prev_topic')
             if i in {1, 2, 4}:
@@ -2406,7 +2406,7 @@ class CheckMessageTest(ZulipTestCase):
     def test_basic_check_message_call(self) -> None:
         sender = self.example_user('othello')
         client = make_client(name="test suite")
-        stream_name = u'España y Francia'
+        stream_name = 'España y Francia'
         self.make_stream(stream_name)
         subject_name = 'issue'
         message_content = 'whatever'
@@ -2431,7 +2431,7 @@ class CheckMessageTest(ZulipTestCase):
 
         sender = bot
         client = make_client(name="test suite")
-        stream_name = u'Россия'
+        stream_name = 'Россия'
         subject_name = 'issue'
         addressee = Addressee.for_stream(stream_name, subject_name)
         message_content = 'whatever'
