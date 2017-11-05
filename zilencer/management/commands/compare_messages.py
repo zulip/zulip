@@ -1,5 +1,4 @@
 from typing import Any
-from six.moves import zip
 
 import ijson
 

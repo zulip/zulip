@@ -63,7 +63,7 @@ import ujson
 
 from typing import Any, Dict, List, Optional, Set, Text
 
-from six.moves import range, zip
+from six.moves import range
 import urllib
 import os
 
