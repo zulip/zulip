@@ -37,7 +37,7 @@ def force_str(s: Union[Text, binary_type], encoding: Text='utf-8') -> str:
         raise TypeError("force_str expects a string type")
 
 
-class Uploader(object):
+class Uploader:
     def __init__(self) -> None:
         self.path_template = "{realm_id}/emoji/{emoji_file_name}"
         self.emoji_size = (64, 64)
