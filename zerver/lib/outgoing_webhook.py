@@ -6,7 +6,7 @@ import sys
 import inspect
 import logging
 import re
-from six.moves import urllib
+import urllib
 from functools import reduce
 from requests import Response
 

@@ -23,7 +23,7 @@ from zerver.models import get_user_profile_by_id, RealmEmoji
 from zerver.models import Attachment
 from zerver.models import Realm, RealmEmoji, UserProfile, Message
 
-from six.moves import urllib
+import urllib
 import base64
 import os
 import re

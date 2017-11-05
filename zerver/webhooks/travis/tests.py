@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from typing import Text
-from six.moves import urllib
+import urllib
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.models import get_realm, get_user
 

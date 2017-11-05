@@ -21,7 +21,7 @@ import DNS
 import mock
 import time
 
-from six.moves import urllib
+import urllib
 from typing import Text
 
 class MITNameTest(ZulipTestCase):
