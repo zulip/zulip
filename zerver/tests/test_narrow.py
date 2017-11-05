@@ -1290,7 +1290,7 @@ class GetOldMessagesTest(ZulipTestCase):
         returned.
         """
         self.login(self.example_email("hamlet"))
-        bad_stream_content = (0, [], ["x", "y"])  # type: Sequence
+        bad_stream_content = (0, [], ["x", "y"])  # type: Tuple[int, List[None], List[Text]]
         self.exercise_bad_narrow_operand("stream", bad_stream_content,
                                          "Bad value for 'narrow'")
 
