@@ -2,7 +2,6 @@
 import re
 import os
 import sourcemap
-from six.moves import map
 
 from typing import Dict, List, Text
 

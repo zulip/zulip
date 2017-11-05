@@ -5,7 +5,6 @@ from django.utils.timezone import now as timezone_now
 
 from typing import Any, List, Dict
 from argparse import ArgumentParser
-from six.moves import map
 import sys
 
 from zerver.models import UserProfile, UserMessage, Realm, RealmAuditLog

@@ -11,7 +11,6 @@ from django.utils.translation import ugettext as _
 from django.template import loader
 
 from zerver.templatetags.app_filters import render_markdown_path
-from six.moves import map
 
 
 """This module declares all of the (documented) integrations available
