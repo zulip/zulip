@@ -36,8 +36,7 @@ import struct
 # there is already an ASN.1 implementation, but in the interest of
 # limiting MIT Kerberos's exposure to malformed ccaches, encode it
 # ourselves. To that end, here's the laziest DER encoder ever.
-def der_encode_length(length):
-    # type: (int) -> bytes
+def der_encode_length(length: int) -> bytes:
     if length <= 127:
         return struct.pack('!B', length)
     out = b""
@@ -47,12 +46,10 @@ def der_encode_length(length):
     out = struct.pack('!B', len(out) | 0x80) + out
     return out
 
-def der_encode_tlv(tag, value):
-    # type: (int, bytes) -> bytes
+def der_encode_tlv(tag: int, value: bytes) -> bytes:
     return struct.pack('!B', tag) + der_encode_length(len(value)) + value
 
-def der_encode_integer_value(val):
-    # type: (int) -> bytes
+def der_encode_integer_value(val: int) -> bytes:
     if not isinstance(val, int):
         raise TypeError("int")
     # base 256, MSB first, two's complement, minimum number of octets
@@ -74,34 +71,28 @@ def der_encode_integer_value(val):
         val >>= 8
     return out
 
-def der_encode_integer(val):
-    # type: (int) -> bytes
+def der_encode_integer(val: int) -> bytes:
     return der_encode_tlv(0x02, der_encode_integer_value(val))
-def der_encode_int32(val):
-    # type: (int) -> bytes
+def der_encode_int32(val: int) -> bytes:
     if val < -2147483648 or val > 2147483647:
         raise ValueError("Bad value")
     return der_encode_integer(val)
-def der_encode_uint32(val):
-    # type: (int) -> bytes
+def der_encode_uint32(val: int) -> bytes:
     if val < 0 or val > 4294967295:
         raise ValueError("Bad value")
     return der_encode_integer(val)
 
-def der_encode_string(val):
-    # type: (Text) -> bytes
+def der_encode_string(val: Text) -> bytes:
     if not isinstance(val, Text):
         raise TypeError("unicode")
     return der_encode_tlv(0x1b, val.encode("utf-8"))
 
-def der_encode_octet_string(val):
-    # type: (bytes) -> bytes
+def der_encode_octet_string(val: bytes) -> bytes:
     if not isinstance(val, bytes):
         raise TypeError("bytes")
     return der_encode_tlv(0x04, val)
 
-def der_encode_sequence(tlvs, tagged=True):
-    # type: (List[Optional[bytes]], Optional[bool]) -> bytes
+def der_encode_sequence(tlvs: List[Optional[bytes]], tagged: Optional[bool]=True) -> bytes:
     body = []
     for i, tlv in enumerate(tlvs):
         # Missing optional elements represented as None.
@@ -113,8 +104,7 @@ def der_encode_sequence(tlvs, tagged=True):
         body.append(tlv)
     return der_encode_tlv(0x30, b"".join(body))
 
-def der_encode_ticket(tkt):
-    # type: (Dict[str, Any]) -> bytes
+def der_encode_ticket(tkt: Dict[str, Any]) -> bytes:
     return der_encode_tlv(
         0x61,  # Ticket
         der_encode_sequence(
@@ -136,34 +126,29 @@ def der_encode_ticket(tkt):
 # Kerberos ccache writing code. Using format documentation from here:
 # http://www.gnu.org/software/shishi/manual/html_node/The-Credential-Cache-Binary-File-Format.html
 
-def ccache_counted_octet_string(data):
-    # type: (bytes) -> bytes
+def ccache_counted_octet_string(data: bytes) -> bytes:
     if not isinstance(data, bytes):
         raise TypeError("bytes")
     return struct.pack("!I", len(data)) + data
 
-def ccache_principal(name, realm):
-    # type: (Dict[str, str], str) -> bytes
+def ccache_principal(name: Dict[str, str], realm: str) -> bytes:
     header = struct.pack("!II", name["nameType"], len(name["nameString"]))
     return (header + ccache_counted_octet_string(force_bytes(realm)) +
             b"".join(ccache_counted_octet_string(force_bytes(c))
                      for c in name["nameString"]))
 
-def ccache_key(key):
-    # type: (Dict[str, str]) -> bytes
+def ccache_key(key: Dict[str, str]) -> bytes:
     return (struct.pack("!H", key["keytype"]) +
             ccache_counted_octet_string(base64.b64decode(key["keyvalue"])))
 
-def flags_to_uint32(flags):
-    # type: (List[str]) -> int
+def flags_to_uint32(flags: List[str]) -> int:
     ret = 0
     for i, v in enumerate(flags):
         if v:
             ret |= 1 << (31 - i)
     return ret
 
-def ccache_credential(cred):
-    # type: (Dict[str, Any]) -> bytes
+def ccache_credential(cred: Dict[str, Any]) -> bytes:
     out = ccache_principal(cred["cname"], cred["crealm"])
     out += ccache_principal(cred["sname"], cred["srealm"])
     out += ccache_key(cred["key"])
@@ -181,8 +166,7 @@ def ccache_credential(cred):
     out += ccache_counted_octet_string(b"")
     return out
 
-def make_ccache(cred):
-    # type: (Dict[str, Any]) -> bytes
+def make_ccache(cred: Dict[str, Any]) -> bytes:
     # Do we need a DeltaTime header? The ccache I get just puts zero
     # in there, so do the same.
     out = struct.pack("!HHHHII",

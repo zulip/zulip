@@ -5,8 +5,12 @@ from zerver.models import Realm, Stream, UserProfile, Huddle, \
     Subscription, Recipient, Client, RealmAuditLog, get_huddle_hash
 from zerver.lib.create_user import create_user_profile
 
-def bulk_create_users(realm, users_raw, bot_type=None, bot_owner=None, tos_version=None, timezone=""):
-    # type: (Realm, Set[Tuple[Text, Text, Text, bool]], Optional[int], Optional[UserProfile], Optional[Text], Text) -> None
+def bulk_create_users(realm: Realm,
+                      users_raw: Set[Tuple[Text, Text, Text, bool]],
+                      bot_type: Optional[int]=None,
+                      bot_owner: Optional[UserProfile]=None,
+                      tos_version: Optional[Text]=None,
+                      timezone: Text="") -> None:
     """
     Creates and saves a UserProfile with the given email.
     Has some code based off of UserManage.create_user, but doesn't .save()
@@ -54,8 +58,8 @@ def bulk_create_users(realm, users_raw, bot_type=None, bot_owner=None, tos_versi
                          recipient=recipients_by_email[email]))
     Subscription.objects.bulk_create(subscriptions_to_create)
 
-def bulk_create_streams(realm, stream_dict):
-    # type: (Realm, Dict[Text, Dict[Text, Any]]) -> None
+def bulk_create_streams(realm: Realm,
+                        stream_dict: Dict[Text, Dict[Text, Any]]) -> None:
     existing_streams = frozenset([name.lower() for name in
                                   Stream.objects.filter(realm=realm)
                                   .values_list('name', flat=True)])
@@ -87,8 +91,7 @@ def bulk_create_streams(realm, stream_dict):
                                                   type=Recipient.STREAM))
     Recipient.objects.bulk_create(recipients_to_create)
 
-def bulk_create_clients(client_list):
-    # type: (Iterable[Text]) -> None
+def bulk_create_clients(client_list: Iterable[Text]) -> None:
     existing_clients = set(client.name for client in Client.objects.select_related().all())  # type: Set[Text]
 
     clients_to_create = []  # type: List[Client]
@@ -98,8 +101,7 @@ def bulk_create_clients(client_list):
             existing_clients.add(name)
     Client.objects.bulk_create(clients_to_create)
 
-def bulk_create_huddles(users, huddle_user_list):
-    # type: (Dict[Text, UserProfile], Iterable[Iterable[Text]]) -> None
+def bulk_create_huddles(users: Dict[Text, UserProfile], huddle_user_list: Iterable[Iterable[Text]]) -> None:
     huddles = {}  # type: Dict[Text, Huddle]
     huddles_by_id = {}  # type: Dict[int, Huddle]
     huddle_set = set()  # type: Set[Tuple[Text, Tuple[int, ...]]]

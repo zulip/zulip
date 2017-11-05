@@ -34,8 +34,7 @@ from typing import Any, Dict, Mapping, Union, TypeVar, Text
 NonBinaryStr = TypeVar('NonBinaryStr', str, Text)
 # This is used to represent text or native strings
 
-def force_text(s, encoding='utf-8'):
-    # type: (Union[Text, bytes], str) -> Text
+def force_text(s: Union[Text, bytes], encoding: str='utf-8') -> Text:
     """converts a string to a text string"""
     if isinstance(s, Text):
         return s
@@ -44,8 +43,7 @@ def force_text(s, encoding='utf-8'):
     else:
         raise TypeError("force_text expects a string type")
 
-def force_bytes(s, encoding='utf-8'):
-    # type: (Union[Text, bytes], str) -> bytes
+def force_bytes(s: Union[Text, bytes], encoding: str='utf-8') -> bytes:
     """converts a string to binary string"""
     if isinstance(s, bytes):
         return s
@@ -54,8 +52,7 @@ def force_bytes(s, encoding='utf-8'):
     else:
         raise TypeError("force_bytes expects a string type")
 
-def force_str(s, encoding='utf-8'):
-    # type: (Union[Text, bytes], str) -> str
+def force_str(s: Union[Text, bytes], encoding: str='utf-8') -> str:
     """converts a string to a native string"""
     if isinstance(s, str):
         return s
@@ -74,16 +71,13 @@ class ModelReprMixin:
     This mixin will automatically define __str__ and __repr__.
     """
 
-    def __unicode__(self):
-        # type: () -> Text
+    def __unicode__(self) -> Text:
         # Originally raised an exception, but Django (e.g. the ./manage.py shell)
         # was catching the exception and not displaying any sort of error
         return u"Implement __unicode__ in your subclass of ModelReprMixin!"
 
-    def __str__(self):
-        # type: () -> str
+    def __str__(self) -> str:
         return force_str(self.__unicode__())
 
-    def __repr__(self):
-        # type: () -> str
+    def __repr__(self) -> str:
         return force_str(self.__unicode__())

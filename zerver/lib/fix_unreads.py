@@ -20,8 +20,7 @@ migration runs.
 logger = logging.getLogger('zulip.fix_unreads')
 logger.setLevel(logging.WARNING)
 
-def build_topic_mute_checker(cursor, user_profile):
-    # type: (CursorObj, UserProfile) -> Callable[[int, Text], bool]
+def build_topic_mute_checker(cursor: CursorObj, user_profile: UserProfile) -> Callable[[int, Text], bool]:
     '''
     This function is similar to the function of the same name
     in zerver/lib/topic_mutes.py, but it works without the ORM,
@@ -44,14 +43,12 @@ def build_topic_mute_checker(cursor, user_profile):
         for (recipient_id, topic_name) in rows
     }
 
-    def is_muted(recipient_id, topic):
-        # type: (int, Text) -> bool
+    def is_muted(recipient_id: int, topic: Text) -> bool:
         return (recipient_id, topic.lower()) in tups
 
     return is_muted
 
-def update_unread_flags(cursor, user_message_ids):
-    # type: (CursorObj, List[int]) -> None
+def update_unread_flags(cursor: CursorObj, user_message_ids: List[int]) -> None:
     um_id_list = ', '.join(str(id) for id in user_message_ids)
     query = '''
         UPDATE zerver_usermessage
@@ -62,8 +59,7 @@ def update_unread_flags(cursor, user_message_ids):
     cursor.execute(query)
 
 
-def get_timing(message, f):
-    # type: (str, Callable[[], None]) -> None
+def get_timing(message: str, f: Callable[[], None]) -> None:
     start = time.time()
     logger.info(message)
     f()
@@ -71,13 +67,11 @@ def get_timing(message, f):
     logger.info('elapsed time: %.03f\n' % (elapsed,))
 
 
-def fix_unsubscribed(cursor, user_profile):
-    # type: (CursorObj, UserProfile) -> None
+def fix_unsubscribed(cursor: CursorObj, user_profile: UserProfile) -> None:
 
     recipient_ids = []
 
-    def find_recipients():
-        # type: () -> None
+    def find_recipients() -> None:
         query = '''
             SELECT
                 zerver_subscription.recipient_id
@@ -108,8 +102,7 @@ def fix_unsubscribed(cursor, user_profile):
 
     user_message_ids = []
 
-    def find():
-        # type: () -> None
+    def find() -> None:
         recips = ', '.join(str(id) for id in recipient_ids)
 
         query = '''
@@ -144,8 +137,7 @@ def fix_unsubscribed(cursor, user_profile):
     if not user_message_ids:
         return
 
-    def fix():
-        # type: () -> None
+    def fix() -> None:
         update_unread_flags(cursor, user_message_ids)
 
     get_timing(
@@ -153,8 +145,7 @@ def fix_unsubscribed(cursor, user_profile):
         fix
     )
 
-def fix_pre_pointer(cursor, user_profile):
-    # type: (CursorObj, UserProfile) -> None
+def fix_pre_pointer(cursor: CursorObj, user_profile: UserProfile) -> None:
 
     pointer = user_profile.pointer
 
@@ -163,8 +154,7 @@ def fix_pre_pointer(cursor, user_profile):
 
     recipient_ids = []
 
-    def find_non_muted_recipients():
-        # type: () -> None
+    def find_non_muted_recipients() -> None:
         query = '''
             SELECT
                 zerver_subscription.recipient_id
@@ -196,8 +186,7 @@ def fix_pre_pointer(cursor, user_profile):
 
     user_message_ids = []
 
-    def find_old_ids():
-        # type: () -> None
+    def find_old_ids() -> None:
         recips = ', '.join(str(id) for id in recipient_ids)
 
         is_topic_muted = build_topic_mute_checker(cursor, user_profile)
@@ -238,8 +227,7 @@ def fix_pre_pointer(cursor, user_profile):
     if not user_message_ids:
         return
 
-    def fix():
-        # type: () -> None
+    def fix() -> None:
         update_unread_flags(cursor, user_message_ids)
 
     get_timing(
@@ -247,8 +235,7 @@ def fix_pre_pointer(cursor, user_profile):
         fix
     )
 
-def fix(user_profile):
-    # type: (UserProfile) -> None
+def fix(user_profile: UserProfile) -> None:
     logger.info('\n---\nFixing %s:' % (user_profile.email,))
     with connection.cursor() as cursor:
         fix_unsubscribed(cursor, user_profile)

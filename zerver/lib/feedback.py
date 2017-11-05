@@ -13,8 +13,7 @@ import time
 
 client = get_redis_client()
 
-def has_enough_time_expired_since_last_message(sender_email, min_delay):
-    # type: (Text, float) -> bool
+def has_enough_time_expired_since_last_message(sender_email: Text, min_delay: float) -> bool:
     # This function returns a boolean, but it also has the side effect
     # of noting that a new message was received.
     key = 'zilencer:feedback:%s' % (sender_email,)
@@ -25,8 +24,7 @@ def has_enough_time_expired_since_last_message(sender_email, min_delay):
     delay = t - int(last_time)
     return delay > min_delay
 
-def get_ticket_number():
-    # type: () -> int
+def get_ticket_number() -> int:
     num_file = '/var/tmp/.feedback-bot-ticket-number'
     try:
         ticket_number = int(open(num_file).read()) + 1
@@ -35,8 +33,7 @@ def get_ticket_number():
     open(num_file, 'w').write('%d' % (ticket_number,))
     return ticket_number
 
-def deliver_feedback_by_zulip(message):
-    # type: (Mapping[str, Any]) -> None
+def deliver_feedback_by_zulip(message: Mapping[str, Any]) -> None:
     subject = "%s" % (message["sender_email"],)
 
     if len(subject) > 60:
@@ -67,8 +64,7 @@ def deliver_feedback_by_zulip(message):
     internal_send_message(user_profile.realm, settings.FEEDBACK_BOT,
                           "stream", settings.FEEDBACK_STREAM, subject, content)
 
-def handle_feedback(event):
-    # type: (Mapping[str, Any]) -> None
+def handle_feedback(event: Mapping[str, Any]) -> None:
     if not settings.ENABLE_FEEDBACK:
         return
     if settings.FEEDBACK_EMAIL is not None:
