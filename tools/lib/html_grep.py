@@ -13,7 +13,7 @@ def show_all_branches(fns):
             print(branch.text())
         print('---')
 
-class Grepper(object):
+class Grepper:
     '''
     A Grepper object is optimized to do repeated
     searches of words that can be found in our

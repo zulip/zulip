@@ -2,7 +2,7 @@ from typing import Callable, List, Tuple, Union
 
 ####### Helpers
 
-class Token(object):
+class Token:
     def __init__(self, s, line, col):
         # type: (str, int, int) -> None
         self.s = s
@@ -350,7 +350,7 @@ def handle_postfluff(post_fluff, indent=False, space_after_first_line=False):
 
 #### Begin CSS classes here
 
-class CssSectionList(object):
+class CssSectionList:
     def __init__(self, tokens, sections):
         # type: (List[Token], List[Union['CssNestedSection', 'CssSection']]) -> None
         self.tokens = tokens
@@ -361,7 +361,7 @@ class CssSectionList(object):
         res = ''.join(section.text() for section in self.sections)
         return res
 
-class CssNestedSection(object):
+class CssNestedSection:
     def __init__(self, tokens, selector_list, section_list, pre_fluff, post_fluff):
         # type: (List[Token], 'CssSelectorList', CssSectionList, str, str) -> None
         self.tokens = tokens
@@ -388,7 +388,7 @@ class CssNestedSection(object):
         res += self.post_fluff
         return res
 
-class CssSection(object):
+class CssSection:
     def __init__(self, tokens, selector_list, declaration_block, pre_fluff, post_fluff):
         # type: (List[Token], 'CssSelectorList', 'CssDeclarationBlock', str, str) -> None
         self.tokens = tokens
@@ -407,7 +407,7 @@ class CssSection(object):
         res += handle_postfluff(self.post_fluff, space_after_first_line=True)
         return res
 
-class CssSelectorList(object):
+class CssSelectorList:
     def __init__(self, tokens, selectors):
         # type: (List[Token], List['CssSelector']) -> None
         self.tokens = tokens
@@ -417,7 +417,7 @@ class CssSelectorList(object):
         # type: () -> str
         return ',\n'.join(sel.text() for sel in self.selectors)
 
-class CssSelector(object):
+class CssSelector:
     def __init__(self, tokens, pre_fluff, post_fluff, levels):
         # type: (List[Token],str, str, List[Token]) -> None
         self.tokens = tokens
@@ -430,7 +430,7 @@ class CssSelector(object):
         res = ' '.join(level.s for level in self.levels)
         return res
 
-class CssDeclarationBlock(object):
+class CssDeclarationBlock:
     def __init__(self, tokens, declarations):
         # type: (List[Token], List['CssDeclaration']) -> None
         self.tokens = tokens
@@ -444,7 +444,7 @@ class CssDeclarationBlock(object):
         res += '}'
         return res
 
-class CssDeclaration(object):
+class CssDeclaration:
     def __init__(self, tokens, pre_fluff, post_fluff, css_property, css_value, semicolon):
         # type: (List[Token], str, str, str, 'CssValue', bool) -> None
         self.tokens = tokens
@@ -471,7 +471,7 @@ class CssDeclaration(object):
         res += handle_postfluff(self.post_fluff, True, True)
         return res
 
-class CssValue(object):
+class CssValue:
     def __init__(self, tokens, value, pre_fluff, post_fluff):
         # type: (List[Token], Token, str, str) -> None
         self.value = value
@@ -498,7 +498,7 @@ def ws(c):
 def tokenize(text):
     # type: (str) -> List[Token]
 
-    class State(object):
+    class State:
         def __init__(self):
             # type: () -> None
             self.i = 0
