@@ -35,7 +35,6 @@ import pytz
 import re
 import time
 
-from six.moves import filter
 from typing import Any, Callable, Dict, List, Optional, Set, Text, \
     Tuple, Type, Union
 
