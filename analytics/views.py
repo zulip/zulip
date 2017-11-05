@@ -332,7 +332,8 @@ def realm_summary_table(realm_minutes):
                         'send_message_backend',
                         '/api/v1/send_message',
                         '/json/update_pointer',
-                        '/json/users/me/pointer'
+                        '/json/users/me/pointer',
+                        'update_pointer_backend'
                     )
                 AND
                     last_visit > now() - interval '1 day'
@@ -363,7 +364,8 @@ def realm_summary_table(realm_minutes):
                             'send_message_backend',
                             '/api/v1/send_message',
                             '/json/update_pointer',
-                            '/json/users/me/pointer'
+                            '/json/users/me/pointer',
+                            'update_pointer_backend'
                         )
                     GROUP by realm.id, up.email
                     HAVING max(last_visit) between
@@ -384,7 +386,8 @@ def realm_summary_table(realm_minutes):
                         '/api/v1/send_message',
                         'send_message_backend',
                         '/json/update_pointer',
-                        '/json/users/me/pointer'
+                        '/json/users/me/pointer',
+                        'update_pointer_backend'
                     )
                 AND
                     up.realm_id = realm.id
@@ -872,7 +875,8 @@ def get_user_activity_summary(records):
             update('website', record)
         if ('send_message' in query) or re.search('/api/.*/external/.*', query):
             update('send', record)
-        if query in ['/json/update_pointer', '/json/users/me/pointer', '/api/v1/update_pointer']:
+        if query in ['/json/update_pointer', '/json/users/me/pointer', '/api/v1/update_pointer',
+                     'update_pointer_backend']:
             update('pointer', record)
         update(client, record)
 
