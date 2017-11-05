@@ -5,7 +5,7 @@ from django.http import HttpRequest, HttpResponse
 from zerver.models import get_client, UserProfile, Client
 
 from zerver.decorator import asynchronous, \
-    authenticated_json_post_view, internal_notify_view, RespondAsynchronously, \
+    internal_notify_view, RespondAsynchronously, \
     has_request_variables, REQ, _RespondAsynchronously
 
 from zerver.lib.response import json_success, json_error

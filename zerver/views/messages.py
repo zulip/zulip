@@ -11,7 +11,7 @@ from typing import Dict, List, Set, Text, Any, Callable, Iterable, \
 from zerver.lib.str_utils import force_text, force_bytes
 from zerver.lib.exceptions import JsonableError, ErrorCode
 from zerver.lib.html_diff import highlight_html_differences
-from zerver.decorator import authenticated_json_post_view, has_request_variables, \
+from zerver.decorator import has_request_variables, \
     REQ, to_non_negative_int
 from django.utils.html import escape as escape_html
 from zerver.lib import bugdown
