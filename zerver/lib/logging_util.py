@@ -15,7 +15,7 @@ from logging import Logger
 
 # Adapted http://djangosnippets.org/snippets/2242/ by user s29 (October 25, 2010)
 
-class _RateLimitFilter(object):
+class _RateLimitFilter:
     last_error = datetime.min.replace(tzinfo=timezone_utc)
 
     def filter(self, record):

@@ -1241,7 +1241,7 @@ def do_send_messages(messages_maybe_none):
     # intermingle sending zephyr messages with other messages.
     return already_sent_ids + [message['message'].id for message in messages]
 
-class UserMessageLite(object):
+class UserMessageLite:
     '''
     The Django ORM is too slow for bulk operations.  This class
     is optimized for the simple use case of inserting a bunch of

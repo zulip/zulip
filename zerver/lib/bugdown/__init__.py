@@ -1577,7 +1577,7 @@ def get_full_name_info(realm_id, full_names):
     }
     return dct
 
-class MentionData(object):
+class MentionData:
     def __init__(self, realm_id, content):
         # type: (int, Text) -> None
         full_names = possible_mentions(content)

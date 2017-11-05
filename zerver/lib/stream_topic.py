@@ -9,7 +9,7 @@ from zerver.models import (
     MutedTopic,
 )
 
-class StreamTopicTarget(object):
+class StreamTopicTarget:
     '''
     This class is designed to help us move to a
     StreamTopic table or something similar.  It isolates

@@ -180,7 +180,7 @@ def floatify_datetime_fields(data, table):
             utc_naive  = dt.replace(tzinfo=None) - dt.utcoffset()
             item[field] = (utc_naive - datetime.datetime(1970, 1, 1)).total_seconds()
 
-class Config(object):
+class Config:
     '''
     A Config object configures a single table for exporting (and,
     maybe some day importing as well.

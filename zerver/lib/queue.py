@@ -20,7 +20,7 @@ Consumer = Callable[[BlockingChannel, Basic.Deliver, pika.BasicProperties, str],
 # rabbitmq/pika's queuing system; its purpose is to just provide an
 # interface for external files to put things into queues and take them
 # out from bots without having to import pika code all over our codebase.
-class SimpleQueueClient(object):
+class SimpleQueueClient:
     def __init__(self):
         # type: () -> None
         self.log = logging.getLogger('zulip.queue')

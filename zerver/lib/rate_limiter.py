@@ -21,7 +21,7 @@ rules = settings.RATE_LIMITING_RULES  # type: List[Tuple[int, int]]
 
 KEY_PREFIX = ''
 
-class RateLimitedObject(object):
+class RateLimitedObject:
     def get_keys(self):
         # type: () -> List[Text]
         key_fragment = self.key_fragment()

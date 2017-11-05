@@ -257,12 +257,12 @@ def get_user_messages(user_profile):
         order_by('message')
     return [um.message for um in query]
 
-class DummyHandler(object):
+class DummyHandler:
     def __init__(self):
         # type: () -> None
         allocate_handler_id(self)  # type: ignore # this is a testing mock
 
-class POSTRequestMock(object):
+class POSTRequestMock:
     method = "POST"
 
     def __init__(self, post_data, user_profile):
@@ -275,7 +275,7 @@ class POSTRequestMock(object):
         self.META = {'PATH_INFO': 'test'}
         self.path = ''
 
-class HostRequestMock(object):
+class HostRequestMock:
     """A mock request object where get_host() works.  Useful for testing
     routes that use Zulip's subdomains feature"""
 
@@ -296,7 +296,7 @@ class HostRequestMock(object):
         # type: () -> Text
         return self.host
 
-class MockPythonResponse(object):
+class MockPythonResponse:
     def __init__(self, text, status_code):
         # type: (Text, int) -> None
         self.text = text

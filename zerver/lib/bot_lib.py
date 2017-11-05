@@ -37,7 +37,7 @@ def get_bot_handler(service_name):
 class StateHandlerError(Exception):
     pass
 
-class StateHandler(object):
+class StateHandler:
     state_size_limit = 10000000   # type: int # TODO: Store this in the server configuration model.
 
     def __init__(self, user_profile):
@@ -76,7 +76,7 @@ class StateHandler(object):
         # type: (Text) -> bool
         return is_key_in_bot_state(self.user_profile, key)
 
-class EmbeddedBotHandler(object):
+class EmbeddedBotHandler:
     def __init__(self, user_profile):
         # type: (UserProfile) -> None
         # Only expose a subset of our UserProfile's functionality

@@ -50,7 +50,7 @@ CATEGORIES = {
     'bots': _('Interactive bots'),
 }  # type: Dict[str, str]
 
-class Integration(object):
+class Integration:
     DEFAULT_LOGO_STATIC_PATH_PNG = 'static/images/integrations/logos/{name}.png'
     DEFAULT_LOGO_STATIC_PATH_SVG = 'static/images/integrations/logos/{name}.svg'
 
