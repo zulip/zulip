@@ -101,7 +101,7 @@ def common_get_active_user_by_email(email, return_data=None):
         return None
     return user_profile
 
-class ZulipAuthMixin(object):
+class ZulipAuthMixin:
     def get_user(self, user_profile_id):
         # type: (int) -> Optional[UserProfile]
         """ Get a UserProfile object from the user_profile_id. """
