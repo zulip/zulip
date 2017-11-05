@@ -14,7 +14,7 @@ from defusedxml.ElementTree import fromstring as xml_fromstring
 import logging
 import re
 import ujson
-from typing import Dict, List, Optional, Tuple, Text
+from typing import Dict, List, Optional, Tuple, Text, Any
 
 
 def api_pivotal_webhook_v3(request: HttpRequest, user_profile: UserProfile,
@@ -96,7 +96,7 @@ def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile,
     content = ""
     subject = "#%s: %s" % (story_id, story_name)
 
-    def extract_comment(change: Dict[str, Dict]) -> Optional[Text]:
+    def extract_comment(change: Dict[str, Any]) -> Optional[Text]:
         if change.get("kind") == "comment":
             return change.get("new_values", {}).get("text", None)
         return None
