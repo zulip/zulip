@@ -31,7 +31,7 @@ from zerver.lib.actions import (
 
 from zerver.views.upload import upload_file_backend
 
-from six.moves import urllib
+import urllib
 from PIL import Image
 
 from boto.s3.connection import S3Connection

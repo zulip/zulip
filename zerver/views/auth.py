@@ -16,7 +16,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET
 from django.utils.translation import ugettext as _
 from django.core import signing
-from six.moves import urllib
+import urllib
 from typing import Any, Dict, List, Optional, Tuple, Text
 
 from confirmation.models import Confirmation, create_confirmation_link

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from six.moves import urllib
+import urllib
 from typing import Optional, Text
 from zerver.lib.test_classes import WebhookTestCase
 

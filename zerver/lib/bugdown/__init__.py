@@ -8,7 +8,7 @@ from typing.re import Match
 import markdown
 import logging
 import traceback
-from six.moves import urllib
+import urllib
 import re
 import os
 import glob
@@ -20,7 +20,6 @@ import functools
 import httplib2
 import itertools
 import ujson
-from six.moves import urllib
 import xml.etree.cElementTree as etree
 from xml.etree.cElementTree import Element, SubElement
 

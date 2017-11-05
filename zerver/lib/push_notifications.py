@@ -20,7 +20,7 @@ from django.utils.translation import ugettext as _
 from gcm import GCM
 from hyper.http20.exceptions import HTTP20Error
 import requests
-from six.moves import urllib
+import urllib
 import ujson
 
 from zerver.decorator import statsd_increment

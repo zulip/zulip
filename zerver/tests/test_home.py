@@ -6,7 +6,7 @@ import ujson
 from django.http import HttpResponse
 from django.test import override_settings
 from mock import MagicMock, patch
-from six.moves import urllib
+import urllib
 from typing import Any, Dict, List, Text
 
 from zerver.lib.actions import do_create_user

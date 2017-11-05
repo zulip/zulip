@@ -45,7 +45,7 @@ import requests
 import smtplib
 import ujson
 
-from six.moves import urllib
+import urllib
 
 @require_post
 def accounts_register(request):

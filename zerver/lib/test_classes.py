@@ -63,7 +63,7 @@ import re
 import time
 import ujson
 import unittest
-from six.moves import urllib
+import urllib
 from six import binary_type
 from zerver.lib.str_utils import NonBinaryStr
 
