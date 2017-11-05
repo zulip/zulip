@@ -41,25 +41,21 @@ from unittest.mock import patch
 from typing import Any, Callable, Dict, Generator, Optional, Text, List, cast
 
 class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
-    def setUp(self):
-        # type: () -> None
+    def setUp(self) -> None:
         super().setUp()
         signals.request_started.disconnect(close_old_connections)
         signals.request_finished.disconnect(close_old_connections)
         self.session_cookie = None  # type: Optional[Dict[Text, Text]]
 
-    def tearDown(self):
-        # type: () -> None
+    def tearDown(self) -> None:
         super().tearDown()
         self.session_cookie = None  # type: Optional[Dict[Text, Text]]
 
     @override_settings(DEBUG=False)
-    def get_app(self):
-        # type: () -> Application
+    def get_app(self) -> Application:
         return create_tornado_application()
 
-    def client_get(self, path, **kwargs):
-        # type: (Text, **Any) -> HTTPResponse
+    def client_get(self, path: Text, **kwargs: Any) -> HTTPResponse:
         self.add_session_cookie(kwargs)
         self.set_http_host(kwargs)
         if 'HTTP_HOST' in kwargs:
@@ -67,8 +63,7 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
             del kwargs['HTTP_HOST']
         return self.fetch(path, method='GET', **kwargs)
 
-    def fetch_async(self, method, path, **kwargs):
-        # type: (Text, Text, **Any) -> None
+    def fetch_async(self, method: Text, path: Text, **kwargs: Any) -> None:
         self.add_session_cookie(kwargs)
         self.set_http_host(kwargs)
         if 'HTTP_HOST' in kwargs:
@@ -81,13 +76,11 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
             **kwargs
         )
 
-    def client_get_async(self, path, **kwargs):
-        # type: (Text, **Any) -> None
+    def client_get_async(self, path: Text, **kwargs: Any) -> None:
         self.set_http_host(kwargs)
         self.fetch_async('GET', path, **kwargs)
 
-    def login(self, *args, **kwargs):
-        # type: (*Any, **Any) -> None
+    def login(self, *args: Any, **kwargs: Any) -> None:
         super().login(*args, **kwargs)
         session_cookie = settings.SESSION_COOKIE_NAME
         session_key = self.client.session.session_key
@@ -95,19 +88,16 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
             "Cookie": "{}={}".format(session_cookie, session_key)
         }
 
-    def get_session_cookie(self):
-        # type: () -> Dict[Text, Text]
+    def get_session_cookie(self) -> Dict[Text, Text]:
         return {} if self.session_cookie is None else self.session_cookie
 
-    def add_session_cookie(self, kwargs):
-        # type: (Dict[str, Any]) -> None
+    def add_session_cookie(self, kwargs: Dict[str, Any]) -> None:
         # TODO: Currently only allows session cookie
         headers = kwargs.get('headers', {})
         headers.update(self.get_session_cookie())
         kwargs['headers'] = headers
 
-    def create_queue(self, **kwargs):
-        # type: (**Any) -> str
+    def create_queue(self, **kwargs: Any) -> str:
         response = self.client_get('/json/events?dont_block=true', subdomain="zulip")
         self.assertEqual(response.code, 200)
         body = ujson.loads(response.body)
@@ -116,14 +106,12 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
         return body['queue_id']
 
 class EventsTestCase(TornadoWebTestCase):
-    def test_create_queue(self):
-        # type: () -> None
+    def test_create_queue(self) -> None:
         self.login(self.example_email('hamlet'))
         queue_id = self.create_queue()
         self.assertIn(queue_id, event_queue.clients)
 
-    def test_events_async(self):
-        # type: () -> None
+    def test_events_async(self) -> None:
         user_profile = self.example_user('hamlet')
         self.login(user_profile.email)
         event_queue_id = self.create_queue()
@@ -135,8 +123,7 @@ class EventsTestCase(TornadoWebTestCase):
         path = '/json/events?{}'.format(urllib.parse.urlencode(data))
         self.client_get_async(path)
 
-        def process_events():
-            # type: () -> None
+        def process_events() -> None:
             users = [user_profile.id]
             event = dict(
                 type='test',
@@ -155,19 +142,18 @@ class EventsTestCase(TornadoWebTestCase):
 
 class WebSocketBaseTestCase(AsyncHTTPTestCase, ZulipTestCase):
 
-    def setUp(self):
-        # type: () -> None
+    def setUp(self) -> None:
         settings.RUNNING_INSIDE_TORNADO = True
         super().setUp()
 
-    def tearDown(self):
-        # type: () -> None
+    def tearDown(self) -> None:
         super().tearDown()
         settings.RUNNING_INSIDE_TORNADO = False
 
     @gen.coroutine
-    def ws_connect(self, path, cookie_header, compression_options=None):
-        # type: (str, str, Optional[Any]) -> Generator[Any, Callable[[HTTPRequest, Optional[Any]], Any], None]
+    def ws_connect(self, path: str, cookie_header: str,
+                   compression_options: Optional[Any]=None
+                   ) -> Generator[Any, Callable[[HTTPRequest, Optional[Any]], Any], None]:
         request = HTTPRequest(url='ws://127.0.0.1:%d%s' % (self.get_http_port(), path))
         request.headers.add('Cookie', cookie_header)
         ws = yield websocket_connect(
@@ -176,40 +162,38 @@ class WebSocketBaseTestCase(AsyncHTTPTestCase, ZulipTestCase):
         raise gen.Return(ws)
 
     @gen.coroutine
-    def close(self, ws):
-        # type: (Any) -> None
+    def close(self, ws: Any) -> None:
         """Close a websocket connection and wait for the server side.
         """
         ws.close()
 
 class TornadoTestCase(WebSocketBaseTestCase):
     @override_settings(DEBUG=False)
-    def get_app(self):
-        # type: () -> Application
+    def get_app(self) -> Application:
         """ Return tornado app to launch for test cases
         """
         return create_tornado_application()
 
     @staticmethod
-    def tornado_call(view_func, user_profile, post_data):
-        # type: (Callable[[HttpRequest, UserProfile], HttpResponse], UserProfile, Dict[str, Any]) -> HttpResponse
+    def tornado_call(view_func: Callable[[HttpRequest, UserProfile], HttpResponse],
+                     user_profile: UserProfile,
+                     post_data: Dict[str, Any]) -> HttpResponse:
         request = POSTRequestMock(post_data, user_profile)
         return view_func(request, user_profile)
 
     @staticmethod
-    def get_cookie_header(cookies):
-        # type: (SimpleCookie) -> str
+    def get_cookie_header(cookies: SimpleCookie) -> str:
         return ';'.join(
             ["{}={}".format(name, value.value) for name, value in cookies.items()])
 
-    def _get_cookies(self, user_profile):
-        # type: (UserProfile) -> SimpleCookie
+    def _get_cookies(self, user_profile: UserProfile) -> SimpleCookie:
         resp = self.login_with_return(user_profile.email)
         return resp.cookies
 
     @gen.coroutine
-    def _websocket_auth(self, ws, queue_events_data, cookies):
-        # type: (Any, Dict[str, Dict[str, str]], SimpleCookie) -> Generator[str, str, None]
+    def _websocket_auth(self, ws: Any,
+                        queue_events_data: Dict[str, Dict[str, str]],
+                        cookies: SimpleCookie) -> Generator[str, str, None]:
         auth_queue_id = ':'.join((queue_events_data['response']['queue_id'], '0'))
         message = {
             "req_id": auth_queue_id,
@@ -227,8 +211,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
         raise gen.Return([response_ack, response_message])
 
     @staticmethod
-    def _get_queue_events_data(email):
-        # type: (Text) -> Dict[str, Dict[str, str]]
+    def _get_queue_events_data(email: Text) -> Dict[str, Dict[str, str]]:
         user_profile = UserProfile.objects.filter(email=email).first()
         events_query = {
             'queue_id': None,
@@ -258,8 +241,11 @@ class TornadoTestCase(WebSocketBaseTestCase):
         result = fetch_events(events_query)
         return result
 
-    def _check_message_sending(self, request_id, ack_resp, msg_resp, profile, queue_events_data):
-        # type: (str, str, str, UserProfile, Dict[str, Dict[str, str]]) -> None
+    def _check_message_sending(self, request_id: str,
+                               ack_resp: str,
+                               msg_resp: str,
+                               profile: UserProfile,
+                               queue_events_data: Dict[str, Dict[str, str]]) -> None:
         self.assertEqual(ack_resp[0], 'a')
         self.assertEqual(
             ujson.loads(ack_resp[1:]),
@@ -295,8 +281,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
             ])
 
     @gen_test
-    def test_tornado_connect(self):
-        # type: () -> Generator[str, Any, None]
+    def test_tornado_connect(self) -> Generator[str, Any, None]:
         user_profile = self.example_user('hamlet')
         cookies = self._get_cookies(user_profile)
         cookie_header = self.get_cookie_header(cookies)
@@ -306,8 +291,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
         yield self.close(ws)
 
     @gen_test
-    def test_tornado_auth(self):
-        # type: () -> Generator[str, TornadoTestCase, None]
+    def test_tornado_auth(self) -> Generator[str, 'TornadoTestCase', None]:
         user_profile = self.example_user('hamlet')
         cookies = self._get_cookies(user_profile)
         cookie_header = self.get_cookie_header(cookies)
@@ -340,8 +324,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
         yield self.close(ws)
 
     @gen_test
-    def test_sending_private_message(self):
-        # type: () -> Generator[str, Any, None]
+    def test_sending_private_message(self) -> Generator[str, Any, None]:
         user_profile = self.example_user('hamlet')
         cookies = self._get_cookies(user_profile)
         cookie_header = self.get_cookie_header(cookies)
@@ -375,8 +358,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
         yield self.close(ws)
 
     @gen_test
-    def test_sending_stream_message(self):
-        # type: () -> Generator[str, Any, None]
+    def test_sending_stream_message(self) -> Generator[str, Any, None]:
         user_profile = self.example_user('hamlet')
         cookies = self._get_cookies(user_profile)
         cookie_header = self.get_cookie_header(cookies)
