@@ -12,40 +12,34 @@ import binascii
 from zerver.lib.str_utils import force_str
 from zerver.models import UserProfile
 
-def xor_hex_strings(bytes_a, bytes_b):
-    # type: (str, str) -> str
+def xor_hex_strings(bytes_a: str, bytes_b: str) -> str:
     """Given two hex strings of equal length, return a hex string with
     the bitwise xor of the two hex strings."""
     assert len(bytes_a) == len(bytes_b)
     return ''.join(["%x" % (int(x, 16) ^ int(y, 16))
                     for x, y in zip(bytes_a, bytes_b)])
 
-def ascii_to_hex(input_string):
-    # type: (str) -> str
+def ascii_to_hex(input_string: str) -> str:
     """Given an ascii string, encode it as a hex string"""
     return "".join([hex(ord(c))[2:].zfill(2) for c in input_string])
 
-def hex_to_ascii(input_string):
-    # type: (str) -> str
+def hex_to_ascii(input_string: str) -> str:
     """Given a hex array, decode it back to a string"""
     return force_str(binascii.unhexlify(input_string))
 
-def otp_encrypt_api_key(user_profile, otp):
-    # type: (UserProfile, str) -> str
+def otp_encrypt_api_key(user_profile: UserProfile, otp: str) -> str:
     assert len(otp) == UserProfile.API_KEY_LENGTH * 2
     hex_encoded_api_key = ascii_to_hex(force_str(user_profile.api_key))
     assert len(hex_encoded_api_key) == UserProfile.API_KEY_LENGTH * 2
     return xor_hex_strings(hex_encoded_api_key, otp)
 
-def otp_decrypt_api_key(otp_encrypted_api_key, otp):
-    # type: (str, str) -> str
+def otp_decrypt_api_key(otp_encrypted_api_key: str, otp: str) -> str:
     assert len(otp) == UserProfile.API_KEY_LENGTH * 2
     assert len(otp_encrypted_api_key) == UserProfile.API_KEY_LENGTH * 2
     hex_encoded_api_key = xor_hex_strings(otp_encrypted_api_key, otp)
     return hex_to_ascii(hex_encoded_api_key)
 
-def is_valid_otp(otp):
-    # type: (str) -> bool
+def is_valid_otp(otp: str) -> bool:
     try:
         assert len(otp) == UserProfile.API_KEY_LENGTH * 2
         [int(c, 16) for c in otp]

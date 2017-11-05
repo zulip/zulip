@@ -7,8 +7,7 @@ import base64
 from typing import Optional, Text
 
 
-def initial_password(email):
-    # type: (Text) -> Optional[Text]
+def initial_password(email: Text) -> Optional[Text]:
     """Given an email address, returns the initial password for that account, as
        created by populate_db."""
 

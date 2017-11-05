@@ -7,8 +7,7 @@ from typing import Optional, Text
 
 from zerver.models import get_realm, Realm, UserProfile
 
-def get_subdomain(request):
-    # type: (HttpRequest) -> Text
+def get_subdomain(request: HttpRequest) -> Text:
 
     # The HTTP spec allows, but doesn't require, a client to omit the
     # port in the `Host` header if it's "the default port for the
@@ -39,18 +38,15 @@ def get_subdomain(request):
 
     return Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
 
-def is_subdomain_root_or_alias(request):
-    # type: (HttpRequest) -> bool
+def is_subdomain_root_or_alias(request: HttpRequest) -> bool:
     return get_subdomain(request) == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
 
-def user_matches_subdomain(realm_subdomain, user_profile):
-    # type: (Optional[Text], UserProfile) -> bool
+def user_matches_subdomain(realm_subdomain: Optional[Text], user_profile: UserProfile) -> bool:
     if realm_subdomain is None:
         return True
     return user_profile.realm.subdomain == realm_subdomain
 
-def is_root_domain_available():
-    # type: () -> bool
+def is_root_domain_available() -> bool:
     if settings.ROOT_DOMAIN_LANDING_PAGE:
         return False
     return get_realm(Realm.SUBDOMAIN_FOR_ROOT_DOMAIN) is None

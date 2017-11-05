@@ -27,8 +27,7 @@ ALL_HOTSPOTS = {
     },
 }  # type: Dict[str, Dict[str, Text]]
 
-def get_next_hotspots(user):
-    # type: (UserProfile) -> List[Dict[str, object]]
+def get_next_hotspots(user: UserProfile) -> List[Dict[str, object]]:
     # Only used for manual testing
     SEND_ALL = False
     if settings.DEVELOPMENT and SEND_ALL:

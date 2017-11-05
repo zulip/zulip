@@ -14,31 +14,29 @@ from zerver.lib.exceptions import JsonableError, ErrorCode
 
 from django.http import HttpRequest, HttpResponse
 
+from typing import Any
+
 class RequestVariableMissingError(JsonableError):
     code = ErrorCode.REQUEST_VARIABLE_MISSING
     data_fields = ['var_name']
 
-    def __init__(self, var_name):
-        # type: (str) -> None
+    def __init__(self, var_name: str) -> None:
         self.var_name = var_name  # type: str
 
     @staticmethod
-    def msg_format():
-        # type: () -> str
+    def msg_format() -> str:
         return _("Missing '{var_name}' argument")
 
 class RequestVariableConversionError(JsonableError):
     code = ErrorCode.REQUEST_VARIABLE_INVALID
     data_fields = ['var_name', 'bad_value']
 
-    def __init__(self, var_name, bad_value):
-        # type: (str, Any) -> None
+    def __init__(self, var_name: str, bad_value: Any) -> None:
         self.var_name = var_name  # type: str
         self.bad_value = bad_value
 
     @staticmethod
-    def msg_format():
-        # type: () -> str
+    def msg_format() -> str:
         return _("Bad value for '{var_name}': {bad_value}")
 
 # Used in conjunction with @has_request_variables, below
@@ -100,7 +98,7 @@ class REQ:
 # expected to call json_error or json_success, as it uses json_error
 # internally when it encounters an error
 def has_request_variables(view_func):
-    # type: (Callable[[HttpRequest, *Any, **Any], HttpResponse]) -> Callable[[HttpRequest, *Any, **Any], HttpResponse]
+    # type: (Callable[[HttpRequest, Any, Any], HttpResponse]) -> Callable[[HttpRequest, *Any, **Any], HttpResponse]
     num_params = view_func.__code__.co_argcount
     if view_func.__defaults__ is None:
         num_default_params = 0
@@ -121,8 +119,7 @@ def has_request_variables(view_func):
             post_params.append(value)
 
     @wraps(view_func)
-    def _wrapped_view_func(request, *args, **kwargs):
-        # type: (HttpRequest, *Any, **Any) -> HttpResponse
+    def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         for param in post_params:
             if param.func_var_name in kwargs:
                 continue

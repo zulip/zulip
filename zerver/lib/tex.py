@@ -5,8 +5,7 @@ import subprocess
 from django.conf import settings
 from typing import Optional, Text
 
-def render_tex(tex, is_inline=True):
-    # type: (Text, bool) -> Optional[Text]
+def render_tex(tex: Text, is_inline: bool=True) -> Optional[Text]:
     """Render a TeX string into HTML using KaTeX
 
     Returns the HTML string, or None if there was some error in the TeX syntax

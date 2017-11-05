@@ -44,8 +44,9 @@ SubInfo = TypedDict('SubInfo', {
     'stream': Stream,
 })
 
-def get_bulk_stream_subscriber_info(user_profiles, stream_dict):
-    # type: (List[UserProfile], Dict[int, Stream]) -> Dict[int, List[Tuple[Subscription, Stream]]]
+def get_bulk_stream_subscriber_info(
+        user_profiles: List[UserProfile],
+        stream_dict: Dict[int, Stream]) -> Dict[int, List[Tuple[Subscription, Stream]]]:
 
     stream_ids = stream_dict.keys()
 
@@ -69,8 +70,7 @@ def get_bulk_stream_subscriber_info(user_profiles, stream_dict):
 
     return result
 
-def num_subscribers_for_stream_id(stream_id):
-    # type: (int) -> int
+def num_subscribers_for_stream_id(stream_id: int) -> int:
     return get_active_subscriptions_for_stream_id(stream_id).filter(
         user_profile__is_active=True,
     ).count()

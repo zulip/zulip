@@ -20,8 +20,7 @@ from scripts.lib.zulip_tools import get_dev_uuid_var_path
 UUID_VAR_DIR = get_dev_uuid_var_path()
 FILENAME_SPLITTER = re.compile('[\W\-_]')
 
-def database_exists(database_name, **options):
-    # type: (Text, **Any) -> bool
+def database_exists(database_name: Text, **options: Any) -> bool:
     db = options.get('database', DEFAULT_DB_ALIAS)
     try:
         connection = connections[db]
@@ -34,8 +33,7 @@ def database_exists(database_name, **options):
     except OperationalError:
         return False
 
-def get_migration_status(**options):
-    # type: (**Any) -> str
+def get_migration_status(**options: Any) -> str:
     verbosity = options.get('verbosity', 1)
 
     for app_config in apps.get_app_configs():
@@ -61,8 +59,7 @@ def get_migration_status(**options):
     output = out.read()
     return re.sub('\x1b\[(1|0)m', '', output)
 
-def are_migrations_the_same(migration_file, **options):
-    # type: (Text, **Any) -> bool
+def are_migrations_the_same(migration_file: Text, **options: Any) -> bool:
     if not os.path.exists(migration_file):
         return False
 
@@ -70,14 +67,12 @@ def are_migrations_the_same(migration_file, **options):
         migration_content = f.read()
     return migration_content == get_migration_status(**options)
 
-def _get_hash_file_path(source_file_path, status_dir):
-    # type: (str, str) -> str
+def _get_hash_file_path(source_file_path: str, status_dir: str) -> str:
     basename = os.path.basename(source_file_path)
     filename = '_'.join(FILENAME_SPLITTER.split(basename)).lower()
     return os.path.join(status_dir, filename)
 
-def _check_hash(target_hash_file, status_dir):
-    # type: (str, str) -> bool
+def _check_hash(target_hash_file: str, status_dir: str) -> bool:
     """
     This function has a side effect of creating a new hash file or
     updating the old hash file.

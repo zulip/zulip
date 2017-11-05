@@ -16,13 +16,11 @@ class StreamTopicTarget:
     places where we are are still using `subject` or
     `topic_name` as a key into tables.
     '''
-    def __init__(self, stream_id, topic_name):
-        # type: (int, Text) -> None
+    def __init__(self, stream_id: int, topic_name: Text) -> None:
         self.stream_id = stream_id
         self.topic_name = topic_name
 
-    def user_ids_muting_topic(self):
-        # type: () -> Set[int]
+    def user_ids_muting_topic(self) -> Set[int]:
         query = MutedTopic.objects.filter(
             stream_id=self.stream_id,
             topic_name__iexact=self.topic_name,
@@ -34,6 +32,5 @@ class StreamTopicTarget:
             for row in query
         }
 
-    def get_active_subscriptions(self):
-        # type: () -> QuerySet
+    def get_active_subscriptions(self) -> QuerySet:
         return get_active_subscriptions_for_stream_id(self.stream_id)

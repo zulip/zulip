@@ -79,8 +79,7 @@ class MockLDAP(fakeldap.MockLDAP):
         pass
 
 @contextmanager
-def stub_event_queue_user_events(event_queue_return, user_events_return):
-    # type: (Any, Any) -> Iterator[None]
+def stub_event_queue_user_events(event_queue_return: Any, user_events_return: Any) -> Iterator[None]:
     with mock.patch('zerver.lib.events.request_event_queue',
                     return_value=event_queue_return):
         with mock.patch('zerver.lib.events.get_user_events',
@@ -88,16 +87,14 @@ def stub_event_queue_user_events(event_queue_return, user_events_return):
             yield
 
 @contextmanager
-def simulated_queue_client(client):
-    # type: (Callable[..., Any]) -> Iterator[None]
+def simulated_queue_client(client: Callable[..., Any]) -> Iterator[None]:
     real_SimpleQueueClient = queue_processors.SimpleQueueClient
     queue_processors.SimpleQueueClient = client  # type: ignore # https://github.com/JukkaL/mypy/issues/1152
     yield
     queue_processors.SimpleQueueClient = real_SimpleQueueClient  # type: ignore # https://github.com/JukkaL/mypy/issues/1152
 
 @contextmanager
-def tornado_redirected_to_list(lst):
-    # type: (List[Mapping[str, Any]]) -> Iterator[None]
+def tornado_redirected_to_list(lst: List[Mapping[str, Any]]) -> Iterator[None]:
     real_event_queue_process_notification = event_queue.process_notification
     event_queue.process_notification = lambda notice: lst.append(notice)
     # process_notification takes a single parameter called 'notice'.
@@ -109,12 +106,11 @@ def tornado_redirected_to_list(lst):
     event_queue.process_notification = real_event_queue_process_notification
 
 @contextmanager
-def simulated_empty_cache():
-    # type: () -> Generator[List[Tuple[str, Union[Text, List[Text]], Text]], None, None]
+def simulated_empty_cache() -> Generator[
+        List[Tuple[str, Union[Text, List[Text]], Text]], None, None]:
     cache_queries = []  # type: List[Tuple[str, Union[Text, List[Text]], Text]]
 
-    def my_cache_get(key, cache_name=None):
-        # type: (Text, Optional[str]) -> Optional[Dict[Text, Any]]
+    def my_cache_get(key: Text, cache_name: Optional[str]=None) -> Optional[Dict[Text, Any]]:
         cache_queries.append(('get', key, cache_name))
         return None
 
@@ -132,8 +128,8 @@ def simulated_empty_cache():
     cache.cache_get_many = old_get_many
 
 @contextmanager
-def queries_captured(include_savepoints=False):
-    # type: (Optional[bool]) -> Generator[List[Dict[str, Union[str, bytes]]], None, None]
+def queries_captured(include_savepoints: Optional[bool]=False) -> Generator[
+        List[Dict[str, Union[str, bytes]]], None, None]:
     '''
     Allow a user to capture just the queries executed during
     the with statement.
@@ -141,8 +137,10 @@ def queries_captured(include_savepoints=False):
 
     queries = []  # type: List[Dict[str, Union[str, bytes]]]
 
-    def wrapper_execute(self, action, sql, params=()):
-        # type: (TimeTrackingCursor, Callable[[NonBinaryStr, Iterable[Any]], None], NonBinaryStr, Iterable[Any]) -> None
+    def wrapper_execute(self: TimeTrackingCursor,
+                        action: Callable[[NonBinaryStr, Iterable[Any]], None],
+                        sql: NonBinaryStr,
+                        params: Iterable[Any]=()) -> None:
         cache = get_cache_backend(None)
         cache.clear()
         start = time.time()
@@ -160,13 +158,13 @@ def queries_captured(include_savepoints=False):
     old_execute = TimeTrackingCursor.execute
     old_executemany = TimeTrackingCursor.executemany
 
-    def cursor_execute(self, sql, params=()):
-        # type: (TimeTrackingCursor, NonBinaryStr, Iterable[Any]) -> None
+    def cursor_execute(self: TimeTrackingCursor, sql: NonBinaryStr,
+                       params: Iterable[Any]=()) -> None:
         return wrapper_execute(self, super(TimeTrackingCursor, self).execute, sql, params)  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
     TimeTrackingCursor.execute = cursor_execute  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
 
-    def cursor_executemany(self, sql, params=()):
-        # type: (TimeTrackingCursor, NonBinaryStr, Iterable[Any]) -> None
+    def cursor_executemany(self: TimeTrackingCursor, sql: NonBinaryStr,
+                           params: Iterable[Any]=()) -> None:
         return wrapper_execute(self, super(TimeTrackingCursor, self).executemany, sql, params)  # type: ignore # https://github.com/JukkaL/mypy/issues/1167 # nocoverage -- doesn't actually get used in tests
     TimeTrackingCursor.executemany = cursor_executemany  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
 
@@ -176,8 +174,7 @@ def queries_captured(include_savepoints=False):
     TimeTrackingCursor.executemany = old_executemany  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
 
 @contextmanager
-def stdout_suppressed():
-    # type: () -> Iterator[IO[str]]
+def stdout_suppressed() -> Iterator[IO[str]]:
     """Redirect stdout to /dev/null."""
 
     with open(os.devnull, 'a') as devnull:
@@ -185,26 +182,22 @@ def stdout_suppressed():
         yield stdout
         sys.stdout = stdout
 
-def get_test_image_file(filename):
-    # type: (str) -> IO[Any]
+def get_test_image_file(filename: str) -> IO[Any]:
     test_avatar_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../tests/images'))
     return open(os.path.join(test_avatar_dir, filename), 'rb')
 
-def avatar_disk_path(user_profile, medium=False):
-    # type: (UserProfile, bool) -> Text
+def avatar_disk_path(user_profile: UserProfile, medium: bool=False) -> Text:
     avatar_url_path = avatar_url(user_profile, medium)
     avatar_disk_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars",
                                     avatar_url_path.split("/")[-2],
                                     avatar_url_path.split("/")[-1].split("?")[0])
     return avatar_disk_path
 
-def make_client(name):
-    # type: (str) -> Client
+def make_client(name: str) -> Client:
     client, _ = Client.objects.get_or_create(name=name)
     return client
 
-def find_key_by_email(address):
-    # type: (Text) -> Optional[Text]
+def find_key_by_email(address: Text) -> Optional[Text]:
     from django.core.mail import outbox
     key_regex = re.compile("accounts/do_confirm/([a-z0-9]{24})>")
     for message in reversed(outbox):
@@ -212,8 +205,7 @@ def find_key_by_email(address):
             return key_regex.search(message.body).groups()[0]
     return None  # nocoverage -- in theory a test might want this case, but none do
 
-def find_pattern_in_email(address, pattern):
-    # type: (Text, Text) -> Optional[Text]
+def find_pattern_in_email(address: Text, pattern: Text) -> Optional[Text]:
     from django.core.mail import outbox
     key_regex = re.compile(pattern)
     for message in reversed(outbox):
@@ -221,35 +213,30 @@ def find_pattern_in_email(address, pattern):
             return key_regex.search(message.body).group(0)
     return None  # nocoverage -- in theory a test might want this case, but none do
 
-def message_stream_count(user_profile):
-    # type: (UserProfile) -> int
+def message_stream_count(user_profile: UserProfile) -> int:
     return UserMessage.objects. \
         select_related("message"). \
         filter(user_profile=user_profile). \
         count()
 
-def most_recent_usermessage(user_profile):
-    # type: (UserProfile) -> UserMessage
+def most_recent_usermessage(user_profile: UserProfile) -> UserMessage:
     query = UserMessage.objects. \
         select_related("message"). \
         filter(user_profile=user_profile). \
         order_by('-message')
     return query[0]  # Django does LIMIT here
 
-def most_recent_message(user_profile):
-    # type: (UserProfile) -> Message
+def most_recent_message(user_profile: UserProfile) -> Message:
     usermessage = most_recent_usermessage(user_profile)
     return usermessage.message
 
-def get_subscription(stream_name, user_profile):
-    # type: (Text, UserProfile) -> Subscription
+def get_subscription(stream_name: Text, user_profile: UserProfile) -> Subscription:
     stream = get_stream(stream_name, user_profile.realm)
     recipient = get_stream_recipient(stream.id)
     return Subscription.objects.get(user_profile=user_profile,
                                     recipient=recipient, active=True)
 
-def get_user_messages(user_profile):
-    # type: (UserProfile) -> List[Message]
+def get_user_messages(user_profile: UserProfile) -> List[Message]:
     query = UserMessage.objects. \
         select_related("message"). \
         filter(user_profile=user_profile). \
@@ -257,15 +244,13 @@ def get_user_messages(user_profile):
     return [um.message for um in query]
 
 class DummyHandler:
-    def __init__(self):
-        # type: () -> None
+    def __init__(self) -> None:
         allocate_handler_id(self)  # type: ignore # this is a testing mock
 
 class POSTRequestMock:
     method = "POST"
 
-    def __init__(self, post_data, user_profile):
-        # type: (Dict[str, Any], Optional[UserProfile]) -> None
+    def __init__(self, post_data: Dict[str, Any], user_profile: Optional[UserProfile]) -> None:
         self.GET = {}  # type: Dict[str, Any]
         self.POST = post_data
         self.user = user_profile
@@ -278,8 +263,7 @@ class HostRequestMock:
     """A mock request object where get_host() works.  Useful for testing
     routes that use Zulip's subdomains feature"""
 
-    def __init__(self, user_profile=None, host=settings.EXTERNAL_HOST):
-        # type: (UserProfile, Text) -> None
+    def __init__(self, user_profile: UserProfile=None, host: Text=settings.EXTERNAL_HOST) -> None:
         self.host = host
         self.GET = {}  # type: Dict[str, Any]
         self.POST = {}  # type: Dict[str, Any]
@@ -291,19 +275,16 @@ class HostRequestMock:
         self.content_type = ''
         self._email = ''
 
-    def get_host(self):
-        # type: () -> Text
+    def get_host(self) -> Text:
         return self.host
 
 class MockPythonResponse:
-    def __init__(self, text, status_code):
-        # type: (Text, int) -> None
+    def __init__(self, text: Text, status_code: int) -> None:
         self.text = text
         self.status_code = status_code
 
     @property
-    def ok(self):
-        # type: () -> bool
+    def ok(self) -> bool:
         return self.status_code == 200
 
 INSTRUMENTING = os.environ.get('TEST_INSTRUMENT_URL_COVERAGE', '') == 'TRUE'
@@ -311,17 +292,15 @@ INSTRUMENTED_CALLS = []  # type: List[Dict[str, Any]]
 
 UrlFuncT = Callable[..., HttpResponse]  # TODO: make more specific
 
-def append_instrumentation_data(data):
-    # type: (Dict[str, Any]) -> None
+def append_instrumentation_data(data: Dict[str, Any]) -> None:
     INSTRUMENTED_CALLS.append(data)
 
-def instrument_url(f):
-    # type: (UrlFuncT) -> UrlFuncT
+def instrument_url(f: UrlFuncT) -> UrlFuncT:
     if not INSTRUMENTING:  # nocoverage -- option is always enabled; should we remove?
         return f
     else:
-        def wrapper(self, url, info={}, **kwargs):
-            # type: (Any, Text, Dict[str, Any], **Any) -> HttpResponse
+        def wrapper(self: Any, url: Text, info: Dict[str, Any]={},
+                    **kwargs: Any) -> HttpResponse:
             start = time.time()
             result = f(self, url, info, **kwargs)
             delay = time.time() - start
@@ -343,8 +322,7 @@ def instrument_url(f):
             return result
         return wrapper
 
-def write_instrumentation_reports(full_suite):
-    # type: (bool) -> None
+def write_instrumentation_reports(full_suite: bool) -> None:
     if INSTRUMENTING:
         calls = INSTRUMENTED_CALLS
 
@@ -353,17 +331,14 @@ def write_instrumentation_reports(full_suite):
         # Find our untested urls.
         pattern_cnt = collections.defaultdict(int)  # type: Dict[str, int]
 
-        def re_strip(r):
-            # type: (Any) -> str
+        def re_strip(r: Any) -> str:
             return str(r).lstrip('^').rstrip('$')
 
-        def find_patterns(patterns, prefixes):
-            # type: (List[Any], List[str]) -> None
+        def find_patterns(patterns: List[Any], prefixes: List[str]) -> None:
             for pattern in patterns:
                 find_pattern(pattern, prefixes)
 
-        def cleanup_url(url):
-            # type: (str) -> str
+        def cleanup_url(url: str) -> str:
             if url.startswith('/'):
                 url = url[1:]
             if url.startswith('http://testserver/'):
@@ -374,8 +349,7 @@ def write_instrumentation_reports(full_suite):
                 url = url[len('http://testserver:9080/'):]
             return url
 
-        def find_pattern(pattern, prefixes):
-            # type: (Any, List[str]) -> None
+        def find_pattern(pattern: Any, prefixes: List[str]) -> None:
 
             if isinstance(pattern, type(LocaleRegexURLResolver)):
                 return  # nocoverage -- shouldn't actually happen
@@ -447,16 +421,14 @@ def write_instrumentation_reports(full_suite):
                 print("   %s" % (untested_pattern,))
             sys.exit(1)
 
-def get_all_templates():
-    # type: () -> List[str]
+def get_all_templates() -> List[str]:
     templates = []
 
     relpath = os.path.relpath
     isfile = os.path.isfile
     path_exists = os.path.exists
 
-    def is_valid_template(p, n):
-        # type: (Text, Text) -> bool
+    def is_valid_template(p: Text, n: Text) -> bool:
         return 'webhooks' not in p \
                and not n.startswith('.') \
                and not n.startswith('__init__') \
@@ -464,8 +436,7 @@ def get_all_templates():
                and not n.endswith('.source.html') \
                and isfile(p)
 
-    def process(template_dir, dirname, fnames):
-        # type: (str, str, Iterable[str]) -> None
+    def process(template_dir: str, dirname: str, fnames: Iterable[str]) -> None:
         for name in fnames:
             path = os.path.join(dirname, name)
             if is_valid_template(path, name):
@@ -480,20 +451,17 @@ def get_all_templates():
 
     return templates
 
-def load_subdomain_token(response):
-    # type: (HttpResponse) -> Dict[str, Any]
+def load_subdomain_token(response: HttpResponse) -> Dict[str, Any]:
     assert isinstance(response, HttpResponseRedirect)
     token = response.url.rsplit('/', 1)[1]
     return signing.loads(token, salt='zerver.views.auth.log_into_subdomain')
 
 FuncT = TypeVar('FuncT', bound=Callable[..., None])
 
-def use_s3_backend(method):
-    # type: (FuncT) -> FuncT
+def use_s3_backend(method: FuncT) -> FuncT:
     @mock_s3_deprecated
     @override_settings(LOCAL_UPLOADS_DIR=None)
-    def new_method(*args, **kwargs):
-        # type: (*Any, **Any) -> Any
+    def new_method(*args: Any, **kwargs: Any) -> Any:
         zerver.lib.upload.upload_backend = S3UploadBackend()
         try:
             return method(*args, **kwargs)

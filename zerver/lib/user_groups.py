@@ -14,13 +14,11 @@ def access_user_group_by_id(user_group_id: int, realm: Realm) -> UserGroup:
         raise JsonableError(_("Invalid user group"))
     return user_group
 
-def user_groups_in_realm(realm):
-    # type: (Realm) -> List[UserGroup]
+def user_groups_in_realm(realm: Realm) -> List[UserGroup]:
     user_groups = UserGroup.objects.filter(realm=realm)
     return list(user_groups)
 
-def user_groups_in_realm_serialized(realm):
-    # type: (Realm) -> List[Dict[Text, Any]]
+def user_groups_in_realm_serialized(realm: Realm) -> List[Dict[Text, Any]]:
     """
     This function is used in do_events_register code path so this code should
     be performant. This is the reason why we get the groups through
@@ -43,32 +41,28 @@ def user_groups_in_realm_serialized(realm):
     user_groups.sort(key=lambda item: item['id'])
     return user_groups
 
-def get_user_groups(user_profile):
-    # type: (UserProfile) -> List[UserGroup]
+def get_user_groups(user_profile: UserProfile) -> List[UserGroup]:
     return list(user_profile.usergroup_set.all())
 
-def check_add_user_to_user_group(user_profile, user_group):
-    # type: (UserProfile, UserGroup) -> bool
+def check_add_user_to_user_group(user_profile: UserProfile, user_group: UserGroup) -> bool:
     member_obj, created = UserGroupMembership.objects.get_or_create(
         user_group=user_group, user_profile=user_profile)
     return created
 
-def remove_user_from_user_group(user_profile, user_group):
-    # type: (UserProfile, UserGroup) -> int
+def remove_user_from_user_group(user_profile: UserProfile, user_group: UserGroup) -> int:
     num_deleted, _ = UserGroupMembership.objects.filter(
         user_profile=user_profile, user_group=user_group).delete()
     return num_deleted
 
-def check_remove_user_from_user_group(user_profile, user_group):
-    # type: (UserProfile, UserGroup) -> bool
+def check_remove_user_from_user_group(user_profile: UserProfile, user_group: UserGroup) -> bool:
     try:
         num_deleted = remove_user_from_user_group(user_profile, user_group)
         return bool(num_deleted)
     except Exception:
         return False
 
-def create_user_group(name, members, realm, description=''):
-    # type: (Text, List[UserProfile], Realm, Text) -> UserGroup
+def create_user_group(name: Text, members: List[UserProfile], realm: Realm,
+                      description: Text='') -> UserGroup:
     with transaction.atomic():
         user_group = UserGroup.objects.create(name=name, realm=realm,
                                               description=description)

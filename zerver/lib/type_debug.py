@@ -4,8 +4,7 @@ import functools
 
 from typing import Any, Callable, IO, Mapping, Sequence, TypeVar, Text
 
-def get_mapping_type_str(x):
-    # type: (Mapping[Any, Any]) -> str
+def get_mapping_type_str(x: Mapping[Any, Any]) -> str:
     container_type = type(x).__name__
     if not x:
         if container_type == 'dict':
@@ -26,8 +25,7 @@ def get_mapping_type_str(x):
         else:
             return '%s([(%s, %s), ...])' % (container_type, key_type, value_type)
 
-def get_sequence_type_str(x):
-    # type: (Sequence[Any]) -> str
+def get_sequence_type_str(x: Sequence[Any]) -> str:
     container_type = type(x).__name__
     if not x:
         if container_type == 'list':
@@ -48,8 +46,7 @@ def get_sequence_type_str(x):
 
 expansion_blacklist = [Text, bytes]
 
-def get_type_str(x):
-    # type: (Any) -> str
+def get_type_str(x: Any) -> str:
     if x is None:
         return 'None'
     elif isinstance(x, tuple):
@@ -69,13 +66,10 @@ def get_type_str(x):
 
 FuncT = TypeVar('FuncT', bound=Callable[..., Any])
 
-def print_types_to(file_obj):
-    # type: (IO[str]) -> Callable[[FuncT], FuncT]
-    def decorator(func):
-        # type: (FuncT) -> FuncT
+def print_types_to(file_obj: IO[str]) -> Callable[[FuncT], FuncT]:
+    def decorator(func: FuncT) -> FuncT:
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            # type: (*Any, **Any) -> Any
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             arg_types = [get_type_str(arg) for arg in args]
             kwarg_types = [key + "=" + get_type_str(value) for key, value in kwargs.items()]
             ret_val = func(*args, **kwargs)
@@ -87,6 +81,5 @@ def print_types_to(file_obj):
         return wrapper  # type: ignore # https://github.com/python/mypy/issues/1927
     return decorator
 
-def print_types(func):
-    # type: (FuncT) -> FuncT
+def print_types(func: FuncT) -> FuncT:
     return print_types_to(sys.stdout)(func)

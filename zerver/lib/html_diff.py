@@ -3,12 +3,10 @@ import lxml
 from lxml.html.diff import htmldiff
 from typing import Optional
 
-def highlight_with_class(text, klass):
-    # type: (str, str) -> str
+def highlight_with_class(text: str, klass: str) -> str:
     return '<span class="%s">%s</span>' % (klass, text)
 
-def highlight_html_differences(s1, s2, msg_id=None):
-    # type: (str, str, Optional[int]) -> str
+def highlight_html_differences(s1: str, s2: str, msg_id: Optional[int]=None) -> str:
     retval = htmldiff(s1, s2)
     fragment = lxml.html.fromstring(retval)  # type: ignore # https://github.com/python/typeshed/issues/525
 
