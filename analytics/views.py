@@ -37,8 +37,7 @@ from zerver.models import Client, Realm, \
     UserActivity, UserActivityInterval, UserProfile
 
 @zulip_login_required
-def stats(request):
-    # type: (HttpRequest) -> HttpResponse
+def stats(request: HttpRequest) -> HttpResponse:
     return render(request,
                   'analytics/stats.html',
                   context=dict(realm_name = request.user.realm.name))
@@ -117,8 +116,7 @@ def get_chart_data(request, user_profile, chart_name=REQ(),
         data['display_order'] = None
     return json_success(data=data)
 
-def sort_by_totals(value_arrays):
-    # type: (Dict[str, List[int]]) -> List[str]
+def sort_by_totals(value_arrays: Dict[str, List[int]]) -> List[str]:
     totals = [(sum(values), label) for label, values in value_arrays.items()]
     totals.sort(reverse=True)
     return [label for total, label in totals]
@@ -129,8 +127,7 @@ def sort_by_totals(value_arrays):
 # understanding the realm's traffic and the user's traffic. This function
 # tries to rank the clients so that taking the first N elements of the
 # sorted list has a reasonable chance of doing so.
-def sort_client_labels(data):
-    # type: (Dict[str, Dict[str, List[int]]]) -> List[str]
+def sort_client_labels(data: Dict[str, Dict[str, List[int]]]) -> List[str]:
     realm_order = sort_by_totals(data['realm'])
     user_order = sort_by_totals(data['user'])
     label_sort_values = {}  # type: Dict[str, float]
@@ -141,8 +138,7 @@ def sort_client_labels(data):
     return [label for label, sort_value in sorted(label_sort_values.items(),
                                                   key=lambda x: x[1])]
 
-def table_filtered_to_id(table, key_id):
-    # type: (Type[BaseCount], int) -> QuerySet
+def table_filtered_to_id(table: Type[BaseCount], key_id: int) -> QuerySet:
     if table == RealmCount:
         return RealmCount.objects.filter(realm_id=key_id)
     elif table == UserCount:
@@ -154,8 +150,7 @@ def table_filtered_to_id(table, key_id):
     else:
         raise AssertionError("Unknown table: %s" % (table,))
 
-def client_label_map(name):
-    # type: (str) -> str
+def client_label_map(name: str) -> str:
     if name == "website":
         return "Website"
     if name.startswith("desktop app"):
@@ -174,8 +169,7 @@ def client_label_map(name):
         return name[len("Zulip"):-len("Webhook")] + " webhook"
     return name
 
-def rewrite_client_arrays(value_arrays):
-    # type: (Dict[str, List[int]]) -> Dict[str, List[int]]
+def rewrite_client_arrays(value_arrays: Dict[str, List[int]]) -> Dict[str, List[int]]:
     mapped_arrays = {}  # type: Dict[str, List[int]]
     for label, array in value_arrays.items():
         mapped_label = client_label_map(label)
@@ -186,8 +180,12 @@ def rewrite_client_arrays(value_arrays):
             mapped_arrays[mapped_label] = [value_arrays[label][i] for i in range(0, len(array))]
     return mapped_arrays
 
-def get_time_series_by_subgroup(stat, table, key_id, end_times, subgroup_to_label, include_empty_subgroups):
-    # type: (CountStat, Type[BaseCount], int, List[datetime], Dict[Optional[str], str], bool) -> Dict[str, List[int]]
+def get_time_series_by_subgroup(stat: CountStat,
+                                table: Type[BaseCount],
+                                key_id: int,
+                                end_times: List[datetime],
+                                subgroup_to_label: Dict[Optional[str], str],
+                                include_empty_subgroups: bool) -> Dict[str, List[int]]:
     queryset = table_filtered_to_id(table, key_id).filter(property=stat.property) \
                                                   .values_list('subgroup', 'end_time', 'value')
     value_dicts = defaultdict(lambda: defaultdict(int))  # type: Dict[Optional[str], Dict[datetime, int]]
@@ -208,12 +206,10 @@ def get_time_series_by_subgroup(stat, table, key_id, end_times, subgroup_to_labe
 
 eastern_tz = pytz.timezone('US/Eastern')
 
-def make_table(title, cols, rows, has_row_class=False):
-    # type: (str, List[str], List[Any], bool) -> str
+def make_table(title: str, cols: List[str], rows: List[Any], has_row_class: bool=False) -> str:
 
     if not has_row_class:
-        def fix_row(row):
-            # type: (Any) -> Dict[str, Any]
+        def fix_row(row: Any) -> Dict[str, Any]:
             return dict(cells=row, row_class=None)
         rows = list(map(fix_row, rows))
 
@@ -226,8 +222,7 @@ def make_table(title, cols, rows, has_row_class=False):
 
     return content
 
-def dictfetchall(cursor):
-    # type: (connection.cursor) -> List[Dict[str, Any]]
+def dictfetchall(cursor: connection.cursor) -> List[Dict[str, Any]]:
     "Returns all rows from a cursor as a dict"
     desc = cursor.description
     return [
@@ -236,8 +231,7 @@ def dictfetchall(cursor):
     ]
 
 
-def get_realm_day_counts():
-    # type: () -> Dict[str, Dict[str, str]]
+def get_realm_day_counts() -> Dict[str, Dict[str, str]]:
     query = '''
         select
             r.string_id,
@@ -275,8 +269,7 @@ def get_realm_day_counts():
         min_cnt = min(raw_cnts)
         max_cnt = max(raw_cnts)
 
-        def format_count(cnt):
-            # type: (int) -> str
+        def format_count(cnt: int) -> str:
             if cnt == min_cnt:
                 good_bad = 'bad'
             elif cnt == max_cnt:
@@ -291,8 +284,7 @@ def get_realm_day_counts():
 
     return result
 
-def realm_summary_table(realm_minutes):
-    # type: (Dict[str, float]) -> str
+def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     query = '''
         SELECT
             realm.string_id,
@@ -425,8 +417,7 @@ def realm_summary_table(realm_minutes):
         row['string_id'] = realm_activity_link(row['string_id'])
 
     # Count active sites
-    def meets_goal(row):
-        # type: (Dict[str, int]) -> bool
+    def meets_goal(row: Dict[str, int]) -> bool:
         return row['active_user_count'] >= 5
 
     num_active_sites = len(list(filter(meets_goal, rows)))
@@ -458,8 +449,7 @@ def realm_summary_table(realm_minutes):
     return content
 
 
-def user_activity_intervals():
-    # type: () -> Tuple[mark_safe, Dict[str, float]]
+def user_activity_intervals() -> Tuple[mark_safe, Dict[str, float]]:
     day_end = timestamp_to_datetime(time.time())
     day_start = day_end - timedelta(hours=24)
 
@@ -509,8 +499,7 @@ def user_activity_intervals():
     content = mark_safe('<pre>' + output + '</pre>')
     return content, realm_minutes
 
-def sent_messages_report(realm):
-    # type: (str) -> str
+def sent_messages_report(realm: str) -> str:
     title = 'Recently sent messages for ' + realm
 
     cols = [
@@ -577,18 +566,16 @@ def sent_messages_report(realm):
 
     return make_table(title, cols, rows)
 
-def ad_hoc_queries():
-    # type: () -> List[Dict[str, str]]
-    def get_page(query, cols, title):
-        # type: (str, List[str], str) -> Dict[str, str]
+def ad_hoc_queries() -> List[Dict[str, str]]:
+    def get_page(query: str, cols: List[str], title: str) -> Dict[str, str]:
         cursor = connection.cursor()
         cursor.execute(query)
         rows = cursor.fetchall()
         rows = list(map(list, rows))
         cursor.close()
 
-        def fix_rows(i, fixup_func):
-            # type: (int, Union[Callable[[Realm], mark_safe], Callable[[datetime], str]]) -> None
+        def fix_rows(i: int,
+                     fixup_func: Union[Callable[[Realm], mark_safe], Callable[[datetime], str]]) -> None:
             for row in rows:
                 row[i] = fixup_func(row[i])
 
@@ -750,8 +737,7 @@ def ad_hoc_queries():
 
 @require_server_admin
 @has_request_variables
-def get_activity(request):
-    # type: (HttpRequest) -> HttpResponse
+def get_activity(request: HttpRequest) -> HttpResponse:
     duration_content, realm_minutes = user_activity_intervals()  # type: Tuple[mark_safe, Dict[str, float]]
     counts_content = realm_summary_table(realm_minutes)  # type: str
     data = [
@@ -769,8 +755,7 @@ def get_activity(request):
         context=dict(data=data, title=title, is_home=True),
     )
 
-def get_user_activity_records_for_realm(realm, is_bot):
-    # type: (str, bool) -> QuerySet
+def get_user_activity_records_for_realm(realm: str, is_bot: bool) -> QuerySet:
     fields = [
         'user_profile__full_name',
         'user_profile__email',
@@ -789,8 +774,7 @@ def get_user_activity_records_for_realm(realm, is_bot):
     records = records.select_related('user_profile', 'client').only(*fields)
     return records
 
-def get_user_activity_records_for_email(email):
-    # type: (str) -> List[QuerySet]
+def get_user_activity_records_for_email(email: str) -> List[QuerySet]:
     fields = [
         'user_profile__full_name',
         'query',
@@ -806,8 +790,7 @@ def get_user_activity_records_for_email(email):
     records = records.select_related('user_profile', 'client').only(*fields)
     return records
 
-def raw_user_activity_table(records):
-    # type: (List[QuerySet]) -> str
+def raw_user_activity_table(records: List[QuerySet]) -> str:
     cols = [
         'query',
         'client',
@@ -815,8 +798,7 @@ def raw_user_activity_table(records):
         'last_visit'
     ]
 
-    def row(record):
-        # type: (QuerySet) -> List[Any]
+    def row(record: QuerySet) -> List[Any]:
         return [
             record.query,
             record.client.name,
@@ -828,8 +810,7 @@ def raw_user_activity_table(records):
     title = 'Raw Data'
     return make_table(title, cols, rows)
 
-def get_user_activity_summary(records):
-    # type: (List[QuerySet]) -> Dict[str, Dict[str, Any]]
+def get_user_activity_summary(records: List[QuerySet]) -> Dict[str, Dict[str, Any]]:
     #: `Any` used above should be `Union(int, datetime)`.
     #: However current version of `Union` does not work inside other function.
     #: We could use something like:
@@ -837,8 +818,7 @@ def get_user_activity_summary(records):
     #: but that would require this long `Union` to carry on throughout inner functions.
     summary = {}  # type: Dict[str, Dict[str, Any]]
 
-    def update(action, record):
-        # type: (str, QuerySet) -> None
+    def update(action: str, record: QuerySet) -> None:
         if action not in summary:
             summary[action] = dict(
                 count=record.count,
@@ -879,29 +859,25 @@ def get_user_activity_summary(records):
 
     return summary
 
-def format_date_for_activity_reports(date):
-    # type: (Optional[datetime]) -> str
+def format_date_for_activity_reports(date: Optional[datetime]) -> str:
     if date:
         return date.astimezone(eastern_tz).strftime('%Y-%m-%d %H:%M')
     else:
         return ''
 
-def user_activity_link(email):
-    # type: (str) -> mark_safe
+def user_activity_link(email: str) -> mark_safe:
     url_name = 'analytics.views.get_user_activity'
     url = urlresolvers.reverse(url_name, kwargs=dict(email=email))
     email_link = '<a href="%s">%s</a>' % (url, email)
     return mark_safe(email_link)
 
-def realm_activity_link(realm_str):
-    # type: (str) -> mark_safe
+def realm_activity_link(realm_str: str) -> mark_safe:
     url_name = 'analytics.views.get_realm_activity'
     url = urlresolvers.reverse(url_name, kwargs=dict(realm_str=realm_str))
     realm_link = '<a href="%s">%s</a>' % (url, realm_str)
     return mark_safe(realm_link)
 
-def realm_client_table(user_summaries):
-    # type: (Dict[str, Dict[str, Dict[str, Any]]]) -> str
+def realm_client_table(user_summaries: Dict[str, Dict[str, Dict[str, Any]]]) -> str:
     exclude_keys = [
         'internal',
         'name',
@@ -945,8 +921,7 @@ def realm_client_table(user_summaries):
 
     return make_table(title, cols, rows)
 
-def user_activity_summary_table(user_summary):
-    # type: (Dict[str, Dict[str, Any]]) -> str
+def user_activity_summary_table(user_summary: Dict[str, Dict[str, Any]]) -> str:
     rows = []
     for k, v in user_summary.items():
         if k == 'name':
@@ -972,33 +947,29 @@ def user_activity_summary_table(user_summary):
     title = 'User Activity'
     return make_table(title, cols, rows)
 
-def realm_user_summary_table(all_records, admin_emails):
-    # type: (List[QuerySet], Set[Text]) -> Tuple[Dict[str, Dict[str, Any]], str]
+def realm_user_summary_table(all_records: List[QuerySet],
+                             admin_emails: Set[Text]) -> Tuple[Dict[str, Dict[str, Any]], str]:
     user_records = {}
 
-    def by_email(record):
-        # type: (QuerySet) -> str
+    def by_email(record: QuerySet) -> str:
         return record.user_profile.email
 
     for email, records in itertools.groupby(all_records, by_email):
         user_records[email] = get_user_activity_summary(list(records))
 
-    def get_last_visit(user_summary, k):
-        # type: (Dict[str, Dict[str, datetime]], str) -> Optional[datetime]
+    def get_last_visit(user_summary: Dict[str, Dict[str, datetime]], k: str) -> Optional[datetime]:
         if k in user_summary:
             return user_summary[k]['last_visit']
         else:
             return None
 
-    def get_count(user_summary, k):
-        # type: (Dict[str, Dict[str, str]], str) -> str
+    def get_count(user_summary: Dict[str, Dict[str, str]], k: str) -> str:
         if k in user_summary:
             return user_summary[k]['count']
         else:
             return ''
 
-    def is_recent(val):
-        # type: (Optional[datetime]) -> bool
+    def is_recent(val: Optional[datetime]) -> bool:
         age = timezone_now() - val
         return age.total_seconds() < 5 * 60
 
@@ -1020,8 +991,7 @@ def realm_user_summary_table(all_records, admin_emails):
         row = dict(cells=cells, row_class=row_class)
         rows.append(row)
 
-    def by_used_time(row):
-        # type: (Dict[str, Any]) -> str
+    def by_used_time(row: Dict[str, Any]) -> str:
         return row['cells'][3]
 
     rows = sorted(rows, key=by_used_time, reverse=True)
@@ -1044,8 +1014,7 @@ def realm_user_summary_table(all_records, admin_emails):
     return user_records, content
 
 @require_server_admin
-def get_realm_activity(request, realm_str):
-    # type: (HttpRequest, str) -> HttpResponse
+def get_realm_activity(request: HttpRequest, realm_str: str) -> HttpResponse:
     data = []  # type: List[Tuple[str, str]]
     all_user_records = {}  # type: Dict[str, Any]
 
@@ -1080,8 +1049,7 @@ def get_realm_activity(request, realm_str):
     )
 
 @require_server_admin
-def get_user_activity(request, email):
-    # type: (HttpRequest, str) -> HttpResponse
+def get_user_activity(request: HttpRequest, email: str) -> HttpResponse:
     records = get_user_activity_records_for_email(email)
 
     data = []  # type: List[Tuple[str, str]]
