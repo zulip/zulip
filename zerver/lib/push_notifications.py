@@ -44,12 +44,10 @@ else:  # nocoverage  -- Not convenient to add test for this.
 DeviceToken = Union[PushDeviceToken, RemotePushDeviceToken]
 
 # We store the token as b64, but apns-client wants hex strings
-def b64_to_hex(data):
-    # type: (bytes) -> Text
+def b64_to_hex(data: bytes) -> Text:
     return binascii.hexlify(base64.b64decode(data)).decode('utf-8')
 
-def hex_to_b64(data):
-    # type: (Text) -> bytes
+def hex_to_b64(data: Text) -> bytes:
     return base64.b64encode(binascii.unhexlify(data.encode('utf-8')))
 
 #
@@ -58,8 +56,7 @@ def hex_to_b64(data):
 
 _apns_client = None  # type: APNsClient
 
-def get_apns_client():
-    # type: () -> APNsClient
+def get_apns_client() -> APNsClient:
     global _apns_client
     if _apns_client is None:
         # NB if called concurrently, this will make excess connections.
@@ -69,8 +66,7 @@ def get_apns_client():
                                   use_sandbox=settings.APNS_SANDBOX)
     return _apns_client
 
-def modernize_apns_payload(data):
-    # type: (Dict[str, Any]) -> Dict[str, Any]
+def modernize_apns_payload(data: Dict[str, Any]) -> Dict[str, Any]:
     '''Take a payload in an unknown Zulip version's format, and return in current format.'''
     # TODO this isn't super robust as is -- if a buggy remote server
     # sends a malformed payload, we are likely to raise an exception.
@@ -96,8 +92,8 @@ def modernize_apns_payload(data):
 APNS_MAX_RETRIES = 3
 
 @statsd_increment("apple_push_notification")
-def send_apple_push_notification(user_id, devices, payload_data):
-    # type: (int, List[DeviceToken], Dict[str, Any]) -> None
+def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
+                                 payload_data: Dict[str, Any]) -> None:
     logging.info("APNs: Sending notification for user %d to %d devices",
                  user_id, len(devices))
     payload = APNsPayload(**modernize_apns_payload(payload_data))
@@ -107,8 +103,7 @@ def send_apple_push_notification(user_id, devices, payload_data):
     for device in devices:
         # TODO obviously this should be made to actually use the async
 
-        def attempt_send():
-            # type: () -> Optional[str]
+        def attempt_send() -> Optional[str]:
             stream_id = client.send_notification_async(
                 device.token, payload, topic='org.zulip.Zulip',
                 expiration=expiration)
@@ -144,15 +139,14 @@ if settings.ANDROID_GCM_API_KEY:  # nocoverage
 else:
     gcm = None
 
-def send_android_push_notification_to_user(user_profile, data):
-    # type: (UserProfile, Dict[str, Any]) -> None
+def send_android_push_notification_to_user(user_profile: UserProfile, data: Dict[str, Any]) -> None:
     devices = list(PushDeviceToken.objects.filter(user=user_profile,
                                                   kind=PushDeviceToken.GCM))
     send_android_push_notification(devices, data)
 
 @statsd_increment("android_push_notification")
-def send_android_push_notification(devices, data, remote=False):
-    # type: (List[DeviceToken], Dict[str, Any], bool) -> None
+def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, Any],
+                                   remote: bool=False) -> None:
     if not gcm:
         logging.warning("Skipping sending a GCM push notification since "
                         "PUSH_NOTIFICATION_BOUNCER_URL and ANDROID_GCM_API_KEY are both unset")
@@ -218,12 +212,12 @@ def send_android_push_notification(devices, data, remote=False):
 # Sending to a bouncer
 #
 
-def uses_notification_bouncer():
-    # type: () -> bool
+def uses_notification_bouncer() -> bool:
     return settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
 
-def send_notifications_to_bouncer(user_profile_id, apns_payload, gcm_payload):
-    # type: (int, Dict[str, Any], Dict[str, Any]) -> None
+def send_notifications_to_bouncer(user_profile_id: int,
+                                  apns_payload: Dict[str, Any],
+                                  gcm_payload: Dict[str, Any]) -> None:
     post_data = {
         'user_id': user_profile_id,
         'apns_payload': apns_payload,
@@ -231,8 +225,7 @@ def send_notifications_to_bouncer(user_profile_id, apns_payload, gcm_payload):
     }
     send_json_to_push_bouncer('POST', 'notify', post_data)
 
-def send_json_to_push_bouncer(method, endpoint, post_data):
-    # type: (str, str, Dict[str, Any]) -> None
+def send_json_to_push_bouncer(method: str, endpoint: str, post_data: Dict[str, Any]) -> None:
     send_to_push_bouncer(
         method,
         endpoint,
@@ -243,8 +236,10 @@ def send_json_to_push_bouncer(method, endpoint, post_data):
 class PushNotificationBouncerException(Exception):
     pass
 
-def send_to_push_bouncer(method, endpoint, post_data, extra_headers=None):
-    # type: (str, str, Union[Text, Dict[str, Any]], Optional[Dict[str, Any]]) -> None
+def send_to_push_bouncer(method: str,
+                         endpoint: str,
+                         post_data: Union[Text, Dict[str, Any]],
+                         extra_headers: Optional[Dict[str, Any]]=None) -> None:
     """While it does actually send the notice, this function has a lot of
     code and comments around error handling for the push notifications
     bouncer.  There are several classes of failures, each with its own
@@ -310,15 +305,16 @@ def send_to_push_bouncer(method, endpoint, post_data, extra_headers=None):
 # Managing device tokens
 #
 
-def num_push_devices_for_user(user_profile, kind = None):
-    # type: (UserProfile, Optional[int]) -> PushDeviceToken
+def num_push_devices_for_user(user_profile: UserProfile, kind: Optional[int]=None) -> PushDeviceToken:
     if kind is None:
         return PushDeviceToken.objects.filter(user=user_profile).count()
     else:
         return PushDeviceToken.objects.filter(user=user_profile, kind=kind).count()
 
-def add_push_device_token(user_profile, token_str, kind, ios_app_id=None):
-    # type: (UserProfile, bytes, int, Optional[str]) -> None
+def add_push_device_token(user_profile: UserProfile,
+                          token_str: bytes,
+                          kind: int,
+                          ios_app_id: Optional[str]=None) -> None:
 
     logging.info("New push device: %d %r %d %r",
                  user_profile.id, token_str, kind, ios_app_id)
@@ -357,8 +353,7 @@ def add_push_device_token(user_profile, token_str, kind, ios_app_id=None):
     else:
         logging.info("New push device created.")
 
-def remove_push_device_token(user_profile, token_str, kind):
-    # type: (UserProfile, bytes, int) -> None
+def remove_push_device_token(user_profile: UserProfile, token_str: bytes, kind: int) -> None:
 
     # If we're sending things to the push notification bouncer
     # register this user with them here
@@ -383,8 +378,7 @@ def remove_push_device_token(user_profile, token_str, kind):
 # Push notifications in general
 #
 
-def get_alert_from_message(message):
-    # type: (Message) -> Text
+def get_alert_from_message(message: Message) -> Text:
     """
     Determine what alert string to display based on the missed messages.
     """
@@ -401,10 +395,8 @@ def get_alert_from_message(message):
     else:
         return "New Zulip mentions and private messages from %s" % (sender_str,)
 
-def get_mobile_push_content(rendered_content):
-    # type: (Text) -> Text
-    def get_text(elem):
-        # type: (LH.HtmlElement) -> Text
+def get_mobile_push_content(rendered_content: Text) -> Text:
+    def get_text(elem: LH.HtmlElement) -> Text:
         # Convert default emojis to their unicode equivalent.
         classes = elem.get("class", "")
         if "emoji" in classes:
@@ -421,8 +413,7 @@ def get_mobile_push_content(rendered_content):
 
         return elem.text or ""
 
-    def process(elem):
-        # type: (LH.HtmlElement) -> Text
+    def process(elem: LH.HtmlElement) -> Text:
         plain_text = get_text(elem)
         for child in elem:
             plain_text += process(child)
@@ -436,8 +427,7 @@ def get_mobile_push_content(rendered_content):
         plain_text = process(elem)
         return plain_text
 
-def truncate_content(content):
-    # type: (Text) -> Text
+def truncate_content(content: Text) -> Text:
     # We use unicode character 'HORIZONTAL ELLIPSIS' (U+2026) instead
     # of three dots as this saves two extra characters for textual
     # content. This function will need to be updated to handle unicode
@@ -446,8 +436,7 @@ def truncate_content(content):
         return content
     return content[:200] + "…"
 
-def get_apns_payload(message):
-    # type: (Message) -> Dict[str, Any]
+def get_apns_payload(message: Message) -> Dict[str, Any]:
     text_content = get_mobile_push_content(message.rendered_content)
     truncated_content = truncate_content(text_content)
     return {
@@ -464,8 +453,7 @@ def get_apns_payload(message):
         }
     }
 
-def get_gcm_payload(user_profile, message):
-    # type: (UserProfile, Message) -> Dict[str, Any]
+def get_gcm_payload(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
     text_content = get_mobile_push_content(message.rendered_content)
     truncated_content = truncate_content(text_content)
 
@@ -492,8 +480,7 @@ def get_gcm_payload(user_profile, message):
     return android_data
 
 @statsd_increment("push_notifications")
-def handle_push_notification(user_profile_id, missed_message):
-    # type: (int, Dict[str, Any]) -> None
+def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any]) -> None:
     """
     missed_message is the event received by the
     zerver.worker.queue_processors.PushNotificationWorker.consume function.

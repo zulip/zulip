@@ -9,15 +9,13 @@ from typing import Text, Optional, List, Tuple
 class StateError(Exception):
     pass
 
-def get_bot_storage(bot_profile, key):
-    # type: (UserProfile, Text) -> Text
+def get_bot_storage(bot_profile: UserProfile, key: Text) -> Text:
     try:
         return BotStorageData.objects.get(bot_profile=bot_profile, key=key).value
     except BotStorageData.DoesNotExist:
         raise StateError("Key does not exist.")
 
-def get_bot_storage_size(bot_profile, key=None):
-    # type: (UserProfile, Optional[Text]) -> int
+def get_bot_storage_size(bot_profile: UserProfile, key: Optional[Text]=None) -> int:
     if key is None:
         return BotStorageData.objects.filter(bot_profile=bot_profile) \
                                      .annotate(key_size=Length('key'), value_size=Length('value')) \
