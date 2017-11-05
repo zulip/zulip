@@ -74,7 +74,7 @@ Query = Any  # TODO: Should be Select, but sqlalchemy stubs are busted
 ConditionTransform = Any  # TODO: should be Callable[[ColumnElement], ColumnElement], but sqlalchemy stubs are busted
 
 # When you add a new operator to this, also update zerver/lib/narrow.py
-class NarrowBuilder(object):
+class NarrowBuilder:
     '''
     Build up a SQLAlchemy query to find messages matching a narrow.
     '''

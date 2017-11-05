@@ -300,7 +300,7 @@ class Realm(models.Model):
         # type: () -> bool
         return self.is_zephyr_mirror_realm
 
-    class Meta(object):
+    class Meta:
         permissions = (
             ('administer', "Administer a realm"),
             ('api_super_user', "Can send messages as other users for mirroring"),
@@ -324,7 +324,7 @@ class RealmDomain(models.Model):
     domain = models.CharField(max_length=80, db_index=True)  # type: Text
     allow_subdomains = models.BooleanField(default=False)
 
-    class Meta(object):
+    class Meta:
         unique_together = ("realm", "domain")
 
 # These functions should only be used on email addresses that have
@@ -381,7 +381,7 @@ class RealmEmoji(models.Model):
 
     PATH_ID_TEMPLATE = "{realm_id}/emoji/{emoji_file_name}"
 
-    class Meta(object):
+    class Meta:
         unique_together = ("realm", "name")
 
     def __str__(self):
@@ -440,7 +440,7 @@ class RealmFilter(models.Model):
     pattern = models.TextField(validators=[filter_pattern_validator])  # type: Text
     url_format_string = models.TextField(validators=[URLValidator(), filter_format_validator])  # type: Text
 
-    class Meta(object):
+    class Meta:
         unique_together = ("realm", "pattern")
 
     def __str__(self):
@@ -853,7 +853,7 @@ class AbstractPushDeviceToken(models.Model):
     # [optional] Contains the app id of the device if it is an iOS device
     ios_app_id = models.TextField(null=True)  # type: Optional[Text]
 
-    class Meta(object):
+    class Meta:
         abstract = True
 
 class PushDeviceToken(AbstractPushDeviceToken):
@@ -900,7 +900,7 @@ class Stream(models.Model):
         # All streams are private in Zephyr mirroring realms.
         return not self.invite_only and not self.is_in_zephyr_realm
 
-    class Meta(object):
+    class Meta:
         unique_together = ("name", "realm")
 
     # This is stream information that is sent to clients
@@ -929,7 +929,7 @@ class Recipient(models.Model):
     STREAM = 2
     HUDDLE = 3
 
-    class Meta(object):
+    class Meta:
         unique_together = ("type", "type_id")
 
     # N.B. If we used Django's choice=... we would get this for free (kinda)
@@ -954,7 +954,7 @@ class MutedTopic(models.Model):
     recipient = models.ForeignKey(Recipient, on_delete=CASCADE)
     topic_name = models.CharField(max_length=MAX_SUBJECT_LENGTH)
 
-    class Meta(object):
+    class Meta:
         unique_together = ('user_profile', 'stream', 'topic_name')
 
     def __str__(self):
@@ -1121,7 +1121,7 @@ class AbstractMessage(models.Model):
     has_image = models.BooleanField(default=False, db_index=True)  # type: bool
     has_link = models.BooleanField(default=False, db_index=True)  # type: bool
 
-    class Meta(object):
+    class Meta:
         abstract = True
 
     def __str__(self):
@@ -1267,7 +1267,7 @@ class Reaction(models.Model):
 
     reaction_type = models.CharField(default=UNICODE_EMOJI, choices=REACTION_TYPES, max_length=30)  # type: Text
 
-    class Meta(object):
+    class Meta:
         unique_together = ("user_profile", "message", "emoji_name")
 
     @staticmethod
@@ -1300,7 +1300,7 @@ class AbstractUserMessage(models.Model):
                  'has_alert_word', "historical"]
     flags = BitField(flags=ALL_FLAGS, default=0)  # type: BitHandler
 
-    class Meta(object):
+    class Meta:
         abstract = True
         unique_together = ("user_profile", "message")
 
@@ -1371,7 +1371,7 @@ class AbstractAttachment(models.Model):
                                        db_index=True)  # type: datetime.datetime
     size = models.IntegerField(null=True)  # type: Optional[int]
 
-    class Meta(object):
+    class Meta:
         abstract = True
 
     def __str__(self):
@@ -1453,7 +1453,7 @@ class Subscription(models.Model):
     # above.
     notifications = models.BooleanField(default=False)  # type: bool
 
-    class Meta(object):
+    class Meta:
         unique_together = ("user_profile", "recipient")
 
     def __str__(self):
@@ -1605,7 +1605,7 @@ class UserActivity(models.Model):
     count = models.IntegerField()  # type: int
     last_visit = models.DateTimeField('last visit')  # type: datetime.datetime
 
-    class Meta(object):
+    class Meta:
         unique_together = ("user_profile", "client", "query")
 
 class UserActivityInterval(models.Model):
@@ -1790,14 +1790,14 @@ class UserPresence(models.Model):
 
         return status_val
 
-    class Meta(object):
+    class Meta:
         unique_together = ("user_profile", "client")
 
 class DefaultStream(models.Model):
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
     stream = models.ForeignKey(Stream, on_delete=CASCADE)  # type: Stream
 
-    class Meta(object):
+    class Meta:
         unique_together = ("realm", "stream")
 
 class DefaultStreamGroup(models.Model):
@@ -1806,7 +1806,7 @@ class DefaultStreamGroup(models.Model):
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
     streams = models.ManyToManyField('Stream')  # type: Manager
 
-    class Meta(object):
+    class Meta:
         unique_together = ("realm", "name")
 
     def to_dict(self):
@@ -1822,7 +1822,7 @@ class AbstractScheduledJob(models.Model):
     # JSON representation of arguments to consumer
     data = models.TextField()  # type: Text
 
-    class Meta(object):
+    class Meta:
         abstract = True
 
 class ScheduledEmail(AbstractScheduledJob):
@@ -1876,7 +1876,7 @@ class UserHotspot(models.Model):
     hotspot = models.CharField(max_length=30)  # type: Text
     timestamp = models.DateTimeField(default=timezone_now)  # type: datetime.datetime
 
-    class Meta(object):
+    class Meta:
         unique_together = ("user", "hotspot")
 
 class CustomProfileField(models.Model):
@@ -1903,7 +1903,7 @@ class CustomProfileField(models.Model):
     field_type = models.PositiveSmallIntegerField(choices=FIELD_TYPE_CHOICES,
                                                   default=SHORT_TEXT)  # type: int
 
-    class Meta(object):
+    class Meta:
         unique_together = ('realm', 'name')
 
     def as_dict(self):
@@ -1923,7 +1923,7 @@ class CustomProfileFieldValue(models.Model):
     field = models.ForeignKey(CustomProfileField, on_delete=CASCADE)  # type: CustomProfileField
     value = models.TextField()  # type: Text
 
-    class Meta(object):
+    class Meta:
         unique_together = ('user_profile', 'field')
 
 # Interfaces for services
@@ -1996,5 +1996,5 @@ class BotUserStateData(models.Model):
     key = models.TextField(db_index=True)  # type: Text
     value = models.TextField()  # type: Text
 
-    class Meta(object):
+    class Meta:
         unique_together = ("bot_profile", "key")
