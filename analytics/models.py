@@ -56,12 +56,12 @@ class BaseCount(models.Model):
     value = models.BigIntegerField()  # type: int
     anomaly = models.ForeignKey(Anomaly, null=True)  # type: Optional[Anomaly]
 
-    class Meta(object):
+    class Meta:
         abstract = True
 
 class InstallationCount(BaseCount):
 
-    class Meta(object):
+    class Meta:
         unique_together = ("property", "subgroup", "end_time")
 
     def __str__(self):
@@ -71,7 +71,7 @@ class InstallationCount(BaseCount):
 class RealmCount(BaseCount):
     realm = models.ForeignKey(Realm)
 
-    class Meta(object):
+    class Meta:
         unique_together = ("realm", "property", "subgroup", "end_time")
         index_together = ["property", "end_time"]
 
@@ -83,7 +83,7 @@ class UserCount(BaseCount):
     user = models.ForeignKey(UserProfile)
     realm = models.ForeignKey(Realm)
 
-    class Meta(object):
+    class Meta:
         unique_together = ("user", "property", "subgroup", "end_time")
         # This index dramatically improves the performance of
         # aggregating from users to realms
@@ -97,7 +97,7 @@ class StreamCount(BaseCount):
     stream = models.ForeignKey(Stream)
     realm = models.ForeignKey(Realm)
 
-    class Meta(object):
+    class Meta:
         unique_together = ("stream", "property", "subgroup", "end_time")
         # This index dramatically improves the performance of
         # aggregating from streams to realms

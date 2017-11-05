@@ -26,7 +26,7 @@ TIMEDELTA_MAX = timedelta(days=365*1000)
 
 ## Class definitions ##
 
-class CountStat(object):
+class CountStat:
     HOUR = 'hour'
     DAY = 'day'
     FREQUENCIES = frozenset([HOUR, DAY])
@@ -61,7 +61,7 @@ class DependentCountStat(CountStat):
         CountStat.__init__(self, property, data_collector, frequency, interval=interval)
         self.dependencies = dependencies
 
-class DataCollector(object):
+class DataCollector:
     def __init__(self, output_table, pull_function):
         # type: (Type[BaseCount], Optional[Callable[[str, datetime, datetime], int]]) -> None
         self.output_table = output_table
