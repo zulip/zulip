@@ -89,6 +89,8 @@ EMAIL_USE_TLS = True
 # Enable at least one of the following authentication backends.
 # See http://zulip.readthedocs.io/en/latest/prod-authentication-methods.html
 # for documentation on our authentication backends.
+# The default (email) backend must be enabled in order for Step 6 of production
+# installation to be completed.
 AUTHENTICATION_BACKENDS = (
     'zproject.backends.EmailAuthBackend',  # Email and password; just requires SMTP setup
     # 'zproject.backends.GoogleMobileOauth2Backend',  # Google Apps, setup below
