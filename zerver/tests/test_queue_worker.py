@@ -16,7 +16,7 @@ from zerver.models import get_client, UserActivity
 from zerver.worker import queue_processors
 
 class WorkerTest(ZulipTestCase):
-    class FakeClient(object):
+    class FakeClient:
         def __init__(self):
             # type: () -> None
             self.consumers = {}  # type: Dict[str, Callable[[Dict[str, Any]], None]]

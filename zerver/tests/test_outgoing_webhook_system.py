@@ -14,7 +14,7 @@ from zerver.lib.outgoing_webhook import do_rest_call, OutgoingWebhookServiceInte
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import get_realm, get_user, UserProfile, get_display_recipient
 
-class ResponseMock(object):
+class ResponseMock:
     def __init__(self, status_code, content = None):
         # type: (int, Optional[Any]) -> None
         self.status_code = status_code

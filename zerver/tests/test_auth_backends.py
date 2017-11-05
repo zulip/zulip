@@ -678,7 +678,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
         utils.BACKENDS = settings.AUTHENTICATION_BACKENDS
 
 
-class ResponseMock(object):
+class ResponseMock:
     def __init__(self, status_code, data):
         # type: (int, Any) -> None
         self.status_code = status_code
@@ -1924,7 +1924,7 @@ class TestLDAP(ZulipTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_get_or_create_user_when_user_exists(self):
         # type: () -> None
-        class _LDAPUser(object):
+        class _LDAPUser:
             attrs = {'fn': ['Full Name'], 'sn': ['Short Name']}
 
         backend = self.backend
@@ -1936,7 +1936,7 @@ class TestLDAP(ZulipTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_get_or_create_user_when_user_does_not_exist(self):
         # type: () -> None
-        class _LDAPUser(object):
+        class _LDAPUser:
             attrs = {'fn': ['Full Name'], 'sn': ['Short Name']}
 
         ldap_user_attr_map = {'full_name': 'fn', 'short_name': 'sn'}
@@ -1952,7 +1952,7 @@ class TestLDAP(ZulipTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_get_or_create_user_when_user_has_invalid_name(self):
         # type: () -> None
-        class _LDAPUser(object):
+        class _LDAPUser:
             attrs = {'fn': ['<invalid name>'], 'sn': ['Short Name']}
 
         ldap_user_attr_map = {'full_name': 'fn', 'short_name': 'sn'}
@@ -1966,7 +1966,7 @@ class TestLDAP(ZulipTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_get_or_create_user_when_realm_is_deactivated(self):
         # type: () -> None
-        class _LDAPUser(object):
+        class _LDAPUser:
             attrs = {'fn': ['Full Name'], 'sn': ['Short Name']}
 
         ldap_user_attr_map = {'full_name': 'fn', 'short_name': 'sn'}
@@ -1981,7 +1981,7 @@ class TestLDAP(ZulipTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_get_or_create_user_when_realm_is_none(self):
         # type: () -> None
-        class _LDAPUser(object):
+        class _LDAPUser:
             attrs = {'fn': ['Full Name'], 'sn': ['Short Name']}
 
         ldap_user_attr_map = {'full_name': 'fn', 'short_name': 'sn'}
@@ -1996,7 +1996,7 @@ class TestLDAP(ZulipTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_get_or_create_user_when_ldap_has_no_email_attr(self):
         # type: () -> None
-        class _LDAPUser(object):
+        class _LDAPUser:
             attrs = {'fn': ['Full Name'], 'sn': ['Short Name']}
 
         nonexisting_attr = 'email'
@@ -2178,7 +2178,7 @@ class TestMaybeSendToRegistration(ZulipTestCase):
         # This form will be returned by the create_hompage_form function
         # and will always be valid so that the code that we want to test
         # actually runs.
-        class Form(object):
+        class Form:
             def is_valid(self):
                 # type: () -> bool
                 return True
@@ -2208,7 +2208,7 @@ class TestMaybeSendToRegistration(ZulipTestCase):
         # This form will be returned by the create_hompage_form function
         # and will always be valid so that the code that we want to test
         # actually runs.
-        class Form(object):
+        class Form:
             def is_valid(self):
                 # type: () -> bool
                 return True

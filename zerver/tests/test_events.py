@@ -2091,7 +2091,7 @@ class ClientDescriptorsTest(ZulipTestCase):
         # type: () -> None
         hamlet = self.example_user("hamlet")
 
-        class MockClient(object):
+        class MockClient:
             def __init__(self, user_profile_id, apply_markdown):
                 # type: (int, bool) -> None
                 self.user_profile_id = user_profile_id

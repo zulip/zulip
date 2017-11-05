@@ -675,7 +675,7 @@ class BugdownTest(ZulipTestCase):
             flush_realm_filter is a post-save hook, so calling it
             directly for testing is kind of awkward
             '''
-            class Instance(object):
+            class Instance:
                 realm_id = None  # type: Optional[int]
             instance = Instance()
             instance.realm_id = realm.id

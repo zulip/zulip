@@ -90,7 +90,7 @@ class TypesPrintTest(TestCase):
 
     def test_class(self):
         # type: () -> None
-        class A(object):
+        class A:
             pass
 
         class B(str):
