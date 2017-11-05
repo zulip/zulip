@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect, HttpResponse, HttpRequest
 from django.shortcuts import redirect, render
 from django.utils import translation
 from django.utils.cache import patch_cache_control
-from six.moves import zip_longest, zip, range
+from six.moves import zip_longest, range
 
 from zerver.decorator import zulip_login_required, process_client
 from zerver.forms import ToSForm

@@ -7,7 +7,6 @@
 # mostly not processed by mypy.
 from functools import wraps
 import ujson
-from six.moves import zip
 
 from django.utils.translation import ugettext as _
 

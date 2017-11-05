@@ -5,7 +5,6 @@ from typing import Any, Iterator, List, Optional, Tuple, Text
 
 from django.conf import settings
 from zerver.lib.redis_utils import get_redis_client
-from six.moves import zip
 
 from zerver.models import UserProfile
 

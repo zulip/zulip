@@ -1,7 +1,6 @@
 # Webhooks for external integrations.
 import re
 from functools import partial
-from six.moves import zip
 from typing import Any, Callable, Dict, List, Optional, Text
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _

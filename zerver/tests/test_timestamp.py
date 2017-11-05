@@ -10,8 +10,6 @@ from datetime import datetime, timedelta
 from dateutil import parser
 import pytz
 
-from six.moves import zip
-
 class TestTimestamp(ZulipTestCase):
     def test_datetime_and_timestamp_conversions(self):
         # type: () -> None

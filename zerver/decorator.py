@@ -28,7 +28,6 @@ import datetime
 import ujson
 import logging
 from io import BytesIO
-from six.moves import zip
 import urllib
 
 from typing import Union, Any, Callable, Sequence, Dict, Optional, TypeVar, Text, cast
