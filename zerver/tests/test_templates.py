@@ -17,7 +17,7 @@ from zerver.lib.test_runner import slow
 from zerver.context_processors import common_context
 
 
-class get_form_value(object):
+class get_form_value:
     def __init__(self, value):
         # type: (Any) -> None
         self._value = value

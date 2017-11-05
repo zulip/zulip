@@ -17,7 +17,7 @@ def fix_params(raw_params):
     # individual parameters serialized as JSON.
     return {k: ujson.dumps(v) for k, v in raw_params.items()}
 
-class StatsMock(object):
+class StatsMock:
     def __init__(self, settings):
         # type: (Callable[..., Any]) -> None
         self.settings = settings

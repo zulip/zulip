@@ -801,7 +801,7 @@ class TestSendNotificationsToBouncer(ZulipTestCase):
                                      extra_headers={'Content-type':
                                                     'application/json'})
 
-class Result(object):
+class Result:
     def __init__(self, status=200, content=ujson.dumps({'msg': 'error'})):
         # type: (int, str) -> None
         self.status_code = status

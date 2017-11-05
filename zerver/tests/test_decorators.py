@@ -46,7 +46,7 @@ import ujson
 class DecoratorTestCase(TestCase):
     def test_get_client_name(self):
         # type: () -> None
-        class Request(object):
+        class Request:
             def __init__(self, GET, POST, META):
                 # type: (Dict[str, str], Dict[str, str], Dict[str, str]) -> None
                 self.GET = GET
@@ -115,7 +115,7 @@ class DecoratorTestCase(TestCase):
             # type: (HttpRequest, Iterable[int]) -> int
             return sum(numbers)
 
-        class Request(object):
+        class Request:
             GET = {}  # type: Dict[str, str]
             POST = {}  # type: Dict[str, str]
 
@@ -160,7 +160,7 @@ class DecoratorTestCase(TestCase):
             # type: (HttpRequest, Iterable[int]) -> int
             return sum(numbers)
 
-        class Request(object):
+        class Request:
             GET = {}  # type: Dict[str, str]
             POST = {}  # type: Dict[str, str]
 
@@ -190,7 +190,7 @@ class DecoratorTestCase(TestCase):
             # type: (HttpRequest, Dict[str, Any]) -> Dict[str, Any]
             return payload
 
-        class MockRequest(object):
+        class MockRequest:
             body = {}  # type: Any
 
         request = MockRequest()
@@ -346,10 +346,10 @@ class RateLimitTestCase(TestCase):
 
     def test_internal_local_clients_skip_rate_limiting(self):
         # type: () -> None
-        class Client(object):
+        class Client:
             name = 'internal'
 
-        class Request(object):
+        class Request:
             client = Client()
             META = {'REMOTE_ADDR': '127.0.0.1'}
 
@@ -370,10 +370,10 @@ class RateLimitTestCase(TestCase):
 
     def test_debug_clients_skip_rate_limiting(self):
         # type: () -> None
-        class Client(object):
+        class Client:
             name = 'internal'
 
-        class Request(object):
+        class Request:
             client = Client()
             META = {'REMOTE_ADDR': '3.3.3.3'}
 
@@ -395,10 +395,10 @@ class RateLimitTestCase(TestCase):
 
     def test_rate_limit_setting_of_false_bypasses_rate_limiting(self):
         # type: () -> None
-        class Client(object):
+        class Client:
             name = 'external'
 
-        class Request(object):
+        class Request:
             client = Client()
             META = {'REMOTE_ADDR': '3.3.3.3'}
             user = 'stub'  # any non-None value here exercises the correct code path
@@ -420,10 +420,10 @@ class RateLimitTestCase(TestCase):
 
     def test_rate_limiting_happens_in_normal_case(self):
         # type: () -> None
-        class Client(object):
+        class Client:
             name = 'external'
 
-        class Request(object):
+        class Request:
             client = Client()
             META = {'REMOTE_ADDR': '3.3.3.3'}
             user = 'stub'  # any non-None value here exercises the correct code path
@@ -951,7 +951,7 @@ class TestValidateApiKey(ZulipTestCase):
 class TestInternalNotifyView(TestCase):
     BORING_RESULT = 'boring'
 
-    class Request(object):
+    class Request:
         def __init__(self, POST, META):
             # type: (Dict[str, Any], Dict[str, Any]) -> None
             self.POST = POST
@@ -1200,7 +1200,7 @@ class TestRequireServerAdminDecorator(ZulipTestCase):
 class ReturnSuccessOnHeadRequestDecorator(ZulipTestCase):
     def test_return_success_on_head_request_returns_200_if_request_method_is_head(self):
         # type: () -> None
-        class HeadRequest(object):
+        class HeadRequest:
             method = 'HEAD'
 
         request = HeadRequest()
@@ -1216,7 +1216,7 @@ class ReturnSuccessOnHeadRequestDecorator(ZulipTestCase):
 
     def test_return_success_on_head_request_returns_normal_response_if_request_method_is_not_head(self):
             # type: () -> None
-            class HeadRequest(object):
+            class HeadRequest:
                 method = 'POST'
 
             request = HeadRequest()
