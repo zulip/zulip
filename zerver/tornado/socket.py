@@ -70,7 +70,7 @@ redis_client = get_redis_client()
 def req_redis_key(req_id: Text) -> Text:
     return u'socket_req_status:%s' % (req_id,)
 
-class CloseErrorInfo(object):
+class CloseErrorInfo:
     def __init__(self, status_code: int, err_msg: str) -> None:
         self.status_code = status_code
         self.err_msg = err_msg

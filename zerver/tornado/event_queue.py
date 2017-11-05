@@ -61,7 +61,7 @@ MAX_QUEUE_TIMEOUT_SECS = 7 * 24 * 60 * 60
 # wireless routers that kill "inactive" http connections.
 HEARTBEAT_MIN_FREQ_SECS = 45
 
-class ClientDescriptor(object):
+class ClientDescriptor:
     def __init__(self, user_profile_id, user_profile_email, realm_id, event_queue,
                  event_types, client_type_name, apply_markdown=True,
                  all_public_streams=False, lifespan_secs=0, narrow=[]):
@@ -230,7 +230,7 @@ def compute_full_event_type(event):
         return "flags/%s/%s" % (event["operation"], event["flag"])
     return event["type"]
 
-class EventQueue(object):
+class EventQueue:
     def __init__(self, id):
         # type: (str) -> None
         self.queue = deque()  # type: ignore # Should be Deque[Dict[str, Any]], but Deque isn't available in Python 3.4

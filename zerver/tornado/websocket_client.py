@@ -21,7 +21,7 @@ from zerver.models import get_system_bot
 from typing import Any, Callable, Dict, Generator, Iterable, Optional
 
 
-class WebsocketClient(object):
+class WebsocketClient:
     def __init__(self, host_url, sockjs_url, sender_email, run_on_start, validate_ssl=True,
                  **run_kwargs):
         # NOTE: Callable should take a WebsocketClient & kwargs, but this is not standardised

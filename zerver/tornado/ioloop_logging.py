@@ -27,7 +27,7 @@ def instrument_tornado_ioloop() -> None:
 # the default poll implementation.  We need to do this before any Tornado code
 # runs that might instantiate the default event loop.
 
-class InstrumentedPoll(object):
+class InstrumentedPoll:
     def __init__(self) -> None:
         self._underlying = orig_poll_impl()
         self._times = []  # type: List[Tuple[float, float]]
