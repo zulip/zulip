@@ -11,8 +11,7 @@ from zerver.lib.test_classes import (
 from zerver.models import get_realm, get_user
 
 class TypingNotificationOperatorTest(ZulipTestCase):
-    def test_missing_parameter(self):
-        # type: () -> None
+    def test_missing_parameter(self) -> None:
         """
         Sending typing notification without op parameter fails
         """
@@ -22,8 +21,7 @@ class TypingNotificationOperatorTest(ZulipTestCase):
                                   **self.api_auth(sender))
         self.assert_json_error(result, 'Missing \'op\' argument')
 
-    def test_invalid_parameter(self):
-        # type: () -> None
+    def test_invalid_parameter(self) -> None:
         """
         Sending typing notification with invalid value for op parameter fails
         """
@@ -34,8 +32,7 @@ class TypingNotificationOperatorTest(ZulipTestCase):
         self.assert_json_error(result, 'Invalid \'op\' value (should be start or stop)')
 
 class TypingNotificationRecipientsTest(ZulipTestCase):
-    def test_missing_recipient(self):
-        # type: () -> None
+    def test_missing_recipient(self) -> None:
         """
         Sending typing notification without recipient fails
         """
@@ -44,8 +41,7 @@ class TypingNotificationRecipientsTest(ZulipTestCase):
                                   **self.api_auth(sender))
         self.assert_json_error(result, 'Missing parameter: \'to\' (recipient)')
 
-    def test_invalid_recipient(self):
-        # type: () -> None
+    def test_invalid_recipient(self) -> None:
         """
         Sending typing notification to invalid recipient fails
         """
@@ -55,8 +51,7 @@ class TypingNotificationRecipientsTest(ZulipTestCase):
                                   **self.api_auth(sender))
         self.assert_json_error(result, 'Invalid email \'' + invalid + '\'')
 
-    def test_single_recipient(self):
-        # type: () -> None
+    def test_single_recipient(self) -> None:
         """
         Sending typing notification to a single recipient is successful
         """
@@ -86,8 +81,7 @@ class TypingNotificationRecipientsTest(ZulipTestCase):
         self.assertEqual(event['type'], 'typing')
         self.assertEqual(event['op'], 'start')
 
-    def test_multiple_recipients(self):
-        # type: () -> None
+    def test_multiple_recipients(self) -> None:
         """
         Sending typing notification to a single recipient is successful
         """
@@ -117,8 +111,7 @@ class TypingNotificationRecipientsTest(ZulipTestCase):
         self.assertEqual(event['op'], 'start')
 
 class TypingStartedNotificationTest(ZulipTestCase):
-    def test_send_notification_to_self_event(self):
-        # type: () -> None
+    def test_send_notification_to_self_event(self) -> None:
         """
         Sending typing notification to yourself
         is successful.
@@ -147,8 +140,7 @@ class TypingStartedNotificationTest(ZulipTestCase):
         self.assertEqual(event['type'], 'typing')
         self.assertEqual(event['op'], 'start')
 
-    def test_send_notification_to_another_user_event(self):
-        # type: () -> None
+    def test_send_notification_to_another_user_event(self) -> None:
         """
         Sending typing notification to another user
         is successful.
@@ -180,8 +172,7 @@ class TypingStartedNotificationTest(ZulipTestCase):
         self.assertEqual(event['op'], 'start')
 
 class StoppedTypingNotificationTest(ZulipTestCase):
-    def test_send_notification_to_self_event(self):
-        # type: () -> None
+    def test_send_notification_to_self_event(self) -> None:
         """
         Sending stopped typing notification to yourself
         is successful.
@@ -211,8 +202,7 @@ class StoppedTypingNotificationTest(ZulipTestCase):
         self.assertEqual(event['type'], 'typing')
         self.assertEqual(event['op'], 'stop')
 
-    def test_send_notification_to_another_user_event(self):
-        # type: () -> None
+    def test_send_notification_to_another_user_event(self) -> None:
         """
         Sending stopped typing notification to another user
         is successful.

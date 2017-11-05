@@ -8,8 +8,7 @@ from typing import Any, Dict
 import ujson
 
 class TutorialTests(ZulipTestCase):
-    def setUp(self):
-        # type: () -> None
+    def setUp(self) -> None:
         # This emulates the welcome message sent by the welcome bot to hamlet@zulip.com
         # This is only a quick fix - ideally, we would have this message sent by the initialization
         # code in populate_db.py
@@ -18,8 +17,7 @@ class TutorialTests(ZulipTestCase):
         content = 'Shortened welcome message.'
         self.send_personal_message(bot_email, user_email, content)
 
-    def test_tutorial_status(self):
-        # type: () -> None
+    def test_tutorial_status(self) -> None:
         email = self.example_email('hamlet')
         self.login(email)
 
@@ -34,8 +32,7 @@ class TutorialTests(ZulipTestCase):
             user = self.example_user('hamlet')
             self.assertEqual(user.tutorial_status, expected_db_status)
 
-    def test_single_response_to_pm(self):
-        # type: () -> None
+    def test_single_response_to_pm(self) -> None:
         realm = get_realm('zulip')
         user_email = 'hamlet@zulip.com'
         bot_email = 'welcome-bot@zulip.com'
@@ -52,8 +49,7 @@ class TutorialTests(ZulipTestCase):
         self.send_personal_message(user_email, bot_email, content)
         self.assertEqual(message_stream_count(user), user_messages+1)
 
-    def test_no_response_to_group_pm(self):
-        # type: () -> None
+    def test_no_response_to_group_pm(self) -> None:
         realm = get_realm('zulip')  # Assume realm is always 'zulip'
         user1_email = self.example_email('hamlet')
         user2_email = self.example_email('cordelia')

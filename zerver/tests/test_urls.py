@@ -19,8 +19,7 @@ class PublicURLTest(ZulipTestCase):
     URLs redirect to a page.
     """
 
-    def fetch(self, method, urls, expected_status):
-        # type: (str, List[str], int) -> None
+    def fetch(self, method: str, urls: List[str], expected_status: int) -> None:
         for url in urls:
             # e.g. self.client_post(url) if method is "post"
             response = getattr(self, method)(url)
@@ -29,8 +28,7 @@ class PublicURLTest(ZulipTestCase):
                                  expected_status, response.status_code, method, url))
 
     @slow("Tests dozens of endpoints, including all of our /help/ documents")
-    def test_public_urls(self):
-        # type: () -> None
+    def test_public_urls(self) -> None:
         """
         Test which views are accessible when not logged in.
         """
@@ -89,8 +87,7 @@ class PublicURLTest(ZulipTestCase):
         for status_code, url_set in put_urls.items():
             self.fetch("client_put", url_set, status_code)
 
-    def test_get_gcid_when_not_configured(self):
-        # type: () -> None
+    def test_get_gcid_when_not_configured(self) -> None:
         with self.settings(GOOGLE_CLIENT_ID=None):
             resp = self.client_get("/api/v1/fetch_google_client_id")
             self.assertEqual(400, resp.status_code,
@@ -98,8 +95,7 @@ class PublicURLTest(ZulipTestCase):
                                  resp.status_code,))
             self.assertEqual('error', resp.json()['result'])
 
-    def test_get_gcid_when_configured(self):
-        # type: () -> None
+    def test_get_gcid_when_configured(self) -> None:
         with self.settings(GOOGLE_CLIENT_ID="ABCD"):
             resp = self.client_get("/api/v1/fetch_google_client_id")
             self.assertEqual(200, resp.status_code,
@@ -110,20 +106,17 @@ class PublicURLTest(ZulipTestCase):
             self.assertEqual('ABCD', data['google_client_id'])
 
 class URLResolutionTest(TestCase):
-    def get_callback_string(self, pattern):
-        # type: (django.core.urlresolvers.RegexURLPattern) -> Optional[str]
+    def get_callback_string(self, pattern: django.core.urlresolvers.RegexURLPattern) -> Optional[str]:
         callback_str = hasattr(pattern, 'lookup_str') and 'lookup_str'
         callback_str = callback_str or '_callback_str'
         return getattr(pattern, callback_str, None)
 
-    def check_function_exists(self, module_name, view):
-        # type: (str, str) -> None
+    def check_function_exists(self, module_name: str, view: str) -> None:
         module = importlib.import_module(module_name)
         self.assertTrue(hasattr(module, view), "View %s.%s does not exist" % (module_name, view))
 
     # Tests that all views in urls.v1_api_and_json_patterns exist
-    def test_rest_api_url_resolution(self):
-        # type: () -> None
+    def test_rest_api_url_resolution(self) -> None:
         for pattern in urls.v1_api_and_json_patterns:
             callback_str = self.get_callback_string(pattern)
             if callback_str and hasattr(pattern, "default_args"):
@@ -136,8 +129,7 @@ class URLResolutionTest(TestCase):
     # Tests function-based views declared in urls.urlpatterns for
     # whether the function exists.  We at present do not test the
     # class-based views.
-    def test_non_api_url_resolution(self):
-        # type: () -> None
+    def test_non_api_url_resolution(self) -> None:
         for pattern in urls.urlpatterns:
             callback_str = self.get_callback_string(pattern)
             if callback_str:
@@ -145,8 +137,7 @@ class URLResolutionTest(TestCase):
                 self.check_function_exists(module_name, base_view)
 
 class ErrorPageTest(TestCase):
-    def test_bogus_http_host(self):
-        # type: () -> None
+    def test_bogus_http_host(self) -> None:
         # This tests that we've successfully worked around a certain bug in
         # Django's exception handling.  The enforce_csrf_checks=True,
         # secure=True, and HTTP_REFERER with an `https:` scheme are all

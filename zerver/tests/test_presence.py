@@ -28,8 +28,7 @@ from zerver.models import (
 import datetime
 
 class ActivityTest(ZulipTestCase):
-    def test_activity(self):
-        # type: () -> None
+    def test_activity(self) -> None:
         self.login(self.example_email("hamlet"))
         client, _ = Client.objects.get_or_create(name='website')
         query = '/json/users/me/pointer'
@@ -50,8 +49,7 @@ class ActivityTest(ZulipTestCase):
         self.assert_length(queries, 4)
 
 class TestClientModel(ZulipTestCase):
-    def test_client_stringification(self):
-        # type: () -> None
+    def test_client_stringification(self) -> None:
         '''
         This test is designed to cover __str__ method for Client.
         '''
@@ -59,8 +57,7 @@ class TestClientModel(ZulipTestCase):
         self.assertEqual(str(client), '<Client: some_client>')
 
 class UserPresenceModelTests(ZulipTestCase):
-    def test_date_logic(self):
-        # type: () -> None
+    def test_date_logic(self) -> None:
         UserPresence.objects.all().delete()
 
         user_profile = self.example_user('hamlet')
@@ -76,8 +73,7 @@ class UserPresenceModelTests(ZulipTestCase):
         self.assertEqual(len(presence_dct), 1)
         self.assertEqual(presence_dct[email]['website']['status'], 'active')
 
-        def back_date(num_weeks):
-            # type: (int) -> None
+        def back_date(num_weeks: int) -> None:
             user_presence = UserPresence.objects.filter(user_profile=user_profile)[0]
             user_presence.timestamp = timezone_now() - datetime.timedelta(weeks=num_weeks)
             user_presence.save()
@@ -92,8 +88,7 @@ class UserPresenceModelTests(ZulipTestCase):
         presence_dct = UserPresence.get_status_dict_by_realm(user_profile.realm_id)
         self.assertEqual(len(presence_dct), 0)
 
-    def test_push_tokens(self):
-        # type: () -> None
+    def test_push_tokens(self) -> None:
         UserPresence.objects.all().delete()
 
         user_profile = self.example_user('hamlet')
@@ -103,8 +98,7 @@ class UserPresenceModelTests(ZulipTestCase):
         result = self.client_post("/json/users/me/presence", {'status': 'active'})
         self.assert_json_success(result)
 
-        def pushable():
-            # type: () -> bool
+        def pushable() -> bool:
             presence_dct = UserPresence.get_status_dict_by_realm(user_profile.realm_id)
             self.assertEqual(len(presence_dct), 1)
             return presence_dct[email]['website']['pushable']
@@ -123,15 +117,13 @@ class UserPresenceModelTests(ZulipTestCase):
         self.assertTrue(pushable())
 
 class UserPresenceTests(ZulipTestCase):
-    def test_invalid_presence(self):
-        # type: () -> None
+    def test_invalid_presence(self) -> None:
         email = self.example_email("hamlet")
         self.login(email)
         result = self.client_post("/json/users/me/presence", {'status': 'foo'})
         self.assert_json_error(result, 'Invalid status: foo')
 
-    def test_set_idle(self):
-        # type: () -> None
+    def test_set_idle(self) -> None:
         email = self.example_email("hamlet")
         self.login(email)
         client = 'website'
@@ -155,8 +147,7 @@ class UserPresenceTests(ZulipTestCase):
         newer_timestamp = json['presences'][email][client]['timestamp']
         self.assertGreaterEqual(newer_timestamp, timestamp)
 
-    def test_set_active(self):
-        # type: () -> None
+    def test_set_active(self) -> None:
         self.login(self.example_email("hamlet"))
         client = 'website'
 
@@ -179,8 +170,7 @@ class UserPresenceTests(ZulipTestCase):
         self.assertEqual(json['presences'][email][client]['status'], 'active')
         self.assertEqual(json['presences'][self.example_email("hamlet")][client]['status'], 'idle')
 
-    def test_no_mit(self):
-        # type: () -> None
+    def test_no_mit(self) -> None:
         """Zephyr mirror realms such as MIT never get a list of users"""
         self.login(self.mit_email("espuser"))
         result = self.client_post("/json/users/me/presence", {'status': 'idle'},
@@ -188,15 +178,13 @@ class UserPresenceTests(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(result.json()['presences'], {})
 
-    def test_mirror_presence(self):
-        # type: () -> None
+    def test_mirror_presence(self) -> None:
         """Zephyr mirror realms find out the status of their mirror bot"""
         user_profile = self.mit_user('espuser')
         email = user_profile.email
         self.login(email)
 
-        def post_presence():
-            # type: () -> Dict[str, Any]
+        def post_presence() -> Dict[str, Any]:
             result = self.client_post("/json/users/me/presence", {'status': 'idle'},
                                       subdomain="zephyr")
             self.assert_json_success(result)
@@ -210,8 +198,7 @@ class UserPresenceTests(ZulipTestCase):
         json = post_presence()
         self.assertEqual(json['zephyr_mirror_active'], True)
 
-    def _simulate_mirror_activity_for_user(self, user_profile):
-        # type: (UserProfile) -> None
+    def _simulate_mirror_activity_for_user(self, user_profile: UserProfile) -> None:
         last_visit = timezone_now()
         client = make_client('zephyr_mirror')
 
@@ -223,8 +210,7 @@ class UserPresenceTests(ZulipTestCase):
             last_visit=last_visit
         )
 
-    def test_same_realm(self):
-        # type: () -> None
+    def test_same_realm(self) -> None:
         self.login(self.mit_email("espuser"))
         self.client_post("/json/users/me/presence", {'status': 'idle'},
                          subdomain="zephyr")
@@ -241,8 +227,7 @@ class UserPresenceTests(ZulipTestCase):
             self.assertEqual(email_to_domain(email), 'zulip.com')
 
 class SingleUserPresenceTests(ZulipTestCase):
-    def test_single_user_get(self):
-        # type: () -> None
+    def test_single_user_get(self) -> None:
 
         # First, we setup the test with some data
         email = self.example_email("othello")
@@ -283,8 +268,7 @@ class SingleUserPresenceTests(ZulipTestCase):
             {"ZulipAndroid", "website", "aggregated"})
         self.assertEqual(set(result_dict['presence']['website'].keys()), {"status", "timestamp"})
 
-    def test_ping_only(self):
-        # type: () -> None
+    def test_ping_only(self) -> None:
 
         self.login(self.example_email("othello"))
         req = dict(
@@ -295,8 +279,7 @@ class SingleUserPresenceTests(ZulipTestCase):
         self.assertEqual(result.json()['msg'], '')
 
 class UserPresenceAggregationTests(ZulipTestCase):
-    def _send_presence_for_aggregated_tests(self, email, status, validate_time):
-        # type: (str, str, datetime.datetime) -> Dict[str, Dict[str, Any]]
+    def _send_presence_for_aggregated_tests(self, email: str, status: str, validate_time: datetime.datetime) -> Dict[str, Dict[str, Any]]:
         self.login(email)
         timezone_util = 'zerver.views.presence.timezone_now'
         with mock.patch(timezone_util, return_value=validate_time - datetime.timedelta(seconds=5)):
@@ -321,8 +304,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
         result = self.client_get("/json/users/%s/presence" % (email,))
         return result.json()
 
-    def test_aggregated_info(self):
-        # type: () -> None
+    def test_aggregated_info(self) -> None:
         email = self.example_email("othello")
         validate_time = timezone_now()
         self._send_presence_for_aggregated_tests(str(self.example_email("othello")), 'active', validate_time)
@@ -341,8 +323,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
             }
         )
 
-    def test_aggregated_presense_active(self):
-        # type: () -> None
+    def test_aggregated_presense_active(self) -> None:
         validate_time = timezone_now()
         result_dict = self._send_presence_for_aggregated_tests(str(self.example_email("othello")), 'active',
                                                                validate_time)
@@ -354,8 +335,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
             }
         )
 
-    def test_aggregated_presense_idle(self):
-        # type: () -> None
+    def test_aggregated_presense_idle(self) -> None:
         validate_time = timezone_now()
         result_dict = self._send_presence_for_aggregated_tests(str(self.example_email("othello")), 'idle',
                                                                validate_time)
@@ -367,8 +347,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
             }
         )
 
-    def test_aggregated_presense_mixed(self):
-        # type: () -> None
+    def test_aggregated_presense_mixed(self) -> None:
         email = self.example_email("othello")
         self.login(email)
         validate_time = timezone_now()
@@ -386,8 +365,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
             }
         )
 
-    def test_aggregated_presense_offline(self):
-        # type: () -> None
+    def test_aggregated_presense_offline(self) -> None:
         email = self.example_email("othello")
         self.login(email)
         validate_time = timezone_now()

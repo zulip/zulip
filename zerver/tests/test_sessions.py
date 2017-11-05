@@ -18,8 +18,9 @@ from zerver.lib.test_classes import ZulipTestCase
 
 class TestSessions(ZulipTestCase):
 
-    def do_test_session(self, user, action, expected_result):
-        # type: (Text, Callable[[], Any], bool) -> None
+    def do_test_session(self, user: Text,
+                        action: Callable[[], Any],
+                        expected_result: bool) -> None:
         self.login(user)
         self.assertIn('_auth_user_id', self.client.session)
         action()
@@ -29,8 +30,7 @@ class TestSessions(ZulipTestCase):
         else:
             self.assertIn('_auth_user_id', self.client.session)
 
-    def test_delete_session(self):
-        # type: () -> None
+    def test_delete_session(self) -> None:
         user_profile = self.example_user('hamlet')
         email = user_profile.email
         self.login(email)
@@ -40,26 +40,22 @@ class TestSessions(ZulipTestCase):
         result = self.client_get("/")
         self.assertEqual('/login', result.url)
 
-    def test_delete_user_sessions(self):
-        # type: () -> None
+    def test_delete_user_sessions(self) -> None:
         user_profile = self.example_user('hamlet')
         email = user_profile.email
         self.do_test_session(str(email), lambda: delete_user_sessions(user_profile), True)
         self.do_test_session(str(self.example_email("othello")), lambda: delete_user_sessions(user_profile), False)
 
-    def test_delete_realm_user_sessions(self):
-        # type: () -> None
+    def test_delete_realm_user_sessions(self) -> None:
         realm = get_realm('zulip')
         self.do_test_session(self.example_email("hamlet"), lambda: delete_realm_user_sessions(realm), True)
         self.do_test_session(self.mit_email("sipbtest"), lambda: delete_realm_user_sessions(realm), False)
 
-    def test_delete_all_user_sessions(self):
-        # type: () -> None
+    def test_delete_all_user_sessions(self) -> None:
         self.do_test_session(self.example_email("hamlet"), lambda: delete_all_user_sessions(), True)
         self.do_test_session(self.mit_email("sipbtest"), lambda: delete_all_user_sessions(), True)
 
-    def test_delete_all_deactivated_user_sessions(self):
-        # type: () -> None
+    def test_delete_all_deactivated_user_sessions(self) -> None:
 
         # Test that no exception is thrown with a logged-out session
         self.login(self.example_email("othello"))

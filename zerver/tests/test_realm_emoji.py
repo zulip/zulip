@@ -7,8 +7,7 @@ from zerver.models import RealmEmoji
 
 class RealmEmojiTest(ZulipTestCase):
 
-    def test_list(self):
-        # type: () -> None
+    def test_list(self) -> None:
         email = self.example_email('iago')
         self.login(email)
         realm = get_realm('zulip')
@@ -18,8 +17,7 @@ class RealmEmojiTest(ZulipTestCase):
         self.assertEqual(200, result.status_code)
         self.assertEqual(len(result.json()["emoji"]), 2)
 
-    def test_list_no_author(self):
-        # type: () -> None
+    def test_list_no_author(self) -> None:
         email = self.example_email('iago')
         self.login(email)
         realm = get_realm('zulip')
@@ -30,8 +28,7 @@ class RealmEmojiTest(ZulipTestCase):
         self.assertEqual(len(content["emoji"]), 2)
         self.assertIsNone(content["emoji"]['my_emoji']['author'])
 
-    def test_list_admins_only(self):
-        # type: () -> None
+    def test_list_admins_only(self) -> None:
         email = self.example_email('othello')
         self.login(email)
         realm = get_realm('zulip')
@@ -44,8 +41,7 @@ class RealmEmojiTest(ZulipTestCase):
         self.assertEqual(len(content["emoji"]), 2)
         self.assertIsNone(content["emoji"]['my_emoji']['author'])
 
-    def test_upload(self):
-        # type: () -> None
+    def test_upload(self) -> None:
         email = self.example_email('iago')
         self.login(email)
         with get_test_image_file('img.png') as fp1:
@@ -70,8 +66,7 @@ class RealmEmojiTest(ZulipTestCase):
             '<RealmEmoji(zulip): my_emoji my_emoji.png>'
         )
 
-    def test_upload_exception(self):
-        # type: () -> None
+    def test_upload_exception(self) -> None:
         email = self.example_email('iago')
         self.login(email)
         with get_test_image_file('img.png') as fp1:
@@ -79,8 +74,7 @@ class RealmEmojiTest(ZulipTestCase):
             result = self.client_post('/json/realm/emoji/my_em*oji', info=emoji_data)
         self.assert_json_error(result, 'Invalid characters in emoji name')
 
-    def test_upload_uppercase_exception(self):
-        # type: () -> None
+    def test_upload_uppercase_exception(self) -> None:
         email = self.example_email('iago')
         self.login(email)
         with get_test_image_file('img.png') as fp1:
@@ -88,8 +82,7 @@ class RealmEmojiTest(ZulipTestCase):
             result = self.client_post('/json/realm/emoji/my_EMoji', info=emoji_data)
         self.assert_json_error(result, 'Invalid characters in emoji name')
 
-    def test_upload_admins_only(self):
-        # type: () -> None
+    def test_upload_admins_only(self) -> None:
         email = self.example_email('othello')
         self.login(email)
         realm = get_realm('zulip')
@@ -100,8 +93,7 @@ class RealmEmojiTest(ZulipTestCase):
             result = self.client_post('/json/realm/emoji/my_emoji', info=emoji_data)
         self.assert_json_error(result, 'Must be a realm administrator')
 
-    def test_upload_anyone(self):
-        # type: () -> None
+    def test_upload_anyone(self) -> None:
         email = self.example_email('othello')
         self.login(email)
         realm = get_realm('zulip')
@@ -112,8 +104,7 @@ class RealmEmojiTest(ZulipTestCase):
             result = self.client_post('/json/realm/emoji/my_emoji', info=emoji_data)
         self.assert_json_success(result)
 
-    def test_delete(self):
-        # type: () -> None
+    def test_delete(self) -> None:
         email = self.example_email('iago')
         self.login(email)
         realm = get_realm('zulip')
@@ -129,8 +120,7 @@ class RealmEmojiTest(ZulipTestCase):
         self.assertEqual(len(emojis), 2)
         self.assertEqual(emojis["my_emoji"]["deactivated"], True)
 
-    def test_delete_admins_only(self):
-        # type: () -> None
+    def test_delete_admins_only(self) -> None:
         email = self.example_email('othello')
         self.login(email)
         realm = get_realm('zulip')
@@ -140,8 +130,7 @@ class RealmEmojiTest(ZulipTestCase):
         result = self.client_delete("/json/realm/emoji/my_emoji")
         self.assert_json_error(result, 'Must be a realm administrator')
 
-    def test_delete_admin_or_author(self):
-        # type: () -> None
+    def test_delete_admin_or_author(self) -> None:
         # If any user in a realm can upload the emoji then the user who
         # uploaded it as well as the admin should be able to delete it.
         realm = get_realm('zulip')
@@ -165,23 +154,20 @@ class RealmEmojiTest(ZulipTestCase):
         result = self.client_delete("/json/realm/emoji/my_emoji_3")
         self.assert_json_error(result, 'Must be a realm administrator or emoji author')
 
-    def test_delete_exception(self):
-        # type: () -> None
+    def test_delete_exception(self) -> None:
         email = self.example_email('iago')
         self.login(email)
         result = self.client_delete("/json/realm/emoji/invalid_emoji")
         self.assert_json_error(result, "Emoji 'invalid_emoji' does not exist")
 
-    def test_multiple_upload(self):
-        # type: () -> None
+    def test_multiple_upload(self) -> None:
         email = self.example_email('iago')
         self.login(email)
         with get_test_image_file('img.png') as fp1, get_test_image_file('img.png') as fp2:
             result = self.client_post('/json/realm/emoji/my_emoji', {'f1': fp1, 'f2': fp2})
         self.assert_json_error(result, 'You must upload exactly one file.')
 
-    def test_emoji_upload_file_size_error(self):
-        # type: () -> None
+    def test_emoji_upload_file_size_error(self) -> None:
         email = self.example_email('iago')
         self.login(email)
         with get_test_image_file('img.png') as fp:
@@ -189,8 +175,7 @@ class RealmEmojiTest(ZulipTestCase):
                 result = self.client_post('/json/realm/emoji/my_emoji', {'file': fp})
         self.assert_json_error(result, 'Uploaded file is larger than the allowed limit of 0 MB')
 
-    def test_upload_already_existed_emoji(self):
-        # type: () -> None
+    def test_upload_already_existed_emoji(self) -> None:
         email = self.example_email('iago')
         self.login(email)
         with get_test_image_file('img.png') as fp1:

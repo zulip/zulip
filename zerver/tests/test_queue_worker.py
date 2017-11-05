@@ -17,23 +17,21 @@ from zerver.worker import queue_processors
 
 class WorkerTest(ZulipTestCase):
     class FakeClient:
-        def __init__(self):
-            # type: () -> None
+        def __init__(self) -> None:
             self.consumers = {}  # type: Dict[str, Callable[[Dict[str, Any]], None]]
             self.queue = []  # type: List[Tuple[str, Dict[str, Any]]]
 
-        def register_json_consumer(self, queue_name, callback):
-            # type: (str, Callable[[Dict[str, Any]], None]) -> None
+        def register_json_consumer(self,
+                                   queue_name: str,
+                                   callback: Callable[[Dict[str, Any]], None]) -> None:
             self.consumers[queue_name] = callback
 
-        def start_consuming(self):
-            # type: () -> None
+        def start_consuming(self) -> None:
             for queue_name, data in self.queue:
                 callback = self.consumers[queue_name]
                 callback(data)
 
-    def test_mirror_worker(self):
-        # type: () -> None
+    def test_mirror_worker(self) -> None:
         fake_client = self.FakeClient()
         data = [
             dict(
@@ -61,8 +59,7 @@ class WorkerTest(ZulipTestCase):
                 worker.setup()
                 worker.start()
 
-    def test_email_sending_worker_retries(self):
-        # type: () -> None
+    def test_email_sending_worker_retries(self) -> None:
         """Tests the retry_send_email_failures decorator to make sure it
         retries sending the email 3 times and then gives up."""
         fake_client = self.FakeClient()
@@ -70,8 +67,9 @@ class WorkerTest(ZulipTestCase):
         data = {'test': 'test', 'id': 'test_missed'}
         fake_client.queue.append(('missedmessage_email_senders', data))
 
-        def fake_publish(queue_name, event, processor):
-            # type: (str, Dict[str, Any], Callable[[Any], None]) -> None
+        def fake_publish(queue_name: str,
+                         event: Dict[str, Any],
+                         processor: Callable[[Any], None]) -> None:
             fake_client.queue.append((queue_name, event))
 
         with simulated_queue_client(lambda: fake_client):
@@ -86,8 +84,7 @@ class WorkerTest(ZulipTestCase):
 
         self.assertEqual(data['failed_tries'], 4)
 
-    def test_signups_worker_retries(self):
-        # type: () -> None
+    def test_signups_worker_retries(self) -> None:
         """Tests the retry logic of signups queue."""
         fake_client = self.FakeClient()
 
@@ -95,8 +92,7 @@ class WorkerTest(ZulipTestCase):
         data = {'user_id': user_id, 'id': 'test_missed'}
         fake_client.queue.append(('signups', data))
 
-        def fake_publish(queue_name, event, processor):
-            # type: (str, Dict[str, Any], Callable[[Any], None]) -> None
+        def fake_publish(queue_name: str, event: Dict[str, Any], processor: Callable[[Any], None]) -> None:
             fake_client.queue.append((queue_name, event))
 
         fake_response = MagicMock()
@@ -117,8 +113,7 @@ class WorkerTest(ZulipTestCase):
 
         self.assertEqual(data['failed_tries'], 4)
 
-    def test_UserActivityWorker(self):
-        # type: () -> None
+    def test_UserActivityWorker(self) -> None:
         fake_client = self.FakeClient()
 
         user = self.example_user('hamlet')
@@ -146,20 +141,17 @@ class WorkerTest(ZulipTestCase):
             self.assertTrue(len(activity_records), 1)
             self.assertTrue(activity_records[0].count, 1)
 
-    def test_error_handling(self):
-        # type: () -> None
+    def test_error_handling(self) -> None:
         processed = []
 
         @queue_processors.assign_queue('unreliable_worker')
         class UnreliableWorker(queue_processors.QueueProcessingWorker):
-            def consume(self, data):
-                # type: (Mapping[str, Any]) -> None
+            def consume(self, data: Mapping[str, Any]) -> None:
                 if data["type"] == 'unexpected behaviour':
                     raise Exception('Worker task not performing as expected!')
                 processed.append(data["type"])
 
-            def _log_problem(self):
-                # type: () -> None
+            def _log_problem(self) -> None:
 
                 # keep the tests quiet
                 pass
@@ -184,25 +176,20 @@ class WorkerTest(ZulipTestCase):
         event = ujson.loads(line.split('\t')[1])
         self.assertEqual(event["type"], 'unexpected behaviour')
 
-    def test_worker_noname(self):
-        # type: () -> None
+    def test_worker_noname(self) -> None:
         class TestWorker(queue_processors.QueueProcessingWorker):
-            def __init__(self):
-                # type: () -> None
+            def __init__(self) -> None:
                 super().__init__()
 
-            def consume(self, data):
-                # type: (Mapping[str, Any]) -> None
+            def consume(self, data: Mapping[str, Any]) -> None:
                 pass  # nocoverage # this is intentionally not called
         with self.assertRaises(queue_processors.WorkerDeclarationException):
             TestWorker()
 
-    def test_worker_noconsume(self):
-        # type: () -> None
+    def test_worker_noconsume(self) -> None:
         @queue_processors.assign_queue('test_worker')
         class TestWorker(queue_processors.QueueProcessingWorker):
-            def __init__(self):
-                # type: () -> None
+            def __init__(self) -> None:
                 super().__init__()
 
         with self.assertRaises(queue_processors.WorkerDeclarationException):

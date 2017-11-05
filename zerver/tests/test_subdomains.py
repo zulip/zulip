@@ -8,11 +8,9 @@ from zerver.lib.subdomains import get_subdomain
 from zerver.models import Realm
 
 class SubdomainsTest(TestCase):
-    def test_get_subdomain(self):
-        # type: () -> None
+    def test_get_subdomain(self) -> None:
 
-        def request_mock(host):
-            # type: (str) -> Any
+        def request_mock(host: str) -> Any:
             request = mock.Mock(spec=['get_host'])
             request.attach_mock(mock.Mock(return_value=host), 'get_host')
             return request

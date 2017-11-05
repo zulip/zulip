@@ -11,8 +11,7 @@ from dateutil import parser
 import pytz
 
 class TestTimestamp(ZulipTestCase):
-    def test_datetime_and_timestamp_conversions(self):
-        # type: () -> None
+    def test_datetime_and_timestamp_conversions(self) -> None:
         timestamp = 1483228800
         for dt in [
                 parser.parse('2017-01-01 00:00:00.123 UTC'),
@@ -27,8 +26,7 @@ class TestTimestamp(ZulipTestCase):
             with self.assertRaises(TimezoneNotUTCException):
                 datetime_to_timestamp(dt)
 
-    def test_convert_to_UTC(self):
-        # type: () -> None
+    def test_convert_to_UTC(self) -> None:
         utc_datetime = parser.parse('2017-01-01 00:00:00.123 UTC')
         for dt in [
                 parser.parse('2017-01-01 00:00:00.123').replace(tzinfo=timezone_utc),
@@ -36,8 +34,7 @@ class TestTimestamp(ZulipTestCase):
                 parser.parse('2017-01-01 05:00:00.123+05')]:
             self.assertEqual(convert_to_UTC(dt), utc_datetime)
 
-    def test_enforce_UTC(self):
-        # type: () -> None
+    def test_enforce_UTC(self) -> None:
         non_utc_datetime = parser.parse('2017-01-01 00:00:00.123')
         for function in [floor_to_hour, floor_to_day, ceiling_to_hour, ceiling_to_hour]:
             with self.assertRaises(TimezoneNotUTCException):
