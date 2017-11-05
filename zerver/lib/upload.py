@@ -124,7 +124,7 @@ def resize_emoji(image_data, size=DEFAULT_EMOJI_SIZE):
 
 ### Common
 
-class ZulipUploadBackend(object):
+class ZulipUploadBackend:
     def upload_message_image(self, uploaded_file_name, uploaded_file_size,
                              content_type, file_data, user_profile, target_realm=None):
         # type: (Text, int, Optional[Text], binary_type, UserProfile, Optional[Realm]) -> Text

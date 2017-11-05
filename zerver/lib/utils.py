@@ -30,7 +30,7 @@ def statsd_key(val, clean_periods=False):
 
     return val
 
-class StatsDWrapper(object):
+class StatsDWrapper:
     """Transparently either submit metrics to statsd
     or do nothing without erroring out"""
 

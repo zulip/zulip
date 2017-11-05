@@ -19,7 +19,7 @@ from zerver.lib.queue import retry_event
 from zerver.lib.validator import check_dict, check_string
 from zerver.decorator import JsonableError
 
-class OutgoingWebhookServiceInterface(object):
+class OutgoingWebhookServiceInterface:
 
     def __init__(self, base_url, token, user_profile, service_name):
         # type: (Text, Text, UserProfile, Text) -> None

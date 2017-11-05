@@ -141,7 +141,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
 
         output = []  # type: List[Text]
 
-        class BaseHandler(object):
+        class BaseHandler:
             def handle_line(self, line):
                 # type: (Text) -> None
                 raise NotImplementedError()

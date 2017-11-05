@@ -7,7 +7,7 @@ from six.moves import map
 from typing import Dict, List, Text
 
 
-class SourceMap(object):
+class SourceMap:
     '''Map (line, column) pairs from generated to source file.'''
 
     def __init__(self, sourcemap_dirs):

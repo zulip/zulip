@@ -30,7 +30,7 @@ def get_user_profiles(emails, realm):
         assert isinstance(e.messages[0], str)
         raise JsonableError(e.messages[0])
 
-class Addressee(object):
+class Addressee:
     # This is really just a holder for vars that tended to be passed
     # around in a non-type-safe way before this class was introduced.
     #

@@ -82,7 +82,7 @@ def message_to_dict_json(message):
     # type: (Message) -> binary_type
     return MessageDict.to_dict_uncached(message)
 
-class MessageDict(object):
+class MessageDict:
     @staticmethod
     def wide_dict(message):
         # type: (Message) -> Dict[str, Any]
@@ -413,7 +413,7 @@ class MessageDict(object):
             client_gravatar=client_gravatar,
         )
 
-class ReactionDict(object):
+class ReactionDict:
     @staticmethod
     def build_dict_from_raw_db_row(row):
         # type: (Dict[str, Any]) -> Dict[str, Any]

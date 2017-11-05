@@ -4,7 +4,7 @@ from typing import (Dict, List)
 from django.db import connection
 from zerver.models import Recipient
 
-class StreamRecipientMap(object):
+class StreamRecipientMap:
     '''
     This class maps stream_id -> recipient_id and vice versa.
     It is useful for bulk operations.  Call the populate_* methods
