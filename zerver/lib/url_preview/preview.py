@@ -32,7 +32,7 @@ def cache_key_func(url):
 
 @cache_with_key(cache_key_func, cache_name=CACHE_NAME, with_statsd_key="urlpreview_data")
 def get_link_embed_data(url, maxwidth=640, maxheight=480):
-    # type: (Text, Optional[int], Optional[int]) -> Optional[Dict]
+    # type: (Text, Optional[int], Optional[int]) -> Optional[Dict[Any, Any]]
     if not is_link(url):
         return None
     # Fetch information from URL.
