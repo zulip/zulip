@@ -1275,8 +1275,8 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assert_json_error_contains(result, 'elem["operand"] is not a string')
 
     def exercise_bad_narrow_operand(self, operator, operands, error_msg):
-        # type: (Text, Sequence, Text) -> None
-        other_params = [("anchor", 0), ("num_before", 0), ("num_after", 0)]  # type: List
+        # type: (Text, Sequence[Any], Text) -> None
+        other_params = [("anchor", 0), ("num_before", 0), ("num_after", 0)]  # type: List[Tuple[str, Any]]
         for operand in operands:
             post_params = dict(other_params + [
                 ("narrow", ujson.dumps([[operator, operand]]))])
