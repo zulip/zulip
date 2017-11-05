@@ -101,7 +101,7 @@ class Confirmation(models.Model):
     def __str__(self) -> Text:
         return '<Confirmation: %s>' % (self.content_object,)
 
-class ConfirmationType(object):
+class ConfirmationType:
     def __init__(self, url_name: str,
                  validity_in_days: int=settings.CONFIRMATION_LINK_DEFAULT_VALIDITY_DAYS) -> None:
         self.url_name = url_name
