@@ -19,7 +19,8 @@ BITBUCKET_SUBJECT_TEMPLATE = '{repository_name}'
 USER_PART = 'User {display_name}(login: {username})'
 
 BITBUCKET_FORK_BODY = USER_PART + ' forked the repository into [{fork_name}]({fork_url}).'
-BITBUCKET_COMMIT_STATUS_CHANGED_BODY = '[System {key}]({system_url}) changed status of {commit_info} to {status}.'
+BITBUCKET_COMMIT_STATUS_CHANGED_BODY = ('[System {key}]({system_url}) changed status of'
+                                        ' {commit_info} to {status}.')
 
 
 PULL_REQUEST_SUPPORTED_ACTIONS = [
@@ -201,9 +202,11 @@ def get_commit_comment_body(payload: Dict[str, Any]) -> Text:
     )
 
 def get_commit_status_changed_body(payload: Dict[str, Any]) -> str:
-    commit_id = re.match('.*/commit/(?P<commit_id>[A-Za-z0-9]*$)', payload['commit_status']['links']['commit']['href'])
+    commit_id = re.match('.*/commit/(?P<commit_id>[A-Za-z0-9]*$)',
+                         payload['commit_status']['links']['commit']['href'])
     if commit_id:
-        commit_info = "{}/{}".format(get_repository_url(payload['repository']), commit_id.group('commit_id'))
+        commit_info = "{}/{}".format(get_repository_url(payload['repository']),
+                                     commit_id.group('commit_id'))
     else:
         commit_info = 'commit'
 
@@ -340,6 +343,8 @@ GET_SINGLE_MESSAGE_BODY_DEPENDING_ON_TYPE_MAPPER = {
     'pull_request_fulfilled': partial(get_pull_request_action_body, action='merged'),
     'pull_request_rejected': partial(get_pull_request_action_body, action='rejected'),
     'pull_request_comment_created': get_pull_request_comment_created_action_body,
-    'pull_request_comment_updated': partial(get_pull_request_deleted_or_updated_comment_action_body, action='updated'),
-    'pull_request_comment_deleted': partial(get_pull_request_deleted_or_updated_comment_action_body, action='deleted')
+    'pull_request_comment_updated': partial(get_pull_request_deleted_or_updated_comment_action_body,
+                                            action='updated'),
+    'pull_request_comment_deleted': partial(get_pull_request_deleted_or_updated_comment_action_body,
+                                            action='deleted')
 }

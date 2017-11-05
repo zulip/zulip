@@ -77,7 +77,8 @@ def fill_appropriate_message_content(payload: Mapping[str, Any],
     return message_body.format(**data)
 
 def get_filled_board_url_template(payload: Mapping[str, Any]) -> Text:
-    return TRELLO_BOARD_URL_TEMPLATE.format(board_name=get_board_name(payload), board_url=get_board_url(payload))
+    return TRELLO_BOARD_URL_TEMPLATE.format(board_name=get_board_name(payload),
+                                            board_url=get_board_url(payload))
 
 def get_board_name(payload: Mapping[str, Any]) -> Text:
     return get_action_data(payload)['board']['name']

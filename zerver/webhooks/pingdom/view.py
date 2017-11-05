@@ -14,7 +14,8 @@ import ujson
 
 
 PINGDOM_SUBJECT_TEMPLATE = '{name} status.'
-PINGDOM_MESSAGE_TEMPLATE = 'Service {service_url} changed its {type} status from {previous_state} to {current_state}.'
+PINGDOM_MESSAGE_TEMPLATE = ('Service {service_url} changed its {type} status'
+                            ' from {previous_state} to {current_state}.')
 PINGDOM_MESSAGE_DESCRIPTION_TEMPLATE = 'Description: {description}.'
 
 

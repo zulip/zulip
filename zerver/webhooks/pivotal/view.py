@@ -131,7 +131,8 @@ def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile,
         for change in changes:
             comment = extract_comment(change)
             if comment is not None:
-                content += "%s added a comment to %s:\n~~~quote\n%s\n~~~" % (performed_by, story_info, comment)
+                content += "%s added a comment to %s:\n~~~quote\n%s\n~~~" % (
+                    performed_by, story_info, comment)
     elif event_type == "story_create_activity":
         content += "%s created %s: %s\n" % (performed_by, story_type, story_info)
         for change in changes:
@@ -146,7 +147,8 @@ def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile,
             old_values = change.get("original_values", {})
             new_values = change["new_values"]
             if "current_state" in old_values and "current_state" in new_values:
-                content += " from **%s** to **%s**" % (old_values["current_state"], new_values["current_state"])
+                content += " from **%s** to **%s**" % (old_values["current_state"],
+                                                       new_values["current_state"])
     elif event_type in ["task_create_activity", "comment_delete_activity",
                         "task_delete_activity", "task_update_activity",
                         "story_move_from_project_activity", "story_delete_activity",

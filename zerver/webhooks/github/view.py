@@ -120,7 +120,8 @@ def api_github_v1(user_profile: UserProfile,
     """
     commit_stream = stream
     issue_stream = 'issues'
-    return api_github_v2(user_profile, event, payload, branches, stream, commit_stream, issue_stream, **kwargs)
+    return api_github_v2(user_profile, event, payload, branches,
+                         stream, commit_stream, issue_stream, **kwargs)
 
 
 def api_github_v2(user_profile, event, payload, branches, default_stream,

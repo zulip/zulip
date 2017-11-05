@@ -39,9 +39,10 @@ def build_pagerduty_formatdict(message: Dict[str, Any]) -> Dict[str, Any]:
 
     # This key can be missing on null
     if message['data']['incident'].get('assigned_to_user', None):
-        format_dict['assigned_to_email'] = message['data']['incident']['assigned_to_user']['email']
-        format_dict['assigned_to_username'] = message['data']['incident']['assigned_to_user']['email'].split('@')[0]
-        format_dict['assigned_to_url'] = message['data']['incident']['assigned_to_user']['html_url']
+        assigned_to_user = message['data']['incident']['assigned_to_user']
+        format_dict['assigned_to_email'] = assigned_to_user['email']
+        format_dict['assigned_to_username'] = assigned_to_user['email'].split('@')[0]
+        format_dict['assigned_to_url'] = assigned_to_user['html_url']
     else:
         format_dict['assigned_to_email'] = 'nobody'
         format_dict['assigned_to_username'] = 'nobody'
@@ -49,9 +50,10 @@ def build_pagerduty_formatdict(message: Dict[str, Any]) -> Dict[str, Any]:
 
     # This key can be missing on null
     if message['data']['incident'].get('resolved_by_user', None):
-        format_dict['resolved_by_email'] = message['data']['incident']['resolved_by_user']['email']
-        format_dict['resolved_by_username'] = message['data']['incident']['resolved_by_user']['email'].split('@')[0]
-        format_dict['resolved_by_url'] = message['data']['incident']['resolved_by_user']['html_url']
+        resolved_by_user = message['data']['incident']['resolved_by_user']
+        format_dict['resolved_by_email'] = resolved_by_user['email']
+        format_dict['resolved_by_username'] = resolved_by_user['email'].split('@')[0]
+        format_dict['resolved_by_url'] = resolved_by_user['html_url']
     else:
         format_dict['resolved_by_email'] = 'nobody'
         format_dict['resolved_by_username'] = 'nobody'
