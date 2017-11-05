@@ -112,7 +112,8 @@ FuncKwargPair = Tuple[Callable[..., HttpResponse], Dict[str, Iterable[Any]]]
 @has_request_variables
 def update_subscriptions_backend(request, user_profile,
                                  delete=REQ(validator=check_list(check_string), default=[]),
-                                 add=REQ(validator=check_list(check_dict([('name', check_string)])), default=[])):
+                                 add=REQ(validator=check_list(check_dict([('name', check_string)])),
+                                         default=[])):
     # type: (HttpRequest, UserProfile, Iterable[Text], Iterable[Mapping[str, Any]]) -> HttpResponse
     if not add and not delete:
         return json_error(_('Nothing to do. Specify at least one of "add" or "delete".'))
@@ -312,7 +313,8 @@ def add_subscriptions_backend(request, user_profile,
         notifications_stream = user_profile.realm.get_notifications_stream()
         if notifications_stream is not None:
             if len(created_streams) > 1:
-                stream_msg = "the following streams: %s" % (", ".join('#**%s**' % s.name for s in created_streams))
+                streams = ", ".join('#**%s**' % s.name for s in created_streams)
+                stream_msg = "the following streams: %s" % (streams,)
             else:
                 stream_msg = "a new stream #**%s**." % created_streams[0].name
             msg = ("%s just created %s" % (user_profile.full_name, stream_msg))

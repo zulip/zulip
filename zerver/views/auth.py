@@ -277,7 +277,8 @@ def start_google_oauth2(request):
 def start_social_login(request, backend):
     # type: (HttpRequest, Text) -> HttpResponse
     backend_url = reverse('social:begin', args=[backend])
-    if (backend == "github") and not (settings.SOCIAL_AUTH_GITHUB_KEY and settings.SOCIAL_AUTH_GITHUB_SECRET):
+    if (backend == "github") and not (settings.SOCIAL_AUTH_GITHUB_KEY and
+                                      settings.SOCIAL_AUTH_GITHUB_SECRET):
         return redirect_to_config_error("github")
 
     return oauth_redirect_to_root(request, backend_url)
@@ -569,10 +570,12 @@ def login_page(request, **kwargs):
 @csrf_exempt
 def dev_direct_login(request, **kwargs):
     # type: (HttpRequest, **Any) -> HttpResponse
-    # This function allows logging in without a password and should only be called in development environments.
-    # It may be called if the DevAuthBackend is included in settings.AUTHENTICATION_BACKENDS
+    # This function allows logging in without a password and should only be called
+    # in development environments.  It may be called if the DevAuthBackend is included
+    # in settings.AUTHENTICATION_BACKENDS
     if (not dev_auth_enabled()) or settings.PRODUCTION:
-        # This check is probably not required, since authenticate would fail without an enabled DevAuthBackend.
+        # This check is probably not required, since authenticate would fail without
+        # an enabled DevAuthBackend.
         raise Exception('Direct login not supported.')
     email = request.POST['direct_email']
     user_profile = authenticate(username=email, realm_subdomain=get_subdomain(request))
@@ -655,7 +658,8 @@ def api_fetch_api_key(request, username=REQ(), password=REQ()):
                           data={"reason": "password auth disabled"}, status=403)
     if user_profile is None:
         if return_data.get("valid_attestation"):
-            # We can leak that the user is unregistered iff they present a valid authentication string for the user.
+            # We can leak that the user is unregistered iff
+            # they present a valid authentication string for the user.
             return json_error(_("This user is not registered; do so from a browser."),
                               data={"reason": "unregistered"}, status=403)
         return json_error(_("Your username or password is incorrect."),
