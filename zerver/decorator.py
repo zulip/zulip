@@ -19,7 +19,7 @@ from zerver.lib.exceptions import RateLimited, JsonableError, ErrorCode
 
 from zerver.lib.rate_limiter import incr_ratelimit, is_ratelimited, \
     api_calls_left, RateLimitedUser
-from zerver.lib.request import REQ, has_request_variables, JsonableError, RequestVariableMissingError
+from zerver.lib.request import REQ, has_request_variables, RequestVariableMissingError
 from django.core.handlers import base
 
 from functools import wraps
