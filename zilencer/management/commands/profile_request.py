@@ -11,7 +11,7 @@ from zerver.middleware import LogRequests
 
 request_logger = LogRequests()
 
-class MockSession(object):
+class MockSession:
     def __init__(self):
         # type: () -> None
         self.modified = False

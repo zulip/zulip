@@ -24,5 +24,5 @@ class RemotePushDeviceToken(zerver.models.AbstractPushDeviceToken):
     user_id = models.BigIntegerField(db_index=True)  # type: int
     token = models.CharField(max_length=4096, db_index=True)  # type: bytes
 
-    class Meta(object):
+    class Meta:
         unique_together = ("server", "token")
