@@ -8,7 +8,6 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 from django.shortcuts import redirect, render
 from django.conf import settings
-from six.moves import map
 
 from zerver.decorator import require_realm_admin, zulip_login_required
 from zerver.forms import CreateUserForm

@@ -7,7 +7,7 @@ import ujson
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from importlib import import_module
-from six.moves import filter, map
+from six.moves import filter
 from typing import (
     cast, Any, Callable, Dict, Iterable, List, Optional, Sequence, Set, Text, Tuple, Union
 )

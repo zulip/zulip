@@ -12,7 +12,7 @@ import sys
 from time import sleep
 
 from django.conf import settings
-from six.moves import map, zip_longest
+from six.moves import zip_longest
 from zerver.lib.str_utils import force_text
 
 T = TypeVar('T')
