@@ -71,12 +71,10 @@ from typing import Dict, Any, Iterable, Optional, Text
 
 @api_key_only_webhook_view('HelloWorld')
 @has_request_variables
-def api_helloworld_webhook(request, user_profile,
-                           payload=REQ(argument_type='body'),
-                           stream=REQ(default='test'),
-                           topic=REQ(default='Hello World')):
-    # type: (HttpRequest, UserProfile, Dict[str, Iterable[Dict[str, Any]]], Text, Optional[Text]) -> HttpResponse
-
+def api_helloworld_webhook(request: HttpRequest, user_profile: UserProfile,
+                           payload: Dict[str, Iterable[Dict[str, Any]]]=REQ(argument_type='body'),
+                           stream: Text=REQ(default='test'),
+                           topic: Text=REQ(default='Hello World')) -> HttpResponse:
     # construct the body of the message
     body = 'Hello! I am happy to be here! :smile:'
 
@@ -226,8 +224,7 @@ class HelloWorldHookTests(WebhookTestCase):
     FIXTURE_DIR_NAME = 'helloworld'
 
     # Note: Include a test function per each distinct message condition your integration supports
-    def test_hello_message(self):
-        # type: () -> None
+    def test_hello_message(self) -> None:
         expected_subject = u"Hello World";
         expected_message = u"Hello! I am happy to be here! :smile: \nThe Wikipedia featured article for today is **[Marilyn Monroe](https://en.wikipedia.org/wiki/Marilyn_Monroe)**";
 
@@ -235,7 +232,7 @@ class HelloWorldHookTests(WebhookTestCase):
         self.send_and_test_stream_message('hello', expected_subject, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def get_body(self, fixture_name):
+    def get_body(self, fixture_name: Text) -> Text:
         # type: (Text) -> Text
         return self.fixture_data("helloworld", fixture_name, file_type="json")
 
@@ -269,8 +266,7 @@ World` webhook, we would add another test function to `HelloWorldHookTests`
 class called something like `test_goodbye_message`:
 
 ```
-    def test_goodbye_message(self):
-        # type: () -> None
+    def test_goodbye_message(self) -> None:
         expected_subject = u"Hello World";
         expected_message = u"Hello! I am happy to be here! :smile:\nThe Wikipedia featured article for today is **[Goodbye](https://en.wikipedia.org/wiki/Goodbye)**";
 
@@ -413,9 +409,7 @@ rather than call the usual helper function.
 Here is an example from the WordPress webhook:
 
 ```
-def test_unknown_action_no_data(self):
-    # type: () -> None
-
+def test_unknown_action_no_data(self) -> None:
     # Mimic send_and_test_stream_message() to manually execute a negative test.
     # Otherwise its call to send_json_payload() would assert on the non-success
     # we are testing. The value of result is the error message the webhook should
@@ -459,9 +453,10 @@ For example, here is the definition of a webhook function that gets both `stream
 and `topic` from the query parameters:
 
 ```
-def api_querytest_webhook(request, user_profile, client,
-                          payload=REQ(argument_type='body'), stream=REQ(default='test'),
-                          topic=REQ(default='Default Alert')):
+def api_querytest_webhook(request: HttpRequest, user_profile: UserProfile,
+                          payload: str=REQ(argument_type='body'),
+                          stream: str=REQ(default='test'),
+                          topic: str=REQ(default='Default Alert')):
 ```
 
 In actual use, you might configure the 3rd party service to call your Zulip
@@ -486,9 +481,7 @@ class QuerytestHookTests(WebhookTestCase):
     URL_TEMPLATE = "/api/v1/external/querytest?api_key={api_key}&stream={stream}"
     FIXTURE_DIR_NAME = 'querytest'
 
-    def test_querytest_test_one(self):
-        # type: () -> None
-
+    def test_querytest_test_one(self) -> None:
         # construct the URL used for this test
         self.TOPIC = u"Query Test"
         self.url = self.build_webhook_url(topic=self.TOPIC)
@@ -500,8 +493,7 @@ class QuerytestHookTests(WebhookTestCase):
         self.send_and_test_stream_message('test_one', expected_subject, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def get_body(self, fixture_name):
-        # type: (Text) -> Text
+    def get_body(self, fixture_name: Text) -> Text:
         return self.fixture_data("querytest", fixture_name, file_type="json")
 ```
 
