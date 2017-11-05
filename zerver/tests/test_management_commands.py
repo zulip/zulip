@@ -4,7 +4,6 @@ import os
 import glob
 from datetime import timedelta
 from mock import MagicMock, patch
-from six.moves import filter
 from typing import List, Dict, Any, Optional
 
 from django.conf import settings

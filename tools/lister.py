@@ -8,7 +8,6 @@ import subprocess
 import re
 from collections import defaultdict
 import argparse
-from six.moves import filter
 
 from typing import Union, List, Dict
 

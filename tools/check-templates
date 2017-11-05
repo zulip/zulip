@@ -6,8 +6,6 @@ import argparse
 import sys
 import logging
 
-from six.moves import filter
-
 # check for the venv
 from lib import sanity_check
 sanity_check.check_venv(__file__)

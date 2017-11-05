@@ -3,7 +3,6 @@ from lib.html_grep import grep
 import argparse
 import sys
 
-from six.moves import filter
 from typing import List
 
 # check for the venv
