@@ -28,8 +28,7 @@ class SlowQueryTest(ZulipTestCase):
         self.assertTrue(is_slow_query(11, '/accounts/webathena_kerberos_login/'))
 
     @patch('logging.info')
-    def test_slow_query_log(self, mock_logging_info):
-        # type: (Mock) -> None
+    def test_slow_query_log(self, mock_logging_info: Mock) -> None:
         self.log_data['time_started'] = time.time() - self.SLOW_QUERY_TIME
         write_log_line(self.log_data, path='/socket/open', method='SOCKET',
                        remote_ip='123.456.789.012', email='unknown', client_name='?')
@@ -43,8 +42,8 @@ class SlowQueryTest(ZulipTestCase):
     @override_settings(ERROR_BOT=None)
     @patch('logging.info')
     @patch('zerver.lib.actions.internal_send_message')
-    def test_slow_query_log_without_error_bot(self, mock_internal_send_message, mock_logging_info):
-        # type: (Mock, Mock) -> None
+    def test_slow_query_log_without_error_bot(self, mock_internal_send_message: Mock,
+                                              mock_logging_info: Mock) -> None:
         self.log_data['time_started'] = time.time() - self.SLOW_QUERY_TIME
         write_log_line(self.log_data, path='/socket/open', method='SOCKET',
                        remote_ip='123.456.789.012', email='unknown', client_name='?')

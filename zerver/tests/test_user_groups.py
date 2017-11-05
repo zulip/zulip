@@ -70,8 +70,7 @@ class UserGroupTestCase(ZulipTestCase):
             self.assertFalse(check_remove_user_from_user_group(othello, user_group))
 
 class UserGroupAPITestCase(ZulipTestCase):
-    def test_user_group_create(self):
-        # type: () -> None
+    def test_user_group_create(self) -> None:
         hamlet = self.example_user('hamlet')
 
         # Test success
@@ -105,8 +104,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         self.assert_json_error(result, "User group 'support' already exists.")
         self.assert_length(UserGroup.objects.all(), 2)
 
-    def test_user_group_update(self):
-        # type: () -> None
+    def test_user_group_update(self) -> None:
         hamlet = self.example_user('hamlet')
         self.login(self.example_email("hamlet"))
         params = {
@@ -136,8 +134,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         result = self.client_patch('/json/user_groups/1111', info=params)
         self.assert_json_error(result, "Invalid user group")
 
-    def test_user_group_delete(self):
-        # type: () -> None
+    def test_user_group_delete(self) -> None:
         hamlet = self.example_user('hamlet')
         self.login(self.example_email("hamlet"))
         params = {
@@ -160,8 +157,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         result = self.client_delete('/json/user_groups/1111')
         self.assert_json_error(result, "Invalid user group")
 
-    def test_update_members_of_user_group(self):
-        # type: () -> None
+    def test_update_members_of_user_group(self) -> None:
         hamlet = self.example_user('hamlet')
         self.login(self.example_email("hamlet"))
         params = {

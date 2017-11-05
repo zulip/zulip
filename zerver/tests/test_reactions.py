@@ -353,8 +353,8 @@ class ReactionEventTest(ZulipTestCase):
         self.assertEqual(event['message_id'], pm_id)
 
 class DefaultEmojiReactionTests(ZulipTestCase):
-    def post_reaction(self, reaction_info, message_id=1, sender='hamlet'):
-        # type: (Dict[str, str], int, str) -> HttpResponse
+    def post_reaction(self, reaction_info: Dict[str, str], message_id: int=1,
+                      sender: str='hamlet') -> HttpResponse:
         reaction_info['reaction_type'] = 'unicode_emoji'
         sender = self.example_email(sender)
         result = self.client_post('/api/v1/messages/%s/reactions' % (message_id,),
@@ -362,8 +362,8 @@ class DefaultEmojiReactionTests(ZulipTestCase):
                                   **self.api_auth(sender))
         return result
 
-    def delete_reaction(self, reaction_info, message_id=1, sender='hamlet'):
-        # type: (Dict[str, str], int, str) -> HttpResponse
+    def delete_reaction(self, reaction_info: Dict[str, str], message_id: int=1,
+                        sender: str='hamlet') -> HttpResponse:
         reaction_info['reaction_type'] = 'unicode_emoji'
         sender = self.example_email(sender)
         result = self.client_delete('/api/v1/messages/%s/reactions' % (message_id,),
@@ -371,16 +371,15 @@ class DefaultEmojiReactionTests(ZulipTestCase):
                                     **self.api_auth(sender))
         return result
 
-    def get_message_reactions(self, message_id, emoji_code, reaction_type):
-        # type: (int, Text, Text) -> List[Reaction]
+    def get_message_reactions(self, message_id: int, emoji_code: Text,
+                              reaction_type: Text) -> List[Reaction]:
         message = Message.objects.get(id=message_id)
         reactions = Reaction.objects.filter(message=message,
                                             emoji_code=emoji_code,
                                             reaction_type=reaction_type)
         return list(reactions)
 
-    def setUp(self):
-        # type: () -> None
+    def setUp(self) -> None:
         reaction_info = {
             'emoji_name': 'hamburger',
             'emoji_code': '1f354',
@@ -388,8 +387,7 @@ class DefaultEmojiReactionTests(ZulipTestCase):
         result = self.post_reaction(reaction_info)
         self.assert_json_success(result)
 
-    def test_add_default_emoji_reaction(self):
-        # type: () -> None
+    def test_add_default_emoji_reaction(self) -> None:
         reaction_info = {
             'emoji_name': 'thumbs_up',
             'emoji_code': '1f44d',
@@ -397,8 +395,7 @@ class DefaultEmojiReactionTests(ZulipTestCase):
         result = self.post_reaction(reaction_info)
         self.assert_json_success(result)
 
-    def test_add_default_emoji_invalid_code(self):
-        # type: () -> None
+    def test_add_default_emoji_invalid_code(self) -> None:
         reaction_info = {
             'emoji_name': 'hamburger',
             'emoji_code': 'TBD',
@@ -406,8 +403,7 @@ class DefaultEmojiReactionTests(ZulipTestCase):
         result = self.post_reaction(reaction_info)
         self.assert_json_error(result, 'Emoji for this emoji code not found.')
 
-    def test_add_default_emoji_invalid_name(self):
-        # type: () -> None
+    def test_add_default_emoji_invalid_name(self) -> None:
         reaction_info = {
             'emoji_name': 'non-existent',
             'emoji_code': '1f44d',
@@ -415,8 +411,7 @@ class DefaultEmojiReactionTests(ZulipTestCase):
         result = self.post_reaction(reaction_info)
         self.assert_json_error(result, 'Invalid emoji name.')
 
-    def test_add_to_existing_renamed_default_emoji_reaction(self):
-        # type: () -> None
+    def test_add_to_existing_renamed_default_emoji_reaction(self) -> None:
         hamlet = self.example_user('hamlet')
         message = Message.objects.get(id=1)
         reaction = Reaction.objects.create(user_profile=hamlet,
@@ -436,8 +431,7 @@ class DefaultEmojiReactionTests(ZulipTestCase):
         for reaction in reactions:
             self.assertEqual(reaction.emoji_name, 'old_name')
 
-    def test_add_duplicate_reaction(self):
-        # type: () -> None
+    def test_add_duplicate_reaction(self) -> None:
         reaction_info = {
             'emoji_name': 'non-existent',
             'emoji_code': '1f354',
@@ -445,8 +439,7 @@ class DefaultEmojiReactionTests(ZulipTestCase):
         result = self.post_reaction(reaction_info)
         self.assert_json_error(result, 'Reaction already exists.')
 
-    def test_preserve_non_canonical_name(self):
-        # type: () -> None
+    def test_preserve_non_canonical_name(self) -> None:
         reaction_info = {
             'emoji_name': '+1',
             'emoji_code': '1f44d',
@@ -458,8 +451,7 @@ class DefaultEmojiReactionTests(ZulipTestCase):
         for reaction in reactions:
             self.assertEqual(reaction.emoji_name, '+1')
 
-    def test_reaction_name_collapse(self):
-        # type: () -> None
+    def test_reaction_name_collapse(self) -> None:
         reaction_info = {
             'emoji_name': '+1',
             'emoji_code': '1f44d',
@@ -475,8 +467,7 @@ class DefaultEmojiReactionTests(ZulipTestCase):
         for reaction in reactions:
             self.assertEqual(reaction.emoji_name, '+1')
 
-    def test_delete_default_emoji_reaction(self):
-        # type: () -> None
+    def test_delete_default_emoji_reaction(self) -> None:
         reaction_info = {
             'emoji_name': 'hamburger',
             'emoji_code': '1f354',
@@ -484,8 +475,7 @@ class DefaultEmojiReactionTests(ZulipTestCase):
         result = self.delete_reaction(reaction_info)
         self.assert_json_success(result)
 
-    def test_delete_non_existing_emoji_reaction(self):
-        # type: () -> None
+    def test_delete_non_existing_emoji_reaction(self) -> None:
         reaction_info = {
             'emoji_name': 'thumbs_up',
             'emoji_code': '1f44d',
@@ -493,8 +483,7 @@ class DefaultEmojiReactionTests(ZulipTestCase):
         result = self.delete_reaction(reaction_info)
         self.assert_json_error(result, "Reaction doesn't exist.")
 
-    def test_delete_renamed_default_emoji(self):
-        # type: () -> None
+    def test_delete_renamed_default_emoji(self) -> None:
         hamlet = self.example_user('hamlet')
         message = Message.objects.get(id=1)
         Reaction.objects.create(user_profile=hamlet,
@@ -511,8 +500,7 @@ class DefaultEmojiReactionTests(ZulipTestCase):
         result = self.delete_reaction(reaction_info)
         self.assert_json_success(result)
 
-    def test_react_historical(self):
-        # type: () -> None
+    def test_react_historical(self) -> None:
         """
         Reacting with valid emoji on a historical message succeeds.
         """
@@ -541,8 +529,7 @@ class DefaultEmojiReactionTests(ZulipTestCase):
         self.assertFalse(user_message.flags.starred)
 
 class ZulipExtraEmojiReactionTest(ZulipTestCase):
-    def post_zulip_reaction(self, message_id=1, sender='hamlet'):
-        # type: (int, Text) -> HttpResponse
+    def post_zulip_reaction(self, message_id: int=1, sender: Text='hamlet') -> HttpResponse:
         sender = self.example_email(sender)
         reaction_info = {
             'emoji_name': 'zulip',
@@ -554,21 +541,18 @@ class ZulipExtraEmojiReactionTest(ZulipTestCase):
                                   **self.api_auth(sender))
         return result
 
-    def test_add_zulip_emoji_reaction(self):
-        # type: () -> None
+    def test_add_zulip_emoji_reaction(self) -> None:
         result = self.post_zulip_reaction()
         self.assert_json_success(result)
 
-    def test_add_duplicate_zulip_reaction(self):
-        # type: () -> None
+    def test_add_duplicate_zulip_reaction(self) -> None:
         result = self.post_zulip_reaction()
         self.assert_json_success(result)
 
         result = self.post_zulip_reaction()
         self.assert_json_error(result, 'Reaction already exists.')
 
-    def test_delete_zulip_emoji(self):
-        # type: () -> None
+    def test_delete_zulip_emoji(self) -> None:
         result = self.post_zulip_reaction()
         self.assert_json_success(result)
 
@@ -583,8 +567,7 @@ class ZulipExtraEmojiReactionTest(ZulipTestCase):
                                     **self.api_auth(sender))
         self.assert_json_success(result)
 
-    def test_delete_non_existent_zulip_reaction(self):
-        # type: () -> None
+    def test_delete_non_existent_zulip_reaction(self) -> None:
         sender = self.example_email('hamlet')
         reaction_info = {
             'emoji_name': 'zulip',
@@ -597,8 +580,8 @@ class ZulipExtraEmojiReactionTest(ZulipTestCase):
         self.assert_json_error(result, "Reaction doesn't exist.")
 
 class RealmEmojiReactionTests(ZulipTestCase):
-    def post_reaction(self, reaction_info, message_id=1, sender='hamlet'):
-        # type: (Dict[str, str], int, str) -> HttpResponse
+    def post_reaction(self, reaction_info: Dict[str, str], message_id: int=1,
+                      sender: str='hamlet') -> HttpResponse:
         reaction_info['reaction_type'] = 'realm_emoji'
         sender = self.example_email(sender)
         result = self.client_post('/api/v1/messages/%s/reactions' % (message_id,),
@@ -606,8 +589,8 @@ class RealmEmojiReactionTests(ZulipTestCase):
                                   **self.api_auth(sender))
         return result
 
-    def delete_reaction(self, reaction_info, message_id=1, sender='hamlet'):
-        # type: (Dict[str, str], int, str) -> HttpResponse
+    def delete_reaction(self, reaction_info: Dict[str, str], message_id: int=1,
+                        sender: str='hamlet') -> HttpResponse:
         reaction_info['reaction_type'] = 'realm_emoji'
         sender = self.example_email(sender)
         result = self.client_delete('/api/v1/messages/%s/reactions' % (message_id,),
@@ -615,16 +598,15 @@ class RealmEmojiReactionTests(ZulipTestCase):
                                     **self.api_auth(sender))
         return result
 
-    def get_message_reactions(self, message_id, emoji_code, reaction_type):
-        # type: (int, Text, Text) -> List[Reaction]
+    def get_message_reactions(self, message_id: int, emoji_code: Text,
+                              reaction_type: Text) -> List[Reaction]:
         message = Message.objects.get(id=message_id)
         reactions = Reaction.objects.filter(message=message,
                                             emoji_code=emoji_code,
                                             reaction_type=reaction_type)
         return list(reactions)
 
-    def test_add_realm_emoji(self):
-        # type: () -> None
+    def test_add_realm_emoji(self) -> None:
         reaction_info = {
             'emoji_name': 'green_tick',
             'emoji_code': 'green_tick',
@@ -632,8 +614,7 @@ class RealmEmojiReactionTests(ZulipTestCase):
         result = self.post_reaction(reaction_info)
         self.assert_json_success(result)
 
-    def test_add_realm_emoji_invalid_code(self):
-        # type: () -> None
+    def test_add_realm_emoji_invalid_code(self) -> None:
         reaction_info = {
             'emoji_name': 'green_tick',
             'emoji_code': 'non_existent',
@@ -641,8 +622,7 @@ class RealmEmojiReactionTests(ZulipTestCase):
         result = self.post_reaction(reaction_info)
         self.assert_json_error(result, 'Emoji for this emoji code not found.')
 
-    def test_add_deactivated_realm_emoji(self):
-        # type: () -> None
+    def test_add_deactivated_realm_emoji(self) -> None:
         emoji = RealmEmoji.objects.get(name="green_tick")
         emoji.deactivated = True
         emoji.save(update_fields=['deactivated'])
@@ -654,8 +634,7 @@ class RealmEmojiReactionTests(ZulipTestCase):
         result = self.post_reaction(reaction_info)
         self.assert_json_error(result, 'Emoji for this emoji code not found.')
 
-    def test_add_to_existing_deactivated_realm_emoji_reaction(self):
-        # type: () -> None
+    def test_add_to_existing_deactivated_realm_emoji_reaction(self) -> None:
         reaction_info = {
             'emoji_name': 'green_tick',
             'emoji_code': 'green_tick',
@@ -673,8 +652,7 @@ class RealmEmojiReactionTests(ZulipTestCase):
         reactions = self.get_message_reactions(1, 'green_tick', 'realm_emoji')
         self.assertEqual(len(reactions), 2)
 
-    def test_remove_realm_emoji_reaction(self):
-        # type: () -> None
+    def test_remove_realm_emoji_reaction(self) -> None:
         reaction_info = {
             'emoji_name': 'green_tick',
             'emoji_code': 'green_tick',
@@ -685,8 +663,7 @@ class RealmEmojiReactionTests(ZulipTestCase):
         result = self.delete_reaction(reaction_info)
         self.assert_json_success(result)
 
-    def test_remove_deactivated_realm_emoji_reaction(self):
-        # type: () -> None
+    def test_remove_deactivated_realm_emoji_reaction(self) -> None:
         reaction_info = {
             'emoji_name': 'green_tick',
             'emoji_code': 'green_tick',
@@ -701,8 +678,7 @@ class RealmEmojiReactionTests(ZulipTestCase):
         result = self.delete_reaction(reaction_info)
         self.assert_json_success(result)
 
-    def test_remove_non_existent_realm_emoji_reaction(self):
-        # type: () -> None
+    def test_remove_non_existent_realm_emoji_reaction(self) -> None:
         reaction_info = {
             'emoji_name': 'non_existent',
             'emoji_code': 'TBD',
@@ -724,8 +700,7 @@ class RealmEmojiReactionTests(ZulipTestCase):
         self.assert_json_error(result, "Emoji for this emoji code not found.")
 
 class ReactionAPIEventTest(ZulipTestCase):
-    def test_add_event(self):
-        # type: () -> None
+    def test_add_event(self) -> None:
         """
         Recipients of the message receive the reaction event
         and event contains relevant data
@@ -770,8 +745,7 @@ class ReactionAPIEventTest(ZulipTestCase):
         self.assertEqual(event['emoji_code'], reaction_info['emoji_code'])
         self.assertEqual(event['reaction_type'], reaction_info['reaction_type'])
 
-    def test_remove_event(self):
-        # type: () -> None
+    def test_remove_event(self) -> None:
         """
         Recipients of the message receive the reaction event
         and event contains relevant data

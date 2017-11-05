@@ -1189,30 +1189,25 @@ class RestAPITest(ZulipTestCase):
         self.assertTrue(result["Location"].endswith("/login/?next=/json/users"))
 
 class CacheTestCase(ZulipTestCase):
-    def test_cachify_basics(self):
-        # type: () -> None
+    def test_cachify_basics(self) -> None:
 
         @cachify
-        def add(w, x, y, z):
-            # type: (Any, Any, Any, Any) -> Any
+        def add(w: Any, x: Any, y: Any, z: Any) -> Any:
             return w + x + y + z
 
         for i in range(2):
             self.assertEqual(add(1, 2, 4, 8), 15)
             self.assertEqual(add('a', 'b', 'c', 'd'), 'abcd')
 
-    def test_cachify_is_per_call(self):
-        # type: () -> None
+    def test_cachify_is_per_call(self) -> None:
 
-        def test_greetings(greeting):
-            # type: (Text) -> Tuple[List[Text], List[Text]]
+        def test_greetings(greeting: Text) -> Tuple[List[Text], List[Text]]:
 
             result_log = []  # type: List[Text]
             work_log = []  # type: List[Text]
 
             @cachify
-            def greet(first_name, last_name):
-                # type: (Text, Text) -> Text
+            def greet(first_name: Text, last_name: Text) -> Text:
                 msg = '%s %s %s' % (greeting, first_name, last_name)
                 work_log.append(msg)
                 return msg

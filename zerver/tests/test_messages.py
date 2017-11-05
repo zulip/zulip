@@ -2329,11 +2329,9 @@ class DeleteMessageTest(ZulipTestCase):
         result = self.client_delete('/json/messages/{msg_id}'.format(msg_id=msg_id))
         self.assert_json_error(result, "Invalid message(s)")
 
-    def test_delete_message_by_user(self):
-        # type: () -> None
+    def test_delete_message_by_user(self) -> None:
 
-        def change_allow_message_deleting_setting(value):
-            # type: (bool) -> None
+        def change_allow_message_deleting_setting(value: bool) -> None:
             self.login("iago@zulip.com")
             admin_user = self.example_user("iago")
             admin_user.realm.allow_message_deleting = value
@@ -2705,8 +2703,7 @@ class MessageHydrationTest(ZulipTestCase):
         )
         self.assertEqual(obj['type'], 'private')
 
-    def test_messages_for_ids(self):
-        # type: () -> None
+    def test_messages_for_ids(self) -> None:
         hamlet = self.example_user('hamlet')
         cordelia = self.example_user('cordelia')
 

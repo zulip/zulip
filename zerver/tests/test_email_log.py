@@ -6,20 +6,17 @@ from zerver.lib.test_classes import ZulipTestCase
 from zproject.email_backends import get_forward_address
 
 class EmailLogTest(ZulipTestCase):
-    def test_get_email_log_page(self):
-        # type: () -> None
+    def test_get_email_log_page(self) -> None:
         result = self.client_get("/emails/")
         self.assert_in_success_response(["All the emails sent in the Zulip"], result)
 
-    def test_clear_email_logs(self):
-        # type: () -> None
+    def test_clear_email_logs(self) -> None:
         result = self.client_get('/emails/clear/')
         self.assertEqual(result.status_code, 302)
         result = self.client_get(result['Location'])
         self.assertIn('manually generate most of the emails by clicking', str(result.content))
 
-    def test_generate_emails(self):
-        # type: () -> None
+    def test_generate_emails(self) -> None:
         with self.settings(EMAIL_BACKEND='zproject.email_backends.EmailLogBackEnd'), \
                 mock.patch('logging.info', return_value=None):
             with mock.patch('zproject.email_backends.EmailLogBackEnd.send_email_smtp'):
@@ -27,8 +24,7 @@ class EmailLogTest(ZulipTestCase):
                 self.assertEqual(result.status_code, 302)
                 self.assertIn('emails', result['Location'])
 
-    def test_forward_address_details(self):
-        # type: () -> None
+    def test_forward_address_details(self) -> None:
         forward_address = "forward-to@example.com"
         result = self.client_post("/emails/", {"forward_address": forward_address})
         self.assert_json_success(result)

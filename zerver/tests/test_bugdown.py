@@ -1072,8 +1072,7 @@ class BugdownTest(ZulipTestCase):
             'javascript://example.com/invalidURL',
         )
 
-    def test_disabled_code_block_processor(self):
-        # type: () -> None
+    def test_disabled_code_block_processor(self) -> None:
         msg = "Hello,\n\n" +  \
               "    I am writing this message to test something. I am writing this message to test something."
         converted = bugdown_convert(msg)
@@ -1089,8 +1088,7 @@ class BugdownTest(ZulipTestCase):
                           '<p>I am writing this message to test something. I am writing this message to test something.</p>'
         self.assertEqual(converted, expected_output)
 
-    def test_normal_link(self):
-        # type: () -> None
+    def test_normal_link(self) -> None:
         realm = get_realm("zulip")
         sender_user_profile = self.example_user('othello')
         message = Message(sender=sender_user_profile, sending_client=get_client("test"))
@@ -1101,8 +1099,7 @@ class BugdownTest(ZulipTestCase):
             '<p><a href="http://example.com/#settings/" target="_blank" title="http://example.com/#settings/">http://example.com/#settings/</a></p>'
         )
 
-    def test_relative_link(self):
-        # type: () -> None
+    def test_relative_link(self) -> None:
         realm = get_realm("zulip")
         sender_user_profile = self.example_user('othello')
         message = Message(sender=sender_user_profile, sending_client=get_client("test"))

@@ -25,46 +25,39 @@ import urllib
 from typing import Text
 
 class MITNameTest(ZulipTestCase):
-    def test_valid_hesiod(self):
-        # type: () -> None
+    def test_valid_hesiod(self) -> None:
         with mock.patch('DNS.dnslookup', return_value=[['starnine:*:84233:101:Athena Consulting Exchange User,,,:/mit/starnine:/bin/bash']]):
             self.assertEqual(compute_mit_user_fullname(self.mit_email("starnine")), "Athena Consulting Exchange User")
         with mock.patch('DNS.dnslookup', return_value=[['sipbexch:*:87824:101:Exch Sipb,,,:/mit/sipbexch:/bin/athena/bash']]):
             self.assertEqual(compute_mit_user_fullname("sipbexch@mit.edu"), "Exch Sipb")
 
-    def test_invalid_hesiod(self):
-        # type: () -> None
+    def test_invalid_hesiod(self) -> None:
         with mock.patch('DNS.dnslookup', side_effect=DNS.Base.ServerError('DNS query status: NXDOMAIN', 3)):
             self.assertEqual(compute_mit_user_fullname("1234567890@mit.edu"), "1234567890@mit.edu")
         with mock.patch('DNS.dnslookup', side_effect=DNS.Base.ServerError('DNS query status: NXDOMAIN', 3)):
             self.assertEqual(compute_mit_user_fullname("ec-discuss@mit.edu"), "ec-discuss@mit.edu")
 
-    def test_mailinglist(self):
-        # type: () -> None
+    def test_mailinglist(self) -> None:
         with mock.patch('DNS.dnslookup', side_effect=DNS.Base.ServerError('DNS query status: NXDOMAIN', 3)):
             self.assertRaises(ValidationError, email_is_not_mit_mailing_list, "1234567890@mit.edu")
         with mock.patch('DNS.dnslookup', side_effect=DNS.Base.ServerError('DNS query status: NXDOMAIN', 3)):
             self.assertRaises(ValidationError, email_is_not_mit_mailing_list, "ec-discuss@mit.edu")
 
-    def test_notmailinglist(self):
-        # type: () -> None
+    def test_notmailinglist(self) -> None:
         with mock.patch('DNS.dnslookup', return_value=[['POP IMAP.EXCHANGE.MIT.EDU starnine']]):
             email_is_not_mit_mailing_list("sipbexch@mit.edu")
 
 class RateLimitTests(ZulipTestCase):
 
-    def setUp(self):
-        # type: () -> None
+    def setUp(self) -> None:
         settings.RATE_LIMITING = True
         add_ratelimit_rule(1, 5)
 
-    def tearDown(self):
-        # type: () -> None
+    def tearDown(self) -> None:
         settings.RATE_LIMITING = False
         remove_ratelimit_rule(1, 5)
 
-    def send_api_message(self, email, content):
-        # type: (Text, Text) -> HttpResponse
+    def send_api_message(self, email: Text, content: Text) -> HttpResponse:
         return self.client_post("/api/v1/messages", {"type": "stream",
                                                      "to": "Verona",
                                                      "client": "test suite",
@@ -72,8 +65,7 @@ class RateLimitTests(ZulipTestCase):
                                                      "subject": "Test subject"},
                                 **self.api_auth(email))
 
-    def test_headers(self):
-        # type: () -> None
+    def test_headers(self) -> None:
         user = self.example_user('hamlet')
         email = user.email
         clear_history(RateLimitedUser(user))
@@ -83,8 +75,7 @@ class RateLimitTests(ZulipTestCase):
         self.assertTrue('X-RateLimit-Limit' in result)
         self.assertTrue('X-RateLimit-Reset' in result)
 
-    def test_ratelimit_decrease(self):
-        # type: () -> None
+    def test_ratelimit_decrease(self) -> None:
         user = self.example_user('hamlet')
         email = user.email
         clear_history(RateLimitedUser(user))
@@ -95,8 +86,7 @@ class RateLimitTests(ZulipTestCase):
         newlimit = int(result['X-RateLimit-Remaining'])
         self.assertEqual(limit, newlimit + 1)
 
-    def test_hit_ratelimits(self):
-        # type: () -> None
+    def test_hit_ratelimits(self) -> None:
         user = self.example_user('cordelia')
         email = user.email
         clear_history(RateLimitedUser(user))

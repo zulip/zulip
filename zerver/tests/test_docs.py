@@ -86,8 +86,7 @@ class DocPageTest(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
 
     @slow("Tests dozens of endpoints, including all our integrations docs")
-    def test_integration_doc_endpoints(self):
-        # type: () -> None
+    def test_integration_doc_endpoints(self) -> None:
         self._test('/integrations/',
                    'Over 60 native integrations.',
                    extra_strings=[

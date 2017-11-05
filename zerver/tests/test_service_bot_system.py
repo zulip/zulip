@@ -178,15 +178,13 @@ class TestServiceBotStateHandler(ZulipTestCase):
         self.assertRaises(StateError, lambda: storage.remove('some key'))
 
 class TestServiceBotConfigHandler(ZulipTestCase):
-    def setUp(self):
-        # type: () -> None
+    def setUp(self) -> None:
         self.user_profile = self.example_user("othello")
         self.bot_profile = self.create_test_bot('embedded-bot@zulip.testserver', self.user_profile, 'Embedded bot',
                                                 'embedded', UserProfile.EMBEDDED_BOT, service_name='helloworld')
         self.bot_handler = EmbeddedBotHandler(self.bot_profile)
 
-    def test_basic_storage_and_retrieval(self):
-        # type: () -> None
+    def test_basic_storage_and_retrieval(self) -> None:
         config_dict = {"entry 1": "value 1", "entry 2": "value 2"}
         for key, value in config_dict.items():
             set_bot_config(self.bot_profile, key, value)
@@ -199,8 +197,7 @@ class TestServiceBotConfigHandler(ZulipTestCase):
         self.assertEqual(self.bot_handler.get_config_info(), config_dict)
 
     @override_settings(BOT_CONFIG_SIZE_LIMIT=100)
-    def test_config_entry_limit(self):
-        # type: () -> None
+    def test_config_entry_limit(self) -> None:
         set_bot_config(self.bot_profile, "some key", 'x' * (settings.BOT_CONFIG_SIZE_LIMIT-8))
         self.assertRaisesMessage(ConfigError,
                                  "Cannot store configuration. Request would require 101 characters. "
