@@ -122,7 +122,7 @@ def retry_send_email_failures(func):
 
     return wrapper
 
-class QueueProcessingWorker(object):
+class QueueProcessingWorker:
     queue_name = None  # type: str
 
     def __init__(self):

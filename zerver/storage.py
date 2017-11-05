@@ -10,7 +10,7 @@ from pipeline.storage import PipelineMixin
 
 from zerver.lib.str_utils import force_str
 
-class AddHeaderMixin(object):
+class AddHeaderMixin:
     def post_process(self, paths, dry_run=False, **kwargs):
         # type: (Dict[str, Tuple[ZulipStorage, str]], bool, **Any) -> List[Tuple[str, str, bool]]
         if dry_run:
@@ -57,7 +57,7 @@ class AddHeaderMixin(object):
         return list(ret_dict.values())
 
 
-class RemoveUnminifiedFilesMixin(object):
+class RemoveUnminifiedFilesMixin:
     def post_process(self, paths, dry_run=False, **kwargs):
         # type: (Dict[str, Tuple[ZulipStorage, str]], bool, **Any) -> List[Tuple[str, str, bool]]
         if dry_run:
