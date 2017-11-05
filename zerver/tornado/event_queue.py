@@ -83,7 +83,8 @@ class ClientDescriptor:
         self.narrow_filter = build_narrow_filter(narrow)
 
         # Clamp queue_timeout to between minimum and maximum timeouts
-        self.queue_timeout = max(IDLE_EVENT_QUEUE_TIMEOUT_SECS, min(self.queue_timeout, MAX_QUEUE_TIMEOUT_SECS))
+        self.queue_timeout = max(IDLE_EVENT_QUEUE_TIMEOUT_SECS,
+                                 min(self.queue_timeout, MAX_QUEUE_TIMEOUT_SECS))
 
     def to_dict(self):
         # type: () -> Dict[str, Any]

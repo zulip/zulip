@@ -168,9 +168,12 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
         msg = ujson.loads(msg_raw)
 
         if self.did_close:
+            user_email = 'unknown'
+            if self.session.user_profile is not None:
+                user_email = self.session.user_profile.email
             logger.info("Received message on already closed socket! transport=%s user=%s client_id=%s"
                         % (self.session.transport_name,
-                           self.session.user_profile.email if self.session.user_profile is not None else 'unknown',
+                           user_email,
                            self.client_id))
 
         self.session.send_message({'req_id': msg['req_id'], 'type': 'ack'})
@@ -211,6 +214,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
             pipeline.execute()
 
         record_request_stop_data(log_data)
+        request_environ = dict(REMOTE_ADDR=self.session.conn_info.ip)
         queue_json_publish("message_sender",
                            dict(request=msg['request'],
                                 req_id=msg['req_id'],
@@ -218,7 +222,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
                                                  client_id=self.client_id,
                                                  return_queue="tornado_return",
                                                  log_data=log_data,
-                                                 request_environ=dict(REMOTE_ADDR=self.session.conn_info.ip))),
+                                                 request_environ=request_environ)),
                            lambda x: None, call_consume_in_tests=True)
 
     def on_close(self) -> None:
@@ -268,9 +272,9 @@ def respond_send_message(data: Mapping[str, Any]) -> None:
 # We disable the eventsource and htmlfile transports because they cannot
 # securely send us the zulip.com cookie, which we use as part of our
 # authentication scheme.
+sockjs_url = 'https://%s/static/third/sockjs/sockjs-0.3.4.js' % (settings.EXTERNAL_HOST,)
 sockjs_router = sockjs.tornado.SockJSRouter(SocketConnection, "/sockjs",
-                                            {'sockjs_url': 'https://%s/static/third/sockjs/sockjs-0.3.4.js' % (
-                                                settings.EXTERNAL_HOST,),
+                                            {'sockjs_url': sockjs_url,
                                              'disabled_transports': ['eventsource', 'htmlfile']})
 def get_sockjs_router() -> sockjs.tornado.SockJSRouter:
     return sockjs_router
