@@ -10,12 +10,10 @@ user_group_mentions = r'(?<![^\s\'\"\(,:<])@(\*[^\*]+\*)'
 
 wildcards = ['all', 'everyone']
 
-def user_mention_matches_wildcard(mention):
-    # type: (Text) -> bool
+def user_mention_matches_wildcard(mention: Text) -> bool:
     return mention in wildcards
 
-def extract_name(s):
-    # type: (Text) -> Optional[Text]
+def extract_name(s: Text) -> Optional[Text]:
     if s.startswith("**") and s.endswith("**"):
         name = s[2:-2]
         if name in wildcards:
@@ -25,18 +23,15 @@ def extract_name(s):
     # We don't care about @all or @everyone
     return None
 
-def possible_mentions(content):
-    # type: (Text) -> Set[Text]
+def possible_mentions(content: Text) -> Set[Text]:
     matches = re.findall(find_mentions, content)
     names_with_none = (extract_name(match) for match in matches)
     names = {name for name in names_with_none if name}
     return names
 
-def extract_user_group(matched_text):
-    # type: (Text) -> Text
+def extract_user_group(matched_text: Text) -> Text:
     return matched_text[1:-1]
 
-def possible_user_group_mentions(content):
-    # type: (Text) -> Set[Text]
+def possible_user_group_mentions(content: Text) -> Set[Text]:
     matches = re.findall(user_group_mentions, content)
     return {extract_user_group(match) for match in matches}

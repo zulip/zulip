@@ -93,8 +93,7 @@ def send_email(template_prefix, to_user_id=None, to_email=None, from_name=None,
         logger.error("Error sending %s email to %s" % (template, mail.to))
         raise EmailNotDeliveredException
 
-def send_email_from_dict(email_dict):
-    # type: (Mapping[str, Any]) -> None
+def send_email_from_dict(email_dict: Mapping[str, Any]) -> None:
     send_email(**dict(email_dict))
 
 def send_future_email(template_prefix, to_user_id=None, to_email=None, from_name=None,

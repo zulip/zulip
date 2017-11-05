@@ -9,8 +9,7 @@ import string
 
 from typing import Optional, Text
 
-def random_api_key():
-    # type: () -> Text
+def random_api_key() -> Text:
     choices = string.ascii_letters + string.digits
     altchars = ''.join([choices[ord(os.urandom(1)) % 62] for _ in range(2)]).encode("utf-8")
     return base64.b64encode(os.urandom(24), altchars=altchars).decode("utf-8")

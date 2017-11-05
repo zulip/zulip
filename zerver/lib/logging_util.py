@@ -17,8 +17,7 @@ from logging import Logger
 class _RateLimitFilter:
     last_error = datetime.min.replace(tzinfo=timezone_utc)
 
-    def filter(self, record):
-        # type: (logging.LogRecord) -> bool
+    def filter(self, record: logging.LogRecord) -> bool:
         from django.conf import settings
         from django.core.cache import cache
 
@@ -58,23 +57,19 @@ class EmailLimiter(_RateLimitFilter):
     pass
 
 class ReturnTrue(logging.Filter):
-    def filter(self, record):
-        # type: (logging.LogRecord) -> bool
+    def filter(self, record: logging.LogRecord) -> bool:
         return True
 
 class ReturnEnabled(logging.Filter):
-    def filter(self, record):
-        # type: (logging.LogRecord) -> bool
+    def filter(self, record: logging.LogRecord) -> bool:
         return settings.LOGGING_NOT_DISABLED
 
 class RequireReallyDeployed(logging.Filter):
-    def filter(self, record):
-        # type: (logging.LogRecord) -> bool
+    def filter(self, record: logging.LogRecord) -> bool:
         from django.conf import settings
         return settings.PRODUCTION
 
-def skip_200_and_304(record):
-    # type: (logging.LogRecord) -> bool
+def skip_200_and_304(record: logging.LogRecord) -> bool:
     # Apparently, `status_code` is added by Django and is not an actual
     # attribute of LogRecord; as a result, mypy throws an error if we
     # access the `status_code` attribute directly.
@@ -91,8 +86,7 @@ IGNORABLE_404_URLS = [
     re.compile(r'^/wp-login.php$'),
 ]
 
-def skip_boring_404s(record):
-    # type: (logging.LogRecord) -> bool
+def skip_boring_404s(record: logging.LogRecord) -> bool:
     """Prevents Django's 'Not Found' warnings from being logged for common
     404 errors that don't reflect a problem in Zulip.  The overall
     result is to keep the Zulip error logs cleaner than they would
@@ -116,8 +110,7 @@ def skip_boring_404s(record):
             return False
     return True
 
-def skip_site_packages_logs(record):
-    # type: (logging.LogRecord) -> bool
+def skip_site_packages_logs(record: logging.LogRecord) -> bool:
     # This skips the log records that are generated from libraries
     # installed in site packages.
     # Workaround for https://code.djangoproject.com/ticket/26886
@@ -125,8 +118,7 @@ def skip_site_packages_logs(record):
         return False
     return True
 
-def find_log_caller_module(record):
-    # type: (logging.LogRecord) -> Optional[str]
+def find_log_caller_module(record: logging.LogRecord) -> Optional[str]:
     '''Find the module name corresponding to where this record was logged.'''
     # Repeat a search similar to that in logging.Logger.findCaller.
     # The logging call should still be on the stack somewhere; search until
@@ -144,8 +136,7 @@ logger_nicknames = {
     'zulip.requests': 'zr',  # Super common.
 }
 
-def find_log_origin(record):
-    # type: (logging.LogRecord) -> str
+def find_log_origin(record: logging.LogRecord) -> str:
     logger_name = logger_nicknames.get(record.name, record.name)
 
     if settings.LOGGING_SHOW_MODULE:
@@ -166,8 +157,7 @@ log_level_abbrevs = {
     'CRITICAL': 'CRIT',
 }
 
-def abbrev_log_levelname(levelname):
-    # type: (str) -> str
+def abbrev_log_levelname(levelname: str) -> str:
     # It's unlikely someone will set a custom log level with a custom name,
     # but it's an option, so we shouldn't crash if someone does.
     return log_level_abbrevs.get(levelname, levelname[:4])
@@ -176,20 +166,17 @@ class ZulipFormatter(logging.Formatter):
     # Used in the base implementation.  Default uses `,`.
     default_msec_format = '%s.%03d'
 
-    def __init__(self):
-        # type: () -> None
+    def __init__(self) -> None:
         super().__init__(fmt=self._compute_fmt())
 
-    def _compute_fmt(self):
-        # type: () -> str
+    def _compute_fmt(self) -> str:
         pieces = ['%(asctime)s', '%(zulip_level_abbrev)-4s']
         if settings.LOGGING_SHOW_PID:
             pieces.append('pid:%(process)d')
         pieces.extend(['[%(zulip_origin)s]', '%(message)s'])
         return ' '.join(pieces)
 
-    def format(self, record):
-        # type: (logging.LogRecord) -> str
+    def format(self, record: logging.LogRecord) -> str:
         if not getattr(record, 'zulip_decorated', False):
             # The `setattr` calls put this logic explicitly outside the bounds of the
             # type system; otherwise mypy would complain LogRecord lacks these attributes.
@@ -198,8 +185,10 @@ class ZulipFormatter(logging.Formatter):
             setattr(record, 'zulip_decorated', True)
         return super().format(record)
 
-def create_logger(name, log_file, log_level, log_format="%(asctime)s %(levelname)-8s %(message)s"):
-    # type: (str, str, str, str) -> Logger
+def create_logger(name: str,
+                  log_file: str,
+                  log_level: str,
+                  log_format: str="%(asctime)s%(levelname)-8s%(message)s") -> Logger:
     """Creates a named logger for use in logging content to a certain
     file.  A few notes:
 

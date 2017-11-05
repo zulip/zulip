@@ -15,8 +15,7 @@ from sqlalchemy.sql import (
     Selectable
 )
 
-def get_topic_mutes(user_profile):
-    # type: (UserProfile) -> List[List[Text]]
+def get_topic_mutes(user_profile: UserProfile) -> List[List[Text]]:
     rows = MutedTopic.objects.filter(
         user_profile=user_profile,
     ).values(
@@ -28,8 +27,7 @@ def get_topic_mutes(user_profile):
         for row in rows
     ]
 
-def set_topic_mutes(user_profile, muted_topics):
-    # type: (UserProfile, List[List[Text]]) -> None
+def set_topic_mutes(user_profile: UserProfile, muted_topics: List[List[Text]]) -> None:
 
     '''
     This is only used in tests.
@@ -50,8 +48,7 @@ def set_topic_mutes(user_profile, muted_topics):
             topic_name=topic_name,
         )
 
-def add_topic_mute(user_profile, stream_id, recipient_id, topic_name):
-    # type: (UserProfile, int, int, str) -> None
+def add_topic_mute(user_profile: UserProfile, stream_id: int, recipient_id: int, topic_name: str) -> None:
     MutedTopic.objects.create(
         user_profile=user_profile,
         stream_id=stream_id,
@@ -59,8 +56,7 @@ def add_topic_mute(user_profile, stream_id, recipient_id, topic_name):
         topic_name=topic_name,
     )
 
-def remove_topic_mute(user_profile, stream_id, topic_name):
-    # type: (UserProfile, int, str) -> None
+def remove_topic_mute(user_profile: UserProfile, stream_id: int, topic_name: str) -> None:
     row = MutedTopic.objects.get(
         user_profile=user_profile,
         stream_id=stream_id,
@@ -68,8 +64,7 @@ def remove_topic_mute(user_profile, stream_id, topic_name):
     )
     row.delete()
 
-def topic_is_muted(user_profile, stream_id, topic_name):
-    # type: (UserProfile, int, Text) -> bool
+def topic_is_muted(user_profile: UserProfile, stream_id: int, topic_name: Text) -> bool:
     is_muted = MutedTopic.objects.filter(
         user_profile=user_profile,
         stream_id=stream_id,
@@ -77,8 +72,9 @@ def topic_is_muted(user_profile, stream_id, topic_name):
     ).exists()
     return is_muted
 
-def exclude_topic_mutes(conditions, user_profile, stream_id):
-    # type: (List[Selectable], UserProfile, Optional[int]) -> List[Selectable]
+def exclude_topic_mutes(conditions: List[Selectable],
+                        user_profile: UserProfile,
+                        stream_id: Optional[int]) -> List[Selectable]:
     query = MutedTopic.objects.filter(
         user_profile=user_profile,
     )
@@ -97,8 +93,7 @@ def exclude_topic_mutes(conditions, user_profile, stream_id):
     if not rows:
         return conditions
 
-    def mute_cond(row):
-        # type: (Dict[str, Any]) -> Selectable
+    def mute_cond(row: Dict[str, Any]) -> Selectable:
         recipient_id = row['recipient_id']
         topic_name = row['topic_name']
         stream_cond = column("recipient_id") == recipient_id
@@ -108,8 +103,7 @@ def exclude_topic_mutes(conditions, user_profile, stream_id):
     condition = not_(or_(*list(map(mute_cond, rows))))
     return conditions + [condition]
 
-def build_topic_mute_checker(user_profile):
-    # type: (UserProfile) -> Callable[[int, Text], bool]
+def build_topic_mute_checker(user_profile: UserProfile) -> Callable[[int, Text], bool]:
     rows = MutedTopic.objects.filter(
         user_profile=user_profile,
     ).values(
@@ -124,8 +118,7 @@ def build_topic_mute_checker(user_profile):
         topic_name = row['topic_name']
         tups.add((recipient_id, topic_name.lower()))
 
-    def is_muted(recipient_id, topic):
-        # type: (int, Text) -> bool
+    def is_muted(recipient_id: int, topic: Text) -> bool:
         return (recipient_id, topic.lower()) in tups
 
     return is_muted

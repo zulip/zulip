@@ -47,12 +47,10 @@ from zproject.backends import email_auth_enabled, password_auth_enabled
 from version import ZULIP_VERSION
 
 
-def get_raw_user_data(realm_id, client_gravatar):
-    # type: (int, bool) -> Dict[int, Dict[str, Text]]
+def get_raw_user_data(realm_id: int, client_gravatar: bool) -> Dict[int, Dict[str, Text]]:
     user_dicts = get_realm_user_dicts(realm_id)
 
-    def user_data(row):
-        # type: (Dict[str, Any]) -> Dict[str, Any]
+    def user_data(row: Dict[str, Any]) -> Dict[str, Any]:
         avatar_url = get_avatar_field(
             user_id=row['id'],
             realm_id= realm_id,
@@ -81,8 +79,7 @@ def get_raw_user_data(realm_id, client_gravatar):
         for row in user_dicts
     }
 
-def always_want(msg_type):
-    # type: (str) -> bool
+def always_want(msg_type: str) -> bool:
     '''
     This function is used as a helper in
     fetch_initial_state_data, when the user passes
@@ -262,8 +259,8 @@ def fetch_initial_state_data(user_profile, event_types, queue_id, client_gravata
     return state
 
 
-def remove_message_id_from_unread_mgs(state, message_id):
-    # type: (Dict[str, Dict[str, Any]], int) -> None
+def remove_message_id_from_unread_mgs(state: Dict[str, Dict[str, Any]],
+                                      message_id: int) -> None:
     raw_unread = state['raw_unread_msgs']
 
     for key in ['pm_dict', 'stream_dict', 'huddle_dict']:
@@ -288,8 +285,11 @@ def apply_events(state, events, user_profile, client_gravatar, include_subscribe
             continue
         apply_event(state, event, user_profile, client_gravatar, include_subscribers)
 
-def apply_event(state, event, user_profile, client_gravatar, include_subscribers):
-    # type: (Dict[str, Any], Dict[str, Any], UserProfile, bool, bool) -> None
+def apply_event(state: Dict[str, Any],
+                event: Dict[str, Any],
+                user_profile: UserProfile,
+                client_gravatar: bool,
+                include_subscribers: bool) -> None:
     if event['type'] == "message":
         state['max_message_id'] = max(state['max_message_id'], event['message']['id'])
         if 'raw_unread_msgs' in state:
@@ -440,8 +440,7 @@ def apply_event(state, event, user_profile, client_gravatar, include_subscribers
                     event['subscriptions'][i] = copy.deepcopy(event['subscriptions'][i])
                     del event['subscriptions'][i]['subscribers']
 
-        def name(sub):
-            # type: (Dict[str, Any]) -> Text
+        def name(sub: Dict[str, Any]) -> Text:
             return sub['name'].lower()
 
         if event['op'] == "add":

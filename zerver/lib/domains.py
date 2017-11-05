@@ -4,8 +4,7 @@ from django.utils.translation import ugettext as _
 import re
 from typing import Text
 
-def validate_domain(domain):
-    # type: (Text) -> None
+def validate_domain(domain: Text) -> None:
     if domain is None or len(domain) == 0:
         raise ValidationError(_("Domain can't be empty."))
     if '.' not in domain:

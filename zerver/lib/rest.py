@@ -15,8 +15,7 @@ METHODS = ('GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH')
 FLAGS = ('override_api_url_scheme')
 
 @csrf_exempt
-def rest_dispatch(request, **kwargs):
-    # type: (HttpRequest, **Any) -> HttpResponse
+def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     """Dispatch to a REST API endpoint.
 
     Unauthenticated endpoints should not use this, as authentication is verified

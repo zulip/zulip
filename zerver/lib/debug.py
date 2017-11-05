@@ -12,8 +12,7 @@ from typing import Optional
 # (that link also points to code for an interactive remote debugger
 # setup, which we might want if we move Tornado to run in a daemon
 # rather than via screen).
-def interactive_debug(sig, frame):
-    # type: (int, FrameType) -> None
+def interactive_debug(sig: int, frame: FrameType) -> None:
     """Interrupt running process, and provide a python prompt for
     interactive debugging."""
     d = {'_frame': frame}      # Allow access to frame object.
@@ -27,7 +26,6 @@ def interactive_debug(sig, frame):
 
 # SIGUSR1 => Just print the stack
 # SIGUSR2 => Print stack + open interactive debugging shell
-def interactive_debug_listen():
-    # type: () -> None
+def interactive_debug_listen() -> None:
     signal.signal(signal.SIGUSR1, lambda sig, stack: traceback.print_stack(stack))
     signal.signal(signal.SIGUSR2, interactive_debug)

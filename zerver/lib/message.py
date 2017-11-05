@@ -97,9 +97,8 @@ def messages_for_ids(message_ids: List[int],
 
     return message_list
 
-
-def sew_messages_and_reactions(messages, reactions):
-    # type: (List[Dict[str, Any]], List[Dict[str, Any]]) -> List[Dict[str, Any]]
+def sew_messages_and_reactions(messages: List[Dict[str, Any]],
+                               reactions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """Given a iterable of messages and reactions stitch reactions
     into messages.
     """
@@ -117,23 +116,19 @@ def sew_messages_and_reactions(messages, reactions):
     return list(converted_messages.values())
 
 
-def extract_message_dict(message_bytes):
-    # type: (bytes) -> Dict[str, Any]
+def extract_message_dict(message_bytes: bytes) -> Dict[str, Any]:
     return ujson.loads(zlib.decompress(message_bytes).decode("utf-8"))
 
-def stringify_message_dict(message_dict):
-    # type: (Dict[str, Any]) -> bytes
+def stringify_message_dict(message_dict: Dict[str, Any]) -> bytes:
     return zlib.compress(ujson.dumps(message_dict).encode())
 
 @cache_with_key(to_dict_cache_key, timeout=3600*24)
-def message_to_dict_json(message):
-    # type: (Message) -> bytes
+def message_to_dict_json(message: Message) -> bytes:
     return MessageDict.to_dict_uncached(message)
 
 class MessageDict:
     @staticmethod
-    def wide_dict(message):
-        # type: (Message) -> Dict[str, Any]
+    def wide_dict(message: Message) -> Dict[str, Any]:
         '''
         The next two lines get the cachable field related
         to our message object, with the side effect of
@@ -154,8 +149,7 @@ class MessageDict:
         return obj
 
     @staticmethod
-    def post_process_dicts(objs, apply_markdown, client_gravatar):
-        # type: (List[Dict[str, Any]], bool, bool) -> None
+    def post_process_dicts(objs: List[Dict[str, Any]], apply_markdown: bool, client_gravatar: bool) -> None:
         MessageDict.bulk_hydrate_sender_info(objs)
 
         for obj in objs:
@@ -163,10 +157,10 @@ class MessageDict:
             MessageDict.finalize_payload(obj, apply_markdown, client_gravatar)
 
     @staticmethod
-    def finalize_payload(obj, apply_markdown, client_gravatar):
-        # type: (Dict[str, Any], bool, bool) -> None
+    def finalize_payload(obj: Dict[str, Any],
+                         apply_markdown: bool,
+                         client_gravatar: bool) -> None:
         MessageDict.set_sender_avatar(obj, client_gravatar)
-
         if apply_markdown:
             obj['content_type'] = 'text/html'
             obj['content'] = obj['rendered_content']
@@ -184,14 +178,12 @@ class MessageDict:
         del obj['sender_is_mirror_dummy']
 
     @staticmethod
-    def to_dict_uncached(message):
-        # type: (Message) -> bytes
+    def to_dict_uncached(message: Message) -> bytes:
         dct = MessageDict.to_dict_uncached_helper(message)
         return stringify_message_dict(dct)
 
     @staticmethod
-    def to_dict_uncached_helper(message):
-        # type: (Message) -> Dict[str, Any]
+    def to_dict_uncached_helper(message: Message) -> Dict[str, Any]:
         return MessageDict.build_message_dict(
             message = message,
             message_id = message.id,
@@ -212,8 +204,7 @@ class MessageDict:
         )
 
     @staticmethod
-    def get_raw_db_rows(needed_ids):
-        # type: (List[int]) -> List[Dict[str, Any]]
+    def get_raw_db_rows(needed_ids: List[int]) -> List[Dict[str, Any]]:
         # This is a special purpose function optimized for
         # callers like get_messages_backend().
         fields = [
@@ -242,8 +233,7 @@ class MessageDict:
         return sew_messages_and_reactions(messages, reactions)
 
     @staticmethod
-    def build_dict_from_raw_db_row(row):
-        # type: (Dict[str, Any]) -> Dict[str, Any]
+    def build_dict_from_raw_db_row(row: Dict[str, Any]) -> Dict[str, Any]:
         '''
         row is a row from a .values() call, and it needs to have
         all the relevant fields populated
@@ -352,8 +342,7 @@ class MessageDict:
         return obj
 
     @staticmethod
-    def bulk_hydrate_sender_info(objs):
-        # type: (List[Dict[str, Any]]) -> None
+    def bulk_hydrate_sender_info(objs: List[Dict[str, Any]]) -> None:
 
         sender_ids = list({
             obj['sender_id']
@@ -393,8 +382,7 @@ class MessageDict:
             obj['sender_is_mirror_dummy'] = user_row['is_mirror_dummy']
 
     @staticmethod
-    def hydrate_recipient_info(obj):
-        # type: (Dict[str, Any]) -> None
+    def hydrate_recipient_info(obj: Dict[str, Any]) -> None:
         '''
         This method hyrdrates recipient info with things
         like full names and emails of senders.  Eventually
@@ -437,8 +425,7 @@ class MessageDict:
             obj['stream_id'] = recipient_type_id
 
     @staticmethod
-    def set_sender_avatar(obj, client_gravatar):
-        # type: (Dict[str, Any], bool) -> None
+    def set_sender_avatar(obj: Dict[str, Any], client_gravatar: bool) -> None:
         sender_id = obj['sender_id']
         sender_realm_id = obj['sender_realm_id']
         sender_email = obj['sender_email']
@@ -457,8 +444,7 @@ class MessageDict:
 
 class ReactionDict:
     @staticmethod
-    def build_dict_from_raw_db_row(row):
-        # type: (Dict[str, Any]) -> Dict[str, Any]
+    def build_dict_from_raw_db_row(row: Dict[str, Any]) -> Dict[str, Any]:
         return {'emoji_name': row['emoji_name'],
                 'emoji_code': row['emoji_code'],
                 'reaction_type': row['reaction_type'],
@@ -467,8 +453,7 @@ class ReactionDict:
                          'full_name': row['user_profile__full_name']}}
 
 
-def access_message(user_profile, message_id):
-    # type: (UserProfile, int) -> Tuple[Message, UserMessage]
+def access_message(user_profile: UserProfile, message_id: int) -> Tuple[Message, UserMessage]:
     """You can access a message by ID in our APIs that either:
     (1) You received or have previously accessed via starring
         (aka have a UserMessage row for).
@@ -506,9 +491,13 @@ def access_message(user_profile, message_id):
     # stream in your realm, so return the message, user_message pair
     return (message, user_message)
 
-def render_markdown(message, content, realm=None, realm_alert_words=None, user_ids=None,
-                    mention_data=None, email_gateway=False):
-    # type: (Message, Text, Optional[Realm], Optional[RealmAlertWords], Optional[Set[int]], Optional[bugdown.MentionData], Optional[bool]) -> Text
+def render_markdown(message: Message,
+                    content: Text,
+                    realm: Optional[Realm]=None,
+                    realm_alert_words: Optional[RealmAlertWords]=None,
+                    user_ids: Optional[Set[int]]=None,
+                    mention_data: Optional[bugdown.MentionData]=None,
+                    email_gateway: Optional[bool]=False) -> Text:
     """Return HTML for given markdown. Bugdown may add properties to the
     message object such as `mentions_user_ids`, `mentions_user_group_ids`, and
     `mentions_wildcard`.  These are only on this Django object and are not
@@ -565,8 +554,7 @@ def render_markdown(message, content, realm=None, realm_alert_words=None, user_i
 
     return rendered_content
 
-def huddle_users(recipient_id):
-    # type: (int) -> str
+def huddle_users(recipient_id: int) -> str:
     display_recipient = get_display_recipient_by_id(recipient_id,
                                                     Recipient.HUDDLE,
                                                     None)  # type: Union[Text, List[Dict[str, Any]]]
@@ -578,8 +566,9 @@ def huddle_users(recipient_id):
     user_ids = sorted(user_ids)
     return ','.join(str(uid) for uid in user_ids)
 
-def aggregate_message_dict(input_dict, lookup_fields, collect_senders):
-    # type: (Dict[int, Dict[str, Any]], List[str], bool) -> List[Dict[str, Any]]
+def aggregate_message_dict(input_dict: Dict[int, Dict[str, Any]],
+                           lookup_fields: List[str],
+                           collect_senders: bool) -> List[Dict[str, Any]]:
     lookup_dict = dict()  # type: Dict[Tuple[Any, ...], Dict[str, Any]]
 
     '''
@@ -639,8 +628,7 @@ def aggregate_message_dict(input_dict, lookup_fields, collect_senders):
 
     return [lookup_dict[k] for k in sorted_keys]
 
-def get_inactive_recipient_ids(user_profile):
-    # type: (UserProfile) -> List[int]
+def get_inactive_recipient_ids(user_profile: UserProfile) -> List[int]:
     rows = get_stream_subscriptions_for_user(user_profile).filter(
         active=False,
     ).values(
@@ -651,8 +639,7 @@ def get_inactive_recipient_ids(user_profile):
         for row in rows]
     return inactive_recipient_ids
 
-def get_muted_stream_ids(user_profile):
-    # type: (UserProfile) -> List[int]
+def get_muted_stream_ids(user_profile: UserProfile) -> List[int]:
     rows = get_stream_subscriptions_for_user(user_profile).filter(
         active=True,
         in_home_view=False,
@@ -664,8 +651,7 @@ def get_muted_stream_ids(user_profile):
         for row in rows]
     return muted_stream_ids
 
-def get_raw_unread_data(user_profile):
-    # type: (UserProfile) -> RawUnreadMessagesResult
+def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
 
     excluded_recipient_ids = get_inactive_recipient_ids(user_profile)
 
@@ -694,8 +680,7 @@ def get_raw_unread_data(user_profile):
 
     topic_mute_checker = build_topic_mute_checker(user_profile)
 
-    def is_row_muted(stream_id, recipient_id, topic):
-        # type: (int, int, Text) -> bool
+    def is_row_muted(stream_id: int, recipient_id: int, topic: Text) -> bool:
         if stream_id in muted_stream_ids:
             return True
 
@@ -706,8 +691,7 @@ def get_raw_unread_data(user_profile):
 
     huddle_cache = {}  # type: Dict[int, str]
 
-    def get_huddle_users(recipient_id):
-        # type: (int) -> str
+    def get_huddle_users(recipient_id: int) -> str:
         if recipient_id in huddle_cache:
             return huddle_cache[recipient_id]
 
@@ -762,8 +746,7 @@ def get_raw_unread_data(user_profile):
         mentions=mentions,
     )
 
-def aggregate_unread_data(raw_data):
-    # type: (RawUnreadMessagesResult) -> UnreadMessagesResult
+def aggregate_unread_data(raw_data: RawUnreadMessagesResult) -> UnreadMessagesResult:
 
     pm_dict = raw_data['pm_dict']
     stream_dict = raw_data['stream_dict']
@@ -807,8 +790,10 @@ def aggregate_unread_data(raw_data):
 
     return result
 
-def apply_unread_message_event(user_profile, state, message, flags):
-    # type: (UserProfile, Dict[str, Any], Dict[str, Any], List[str]) -> None
+def apply_unread_message_event(user_profile: UserProfile,
+                               state: Dict[str, Any],
+                               message: Dict[str, Any],
+                               flags: List[str]) -> None:
     message_id = message['id']
     if message['type'] == 'stream':
         message_type = 'stream'
