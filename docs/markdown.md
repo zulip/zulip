@@ -54,12 +54,6 @@ this file:
   the fixtures; this will ensure that the syntax stays that way.  If
   the differences are important (i.e. not just whitespace), we should
   also open an issue on GitHub to track the problem.
-* When those above settings are not in use, we set
-  `bugdown_matches_marked` to `false`.  `bugdown_matches_marked` is
-  the predescessor to the more descriptive `backend_only_rendering`
-  and `marked_expected_output` fields, and when `false`, should be
-  replaced be one of those.  We plan to eliminate it once we're out of
-  cases where it is `false`.
 * For mobile push notifications, we need a text version of the
   rendered content, since the APNS and GCM push notification systems
   don't support richer markup.  Mostly, this involves stripping HTML,
