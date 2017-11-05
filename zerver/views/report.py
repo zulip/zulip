@@ -1,6 +1,6 @@
 # System documented in https://zulip.readthedocs.io/en/latest/logging.html
 
-from typing import Any, Dict, Optional, Text
+from typing import Any, Dict, Optional, Text, Union
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
@@ -39,7 +39,7 @@ def report_send_times(request, user_profile,
                       displayed=REQ(converter=to_non_negative_int, default="(unknown)"),
                       locally_echoed=REQ(validator=check_bool, default=False),
                       rendered_content_disparity=REQ(validator=check_bool, default=False)):
-    # type: (HttpRequest, UserProfile, int, int, int, bool, bool) -> HttpResponse
+    # type: (HttpRequest, UserProfile, int, Union[int, str], Union[int, str], bool, bool) -> HttpResponse
     request._log_data["extra"] = "[%sms/%sms/%sms/echo:%s/diff:%s]" \
         % (time, received, displayed, locally_echoed, rendered_content_disparity)
     base_key = statsd_key(user_profile.realm.string_id, clean_periods=True)
