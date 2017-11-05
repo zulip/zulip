@@ -15,8 +15,7 @@ GCI_SUBJECT_TEMPLATE = u'Task: {task_name}'
 class UnknownEventType(Exception):
     pass
 
-def get_abandon_event_body(payload):
-    # type: (Dict[Text, Any]) -> Text
+def get_abandon_event_body(payload: Dict[Text, Any]) -> Text:
     return GCI_MESSAGE_TEMPLATE.format(
         actor=payload['task_claimed_by'],
         action='{}ed'.format(payload['event_type']),
@@ -24,8 +23,7 @@ def get_abandon_event_body(payload):
         task_url=payload['task_definition_url'],
     )
 
-def get_submit_event_body(payload):
-    # type: (Dict[Text, Any]) -> Text
+def get_submit_event_body(payload: Dict[Text, Any]) -> Text:
     return GCI_MESSAGE_TEMPLATE.format(
         actor=payload['task_claimed_by'],
         action='{}ted'.format(payload['event_type']),
@@ -33,8 +31,7 @@ def get_submit_event_body(payload):
         task_url=payload['task_definition_url'],
     )
 
-def get_comment_event_body(payload):
-    # type: (Dict[Text, Any]) -> Text
+def get_comment_event_body(payload: Dict[Text, Any]) -> Text:
     return GCI_MESSAGE_TEMPLATE.format(
         actor=payload['author'],
         action='{}ed on'.format(payload['event_type']),
@@ -42,8 +39,7 @@ def get_comment_event_body(payload):
         task_url=payload['task_definition_url'],
     )
 
-def get_claim_event_body(payload):
-    # type: (Dict[Text, Any]) -> Text
+def get_claim_event_body(payload: Dict[Text, Any]) -> Text:
     return GCI_MESSAGE_TEMPLATE.format(
         actor=payload['task_claimed_by'],
         action='{}ed'.format(payload['event_type']),
@@ -51,8 +47,7 @@ def get_claim_event_body(payload):
         task_url=payload['task_definition_url'],
     )
 
-def get_approve_event_body(payload):
-    # type: (Dict[Text, Any]) -> Text
+def get_approve_event_body(payload: Dict[Text, Any]) -> Text:
     return GCI_MESSAGE_TEMPLATE.format(
         actor=payload['author'],
         action='{}d'.format(payload['event_type']),
@@ -60,8 +55,7 @@ def get_approve_event_body(payload):
         task_url=payload['task_definition_url'],
     )
 
-def get_needswork_event_body(payload):
-    # type: (Dict[Text, Any]) -> Text
+def get_needswork_event_body(payload: Dict[Text, Any]) -> Text:
     template = "{} for more work.".format(GCI_MESSAGE_TEMPLATE.rstrip('.'))
     return template.format(
         actor=payload['author'],
@@ -95,14 +89,12 @@ EVENTS_FUNCTION_MAPPER = {
     'submit': get_submit_event_body,
 }
 
-def get_event(payload):
-    # type: (Dict[Text, Any]) -> Optional[Text]
+def get_event(payload: Dict[Text, Any]) -> Optional[Text]:
     event = payload['event_type']
     if event in EVENTS_FUNCTION_MAPPER:
         return event
 
     raise UnknownEventType(u"Event '{}' is unknown and cannot be handled".format(event))  # nocoverage
 
-def get_body_based_on_event(event):
-    # type: (Text) -> Any
+def get_body_based_on_event(event: Text) -> Any:
     return EVENTS_FUNCTION_MAPPER[event]

@@ -8,8 +8,7 @@ class WordPressHookTests(WebhookTestCase):
     URL_TEMPLATE = "/api/v1/external/wordpress?api_key={api_key}"
     FIXTURE_DIR_NAME = 'wordpress'
 
-    def test_publish_post(self):
-        # type: () -> None
+    def test_publish_post(self) -> None:
 
         expected_topic = u"WordPress Post"
         expected_message = u"New post published.\n[New Blog Post](http://example.com\n)"
@@ -17,8 +16,7 @@ class WordPressHookTests(WebhookTestCase):
         self.send_and_test_stream_message('publish_post', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def test_publish_post_type_not_provided(self):
-        # type: () -> None
+    def test_publish_post_type_not_provided(self) -> None:
 
         expected_topic = u"WordPress Post"
         expected_message = u"New post published.\n[New Blog Post](http://example.com\n)"
@@ -27,8 +25,7 @@ class WordPressHookTests(WebhookTestCase):
                                           expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def test_publish_post_no_data_provided(self):
-        # type: () -> None
+    def test_publish_post_no_data_provided(self) -> None:
 
         # Note: the fixture includes 'hook=publish_post' because it's always added by HookPress
         expected_topic = u"WordPress Notification"
@@ -38,8 +35,7 @@ class WordPressHookTests(WebhookTestCase):
                                           expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def test_publish_page(self):
-        # type: () -> None
+    def test_publish_page(self) -> None:
 
         expected_topic = u"WordPress Page"
         expected_message = u"New page published.\n" + "[New Blog Page](http://example.com\n)"
@@ -47,8 +43,7 @@ class WordPressHookTests(WebhookTestCase):
         self.send_and_test_stream_message('publish_page', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def test_user_register(self):
-        # type: () -> None
+    def test_user_register(self) -> None:
 
         expected_topic = u"New Blog Users"
         expected_message = u"New blog user registered.\nName: test_user\nemail: test_user@example.com"
@@ -56,8 +51,7 @@ class WordPressHookTests(WebhookTestCase):
         self.send_and_test_stream_message('user_register', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def test_wp_login(self):
-        # type: () -> None
+    def test_wp_login(self) -> None:
 
         expected_topic = u"New Login"
         expected_message = u"User testuser logged in."
@@ -65,8 +59,7 @@ class WordPressHookTests(WebhookTestCase):
         self.send_and_test_stream_message('wp_login', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def test_unknown_action_no_data(self):
-        # type: () -> None
+    def test_unknown_action_no_data(self) -> None:
 
         # Mimic send_and_test_stream_message() to manually execute a negative test.
         # Otherwise its call to send_json_payload() would assert on the non-success
@@ -84,8 +77,7 @@ class WordPressHookTests(WebhookTestCase):
         # check that we got the expected error message
         self.assert_json_error(result, "Unknown WordPress webhook action: WordPress Action")
 
-    def test_unknown_action_no_hook_provided(self):
-        # type: () -> None
+    def test_unknown_action_no_hook_provided(self) -> None:
 
         # Similar to unknown_action_no_data, except the fixture contains valid blog post
         # params but without the hook parameter. This should also return an error.
@@ -97,6 +89,5 @@ class WordPressHookTests(WebhookTestCase):
 
         self.assert_json_error(result, "Unknown WordPress webhook action: WordPress Action")
 
-    def get_body(self, fixture_name):
-        # type: (text_type) -> text_type
+    def get_body(self, fixture_name: text_type) -> text_type:
         return self.fixture_data("wordpress", fixture_name, file_type="txt")

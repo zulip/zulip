@@ -21,11 +21,9 @@ ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
 # Beanstalk's web hook UI rejects url with a @ in the username section of a url
 # So we ask the user to replace them with %40
 # We manually fix the username here before passing it along to @authenticated_rest_api_view
-def beanstalk_decoder(view_func):
-    # type: (ViewFuncT) -> ViewFuncT
+def beanstalk_decoder(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
-    def _wrapped_view_func(request, *args, **kwargs):
-        # type: (HttpRequest, *Any, **Any) -> HttpResponse
+    def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         try:
             auth_type, encoded_value = request.META['HTTP_AUTHORIZATION'].split()  # type: str, str
             if auth_type.lower() == "basic":

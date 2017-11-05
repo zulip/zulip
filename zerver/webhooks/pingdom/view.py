@@ -49,13 +49,11 @@ def api_pingdom_webhook(request, user_profile, payload=REQ(argument_type='body')
     return json_success()
 
 
-def get_subject_for_http_request(payload):
-    # type: (Dict[str, Any]) -> Text
+def get_subject_for_http_request(payload: Dict[str, Any]) -> Text:
     return PINGDOM_SUBJECT_TEMPLATE.format(name=payload['check_name'])
 
 
-def get_body_for_http_request(payload):
-    # type: (Dict[str, Any]) -> Text
+def get_body_for_http_request(payload: Dict[str, Any]) -> Text:
     current_state = payload['current_state']
     previous_state = payload['previous_state']
 
@@ -72,6 +70,5 @@ def get_body_for_http_request(payload):
     return body
 
 
-def get_check_type(payload):
-    # type: (Dict[str, Any]) -> Text
+def get_check_type(payload: Dict[str, Any]) -> Text:
     return payload['check_type']

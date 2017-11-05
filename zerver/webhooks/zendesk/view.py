@@ -7,8 +7,7 @@ from zerver.models import get_client, UserProfile
 from django.http import HttpRequest, HttpResponse
 from typing import Text
 
-def truncate(string, length):
-    # type: (Text, int) -> Text
+def truncate(string: Text, length: int) -> Text:
     if len(string) > length:
         string = string[:length-3] + '...'
     return string

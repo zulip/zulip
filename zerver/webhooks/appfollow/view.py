@@ -24,8 +24,7 @@ def api_appfollow_webhook(request, user_profile, stream=REQ(default="appfollow")
                               app_name, convert_markdown(message))
     return json_success()
 
-def convert_markdown(text):
-    # type: (Text) -> Text
+def convert_markdown(text: Text) -> Text:
     # Converts Slack-style markdown to Zulip format
     # Implemented mainly for AppFollow messages
     # Not ready for general use as some edge-cases not handled

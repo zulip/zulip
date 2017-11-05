@@ -6,8 +6,7 @@ class HerokuHookTests(WebhookTestCase):
     STREAM_NAME = 'heroku'
     URL_TEMPLATE = u"/api/v1/external/heroku?stream={stream}&api_key={api_key}"
 
-    def test_deployment(self):
-        # type: () -> None
+    def test_deployment(self) -> None:
         expected_subject = "sample-project"
         expected_message = u"""user@example.com deployed version 3eb5f44 of \
 [sample-project](http://sample-project.herokuapp.com)
@@ -15,6 +14,5 @@ class HerokuHookTests(WebhookTestCase):
         self.send_and_test_stream_message('deploy', expected_subject, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def get_body(self, fixture_name):
-        # type: (Text) -> Text
+    def get_body(self, fixture_name: Text) -> Text:
         return self.fixture_data("heroku", fixture_name, file_type="txt")

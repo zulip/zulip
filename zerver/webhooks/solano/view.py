@@ -65,8 +65,7 @@ def api_solano_webhook(request, user_profile,
     check_send_stream_message(user_profile, request.client, stream, topic, body)
     return json_success()
 
-def handle_test_event(user_profile, client, stream, topic):
-    # type: (UserProfile, Client, str, str) -> HttpResponse
+def handle_test_event(user_profile: UserProfile, client: Client, stream: str, topic: str) -> HttpResponse:
     body = 'Solano webhook set up correctly'
     check_send_stream_message(user_profile, client, stream, topic, body)
     return json_success()
