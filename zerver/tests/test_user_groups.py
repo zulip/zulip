@@ -25,8 +25,7 @@ class UserGroupTestCase(ZulipTestCase):
         members = [self.example_user('othello')]
         return create_user_group(group_name, members, realm)
 
-    def test_user_groups_in_realm(self):
-        # type: () -> None
+    def test_user_groups_in_realm(self) -> None:
         realm = get_realm('zulip')
         self.assertEqual(len(user_groups_in_realm(realm)), 1)
         self.create_user_group_for_test('support')
@@ -35,8 +34,7 @@ class UserGroupTestCase(ZulipTestCase):
         names = set([ug.name for ug in user_groups])
         self.assertEqual(names, set(['hamletcharacters', 'support']))
 
-    def test_user_groups_in_realm_serialized(self):
-        # type: () -> None
+    def test_user_groups_in_realm_serialized(self) -> None:
         realm = get_realm('zulip')
         user_group = UserGroup.objects.first()
         membership = UserGroupMembership.objects.filter(user_group=user_group)
@@ -48,23 +46,20 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[0]['description'], 'Characters of Hamlet')
         self.assertEqual(set(user_groups[0]['members']), set(membership))
 
-    def test_get_user_groups(self):
-        # type: () -> None
+    def test_get_user_groups(self) -> None:
         othello = self.example_user('othello')
         self.create_user_group_for_test('support')
         user_groups = get_user_groups(othello)
         self.assertEqual(len(user_groups), 1)
         self.assertEqual(user_groups[0].name, 'support')
 
-    def test_check_add_user_to_user_group(self):
-        # type: () -> None
+    def test_check_add_user_to_user_group(self) -> None:
         user_group = self.create_user_group_for_test('support')
         hamlet = self.example_user('hamlet')
         self.assertTrue(check_add_user_to_user_group(hamlet, user_group))
         self.assertFalse(check_add_user_to_user_group(hamlet, user_group))
 
-    def test_check_remove_user_from_user_group(self):
-        # type: () -> None
+    def test_check_remove_user_from_user_group(self) -> None:
         user_group = self.create_user_group_for_test('support')
         othello = self.example_user('othello')
         self.assertTrue(check_remove_user_from_user_group(othello, user_group))

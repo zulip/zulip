@@ -18,8 +18,7 @@ class SendLoginEmailTest(ZulipTestCase):
     It is turned off during testing.
     """
 
-    def test_send_login_emails_if_send_login_email_setting_is_true(self):
-        # type: () -> None
+    def test_send_login_emails_if_send_login_email_setting_is_true(self) -> None:
         with self.settings(SEND_LOGIN_EMAILS=True):
             self.assertTrue(settings.SEND_LOGIN_EMAILS)
             # we don't use the self.login method since we spoof the user-agent
@@ -34,16 +33,14 @@ class SendLoginEmailTest(ZulipTestCase):
             subject = 'New login from Firefox on Windows'
             self.assertEqual(mail.outbox[0].subject, subject)
 
-    def test_dont_send_login_emails_if_send_login_emails_is_false(self):
-        # type: () -> None
+    def test_dont_send_login_emails_if_send_login_emails_is_false(self) -> None:
         self.assertFalse(settings.SEND_LOGIN_EMAILS)
         email = self.example_email('hamlet')
         self.login(email)
 
         self.assertEqual(len(mail.outbox), 0)
 
-    def test_dont_send_login_emails_for_new_user_registration_logins(self):
-        # type: () -> None
+    def test_dont_send_login_emails_for_new_user_registration_logins(self) -> None:
         with self.settings(SEND_LOGIN_EMAILS=True):
             self.register("test@zulip.com", "test")
 
@@ -51,8 +48,7 @@ class SendLoginEmailTest(ZulipTestCase):
             self.assertEqual(mail.outbox[0].subject, "Activate your Zulip account")
             self.assertEqual(len(mail.outbox), 1)
 
-    def test_without_path_info_dont_send_login_emails_for_new_user_registration_logins(self):
-        # type: () -> None
+    def test_without_path_info_dont_send_login_emails_for_new_user_registration_logins(self) -> None:
         with self.settings(SEND_LOGIN_EMAILS=True):
             self.client_post('/accounts/home/', {'email': "orange@zulip.com"})
             self.submit_reg_form_for_user("orange@zulip.com", "orange", PATH_INFO='')
@@ -63,8 +59,7 @@ class SendLoginEmailTest(ZulipTestCase):
 
 class TestBrowserAndOsUserAgentStrings(ZulipTestCase):
 
-    def setUp(self):
-        # type: () -> None
+    def setUp(self) -> None:
         self.user_agents = [
             ('mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) ' +
                 'Chrome/54.0.2840.59 Safari/537.36', 'Chrome', 'Linux',),
@@ -106,22 +101,19 @@ class TestBrowserAndOsUserAgentStrings(ZulipTestCase):
             ('', None, None),
         ]
 
-    def test_get_browser_on_new_login(self):
-        # type: () -> None
+    def test_get_browser_on_new_login(self) -> None:
         for user_agent in self.user_agents:
             device_browser = get_device_browser(user_agent[0])
             self.assertEqual(device_browser, user_agent[1])
 
-    def test_get_os_on_new_login(self):
-        # type: () -> None
+    def test_get_os_on_new_login(self) -> None:
         for user_agent in self.user_agents:
             device_os = get_device_os(user_agent[0])
             self.assertEqual(device_os, user_agent[2])
 
 
 class TestNotifyNewUser(ZulipTestCase):
-    def test_notify_of_new_user_internally(self):
-        # type: () -> None
+    def test_notify_of_new_user_internally(self) -> None:
         new_user = self.example_user('cordelia')
         self.make_stream('signups')
         notify_new_user(new_user, internal=True)
@@ -132,8 +124,7 @@ class TestNotifyNewUser(ZulipTestCase):
         self.assertEqual(message.recipient.type, Recipient.STREAM)
         self.assertIn("**INTERNAL SIGNUP**", message.content)
 
-    def test_notify_realm_of_new_user(self):
-        # type: () -> None
+    def test_notify_realm_of_new_user(self) -> None:
         new_user = self.example_user('cordelia')
         stream = self.make_stream('announce')
         new_user.realm.notifications_stream_id = stream.id

@@ -50,8 +50,7 @@ class DocPageTest(ZulipTestCase):
                 self.assertNotIn(s, str(result.content))
 
     @slow("Tests dozens of endpoints, including generating lots of emails")
-    def test_doc_endpoints(self):
-        # type: () -> None
+    def test_doc_endpoints(self) -> None:
         self._test('/api/', 'We hear you like APIs')
         self._test('/api/endpoints/', 'pre-built API bindings for')
         self._test('/api/api-keys', 'you can use its email and API key')
@@ -104,13 +103,11 @@ class DocPageTest(ZulipTestCase):
 
 
 class IntegrationTest(TestCase):
-    def test_check_if_every_integration_has_logo_that_exists(self):
-        # type: () -> None
+    def test_check_if_every_integration_has_logo_that_exists(self) -> None:
         for integration in INTEGRATIONS.values():
             self.assertTrue(os.path.isfile(os.path.join(DEPLOY_ROOT, integration.logo)))
 
-    def test_api_url_view_subdomains_base(self):
-        # type: () -> None
+    def test_api_url_view_subdomains_base(self) -> None:
         context = dict()  # type: Dict[str, Any]
         add_api_uri_context(context, HostRequestMock())
         self.assertEqual(context["api_url_scheme_relative"], "testserver/api")
@@ -118,16 +115,14 @@ class IntegrationTest(TestCase):
         self.assertTrue(context["html_settings_links"])
 
     @override_settings(ROOT_DOMAIN_LANDING_PAGE=True)
-    def test_api_url_view_subdomains_homepage_base(self):
-        # type: () -> None
+    def test_api_url_view_subdomains_homepage_base(self) -> None:
         context = dict()  # type: Dict[str, Any]
         add_api_uri_context(context, HostRequestMock())
         self.assertEqual(context["api_url_scheme_relative"], "yourZulipDomain.testserver/api")
         self.assertEqual(context["api_url"], "http://yourZulipDomain.testserver/api")
         self.assertFalse(context["html_settings_links"])
 
-    def test_api_url_view_subdomains_full(self):
-        # type: () -> None
+    def test_api_url_view_subdomains_full(self) -> None:
         context = dict()  # type: Dict[str, Any]
         request = HostRequestMock(host="mysubdomain.testserver")
         add_api_uri_context(context, request)
@@ -135,8 +130,7 @@ class IntegrationTest(TestCase):
         self.assertEqual(context["api_url"], "http://mysubdomain.testserver/api")
         self.assertTrue(context["html_settings_links"])
 
-    def test_integration_view_html_settings_links(self):
-        # type: () -> None
+    def test_integration_view_html_settings_links(self) -> None:
         context = dict()
         context['html_settings_links'] = False
         add_integrations_context(context)
@@ -158,8 +152,7 @@ class IntegrationTest(TestCase):
             '<a target="_blank" href="../../#streams">streams page</a>')
 
 class AboutPageTest(ZulipTestCase):
-    def setUp(self):
-        # type: () -> None
+    def setUp(self) -> None:
         """ Manual installation which did not execute `tools/provision`
         would not have the `static/generated/github-contributors.json` fixture
         file.
@@ -172,16 +165,14 @@ class AboutPageTest(ZulipTestCase):
                                          '../../tools/update-authors-json')  # nocoverage
             subprocess.check_call([update_script, '--use-fixture'])  # nocoverage
 
-    def test_endpoint(self):
-        # type: () -> None
+    def test_endpoint(self) -> None:
         result = self.client_get('/team/')
         self.assert_in_success_response(
             ['Our amazing community', 'commits', '@timabbott'],
             result
         )
 
-    def test_split_by(self):
-        # type: () -> None
+    def test_split_by(self) -> None:
         """Utility function primarily used in authors page"""
         flat_list = [1, 2, 3, 4, 5, 6, 7, 8, 9]
         expected_result = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
@@ -189,8 +180,7 @@ class AboutPageTest(ZulipTestCase):
 
 class ConfigErrorTest(ZulipTestCase):
     @override_settings(GOOGLE_OAUTH2_CLIENT_ID=None)
-    def test_google(self):
-        # type: () -> None
+    def test_google(self) -> None:
         result = self.client_get("/accounts/login/google/")
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result.url, '/config-error/google')
@@ -198,8 +188,7 @@ class ConfigErrorTest(ZulipTestCase):
         self.assert_in_success_response(["GOOGLE_OAUTH2_CLIENT_ID"], result)
 
     @override_settings(SOCIAL_AUTH_GITHUB_KEY=None)
-    def test_github(self):
-        # type: () -> None
+    def test_github(self) -> None:
         result = self.client_get("/accounts/login/social/github")
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result.url, '/config-error/github')
@@ -208,8 +197,7 @@ class ConfigErrorTest(ZulipTestCase):
 
     @override_settings(SOCIAL_AUTH_GITHUB_KEY=None)
     @override_settings(DEVELOPMENT=False)
-    def test_github_production_error(self):
-        # type: () -> None
+    def test_github_production_error(self) -> None:
         """Test the !DEVELOPMENT code path of config-error."""
         result = self.client_get("/accounts/login/social/github")
         self.assertEqual(result.status_code, 302)
@@ -217,8 +205,7 @@ class ConfigErrorTest(ZulipTestCase):
         result = self.client_get(result.url)
         self.assert_in_success_response(["/etc/zulip/zulip-secrets.conf"], result)
 
-    def test_smtp_error(self):
-        # type: () -> None
+    def test_smtp_error(self) -> None:
         result = self.client_get("/config-error/smtp")
         self.assertEqual(result.status_code, 200)
         self.assert_in_success_response(["email configuration"], result)

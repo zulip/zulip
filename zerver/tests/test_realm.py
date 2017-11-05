@@ -20,12 +20,10 @@ from zerver.lib.test_runner import slow
 from zerver.models import get_realm, Realm, UserProfile, ScheduledEmail, get_stream
 
 class RealmTest(ZulipTestCase):
-    def assert_user_profile_cache_gets_new_name(self, user_profile, new_realm_name):
-        # type: (UserProfile, Text) -> None
+    def assert_user_profile_cache_gets_new_name(self, user_profile: UserProfile, new_realm_name: Text) -> None:
         self.assertEqual(user_profile.realm.name, new_realm_name)
 
-    def test_do_set_realm_name_caching(self):
-        # type: () -> None
+    def test_do_set_realm_name_caching(self) -> None:
         """The main complicated thing about setting realm names is fighting the
         cache, and we start by populating the cache for Hamlet, and we end
         by checking the cache to ensure that the new value is there."""
@@ -36,8 +34,7 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(get_realm(realm.string_id).name, new_name)
         self.assert_user_profile_cache_gets_new_name(self.example_user('hamlet'), new_name)
 
-    def test_update_realm_name_events(self):
-        # type: () -> None
+    def test_update_realm_name_events(self) -> None:
         realm = get_realm('zulip')
         new_name = u'Puliz'
         events = []  # type: List[Mapping[str, Any]]
@@ -51,8 +48,7 @@ class RealmTest(ZulipTestCase):
             value=new_name,
         ))
 
-    def test_update_realm_description_events(self):
-        # type: () -> None
+    def test_update_realm_description_events(self) -> None:
         realm = get_realm('zulip')
         new_description = u'zulip dev group'
         events = []  # type: List[Mapping[str, Any]]
@@ -66,8 +62,7 @@ class RealmTest(ZulipTestCase):
             value=new_description,
         ))
 
-    def test_update_realm_description(self):
-        # type: () -> None
+    def test_update_realm_description(self) -> None:
         email = self.example_email("iago")
         self.login(email)
         realm = get_realm('zulip')
@@ -88,8 +83,7 @@ class RealmTest(ZulipTestCase):
             value=new_description,
         ))
 
-    def test_realm_description_length(self):
-        # type: () -> None
+    def test_realm_description_length(self) -> None:
         new_description = u'A' * 1001
         data = dict(description=ujson.dumps(new_description))
 
@@ -102,8 +96,7 @@ class RealmTest(ZulipTestCase):
         realm = get_realm('zulip')
         self.assertNotEqual(realm.description, new_description)
 
-    def test_realm_name_length(self):
-        # type: () -> None
+    def test_realm_name_length(self) -> None:
         new_name = u'A' * (Realm.MAX_REALM_NAME_LENGTH + 1)
         data = dict(name=ujson.dumps(new_name))
 
@@ -116,8 +109,7 @@ class RealmTest(ZulipTestCase):
         realm = get_realm('zulip')
         self.assertNotEqual(realm.name, new_name)
 
-    def test_admin_restrictions_for_changing_realm_name(self):
-        # type: () -> None
+    def test_admin_restrictions_for_changing_realm_name(self) -> None:
         new_name = 'Mice will play while the cat is away'
 
         user_profile = self.example_user('othello')
@@ -129,8 +121,7 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, 'Must be a realm administrator')
 
-    def test_unauthorized_name_change(self):
-        # type: () -> None
+    def test_unauthorized_name_change(self) -> None:
         data = {'full_name': 'Sir Hamlet'}
         user_profile = self.example_user('hamlet')
         email = user_profile.email
@@ -142,8 +133,7 @@ class RealmTest(ZulipTestCase):
         # Since the setting fails silently, no message is returned
         self.assert_in_response("", result)
 
-    def test_do_deactivate_realm_clears_user_realm_cache(self):
-        # type: () -> None
+    def test_do_deactivate_realm_clears_user_realm_cache(self) -> None:
         """The main complicated thing about deactivating realm names is
         updating the cache, and we start by populating the cache for
         Hamlet, and we end by checking the cache to ensure that his
@@ -155,16 +145,14 @@ class RealmTest(ZulipTestCase):
         user = self.example_user('hamlet')
         self.assertTrue(user.realm.deactivated)
 
-    def test_do_deactivate_realm_clears_scheduled_jobs(self):
-        # type: () -> None
+    def test_do_deactivate_realm_clears_scheduled_jobs(self) -> None:
         user = self.example_user('hamlet')
         send_future_email('zerver/emails/followup_day1', to_user_id=user.id, delay=datetime.timedelta(hours=1))
         self.assertEqual(ScheduledEmail.objects.count(), 1)
         do_deactivate_realm(user.realm)
         self.assertEqual(ScheduledEmail.objects.count(), 0)
 
-    def test_do_deactivate_realm_on_deactived_realm(self):
-        # type: () -> None
+    def test_do_deactivate_realm_on_deactived_realm(self) -> None:
         """Ensure early exit is working in realm deactivation"""
         realm = get_realm('zulip')
         self.assertFalse(realm.deactivated)
@@ -175,8 +163,7 @@ class RealmTest(ZulipTestCase):
         do_deactivate_realm(realm)
         self.assertTrue(realm.deactivated)
 
-    def test_change_notifications_stream(self):
-        # type: () -> None
+    def test_change_notifications_stream(self) -> None:
         # We need an admin user.
         email = 'iago@zulip.com'
         self.login(email)
@@ -202,8 +189,7 @@ class RealmTest(ZulipTestCase):
         realm = get_realm('zulip')
         self.assertNotEqual(realm.notifications_stream.id, invalid_notif_stream_id)
 
-    def test_get_default_notifications_stream(self):
-        # type: () -> None
+    def test_get_default_notifications_stream(self) -> None:
         realm = get_realm("zulip")
         verona = get_stream("verona", realm)
         realm.notifications_stream_id = verona.id
@@ -214,8 +200,7 @@ class RealmTest(ZulipTestCase):
         do_deactivate_stream(notifications_stream)
         self.assertIsNone(realm.get_notifications_stream())
 
-    def test_change_realm_default_language(self):
-        # type: () -> None
+    def test_change_realm_default_language(self) -> None:
         new_lang = "de"
         realm = get_realm('zulip')
         self.assertNotEqual(realm.default_language, new_lang)
@@ -242,27 +227,23 @@ class RealmTest(ZulipTestCase):
 
 class RealmAPITest(ZulipTestCase):
 
-    def setUp(self):
-        # type: () -> None
+    def setUp(self) -> None:
         user_profile = self.example_user('cordelia')
         email = user_profile.email
         self.login(email)
         do_change_is_admin(user_profile, True)
 
-    def set_up_db(self, attr, value):
-        # type: (str, Any) -> None
+    def set_up_db(self, attr: str, value: Any) -> None:
         realm = get_realm('zulip')
         setattr(realm, attr, value)
         realm.save()
 
-    def update_with_api(self, name, value):
-        # type: (str, Union[Text, int, bool]) -> Realm
+    def update_with_api(self, name: str, value: int) -> Realm:
         result = self.client_patch('/json/realm', {name: ujson.dumps(value)})
         self.assert_json_success(result)
         return get_realm('zulip')  # refresh data
 
-    def do_test_realm_update_api(self, name):
-        # type: (str) -> None
+    def do_test_realm_update_api(self, name: str) -> None:
         """Test updating realm properties.
 
         If new realm properties have been added to the Realm model but the
@@ -291,13 +272,11 @@ class RealmAPITest(ZulipTestCase):
         self.assertEqual(getattr(realm, name), vals[0])
 
     @slow("Tests a dozen properties in a loop")
-    def test_update_realm_properties(self):
-        # type: () -> None
+    def test_update_realm_properties(self) -> None:
         for prop in Realm.property_types:
             self.do_test_realm_update_api(prop)
 
-    def test_update_realm_allow_message_editing(self):
-        # type: () -> None
+    def test_update_realm_allow_message_editing(self) -> None:
         """Tests updating the realm property 'allow_message_editing'."""
         self.set_up_db('allow_message_editing', False)
         self.set_up_db('message_content_edit_limit_seconds', 0)

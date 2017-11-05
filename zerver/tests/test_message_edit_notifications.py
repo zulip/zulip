@@ -26,8 +26,7 @@ from zerver.tornado.event_queue import (
 )
 
 class EditMessageSideEffectsTest(ZulipTestCase):
-    def _assert_update_does_not_notify_anybody(self, message_id, content):
-        # type: (int, Text) -> None
+    def _assert_update_does_not_notify_anybody(self, message_id: int, content: Text) -> None:
         url = '/json/messages/' + str(message_id)
 
         request = dict(
@@ -41,8 +40,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertFalse(m.called)
 
-    def test_updates_with_pm_mention(self):
-        # type: () -> None
+    def test_updates_with_pm_mention(self) -> None:
         hamlet = self.example_user('hamlet')
         cordelia = self.example_user('cordelia')
 
@@ -59,8 +57,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             content='now we mention @**Cordelia Lear**',
         )
 
-    def _login_and_send_original_stream_message(self, content):
-        # type: (Text) -> int
+    def _login_and_send_original_stream_message(self, content: Text) -> int:
         '''
             Note our conventions here:
 
@@ -83,8 +80,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
         return message_id
 
-    def _get_queued_data_for_message_update(self, message_id, content, expect_short_circuit=False):
-        # type: (int, Text, bool) -> Dict[str, Any]
+    def _get_queued_data_for_message_update(self, message_id: int, content: Text, expect_short_circuit: bool=False) -> Dict[str, Any]:
         '''
         This function updates a message with a post to
         /json/messages/(message_id).
@@ -130,8 +126,9 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
         queue_messages = []
 
-        def fake_publish(queue_name, event, *args):
-            # type: (str, Union[Mapping[str, Any], str], *Any) -> None
+        def fake_publish(queue_name: str,
+                         event: Union[Mapping[str, Any], str],
+                         *args: Any) -> None:
             queue_messages.append(dict(
                 queue_name=queue_name,
                 event=event,
@@ -148,8 +145,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             queue_messages=queue_messages
         )
 
-    def test_updates_with_stream_mention(self):
-        # type: () -> None
+    def test_updates_with_stream_mention(self) -> None:
         message_id = self._login_and_send_original_stream_message(
             content='no mention',
         )
@@ -190,8 +186,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         self.assertEqual(email_event['user_profile_id'], cordelia.id)
         self.assertEqual(email_event['trigger'], 'mentioned')
 
-    def test_second_mention_is_ignored(self):
-        # type: () -> None
+    def test_second_mention_is_ignored(self) -> None:
         message_id = self._login_and_send_original_stream_message(
             content='hello @**Cordelia Lear**'
         )
@@ -202,8 +197,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             expect_short_circuit=True,
         )
 
-    def _turn_on_stream_push_for_cordelia(self):
-        # type: () -> None
+    def _turn_on_stream_push_for_cordelia(self) -> None:
         '''
         conventions:
             Cordelia is the message receiver we care about.
@@ -219,8 +213,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         cordelia_subscription.push_notifications = True
         cordelia_subscription.save()
 
-    def test_updates_with_stream_push_notify(self):
-        # type: () -> None
+    def test_updates_with_stream_push_notify(self) -> None:
         self._turn_on_stream_push_for_cordelia()
 
         message_id = self._login_and_send_original_stream_message(
@@ -236,8 +229,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             expect_short_circuit=True,
         )
 
-    def _cordelia_connected_to_zulip(self):
-        # type: () -> Any
+    def _cordelia_connected_to_zulip(self) -> Any:
         '''
         Right now the easiest way to make Cordelia look
         connected to Zulip is to mock the function below.
@@ -250,8 +242,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             return_value=False
         )
 
-    def test_stream_push_notify_for_sorta_present_user(self):
-        # type: () -> None
+    def test_stream_push_notify_for_sorta_present_user(self) -> None:
         self._turn_on_stream_push_for_cordelia()
 
         message_id = self._login_and_send_original_stream_message(
@@ -270,8 +261,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
                 expect_short_circuit=True,
             )
 
-    def _make_cordelia_present_on_web(self):
-        # type: () -> None
+    def _make_cordelia_present_on_web(self) -> None:
         cordelia = self.example_user('cordelia')
         UserPresence.objects.create(
             user_profile_id=cordelia.id,
@@ -280,8 +270,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             timestamp=timezone_now(),
         )
 
-    def test_stream_push_notify_for_fully_present_user(self):
-        # type: () -> None
+    def test_stream_push_notify_for_fully_present_user(self) -> None:
         self._turn_on_stream_push_for_cordelia()
 
         message_id = self._login_and_send_original_stream_message(
@@ -299,8 +288,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
                 expect_short_circuit=True,
             )
 
-    def test_always_push_notify_for_fully_present_mentioned_user(self):
-        # type: () -> None
+    def test_always_push_notify_for_fully_present_mentioned_user(self) -> None:
         cordelia = self.example_user('cordelia')
         cordelia.enable_online_push_notifications = True
         cordelia.save()
@@ -337,8 +325,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
         self.assertEqual(len(queue_messages), 1)
 
-    def test_always_push_notify_for_fully_present_boring_user(self):
-        # type: () -> None
+    def test_always_push_notify_for_fully_present_boring_user(self) -> None:
         cordelia = self.example_user('cordelia')
         cordelia.enable_online_push_notifications = True
         cordelia.save()
@@ -378,8 +365,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         # was not mentioned.
         self.assertEqual(len(queue_messages), 0)
 
-    def test_updates_with_stream_mention_of_sorta_present_user(self):
-        # type: () -> None
+    def test_updates_with_stream_mention_of_sorta_present_user(self) -> None:
         cordelia = self.example_user('cordelia')
 
         message_id = self._login_and_send_original_stream_message(
@@ -412,8 +398,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         # actual content of these messages.)
         self.assertEqual(len(info['queue_messages']), 2)
 
-    def test_updates_with_stream_mention_of_fully_present_user(self):
-        # type: () -> None
+    def test_updates_with_stream_mention_of_fully_present_user(self) -> None:
         cordelia = self.example_user('cordelia')
 
         message_id = self._login_and_send_original_stream_message(

@@ -15,8 +15,7 @@ class SlowQueryTest(ZulipTestCase):
                 'remote_cache_time_start': 0,
                 'remote_cache_requests_start': 0}
 
-    def test_is_slow_query(self):
-        # type: () -> None
+    def test_is_slow_query(self) -> None:
         self.assertFalse(is_slow_query(1.1, '/some/random/url'))
         self.assertTrue(is_slow_query(2, '/some/random/url'))
         self.assertTrue(is_slow_query(5.1, '/activity'))

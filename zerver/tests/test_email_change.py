@@ -21,24 +21,21 @@ from zerver.models import get_user, EmailChangeStatus, Realm, get_realm
 
 
 class EmailChangeTestCase(ZulipTestCase):
-    def test_confirm_email_change_with_non_existent_key(self):
-        # type: () -> None
+    def test_confirm_email_change_with_non_existent_key(self) -> None:
         self.login(self.example_email("hamlet"))
         key = generate_key()
         url = confirmation_url(key, 'testserver', Confirmation.EMAIL_CHANGE)
         response = self.client_get(url)
         self.assert_in_success_response(["Whoops. We couldn't find your confirmation link in the system."], response)
 
-    def test_confirm_email_change_with_invalid_key(self):
-        # type: () -> None
+    def test_confirm_email_change_with_invalid_key(self) -> None:
         self.login(self.example_email("hamlet"))
         key = 'invalid key'
         url = confirmation_url(key, 'testserver', Confirmation.EMAIL_CHANGE)
         response = self.client_get(url)
         self.assert_in_success_response(["Whoops. The confirmation link is malformed."], response)
 
-    def test_confirm_email_change_when_time_exceeded(self):
-        # type: () -> None
+    def test_confirm_email_change_when_time_exceeded(self) -> None:
         user_profile = self.example_user('hamlet')
         old_email = user_profile.email
         new_email = 'hamlet-new@zulip.com'
@@ -57,8 +54,7 @@ class EmailChangeTestCase(ZulipTestCase):
         response = self.client_get(url)
         self.assert_in_success_response(["Whoops. The confirmation link has expired."], response)
 
-    def test_confirm_email_change(self):
-        # type: () -> None
+    def test_confirm_email_change(self) -> None:
         user_profile = self.example_user('hamlet')
         old_email = user_profile.email
         new_email = 'hamlet-new@zulip.com'
@@ -84,14 +80,12 @@ class EmailChangeTestCase(ZulipTestCase):
         obj.refresh_from_db()
         self.assertEqual(obj.status, 1)
 
-    def test_start_email_change_process(self):
-        # type: () -> None
+    def test_start_email_change_process(self) -> None:
         user_profile = self.example_user('hamlet')
         do_start_email_change_process(user_profile, 'hamlet-new@zulip.com')
         self.assertEqual(EmailChangeStatus.objects.count(), 1)
 
-    def test_end_to_end_flow(self):
-        # type: () -> None
+    def test_end_to_end_flow(self) -> None:
         data = {'email': 'hamlet-new@zulip.com'}
         email = self.example_email("hamlet")
         self.login(email)
@@ -121,8 +115,7 @@ class EmailChangeTestCase(ZulipTestCase):
         result = self.client_patch(url, {"email": "hamlet@zulip.com"})
         self.assert_in_success_response(['Check your email for a confirmation link.'], result)
 
-    def test_unauthorized_email_change(self):
-        # type: () -> None
+    def test_unauthorized_email_change(self) -> None:
         data = {'email': 'hamlet-new@zulip.com'}
         user_profile = self.example_user('hamlet')
         email = user_profile.email
@@ -135,8 +128,7 @@ class EmailChangeTestCase(ZulipTestCase):
         self.assert_in_response("Email address changes are disabled in this organization.",
                                 result)
 
-    def test_email_change_already_taken(self):
-        # type: () -> None
+    def test_email_change_already_taken(self) -> None:
         data = {'email': 'cordelia@zulip.com'}
         user_profile = self.example_user('hamlet')
         email = user_profile.email
@@ -149,8 +141,7 @@ class EmailChangeTestCase(ZulipTestCase):
         self.assert_in_response("Already has an account",
                                 result)
 
-    def test_unauthorized_email_change_from_email_confirmation_link(self):
-        # type: () -> None
+    def test_unauthorized_email_change_from_email_confirmation_link(self) -> None:
         data = {'email': 'hamlet-new@zulip.com'}
         user_profile = self.example_user('hamlet')
         email = user_profile.email
@@ -177,8 +168,7 @@ class EmailChangeTestCase(ZulipTestCase):
         self.assert_in_response("Email address changes are disabled in this organization.",
                                 response)
 
-    def test_post_invalid_email(self):
-        # type: () -> None
+    def test_post_invalid_email(self) -> None:
         data = {'email': 'hamlet-new'}
         email = self.example_email("hamlet")
         self.login(email)
@@ -186,8 +176,7 @@ class EmailChangeTestCase(ZulipTestCase):
         result = self.client_patch(url, data)
         self.assert_in_response('Invalid address', result)
 
-    def test_post_same_email(self):
-        # type: () -> None
+    def test_post_same_email(self) -> None:
         data = {'email': self.example_email("hamlet")}
         email = self.example_email("hamlet")
         self.login(email)

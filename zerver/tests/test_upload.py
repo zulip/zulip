@@ -50,15 +50,13 @@ from django.utils.timezone import now as timezone_now
 
 from typing import Any, Callable, Text
 
-def destroy_uploads():
-    # type: () -> None
+def destroy_uploads() -> None:
     if os.path.exists(settings.LOCAL_UPLOADS_DIR):
         shutil.rmtree(settings.LOCAL_UPLOADS_DIR)
 
 class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
-    def test_rest_endpoint(self):
-        # type: () -> None
+    def test_rest_endpoint(self) -> None:
         """
         Tests the /api/v1/user_uploads api endpoint. Here a single file is uploaded
         and downloaded using a username and api_key
@@ -84,8 +82,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.login(self.example_email("hamlet"))
         self.assert_url_serves_contents_of_file(uri, b"zulip!")
 
-    def test_filename_encoding(self):
-        # type: () -> None
+    def test_filename_encoding(self) -> None:
         """
         In Python 2, we need to encode unicode filenames (which converts them to
         str) before they can be rendered correctly.  However, in Python 3, the
@@ -122,8 +119,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assert_json_success(result)
         mock_filename.encode.assert_called_once_with('ascii')
 
-    def test_file_too_big_failure(self):
-        # type: () -> None
+    def test_file_too_big_failure(self) -> None:
         """
         Attempting to upload big files should fail.
         """
@@ -137,8 +133,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             result = self.client_post("/json/user_uploads", {'f1': fp})
         self.assert_json_error(result, 'Uploaded file is larger than the allowed limit of 0 MB')
 
-    def test_multiple_upload_failure(self):
-        # type: () -> None
+    def test_multiple_upload_failure(self) -> None:
         """
         Attempting to upload two files should fail.
         """
@@ -151,8 +146,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_post("/json/user_uploads", {'f1': fp, 'f2': fp2})
         self.assert_json_error(result, "You may only upload one file at a time")
 
-    def test_no_file_upload_failure(self):
-        # type: () -> None
+    def test_no_file_upload_failure(self) -> None:
         """
         Calling this endpoint with no files should fail.
         """
@@ -161,8 +155,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_post("/json/user_uploads")
         self.assert_json_error(result, "You must specify a file to upload")
 
-    def test_download_non_existent_file(self):
-        # type: () -> None
+    def test_download_non_existent_file(self) -> None:
         self.login(self.example_email("hamlet"))
         response = self.client_get('/user_uploads/unk/nonexistent_file')
         self.assertEqual(response.status_code, 404)
@@ -170,8 +163,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
     # This test will go through the code path for uploading files onto LOCAL storage
     # when zulip is in DEVELOPMENT mode.
-    def test_file_upload_authed(self):
-        # type: () -> None
+    def test_file_upload_authed(self) -> None:
         """
         A call to /json/user_uploads should return a uri and actually create an
         entry in the database. This entry will be marked unclaimed till a message
@@ -201,8 +193,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.send_stream_message(self.example_email("hamlet"), "Denmark", body, "test")
         self.assertIn('title="zulip.txt"', self.get_last_message().rendered_content)
 
-    def test_file_download_unauthed(self):
-        # type: () -> None
+    def test_file_download_unauthed(self) -> None:
         self.login(self.example_email("hamlet"))
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
@@ -214,8 +205,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assert_json_error(response, "Not logged in: API authentication or user session required",
                                status_code=401)
 
-    def test_removed_file_download(self):
-        # type: () -> None
+    def test_removed_file_download(self) -> None:
         '''
         Trying to download deleted files should return 404 error
         '''
@@ -229,8 +219,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         response = self.client_get(result.json()["uri"])
         self.assertEqual(response.status_code, 404)
 
-    def test_non_existing_file_download(self):
-        # type: () -> None
+    def test_non_existing_file_download(self) -> None:
         '''
         Trying to download a file that was never uploaded will return a json_error
         '''
@@ -239,8 +228,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(response.status_code, 404)
         self.assert_in_response('File not found.', response)
 
-    def test_delete_old_unclaimed_attachments(self):
-        # type: () -> None
+    def test_delete_old_unclaimed_attachments(self) -> None:
         # Upload some files and make them older than a weeek
         self.login(self.example_email("hamlet"))
         d1 = StringIO("zulip!")
@@ -272,15 +260,13 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertTrue(not Attachment.objects.filter(path_id = d2_path_id).exists())
         self.assertTrue(not delete_message_image(d2_path_id))
 
-    def test_attachment_url_without_upload(self):
-        # type: () -> None
+    def test_attachment_url_without_upload(self) -> None:
         self.login(self.example_email("hamlet"))
         body = "Test message ...[zulip.txt](http://localhost:9991/user_uploads/1/64/fake_path_id.txt)"
         self.send_stream_message(self.example_email("hamlet"), "Denmark", body, "test")
         self.assertFalse(Attachment.objects.filter(path_id = "1/64/fake_path_id.txt").exists())
 
-    def test_multiple_claim_attachments(self):
-        # type: () -> None
+    def test_multiple_claim_attachments(self) -> None:
         """
         This test tries to claim the same attachment twice. The messages field in
         the Attachment model should have both the messages in its entry.
@@ -299,8 +285,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 2)
 
-    def test_multiple_claim_attachments_different_owners(self):
-        # type: () -> None
+    def test_multiple_claim_attachments_different_owners(self) -> None:
         """This test tries to claim the same attachment more than once, first
         with a private stream and then with different recipients."""
         self.login(self.example_email("hamlet"))
@@ -336,8 +321,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 3)
         self.assertTrue(Attachment.objects.get(path_id=d1_path_id).is_realm_public)
 
-    def test_check_attachment_reference_update(self):
-        # type: () -> None
+    def test_check_attachment_reference_update(self) -> None:
         f1 = StringIO("file1")
         f1.name = "file1.txt"
         f2 = StringIO("file2")
@@ -393,8 +377,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertTrue(message not in f2_attachment.messages.all())
         self.assertTrue(message not in f3_attachment.messages.all())
 
-    def test_file_name(self):
-        # type: () -> None
+    def test_file_name(self) -> None:
         """
         Unicode filenames should be processed correctly.
         """
@@ -406,8 +389,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             result = self.client_post("/json/user_uploads", {'f1': fp})
             assert sanitize_name(expected) in result.json()['uri']
 
-    def test_upload_size_quote(self):
-        # type: () -> None
+    def test_upload_size_quote(self) -> None:
         """
         User quote for uploading should not be exceeded
         """
@@ -436,11 +418,9 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_post("/json/user_uploads", {'file': d3})
         self.assert_json_error(result, "Upload would exceed your maximum quota.")
 
-    def test_cross_realm_file_access(self):
-        # type: () -> None
+    def test_cross_realm_file_access(self) -> None:
 
-        def create_user(email, realm_id):
-            # type: (Text, Text) -> UserProfile
+        def create_user(email: Text, realm_id: Text) -> UserProfile:
             self.register(email, 'test', subdomain=realm_id)
             return get_user(email, get_realm(realm_id))
 
@@ -485,8 +465,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(response.status_code, 403)
         self.assert_in_response("You are not authorized to view this file.", response)
 
-    def test_file_download_authorization_invite_only(self):
-        # type: () -> None
+    def test_file_download_authorization_invite_only(self) -> None:
         subscribed_users = [self.example_email("hamlet"), self.example_email("iago")]
         unsubscribed_users = [self.example_email("othello"), self.example_email("prospero")]
         realm = get_realm("zulip")
@@ -525,8 +504,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             self.assert_in_response("You are not authorized to view this file.", response)
             self.logout()
 
-    def test_file_download_authorization_public(self):
-        # type: () -> None
+    def test_file_download_authorization_public(self) -> None:
         subscribed_users = [self.example_email("hamlet"), self.example_email("iago")]
         unsubscribed_users = [self.example_email("othello"), self.example_email("prospero")]
         realm = get_realm("zulip")
@@ -551,14 +529,12 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             self.assertEqual(b"zulip!", data)
             self.logout()
 
-    def tearDown(self):
-        # type: () -> None
+    def tearDown(self) -> None:
         destroy_uploads()
 
 class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
-    def test_get_avatar_field(self):
-        # type: () -> None
+    def test_get_avatar_field(self) -> None:
         with self.settings(AVATAR_SALT="salt"):
             url = get_avatar_field(
                 user_id=17,
@@ -602,8 +578,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
         self.assertEqual(url, None)
 
-    def test_avatar_url(self):
-        # type: () -> None
+    def test_avatar_url(self) -> None:
         """Verifies URL schemes for avatars and realm icons."""
         backend = LocalUploadBackend()  # type: ZulipUploadBackend
         self.assertEqual(backend.get_avatar_url("hash", False),
@@ -622,8 +597,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             self.assertEqual(backend.get_realm_icon_url(15, 1),
                              "https://bucket.s3.amazonaws.com/15/realm/icon.png?version=1")
 
-    def test_multiple_upload_failure(self):
-        # type: () -> None
+    def test_multiple_upload_failure(self) -> None:
         """
         Attempting to upload two files should fail.
         """
@@ -633,8 +607,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             result = self.client_post("/json/users/me/avatar", {'f1': fp1, 'f2': fp2})
         self.assert_json_error(result, "You must upload exactly one avatar.")
 
-    def test_no_file_upload_failure(self):
-        # type: () -> None
+    def test_no_file_upload_failure(self) -> None:
         """
         Calling this endpoint with no files should fail.
         """
@@ -651,8 +624,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
     ]
     corrupt_files = ['text.txt', 'corrupt.png', 'corrupt.gif']
 
-    def test_get_gravatar_avatar(self):
-        # type: () -> None
+    def test_get_gravatar_avatar(self) -> None:
         self.login(self.example_email("hamlet"))
         cordelia = self.example_user('cordelia')
 
@@ -668,8 +640,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             redirect_url = response['Location']
             self.assertTrue(redirect_url.endswith(avatar_url(cordelia) + '&foo=bar'))
 
-    def test_get_user_avatar(self):
-        # type: () -> None
+    def test_get_user_avatar(self) -> None:
         self.login(self.example_email("hamlet"))
         cordelia = self.example_user('cordelia')
 
@@ -683,8 +654,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         redirect_url = response['Location']
         self.assertTrue(redirect_url.endswith(avatar_url(cordelia) + '&foo=bar'))
 
-    def test_get_user_avatar_medium(self):
-        # type: () -> None
+    def test_get_user_avatar_medium(self) -> None:
         self.login(self.example_email("hamlet"))
         cordelia = self.example_user('cordelia')
 
@@ -698,8 +668,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         redirect_url = response['Location']
         self.assertTrue(redirect_url.endswith(avatar_url(cordelia, True) + '&foo=bar'))
 
-    def test_non_valid_user_avatar(self):
-        # type: () -> None
+    def test_non_valid_user_avatar(self) -> None:
 
         # It's debatable whether we should generate avatars for non-users,
         # but this test just validates the current code's behavior.
@@ -710,8 +679,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         actual_url = 'https://secure.gravatar.com/avatar/444258b521f152129eb0c162996e572d?d=identicon&version=1&foo=bar'
         self.assertEqual(redirect_url, actual_url)
 
-    def test_valid_avatars(self):
-        # type: () -> None
+    def test_valid_avatars(self) -> None:
         """
         A PUT request to /json/users/me/avatar with a valid file should return a url and actually create an avatar.
         """
@@ -750,8 +718,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             self.assertEqual(user_profile.avatar_version, version)
             version += 1
 
-    def test_invalid_avatars(self):
-        # type: () -> None
+    def test_invalid_avatars(self) -> None:
         """
         A PUT request to /json/users/me/avatar with an invalid file should fail.
         """
@@ -765,8 +732,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             user_profile = self.example_user('hamlet')
             self.assertEqual(user_profile.avatar_version, 1)
 
-    def test_delete_avatar(self):
-        # type: () -> None
+    def test_delete_avatar(self) -> None:
         """
         A DELETE request to /json/users/me/avatar should delete the user avatar and return gravatar URL
         """
@@ -785,22 +751,19 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(user_profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
         self.assertEqual(user_profile.avatar_version, 2)
 
-    def test_avatar_upload_file_size_error(self):
-        # type: () -> None
+    def test_avatar_upload_file_size_error(self) -> None:
         self.login(self.example_email("hamlet"))
         with get_test_image_file(self.correct_files[0][0]) as fp:
             with self.settings(MAX_AVATAR_FILE_SIZE=0):
                 result = self.client_post("/json/users/me/avatar", {'file': fp})
         self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MB")
 
-    def tearDown(self):
-        # type: () -> None
+    def tearDown(self) -> None:
         destroy_uploads()
 
 class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
 
-    def test_multiple_upload_failure(self):
-        # type: () -> None
+    def test_multiple_upload_failure(self) -> None:
         """
         Attempting to upload two files should fail.
         """
@@ -811,8 +774,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
             result = self.client_post("/json/realm/icon", {'f1': fp1, 'f2': fp2})
         self.assert_json_error(result, "You must upload exactly one icon.")
 
-    def test_no_file_upload_failure(self):
-        # type: () -> None
+    def test_no_file_upload_failure(self) -> None:
         """
         Calling this endpoint with no files should fail.
         """
@@ -829,15 +791,13 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
     ]
     corrupt_files = ['text.txt', 'corrupt.png', 'corrupt.gif']
 
-    def test_no_admin_user_upload(self):
-        # type: () -> None
+    def test_no_admin_user_upload(self) -> None:
         self.login(self.example_email("hamlet"))
         with get_test_image_file(self.correct_files[0][0]) as fp:
             result = self.client_post("/json/realm/icon", {'file': fp})
         self.assert_json_error(result, 'Must be a realm administrator')
 
-    def test_get_gravatar_icon(self):
-        # type: () -> None
+    def test_get_gravatar_icon(self) -> None:
         self.login(self.example_email("hamlet"))
         realm = get_realm('zulip')
         realm.icon_source = Realm.ICON_FROM_GRAVATAR
@@ -852,8 +812,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
             redirect_url = response['Location']
             self.assertTrue(redirect_url.endswith(realm_icon_url(realm) + '&foo=bar'))
 
-    def test_get_realm_icon(self):
-        # type: () -> None
+    def test_get_realm_icon(self) -> None:
         self.login(self.example_email("hamlet"))
 
         realm = get_realm('zulip')
@@ -863,8 +822,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         redirect_url = response['Location']
         self.assertTrue(redirect_url.endswith(realm_icon_url(realm) + '&foo=bar'))
 
-    def test_valid_icons(self):
-        # type: () -> None
+    def test_valid_icons(self) -> None:
         """
         A PUT request to /json/realm/icon with a valid file should return a url
         and actually create an realm icon.
@@ -887,8 +845,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
                 data = b"".join(response.streaming_content)
                 self.assertEqual(Image.open(io.BytesIO(data)).size, (100, 100))
 
-    def test_invalid_icons(self):
-        # type: () -> None
+    def test_invalid_icons(self) -> None:
         """
         A PUT request to /json/realm/icon with an invalid file should fail.
         """
@@ -900,8 +857,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
 
             self.assert_json_error(result, "Could not decode image; did you upload an image file?")
 
-    def test_delete_icon(self):
-        # type: () -> None
+    def test_delete_icon(self) -> None:
         """
         A DELETE request to /json/realm/icon should delete the realm icon and return gravatar URL
         """
@@ -918,8 +874,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(result.json()["icon_url"], realm_icon_url(realm))
         self.assertEqual(realm.icon_source, Realm.ICON_FROM_GRAVATAR)
 
-    def test_realm_icon_version(self):
-        # type: () -> None
+    def test_realm_icon_version(self) -> None:
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
         icon_version = realm.icon_version
@@ -929,22 +884,19 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         realm = get_realm('zulip')
         self.assertEqual(realm.icon_version, icon_version + 1)
 
-    def test_realm_icon_upload_file_size_error(self):
-        # type: () -> None
+    def test_realm_icon_upload_file_size_error(self) -> None:
         self.login(self.example_email("iago"))
         with get_test_image_file(self.correct_files[0][0]) as fp:
             with self.settings(MAX_ICON_FILE_SIZE=0):
                 result = self.client_post("/json/realm/icon", {'file': fp})
         self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MB")
 
-    def tearDown(self):
-        # type: () -> None
+    def tearDown(self) -> None:
         destroy_uploads()
 
 class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
 
-    def test_file_upload_local(self):
-        # type: () -> None
+    def test_file_upload_local(self) -> None:
         user_profile = self.example_user('hamlet')
         uri = upload_message_image(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
 
@@ -957,8 +909,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         uploaded_file = Attachment.objects.get(owner=user_profile, path_id=path_id)
         self.assertEqual(len(b'zulip!'), uploaded_file.size)
 
-    def test_delete_message_image_local(self):
-        # type: () -> None
+    def test_delete_message_image_local(self) -> None:
         self.login(self.example_email("hamlet"))
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
@@ -967,15 +918,13 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         path_id = re.sub('/user_uploads/', '', result.json()['uri'])
         self.assertTrue(delete_message_image(path_id))
 
-    def tearDown(self):
-        # type: () -> None
+    def tearDown(self) -> None:
         destroy_uploads()
 
 class S3Test(ZulipTestCase):
 
     @use_s3_backend
-    def test_file_upload_s3(self):
-        # type: () -> None
+    def test_file_upload_s3(self) -> None:
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
         bucket = conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
 
@@ -997,8 +946,7 @@ class S3Test(ZulipTestCase):
         self.assertIn('title="dummy.txt"', self.get_last_message().rendered_content)
 
     @use_s3_backend
-    def test_message_image_delete_s3(self):
-        # type: () -> None
+    def test_message_image_delete_s3(self) -> None:
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
         conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
 
@@ -1009,8 +957,7 @@ class S3Test(ZulipTestCase):
         self.assertTrue(delete_message_image(path_id))
 
     @use_s3_backend
-    def test_file_upload_authed(self):
-        # type: () -> None
+    def test_file_upload_authed(self) -> None:
         """
         A call to /json/user_uploads should return a uri and actually create an object.
         """
@@ -1039,8 +986,7 @@ class S3Test(ZulipTestCase):
         self.assertIn('title="zulip.txt"', self.get_last_message().rendered_content)
 
 class UploadTitleTests(TestCase):
-    def test_upload_titles(self):
-        # type: () -> None
+    def test_upload_titles(self) -> None:
         self.assertEqual(url_filename("http://localhost:9991/user_uploads/1/LUeQZUG5jxkagzVzp1Ox_amr/dummy.txt"), "dummy.txt")
         self.assertEqual(url_filename("http://localhost:9991/user_uploads/1/94/SzGYe0RFT-tEcOhQ6n-ZblFZ/zulip.txt"), "zulip.txt")
         self.assertEqual(url_filename("https://zulip.com/user_uploads/4142/LUeQZUG5jxkagzVzp1Ox_amr/pasted_image.png"), "pasted_image.png")
@@ -1048,8 +994,7 @@ class UploadTitleTests(TestCase):
         self.assertEqual(url_filename("https://example.com"), "https://example.com")
 
 class SanitizeNameTests(TestCase):
-    def test_file_name(self):
-        # type: () -> None
+    def test_file_name(self) -> None:
         self.assertEqual(sanitize_name(u'test.txt'), u'test.txt')
         self.assertEqual(sanitize_name(u'.hidden'), u'.hidden')
         self.assertEqual(sanitize_name(u'.hidden.txt'), u'.hidden.txt')

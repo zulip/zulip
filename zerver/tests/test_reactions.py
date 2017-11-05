@@ -13,8 +13,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import get_realm, Message, Reaction, RealmEmoji, Recipient, UserMessage
 
 class ReactionEmojiTest(ZulipTestCase):
-    def test_missing_emoji(self):
-        # type: () -> None
+    def test_missing_emoji(self) -> None:
         """
         Sending reaction without emoji fails
         """
@@ -23,8 +22,7 @@ class ReactionEmojiTest(ZulipTestCase):
                                  **self.api_auth(sender))
         self.assertEqual(result.status_code, 400)
 
-    def test_add_invalid_emoji(self):
-        # type: () -> None
+    def test_add_invalid_emoji(self) -> None:
         """
         Sending invalid emoji fails
         """
@@ -33,8 +31,7 @@ class ReactionEmojiTest(ZulipTestCase):
                                  **self.api_auth(sender))
         self.assert_json_error(result, "Emoji 'foo' does not exist")
 
-    def test_add_deactivated_realm_emoji(self):
-        # type: () -> None
+    def test_add_deactivated_realm_emoji(self) -> None:
         """
         Sending deactivated realm emoji fails.
         """
@@ -46,8 +43,7 @@ class ReactionEmojiTest(ZulipTestCase):
                                  **self.api_auth(sender))
         self.assert_json_error(result, "Emoji 'green_tick' does not exist")
 
-    def test_valid_emoji(self):
-        # type: () -> None
+    def test_valid_emoji(self) -> None:
         """
         Reacting with valid emoji succeeds
         """
@@ -57,8 +53,7 @@ class ReactionEmojiTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
 
-    def test_zulip_emoji(self):
-        # type: () -> None
+    def test_zulip_emoji(self) -> None:
         """
         Reacting with zulip emoji succeeds
         """
@@ -68,8 +63,7 @@ class ReactionEmojiTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
 
-    def test_valid_emoji_react_historical(self):
-        # type: () -> None
+    def test_valid_emoji_react_historical(self) -> None:
         """
         Reacting with valid emoji on a historical message succeeds
         """
@@ -95,8 +89,7 @@ class ReactionEmojiTest(ZulipTestCase):
         self.assertTrue(user_message.flags.read)
         self.assertFalse(user_message.flags.starred)
 
-    def test_valid_realm_emoji(self):
-        # type: () -> None
+    def test_valid_realm_emoji(self) -> None:
         """
         Reacting with valid realm emoji succeeds
         """
@@ -107,8 +100,7 @@ class ReactionEmojiTest(ZulipTestCase):
                                  **self.api_auth(sender))
         self.assert_json_success(result)
 
-    def test_emoji_name_to_emoji_code(self):
-        # type: () -> None
+    def test_emoji_name_to_emoji_code(self) -> None:
         """
         An emoji name is mapped canonically to emoji code.
         """
@@ -164,8 +156,7 @@ class ReactionEmojiTest(ZulipTestCase):
         self.assertEqual(str(exc.exception), "Emoji 'invalid_emoji' does not exist")
 
 class ReactionMessageIDTest(ZulipTestCase):
-    def test_missing_message_id(self):
-        # type: () -> None
+    def test_missing_message_id(self) -> None:
         """
         Reacting without a message_id fails
         """
@@ -174,8 +165,7 @@ class ReactionMessageIDTest(ZulipTestCase):
                                  **self.api_auth(sender))
         self.assertEqual(result.status_code, 404)
 
-    def test_invalid_message_id(self):
-        # type: () -> None
+    def test_invalid_message_id(self) -> None:
         """
         Reacting to an invalid message id fails
         """
@@ -184,8 +174,7 @@ class ReactionMessageIDTest(ZulipTestCase):
                                  **self.api_auth(sender))
         self.assertEqual(result.status_code, 404)
 
-    def test_inaccessible_message_id(self):
-        # type: () -> None
+    def test_inaccessible_message_id(self) -> None:
         """
         Reacting to a inaccessible (for instance, private) message fails
         """
@@ -204,8 +193,7 @@ class ReactionMessageIDTest(ZulipTestCase):
         self.assert_json_error(result, "Invalid message(s)")
 
 class ReactionTest(ZulipTestCase):
-    def test_add_existing_reaction(self):
-        # type: () -> None
+    def test_add_existing_reaction(self) -> None:
         """
         Creating the same reaction twice fails
         """
@@ -228,8 +216,7 @@ class ReactionTest(ZulipTestCase):
                                  **self.api_auth(reaction_sender))
         self.assert_json_error(second, "Reaction already exists")
 
-    def test_remove_nonexisting_reaction(self):
-        # type: () -> None
+    def test_remove_nonexisting_reaction(self) -> None:
         """
         Removing a reaction twice fails
         """
@@ -256,8 +243,7 @@ class ReactionTest(ZulipTestCase):
                                     **self.api_auth(reaction_sender))
         self.assert_json_error(second, "Reaction does not exist")
 
-    def test_remove_existing_reaction_with_renamed_emoji(self):
-        # type: () -> None
+    def test_remove_existing_reaction_with_renamed_emoji(self) -> None:
         """
         Removes an old existing reaction but the name of emoji got changed during
         various emoji infra changes.
@@ -272,8 +258,7 @@ class ReactionTest(ZulipTestCase):
                                         **self.api_auth(sender))
             self.assert_json_success(result)
 
-    def test_remove_existing_reaction_with_deactivated_realm_emoji(self):
-        # type: () -> None
+    def test_remove_existing_reaction_with_deactivated_realm_emoji(self) -> None:
         """
         Removes an old existing reaction but the realm emoji used there has been deactivated.
         """
@@ -292,8 +277,7 @@ class ReactionTest(ZulipTestCase):
         self.assert_json_success(result)
 
 class ReactionEventTest(ZulipTestCase):
-    def test_add_event(self):
-        # type: () -> None
+    def test_add_event(self) -> None:
         """
         Recipients of the message receive the reaction event
         and event contains relevant data
@@ -328,8 +312,7 @@ class ReactionEventTest(ZulipTestCase):
         self.assertEqual(event['emoji_name'], 'smile')
         self.assertEqual(event['message_id'], pm_id)
 
-    def test_remove_event(self):
-        # type: () -> None
+    def test_remove_event(self) -> None:
         """
         Recipients of the message receive the reaction event
         and event contains relevant data

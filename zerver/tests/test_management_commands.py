@@ -17,13 +17,11 @@ from zerver.models import get_realm, UserProfile, Realm
 from confirmation.models import RealmCreationKey, generate_realm_creation_url
 
 class TestZulipBaseCommand(ZulipTestCase):
-    def setUp(self):
-        # type: () -> None
+    def setUp(self) -> None:
         self.zulip_realm = get_realm("zulip")
         self.command = ZulipBaseCommand()
 
-    def test_get_realm(self):
-        # type: () -> None
+    def test_get_realm(self) -> None:
         self.assertEqual(self.command.get_realm(dict(realm_id='zulip')), self.zulip_realm)
         self.assertEqual(self.command.get_realm(dict(realm_id=None)), None)
         self.assertEqual(self.command.get_realm(dict(realm_id='1')), self.zulip_realm)
@@ -32,8 +30,7 @@ class TestZulipBaseCommand(ZulipTestCase):
         with self.assertRaisesRegex(CommandError, "There is no realm with id"):
             self.command.get_realm(dict(realm_id='mit'))
 
-    def test_get_user(self):
-        # type: () -> None
+    def test_get_user(self) -> None:
         mit_realm = get_realm("zephyr")
         user_profile = self.example_user("hamlet")
         email = user_profile.email
@@ -49,13 +46,11 @@ class TestZulipBaseCommand(ZulipTestCase):
             self.command.get_user('invalid_email@example.com', None)
         # TODO: Add a test for the MultipleObjectsReturned case once we make that possible.
 
-    def get_users_sorted(self, options, realm):
-        # type: (Dict[str, Any], Optional[Realm]) -> List[UserProfile]
+    def get_users_sorted(self, options: Dict[str, Any], realm: Optional[Realm]) -> List[UserProfile]:
         user_profiles = self.command.get_users(options, realm)
         return sorted(user_profiles, key = lambda x: x.email)
 
-    def test_get_users(self):
-        # type: () -> None
+    def test_get_users(self) -> None:
         user_emails = self.example_email("hamlet") + "," + self.example_email("iago")
         expected_user_profiles = [self.example_user("hamlet"), self.example_user("iago")]
         user_profiles = self.get_users_sorted(dict(users=user_emails), self.zulip_realm)
@@ -76,8 +71,7 @@ class TestZulipBaseCommand(ZulipTestCase):
 
         self.assertEqual(self.command.get_users(dict(users=None), None), [])
 
-    def test_get_users_with_all_users_argument_enabled(self):
-        # type: () -> None
+    def test_get_users_with_all_users_argument_enabled(self) -> None:
         user_emails = self.example_email("hamlet") + "," + self.example_email("iago")
         expected_user_profiles = [self.example_user("hamlet"), self.example_user("iago")]
         user_profiles = self.get_users_sorted(dict(users=user_emails, all_users=False), self.zulip_realm)
@@ -101,8 +95,7 @@ class TestZulipBaseCommand(ZulipTestCase):
 
 class TestCommandsCanStart(TestCase):
 
-    def setUp(self):
-        # type: () -> None
+    def setUp(self) -> None:
         self.commands = filter(
             lambda filename: filename != '__init__',
             map(
@@ -112,8 +105,7 @@ class TestCommandsCanStart(TestCase):
         )
 
     @slow("Aggregate of runs dozens of individual --help tests")
-    def test_management_commands_show_help(self):
-        # type: () -> None
+    def test_management_commands_show_help(self) -> None:
         with stdout_suppressed() as stdout:
             for command in self.commands:
                 print('Testing management command: {}'.format(command),
@@ -128,30 +120,26 @@ class TestCommandsCanStart(TestCase):
 class TestSendWebhookFixtureMessage(TestCase):
     COMMAND_NAME = 'send_webhook_fixture_message'
 
-    def setUp(self):
-        # type: () -> None
+    def setUp(self) -> None:
         self.fixture_path = os.path.join('some', 'fake', 'path.json')
         self.url = '/some/url/with/hook'
 
     @patch('zerver.management.commands.send_webhook_fixture_message.Command.print_help')
-    def test_check_if_command_exits_when_fixture_param_is_empty(self, print_help_mock):
-        # type: (MagicMock) -> None
+    def test_check_if_command_exits_when_fixture_param_is_empty(self, print_help_mock: MagicMock) -> None:
         with self.assertRaises(SystemExit):
             call_command(self.COMMAND_NAME, url=self.url)
 
         print_help_mock.assert_any_call('./manage.py', self.COMMAND_NAME)
 
     @patch('zerver.management.commands.send_webhook_fixture_message.Command.print_help')
-    def test_check_if_command_exits_when_url_param_is_empty(self, print_help_mock):
-        # type: (MagicMock) -> None
+    def test_check_if_command_exits_when_url_param_is_empty(self, print_help_mock: MagicMock) -> None:
         with self.assertRaises(SystemExit):
             call_command(self.COMMAND_NAME, fixture=self.fixture_path)
 
         print_help_mock.assert_any_call('./manage.py', self.COMMAND_NAME)
 
     @patch('zerver.management.commands.send_webhook_fixture_message.os.path.exists')
-    def test_check_if_command_exits_when_fixture_path_does_not_exist(self, os_path_exists_mock):
-        # type: (MagicMock) -> None
+    def test_check_if_command_exits_when_fixture_path_does_not_exist(self, os_path_exists_mock: MagicMock) -> None:
         os_path_exists_mock.return_value = False
 
         with self.assertRaises(SystemExit):
@@ -186,8 +174,7 @@ class TestSendWebhookFixtureMessage(TestCase):
 class TestGenerateRealmCreationLink(ZulipTestCase):
     COMMAND_NAME = "generate_realm_creation_link"
 
-    def test_generate_link_and_create_realm(self):
-        # type: () -> None
+    def test_generate_link_and_create_realm(self) -> None:
         email = "user1@test.com"
         generated_link = generate_realm_creation_url()
 
@@ -209,16 +196,14 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
             result = self.client_get(generated_link)
             self.assert_in_success_response(["The organization creation link has expired or is not valid."], result)
 
-    def test_realm_creation_with_random_link(self):
-        # type: () -> None
+    def test_realm_creation_with_random_link(self) -> None:
         with self.settings(OPEN_REALM_CREATION=False):
             # Realm creation attempt with an invalid link should fail
             random_link = "/create_realm/5e89081eb13984e0f3b130bf7a4121d153f1614b"
             result = self.client_get(random_link)
             self.assert_in_success_response(["The organization creation link has expired or is not valid."], result)
 
-    def test_realm_creation_with_expired_link(self):
-        # type: () -> None
+    def test_realm_creation_with_expired_link(self) -> None:
         with self.settings(OPEN_REALM_CREATION=False):
             generated_link = generate_realm_creation_url()
             key = generated_link[-24:]

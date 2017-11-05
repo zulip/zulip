@@ -31,8 +31,7 @@ TEST_CACHES = {
 @override_settings(INLINE_URL_EMBED_PREVIEW=True)
 class OembedTestCase(ZulipTestCase):
     @mock.patch('pyoembed.requests.get')
-    def test_present_provider(self, get):
-        # type: (Any) -> None
+    def test_present_provider(self, get: Any) -> None:
         get.return_value = response = mock.Mock()
         response.headers = {'content-type': 'application/json'}
         response.ok = True
@@ -54,8 +53,7 @@ class OembedTestCase(ZulipTestCase):
         self.assertEqual(data['title'], response_data['title'])
 
     @mock.patch('pyoembed.requests.get')
-    def test_error_request(self, get):
-        # type: (Any) -> None
+    def test_error_request(self, get: Any) -> None:
         get.return_value = response = mock.Mock()
         response.ok = False
         url = 'http://instagram.com/p/BLtI2WdAymy'
@@ -64,8 +62,7 @@ class OembedTestCase(ZulipTestCase):
 
 
 class OpenGraphParserTestCase(ZulipTestCase):
-    def test_page_with_og(self):
-        # type: () -> None
+    def test_page_with_og(self) -> None:
         html = """<html>
           <head>
           <meta property="og:title" content="The Rock" />
@@ -84,8 +81,7 @@ class OpenGraphParserTestCase(ZulipTestCase):
 
 
 class GenericParserTestCase(ZulipTestCase):
-    def test_parser(self):
-        # type: () -> None
+    def test_parser(self) -> None:
         html = """
           <html>
             <head><title>Test title</title></head>
@@ -100,8 +96,7 @@ class GenericParserTestCase(ZulipTestCase):
         self.assertEqual(result.get('title'), 'Test title')
         self.assertEqual(result.get('description'), 'Description text')
 
-    def test_extract_image(self):
-        # type: () -> None
+    def test_extract_image(self) -> None:
         html = """
           <html>
             <body>
@@ -119,8 +114,7 @@ class GenericParserTestCase(ZulipTestCase):
         self.assertEqual(result.get('description'), 'Description text')
         self.assertEqual(result.get('image'), 'http://test.com/test.jpg')
 
-    def test_extract_description(self):
-        # type: () -> None
+    def test_extract_description(self) -> None:
         html = """
           <html>
             <body>
@@ -170,8 +164,7 @@ class PreviewTestCase(ZulipTestCase):
         """
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
-    def test_edit_message_history(self):
-        # type: () -> None
+    def test_edit_message_history(self) -> None:
         email = self.example_email('hamlet')
         self.login(email)
         msg_id = self.send_stream_message(email, "Scotland",
@@ -201,8 +194,7 @@ class PreviewTestCase(ZulipTestCase):
         self.assertIn(embedded_link, msg.rendered_content)
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
-    def _send_message_with_test_org_url(self, sender_email, queue_should_run=True, relative_url=False):
-        # type: (str, bool, bool) -> Message
+    def _send_message_with_test_org_url(self, sender_email: str, queue_should_run: bool=True, relative_url: bool=False) -> Message:
         url = 'http://test.org/'
         with mock.patch('zerver.lib.actions.queue_json_publish') as patched:
             msg_id = self.send_personal_message(
@@ -242,8 +234,7 @@ class PreviewTestCase(ZulipTestCase):
         return msg
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
-    def test_message_update_race_condition(self):
-        # type: () -> None
+    def test_message_update_race_condition(self) -> None:
         email = self.example_email('hamlet')
         self.login(email)
         original_url = 'http://test.org/'
@@ -256,8 +247,7 @@ class PreviewTestCase(ZulipTestCase):
             self.assertEqual(queue, "embed_links")
             event = patched.call_args[0][1]
 
-        def wrapped_queue_json_publish(*args, **kwargs):
-            # type: (*Any, **Any) -> None
+        def wrapped_queue_json_publish(*args: Any, **kwargs: Any) -> None:
             # Mock the network request result so the test can be fast without Internet
             response = MockPythonResponse(self.open_graph_html, 200)
             mocked_response_original = mock.Mock(
@@ -291,8 +281,7 @@ class PreviewTestCase(ZulipTestCase):
             })
             self.assert_json_success(result)
 
-    def test_get_link_embed_data(self):
-        # type: () -> None
+    def test_get_link_embed_data(self) -> None:
         url = 'http://test.org/'
         embedded_link = '<a href="{0}" target="_blank" title="The Rock">The Rock</a>'.format(url)
 
@@ -310,8 +299,7 @@ class PreviewTestCase(ZulipTestCase):
         msg = self._send_message_with_test_org_url(sender_email=self.example_email('prospero'))
         self.assertIn(embedded_link, msg.rendered_content)
 
-    def test_inline_url_embed_preview(self):
-        # type: () -> None
+    def test_inline_url_embed_preview(self) -> None:
         with_preview = '<p><a href="http://test.org/" target="_blank" title="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(http://ia.media-imdb.com/images/rock.jpg)" target="_blank"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" target="_blank" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
         without_preview = '<p><a href="http://test.org/" target="_blank" title="http://test.org/">http://test.org/</a></p>'
         msg = self._send_message_with_test_org_url(sender_email=self.example_email('hamlet'))
@@ -324,15 +312,13 @@ class PreviewTestCase(ZulipTestCase):
         msg = self._send_message_with_test_org_url(sender_email=self.example_email('prospero'), queue_should_run=False)
         self.assertEqual(msg.rendered_content, without_preview)
 
-    def test_inline_url_embed_preview_with_relative_image_url(self):
-        # type: () -> None
+    def test_inline_url_embed_preview_with_relative_image_url(self) -> None:
         with_preview_relative = '<p><a href="http://test.org/" target="_blank" title="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(http://test.org/images/rock.jpg)" target="_blank"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" target="_blank" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
         # Try case where the opengraph image is a relative url.
         msg = self._send_message_with_test_org_url(sender_email=self.example_email('prospero'), relative_url=True)
         self.assertEqual(msg.rendered_content, with_preview_relative)
 
-    def test_http_error_get_data(self):
-        # type: () -> None
+    def test_http_error_get_data(self) -> None:
         url = 'http://test.org/'
         msg_id = self.send_personal_message(
             self.example_email('hamlet'),
@@ -355,8 +341,7 @@ class PreviewTestCase(ZulipTestCase):
             '<p><a href="http://test.org/" target="_blank" title="http://test.org/">http://test.org/</a></p>',
             msg.rendered_content)
 
-    def test_invalid_link(self):
-        # type: () -> None
+    def test_invalid_link(self) -> None:
         with self.settings(INLINE_URL_EMBED_PREVIEW=True, TEST_SUITE=False, CACHES=TEST_CACHES):
             self.assertIsNone(get_link_embed_data('com.notvalidlink'))
             self.assertIsNone(get_link_embed_data(u'μένει.com.notvalidlink'))

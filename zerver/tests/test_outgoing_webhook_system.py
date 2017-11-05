@@ -15,30 +15,25 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import get_realm, get_user, UserProfile, get_display_recipient
 
 class ResponseMock:
-    def __init__(self, status_code, content = None):
-        # type: (int, Optional[Any]) -> None
+    def __init__(self, status_code: int, content: Optional[Any]=None) -> None:
         self.status_code = status_code
         self.content = content
         self.text = ujson.dumps(content)
 
-def request_exception_error(http_method, final_url, data, **request_kwargs):
-    # type: (Any, Any, Any, **Any) -> Any
+def request_exception_error(http_method: Any, final_url: Any, data: Any, **request_kwargs: Any) -> Any:
     raise requests.exceptions.RequestException("I'm a generic exception :(")
 
-def timeout_error(http_method, final_url, data, **request_kwargs):
-    # type: (Any, Any, Any, **Any) -> Any
+def timeout_error(http_method: Any, final_url: Any, data: Any, **request_kwargs: Any) -> Any:
     raise requests.exceptions.Timeout("Time is up!")
 
 class MockServiceHandler(OutgoingWebhookServiceInterface):
-    def process_success(self, response, event):
-        # type: (Response, Dict[Text, Any]) -> Optional[str]
+    def process_success(self, response: Response, event: Dict[Text, Any]) -> Optional[str]:
         return "Success!"
 
 service_handler = MockServiceHandler(None, None, None, None)
 
 class DoRestCallTests(ZulipTestCase):
-    def setUp(self):
-        # type: () -> None
+    def setUp(self) -> None:
         realm = get_realm("zulip")
         user_profile = get_user("outgoing-webhook@zulip.com", realm)
         self.mock_event = {
@@ -62,15 +57,13 @@ class DoRestCallTests(ZulipTestCase):
         logging.disable(logging.WARNING)
 
     @mock.patch('zerver.lib.outgoing_webhook.succeed_with_message')
-    def test_successful_request(self, mock_succeed_with_message):
-        # type: (mock.Mock) -> None
+    def test_successful_request(self, mock_succeed_with_message: mock.Mock) -> None:
         response = ResponseMock(200)
         with mock.patch('requests.request', return_value=response):
             do_rest_call(self.rest_operation, None, self.mock_event, service_handler, None)
             self.assertTrue(mock_succeed_with_message.called)
 
-    def test_retry_request(self):
-        # type: (mock.Mock) -> None
+    def test_retry_request(self: mock.Mock) -> None:
         response = ResponseMock(500)
 
         self.mock_event['failed_tries'] = 3
@@ -84,8 +77,7 @@ The webhook got a response with status code *500*.''')
         self.mock_event['failed_tries'] = 0
 
     @mock.patch('zerver.lib.outgoing_webhook.fail_with_message')
-    def test_fail_request(self, mock_fail_with_message):
-        # type: (mock.Mock) -> None
+    def test_fail_request(self, mock_fail_with_message: mock.Mock) -> None:
         response = ResponseMock(400)
         with mock.patch('requests.request', return_value=response):
             do_rest_call(self.rest_operation, None, self.mock_event, service_handler, None)
@@ -98,8 +90,7 @@ The webhook got a response with status code *400*.''')
 
     @mock.patch('logging.info')
     @mock.patch('requests.request', side_effect=timeout_error)
-    def test_timeout_request(self, mock_requests_request, mock_logger):
-        # type: (mock.Mock, mock.Mock, mock.Mock) -> None
+    def test_timeout_request(self, mock_requests_request: mock.Mock, mock_logger: mock.Mock) -> None:
         do_rest_call(self.rest_operation, None, self.mock_event, service_handler, None)
         bot_owner_notification = self.get_last_message()
         self.assertEqual(bot_owner_notification.content,
@@ -113,8 +104,7 @@ Time is up!
     @mock.patch('logging.exception')
     @mock.patch('requests.request', side_effect=request_exception_error)
     @mock.patch('zerver.lib.outgoing_webhook.fail_with_message')
-    def test_request_exception(self, mock_fail_with_message, mock_requests_request, mock_logger):
-        # type: (mock.Mock, mock.Mock, mock.Mock) -> None
+    def test_request_exception(self, mock_fail_with_message: mock.Mock, mock_requests_request: mock.Mock, mock_logger: mock.Mock) -> None:
         do_rest_call(self.rest_operation, None, self.mock_event, service_handler, None)
         bot_owner_notification = self.get_last_message()
         self.assertTrue(mock_fail_with_message.called)
@@ -127,16 +117,14 @@ I'm a generic exception :(
         self.assertEqual(bot_owner_notification.recipient_id, self.bot_user.bot_owner.id)
 
 class TestOutgoingWebhookMessaging(ZulipTestCase):
-    def setUp(self):
-        # type: () -> None
+    def setUp(self) -> None:
         self.user_profile = self.example_user("othello")
         self.bot_profile = self.create_test_bot(
             'outgoing-webhook-bot@zulip.testserver', self.user_profile, 'Outgoing Webhook bot',
             'outgoing-webhook-bot', UserProfile.OUTGOING_WEBHOOK_BOT, service_name='foo-service')
 
     @mock.patch('requests.request', return_value=ResponseMock(200, {"response_string": "Hidley ho, I'm a webhook responding!"}))
-    def test_pm_to_outgoing_webhook_bot(self, mock_requests_request):
-        # type: (mock.Mock) -> None
+    def test_pm_to_outgoing_webhook_bot(self, mock_requests_request: mock.Mock) -> None:
         self.send_personal_message(self.user_profile.email, self.bot_profile.email,
                                    content="foo")
         last_message = self.get_last_message()
@@ -150,8 +138,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         self.assertEqual(display_recipient[0]['email'], self.user_profile.email)   # type: ignore
 
     @mock.patch('requests.request', return_value=ResponseMock(200, {"response_string": "Hidley ho, I'm a webhook responding!"}))
-    def test_stream_message_to_outgoing_webhook_bot(self, mock_requests_request):
-        # type: (mock.Mock) -> None
+    def test_stream_message_to_outgoing_webhook_bot(self, mock_requests_request: mock.Mock) -> None:
         self.send_stream_message(self.user_profile.email, "Denmark",
                                  content="@**{}** foo".format(self.bot_profile.full_name),
                                  topic_name="bar")

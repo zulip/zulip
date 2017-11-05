@@ -7,14 +7,12 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import UserProfile, Recipient, get_display_recipient
 
 class TestEmbeddedBotMessaging(ZulipTestCase):
-    def setUp(self):
-        # type: () -> None
+    def setUp(self) -> None:
         self.user_profile = self.example_user("othello")
         self.bot_profile = self.create_test_bot('embedded-bot@zulip.testserver', self.user_profile, 'Embedded bot',
                                                 'embedded', UserProfile.EMBEDDED_BOT, service_name='helloworld')
 
-    def test_pm_to_embedded_bot(self):
-        # type: () -> None
+    def test_pm_to_embedded_bot(self) -> None:
         self.send_personal_message(self.user_profile.email, self.bot_profile.email,
                                    content="help")
         last_message = self.get_last_message()
@@ -27,8 +25,7 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
         self.assert_length(display_recipient, 1)  # type: ignore
         self.assertEqual(display_recipient[0]['email'], self.user_profile.email)   # type: ignore
 
-    def test_stream_message_to_embedded_bot(self):
-        # type: () -> None
+    def test_stream_message_to_embedded_bot(self) -> None:
         self.send_stream_message(self.user_profile.email, "Denmark",
                                  content="@**{}** foo".format(self.bot_profile.full_name),
                                  topic_name="bar")
@@ -39,8 +36,7 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
         display_recipient = get_display_recipient(last_message.recipient)
         self.assertEqual(display_recipient, "Denmark")
 
-    def test_stream_message_not_to_embedded_bot(self):
-        # type: () -> None
+    def test_stream_message_not_to_embedded_bot(self) -> None:
         self.send_stream_message(self.user_profile.email, "Denmark",
                                  content="foo", topic_name="bar")
         last_message = self.get_last_message()
@@ -48,8 +44,7 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
 
 class TestEmbeddedBotFailures(ZulipTestCase):
     @mock.patch("logging.error")
-    def test_invalid_embedded_bot_service(self, logging_error_mock):
-        # type: (mock.Mock) -> None
+    def test_invalid_embedded_bot_service(self, logging_error_mock: mock.Mock) -> None:
         user_profile = self.example_user("othello")
         bot_profile = self.create_test_bot('embedded-bot@zulip.testserver', user_profile, 'Embedded bot',
                                            'embedded', UserProfile.EMBEDDED_BOT, service_name='nonexistent_service')

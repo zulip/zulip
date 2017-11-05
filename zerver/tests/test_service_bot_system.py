@@ -27,8 +27,7 @@ BOT_TYPE_TO_QUEUE_NAME = {
 }
 
 class TestServiceBotBasics(ZulipTestCase):
-    def _get_outgoing_bot(self):
-        # type: () -> UserProfile
+    def _get_outgoing_bot(self) -> UserProfile:
         outgoing_bot = do_create_user(
             email="bar-bot@zulip.com",
             password="test",
@@ -41,8 +40,7 @@ class TestServiceBotBasics(ZulipTestCase):
 
         return outgoing_bot
 
-    def test_service_events_for_pms(self):
-        # type: () -> None
+    def test_service_events_for_pms(self) -> None:
         sender = self.example_user('hamlet')
         assert(not sender.is_bot)
 
@@ -66,8 +64,7 @@ class TestServiceBotBasics(ZulipTestCase):
 
         self.assertEqual(event_dict, expected)
 
-    def test_service_events_for_stream_mentions(self):
-        # type: () -> None
+    def test_service_events_for_stream_mentions(self) -> None:
         sender = self.example_user('hamlet')
         assert(not sender.is_bot)
 
@@ -92,8 +89,7 @@ class TestServiceBotBasics(ZulipTestCase):
         self.assertEqual(event_dict, expected)
 
 class TestServiceBotStateHandler(ZulipTestCase):
-    def setUp(self):
-        # type: () -> None
+    def setUp(self) -> None:
         self.user_profile = self.example_user("othello")
         self.bot_profile = do_create_user(email="embedded-bot-1@zulip.com",
                                           password="test",
@@ -110,8 +106,7 @@ class TestServiceBotStateHandler(ZulipTestCase):
                                                  bot_type=UserProfile.EMBEDDED_BOT,
                                                  bot_owner=self.user_profile)
 
-    def test_basic_storage_and_retrieval(self):
-        # type: () -> None
+    def test_basic_storage_and_retrieval(self) -> None:
         storage = StateHandler(self.bot_profile)
         storage.put('some key', 'some value')
         storage.put('some other key', 'some other value')
@@ -131,15 +126,13 @@ class TestServiceBotStateHandler(ZulipTestCase):
         self.assertEqual(storage.get('some key'), 'a new value')
         self.assertEqual(second_storage.get('some key'), 'yet another value')
 
-    def test_marshaling(self):
-        # type: () -> None
+    def test_marshaling(self) -> None:
         storage = StateHandler(self.bot_profile)
         serializable_obj = {'foo': 'bar', 'baz': [42, 'cux']}
         storage.put('some key', serializable_obj)  # type: ignore # Ignore for testing.
         self.assertEqual(storage.get('some key'), serializable_obj)
 
-    def test_invalid_calls(self):
-        # type: () -> None
+    def test_invalid_calls(self) -> None:
         storage = StateHandler(self.bot_profile)
         storage.marshal = lambda obj: obj
         storage.demarshal = lambda obj: obj
@@ -153,8 +146,7 @@ class TestServiceBotStateHandler(ZulipTestCase):
 
     # Reduce maximal state size for faster test string construction.
     @override_settings(USER_STATE_SIZE_LIMIT=100)
-    def test_storage_limit(self):
-        # type: () -> None
+    def test_storage_limit(self) -> None:
         storage = StateHandler(self.bot_profile)
 
         # Disable marshaling for storing a string whose size is
@@ -173,8 +165,7 @@ class TestServiceBotStateHandler(ZulipTestCase):
         second_storage.put('another big entry', 'x' * (settings.USER_STATE_SIZE_LIMIT - 40))
         second_storage.put('normal entry', 'abcd')
 
-    def test_entry_removal(self):
-        # type: () -> None
+    def test_entry_removal(self) -> None:
         storage = StateHandler(self.bot_profile)
         storage.put('some key', 'some value')
         storage.put('another key', 'some value')
@@ -187,8 +178,7 @@ class TestServiceBotStateHandler(ZulipTestCase):
 
 class TestServiceBotEventTriggers(ZulipTestCase):
 
-    def setUp(self):
-        # type: () -> None
+    def setUp(self) -> None:
         self.user_profile = self.example_user("othello")
         self.bot_profile = do_create_user(email="foo-bot@zulip.com",
                                           password="test",
@@ -206,8 +196,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
                                                  bot_owner=self.user_profile)
 
     @mock.patch('zerver.lib.actions.queue_json_publish')
-    def test_trigger_on_stream_mention_from_user(self, mock_queue_json_publish):
-        # type: (mock.Mock) -> None
+    def test_trigger_on_stream_mention_from_user(self, mock_queue_json_publish: mock.Mock) -> None:
         for bot_type, expected_queue_name in BOT_TYPE_TO_QUEUE_NAME.items():
             self.bot_profile.bot_type = bot_type
             self.bot_profile.save()
@@ -217,8 +206,10 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             trigger = 'mention'
             message_type = Recipient._type_names[Recipient.STREAM]
 
-            def check_values_passed(queue_name, trigger_event, x, call_consume_in_tests):
-                # type: (Any, Union[Mapping[Any, Any], Any], Callable[[Any], None], bool) -> None
+            def check_values_passed(queue_name: Any,
+                                    trigger_event: Union[Mapping[Any, Any], Any],
+                                    x: Callable[[Any], None],
+                                    call_consume_in_tests: bool) -> None:
                 self.assertEqual(queue_name, expected_queue_name)
                 self.assertEqual(trigger_event["message"]["content"], content)
                 self.assertEqual(trigger_event["message"]["display_recipient"], recipient)
@@ -235,15 +226,13 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             self.assertTrue(mock_queue_json_publish.called)
 
     @mock.patch('zerver.lib.actions.queue_json_publish')
-    def test_no_trigger_on_stream_message_without_mention(self, mock_queue_json_publish):
-        # type: (mock.Mock) -> None
+    def test_no_trigger_on_stream_message_without_mention(self, mock_queue_json_publish: mock.Mock) -> None:
         sender_email = self.user_profile.email
         self.send_stream_message(sender_email, "Denmark")
         self.assertFalse(mock_queue_json_publish.called)
 
     @mock.patch('zerver.lib.actions.queue_json_publish')
-    def test_no_trigger_on_stream_mention_from_bot(self, mock_queue_json_publish):
-        # type: (mock.Mock) -> None
+    def test_no_trigger_on_stream_mention_from_bot(self, mock_queue_json_publish: mock.Mock) -> None:
         for bot_type in BOT_TYPE_TO_QUEUE_NAME:
             self.bot_profile.bot_type = bot_type
             self.bot_profile.save()
@@ -255,8 +244,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             self.assertFalse(mock_queue_json_publish.called)
 
     @mock.patch('zerver.lib.actions.queue_json_publish')
-    def test_trigger_on_personal_message_from_user(self, mock_queue_json_publish):
-        # type: (mock.Mock) -> None
+    def test_trigger_on_personal_message_from_user(self, mock_queue_json_publish: mock.Mock) -> None:
         for bot_type, expected_queue_name in BOT_TYPE_TO_QUEUE_NAME.items():
             self.bot_profile.bot_type = bot_type
             self.bot_profile.save()
@@ -264,8 +252,10 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             sender_email = self.user_profile.email
             recipient_email = self.bot_profile.email
 
-            def check_values_passed(queue_name, trigger_event, x, call_consume_in_tests):
-                # type: (Any, Union[Mapping[Any, Any], Any], Callable[[Any], None], bool) -> None
+            def check_values_passed(queue_name: Any,
+                                    trigger_event: Union[Mapping[Any, Any], Any],
+                                    x: Callable[[Any], None],
+                                    call_consume_in_tests: bool) -> None:
                 self.assertEqual(queue_name, expected_queue_name)
                 self.assertEqual(trigger_event["user_profile_id"], self.bot_profile.id)
                 self.assertEqual(trigger_event["trigger"], "private_message")
@@ -282,8 +272,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             self.assertTrue(mock_queue_json_publish.called)
 
     @mock.patch('zerver.lib.actions.queue_json_publish')
-    def test_no_trigger_on_personal_message_from_bot(self, mock_queue_json_publish):
-        # type: (mock.Mock) -> None
+    def test_no_trigger_on_personal_message_from_bot(self, mock_queue_json_publish: mock.Mock) -> None:
         for bot_type in BOT_TYPE_TO_QUEUE_NAME:
             self.bot_profile.bot_type = bot_type
             self.bot_profile.save()
@@ -294,8 +283,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             self.assertFalse(mock_queue_json_publish.called)
 
     @mock.patch('zerver.lib.actions.queue_json_publish')
-    def test_trigger_on_huddle_message_from_user(self, mock_queue_json_publish):
-        # type: (mock.Mock) -> None
+    def test_trigger_on_huddle_message_from_user(self, mock_queue_json_publish: mock.Mock) -> None:
         for bot_type, expected_queue_name in BOT_TYPE_TO_QUEUE_NAME.items():
             self.bot_profile.bot_type = bot_type
             self.bot_profile.save()
@@ -307,8 +295,10 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             recipient_emails = [self.bot_profile.email, self.second_bot_profile.email]
             profile_ids = [self.bot_profile.id, self.second_bot_profile.id]
 
-            def check_values_passed(queue_name, trigger_event, x, call_consume_in_tests):
-                # type: (Any, Union[Mapping[Any, Any], Any], Callable[[Any], None], bool) -> None
+            def check_values_passed(queue_name: Any,
+                                    trigger_event: Union[Mapping[Any, Any], Any],
+                                    x: Callable[[Any], None],
+                                    call_consume_in_tests: bool) -> None:
                 self.assertEqual(queue_name, expected_queue_name)
                 self.assertIn(trigger_event["user_profile_id"], profile_ids)
                 profile_ids.remove(trigger_event["user_profile_id"])
@@ -322,8 +312,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             mock_queue_json_publish.reset_mock()
 
     @mock.patch('zerver.lib.actions.queue_json_publish')
-    def test_no_trigger_on_huddle_message_from_bot(self, mock_queue_json_publish):
-        # type: (mock.Mock) -> None
+    def test_no_trigger_on_huddle_message_from_bot(self, mock_queue_json_publish: mock.Mock) -> None:
         for bot_type in BOT_TYPE_TO_QUEUE_NAME:
             self.bot_profile.bot_type = bot_type
             self.bot_profile.save()

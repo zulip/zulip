@@ -15,8 +15,7 @@ from zerver.tornado.views import get_events_backend
 class MissedMessageNotificationsTest(ZulipTestCase):
     """Tests the logic for when missed-message notifications
     should be triggered, based on user settings"""
-    def check_will_notify(self, *args, **kwargs):
-        # type: (*Any, **Any) -> Tuple[str, str]
+    def check_will_notify(self, *args: Any, **kwargs: Any) -> Tuple[str, str]:
         email_notice = None
         mobile_notice = None
         with mock.patch("zerver.tornado.event_queue.queue_json_publish") as mock_queue_publish:
@@ -39,8 +38,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                 self.assertFalse(notified.get('push_notified', False))
         return email_notice, mobile_notice
 
-    def test_enqueue_notifications(self):
-        # type: () -> None
+    def test_enqueue_notifications(self) -> None:
         user_profile = self.example_user("hamlet")
         message_id = 32
 
@@ -114,13 +112,12 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         self.assertTrue(email_notice is None)
         self.assertTrue(mobile_notice is not None)
 
-    def tornado_call(self, view_func, user_profile, post_data):
-        # type: (Callable[[HttpRequest, UserProfile], HttpResponse], UserProfile, Dict[str, Any]) -> HttpResponse
+    def tornado_call(self, view_func: Callable[[HttpRequest, UserProfile], HttpResponse],
+                     user_profile: UserProfile, post_data: Dict[str, Any]) -> HttpResponse:
         request = POSTRequestMock(post_data, user_profile)
         return view_func(request, user_profile)
 
-    def test_end_to_end_missedmessage_hook(self):
-        # type: () -> None
+    def test_end_to_end_missedmessage_hook(self) -> None:
         """Tests what arguments missedmessage_hook passes into maybe_enqueue_notifications.
         Combined with the previous test, this ensures that the missedmessage_hook is correct"""
         user_profile = self.example_user('hamlet')

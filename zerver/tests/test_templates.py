@@ -18,12 +18,10 @@ from zerver.context_processors import common_context
 
 
 class get_form_value:
-    def __init__(self, value):
-        # type: (Any) -> None
+    def __init__(self, value: Any) -> None:
         self._value = value
 
-    def value(self):
-        # type: () -> Any
+    def value(self) -> Any:
         return self._value
 
 
@@ -43,8 +41,7 @@ class TemplateTestCase(ZulipTestCase):
     """
     @slow("Tests a large number of different templates")
     @override_settings(TERMS_OF_SERVICE=None)
-    def test_templates(self):
-        # type: () -> None
+    def test_templates(self) -> None:
 
         # Just add the templates whose context has a conflict with other
         # templates' context in `defer`.
@@ -139,8 +136,7 @@ class TemplateTestCase(ZulipTestCase):
         update = {'data': [('one', 'two')]}
         self.render_templates(defer, self.get_context(**update))
 
-    def render_templates(self, templates, context):
-        # type: (Iterable[str], Dict[str, Any]) -> None
+    def render_templates(self, templates: Iterable[str], context: Dict[str, Any]) -> None:
         for template_name in templates:
             template = get_template(template_name)
             try:
@@ -149,8 +145,7 @@ class TemplateTestCase(ZulipTestCase):
                 logging.error("Exception while rendering '{}'".format(template.template.name))
                 raise
 
-    def get_context(self, **kwargs):
-        # type: (**Any) -> Dict[str, Any]
+    def get_context(self, **kwargs: Any) -> Dict[str, Any]:
         """Get the dummy context for shallow testing.
 
         The context returned will always contain a parameter called
@@ -207,8 +202,7 @@ class TemplateTestCase(ZulipTestCase):
         context.update(kwargs)
         return context
 
-    def test_markdown_in_template(self):
-        # type: () -> None
+    def test_markdown_in_template(self) -> None:
         template = get_template("tests/test_markdown.html")
         context = {
             'markdown_test_file': "zerver/tests/markdown/test_markdown.md"
@@ -219,16 +213,14 @@ class TemplateTestCase(ZulipTestCase):
         self.assertEqual(content_sans_whitespace,
                          'header<h1id="hello">Hello!</h1><p>Thisissome<em>boldtext</em>.</p>footer')
 
-    def test_custom_tos_template(self):
-        # type: () -> None
+    def test_custom_tos_template(self) -> None:
         response = self.client_get("/terms/")
 
         self.assert_in_success_response([u"Thanks for using our products and services (\"Services\"). ",
                                          u"By using our Services, you are agreeing to these terms"],
                                         response)
 
-    def test_custom_terms_of_service_template(self):
-        # type: () -> None
+    def test_custom_terms_of_service_template(self) -> None:
         not_configured_message = 'This installation of Zulip does not have a configured ' \
                                  'terms of service'
         with self.settings(TERMS_OF_SERVICE=None):
@@ -239,8 +231,7 @@ class TemplateTestCase(ZulipTestCase):
         self.assert_in_success_response(['This is some <em>bold text</em>.'], response)
         self.assert_not_in_success_response([not_configured_message], response)
 
-    def test_custom_privacy_policy_template(self):
-        # type: () -> None
+    def test_custom_privacy_policy_template(self) -> None:
         not_configured_message = 'This installation of Zulip does not have a configured ' \
                                  'privacy policy'
         with self.settings(PRIVACY_POLICY=None):

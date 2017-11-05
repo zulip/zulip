@@ -45,23 +45,19 @@ import os
 import re
 import ujson
 
-def get_sqlalchemy_query_params(query):
-    # type: (Text) -> Dict[Text, Text]
+def get_sqlalchemy_query_params(query: Text) -> Dict[Text, Text]:
     dialect = get_sqlalchemy_connection().dialect
     comp = compiler.SQLCompiler(dialect, query)
     return comp.params
 
-def fix_ws(s):
-    # type: (Text) -> Text
+def fix_ws(s: Text) -> Text:
     return re.sub('\s+', ' ', str(s)).strip()
 
-def get_recipient_id_for_stream_name(realm, stream_name):
-    # type: (Realm, Text) -> Text
+def get_recipient_id_for_stream_name(realm: Realm, stream_name: Text) -> Text:
     stream = get_stream(stream_name, realm)
     return get_stream_recipient(stream.id).id
 
-def mute_stream(realm, user_profile, stream_name):
-    # type: (Realm, Text, Text) -> None
+def mute_stream(realm: Realm, user_profile: Text, stream_name: Text) -> None:
     stream = get_stream(stream_name, realm)
     recipient = get_stream_recipient(stream.id)
     subscription = Subscription.objects.get(recipient=recipient, user_profile=user_profile)
@@ -69,20 +65,17 @@ def mute_stream(realm, user_profile, stream_name):
     subscription.save()
 
 class NarrowBuilderTest(ZulipTestCase):
-    def setUp(self):
-        # type: () -> None
+    def setUp(self) -> None:
         self.realm = get_realm('zulip')
         self.user_profile = self.example_user('hamlet')
         self.builder = NarrowBuilder(self.user_profile, column('id'))
         self.raw_query = select([column("id")], None, table("zerver_message"))
 
-    def test_add_term_using_not_defined_operator(self):
-        # type: () -> None
+    def test_add_term_using_not_defined_operator(self) -> None:
         term = dict(operator='not-defined', operand='any')
         self.assertRaises(BadNarrowOperator, self._build_query, term)
 
-    def test_add_term_using_stream_operator(self):
-        # type: () -> None
+    def test_add_term_using_stream_operator(self) -> None:
         term = dict(operator='stream', operand='Scotland')
         self._do_add_term_test(term, 'WHERE recipient_id = :recipient_id_1')
 
@@ -96,8 +89,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='stream', operand='NonExistingStream')
         self.assertRaises(BadNarrowOperator, self._build_query, term)
 
-    def test_add_term_using_is_operator_and_private_operand(self):
-        # type: () -> None
+    def test_add_term_using_is_operator_and_private_operand(self) -> None:
         term = dict(operator='is', operand='private')
         self._do_add_term_test(term, 'WHERE type = :type_1 OR type = :type_2')
 
@@ -106,14 +98,12 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='is', operand='private', negated=True)
         self._do_add_term_test(term, 'WHERE NOT (type = :type_1 OR type = :type_2)')
 
-    def test_add_term_using_is_operator_and_non_private_operand(self):
-        # type: () -> None
+    def test_add_term_using_is_operator_and_non_private_operand(self) -> None:
         for operand in ['starred', 'mentioned', 'alerted']:
             term = dict(operator='is', operand=operand)
             self._do_add_term_test(term, 'WHERE (flags & :flags_1) != :param_1')
 
-    def test_add_term_using_is_operator_and_unread_operand(self):
-        # type: () -> None
+    def test_add_term_using_is_operator_and_unread_operand(self) -> None:
         term = dict(operator='is', operand='unread')
         self._do_add_term_test(term, 'WHERE (flags & :flags_1) = :param_1')
 
@@ -150,13 +140,11 @@ class NarrowBuilderTest(ZulipTestCase):
         )
         self._do_add_term_test(term, where_clause, params)
 
-    def test_add_term_using_non_supported_operator_should_raise_error(self):
-        # type: () -> None
+    def test_add_term_using_non_supported_operator_should_raise_error(self) -> None:
         term = dict(operator='is', operand='non_supported')
         self.assertRaises(BadNarrowOperator, self._build_query, term)
 
-    def test_add_term_using_topic_operator_and_lunch_operand(self):
-        # type: () -> None
+    def test_add_term_using_topic_operator_and_lunch_operand(self) -> None:
         term = dict(operator='topic', operand='lunch')
         self._do_add_term_test(term, 'WHERE upper(subject) = upper(:param_1)')
 
@@ -165,8 +153,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='topic', operand='lunch', negated=True)
         self._do_add_term_test(term, 'WHERE upper(subject) != upper(:param_1)')
 
-    def test_add_term_using_topic_operator_and_personal_operand(self):
-        # type: () -> None
+    def test_add_term_using_topic_operator_and_personal_operand(self) -> None:
         term = dict(operator='topic', operand='personal')
         self._do_add_term_test(term, 'WHERE upper(subject) = upper(:param_1)')
 
@@ -175,8 +162,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='topic', operand='personal', negated=True)
         self._do_add_term_test(term, 'WHERE upper(subject) != upper(:param_1)')
 
-    def test_add_term_using_sender_operator(self):
-        # type: () -> None
+    def test_add_term_using_sender_operator(self) -> None:
         term = dict(operator='sender', operand=self.example_email("othello"))
         self._do_add_term_test(term, 'WHERE sender_id = :param_1')
 
@@ -190,8 +176,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='sender', operand='non-existing@zulip.com')
         self.assertRaises(BadNarrowOperator, self._build_query, term)
 
-    def test_add_term_using_pm_with_operator_and_not_the_same_user_as_operand(self):
-        # type: () -> None
+    def test_add_term_using_pm_with_operator_and_not_the_same_user_as_operand(self) -> None:
         term = dict(operator='pm-with', operand=self.example_email("othello"))
         self._do_add_term_test(term, 'WHERE sender_id = :sender_id_1 AND recipient_id = :recipient_id_1 OR sender_id = :sender_id_2 AND recipient_id = :recipient_id_2')
 
@@ -200,8 +185,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='pm-with', operand=self.example_email("othello"), negated=True)
         self._do_add_term_test(term, 'WHERE NOT (sender_id = :sender_id_1 AND recipient_id = :recipient_id_1 OR sender_id = :sender_id_2 AND recipient_id = :recipient_id_2)')
 
-    def test_add_term_using_pm_with_operator_the_same_user_as_operand(self):
-        # type: () -> None
+    def test_add_term_using_pm_with_operator_the_same_user_as_operand(self) -> None:
         term = dict(operator='pm-with', operand=self.example_email("hamlet"))
         self._do_add_term_test(term, 'WHERE sender_id = :sender_id_1 AND recipient_id = :recipient_id_1')
 
@@ -210,8 +194,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='pm-with', operand=self.example_email("hamlet"), negated=True)
         self._do_add_term_test(term, 'WHERE NOT (sender_id = :sender_id_1 AND recipient_id = :recipient_id_1)')
 
-    def test_add_term_using_pm_with_operator_and_more_than_user_as_operand(self):
-        # type: () -> None
+    def test_add_term_using_pm_with_operator_and_more_than_user_as_operand(self) -> None:
         term = dict(operator='pm-with', operand='hamlet@zulip.com, othello@zulip.com')
         self._do_add_term_test(term, 'WHERE recipient_id = :recipient_id_1')
 
@@ -220,18 +203,15 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='pm-with', operand='hamlet@zulip.com, othello@zulip.com', negated=True)
         self._do_add_term_test(term, 'WHERE recipient_id != :recipient_id_1')
 
-    def test_add_term_using_pm_with_operator_with_non_existing_user_as_operand(self):
-        # type: () -> None
+    def test_add_term_using_pm_with_operator_with_non_existing_user_as_operand(self) -> None:
         term = dict(operator='pm-with', operand='non-existing@zulip.com')
         self.assertRaises(BadNarrowOperator, self._build_query, term)
 
-    def test_add_term_using_pm_with_operator_with_existing_and_non_existing_user_as_operand(self):
-        # type: () -> None
+    def test_add_term_using_pm_with_operator_with_existing_and_non_existing_user_as_operand(self) -> None:
         term = dict(operator='pm-with', operand='othello@zulip.com,non-existing@zulip.com')
         self.assertRaises(BadNarrowOperator, self._build_query, term)
 
-    def test_add_term_using_id_operator(self):
-        # type: () -> None
+    def test_add_term_using_id_operator(self) -> None:
         term = dict(operator='id', operand=555)
         self._do_add_term_test(term, 'WHERE id = :param_1')
 
@@ -240,8 +220,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='id', operand=555, negated=True)
         self._do_add_term_test(term, 'WHERE id != :param_1')
 
-    def test_add_term_using_group_pm_operator_and_not_the_same_user_as_operand(self):
-        # type: () -> None
+    def test_add_term_using_group_pm_operator_and_not_the_same_user_as_operand(self) -> None:
         term = dict(operator='group-pm-with', operand=self.example_email("othello"))
         with mock.patch("sqlalchemy.util.warn") as mock_warn:
             self._do_add_term_test(term, 'WHERE recipient_id != recipient_id')
@@ -254,14 +233,12 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='group-pm-with', operand=self.example_email("othello"), negated=True)
         self._do_add_term_test(term, 'WHERE recipient_id = recipient_id')
 
-    def test_add_term_using_group_pm_operator_with_non_existing_user_as_operand(self):
-        # type: () -> None
+    def test_add_term_using_group_pm_operator_with_non_existing_user_as_operand(self) -> None:
         term = dict(operator='group-pm-with', operand='non-existing@zulip.com')
         self.assertRaises(BadNarrowOperator, self._build_query, term)
 
     @override_settings(USING_PGROONGA=False)
-    def test_add_term_using_search_operator(self):
-        # type: () -> None
+    def test_add_term_using_search_operator(self) -> None:
         term = dict(operator='search', operand='"french fries"')
         self._do_add_term_test(term, 'WHERE (lower(content) LIKE lower(:content_1) OR lower(subject) LIKE lower(:subject_1)) AND (search_tsvector @@ plainto_tsquery(:param_2, :param_3))')
 
@@ -272,8 +249,7 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(term, 'WHERE NOT (lower(content) LIKE lower(:content_1) OR lower(subject) LIKE lower(:subject_1)) AND NOT (search_tsvector @@ plainto_tsquery(:param_2, :param_3))')
 
     @override_settings(USING_PGROONGA=True)
-    def test_add_term_using_search_operator_pgroonga(self):
-        # type: () -> None
+    def test_add_term_using_search_operator_pgroonga(self) -> None:
         term = dict(operator='search', operand='"french fries"')
         self._do_add_term_test(term, 'WHERE search_pgroonga @@ :search_pgroonga_1')
 
@@ -283,8 +259,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='search', operand='"french fries"', negated=True)
         self._do_add_term_test(term, 'WHERE NOT (search_pgroonga @@ :search_pgroonga_1)')
 
-    def test_add_term_using_has_operator_and_attachment_operand(self):
-        # type: () -> None
+    def test_add_term_using_has_operator_and_attachment_operand(self) -> None:
         term = dict(operator='has', operand='attachment')
         self._do_add_term_test(term, 'WHERE has_attachment')
 
@@ -293,8 +268,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='has', operand='attachment', negated=True)
         self._do_add_term_test(term, 'WHERE NOT has_attachment')
 
-    def test_add_term_using_has_operator_and_image_operand(self):
-        # type: () -> None
+    def test_add_term_using_has_operator_and_image_operand(self) -> None:
         term = dict(operator='has', operand='image')
         self._do_add_term_test(term, 'WHERE has_image')
 
@@ -303,8 +277,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='has', operand='image', negated=True)
         self._do_add_term_test(term, 'WHERE NOT has_image')
 
-    def test_add_term_using_has_operator_and_link_operand(self):
-        # type: () -> None
+    def test_add_term_using_has_operator_and_link_operand(self) -> None:
         term = dict(operator='has', operand='link')
         self._do_add_term_test(term, 'WHERE has_link')
 
@@ -313,65 +286,55 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='has', operand='link', negated=True)
         self._do_add_term_test(term, 'WHERE NOT has_link')
 
-    def test_add_term_using_has_operator_non_supported_operand_should_raise_error(self):
-        # type: () -> None
+    def test_add_term_using_has_operator_non_supported_operand_should_raise_error(self) -> None:
         term = dict(operator='has', operand='non_supported')
         self.assertRaises(BadNarrowOperator, self._build_query, term)
 
-    def test_add_term_using_in_operator(self):
-        # type: () -> None
+    def test_add_term_using_in_operator(self) -> None:
         mute_stream(self.realm, self.user_profile, 'Verona')
         term = dict(operator='in', operand='home')
         self._do_add_term_test(term, 'WHERE recipient_id NOT IN (:recipient_id_1)')
 
-    def test_add_term_using_in_operator_and_negated(self):
-        # type: () -> None
+    def test_add_term_using_in_operator_and_negated(self) -> None:
         # negated = True should not change anything
         mute_stream(self.realm, self.user_profile, 'Verona')
         term = dict(operator='in', operand='home', negated=True)
         self._do_add_term_test(term, 'WHERE recipient_id NOT IN (:recipient_id_1)')
 
-    def test_add_term_using_in_operator_and_all_operand(self):
-        # type: () -> None
+    def test_add_term_using_in_operator_and_all_operand(self) -> None:
         mute_stream(self.realm, self.user_profile, 'Verona')
         term = dict(operator='in', operand='all')
         query = self._build_query(term)
         self.assertEqual(str(query), 'SELECT id \nFROM zerver_message')
 
-    def test_add_term_using_in_operator_all_operand_and_negated(self):
-        # type: () -> None
+    def test_add_term_using_in_operator_all_operand_and_negated(self) -> None:
         # negated = True should not change anything
         mute_stream(self.realm, self.user_profile, 'Verona')
         term = dict(operator='in', operand='all', negated=True)
         query = self._build_query(term)
         self.assertEqual(str(query), 'SELECT id \nFROM zerver_message')
 
-    def test_add_term_using_in_operator_and_not_defined_operand(self):
-        # type: () -> None
+    def test_add_term_using_in_operator_and_not_defined_operand(self) -> None:
         term = dict(operator='in', operand='not_defined')
         self.assertRaises(BadNarrowOperator, self._build_query, term)
 
-    def test_add_term_using_near_operator(self):
-        # type: () -> None
+    def test_add_term_using_near_operator(self) -> None:
         term = dict(operator='near', operand='operand')
         query = self._build_query(term)
         self.assertEqual(str(query), 'SELECT id \nFROM zerver_message')
 
-    def _do_add_term_test(self, term, where_clause, params=None):
-        # type: (Dict[str, Any], Text, Optional[Dict[str, Any]]) -> None
+    def _do_add_term_test(self, term: Dict[str, Any], where_clause: Text, params: Optional[Dict[str, Any]]=None) -> None:
         query = self._build_query(term)
         if params is not None:
             actual_params = query.compile().params
             self.assertEqual(actual_params, params)
         self.assertTrue(where_clause in str(query))
 
-    def _build_query(self, term):
-        # type: (Dict[str, Any]) -> Query
+    def _build_query(self, term: Dict[str, Any]) -> Query:
         return self.builder.add_term(self.raw_query, term)
 
 class BuildNarrowFilterTest(TestCase):
-    def test_build_narrow_filter(self):
-        # type: () -> None
+    def test_build_narrow_filter(self) -> None:
         fixtures_path = os.path.join(os.path.dirname(__file__),
                                      '../fixtures/narrow.json')
         scenarios = ujson.loads(open(fixtures_path, 'r').read())
@@ -386,14 +349,12 @@ class BuildNarrowFilterTest(TestCase):
             for e in reject_events:
                 self.assertFalse(narrow_filter(e))
 
-    def test_build_narrow_filter_invalid(self):
-        # type: () -> None
+    def test_build_narrow_filter_invalid(self) -> None:
         with self.assertRaises(JsonableError):
             build_narrow_filter(["invalid_operator", "operand"])
 
 class IncludeHistoryTest(ZulipTestCase):
-    def test_ok_to_include_history(self):
-        # type: () -> None
+    def test_ok_to_include_history(self) -> None:
         realm = get_realm('zulip')
         self.make_stream('public_stream', realm=realm)
 
@@ -444,8 +405,9 @@ class IncludeHistoryTest(ZulipTestCase):
 
 class GetOldMessagesTest(ZulipTestCase):
 
-    def get_and_check_messages(self, modified_params, **kwargs):
-        # type: (Dict[str, Union[str, int]], **Any) -> Dict[str, Any]
+    def get_and_check_messages(self,
+                               modified_params: Dict[str, Union[str, int]],
+                               **kwargs: Any) -> Dict[str, Any]:
         post_params = {"anchor": 1, "num_before": 1, "num_after": 1}  # type: Dict[str, Union[str, int]]
         post_params.update(modified_params)
         payload = self.client_get("/json/messages", dict(post_params),
@@ -463,8 +425,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         return result
 
-    def get_query_ids(self):
-        # type: () -> Dict[Text, int]
+    def get_query_ids(self) -> Dict[Text, int]:
         hamlet_user = self.example_user('hamlet')
         othello_user = self.example_user('othello')
 
@@ -479,15 +440,13 @@ class GetOldMessagesTest(ZulipTestCase):
 
         return query_ids
 
-    def test_content_types(self):
-        # type: () -> None
+    def test_content_types(self) -> None:
         """
         Test old `/json/messages` returns reactions.
         """
         self.login(self.example_email("hamlet"))
 
-        def get_content_type(apply_markdown):
-            # type: (bool) -> Text
+        def get_content_type(apply_markdown: bool) -> Text:
             req = dict(
                 apply_markdown=ujson.dumps(apply_markdown),
             )  # type: Dict[str, Any]
@@ -505,8 +464,7 @@ class GetOldMessagesTest(ZulipTestCase):
             'text/html',
         )
 
-    def test_successful_get_messages_reaction(self):
-        # type: () -> None
+    def test_successful_get_messages_reaction(self) -> None:
         """
         Test old `/json/messages` returns reactions.
         """
@@ -533,8 +491,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(message_to_assert['reactions'][0]['emoji_name'],
                          reaction_name)
 
-    def test_successful_get_messages(self):
-        # type: () -> None
+    def test_successful_get_messages(self) -> None:
         """
         A call to GET /json/messages with valid parameters returns a list of
         messages.
@@ -548,8 +505,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         self.get_and_check_messages(dict(narrow=ujson.dumps([dict(operator='pm-with', operand=self.example_email("othello"))])))
 
-    def test_client_avatar(self):
-        # type: () -> None
+    def test_client_avatar(self) -> None:
         """
         The client_gravatar flag determines whether we send avatar_url.
         """
@@ -566,16 +522,14 @@ class GetOldMessagesTest(ZulipTestCase):
         message = result['messages'][0]
         self.assertEqual(message['avatar_url'], None)
 
-    def test_get_messages_with_narrow_pm_with(self):
-        # type: () -> None
+    def test_get_messages_with_narrow_pm_with(self) -> None:
         """
         A request for old messages with a narrow by pm-with only returns
         conversations with that user.
         """
         me = self.example_email('hamlet')
 
-        def dr_emails(dr):
-            # type: (Union[Text, List[Dict[str, Any]]]) -> Text
+        def dr_emails(dr: Union[Text, List[Dict[str, Any]]]) -> Text:
             assert isinstance(dr, list)
             return ','.join(sorted(set([r['email'] for r in dr] + [me])))
 
@@ -596,8 +550,7 @@ class GetOldMessagesTest(ZulipTestCase):
             for message in result["messages"]:
                 self.assertEqual(dr_emails(message['display_recipient']), emails)
 
-    def test_get_messages_with_narrow_group_pm_with(self):
-        # type: () -> None
+    def test_get_messages_with_narrow_group_pm_with(self) -> None:
         """
         A request for old messages with a narrow by group-pm-with only returns
         group-private conversations with that user.
@@ -660,8 +613,7 @@ class GetOldMessagesTest(ZulipTestCase):
             self.assertIn(message["id"], matching_message_ids)
             self.assertNotIn(message["id"], non_matching_message_ids)
 
-    def test_include_history(self):
-        # type: () -> None
+    def test_include_history(self) -> None:
         hamlet = self.example_user('hamlet')
         cordelia = self.example_user('cordelia')
 
@@ -702,8 +654,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(old_message['flags'], ['read', 'historical'])
         self.assertEqual(new_message['flags'], ['mentioned'])
 
-    def test_get_messages_with_narrow_stream(self):
-        # type: () -> None
+    def test_get_messages_with_narrow_stream(self) -> None:
         """
         A request for old messages with a narrow by stream only returns
         messages for that stream.
@@ -726,8 +677,7 @@ class GetOldMessagesTest(ZulipTestCase):
             self.assertEqual(message["type"], "stream")
             self.assertEqual(message["recipient_id"], stream_id)
 
-    def test_get_messages_with_narrow_stream_mit_unicode_regex(self):
-        # type: () -> None
+    def test_get_messages_with_narrow_stream_mit_unicode_regex(self) -> None:
         """
         A request for old messages for a user in the mit.edu relam with unicode
         stream name should be correctly escaped in the database query.
@@ -760,8 +710,7 @@ class GetOldMessagesTest(ZulipTestCase):
             stream_id = stream_messages[i].recipient.id
             self.assertEqual(message["recipient_id"], stream_id)
 
-    def test_get_messages_with_narrow_topic_mit_unicode_regex(self):
-        # type: () -> None
+    def test_get_messages_with_narrow_topic_mit_unicode_regex(self) -> None:
         """
         A request for old messages for a user in the mit.edu realm with unicode
         topic name should be correctly escaped in the database query.
@@ -798,8 +747,7 @@ class GetOldMessagesTest(ZulipTestCase):
             stream_id = stream_messages[i].recipient.id
             self.assertEqual(message["recipient_id"], stream_id)
 
-    def test_get_messages_with_narrow_topic_mit_personal(self):
-        # type: () -> None
+    def test_get_messages_with_narrow_topic_mit_personal(self) -> None:
         """
         We handle .d grouping for MIT realm personal messages correctly.
         """
@@ -840,8 +788,7 @@ class GetOldMessagesTest(ZulipTestCase):
             stream_id = stream_messages[i].recipient.id
             self.assertEqual(message["recipient_id"], stream_id)
 
-    def test_get_messages_with_narrow_sender(self):
-        # type: () -> None
+    def test_get_messages_with_narrow_sender(self) -> None:
         """
         A request for old messages with a narrow by sender only returns
         messages sent by that person.
@@ -860,8 +807,7 @@ class GetOldMessagesTest(ZulipTestCase):
         for message in result["messages"]:
             self.assertEqual(message["sender_email"], self.example_email("othello"))
 
-    def _update_tsvector_index(self):
-        # type: () -> None
+    def _update_tsvector_index(self) -> None:
         # We use brute force here and update our text search index
         # for the entire zerver_message table (which is small in test
         # mode).  In production there is an async process which keeps
@@ -874,13 +820,11 @@ class GetOldMessagesTest(ZulipTestCase):
             """)
 
     @override_settings(USING_PGROONGA=False)
-    def test_messages_in_narrow(self):
-        # type: () -> None
+    def test_messages_in_narrow(self) -> None:
         email = self.example_email("cordelia")
         self.login(email)
 
-        def send(content):
-            # type: (Text) -> int
+        def send(content: Text) -> int:
             msg_id = self.send_stream_message(
                 sender_email=email,
                 stream_name="Verona",
@@ -910,8 +854,7 @@ class GetOldMessagesTest(ZulipTestCase):
                          u'<p><span class="highlight">KEYWORDMATCH</span> and should work</p>')
 
     @override_settings(USING_PGROONGA=False)
-    def test_get_messages_with_search(self):
-        # type: () -> None
+    def test_get_messages_with_search(self) -> None:
         self.login(self.example_email("cordelia"))
 
         messages_to_search = [
@@ -1040,8 +983,7 @@ class GetOldMessagesTest(ZulipTestCase):
                          '<p>こんに <span class="highlight">ちは</span> 。 <span class="highlight">今日は</span> いい 天気ですね。</p>')
 
     @override_settings(USING_PGROONGA=False)
-    def test_get_messages_with_search_not_subscribed(self):
-        # type: () -> None
+    def test_get_messages_with_search_not_subscribed(self) -> None:
         """Verify support for searching a stream you're not subscribed to"""
         self.subscribe(self.example_user("hamlet"), "newstream")
         self.send_stream_message(
@@ -1069,8 +1011,7 @@ class GetOldMessagesTest(ZulipTestCase):
                          '<p>Public <span class="highlight">special</span> content!</p>')
 
     @override_settings(USING_PGROONGA=True)
-    def test_get_messages_with_search_pgroonga(self):
-        # type: () -> None
+    def test_get_messages_with_search_pgroonga(self) -> None:
         self.login(self.example_email("cordelia"))
 
         next_message_id = self.get_last_message().id + 1
@@ -1177,13 +1118,11 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(link_search_result['messages'][0]['match_content'],
                          '<p><a href="https://google.com" target="_blank" title="https://google.com"><span class="highlight">https://google.com</span></a></p>')
 
-    def test_messages_in_narrow_for_non_search(self):
-        # type: () -> None
+    def test_messages_in_narrow_for_non_search(self) -> None:
         email = self.example_email("cordelia")
         self.login(email)
 
-        def send(content):
-            # type: (Text) -> int
+        def send(content: Text) -> int:
             msg_id = self.send_stream_message(
                 sender_email=email,
                 stream_name="Verona",
@@ -1212,8 +1151,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertIn('http://foo.com', message['match_content'])
         self.assertEqual(message['match_subject'], 'test_topic')
 
-    def test_get_messages_with_only_searching_anchor(self):
-        # type: () -> None
+    def test_get_messages_with_only_searching_anchor(self) -> None:
         """
         Test that specifying an anchor but 0 for num_before and num_after
         returns at most 1 message.
@@ -1233,8 +1171,7 @@ class GetOldMessagesTest(ZulipTestCase):
                                                   num_after=0))
         self.assertEqual(len(result['messages']), 0)
 
-    def test_missing_params(self):
-        # type: () -> None
+    def test_missing_params(self) -> None:
         """
         anchor, num_before, and num_after are all required
         POST parameters for get_messages.
@@ -1249,8 +1186,7 @@ class GetOldMessagesTest(ZulipTestCase):
             self.assert_json_error(result,
                                    "Missing '%s' argument" % (required_args[i][0],))
 
-    def test_bad_int_params(self):
-        # type: () -> None
+    def test_bad_int_params(self) -> None:
         """
         num_before, num_after, and narrow must all be non-negative
         integers or strings that can be converted to non-negative integers.
@@ -1273,8 +1209,7 @@ class GetOldMessagesTest(ZulipTestCase):
                 self.assert_json_error(result,
                                        "Bad value for '%s': %s" % (param, type))
 
-    def test_bad_narrow_type(self):
-        # type: () -> None
+    def test_bad_narrow_type(self) -> None:
         """
         narrow must be a list of string pairs.
         """
@@ -1290,8 +1225,7 @@ class GetOldMessagesTest(ZulipTestCase):
             self.assert_json_error(result,
                                    "Bad value for 'narrow': %s" % (type,))
 
-    def test_bad_narrow_operator(self):
-        # type: () -> None
+    def test_bad_narrow_operator(self) -> None:
         """
         Unrecognized narrow operators are rejected.
         """
@@ -1303,8 +1237,7 @@ class GetOldMessagesTest(ZulipTestCase):
             self.assert_json_error_contains(result,
                                             "Invalid narrow operator: unknown operator")
 
-    def test_non_string_narrow_operand_in_dict(self):
-        # type: () -> None
+    def test_non_string_narrow_operand_in_dict(self) -> None:
         """
         We expect search operands to be strings, not integers.
         """
@@ -1315,8 +1248,9 @@ class GetOldMessagesTest(ZulipTestCase):
         result = self.client_get("/json/messages", params)
         self.assert_json_error_contains(result, 'elem["operand"] is not a string')
 
-    def exercise_bad_narrow_operand(self, operator, operands, error_msg):
-        # type: (Text, Sequence[Any], Text) -> None
+    def exercise_bad_narrow_operand(self, operator: Text,
+                                    operands: Sequence[Any],
+                                    error_msg: Text) -> None:
         other_params = [("anchor", 0), ("num_before", 0), ("num_after", 0)]  # type: List[Tuple[str, Any]]
         for operand in operands:
             post_params = dict(other_params + [
@@ -1324,8 +1258,7 @@ class GetOldMessagesTest(ZulipTestCase):
             result = self.client_get("/json/messages", post_params)
             self.assert_json_error_contains(result, error_msg)
 
-    def test_bad_narrow_stream_content(self):
-        # type: () -> None
+    def test_bad_narrow_stream_content(self) -> None:
         """
         If an invalid stream name is requested in get_messages, an error is
         returned.
@@ -1335,8 +1268,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.exercise_bad_narrow_operand("stream", bad_stream_content,
                                          "Bad value for 'narrow'")
 
-    def test_bad_narrow_one_on_one_email_content(self):
-        # type: () -> None
+    def test_bad_narrow_one_on_one_email_content(self) -> None:
         """
         If an invalid 'pm-with' is requested in get_messages, an
         error is returned.
@@ -1346,20 +1278,17 @@ class GetOldMessagesTest(ZulipTestCase):
         self.exercise_bad_narrow_operand("pm-with", bad_stream_content,
                                          "Bad value for 'narrow'")
 
-    def test_bad_narrow_nonexistent_stream(self):
-        # type: () -> None
+    def test_bad_narrow_nonexistent_stream(self) -> None:
         self.login(self.example_email("hamlet"))
         self.exercise_bad_narrow_operand("stream", ['non-existent stream'],
                                          "Invalid narrow operator: unknown stream")
 
-    def test_bad_narrow_nonexistent_email(self):
-        # type: () -> None
+    def test_bad_narrow_nonexistent_email(self) -> None:
         self.login(self.example_email("hamlet"))
         self.exercise_bad_narrow_operand("pm-with", ['non-existent-user@zulip.com'],
                                          "Invalid narrow operator: unknown user")
 
-    def test_message_without_rendered_content(self):
-        # type: () -> None
+    def test_message_without_rendered_content(self) -> None:
         """Older messages may not have rendered_content in the database"""
         m = self.get_last_message()
         m.rendered_content = m.rendered_content_version = None
@@ -1368,8 +1297,7 @@ class GetOldMessagesTest(ZulipTestCase):
         MessageDict.finalize_payload(d, apply_markdown=True, client_gravatar=False)
         self.assertEqual(d['content'], '<p>test content</p>')
 
-    def common_check_get_messages_query(self, query_params, expected):
-        # type: (Dict[str, object], Text) -> None
+    def common_check_get_messages_query(self, query_params: Dict[str, object], expected: Text) -> None:
         user_profile = self.example_user('hamlet')
         request = POSTRequestMock(query_params, user_profile)
         with queries_captured() as queries:
@@ -1382,8 +1310,7 @@ class GetOldMessagesTest(ZulipTestCase):
                 return
         raise AssertionError("get_messages query not found")
 
-    def test_use_first_unread_anchor_with_some_unread_messages(self):
-        # type: () -> None
+    def test_use_first_unread_anchor_with_some_unread_messages(self) -> None:
         user_profile = self.example_user('hamlet')
 
         # Have Othello send messages to Hamlet that he hasn't read.
@@ -1422,8 +1349,7 @@ class GetOldMessagesTest(ZulipTestCase):
         cond = 'WHERE user_profile_id = %d AND message_id <= %d' % (user_profile.id, last_message_id_to_hamlet - 1)
         self.assertIn(cond, sql)
 
-    def test_use_first_unread_anchor_with_no_unread_messages(self):
-        # type: () -> None
+    def test_use_first_unread_anchor_with_no_unread_messages(self) -> None:
         user_profile = self.example_user('hamlet')
 
         query_params = dict(
@@ -1446,8 +1372,7 @@ class GetOldMessagesTest(ZulipTestCase):
         # There should not be an after_query in this case, since it'd be useless
         self.assertNotIn('AND message_id >= %d' % (LARGER_THAN_MAX_MESSAGE_ID,), queries[0]['sql'])
 
-    def test_use_first_unread_anchor_with_muted_topics(self):
-        # type: () -> None
+    def test_use_first_unread_anchor_with_muted_topics(self) -> None:
         """
         Test that our logic related to `use_first_unread_anchor`
         invokes the `message_id = LARGER_THAN_MAX_MESSAGE_ID` hack for
@@ -1500,8 +1425,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertIn('AND message_id = %d' % (LARGER_THAN_MAX_MESSAGE_ID,),
                       queries[0]['sql'])
 
-    def test_exclude_muting_conditions(self):
-        # type: () -> None
+    def test_exclude_muting_conditions(self) -> None:
         realm = get_realm('zulip')
         self.make_stream('web stuff')
         user_profile = self.example_user('hamlet')
@@ -1575,8 +1499,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(params['recipient_id_3'], get_recipient_id_for_stream_name(realm, 'web stuff'))
         self.assertEqual(params['upper_2'], 'css')
 
-    def test_get_messages_queries(self):
-        # type: () -> None
+    def test_get_messages_queries(self) -> None:
         query_ids = self.get_query_ids()
 
         sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = {hamlet_id} AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 11) AS anon_1 ORDER BY message_id ASC'
@@ -1591,8 +1514,7 @@ class GetOldMessagesTest(ZulipTestCase):
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 100, 'num_before': 10, 'num_after': 10}, sql)
 
-    def test_get_messages_with_narrow_queries(self):
-        # type: () -> None
+    def test_get_messages_with_narrow_queries(self) -> None:
         query_ids = self.get_query_ids()
 
         sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (sender_id = {othello_id} AND recipient_id = {hamlet_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_recipient}) AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
@@ -1645,8 +1567,7 @@ class GetOldMessagesTest(ZulipTestCase):
                                              sql)
 
     @override_settings(USING_PGROONGA=False)
-    def test_get_messages_with_search_queries(self):
-        # type: () -> None
+    def test_get_messages_with_search_queries(self) -> None:
         query_ids = self.get_query_ids()
 
         sql_template = "SELECT anon_1.message_id, anon_1.flags, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.subject_matches \nFROM (SELECT message_id, flags, subject, rendered_content, ts_match_locs_array('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', 'jumping')) AS content_matches, ts_match_locs_array('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', 'jumping')) AS subject_matches \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', 'jumping')) AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"  # type: Text
@@ -1668,8 +1589,7 @@ class GetOldMessagesTest(ZulipTestCase):
                                              sql)
 
     @override_settings(USING_PGROONGA=False)
-    def test_get_messages_with_search_using_email(self):
-        # type: () -> None
+    def test_get_messages_with_search_using_email(self) -> None:
         self.login(self.example_email("cordelia"))
 
         messages_to_search = [

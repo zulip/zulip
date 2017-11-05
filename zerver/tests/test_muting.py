@@ -24,8 +24,7 @@ from zerver.lib.topic_mutes import (
 )
 
 class MutedTopicsTests(ZulipTestCase):
-    def test_user_ids_muting_topic(self):
-        # type: () -> None
+    def test_user_ids_muting_topic(self) -> None:
         hamlet = self.example_user('hamlet')
         cordelia  = self.example_user('cordelia')
         realm = hamlet.realm
@@ -41,8 +40,7 @@ class MutedTopicsTests(ZulipTestCase):
         user_ids = stream_topic_target.user_ids_muting_topic()
         self.assertEqual(user_ids, set())
 
-        def mute_user(user):
-            # type: (UserProfile) -> None
+        def mute_user(user: UserProfile) -> None:
             add_topic_mute(
                 user_profile=user,
                 stream_id=stream.id,
@@ -58,8 +56,7 @@ class MutedTopicsTests(ZulipTestCase):
         user_ids = stream_topic_target.user_ids_muting_topic()
         self.assertEqual(user_ids, {hamlet.id, cordelia.id})
 
-    def test_add_muted_topic(self):
-        # type: () -> None
+    def test_add_muted_topic(self) -> None:
         email = self.example_email('hamlet')
         self.login(email)
 
@@ -75,8 +72,7 @@ class MutedTopicsTests(ZulipTestCase):
         self.assertTrue(topic_is_muted(user, stream.id, 'Verona3'))
         self.assertTrue(topic_is_muted(user, stream.id, 'verona3'))
 
-    def test_remove_muted_topic(self):
-        # type: () -> None
+    def test_remove_muted_topic(self) -> None:
         self.user_profile = self.example_user('hamlet')
         email = self.user_profile.email
         self.login(email)
@@ -99,8 +95,7 @@ class MutedTopicsTests(ZulipTestCase):
         user = self.example_user('hamlet')
         self.assertNotIn([[u'Verona', u'Verona3']], get_topic_mutes(user))
 
-    def test_muted_topic_add_invalid(self):
-        # type: () -> None
+    def test_muted_topic_add_invalid(self) -> None:
         self.user_profile = self.example_user('hamlet')
         email = self.user_profile.email
         self.login(email)
@@ -120,8 +115,7 @@ class MutedTopicsTests(ZulipTestCase):
         result = self.client_patch(url, data, **self.api_auth(email))
         self.assert_json_error(result, "Topic already muted")
 
-    def test_muted_topic_remove_invalid(self):
-        # type: () -> None
+    def test_muted_topic_remove_invalid(self) -> None:
         self.user_profile = self.example_user('hamlet')
         email = self.user_profile.email
         self.login(email)
