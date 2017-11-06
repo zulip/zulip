@@ -61,7 +61,7 @@ from social_core.backends.github import GithubOrganizationOAuth2, GithubTeamOAut
     GithubOAuth2
 
 import urllib
-from six.moves.http_cookies import SimpleCookie
+from http.cookies import SimpleCookie
 import ujson
 from zerver.lib.test_helpers import MockLDAP, load_subdomain_token
 

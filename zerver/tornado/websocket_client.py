@@ -14,7 +14,7 @@ from tornado import gen
 from tornado.httpclient import HTTPRequest
 from tornado.websocket import websocket_connect, WebSocketClientConnection
 from urllib.parse import urlparse, urlunparse, urljoin
-from six.moves.http_cookies import SimpleCookie
+from http.cookies import SimpleCookie
 
 from zerver.models import get_system_bot
 
