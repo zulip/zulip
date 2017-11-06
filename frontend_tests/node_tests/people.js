@@ -450,10 +450,23 @@ initialize();
         sender_email: maria.email,
     };
     assert(!people.is_known_user_id(maria.user_id));
+
+    var reported;
+    people.report_late_add = function (user_id, email) {
+        assert.equal(user_id, maria.user_id);
+        assert.equal(email, maria.email);
+        reported = true;
+    };
+
     people.extract_people_from_message(message);
     assert(people.is_known_user_id(maria.user_id));
+    assert(reported);
 
     // Get line coverage
+    people.report_late_add = function () {
+        throw Error('unexpected late add');
+    };
+
     message = {
         type: 'private',
         display_recipient: [unknown_user],

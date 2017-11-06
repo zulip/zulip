@@ -727,6 +727,15 @@ exports.deactivate = function (person) {
     active_user_dict.del(person.user_id);
 };
 
+exports.report_late_add = function (user_id, email) {
+    // This function is extracted to make unit testing easier,
+    // plus we may fine-tune our reporting here for different
+    // types of realms.
+    var msg = 'Added user late: user_id=' + user_id + ' email=' + email;
+
+    blueslip.warn(msg);
+};
+
 exports.extract_people_from_message = function (message) {
     var involved_people;
 
@@ -753,6 +762,8 @@ exports.extract_people_from_message = function (message) {
         if (people_by_user_id_dict.has(user_id)) {
             return;
         }
+
+        exports.report_late_add(user_id, person.email);
 
         exports.add({
             email: person.email,
