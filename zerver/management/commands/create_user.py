@@ -14,7 +14,6 @@ from zerver.lib.actions import do_create_user
 from zerver.lib.actions import notify_new_user
 from zerver.lib.initial_password import initial_password
 from zerver.lib.management import ZulipBaseCommand
-from six.moves import input
 
 class Command(ZulipBaseCommand):
     help = """Create the specified user with a default initial password.
