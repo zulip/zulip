@@ -54,7 +54,7 @@ import datetime
 import logging
 import requests
 import ujson
-from six.moves import cStringIO as StringIO
+from io import StringIO
 import re
 import importlib
 

@@ -5,7 +5,7 @@ import hashlib
 import sys
 from typing import Any, List, Optional, Text
 from importlib import import_module
-from six.moves import cStringIO as StringIO
+from io import StringIO
 
 from django.db import connections, DEFAULT_DB_ALIAS
 from django.db.utils import OperationalError

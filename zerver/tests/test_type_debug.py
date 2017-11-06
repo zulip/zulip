@@ -1,7 +1,7 @@
 
 import sys
 from unittest import TestCase
-from six.moves import cStringIO as StringIO
+from io import StringIO
 
 from zerver.lib.type_debug import print_types
 

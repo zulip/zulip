@@ -51,7 +51,7 @@ import ujson
 import mock
 import os
 import sys
-from six.moves import cStringIO as StringIO
+from io import StringIO
 from django.conf import settings
 
 from zerver.lib.str_utils import force_str

@@ -36,7 +36,7 @@ from PIL import Image
 
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
-from six.moves import StringIO
+from io import StringIO
 import mock
 import os
 import io
