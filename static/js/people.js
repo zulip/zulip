@@ -744,20 +744,23 @@ exports.extract_people_from_message = function (message) {
 
     // Add new people involved in this message to the people list
     _.each(involved_people, function (person) {
-        if (!person.unknown_local_echo_user) {
-
-            var user_id = person.user_id || person.id;
-
-            if (!people_by_user_id_dict.has(user_id)) {
-                exports.add({
-                    email: person.email,
-                    user_id: user_id,
-                    full_name: person.full_name,
-                    is_admin: person.is_realm_admin || false,
-                    is_bot: person.is_bot || false,
-                });
-            }
+        if (person.unknown_local_echo_user) {
+            return;
         }
+
+        var user_id = person.user_id || person.id;
+
+        if (people_by_user_id_dict.has(user_id)) {
+            return;
+        }
+
+        exports.add({
+            email: person.email,
+            user_id: user_id,
+            full_name: person.full_name,
+            is_admin: person.is_realm_admin || false,
+            is_bot: person.is_bot || false,
+        });
     });
 };
 

@@ -431,6 +431,12 @@ initialize();
 initialize();
 
 (function test_extract_people_from_message() {
+    var unknown_user = {
+        email: 'unknown@example.com',
+        user_id: 500,
+        unknown_local_echo_user: true,
+    };
+
     var maria = {
         email: 'athens@example.com',
         user_id: 452,
@@ -446,6 +452,13 @@ initialize();
     assert(!people.is_known_user_id(maria.user_id));
     people.extract_people_from_message(message);
     assert(people.is_known_user_id(maria.user_id));
+
+    // Get line coverage
+    message = {
+        type: 'private',
+        display_recipient: [unknown_user],
+    };
+    people.extract_people_from_message(message);
 }());
 
 initialize();
