@@ -1,7 +1,7 @@
 import os
 
 from posixpath import basename
-from six.moves.urllib.parse import urlparse
+from urllib.parse import urlparse
 
 from .common.spiders import BaseDocumentationSpider
 
