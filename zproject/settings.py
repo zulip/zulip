@@ -15,7 +15,7 @@ import os
 import platform
 import time
 import sys
-import six.moves.configparser
+import configparser
 
 from zerver.lib.db import TimeTrackingConnection
 import zerver.lib.logging_util
@@ -26,14 +26,14 @@ import zerver.lib.logging_util
 
 DEPLOY_ROOT = os.path.join(os.path.realpath(os.path.dirname(__file__)), '..')
 
-config_file = six.moves.configparser.RawConfigParser()
+config_file = configparser.RawConfigParser()
 config_file.read("/etc/zulip/zulip.conf")
 
 # Whether this instance of Zulip is running in a production environment.
 PRODUCTION = config_file.has_option('machine', 'deploy_type')
 DEVELOPMENT = not PRODUCTION
 
-secrets_file = six.moves.configparser.RawConfigParser()
+secrets_file = configparser.RawConfigParser()
 if PRODUCTION:
     secrets_file.read("/etc/zulip/zulip-secrets.conf")
 else:
@@ -586,7 +586,7 @@ try:
     # For get_updates hostname sharding.
     domain = config_file.get('django', 'cookie_domain')
     CSRF_COOKIE_DOMAIN = '.' + domain
-except six.moves.configparser.Error:
+except configparser.Error:
     # Failing here is OK
     pass
 

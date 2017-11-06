@@ -12,7 +12,7 @@ from zerver.lib.bot_storage import get_bot_state, set_bot_state, \
     is_key_in_bot_state, get_bot_state_size, remove_bot_state
 from zerver.lib.integrations import EMBEDDED_BOTS
 
-from six.moves import configparser
+import configparser
 
 if False:
     from mypy_extensions import NoReturn
