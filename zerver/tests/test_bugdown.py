@@ -435,15 +435,15 @@ class BugdownTest(ZulipTestCase):
             # type: (Text) -> Text
             return '<a href="%s" target="_blank" title="%s">%s</a>' % (url, url, url)
 
-        normal_tweet_html = ('<a href="https://twitter.com/twitter" target="_blank"'
-                             ' title="https://twitter.com/twitter">@twitter</a> '
+        normal_tweet_html = ('<a href="https://twitter.com/Twitter" target="_blank"'
+                             ' title="https://twitter.com/Twitter">@Twitter</a> '
                              'meets @seepicturely at #tcdisrupt cc.'
                              '<a href="https://twitter.com/boscomonkey" target="_blank"'
                              ' title="https://twitter.com/boscomonkey">@boscomonkey</a> '
                              '<a href="https://twitter.com/episod" target="_blank"'
                              ' title="https://twitter.com/episod">@episod</a> '
                              '<a href="http://t.co/6J2EgYM" target="_blank"'
-                             ' title="http://t.co/6J2EgYM">http://instagram.com/p/MuW67/</a>')
+                             ' title="http://t.co/6J2EgYM">http://instagr.am/p/MuW67/</a>')
 
         mention_in_link_tweet_html = """<a href="http://t.co/@foo" target="_blank" title="http://t.co/@foo">http://foo.com</a>"""
 
@@ -459,10 +459,12 @@ class BugdownTest(ZulipTestCase):
                     '<div class="twitter-tweet">'
                     '<a href="%s" target="_blank">'
                     '<img class="twitter-avatar"'
-                    ' src="https://si0.twimg.com/profile_images/1380912173/Screen_shot_2011-06-03_at_7.35.36_PM_normal.png">'
+                    ' src="https://external-content.zulipcdn.net/1f7cd2436976d410eab8189ebceda87ae0b34ead/687474703a2f2f7062732e7477696d672e63'
+                    '6f6d2f70726f66696c655f696d616765732f313338303931323137332f53637265656e5f73686f745f323031312d30362d30335f61745f372e33352e33'
+                    '365f504d5f6e6f726d616c2e706e67">'
                     '</a>'
                     '<p>%s</p>'
-                    '<span>- Eoin McMillan  (@imeoin)</span>'
+                    '<span>- Eoin McMillan (@imeoin)</span>'
                     '%s'
                     '</div>'
                     '</div>') % (url, tweet_html, image_html)
