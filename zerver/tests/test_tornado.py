@@ -35,7 +35,7 @@ from zerver.tornado.event_queue import fetch_events, \
 from zerver.tornado.views import get_events_backend
 
 from six.moves.http_cookies import SimpleCookie
-from six.moves import urllib_parse
+import urllib.parse
 
 from typing import Any, Callable, Dict, Generator, Optional, Text, List, cast
 
@@ -131,7 +131,7 @@ class EventsTestCase(TornadoWebTestCase):
             'last_event_id': 0,
         }
 
-        path = '/json/events?{}'.format(urllib_parse.urlencode(data))
+        path = '/json/events?{}'.format(urllib.parse.urlencode(data))
         self.client_get_async(path)
 
         def process_events():

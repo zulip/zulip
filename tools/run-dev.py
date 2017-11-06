@@ -9,7 +9,7 @@ import sys
 import time
 import traceback
 
-from six.moves.urllib.parse import urlunparse
+from urllib.parse import urlunparse
 
 # check for the venv
 from lib import sanity_check
