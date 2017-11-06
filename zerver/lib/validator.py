@@ -28,7 +28,7 @@ for any particular type of object.
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email, URLValidator
-from typing import Callable, Iterable, Optional, Tuple, TypeVar, Text, Type
+from typing import Callable, Iterable, Optional, Tuple, TypeVar, Text, Type, Sequence, Mapping, Any
 
 from zerver.lib.request import JsonableError
 
@@ -36,12 +36,22 @@ Validator = Callable[[str, object], Optional[str]]
 
 CheckT = TypeVar('CheckT')
 
-def check(T: Type[CheckT]) -> Validator:
+def check(T: Type[CheckT], sub_validator: Optional[Validator]=None) -> Validator:
     def checker(var_name: str, val: object) -> Optional[str]:
         if not isinstance(val, T):
             return _('%s is not a %s') % (val, str(T))
+        if sub_validator is not None:
+            if isinstance(val, Sequence):  # from check_list
+                for i, item in enumerate(val):  # type: (int, Any)
+                    vname = '%s[%d]' % (var_name, i)
+                    error = sub_validator(vname, item)
+                    if error:
+                        return error
+            elif isinstance(val, Mapping):
+                pass # TODO
         return None
     return checker
+
 
 def check_string(var_name: str, val: object) -> Optional[str]:
     if not isinstance(val, str):
