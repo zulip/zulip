@@ -13,6 +13,16 @@ people.init();
 people.add(me);
 people.initialize_current_user(me.user_id);
 
+(function test_report_late_add() {
+    var message;
+    global.blueslip.warn = function (msg) {
+        message = msg;
+    };
+
+    people.report_late_add(55, 'foo@example.com');
+    assert.equal(message, 'Added user late: user_id=55 email=foo@example.com');
+}());
+
 (function test_blueslip() {
     var unknown_email = "alicebobfred@example.com";
 
