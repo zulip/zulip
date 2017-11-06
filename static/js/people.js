@@ -757,12 +757,28 @@ exports.extract_people_from_message = function (message) {
                     is_bot: person.is_bot || false,
                 });
             }
-
-            if (message.type === 'private' && message.sent_by_me) {
-                // Track the number of PMs we've sent to this person to improve autocomplete
-                exports.incr_recipient_count(user_id);
-            }
         }
+    });
+};
+
+exports.maybe_incr_recipient_count = function (message) {
+    if (message.type !== 'private') {
+        return;
+    }
+
+    if (!message.sent_by_me) {
+        return;
+    }
+
+    // Track the number of PMs we've sent to this person to improve autocomplete
+    _.each(message.display_recipient, function (person) {
+
+        if (person.unknown_local_echo_user) {
+            return;
+        }
+
+        var user_id = person.user_id || person.id;
+        exports.incr_recipient_count(user_id);
     });
 };
 

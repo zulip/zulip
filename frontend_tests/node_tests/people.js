@@ -443,15 +443,58 @@ initialize();
         sender_id: maria.user_id,
         sender_email: maria.email,
     };
+    assert(!people.is_known_user_id(maria.user_id));
     people.extract_people_from_message(message);
     assert(people.is_known_user_id(maria.user_id));
+}());
 
-    message = {
+initialize();
+
+(function test_maybe_incr_recipient_count() {
+    var maria = {
+        email: 'athens@example.com',
+        user_id: 452,
+        full_name: 'Maria Athens',
+    };
+    people.add_in_realm(maria);
+
+    var unknown_user = {
+        email: 'unknown@example.com',
+        user_id: 500,
+        unknown_local_echo_user: true,
+    };
+
+    var message = {
         type: 'private',
         display_recipient: [maria],
         sent_by_me: true,
     };
-    people.extract_people_from_message(message);
+    assert.equal(people.get_recipient_count(maria), 0);
+    people.maybe_incr_recipient_count(message);
+    assert.equal(people.get_recipient_count(maria), 1);
+
+    // Test all the no-op conditions to get test
+    // coverage.
+    message = {
+        type: 'private',
+        sent_by_me: false,
+        display_recipient: [maria],
+    };
+    people.maybe_incr_recipient_count(message);
+    assert.equal(people.get_recipient_count(maria), 1);
+
+    message = {
+        type: 'private',
+        sent_by_me: true,
+        display_recipient: [unknown_user],
+    };
+    people.maybe_incr_recipient_count(message);
+    assert.equal(people.get_recipient_count(maria), 1);
+
+    message = {
+        type: 'stream',
+    };
+    people.maybe_incr_recipient_count(message);
     assert.equal(people.get_recipient_count(maria), 1);
 }());
 

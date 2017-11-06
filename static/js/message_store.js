@@ -123,6 +123,7 @@ exports.add_message_metadata = function (message) {
     exports.set_message_booleans(message, message.flags);
 
     people.extract_people_from_message(message);
+    people.maybe_incr_recipient_count(message);
 
     var sender = people.get_person_from_user_id(message.sender_id);
     if (sender) {
