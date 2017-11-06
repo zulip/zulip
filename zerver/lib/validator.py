@@ -34,52 +34,43 @@ from zerver.lib.request import JsonableError
 
 Validator = Callable[[str, Any], Optional[str]]
 
-def check_string(var_name, val):
-    # type: (str, Any) -> Optional[str]
+def check_string(var_name: str, val: Any) -> Optional[str]:
     if not isinstance(val, str):
         return _('%s is not a string') % (var_name,)
     return None
 
-def check_short_string(var_name, val):
-    # type: (str, Any) -> Optional[str]
+def check_short_string(var_name: str, val: Any) -> Optional[str]:
     max_length = 200
     if len(val) >= max_length:
         return _("{var_name} is longer than {max_length}.".format(
             var_name=var_name, max_length=max_length))
     return check_string(var_name, val)
 
-def check_int(var_name, val):
-    # type: (str, Any) -> Optional[str]
+def check_int(var_name: str, val: Any) -> Optional[str]:
     if not isinstance(val, int):
         return _('%s is not an integer') % (var_name,)
     return None
 
-def check_float(var_name, val):
-    # type: (str, Any) -> Optional[str]
+def check_float(var_name: str, val: Any) -> Optional[str]:
     if not isinstance(val, float):
         return _('%s is not a float') % (var_name,)
     return None
 
-def check_bool(var_name, val):
-    # type: (str, Any) -> Optional[str]
+def check_bool(var_name: str, val: Any) -> Optional[str]:
     if not isinstance(val, bool):
         return _('%s is not a boolean') % (var_name,)
     return None
 
-def check_none_or(sub_validator):
-    # type: (Validator) -> Validator
-    def f(var_name, val):
-        # type: (str, Any) -> Optional[str]
+def check_none_or(sub_validator: Validator) -> Validator:
+    def f(var_name: str, val: Any) -> Optional[str]:
         if val is None:
             return None
         else:
             return sub_validator(var_name, val)
     return f
 
-def check_list(sub_validator, length=None):
-    # type: (Optional[Validator], Optional[int]) -> Validator
-    def f(var_name, val):
-        # type: (str, Any) -> Optional[str]
+def check_list(sub_validator: Optional[Validator], length: Optional[int]=None) -> Validator:
+    def f(var_name: str, val: Any) -> Optional[str]:
         if not isinstance(val, list):
             return _('%s is not a list') % (var_name,)
 
@@ -97,10 +88,9 @@ def check_list(sub_validator, length=None):
         return None
     return f
 
-def check_dict(required_keys, _allow_only_listed_keys=False):
-    # type: (Iterable[Tuple[str, Validator]], bool) -> Validator
-    def f(var_name, val):
-        # type: (str, Any) -> Optional[str]
+def check_dict(required_keys: Iterable[Tuple[str, Validator]],
+              _allow_only_listed_keys: bool=False) -> Validator:
+    def f(var_name: str, val: Any) -> Optional[str]:
         if not isinstance(val, dict):
             return _('%s is not a dict') % (var_name,)
 
@@ -122,12 +112,10 @@ def check_dict(required_keys, _allow_only_listed_keys=False):
 
     return f
 
-def check_dict_only(required_keys):
-    # type: (Iterable[Tuple[str, Validator]]) -> Validator
+def check_dict_only(required_keys: Iterable[Tuple[str, Validator]]) -> Validator:
     return check_dict(required_keys, _allow_only_listed_keys=True)
 
-def check_variable_type(allowed_type_funcs):
-    # type: (Iterable[Validator]) -> Validator
+def check_variable_type(allowed_type_funcs: Iterable[Validator]) -> Validator:
     """
     Use this validator if an argument is of a variable type (e.g. processing
     properties that might be strings or booleans).
@@ -135,18 +123,15 @@ def check_variable_type(allowed_type_funcs):
     `allowed_type_funcs`: the check_* validator functions for the possible data
     types for this variable.
     """
-    def enumerated_type_check(var_name, val):
-        # type: (str, Any) -> Optional[str]
+    def enumerated_type_check(var_name: str, val: Any) -> Optional[str]:
         for func in allowed_type_funcs:
             if not func(var_name, val):
                 return None
         return _('%s is not an allowed_type') % (var_name,)
     return enumerated_type_check
 
-def equals(expected_val):
-    # type: (Any) -> Validator
-    def f(var_name, val):
-        # type: (str, Any) -> Optional[str]
+def equals(expected_val: Any) -> Validator:
+    def f(var_name: str, val: Any) -> Optional[str]:
         if val != expected_val:
             return (_('%(variable)s != %(expected_value)s (%(value)s is wrong)') %
                     {'variable': var_name,
@@ -155,15 +140,13 @@ def equals(expected_val):
         return None
     return f
 
-def validate_login_email(email):
-    # type: (Text) -> None
+def validate_login_email(email: Text) -> None:
     try:
         validate_email(email)
     except ValidationError as err:
         raise JsonableError(str(err.message))
 
-def check_url(var_name, val):
-    # type: (str, Text) -> None
+def check_url(var_name: str, val: Text) -> None:
     validate = URLValidator()
     try:
         validate(val)
