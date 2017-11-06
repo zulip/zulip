@@ -28,11 +28,20 @@ for any particular type of object.
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email, URLValidator
-from typing import Callable, Iterable, Optional, Tuple, TypeVar, Text
+from typing import Callable, Iterable, Optional, Tuple, TypeVar, Text, Type
 
 from zerver.lib.request import JsonableError
 
 Validator = Callable[[str, object], Optional[str]]
+
+CheckT = TypeVar('CheckT')
+
+def check(T: Type[CheckT]) -> Validator:
+    def checker(var_name: str, val: object) -> Optional[str]:
+        if not isinstance(val, T):
+            return _('%s is not a %s') % (val, str(T))
+        return None
+    return checker
 
 def check_string(var_name: str, val: object) -> Optional[str]:
     if not isinstance(val, str):
