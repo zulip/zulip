@@ -3,7 +3,7 @@ from typing import Any
 from django.core.management.base import BaseCommand
 from zerver.models import get_realm, get_user, UserProfile
 import os
-from six.moves.configparser import ConfigParser
+from configparser import ConfigParser
 
 class Command(BaseCommand):
     help = """Sync your API key from ~/.zuliprc into your development instance"""
@@ -15,12 +15,7 @@ class Command(BaseCommand):
             raise RuntimeError("No ~/.zuliprc found")
         config = ConfigParser()
         with open(config_file, 'r') as f:
-            # Apparently, six.moves.configparser.ConfigParser is not
-            # consistent between Python 2 and 3!
-            if hasattr(config, 'read_file'):
-                config.read_file(f, config_file)
-            else:
-                config.readfp(f, config_file)
+            config.read_file(f, config_file)
         api_key = config.get("api", "key")
         email = config.get("api", "email")
 
