@@ -559,6 +559,14 @@ initialize();
 (function test_initialize() {
     people.init();
 
+    global.page_params.realm_non_active_users = [
+        {
+            email: 'retiree@example.com',
+            user_id: 15,
+            full_name: 'Retiree',
+        },
+    ];
+
     global.page_params.realm_users = [
         {
             email: 'alice@example.com',
@@ -582,8 +590,13 @@ initialize();
     assert(people.is_cross_realm_email('bot@example.com'));
     assert(people.is_valid_email_for_compose('bot@example.com'));
     assert(people.is_valid_email_for_compose('alice@example.com'));
+    assert(!people.is_valid_email_for_compose('retiree@example.com'));
     assert(people.is_my_user_id(42));
+
+    var fetched_retiree = people.get_person_from_user_id(15);
+    assert(fetched_retiree.full_name, 'Retiree');
 
     assert.equal(global.page_params.realm_users, undefined);
     assert.equal(global.page_params.cross_realm_bots, undefined);
+    assert.equal(global.page_params.realm_non_active_users, undefined);
 }());

@@ -810,6 +810,10 @@ exports.initialize = function () {
         exports.add_in_realm(person);
     });
 
+    _.each(page_params.realm_non_active_users, function (person) {
+        exports.add(person);
+    });
+
     _.each(page_params.cross_realm_bots, function (person) {
         if (!people_dict.has(person.email)) {
             exports.add(person);
@@ -820,6 +824,7 @@ exports.initialize = function () {
     exports.initialize_current_user(page_params.user_id);
 
     delete page_params.realm_users; // We are the only consumer of this.
+    delete page_params.realm_non_active_users;
     delete page_params.cross_realm_bots;
 };
 
