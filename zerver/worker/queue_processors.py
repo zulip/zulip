@@ -421,7 +421,7 @@ class TestWorker(QueueProcessingWorker):
     # creating significant side effects.  It can be useful in development or
     # for troubleshooting prod/staging.  It pulls a message off the test queue
     # and appends it to a file in /tmp.
-    def consume(self, event):
+    def consume(self, event):  # nocoverage
         # type: (Mapping[str, Any]) -> None
         fn = settings.ZULIP_WORKER_TEST_FILE
         message = ujson.dumps(event)
