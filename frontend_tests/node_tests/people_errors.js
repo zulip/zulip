@@ -15,7 +15,7 @@ people.initialize_current_user(me.user_id);
 
 (function test_report_late_add() {
     var message;
-    global.blueslip.warn = function (msg) {
+    global.blueslip.error = function (msg) {
         message = msg;
     };
 
