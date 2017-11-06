@@ -57,10 +57,10 @@ To configure and deploy this bot:
 3.  Test the script by running it manually:
 
         /usr/local/share/zulip/integrations/twitter/twitter-bot --search="@nprnews,quantum
-        physics" --site={{ realm_uri }} --config-file=~/zuliprc
+        physics" --config-file=~/zuliprc
 
         /usr/local/share/zulip/integrations/twitter/twitter-bot --twitter-name="<@your-
-        twitter-handle>" --site={{ realm_uri }} --config-file=~/zuliprc
+        twitter-handle>" --config-file=~/zuliprc
 
     Note: `twitter-bot` may install to a different location on
     your operating system distribution.
@@ -69,7 +69,7 @@ To configure and deploy this bot:
     that will process tweets every minute is:
 
         * * * * * /usr/local/share/zulip/integrations/twitter/twitter-bot --search="@nprnews,
-        quantum physics" --site={{ realm_uri }} --config-file=~/zuliprc
+        quantum physics" --config-file=~/zuliprc
 
 When someone tweets a message containing one of your search terms,
 you’ll get a Zulip on your specified stream, with the search term as
