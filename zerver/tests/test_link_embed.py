@@ -7,6 +7,7 @@ from requests.exceptions import ConnectionError
 from django.test import override_settings
 
 from zerver.models import Recipient, Message
+from zerver.lib.actions import queue_json_publish
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import MockPythonResponse
 from zerver.worker.queue_processors import FetchLinksEmbedData
@@ -239,6 +240,56 @@ class PreviewTestCase(ZulipTestCase):
                 FetchLinksEmbedData().consume(event)
         msg = Message.objects.select_related("sender").get(id=msg_id)
         return msg
+
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_message_update_race_condition(self):
+        # type: () -> None
+        email = self.example_email('hamlet')
+        self.login(email)
+        original_url = 'http://test.org/'
+        edited_url = 'http://edited.org/'
+        with mock.patch('zerver.lib.actions.queue_json_publish') as patched:
+            msg_id = self.send_stream_message(email, "Scotland",
+                                              topic_name="foo", content=original_url)
+            patched.assert_called_once()
+            queue = patched.call_args[0][0]
+            self.assertEqual(queue, "embed_links")
+            event = patched.call_args[0][1]
+
+        def wrapped_queue_json_publish(*args, **kwargs):
+            # type: (*Any, **Any) -> None
+            # Mock the network request result so the test can be fast without Internet
+            response = MockPythonResponse(self.open_graph_html, 200)
+            mocked_response_original = mock.Mock(
+                side_effect=lambda k: {original_url: response}.get(k, MockPythonResponse('', 404)))
+            mocked_response_edited = mock.Mock(
+                side_effect=lambda k: {edited_url: response}.get(k, MockPythonResponse('', 404)))
+            with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
+                with mock.patch('requests.get', mocked_response_original):
+                    # Run the queue processor. This will simulate the event for original_url being
+                    # processed after the message has been edited.
+                    FetchLinksEmbedData().consume(event)
+            msg = Message.objects.select_related("sender").get(id=msg_id)
+            # The content of the message has changed since the event for original_url has been created,
+            # it should not be rendered. Another, up-to-date event will have been sent (edited_url).
+            self.assertNotIn('<a href="{0}" target="_blank" title="The Rock">The Rock</a>'.format(original_url),
+                             msg.rendered_content)
+            mocked_response_edited.assert_not_called()
+
+            with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
+                with mock.patch('requests.get', mocked_response_edited):
+                    # Now proceed with the original queue_json_publish and call the
+                    # up-to-date event for edited_url.
+                    queue_json_publish(*args, **kwargs)
+                    msg = Message.objects.select_related("sender").get(id=msg_id)
+                    self.assertIn('<a href="{0}" target="_blank" title="The Rock">The Rock</a>'.format(edited_url),
+                                  msg.rendered_content)
+
+        with mock.patch('zerver.views.messages.queue_json_publish', wraps=wrapped_queue_json_publish) as patched:
+            result = self.client_patch("/json/messages/" + str(msg_id), {
+                'message_id': msg_id, 'content': edited_url,
+            })
+            self.assert_json_success(result)
 
     def test_get_link_embed_data(self):
         # type: () -> None
