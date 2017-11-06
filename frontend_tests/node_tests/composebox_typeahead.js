@@ -349,15 +349,11 @@ global.people.add(deactivated_user);
 
     var pm_recipient_typeahead_called = false;
     $('#private_message_recipient').typeahead = function (options) {
-        // options.source()
-        //
         // This should match the users added at the beginning of this test file.
         var actual_value = options.source();
-        var expected_value = [othello, cordelia, deactivated_user];
+        var expected_value = [othello, cordelia];
         assert.deepEqual(actual_value, expected_value);
 
-        // options.highlighter()
-        //
         // Even though the items passed to .highlighter() are the full
         // objects of the users matching the query, it only returns the
         // HTML string with the "User_name <email>" format, with the
@@ -381,44 +377,37 @@ global.people.add(deactivated_user);
         options.query = 'el';  // Matches both "othELlo" and "cordELia"
         assert.equal(options.matcher(othello), true);
         assert.equal(options.matcher(cordelia), true);
-        assert.equal(options.matcher(deactivated_user), false);
 
         // Othello is already filled in, now typeahead makes suggestions for
         // the value after the comma.
         options.query = 'othello@zulip.com, cor';
         assert.equal(options.matcher(othello), false);
         assert.equal(options.matcher(cordelia), true);
-        assert.equal(options.matcher(deactivated_user), false);
 
         // No suggestions are made if the query is just a comma.
         options.query = ',';
         assert.equal(options.matcher(othello), false);
         assert.equal(options.matcher(cordelia), false);
-        assert.equal(options.matcher(deactivated_user), false);
 
         options.query = 'bender';  // Doesn't exist
         assert.equal(options.matcher(othello), false);
         assert.equal(options.matcher(cordelia), false);
-        assert.equal(options.matcher(deactivated_user), false);
 
         // Don't make suggestions if the last name only has whitespaces
         // (we're between typing names).
         options.query = 'othello@zulip.com,     ';
         assert.equal(options.matcher(othello), false);
         assert.equal(options.matcher(cordelia), false);
-        assert.equal(options.matcher(deactivated_user), false);
 
         options.query = 'othello@zulip.com,, , cord';
         assert.equal(options.matcher(othello), false);
         assert.equal(options.matcher(cordelia), true);
-        assert.equal(options.matcher(deactivated_user), false);
 
         // If the user is already in the list, typeahead doesn't include it
         // again.
         options.query = 'cordelia@zulip.com, cord';
         assert.equal(options.matcher(othello), false);
         assert.equal(options.matcher(cordelia), false);
-        assert.equal(options.matcher(deactivated_user), false);
 
         // options.sorter()
         //
