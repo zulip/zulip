@@ -315,7 +315,8 @@ def realm_summary_table(realm_minutes):
                 WHERE up.realm_id = realm.id
                 AND is_active
                 AND is_bot
-            ) bot_count,realm.date_created
+            ) bot_count,
+	realm.date_created
         FROM zerver_realm realm
         LEFT OUTER JOIN
             (
