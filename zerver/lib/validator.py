@@ -28,18 +28,26 @@ for any particular type of object.
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email, URLValidator
-from typing import Callable, Iterable, Optional, Tuple, TypeVar, Text, Type, Sequence, Mapping, Any
+from typing import Callable, Iterable, Optional, Tuple, TypeVar, Text, Type, Sequence, Mapping, Any, Sized
 
 from zerver.lib.request import JsonableError
 
 Validator = Callable[[str, object], Optional[str]]
 
+Constraint = Callable[[object], Optional[str]]
+
 CheckT = TypeVar('CheckT')
 
-def check(T: Type[CheckT], sub_validator: Optional[Validator]=None) -> Validator:
+def check(T: Type[CheckT], sub_validator: Optional[Validator]=None,
+          constraints: Optional[Sequence[Constraint]]=None) -> Validator:
     def checker(var_name: str, val: object) -> Optional[str]:
         if not isinstance(val, T):
             return _('%s is not a %s') % (val, str(T))
+        if constraints is not None and len(constraints) > 0:
+            for c in constraints:
+                error = c(val)
+                if error is not None:
+                    return "%s%s" % (var_name, error)
         if sub_validator is not None:
             if isinstance(val, Sequence):  # from check_list
                 for i, item in enumerate(val):  # type: (int, Any)
@@ -49,6 +57,24 @@ def check(T: Type[CheckT], sub_validator: Optional[Validator]=None) -> Validator
                         return error
             elif isinstance(val, Mapping):
                 pass # TODO
+        return None
+    return checker
+
+def max_length(length: int=200) -> Constraint:  # NOTE: from previous check_short_string
+    def checker(val: object) -> Optional[str]:
+        if not isinstance(val, Sized):
+            return " is not a container with a length"
+        if len(val) >= length:
+            return _(" is longer than %s.") % (length,)
+        return None
+    return checker
+
+def exact_length(length: int) -> Constraint: # NOTE: from previous check_list option
+    def checker(val: object) -> Optional[str]:
+        if not isinstance(val, Sized):
+            return " is not a container with a length"
+        if length != len(val):
+            return _(" does not have exactly %s items") % (length,)
         return None
     return checker
 
