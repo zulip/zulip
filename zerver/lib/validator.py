@@ -78,6 +78,23 @@ def exact_length(length: int) -> Constraint: # NOTE: from previous check_list op
         return None
     return checker
 
+def has_keys(keys: Iterable[str], _only_listed_keys: bool=False) -> Constraint: # NOTE: from previous check_dict
+    def checker(val: object) -> Optional[str]:
+        if not isinstance(val, Mapping):
+            return " is not a mapping"
+        for key in keys:
+            if key not in val:
+                return _(' does not contain key %s') % (key,)
+        if _only_listed_keys:
+            delta_keys = set(val.keys()) - set(keys)
+            if len(delta_keys) != 0:
+                return _(" has unexpected arguments: %s" % (", ".join(list(delta_keys))))
+        return None
+    return checker
+
+def only_keys(keys: Iterable[str]) -> Constraint: # NOTE: from previous check_dict_only
+    return has_keys(keys, _only_listed_keys=True)
+
 
 def check_string(var_name: str, val: object) -> Optional[str]:
     if not isinstance(val, str):
