@@ -35,6 +35,7 @@ from zerver.lib.actions import (
     get_status_dict, streams_to_dicts_sorted
 )
 from zerver.lib.upload import get_total_uploads_size_for_user
+from zerver.lib.user_groups import user_groups_in_realm_serialized
 from zerver.tornado.event_queue import request_event_queue, get_user_events
 from zerver.models import Client, Message, Realm, UserPresence, UserProfile, \
     get_user_profile_by_id, \
@@ -176,6 +177,9 @@ def fetch_initial_state_data(user_profile, event_types, queue_id, client_gravata
 
     if want('realm_filters'):
         state['realm_filters'] = realm_filters_for_realm(user_profile.realm_id)
+
+    if want('realm_user_groups'):
+        state['realm_user_groups'] = user_groups_in_realm_serialized(user_profile.realm)
 
     if want('realm_user'):
         state['raw_users'] = get_raw_user_data(

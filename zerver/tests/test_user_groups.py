@@ -13,6 +13,7 @@ from zerver.lib.user_groups import (
     get_user_groups,
     user_groups_in_realm,
     get_memberships_of_users,
+    user_groups_in_realm_serialized,
 )
 from zerver.models import UserProfile, UserGroup, get_realm, Realm, \
     UserGroupMembership
@@ -32,6 +33,19 @@ class UserGroupTestCase(ZulipTestCase):
         user_groups = user_groups_in_realm(realm)
         self.assertEqual(len(user_groups), 1)
         self.assertEqual(user_groups[0].name, 'support')
+
+    def test_user_groups_in_realm_serialized(self):
+        # type: () -> None
+        realm = get_realm('zulip')
+        user_group = self.create_user_group_for_test('support')
+        hamlet = self.example_user('hamlet')
+        check_add_user_to_user_group(hamlet, user_group)
+        members = user_groups_in_realm_serialized(realm)
+        self.assertEqual(len(members), 1)
+        self.assertEqual(members[0]['id'], user_group.id)
+        self.assertEqual(members[0]['name'], user_group.name)
+        self.assertEqual(members[0]['description'], '')
+        self.assertEqual(members[0]['members'], [4, 6])
 
     def test_get_user_groups(self):
         # type: () -> None

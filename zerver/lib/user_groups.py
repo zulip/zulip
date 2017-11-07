@@ -1,10 +1,11 @@
 from __future__ import absolute_import
 
+from collections import defaultdict
 from django.db import transaction
 from django.utils.translation import ugettext as _
 from zerver.lib.exceptions import JsonableError
 from zerver.models import UserProfile, Realm, UserGroupMembership, UserGroup
-from typing import Dict, Iterable, List, Text
+from typing import Dict, Iterable, List, Text, Tuple, Any
 
 def access_user_group_by_id(user_group_id: int, realm: Realm) -> UserGroup:
     try:
@@ -17,6 +18,28 @@ def user_groups_in_realm(realm):
     # type: (Realm) -> List[UserGroup]
     user_groups = UserGroup.objects.filter(realm=realm)
     return list(user_groups)
+
+def user_groups_in_realm_serialized(realm):
+    # type: (Realm) -> List[Dict[Text, Any]]
+    """
+    This function is used in do_events_register code path so this code should
+    be performant. This is the reason why we get the groups through
+    UserGroupMembership table. It gives us the groups and members in one query.
+    """
+    memberships = UserGroupMembership.objects.filter(user_group__realm=realm)
+    memberships = memberships.select_related('user_group')
+    groups = defaultdict(list)  # type: Dict[Tuple[int, Text, Text], List[int]]
+    for membership in memberships:
+        group = (membership.user_group.id,
+                 membership.user_group.name,
+                 membership.user_group.description)
+        groups[group].append(membership.user_profile_id)
+
+    return [dict(id=group[0],
+                 name=group[1],
+                 description=group[2],
+                 members=sorted(members))
+            for group, members in groups.items()]
 
 def get_user_groups(user_profile):
     # type: (UserProfile) -> List[UserGroup]
