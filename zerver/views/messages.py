@@ -735,9 +735,10 @@ def get_messages_backend(request, user_profile,
         message_ids = [row[0] for row in query_result]
 
         # TODO: This could be done with an outer join instead of two queries
-        user_message_flags = dict((user_message.message_id, user_message.flags_list()) for user_message in
-                                  UserMessage.objects.filter(user_profile=user_profile,
-                                                             message__id__in=message_ids))
+        um_rows = UserMessage.objects.filter(user_profile=user_profile,
+                                             message__id__in=message_ids)
+        user_message_flags = {um.message_id: um.flags_list() for um in um_rows}
+
         for row in query_result:
             message_id = row[0]
             if user_message_flags.get(message_id) is None:
