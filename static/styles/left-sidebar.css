@@ -313,7 +313,7 @@ ul.filters li.out_of_home_view li.muted_topic {
 
 #stream_filters .subscription_block .stream-name {
     display: inline-block;
-    width: calc(100% - 50px);
+    width: calc(100% - 76px);
 
     text-overflow: ellipsis;
     white-space: nowrap;
