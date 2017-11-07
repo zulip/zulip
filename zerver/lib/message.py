@@ -62,6 +62,63 @@ UnreadMessagesResult = TypedDict('UnreadMessagesResult', {
 
 MAX_UNREAD_MESSAGES = 5000
 
+def get_full_messages(user_profile: UserProfile,
+                      message_ids: List[int]) -> List[Dict[str, Any]]:
+    '''
+    This function gets full messages for message_ids for a user.  It
+    has some limitations:
+
+        * A user may be "allowed" to access a historical message (such
+          as on a public stream from before they subscribed), but we
+          won't return it here unless there's a UserMessage row.
+
+        * We hard code apply_markdown and client_gravatar.
+
+        * We don't support search fields or edit history.
+
+    Right now we're only using this for a couple mobile-app-related
+    use cases where the above restrictions are fine.  We may want
+    to add some flexibility down the road.
+    '''
+    user_message_flags = get_user_message_flags_for_message_ids(
+        user_profile=user_profile,
+        message_ids=message_ids
+    )
+
+    message_ids = list(user_message_flags.keys())
+
+    return messages_for_ids(
+        message_ids=message_ids,
+        user_message_flags=user_message_flags,
+        search_fields={},
+        apply_markdown=True,
+        client_gravatar=True,
+        allow_edit_history=False,
+    )
+
+def get_user_message_flags_for_message_ids(user_profile: UserProfile,
+                                           message_ids: List[int]) -> Dict[int, List[str]]:
+    '''
+    This only looks up flags for messages where the user
+    has UserMessage rows.  No historical rows for now.
+    '''
+    if not message_ids:
+        return {}
+
+    query = UserMessage.objects.filter(
+        user_profile=user_profile
+    ).values(
+        'message_id',
+        'flags',
+    )
+    query = query_for_ids(query, message_ids, 'message_id')
+
+    result = {
+        row['message_id']: UserMessage.flags_list_for_flags(row['flags'])
+        for row in query
+    }
+    return result
+
 def messages_for_ids(message_ids: List[int],
                      user_message_flags: Dict[int, List[str]],
                      search_fields: Dict[int, Dict[str, Text]],
