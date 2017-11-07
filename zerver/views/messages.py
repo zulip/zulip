@@ -728,7 +728,6 @@ def get_messages_backend(request, user_profile,
     # rendered message dict before returning it.  We attempt to
     # bulk-fetch rendered message dicts from remote cache using the
     # 'messages' list.
-    search_fields = dict()  # type: Dict[int, Dict[str, Text]]
     message_ids = []  # type: List[int]
     user_message_flags = {}  # type: Dict[int, List[str]]
     if include_history:
@@ -739,26 +738,23 @@ def get_messages_backend(request, user_profile,
                                              message__id__in=message_ids)
         user_message_flags = {um.message_id: um.flags_list() for um in um_rows}
 
-        for row in query_result:
-            message_id = row[0]
-            if user_message_flags.get(message_id) is None:
+        for message_id in message_ids:
+            if message_id not in user_message_flags:
                 user_message_flags[message_id] = ["read", "historical"]
-            if is_search:
-                (_, subject, rendered_content, content_matches, subject_matches) = row
-                search_fields[message_id] = get_search_fields(rendered_content, subject,
-                                                              content_matches, subject_matches)
     else:
         for row in query_result:
             message_id = row[0]
             flags = row[1]
             user_message_flags[message_id] = parse_usermessage_flags(flags)
-
             message_ids.append(message_id)
 
-            if is_search:
-                (_, _, subject, rendered_content, content_matches, subject_matches) = row
-                search_fields[message_id] = get_search_fields(rendered_content, subject,
-                                                              content_matches, subject_matches)
+    search_fields = dict()  # type: Dict[int, Dict[str, Text]]
+    if is_search:
+        for row in query_result:
+            message_id = row[0]
+            (subject, rendered_content, content_matches, subject_matches) = row[-4:]
+            search_fields[message_id] = get_search_fields(rendered_content, subject,
+                                                          content_matches, subject_matches)
 
     cache_transformer = MessageDict.build_dict_from_raw_db_row
     id_fetcher = lambda row: row['id']
