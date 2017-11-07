@@ -231,7 +231,6 @@ class BugdownTest(ZulipTestCase):
         # type: () -> None
         format_tests, linkify_tests = self.load_bugdown_tests()
         valid_keys = set(['name', "input", "expected_output",
-                          "bugdown_matches_marked",
                           "backend_only_rendering",
                           "marked_expected_output", "text_content"])
 

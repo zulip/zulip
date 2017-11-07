@@ -11,49 +11,42 @@
       "name": "basic_paragraph",
       "input": "test_input",
       "expected_output": "<p>test_input</p>",
-      "bugdown_matches_marked": true,
       "text_content": "test_input"
     },
     {
       "name": "codeblock_multiline",
       "input": "Hamlet once said\n~~~~\ndef func():\n    x = 1\n\n    y = 2\n\n    z = 3\n~~~~\nAnd all was good.",
       "expected_output": "<p>Hamlet once said</p>\n<div class=\"codehilite\"><pre><span></span>def func():\n    x = 1\n\n    y = 2\n\n    z = 3\n</pre></div>\n\n\n<p>And all was good.</p>",
-      "bugdown_matches_marked": true,
       "text_content": "Hamlet once said\ndef func():\n    x = 1\n\n    y = 2\n\n    z = 3\n\n\n\nAnd all was good."
     },
     {
       "name": "codeblock_trailing_whitespace",
       "input": "Hamlet once said\n~~~~\ndef func():\n    x = 1\n\n    y = 2\t\t\n\n    z = 3       \n~~~~\nAnd all was good.",
       "expected_output": "<p>Hamlet once said</p>\n<div class=\"codehilite\"><pre><span></span>def func():\n    x = 1\n\n    y = 2\n\n    z = 3\n</pre></div>\n\n\n<p>And all was good.</p>",
-      "bugdown_matches_marked": true,
       "text_content": "Hamlet once said\ndef func():\n    x = 1\n\n    y = 2\n\n    z = 3\n\n\n\nAnd all was good."
     },
     {
       "name": "codeblock_backticks",
       "input": "\n```\nfenced code\n```\n\n```inline code```\n",
       "expected_output": "<div class=\"codehilite\"><pre><span></span>fenced code\n</pre></div>\n\n\n<p><code>inline code</code></p>",
-      "bugdown_matches_marked": true,
       "text_content": "fenced code\n\n\n\ninline code"
     },
     {
       "name": "hanging_multi_codeblock",
       "input": "Hamlet said:\n~~~~\ndef speak(self):\n    x = 1\n# Comment to make this code block longer to test Trac #1162\n~~~~\n\nThen he mentioned ````y = 4 + x**2```` and\n~~~~\ndef foobar(self):\n    return self.baz()",
       "expected_output": "<p>Hamlet said:</p>\n<div class=\"codehilite\"><pre><span></span>def speak(self):\n    x = 1\n# Comment to make this code block longer to test Trac #1162\n</pre></div>\n\n\n<p>Then he mentioned <code>y = 4 + x**2</code> and</p>\n<div class=\"codehilite\"><pre><span></span>def foobar(self):\n    return self.baz()\n</pre></div>",
-      "bugdown_matches_marked": true,
       "text_content": "Hamlet said:\ndef speak(self):\n    x = 1\n# Comment to make this code block longer to test Trac #1162\n\n\n\nThen he mentioned y = 4 + x**2 and\ndef foobar(self):\n    return self.baz()\n"
     },
     {
       "name": "fenced_quote",
       "input": "Hamlet said:\n~~~ quote\nTo be or **not** to be.\n\nThat is the question\n~~~",
       "expected_output": "<p>Hamlet said:</p>\n<blockquote>\n<p>To be or <strong>not</strong> to be.</p>\n<p>That is the question</p>\n</blockquote>",
-      "bugdown_matches_marked": true,
       "text_content": "Hamlet said:\n\nTo be or not to be.\nThat is the question\n"
     },
     {
       "name": "fenced_nested_quote",
       "input": "Hamlet said:\n~~~ quote\nPolonius said:\n> This above all: to thine ownself be true,\nAnd it must follow, as the night the day,\nThou canst not then be false to any man.\n\nWhat good advice!\n~~~",
       "expected_output": "<p>Hamlet said:</p>\n<blockquote>\n<p>Polonius said:</p>\n<blockquote>\n<p>This above all: to thine ownself be true,<br>\nAnd it must follow, as the night the day,<br>\nThou canst not then be false to any man.</p>\n</blockquote>\n<p>What good advice!</p>\n</blockquote>",
-      "bugdown_matches_marked": true,
       "text_content": "Hamlet said:\n\nPolonius said:\n\nThis above all: to thine ownself be true,\nAnd it must follow, as the night the day,\nThou canst not then be false to any man.\n\nWhat good advice!\n"
     },
     {
@@ -67,7 +60,6 @@
       "name": "fenced_quote_with_hashtag",
       "input": "```quote\n# line 1\n# line 2\n```",
       "expected_output": "<blockquote>\n<p># line 1<br>\n# line 2</p>\n</blockquote>",
-      "bugdown_matches_marked": true,
       "text_content": "\n# line 1\n# line 2\n"
     },
     {
@@ -81,7 +73,6 @@
       "name": "dangerous_block",
       "input": "``` one ```\n\n``` two ```\n\n~~~~\nx = 1",
       "expected_output": "<p><code>one</code></p>\n<p><code>two</code></p>\n<div class=\"codehilite\"><pre><span></span>x = 1\n</pre></div>",
-      "bugdown_matches_marked": true,
       "text_content": "one\ntwo\nx = 1\n"
     },
     {
@@ -102,14 +93,12 @@
       "name": "ulist_standard",
       "input": "Some text with a list:\n\n* One item\n* Two items\n* Three items",
       "expected_output": "<p>Some text with a list:</p>\n<ul>\n<li>One item</li>\n<li>Two items</li>\n<li>Three items</li>\n</ul>",
-      "bugdown_matches_marked": true,
       "text_content": "Some text with a list:\n\nOne item\nTwo items\nThree items\n"
     },
     {
       "name": "ulist_hanging",
       "input": "Some text with a hanging list:\n* One item\n* Two items\n* Three items",
       "expected_output": "<p>Some text with a hanging list:</p>\n<ul>\n<li>One item</li>\n<li>Two items</li>\n<li>Three items</li>\n</ul>",
-      "bugdown_matches_marked": true,
       "text_content": "Some text with a hanging list:\n\nOne item\nTwo items\nThree items\n"
     },
     {
@@ -123,14 +112,12 @@
       "name": "ulist_hanging_multi",
       "input": "Plain list\n* Alpha\n* Beta\n\nAnd Again:\n* A\n* B\n* C\n\nOnce more for feeling:\n* Q\n* E\n* D",
       "expected_output": "<p>Plain list</p>\n<ul>\n<li>Alpha</li>\n<li>Beta</li>\n</ul>\n<p>And Again:</p>\n<ul>\n<li>A</li>\n<li>B</li>\n<li>C</li>\n</ul>\n<p>Once more for feeling:</p>\n<ul>\n<li>Q</li>\n<li>E</li>\n<li>D</li>\n</ul>",
-      "bugdown_matches_marked": true,
       "text_content": "Plain list\n\nAlpha\nBeta\n\nAnd Again:\n\nA\nB\nC\n\nOnce more for feeling:\n\nQ\nE\nD\n"
     },
     {
       "name": "ulist_nested_ulist_two_space_indent",
       "input": "Nested list\n* I am outer list\n  * I am inner nested list first item\n  * I am inner nested list second item",
       "expected_output": "<p>Nested list</p>\n<ul>\n<li>I am outer list<ul>\n<li>I am inner nested list first item</li>\n<li>I am inner nested list second item</li>\n</ul>\n</li>\n</ul>",
-      "bugdown_matches_marked": true,
       "text_content": "Nested list\n\nI am outer list\nI am inner nested list first item\nI am inner nested list second item\n\n\n"
     },
     {
@@ -144,88 +131,75 @@
       "name": "ulist_codeblock",
       "input": "~~~\nint x = 3\n* 4;\n~~~",
       "expected_output": "<div class=\"codehilite\"><pre><span></span>int x = 3\n* 4;\n</pre></div>",
-      "bugdown_matches_marked": true,
       "text_content": "int x = 3\n* 4;\n"
     },
     {
       "name": "malformed_fence",
       "input": "~~~~~~~~xxxxxxxxx:  xxxxxxxxxxxx xxxxx x xxxxxxxx~~~~~~",
       "expected_output": "<p>~~~~~~~~xxxxxxxxx:  xxxxxxxxxxxx xxxxx x xxxxxxxx~~~~~~</p>",
-      "bugdown_matches_marked": true,
       "text_content": "~~~~~~~~xxxxxxxxx:  xxxxxxxxxxxx xxxxx x xxxxxxxx~~~~~~"
     },
     {
       "name": "strikthrough_basic",
       "input": "I like ~~software~~ hardware",
       "expected_output": "<p>I like <del>software</del> hardware</p>",
-      "bugdown_matches_marked": true,
       "text_content": "I like software hardware"
     },
     {
       "name": "strikthrough_multiword",
       "input": "I ~~like software~~ love hardware",
       "expected_output": "<p>I <del>like software</del> love hardware</p>",
-      "bugdown_matches_marked": true,
       "text_content": "I like software love hardware"
     },
     {
       "name": "strikthrough_multiword",
       "input": "I ~~ like software ~~ love hardware",
       "expected_output": "<p>I <del> like software </del> love hardware</p>",
-      "bugdown_matches_marked": true,
       "text_content": "I  like software  love hardware"
     },
     {
       "name": "underscore_disabled",
       "input": "_foo_",
-      "expected_output": "<p>_foo_</p>",
-      "bugdown_matches_marked": true
+      "expected_output": "<p>_foo_</p>"
     },
     {
       "name": "emphasis_text",
       "input": "*foo*",
       "expected_output": "<p><em>foo</em></p>",
-      "bugdown_matches_marked": true,
       "text_content": "foo"
     },
     {
       "name": "emphasis_code",
       "input": "const char *x = (char *)y",
-      "expected_output": "<p>const char *x = (char *)y</p>",
-      "bugdown_matches_marked": true
+      "expected_output": "<p>const char *x = (char *)y</p>"
     },
     {
       "name": "emphasis_with_space",
       "input": "A *foo bar* is a *baz quux*",
       "expected_output": "<p>A <em>foo bar</em> is a <em>baz quux</em></p>",
-      "bugdown_matches_marked": true,
       "text_content": "A foo bar is a baz quux"
     },
     {
       "name": "underscore_strong_disabled",
       "input": "__foo__",
-      "expected_output": "<p>__foo__</p>",
-      "bugdown_matches_marked": true
+      "expected_output": "<p>__foo__</p>"
     },
     {
       "name": "star_strong",
       "input": "**foo**",
       "expected_output": "<p><strong>foo</strong></p>",
-      "bugdown_matches_marked": true,
       "text_content": "foo"
     },
     {
       "name": "numbered_list",
       "input": "1. A\n 2. B",
       "expected_output": "<p>1. A<br>\n 2. B</p>",
-      "bugdown_matches_marked": true,
       "text_content": "1. A\n 2. B"
     },
     {
       "name": "linkify_interference",
       "input": "link: xx, x xxxxx xx xxxx xx\n\n[xxxxx #xx](http://xxxxxxxxx:xxxx/xxx/xxxxxx%xxxxxx/xx/):**xxxxxxx**\n\nxxxxxxx xxxxx xxxx xxxxx:\n`xxxxxx`: xxxxxxx\n`xxxxxx`: xxxxx\n`xxxxxx`: xxxxx xxxxx",
       "expected_output": "<p>link: xx, x xxxxx xx xxxx xx</p>\n<p><a href=\"http://xxxxxxxxx:xxxx/xxx/xxxxxx%xxxxxx/xx/\" target=\"_blank\" title=\"http://xxxxxxxxx:xxxx/xxx/xxxxxx%xxxxxx/xx/\">xxxxx #xx</a>:<strong>xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxxxxxx<br>\n<code>xxxxxx</code>: xxxxx<br>\n<code>xxxxxx</code>: xxxxx xxxxx</p>",
-      "bugdown_matches_marked": true,
       "text_content": "link: xx, x xxxxx xx xxxx xx\nxxxxx #xx:xxxxxxx\nxxxxxxx xxxxx xxxx xxxxx:\nxxxxxx: xxxxxxx\nxxxxxx: xxxxx\nxxxxxx: xxxxx xxxxx"
     },
     {
@@ -252,21 +226,18 @@
       "name": "nl2br",
       "input": "test\nbar",
       "expected_output": "<p>test<br>\nbar</p>",
-      "bugdown_matches_marked": true,
       "text_content": "test\nbar"
     },
     {
       "name": "nl2br_trailing_space",
       "input": "test  ",
       "expected_output": "<p>test  </p>",
-      "bugdown_matches_marked": true,
       "text_content": "test  "
     },
     {
       "name": "tables",
       "input": "This is a table:\n\nFirst Header  | Second Header\n------------- | -------------\nContent Cell  | Content Cell\nContent Cell  | Content Cell\n",
       "expected_output": "<p>This is a table:</p>\n<table>\n<thead>\n<tr>\n<th>First Header</th>\n<th>Second Header</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>Content Cell</td>\n<td>Content Cell</td>\n</tr>\n<tr>\n<td>Content Cell</td>\n<td>Content Cell</td>\n</tr>\n</tbody>\n</table>",
-      "bugdown_matches_marked": true,
       "text_content": "This is a table:\n\n\n\nFirst Header\nSecond Header\n\n\n\n\nContent Cell\nContent Cell\n\n\nContent Cell\nContent Cell\n\n\n"
     },
     {
@@ -280,144 +251,122 @@
       "name": "many_emoji",
       "input":  "test :smile: again :poop:\n:) foo:)bar x::y::z :wasted waste: :fakeemojithisshouldnotrender:",
       "expected_output": "<p>test <span class=\"emoji emoji-1f604\" title=\"smile\">:smile:</span> again <span class=\"emoji emoji-1f4a9\" title=\"poop\">:poop:</span><br>\n:) foo:)bar x::y::z :wasted waste: :fakeemojithisshouldnotrender:</p>",
-      "bugdown_matches_marked": true,
       "text_content": "test \ud83d\ude04 again \ud83d\udca9\n:) foo:)bar x::y::z :wasted waste: :fakeemojithisshouldnotrender:"
     },
     {
       "name": "random_emoji_1",
       "input": ":airplane:",
-      "expected_output": "<p><span class=\"emoji emoji-2708\" title=\"airplane\">:airplane:</span></p>",
-      "bugdown_matches_marked": true
+      "expected_output": "<p><span class=\"emoji emoji-2708\" title=\"airplane\">:airplane:</span></p>"
     },
     {
       "name": "zulip_emoji",
       "input": ":zulip:",
       "expected_output": "<p><img alt=\":zulip:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/zulip.png\" title=\"zulip\"></p>",
-      "bugdown_matches_marked": true,
       "text_content": ":zulip:"
     },
     {
       "name": "random_emoji_2",
       "input": ":poop:",
-      "expected_output": "<p><span class=\"emoji emoji-1f4a9\" title=\"poop\">:poop:</span></p>",
-      "bugdown_matches_marked": true
+      "expected_output": "<p><span class=\"emoji emoji-1f4a9\" title=\"poop\">:poop:</span></p>"
     },
     {
       "name": "emojis_without_space",
       "input": ":cat:hello:dog::rabbit:",
       "expected_output": "<p><span class=\"emoji emoji-1f431\" title=\"cat\">:cat:</span>hello<span class=\"emoji emoji-1f436\" title=\"dog\">:dog:</span><span class=\"emoji emoji-1f430\" title=\"rabbit\">:rabbit:</span></p>",
-      "bugdown_matches_marked": true,
       "text_content": "\ud83d\udc31hello\ud83d\udc36\ud83d\udc30"
     },
     {
       "name": "emojis_newline",
       "input": ":cat:\n:dog:",
       "expected_output": "<p><span class=\"emoji emoji-1f431\" title=\"cat\">:cat:</span><br>\n<span class=\"emoji emoji-1f436\" title=\"dog\">:dog:</span></p>",
-      "bugdown_matches_marked": true,
       "text_content": "\ud83d\udc31\n\ud83d\udc36"
     },
     {
       "name": "not_emoji",
       "input": ":not_an_emoji:",
       "expected_output": "<p>:not_an_emoji:</p>",
-      "bugdown_matches_marked": true,
       "text_content": ":not_an_emoji:"
     },
     {
       "name": "unicode_emoji",
       "input": "\ud83d\udca9",
       "expected_output":"<p><span class=\"emoji emoji-1f4a9\" title=\"poop\">:poop:</span></p>",
-      "bugdown_matches_marked": true,
       "text_content": "\ud83d\udca9"
     },
     {
       "name": "two_unicode_emoji",
       "input": "\ud83d\udca9\ud83d\udca9",
       "expected_output":"<p><span class=\"emoji emoji-1f4a9\" title=\"poop\">:poop:</span><span class=\"emoji emoji-1f4a9\" title=\"poop\">:poop:</span><\/p>",
-      "bugdown_matches_marked": true,
       "text_content": "\ud83d\udca9\ud83d\udca9"
     },
     {
       "name": "two_unicode_emoji_separated_by_text",
       "input": "\ud83d\udca9 word \ud83d\udca9",
       "expected_output":"<p><span class=\"emoji emoji-1f4a9\" title=\"poop\">:poop:</span> word <span class=\"emoji emoji-1f4a9\" title=\"poop\">:poop:</span><\/p>",
-      "bugdown_matches_marked": true,
       "text_content": "\ud83d\udca9 word \ud83d\udca9"
     },
     {
       "name": "miscellaneous_symbols_and_pictographs",
       "input": "Merry Christmas!!\ud83c\udf84",
       "expected_output":"<p>Merry Christmas!!<span class=\"emoji emoji-1f384\" title=\"christmas tree\">:christmas_tree:</span><\/p>",
-      "bugdown_matches_marked": true,
       "text_content": "Merry Christmas!!\ud83c\udf84"
     },
     {
       "name": "miscellaneous_and_dingbats_emoji",
       "input": "\u2693\u2797",
-      "expected_output":"<p><span class=\"emoji emoji-2693\" title=\"anchor\">:anchor:</span><span class=\"emoji emoji-2797\" title=\"heavy division sign\">:heavy_division_sign:</span><\/p>",
-      "bugdown_matches_marked": true
+      "expected_output":"<p><span class=\"emoji emoji-2693\" title=\"anchor\">:anchor:</span><span class=\"emoji emoji-2797\" title=\"heavy division sign\">:heavy_division_sign:</span><\/p>"
     },
     {
       "name": "supplemental_symbols_and_pictographs",
       "input": "I am a robot \ud83e\udd16.",
-      "expected_output":"<p>I am a robot <span class=\"emoji emoji-1f916\" title=\"robot face\">:robot_face:</span>.<\/p>",
-      "bugdown_matches_marked": true
+      "expected_output":"<p>I am a robot <span class=\"emoji emoji-1f916\" title=\"robot face\">:robot_face:</span>.<\/p>"
     },
     {
       "name": "miscellaneous_symbols_and_arrows",
       "input": "Black upward arrow \u2b06",
-      "expected_output":"<p>Black upward arrow <span class=\"emoji emoji-2b06\" title=\"arrow up\">:arrow_up:</span><\/p>",
-      "bugdown_matches_marked": true
+      "expected_output":"<p>Black upward arrow <span class=\"emoji emoji-2b06\" title=\"arrow up\">:arrow_up:</span><\/p>"
     },
     {
       "name": "unicode_emoji_without_space",
       "input": "Extra\ud83d\udc7dTerrestrial",
-      "expected_output":"<p>Extra<span class=\"emoji emoji-1f47d\" title=\"alien\">:alien:</span>Terrestrial<\/p>",
-      "bugdown_matches_marked": true
+      "expected_output":"<p>Extra<span class=\"emoji emoji-1f47d\" title=\"alien\">:alien:</span>Terrestrial<\/p>"
     },
     {
       "name": "unicode_emojis_new_line",
       "input": "\ud83d\udc7d\n\ud83d\udc7d",
       "expected_output":"<p><span class=\"emoji emoji-1f47d\" title=\"alien\">:alien:</span><br>\n<span class=\"emoji emoji-1f47d\" title=\"alien\">:alien:</span></p>",
-      "bugdown_matches_marked": true,
       "text_content": "\ud83d\udc7d\n\ud83d\udc7d"
     },
     {
       "name": "emoji_alongside_punctuation",
       "input": ":smile:, :smile:; :smile:",
-      "expected_output": "<p><span class=\"emoji emoji-1f604\" title=\"smile\">:smile:</span>, <span class=\"emoji emoji-1f604\" title=\"smile\">:smile:</span>; <span class=\"emoji emoji-1f604\" title=\"smile\">:smile:</span></p>",
-      "bugdown_matches_marked": true
+      "expected_output": "<p><span class=\"emoji emoji-1f604\" title=\"smile\">:smile:</span>, <span class=\"emoji emoji-1f604\" title=\"smile\">:smile:</span>; <span class=\"emoji emoji-1f604\" title=\"smile\">:smile:</span></p>"
     },
     {
       "name": "new_emoji_test",
       "input": ":avocado:, :kiwifruit:, :selfie:, :gear:, :comet:, :first_place_medal:",
-      "expected_output": "<p><span class=\"emoji emoji-1f951\" title=\"avocado\">:avocado:</span>, <span class=\"emoji emoji-1f95d\" title=\"kiwifruit\">:kiwifruit:</span>, <span class=\"emoji emoji-1f933\" title=\"selfie\">:selfie:</span>, <span class=\"emoji emoji-2699\" title=\"gear\">:gear:</span>, <span class=\"emoji emoji-2604\" title=\"comet\">:comet:</span>, <span class=\"emoji emoji-1f947\" title=\"first place medal\">:first_place_medal:</span></p>",
-      "bugdown_matches_marked": true
+      "expected_output": "<p><span class=\"emoji emoji-1f951\" title=\"avocado\">:avocado:</span>, <span class=\"emoji emoji-1f95d\" title=\"kiwifruit\">:kiwifruit:</span>, <span class=\"emoji emoji-1f933\" title=\"selfie\">:selfie:</span>, <span class=\"emoji emoji-2699\" title=\"gear\">:gear:</span>, <span class=\"emoji emoji-2604\" title=\"comet\">:comet:</span>, <span class=\"emoji emoji-1f947\" title=\"first place medal\">:first_place_medal:</span></p>"
     },
     {
       "name": "skin_tones_are_banned",
       "input": ":skin-tone-2: :skin-tone-3:",
-      "expected_output": "<p>:skin-tone-2: :skin-tone-3:</p>",
-      "bugdown_matches_marked": true
+      "expected_output": "<p>:skin-tone-2: :skin-tone-3:</p>"
     },
     {
       "name": "fried_egg",
       "input": "new :fried_egg: emoji is banned for now.",
-      "expected_output": "<p>new :fried_egg: emoji is banned for now.</p>",
-      "bugdown_matches_marked": true
+      "expected_output": "<p>new :fried_egg: emoji is banned for now.</p>"
     },
     {
       "name": "emojis_with_zwj_are_banned",
       "input": "Emojis like :man-girl-girl: which have ZWJ are banned for now.",
       "expected_output": "<p>Emojis like :man-girl-girl: which have ZWJ are banned for now.</p>",
-      "bugdown_matches_marked": true,
       "text_content": "Emojis like :man-girl-girl: which have ZWJ are banned for now."
     },
     {
       "name": "safe_html",
       "input": "<h1>stay normal</h1> thanks",
       "expected_output": "<p>&lt;h1&gt;stay normal&lt;/h1&gt; thanks</p>",
-      "bugdown_matches_marked": true,
       "text_content": "<h1>stay normal<\/h1> thanks"
     },
     {
@@ -431,14 +380,12 @@
       "name": "safe_html_nested_script_tag",
       "input": "<<script>script>evil()<</script>/script>",
       "expected_output": "<p>&lt;&lt;script&gt;script&gt;evil()&lt;&lt;/script&gt;/script&gt;</p>",
-      "bugdown_matches_marked": true,
       "text_content": "<<script>script>evil()<<\/script>\/script>"
     },
     {
       "name": "safe_html_nested_script_tag_with_parse_error",
       "input": "<<x>script>evil()<</x>/script>",
       "expected_output": "<p>&lt;&lt;x&gt;script&gt;evil()&lt;&lt;/x&gt;/script&gt;</p>",
-      "bugdown_matches_marked": true,
       "text_content": "<<x>script>evil()<<\/x>\/script>"
     },
     {
@@ -463,14 +410,12 @@
       "name": "safe_html_in_code",
       "input": "~~~\n<h1>stay normal</h1>",
       "expected_output": "<div class=\"codehilite\"><pre><span></span>&lt;h1&gt;stay normal&lt;/h1&gt;\n</pre></div>",
-      "bugdown_matches_marked": true,
       "text_content": "<h1>stay normal<\/h1>\n"
     },
     {
       "name": "ulist_with_inline_code",
       "input": "gonna take a break for a bit--all yours if you want to play around too. what I did:\n\n* install cmake\n* git clone zulip desktop\n* run `cmake-gui ..` in `c:\\zulip\\zulip-desktop\\msvcbuild`\n* hit configure/generate until it generated the msvc project (had to make a fix to some cmake files)\n* opened vs2013 \n* tried to build\n",
       "expected_output": "<p>gonna take a break for a bit--all yours if you want to play around too. what I did:</p>\n<ul>\n<li>install cmake</li>\n<li>git clone zulip desktop</li>\n<li>run <code>cmake-gui ..</code> in <code>c:\\zulip\\zulip-desktop\\msvcbuild</code></li>\n<li>hit configure/generate until it generated the msvc project (had to make a fix to some cmake files)</li>\n<li>opened vs2013 </li>\n<li>tried to build</li>\n</ul>",
-      "bugdown_matches_marked": true,
       "text_content": "gonna take a break for a bit--all yours if you want to play around too. what I did:\n\ninstall cmake\ngit clone zulip desktop\nrun cmake-gui .. in c:\\zulip\\zulip-desktop\\msvcbuild\nhit configure\/generate until it generated the msvc project (had to make a fix to some cmake files)\nopened vs2013 \ntried to build\n"
     },
     {
@@ -484,35 +429,30 @@
       "name": "modal_link_escaped",
       "input": "`!modal_link(#settings, Settings page)`",
       "expected_output": "<p><code>!modal_link(#settings, Settings page)</code></p>",
-      "bugdown_matches_marked": true,
       "text_content": "!modal_link(#settings, Settings page)"
     },
     {
       "name": "avatar",
       "input": "!avatar(username@example.com)",
       "expected_output": "<p><img alt=\"username@example.com\" class=\"message_body_gravatar\" src=\"/avatar/username@example.com?s=30\" title=\"username@example.com\"></p>",
-      "bugdown_matches_marked": true,
       "text_content": "username@example.com"
     },
     {
       "name": "gravatar",
       "input": "!gravatar(username@example.com)",
       "expected_output": "<p><img alt=\"username@example.com\" class=\"message_body_gravatar\" src=\"/avatar/username@example.com?s=30\" title=\"username@example.com\"></p>",
-      "bugdown_matches_marked": true,
       "text_content": "username@example.com"
     },
     {
       "name": "avatar_escaped",
       "input": "`!avatar(username@example.com)`",
       "expected_output": "<p><code>!avatar(username@example.com)</code></p>",
-      "bugdown_matches_marked": true,
       "text_content": "!avatar(username@example.com)"
     },
     {
       "name": "gravatar_escaped",
       "input": "`!gravatar(username@example.com)`",
       "expected_output": "<p><code>!gravatar(username@example.com)</code></p>",
-      "bugdown_matches_marked": true,
       "text_content": "!gravatar(username@example.com)"
     },
     {
@@ -526,7 +466,6 @@
       "name": "stream_subscribe_button_escaped",
       "input": "`!_stream_subscribe_button(streamname)`",
       "expected_output": "<p><code>!_stream_subscribe_button(streamname)</code></p>",
-      "bugdown_matches_marked": true,
       "text_content": "!_stream_subscribe_button(streamname)"
     },
     {
@@ -544,8 +483,7 @@
     {
       "name": "tex_escaped",
       "input": "`$$a$$`",
-      "expected_output": "<p><code>$$a$$</code></p>",
-      "bugdown_matches_marked": true
+      "expected_output": "<p><code>$$a$$</code></p>"
     },
     {
       "name": "tex_fenced_math",
@@ -574,20 +512,17 @@
     {
       "name": "tex_dollar_smiley",
       "input": "$$_$$ is a fun money-related smiley!",
-      "expected_output": "<p>$$_$$ is a fun money-related smiley!</p>",
-      "bugdown_matches_marked": true
+      "expected_output": "<p>$$_$$ is a fun money-related smiley!</p>"
     },
     {
       "name": "tex_multiple_dollars",
       "input": "We are going to make some $$$ or maybe even $$$$!",
-      "expected_output": "<p>We are going to make some $$$ or maybe even $$$$!</p>",
-      "bugdown_matches_marked": true
+      "expected_output": "<p>We are going to make some $$$ or maybe even $$$$!</p>"
     },
     {
       "name": "tex_non_matching_dollar_count",
       "input": "$foo is$$",
-      "expected_output": "<p>$foo is$$</p>",
-      "bugdown_matches_marked": true
+      "expected_output": "<p>$foo is$$</p>"
     },
     {
       "name": "tex_safe_script_tag",
