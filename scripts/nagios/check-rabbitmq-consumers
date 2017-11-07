@@ -2,7 +2,7 @@
 
 import sys
 import time
-import optparse
+import argparse
 from collections import defaultdict
 import os
 import subprocess
@@ -23,14 +23,14 @@ if 'USER' in os.environ and not os.environ['USER'] in ['root', 'rabbitmq']:
 
 usage = """Usage: check-rabbitmq-consumers --queue=[queue-name] --min-threshold=[min-threshold]"""
 
-parser = optparse.OptionParser(usage=usage)
-parser.add_option('--min-threshold',
-                  dest='min_count',
-                  type="int",
-                  default=1,
-                  action='store')
+parser = argparse.ArgumentParser(usage=usage)
+parser.add_argument('--min-threshold',
+                    dest='min_count',
+                    type="int",
+                    default=1,
+                    action='store')
 
-(options, args) = parser.parse_args()
+args = parser.parse_args()
 
 output = subprocess.check_output(['/usr/sbin/rabbitmqctl', 'list_consumers'],
                                  universal_newlines=True)
@@ -76,12 +76,12 @@ for queue_name in consumers.keys():
     state_file_path = "/var/lib/nagios_state/check-rabbitmq-consumers-" + queue_name
     state_file_tmp = state_file_path + "-tmp"
 
-    if consumers[queue_name] < options.min_count:
+    if consumers[queue_name] < args.min_count:
         status = 2
     else:
         status = 0
     with open(state_file_tmp, "w") as f:
         f.write("%s|%s|%s|queue %s has %s consumers, needs %s\n" % (
             now, status, states[status], queue_name,
-            consumers[queue_name], options.min_count))
+            consumers[queue_name], args.min_count))
     subprocess.check_call(["mv", state_file_tmp, state_file_path])

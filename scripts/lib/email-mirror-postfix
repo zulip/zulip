@@ -42,7 +42,7 @@ import os
 import ssl
 import sys
 
-from optparse import OptionParser
+import argparse
 
 import posix
 import json
@@ -54,28 +54,28 @@ from six.moves.configparser import RawConfigParser
 from six import text_type
 
 
-parser = OptionParser()
+parser = argparse.ArgumentParser()
 
-parser.add_option('-r', '--recipient', dest="recipient", type='string', default='',
-                  help="Original recipient.")
+parser.add_argument('-r', '--recipient', dest="recipient", type='string', default='',
+                    help="Original recipient.")
 
-parser.add_option('-s', '--shared-secret', dest="shared_secret", type='string', default='',
-                  help="Secret access key.")
+parser.add_argument('-s', '--shared-secret', dest="shared_secret", type='string', default='',
+                    help="Secret access key.")
 
-parser.add_option('-d', '--dst-host', dest="host", type='string', default='https://127.0.0.1',
-                  help="Destination server address for uploading email from email mirror. "
-                       "Address must contain a HTTP protocol.")
+parser.add_argument('-d', '--dst-host', dest="host", type='string', default='https://127.0.0.1',
+                    help="Destination server address for uploading email from email mirror. "
+                         "Address must contain a HTTP protocol.")
 
-parser.add_option('-u', '--dst-url', dest="url", type='string', default='/email_mirror_message',
-                  help="Destination relative url for uploading email from email mirror.")
+parser.add_argument('-u', '--dst-url', dest="url", type='string', default='/email_mirror_message',
+                    help="Destination relative url for uploading email from email mirror.")
 
-parser.add_option('-n', '--not-verify-ssl', dest="verify_ssl", action='store_false', default=True,
-                  help="Disable ssl certificate verifying for self-signed certificates")
+parser.add_argument('-n', '--not-verify-ssl', dest="verify_ssl", action='store_false', default=True,
+                    help="Disable ssl certificate verifying for self-signed certificates")
 
-parser.add_option('-t', '--test', dest="test", action='store_true', default=False,
-                  help="Test mode.")
+parser.add_argument('-t', '--test', dest="test", action='store_true', default=False,
+                    help="Test mode.")
 
-(options, args) = parser.parse_args(args=None, values=None)
+args = parser.parse_args(args=None, values=None)
 
 MAX_ALLOWED_PAYLOAD = 25 * 1024 * 1024
 
@@ -136,6 +136,6 @@ def send_email_mirror(rcpt_to, shared_secret, host, url, test, verify_ssl):
         process_response_error(err)
 
 
-recipient = str(os.environ.get("ORIGINAL_RECIPIENT", options.recipient))
-send_email_mirror(recipient, options.shared_secret, options.host, options.url, options.test,
-                  options.verify_ssl)
+recipient = str(os.environ.get("ORIGINAL_RECIPIENT", args.recipient))
+send_email_mirror(recipient, args.shared_secret, args.host, args.url, args.test,
+                  args.verify_ssl)

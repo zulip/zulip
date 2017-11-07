@@ -9,7 +9,7 @@ It must be run on a machine that is using the live database for the
 Django ORM.
 """
 import sys
-import optparse
+import argparse
 import random
 import subprocess
 import time
@@ -28,31 +28,31 @@ usage = """Usage: send-receive.py [options] [config]
        'config' is optional, if present will return config info.
         Otherwise, returns the output data."""
 
-parser = optparse.OptionParser(usage=usage)
-parser.add_option('--site',
-                  dest='site',
-                  default="https://api.zulip.com",
-                  action='store')
+parser = argparse.ArgumentParser(usage=usage)
+parser.add_argument('--site',
+                    dest='site',
+                    default="https://api.zulip.com",
+                    action='store')
 
-parser.add_option('--nagios',
-                  dest='nagios',
-                  action='store_true')
+parser.add_argument('--nagios',
+                    dest='nagios',
+                    action='store_true')
 
-parser.add_option('--insecure',
-                  dest='insecure',
-                  action='store_true')
+parser.add_argument('--insecure',
+                    dest='insecure',
+                    action='store_true')
 
-parser.add_option('--munin',
-                  dest='munin',
-                  action='store_true')
+parser.add_argument('--munin',
+                    dest='munin',
+                    action='store_true')
 
-parser.add_option('--websocket',
-                  dest='websocket',
-                  action='store_true')
+parser.add_argument('--websocket',
+                    dest='websocket',
+                    action='store_true')
 
-(options, args) = parser.parse_args()
+args = parser.parse_args()
 
-if not options.nagios and not options.munin:
+if not args.nagios and not args.munin:
     print('No output options specified! Please provide --munin or --nagios')
     sys.exit(0)
 
@@ -60,7 +60,7 @@ if len(args) > 2:
     print(usage)
     sys.exit(0)
 
-if options.munin:
+if args.munin:
     if len(args) and args[0] == 'config':
         print("""graph_title Send-Receive times
 graph_info The number of seconds it takes to send and receive a message from the server
@@ -95,7 +95,7 @@ def report(state, timestamp=None, msg=None):
     now = int(time.time())
     if msg is None:
         msg = "send time was %s" % (timestamp,)
-    if options.websocket:
+    if args.websocket:
         state_file_path = "/var/lib/nagios_state/check_send_receive_websockets_state"
     else:
         state_file_path = "/var/lib/nagios_state/check_send_receive_state"
@@ -108,7 +108,7 @@ def report(state, timestamp=None, msg=None):
 def send_zulip(sender, message):
     # type: (zulip.Client, Dict[str, Any]) -> None
     result = sender.send_message(message)
-    if result["result"] != "success" and options.nagios:
+    if result["result"] != "success" and args.nagios:
         report("CRITICAL", msg="Error sending Zulip, args were: %s, %s" % (message, result))
 
 def get_zulips():
@@ -129,7 +129,7 @@ def send_message_via_websocket(websocket_client, recepient_email, content):
     # type: (WebsocketClient, str, str) -> None
     websocket_client.send_message('website', 'private', 'no topic', "", recepient_email, content)
 
-if "staging" in options.site and settings.NAGIOS_STAGING_SEND_BOT is not None and \
+if "staging" in args.site and settings.NAGIOS_STAGING_SEND_BOT is not None and \
         settings.NAGIOS_STAGING_RECEIVE_BOT is not None:
     sender = get_system_bot(settings.NAGIOS_STAGING_SEND_BOT)
     recipient = get_system_bot(settings.NAGIOS_STAGING_RECEIVE_BOT)
@@ -141,17 +141,17 @@ zulip_sender = zulip.Client(
     email=sender.email,
     api_key=sender.api_key,
     verbose=True,
-    insecure=options.insecure,
+    insecure=args.insecure,
     client="ZulipMonitoring/0.1",
-    site=options.site)
+    site=args.site)
 
 zulip_recipient = zulip.Client(
     email=recipient.email,
     api_key=recipient.api_key,
     verbose=True,
-    insecure=options.insecure,
+    insecure=args.insecure,
     client="ZulipMonitoring/0.1",
-    site=options.site)
+    site=args.site)
 
 try:
     res = zulip_recipient.register(event_types=["message"])
@@ -163,11 +163,11 @@ except Exception:
 msg_to_send = str(random.getrandbits(64))
 time_start = time.time()
 
-if options.websocket:
-    client = WebsocketClient(host_url=options.site, sockjs_url='/sockjs/366/v8nw22qe/websocket',
+if args.websocket:
+    client = WebsocketClient(host_url=args.site, sockjs_url='/sockjs/366/v8nw22qe/websocket',
                              run_on_start=send_message_via_websocket, sender_email=sender.email,
                              recepient_email=recipient.email, content=msg_to_send,
-                             validate_ssl=not options.insecure)
+                             validate_ssl=not args.insecure)
     client.run()
 else:
     send_zulip(zulip_sender, {
@@ -187,13 +187,13 @@ while msg_to_send not in msg_content:
 
 zulip_recipient.deregister(queue_id)
 
-if options.nagios:
+if args.nagios:
     if seconds_diff > 12:
         report('CRITICAL', timestamp=seconds_diff)
     if seconds_diff > 3:
         report('WARNING', timestamp=seconds_diff)
 
-if options.munin:
+if args.munin:
     print("sendreceive.value %s" % (seconds_diff,))
-elif options.nagios:
+elif args.nagios:
     report('OK', timestamp=seconds_diff)
