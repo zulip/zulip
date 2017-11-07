@@ -300,7 +300,7 @@ ul.filters li.out_of_home_view li.muted_topic {
 }
 
 #stream_filters .subscription_block {
-    padding: 1px 0px;
+    padding: 0px;
     margin-right: 18px;
     margin-left: 10px;
 }
@@ -313,15 +313,15 @@ ul.filters li.out_of_home_view li.muted_topic {
 
 #stream_filters .subscription_block .stream-name {
     display: inline-block;
-    width: calc(100% - 50px);
+    width: calc(100% - 76px);
 
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
 
-    line-height: 1;
+    line-height: 1.2;
     position: relative;
-    top: 2px;
+    top: 4px;
 }
 
 #stream_filters .subscription_block.stream-with-count {
