@@ -2185,6 +2185,10 @@ div.floating_recipient {
     float: none;
 }
 
+#stream_creating_indicator {
+    margin: 10px auto;
+}
+
 #copy-from-stream-expand-collapse {
     cursor: pointer;
 }
