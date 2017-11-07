@@ -230,7 +230,7 @@ def fetch_tweet_data(tweet_id):
             return None
 
         try:
-            api = twitter.Api(**creds)
+            api = twitter.Api(tweet_mode='extended', **creds)
             # Sometimes Twitter hangs on responses.  Timing out here
             # will cause the Tweet to go through as-is with no inline
             # preview, rather than having the message be rejected
@@ -604,7 +604,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             image_url = user.get('profile_image_url_https', user['profile_image_url'])
             profile_img.set('src', image_url)
 
-            text = html.unescape(res['text'])
+            text = html.unescape(res['full_text'])
             urls = res.get('urls', [])
             user_mentions = res.get('user_mentions', [])
             media = res.get('media', [])  # type: List[Dict[Text, Any]]
