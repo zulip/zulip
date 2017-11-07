@@ -82,9 +82,8 @@ function show_user_info_popover(element, user, message) {
     var elt = $(element);
     if (elt.data('popover') === undefined) {
         if (user === undefined) {
-            // This case should not happen, because
-            // people.extract_people_from_message should have added
-            // the message sender to the people.js data set.
+            // This is never supposed to happen, not even for deactivated
+            // users, so we'll need to debug this error if it occurs.
             blueslip.error('Bad sender in message' + message.sender_id);
             return;
         }

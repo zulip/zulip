@@ -431,6 +431,12 @@ initialize();
 initialize();
 
 (function test_extract_people_from_message() {
+    var unknown_user = {
+        email: 'unknown@example.com',
+        user_id: 500,
+        unknown_local_echo_user: true,
+    };
+
     var maria = {
         email: 'athens@example.com',
         user_id: 452,
@@ -443,15 +449,78 @@ initialize();
         sender_id: maria.user_id,
         sender_email: maria.email,
     };
+    assert(!people.is_known_user_id(maria.user_id));
+
+    var reported;
+    people.report_late_add = function (user_id, email) {
+        assert.equal(user_id, maria.user_id);
+        assert.equal(email, maria.email);
+        reported = true;
+    };
+
     people.extract_people_from_message(message);
     assert(people.is_known_user_id(maria.user_id));
+    assert(reported);
+
+    // Get line coverage
+    people.report_late_add = function () {
+        throw Error('unexpected late add');
+    };
 
     message = {
+        type: 'private',
+        display_recipient: [unknown_user],
+    };
+    people.extract_people_from_message(message);
+}());
+
+initialize();
+
+(function test_maybe_incr_recipient_count() {
+    var maria = {
+        email: 'athens@example.com',
+        user_id: 452,
+        full_name: 'Maria Athens',
+    };
+    people.add_in_realm(maria);
+
+    var unknown_user = {
+        email: 'unknown@example.com',
+        user_id: 500,
+        unknown_local_echo_user: true,
+    };
+
+    var message = {
         type: 'private',
         display_recipient: [maria],
         sent_by_me: true,
     };
-    people.extract_people_from_message(message);
+    assert.equal(people.get_recipient_count(maria), 0);
+    people.maybe_incr_recipient_count(message);
+    assert.equal(people.get_recipient_count(maria), 1);
+
+    // Test all the no-op conditions to get test
+    // coverage.
+    message = {
+        type: 'private',
+        sent_by_me: false,
+        display_recipient: [maria],
+    };
+    people.maybe_incr_recipient_count(message);
+    assert.equal(people.get_recipient_count(maria), 1);
+
+    message = {
+        type: 'private',
+        sent_by_me: true,
+        display_recipient: [unknown_user],
+    };
+    people.maybe_incr_recipient_count(message);
+    assert.equal(people.get_recipient_count(maria), 1);
+
+    message = {
+        type: 'stream',
+    };
+    people.maybe_incr_recipient_count(message);
     assert.equal(people.get_recipient_count(maria), 1);
 }());
 
@@ -556,93 +625,16 @@ initialize();
     );
 }());
 
-(function test_blueslip() {
-    var unknown_email = "alicebobfred@example.com";
-
-    global.blueslip.debug = function (msg) {
-        assert.equal(msg, 'User email operand unknown: ' + unknown_email);
-    };
-    people.id_matches_email_operand(42, unknown_email);
-
-    global.blueslip.error = function (msg) {
-        assert.equal(msg, 'Unknown email for get_user_id: ' + unknown_email);
-    };
-    people.get_user_id(unknown_email);
-
-    var person = {
-        email: 'person@example.com',
-        user_id: undefined,
-        full_name: 'Person Person',
-    };
-    people.add(person);
-
-    global.blueslip.error = function (msg) {
-        assert.equal(msg, 'No user_id found for person@example.com');
-    };
-    var user_id = people.get_user_id('person@example.com');
-    assert.equal(user_id, undefined);
-
-    global.blueslip.error = function (msg) {
-        assert.equal(msg, 'Unknown user ids: 1,2');
-    };
-    people.user_ids_string_to_emails_string('1,2');
-
-    global.blueslip.warn = function (msg) {
-        assert.equal(msg, 'Unknown emails: ' + unknown_email);
-    };
-    people.email_list_to_user_ids_string(unknown_email);
-
-    var message = {
-        type: 'private',
-        display_recipient: [],
-        sender_id: me.user_id,
-    };
-    global.blueslip.error = function (msg) {
-        assert.equal(msg, 'Empty recipient list in message');
-    };
-    people.pm_with_user_ids(message);
-    people.group_pm_with_user_ids(message);
-
-    var charles = {
-        email: 'charles@example.com',
-        user_id: 451,
-        full_name: 'Charles Dickens',
-        avatar_url: 'charles.com/foo.png',
-    };
-    var maria = {
-        email: 'athens@example.com',
-        user_id: 452,
-        full_name: 'Maria Athens',
-    };
-    people.add(charles);
-    people.add(maria);
-
-    message = {
-        type: 'private',
-        display_recipient: [
-            {id: maria.user_id},
-            {id: 42},
-            {user_id: charles.user_id},
-        ],
-        sender_id: charles.user_id,
-    };
-    global.blueslip.error = function (msg) {
-        assert.equal(msg, 'Unknown user id in message: 42');
-    };
-    var reply_to = people.pm_reply_to(message);
-    assert(reply_to.indexOf('?') > -1);
-
-    people.pm_with_user_ids = function () { return [42]; };
-    people.get_person_from_user_id = function () { return undefined; };
-    global.blueslip.error = function (msg) {
-        assert.equal(msg, 'Unknown people in message');
-    };
-    var uri = people.pm_with_url({});
-    assert.equal(uri.indexOf('unk'), uri.length - 3);
-}());
-
 (function test_initialize() {
     people.init();
+
+    global.page_params.realm_non_active_users = [
+        {
+            email: 'retiree@example.com',
+            user_id: 15,
+            full_name: 'Retiree',
+        },
+    ];
 
     global.page_params.realm_users = [
         {
@@ -667,8 +659,13 @@ initialize();
     assert(people.is_cross_realm_email('bot@example.com'));
     assert(people.is_valid_email_for_compose('bot@example.com'));
     assert(people.is_valid_email_for_compose('alice@example.com'));
+    assert(!people.is_valid_email_for_compose('retiree@example.com'));
     assert(people.is_my_user_id(42));
+
+    var fetched_retiree = people.get_person_from_user_id(15);
+    assert(fetched_retiree.full_name, 'Retiree');
 
     assert.equal(global.page_params.realm_users, undefined);
     assert.equal(global.page_params.cross_realm_bots, undefined);
+    assert.equal(global.page_params.realm_non_active_users, undefined);
 }());
