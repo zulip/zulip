@@ -66,7 +66,9 @@ def generate_all_emails(request):
     assert result.status_code == 200
 
     # Verification for new email
-    result = client.patch('/json/settings', urllib.parse.urlencode({'email': 'hamlets-new@zulip.com'}), **host_kwargs)
+    result = client.patch('/json/settings',
+                          urllib.parse.urlencode({'email': 'hamlets-new@zulip.com'}),
+                          **host_kwargs)
     assert result.status_code == 200
 
     # Email change successful
@@ -74,9 +76,7 @@ def generate_all_emails(request):
     url = confirmation_url(key, realm.host, Confirmation.EMAIL_CHANGE)
     user_profile = get_user(registered_email, realm)
     result = client.get(url)
-    assert result.status_code == 302
-    user_profile.emails = "hamlet@zulip.com"
-    user_profile.save()
+    assert result.status_code == 200
 
     # Follow up day1 day2 emails
     enqueue_welcome_emails(user_profile)
