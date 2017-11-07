@@ -1318,18 +1318,19 @@ class AbstractUserMessage(models.Model):
         return self.flags_list_for_flags(flags)
 
     @staticmethod
-    def flags_list_for_flags(flags):
+    def flags_list_for_flags(val):
         # type: (int) -> List[str]
         '''
         This function is highly optimized, because it actually slows down
         sending messages in a naive implementation.
         '''
-        names = AbstractUserMessage.ALL_FLAGS
-        return [
-            names[i]
-            for i in range(len(names))
-            if flags & (2 ** i)
-        ]
+        flags = []
+        mask = 1
+        for flag in UserMessage.ALL_FLAGS:
+            if val & mask:
+                flags.append(flag)
+            mask <<= 1
+        return flags
 
     def __str__(self):
         # type: () -> Text
@@ -1345,17 +1346,6 @@ class ArchivedUserMessage(AbstractUserMessage):
 
 class UserMessage(AbstractUserMessage):
     message = models.ForeignKey(Message, on_delete=CASCADE)  # type: Message
-
-
-def parse_usermessage_flags(val):
-    # type: (int) -> List[str]
-    flags = []
-    mask = 1
-    for flag in UserMessage.ALL_FLAGS:
-        if val & mask:
-            flags.append(flag)
-        mask <<= 1
-    return flags
 
 
 class AbstractAttachment(models.Model):

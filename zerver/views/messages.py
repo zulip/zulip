@@ -36,7 +36,7 @@ from zerver.lib.validator import \
     check_list, check_int, check_dict, check_string, check_bool
 from zerver.models import Message, UserProfile, Stream, Subscription, \
     Realm, RealmDomain, Recipient, UserMessage, bulk_get_recipients, get_personal_recipient, \
-    get_stream, parse_usermessage_flags, email_to_domain, get_realm, get_active_streams, \
+    get_stream, email_to_domain, get_realm, get_active_streams, \
     get_user_including_cross_realm, get_stream_recipient
 
 from sqlalchemy import func
@@ -739,7 +739,7 @@ def get_messages_backend(request, user_profile,
         for row in query_result:
             message_id = row[0]
             flags = row[1]
-            user_message_flags[message_id] = parse_usermessage_flags(flags)
+            user_message_flags[message_id] = UserMessage.flags_list_for_flags(flags)
             message_ids.append(message_id)
 
     search_fields = dict()  # type: Dict[int, Dict[str, Text]]
