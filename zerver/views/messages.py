@@ -21,16 +21,10 @@ from zerver.lib.actions import recipient_for_emails, do_update_message_flags, \
     extract_recipients, truncate_body, render_incoming_message, do_delete_message, \
     do_mark_all_as_read, do_mark_stream_messages_as_read, get_user_info_for_message_updates
 from zerver.lib.queue import queue_json_publish
-from zerver.lib.cache import (
-    generic_bulk_cached_fetch,
-    to_dict_cache_key_id,
-)
 from zerver.lib.message import (
     access_message,
-    MessageDict,
-    extract_message_dict,
+    messages_for_ids,
     render_markdown,
-    stringify_message_dict,
 )
 from zerver.lib.response import json_success, json_error
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
@@ -756,31 +750,14 @@ def get_messages_backend(request, user_profile,
             search_fields[message_id] = get_search_fields(rendered_content, subject,
                                                           content_matches, subject_matches)
 
-    cache_transformer = MessageDict.build_dict_from_raw_db_row
-    id_fetcher = lambda row: row['id']
-
-    message_dicts = generic_bulk_cached_fetch(to_dict_cache_key_id,
-                                              MessageDict.get_raw_db_rows,
-                                              message_ids,
-                                              id_fetcher=id_fetcher,
-                                              cache_transformer=cache_transformer,
-                                              extractor=extract_message_dict,
-                                              setter=stringify_message_dict)
-
-    message_list = []
-
-    for message_id in message_ids:
-        msg_dict = message_dicts[message_id]
-        msg_dict.update({"flags": user_message_flags[message_id]})
-        if message_id in search_fields:
-            msg_dict.update(search_fields[message_id])
-        # Make sure that we never send message edit history to clients
-        # in realms with allow_edit_history disabled.
-        if "edit_history" in msg_dict and not user_profile.realm.allow_edit_history:
-            del msg_dict["edit_history"]
-        message_list.append(msg_dict)
-
-    MessageDict.post_process_dicts(message_list, apply_markdown, client_gravatar)
+    message_list = messages_for_ids(
+        message_ids=message_ids,
+        user_message_flags=user_message_flags,
+        search_fields=search_fields,
+        apply_markdown=apply_markdown,
+        client_gravatar=client_gravatar,
+        allow_edit_history=user_profile.realm.allow_edit_history,
+    )
 
     statsd.incr('loaded_old_messages', len(message_list))
     ret = {'messages': message_list,

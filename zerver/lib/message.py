@@ -9,7 +9,12 @@ from six import binary_type
 
 from zerver.lib.avatar import get_avatar_field
 import zerver.lib.bugdown as bugdown
-from zerver.lib.cache import cache_with_key, to_dict_cache_key
+from zerver.lib.cache import (
+    cache_with_key,
+    generic_bulk_cached_fetch,
+    to_dict_cache_key,
+    to_dict_cache_key_id,
+)
 from zerver.lib.request import JsonableError
 from zerver.lib.str_utils import force_bytes, dict_with_str_keys
 from zerver.lib.stream_subscription import (
@@ -49,6 +54,42 @@ UnreadMessagesResult = TypedDict('UnreadMessagesResult', {
 })
 
 MAX_UNREAD_MESSAGES = 5000
+
+def messages_for_ids(message_ids: List[int],
+                     user_message_flags: Dict[int, List[str]],
+                     search_fields: Dict[int, Dict[str, Text]],
+                     apply_markdown: bool,
+                     client_gravatar: bool,
+                     allow_edit_history: bool) -> List[Dict[str, Any]]:
+
+    cache_transformer = MessageDict.build_dict_from_raw_db_row
+    id_fetcher = lambda row: row['id']
+
+    message_dicts = generic_bulk_cached_fetch(to_dict_cache_key_id,
+                                              MessageDict.get_raw_db_rows,
+                                              message_ids,
+                                              id_fetcher=id_fetcher,
+                                              cache_transformer=cache_transformer,
+                                              extractor=extract_message_dict,
+                                              setter=stringify_message_dict)
+
+    message_list = []  # type: List[Dict[str, Any]]
+
+    for message_id in message_ids:
+        msg_dict = message_dicts[message_id]
+        msg_dict.update({"flags": user_message_flags[message_id]})
+        if message_id in search_fields:
+            msg_dict.update(search_fields[message_id])
+        # Make sure that we never send message edit history to clients
+        # in realms with allow_edit_history disabled.
+        if "edit_history" in msg_dict and not allow_edit_history:
+            del msg_dict["edit_history"]
+        message_list.append(msg_dict)
+
+    MessageDict.post_process_dicts(message_list, apply_markdown, client_gravatar)
+
+    return message_list
+
 
 def sew_messages_and_reactions(messages, reactions):
     # type: (List[Dict[str, Any]], List[Dict[str, Any]]) -> List[Dict[str, Any]]

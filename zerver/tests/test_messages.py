@@ -21,6 +21,7 @@ from zerver.lib.actions import (
 
 from zerver.lib.message import (
     MessageDict,
+    messages_for_ids,
     sew_messages_and_reactions,
 )
 
@@ -2795,3 +2796,46 @@ class MessageHydrationTest(ZulipTestCase):
             ],
         )
         self.assertEqual(obj['type'], 'private')
+
+    def test_messages_for_ids(self):
+        # type: () -> None
+        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user('cordelia')
+
+        stream_name = 'test stream'
+        self.subscribe(cordelia, stream_name)
+
+        old_message_id = self.send_stream_message(cordelia.email, stream_name, content='foo')
+
+        self.subscribe(hamlet, stream_name)
+
+        content = 'hello @**King Hamlet**'
+        new_message_id = self.send_stream_message(cordelia.email, stream_name, content=content)
+
+        user_message_flags = {
+            old_message_id: ['read', 'historical'],
+            new_message_id: ['mentioned'],
+        }
+
+        messages = messages_for_ids(
+            message_ids=[old_message_id, new_message_id],
+            user_message_flags=user_message_flags,
+            search_fields={},
+            apply_markdown=True,
+            client_gravatar=True,
+            allow_edit_history=False,
+        )
+
+        self.assertEqual(len(messages), 2)
+
+        for message in messages:
+            if message['id'] == old_message_id:
+                old_message = message
+            elif message['id'] == new_message_id:
+                new_message = message
+
+        self.assertEqual(old_message['content'], '<p>foo</p>')
+        self.assertEqual(old_message['flags'], ['read', 'historical'])
+
+        self.assertIn('class="user-mention"', new_message['content'])
+        self.assertEqual(new_message['flags'], ['mentioned'])
