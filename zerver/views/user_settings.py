@@ -35,7 +35,6 @@ def confirm_email_change(request, confirmation_key):
     if user_profile.realm.email_changes_disabled:
         raise JsonableError(_("Email address changes are disabled in this organization."))
 
-    confirmation_key = confirmation_key.lower()
     try:
         obj = get_object_from_key(confirmation_key, Confirmation.EMAIL_CHANGE)
     except ConfirmationKeyException as exception:
