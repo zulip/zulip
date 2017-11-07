@@ -36,17 +36,17 @@ def confirm_email_change(request, confirmation_key):
         raise JsonableError(_("Email address changes are disabled in this organization."))
 
     try:
-        obj = get_object_from_key(confirmation_key, Confirmation.EMAIL_CHANGE)
+        email_change_object = get_object_from_key(confirmation_key, Confirmation.EMAIL_CHANGE)
     except ConfirmationKeyException as exception:
         return render_confirmation_key_error(request, exception)
 
-    assert isinstance(obj, EmailChangeStatus)
-    new_email = obj.new_email
-    old_email = obj.old_email
+    new_email = email_change_object.new_email
+    old_email = email_change_object.old_email
+    user_profile = email_change_object.user_profile
 
-    do_change_user_email(obj.user_profile, obj.new_email)
+    do_change_user_email(user_profile, new_email)
 
-    context = {'realm': obj.realm, 'new_email': new_email}
+    context = {'realm': user_profile.realm, 'new_email': new_email}
     send_email('zerver/emails/notify_change_in_email', to_email=old_email,
                from_name="Zulip Account Security", from_address=FromAddress.SUPPORT,
                context=context)
