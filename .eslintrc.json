@@ -39,6 +39,7 @@
         "input_pill": false,
         "stream_color": false,
         "people": false,
+        "user_groups": false,
         "navigate": false,
         "settings_account": false,
         "settings_display": false,
