@@ -25,7 +25,7 @@ import psycopg2.extensions
 import select
 import time
 import logging
-import six.moves.configparser
+import configparser
 import sys
 import os
 
@@ -80,7 +80,7 @@ except ImportError as e:
 #
 # However, we still also check the `USING_PGROONGA` variable, since
 # that's all we have in development.
-config_file = six.moves.configparser.RawConfigParser()
+config_file = configparser.RawConfigParser()
 config_file.read("/etc/zulip/zulip.conf")
 if config_file.has_option('machine', 'pgroonga'):
     USING_PGROONGA = True

@@ -15,7 +15,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.module_loading import import_string
 from threading import Lock
 from tornado.wsgi import WSGIContainer
-from six.moves import urllib
+import urllib
 
 from zerver.decorator import RespondAsynchronously
 from zerver.lib.response import json_response

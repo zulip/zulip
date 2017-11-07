@@ -8,7 +8,7 @@ from typing.re import Match
 import markdown
 import logging
 import traceback
-from six.moves import urllib
+import urllib
 import re
 import os
 import glob
@@ -20,7 +20,6 @@ import functools
 import httplib2
 import itertools
 import ujson
-from six.moves import urllib
 import xml.etree.cElementTree as etree
 from xml.etree.cElementTree import Element, SubElement
 
@@ -56,7 +55,6 @@ import zerver.lib.alert_words as alert_words
 import zerver.lib.mention as mention
 from zerver.lib.str_utils import force_str, force_text
 from zerver.lib.tex import render_tex
-from six.moves import html_parser
 
 FullNameInfo = TypedDict('FullNameInfo', {
     'id': int,

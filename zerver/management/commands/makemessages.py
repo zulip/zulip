@@ -36,7 +36,6 @@ import os
 import re
 import glob
 import json
-from six.moves import zip
 
 import django
 from django.core.management.commands import makemessages

@@ -63,7 +63,7 @@ import ujson
 
 from typing import Any, Dict, List, Optional, Set, Text
 
-from six.moves import urllib, range, zip
+import urllib
 import os
 
 class RedirectAndLogIntoSubdomainTestCase(ZulipTestCase):

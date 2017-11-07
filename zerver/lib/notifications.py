@@ -30,7 +30,7 @@ import lxml.html
 import re
 import subprocess
 import ujson
-from six.moves import urllib
+import urllib
 from collections import defaultdict
 
 def one_click_unsubscribe_link(user_profile, email_type):

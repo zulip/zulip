@@ -30,7 +30,6 @@ from zerver.models import UserProfile, Stream, Realm, Subscription, \
 
 from collections import defaultdict
 import ujson
-from six.moves import urllib
 
 class PrincipalError(JsonableError):
     code = ErrorCode.UNAUTHORIZED_PRINCIPAL

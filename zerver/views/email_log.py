@@ -6,7 +6,7 @@ from django.views.decorators.http import require_GET
 
 from zerver.models import get_realm, get_user
 from zerver.lib.notifications import enqueue_welcome_emails
-from six.moves import urllib
+import urllib
 from confirmation.models import Confirmation, confirmation_url
 
 import os

@@ -60,8 +60,8 @@ from social_django.storage import BaseDjangoStorage
 from social_core.backends.github import GithubOrganizationOAuth2, GithubTeamOAuth2, \
     GithubOAuth2
 
-from six.moves import urllib
-from six.moves.http_cookies import SimpleCookie
+import urllib
+from http.cookies import SimpleCookie
 import ujson
 from zerver.lib.test_helpers import MockLDAP, load_subdomain_token
 

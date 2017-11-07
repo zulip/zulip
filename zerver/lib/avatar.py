@@ -8,7 +8,7 @@ from typing import Any, Dict, Optional, Text
 from zerver.lib.avatar_hash import gravatar_hash, user_avatar_path_from_ids
 from zerver.lib.upload import upload_backend, MEDIUM_AVATAR_SIZE
 from zerver.models import UserProfile
-from six.moves import urllib
+import urllib
 
 def avatar_url(user_profile, medium=False, client_gravatar=False):
     # type: (UserProfile, bool, bool) -> Text

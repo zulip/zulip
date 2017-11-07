@@ -34,8 +34,8 @@ from zerver.tornado.event_queue import fetch_events, \
     allocate_client_descriptor, process_event
 from zerver.tornado.views import get_events_backend
 
-from six.moves.http_cookies import SimpleCookie
-from six.moves import urllib_parse
+from http.cookies import SimpleCookie
+import urllib.parse
 
 from typing import Any, Callable, Dict, Generator, Optional, Text, List, cast
 
@@ -131,7 +131,7 @@ class EventsTestCase(TornadoWebTestCase):
             'last_event_id': 0,
         }
 
-        path = '/json/events?{}'.format(urllib_parse.urlencode(data))
+        path = '/json/events?{}'.format(urllib.parse.urlencode(data))
         self.client_get_async(path)
 
         def process_events():
@@ -197,7 +197,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
 
     @staticmethod
     def get_cookie_header(cookies):
-        # type: (Dict[Any, Any]) -> str
+        # type: (SimpleCookie) -> str
         return ';'.join(
             ["{}={}".format(name, value.value) for name, value in cookies.items()])
 

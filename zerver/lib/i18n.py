@@ -6,7 +6,7 @@ from django.utils import translation
 from django.utils.translation import ugettext as _
 from django.utils.lru_cache import lru_cache
 
-from six.moves import urllib, zip_longest, zip, range
+from itertools import zip_longest
 from typing import Any, List, Dict, Optional, Text
 
 import os

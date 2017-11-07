@@ -30,8 +30,6 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.models import UserProfile
 
 import ujson
-from six.moves import range
-
 
 @api_key_only_webhook_view('Taiga')
 @has_request_variables

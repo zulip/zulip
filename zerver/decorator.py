@@ -28,7 +28,7 @@ import datetime
 import ujson
 import logging
 from io import BytesIO
-from six.moves import zip, urllib
+import urllib
 
 from typing import Union, Any, Callable, Sequence, Dict, Optional, TypeVar, Text, Tuple, cast
 from zerver.lib.str_utils import force_bytes

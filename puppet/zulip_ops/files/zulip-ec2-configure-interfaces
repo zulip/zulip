@@ -53,7 +53,6 @@ import sys
 
 import boto.utils
 import netifaces
-from six.moves import range
 if False:
     from typing import Optional
 

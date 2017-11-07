@@ -1,6 +1,5 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Callable, Tuple, Text
-from six.moves import zip
 
 from django.utils.timezone import utc as timezone_utc
 from django.utils.translation import ugettext as _
