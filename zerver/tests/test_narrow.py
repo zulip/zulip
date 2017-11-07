@@ -661,6 +661,48 @@ class GetOldMessagesTest(ZulipTestCase):
             self.assertIn(message["id"], matching_message_ids)
             self.assertNotIn(message["id"], non_matching_message_ids)
 
+    def test_include_history(self):
+        # type: () -> None
+        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user('cordelia')
+
+        stream_name = 'test stream'
+        self.subscribe(cordelia, stream_name)
+
+        old_message_id = self.send_stream_message(cordelia.email, stream_name, content='foo')
+
+        self.subscribe(hamlet, stream_name)
+
+        content = 'hello @**King Hamlet**'
+        new_message_id = self.send_stream_message(cordelia.email, stream_name, content=content)
+
+        self.login(hamlet.email)
+        narrow = [
+            dict(operator='stream', operand=stream_name)
+        ]
+
+        req = dict(
+            narrow=ujson.dumps(narrow),
+            anchor=LARGER_THAN_MAX_MESSAGE_ID,
+            num_before=100,
+            num_after=100,
+        )
+
+        payload = self.client_get('/json/messages', req)
+        self.assert_json_success(payload)
+        result = ujson.loads(payload.content)
+        messages = result['messages']
+        self.assertEqual(len(messages), 2)
+
+        for message in messages:
+            if message['id'] == old_message_id:
+                old_message = message
+            elif message['id'] == new_message_id:
+                new_message = message
+
+        self.assertEqual(old_message['flags'], ['read', 'historical'])
+        self.assertEqual(new_message['flags'], ['mentioned'])
+
     def test_get_messages_with_narrow_stream(self):
         # type: () -> None
         """
