@@ -4,15 +4,11 @@ set_global("page_params", {
 
 set_global("avatar", {});
 
-add_dependencies({
-    bot_data: 'js/bot_data.js',
-    upload_widget: 'js/upload_widget.js',
-});
-
 set_global('$', global.make_zjquery());
 set_global('document', 'document-stub');
 
-var settings_bots = require("js/settings_bots.js");
+zrequire('bot_data');
+zrequire('settings_bots');
 
 (function test_generate_zuliprc_uri() {
     var bot = {
