@@ -13,7 +13,7 @@ EXCLUDED_URLS = [
     # Google calendar returns 404s on HEAD requests unconditionally
     'https://calendar.google.com/calendar/embed?src=ktiduof4eoh47lmgcl2qunnc0o@group.calendar.google.com',
     # Returns 409 errors to HEAD requests frequently
-    'https://medium.freecodecamp.com',
+    'https://medium.freecodecamp.org/',
     # Returns 404 to HEAD requests unconditionally
     'https://www.git-tower.com/blog/command-line-cheat-sheet/',
 ]

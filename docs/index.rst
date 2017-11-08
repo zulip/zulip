@@ -31,138 +31,67 @@ is your first time here, you may want to start with
 
 Contents:
 
-* :ref:`overview`
-* :ref:`zulip-in-production`
-* :ref:`development-environment`
-* :ref:`developer-tutorials`
-* :ref:`code-contribution-guide`
-* :ref:`code-testing`
-* :ref:`subsystem-documentation`
+* :ref:`Overview <overview>`
+* :ref:`Zulip in Production <zulip-in-production>`
+* :ref:`Development Environment <development-environment>`
+* :ref:`Developer Tutorials <developer-tutorials>`
+* :ref:`Code Contribution Guide <code-contribution-guide>`
+* :ref:`Code Testing <code-testing>`
+* :ref:`Subsystem Documentation <subsystem-documentation>`
+* :ref:`Translating <translating>`
 
 .. _overview:
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Overview
+   :maxdepth: 3
 
-   readme-symlink
-   contributing
-   architecture-overview
-   directory-structure
-   roadmap
-   changelog
+   overview/index 
 
 .. _zulip-in-production:
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Zulip in production
+   :maxdepth: 3
 
-   Production overview <prod>
-   prod-requirements
-   Installing a production server <prod-install>
-   prod-troubleshooting
-   prod-customize
-   prod-mobile-push-notifications
-   prod-maintain-secure-upgrade
-   security-model
-   prod-authentication-methods
-   prod-postgres
+   production/index
 
 .. _development-environment:
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Development environment
+   :maxdepth: 3
 
-   Development environment installation <dev-overview>
-   Recommended setup (Vagrant) <dev-env-first-time-contributors>
-   Advanced setup (non-Vagrant) <dev-setup-non-vagrant>
-   Using the development environment <using-dev-environment>
-   Developing remotely <dev-remote>
+   development/index
 
 .. _developer-tutorials:
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Developer tutorials
+   :maxdepth: 3
 
-   integration-guide
-   integration-docs-guide
-   webhook-walkthrough
-   new-feature-tutorial
-   writing-views
-   life-of-a-request
-   reading-list
-   screenshot-and-gif-software
-   fixing-commits
-   git-cheat-sheet-detailed
-   git-cheat-sheet
-   shell-tips
-   working-copies
+   tutorials/index
 
 .. _code-contribution-guide:
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Code contribution guide
+   :maxdepth: 3
 
-   git-guide
-   version-control
-   code-style
-   mypy
-   code-reviewing
-   chat-zulip-org
-   zulipbot-usage
-   accessibility
-   bug-reports
+   contributing/index
 
 .. _code-testing:
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Code testing
+   :maxdepth: 3
 
-   testing
-   linters
-   testing-with-django
-   testing-with-node
-   testing-with-casper
-   travis
-   manual-testing
+   testing/index
 
 .. _subsystem-documentation:
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Subsystem documentation
+   :maxdepth: 3
 
-   dependencies
-   settings
-   events-system
-   queuing
-   custom-apps
-   pointer
-   markdown
-   realms
-   management-commands
-   front-end-build-process
-   schema-migrations
-   html_css
-   hashchange-system
-   emoji
-   hotspots
-   full-text-search
-   oauth
-   email
-   analytics
-   translating
-   html-templates
-   client
-   logging
-   typing-indicators
-   release-checklist
-   api-release-checklist
-   swagger-api-docs
-   documentation
-   user-docs
+   subsystems/index
+
+.. _translating:
+
+.. toctree::
+   :maxdepth: 3
+
+   translating/index

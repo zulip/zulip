@@ -1,5 +1,5 @@
 // This contains zulip's frontend markdown implementation; see
-// docs/markdown.md for docs on our Markdown syntax.  The other
+// docs/subsystems/markdown.md for docs on our Markdown syntax.  The other
 // main piece in rendering markdown client-side is
 // static/third/marked/lib/marked.js, which we have significantly
 // modified from the original implementation.

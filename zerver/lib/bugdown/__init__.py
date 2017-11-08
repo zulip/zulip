@@ -1,4 +1,4 @@
-# Zulip's main markdown implementation.  See docs/markdown.md for
+# Zulip's main markdown implementation.  See docs/subsystems/markdown.md for
 # detailed documentation on our markdown syntax.
 from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Text, Tuple, TypeVar, Union
 from mypy_extensions import TypedDict

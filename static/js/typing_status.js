@@ -2,7 +2,7 @@ var typing_status = (function () {
 
 var exports = {};
 
-// See docs/typing-indicators.md for details on typing indicators.
+// See docs/subsystems/typing-indicators.md for details on typing indicators.
 
 // The following constants are tuned to work with
 // TYPING_STARTED_EXPIRY_PERIOD, which is what the other
