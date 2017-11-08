@@ -4,11 +4,8 @@ set_global('page_params', {
 });
 set_global('upload_widget', {});
 
-add_dependencies({
-    emoji_codes: 'generated/emoji/emoji_codes.js',
-});
-
-var emoji = require('js/emoji.js');
+zrequire('emoji_codes', 'generated/emoji/emoji_codes');
+zrequire('emoji');
 
 (function test_build_emoji_upload_widget() {
     var build_widget_stub = false;
