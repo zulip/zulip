@@ -17,7 +17,6 @@ set_global('document', {
     },
 });
 
-set_global('XDate', require("xdate"));
 set_global('blueslip', function () {});
 set_global('channel', {});
 set_global('compose_actions', {});
@@ -99,9 +98,6 @@ people.add_in_realm(norbert);
 people.add_in_realm(zoe);
 people.add_in_realm(me);
 people.initialize_current_user(me.user_id);
-
-var activity = require('js/activity.js');
-var compose_fade = require('js/compose_fade.js');
 
 compose_fade.update_faded_users = function () {};
 
