@@ -296,12 +296,12 @@ def build_custom_checkers(by_lang):
         # This next check could have false positives, but it seems pretty
         # rare; if we find any, they can be added to the exclude list for
         # this rule.
-        {'pattern': ' % [a-zA-Z0-9_.]*\)?$',
+        {'pattern': ' % [a-zA-Z0-9_."\']*\)?$',
          'exclude_line': set([
              ('tools/tests/test_template_parser.py', '{% foo'),
          ]),
          'description': 'Used % comprehension without a tuple'},
-        {'pattern': '.*%s.* % \([a-zA-Z0-9_.]*\)$',
+        {'pattern': '.*%s.* % \([a-zA-Z0-9_."\']*\)$',
          'description': 'Used % comprehension without a tuple'},
         {'pattern': 'django.utils.translation',
          'include_only': set(['test/']),
