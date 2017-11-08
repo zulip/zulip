@@ -318,26 +318,35 @@ class TestDigestEmailMessages(ZulipTestCase):
         enqueue_emails(cutoff)
         self.assertEqual(mock_queue_digest_recipient.call_count, all_user_profiles.count())
 
-    @mock.patch('zerver.lib.digest.queue_digest_recipient')
+    @mock.patch('zerver.lib.digest.enough_traffic', return_value=True)
     @mock.patch('zerver.lib.digest.timezone_now')
-    def test_active_users_not_enqueued(self, mock_django_timezone, mock_queue_digest_recipient):
+    def test_active_users_not_enqueued(self, mock_django_timezone, mock_enough_traffic):
         # type: (mock.MagicMock, mock.MagicMock) -> None
-
         cutoff = timezone_now()
         # A Tuesday
         mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=5)
-
-        for realm in Realm.objects.filter(deactivated=False, show_digest_email=True):
-            for user_profile in UserProfile.objects.filter(realm=realm):
+        realms = Realm.objects.filter(deactivated=False, show_digest_email=True)
+        for realm in realms:
+            user_profiles = UserProfile.objects.filter(realm=realm)
+            for counter, user_profile in enumerate(user_profiles, 1):
                 UserActivity.objects.create(
                     last_visit=cutoff + datetime.timedelta(days=1),
                     user_profile=user_profile,
                     count=0,
                     client=get_client('test_client'))
-
+                # When there are only two users left who have not been set to active,
+                # check the full enqueue-digest flow for them.
+                if realm == realms.last() and user_profiles.count() - counter == 2:
+                    with mock.patch('zerver.models.ScheduledEmail.objects.create') as mock_email_create:
+                        enqueue_emails(cutoff)
+                        self.assert_length(mock_email_create.call_args_list, 2)
+                        for call_args in mock_email_create.call_args_list:
+                            email_data = ujson.loads(call_args[1]['data'])
+                            self.assertEqual(email_data['template_prefix'], 'zerver/emails/digest')
         # Check that an active user is not enqueued
-        enqueue_emails(cutoff)
-        self.assertEqual(mock_queue_digest_recipient.call_count, 0)
+        with mock.patch('zerver.lib.digest.queue_digest_recipient') as mock_queue_digest_recipient:
+            enqueue_emails(cutoff)
+            self.assertEqual(mock_queue_digest_recipient.call_count, 0)
 
     @mock.patch('zerver.lib.digest.queue_digest_recipient')
     @mock.patch('zerver.lib.digest.timezone_now')
