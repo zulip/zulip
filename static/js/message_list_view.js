@@ -719,6 +719,11 @@ MessageListView.prototype = {
             return;
         }
 
+        // do not scroll if there are any active popovers.
+        if (popovers.any_active()) {
+            return;
+        }
+
         // This next decision is fairly debatable.  For a big message that
         // would push the pointer off the screen, we do a partial autoscroll,
         // which has the following implications:
