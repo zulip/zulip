@@ -77,15 +77,13 @@ def accounts_register(request):
     password_required = prereg_user.password_required
 
     validators.validate_email(email)
-    if prereg_user.referred_by:
-        # If someone invited you, you are joining their realm regardless
-        # of your e-mail address.
-        realm = prereg_user.referred_by.realm
-    elif realm_creation:
+    if realm_creation:
         # For creating a new realm, there is no existing realm or domain
         realm = None
     else:
         realm = get_realm(get_subdomain(request))
+        if prereg_user.realm is not None and prereg_user.realm != realm:
+            return render(request, 'confirmation/link_does_not_exist.html')
 
     if realm and not email_allowed_for_realm(email, realm):
         return render(request, "zerver/closed_realm.html",
@@ -295,9 +293,13 @@ def login_and_go_to_home(request, user_profile):
 def create_preregistration_user(email, request, realm_creation=False,
                                 password_required=True):
     # type: (Text, HttpRequest, bool, bool) -> HttpResponse
+    realm = None
+    if not realm_creation:
+        realm = get_realm(get_subdomain(request))
     return PreregistrationUser.objects.create(email=email,
                                               realm_creation=realm_creation,
-                                              password_required=password_required)
+                                              password_required=password_required,
+                                              realm=realm)
 
 def send_registration_completion_email(email, request, realm_creation=False, streams=None):
     # type: (str, HttpRequest, bool, Optional[List[Stream]]) -> None

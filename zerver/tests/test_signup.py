@@ -324,7 +324,7 @@ class LoginTest(ZulipTestCase):
         with queries_captured() as queries:
             self.register(self.nonreg_email('test'), "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assert_length(queries, 68)
+        self.assert_length(queries, 70)
         user_profile = self.nonreg_user('test')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
         self.assertFalse(user_profile.enable_stream_desktop_notifications)
@@ -1538,6 +1538,22 @@ class UserSignUpTest(ZulipTestCase):
                      'terms': True})
         mock_error.assert_called_once()
         self.assertEqual(result.status_code, 302)
+
+    def test_replace_subdomain_in_confirmation_link(self) -> None:
+        """
+        Check that manually changing the subdomain in a registration
+        confirmation link doesn't allow you to register to a different realm.
+        """
+        email = "newuser@zulip.com"
+        self.client_post('/accounts/home/', {'email': email})
+        result = self.client_post(
+            '/accounts/register/',
+            {'password': "password",
+             'key': find_key_by_email(email),
+             'terms': True,
+             'full_name': "New User",
+             'from_confirmation': '1'},  subdomain="zephyr")
+        self.assert_in_success_response(["We couldn't find your confirmation link"], result)
 
     def test_failed_signup_due_to_restricted_domain(self):
         # type: () -> None
