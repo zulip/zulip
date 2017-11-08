@@ -70,7 +70,10 @@ class MarkdownDirectoryView(ApiURLView):
 
         # For disabling the "Back to home" on the homepage
         context["not_index_page"] = not path.endswith("/index.md")
-        context["page_is_help_center"] = True
+        if self.template_name == "zerver/help/main.html":
+            context["page_is_help_center"] = True
+        else:
+            context["page_is_api_center"] = True
         # An "article" might require the api_uri_context to be rendered
         api_uri_context = {}  # type: Dict[str, Any]
         add_api_uri_context(api_uri_context, self.request)
