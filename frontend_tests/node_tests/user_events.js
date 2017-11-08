@@ -1,12 +1,7 @@
 set_global('$', global.make_zjquery());
 
-add_dependencies({
-    people: 'js/people.js',
-});
-
-var people = global.people;
-
-var user_events = require("js/user_events.js");
+zrequire('people');
+zrequire('user_events');
 
 set_global('activity', {
     redraw: function () {},
