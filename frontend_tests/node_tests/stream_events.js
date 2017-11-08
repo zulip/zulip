@@ -11,11 +11,8 @@ set_global('colorspace', {
     },
 });
 
-add_dependencies({
-    stream_data: 'js/stream_data.js',
-});
-
-var stream_events = require('js/stream_events.js');
+zrequire('stream_data');
+zrequire('stream_events');
 var with_overrides = global.with_overrides;
 
 var frontend = {
