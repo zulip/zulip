@@ -1,4 +1,4 @@
-var pmc = require('js/pm_conversations.js');
+var pmc = zrequire('pm_conversations');
 
 (function test_partners() {
     var user1_id = 1;
