@@ -62,5 +62,6 @@ class TestCustomRules(TestCase):
                 # create=True is superfluous when mocking built-ins in Python >= 3.5
                 with patch('builtins.open',
                            return_value=iter((line+'\n\n').splitlines()), create=True, autospec=True), patch('builtins.print'):
-                    self.assertTrue(custom_check_file('foo.bar', 'baz', [rule], ''),
+                    filename = list(rule.get('include_only', {'foo.bar'}))[0]
+                    self.assertTrue(custom_check_file(filename, 'baz', [rule], ''),
                                     "The pattern '{}' didn't match the line '{}' while it should.".format(pattern, line))
