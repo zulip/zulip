@@ -76,20 +76,6 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-.app.api-docs .sidebar {
-    background-color: #fff;
-    border-right: 1px solid #ddd;
-    color: #444;
-}
-
-.app.api-docs .sidebar h2 {
-    color: #444;
-}
-
-.app.api-docs .sidebar li {
-    opacity: 0.8;
-}
-
 .code-section ul.nav {
     margin: 0;
 }
