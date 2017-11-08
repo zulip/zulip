@@ -90,14 +90,14 @@ from the command-line, providing the message to be sent on STDIN.
 
 ```bash
 zulip-send --stream Denmark --subject Castle \
---user othello-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5
+    --user othello-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5
 ```
 
 #### Private message
 
 ```bash
 zulip-send hamlet@example.com \
---user othello-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5
+    --user othello-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5
 ```
 
 #### Passing in the message on the command-line
@@ -107,8 +107,8 @@ If you'd like, you can also provide the message on the command-line with the `-m
 
 ```bash
 zulip-send --stream Denmark --subject Castle \
--m "Something is rotten in the state of Denmark." \
---user othello-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5
+    -m "Something is rotten in the state of Denmark." \
+    --user othello-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5
 ```
 
 You can omit the `user` and `api-key` arguments if you have a `~/.zuliprc` file.
