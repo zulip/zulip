@@ -50,10 +50,7 @@ var page_params = global.page_params;
 
 // alert_words is coupled to dispatching in the sense
 // that we write directly to alert_words.words
-add_dependencies({alert_words: 'js/alert_words.js'});
-
-// contains the main event dispatching function
-add_dependencies({server_events_dispatch: 'js/server_events_dispatch.js'});
+zrequire('alert_words');
 
 // We access various msg_list object to rerender them
 set_global('current_msg_list', {rerender: noop});
@@ -71,7 +68,8 @@ set_global('blueslip', {
     },
 });
 
-var sed = require('js/server_events_dispatch.js');
+zrequire('server_events_dispatch');
+var sed = server_events_dispatch;
 
 function dispatch(ev) {
     sed.dispatch_normal_event(ev);
