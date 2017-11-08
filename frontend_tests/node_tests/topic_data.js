@@ -1,4 +1,4 @@
-var topic_data = require('js/topic_data.js');
+zrequire('topic_data');
 
 set_global('channel', {});
 
