@@ -114,9 +114,11 @@ if __name__ == "__main__":
     parser.add_argument('targets', nargs='*', default=[],
                         help='''files and directories to include in the result.
                         If this is not specified, the current directory is used''')
-    parser.add_argument('-m', '--modified', action='store_true', default=False, help='list only modified files')
+    parser.add_argument('-m', '--modified', action='store_true', default=False,
+                        help='list only modified files')
     parser.add_argument('-f', '--ftypes', nargs='+', default=[],
-                        help="list of file types to filter on. All files are included if this option is absent")
+                        help="list of file types to filter on. "
+                             "All files are included if this option is absent")
     parser.add_argument('--ext-only', dest='extonly', action='store_true', default=False,
                         help='only use extension to determine file type')
     parser.add_argument('--exclude', nargs='+', default=[],

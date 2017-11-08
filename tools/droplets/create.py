@@ -194,7 +194,8 @@ Your remote Zulip dev server has been created!
 - There is no password; your account is configured to use your ssh keys.
 - Once you log in, you should see `(zulip-venv) ~$`.
 - To start the dev server, `cd zulip` and then run `./tools/run-dev.py`.
-- While the dev server is running, you can see the Zulip server in your browser at http://{0}.zulipdev.org:9991.
+- While the dev server is running, you can see the Zulip server in your browser at
+  http://{0}.zulipdev.org:9991.
 """.format(username))
 
     print("See [Developing remotely](http://zulip.readthedocs.io/en/latest/dev-remote.html) "

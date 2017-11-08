@@ -236,7 +236,8 @@ def dump_emojis(cache_path):
         emoji_data = ujson.load(emoji_data_file)
     emoji_catalog = generate_emoji_catalog(emoji_data)
 
-    UNIFIED_REACTIONS_PATH = os.path.join(ZULIP_PATH, 'zerver', 'management', 'data', 'unified_reactions.json')
+    UNIFIED_REACTIONS_PATH = os.path.join(ZULIP_PATH, 'zerver',
+                                          'management', 'data', 'unified_reactions.json')
     with open(UNIFIED_REACTIONS_PATH) as unified_reactions_file:
         unified_reactions_data = ujson.load(unified_reactions_file)
 

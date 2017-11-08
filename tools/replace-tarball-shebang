@@ -17,7 +17,8 @@ old_shebang_bytes = old_shebang.encode()
 new_shebang_bytes = new_shebang.encode()
 
 with tarfile.open(fileobj=stdin, mode='r|*') as in_tar, \
-        tarfile.open(fileobj=stdout, mode='w', format=tarfile.PAX_FORMAT, pax_headers=in_tar.pax_headers) as out_tar:
+        tarfile.open(fileobj=stdout, mode='w',
+                     format=tarfile.PAX_FORMAT, pax_headers=in_tar.pax_headers) as out_tar:
     for info in in_tar:
         if info.isfile():
             file = in_tar.extractfile(info)
