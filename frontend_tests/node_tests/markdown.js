@@ -1,6 +1,16 @@
 /*global Dict */
-var path = require('path');
-var fs = require('fs');
+var path = zrequire('path', 'path');
+var fs = zrequire('fs', 'fs');
+zrequire('hash_util');
+zrequire('katex', 'node_modules/katex/dist/katex.min.js');
+zrequire('marked', 'third/marked/lib/marked');
+zrequire('util');
+zrequire('fenced_code');
+zrequire('stream_data');
+zrequire('people');
+zrequire('emoji_codes', 'generated/emoji/emoji_codes');
+zrequire('emoji');
+zrequire('markdown');
 
 set_global('window', {
     location: {
@@ -31,18 +41,6 @@ set_global('page_params', {
 });
 
 set_global('blueslip', {});
-
-add_dependencies({
-    marked: 'third/marked/lib/marked.js',
-    emoji_codes: 'generated/emoji/emoji_codes.js',
-    emoji: 'js/emoji.js',
-    people: 'js/people.js',
-    stream_data: 'js/stream_data.js',
-    hash_util: 'js/hash_util',
-    fenced_code: 'js/fenced_code.js',
-    katex: 'node_modules/katex/dist/katex.min.js',
-    util: 'js/util.js',
-});
 
 set_global('Image', function () {
   return {};
@@ -100,8 +98,6 @@ stream_data.add_sub('social', social);
     var output = fenced_code.process_fenced_code(input);
     assert.equal(output, expected);
 }());
-
-var markdown = require('js/markdown.js');
 
 markdown.initialize();
 

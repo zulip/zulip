@@ -27,6 +27,7 @@ exports.zrequire = function (name, fn) {
     var obj = require(fn);
     requires.push(fn);
     set_global(name, obj);
+    return obj;
 };
 
 exports.add_dependencies = function (dct) {
