@@ -1,19 +1,13 @@
-var assert = require('assert');
-
-add_dependencies({
-    util: 'js/util.js',
-    tutorial: 'js/tutorial.js',
-    server_events_dispatch: 'js/server_events_dispatch.js',
-});
-
 var noop = function () {};
 
 set_global('document', {});
 set_global('window', {
     addEventListener: noop,
 });
-
 global.stub_out_jquery();
+
+zrequire('server_events_dispatch');
+zrequire('server_events');
 
 set_global('blueslip', {});
 set_global('channel', {});
@@ -40,7 +34,6 @@ set_global('ui_report', {
     show_error: function () { return false; },
 });
 
-var server_events = require('js/server_events.js');
 
 server_events.home_view_loaded();
 
