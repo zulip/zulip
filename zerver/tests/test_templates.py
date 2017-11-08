@@ -202,6 +202,7 @@ class TemplateTestCase(ZulipTestCase):
                          "device_ip": "127.0.0.1",
                          "login_time": "9:33am NewYork, NewYork",
                          },
+            api_uri_context={},
         )
 
         context.update(kwargs)
