@@ -1,21 +1,11 @@
-set_global('page_params', {realm_emoji: {
-  burrito: {display_url: '/static/generated/emoji/images/emoji/burrito.png',
-            source_url: '/static/generated/emoji/images/emoji/burrito.png'},
-}});
-
-add_dependencies({
-    Handlebars: 'handlebars',
-    templates: 'js/templates',
-    emoji_codes: 'generated/emoji/emoji_codes.js',
-    emoji: 'js/emoji',
-});
+zrequire('Handlebars', 'handlebars');
+zrequire('templates');
 
 set_global('i18n', global.stub_i18n);
 
 var jsdom = require("jsdom");
 var window = jsdom.jsdom().defaultView;
 global.$ = require('jquery')(window);
-var _ = global._;
 
 // When writing these tests, the following command might be helpful:
 // ./tools/get-handlebar-vars static/templates/*.handlebars
