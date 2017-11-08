@@ -8,10 +8,10 @@ add_dependencies({
     util: 'js/util.js',
     muting: 'js/muting.js',
     MessageListView: 'js/message_list_view.js',
-    i18n: 'i18next',
 });
 
 
+set_global('i18n', global.stub_i18n);
 set_global('document', null);
 
 global.stub_out_jquery();
@@ -279,7 +279,7 @@ var MessageList = require('js/message_list').MessageList;
     var list = new MessageList(table, filter);
 
     with_overrides(function (override) {
-        var expected = "You subscribed to stream IceCream";
+        var expected = "translated: You subscribed to stream IceCream";
         list.view.clear_trailing_bookend = noop;
         list.narrowed = true;
 
@@ -300,7 +300,7 @@ var MessageList = require('js/message_list').MessageList;
             assert.equal(bookend.show_button, true);
         });
 
-        expected = "You unsubscribed from stream IceCream";
+        expected = "translated: You unsubscribed from stream IceCream";
         list.last_message_historical = false;
         override("stream_data.is_subscribed", function () {
             return false;
@@ -320,7 +320,7 @@ var MessageList = require('js/message_list').MessageList;
         });
 
         // Test when the stream is privates (invite only)
-        expected = "You unsubscribed from stream IceCream";
+        expected = "translated: You unsubscribed from stream IceCream";
         override("stream_data.is_subscribed", function () {
             return false;
         });
@@ -338,7 +338,7 @@ var MessageList = require('js/message_list').MessageList;
             assert.equal(bookend.show_button, false);
         });
 
-        expected = "You are not subscribed to stream IceCream";
+        expected = "translated: You are not subscribed to stream IceCream";
         list.last_message_historical = true;
 
         global.with_stub(function (stub) {
