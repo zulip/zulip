@@ -62,7 +62,7 @@ class EmailChangeTestCase(ZulipTestCase):
                                     type=Confirmation.EMAIL_CHANGE)
         url = confirmation_url(key, user_profile.realm.host, Confirmation.EMAIL_CHANGE)
         response = self.client_get(url)
-        self.assert_in_success_response(["Whoops. The confirmation link has expired."], response)
+        self.assert_in_success_response(["The confirmation link has expired or been deactivated."], response)
 
     def test_confirm_email_change(self):
         # type: () -> None
