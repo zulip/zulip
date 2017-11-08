@@ -1,14 +1,11 @@
-add_dependencies({
-    muting: 'js/muting',
-    stream_data: 'js/stream_data',
-    stream_sort: 'js/stream_sort',
-    topic_data: 'js/topic_data',
-    unread: 'js/unread',
-});
-
 set_global('blueslip', {});
 
-var tg = require('js/topic_generator.js');
+zrequire('muting');
+zrequire('unread');
+zrequire('stream_data');
+zrequire('topic_data');
+zrequire('stream_sort');
+var tg = zrequire('topic_generator');
 
 function is_even(i) { return i % 2 === 0; }
 function is_odd(i) { return i % 2 === 1; }
