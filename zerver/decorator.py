@@ -75,11 +75,11 @@ def asynchronous(method):
     return wrapper
 
 def cachify(method):
-    # type: (Callable) -> Callable
-    dct = {}  # type: Dict[Tuple, Any]
+    # type: (Callable[..., ReturnT]) -> Callable[..., ReturnT]
+    dct = {}  # type: Dict[Tuple[Any, ...], ReturnT]
 
     def cache_wrapper(*args):
-        # type: (*Any) -> Any
+        # type: (*Any) -> ReturnT
         tup = tuple(args)
         if tup in dct:
             return dct[tup]
