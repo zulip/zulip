@@ -82,9 +82,9 @@ client.call_on_each_event(lambda msg: sys.stdout.write(str(msg) + "\n"))
 ```
 </div>
 
-<div data-language="zulip-send" markdown="1">
-You can use `zulip-send` (found in `bin/` in the tarball) to easily send Zulips
-from the command-line, providing the message to be sent on STDIN.
+<div data-language="zulip-send" markdown="1"> You can use `zulip-send`
+(available after you `pip install zulip`) to easily send Zulips from
+the command-line, providing the message content via STDIN.
 
 #### Stream message
 
