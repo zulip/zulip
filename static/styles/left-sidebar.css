@@ -147,6 +147,14 @@ li.hidden-filter {
     padding: 1px 10px;
 }
 
+#global_filters .global-filter a:hover {
+    text-decoration: none;
+}
+
+#global_filters .global-filter:hover .hover-underline {
+    text-decoration: underline;
+}
+
 .left-sidebar li {
     padding-top: 2px;
     padding-bottom: 2px;
