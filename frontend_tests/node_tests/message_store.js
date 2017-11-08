@@ -1,8 +1,7 @@
-add_dependencies({
-    people: 'js/people.js',
-    pm_conversations: 'js/pm_conversations.js',
-    util: 'js/util.js',
-});
+zrequire('pm_conversations');
+zrequire('util');
+zrequire('people');
+zrequire('message_store');
 
 var noop = function () {};
 var with_overrides = global.with_overrides;
@@ -60,8 +59,6 @@ people.add_in_realm(bob);
 people.add_in_realm(cindy);
 
 global.people.initialize_current_user(me.user_id);
-
-var message_store = require('js/message_store.js');
 
 (function test_insert_recent_private_message() {
     message_store.insert_recent_private_message('1', 1001);
