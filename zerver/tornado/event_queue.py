@@ -805,7 +805,7 @@ def process_message_event(event_template, users):
 
     @cachify
     def get_client_payload(apply_markdown, client_gravatar):
-        # type: (bool, bool) -> Mapping[str, Any]
+        # type: (bool, bool) -> Dict[str, Any]
         dct = copy.deepcopy(wide_dict)
         MessageDict.finalize_payload(dct, apply_markdown, client_gravatar)
         return dct
