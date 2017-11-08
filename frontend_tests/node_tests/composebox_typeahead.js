@@ -6,6 +6,7 @@ zrequire('Handlebars', 'handlebars');
 zrequire('templates');
 zrequire('typeahead_helper');
 zrequire('people');
+zrequire('user_groups');
 zrequire('stream_data');
 zrequire('composebox_typeahead');
 

@@ -57,6 +57,14 @@ function query_matches_person(query, person) {
             || person.full_name.toLowerCase().indexOf(query) !== -1);
 }
 
+function query_matches_user_group(query, user_group) {
+    // Case-insensitive.
+    query = query.toLowerCase();
+
+    return (user_group.name.toLowerCase().indexOf(query) !== -1
+            || user_group.description.toLowerCase().indexOf(query) !== -1);
+}
+
 function query_matches_stream(query, stream) {
     query = query.toLowerCase();
 
@@ -334,7 +342,8 @@ exports.compose_content_begins_typeahead = function (query) {
             full_name: "everyone",
         };
         var persons = people.get_realm_persons();
-        return [].concat(persons, [all_item, everyone_item]);
+        var groups = user_groups.get_realm_user_groups();
+        return [].concat(persons, [all_item, everyone_item], groups);
     }
 
     if (this.options.completions.stream && current_token[0] === '#') {
@@ -360,7 +369,13 @@ exports.content_highlighter = function (item) {
     if (this.completing === 'emoji') {
         return typeahead_helper.render_emoji(item);
     } else if (this.completing === 'mention') {
-        return typeahead_helper.render_person(item);
+        var rendered;
+        if (user_groups.is_user_group(item)) {
+            rendered = typeahead_helper.render_user_group(item);
+        } else {
+            rendered = typeahead_helper.render_person(item);
+        }
+        return rendered;
     } else if (this.completing === 'stream') {
         return typeahead_helper.render_stream(item);
     } else if (this.completing === 'syntax') {
@@ -385,9 +400,14 @@ exports.content_typeahead_selected = function (item) {
             beginning = (beginning.substring(0, beginning.length - this.token.length - 1) + " :" + item.emoji_name + ": ");
         }
     } else if (this.completing === 'mention') {
-        beginning = (beginning.substring(0, beginning.length - this.token.length - 1)
-                + '@**' + item.full_name + '** ');
-        $(document).trigger('usermention_completed.zulip', {mentioned: item});
+        beginning = beginning.substring(0, beginning.length - this.token.length - 1);
+        if (user_groups.is_user_group(item)) {
+            beginning += '@*' + item.name + '* ';
+            $(document).trigger('usermention_completed.zulip', {user_group: item});
+        } else {
+            beginning += '@**' + item.full_name + '** ';
+            $(document).trigger('usermention_completed.zulip', {mentioned: item});
+        }
     } else if (this.completing === 'stream') {
         beginning = (beginning.substring(0, beginning.length - this.token.length - 1)
                 + '#**' + item.name + '** ');
@@ -423,7 +443,13 @@ exports.compose_content_matcher = function (item) {
     if (this.completing === 'emoji') {
         return query_matches_emoji(this.token, item);
     } else if (this.completing === 'mention') {
-        return query_matches_person(this.token, item);
+        var matches;
+        if (user_groups.is_user_group(item)) {
+            matches = query_matches_user_group(this.token, item);
+        } else {
+            matches = query_matches_person(this.token, item);
+        }
+        return matches;
     } else if (this.completing === 'stream') {
         return query_matches_stream(this.token, item);
     } else if (this.completing === 'syntax') {
@@ -435,9 +461,21 @@ exports.compose_matches_sorter = function (matches) {
     if (this.completing === 'emoji') {
         return typeahead_helper.sort_emojis(matches, this.token);
     } else if (this.completing === 'mention') {
-        return typeahead_helper.sort_recipients(matches, this.token,
-                                                compose_state.stream_name(),
-                                                compose_state.subject());
+        var recipients = [];
+        var groups = [];
+        _.each(matches, function (match) {
+            if (user_groups.is_user_group(match)) {
+                groups.push(match);
+            } else {
+                recipients.push(match);
+            }
+        });
+
+        recipients = typeahead_helper.sort_recipients(recipients, this.token,
+                                                      compose_state.stream_name(),
+                                                      compose_state.subject());
+        groups = typeahead_helper.sort_user_groups(groups, this.token);
+        return recipients.concat(groups);
     } else if (this.completing === 'stream') {
         return typeahead_helper.sort_streams(matches, this.token);
     } else if (this.completing === 'syntax') {

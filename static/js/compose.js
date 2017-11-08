@@ -566,6 +566,10 @@ exports.initialize = function () {
             }
         }
 
+        // User group mentions will fall through here.  In the future,
+        // we may want to add some sort of similar warning for cases
+        // where nobody in the group is subscribed, but that decision
+        // can wait on user feedback.
     });
 
     $("#compose-all-everyone").on('click', '.compose-all-everyone-confirm', function (event) {
