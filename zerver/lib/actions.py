@@ -415,7 +415,7 @@ def notify_created_bot(user_profile):
     event = dict(type="realm_bot", op="add", bot=bot)
     send_event(event, bot_owner_user_ids(user_profile))
 
-def do_create_user(email, password, realm, full_name, short_name,
+def do_create_user(email, password, realm, full_name,
                    active=True, is_realm_admin=False, bot_type=None, bot_owner=None, tos_version=None,
                    timezone=u"", avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
                    default_sending_stream=None, default_events_register_stream=None,
@@ -423,7 +423,7 @@ def do_create_user(email, password, realm, full_name, short_name,
                    newsletter_data=None):
     # type: (Text, Optional[Text], Realm, Text, Text, bool, bool, Optional[int], Optional[UserProfile], Optional[Text], Text, Text, Optional[Stream], Optional[Stream], bool, Optional[PreregistrationUser], Optional[Dict[str, str]]) -> UserProfile
     user_profile = create_user(email=email, password=password, realm=realm,
-                               full_name=full_name, short_name=short_name,
+                               full_name=full_name,
                                active=active, is_realm_admin=is_realm_admin,
                                bot_type=bot_type, bot_owner=bot_owner,
                                tos_version=tos_version, timezone=timezone, avatar_source=avatar_source,
