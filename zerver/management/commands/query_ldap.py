@@ -2,9 +2,8 @@
 from typing import Any
 
 from argparse import ArgumentParser
-import sys
 
-from django.contrib.auth import authenticate, login, get_backends
+from django.contrib.auth import get_backends
 from django.core.management.base import BaseCommand
 from django.conf import settings
 

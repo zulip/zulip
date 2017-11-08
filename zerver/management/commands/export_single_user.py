@@ -7,7 +7,6 @@ import os
 import shutil
 import subprocess
 import tempfile
-import ujson
 
 from zerver.lib.export import do_export_user
 from zerver.lib.management import ZulipBaseCommand

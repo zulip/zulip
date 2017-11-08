@@ -1,6 +1,5 @@
 from django.db import models
-from django.db.models import Manager
-from typing import Dict, Optional, Text
+from typing import Text
 
 import zerver.models
 import datetime

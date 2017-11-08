@@ -10,8 +10,8 @@ from zerver.lib.push_notifications import send_android_push_notification, \
     send_apple_push_notification
 from zerver.lib.response import json_error, json_success
 from zerver.lib.request import has_request_variables, REQ
-from zerver.lib.validator import check_dict, check_int
-from zerver.models import UserProfile, PushDeviceToken, Realm
+from zerver.lib.validator import check_int
+from zerver.models import UserProfile
 from zerver.views.push_notifications import validate_token
 
 from typing import Any, Dict, Optional, Union, Text, cast

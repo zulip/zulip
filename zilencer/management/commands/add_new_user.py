@@ -1,4 +1,4 @@
-from django.core.management.base import BaseCommand, CommandParser
+from django.core.management.base import CommandParser
 from zerver.lib.actions import do_create_user
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import Realm, UserProfile

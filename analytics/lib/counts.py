@@ -7,7 +7,7 @@ from analytics.models import InstallationCount, RealmCount, \
     last_successful_fill
 from zerver.models import Realm, UserProfile, Message, Stream, \
     UserActivityInterval, RealmAuditLog, models
-from zerver.lib.timestamp import floor_to_day, floor_to_hour, ceiling_to_day, \
+from zerver.lib.timestamp import floor_to_hour, ceiling_to_day, \
     ceiling_to_hour, verify_UTC
 
 from typing import Any, Callable, Dict, List, Optional, Text, Tuple, Type, Union

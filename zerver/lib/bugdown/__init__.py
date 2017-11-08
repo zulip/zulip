@@ -1,4 +1,3 @@
-import subprocess
 # Zulip's main markdown implementation.  See docs/markdown.md for
 # detailed documentation on our markdown syntax.
 from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Text, Tuple, TypeVar, Union
@@ -11,19 +10,16 @@ import traceback
 import urllib
 import re
 import os
-import glob
 import html
 import twitter
 import platform
 import time
 import functools
-import httplib2
-import itertools
 import ujson
 import xml.etree.cElementTree as etree
 from xml.etree.cElementTree import Element, SubElement
 
-from collections import defaultdict, deque
+from collections import deque
 
 import requests
 
@@ -43,7 +39,6 @@ from zerver.lib.url_preview import preview as link_preview
 from zerver.models import (
     all_realm_filters,
     get_active_streams,
-    get_system_bot,
     Message,
     Realm,
     RealmFilter,
@@ -51,7 +46,6 @@ from zerver.models import (
     UserProfile,
     UserGroup,
 )
-import zerver.lib.alert_words as alert_words
 import zerver.lib.mention as mention
 from zerver.lib.str_utils import force_str, force_text
 from zerver.lib.tex import render_tex

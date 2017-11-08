@@ -4,7 +4,6 @@ from typing import Any, Dict, List, Set, Tuple, Optional, Text
 from apiclient.sample_tools import client as googleapiclient
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 import django.contrib.auth
-from django.contrib.auth import authenticate
 from django.contrib.auth.backends import RemoteUserBackend
 from django.conf import settings
 from django.http import HttpResponse

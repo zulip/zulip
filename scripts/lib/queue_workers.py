@@ -6,7 +6,7 @@ import sys
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(BASE_DIR)
-import scripts.lib.setup_path_on_import
+import scripts.lib.setup_path_on_import  # WARN this actually runs a script
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 

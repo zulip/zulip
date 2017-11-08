@@ -1,12 +1,10 @@
 
-from typing import Any
-
 import os
 import ujson
 
 from django.test import Client
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandParser
+from django.core.management.base import CommandParser
 
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import get_realm

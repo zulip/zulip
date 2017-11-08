@@ -4,7 +4,6 @@ from typing import Any
 from zerver.lib.rest import rest_dispatch
 
 import zilencer.views
-import zerver.views.report
 
 i18n_urlpatterns = []  # type: Any
 

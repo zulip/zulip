@@ -1,12 +1,8 @@
 
-import time
-import ujson
-
-from typing import Any, Callable, Dict, List, Set, Text
+from typing import Any, Dict, List, Set
 
 from argparse import ArgumentParser
 from django.core.management.base import CommandError
-from django.db import connection
 
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.topic_mutes import build_topic_mute_checker

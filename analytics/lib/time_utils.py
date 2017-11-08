@@ -1,5 +1,5 @@
 from zerver.lib.timestamp import floor_to_hour, floor_to_day, \
-    timestamp_to_datetime, verify_UTC
+    verify_UTC
 from analytics.lib.counts import CountStat
 
 from datetime import datetime, timedelta

@@ -1,6 +1,3 @@
-import sys
-import traceback
-
 import logging
 import requests
 import ujson

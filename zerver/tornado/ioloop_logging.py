@@ -3,7 +3,6 @@ from typing import Any, List, Tuple
 import logging
 import time
 import select
-from tornado import ioloop
 from django.conf import settings
 
 from tornado.ioloop import IOLoop, PollIOLoop

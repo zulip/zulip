@@ -8,18 +8,13 @@ from django.test import TestCase
 from django.test.client import (
     BOUNDARY, MULTIPART_CONTENT, encode_multipart,
 )
-from django.template import loader
 from django.test.testcases import SerializeMixin
 from django.http import HttpResponse
 from django.db.utils import IntegrityError
 
 from zerver.lib.initial_password import initial_password
-from zerver.lib.db import TimeTrackingCursor
 from zerver.lib.str_utils import force_text
 from zerver.lib.utils import is_remote_server
-from zerver.lib import cache
-from zerver.tornado.handlers import allocate_handler_id
-from zerver.worker import queue_processors
 from zerver.views.users import add_service
 
 from zerver.lib.actions import (
@@ -48,11 +43,9 @@ from zerver.models import (
     Service,
     Stream,
     Subscription,
-    UserMessage,
     UserProfile,
 )
 
-from zerver.lib.request import JsonableError
 from zilencer.models import get_remote_server_by_uuid
 
 
@@ -60,12 +53,8 @@ import base64
 import mock
 import os
 import re
-import time
 import ujson
-import unittest
 import urllib
-from six import binary_type
-from zerver.lib.str_utils import NonBinaryStr
 
 from contextlib import contextmanager
 
