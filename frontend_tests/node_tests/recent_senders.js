@@ -1,4 +1,4 @@
-var rs = require('js/recent_senders.js');
+var rs = zrequire('recent_senders');
 
 (function test_process_message_for_senders() {
     var stream1 = 1;
