@@ -41,12 +41,16 @@ function on_create_bot_success(result, stream_name, api_url, integration_url) {
     update_integration_bot_url(integration_bot_url);
 }
 
+<<<<<<< HEAD
+function create_bot(full_name, bot_avatar_file, stream_name,
+                    external_api_uri_subdomain, integration_url, on_success) {
+=======
 function create_bot(full_name, short_name, bot_avatar_file, stream_name,
                     api_url, integration_url, on_success) {
+>>>>>>> 4108797218cbba88c221e1b940da4223a73d3162
     var formData = new FormData();
     formData.append('csrfmiddlewaretoken', csrf_token);
     formData.append('full_name', full_name);
-    formData.append('short_name', short_name);
     formData.append('file-'+0, bot_avatar_file);
     channel.post({
         url: '/json/bots',
@@ -67,11 +71,19 @@ function create_bot(full_name, short_name, bot_avatar_file, stream_name,
 
 // This is the main function to be called to set the integration bot url.
 exports.set_integration_bot_url = function (
+<<<<<<< HEAD
+    external_api_uri_subdomain, integration_url, bot_full_name,
+    bot_avatar_file, bot_owner, stream_name
+) {
+    create_bot(bot_full_name, bot_avatar_file,
+               stream_name, external_api_uri_subdomain, integration_url, on_create_bot_success);
+=======
     api_url, integration_url, bot_full_name,
     bot_short_name, bot_avatar_file, bot_owner, stream_name
 ) {
     create_bot(bot_full_name, bot_short_name, bot_avatar_file,
                stream_name, api_url, integration_url, on_create_bot_success);
+>>>>>>> 4108797218cbba88c221e1b940da4223a73d3162
 };
 
 return exports;

@@ -429,8 +429,13 @@ def notify_created_bot(user_profile):
     event = dict(type="realm_bot", op="add", bot=bot)
     send_event(event, bot_owner_user_ids(user_profile))
 
+<<<<<<< HEAD
+def do_create_user(email, password, realm, full_name,
+                   active=True, is_realm_admin=False, bot_type=None, bot_owner=None, tos_version=None,
+=======
 def do_create_user(email, password, realm, full_name, short_name,
                    is_realm_admin=False, bot_type=None, bot_owner=None, tos_version=None,
+>>>>>>> 4108797218cbba88c221e1b940da4223a73d3162
                    timezone=u"", avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
                    default_sending_stream=None, default_events_register_stream=None,
                    default_all_public_streams=None, prereg_user=None,
@@ -438,8 +443,13 @@ def do_create_user(email, password, realm, full_name, short_name,
     # type: (Text, Optional[Text], Realm, Text, Text, bool, Optional[int], Optional[UserProfile], Optional[Text], Text, Text, Optional[Stream], Optional[Stream], bool, Optional[PreregistrationUser], Optional[Dict[str, str]], List[DefaultStreamGroup]) -> UserProfile
 
     user_profile = create_user(email=email, password=password, realm=realm,
+<<<<<<< HEAD
+                               full_name=full_name,
+                               active=active, is_realm_admin=is_realm_admin,
+=======
                                full_name=full_name, short_name=short_name,
                                is_realm_admin=is_realm_admin,
+>>>>>>> 4108797218cbba88c221e1b940da4223a73d3162
                                bot_type=bot_type, bot_owner=bot_owner,
                                tos_version=tos_version, timezone=timezone, avatar_source=avatar_source,
                                default_sending_stream=default_sending_stream,
