@@ -1040,7 +1040,7 @@ class MultiuseInviteTest(ZulipTestCase):
         result = self.client_post(invite_link, {'email': email})
 
         self.assertEqual(result.status_code, 200)
-        self.assert_in_response("Whoops. The confirmation link has expired.", result)
+        self.assert_in_response("The confirmation link has expired or been deactivated.", result)
 
     def test_invalid_multiuse_link(self) -> None:
         email = self.nonreg_email('newuser')
@@ -1706,6 +1706,26 @@ class UserSignUpTest(ZulipTestCase):
              'full_name': "New User",
              'from_confirmation': '1'},  subdomain="zephyr")
         self.assert_in_success_response(["We couldn't find your confirmation link"], result)
+
+    def test_failed_signup_due_to_empty_realm_in_prereg_user(self) -> None:
+        """
+        Largely to test a transitional state, where we started requiring the
+        realm in PreregistrationUser (if realm_creation is False), and wanted
+        to make sure we had properly disabled any existing confirmation links that
+        didn't have the realm set.
+        """
+        email = "newuser@zulip.com"
+        password = "password"
+        self.client_post('/accounts/home/', {'email': email})
+        PreregistrationUser.objects.update(realm=None)
+        result = self.client_post(
+            '/accounts/register/',
+            {'password': password,
+             'key': find_key_by_email(email),
+             'terms': True,
+             'full_name': "New User",
+             'from_confirmation': '1'})
+        self.assert_in_success_response(["The confirmation link has expired or been deactivated."], result)
 
     def test_failed_signup_due_to_restricted_domain(self) -> None:
         realm = get_realm('zulip')

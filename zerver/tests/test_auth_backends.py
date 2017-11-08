@@ -540,7 +540,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
     def test_github_backend_new_user(self) -> None:
         rf = RequestFactory()
-        request = rf.get('/complete')
+        request = rf.get('/complete', HTTP_HOST=self.user_profile.realm.host)
         request.session = {}
         request.user = self.user_profile
         self.backend.strategy.request = request
