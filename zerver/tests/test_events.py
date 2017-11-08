@@ -481,13 +481,18 @@ class EventsRegisterTest(ZulipTestCase):
         )
         # hybrid_state = initial fetch state + re-applying events triggered by our action
         # normal_state = do action then fetch at the end (the "normal" code path)
-        hybrid_state = fetch_initial_state_data(self.user_profile, event_types, "", include_subscribers=include_subscribers)
+        hybrid_state = fetch_initial_state_data(
+            self.user_profile, event_types, "",
+            client_gravatar=True,
+            include_subscribers=include_subscribers
+        )
         action()
         events = client.event_queue.contents()
         self.assertTrue(len(events) == num_events)
 
         before = ujson.dumps(hybrid_state)
-        apply_events(hybrid_state, events, self.user_profile, include_subscribers=include_subscribers)
+        apply_events(hybrid_state, events, self.user_profile,
+                     client_gravatar=True, include_subscribers=include_subscribers)
         after = ujson.dumps(hybrid_state)
 
         if state_change_expected:
@@ -498,7 +503,11 @@ class EventsRegisterTest(ZulipTestCase):
             if before != after:
                 raise AssertionError('Test is invalid--state actually does change here.')
 
-        normal_state = fetch_initial_state_data(self.user_profile, event_types, "", include_subscribers=include_subscribers)
+        normal_state = fetch_initial_state_data(
+            self.user_profile, event_types, "",
+            client_gravatar=True,
+            include_subscribers=include_subscribers
+        )
         self.match_states(hybrid_state, normal_state, events)
         return events
 
@@ -941,7 +950,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('person', check_dict_only([
                 ('user_id', check_int),
                 ('email', check_string),
-                ('avatar_url', check_string),
+                ('avatar_url', check_none_or(check_string)),
                 ('full_name', check_string),
                 ('is_admin', check_bool),
                 ('is_bot', check_bool),
@@ -1757,7 +1766,7 @@ class EventsRegisterTest(ZulipTestCase):
             lambda: do_delete_message(self.user_profile, message),
             state_change_expected=True,
         )
-        result = fetch_initial_state_data(user_profile, None, "")
+        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False)
         self.assertEqual(result['max_message_id'], -1)
 
 class FetchInitialStateDataTest(ZulipTestCase):
@@ -1766,7 +1775,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         # type: () -> None
         user_profile = self.example_user('cordelia')
         self.assertFalse(user_profile.is_realm_admin)
-        result = fetch_initial_state_data(user_profile, None, "")
+        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False)
         self.assert_length(result['realm_bots'], 0)
 
         # additionally the API key for a random bot is not present in the data
@@ -1779,7 +1788,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         user_profile = self.example_user('hamlet')
         do_change_is_admin(user_profile, True)
         self.assertTrue(user_profile.is_realm_admin)
-        result = fetch_initial_state_data(user_profile, None, "")
+        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False)
         self.assertTrue(len(result['realm_bots']) > 5)
 
     def test_max_message_id_with_no_history(self):
@@ -1787,7 +1796,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         user_profile = self.example_user('aaron')
         # Delete all historical messages for this user
         UserMessage.objects.filter(user_profile=user_profile).delete()
-        result = fetch_initial_state_data(user_profile, None, "")
+        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False)
         self.assertEqual(result['max_message_id'], -1)
 
     def test_unread_msgs(self):
@@ -2339,6 +2348,7 @@ class FetchQueriesTest(ZulipTestCase):
                     user_profile=user,
                     event_types=None,
                     queue_id='x',
+                    client_gravatar=False,
                 )
 
         self.assert_length(queries, 28)
@@ -2390,6 +2400,7 @@ class FetchQueriesTest(ZulipTestCase):
                     user_profile=user,
                     event_types=event_types,
                     queue_id='x',
+                    client_gravatar=False,
                 )
             self.assert_length(queries, count)
 

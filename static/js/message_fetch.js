@@ -87,6 +87,8 @@ exports.load_old_messages = function load_old_messages(opts) {
         data.use_first_unread_anchor = true;
     }
 
+    data.client_gravatar = true;
+
     channel.get({
         url:      '/json/messages',
         data:     data,

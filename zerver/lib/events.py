@@ -15,7 +15,7 @@ session_engine = import_module(settings.SESSION_ENGINE)
 
 from zerver.lib.alert_words import user_alert_words
 from zerver.lib.attachments import user_attachments
-from zerver.lib.avatar import avatar_url, avatar_url_from_dict
+from zerver.lib.avatar import avatar_url, get_avatar_field
 from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.message import (
@@ -44,13 +44,22 @@ from zproject.backends import email_auth_enabled, password_auth_enabled
 from version import ZULIP_VERSION
 
 
-def get_raw_user_data(realm_id):
-    # type: (int) -> Dict[int, Dict[str, Text]]
+def get_raw_user_data(realm_id, client_gravatar):
+    # type: (int, bool) -> Dict[int, Dict[str, Text]]
     user_dicts = get_realm_user_dicts(realm_id)
 
     def user_data(row):
         # type: (Dict[str, Any]) -> Dict[str, Any]
-        avatar_url = avatar_url_from_dict(row)
+        avatar_url = get_avatar_field(
+            user_id=row['id'],
+            realm_id= realm_id,
+            email=row['email'],
+            avatar_source=row['avatar_source'],
+            avatar_version=row['avatar_version'],
+            medium=False,
+            client_gravatar=client_gravatar,
+        )
+
         is_admin = row['is_realm_admin']
 
         return dict(
@@ -84,9 +93,9 @@ def always_want(msg_type):
 # all event types.  Whenever you add new code to this function, you
 # should also add corresponding events for changes in the data
 # structures and new code to apply_events (and add a test in EventsRegisterTest).
-def fetch_initial_state_data(user_profile, event_types, queue_id,
+def fetch_initial_state_data(user_profile, event_types, queue_id, client_gravatar,
                              include_subscribers=True):
-    # type: (UserProfile, Optional[Iterable[str]], str, bool) -> Dict[str, Any]
+    # type: (UserProfile, Optional[Iterable[str]], str, bool, bool) -> Dict[str, Any]
     state = {'queue_id': queue_id}  # type: Dict[str, Any]
 
     if event_types is None:
@@ -169,10 +178,21 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['realm_filters'] = realm_filters_for_realm(user_profile.realm_id)
 
     if want('realm_user'):
-        state['raw_users'] = get_raw_user_data(user_profile.realm_id)
+        state['raw_users'] = get_raw_user_data(
+            realm_id=user_profile.realm_id,
+            client_gravatar=client_gravatar,
+        )
         state['avatar_source'] = user_profile.avatar_source
-        state['avatar_url_medium'] = avatar_url(user_profile, medium=True)
-        state['avatar_url'] = avatar_url(user_profile)
+        state['avatar_url_medium'] = avatar_url(
+            user_profile,
+            medium=True,
+            client_gravatar=client_gravatar,
+        )
+        state['avatar_url'] = avatar_url(
+            user_profile,
+            medium=False,
+            client_gravatar=client_gravatar,
+        )
         state['can_create_streams'] = user_profile.can_create_streams()
         state['cross_realm_bots'] = list(get_cross_realm_dicts())
         state['is_admin'] = user_profile.is_realm_admin
@@ -235,9 +255,9 @@ def remove_message_id_from_unread_mgs(state, message_id):
     raw_unread['unmuted_stream_msgs'].discard(message_id)
     raw_unread['mentions'].discard(message_id)
 
-def apply_events(state, events, user_profile, include_subscribers=True,
+def apply_events(state, events, user_profile, client_gravatar, include_subscribers=True,
                  fetch_event_types=None):
-    # type: (Dict[str, Any], Iterable[Dict[str, Any]], UserProfile, bool, Optional[Iterable[str]]) -> None
+    # type: (Dict[str, Any], Iterable[Dict[str, Any]], UserProfile, bool, bool, Optional[Iterable[str]]) -> None
     for event in events:
         if fetch_event_types is not None and event['type'] not in fetch_event_types:
             # TODO: continuing here is not, most precisely, correct.
@@ -249,10 +269,10 @@ def apply_events(state, events, user_profile, include_subscribers=True,
             # `apply_event`.  For now, be careful in your choice of
             # `fetch_event_types`.
             continue
-        apply_event(state, event, user_profile, include_subscribers)
+        apply_event(state, event, user_profile, client_gravatar, include_subscribers)
 
-def apply_event(state, event, user_profile, include_subscribers):
-    # type: (Dict[str, Any], Dict[str, Any], UserProfile, bool) -> None
+def apply_event(state, event, user_profile, client_gravatar, include_subscribers):
+    # type: (Dict[str, Any], Dict[str, Any], UserProfile, bool, bool) -> None
     if event['type'] == "message":
         state['max_message_id'] = max(state['max_message_id'], event['message']['id'])
         if 'raw_unread_msgs' in state:
@@ -275,6 +295,9 @@ def apply_event(state, event, user_profile, include_subscribers):
 
         if event['op'] == "add":
             person = copy.deepcopy(person)
+            if client_gravatar:
+                if 'gravatar.com' in person['avatar_url']:
+                    person['avatar_url'] = None
             person['is_active'] = True
             state['raw_users'][person_user_id] = person
         elif event['op'] == "remove":
@@ -549,11 +572,13 @@ def do_events_register(user_profile, user_client, apply_markdown=True, client_gr
     maybe_catch_up_soft_deactivated_user(user_profile)
 
     ret = fetch_initial_state_data(user_profile, event_types_set, queue_id,
+                                   client_gravatar=client_gravatar,
                                    include_subscribers=include_subscribers)
 
     # Apply events that came in while we were fetching initial data
     events = get_user_events(user_profile, queue_id, -1)
     apply_events(ret, events, user_profile, include_subscribers=include_subscribers,
+                 client_gravatar=client_gravatar,
                  fetch_event_types=fetch_event_types)
 
     '''
