@@ -1,4 +1,4 @@
-var colorspace = require('js/colorspace.js');
+zrequire('colorspace');
 
 (function test_sRGB_to_linear() {
     var srgb_color = 0.0042;
