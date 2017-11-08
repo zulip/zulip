@@ -1,4 +1,15 @@
-var ct = require('js/composebox_typeahead.js');
+zrequire('compose_state');
+zrequire('ui_util');
+zrequire('pm_conversations');
+zrequire('util');
+zrequire('Handlebars', 'handlebars');
+zrequire('templates');
+zrequire('typeahead_helper');
+zrequire('people');
+zrequire('stream_data');
+zrequire('composebox_typeahead');
+
+var ct = composebox_typeahead;
 
 var emoji_stadium = {
     emoji_name: 'stadium',
@@ -54,19 +65,6 @@ set_global('emoji', {
 });
 set_global('pygments_data', {langs:
     {python: 0, javscript: 1, html: 2, css: 3},
-});
-
-add_dependencies({
-    Handlebars: 'handlebars',
-    compose_state: 'js/compose_state.js',
-    people: 'js/people.js',
-    stream_data: 'js/stream_data',
-    templates: 'js/templates',
-    pm_conversations: 'js/pm_conversations.js',
-    recent_senders: 'js/recent_senders.js',
-    typeahead_helper: 'js/typeahead_helper.js',
-    ui_util: 'js/ui_util.js',
-    util: 'js/util.js',
 });
 
 global.compile_template('typeahead_list_item');
