@@ -9,8 +9,8 @@ import ujson
 from typing import Any, Dict, List
 
 from emoji_setup_utils import generate_emoji_catalog, generate_codepoint_to_name_map, \
-    get_extended_codepoint_to_name, get_extended_name_to_codepoint, get_extended_names_list, \
-    get_new_emoji_dicts, emoji_names_for_picker, EMOJISETS
+    generate_name_to_codepoint_map, emoji_names_for_picker, EMOJISETS
+from emoji_names import EMOJI_NAME_MAPS
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../')
 sys.path.append(ZULIP_PATH)
@@ -185,27 +185,15 @@ def setup_old_emoji_farm(cache_path, emoji_map):
         except FileExistsError:
             pass
 
-def generate_map_files(cache_path, emoji_map, emoji_data, emoji_catalog, unified_reactions_data):
-    # type: (str, Dict[str, str], List[Dict[str, Any]], Dict[str, List[str]], Dict[str, str]) -> None
+def generate_map_files(cache_path, emoji_catalog):
+    # type: (str, Dict[str, List[str]]) -> None
     # This function generates the various data files consumed by webapp, mobile apps, bugdown etc.
-    EMOJI_CODES_PATH = os.path.join(cache_path, 'emoji_codes.js')
+    names = emoji_names_for_picker(EMOJI_NAME_MAPS)
+    codepoint_to_name = generate_codepoint_to_name_map(EMOJI_NAME_MAPS)
+    name_to_codepoint = generate_name_to_codepoint_map(EMOJI_NAME_MAPS)
 
-    # put thumbs_up before thumbs_down
-    names = emoji_names_for_picker(emoji_map)
-    down_index = names.index('thumbs_down')
-    up_index = names.index('thumbs_up')
-    names[down_index], names[up_index] = ('thumbs_up', 'thumbs_down')
-
-    name_to_codepoint = {name: unified_reactions_data[name] for name in names}
-    codepoint_to_name = generate_codepoint_to_name_map(names, unified_reactions_data)
-
-    # Extend to use new emojis from iamcal dataset(See `emoji_can_be_included()` in emoji_setup_utils).
-    new_emoji_dicts = get_new_emoji_dicts(unified_reactions_data, emoji_data)
-    names = get_extended_names_list(names, new_emoji_dicts)
-    name_to_codepoint = get_extended_name_to_codepoint(name_to_codepoint, new_emoji_dicts)
-    codepoint_to_name = get_extended_codepoint_to_name(codepoint_to_name, new_emoji_dicts)
-
-    with open(EMOJI_CODES_PATH, 'w') as emoji_codes_file:
+    EMOJI_CODES_FILE_PATH = os.path.join(cache_path, 'emoji_codes.js')
+    with open(EMOJI_CODES_FILE_PATH, 'w') as emoji_codes_file:
         emoji_codes_file.write(EMOJI_CODES_FILE_TEMPLATE % {
             'names': names,
             'name_to_codepoint': name_to_codepoint,
@@ -231,12 +219,7 @@ def dump_emojis(cache_path):
     EMOJI_DATA_FILE_PATH = os.path.join(NODE_MODULES_PATH, 'emoji-datasource-google', 'emoji.json')
     with open(EMOJI_DATA_FILE_PATH) as emoji_data_file:
         emoji_data = ujson.load(emoji_data_file)
-    emoji_catalog = generate_emoji_catalog(emoji_data)
-
-    UNIFIED_REACTIONS_PATH = os.path.join(ZULIP_PATH, 'zerver',
-                                          'management', 'data', 'unified_reactions.json')
-    with open(UNIFIED_REACTIONS_PATH) as unified_reactions_file:
-        unified_reactions_data = ujson.load(unified_reactions_file)
+    emoji_catalog = generate_emoji_catalog(emoji_data, EMOJI_NAME_MAPS)
 
     # Setup emoji farms.
     run(['rm', '-rf', cache_path])
@@ -244,7 +227,7 @@ def dump_emojis(cache_path):
     setup_old_emoji_farm(cache_path, emoji_map)
 
     # Generate various map files.
-    generate_map_files(cache_path, emoji_map, emoji_data, emoji_catalog, unified_reactions_data)
+    generate_map_files(cache_path, emoji_catalog)
 
 if __name__ == "__main__":
     main()

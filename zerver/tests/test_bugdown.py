@@ -498,7 +498,7 @@ class BugdownTest(ZulipTestCase):
         media_tweet_html = ('<a href="http://t.co/xo7pAhK6n3" target="_blank" title="http://t.co/xo7pAhK6n3">'
                             'http://twitter.com/NEVNBoston/status/421654515616849920/photo/1</a>')
 
-        emoji_in_tweet_html = """Zulip is <span class="emoji emoji-1f4af" title="hundred points">:hundred_points:</span>% open-source!"""
+        emoji_in_tweet_html = """Zulip is <span class="emoji emoji-1f4af" title="100">:100:</span>% open-source!"""
 
         def make_inline_twitter_preview(url: str, tweet_html: str, image_html: str='') -> str:
             ## As of right now, all previews are mocked to be the exact same tweet
