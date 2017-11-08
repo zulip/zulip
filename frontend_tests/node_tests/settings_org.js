@@ -1,11 +1,8 @@
 set_global('$', global.make_zjquery());
 set_global('i18n', global.stub_i18n);
 
-add_dependencies({
-    stream_data: 'js/stream_data',
-});
-
-var settings_org = require('js/settings_org.js');
+zrequire('stream_data');
+zrequire('settings_org');
 
 var noop = function () {};
 
