@@ -39,7 +39,7 @@ function render_code_sections() {
         });
     };
 
-    $(".sidebar h2").click(function (e) {
+    $(".sidebar.slide h2").click(function (e) {
         var $next = $(e.target).next();
 
         if ($next.is("ul")) {

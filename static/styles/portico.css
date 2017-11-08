@@ -151,7 +151,7 @@ body {
     cursor: pointer;
 }
 
-.help .sidebar h2::before {
+.help .sidebar.slide h2::before {
     display: inline-block;
     font: normal normal normal 14px/1 FontAwesome;
     font-size: inherit;
@@ -169,8 +169,12 @@ body {
     content: "";
 }
 
-.help .sidebar h2.no-arrow {
+.help .sidebar.slide h2.no-arrow {
     margin-left: 12px;
+}
+
+.help .sidebar:not(.slide) h2 {
+    margin-left: 0px;
 }
 
 .help .sidebar h2.no-arrow a {
@@ -188,8 +192,15 @@ body {
 }
 
 .help .sidebar ul {
+    margin: 10px 0px 10px 12px;
+}
+
+.help .sidebar.slide ul {
+    margin-left: 19px;
+}
+
+.help .sidebar.slide ul {
     display: none;
-    margin: 10px 0px 10px 19px;
 }
 
 .help .sidebar li {
