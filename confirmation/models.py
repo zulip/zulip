@@ -43,8 +43,9 @@ def generate_key() -> str:
     # 24 characters * 5 bits of entropy/character = 120 bits of entropy
     return ''.join(generator.choice(string.ascii_lowercase + string.digits) for _ in range(24))
 
+ObjT = Union[MultiuseInvite, PreregistrationUser, EmailChangeStatus]
 def get_object_from_key(confirmation_key: str,
-                        confirmation_type: int) -> Union[MultiuseInvite, PreregistrationUser, EmailChangeStatus]:
+                        confirmation_type: int) -> ObjT:
     # Confirmation keys used to be 40 characters
     if len(confirmation_key) not in (24, 40):
         raise ConfirmationKeyException(ConfirmationKeyException.WRONG_LENGTH)
