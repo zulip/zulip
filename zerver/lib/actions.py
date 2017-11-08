@@ -174,8 +174,10 @@ def private_stream_user_ids(stream_id):
 def bot_owner_user_ids(user_profile):
     # type: (UserProfile) -> Set[int]
     is_private_bot = (
-        user_profile.default_sending_stream and user_profile.default_sending_stream.invite_only or
-        user_profile.default_events_register_stream and user_profile.default_events_register_stream.invite_only)
+        user_profile.default_sending_stream and
+        user_profile.default_sending_stream.invite_only or
+        user_profile.default_events_register_stream and
+        user_profile.default_events_register_stream.invite_only)
     if is_private_bot:
         return {user_profile.bot_owner_id, }
     else:
@@ -300,7 +302,8 @@ def add_new_user_history(user_profile, streams):
     # Handle the race condition where a message arrives between
     # bulk_add_subscriptions above and the Message query just above
     already_ids = set(UserMessage.objects.filter(message_id__in=message_ids_to_use,
-                                                 user_profile=user_profile).values_list("message_id", flat=True))
+                                                 user_profile=user_profile).values_list("message_id",
+                                                                                        flat=True))
     ums_to_create = [UserMessage(user_profile=user_profile, message_id=message_id,
                                  flags=UserMessage.flags.read)
                      for message_id in message_ids_to_use
@@ -1193,7 +1196,8 @@ def do_send_messages(messages_maybe_none, email_gateway=False):
             # ensuring that in the tornado server, non-public stream
             # messages are only associated to their subscribed users.
             if message['stream'] is None:
-                message['stream'] = Stream.objects.select_related("realm").get(id=message['message'].recipient.type_id)
+                stream_id = message['message'].recipient.type_id
+                message['stream'] = Stream.objects.select_related("realm").get(id=stream_id)
             assert message['stream'] is not None  # assert needed because stubs for django are missing
             if message['stream'].is_public():
                 event['realm_id'] = message['stream'].realm_id
@@ -1383,7 +1387,8 @@ def do_send_typing_notification(notification):
     user_ids_to_notify = [profile.id for profile in recipient_user_profiles if profile.is_active]
     sender_dict = {'user_id': notification['sender'].id, 'email': notification['sender'].email}
     # Include a list of recipients in the event body to help identify where the typing is happening
-    recipient_dicts = [{'user_id': profile.id, 'email': profile.email} for profile in recipient_user_profiles]
+    recipient_dicts = [{'user_id': profile.id, 'email': profile.email}
+                       for profile in recipient_user_profiles]
     event = dict(
         type            = 'typing',
         op              = notification['op'],
@@ -1490,7 +1495,10 @@ def create_streams_if_needed(realm, stream_dicts):
     return added_streams, existing_streams
 
 
-def get_recipient_from_user_ids(recipient_profile_ids, not_forged_mirror_message, forwarder_user_profile, sender):
+def get_recipient_from_user_ids(recipient_profile_ids,
+                                not_forged_mirror_message,
+                                forwarder_user_profile,
+                                sender):
     # type: (Set[int], bool, Optional[UserProfile], UserProfile) -> Recipient
 
     # Avoid mutating the passed in set of recipient_profile_ids.
@@ -1748,7 +1756,8 @@ def check_message(sender, client, addressee,
 
         except Stream.DoesNotExist:
             send_pm_if_empty_stream(sender, None, stream_name, realm)
-            raise JsonableError(_("Stream '%(stream_name)s' does not exist") % {'stream_name': escape(stream_name)})
+            raise JsonableError(_("Stream '%(stream_name)s' "
+                                  "does not exist") % {'stream_name': escape(stream_name)})
         recipient = get_stream_recipient(stream.id)
 
         if not stream.invite_only:
@@ -1778,7 +1787,8 @@ def check_message(sender, client, addressee,
         if user_profiles is None or len(user_profiles) == 0:
             raise JsonableError(_("Message must have recipients"))
 
-        mirror_message = client and client.name in ["zephyr_mirror", "irc_mirror", "jabber_mirror", "JabberMirror"]
+        mirror_message = client and client.name in ["zephyr_mirror", "irc_mirror",
+                                                    "jabber_mirror", "JabberMirror"]
         not_forged_mirror_message = mirror_message and not forged
         try:
             recipient = recipient_for_user_profiles(user_profiles, not_forged_mirror_message,
@@ -2188,7 +2198,8 @@ def bulk_add_subscriptions(streams, users, from_stream_creation=False, acting_us
     with transaction.atomic():
         occupied_streams_before = list(get_occupied_streams(user_profile.realm))
         Subscription.objects.bulk_create([sub for (sub, stream) in subs_to_add])
-        Subscription.objects.filter(id__in=[sub.id for (sub, stream) in subs_to_activate]).update(active=True)
+        sub_ids = [sub.id for (sub, stream) in subs_to_activate]
+        Subscription.objects.filter(id__in=sub_ids).update(active=True)
         occupied_streams_after = list(get_occupied_streams(user_profile.realm))
 
     # Log Subscription Activities in RealmAuditLog
