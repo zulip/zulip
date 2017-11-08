@@ -352,9 +352,9 @@
     },
     {
       "name": "many_emoji",
-      "input":  "test :smile: again :poop:\n foobar x::y::z :wasted waste: :fakeemojithisshouldnotrender:",
-      "expected_output": "<p>test <span class=\"emoji emoji-1f604\" title=\"smile\">:smile:</span> again <span class=\"emoji emoji-1f4a9\" title=\"poop\">:poop:</span><br>\n foobar x::y::z :wasted waste: :fakeemojithisshouldnotrender:</p>",
-      "text_content": "test \ud83d\ude04 again \ud83d\udca9\n foobar x::y::z :wasted waste: :fakeemojithisshouldnotrender:"
+      "input":  "test :smile: again :poop:\n:) foo:)bar x::y::z :wasted waste: :fakeemojithisshouldnotrender:",
+      "expected_output": "<p>test <span class=\"emoji emoji-263a\" title=\"smile\">:smile:</span> again <span class=\"emoji emoji-1f4a9\" title=\"poop\">:poop:</span><br>\n:) foo:)bar x::y::z :wasted waste: :fakeemojithisshouldnotrender:</p>",
+      "text_content": "test \u263A again \ud83d\udca9\n:) foo:)bar x::y::z :wasted waste: :fakeemojithisshouldnotrender:"
     },
     {
       "name": "translate_emoticons_not_enabled",
@@ -373,7 +373,7 @@
     {
       "name": "translate_emoticons",
       "input":  ":) foo :( bar <3 with space : ) real emoji :smiley:",
-      "expected_output": "<p><span class=\"emoji emoji-1f603\" title=\"smiley\">:smiley:</span> foo <span class=\"emoji emoji-1f641\" title=\"slightly frowning face\">:slightly_frowning_face:</span> bar <span class=\"emoji emoji-2764\" title=\"heart\">:heart:</span> with space : ) real emoji <span class=\"emoji emoji-1f603\" title=\"smiley\">:smiley:</span></p>",
+      "expected_output": "<p><span class=\"emoji emoji-1f603\" title=\"smiley\">:smiley:</span> foo <span class=\"emoji emoji-1f641\" title=\"slight frown\">:slight_frown:</span> bar <span class=\"emoji emoji-2764\" title=\"heart\">:heart:</span> with space : ) real emoji <span class=\"emoji emoji-1f603\" title=\"smiley\">:smiley:</span></p>",
       "text_content": "\ud83d\ude03 foo \ud83d\ude41 bar \u2764 with space : ) real emoji \ud83d\ude03",
       "translate_emoticons": true
     },
@@ -432,14 +432,14 @@
     {
       "name": "emojis_without_space",
       "input": ":cat:hello:dog::rabbit:",
-      "expected_output": "<p><span class=\"emoji emoji-1f431\" title=\"cat\">:cat:</span>hello<span class=\"emoji emoji-1f436\" title=\"dog\">:dog:</span><span class=\"emoji emoji-1f430\" title=\"rabbit\">:rabbit:</span></p>",
-      "text_content": "\ud83d\udc31hello\ud83d\udc36\ud83d\udc30"
+      "expected_output": "<p><span class=\"emoji emoji-1f408\" title=\"cat\">:cat:</span>hello<span class=\"emoji emoji-1f415\" title=\"dog\">:dog:</span><span class=\"emoji emoji-1f407\" title=\"rabbit\">:rabbit:</span></p>",
+      "text_content": "\ud83d\udc08hello\ud83d\udc15\ud83d\udc07"
     },
     {
       "name": "emojis_newline",
       "input": ":cat:\n:dog:",
-      "expected_output": "<p><span class=\"emoji emoji-1f431\" title=\"cat\">:cat:</span><br>\n<span class=\"emoji emoji-1f436\" title=\"dog\">:dog:</span></p>",
-      "text_content": "\ud83d\udc31\n\ud83d\udc36"
+      "expected_output": "<p><span class=\"emoji emoji-1f408\" title=\"cat\">:cat:</span><br>\n<span class=\"emoji emoji-1f415\" title=\"dog\">:dog:</span></p>",
+      "text_content": "\ud83d\udc08\n\ud83d\udc15"
     },
     {
       "name": "not_emoji",
@@ -468,23 +468,23 @@
     {
       "name": "miscellaneous_symbols_and_pictographs",
       "input": "Merry Christmas!!\ud83c\udf84",
-      "expected_output":"<p>Merry Christmas!!<span class=\"emoji emoji-1f384\" title=\"christmas tree\">:christmas_tree:</span><\/p>",
+      "expected_output":"<p>Merry Christmas!!<span class=\"emoji emoji-1f384\" title=\"holiday tree\">:holiday_tree:</span><\/p>",
       "text_content": "Merry Christmas!!\ud83c\udf84"
     },
     {
       "name": "miscellaneous_and_dingbats_emoji",
       "input": "\u2693\u2797",
-      "expected_output":"<p><span class=\"emoji emoji-2693\" title=\"anchor\">:anchor:</span><span class=\"emoji emoji-2797\" title=\"heavy division sign\">:heavy_division_sign:</span><\/p>"
+      "expected_output":"<p><span class=\"emoji emoji-2693\" title=\"anchor\">:anchor:</span><span class=\"emoji emoji-2797\" title=\"division\">:division:</span><\/p>"
     },
     {
       "name": "supplemental_symbols_and_pictographs",
       "input": "I am a robot \ud83e\udd16.",
-      "expected_output":"<p>I am a robot <span class=\"emoji emoji-1f916\" title=\"robot face\">:robot_face:</span>.<\/p>"
+      "expected_output":"<p>I am a robot <span class=\"emoji emoji-1f916\" title=\"robot\">:robot:</span>.<\/p>"
     },
     {
       "name": "miscellaneous_symbols_and_arrows",
       "input": "Black upward arrow \u2b06",
-      "expected_output":"<p>Black upward arrow <span class=\"emoji emoji-2b06\" title=\"arrow up\">:arrow_up:</span><\/p>"
+      "expected_output":"<p>Black upward arrow <span class=\"emoji emoji-2b06\" title=\"up\">:up:</span><\/p>"
     },
     {
       "name": "unicode_emoji_without_space",
@@ -500,12 +500,12 @@
     {
       "name": "emoji_alongside_punctuation",
       "input": ":smile:, :smile:; :smile:",
-      "expected_output": "<p><span class=\"emoji emoji-1f604\" title=\"smile\">:smile:</span>, <span class=\"emoji emoji-1f604\" title=\"smile\">:smile:</span>; <span class=\"emoji emoji-1f604\" title=\"smile\">:smile:</span></p>"
+      "expected_output": "<p><span class=\"emoji emoji-263a\" title=\"smile\">:smile:</span>, <span class=\"emoji emoji-263a\" title=\"smile\">:smile:</span>; <span class=\"emoji emoji-263a\" title=\"smile\">:smile:</span></p>"
     },
     {
       "name": "new_emoji_test",
-      "input": ":avocado:, :kiwifruit:, :selfie:, :gear:, :comet:, :first_place_medal:",
-      "expected_output": "<p><span class=\"emoji emoji-1f951\" title=\"avocado\">:avocado:</span>, <span class=\"emoji emoji-1f95d\" title=\"kiwifruit\">:kiwifruit:</span>, <span class=\"emoji emoji-1f933\" title=\"selfie\">:selfie:</span>, <span class=\"emoji emoji-2699\" title=\"gear\">:gear:</span>, <span class=\"emoji emoji-2604\" title=\"comet\">:comet:</span>, <span class=\"emoji emoji-1f947\" title=\"first place medal\">:first_place_medal:</span></p>"
+      "input": ":avocado:, :kiwi:, :selfie:, :gear:, :comet:, :gold:",
+      "expected_output": "<p><span class=\"emoji emoji-1f951\" title=\"avocado\">:avocado:</span>, <span class=\"emoji emoji-1f95d\" title=\"kiwi\">:kiwi:</span>, <span class=\"emoji emoji-1f933\" title=\"selfie\">:selfie:</span>, <span class=\"emoji emoji-2699\" title=\"gear\">:gear:</span>, <span class=\"emoji emoji-2604\" title=\"comet\">:comet:</span>, <span class=\"emoji emoji-1f947\" title=\"gold\">:gold:</span></p>"
     },
     {
       "name": "emoji_pipeline_newline",

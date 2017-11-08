@@ -203,47 +203,37 @@ def google_color_bug(names):
     return [name for name in names if
             name[:5] == 'black' or name[:5] == 'white' or name in miscolored_names]
 
-def emoji_names_for_picker(emoji_map):
-    # type: (Dict[str, str]) -> List[str]
-    codepoint_to_names = defaultdict(list)  # type: Dict[str, List[str]]
-    for name, codepoint in emoji_map.items():
-        codepoint_to_names[codepoint].append(name)
+def emoji_names_for_picker(emoji_name_maps):
+    # type: (Dict[str, Dict[str, Any]]) -> List[str]
+    emoji_names = []  # type: List[str]
+    for emoji_code, name_info in emoji_name_maps.items():
+        emoji_names.append(name_info["canonical_name"])
+        emoji_names.extend(name_info["aliases"])
 
-    # blacklisted must come first, followed by {one_lettered, ideographless}
-    # Each function here returns a list of names to be removed from a list of names
-    for func in [blacklisted, one_lettered, ideographless, word_superset,
-                 superstring, longer, google_color_bug]:
-        for codepoint, names in codepoint_to_names.items():
-            codepoint_to_names[codepoint] = [name for name in names if name not in func(names)]
-
-    for names in whitelisted_names:
-        codepoint = emoji_map[names[0]]
-        for name in names:
-            assert (emoji_map[name] == codepoint)
-        codepoint_to_names[codepoint] = names
-
-    return sorted(list(chain.from_iterable(codepoint_to_names.values())))
+    return sorted(emoji_names)
 
 # Returns a dict from categories to list of codepoints. The list of
 # codepoints are sorted according to the `sort_order` as defined in
 # `emoji_data`.
-def generate_emoji_catalog(emoji_data):
-    # type: (List[Dict[str, Any]]) -> Dict[str, List[str]]
+def generate_emoji_catalog(emoji_data, emoji_name_maps):
+    # type: (List[Dict[str, Any]], Dict[str, Dict[str, Any]]) -> Dict[str, List[str]]
     sort_order = {}  # type: Dict[str, int]
-    emoji_catalog = {}  # type: Dict[str, List[str]]
-    for emoji in emoji_data:
-        if not emoji_is_universal(emoji):
+    emoji_catalog = defaultdict(list)  # type: Dict[str, List[str]]
+
+    for emoji_dict in emoji_data:
+        emoji_code = emoji_dict["unified"].lower()
+        if not emoji_is_universal(emoji_dict) or emoji_code not in emoji_name_maps:
             continue
-        category = emoji["category"]
-        codepoint = emoji["unified"].lower()
-        sort_order[codepoint] = emoji["sort_order"]
-        if category in emoji_catalog:
-            emoji_catalog[category].append(codepoint)
-        else:
-            emoji_catalog[category] = [codepoint, ]
+        category = emoji_dict["category"]
+        sort_order[emoji_code] = emoji_dict["sort_order"]
+        emoji_catalog[category].append(emoji_code)
+
+    # Sort the emojis according to iamcal's sort order. This sorting determines the
+    # order in which emojis will be displayed in emoji picker.
     for category in emoji_catalog:
-        emoji_catalog[category].sort(key=lambda codepoint: sort_order[codepoint])
-    return emoji_catalog
+        emoji_catalog[category].sort(key=lambda emoji_code: sort_order[emoji_code])
+
+    return dict(emoji_catalog)
 
 # Use only those names for which images are present in all
 # the emoji sets so that we can switch emoji sets seemlessly.
@@ -254,63 +244,20 @@ def emoji_is_universal(emoji_dict):
             return False
     return True
 
-def generate_codepoint_to_name_map(names, unified_reactions_data):
-    # type: (List[str], Dict[str, str]) -> Dict[str, str]
-    # TODO: Decide canonical names. For now, using the names
-    # generated for emoji picker. In case of multiple names
-    # for the same emoji, lexicographically greater name is
-    # used, for example, `thumbs_up` is used and not `+1`.
+def generate_codepoint_to_name_map(emoji_name_maps):
+    # type: (Dict[str, Dict[str, Any]]) -> Dict[str, str]
     codepoint_to_name = {}  # type: Dict[str, str]
-    for name in names:
-        codepoint_to_name[unified_reactions_data[name]] = name
+    for emoji_code, name_info in emoji_name_maps.items():
+        codepoint_to_name[emoji_code] = name_info["canonical_name"]
     return codepoint_to_name
 
-def emoji_can_be_included(emoji_dict, unified_reactions_codepoints):
-    # type: (Dict[str, Any], List[str]) -> bool
-    # This function returns True if an emoji in new(not included in old emoji dataset) and is
-    # safe to be included. Currently emojis which are represented by a sequence of codepoints
-    # or emojis with ZWJ are not to be included until we implement a mechanism for dealing with
-    # their unicode versions.
-    # `:fried_egg:` emoji is banned for now, due to a name collision with `:egg:` emoji in
-    # `unified_reactions.json` dataset, until we completely switch to iamcal dataset.
-    if emoji_dict["short_name"] == "fried_egg":
-        return False
-    codepoint = emoji_dict["unified"].lower()
-    if '-' not in codepoint and emoji_dict["category"] != "Skin Tones" and \
-            emoji_is_universal(emoji_dict) and codepoint not in unified_reactions_codepoints:
-        return True
-    return False
-
-def get_new_emoji_dicts(unified_reactions_data, emoji_data):
-    # type: (Dict[str, str], List[Dict[str, Any]]) -> List[Dict[str, Any]]
-    unified_reactions_codepoints = [unified_reactions_data[name] for name in unified_reactions_data]
-    new_emoji_dicts = []
-    for emoji_dict in emoji_data:
-        if emoji_can_be_included(emoji_dict, unified_reactions_codepoints):
-            new_emoji_dicts.append(emoji_dict)
-    return new_emoji_dicts
-
-def get_extended_names_list(names, new_emoji_dicts):
-    # type: (List[str], List[Dict[str, Any]]) -> List[str]
-    extended_names_list = names[:]
-    for emoji_dict in new_emoji_dicts:
-        extended_names_list.append(emoji_dict["short_name"])
-    return extended_names_list
-
-def get_extended_name_to_codepoint(name_to_codepoint, new_emoji_dicts):
-    # type: (Dict[str, str], List[Dict[str, Any]]) -> Dict[str, str]
-    extended_name_to_codepoint = name_to_codepoint.copy()
-    for emoji_dict in new_emoji_dicts:
-        emoji_name = emoji_dict["short_name"]
-        codepoint = emoji_dict["unified"].lower()
-        extended_name_to_codepoint[emoji_name] = codepoint
-    return extended_name_to_codepoint
-
-def get_extended_codepoint_to_name(codepoint_to_name, new_emoji_dicts):
-    # type: (Dict[str, str], List[Dict[str, Any]]) -> Dict[str, str]
-    extended_codepoint_to_name = codepoint_to_name.copy()
-    for emoji_dict in new_emoji_dicts:
-        emoji_name = emoji_dict["short_name"]
-        codepoint = emoji_dict["unified"].lower()
-        extended_codepoint_to_name[codepoint] = emoji_name
-    return extended_codepoint_to_name
+def generate_name_to_codepoint_map(emoji_name_maps):
+    # type: (Dict[str, Dict[str, Any]]) -> Dict[str, str]
+    name_to_codepoint = {}
+    for emoji_code, name_info in emoji_name_maps.items():
+        canonical_name = name_info["canonical_name"]
+        aliases = name_info["aliases"]
+        name_to_codepoint[canonical_name] = emoji_code
+        for alias in aliases:
+            name_to_codepoint[alias] = emoji_code
+    return name_to_codepoint

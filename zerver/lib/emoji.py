@@ -20,7 +20,7 @@ CODEPOINT_TO_NAME_PATH = os.path.join(settings.STATIC_ROOT, "generated", "emoji"
 EMOTICON_CONVERSIONS = {
     ':)': ':smiley:',
     '(:': ':smiley:',
-    ':(': ':slightly_frowning_face:',
+    ':(': ':slight_frown:',
     '<3': ':heart:',
     ':|': ':expressionless:',
     ':/': ':confused:',

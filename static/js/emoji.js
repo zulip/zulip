@@ -24,7 +24,7 @@ var zulip_emoji = {
 exports.EMOTICON_CONVERSIONS = {
     ':)': 'smiley',
     '(:': 'smiley',
-    ':(': 'slightly_frowning_face',
+    ':(': 'slight_frown',
     '<3': 'heart',
     ':|': 'expressionless',
     ':/': 'confused',
