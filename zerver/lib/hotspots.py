@@ -25,7 +25,7 @@ ALL_HOTSPOTS = {
         'description': 'Click here to start a new conversation. Pick a topic '
         '(2-3 words is best), and give it a go!',
     },
-}  # type Dict[str, Dict[str, Text]]
+}  # type: Dict[str, Dict[str, Text]]
 
 def get_next_hotspots(user):
     # type: (UserProfile) -> List[Dict[str, object]]
