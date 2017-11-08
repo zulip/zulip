@@ -1,4 +1,3 @@
-var assert = require('assert');
 var noop = function () {};
 var return_true = function () { return true; };
 set_global('$', global.make_zjquery());

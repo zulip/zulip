@@ -1,4 +1,3 @@
-var assert = require('assert');
 var pmc = require('js/pm_conversations.js');
 
 (function test_partners() {

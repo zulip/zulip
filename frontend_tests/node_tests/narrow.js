@@ -7,12 +7,6 @@ zrequire('Filter', 'js/filter');
 
 zrequire('narrow');
 
-var narrow_state = global.narrow_state;
-
-var Filter = global.Filter;
-var stream_data = global.stream_data;
-var _ = global._;
-
 function set_filter(operators) {
     operators = _.map(operators, function (op) {
         return {operator: op[0], operand: op[1]};

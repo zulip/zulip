@@ -1,6 +1,4 @@
-var assert = require('assert');
 var rs = require('js/recent_senders.js');
-var _ = require('node_modules/underscore/underscore.js');
 
 (function test_process_message_for_senders() {
     var stream1 = 1;
