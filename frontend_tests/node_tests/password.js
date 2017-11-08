@@ -1,10 +1,7 @@
-add_dependencies({
-    zxcvbn: 'node_modules/zxcvbn/dist/zxcvbn.js',
-});
+zrequire('zxcvbn', 'node_modules/zxcvbn/dist/zxcvbn');
+zrequire('common');
 
 set_global('i18n', global.stub_i18n);
-
-var common = require("js/common.js");
 
 (function test_basics() {
     var accepted;
