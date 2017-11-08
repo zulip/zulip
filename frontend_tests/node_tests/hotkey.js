@@ -32,7 +32,7 @@ set_global('$', function () {
 set_global('document', {
 });
 
-var hotkey = require('js/hotkey.js');
+var hotkey = zrequire('hotkey');
 
 set_global('list_util', {
 });
