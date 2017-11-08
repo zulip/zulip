@@ -28,20 +28,20 @@ No download required!
 
 ```
 curl {{ api_url }}/v1/messages \
--u BOT_EMAIL_ADDRESS:BOT_API_KEY \
--d "type=stream" \
--d "to=Denmark" \
--d "subject=Castle" \
--d "content=Something is rotten in the state of Denmark."
+    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
+    -d "type=stream" \
+    -d "to=Denmark" \
+    -d "subject=Castle" \
+    -d "content=Something is rotten in the state of Denmark."
 ```
 
 #### Private message
 ```
 curl {{ api_url }}/v1/messages \
--u BOT_EMAIL_ADDRESS:BOT_API_KEY \
--d "type=private" \
--d "to=hamlet@example.com" \
--d "content=I come not, friends, to steal away your hearts."
+    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
+    -d "type=private" \
+    -d "to=hamlet@example.com" \
+    -d "content=I come not, friends, to steal away your hearts."
 ```
 </div>
 
@@ -54,20 +54,21 @@ import sys
 
 # Keyword arguments 'email' and 'api_key' are not required if you are using ~/.zuliprc
 client = zulip.Client(email="othello-bot@example.com",
-          api_key="a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5",
-          site="{{ api_url }}")
+                      api_key="a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5",
+                      site="{{ api_url }}")
+
 # Send a stream message
 client.send_message({
-"type": "stream",
-"to": "Denmark",
-"subject": "Castle",
-"content": "Something is rotten in the state of Denmark."
+    "type": "stream",
+    "to": "Denmark",
+    "subject": "Castle",
+    "content": "Something is rotten in the state of Denmark."
 })
 # Send a private message
 client.send_message({
-"type": "private",
-"to": "hamlet@example.com",
-"content": "I come not, friends, to steal away your hearts."
+    "type": "private",
+    "to": "hamlet@example.com",
+    "content": "I come not, friends, to steal away your hearts."
 })
 
 # Print each message the user receives
@@ -121,39 +122,39 @@ More examples and documentation can be found [here](https://github.com/zulip/zul
 const zulip = require('zulip');
 
 const config = {
-username: 'othello-bot@example.com',
-apiKey: 'a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5',
-realm: '{{ api_url }}'
+  username: 'othello-bot@example.com',
+  apiKey: 'a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5',
+  realm: '{{ api_url }}'
 };
 
 const client = zulip(config);
 
 // Send a message
 client.messages.send({
-to: 'Denmark',
-type: 'stream',
-subject: 'Castle',
-content: 'Something is rotten in the state of Denmark.'
+  to: 'Denmark',
+  type: 'stream',
+  subject: 'Castle',
+  content: 'Something is rotten in the state of Denmark.'
 });
 
 // Send a private message
 client.messages.send({
-to: 'hamlet@example.com',
-type: 'private',
-content: 'I come not, friends, to steal away your hearts.'
+  to: 'hamlet@example.com',
+  type: 'private',
+  content: 'I come not, friends, to steal away your hearts.'
 });
 
 // Register queue to receive messages for user
 client.queues.register({
-event_types: ['message']
+  event_types: ['message']
 }).then((res) => {
-// Retrieve events from a queue
-// Blocking until there is an event (or the request times out)
-client.events.retrieve({
-queue_id: res.queue_id,
-last_event_id: -1,
-dont_block: false
-}).then(console.log);
+  // Retrieve events from a queue
+  // Blocking until there is an event (or the request times out)
+  client.events.retrieve({
+    queue_id: res.queue_id,
+    last_event_id: -1,
+    dont_block: false
+  }).then(console.log);
 });
 ```
 </div>
