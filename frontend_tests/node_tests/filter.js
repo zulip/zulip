@@ -7,8 +7,6 @@ zrequire('Filter', 'js/filter');
 set_global('page_params', {});
 set_global('feature_flags', {});
 
-var _ = global._;
-
 var me = {
     email: 'me@example.com',
     user_id: 30,

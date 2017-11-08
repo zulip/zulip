@@ -9,8 +9,6 @@ set_global('md5', function (s) {
     return 'md5-' + s;
 });
 
-var _ = global._;
-
 var me = {
     email: 'me@example.com',
     user_id: 30,

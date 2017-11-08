@@ -1,6 +1,3 @@
-var assert = require('assert');
-var _ = global._;
-
 var noop = function () {};
 
 set_global('document', 'document-stub');
