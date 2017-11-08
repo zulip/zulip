@@ -204,6 +204,11 @@ function _set_up() {
                 type: 'text',
                 msg: i18n.t("Default language changed!"),
             },
+            allow_message_deleting: {
+                type: 'bool',
+                checked_msg: i18n.t("Users can delete messages!"),
+                unchecked_msg: i18n.t("Users can no longer delete messages!"),
+            },
             allow_edit_history: {
                 type: 'bool',
                 checked_msg: i18n.t("Users can view message edit history!"),

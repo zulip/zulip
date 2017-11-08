@@ -171,7 +171,8 @@ exports.toggle_actions_popover = function (element, id) {
         var should_display_edit_history_option = _.any(message.edit_history, function (entry) {
             return entry.prev_content !== undefined;
         }) && page_params.realm_allow_edit_history;
-        var should_display_delete_option = page_params.is_admin;
+        var should_display_delete_option = page_params.is_admin ||
+            (message.sent_by_me && page_params.realm_allow_message_deleting);
         var args = {
             message: message,
             use_edit_icon: use_edit_icon,

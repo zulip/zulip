@@ -150,6 +150,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id, client_gravata
         # these manual entries are for those realm settings that don't
         # fit into that framework.
         state['realm_authentication_methods'] = user_profile.realm.authentication_methods_dict()
+        state['realm_allow_message_deleting'] = user_profile.realm.allow_message_deleting
         state['realm_allow_message_editing'] = user_profile.realm.allow_message_editing
         state['realm_message_content_edit_limit_seconds'] = user_profile.realm.message_content_edit_limit_seconds
         state['realm_icon_url'] = realm_icon_url(user_profile.realm)

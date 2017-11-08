@@ -153,6 +153,7 @@ class Realm(models.Model):
     email_changes_disabled = models.BooleanField(default=False)  # type: bool
     description = models.TextField(null=True)  # type: Optional[Text]
 
+    allow_message_deleting = models.BooleanField(default=False)  # type: bool
     allow_message_editing = models.BooleanField(default=True)  # type: bool
     DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS = 600  # if changed, also change in admin.js
     message_content_edit_limit_seconds = models.IntegerField(default=DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS)  # type: int
@@ -176,6 +177,7 @@ class Realm(models.Model):
     property_types = dict(
         add_emoji_by_admins_only=bool,
         allow_edit_history=bool,
+        allow_message_deleting=bool,
         create_stream_by_admins_only=bool,
         default_language=Text,
         description=Text,

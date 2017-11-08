@@ -31,6 +31,7 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
                  inline_url_embed_preview=REQ(validator=check_bool, default=None),
                  create_stream_by_admins_only=REQ(validator=check_bool, default=None),
                  add_emoji_by_admins_only=REQ(validator=check_bool, default=None),
+                 allow_message_deleting=REQ(validator=check_bool, default=None),
                  allow_message_editing=REQ(validator=check_bool, default=None),
                  mandatory_topics=REQ(validator=check_bool, default=None),
                  message_content_edit_limit_seconds=REQ(converter=to_non_negative_int, default=None),
@@ -40,7 +41,7 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
                  authentication_methods=REQ(validator=check_dict([]), default=None),
                  notifications_stream_id=REQ(validator=check_int, default=None),
                  message_retention_days=REQ(converter=to_not_negative_int_or_none, default=None)):
-    # type: (HttpRequest, UserProfile, Optional[str], Optional[str], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[int], Optional[bool], Optional[str], Optional[int], Optional[Dict[Any,Any]], Optional[int], Optional[int]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Optional[str], Optional[str], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[int], Optional[bool], Optional[str], Optional[int], Optional[Dict[Any,Any]], Optional[int], Optional[int]) -> HttpResponse
     realm = user_profile.realm
 
     # Additional validation/error checking beyond types go here, so

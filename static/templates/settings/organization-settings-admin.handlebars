@@ -6,11 +6,23 @@
         <div class="alert" id="admin-realm-inline-image-preview-status"></div>
         <div class="alert" id="admin-realm-inline-url-embed-preview-status"></div>
         <div class="alert" id="admin-realm-allow-edit-history-status"></div>
+        <div class="alert" id="admin-realm-allow-message-deleting-status"></div>
         <div class="alert" id="admin-realm-message-editing-status"></div>
         <div class="alert" id="admin-realm-mandatory-topics-status"></div>
 
         <h3 class="light">{{t "Message editing" }}</h3>
         <div class="side-padded-container m-10 inline-block organization-permissions-parent">
+            <div class="input-group">
+                <label class="checkbox">
+                    <input type="checkbox" id="id_realm_allow_message_deleting" name="realm_allow_message_deleting"
+                           {{#if realm_allow_message_deleting}}checked="checked"{{/if}} />
+                    <span></span>
+                </label>
+                <label for="id_realm_allow_message_deleting" id="id_realm_allow_message_deleting_label" class="inline-block"
+                    title="{{t 'If checked, user can delete the message'}}">
+                    {{t "User can delete their messages" }}
+                </label>
+            </div>
             <div class="input-group">
                 <label class="checkbox">
                     <input type="checkbox" id="id_realm_allow_message_editing" name="realm_allow_message_editing"
