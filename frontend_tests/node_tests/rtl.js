@@ -1,9 +1,5 @@
-var rtl = require('js/rtl.js');
-var util = require('js/util.js');
-
-set_global('util', {
-    lower_bound: util.lower_bound,
-});
+zrequire('util');
+var rtl = zrequire('rtl');
 
 (function test_get_direction() {
     // These characters are strong R or AL:    ا ب پ ج ض و د ؛
