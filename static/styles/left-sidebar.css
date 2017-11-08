@@ -54,7 +54,7 @@
 }
 
 #stream_filters li {
-    padding: 0px;
+    padding: 1px 0px;
 }
 
 #stream_filters li ul {
@@ -62,7 +62,7 @@
 }
 
 #stream_filters li ul.topic-list li {
-    padding-left: 29px;
+    padding: 2px 0px 2px 29px;
 }
 
 #stream-filters-container {
@@ -144,8 +144,7 @@ li.hidden-filter {
 
 #global_filters .global-filter {
     position: relative;
-    padding-left: 10px;
-    padding-right: 10px;
+    padding: 1px 10px;
 }
 
 .left-sidebar li {
@@ -179,7 +178,7 @@ li.hidden-filter {
     margin-top: 3px;
     line-height: 12px;
     background: hsl(105, 2%, 50%);
-    padding: 1px 4px 2px 4px;
+    padding: 1px 4px;
     border-radius: 0px;
     color: #ffffff;
     font-size: 12px;
@@ -190,10 +189,10 @@ li.hidden-filter {
 
 #global_filters .count {
     margin-right: 20px;
-    margin-top: 2px;
+    margin-top: 3px;
     display: none;
 
-    line-height: 13px;
+    line-height: 12px;
 }
 
 #stream_filters .count {
@@ -206,7 +205,7 @@ li.hidden-filter {
 
 .topic-name {
     display: block;
-    line-height: 1.3em;
+    line-height: 1.1;
     width: calc(100% - 5px);
     white-space: nowrap;
     overflow: hidden;
@@ -219,7 +218,7 @@ li.hidden-filter {
     position: absolute;
     line-height: 1em;
     top: 4px;
-    padding: 1px 4px 2px 4px;
+    padding: 1px 4px 1px 4px;
     background: hsl(107, 5%, 66%);
     color: #ffffff;
     border-radius: 1px;
@@ -231,7 +230,7 @@ li.hidden-filter {
 
 .topic-unread-count {
     right: 30px;
-    top: 2px;
+    top: 3px;
 }
 
 .private_message_count {
@@ -319,9 +318,9 @@ ul.filters li.out_of_home_view li.muted_topic {
     white-space: nowrap;
     overflow: hidden;
 
-    line-height: 1.2;
+    line-height: 1.1;
     position: relative;
-    top: 4px;
+    top: 3px;
 }
 
 #stream_filters .subscription_block.stream-with-count {
