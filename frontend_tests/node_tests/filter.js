@@ -1,14 +1,12 @@
-add_dependencies({
-    people: 'js/people.js',
-    stream_data: 'js/stream_data.js',
-    util: 'js/util.js',
-    unread: 'js/unread.js',
-});
+zrequire('util');
+zrequire('unread');
+zrequire('stream_data');
+zrequire('people');
+zrequire('Filter', 'js/filter');
 
 set_global('page_params', {});
 set_global('feature_flags', {});
 
-var Filter = require('js/filter.js');
 var _ = global._;
 
 var me = {
