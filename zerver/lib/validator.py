@@ -28,7 +28,7 @@ for any particular type of object.
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email, URLValidator
-from typing import Callable, Iterable, Optional, Tuple, TypeVar, Text, Type, Sequence, Mapping, Any, Sized, List
+from typing import Callable, Iterable, Optional, Tuple, TypeVar, Text, Type, Sequence, Mapping, Any, Sized, List, Dict
 
 from zerver.lib.request import JsonableError
 
@@ -114,33 +114,19 @@ def only_keys(keys: Iterable[str]) -> Constraint: # NOTE: from previous check_di
 
 
 def check_string(var_name: str, val: object) -> Optional[str]:
-    if not isinstance(val, str):
-        return _('%s is not a string') % (var_name,)
-    return None
+    return check(str)(var_name, val)
 
 def check_short_string(var_name: str, val: object) -> Optional[str]:
-    if not isinstance(val, str):
-        return _('%s is not a string') % (var_name,)
-    max_length = 200
-    if len(val) >= max_length:
-        return _("{var_name} is longer than {max_length}.".format(
-            var_name=var_name, max_length=max_length))
-    return None
+    return check(str, constraints=[max_length()])(var_name, val)
 
 def check_int(var_name: str, val: object) -> Optional[str]:
-    if not isinstance(val, int):
-        return _('%s is not an integer') % (var_name,)
-    return None
+    return check(int)(var_name, val)
 
 def check_float(var_name: str, val: object) -> Optional[str]:
-    if not isinstance(val, float):
-        return _('%s is not a float') % (var_name,)
-    return None
+    return check(float)(var_name, val)
 
 def check_bool(var_name: str, val: object) -> Optional[str]:
-    if not isinstance(val, bool):
-        return _('%s is not a boolean') % (var_name,)
-    return None
+    return check(bool)(var_name, val)
 
 def check_none_or(sub_validator: Validator) -> Validator:
     def f(var_name: str, val: object) -> Optional[str]:
@@ -151,47 +137,18 @@ def check_none_or(sub_validator: Validator) -> Validator:
     return f
 
 def check_list(sub_validator: Optional[Validator], length: Optional[int]=None) -> Validator:
-    def f(var_name: str, val: object) -> Optional[str]:
-        if not isinstance(val, list):
-            return _('%s is not a list') % (var_name,)
-
-        if length is not None and length != len(val):
-            return (_('%(container)s should have exactly %(length)s items') %
-                    {'container': var_name, 'length': length})
-
-        if sub_validator:
-            for i, item in enumerate(val):
-                vname = '%s[%d]' % (var_name, i)
-                error = sub_validator(vname, item)
-                if error:
-                    return error
-
-        return None
-    return f
+    if length is not None:
+        return check(List[Any], sub_validator=sub_validator, constraints=[exact_length(length)])
+    else:
+        return check(List[Any], sub_validator=sub_validator)
 
 def check_dict(required_keys: Iterable[Tuple[str, Validator]],
                _allow_only_listed_keys: bool=False) -> Validator:
-    def f(var_name: str, val: object) -> Optional[str]:
-        if not isinstance(val, dict):
-            return _('%s is not a dict') % (var_name,)
-
-        for k, sub_validator in required_keys:
-            if k not in val:
-                return (_('%(key_name)s key is missing from %(var_name)s') %
-                        {'key_name': k, 'var_name': var_name})
-            vname = '%s["%s"]' % (var_name, k)
-            error = sub_validator(vname, val[k])
-            if error:
-                return error
-
-        if _allow_only_listed_keys:
-            delta_keys = set(val.keys()) - set(x[0] for x in required_keys)
-            if len(delta_keys) != 0:
-                return _("Unexpected arguments: %s" % (", ".join(list(delta_keys))))
-
-        return None
-
-    return f
+    k, v = zip(*required_keys)
+    if _allow_only_listed_keys:
+        return check(Dict[Any, Any], keyed_sub_validator=required_keys, constraints=[only_keys(k)])
+    else:
+        return check(Dict[Any, Any], keyed_sub_validator=required_keys, constraints=[has_keys(k)])
 
 def check_dict_only(required_keys: Iterable[Tuple[str, Validator]]) -> Validator:
     return check_dict(required_keys, _allow_only_listed_keys=True)
