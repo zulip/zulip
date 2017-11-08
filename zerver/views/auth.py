@@ -48,9 +48,13 @@ import ujson
 def create_preregistration_user(email, request, realm_creation=False,
                                 password_required=True):
     # type: (Text, HttpRequest, bool, bool) -> HttpResponse
+    realm = None
+    if not realm_creation:
+        realm = get_realm(get_subdomain(request))
     return PreregistrationUser.objects.create(email=email,
                                               realm_creation=realm_creation,
-                                              password_required=password_required)
+                                              password_required=password_required,
+                                              realm=realm)
 
 def maybe_send_to_registration(request, email, full_name='', password_required=True):
     # type: (HttpRequest, Text, Text, bool) -> HttpResponse
@@ -74,7 +78,7 @@ def maybe_send_to_registration(request, email, full_name='', password_required=T
         prereg_user = None
         if settings.ONLY_SSO:
             try:
-                prereg_user = PreregistrationUser.objects.filter(email__iexact=email).latest("invited_at")
+                prereg_user = PreregistrationUser.objects.filter(email__iexact=email, realm=realm).latest("invited_at")
             except PreregistrationUser.DoesNotExist:
                 prereg_user = create_preregistration_user(email, request,
                                                           password_required=password_required)

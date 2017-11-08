@@ -4000,7 +4000,8 @@ def do_invite_users(user_profile, invitee_emails, streams, invite_as_admin=False
     for email in validated_emails:
         # The logged in user is the referrer.
         prereg_user = PreregistrationUser(email=email, referred_by=user_profile,
-                                          invited_as_admin=invite_as_admin)
+                                          invited_as_admin=invite_as_admin,
+                                          realm=user_profile.realm)
 
         prereg_user.save()
         stream_ids = [stream.id for stream in streams]
