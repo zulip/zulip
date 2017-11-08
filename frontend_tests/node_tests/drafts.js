@@ -1,10 +1,8 @@
+zrequire('localstorage');
+zrequire('drafts');
+
 set_global('$', global.make_zjquery());
 set_global('window', {});
-
-add_dependencies({
-    localstorage: 'js/localstorage',
-    drafts: 'js/drafts',
-});
 
 var ls_container = {};
 set_global('localStorage', {
