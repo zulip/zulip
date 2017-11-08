@@ -1,12 +1,6 @@
-var assert = require('assert');
-
-add_dependencies({
-    stream_data: 'js/stream_data.js',
-    util: 'js/util.js',
-});
-
-var stream_sort = require('js/stream_sort.js');
-var stream_data = require('js/stream_data.js');
+zrequire('util');
+zrequire('stream_data');
+zrequire('stream_sort');
 var with_overrides = global.with_overrides;
 
 // Test no subscribed streams
