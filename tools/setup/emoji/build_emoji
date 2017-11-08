@@ -6,7 +6,7 @@ import os
 import sys
 import ujson
 
-from typing import Any, Dict, List, Text, Union
+from typing import Any, Dict, List
 
 from emoji_setup_utils import generate_emoji_catalog, generate_codepoint_to_name_map, \
     get_extended_codepoint_to_name, get_extended_name_to_codepoint, get_extended_names_list, \
@@ -95,7 +95,7 @@ def get_success_stamp():
     return os.path.join(EMOJI_CACHE_PATH, sha1_hexdigest, 'emoji', '.success-stamp')
 
 def generate_sprite_css_files(cache_path, emoji_map, emoji_data):
-    # type: (Text, Dict[Text, Text], List[Dict[Text, Any]]) -> None
+    # type: (str, Dict[str, str], List[Dict[str, Any]]) -> None
     # Spritesheet CSS generation code.
     emoji_positions = ""
     for emoji in emoji_data:
@@ -115,7 +115,7 @@ def generate_sprite_css_files(cache_path, emoji_map, emoji_data):
         sprite_css_file.close()
 
 def setup_emoji_farm(cache_path, emoji_map, emoji_data):
-    # type: (Text, Dict[Text, Text], List[Dict[Text, Any]]) -> None
+    # type: (str, Dict[str, str], List[Dict[str, Any]]) -> None
     for emojiset in EMOJISETS:
         # Copy individual emoji images from npm packages.
         src_emoji_farm = os.path.join(
@@ -136,7 +136,7 @@ def setup_emoji_farm(cache_path, emoji_map, emoji_data):
     generate_sprite_css_files(cache_path, emoji_map, emoji_data)
 
 def setup_old_emoji_farm(cache_path, emoji_map):
-    # type: (Text, Dict[Text, Text]) -> None
+    # type: (str, Dict[str, str]) -> None
     # Code for setting up old emoji farm.
     # Some image files in the old emoji farm had a different name than in the new emoji
     # farm. `remapped_emojis` is a map that contains a mapping of their name in the old
@@ -186,7 +186,7 @@ def setup_old_emoji_farm(cache_path, emoji_map):
             pass
 
 def generate_map_files(cache_path, emoji_map, emoji_data, emoji_catalog, unified_reactions_data):
-    # type: (Text, Dict[Text, Text], List[Dict[Text, Any]], Dict[Text, List[Text]], Dict[Text, Text]) -> None
+    # type: (str, Dict[str, str], List[Dict[str, Any]], Dict[str, List[str]], Dict[str, str]) -> None
     # This function generates the various data files consumed by webapp, mobile apps, bugdown etc.
     EMOJI_CODES_PATH = os.path.join(cache_path, 'emoji_codes.js')
     emoji_codes_file = open(EMOJI_CODES_PATH, 'w')
