@@ -71,7 +71,7 @@ lint, management commands, etc., use `vagrant ssh`.
 At this point you should [read about using the development
 environment][using-dev].
 
-[using-dev]: using-dev-environment.html
+[using-dev]: using.html
 
 ### Specifying a proxy
 

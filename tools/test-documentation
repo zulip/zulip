@@ -13,9 +13,14 @@ case $1 in
     ;;
 esac
 
-cd "$(dirname "$0")"/..
-./tools/build-docs
-cd ./tools/documentation_crawler
+cd "$(dirname "$0")"/../docs
+rm -rf _build
+# collapse_navigation is set to False in conf.py to improve sidebar navigation for users.
+# However, we must change its value to True before we begin testing links.
+# Otherwise, sphinx would generate a large number of links we don't need to test.
+# The crawler would take a very long time to finish and TravisCI would fail as a result.
+sphinx-build -b html -d _build/doctrees -D html_theme_options.collapse_navigation=True . _build/html
+cd ../tools/documentation_crawler
 
 echo -en "\033[0;94m"
 echo "Testing links in documentation..."

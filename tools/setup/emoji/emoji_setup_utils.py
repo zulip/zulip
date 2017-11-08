@@ -4,7 +4,7 @@
 # otherwise there will be a ton of duplicates alphabetically next to
 # each other, which is confusing and looks bad (e.g. `angry` and
 # `angry_face` or `ab` and `ab_button` will always sort next to each
-# other, and you really want to just pick one).  See docs/emoji.md for
+# other, and you really want to just pick one).  See docs/subsystems/emoji.md for
 # details on how this system works.
 
 from collections import defaultdict

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# See docs/emoji.md for a high-level explanation of how this system
+# See docs/subsystems/emoji.md for a high-level explanation of how this system
 # works.
 import os
 import sys
