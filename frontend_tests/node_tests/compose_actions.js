@@ -14,20 +14,14 @@ set_global('page_params', {
 set_global('$', function () {
 });
 
-add_dependencies({
-    compose: 'js/compose',
-});
-
 set_global('$', global.make_zjquery());
 
-add_dependencies({
-    compose_state: 'js/compose_state',
-    people: 'js/people',
-    util: 'js/util',
-    compose_ui: 'js/compose_ui',
-});
-
-var compose_actions = require('js/compose_actions.js');
+zrequire('people');
+zrequire('compose_ui');
+zrequire('compose');
+zrequire('util');
+zrequire('compose_state');
+zrequire('compose_actions');
 
 var start = compose_actions.start;
 var cancel = compose_actions.cancel;

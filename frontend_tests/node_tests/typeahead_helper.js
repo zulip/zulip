@@ -1,18 +1,13 @@
-var th = require('js/typeahead_helper.js');
-
 set_global('page_params', {realm_is_zephyr_mirror_realm: false});
 set_global('templates', {});
 
-add_dependencies({
-    stream_data: 'js/stream_data.js',
-    people: 'js/people.js',
-    util: 'js/util.js',
-    Handlebars: 'handlebars',
-    recent_senders: 'js/recent_senders.js',
-    pm_conversations: 'js/pm_conversations.js',
-    message_store: 'js/message_store.js',
-    typeahead_helper: 'js/typeahead_helper.js',
-});
+zrequire('Handlebars', 'handlebars');
+zrequire('recent_senders');
+zrequire('pm_conversations');
+zrequire('people');
+zrequire('util');
+zrequire('stream_data');
+var th = zrequire('typeahead_helper');
 
 stream_data.create_streams([
     {name: 'Dev', subscribed: true, color: 'blue', stream_id: 1},

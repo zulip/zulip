@@ -1,9 +1,8 @@
 set_global('document', 'document-stub');
 set_global('$', global.make_zjquery());
 
-add_dependencies({
-    people: 'js/people.js',
-});
+zrequire('people');
+zrequire('reactions');
 
 set_global('emoji', {
     emojis_name_to_css_class: {
@@ -58,8 +57,6 @@ set_global('emoji_codes', {
 set_global('emoji_picker', {
     hide_emoji_popover: function () {},
 });
-
-var reactions = require("js/reactions.js");
 
 var alice = {
     email: 'alice@example.com',

@@ -44,17 +44,14 @@ set_global('sent_messages', {
 global.document.location.protocol = 'https:';
 global.document.location.host = 'foo.com';
 
-add_dependencies({
-    common: 'js/common',
-    compose_state: 'js/compose_state',
-    compose_ui: 'js/compose_ui.js',
-    Handlebars: 'handlebars',
-    people: 'js/people',
-    stream_data: 'js/stream_data',
-    util: 'js/util',
-});
-
-var compose = require('js/compose.js');
+zrequire('compose_ui');
+zrequire('util');
+zrequire('common');
+zrequire('Handlebars', 'handlebars');
+zrequire('stream_data');
+zrequire('compose_state');
+zrequire('people');
+zrequire('compose');
 page_params.use_websockets = false;
 
 var me = {

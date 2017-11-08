@@ -1,10 +1,6 @@
-var _ = require('node_modules/underscore/underscore.js');
-var MessageListView = require('js/message_list_view.js');
-
-add_dependencies({
-    XDate: 'node_modules/xdate/src/xdate.js',
-    util: 'js/util.js',
-});
+zrequire('util');
+zrequire('XDate', 'node_modules/xdate/src/xdate');
+var MessageListView = zrequire('message_list_view');
 
 set_global('page_params', {
   twenty_four_hour_time: false,

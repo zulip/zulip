@@ -1,9 +1,6 @@
-add_dependencies({
-    emoji_codes: 'generated/emoji/emoji_codes.js',
-    emoji: 'js/emoji.js',
-});
-
-var emoji_picker = require('js/emoji_picker.js');
+zrequire('emoji_codes', 'generated/emoji/emoji_codes');
+zrequire('emoji');
+zrequire('emoji_picker');
 
 (function test_initialize() {
     emoji.update_emojis({});

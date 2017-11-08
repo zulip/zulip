@@ -4,7 +4,6 @@
     },
     "globals": {
 	"assert": false,
-	"add_dependencies": false,
 	"casper": false,
 	"document": false,
 	"set_global": false,

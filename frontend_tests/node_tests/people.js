@@ -9,8 +9,6 @@ set_global('md5', function (s) {
     return 'md5-' + s;
 });
 
-var _ = global._;
-
 var me = {
     email: 'me@example.com',
     user_id: 30,
@@ -138,8 +136,8 @@ initialize();
     global.page_params.twenty_four_hour_time = false;
     assert.deepEqual(people.get_user_time_preferences(me.user_id), expected_pref);
 
-    var actual_moment = require('moment-timezone');
-    set_global('moment', function () { return actual_moment('20130208T080910'); });
+    zrequire('actual_moment', 'moment-timezone');
+    set_global('moment', function () { return global.actual_moment('20130208T080910'); });
 
     global.page_params.twenty_four_hour_time = true;
     assert.equal(people.get_user_time(me.user_id), '00:09');

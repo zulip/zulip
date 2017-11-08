@@ -1,31 +1,11 @@
-set_global('page_params', {realm_emoji: {
-  burrito: {display_url: '/static/generated/emoji/images/emoji/burrito.png',
-            source_url: '/static/generated/emoji/images/emoji/burrito.png'},
-}});
+zrequire('Handlebars', 'handlebars');
+zrequire('templates');
 
-add_dependencies({
-    Handlebars: 'handlebars',
-    templates: 'js/templates',
-    emoji_codes: 'generated/emoji/emoji_codes.js',
-    emoji: 'js/emoji',
-    i18n: 'i18next',
-});
-
-var i18n = global.i18n;
-i18n.init({
-    nsSeparator: false,
-    keySeparator: false,
-    interpolation: {
-        prefix: "__",
-        suffix: "__",
-    },
-    lng: 'en',
-});
+set_global('i18n', global.stub_i18n);
 
 var jsdom = require("jsdom");
 var window = jsdom.jsdom().defaultView;
 global.$ = require('jquery')(window);
-var _ = global._;
 
 // When writing these tests, the following command might be helpful:
 // ./tools/get-handlebar-vars static/templates/*.handlebars
@@ -90,7 +70,7 @@ function render(template_name, args) {
     html += render('actions_popover_content', args);
     html += "</div>";
     var link = $(html).find("a.respond_button");
-    assert.equal(link.text().trim(), 'Quote and reply');
+    assert.equal(link.text().trim(), 'translated: Quote and reply');
     global.write_handlebars_output("actions_popover_content", html);
 }());
 
@@ -110,7 +90,7 @@ function render(template_name, args) {
     var row = button.closest('tr');
     var subdomains_checkbox = row.find('.allow-subdomains');
 
-    assert.equal(button.text().trim(), "Remove");
+    assert.equal(button.text().trim(), "translated: Remove");
     assert(button.hasClass("delete_realm_domain"));
     assert.equal(domain.text(), "zulip.org");
 
@@ -257,11 +237,11 @@ function render(template_name, args) {
     html += "</table>";
     var buttons = $(html).find('.button');
 
-    assert.equal($(buttons[0]).text().trim(), "Revoke");
+    assert.equal($(buttons[0]).text().trim(), "translated: Revoke");
     assert($(buttons[0]).hasClass("revoke"));
     assert.equal($(buttons[0]).attr("data-invite-id"), 0);
 
-    assert.equal($(buttons[3]).text().trim(), "Resend");
+    assert.equal($(buttons[3]).text().trim(), "translated: Resend");
     assert($(buttons[3]).hasClass("resend"));
     assert.equal($(buttons[3]).attr("data-invite-id"), 1);
 
@@ -320,13 +300,13 @@ function render(template_name, args) {
 
     var buttons = $(html).find('.button');
 
-    assert.equal($(buttons[0]).text().trim(), "Deactivate");
+    assert.equal($(buttons[0]).text().trim(), "translated: Deactivate");
     assert($(buttons[0]).hasClass("deactivate"));
 
-    assert.equal($(buttons[1]).text().trim(), "Make admin");
+    assert.equal($(buttons[1]).text().trim(), "translated: Make admin");
     assert($(buttons[1]).hasClass("make-admin"));
 
-    assert.equal($(buttons[2]).attr('title').trim(), "Edit user");
+    assert.equal($(buttons[2]).attr('title').trim(), "translated: Edit user");
     assert($(buttons[2]).hasClass("open-user-form"));
 
     // When the logged in user is not admin
@@ -375,20 +355,20 @@ function render(template_name, args) {
     assert.equal(li.attr('data-word'),'lunch');
     assert.equal(value.length, 1);
     assert.equal(value.text(), 'lunch');
-    assert.equal(button.attr('title'), 'Delete alert word');
+    assert.equal(button.attr('title'), 'translated: Delete alert word');
     assert.equal(button.attr('data-word'),'lunch');
 
     var title = $(html).find('.new-alert-word-section-title');
     var textbox = $(html).find('#create_alert_word_name');
     button = $(html).find('#create_alert_word_button');
     assert.equal(title.length, 1);
-    assert.equal(title.text().trim(), 'Add a new alert word');
+    assert.equal(title.text().trim(), 'translated: Add a new alert word');
     assert.equal(textbox.length, 1);
     assert.equal(textbox.attr('maxlength'), 100);
-    assert.equal(textbox.attr('placeholder'), 'Alert word');
+    assert.equal(textbox.attr('placeholder'), 'translated: Alert word');
     assert.equal(textbox.attr('class'), 'required');
     assert.equal(button.length, 1);
-    assert.equal(button.text().trim(), 'Add alert word');
+    assert.equal(button.text().trim(), 'translated: Add alert word');
 
 }());
 
@@ -438,7 +418,7 @@ function render(template_name, args) {
     var all_html = '';
 
     html = render('bookend', args);
-    assert.equal($(html).text().trim(), "subscribed to stream\n    \n        \n            Unsubscribe");
+    assert.equal($(html).text().trim(), "subscribed to stream\n    \n        \n            translated: Unsubscribe");
 
     all_html += html;
 
@@ -449,7 +429,7 @@ function render(template_name, args) {
     };
 
     html = render('bookend', args);
-    assert.equal($(html).text().trim(), 'Not subscribed to stream\n    \n        \n            Subscribe');
+    assert.equal($(html).text().trim(), 'Not subscribed to stream\n    \n        \n            translated: Subscribe');
 
     all_html += '<hr />';
     all_html += html;
@@ -507,7 +487,7 @@ function render(template_name, args) {
     var html = render('compose-invite-users', args);
     global.write_handlebars_output("compose-invite-users", html);
     var button = $(html).find("button:first");
-    assert.equal(button.text(), "Subscribe");
+    assert.equal(button.text(), "translated: Subscribe");
 }());
 
 (function compose_all_everyone() {
@@ -518,9 +498,9 @@ function render(template_name, args) {
     var html = render('compose_all_everyone', args);
     global.write_handlebars_output("compose_all_everyone", html);
     var button = $(html).find("button:first");
-    assert.equal(button.text(), "Yes, send");
+    assert.equal(button.text(), "translated: Yes, send");
     var error_msg = $(html).find('span.compose-all-everyone-msg').text().trim();
-    assert.equal(error_msg, "Are you sure you want to mention all 101 people in this stream?");
+    assert.equal(error_msg, "translated: Are you sure you want to mention all 101 people in this stream?");
 }());
 
 (function compose_notification() {
@@ -580,7 +560,7 @@ function render(template_name, args) {
     assert.equal(row_1.find(".message_content").text().trim(), "Public draft");
 
     var row_2 = $(html).find(".draft-row[data-draft-id='2']");
-    assert.equal(row_2.find(".stream_label").text().trim(), "You and Jordan, Michael");
+    assert.equal(row_2.find(".stream_label").text().trim(), "translated: You and Jordan, Michael");
     assert(row_2.find(".message_row").hasClass("private-message"));
     assert.equal(row_2.find(".message_content").text().trim(), "Private draft");
 }());
@@ -590,7 +570,7 @@ function render(template_name, args) {
     var html = render('email_address_hint');
     global.write_handlebars_output("email_address_hint", html);
     var li = $(html).find("li:first");
-    assert.equal(li.text(), 'The email will be forwarded to this stream');
+    assert.equal(li.text(), 'translated: The email will be forwarded to this stream');
 }());
 
 (function emoji_popover() {
@@ -777,7 +757,7 @@ function render(template_name, args) {
     assert.equal(first_message_text, "This is message one.");
 
     var starred_title = first_message.find(".star").attr("title");
-    assert.equal(starred_title, "Unstar this message (*)");
+    assert.equal(starred_title, "translated: Unstar this message (*)");
 }());
 
 (function message_edit_form() {
@@ -932,8 +912,8 @@ function render(template_name, args) {
     global.write_handlebars_output("propagate_notification_change", html);
 
     var button_area = $(html).find(".propagate-notifications-controls");
-    assert.equal(button_area.find(".yes_propagate_notifications").text().trim(), 'Yes');
-    assert.equal(button_area.find(".no_propagate_notifications").text().trim(), 'No');
+    assert.equal(button_area.find(".yes_propagate_notifications").text().trim(), 'translated: Yes');
+    assert.equal(button_area.find(".no_propagate_notifications").text().trim(), 'translated: No');
 }());
 
 (function settings_tab() {
@@ -1012,7 +992,7 @@ function render(template_name, args) {
 
     var conversations = $(html).find('a').text().trim().split('\n');
     assert.equal(conversations[0], 'alice,bob');
-    assert.equal(conversations[1].trim(), '(more conversations)');
+    assert.equal(conversations[1].trim(), '(translated: more conversations)');
 
     global.write_handlebars_output("sidebar_private_message_list", html);
 }());
@@ -1059,7 +1039,7 @@ function render(template_name, args) {
     global.write_handlebars_output("stream_sidebar_actions", html);
 
     var li = $(html).find("li:first");
-    assert.equal(li.text().trim(), 'Stream settings');
+    assert.equal(li.text().trim(), 'translated: Stream settings');
 }());
 
 (function stream_sidebar_row() {
@@ -1090,7 +1070,7 @@ function render(template_name, args) {
     global.write_handlebars_output("subscription_invites_warning_modal", html);
 
     var button = $(html).find(".close-invites-warning-modal").last();
-    assert.equal(button.text(), 'Go back');
+    assert.equal(button.text(), 'translated: Go back');
 }());
 
 (function subscription_settings() {
@@ -1119,7 +1099,7 @@ function render(template_name, args) {
 
     var anchor = $(html).find(".change-stream-privacy:first");
     assert.equal(anchor.data("is-private"), true);
-    assert.equal(anchor.text(), "[Change]");
+    assert.equal(anchor.text(), "[translated: Change]");
 }());
 
 
@@ -1137,7 +1117,7 @@ function render(template_name, args) {
 
     var button = $(html).find("#change-stream-privacy-button");
     assert(button.hasClass("btn-primary"));
-    assert.equal(button.text().trim(), "Make stream public");
+    assert.equal(button.text().trim(), "translated: Make stream public");
 }());
 
 
@@ -1240,7 +1220,7 @@ function render(template_name, args) {
     global.write_handlebars_output("topic_sidebar_actions", html);
 
     var a = $(html).find("a.narrow_to_topic");
-    assert.equal(a.text().trim(), 'Narrow to topic lunch');
+    assert.equal(a.text().trim(), 'translated: Narrow to topic lunch');
 
 }());
 
@@ -1305,7 +1285,7 @@ function render(template_name, args) {
     global.write_handlebars_output("user_info_popover_content", html);
 
     var a = $(html).find("a.narrow_to_private_messages");
-    assert.equal(a.text().trim(), 'View private messages');
+    assert.equal(a.text().trim(), 'translated: View private messages');
 }());
 
 (function user_info_popover_title() {

@@ -1,14 +1,8 @@
 set_global('$', global.make_zjquery());
-set_global('page_params', {});
 set_global('document', {});
 set_global('window', {});
 
-add_dependencies({
-    util: 'js/util.js',
-});
-
-var util = global.util;
-var _ = global._;
+zrequire('util');
 
 (function test_CachedValue() {
     var x = 5;

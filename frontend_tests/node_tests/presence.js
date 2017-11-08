@@ -1,8 +1,5 @@
-add_dependencies({
-    people: 'js/people.js',
-});
-
-var presence = require('js/presence.js');
+zrequire('people');
+zrequire('presence');
 
 set_global('server_events', {});
 set_global('blueslip', {});
