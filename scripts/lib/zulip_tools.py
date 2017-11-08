@@ -102,7 +102,8 @@ if __name__ == '__main__':
 
 def get_dev_uuid_var_path(create_if_missing=False):
     # type: (bool) -> str
-    zulip_path = os.path.realpath(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
+    zulip_path = os.path.realpath(os.path.dirname(os.path.dirname(
+        os.path.dirname(os.path.realpath(__file__)))))
     uuid_path = os.path.join(os.path.realpath(os.path.dirname(zulip_path)), ".zulip-dev-uuid")
     if os.path.exists(uuid_path):
         with open(uuid_path) as f:
