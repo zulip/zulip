@@ -1,41 +1,16 @@
-// Unit test the unread.js module, which depends on these global variables:
-//
-//   _, narrow_state, current_msg_list, home_msg_list, subs
-//
-// These tests are framework-free and run sequentially; they are invoked
-// immediately after being defined.  The contract here is that tests should
-// clean up after themselves, and they should explicitly stub all
-// dependencies (except _).
+zrequire('muting');
+zrequire('people');
+zrequire('stream_data');
+zrequire('unread');
 
-add_dependencies({
-    muting: 'js/muting.js',
-    people: 'js/people.js',
-    unread: 'js/unread.js',
-});
-
-var stream_data = require('js/stream_data.js');
-
-set_global('stream_data', stream_data);
 set_global('blueslip', {});
 set_global('page_params', {});
 set_global('feature_flags', {
     load_server_counts: true,
 });
-
-var Dict = global.Dict;
-var muting = global.muting;
-var people = global.people;
-
-var unread = require('js/unread.js');
-
-var narrow_state = {};
-global.narrow_state = narrow_state;
-
-var current_msg_list = {};
-global.current_msg_list = current_msg_list;
-
-var home_msg_list = {};
-global.home_msg_list = home_msg_list;
+set_global('narrow_state', {});
+set_global('current_msg_list', {});
+set_global('home_msg_list', {});
 
 var me = {
     email: 'me@example.com',
