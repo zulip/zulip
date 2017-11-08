@@ -1135,7 +1135,9 @@ def update_message_backend(request, user_profile,
 def delete_message_backend(request, user_profile, message_id=REQ(converter=to_non_negative_int)):
     # type: (HttpRequest, UserProfile, int) -> HttpResponse
     message, ignored_user_message = access_message(user_profile, message_id)
-    if not user_profile.is_realm_admin:
+    is_user_allowed_to_delete_message = user_profile.is_realm_admin or \
+        (message.sender == user_profile and user_profile.realm.allow_message_deleting)
+    if not is_user_allowed_to_delete_message:
         raise JsonableError(_("You don't have permission to edit this message"))
     do_delete_message(user_profile, message)
     return json_success()

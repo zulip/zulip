@@ -6,6 +6,7 @@
         <div class="alert" id="admin-realm-inline-image-preview-status"></div>
         <div class="alert" id="admin-realm-inline-url-embed-preview-status"></div>
         <div class="alert" id="admin-realm-allow-edit-history-status"></div>
+        <div class="alert" id="admin-realm-allow-message-deleting-status"></div>
         <div class="alert" id="admin-realm-message-editing-status"></div>
         <div class="alert" id="admin-realm-mandatory-topics-status"></div>
 
@@ -34,6 +35,18 @@
                        class="admin-realm-message-content-edit-limit-minutes"
                        value="{{ realm_message_content_edit_limit_minutes }}"
                   {{#unless realm_allow_message_editing}}disabled="disabled"{{/unless}} />
+            </div>
+
+            <div class="input-group">
+                <label class="checkbox">
+                    <input type="checkbox" id="id_realm_allow_message_deleting" name="realm_allow_message_deleting"
+                           {{#if realm_allow_message_deleting}}checked="checked"{{/if}} />
+                    <span></span>
+                </label>
+                <label for="id_realm_allow_message_deleting" id="id_realm_allow_message_deleting_label" class="inline-block"
+                    title="{{t 'If checked, users can delete their messages.  By default, only administrators can delete messages.' }}">
+                    {{t "Users can delete their messages" }}
+                </label>
             </div>
 
             <div class="input-group">

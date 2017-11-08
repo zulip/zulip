@@ -54,6 +54,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         var realm_settings = {
             add_emoji_by_admins_only: settings_emoji.update_custom_emoji_ui,
             allow_edit_history: noop,
+            allow_message_deleting: noop,
             allow_message_editing: noop,
             create_stream_by_admins_only: noop,
             default_language: settings_org.reset_realm_default_language,
