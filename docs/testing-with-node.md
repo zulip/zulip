@@ -94,9 +94,6 @@ like the following toward the top of your test file:
 >     zrequire('stream_data');
 >     zrequire('Filter', 'js/filter');
 
-(Deprecation note: you may see code where we use `add_dependencies` or
-direct `require` statements.  We should use `zrequire` instead.)
-
 For modules that you want to completely stub out, please use a pattern
 like this:
 

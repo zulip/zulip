@@ -30,12 +30,6 @@ exports.zrequire = function (name, fn) {
     return obj;
 };
 
-exports.add_dependencies = function (dct) {
-    _.each(dct, function (fn, name) {
-        exports.zrequire(name, fn);
-    });
-};
-
 exports.restore = function () {
     dependencies.forEach(function (name) {
         delete global[name];
