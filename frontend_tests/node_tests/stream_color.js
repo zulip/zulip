@@ -1,6 +1,6 @@
 global.stub_out_jquery();
 
-var stream_color = require('js/stream_color.js');
+zrequire('stream_color');
 
 (function test_pick_color() {
     var used_colors = ["#76ce90", "#fae589"];
