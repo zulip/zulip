@@ -1,8 +1,9 @@
 # Webhooks for external integrations.
 from django.utils.translation import ugettext as _
+from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success, json_error
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
+from zerver.lib.request import REQ, has_request_variables
 from zerver.models import UserProfile
 
 from django.http import HttpRequest, HttpResponse
@@ -38,7 +39,11 @@ def api_stripe_webhook(request, user_profile,
                 rest = "created"
                 verb = 'is'
 
-            body = body_template.format(amount=amount_string, rest=rest, verb=verb, charge=charge_id, link=link)
+            body = body_template.format(amount=amount_string,
+                                        rest=rest,
+                                        verb=verb,
+                                        charge=charge_id,
+                                        link=link)
 
         else:
             charge_id = data_object["id"]
@@ -82,7 +87,8 @@ def api_stripe_webhook(request, user_profile,
                 # https://stripe.com/docs/api/python#event_types, but do the
                 # computation just to be safe.
                 days_left = int((data_object["trial_end"] - time.time() + DAY//2) // DAY)
-                body_template = "The customer subscription trial with id **[{id}]({link})** will end in {days} days."
+                body_template = ("The customer subscription trial with id"
+                                 " **[{id}]({link})** will end in {days} days.")
                 body = body_template.format(id=object_id, link=link, days=days_left)
 
         else:
@@ -130,7 +136,11 @@ def api_stripe_webhook(request, user_profile,
             beginning = "The"
             end = "been updated"
 
-        body = body_template.format(beginning=beginning, id=object_id, link=link, amount=amount_string, end=end)
+        body = body_template.format(beginning=beginning,
+                                    id=object_id,
+                                    link=link,
+                                    amount=amount_string,
+                                    end=end)
 
         if topic is None:
             topic = "Order {}".format(object_id)
@@ -163,10 +173,10 @@ def api_stripe_webhook(request, user_profile,
 
     return json_success()
 
-def amount(amount, currency):
-    # type: (int, str) -> str
+def amount(amount: int, currency: str) -> str:
     # zero-decimal currencies
-    zero_decimal_currencies = ["bif", "djf", "jpy", "krw", "pyg", "vnd", "xaf", "xpf", "clp", "gnf", "kmf", "mga", "rwf", "vuv", "xof"]
+    zero_decimal_currencies = ["bif", "djf", "jpy", "krw", "pyg", "vnd", "xaf",
+                               "xpf", "clp", "gnf", "kmf", "mga", "rwf", "vuv", "xof"]
     if currency in zero_decimal_currencies:
         return str(amount) + currency
     else:

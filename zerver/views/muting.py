@@ -5,7 +5,6 @@ from typing import List, Text
 import ujson
 
 from django.utils.translation import ugettext as _
-from zerver.decorator import authenticated_json_post_view
 from zerver.lib.actions import do_mute_topic, do_unmute_topic
 from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_success, json_error
@@ -14,8 +13,8 @@ from zerver.lib.streams import access_stream_by_name, access_stream_for_unmute_t
 from zerver.lib.validator import check_string, check_list
 from zerver.models import get_stream, Stream, UserProfile
 
-def mute_topic(user_profile, stream_name, topic_name):
-    # type: (UserProfile, str, str) -> HttpResponse
+def mute_topic(user_profile: UserProfile, stream_name: str,
+               topic_name: str) -> HttpResponse:
     (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
 
     if topic_is_muted(user_profile, stream.id, topic_name):
@@ -24,8 +23,8 @@ def mute_topic(user_profile, stream_name, topic_name):
     do_mute_topic(user_profile, stream, recipient, topic_name)
     return json_success()
 
-def unmute_topic(user_profile, stream_name, topic_name):
-    # type: (UserProfile, str, str) -> HttpResponse
+def unmute_topic(user_profile: UserProfile, stream_name: str,
+                 topic_name: str) -> HttpResponse:
     error = _("Topic is not there in the muted_topics list")
     stream = access_stream_for_unmute_topic(user_profile, stream_name, error)
 

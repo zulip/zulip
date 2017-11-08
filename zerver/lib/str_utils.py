@@ -71,7 +71,7 @@ def dict_with_str_keys(dct, encoding='utf-8'):
     """applies force_str on the keys of a dict (non-recursively)"""
     return {force_str(key, encoding): value for key, value in dct.items()}
 
-class ModelReprMixin(object):
+class ModelReprMixin:
     """
     This mixin provides a python 2 and 3 compatible way of handling string representation of a model.
     When declaring a model, inherit this mixin before django.db.models.Model.

@@ -678,9 +678,7 @@ exports.register_click_handlers = function () {
     $(document).on('click', '.emoji-popover-emoji.composition', function (e) {
         var emoji_name = $(this).data("emoji-name");
         var emoji_text = ':' + emoji_name + ':';
-        var textarea = $("#new_message_content");
-        textarea.caret(emoji_text);
-        textarea.focus();
+        compose_state.insert_syntax_and_focus(emoji_text);
         e.stopPropagation();
         emoji_picker.hide_emoji_popover();
     });

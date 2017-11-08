@@ -42,7 +42,7 @@ before testing the apps.
 Because of how Google and Apple have architected the security model of
 their push notification protocols, the Zulip mobile apps for
 [iOS](https://itunes.apple.com/us/app/zulip/id1203036395) and
-[Android](https://play.google.com/store/apps/details?id=com.zulip.android)
+[Android](https://play.google.com/store/apps/details?id=com.zulipmobile)
 can only receive push notifications from a single Zulip server.  We
 have configured that server to be `push.zulipchat.com`, and offer a
 [push notification forwarding service](prod-mobile-push-notifications.html) that

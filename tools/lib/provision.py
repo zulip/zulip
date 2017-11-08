@@ -13,7 +13,8 @@ os.environ["PYTHONUNBUFFERED"] = "y"
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 sys.path.append(ZULIP_PATH)
-from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING
+from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING, \
+    get_dev_uuid_var_path
 from scripts.lib.setup_venv import VENV_DEPENDENCIES
 from scripts.lib.node_cache import setup_node_modules, NODE_MODULES_CACHE_PATH
 
@@ -67,7 +68,8 @@ if ram_gb < 1.5:
     sys.exit(1)
 
 try:
-    run(["mkdir", "-p", VAR_DIR_PATH])
+    UUID_VAR_PATH = get_dev_uuid_var_path(create_if_missing=True)
+    run(["mkdir", "-p", UUID_VAR_PATH])
     if os.path.exists(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink')):
         os.remove(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink'))
     os.symlink(
@@ -174,8 +176,10 @@ def setup_shell_profile(shell_profile):
     def write_command(command):
         # type: (str) -> None
         if os.path.exists(shell_profile_path):
-            with open(shell_profile_path, 'a+') as shell_profile_file:
-                if command not in shell_profile_file.read():
+            with open(shell_profile_path, 'r') as shell_profile_file:
+                lines = [line.strip() for line in shell_profile_file.readlines()]
+            if command not in lines:
+                with open(shell_profile_path, 'a+') as shell_profile_file:
                     shell_profile_file.writelines(command + '\n')
         else:
             with open(shell_profile_path, 'w') as shell_profile_file:
@@ -209,7 +213,7 @@ def main(options):
 
     new_apt_dependencies_hash = sha_sum.hexdigest()
     last_apt_dependencies_hash = None
-    apt_hash_file_path = 'var/apt_dependencies_hash'
+    apt_hash_file_path = os.path.join(UUID_VAR_PATH, "apt_dependencies_hash")
     try:
         hash_file = open(apt_hash_file_path, 'r+')
         last_apt_dependencies_hash = hash_file.read()
@@ -326,8 +330,9 @@ def main(options):
         else:
             print("RabbitMQ is already configured.")
 
+        migration_status_path = os.path.join(UUID_VAR_PATH, "migration_status_dev")
         if options.is_force or not is_template_database_current(
-                migration_status="var/migration_status_dev",
+                migration_status=migration_status_path,
                 settings="zproject.settings",
                 database_name="zulip",
         ):
@@ -353,19 +358,20 @@ def main(options):
             with open(path, 'r') as file_to_hash:
                 sha1sum.update(force_bytes(file_to_hash.read()))
 
+        compilemessages_hash_path = os.path.join(UUID_VAR_PATH, "last_compilemessages_hash")
         new_compilemessages_hash = sha1sum.hexdigest()
-        run(['touch', 'var/last_compilemessages_hash'])
-        with open('var/last_compilemessages_hash', 'r') as hash_file:
+        run(['touch', compilemessages_hash_path])
+        with open(compilemessages_hash_path, 'r') as hash_file:
             last_compilemessages_hash = hash_file.read()
 
         if options.is_force or (new_compilemessages_hash != last_compilemessages_hash):
-            with open('var/last_compilemessages_hash', 'w') as hash_file:
+            with open(compilemessages_hash_path, 'w') as hash_file:
                 hash_file.write(new_compilemessages_hash)
             run(["./manage.py", "compilemessages"])
         else:
             print("No need to run `manage.py compilemessages`.")
 
-    version_file = os.path.join(ZULIP_PATH, 'var/provision_version')
+    version_file = os.path.join(UUID_VAR_PATH, 'provision_version')
     print('writing to %s\n' % (version_file,))
     open(version_file, 'w').write(PROVISION_VERSION + '\n')
 

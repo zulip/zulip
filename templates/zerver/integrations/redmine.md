@@ -39,9 +39,10 @@ you want these settings to apply.
 To configure Zulip notifications for a particular Redmine project,
 visit the project's **Settings** page.
 
-In either case, fill out zulip server by `{{ external_api_path_subdomain }}`
-the bot email address, and API key, and the Zulip stream that should
-receive notifications. Apply your changes.
+In either case, fill out the settings with the Zulip server
+(`{{ api_url_scheme_relative }}`), the bot's email address and API key,
+and the Zulip stream that should receive notifications, and apply your
+changes.
 
 To test the plugin, create an issue or update an existing issue
 in a Redmine project that has Zulip notifications configured (any

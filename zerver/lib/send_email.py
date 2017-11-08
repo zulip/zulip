@@ -19,7 +19,7 @@ from zerver.lib.logging_util import create_logger
 
 logger = create_logger('zulip.send_email', settings.EMAIL_LOG_PATH, 'INFO')
 
-class FromAddress(object):
+class FromAddress:
     SUPPORT = parseaddr(settings.ZULIP_ADMINISTRATOR)[1]
     NOREPLY = parseaddr(settings.NOREPLY_EMAIL_ADDRESS)[1]
 
@@ -41,6 +41,7 @@ def build_email(template_prefix, to_user_id=None, to_email=None, from_name=None,
         'realm_name_in_notifications': False,
         'support_email': FromAddress.SUPPORT,
         'email_images_base_uri': settings.ROOT_DOMAIN_URI + '/static/images/emails',
+        'physical_address': settings.PHYSICAL_ADDRESS,
     })
     subject = loader.render_to_string(template_prefix + '.subject',
                                       context=context,

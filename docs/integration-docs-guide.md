@@ -99,11 +99,10 @@ Here are a few common macros used to document Zulip's integrations:
 
 * **Contents:** See [source][5]. **Note:** If special configuration is
   required to set up the URL and you can't use this macro, be sure to use the
-  `{{ external_api_uri }}` template variable, so that your integration
+  `{{ api_url }}` template variable, so that your integration
   documentation will provide the correct URL for whatever server it is
   deployed on.  If special configuration is required to set the SITE
-  variable, you should document that too, inside an `{% if
-  api_site_required %}` check.
+  variable, you should document that too.
 
 * **Example usage:**
   ```

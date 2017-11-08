@@ -71,8 +71,8 @@ This is documented in [the developer installation guide][dev-install].
 
 ## Running Zulip in production
 
-Zulip in production supports Ubuntu 14.04 Trusty and Ubuntu 16.04
-Xenial. We're happy to support work to enable Zulip to run on
+Zulip in production supports Ubuntu 16.04 Xenial and Ubuntu 14.04
+Trusty. We're happy to support work to enable Zulip to run on
 additional platforms. The installation process is
 [documented here](https://zulip.readthedocs.io/en/latest/prod.html).
 
@@ -93,7 +93,7 @@ the `[WIP]`.
 you submit a pull request, but you can also run them all in your
 development environment following the instructions in the [testing
 docs][doc-test]. You can also try out [our new desktop
-client][electron], which is in alpha; we'd appreciate testing and
+client][electron], which is now out of beta; we'd appreciate testing and
 [feedback](https://github.com/zulip/zulip-electron/issues/new).
 
 * **Developer Documentation**.  Zulip has a growing collection of

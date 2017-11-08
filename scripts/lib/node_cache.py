@@ -47,7 +47,7 @@ def generate_sha1sum_node_modules(setup_dir=None, production=DEFAULT_PRODUCTION)
 
 def setup_node_modules(production=DEFAULT_PRODUCTION, stdout=None, stderr=None, copy_modules=False,
                        prefer_offline=False):
-    # type: (bool, Optional[IO], Optional[IO], bool, bool) -> None
+    # type: (bool, Optional[IO[Any]], Optional[IO[Any]], bool, bool) -> None
     yarn_args = get_yarn_args(production=production)
     if prefer_offline:
         yarn_args.append("--prefer-offline")
@@ -74,7 +74,7 @@ def setup_node_modules(production=DEFAULT_PRODUCTION, stdout=None, stderr=None, 
 
 def do_yarn_install(target_path, yarn_args, success_stamp, stdout=None, stderr=None,
                     copy_modules=False):
-    # type: (str, List[str], str, Optional[IO], Optional[IO], bool) -> None
+    # type: (str, List[str], str, Optional[IO[Any]], Optional[IO[Any]], bool) -> None
     cmds = [
         ['mkdir', '-p', target_path],
         ['cp', 'package.json', "yarn.lock", target_path],

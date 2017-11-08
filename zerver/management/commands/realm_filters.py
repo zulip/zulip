@@ -17,13 +17,13 @@ NOTE: Regexes must be simple enough that they can be easily translated to JavaSc
       * Named groups will be converted to numbered groups automatically
       * Inline-regex flags will be stripped, and where possible translated to RegExp-wide flags
 
-Example: ./manage.py realm_filters --realm=zulip --op=add '#(?P<id>[0-9]{2,8})' 'https://trac.humbughq.com/ticket/%(id)s'
+Example: ./manage.py realm_filters --realm=zulip --op=add '#(?P<id>[0-9]{2,8})' \
+    'https://support.example.com/ticket/%(id)s'
 Example: ./manage.py realm_filters --realm=zulip --op=remove '#(?P<id>[0-9]{2,8})'
 Example: ./manage.py realm_filters --realm=zulip --op=show
 """
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--op',
                             dest='op',
                             type=str,
@@ -35,8 +35,7 @@ Example: ./manage.py realm_filters --realm=zulip --op=show
                             help="format string to substitute")
         self.add_realm_args(parser, True)
 
-    def handle(self, *args, **options):
-        # type: (*Any, **str) -> None
+    def handle(self, *args: Any, **options: str) -> None:
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
         if options["op"] == "show":

@@ -6,7 +6,6 @@ import base64
 import ujson
 import os
 import string
-from six.moves import range
 
 from typing import Optional, Text
 
@@ -52,7 +51,7 @@ def create_user_profile(realm, email, password, active, bot_type, full_name,
 
 def create_user(email, password, realm, full_name, short_name,
                 active=True, is_realm_admin=False, bot_type=None, bot_owner=None, tos_version=None,
-                timezone=u"", avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
+                timezone="", avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
                 is_mirror_dummy=False, default_sending_stream=None,
                 default_events_register_stream=None,
                 default_all_public_streams=None, user_profile_id=None):

@@ -59,7 +59,7 @@ def queue_digest_recipient(user_profile, cutoff):
     # Convert cutoff to epoch seconds for transit.
     event = {"user_profile_id": user_profile.id,
              "cutoff": cutoff.strftime('%s')}
-    queue_json_publish("digest_emails", event, lambda event: None)
+    queue_json_publish("digest_emails", event, lambda event: None, call_consume_in_tests=True)
 
 def enqueue_emails(cutoff):
     # type: (datetime.datetime) -> None

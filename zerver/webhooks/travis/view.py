@@ -2,9 +2,10 @@
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
+from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success
+from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.validator import check_dict, check_string, check_bool
 from zerver.models import UserProfile
 from typing import Dict
@@ -31,7 +32,7 @@ def api_travis_webhook(request, user_profile,
                            ('status_message', check_string),
                            ('compare_url', check_string),
                        ]))):
-    # type: (HttpRequest, UserProfile, str, str, str, Dict[str, str]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, str, str, bool, Dict[str, str]) -> HttpResponse
 
     message_status = message['status_message']
     if ignore_pull_requests and message['type'] == 'pull_request':

@@ -119,8 +119,10 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument('--development', action='store_true', dest='development', help='For setting up the developer env for zulip')
-    group.add_argument('--production', action='store_false', dest='development', help='For setting up the production env for zulip')
+    group.add_argument('--development', action='store_true', dest='development',
+                       help='For setting up the developer env for zulip')
+    group.add_argument('--production', action='store_false', dest='development',
+                       help='For setting up the production env for zulip')
     results = parser.parse_args()
 
     generate_secrets(results.development)

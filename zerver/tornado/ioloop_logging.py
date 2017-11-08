@@ -3,7 +3,6 @@ from typing import Any, List, Tuple
 import logging
 import time
 import select
-from tornado import ioloop
 from django.conf import settings
 
 from tornado.ioloop import IOLoop, PollIOLoop
@@ -14,10 +13,9 @@ orig_poll_impl = select.epoll
 
 class InstrumentedPollIOLoop(PollIOLoop):
     def initialize(self, **kwargs):  # type: ignore # TODO investigate likely buggy monkey patching here
-        super(InstrumentedPollIOLoop, self).initialize(impl=InstrumentedPoll(), **kwargs)
+        super().initialize(impl=InstrumentedPoll(), **kwargs)
 
-def instrument_tornado_ioloop():
-    # type: () -> None
+def instrument_tornado_ioloop() -> None:
     IOLoop.configure(InstrumentedPollIOLoop)
 
 # A hack to keep track of how much time we spend working, versus sleeping in
@@ -28,9 +26,8 @@ def instrument_tornado_ioloop():
 # the default poll implementation.  We need to do this before any Tornado code
 # runs that might instantiate the default event loop.
 
-class InstrumentedPoll(object):
-    def __init__(self):
-        # type: () -> None
+class InstrumentedPoll:
+    def __init__(self) -> None:
         self._underlying = orig_poll_impl()
         self._times = []  # type: List[Tuple[float, float]]
         self._last_print = 0.0
@@ -38,13 +35,11 @@ class InstrumentedPoll(object):
     # Python won't let us subclass e.g. select.epoll, so instead
     # we proxy every method.  __getattr__ handles anything we
     # don't define elsewhere.
-    def __getattr__(self, name):
-        # type: (str) -> Any
+    def __getattr__(self, name: str) -> Any:
         return getattr(self._underlying, name)
 
     # Call the underlying poll method, and report timing data.
-    def poll(self, timeout):
-        # type: (float) -> Any
+    def poll(self, timeout: float) -> Any:
 
         # Avoid accumulating a bunch of insignificant data points
         # from short timeouts.

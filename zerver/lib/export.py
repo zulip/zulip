@@ -15,7 +15,7 @@ import ujson
 import shutil
 import subprocess
 import tempfile
-from zerver.lib.avatar_hash import user_avatar_hash
+from zerver.lib.avatar_hash import user_avatar_hash, user_avatar_path_from_ids
 from zerver.lib.create_user import random_api_key
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserMessage, Subscription, Message, RealmEmoji, RealmFilter, \
@@ -23,8 +23,6 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserPresence, UserActivity, UserActivityInterval, \
     get_display_recipient, Attachment, get_system_bot
 from zerver.lib.parallel import run_parallel
-from zerver.lib.utils import mkdir_p
-from six.moves import range
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 # Custom mypy types follow:
@@ -182,7 +180,7 @@ def floatify_datetime_fields(data, table):
             utc_naive  = dt.replace(tzinfo=None) - dt.utcoffset()
             item[field] = (utc_naive - datetime.datetime(1970, 1, 1)).total_seconds()
 
-class Config(object):
+class Config:
     '''
     A Config object configures a single table for exporting (and,
     maybe some day importing as well.
@@ -334,7 +332,7 @@ def export_from_config(response, config, seed_object=None, context=None):
         rows = list(query)
 
     elif config.id_source:
-        # In this mode,  we are the figurative Blog, and we now
+        # In this mode, we are the figurative Blog, and we now
         # need to look at the current response to get all the
         # blog ids from the Article rows we fetched previously.
         model = config.model
@@ -865,9 +863,9 @@ def export_files_from_s3(realm, bucket_name, output_dir, processing_avatars=Fals
     if processing_avatars:
         bucket_list = bucket.list()
         for user_profile in UserProfile.objects.filter(realm=realm):
-            avatar_hash = user_avatar_hash(user_profile.email)
-            avatar_hash_values.add(avatar_hash)
-            avatar_hash_values.add(avatar_hash + ".original")
+            avatar_path = user_avatar_path_from_ids(user_profile.id, realm.id)
+            avatar_hash_values.add(avatar_path)
+            avatar_hash_values.add(avatar_path + ".original")
             user_ids.add(user_profile.id)
     else:
         bucket_list = bucket.list(prefix="%s/" % (realm.id,))
@@ -941,7 +939,7 @@ def export_uploads_from_local(realm, local_dir, output_dir):
     for attachment in Attachment.objects.filter(realm_id=realm.id):
         local_path = os.path.join(local_dir, attachment.path_id)
         output_path = os.path.join(output_dir, attachment.path_id)
-        mkdir_p(os.path.dirname(output_path))
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
         subprocess.check_call(["cp", "-a", local_path, output_path])
         stat = os.stat(local_path)
         record = dict(realm_id=attachment.realm_id,
@@ -977,15 +975,15 @@ def export_avatars_from_local(realm, local_dir, output_dir):
         if user.avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
             continue
 
-        avatar_hash = user_avatar_hash(user.email)
-        wildcard = os.path.join(local_dir, avatar_hash + '.*')
+        avatar_path = user_avatar_path_from_ids(user.id, realm.id)
+        wildcard = os.path.join(local_dir, avatar_path + '.*')
 
         for local_path in glob.glob(wildcard):
             logging.info('Copying avatar file for user %s from %s' % (
                 user.email, local_path))
-            fn = os.path.basename(local_path)
+            fn = os.path.relpath(local_path, local_dir)
             output_path = os.path.join(output_dir, fn)
-            mkdir_p(str(os.path.dirname(output_path)))
+            os.makedirs(str(os.path.dirname(output_path)), exist_ok=True)
             subprocess.check_call(["cp", "-a", str(local_path), str(output_path)])
             stat = os.stat(local_path)
             record = dict(realm_id=realm.id,
@@ -1189,7 +1187,8 @@ def export_messages_single_user(user_profile, output_dir, chunk_size=1000):
     min_id = -1
     dump_file_id = 1
     while True:
-        actual_query = user_message_query.select_related("message", "message__sending_client").filter(id__gt=min_id)[0:chunk_size]
+        actual_query = user_message_query.select_related(
+            "message", "message__sending_client").filter(id__gt=min_id)[0:chunk_size]
         user_message_chunk = [um for um in actual_query]
         user_message_ids = set(um.id for um in user_message_chunk)
 
@@ -1294,6 +1293,15 @@ def fix_bitfield_keys(data, table, field_name):
         item[field_name] = item[field_name + '_mask']
         del item[field_name + '_mask']
 
+def fix_realm_authentication_bitfield(data, table, field_name):
+    # type: (TableData, TableName, Field) -> None
+    """Used to fixup the authentication_methods bitfield to be a string"""
+    for item in data[table]:
+        values_as_bitstring = ''.join(['1' if field[1] else '0' for field in
+                                       item[field_name]])
+        values_as_int = int(values_as_bitstring, 2)
+        item[field_name] = values_as_int
+
 def bulk_import_model(data, model, table, dump_file_id=None):
     # type: (TableData, Any, TableName, str) -> None
     # TODO, deprecate dump_file_id
@@ -1324,10 +1332,10 @@ def import_uploads_local(import_dir, processing_avatars=False):
 
     for record in records:
         if processing_avatars:
-            # For avatars, we need to rehash the user's email with the
+            # For avatars, we need to rehash the user ID with the
             # new server's avatar salt
-            avatar_hash = user_avatar_hash(record['user_profile_email'])
-            file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", avatar_hash)
+            avatar_path = user_avatar_path_from_ids(record['user_profile_id'], record['realm_id'])
+            file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", avatar_path)
             if record['s3_path'].endswith('.original'):
                 file_path += '.original'
             else:
@@ -1355,8 +1363,8 @@ def import_uploads_s3(bucket_name, import_dir, processing_avatars=False):
         if processing_avatars:
             # For avatars, we need to rehash the user's email with the
             # new server's avatar salt
-            avatar_hash = user_avatar_hash(record['user_profile_email'])
-            key.key = avatar_hash
+            avatar_path = user_avatar_path_from_ids(record['user_profile_id'], record['realm_id'])
+            key.key = avatar_path
             if record['s3_path'].endswith('.original'):
                 key.key += '.original'
         else:
@@ -1372,7 +1380,7 @@ def import_uploads_s3(bucket_name, import_dir, processing_avatars=False):
         key.set_metadata("realm_id", str(user_profile.realm_id))
         key.set_metadata("orig_last_modified", record['last_modified'])
 
-        headers = {u'Content-Type': record['content_type']}
+        headers = {'Content-Type': record['content_type']}
 
         key.set_contents_from_filename(os.path.join(import_dir, record['path']), headers=headers)
 
@@ -1425,6 +1433,7 @@ def do_import_realm(import_dir):
 
     convert_to_id_fields(data, 'zerver_realm', 'notifications_stream')
     fix_datetime_fields(data, 'zerver_realm')
+    fix_realm_authentication_bitfield(data, 'zerver_realm', 'authentication_methods')
     realm = Realm(**data['zerver_realm'][0])
     if realm.notifications_stream_id is not None:
         notifications_stream_id = int(realm.notifications_stream_id)  # type: Optional[int]

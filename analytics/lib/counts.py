@@ -7,7 +7,7 @@ from analytics.models import InstallationCount, RealmCount, \
     last_successful_fill
 from zerver.models import Realm, UserProfile, Message, Stream, \
     UserActivityInterval, RealmAuditLog, models
-from zerver.lib.timestamp import floor_to_day, floor_to_hour, ceiling_to_day, \
+from zerver.lib.timestamp import floor_to_hour, ceiling_to_day, \
     ceiling_to_hour, verify_UTC
 
 from typing import Any, Callable, Dict, List, Optional, Text, Tuple, Type, Union
@@ -26,7 +26,7 @@ TIMEDELTA_MAX = timedelta(days=365*1000)
 
 ## Class definitions ##
 
-class CountStat(object):
+class CountStat:
     HOUR = 'hour'
     DAY = 'day'
     FREQUENCIES = frozenset([HOUR, DAY])
@@ -46,9 +46,9 @@ class CountStat(object):
         else:  # frequency == CountStat.DAY
             self.interval = timedelta(days=1)
 
-    def __unicode__(self):
+    def __str__(self):
         # type: () -> Text
-        return u"<CountStat: %s>" % (self.property,)
+        return "<CountStat: %s>" % (self.property,)
 
 class LoggingCountStat(CountStat):
     def __init__(self, property, output_table, frequency):
@@ -61,7 +61,7 @@ class DependentCountStat(CountStat):
         CountStat.__init__(self, property, data_collector, frequency, interval=interval)
         self.dependencies = dependencies
 
-class DataCollector(object):
+class DataCollector:
     def __init__(self, output_table, pull_function):
         # type: (Type[BaseCount], Optional[Callable[[str, datetime, datetime], int]]) -> None
         self.output_table = output_table

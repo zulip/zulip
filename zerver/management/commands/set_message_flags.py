@@ -16,8 +16,7 @@ class Command(ZulipBaseCommand):
     help = """Sets user message flags. Used internally by actions.py. Marks all
     Expects a comma-delimited list of user message ids via stdin, and an EOF to terminate."""
 
-    def add_arguments(self, parser):
-        # type: (CommandParser) -> None
+    def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument('-l', '--for-real',
                             dest='for_real',
                             action='store_true',
@@ -45,8 +44,7 @@ class Command(ZulipBaseCommand):
                             help="Email to set messages for")
         self.add_realm_args(parser)
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         if not options["flag"] or not options["op"] or not options["email"]:
             print("Please specify an operation, a flag and an email")
             exit(1)
@@ -71,8 +69,7 @@ class Command(ZulipBaseCommand):
             sys.stdout.close()
             sys.stderr.close()
 
-        def do_update(batch):
-            # type: (Iterable[int]) -> None
+        def do_update(batch: Iterable[int]) -> None:
             msgs = UserMessage.objects.filter(id__in=batch)
             if op == 'add':
                 msgs.update(flags=models.F('flags').bitor(flag))

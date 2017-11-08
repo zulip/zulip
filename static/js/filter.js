@@ -226,10 +226,10 @@ Filter.canonicalize_term = function (opts) {
    narrow in the URL fragment.  There we do use full
    URI encoding to avoid problematic characters. */
 function encodeOperand(operand) {
-    return operand.replace(/%/g,  '%25')
+    return operand.replace(/%/g, '%25')
                   .replace(/\+/g, '%2B')
-                  .replace(/ /g,  '+')
-                  .replace(/"/g,  '%22');
+                  .replace(/ /g, '+')
+                  .replace(/"/g, '%22');
 }
 
 function decodeOperand(encoded, operator) {
@@ -477,7 +477,7 @@ Filter.operator_to_prefix = function (operator, negated) {
         return verb + 'messages that are';
 
     case 'group-pm-with':
-        return verb + 'group personal messages with';
+        return verb + 'group private messages including';
     }
     return '';
 };

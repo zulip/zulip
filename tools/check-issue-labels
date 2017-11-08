@@ -6,7 +6,7 @@ import argparse
 import sys
 import os
 
-from six.moves.configparser import ConfigParser
+import ConfigParser
 from typing import Any, Dict, MutableMapping, Optional, Text
 
 # Scans zulip repositary for issues that don't have any `area` labels.

@@ -1,16 +1,18 @@
-from typing import Any, Dict, Generator, Iterable, Tuple
+from typing import Dict, Iterable, Tuple, Callable, TypeVar, Iterator
 
 import os
 import pty
 import sys
 import errno
 
+JobData = TypeVar('JobData')
+
 def run_parallel(job, data, threads=6):
-    # type: (Any, Iterable[Any], int) -> Generator[Tuple[int, Any], None, None]
-    pids = {}  # type: Dict[int, Any]
+    # type: (Callable[[JobData], int], Iterable[JobData], int) -> Iterator[Tuple[int, JobData]]
+    pids = {}  # type: Dict[int, JobData]
 
     def wait_for_one():
-        # type: () -> Tuple[int, Any]
+        # type: () -> Tuple[int, JobData]
         while True:
             try:
                 (pid, status) = os.wait()

@@ -146,6 +146,7 @@ Contents:
    emoji
    hotspots
    full-text-search
+   oauth
    email
    analytics
    translating

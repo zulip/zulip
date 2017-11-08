@@ -1,11 +1,12 @@
 # Webhooks for external integrations.
 
 from django.http import HttpRequest, HttpResponse
-from zerver.models import get_client, UserProfile
+from zerver.decorator import authenticated_rest_api_view
 from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success
+from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.validator import check_dict
-from zerver.decorator import REQ, has_request_variables, authenticated_rest_api_view
+from zerver.models import get_client, UserProfile
 
 import base64
 from functools import wraps
@@ -20,11 +21,9 @@ ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
 # Beanstalk's web hook UI rejects url with a @ in the username section of a url
 # So we ask the user to replace them with %40
 # We manually fix the username here before passing it along to @authenticated_rest_api_view
-def beanstalk_decoder(view_func):
-    # type: (ViewFuncT) -> ViewFuncT
+def beanstalk_decoder(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
-    def _wrapped_view_func(request, *args, **kwargs):
-        # type: (HttpRequest, *Any, **Any) -> HttpResponse
+    def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         try:
             auth_type, encoded_value = request.META['HTTP_AUTHORIZATION'].split()  # type: str, str
             if auth_type.lower() == "basic":

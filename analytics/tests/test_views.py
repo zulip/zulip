@@ -1,21 +1,19 @@
-from django.utils.timezone import get_fixed_timezone, utc
+from django.utils.timezone import utc
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import ceiling_to_hour, ceiling_to_day, \
     datetime_to_timestamp
-from zerver.models import Realm, UserProfile, Client, get_realm
+from zerver.models import Client, get_realm
 
 from analytics.lib.counts import CountStat, COUNT_STATS
 from analytics.lib.time_utils import time_range
-from analytics.models import RealmCount, UserCount, BaseCount, \
+from analytics.models import RealmCount, UserCount, \
     FillState, last_successful_fill
 from analytics.views import stats, get_chart_data, sort_by_totals, \
     sort_client_labels, rewrite_client_arrays
 
 from datetime import datetime, timedelta
 import mock
-import ujson
 
-from six.moves import range
 from typing import List, Dict, Optional
 
 class TestStatsEndpoint(ZulipTestCase):

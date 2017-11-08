@@ -103,10 +103,10 @@ else:
     WEBPACK_FILE = os.path.join('var', 'webpack-stats-test.json')
 WEBPACK_LOADER['DEFAULT']['STATS_FILE'] = os.path.join(DEPLOY_ROOT, WEBPACK_FILE)
 
-if CASPER_TESTS:
-    # Don't auto-restart Tornado server during casper tests
-    AUTORELOAD = False
-else:
+# Don't auto-restart Tornado server during automated tests
+AUTORELOAD = False
+
+if not CASPER_TESTS:
     # Use local memory cache for backend tests.
     CACHES['default'] = {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
@@ -114,10 +114,14 @@ else:
 
     def set_loglevel(logger_name, level):
         LOGGING['loggers'].setdefault(logger_name, {})['level'] = level
+        LOGGING['loggers'].setdefault(logger_name, {})['propagate'] = False
     set_loglevel('zulip.requests', 'CRITICAL')
     set_loglevel('zulip.management', 'CRITICAL')
     set_loglevel('django.request', 'ERROR')
     set_loglevel('fakeldap', 'ERROR')
+    set_loglevel('zulip.send_email', 'ERROR')
+    set_loglevel('zerver.lib.digest', 'ERROR')
+    set_loglevel('zerver.lib.email_mirror', 'ERROR')
 
 # Enable file:/// hyperlink support by default in tests
 ENABLE_FILE_LINKS = True

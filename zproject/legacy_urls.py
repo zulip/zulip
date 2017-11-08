@@ -18,12 +18,4 @@ legacy_urls = [
     url(r'^json/subscriptions/exists$', zerver.views.streams.json_stream_exists),
 
     url(r'^json/fetch_api_key$', zerver.views.auth.json_fetch_api_key),
-
-    # A version of these reporting views may make sense to support in
-    # the API for getting mobile analytics, but we may want something
-    # totally different.
-    url(r'^json/report_error$', zerver.views.report.json_report_error),
-    url(r'^json/report_send_time$', zerver.views.report.json_report_send_time),
-    url(r'^json/report_narrow_time$', zerver.views.report.json_report_narrow_time),
-    url(r'^json/report_unnarrow_time$', zerver.views.report.json_report_unnarrow_time),
 ]

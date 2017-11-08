@@ -684,6 +684,18 @@ button.login-google-button {
     left: 2px;
 }
 
+#registration .input-box label.static {
+    width: 100%;
+    text-align: left;
+    position: static !important;
+    margin-left: 2px;
+}
+
+
+#registration [for="realm_in_root_domain"] {
+    font-weight: normal !important;
+}
+
 #registration .register-button-box {
     text-align: center;
 }
@@ -699,15 +711,31 @@ button.login-google-button {
     position: relative;
     padding-right: 10px;
 
-    width: 150px;
+    width: 156px;
 }
 
 #registration #id_team_subdomain.subdomain + .realm_subdomain_label {
     float: right;
-    margin-top: 38px;
+    margin-top: 12px;
     margin-left: 10px;
 
     font-weight: normal;
+}
+
+#registration #id_team_subdomain.subdomain {
+    margin-top: 0px;
+}
+
+#registration #subdomain_section .or {
+    margin-top: 0px;
+}
+
+.static.org-url + #subdomain_section {
+    margin-top: 0px !important;
+}
+
+.static.org-url + #subdomain_section .or {
+    display: none;
 }
 
 #registration .input-box.full-width {
@@ -750,6 +778,10 @@ button.login-google-button {
 
 #registration .input-group label.inline-block {
     margin-top: -1px;
+}
+
+#registration .org-url {
+    margin-bottom: 5px !important;
 }
 
 .split-view .right-side,

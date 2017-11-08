@@ -1,4 +1,5 @@
 import os
+import pathlib
 
 from typing import Dict, List, Optional, TypeVar, Any, Text
 from django.conf import settings
@@ -10,7 +11,6 @@ from django.utils.translation import ugettext as _
 from django.template import loader
 
 from zerver.templatetags.app_filters import render_markdown_path
-from six.moves import map
 
 
 """This module declares all of the (documented) integrations available
@@ -49,7 +49,7 @@ CATEGORIES = {
     'bots': _('Interactive bots'),
 }  # type: Dict[str, str]
 
-class Integration(object):
+class Integration:
     DEFAULT_LOGO_STATIC_PATH_PNG = 'static/images/integrations/logos/{name}.png'
     DEFAULT_LOGO_STATIC_PATH_SVG = 'static/images/integrations/logos/{name}.svg'
 
@@ -72,10 +72,7 @@ class Integration(object):
         self.categories = list(map((lambda c: CATEGORIES[c]), categories))
 
         if logo is None:
-            if os.path.isfile(self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=name)):
-                logo = self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=name)
-            else:
-                logo = self.DEFAULT_LOGO_STATIC_PATH_PNG.format(name=name)
+            logo = self.get_logo_url()
         self.logo = logo
 
         if display_name is None:
@@ -94,6 +91,23 @@ class Integration(object):
         # type: (Dict[Any, Any]) -> None
         self.doc_context = context
 
+    def get_logo_url(self):
+        # type: () -> Optional[str]
+        logo_file_path_svg = str(pathlib.PurePath(
+            settings.STATIC_ROOT,
+            *self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=self.name).split('/')[1:]
+        ))
+        logo_file_path_png = str(pathlib.PurePath(
+            settings.STATIC_ROOT,
+            *self.DEFAULT_LOGO_STATIC_PATH_PNG.format(name=self.name).split('/')[1:]
+        ))
+        if os.path.isfile(logo_file_path_svg):
+            return self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=self.name)
+        elif os.path.isfile(logo_file_path_png):
+            return self.DEFAULT_LOGO_STATIC_PATH_PNG.format(name=self.name)
+
+        return None
+
 class BotIntegration(Integration):
     DEFAULT_LOGO_STATIC_PATH_PNG = 'static/generated/bots/{name}/logo.png'
     DEFAULT_LOGO_STATIC_PATH_SVG = 'static/generated/bots/{name}/logo.svg'
@@ -103,7 +117,7 @@ class BotIntegration(Integration):
     def __init__(self, name, categories, logo=None, secondary_line_text=None,
                  display_name=None, doc=None):
         # type: (str, List[str], Optional[str], Optional[str], Optional[str], Optional[str]) -> None
-        super(BotIntegration, self).__init__(
+        super().__init__(
             name,
             client_name=name,
             categories=categories,
@@ -111,10 +125,9 @@ class BotIntegration(Integration):
         )
 
         if logo is None:
-            if os.path.isfile(self.DEFAULT_LOGO_STATIC_PATH_PNG.format(name=name)):
-                logo = self.DEFAULT_LOGO_STATIC_PATH_PNG.format(name=name)
-            elif os.path.isfile(self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=name)):
-                logo = self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=name)
+            logo_url = self.get_logo_url()
+            if logo_url is not None:
+                logo = logo_url
             else:
                 # TODO: Add a test for this by initializing one in a test.
                 logo = self.ZULIP_LOGO_STATIC_PATH_PNG  # nocoverage
@@ -146,7 +159,7 @@ class WebhookIntegration(Integration):
         # type: (str, List[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[bool]) -> None
         if client_name is None:
             client_name = self.DEFAULT_CLIENT_NAME.format(name=name.title())
-        super(WebhookIntegration, self).__init__(
+        super().__init__(
             name,
             client_name,
             categories,
@@ -191,7 +204,7 @@ class HubotLozenge(Integration):
         if git_url is None:
             git_url = self.GIT_URL_TEMPLATE.format(name)
         self.git_url = git_url
-        super(HubotLozenge, self).__init__(
+        super().__init__(
             name, name, categories,
             logo=logo, display_name=display_name,
             legacy=legacy
@@ -207,7 +220,7 @@ class GithubIntegration(WebhookIntegration):
         # type: (str, List[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[bool]) -> None
         url = self.DEFAULT_URL.format(name='github')
 
-        super(GithubIntegration, self).__init__(
+        super().__init__(
             name,
             categories,
             client_name=client_name,
@@ -237,12 +250,14 @@ class EmbeddedBotIntegration(Integration):
         # type: (str, *Any, **Any) -> None
         assert kwargs.get("client_name") is None
         client_name = self.DEFAULT_CLIENT_NAME.format(name=name.title())
-        super(EmbeddedBotIntegration, self).__init__(
+        super().__init__(
             name, client_name, *args, **kwargs)
 
 EMBEDDED_BOTS = [
     EmbeddedBotIntegration('converter', []),
-    EmbeddedBotIntegration('encrypt', [])
+    EmbeddedBotIntegration('encrypt', []),
+    EmbeddedBotIntegration('helloworld', []),
+    EmbeddedBotIntegration('virtual_fs', []),
 ]  # type: List[EmbeddedBotIntegration]
 
 WEBHOOK_INTEGRATIONS = [
@@ -357,6 +372,7 @@ INTEGRATIONS = {
                              doc='zerver/integrations/discourse.md'),
     'email': EmailIntegration('email', 'email', ['communication'],
                               doc='zerver/integrations/email.md'),
+    'errbot': Integration('errbot', 'errbot', ['meta-integration', 'bots'], doc='zerver/integrations/errbot.md'),
     'git': Integration('git', 'git', ['version-control'], doc='zerver/integrations/git.md'),
     'google-calendar': Integration(
         'google-calendar',

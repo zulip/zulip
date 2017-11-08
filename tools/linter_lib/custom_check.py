@@ -9,13 +9,12 @@ import traceback
 
 from .printer import print_err, colors
 
-from typing import cast, Any, Callable, Dict, List, Optional, Tuple
+from typing import cast, Any, Callable, Dict, List, Optional, Tuple, Iterable
 
-RuleList = List[Dict[str, Any]]  # mypy currently requires Aliases at global scope
-# https://github.com/python/mypy/issues/3145
+RuleList = List[Dict[str, Any]]
 
 def custom_check_file(fn, identifier, rules, color, skip_rules=None, max_length=None):
-    # type: (str, str, RuleList, str, Optional[Any], Optional[int]) -> bool
+    # type: (str, str, RuleList, str, Optional[Iterable[str]], Optional[int]) -> bool
     failed = False
 
     line_tups = []
@@ -23,8 +22,8 @@ def custom_check_file(fn, identifier, rules, color, skip_rules=None, max_length=
         line_newline_stripped = line.strip('\n')
         line_fully_stripped = line_newline_stripped.strip()
         skip = False
-        for rule in skip_rules or []:
-            if re.match(rule, line):
+        for skip_rule in skip_rules or []:
+            if re.match(skip_rule, line):
                 skip = True
         if line_fully_stripped.endswith('  # nolint'):
             continue
@@ -95,7 +94,7 @@ def custom_check_file(fn, identifier, rules, color, skip_rules=None, max_length=
         if (max_length is not None and line_length > max_length and
             '# type' not in line and 'test' not in fn and 'example' not in fn and
             not re.match("\[[ A-Za-z0-9_:,&()-]*\]: http.*", line) and
-            not re.match("`\{\{ external_api_uri_subdomain \}\}[^`]+`", line) and
+            not re.match("`\{\{ api_url \}\}[^`]+`", line) and
                 "#ignorelongline" not in line and 'migrations' not in fn):
             print("Line too long (%s) at %s line %s: %s" % (len(line), fn, i+1, line_newline_stripped))
             failed = True
@@ -144,6 +143,13 @@ def build_custom_checkers(by_lang):
          'strip': '\n',
          'exclude': set(['tools/travis/success-http-headers.txt']),
          'description': 'Fix tab-based whitespace'},
+    ]  # type: RuleList
+    comma_whitespace_rule = [
+        {'pattern': ', {2,}[^#/ ]',
+         'exclude': set(['zerver/tests', 'frontend_tests/node_tests']),
+         'description': "Remove multiple whitespaces after ','",
+         'good_lines': ['foo(1, 2, 3)', 'foo = bar  # some inline comment'],
+         'bad_lines': ['foo(1,  2, 3)', 'foo(1,    2, 3)']},
     ]  # type: RuleList
     markdown_whitespace_rules = list([rule for rule in whitespace_rules if rule['pattern'] != '\s+$']) + [
         # Two spaces trailing a line with other content is okay--it's a markdown line break.
@@ -225,7 +231,7 @@ def build_custom_checkers(by_lang):
          ]),
          'good_lines': ['#my-style {color: blue;}'],
          'bad_lines': ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"']},
-    ]) + whitespace_rules
+    ]) + whitespace_rules + comma_whitespace_rule
     python_rules = cast(RuleList, [
         {'pattern': '^(?!#)@login_required',
          'description': '@login_required is unsupported; use @zulip_login_required',
@@ -254,6 +260,7 @@ def build_custom_checkers(by_lang):
          'bad_lines': ["'foo':bar", "'foo':1"]},
         {'pattern': "^\s+#\w",
          'strip': '\n',
+         'exclude': set(['tools/droplets/create.py']),
          'description': 'Missing whitespace after "#"',
          'good_lines': ['a = b # some operation', '1+2 #  3 is the result'],
          'bad_lines': [' #some operation', '  #not valid!!!']},
@@ -390,8 +397,8 @@ def build_custom_checkers(by_lang):
          'exclude_pattern': '[.]_meta[.]pk',
          'description': "Use `id` instead of `pk`.",
          'good_lines': ['if my_django_model.id == 42', 'self.user_profile._meta.pk'],
-         'bad_lines': ['if my_django_model.pk == 42']}
-    ]) + whitespace_rules
+         'bad_lines': ['if my_django_model.pk == 42']},
+    ]) + whitespace_rules + comma_whitespace_rule
     bash_rules = [
         {'pattern': '#!.*sh [-xe]',
          'description': 'Fix shebang line with proper call to /usr/bin/env for Bash path, change -x|-e switches'
@@ -416,8 +423,8 @@ def build_custom_checkers(by_lang):
          'description': "medium CSS attribute is under-specified, please use pixels."},
         {'pattern': ' thick[; ]',
          'description': "thick CSS attribute is under-specified, please use pixels."},
-    ]) + whitespace_rules  # type: RuleList
-    prose_style_rules = [
+    ]) + whitespace_rules + comma_whitespace_rule
+    prose_style_rules = cast(RuleList, [
         {'pattern': '[^\/\#\-\"]([jJ]avascript)',  # exclude usage in hrefs/divs
          'description': "javascript should be spelled JavaScript"},
         {'pattern': '[^\/\-\.\"\'\_\=\>]([gG]ithub)[^\.\-\_\"\<]',  # exclude usage in hrefs/divs
@@ -429,7 +436,7 @@ def build_custom_checkers(by_lang):
          'description': "!!! warning is invalid; it's spelled '!!! warn'"},
         {'pattern': 'Terms of service',
          'description': "The S in Terms of Service is capitalized"},
-    ]  # type: RuleList
+    ]) + comma_whitespace_rule
     html_rules = whitespace_rules + prose_style_rules + [
         {'pattern': 'placeholder="[^{]',
          'description': "`placeholder` value should be translatable.",
@@ -523,6 +530,7 @@ def build_custom_checkers(by_lang):
              'templates/zerver/accounts_send_confirm.html',
              'templates/zerver/integrations/index.html',
              'templates/zerver/help/main.html',
+             'templates/zerver/api/main.html',
              'templates/analytics/realm_summary_table.html',
              'templates/corporate/zephyr.html',
              'templates/corporate/zephyr-mirror.html',
@@ -579,7 +587,7 @@ def build_custom_checkers(by_lang):
         for fn in by_lang['py']:
             if 'custom_check.py' in fn:
                 continue
-            if custom_check_file(fn, 'py', python_rules, color, max_length=140):
+            if custom_check_file(fn, 'py', python_rules, color, max_length=120):
                 failed = True
         return failed
 

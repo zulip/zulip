@@ -2,9 +2,8 @@
 from typing import Any
 
 from argparse import ArgumentParser
-import sys
 
-from django.contrib.auth import authenticate, login, get_backends
+from django.contrib.auth import get_backends
 from django.core.management.base import BaseCommand
 from django.conf import settings
 
@@ -12,8 +11,7 @@ from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 
 
 # Quick tool to test whether you're correctly authenticating to LDAP
-def query_ldap(**options):
-    # type: (**str) -> None
+def query_ldap(**options: str) -> None:
     email = options['email']
     for backend in get_backends():
         if isinstance(backend, LDAPBackend):
@@ -25,11 +23,9 @@ def query_ldap(**options):
                     print("%s: %s" % (django_field, ldap_attrs[ldap_field]))
 
 class Command(BaseCommand):
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('email', metavar='<email>', type=str,
                             help="email of user to query")
 
-    def handle(self, *args, **options):
-        # type: (*Any, **str) -> None
+    def handle(self, *args: Any, **options: str) -> None:
         query_ldap(**options)

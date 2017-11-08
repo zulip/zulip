@@ -866,6 +866,9 @@ MessageListView.prototype = {
         this._add_msg_timestring(message_container);
         this._maybe_format_me_message(message_container);
 
+        // Make sure the right thing happens if the message was edited to mention us.
+        message_container.contains_mention = message_container.msg.mentioned;
+
         var rendered_msg = $(this._get_message_template(message_container));
         if (message_content_edited) {
             rendered_msg.addClass("fade-in-message");

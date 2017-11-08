@@ -145,8 +145,13 @@ function populate_users(realm_people_data) {
             } else if (presence.presence_info[item.user_id]) {
                 // XDate takes number of milliseconds since UTC epoch.
                 var last_active = presence.presence_info[item.user_id].last_active * 1000;
-                var last_active_date = new XDate(last_active);
-                activity_rendered = timerender.render_date(last_active_date, undefined, today);
+
+                if (!isNaN(last_active)) {
+                    var last_active_date = new XDate(last_active);
+                    activity_rendered = timerender.render_date(last_active_date, undefined, today);
+                } else {
+                    activity_rendered = $("<span></span>").text(i18n.t("Never"));
+                }
             } else {
                 activity_rendered = $("<span></span>").text(i18n.t("Unknown"));
             }
@@ -238,7 +243,7 @@ exports.on_load_success = function (realm_people_data) {
 
         if ($("#deactivation_user_modal .email").html() !== email) {
             blueslip.error("User deactivation canceled due to non-matching fields.");
-            ui_report.message("Deactivation encountered an error. Please reload and try again.",
+            ui_report.message(i18n.t("Deactivation encountered an error. Please reload and try again."),
                $("#home-error"), 'alert-error');
         }
         $("#deactivation_user_modal").modal("hide");

@@ -5,7 +5,7 @@ from zerver.models import Realm, Stream, UserProfile, Huddle, \
     Subscription, Recipient, Client, RealmAuditLog, get_huddle_hash
 from zerver.lib.create_user import create_user_profile
 
-def bulk_create_users(realm, users_raw, bot_type=None, bot_owner=None, tos_version=None, timezone=u""):
+def bulk_create_users(realm, users_raw, bot_type=None, bot_owner=None, tos_version=None, timezone=""):
     # type: (Realm, Set[Tuple[Text, Text, Text, bool]], Optional[int], Optional[UserProfile], Optional[Text], Text) -> None
     """
     Creates and saves a UserProfile with the given email.

@@ -22,7 +22,7 @@ exports.set = function (url) {
         // in re-rendering the page (see #882).
         $(favicon_selector).remove();
         $('head').append($('<link>')
-            .attr('rel',  'shortcut icon')
+            .attr('rel', 'shortcut icon')
             .attr('href', url));
     }
 };

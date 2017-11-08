@@ -238,6 +238,39 @@ function render(template_name, args) {
     assert.equal(filter_format.text(), 'https://trac.example.com/ticket/%(id)s');
 }());
 
+(function admin_invites_list() {
+    var html = '<table>';
+    var invites = ['alice', 'bob', 'carl'];
+    var invite_id = 0;
+    _.each(invites, function (invite) {
+        var args = {
+            invite: {
+                email: invite + '@zulip.com',
+                ref: 'iago@zulip.com',
+                invited: "2017-01-01 01:01:01",
+                id: invite_id,
+            },
+        };
+        html += render('admin_invites_list', args);
+        invite_id += 1;
+    });
+    html += "</table>";
+    var buttons = $(html).find('.button');
+
+    assert.equal($(buttons[0]).text().trim(), "Revoke");
+    assert($(buttons[0]).hasClass("revoke"));
+    assert.equal($(buttons[0]).attr("data-invite-id"), 0);
+
+    assert.equal($(buttons[3]).text().trim(), "Resend");
+    assert($(buttons[3]).hasClass("resend"));
+    assert.equal($(buttons[3]).attr("data-invite-id"), 1);
+
+    var span = $(html).find(".email:first");
+    assert.equal(span.text(), "alice@zulip.com");
+
+    global.write_handlebars_output("admin_invites_list", html);
+}());
+
 (function admin_streams_list() {
     var html = '<table>';
     var streams = ['devel', 'trac', 'zulip'];
@@ -257,7 +290,8 @@ function render(template_name, args) {
     };
     var html = render('admin_tab', args);
     var admin_features = ["admin_users_table", "admin_bots_table",
-                          "admin_streams_table", "admin_deactivated_users_table"];
+                          "admin_streams_table", "admin_deactivated_users_table",
+                          "admin_invites_table"];
     _.each(admin_features, function (admin_feature) {
         assert.notEqual($(html).find("#" + admin_feature).length, 0);
     });
@@ -1270,8 +1304,8 @@ function render(template_name, args) {
     var html = render('user_info_popover_content', args);
     global.write_handlebars_output("user_info_popover_content", html);
 
-    var a = $(html).find("a.compose_private_message");
-    assert.equal(a.text().trim(), 'Send private message (R)');
+    var a = $(html).find("a.narrow_to_private_messages");
+    assert.equal(a.text().trim(), 'View private messages');
 }());
 
 (function user_info_popover_title() {

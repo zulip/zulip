@@ -6,7 +6,7 @@ from typing import Callable, DefaultDict, Iterator, List, Optional, Set, Tuple
 Edge = Tuple[str, str]
 EdgeSet = Set[Edge]
 
-class Graph(object):
+class Graph:
     def __init__(self, tuples):
         # type: (EdgeSet) -> None
         self.children = defaultdict(list)  # type: DefaultDict[str, List[str]]

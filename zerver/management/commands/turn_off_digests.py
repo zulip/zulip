@@ -1,17 +1,13 @@
 
-from typing import Any
-
 from django.core.management.base import CommandParser
 
 from zerver.lib.actions import do_change_notification_settings
 from zerver.lib.management import ZulipBaseCommand
-from zerver.models import UserProfile
 
 class Command(ZulipBaseCommand):
     help = """Turn off digests for a subdomain/string_id or specified set of email addresses."""
 
-    def add_arguments(self, parser):
-        # type: (CommandParser) -> None
+    def add_arguments(self, parser: CommandParser) -> None:
         self.add_realm_args(parser)
 
         self.add_user_list_args(parser,
@@ -19,8 +15,7 @@ class Command(ZulipBaseCommand):
                                      'list of email addresses.',
                                 all_users_help="Turn off digests for everyone in realm.")
 
-    def handle(self, **options):
-        # type: (**str) -> None
+    def handle(self, **options: str) -> None:
         realm = self.get_realm(options)
         user_profiles = self.get_users(options, realm)
 

@@ -1,7 +1,6 @@
 
 from argparse import ArgumentParser, RawTextHelpFormatter
 from typing import Any
-from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import ProgrammingError
 from confirmation.models import generate_realm_creation_url
@@ -18,14 +17,12 @@ class Command(BaseCommand):
     Usage: ./manage.py generate_realm_creation_link """
 
     # Fix support for multi-line usage
-    def create_parser(self, *args, **kwargs):
-        # type: (*Any, **Any) -> ArgumentParser
-        parser = super(Command, self).create_parser(*args, **kwargs)
+    def create_parser(self, *args: Any, **kwargs: Any) -> ArgumentParser:
+        parser = super().create_parser(*args, **kwargs)
         parser.formatter_class = RawTextHelpFormatter
         return parser
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         try:
             # first check if the db has been initalized
             Realm.objects.first()

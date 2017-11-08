@@ -8,7 +8,7 @@ There are two types of documents: articles about specific features, and a
 handful of longer guides.
 
 The feature articles serve a few different purposes:
-* Feature discovery, for someone browing the `/help` page, and looking at
+* Feature discovery, for someone browsing the `/help` page, and looking at
   the set of titles.
 * Public documentation of our featureset, for someone googling "can zulip do .."
 * Canned responses to support questions; if someone emails a zulip admin
@@ -230,6 +230,8 @@ class="fa fa-bars"></i>) icon`
 `star (<i class="fa fa-star-o"></i>) icon`
 * trash (<i class="fa fa-trash-o"></i>) icon —
 `trash (<i class="fa fa-trash-o"></i>) icon`
+* video-camera (<i class="fa fa-video-camera"></i>) icon —
+`video-camera (<i class="fa fa-video-camera"></i>) icon`
 * x (<i class="fa fa-times"></i>) icon —
 `x (<i class="fa fa-times"></i>) icon`
 

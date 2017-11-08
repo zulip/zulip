@@ -8,8 +8,7 @@ import sys
 class Command(BaseCommand):
     help = """Checks your Zulip Voyager Django configuration for issues."""
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         for (setting_name, default) in settings.REQUIRED_SETTINGS:
             try:
                 if settings.__getattr__(setting_name) != default:

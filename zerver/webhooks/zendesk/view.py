@@ -1,13 +1,13 @@
 # Webhooks for external integrations.
-from zerver.models import get_client, UserProfile
+from zerver.decorator import authenticated_rest_api_view
 from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success
-from zerver.decorator import authenticated_rest_api_view, REQ, has_request_variables
+from zerver.lib.request import REQ, has_request_variables
+from zerver.models import get_client, UserProfile
 from django.http import HttpRequest, HttpResponse
 from typing import Text
 
-def truncate(string, length):
-    # type: (Text, int) -> Text
+def truncate(string: Text, length: int) -> Text:
     if len(string) > length:
         string = string[:length-3] + '...'
     return string

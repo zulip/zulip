@@ -19,22 +19,6 @@ from typing import Optional
 # EXTERNAL_HOST to e.g. zulip.example.com:1234 here.
 EXTERNAL_HOST = 'zulip.example.com'
 
-# A comma-separated list of strings representing the host/domain names
-# that your users will enter in their browsers to access your Zulip
-# server. This is a security measure to prevent an attacker from
-# poisoning caches and triggering password reset emails with links to
-# malicious hosts by submitting requests with a fake HTTP Host
-# header. See Django's documentation here:
-# <https://docs.djangoproject.com/en/1.9/ref/settings/#allowed-hosts>.
-# Zulip adds 'localhost' and '127.0.0.1' to the list automatically.
-#
-# The default should work unless you are using multiple hostnames or
-# connecting directly to your server's IP address.  If this is set
-# wrong, all requests will get a 400 "Bad Request" error.
-#
-# Note that these should just be hostnames, without port numbers.
-ALLOWED_HOSTS = [EXTERNAL_HOST.split(":")[0]]
-
 # The email address for the person or team who maintains the Zulip
 # installation. Note that this is a public-facing email address; it may
 # appear on 404 pages, is used as the sender's address for many automated
@@ -81,6 +65,25 @@ EMAIL_USE_TLS = True
 # zulip.example.com).
 #NOREPLY_EMAIL_ADDRESS = 'noreply@example.com'
 
+# Many countries and bulk mailers require certain types of email to display
+# a physical mailing address to comply with anti-spam legislation.
+# Non-commercial and non-public-facing installations are unlikely to need
+# this setting.
+# The address should have no newlines.
+#PHYSICAL_ADDRESS = ''
+
+# A comma-separated list of strings representing the host/domain names
+# that your users can enter in their browsers to access Zulip.
+# This is a security measure; for details, see the Django documentation:
+# https://docs.djangoproject.com/en/1.11/ref/settings/#allowed-hosts
+#
+# Zulip automatically adds to this list 'localhost', '127.0.0.1', and
+# patterns representing EXTERNAL_HOST and subdomains of it.  If you are
+# accessing your server by other hostnames, list them here.
+#
+# Note that these should just be hostnames, without port numbers.
+#ALLOWED_HOSTS = ['zulip-alias.example.com']
+
 ### AUTHENTICATION SETTINGS
 #
 # Enable at least one of the following authentication backends.
@@ -94,38 +97,47 @@ AUTHENTICATION_BACKENDS = (
     # 'zproject.backends.ZulipRemoteUserBackend',  # Local SSO, setup docs on readthedocs
 )
 
-# To enable Google authentication, you need to do the following:
+# To set up Google authentication, you'll need to do the following:
 #
-# (1) Visit https://console.developers.google.com, click on Credentials on
-# the left sidebar and create a Oauth2 client ID
-# e.g. https://zulip.example.com/accounts/login/google/done/.
+# (1) Visit https://console.developers.google.com/ , navigate to
+# "APIs & Services" > "Credentials", and create a "Project" which will
+# correspond to your Zulip instance.
 #
-# (2) Go to the Library (left sidebar), then under "Social APIs" click on
-# "Google+ API" and click the button to enable the API.
+# (2) Navigate to "APIs & services" > "Library", and find the
+# "Google+ API".  Choose "Enable".
 #
-# (3) put your client secret as "google_oauth2_client_secret" in
-# zulip-secrets.conf, and your client ID right here:
-# GOOGLE_OAUTH2_CLIENT_ID=<your client ID from Google>
+# (3) Return to "Credentials", and select "Create credentials".
+# Choose "OAuth client ID", and follow prompts to create a consent
+# screen.  Fill in "Authorized redirect URIs" with a value like
+#   https://zulip.example.com/accounts/login/google/done/
+# based on your value for EXTERNAL_HOST.
+#
+# (4) You should get a client ID and a client secret. Copy them.
+# Use the client ID as `GOOGLE_OAUTH2_CLIENT_ID` here, and put the
+# client secret in zulip-secrets.conf as `google_oauth2_client_secret`.
+#GOOGLE_OAUTH2_CLIENT_ID = <your client ID from Google>
 
-
-# To enable GitHub authentication, you will need to need to do the following:
+# To set up GitHub authentication, you'll need to do the following:
 #
 # (1) Register an OAuth2 application with GitHub at one of:
 #   https://github.com/settings/developers
 #   https://github.com/organizations/ORGNAME/settings/developers
-# Specify e.g. https://zulip.example.com/complete/github/ as the callback URL.
+# Fill in "Callback URL" with a value like
+#   https://zulip.example.com/complete/github/ as
+# based on your value for EXTERNAL_HOST.
 #
-# (2) Put your "Client ID" as SOCIAL_AUTH_GITHUB_KEY below and your
-# "Client secret" as social_auth_github_secret in
-# /etc/zulip/zulip-secrets.conf.
-# SOCIAL_AUTH_GITHUB_KEY = <your client ID from GitHub>
-#
-# (3) You can also configure the GitHub integration to only allow
-# members of a particular GitHub team or organization to login to your
-# Zulip server using GitHub authentication; to enable this, set one of the
-# two parameters below:
-# SOCIAL_AUTH_GITHUB_TEAM_ID = <your team id>
-# SOCIAL_AUTH_GITHUB_ORG_NAME = <your org name>
+# (2) You should get a page with settings for your new application,
+# showing a client ID and a client secret.  Use the client ID as
+# `SOCIAL_AUTH_GITHUB_KEY` here, and put the client secret in
+# zulip-secrets.conf as `social_auth_github_secret`.
+#SOCIAL_AUTH_GITHUB_KEY = <your client ID from GitHub>
+
+# (3) Optionally, you can configure the GitHub integration to only
+# allow members of a particular GitHub team or organization to log
+# into your Zulip server through GitHub authentication.  To enable
+# this, set one of the two parameters below:
+#SOCIAL_AUTH_GITHUB_TEAM_ID = <your team id>
+#SOCIAL_AUTH_GITHUB_ORG_NAME = <your org name>
 
 
 # If you are using the ZulipRemoteUserBackend authentication backend,
@@ -141,6 +153,12 @@ SSO_APPEND_DOMAIN = None  # type: Optional[str]
 # https://zulip.readthedocs.io/en/latest/prod-mobile-push-notifications.html
 # for information on how to sign up for and configure this.
 #PUSH_NOTIFICATION_BOUNCER_URL = 'https://push.zulipchat.com'
+
+# Whether to redact the content of push notifications.  This is less
+# usable, but avoids sending message content over the wire.  In the
+# future, we're likely to replace this with an end-to-end push
+# notification encryption feature.
+#PUSH_NOTIFICATION_REDACT_CONTENT = False
 
 # Controls whether session cookies expire when the browser closes
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
@@ -232,16 +250,9 @@ ENABLE_GRAVATAR = True
 # To access an external postgres database you should define the host name in
 # REMOTE_POSTGRES_HOST, you can define the password in the secrets file in the
 # property postgres_password, and the SSL connection mode in REMOTE_POSTGRES_SSLMODE
-# Different options are:
-#   disable: I don't care about security, and I don't want to pay the overhead of encryption.
-#   allow: I don't care about security, but I will pay the overhead of encryption if the server insists on it.
-#   prefer: I don't care about encryption, but I wish to pay the overhead of encryption if the server supports it.
-#   require: I want my data to be encrypted, and I accept the overhead. I trust that the network will make sure
-#            I always connect to the server I want.
-#   verify-ca: I want my data encrypted, and I accept the overhead. I want to be sure that I connect to a server
-#              that I trust.
-#   verify-full: I want my data encrypted, and I accept the overhead. I want to be sure that I connect to a server
-#                I trust, and that it's the one I specify.
+# Valid values for REMOTE_POSTGRES_SSLMODE are documented in the
+# "SSL Mode Descriptions" table in
+#   https://www.postgresql.org/docs/9.5/static/libpq-ssl.html
 #REMOTE_POSTGRES_HOST = 'dbserver.example.com'
 #REMOTE_POSTGRES_SSLMODE = 'require'
 

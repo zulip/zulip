@@ -6,9 +6,10 @@ import ujson
 from django.http import HttpResponse
 from django.test import override_settings
 from mock import MagicMock, patch
-from six.moves import urllib
-from typing import Any, Dict, List
+import urllib
+from typing import Any, Dict, List, Text
 
+from zerver.lib.actions import do_create_user
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     HostRequestMock, queries_captured, get_user_messages
@@ -17,7 +18,7 @@ from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_runner import slow
 from zerver.models import (
     get_realm, get_stream, get_user, UserProfile, UserMessage, Recipient,
-    flush_per_request_caches, DefaultStream
+    flush_per_request_caches, DefaultStream, Realm,
 )
 from zerver.views.home import home, sent_time_in_epoch_seconds
 
@@ -112,7 +113,9 @@ class HomeTest(ZulipTestCase):
             "realm_default_streams",
             "realm_description",
             "realm_domains",
+            "realm_email_auth_enabled",
             "realm_email_changes_disabled",
+            "realm_embedded_bots",
             "realm_emoji",
             "realm_filters",
             "realm_icon_source",
@@ -127,6 +130,7 @@ class HomeTest(ZulipTestCase):
             "realm_message_retention_days",
             "realm_name",
             "realm_name_changes_disabled",
+            "realm_non_active_users",
             "realm_notifications_stream_id",
             "realm_password_auth_enabled",
             "realm_presence_disabled",
@@ -171,9 +175,11 @@ class HomeTest(ZulipTestCase):
         # Verify succeeds once logged-in
         flush_per_request_caches()
         with queries_captured() as queries:
-            result = self._get_home_page(stream='Denmark')
+            with patch('zerver.lib.cache.cache_set') as cache_mock:
+                result = self._get_home_page(stream='Denmark')
 
-        self.assert_length(queries, 41)
+        self.assert_length(queries, 40)
+        self.assert_length(cache_mock.call_args_list, 10)
 
         html = result.content.decode('utf-8')
 
@@ -206,6 +212,7 @@ class HomeTest(ZulipTestCase):
         realm_bots_actual_keys = sorted([str(key) for key in page_params['realm_bots'][0].keys()])
         self.assertEqual(realm_bots_actual_keys, realm_bots_expected_keys)
 
+    @slow("Creates and subscribes 10 users in a loop.  Should use bulk queries.")
     def test_num_queries_with_streams(self):
         # type: () -> None
         main_user = self.example_user('hamlet')
@@ -360,19 +367,104 @@ class HomeTest(ZulipTestCase):
         page_params = self._get_page_params(result)
         self.assertEqual(page_params['realm_notifications_stream_id'], get_stream('Denmark', realm).id)
 
+    def create_bot(self, owner, bot_email, bot_name):
+        # type: (UserProfile, Text, Text) -> UserProfile
+        user = do_create_user(
+            email=bot_email,
+            password='123',
+            realm=owner.realm,
+            full_name=bot_name,
+            short_name=bot_name,
+            bot_type=UserProfile.DEFAULT_BOT,
+            bot_owner=owner
+        )
+        return user
+
+    def create_non_active_user(self, realm, email, name):
+        # type: (Realm, Text, Text) -> UserProfile
+        user = do_create_user(
+            email=email,
+            password='123',
+            realm=realm,
+            full_name=name,
+            short_name=name,
+        )
+
+        # Doing a full-stack deactivation would be expensive here,
+        # and we really only need to flip the flag to get a valid
+        # test.
+        user.is_active = False
+        user.save()
+        return user
+
+    @slow('creating users and loading home page')
     def test_people(self):
         # type: () -> None
-        email = self.example_email('hamlet')
+        hamlet = self.example_user('hamlet')
         realm = get_realm('zulip')
-        self.login(email)
+        self.login(hamlet.email)
+
+        for i in range(3):
+            self.create_bot(
+                owner=hamlet,
+                bot_email='bot-%d@zulip.com' % (i,),
+                bot_name='Bot %d' % (i,),
+            )
+
+        for i in range(3):
+            self.create_non_active_user(
+                realm=realm,
+                email='defunct-%d@zulip.com' % (i,),
+                name='Defunct User %d' % (i,),
+            )
+
         result = self._get_home_page()
         page_params = self._get_page_params(result)
-        for params in ['realm_users', 'realm_bots']:
-            users = page_params['realm_users']
-            self.assertTrue(len(users) >= 3)
-            for user in users:
-                self.assertEqual(user['user_id'],
-                                 get_user(user['email'], realm).id)
+
+        '''
+        We send three lists of users.  The first two below are disjoint
+        lists of users, and the records we send for them have identical
+        structure.
+
+        The realm_bots bucket is somewhat redundant, since all bots will
+        be in one of the first two buckets.  They do include fields, however,
+        that normal users don't care about, such as default_sending_stream.
+        '''
+
+        buckets = [
+            'realm_users',
+            'realm_non_active_users',
+            'realm_bots',
+        ]
+
+        for field in buckets:
+            users = page_params[field]
+            self.assertTrue(len(users) >= 3, field)
+            for rec in users:
+                self.assertEqual(rec['user_id'],
+                                 get_user(rec['email'], realm).id)
+                if field == 'realm_bots':
+                    self.assertNotIn('is_bot', rec)
+                    self.assertIn('is_active', rec)
+                    self.assertIn('owner', rec)
+                else:
+                    self.assertIn('is_bot', rec)
+                    self.assertNotIn('is_active', rec)
+
+        active_emails = {p['email'] for p in page_params['realm_users']}
+        non_active_emails = {p['email'] for p in page_params['realm_non_active_users']}
+        bot_emails = {p['email'] for p in page_params['realm_bots']}
+
+        self.assertIn(hamlet.email, active_emails)
+        self.assertIn('defunct-1@zulip.com', non_active_emails)
+
+        # Bots can show up in multiple buckets.
+        self.assertIn('bot-2@zulip.com', bot_emails)
+        self.assertIn('bot-2@zulip.com', active_emails)
+
+        # Make sure nobody got mis-bucketed.
+        self.assertNotIn(hamlet.email, non_active_emails)
+        self.assertNotIn('defunct-1@zulip.com', active_emails)
 
         cross_bots = page_params['cross_realm_bots']
         self.assertEqual(len(cross_bots), 3)
@@ -506,12 +598,12 @@ class HomeTest(ZulipTestCase):
                 result = self._get_home_page()
             self._sanity_check(result)
 
-    def send_stream_message(self, content, sender_name='iago',
-                            stream_name='Denmark', subject='foo'):
+    def send_test_message(self, content, sender_name='iago',
+                          stream_name='Denmark', topic_name='foo'):
         # type: (str, str, str, str) -> None
         sender = self.example_email(sender_name)
-        self.send_message(sender, stream_name, Recipient.STREAM,
-                          content, subject)
+        self.send_stream_message(sender, stream_name,
+                                 content=content, topic_name=topic_name)
 
     def soft_activate_and_get_unread_count(self, stream='Denmark', topic='foo'):
         # type: (str, str) -> int
@@ -526,7 +618,7 @@ class HomeTest(ZulipTestCase):
         long_term_idle_user = self.example_user('hamlet')
         self.login(long_term_idle_user.email)
         message = 'Test Message 1'
-        self.send_stream_message(message)
+        self.send_test_message(message)
         with queries_captured() as queries:
             self.assertEqual(self.soft_activate_and_get_unread_count(), 1)
         query_count = len(queries)
@@ -538,7 +630,7 @@ class HomeTest(ZulipTestCase):
 
         self.login(long_term_idle_user.email)
         message = 'Test Message 2'
-        self.send_stream_message(message)
+        self.send_test_message(message)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assertNotEqual(idle_user_msg_list[-1].content, message)
         with queries_captured() as queries:
@@ -549,16 +641,17 @@ class HomeTest(ZulipTestCase):
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assertEqual(idle_user_msg_list[-1].content, message)
 
+    @slow("Loads home page data several times testing different cases")
     def test_multiple_user_soft_deactivations(self):
         # type: () -> None
         long_term_idle_user = self.example_user('hamlet')
         # We are sending this message to ensure that long_term_idle_user has
         # at least one UserMessage row.
-        self.send_stream_message('Testing', sender_name='hamlet')
+        self.send_test_message('Testing', sender_name='hamlet')
         do_soft_deactivate_users([long_term_idle_user])
 
         message = 'Test Message 1'
-        self.send_stream_message(message)
+        self.send_test_message(message)
         self.login(long_term_idle_user.email)
         with queries_captured() as queries:
             self.assertEqual(self.soft_activate_and_get_unread_count(), 2)
@@ -569,7 +662,7 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(idle_user_msg_list[-1].content, message)
 
         message = 'Test Message 2'
-        self.send_stream_message(message)
+        self.send_test_message(message)
         with queries_captured() as queries:
             self.assertEqual(self.soft_activate_and_get_unread_count(), 3)
         # Test here for query count to be at least 5 less than previous count.
@@ -582,7 +675,7 @@ class HomeTest(ZulipTestCase):
         do_soft_deactivate_users([long_term_idle_user])
 
         message = 'Test Message 3'
-        self.send_stream_message(message)
+        self.send_test_message(message)
         self.login(long_term_idle_user.email)
         with queries_captured() as queries:
             self.assertEqual(self.soft_activate_and_get_unread_count(), 4)
@@ -593,7 +686,7 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(idle_user_msg_list[-1].content, message)
 
         message = 'Test Message 4'
-        self.send_stream_message(message)
+        self.send_test_message(message)
         with queries_captured() as queries:
             self.assertEqual(self.soft_activate_and_get_unread_count(), 5)
         self.assertGreaterEqual(query_count - len(queries), 5)

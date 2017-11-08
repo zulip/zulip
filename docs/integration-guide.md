@@ -14,7 +14,9 @@ On this page you'll find:
 * Details about writing [webhook integrations](#webhook-integrations).
 * Details about writing [Python script and plugin
   integrations](#python-script-and-plugin-integrations).
-* A guide to [documenting your integration](#documenting-your-integration).
+* A guide to
+  [documenting your integration](integration-docs-guide.html) is on a
+  separate page.
 
 A detailed walkthrough of a simple "Hello World" integration can be
 found in the [webhook walkthrough](webhook-walkthrough.html).
@@ -140,21 +142,21 @@ For a quick guide, read on.
   the service.
 
 * Finally, write documentation for the integration; there's a
-  [detailed guide](#documenting-your-integration) below.
+  [detailed guide](integration-docs-guide.html).
 
 ### Files that need to be created
 
 Select a name for your webhook and use it consistently. The examples below are
 for a webhook named 'MyWebHook'.
 
-* `static/images/integrations/logos/mywebhook.png`: An image to represent
-  your integration in the user interface. Generally this Should be the logo of the
+* `static/images/integrations/logos/mywebhook.svg`: An image to represent
+  your integration in the user interface. Generally this should be the logo of the
   platform/server/product you are integrating. See [Documenting your
-  integration](#documenting-your-integration) for details.
-* `static/images/integrations/mywebbook/001.png`: A screen capture of your
+  integration](integration-docs-guide.html) for details.
+* `static/images/integrations/mywebbook/001.svg`: A screen capture of your
   integration for use in the user interface. You can add as many images as needed
   to effectively document your webhook integration. See [Documenting your
-  integration](#documenting-your-integration) for details.
+  integration](integration-docs-guide.html) for details.
 * `zerver/webhooks/mywebhook/fixtures/messagetype.json`: Sample json payload data
   used by tests. Add one fixture file per type of message supported by your
   integration. See [Testing and writing tests](testing.html) for details.
@@ -165,7 +167,7 @@ for a webhook named 'MyWebHook'.
 * `zerver/webhooks/mywebhook/tests.py`: Add tests for your
   webbook. See [Testing and writing tests](testing.html) for details.
 * `zerver/webhooks/mywebhook/doc.html`: Add end-user documentation. See
-  [Documenting your integration](#documenting-your-integration) for details.
+  [Documenting your integration](integration-docs-guide.html) for details.
 
 ### Files that need to be updated
 
@@ -204,8 +206,3 @@ ZulipDesktop/0.7.0 (Ubuntu; 14.04)
 ZulipJenkins/0.1.0 (Windows; 7.2)
 ZulipMobile/0.5.4 (Android; 4.2; maguro)
 ```
-
-## Documenting your integration
-
-See
-[our guide for writing integration documentation](integration-docs-guide.html).

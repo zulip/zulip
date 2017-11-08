@@ -1,7 +1,7 @@
 import re
 import logging
 import traceback
-from typing import Any, Optional, Text
+from typing import Any, Optional, Text, Dict
 from typing.re import Match
 import requests
 from zerver.lib.cache import cache_with_key, get_cache_with_key
@@ -32,7 +32,7 @@ def cache_key_func(url):
 
 @cache_with_key(cache_key_func, cache_name=CACHE_NAME, with_statsd_key="urlpreview_data")
 def get_link_embed_data(url, maxwidth=640, maxheight=480):
-    # type: (Text, Optional[int], Optional[int]) -> Any
+    # type: (Text, Optional[int], Optional[int]) -> Optional[Dict[Any, Any]]
     if not is_link(url):
         return None
     # Fetch information from URL.

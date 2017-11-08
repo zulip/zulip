@@ -18,17 +18,15 @@ import hashlib
 # from zerver.lib.upload (which would pretty annoying, but would be a
 # pain) and just using the current version, which doesn't work
 # since we rearranged the avatars in Zulip 1.6.
-def patched_user_avatar_path(user_profile):
-    # type: (UserProfile) -> Text
+def patched_user_avatar_path(user_profile: UserProfile) -> Text:
     email = user_profile.email
     user_key = email.lower() + settings.AVATAR_SALT
     return make_safe_digest(user_key, hashlib.sha1)
 
 @patch('zerver.lib.upload.user_avatar_path', patched_user_avatar_path)
-def verify_medium_avatar_image(apps, schema_editor):
-    # type: (StateApps, DatabaseSchemaEditor) -> None
+def verify_medium_avatar_image(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     user_profile_model = apps.get_model('zerver', 'UserProfile')
-    for user_profile in user_profile_model.objects.filter(avatar_source=u"U"):
+    for user_profile in user_profile_model.objects.filter(avatar_source="U"):
         upload_backend.ensure_medium_avatar_image(user_profile)
 
 

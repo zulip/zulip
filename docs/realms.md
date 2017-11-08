@@ -5,6 +5,10 @@ Realms are the Zulip codebases's internal name for what we refer to in
 user documentation as an organization (the name "realm" comes from
 [Kerberos](https://web.mit.edu/kerberos/)).
 
+The
+[production docs on multiple realms](prod-multiple-organizations.html)
+are likely also relevant reading.
+
 ## Creating Realms
 
 There are two main methods for creating realms.

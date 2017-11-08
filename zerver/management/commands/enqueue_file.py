@@ -9,8 +9,7 @@ import sys
 import ujson
 
 
-def error(*args):
-    # type: (*Any) -> None
+def error(*args: Any) -> None:
     raise Exception('We cannot enqueue because settings.USING_RABBITMQ is False.')
 
 class Command(BaseCommand):
@@ -24,15 +23,13 @@ first field is a timestamp that we ignore.)
 You can use "-" to represent stdin.
 """
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('queue_name', metavar='<queue>', type=str,
                             help="name of worker queue to enqueue to")
         parser.add_argument('file_name', metavar='<file>', type=str,
                             help="name of file containing JSON lines")
 
-    def handle(self, *args, **options):
-        # type: (*Any, **str) -> None
+    def handle(self, *args: Any, **options: str) -> None:
         queue_name = options['queue_name']
         file_name = options['file_name']
 
@@ -57,4 +54,6 @@ You can use "-" to represent stdin.
             # Verify that payload is valid json.
             data = ujson.loads(payload)
 
+            # This is designed to use the `error` method rather than
+            # the call_consume_in_tests flow.
             queue_json_publish(queue_name, data, error)

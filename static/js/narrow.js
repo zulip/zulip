@@ -6,7 +6,7 @@ var unnarrow_times;
 
 function report_narrow_time(initial_core_time, initial_free_time, network_time) {
     channel.post({
-        url: '/json/report_narrow_time',
+        url: '/json/report/narrow_times',
         data: {initial_core: initial_core_time.toString(),
                initial_free: initial_free_time.toString(),
                network: network_time.toString()},
@@ -36,7 +36,7 @@ function report_unnarrow_time() {
     var initial_free_time = unnarrow_times.initial_free_time - unnarrow_times.start_time;
 
     channel.post({
-        url: '/json/report_unnarrow_time',
+        url: '/json/report/unnarrow_times',
         data: {initial_core: initial_core_time.toString(),
                initial_free: initial_free_time.toString()},
     });

@@ -18,11 +18,9 @@ body {
 }
 
 .why-page h3.normal {
-    font-size: 1.3em;
+    font-size: 1.2em;
     margin-top: 20px;
     margin-bottom: 5px;
-
-    color: #888;
 }
 
 .navbar {
@@ -76,6 +74,57 @@ body {
     font-size: 17px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
+
+.app.api-docs .sidebar {
+    background-color: #fff;
+    border-right: 1px solid #ddd;
+    color: #444;
+}
+
+.app.api-docs .sidebar h2 {
+    color: #444;
+}
+
+.app.api-docs .sidebar li {
+    opacity: 0.8;
+}
+
+.code-section ul.nav {
+    margin: 0;
+}
+
+.code-section ul.nav li {
+    display: inline-block;
+    padding: 3px 10px;
+    margin: 0;
+
+    border: 1px solid #ddd;
+    border-bottom: none;
+    border-radius: 4px 4px 0px 0px;
+
+    cursor: pointer;
+}
+
+.code-section ul.nav li.active {
+    color: hsl(176, 46%, 41%);
+}
+
+.code-section .blocks {
+    padding: 20px;
+
+    background-color: #fafafa;
+    border: 1px solid #ddd;
+
+    border-radius: 0px 4px 4px 4px;
+}
+
+.code-section .blocks > div {
+    display: none;
+}
+
+.code-section .blocks > .active {
+    display: block;
 }
 
 .app.help {
@@ -187,9 +236,19 @@ body {
 .markdown h4[id]:before {
     display: block;
     content: " ";
-    margin-top: -40px;
-    height: 40px;
     visibility: hidden;
+}
+
+.markdown h1[id]:before {
+    margin-top: -30px;
+    height: 30px;
+}
+
+.markdown h2[id]:before,
+.markdown h3[id]:before,
+.markdown h4[id]:before {
+    margin-top: -10px;
+    height: 10px;
 }
 
 .markdown ul,
@@ -583,6 +642,135 @@ input.text-error {
     padding: 6px 0px 6px 0px;
 }
 
+.portico-header .dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.portico-header .dropdown ul {
+    display: none;
+
+    position: absolute;
+    right: 0px;
+    margin: 10px 0 0 0;
+    list-style-type: none;
+    width: 200px;
+
+    background: #fff;
+    padding: 5px 0px;
+
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.portico-header .dropdown.show ul {
+    display: block;
+}
+
+.portico-header .dropdown ul::before {
+    content: "\25B2";
+
+    position: absolute;
+    top: -4px;
+    right: 9px;
+
+    font-size: 0.5em;
+    color: #ddd;
+
+    line-height: 0;
+
+    -webkit-transform: scale(1.8, 1);
+}
+
+.portico-header .dropdown ul li {
+    display: list-item;
+    margin: 0;
+    padding: 3px 10px;
+    text-align: left;
+
+    opacity: 1;
+
+    cursor: pointer;
+}
+
+.portico-header .dropdown ul li:hover {
+    background: linear-gradient(to bottom,#08c,#0077b3);
+    transition: none;
+}
+
+.portico-header .dropdown ul li a {
+    display: block;
+    margin: 2px 0px;
+
+    transition: none;
+    font-size: 0.9em;
+    font-weight: 400;
+
+    color: #444;
+}
+
+.portico-header .dropdown ul li:hover a {
+    background: transparent;
+    color: #fff;
+}
+
+.portico-header .dropdown ul li a i {
+    margin-right: 5px;
+}
+
+.portico-header .dropdown-pill {
+    border: 1px solid rgba(0,0,0,0.2);
+    border-radius: 4px;
+
+    font-weight: 400;
+
+    cursor: pointer;
+}
+
+.portico-header .dropdown-pill .realm-name {
+    display: inline-block;
+    vertical-align: top;
+
+    margin: 0px 5px 0px -4px;
+    padding: 1px 0px 1px 5px;
+
+    border-left: 1px solid rgba(0,0,0,0.2);
+
+    font-size: 0.9em;
+    font-weight: 600;
+
+    line-height: 1.6;
+}
+
+.portico-page-container .portico-header .dropdown-pill .realm-name {
+    margin-left: -3px;
+}
+
+.portico-header .dropdown-pill .realm-name i.fa {
+    position: relative;
+    top: -2px;
+
+    font-size: 0.6em;
+    margin-left: 5px;
+
+    opacity: 0.5;
+    transition: all 0.2s ease;
+}
+
+.portico-header .dropdown-pill:hover .realm-name i.fa {
+    opacity: 1;
+}
+
+.portico-header .dropdown-pill .header-realm-icon {
+    width: 26px;
+    height: 26px;
+
+    vertical-align: top;
+
+    border-radius: 4px 0px 0px 4px;
+}
+
 .app {
     width: 100%;
     z-index: 99;
@@ -650,6 +838,89 @@ a.bottom-signup-button {
 .table.table-striped {
     background: #fff;
     box-shadow: 0px 0px 4px rgba(0,0,0,0.1);
+}
+
+.team .team-profiles {
+    text-align: center;
+    margin: 20px 0px;
+}
+
+.team {
+    margin: 50px 0px;
+}
+
+.team .profile {
+    display: inline-block;
+    text-align: center;
+
+    margin: 10px 0px;
+}
+
+.team .profile .profile-picture {
+    display: block;
+
+    width: 130px;
+    height: 130px;
+    margin: 5px 5px;
+
+    border-radius: 50%;
+
+    background-color: #444;
+
+    pointer-events: none;
+
+    box-shadow: 1px 2px 2px hsla(217, 47%, 17%, 0.03), 2px 2px 12px hsla(217, 47%, 17%, 0.09);
+}
+
+.team .profile:not(.bdfl) .profile-picture {
+    margin: 5px 13px;
+}
+
+.team .profile.bdfl {
+    display: block;
+}
+
+.team .profile.bdfl .profile-information {
+    display: inline-block;
+    vertical-align: top;
+    text-align: left;
+    font-size: 1.4em;
+
+    width: calc(100% - 215px - 10px);
+    margin-left: 10px;
+}
+
+.team .profile.bdfl .profile-description {
+    margin-top: 20px;
+
+    font-weight: 400;
+    font-size: 0.8em;
+    opacity: 0.8;
+}
+
+.team .profile.bdfl .profile-description p {
+    font-size: 1em;
+    line-height: inherit;
+}
+
+.team .profile.bdfl .profile-picture {
+    display: inline-block;
+
+    width: 200px;
+    height: auto;
+    border-radius: 4px;
+}
+
+.team .profile .profile-name {
+    font-weight: 600;
+}
+
+.team .profile .profile-role {
+    opacity: 0.5;
+    text-transform: uppercase;
+    font-size: 0.8em;
+
+    font-weight: 400;
 }
 
 .authors_row {
@@ -1253,24 +1524,30 @@ input.new-organization-button {
 
 .markdown h1,
 .markdown h2,
-.markdown h3 {
+.markdown h3,
+.why-page h1,
+.why-page h2,
+.why-page h3 {
     font-weight: 700;
 }
 
-.markdown h1 {
+.markdown h1,
+.why-page .main h1 {
     border-bottom: 1px solid #eee;
     padding-bottom: 10px;
     margin-bottom: 15px;
 }
 
-.markdown h2 {
-    font-size: 1.2em;
+.markdown h2,
+.why-page h2 {
+    font-size: 1.4em;
     margin: 5px 0 0 0;
 }
 
-.markdown h3 {
-    font-size: 1.2em;
-    opacity: 0.7;
+.markdown h3,
+.why-page h3 {
+    font-size: 1.1em;
+    opacity: 1;
     margin-bottom: 0px;
 }
 

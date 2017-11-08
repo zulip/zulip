@@ -1,6 +1,5 @@
 import os
 
-from itertools import chain
 from mock import patch
 from unittest import TestCase
 

@@ -15,7 +15,7 @@ import os
 import platform
 import time
 import sys
-import six.moves.configparser
+import configparser
 
 from zerver.lib.db import TimeTrackingConnection
 import zerver.lib.logging_util
@@ -26,21 +26,20 @@ import zerver.lib.logging_util
 
 DEPLOY_ROOT = os.path.join(os.path.realpath(os.path.dirname(__file__)), '..')
 
-config_file = six.moves.configparser.RawConfigParser()
+config_file = configparser.RawConfigParser()
 config_file.read("/etc/zulip/zulip.conf")
 
 # Whether this instance of Zulip is running in a production environment.
 PRODUCTION = config_file.has_option('machine', 'deploy_type')
 DEVELOPMENT = not PRODUCTION
 
-secrets_file = six.moves.configparser.RawConfigParser()
+secrets_file = configparser.RawConfigParser()
 if PRODUCTION:
     secrets_file.read("/etc/zulip/zulip-secrets.conf")
 else:
     secrets_file.read(os.path.join(DEPLOY_ROOT, "zproject/dev-secrets.conf"))
 
-def get_secret(key):
-    # type: (str) -> None
+def get_secret(key: str) -> None:
     if secrets_file.has_option('secrets', key):
         return secrets_file.get('secrets', key)
     return None
@@ -115,9 +114,13 @@ else:
 # prod_settings_template.py, and in the initial /etc/zulip/settings.py on a new
 # install of the Zulip server.
 DEFAULT_SETTINGS = {
-    # Basic Django email settings
+    # Extra HTTP "Host" values to allow (standard ones added below)
+    'ALLOWED_HOSTS': [],
+
+    # Basic email settings
     'EMAIL_HOST': None,
     'NOREPLY_EMAIL_ADDRESS': "noreply@" + EXTERNAL_HOST.split(":")[0],
+    'PHYSICAL_ADDRESS': '',
 
     # Google auth
     'GOOGLE_OAUTH2_CLIENT_ID': None,
@@ -179,8 +182,10 @@ DEFAULT_SETTINGS = {
     'PASSWORD_MIN_LENGTH': 6,
     'PASSWORD_MIN_GUESSES': 10000,
     'PUSH_NOTIFICATION_BOUNCER_URL': None,
+    'PUSH_NOTIFICATION_REDACT_CONTENT': False,
     'RATE_LIMITING': True,
     'SEND_LOGIN_EMAILS': True,
+    'EMBEDDED_BOTS_ENABLED': False,
 }
 
 # These settings are not documented in prod_settings_template.py.
@@ -239,6 +244,12 @@ DEFAULT_SETTINGS.update({
     # purpose now that the REALMS_HAVE_SUBDOMAINS migration is finished.
     'SYSTEM_ONLY_REALMS': {"zulip"},
 
+    # Alternate hostnames to serve particular realms on, in addition to
+    # their usual subdomains.  Keys are realm string_ids (aka subdomains),
+    # and values are alternate hosts.
+    # The values will also be added to ALLOWED_HOSTS.
+    'REALM_HOSTS': {},
+
     # Whether the server is using the Pgroonga full-text search
     # backend.  Plan is to turn this on for everyone after further
     # testing.
@@ -270,7 +281,7 @@ DEFAULT_SETTINGS.update({
 
     # Controls for which links are published in portico footers/headers/etc.
     'EMAIL_DELIVERER_DISABLED': False,
-    'REGISTER_LINK_DISABLED': False,
+    'REGISTER_LINK_DISABLED': None,
     'LOGIN_LINK_DISABLED': False,
     'ABOUT_LINK_DISABLED': False,
     'FIND_TEAM_LINK_DISABLED': True,
@@ -306,9 +317,6 @@ DEFAULT_SETTINGS.update({
 
     # Configuration for JWT auth.
     'JWT_AUTH_KEYS': {},
-
-    # TODO: Remove the remains of the legacy "deployment" system.
-    'DEPLOYMENT_ROLE_NAME': "",
 
     # https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-SERVER_EMAIL
     # Django setting for what from address to use in error emails.  We
@@ -351,9 +359,6 @@ DEFAULT_SETTINGS.update({
 for setting_name, setting_val in DEFAULT_SETTINGS.items():
     if setting_name not in vars():
         vars()[setting_name] = setting_val
-
-# Extend ALLOWED_HOSTS with localhost (needed to RPC to Tornado).
-ALLOWED_HOSTS += ['127.0.0.1', 'localhost']
 
 # These are the settings that we will check that the user has filled in for
 # production deployments before starting the app.  It consists of a series
@@ -408,6 +413,14 @@ DEPLOY_ROOT = os.path.join(os.path.realpath(os.path.dirname(__file__)), '..')
 DEVELOPMENT_LOG_DIRECTORY = os.path.join(DEPLOY_ROOT, 'var', 'log')
 # Make redirects work properly behind a reverse proxy
 USE_X_FORWARDED_HOST = True
+
+# Extend ALLOWED_HOSTS with localhost (needed to RPC to Tornado),
+ALLOWED_HOSTS += ['127.0.0.1', 'localhost']
+# ... with hosts corresponding to EXTERNAL_HOST,
+ALLOWED_HOSTS += [EXTERNAL_HOST.split(":")[0],
+                  '.' + EXTERNAL_HOST.split(":")[0]]
+# ... and with the hosts in REALM_HOSTS.
+ALLOWED_HOSTS += REALM_HOSTS.values()
 
 MIDDLEWARE = (
     # With the exception of it's dependencies,
@@ -536,9 +549,10 @@ CACHES = {
     'database': {
         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
         'LOCATION': 'third_party_api_results',
-        # Basically never timeout.  Setting to 0 isn't guaranteed
-        # to work, see https://code.djangoproject.com/ticket/9595
-        'TIMEOUT': 2000000000,
+        # This cache shouldn't timeout; we're really just using the
+        # cache API to store the results of requests to third-party
+        # APIs like the Twitter API permanently.
+        'TIMEOUT': None,
         'OPTIONS': {
             'MAX_ENTRIES': 100000000,
             'CULL_FREQUENCY': 10,
@@ -572,7 +586,7 @@ try:
     # For get_updates hostname sharding.
     domain = config_file.get('django', 'cookie_domain')
     CSRF_COOKIE_DOMAIN = '.' + domain
-except six.moves.configparser.Error:
+except configparser.Error:
     # Failing here is OK
     pass
 
@@ -602,9 +616,6 @@ else:
 # API/BOT SETTINGS
 ########################################################################
 
-if "EXTERNAL_API_PATH" not in vars():
-    EXTERNAL_API_PATH = EXTERNAL_HOST + "/api"
-EXTERNAL_API_URI = EXTERNAL_URI_SCHEME + EXTERNAL_API_PATH
 ROOT_DOMAIN_URI = EXTERNAL_URI_SCHEME + EXTERNAL_HOST
 
 if "NAGIOS_BOT_HOST" not in vars():
@@ -671,8 +682,6 @@ if EMAIL_GATEWAY_PATTERN != "":
     EMAIL_GATEWAY_EXAMPLE = EMAIL_GATEWAY_PATTERN % ("support+abcdefg",)
 else:
     EMAIL_GATEWAY_EXAMPLE = ""
-
-DEPLOYMENT_ROLE_KEY = get_secret("deployment_role_key")
 
 ########################################################################
 # STATSD CONFIGURATION
@@ -851,15 +860,15 @@ PIPELINE = {
         },
         'apple_sprite': {
             'source_filenames': (
-                'generated/emoji/google_sprite.css',
+                'generated/emoji/apple_sprite.css',
             ),
-            'output_filename': 'min/google_sprite.css',
+            'output_filename': 'min/apple_sprite.css',
         },
         'emojione_sprite': {
             'source_filenames': (
-                'generated/emoji/google_sprite.css',
+                'generated/emoji/emojione_sprite.css',
             ),
-            'output_filename': 'min/google_sprite.css',
+            'output_filename': 'min/emojione_sprite.css',
         },
         'google_sprite': {
             'source_filenames': (
@@ -869,9 +878,9 @@ PIPELINE = {
         },
         'twitter_sprite': {
             'source_filenames': (
-                'generated/emoji/google_sprite.css',
+                'generated/emoji/twitter_sprite.css',
             ),
-            'output_filename': 'min/google_sprite.css',
+            'output_filename': 'min/twitter_sprite.css',
         },
     },
     'JAVASCRIPT': {},
@@ -885,6 +894,7 @@ JS_SPECS = {
             'third/bootstrap-notify/js/bootstrap-notify.js',
             'third/html5-formdata/formdata.js',
             'node_modules/jquery-validation/dist/jquery.validate.js',
+            'node_modules/blueimp-md5/js/md5.js',
             'node_modules/clipboard/dist/clipboard.js',
             'third/jquery-form/jquery.form.js',
             'third/jquery-filedrop/jquery.filedrop.js',
@@ -1019,6 +1029,7 @@ JS_SPECS = {
             'js/settings_users.js',
             'js/settings_streams.js',
             'js/settings_filters.js',
+            'js/settings_invites.js',
             'js/settings.js',
             'js/admin_sections.js',
             'js/admin.js',
@@ -1034,6 +1045,7 @@ JS_SPECS = {
             'js/ui_init.js',
             'js/emoji_picker.js',
             'js/compose_ui.js',
+            'js/desktop_notifications_panel.js'
         ],
         'output_filename': 'min/app.js'
     },
@@ -1385,7 +1397,19 @@ if POPULATE_PROFILE_VIA_LDAP and \
    'zproject.backends.ZulipLDAPAuthBackend' not in AUTHENTICATION_BACKENDS:
     AUTHENTICATION_BACKENDS += ('zproject.backends.ZulipLDAPUserPopulator',)
 else:
-    POPULATE_PROFILE_VIA_LDAP = 'zproject.backends.ZulipLDAPAuthBackend' in AUTHENTICATION_BACKENDS or POPULATE_PROFILE_VIA_LDAP
+    POPULATE_PROFILE_VIA_LDAP = (
+        'zproject.backends.ZulipLDAPAuthBackend' in AUTHENTICATION_BACKENDS or
+        POPULATE_PROFILE_VIA_LDAP)
+
+if REGISTER_LINK_DISABLED is None:
+    # The default for REGISTER_LINK_DISABLED is a bit more
+    # complicated: we want it to be disabled by default for people
+    # using the LDAP backend that auto-creates users on login.
+    if (len(AUTHENTICATION_BACKENDS) == 2 and
+            ('zproject.backends.ZulipLDAPAuthBackend' in AUTHENTICATION_BACKENDS)):
+        REGISTER_LINK_DISABLED = True
+    else:
+        REGISTER_LINK_DISABLED = False
 
 ########################################################################
 # SOCIAL AUTHENTICATION SETTINGS
@@ -1416,7 +1440,7 @@ elif not EMAIL_HOST and PRODUCTION:
     EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
 elif DEVELOPMENT:
     # In the dev environment, emails are printed to the run-dev.py console.
-    EMAIL_BACKEND = 'zproject.backends.EmailLogBackEnd'
+    EMAIL_BACKEND = 'zproject.email_backends.EmailLogBackEnd'
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 

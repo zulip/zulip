@@ -1,5 +1,6 @@
 var assert = require('assert');
 var noop = function () {};
+var return_true = function () { return true; };
 set_global('$', global.make_zjquery());
 set_global('document', 'document-stub');
 
@@ -153,6 +154,7 @@ stream_data.add_sub('Frontend', frontend);
     });
     set_global('subs', { update_settings_for_subscribed: noop });
     set_global('narrow_state', { is_for_stream_id: noop });
+    set_global('overlays', { streams_open: return_true });
 
     // Test unread count update
     with_overrides(function (override) {

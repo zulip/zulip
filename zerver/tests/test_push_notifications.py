@@ -50,12 +50,12 @@ class BouncerTestCase(ZulipTestCase):
                                    hostname="demo.example.com",
                                    last_updated=now())
         server.save()
-        super(BouncerTestCase, self).setUp()
+        super().setUp()
 
     def tearDown(self):
         # type: () -> None
         RemoteZulipServer.objects.filter(uuid=self.server_uuid).delete()
-        super(BouncerTestCase, self).tearDown()
+        super().tearDown()
 
     def bounce_request(self, *args, **kwargs):
         # type: (*Any, **Any) -> HttpResponse
@@ -265,7 +265,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
 class PushNotificationTest(BouncerTestCase):
     def setUp(self):
         # type: () -> None
-        super(PushNotificationTest, self).setUp()
+        super().setUp()
         self.user_profile = self.example_user('hamlet')
         self.tokens = [u'aaaa', u'bbbb']
         for token in self.tokens:
@@ -342,11 +342,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
         missed_message = {
             'message_id': message.id,
-            'triggers': {
-                'private_message': True,
-                'mentioned': False,
-                'stream_push_notify': False,
-            },
+            'trigger': 'private_message',
         }
         with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=''), \
                 mock.patch('zerver.lib.push_notifications.requests.request',
@@ -401,11 +397,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         missed_message = {
             'user_profile_id': self.user_profile.id,
             'message_id': message.id,
-            'triggers': {
-                'private_message': True,
-                'mentioned': False,
-                'stream_push_notify': False,
-            },
+            'trigger': 'private_message',
         }
         with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=''), \
                 mock.patch('zerver.lib.push_notifications.requests.request',
@@ -452,11 +444,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
         missed_message = {
             'message_id': message.id,
-            'triggers': {
-                'private_message': True,
-                'mentioned': False,
-                'stream_push_notify': False,
-            },
+            'trigger': 'private_message',
         }
         apn.handle_push_notification(user_profile.id, missed_message)
 
@@ -471,11 +459,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
         missed_message = {
             'message_id': message.id,
-            'triggers': {
-                'private_message': True,
-                'mentioned': False,
-                'stream_push_notify': False,
-            },
+            'trigger': 'private_message',
         }
         with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=True), \
                 mock.patch('zerver.lib.push_notifications.get_apns_payload',
@@ -514,11 +498,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
         missed_message = {
             'message_id': message.id,
-            'triggers': {
-                'private_message': True,
-                'mentioned': False,
-                'stream_push_notify': False,
-            },
+            'trigger': 'private_message',
         }
         with mock.patch('zerver.lib.push_notifications.get_apns_payload',
                         return_value={'apns': True}), \
@@ -629,44 +609,28 @@ class TestGetAlertFromMessage(PushNotificationTest):
     def test_get_alert_from_private_group_message(self):
         # type: () -> None
         message = self.get_message(Recipient.HUDDLE)
-        message.triggers = {
-            'private_message': True,
-            'mentioned': False,
-            'stream_push_notify': False,
-        }
+        message.trigger = 'private_message'
         alert = apn.get_alert_from_message(message)
         self.assertEqual(alert, "New private group message from King Hamlet")
 
     def test_get_alert_from_private_message(self):
         # type: () -> None
         message = self.get_message(Recipient.PERSONAL)
-        message.triggers = {
-            'private_message': True,
-            'mentioned': False,
-            'stream_push_notify': False,
-        }
+        message.trigger = 'private_message'
         alert = apn.get_alert_from_message(message)
         self.assertEqual(alert, "New private message from King Hamlet")
 
     def test_get_alert_from_mention(self):
         # type: () -> None
         message = self.get_message(Recipient.STREAM)
-        message.triggers = {
-            'private_message': False,
-            'mentioned': True,
-            'stream_push_notify': False,
-        }
+        message.trigger = 'mentioned'
         alert = apn.get_alert_from_message(message)
         self.assertEqual(alert, "New mention from King Hamlet")
 
     def test_get_alert_from_stream_message(self):
         # type: () -> None
         message = self.get_message(Recipient.STREAM)
-        message.triggers = {
-            'private_message': False,
-            'mentioned': False,
-            'stream_push_notify': True,
-        }
+        message.trigger = 'stream_push_notify'
         message.stream_name = 'Denmark'
         alert = apn.get_alert_from_message(message)
         self.assertEqual(alert, "New stream message from King Hamlet in Denmark")
@@ -674,11 +638,7 @@ class TestGetAlertFromMessage(PushNotificationTest):
     def test_get_alert_from_other_message(self):
         # type: () -> None
         message = self.get_message(0)
-        message.triggers = {
-            'private_message': False,
-            'mentioned': False,
-            'stream_push_notify': False,
-        }
+        message.trigger = 'stream_push_notify'
         alert = apn.get_alert_from_message(message)
         alert = apn.get_alert_from_message(self.get_message(0))
         self.assertEqual(alert,
@@ -689,16 +649,32 @@ class TestGetAPNsPayload(PushNotificationTest):
     def test_get_apns_payload(self):
         # type: () -> None
         message = self.get_message(Recipient.HUDDLE)
-        message.triggers = {
-            'private_message': True,
-            'mentioned': False,
-            'stream_push_notify': False,
-        }
+        message.trigger = 'private_message'
         payload = apn.get_apns_payload(message)
         expected = {
             'alert': {
                 'title': "New private group message from King Hamlet",
                 'body': message.content,
+            },
+            'badge': 0,
+            'custom': {
+                'zulip': {
+                    'message_ids': [message.id],
+                }
+            }
+        }
+        self.assertDictEqual(payload, expected)
+
+    @override_settings(PUSH_NOTIFICATION_REDACT_CONTENT = True)
+    def test_get_apns_payload_redacted_content(self):
+        # type: () -> None
+        message = self.get_message(Recipient.HUDDLE)
+        message.trigger = 'private_message'
+        payload = apn.get_apns_payload(message)
+        expected = {
+            'alert': {
+                'title': "New private group message from King Hamlet",
+                'body': "***REDACTED***",
             },
             'badge': 0,
             'custom': {
@@ -717,11 +693,7 @@ class TestGetGCMPayload(PushNotificationTest):
         message.content = 'a' * 210
         message.rendered_content = 'a' * 210
         message.save()
-        message.triggers = {
-            'private_message': False,
-            'mentioned': True,
-            'stream_push_notify': False,
-        }
+        message.trigger = 'mentioned'
 
         user_profile = self.example_user('hamlet')
         payload = apn.get_gcm_payload(user_profile, message)
@@ -745,11 +717,7 @@ class TestGetGCMPayload(PushNotificationTest):
     def test_get_gcm_payload_personal(self):
         # type: () -> None
         message = self.get_message(Recipient.PERSONAL, 1)
-        message.triggers = {
-            'private_message': True,
-            'mentioned': False,
-            'stream_push_notify': False,
-        }
+        message.trigger = 'private_message'
         user_profile = self.example_user('hamlet')
         payload = apn.get_gcm_payload(user_profile, message)
         expected = {
@@ -770,11 +738,7 @@ class TestGetGCMPayload(PushNotificationTest):
     def test_get_gcm_payload_stream_notifications(self):
         # type: () -> None
         message = self.get_message(Recipient.STREAM, 1)
-        message.triggers = {
-            'private_message': False,
-            'mentioned': False,
-            'stream_push_notify': True,
-        }
+        message.trigger = 'stream_push_notify'
         message.stream_name = 'Denmark'
         user_profile = self.example_user('hamlet')
         payload = apn.get_gcm_payload(user_profile, message)
@@ -795,6 +759,32 @@ class TestGetGCMPayload(PushNotificationTest):
         }
         self.assertDictEqual(payload, expected)
 
+    @override_settings(PUSH_NOTIFICATION_REDACT_CONTENT = True)
+    def test_get_gcm_payload_redacted_content(self):
+        # type: () -> None
+        message = self.get_message(Recipient.STREAM, 1)
+        message.trigger = 'stream_push_notify'
+        message.stream_name = 'Denmark'
+        user_profile = self.example_user('hamlet')
+        payload = apn.get_gcm_payload(user_profile, message)
+        expected = {
+            "user": user_profile.email,
+            "event": "message",
+            "alert": "New stream message from King Hamlet in Denmark",
+            "zulip_message_id": message.id,
+            "time": apn.datetime_to_timestamp(message.pub_date),
+            "content": "***REDACTED***",
+            "content_truncated": False,
+            "sender_email": self.example_email("hamlet"),
+            "sender_full_name": "King Hamlet",
+            "sender_avatar_url": apn.absolute_avatar_url(message.sender),
+            "recipient_type": "stream",
+            "topic": "Test Message",
+            "stream": "Denmark"
+        }
+        self.assertDictEqual(payload, expected)
+
+
 class TestSendNotificationsToBouncer(ZulipTestCase):
     @mock.patch('zerver.lib.push_notifications.send_to_push_bouncer')
     def test_send_notifications_to_bouncer(self, mock_send):
@@ -811,7 +801,7 @@ class TestSendNotificationsToBouncer(ZulipTestCase):
                                      extra_headers={'Content-type':
                                                     'application/json'})
 
-class Result(object):
+class Result:
     def __init__(self, status=200, content=ujson.dumps({'msg': 'error'})):
         # type: (int, str) -> None
         self.status_code = status
@@ -931,7 +921,7 @@ class TestPushApi(ZulipTestCase):
 class GCMTest(PushNotificationTest):
     def setUp(self):
         # type: () -> None
-        super(GCMTest, self).setUp()
+        super().setUp()
         apn.gcm = gcm.GCM('fake key')
         self.gcm_tokens = [u'1111', u'2222']
         for token in self.gcm_tokens:

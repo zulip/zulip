@@ -9,7 +9,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 
-from zerver.decorator import authenticated_json_post_view, human_users_only
+from zerver.decorator import human_users_only
 from zerver.lib.actions import get_status_dict, update_user_presence
 from zerver.lib.request import has_request_variables, REQ, JsonableError
 from zerver.lib.response import json_success, json_error
@@ -17,13 +17,12 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.validator import check_bool
 from zerver.models import UserActivity, UserPresence, UserProfile, get_user
 
-def get_status_list(requesting_user_profile):
-    # type: (UserProfile) -> Dict[str, Any]
+def get_status_list(requesting_user_profile: UserProfile) -> Dict[str, Any]:
     return {'presences': get_status_dict(requesting_user_profile),
             'server_timestamp': time.time()}
 
-def get_presence_backend(request, user_profile, email):
-    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
+def get_presence_backend(request: HttpRequest, user_profile: UserProfile,
+                         email: Text) -> HttpResponse:
     try:
         target = get_user(email, user_profile.realm)
     except UserProfile.DoesNotExist:

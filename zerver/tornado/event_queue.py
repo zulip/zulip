@@ -2,15 +2,13 @@
 # high-level documentation on how this system works.
 from typing import cast, AbstractSet, Any, Callable, Dict, List, \
     Mapping, MutableMapping, Optional, Iterable, Sequence, Set, Text, Union
+from mypy_extensions import TypedDict
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
-from django.utils.timezone import now as timezone_now
 from collections import deque
-import datetime
 import os
 import time
-import socket
 import logging
 import ujson
 import requests
@@ -20,17 +18,16 @@ import signal
 import tornado.autoreload
 import tornado.ioloop
 import random
-import traceback
 from zerver.models import UserProfile, Client
-from zerver.decorator import RespondAsynchronously
+from zerver.decorator import cachify
 from zerver.tornado.handlers import clear_handler_by_id, get_handler_by_id, \
     finish_handler, handler_stats_string
 from zerver.lib.utils import statsd
 from zerver.middleware import async_request_restart
+from zerver.lib.message import MessageDict
 from zerver.lib.narrow import build_narrow_filter
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.request import JsonableError
-from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
 from zerver.tornado.exceptions import BadEventQueueIdError
 import copy
@@ -59,11 +56,11 @@ MAX_QUEUE_TIMEOUT_SECS = 7 * 24 * 60 * 60
 # wireless routers that kill "inactive" http connections.
 HEARTBEAT_MIN_FREQ_SECS = 45
 
-class ClientDescriptor(object):
+class ClientDescriptor:
     def __init__(self, user_profile_id, user_profile_email, realm_id, event_queue,
-                 event_types, client_type_name, apply_markdown=True,
+                 event_types, client_type_name, apply_markdown=True, client_gravatar=True,
                  all_public_streams=False, lifespan_secs=0, narrow=[]):
-        # type: (int, Text, int, EventQueue, Optional[Sequence[str]], Text, bool, bool, int, Iterable[Sequence[Text]]) -> None
+        # type: (int, Text, int, EventQueue, Optional[Sequence[str]], Text, bool, bool, bool, int, Iterable[Sequence[Text]]) -> None
         # These objects are serialized on shutdown and restored on restart.
         # If fields are added or semantics are changed, temporary code must be
         # added to load_event_queues() to update the restored objects.
@@ -78,6 +75,7 @@ class ClientDescriptor(object):
         self.event_types = event_types
         self.last_connection_time = time.time()
         self.apply_markdown = apply_markdown
+        self.client_gravatar = client_gravatar
         self.all_public_streams = all_public_streams
         self.client_type_name = client_type_name
         self._timeout_handle = None  # type: Any # TODO: should be return type of ioloop.add_timeout
@@ -85,7 +83,8 @@ class ClientDescriptor(object):
         self.narrow_filter = build_narrow_filter(narrow)
 
         # Clamp queue_timeout to between minimum and maximum timeouts
-        self.queue_timeout = max(IDLE_EVENT_QUEUE_TIMEOUT_SECS, min(self.queue_timeout, MAX_QUEUE_TIMEOUT_SECS))
+        self.queue_timeout = max(IDLE_EVENT_QUEUE_TIMEOUT_SECS,
+                                 min(self.queue_timeout, MAX_QUEUE_TIMEOUT_SECS))
 
     def to_dict(self):
         # type: () -> Dict[str, Any]
@@ -100,6 +99,7 @@ class ClientDescriptor(object):
                     event_types=self.event_types,
                     last_connection_time=self.last_connection_time,
                     apply_markdown=self.apply_markdown,
+                    client_gravatar=self.client_gravatar,
                     all_public_streams=self.all_public_streams,
                     narrow=self.narrow,
                     client_type_name=self.client_type_name)
@@ -118,10 +118,23 @@ class ClientDescriptor(object):
         if 'client_type' in d:
             # Temporary migration for the rename of client_type to client_type_name
             d['client_type_name'] = d['client_type']
-        ret = cls(d['user_profile_id'], d['user_profile_email'], d['realm_id'],
-                  EventQueue.from_dict(d['event_queue']), d['event_types'],
-                  d['client_type_name'], d['apply_markdown'], d['all_public_streams'],
-                  d['queue_timeout'], d.get('narrow', []))
+        if 'client_gravatar' not in d:
+            # Temporary migration for the addition of the client_gravatar field
+            d['client_gravatar'] = False
+
+        ret = cls(
+            d['user_profile_id'],
+            d['user_profile_email'],
+            d['realm_id'],
+            EventQueue.from_dict(d['event_queue']),
+            d['event_types'],
+            d['client_type_name'],
+            d['apply_markdown'],
+            d['client_gravatar'],
+            d['all_public_streams'],
+            d['queue_timeout'],
+            d.get('narrow', [])
+        )
         ret.last_connection_time = d['last_connection_time']
         return ret
 
@@ -228,7 +241,7 @@ def compute_full_event_type(event):
         return "flags/%s/%s" % (event["operation"], event["flag"])
     return event["type"]
 
-class EventQueue(object):
+class EventQueue:
     def __init__(self, id):
         # type: (str) -> None
         self.queue = deque()  # type: ignore # Should be Deque[Dict[str, Any]], but Deque isn't available in Python 3.4
@@ -566,13 +579,14 @@ def extract_json_response(resp):
     else:
         return resp.json  # type: ignore # mypy trusts the stub, not the runtime type checking of this fn
 
-def request_event_queue(user_profile, user_client, apply_markdown,
+def request_event_queue(user_profile, user_client, apply_markdown, client_gravatar,
                         queue_lifespan_secs, event_types=None, all_public_streams=False,
                         narrow=[]):
-    # type: (UserProfile, Client, bool, int, Optional[Iterable[str]], bool, Iterable[Sequence[Text]]) -> Optional[str]
+    # type: (UserProfile, Client, bool, bool, int, Optional[Iterable[str]], bool, Iterable[Sequence[Text]]) -> Optional[str]
     if settings.TORNADO_SERVER:
         req = {'dont_block': 'true',
                'apply_markdown': ujson.dumps(apply_markdown),
+               'client_gravatar': ujson.dumps(client_gravatar),
                'all_public_streams': ujson.dumps(all_public_streams),
                'client': 'internal',
                'user_client': user_client.name,
@@ -601,7 +615,7 @@ def request_event_queue(user_profile, user_client, apply_markdown,
     return None
 
 def get_user_events(user_profile, queue_id, last_event_id):
-    # type: (UserProfile, str, int) -> List[Dict]
+    # type: (UserProfile, str, int) -> List[Dict[Any, Any]]
     if settings.TORNADO_SERVER:
         resp = requests_client.get(settings.TORNADO_SERVER + '/api/v1/events',
                                    auth=requests.auth.HTTPBasicAuth(
@@ -673,8 +687,14 @@ def missedmessage_hook(user_profile_id, client, last_for_client):
         idle = True
 
         message_id = event['message']['id']
+        # Pass on the information on whether a push or email notification was already sent.
+        already_notified = dict(
+            push_notified = event.get("push_notified", False),
+            email_notified = event.get("email_notified", False),
+        )
         maybe_enqueue_notifications(user_profile_id, message_id, private_message, mentioned,
-                                    stream_push_notify, stream_name, always_push_notify, idle)
+                                    stream_push_notify, stream_name, always_push_notify, idle,
+                                    already_notified)
 
 def receiver_is_off_zulip(user_profile_id):
     # type: (int) -> bool
@@ -687,8 +707,8 @@ def receiver_is_off_zulip(user_profile_id):
 
 def maybe_enqueue_notifications(user_profile_id, message_id, private_message,
                                 mentioned, stream_push_notify, stream_name,
-                                always_push_notify, idle):
-    # type: (int, int, bool, bool, bool, Optional[str], bool, bool) -> Dict[str, bool]
+                                always_push_notify, idle, already_notified):
+    # type: (int, int, bool, bool, bool, Optional[str], bool, bool, Dict[str, bool]) -> Dict[str, bool]
     """This function has a complete unit test suite in
     `test_enqueue_notifications` that should be expanded as we add
     more features here."""
@@ -696,14 +716,18 @@ def maybe_enqueue_notifications(user_profile_id, message_id, private_message,
 
     if (idle or always_push_notify) and (private_message or mentioned or stream_push_notify):
         notice = build_offline_notification(user_profile_id, message_id)
-        notice['triggers'] = {
-            'private_message': private_message,
-            'mentioned': mentioned,
-            'stream_push_notify': stream_push_notify,
-        }
+        if private_message:
+            notice['trigger'] = 'private_message'
+        elif mentioned:
+            notice['trigger'] = 'mentioned'
+        elif stream_push_notify:
+            notice['trigger'] = 'stream_push_notify'
+        else:
+            raise AssertionError("Unknown notification trigger!")
         notice['stream_name'] = stream_name
-        queue_json_publish("missedmessage_mobile_notifications", notice, lambda notice: None)
-        notified['push_notified'] = True
+        if not already_notified.get("push_notified"):
+            queue_json_publish("missedmessage_mobile_notifications", notice, lambda notice: None)
+            notified['push_notified'] = True
 
     # Send missed_message emails if a private message or a
     # mention.  Eventually, we'll add settings to allow email
@@ -712,42 +736,86 @@ def maybe_enqueue_notifications(user_profile_id, message_id, private_message,
     if idle and (private_message or mentioned):
         # We require RabbitMQ to do this, as we can't call the email handler
         # from the Tornado process. So if there's no rabbitmq support do nothing
-        queue_json_publish("missedmessage_emails", notice, lambda notice: None)
-        notified['email_notified'] = True
+        if not already_notified.get("email_notified"):
+            queue_json_publish("missedmessage_emails", notice, lambda notice: None)
+            notified['email_notified'] = True
 
     return notified
 
-def process_message_event(event_template, users):
-    # type: (Mapping[str, Any], Iterable[Mapping[str, Any]]) -> None
-    presence_idle_user_ids = set(event_template.get('presence_idle_user_ids', []))
+ClientInfo = TypedDict('ClientInfo', {
+    'client': ClientDescriptor,
+    'flags': Optional[Iterable[str]],
+    'is_sender': bool,
+})
+
+def get_client_info_for_message_event(event_template, users):
+    # type: (Mapping[str, Any], Iterable[Mapping[str, Any]]) -> Dict[str, ClientInfo]
+
+    '''
+    Return client info for all the clients interested in a message.
+    This basically includes clients for users who are recipients
+    of the message, with some nuances for bots that auto-subscribe
+    to all streams, plus users who may be mentioned, etc.
+    '''
+
+    send_to_clients = {}  # type: Dict[str, ClientInfo]
+
     sender_queue_id = event_template.get('sender_queue_id', None)  # type: Optional[str]
-    message_dict_markdown = event_template['message_dict_markdown']  # type: Dict[str, Any]
-    message_dict_no_markdown = event_template['message_dict_no_markdown']  # type: Dict[str, Any]
-    sender_id = message_dict_markdown['sender_id']  # type: int
-    message_id = message_dict_markdown['id']  # type: int
-    message_type = message_dict_markdown['type']  # type: str
-    sending_client = message_dict_markdown['client']  # type: Text
 
-    # To remove duplicate clients: Maps queue ID to {'client': Client, 'flags': flags}
-    send_to_clients = {}  # type: Dict[str, Dict[str, Any]]
+    def is_sender_client(client):
+        # type: (ClientDescriptor) -> bool
+        return (sender_queue_id is not None) and client.event_queue.id == sender_queue_id
 
-    # Extra user-specific data to include
-    extra_user_data = {}  # type: Dict[int, Any]
-
+    # If we're on a public stream, look for clients (typically belonging to
+    # bots) that are registered to get events for ALL streams.
     if 'stream_name' in event_template and not event_template.get("invite_only"):
-        for client in get_client_descriptors_for_realm_all_streams(event_template['realm_id']):
-            send_to_clients[client.event_queue.id] = {'client': client, 'flags': None}
-            if sender_queue_id is not None and client.event_queue.id == sender_queue_id:
-                send_to_clients[client.event_queue.id]['is_sender'] = True
+        realm_id = event_template['realm_id']
+        for client in get_client_descriptors_for_realm_all_streams(realm_id):
+            send_to_clients[client.event_queue.id] = dict(
+                client=client,
+                flags=None,
+                is_sender=is_sender_client(client)
+            )
 
     for user_data in users:
         user_profile_id = user_data['id']  # type: int
         flags = user_data.get('flags', [])  # type: Iterable[str]
 
         for client in get_client_descriptors_for_user(user_profile_id):
-            send_to_clients[client.event_queue.id] = {'client': client, 'flags': flags}
-            if sender_queue_id is not None and client.event_queue.id == sender_queue_id:
-                send_to_clients[client.event_queue.id]['is_sender'] = True
+            send_to_clients[client.event_queue.id] = dict(
+                client=client,
+                flags=flags,
+                is_sender=is_sender_client(client)
+            )
+
+    return send_to_clients
+
+
+def process_message_event(event_template, users):
+    # type: (Mapping[str, Any], Iterable[Mapping[str, Any]]) -> None
+    send_to_clients = get_client_info_for_message_event(event_template, users)
+
+    presence_idle_user_ids = set(event_template.get('presence_idle_user_ids', []))
+    wide_dict = event_template['message_dict']  # type: Dict[str, Any]
+
+    sender_id = wide_dict['sender_id']  # type: int
+    message_id = wide_dict['id']  # type: int
+    message_type = wide_dict['type']  # type: str
+    sending_client = wide_dict['client']  # type: Text
+
+    @cachify
+    def get_client_payload(apply_markdown, client_gravatar):
+        # type: (bool, bool) -> Mapping[str, Any]
+        dct = copy.deepcopy(wide_dict)
+        MessageDict.finalize_payload(dct, apply_markdown, client_gravatar)
+        return dct
+
+    # Extra user-specific data to include
+    extra_user_data = {}  # type: Dict[int, Any]
+
+    for user_data in users:
+        user_profile_id = user_data['id']  # type: int
+        flags = user_data.get('flags', [])  # type: Iterable[str]
 
         # If the recipient was offline and the message was a single or group PM to them
         # or they were @-notified potentially notify more immediately
@@ -763,7 +831,7 @@ def process_message_event(event_template, users):
             stream_name = event_template.get('stream_name')
             result = maybe_enqueue_notifications(user_profile_id, message_id, private_message,
                                                  mentioned, stream_push_notify, stream_name,
-                                                 always_push_notify, idle)
+                                                 always_push_notify, idle, {})
             result['stream_push_notify'] = stream_push_notify
             extra_user_data[user_profile_id] = result
 
@@ -779,10 +847,7 @@ def process_message_event(event_template, users):
             # message data unnecessarily
             continue
 
-        if client.apply_markdown:
-            message_dict = message_dict_markdown
-        else:
-            message_dict = message_dict_no_markdown
+        message_dict = get_client_payload(client.apply_markdown, client.client_gravatar)
 
         # Make sure Zephyr mirroring bots know whether stream is invite-only
         if "mirror" in client.client_type_name and event_template.get("invite_only"):
@@ -909,6 +974,7 @@ def maybe_enqueue_notifications_for_message_update(user_profile_id,
         stream_name=stream_name,
         always_push_notify=always_push_notify,
         idle=idle,
+        already_notified={},
     )
 
 def process_notification(notice):
@@ -942,7 +1008,7 @@ def send_notification_http(data):
         process_notification(data)
 
 def send_notification(data):
-    # type: (Mapping[str, Any]) -> None
+    # type: (Dict[str, Any]) -> None
     queue_json_publish("notify_tornado", data, send_notification_http)
 
 def send_event(event, users):

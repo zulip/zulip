@@ -57,6 +57,7 @@ casper.then(function () {
             realm_subdomain: subdomain,
             password: 'passwordwhichisreallyreallyreallycomplexandnotguessable',
             terms: true,
+            realm_in_root_domain: false,
         }, true);
     });
 

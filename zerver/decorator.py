@@ -5,16 +5,16 @@ from django.contrib.auth import REDIRECT_FIELD_NAME, login as django_login
 from django.views.decorators.csrf import csrf_exempt
 from django.http import QueryDict, HttpResponseNotAllowed, HttpRequest
 from django.http.multipartparser import MultiPartParser
-from zerver.models import UserProfile, get_client, get_user_profile_by_api_key
+from zerver.models import Realm, UserProfile, get_client, get_user_profile_by_api_key
 from zerver.lib.response import json_error, json_unauthorized, json_success
 from django.shortcuts import resolve_url
 from django.utils.decorators import available_attrs
 from django.utils.timezone import now as timezone_now
 from django.conf import settings
 from zerver.lib.queue import queue_json_publish
+from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
-from zerver.lib.utils import statsd, get_subdomain, check_subdomain, \
-    is_remote_server
+from zerver.lib.utils import statsd, is_remote_server
 from zerver.lib.exceptions import RateLimited, JsonableError, ErrorCode
 
 from zerver.lib.rate_limiter import incr_ratelimit, is_ratelimited, \
@@ -28,9 +28,9 @@ import datetime
 import ujson
 import logging
 from io import BytesIO
-from six.moves import zip, urllib
+import urllib
 
-from typing import Union, Any, Callable, Sequence, Dict, Optional, TypeVar, Text, cast
+from typing import Union, Any, Callable, Sequence, Dict, Optional, TypeVar, Text, Tuple, cast
 from zerver.lib.str_utils import force_bytes
 from zerver.lib.logging_util import create_logger
 
@@ -43,14 +43,14 @@ else:
     get_remote_server_by_uuid = Mock()
     RemoteZulipServer = Mock()  # type: ignore # https://github.com/JukkaL/mypy/issues/1188
 
-FuncT = TypeVar('FuncT', bound=Callable[..., Any])
 ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
+ReturnT = TypeVar('ReturnT')
 
 ## logger setup
 webhook_logger = create_logger(
     "zulip.zerver.webhooks", settings.API_KEY_ONLY_WEBHOOK_LOG_PATH, 'DEBUG')
 
-class _RespondAsynchronously(object):
+class _RespondAsynchronously:
     pass
 
 # Return RespondAsynchronously from an @asynchronous view if the
@@ -62,7 +62,8 @@ RespondAsynchronously = _RespondAsynchronously()
 def asynchronous(method):
     # type: (Callable[..., Union[HttpResponse, _RespondAsynchronously]]) -> Callable[..., Union[HttpResponse, _RespondAsynchronously]]
     # TODO: this should be the correct annotation when mypy gets fixed: type:
-    #   (Callable[[HttpRequest, base.BaseHandler, Sequence[Any], Dict[str, Any]], Union[HttpResponse, _RespondAsynchronously]]) ->
+    #   (Callable[[HttpRequest, base.BaseHandler, Sequence[Any], Dict[str, Any]],
+    #     Union[HttpResponse, _RespondAsynchronously]]) ->
     #   Callable[[HttpRequest, Sequence[Any], Dict[str, Any]], Union[HttpResponse, _RespondAsynchronously]]
     # TODO: see https://github.com/python/mypy/issues/1655
     @wraps(method)
@@ -73,14 +74,30 @@ def asynchronous(method):
         wrapper.csrf_exempt = True  # type: ignore # https://github.com/JukkaL/mypy/issues/1170
     return wrapper
 
-def update_user_activity(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> None
+def cachify(method):
+    # type: (Callable) -> Callable
+    dct = {}  # type: Dict[Tuple, Any]
+
+    def cache_wrapper(*args):
+        # type: (*Any) -> Any
+        tup = tuple(args)
+        if tup in dct:
+            return dct[tup]
+        result = method(*args)
+        dct[tup] = result
+        return result
+    return cache_wrapper
+
+def update_user_activity(request, user_profile, query):
+    # type: (HttpRequest, UserProfile, Optional[str]) -> None
     # update_active_status also pushes to rabbitmq, and it seems
     # redundant to log that here as well.
     if request.META["PATH_INFO"] == '/json/users/me/presence':
         return
 
-    if hasattr(request, '_query'):
+    if query is not None:
+        pass
+    elif hasattr(request, '_query'):
         query = request._query
     else:
         query = request.META['PATH_INFO']
@@ -154,15 +171,15 @@ def get_client_name(request, is_browser_view):
         else:
             return "Unspecified"
 
-def process_client(request, user_profile, is_browser_view=False, client_name=None,
-                   remote_server_request=False):
-    # type: (HttpRequest, UserProfile, bool, Optional[Text], bool) -> None
+def process_client(request, user_profile, *, is_browser_view=False, client_name=None,
+                   remote_server_request=False, query=None):
+    # type: (HttpRequest, UserProfile, bool, Optional[Text], bool, Optional[Text]) -> None
     if client_name is None:
         client_name = get_client_name(request, is_browser_view)
 
     request.client = get_client(client_name)
     if not remote_server_request:
-        update_user_activity(request, user_profile)
+        update_user_activity(request, user_profile, query)
 
 class InvalidZulipServerError(JsonableError):
     code = ErrorCode.INVALID_ZULIP_SERVER
@@ -199,7 +216,7 @@ def validate_api_key(request, role, api_key, is_webhook=False,
         if api_key != remote_server.api_key:
             raise InvalidZulipServerKeyError(role)
 
-        if not check_subdomain(get_subdomain(request), ""):
+        if get_subdomain(request) != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
             raise JsonableError(_("Invalid subdomain for push notifications bouncer"))
         request.user = remote_server
         request._email = "zulip-server:" + role
@@ -229,7 +246,7 @@ def validate_account_and_subdomain(request, user_profile):
     # in the message_sender worker (which will have already had the
     # subdomain validated), or we're accessing Tornado from and to
     # localhost (aka spoofing a request as the user).
-    if (not check_subdomain(get_subdomain(request), user_profile.realm.subdomain) and
+    if (not user_matches_subdomain(get_subdomain(request), user_profile) and
         not (request.method == "SOCKET" and
              request.META['SERVER_NAME'] == "127.0.0.1") and
         not (settings.RUNNING_INSIDE_TORNADO and
@@ -257,9 +274,9 @@ def access_user_by_api_key(request, api_key, email=None):
 
 # Use this for webhook views that don't get an email passed in.
 def api_key_only_webhook_view(client_name):
-    # type: (Text) ->  Callable[..., HttpResponse]
-    # This function can't be typed perfectly because returning a generic function
-    # isn't supported in mypy - https://github.com/python/mypy/issues/1551.
+    # type: (Text) ->  Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]
+    # TODO The typing here could be improved by using the Extended Callable types:
+    # https://mypy.readthedocs.io/en/latest/kinds_of_types.html#extended-callable-types
     def _wrapped_view_func(view_func):
         # type: (Callable[..., HttpResponse]) -> Callable[..., HttpResponse]
         @csrf_exempt
@@ -361,7 +378,7 @@ def logged_in_and_active(request):
         return False
     if request.user.realm.deactivated:
         return False
-    return check_subdomain(get_subdomain(request), request.user.realm.subdomain)
+    return user_matches_subdomain(get_subdomain(request), request.user)
 
 def do_login(request, user_profile):
     # type: (HttpRequest, UserProfile) -> None
@@ -372,14 +389,23 @@ def do_login(request, user_profile):
     request._email = user_profile.email
     process_client(request, user_profile, is_browser_view=True)
 
+def log_view_func(view_func):
+    # type: (ViewFuncT) -> ViewFuncT
+    @wraps(view_func)
+    def _wrapped_view_func(request, *args, **kwargs):
+        # type: (HttpRequest, *Any, **Any) -> HttpResponse
+        request._query = view_func.__name__
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
+
 def add_logging_data(view_func):
     # type: (ViewFuncT) -> ViewFuncT
     @wraps(view_func)
     def _wrapped_view_func(request, *args, **kwargs):
         # type: (HttpRequest, *Any, **Any) -> HttpResponse
         request._email = request.user.email
-        request._query = view_func.__name__
-        process_client(request, request.user, is_browser_view=True)
+        process_client(request, request.user, is_browser_view=True,
+                       query=view_func.__name__)
         return rate_limit()(view_func)(request, *args, **kwargs)
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
@@ -414,7 +440,6 @@ def require_server_admin(view_func):
     @wraps(view_func)
     def _wrapped_view_func(request, *args, **kwargs):
         # type: (HttpRequest, *Any, **Any) -> HttpResponse
-        request._query = view_func.__name__
         if not request.user.is_staff:
             return HttpResponseRedirect(settings.HOME_NOT_LOGGED_IN)
 
@@ -525,7 +550,8 @@ def authenticate_log_and_execute_json(request, view_func, *args, **kwargs):
     if user_profile.is_incoming_webhook:
         raise JsonableError(_("Webhook bots can only access webhooks"))
 
-    process_client(request, user_profile, is_browser_view=True)
+    process_client(request, user_profile, is_browser_view=True,
+                   query=view_func.__name__)
     request._email = user_profile.email
     return rate_limit()(view_func)(request, user_profile, *args, **kwargs)
 
@@ -574,9 +600,9 @@ def client_is_exempt_from_rate_limiting(request):
              settings.DEBUG_RATE_LIMITING))
 
 def internal_notify_view(is_tornado_view):
-    # type: (bool) ->  Callable[..., HttpResponse]
-    # This function can't be typed perfectly because returning a generic function
-    # isn't supported in mypy - https://github.com/python/mypy/issues/1551.
+    # type: (bool) ->  Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]
+    # The typing here could be improved by using the Extended Callable types:
+    # https://mypy.readthedocs.io/en/latest/kinds_of_types.html#extended-callable-types
     """Used for situations where something running on the Zulip server
     needs to make a request to the (other) Django/Tornado processes running on
     the server."""
@@ -630,16 +656,16 @@ def to_utc_datetime(timestamp):
     return timestamp_to_datetime(float(timestamp))
 
 def statsd_increment(counter, val=1):
-    # type: (Text, int) -> Callable[[Callable[..., Any]], Callable[..., Any]]
+    # type: (Text, int) -> Callable[[Callable[..., ReturnT]], Callable[..., ReturnT]]
     """Increments a statsd counter on completion of the
     decorated function.
 
     Pass the name of the counter to this decorator-returning function."""
     def wrapper(func):
-        # type: (Callable[..., Any]) -> Callable[..., Any]
+        # type: (Callable[..., ReturnT]) -> Callable[..., ReturnT]
         @wraps(func)
         def wrapped_func(*args, **kwargs):
-            # type: (*Any, **Any) -> Any
+            # type: (*Any, **Any) -> ReturnT
             ret = func(*args, **kwargs)
             statsd.incr(counter, val)
             return ret
@@ -711,11 +737,9 @@ def rate_limit(domain='all'):
         return wrapped_func
     return wrapper
 
-def return_success_on_head_request(view_func):
-    # type: (Callable) -> Callable
+def return_success_on_head_request(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
     @wraps(view_func)
-    def _wrapped_view_func(request, *args, **kwargs):
-        # type: (HttpResponse, *Any, **Any) -> Callable
+    def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         if request.method == 'HEAD':
             return json_success()
         return view_func(request, *args, **kwargs)

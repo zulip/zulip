@@ -244,7 +244,7 @@ function make_dimen_wrapper(dimen_name, dimen_func) {
 }
 
 exports.height = make_dimen_wrapper('height', $(exports.message_pane).height);
-exports.width  = make_dimen_wrapper('width',  $(exports.message_pane).width);
+exports.width = make_dimen_wrapper('width', $(exports.message_pane).width);
 
 exports.stop_auto_scrolling = function () {
     if (in_stoppable_autoscroll) {

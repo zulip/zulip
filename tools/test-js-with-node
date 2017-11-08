@@ -3,8 +3,7 @@ import optparse
 import os
 import subprocess
 import sys
-import ujson
-from typing import Dict
+from typing import Dict, Any
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
@@ -13,6 +12,9 @@ ROOT_DIR = os.path.dirname(TOOLS_DIR)
 # check for the venv
 from tools.lib import sanity_check
 sanity_check.check_venv(__file__)
+
+# Import this after we do the sanity_check so it doesn't crash.
+import ujson
 
 USAGE = '''
     tools/test-js-with-node                      - to run all tests
@@ -108,7 +110,7 @@ except OSError:
     raise
 
 def check_line_coverage(line_coverage, line_mapping, log=True):
-    # type: (Dict, Dict, bool) -> bool
+    # type: (Dict[Any, Any], Dict[Any, Any], bool) -> bool
     missing_lines = []
     for line in line_coverage:
         if line_coverage[line] == 0:

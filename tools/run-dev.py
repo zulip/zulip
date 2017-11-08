@@ -9,7 +9,11 @@ import sys
 import time
 import traceback
 
+<<<<<<< HEAD
 # from six.moves.urllib.parse import urlunparse
+=======
+from urllib.parse import urlunparse
+>>>>>>> 4108797218cbba88c221e1b940da4223a73d3162
 
 # check for the venv
 from lib import sanity_check
@@ -199,14 +203,14 @@ class BaseWebsocketHandler(WebSocketHandler):
 
     def __init__(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
-        super(BaseWebsocketHandler, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # define client for target websocket server
         self.client = None  # type: Any
 
     def get(self, *args, **kwargs):
-        # type: (*Any, **Any) -> Optional[Callable]
+        # type: (*Any, **Any) -> Optional[Callable[..., Any]]
         # use get method from WebsocketHandler
-        return super(BaseWebsocketHandler, self).get(*args, **kwargs)
+        return super().get(*args, **kwargs)
 
     def open(self):
         # type: () -> None
@@ -236,7 +240,7 @@ class BaseWebsocketHandler(WebSocketHandler):
             self.write_message(message, False)
 
     def on_message(self, message, binary=False):
-        # type: (str, bool) -> Optional[Callable]
+        # type: (str, bool) -> Optional[Callable[..., Any]]
         if not self.client:
             # close websocket proxy connection if no connection with target websocket server
             return self.close()
@@ -260,9 +264,9 @@ class BaseWebsocketHandler(WebSocketHandler):
 class CombineHandler(BaseWebsocketHandler):
 
     def get(self, *args, **kwargs):
-        # type: (*Any, **Any) -> Optional[Callable]
+        # type: (*Any, **Any) -> Optional[Callable[..., Any]]
         if self.request.headers.get("Upgrade", "").lower() == 'websocket':
-            return super(CombineHandler, self).get(*args, **kwargs)
+            return super().get(*args, **kwargs)
         return None
 
     def head(self):
@@ -314,7 +318,7 @@ class CombineHandler(BaseWebsocketHandler):
         if 'X-REAL-IP' not in self.request.headers:
             self.request.headers['X-REAL-IP'] = self.request.remote_ip
         if self.request.headers.get("Upgrade", "").lower() == 'websocket':
-            return super(CombineHandler, self).prepare()
+            return super().prepare()
         url = transform_url(
             self.request.protocol,
             self.request.path,
@@ -363,12 +367,12 @@ class Application(web.Application):
             (r"/sockjs.*", TornadoHandler),
             (r"/.*", DjangoHandler)
         ]
-        super(Application, self).__init__(handlers, enable_logging=enable_logging)
+        super().__init__(handlers, enable_logging=enable_logging)
 
     def log_request(self, handler):
         # type: (BaseWebsocketHandler) -> None
         if self.settings['enable_logging']:
-            super(Application, self).log_request(handler)
+            super().log_request(handler)
 
 
 def on_shutdown():

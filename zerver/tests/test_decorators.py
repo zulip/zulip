@@ -13,6 +13,7 @@ from django.conf import settings
 from zerver.forms import OurAuthenticationForm
 from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
     do_reactivate_user, do_reactivate_realm
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_helpers import (
     HostRequestMock,
@@ -25,11 +26,10 @@ from zerver.lib.response import json_response
 from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.request import \
     REQ, has_request_variables, RequestVariableMissingError, \
-    RequestVariableConversionError, JsonableError
+    RequestVariableConversionError
 from zerver.decorator import (
     api_key_only_webhook_view,
-    authenticated_json_post_view, authenticated_json_view,
-    authenticate_notify,
+    authenticate_notify, cachify,
     get_client_name, internal_notify_view, is_local_addr,
     rate_limit, validate_api_key, logged_in_and_active,
     return_success_on_head_request
@@ -46,7 +46,7 @@ import ujson
 class DecoratorTestCase(TestCase):
     def test_get_client_name(self):
         # type: () -> None
-        class Request(object):
+        class Request:
             def __init__(self, GET, POST, META):
                 # type: (Dict[str, str], Dict[str, str], Dict[str, str]) -> None
                 self.GET = GET
@@ -102,20 +102,20 @@ class DecoratorTestCase(TestCase):
         # type: () -> None
 
         def my_converter(data):
-            # type: (str) -> List[str]
+            # type: (str) -> List[int]
             lst = ujson.loads(data)
             if not isinstance(lst, list):
                 raise ValueError('not a list')
             if 13 in lst:
                 raise JsonableError('13 is an unlucky number!')
-            return lst
+            return [int(elem) for elem in lst]
 
         @has_request_variables
         def get_total(request, numbers=REQ(converter=my_converter)):
             # type: (HttpRequest, Iterable[int]) -> int
             return sum(numbers)
 
-        class Request(object):
+        class Request:
             GET = {}  # type: Dict[str, str]
             POST = {}  # type: Dict[str, str]
 
@@ -148,7 +148,7 @@ class DecoratorTestCase(TestCase):
         with self.assertRaisesRegex(AssertionError, "converter and validator are mutually exclusive"):
             @has_request_variables
             def get_total(request, numbers=REQ(validator=check_list(check_int),
-                                               converter=lambda: None)):
+                                               converter=lambda x: [])):
                 # type: (HttpRequest, Iterable[int]) -> int
                 return sum(numbers)  # nocoverage -- isn't intended to be run
 
@@ -160,7 +160,7 @@ class DecoratorTestCase(TestCase):
             # type: (HttpRequest, Iterable[int]) -> int
             return sum(numbers)
 
-        class Request(object):
+        class Request:
             GET = {}  # type: Dict[str, str]
             POST = {}  # type: Dict[str, str]
 
@@ -187,10 +187,10 @@ class DecoratorTestCase(TestCase):
         # type: () -> None
         @has_request_variables
         def get_payload(request, payload=REQ(argument_type='body')):
-            # type: (HttpRequest, Dict[str, Dict]) -> Dict[str, Dict]
+            # type: (HttpRequest, Dict[str, Any]) -> Dict[str, Any]
             return payload
 
-        class MockRequest(object):
+        class MockRequest:
             body = {}  # type: Any
 
         request = MockRequest()
@@ -207,7 +207,7 @@ class DecoratorTestCase(TestCase):
         with self.assertRaises(Exception) as cm:
             @has_request_variables
             def test(request, payload=REQ(argument_type="invalid")):
-                # type: (HttpRequest, Dict[str, Dict]) -> None
+                # type: (HttpRequest, Any) -> None  # Any is ok; exception should occur in decorator
                 pass  # nocoverage # this function isn't meant to be called
             test(request)
 
@@ -346,10 +346,10 @@ class RateLimitTestCase(TestCase):
 
     def test_internal_local_clients_skip_rate_limiting(self):
         # type: () -> None
-        class Client(object):
+        class Client:
             name = 'internal'
 
-        class Request(object):
+        class Request:
             client = Client()
             META = {'REMOTE_ADDR': '127.0.0.1'}
 
@@ -370,10 +370,10 @@ class RateLimitTestCase(TestCase):
 
     def test_debug_clients_skip_rate_limiting(self):
         # type: () -> None
-        class Client(object):
+        class Client:
             name = 'internal'
 
-        class Request(object):
+        class Request:
             client = Client()
             META = {'REMOTE_ADDR': '3.3.3.3'}
 
@@ -395,10 +395,10 @@ class RateLimitTestCase(TestCase):
 
     def test_rate_limit_setting_of_false_bypasses_rate_limiting(self):
         # type: () -> None
-        class Client(object):
+        class Client:
             name = 'external'
 
-        class Request(object):
+        class Request:
             client = Client()
             META = {'REMOTE_ADDR': '3.3.3.3'}
             user = 'stub'  # any non-None value here exercises the correct code path
@@ -420,10 +420,10 @@ class RateLimitTestCase(TestCase):
 
     def test_rate_limiting_happens_in_normal_case(self):
         # type: () -> None
-        class Client(object):
+        class Client:
             name = 'external'
 
-        class Request(object):
+        class Request:
             client = Client()
             META = {'REMOTE_ADDR': '3.3.3.3'}
             user = 'stub'  # any non-None value here exercises the correct code path
@@ -951,9 +951,9 @@ class TestValidateApiKey(ZulipTestCase):
 class TestInternalNotifyView(TestCase):
     BORING_RESULT = 'boring'
 
-    class Request(object):
+    class Request:
         def __init__(self, POST, META):
-            # type: (Dict, Dict) -> None
+            # type: (Dict[str, Any], Dict[str, Any]) -> None
             self.POST = POST
             self.META = META
             self.method = 'POST'
@@ -1022,10 +1022,16 @@ class TestHumanUsersOnlyDecorator(ZulipTestCase):
     def test_human_only_endpoints(self):
         # type: () -> None
         post_endpoints = [
-            "/api/v1/users/me/presence",
             "/api/v1/users/me/apns_device_token",
             "/api/v1/users/me/android_gcm_reg_id",
+            "/api/v1/users/me/enter-sends",
             "/api/v1/users/me/hotspots",
+            "/api/v1/users/me/presence",
+            "/api/v1/users/me/tutorial_status",
+            "/api/v1/report/error",
+            "/api/v1/report/send_times",
+            "/api/v1/report/narrow_times",
+            "/api/v1/report/unnarrow_times",
         ]
         for endpoint in post_endpoints:
             result = self.client_post(endpoint, **self.api_auth('default-bot@zulip.com'))
@@ -1194,7 +1200,7 @@ class TestRequireServerAdminDecorator(ZulipTestCase):
 class ReturnSuccessOnHeadRequestDecorator(ZulipTestCase):
     def test_return_success_on_head_request_returns_200_if_request_method_is_head(self):
         # type: () -> None
-        class HeadRequest(object):
+        class HeadRequest:
             method = 'HEAD'
 
         request = HeadRequest()
@@ -1210,7 +1216,7 @@ class ReturnSuccessOnHeadRequestDecorator(ZulipTestCase):
 
     def test_return_success_on_head_request_returns_normal_response_if_request_method_is_not_head(self):
             # type: () -> None
-            class HeadRequest(object):
+            class HeadRequest:
                 method = 'POST'
 
             request = HeadRequest()
@@ -1248,6 +1254,70 @@ class RestAPITest(ZulipTestCase):
                                  HTTP_ACCEPT='text/html')
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith("/login/?next=/json/users"))
+
+class CacheTestCase(ZulipTestCase):
+    def test_cachify_basics(self):
+        # type: () -> None
+
+        @cachify
+        def add(w, x, y, z):
+            # type: (Any, Any, Any, Any) -> Any
+            return w + x + y + z
+
+        for i in range(2):
+            self.assertEqual(add(1, 2, 4, 8), 15)
+            self.assertEqual(add('a', 'b', 'c', 'd'), 'abcd')
+
+    def test_cachify_is_per_call(self):
+        # type: () -> None
+
+        def test_greetings(greeting):
+            # type: (Text) -> Tuple[List[Text], List[Text]]
+
+            result_log = []  # type: List[Text]
+            work_log = []  # type: List[Text]
+
+            @cachify
+            def greet(first_name, last_name):
+                # type: (Text, Text) -> Text
+                msg = '%s %s %s' % (greeting, first_name, last_name)
+                work_log.append(msg)
+                return msg
+
+            result_log.append(greet('alice', 'smith'))
+            result_log.append(greet('bob', 'barker'))
+            result_log.append(greet('alice', 'smith'))
+            result_log.append(greet('cal', 'johnson'))
+
+            return (work_log, result_log)
+
+        work_log, result_log = test_greetings('hello')
+        self.assertEqual(work_log, [
+            'hello alice smith',
+            'hello bob barker',
+            'hello cal johnson',
+        ])
+
+        self.assertEqual(result_log, [
+            'hello alice smith',
+            'hello bob barker',
+            'hello alice smith',
+            'hello cal johnson',
+        ])
+
+        work_log, result_log = test_greetings('goodbye')
+        self.assertEqual(work_log, [
+            'goodbye alice smith',
+            'goodbye bob barker',
+            'goodbye cal johnson',
+        ])
+
+        self.assertEqual(result_log, [
+            'goodbye alice smith',
+            'goodbye bob barker',
+            'goodbye alice smith',
+            'goodbye cal johnson',
+        ])
 
 class TestUserAgentParsing(ZulipTestCase):
     def test_user_agent_parsing(self):

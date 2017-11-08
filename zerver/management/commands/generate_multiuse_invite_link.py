@@ -10,8 +10,7 @@ from zerver.models import MultiuseInvite
 class Command(ZulipBaseCommand):
     help = "Generates invite link that can be used for inviting multiple users"
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         self.add_realm_args(parser, True)
 
         parser.add_argument(
@@ -28,8 +27,7 @@ class Command(ZulipBaseCommand):
             required=True,
         )
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
 

@@ -6,7 +6,7 @@ from django.utils import translation
 from django.utils.translation import ugettext as _
 from django.utils.lru_cache import lru_cache
 
-from six.moves import urllib, zip_longest, zip, range
+from itertools import zip_longest
 from typing import Any, List, Dict, Optional, Text
 
 import os
@@ -53,13 +53,17 @@ def get_language_list_for_templates(default_language):
             lang = language_list[ind]
             percent = name = lang['name']
             if 'percent_translated' in lang:
-                percent = u"{} ({}%)".format(name, lang['percent_translated'])
+                percent = "{} ({}%)".format(name, lang['percent_translated'])
+
+            selected = False
+            if default_language in (lang['code'], lang['locale']):
+                selected = True
 
             item[position] = {
                 'name': name,
                 'code': lang['code'],
                 'percent': percent,
-                'selected': True if default_language == lang['code'] else False
+                'selected': selected
             }
 
         formatted_list.append(item)
@@ -69,7 +73,7 @@ def get_language_list_for_templates(default_language):
 def get_language_name(code):
     # type: (str) -> Optional[Text]
     for lang in get_language_list():
-        if lang['code'] == code:
+        if code in (lang['code'], lang['locale']):
             return lang['name']
     return None
 

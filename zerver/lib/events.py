@@ -7,17 +7,17 @@ import ujson
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from importlib import import_module
-from six.moves import filter, map
 from typing import (
-    cast, Any, Dict, Iterable, List, Optional, Sequence, Set, Text, Tuple, Union
+    cast, Any, Callable, Dict, Iterable, List, Optional, Sequence, Set, Text, Tuple, Union
 )
 
 session_engine = import_module(settings.SESSION_ENGINE)
 
 from zerver.lib.alert_words import user_alert_words
 from zerver.lib.attachments import user_attachments
-from zerver.lib.avatar import avatar_url, avatar_url_from_dict
+from zerver.lib.avatar import avatar_url, get_avatar_field
 from zerver.lib.hotspots import get_next_hotspots
+from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.message import (
     aggregate_unread_data,
     apply_unread_message_event,
@@ -38,34 +38,69 @@ from zerver.lib.upload import get_total_uploads_size_for_user
 from zerver.tornado.event_queue import request_event_queue, get_user_events
 from zerver.models import Client, Message, Realm, UserPresence, UserProfile, \
     get_user_profile_by_id, \
-    get_active_user_dicts_in_realm, realm_filters_for_realm, get_user,\
+    get_realm_user_dicts, realm_filters_for_realm, get_user,\
     get_owned_bot_dicts, custom_profile_fields_for_realm, get_realm_domains
-from zproject.backends import password_auth_enabled
+from zproject.backends import email_auth_enabled, password_auth_enabled
 from version import ZULIP_VERSION
 
 
-def get_realm_user_dicts(user_profile):
-    # type: (UserProfile) -> List[Dict[str, Text]]
-    return [{'email': userdict['email'],
-             'user_id': userdict['id'],
-             'avatar_url': avatar_url_from_dict(userdict),
-             'is_admin': userdict['is_realm_admin'],
-             'is_bot': userdict['is_bot'],
-             'full_name': userdict['full_name'],
-             'timezone': userdict['timezone']}
-            for userdict in get_active_user_dicts_in_realm(user_profile.realm_id)]
+def get_raw_user_data(realm_id, client_gravatar):
+    # type: (int, bool) -> Dict[int, Dict[str, Text]]
+    user_dicts = get_realm_user_dicts(realm_id)
+
+    def user_data(row):
+        # type: (Dict[str, Any]) -> Dict[str, Any]
+        avatar_url = get_avatar_field(
+            user_id=row['id'],
+            realm_id= realm_id,
+            email=row['email'],
+            avatar_source=row['avatar_source'],
+            avatar_version=row['avatar_version'],
+            medium=False,
+            client_gravatar=client_gravatar,
+        )
+
+        is_admin = row['is_realm_admin']
+
+        return dict(
+            email=row['email'],
+            user_id=row['id'],
+            avatar_url=avatar_url,
+            is_admin=is_admin,
+            is_bot=row['is_bot'],
+            full_name=row['full_name'],
+            timezone=row['timezone'],
+            is_active = row['is_active'],
+        )
+
+    return {
+        row['id']: user_data(row)
+        for row in user_dicts
+    }
+
+def always_want(msg_type):
+    # type: (str) -> bool
+    '''
+    This function is used as a helper in
+    fetch_initial_state_data, when the user passes
+    in None for event_types, and we want to fetch
+    info for every event type.  Defining this at module
+    level makes it easier to mock.
+    '''
+    return True
 
 # Fetch initial data.  When event_types is not specified, clients want
 # all event types.  Whenever you add new code to this function, you
 # should also add corresponding events for changes in the data
 # structures and new code to apply_events (and add a test in EventsRegisterTest).
-def fetch_initial_state_data(user_profile, event_types, queue_id,
+def fetch_initial_state_data(user_profile, event_types, queue_id, client_gravatar,
                              include_subscribers=True):
-    # type: (UserProfile, Optional[Iterable[str]], str, bool) -> Dict[str, Any]
+    # type: (UserProfile, Optional[Iterable[str]], str, bool, bool) -> Dict[str, Any]
     state = {'queue_id': queue_id}  # type: Dict[str, Any]
 
     if event_types is None:
-        want = lambda msg_type: True
+        # return True always
+        want = always_want  # type: Callable[[str], bool]
     else:
         want = set(event_types).__contains__
 
@@ -125,6 +160,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['realm_presence_disabled'] = user_profile.realm.presence_disabled
         state['realm_show_digest_email'] = user_profile.realm.show_digest_email
         state['realm_is_zephyr_mirror_realm'] = user_profile.realm.is_zephyr_mirror_realm
+        state['realm_email_auth_enabled'] = email_auth_enabled(user_profile.realm)
         state['realm_password_auth_enabled'] = password_auth_enabled(user_profile.realm)
         if user_profile.realm.notifications_stream and not user_profile.realm.notifications_stream.deactivated:
             notifications_stream = user_profile.realm.notifications_stream
@@ -142,10 +178,21 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['realm_filters'] = realm_filters_for_realm(user_profile.realm_id)
 
     if want('realm_user'):
-        state['realm_users'] = get_realm_user_dicts(user_profile)
+        state['raw_users'] = get_raw_user_data(
+            realm_id=user_profile.realm_id,
+            client_gravatar=client_gravatar,
+        )
         state['avatar_source'] = user_profile.avatar_source
-        state['avatar_url_medium'] = avatar_url(user_profile, medium=True)
-        state['avatar_url'] = avatar_url(user_profile)
+        state['avatar_url_medium'] = avatar_url(
+            user_profile,
+            medium=True,
+            client_gravatar=client_gravatar,
+        )
+        state['avatar_url'] = avatar_url(
+            user_profile,
+            medium=False,
+            client_gravatar=client_gravatar,
+        )
         state['can_create_streams'] = user_profile.can_create_streams()
         state['cross_realm_bots'] = list(get_cross_realm_dicts())
         state['is_admin'] = user_profile.is_realm_admin
@@ -156,6 +203,11 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
 
     if want('realm_bot'):
         state['realm_bots'] = get_owned_bot_dicts(user_profile)
+
+    # This does not yet have an apply_event counterpart, since currently,
+    # new entries for EMBEDDED_BOTS can only be added directly in the codebase.
+    if want('realm_embedded_bots'):
+        state['realm_embedded_bots'] = list(bot.name for bot in EMBEDDED_BOTS)
 
     if want('subscription'):
         subscriptions, unsubscribed, never_subscribed = gather_subscriptions_helper(
@@ -203,9 +255,9 @@ def remove_message_id_from_unread_mgs(state, message_id):
     raw_unread['unmuted_stream_msgs'].discard(message_id)
     raw_unread['mentions'].discard(message_id)
 
-def apply_events(state, events, user_profile, include_subscribers=True,
+def apply_events(state, events, user_profile, client_gravatar, include_subscribers=True,
                  fetch_event_types=None):
-    # type: (Dict[str, Any], Iterable[Dict[str, Any]], UserProfile, bool, Optional[Iterable[str]]) -> None
+    # type: (Dict[str, Any], Iterable[Dict[str, Any]], UserProfile, bool, bool, Optional[Iterable[str]]) -> None
     for event in events:
         if fetch_event_types is not None and event['type'] not in fetch_event_types:
             # TODO: continuing here is not, most precisely, correct.
@@ -217,10 +269,10 @@ def apply_events(state, events, user_profile, include_subscribers=True,
             # `apply_event`.  For now, be careful in your choice of
             # `fetch_event_types`.
             continue
-        apply_event(state, event, user_profile, include_subscribers)
+        apply_event(state, event, user_profile, client_gravatar, include_subscribers)
 
-def apply_event(state, event, user_profile, include_subscribers):
-    # type: (Dict[str, Any], Dict[str, Any], UserProfile, bool) -> None
+def apply_event(state, event, user_profile, client_gravatar, include_subscribers):
+    # type: (Dict[str, Any], Dict[str, Any], UserProfile, bool, bool) -> None
     if event['type'] == "message":
         state['max_message_id'] = max(state['max_message_id'], event['message']['id'])
         if 'raw_unread_msgs' in state:
@@ -239,48 +291,52 @@ def apply_event(state, event, user_profile, include_subscribers):
         state['pointer'] = max(state['pointer'], event['pointer'])
     elif event['type'] == "realm_user":
         person = event['person']
-
-        def our_person(p):
-            # type: (Dict[str, Any]) -> bool
-            return p['user_id'] == person['user_id']
+        person_user_id = person['user_id']
 
         if event['op'] == "add":
-            state['realm_users'].append(person)
+            person = copy.deepcopy(person)
+            if client_gravatar:
+                if 'gravatar.com' in person['avatar_url']:
+                    person['avatar_url'] = None
+            person['is_active'] = True
+            state['raw_users'][person_user_id] = person
         elif event['op'] == "remove":
-            state['realm_users'] = [user for user in state['realm_users'] if not our_person(user)]
+            state['raw_users'][person_user_id]['is_active'] = False
         elif event['op'] == 'update':
-            if (person['user_id'] == user_profile.id and 'avatar_url' in person and 'avatar_url' in state):
-                state['avatar_source'] = person['avatar_source']
-                state['avatar_url'] = person['avatar_url']
-                state['avatar_url_medium'] = person['avatar_url_medium']
-            if 'avatar_source' in person:
-                # Drop these so that they don't modify the
-                # `realm_user` structure in the `p.update()` line
-                # later; they're only used in the above lines
-                del person['avatar_source']
-                del person['avatar_url_medium']
+            is_me = (person_user_id == user_profile.id)
 
-            for field in ['is_admin', 'email', 'full_name']:
-                if person['user_id'] == user_profile.id and field in person and field in state:
-                    state[field] = person[field]
+            if is_me:
+                if ('avatar_url' in person and 'avatar_url' in state):
+                    state['avatar_source'] = person['avatar_source']
+                    state['avatar_url'] = person['avatar_url']
+                    state['avatar_url_medium'] = person['avatar_url_medium']
 
-            for p in state['realm_users']:
-                if our_person(p):
-                    # In the unlikely event that the current user
-                    # just changed to/from being an admin, we need
-                    # to add/remove the data on all bots in the
-                    # realm.  This is ugly and probably better
-                    # solved by removing the all-realm-bots data
-                    # given to admin users from this flow.
-                    if ('is_admin' in person and 'realm_bots' in state and
-                            user_profile.email == person['email']):
-                        if p['is_admin'] and not person['is_admin']:
-                            state['realm_bots'] = []
-                        if not p['is_admin'] and person['is_admin']:
-                            state['realm_bots'] = get_owned_bot_dicts(user_profile)
+                for field in ['is_admin', 'email', 'full_name']:
+                    if field in person and field in state:
+                        state[field] = person[field]
 
-                    # Now update the person
-                    p.update(person)
+                # In the unlikely event that the current user
+                # just changed to/from being an admin, we need
+                # to add/remove the data on all bots in the
+                # realm.  This is ugly and probably better
+                # solved by removing the all-realm-bots data
+                # given to admin users from this flow.
+                if ('is_admin' in person and 'realm_bots' in state):
+                    prev_state = state['raw_users'][user_profile.id]
+                    was_admin = prev_state['is_admin']
+                    now_admin = person['is_admin']
+
+                    if was_admin and not now_admin:
+                        state['realm_bots'] = []
+                    if not was_admin and now_admin:
+                        state['realm_bots'] = get_owned_bot_dicts(user_profile)
+
+            if person_user_id in state['raw_users']:
+                p = state['raw_users'][person_user_id]
+                for field in p:
+                    if field in person:
+                        p[field] = person[field]
+
     elif event['type'] == 'realm_bot':
         if event['op'] == 'add':
             state['realm_bots'].append(event['bot'])
@@ -353,6 +409,7 @@ def apply_event(state, event, user_profile, include_subscribers):
                 # is enabled on this server.
                 if key == 'authentication_methods':
                     state['realm_password_auth_enabled'] = (value['Email'] or value['LDAP'])
+                    state['realm_email_auth_enabled'] = value['Email']
     elif event['type'] == "subscription":
         if not include_subscribers and event['op'] in ['peer_add', 'peer_remove']:
             return
@@ -423,7 +480,8 @@ def apply_event(state, event, user_profile, include_subscribers):
     elif event['type'] == "presence":
         # TODO: Add user_id to presence update events / state format!
         presence_user_profile = get_user(event['email'], user_profile.realm)
-        state['presences'][event['email']] = UserPresence.get_status_dict_by_user(presence_user_profile)[event['email']]
+        state['presences'][event['email']] = UserPresence.get_status_dict_by_user(
+            presence_user_profile)[event['email']]
     elif event['type'] == "update_message":
         # We don't return messages in /register, so we don't need to
         # do anything for content updates, but we may need to update
@@ -484,10 +542,10 @@ def apply_event(state, event, user_profile, include_subscribers):
     else:
         raise AssertionError("Unexpected event type %s" % (event['type'],))
 
-def do_events_register(user_profile, user_client, apply_markdown=True,
+def do_events_register(user_profile, user_client, apply_markdown=True, client_gravatar=False,
                        event_types=None, queue_lifespan_secs=0, all_public_streams=False,
                        include_subscribers=True, narrow=[], fetch_event_types=None):
-    # type: (UserProfile, Client, bool, Optional[Iterable[str]], int, bool, bool, Iterable[Sequence[Text]], Optional[Iterable[str]]) -> Dict[str, Any]
+    # type: (UserProfile, Client, bool, bool, Optional[Iterable[str]], int, bool, bool, Iterable[Sequence[Text]], Optional[Iterable[str]]) -> Dict[str, Any]
 
     # Technically we don't need to check this here because
     # build_narrow_filter will check it, but it's nicer from an error
@@ -496,7 +554,7 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
 
     # Note that we pass event_types, not fetch_event_types here, since
     # that's what controls which future events are sent.
-    queue_id = request_event_queue(user_profile, user_client, apply_markdown,
+    queue_id = request_event_queue(user_profile, user_client, apply_markdown, client_gravatar,
                                    queue_lifespan_secs, event_types, all_public_streams,
                                    narrow=narrow)
 
@@ -514,11 +572,13 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
     maybe_catch_up_soft_deactivated_user(user_profile)
 
     ret = fetch_initial_state_data(user_profile, event_types_set, queue_id,
+                                   client_gravatar=client_gravatar,
                                    include_subscribers=include_subscribers)
 
     # Apply events that came in while we were fetching initial data
     events = get_user_events(user_profile, queue_id, -1)
     apply_events(ret, events, user_profile, include_subscribers=include_subscribers,
+                 client_gravatar=client_gravatar,
                  fetch_event_types=fetch_event_types)
 
     '''
@@ -535,6 +595,30 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
     if 'raw_unread_msgs' in ret:
         ret['unread_msgs'] = aggregate_unread_data(ret['raw_unread_msgs'])
         del ret['raw_unread_msgs']
+
+    '''
+    See the note above; the same technique applies below.
+    '''
+    if 'raw_users'in ret:
+        user_dicts = list(ret['raw_users'].values())
+
+        ret['realm_users'] = [d for d in user_dicts if d['is_active']]
+        ret['realm_non_active_users'] = [d for d in user_dicts if not d['is_active']]
+
+        '''
+        Be aware that we do intentional aliasing in the below code.
+        We can now safely remove the `is_active` field from all the
+        dicts that got partitioned into the two lists above.
+
+        We remove the field because it's already implied, and sending
+        it to clients makes clients prone to bugs where they "trust"
+        the field but don't actually update in live updates.  It also
+        wastes bandwidth.
+        '''
+        for d in user_dicts:
+            d.pop('is_active')
+
+        del ret['raw_users']
 
     if len(events) > 0:
         ret['last_event_id'] = events[-1]['id']

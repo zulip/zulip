@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 from django.utils.translation import ugettext as _
+from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success, json_error
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
-from zerver.models import UserProfile
+from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.webhooks.git import get_push_commits_event_message, \
     get_pull_request_event_message, get_create_branch_event_message, \
     SUBJECT_WITH_BRANCH_TEMPLATE, SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE
+from zerver.models import UserProfile
 
 from django.http import HttpRequest, HttpResponse
 from typing import Dict, Any, Iterable, Optional, Text
 
-def format_push_event(payload):
-    # type: (Dict[str, Any]) -> Text
+def format_push_event(payload: Dict[str, Any]) -> Text:
 
     for commit in payload['commits']:
         commit['sha'] = commit['id']
@@ -29,8 +29,7 @@ def format_push_event(payload):
 
     return get_push_commits_event_message(**data)
 
-def format_new_branch_event(payload):
-    # type: (Dict[str, Any]) -> Text
+def format_new_branch_event(payload: Dict[str, Any]) -> Text:
 
     branch_name = payload['ref']
     url = '{}/src/{}'.format(payload['repository']['html_url'], branch_name)
@@ -42,8 +41,7 @@ def format_new_branch_event(payload):
     }
     return get_create_branch_event_message(**data)
 
-def format_pull_request_event(payload):
-    # type: (Dict[str, Any]) -> Text
+def format_pull_request_event(payload: Dict[str, Any]) -> Text:
 
     data = {
         'user_name': payload['pull_request']['user']['username'],

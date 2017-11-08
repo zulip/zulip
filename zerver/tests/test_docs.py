@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import mock
 import os
 import subprocess
 
@@ -52,9 +53,13 @@ class DocPageTest(ZulipTestCase):
         # type: () -> None
         self._test('/api/', 'We hear you like APIs')
         self._test('/api/endpoints/', 'pre-built API bindings for')
-        self._test('/about/', 'Cambridge, Massachusetts')
+        self._test('/api-new/', 'We hear you like APIs')
+        self._test('/api-new/api-keys', 'you can use its email and API key')
+        self._test('/api-new/installation-instructions', 'Python Installation')
+        self._test('/team/', 'industry veterans')
+        self._test('/history/', 'Cambridge, Massachusetts')
         # Test the i18n version of one of these pages.
-        self._test('/en/about/', 'Cambridge, Massachusetts')
+        self._test('/en/history/', 'Cambridge, Massachusetts')
         self._test('/apps/', 'Apps for every platform.')
         self._test('/features/', 'Beautiful messaging')
         self._test('/hello/', 'productive group chat')
@@ -78,7 +83,8 @@ class DocPageTest(ZulipTestCase):
         self._test('/errors/404/', 'Page not found')
         self._test('/errors/5xx/', 'Internal server error')
 
-        with self.settings(EMAIL_BACKEND='zproject.backends.EmailLogBackEnd'):
+        with self.settings(EMAIL_BACKEND='zproject.email_backends.EmailLogBackEnd'), \
+                mock.patch('logging.info', return_value=None):
             # For reaching full coverage for clear_emails function
             result = self.client_get('/emails/clear/')
             self.assertEqual(result.status_code, 302)
@@ -117,8 +123,8 @@ class IntegrationTest(TestCase):
         # type: () -> None
         context = dict()  # type: Dict[str, Any]
         add_api_uri_context(context, HostRequestMock())
-        self.assertEqual(context["external_api_path_subdomain"], "testserver/api")
-        self.assertEqual(context["external_api_uri_subdomain"], "http://testserver/api")
+        self.assertEqual(context["api_url_scheme_relative"], "testserver/api")
+        self.assertEqual(context["api_url"], "http://testserver/api")
         self.assertTrue(context["html_settings_links"])
 
     @override_settings(ROOT_DOMAIN_LANDING_PAGE=True)
@@ -126,8 +132,8 @@ class IntegrationTest(TestCase):
         # type: () -> None
         context = dict()  # type: Dict[str, Any]
         add_api_uri_context(context, HostRequestMock())
-        self.assertEqual(context["external_api_path_subdomain"], "yourZulipDomain.testserver/api")
-        self.assertEqual(context["external_api_uri_subdomain"], "http://yourZulipDomain.testserver/api")
+        self.assertEqual(context["api_url_scheme_relative"], "yourZulipDomain.testserver/api")
+        self.assertEqual(context["api_url"], "http://yourZulipDomain.testserver/api")
         self.assertFalse(context["html_settings_links"])
 
     def test_api_url_view_subdomains_full(self):
@@ -135,8 +141,8 @@ class IntegrationTest(TestCase):
         context = dict()  # type: Dict[str, Any]
         request = HostRequestMock(host="mysubdomain.testserver")
         add_api_uri_context(context, request)
-        self.assertEqual(context["external_api_path_subdomain"], "mysubdomain.testserver/api")
-        self.assertEqual(context["external_api_uri_subdomain"], "http://mysubdomain.testserver/api")
+        self.assertEqual(context["api_url_scheme_relative"], "mysubdomain.testserver/api")
+        self.assertEqual(context["api_url"], "http://mysubdomain.testserver/api")
         self.assertTrue(context["html_settings_links"])
 
     def test_integration_view_html_settings_links(self):
@@ -178,9 +184,9 @@ class AboutPageTest(ZulipTestCase):
 
     def test_endpoint(self):
         # type: () -> None
-        result = self.client_get('/about/')
+        result = self.client_get('/team/')
         self.assert_in_success_response(
-            ['Contributors', 'commits', '@timabbott'],
+            ['Our amazing community', 'commits', '@timabbott'],
             result
         )
 

@@ -75,6 +75,19 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 {% endif %}
             </section>
 
+            {% if default_stream_groups %}
+            <div class="input-group m-10 inline-block">
+                <label for="default_stream_group">{{ _('What parts of the organization are you interested in?') }}</label>
+                {% for default_stream_group in default_stream_groups %}
+                <div class="input-group radio">
+                    <input class="inline-block" type="checkbox" name="default_stream_group" value="{{ default_stream_group.name }}"
+                    {% if "default_stream_group" in  form.data and default_stream_group.name in form.data.getlist('default_stream_group') %} checked {% endif %} />
+                    <label for="id_radio_{{ default_stream_group.name }}" class="inline-block">{{ default_stream_group.name }}</label>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
             <section class="org-registration">
                 {% if creating_new_team %}
                 <div class="input-box">
@@ -97,10 +110,21 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 </div>
 
                 <div class="input-box">
-                    <label for="id_team_subdomain" class="inline-block label-title">
-                        {{ _('Subdomain') }}
+                    <label class="static org-url">
+                        {{ _('Organization URL') }}
                     </label>
-                    <div class="inline-block">
+                    {% if root_domain_available %}
+                    <label class="checkbox static" for="realm_in_root_domain">
+                        <input type="checkbox" name="realm_in_root_domain" id="realm_in_root_domain"
+                            {% if not form.realm_subdomain.value() and not form.realm_subdomain.errors %}checked="checked"{% endif %}/>
+                        <span></span>
+                        {% trans %}Use {{ external_host }}{% endtrans %}
+                    </label>
+                    {% endif %}
+
+                    <div class="inline-block" id="subdomain_section" {% if root_domain_available and
+                        not form.realm_subdomain.errors and not form.realm_subdomain.value() %}style="display: none;"{% endif %}>
+                        <div class="or">or</div>
                         <div class="inline-block relative">
                             <input id="id_team_subdomain"
                                 class="{% if root_domain_landing_page %}required{% endif %} subdomain" type="text"

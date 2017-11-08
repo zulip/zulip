@@ -1,7 +1,6 @@
-from django.core.management.base import BaseCommand, CommandParser
+from django.core.management.base import CommandParser
 from zerver.lib.actions import do_create_user
 from zerver.lib.management import ZulipBaseCommand
-from zerver.lib.onboarding import send_initial_pms
 from zerver.models import Realm, UserProfile
 
 from typing import Any
@@ -30,6 +29,4 @@ and will otherwise fall back to the zulip realm."""
             domain = realm.string_id + '.zulip.com'
 
         name = '%02d-user' % (UserProfile.objects.filter(email__contains='user@').count(),)
-        user = do_create_user('%s@%s' % (name, domain),
-                              'password', realm, name, name)
-        send_initial_pms(user)
+        do_create_user('%s@%s' % (name, domain), 'password', realm, name, name)

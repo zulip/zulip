@@ -3,7 +3,7 @@ from functools import partial
 import random
 
 from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, \
-    Text, Type, cast, Union
+    Text, Type, cast, Union, TypeVar
 from unittest import loader, runner  # type: ignore  # Mypy cannot pick these up.
 from unittest.result import TestResult
 
@@ -38,8 +38,10 @@ if False:
 
 _worker_id = 0  # Used to identify the worker process.
 
+ReturnT = TypeVar('ReturnT')  # Constrain return type to match
+
 def slow(slowness_reason):
-    # type: (str) -> Callable[[Callable], Callable]
+    # type: (str) -> Callable[[Callable[..., ReturnT]], Callable[..., ReturnT]]
     '''
     This is a decorate that annotates a test as being "known
     to be slow."  The decorator will set expected_run_time and slowness_reason
@@ -47,7 +49,7 @@ def slow(slowness_reason):
     as needed, e.g. to exclude these tests in "fast" mode.
     '''
     def decorator(f):
-        # type: (Any) -> Any
+        # type: (Any) -> ReturnT
         f.slowness_reason = slowness_reason
         return f
 
@@ -93,7 +95,7 @@ def report_slow_tests():
 def enforce_timely_test_completion(test_method, test_name, delay, result):
     # type: (Any, str, float, TestResult) -> None
     if hasattr(test_method, 'slowness_reason'):
-        max_delay = 1.1  # seconds
+        max_delay = 2.0  # seconds
     else:
         max_delay = 0.4  # seconds
 
@@ -175,7 +177,7 @@ class TextTestResult(runner.TextTestResult):
     """
     def __init__(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
-        super(TextTestResult, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.failed_tests = []  # type: List[str]
 
     def addInfo(self, test, msg):
@@ -234,11 +236,11 @@ class RemoteTestResult(django_runner.RemoteTestResult):
         self.events.append(('addInstrumentation', self.test_index, data))
 
 def process_instrumented_calls(func):
-    # type: (Callable) -> None
+    # type: (Callable[[Dict[str, Any]], None]) -> None
     for call in test_helpers.INSTRUMENTED_CALLS:
         func(call)
 
-SerializedSubsuite = Tuple[Type[Iterable[TestCase]], List[str]]
+SerializedSubsuite = Tuple[Type['TestSuite'], List[str]]
 SubsuiteArgs = Tuple[Type['RemoteTestRunner'], int, SerializedSubsuite, bool]
 
 def run_subsuite(args):
@@ -400,8 +402,12 @@ class ParallelTestSuite(django_runner.ParallelTestSuite):
 
     def __init__(self, suite, processes, failfast):
         # type: (TestSuite, int, bool) -> None
-        super(ParallelTestSuite, self).__init__(suite, processes, failfast)
-        self.subsuites = SubSuiteList(self.subsuites)  # type: SubSuiteList
+        super().__init__(suite, processes, failfast)
+        # We can't specify a consistent type for self.subsuites, since
+        # the whole idea here is to monkey-patch that so we can use
+        # most of django_runner.ParallelTestSuite with our own suite
+        # definitions.
+        self.subsuites = SubSuiteList(self.subsuites)  # type: ignore # Type of self.subsuites changes.
 
 class Runner(DiscoverRunner):
     test_suite = TestSuite
@@ -445,7 +451,7 @@ class Runner(DiscoverRunner):
         settings.DATABASES['default']['NAME'] = settings.BACKEND_DATABASE_TEMPLATE
         # We create/destroy the test databases in run_tests to avoid
         # duplicate work when running in parallel mode.
-        return super(Runner, self).setup_test_environment(*args, **kwargs)
+        return super().setup_test_environment(*args, **kwargs)
 
     def teardown_test_environment(self, *args, **kwargs):
         # type: (*Any, **Any) -> Any
@@ -456,7 +462,7 @@ class Runner(DiscoverRunner):
             # destroy settings.BACKEND_DATABASE_TEMPLATE; we don't want that.
             # So run this only in serial mode.
             destroy_test_databases()
-        return super(Runner, self).teardown_test_environment(*args, **kwargs)
+        return super().teardown_test_environment(*args, **kwargs)
 
     def run_tests(self, test_labels, extra_tests=None,
                   full_suite=False, **kwargs):
@@ -514,9 +520,9 @@ def serialize_suite(suite):
     return type(suite), get_test_names(suite)
 
 def deserialize_suite(args):
-    # type: (Tuple[Type[Iterable[TestCase]], List[str]]) -> Iterable[TestCase]
+    # type: (Tuple[Type[TestSuite], List[str]]) -> TestSuite
     suite_class, test_names = args
-    suite = suite_class()  # type: ignore  # Gives abstract type error.
+    suite = suite_class()
     tests = TestLoader().loadTestsFromNames(test_names)
     for test in get_tests_from_suite(tests):
         suite.addTest(test)
@@ -525,7 +531,7 @@ def deserialize_suite(args):
 class RemoteTestRunner(django_runner.RemoteTestRunner):
     resultclass = RemoteTestResult
 
-class SubSuiteList(list):
+class SubSuiteList(List[Tuple[Type[TestSuite], List[str]]]):
     """
     This class allows us to avoid changing the main logic of
     ParallelTestSuite and still make it serializable.
@@ -533,9 +539,9 @@ class SubSuiteList(list):
     def __init__(self, suites):
         # type: (List[TestSuite]) -> None
         serialized_suites = [serialize_suite(s) for s in suites]
-        super(SubSuiteList, self).__init__(serialized_suites)
+        super().__init__(serialized_suites)
 
     def __getitem__(self, index):
         # type: (Any) -> Any
-        suite = super(SubSuiteList, self).__getitem__(index)
+        suite = super().__getitem__(index)
         return deserialize_suite(suite)

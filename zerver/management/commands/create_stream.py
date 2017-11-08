@@ -14,14 +14,12 @@ class Command(ZulipBaseCommand):
 This should be used for TESTING only, unless you understand the limitations of
 the command."""
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         self.add_realm_args(parser, True, "realm in which to create the stream")
         parser.add_argument('stream_name', metavar='<stream name>', type=str,
                             help='name of stream to create')
 
-    def handle(self, *args, **options):
-        # type: (*Any, **str) -> None
+    def handle(self, *args: Any, **options: str) -> None:
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
 

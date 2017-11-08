@@ -7,7 +7,6 @@
 # mostly not processed by mypy.
 from functools import wraps
 import ujson
-from six.moves import zip
 
 from django.utils.translation import ugettext as _
 
@@ -43,11 +42,11 @@ class RequestVariableConversionError(JsonableError):
         return _("Bad value for '{var_name}': {bad_value}")
 
 # Used in conjunction with @has_request_variables, below
-class REQ(object):
+class REQ:
     # NotSpecified is a sentinel value for determining whether a
     # default value was specified for a request variable.  We can't
     # use None because that could be a valid, user-specified default
-    class _NotSpecified(object):
+    class _NotSpecified:
         pass
     NotSpecified = _NotSpecified()
 

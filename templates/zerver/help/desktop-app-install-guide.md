@@ -8,6 +8,7 @@ To install the latest stable release (recommended for most users),
 find your operating system below.  If you're interested in an early
 look at the newest features, consider the [beta releases](#beta-releases).
 
+<!-- This heading is linked to directly from /apps; change with caution -->
 ## Installing on macOS
 
 ### Disk image (recommended)
@@ -27,6 +28,7 @@ If you have Homebrew installed and prefer to use it, here's how.
 3. The app will update automatically to future versions.
    (`brew upgrade` will also work, if you prefer.)
 
+<!-- This heading is linked to directly from /apps; change with caution -->
 ## Installing on Windows
 
 ### Installer (recommended)
@@ -46,6 +48,7 @@ If you have Homebrew installed and prefer to use it, here's how.
 4. The app will NOT update automatically. You can repeat these steps
    to upgrade to future versions. <!-- TODO fact check -->
 
+<!-- This heading is linked to directly from /apps; change with caution -->
 ## Installing on Linux
 
 ### apt (recommended for Ubuntu or Debian 8+)
@@ -53,17 +56,14 @@ If you have Homebrew installed and prefer to use it, here's how.
 1. Set up the Zulip Desktop apt repository and its signing key, from a
    terminal:
 
-```
-sudo apt-key adv --keyserver pool.sks-keyservers.net --recv 69AD12704E71A4803DCA3A682424BE5AE9BD10D9
-echo "deb https://dl.bintray.com/zulip/debian/ stable main" | \
-  sudo tee -a /etc/apt/sources.list.d/zulip.list
-```
+        sudo apt-key adv --keyserver pool.sks-keyservers.net --recv 69AD12704E71A4803DCA3A682424BE5AE9BD10D9
+        echo "deb https://dl.bintray.com/zulip/debian/ stable main" | \
+        sudo tee -a /etc/apt/sources.list.d/zulip.list
 
 2. Install the client, from a terminal:
-```
-sudo apt update
-sudo apt install zulip
-```
+
+        sudo apt update
+        sudo apt install zulip
 
 3. Done! Run Zulip from your app launcher, or with `zulip` from a
    terminal.

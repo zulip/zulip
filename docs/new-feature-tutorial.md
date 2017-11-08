@@ -151,7 +151,7 @@ boolean field, `mandatory_topics`, to the Realm model in
 
 # zerver/models.py
 
-class Realm(ModelReprMixin, models.Model):
+class Realm(models.Model):
     # ...
     restricted_to_domain = models.BooleanField(default=True) # type: bool
     invite_required = models.BooleanField(default=False) # type: bool
@@ -169,7 +169,7 @@ dictionary.
 
 # zerver/models.py
 
-class Realm(ModelReprMixin, models.Model)
+class Realm(models.Model)
   # ...
   # Define the types of the various automatically managed properties
     property_types = dict(
@@ -273,8 +273,7 @@ active users in a realm.
 
     # zerver/lib/actions.py
 
-    def do_set_realm_property(realm, name, value):
-      # type: (Realm, str, Union[Text, bool, int]) -> None
+    def do_set_realm_property(realm: Realm, name: str, value: bool) -> None:
       """Takes in a realm object, the name of an attribute to update, and the
       value to update.
       """
@@ -300,8 +299,7 @@ field and send an event. For example:
 
     # zerver/lib/actions.py
 
-    def do_set_realm_authentication_methods(realm, authentication_methods):
-        # type: (Realm, Dict[str, bool]) -> None
+    def do_set_realm_authentication_methods(realm: Realm, authentication_methods: Dict[str, bool]) -> None:
         for key, value in list(authentication_methods.items()):
             index = getattr(realm.authentication_methods, key).number
             realm.authentication_methods.set_bit(index, int(value))

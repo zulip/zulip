@@ -982,14 +982,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
     def test_if_each_embedded_bot_service_exists(self):
         # type: () -> None
-        # Each bot has its bot handler class name as Bot_nameHandler. For instance encrypt bot has
-        # its class name as EncryptHandler.
-        class_bot_handler = "<class 'zulip_bots.bots.{name}.{name}.{Name}Handler'>"
         for embedded_bot in EMBEDDED_BOTS:
-            embedded_bot_handler = get_bot_handler(embedded_bot.name)
-            bot_name = embedded_bot.name
-            bot_handler_class_name = class_bot_handler.format(name=bot_name, Name=bot_name.title())
-            self.assertEqual(str(type(embedded_bot_handler)), bot_handler_class_name)
+            self.assertIsNotNone(get_bot_handler(embedded_bot.name))
 
     def test_outgoing_webhook_interface_type(self):
         # type: () -> None
@@ -1007,3 +1001,43 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         bot_info['interface_type'] = Service.GENERIC
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
+
+    def test_create_embedded_bot(self, **extras):
+        # type: (**Any) -> None
+        self.login(self.example_email('hamlet'))
+
+        # Test to create embedded bot with correct service_name
+        bot_info = {
+            'full_name': 'Embedded test bot',
+            'short_name': 'embeddedservicebot',
+            'bot_type': UserProfile.EMBEDDED_BOT,
+            'service_name': 'converter',
+        }
+        bot_info.update(extras)
+        with self.settings(EMBEDDED_BOTS_ENABLED=False):
+            result = self.client_post("/json/bots", bot_info)
+            self.assert_json_error(result, 'Embedded bots are not enabled.')
+
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        bot_email = "embeddedservicebot-bot@zulip.testserver"
+        bot_realm = get_realm('zulip')
+        bot = get_user(bot_email, bot_realm)
+        services = get_bot_services(bot.id)
+        service = services[0]
+
+        self.assertEqual(len(services), 1)
+        self.assertEqual(service.name, "converter")
+        self.assertEqual(service.user_profile, bot)
+
+        # Test to create embedded bot with incorrect service_name
+        bot_info = {
+            'full_name': 'Embedded test bot',
+            'short_name': 'embeddedservicebot',
+            'bot_type': UserProfile.EMBEDDED_BOT,
+            'service_name': 'not_existing_service',
+        }
+        bot_info.update(extras)
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_error(result, 'Invalid embedded bot name.')

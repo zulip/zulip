@@ -303,7 +303,7 @@ exports.compose_content_begins_typeahead = function (query) {
         // as :P or :-p
         // Also, if the user has only typed a colon and nothing after,
         // no need to match yet.
-        if (/^:-?.?$/.test(current_token)) {
+        if (/^:-.?$/.test(current_token) || /^:[^a-z+]?$/.test(current_token)) {
             return false;
         }
         this.completing = 'emoji';
@@ -538,7 +538,7 @@ exports.initialize = function () {
     });
 
     $("#private_message_recipient").typeahead({
-        source: people.get_all_persons, // This is a function.
+        source: people.get_realm_persons, // This is a function.
         items: 5,
         dropup: true,
         fixed: true,

@@ -3,11 +3,12 @@
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
-from zerver.models import get_client, UserProfile
+from zerver.decorator import authenticated_rest_api_view
 from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success, json_error
+from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.notifications import convert_html_to_markdown
-from zerver.decorator import REQ, has_request_variables, authenticated_rest_api_view
+from zerver.models import get_client, UserProfile
 
 import logging
 import ujson
@@ -15,22 +16,20 @@ import ujson
 from typing import Any, Dict, List, Optional, Tuple, Union, Text
 
 
-class TicketDict(dict):
+class TicketDict(Dict[str, Any]):
     """
     A helper class to turn a dictionary with ticket information into
     an object where each of the keys is an attribute for easy access.
     """
 
-    def __getattr__(self, field):
-        # type: (str) -> Any
+    def __getattr__(self, field: str) -> Any:
         if "_" in field:
             return self.get(field)
         else:
             return self.get("ticket_" + field)
 
 
-def property_name(property, index):
-    # type: (str, int) -> str
+def property_name(property: str, index: int) -> str:
     """The Freshdesk API is currently pretty broken: statuses are customizable
     but the API will only tell you the number associated with the status, not
     the name. While we engage the Freshdesk developers about exposing this
@@ -49,8 +48,7 @@ def property_name(property, index):
         raise ValueError("Unknown property")
 
 
-def parse_freshdesk_event(event_string):
-    # type: (str) -> List[str]
+def parse_freshdesk_event(event_string: str) -> List[str]:
     """These are always of the form "{ticket_action:created}" or
     "{status:{from:4,to:6}}". Note the lack of string quoting: this isn't
     valid JSON so we have to parse it ourselves.
@@ -69,8 +67,7 @@ def parse_freshdesk_event(event_string):
                 property_name(property, int(to_state))]
 
 
-def format_freshdesk_note_message(ticket, event_info):
-    # type: (TicketDict, List[str]) -> str
+def format_freshdesk_note_message(ticket: TicketDict, event_info: List[str]) -> str:
     """There are public (visible to customers) and private note types."""
     note_type = event_info[1]
     content = "%s <%s> added a %s note to [ticket #%s](%s)." % (
@@ -80,8 +77,7 @@ def format_freshdesk_note_message(ticket, event_info):
     return content
 
 
-def format_freshdesk_property_change_message(ticket, event_info):
-    # type: (TicketDict, List[str]) -> str
+def format_freshdesk_property_change_message(ticket: TicketDict, event_info: List[str]) -> str:
     """Freshdesk will only tell us the first event to match our webhook
     configuration, so if we change multiple properties, we only get the before
     and after data for the first one.
@@ -95,8 +91,7 @@ def format_freshdesk_property_change_message(ticket, event_info):
     return content
 
 
-def format_freshdesk_ticket_creation_message(ticket):
-    # type: (TicketDict) -> str
+def format_freshdesk_ticket_creation_message(ticket: TicketDict) -> str:
     """They send us the description as HTML."""
     cleaned_description = convert_html_to_markdown(ticket.description)
     content = "%s <%s> created [ticket #%s](%s):\n\n" % (

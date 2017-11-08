@@ -83,6 +83,7 @@ function _setup_page() {
             "streams-list-admin": i18n.t("Streams"),
             "default-streams-list": i18n.t("Default streams"),
             "filter-settings": i18n.t("Filter settings"),
+            "invites-list-admin": i18n.t("Invitations"),
         };
     }
 

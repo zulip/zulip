@@ -116,18 +116,19 @@ def generate_sprite_css_files(cache_path, emoji_map, emoji_data):
 
 def setup_emoji_farm(cache_path, emoji_map, emoji_data):
     # type: (Text, Dict[Text, Text], List[Dict[Text, Any]]) -> None
-    # Copy individual emoji images from npm package.
-    src_emoji_farm = os.path.join(NODE_MODULES_PATH, 'emoji-datasource-google', 'img', 'google', '64', '*')
-    target_emoji_farm = os.path.join(cache_path, 'images-google-64')
-    run(['mkdir', '-p', target_emoji_farm])
-    run(['cp', '-RPp', src_emoji_farm, target_emoji_farm], shell=True)
-
-    # Copy zulip.png to the emoji farm.
-    zulip_image = "{}/static/assets/zulip-emoji/*".format(ZULIP_PATH)
-    run(['cp', '-RPp', zulip_image, target_emoji_farm], shell=True)
-
-    # Copy spritesheets.
     for emojiset in EMOJISETS:
+        # Copy individual emoji images from npm packages.
+        src_emoji_farm = os.path.join(
+            NODE_MODULES_PATH, 'emoji-datasource-' + emojiset, 'img', emojiset, '64', '*')
+        target_emoji_farm = os.path.join(cache_path, 'images-' + emojiset + '-64')
+        run(['mkdir', '-p', target_emoji_farm])
+        run(['cp', '-RPp', src_emoji_farm, target_emoji_farm], shell=True)
+
+        # Copy zulip.png to the emoji farm.
+        zulip_image = "{}/static/assets/zulip-emoji/*".format(ZULIP_PATH)
+        run(['cp', '-RPp', zulip_image, target_emoji_farm], shell=True)
+
+        # Copy spritesheets.
         input_sprite_sheet = os.path.join(EMOJI_DATA_PATH, 'img', emojiset, 'sheets', '32.png')
         output_sprite_sheet = os.path.join(cache_path, 'sheet_%s_32.png' % (emojiset,))
         run(['cp', input_sprite_sheet, output_sprite_sheet])

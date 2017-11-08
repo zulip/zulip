@@ -396,7 +396,7 @@ function populate_messages_sent_by_client(data) {
         plot_data.values.reverse();
         plot_data.labels.reverse();
         plot_data.percentages.reverse();
-        var annotations = { values : [],  labels : [],  text : []};
+        var annotations = {values: [], labels: [], text: []};
         for (var i=0; i<plot_data.values.length; i+=1) {
             if (plot_data.values[i] > 0) {
                 annotations.values.push(plot_data.values[i]);

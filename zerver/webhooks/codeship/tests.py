@@ -7,32 +7,28 @@ class CodeshipHookTests(WebhookTestCase):
     SUBJECT = u"codeship/docs"
     FIXTURE_DIR_NAME = 'codeship'
 
-    def test_codeship_build_in_testing_status_message(self):
-        # type: () -> None
+    def test_codeship_build_in_testing_status_message(self) -> None:
         """
         Tests if codeship testing status is mapped correctly
         """
         expected_message = u"[Build](https://www.codeship.com/projects/10213/builds/973711) triggered by beanieboi on master branch started."
         self.send_and_test_stream_message('testing_build', self.SUBJECT, expected_message)
 
-    def test_codeship_build_in_error_status_message(self):
-        # type: () -> None
+    def test_codeship_build_in_error_status_message(self) -> None:
         """
         Tests if codeship error status is mapped correctly
         """
         expected_message = u"[Build](https://www.codeship.com/projects/10213/builds/973711) triggered by beanieboi on master branch failed."
         self.send_and_test_stream_message('error_build', self.SUBJECT, expected_message)
 
-    def test_codeship_build_in_success_status_message(self):
-        # type: () -> None
+    def test_codeship_build_in_success_status_message(self) -> None:
         """
         Tests if codeship success status is mapped correctly
         """
         expected_message = u"[Build](https://www.codeship.com/projects/10213/builds/973711) triggered by beanieboi on master branch succeeded."
         self.send_and_test_stream_message('success_build', self.SUBJECT, expected_message)
 
-    def test_codeship_build_in_other_status_status_message(self):
-        # type: () -> None
+    def test_codeship_build_in_other_status_status_message(self) -> None:
         """
         Tests if codeship other status is mapped correctly
         """

@@ -586,7 +586,7 @@ exports.get_filtered_and_sorted_user_ids = function () {
     if (exports.get_filter_text()) {
         // If there's a filter, select from all users, not just those
         // recently active.
-        user_ids = filter_user_ids(people.get_realm_human_user_ids());
+        user_ids = filter_user_ids(people.get_active_user_ids());
     } else {
         // From large realms, the user_ids in presence may exclude
         // users who have been idle more than three weeks.  When the

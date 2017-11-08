@@ -50,16 +50,16 @@ this file:
   `true` in the fixtures; this will automatically verify that
   `markdown.contains_backend_only_syntax` rejects the syntax, ensuring
   it will be rendered only by the backend processor.
-* When the two processors disagree, we set `expected_marked_output` in
+* When the two processors disagree, we set `marked_expected_output` in
   the fixtures; this will ensure that the syntax stays that way.  If
-  the differenes are important (i.e. not just whitespace), we should
+  the differences are important (i.e. not just whitespace), we should
   also open an issue on GitHub to track the problem.
-* When those above settings are not in use, we set
-  `bugdown_matches_marked` to `false`.  `bugdown_matches_marked` is
-  the predescessor to the more descriptive `backend_only_rendering`
-  and `expected_marked_output` fields, and when `false`, should be
-  replaced be one of those.  We plan to eliminate it once we're out of
-  cases where it is `false`.
+* For mobile push notifications, we need a text version of the
+  rendered content, since the APNS and GCM push notification systems
+  don't support richer markup.  Mostly, this involves stripping HTML,
+  but there's some syntax we take special care with.  Tests for what
+  this plain-text version of content should be are stored in the
+  `text_content` field.
 
 If you're going to manually test some changes in the frontend Markdown
 implementation, the easiest way to do this is as follows:

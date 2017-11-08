@@ -8,8 +8,7 @@ from zerver.lib.queue import SimpleQueueClient
 from zerver.worker.queue_processors import get_active_worker_queues
 
 class Command(BaseCommand):
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(dest="queue_name", type=str, nargs='?',
                             help="queue to purge", default=None)
         parser.add_argument('--all', dest="all", action="store_true",
@@ -17,10 +16,8 @@ class Command(BaseCommand):
 
     help = "Discards all messages from the given queue"
 
-    def handle(self, *args, **options):
-        # type: (*Any, **str) -> None
-        def purge_queue(queue_name):
-            # type: (str) -> None
+    def handle(self, *args: Any, **options: str) -> None:
+        def purge_queue(queue_name: str) -> None:
             queue = SimpleQueueClient()
             queue.ensure_queue(queue_name, lambda: None)
             queue.channel.queue_purge(queue_name)

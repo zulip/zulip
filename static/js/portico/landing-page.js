@@ -1,4 +1,4 @@
-const ELECTRON_APP_VERSION = "1.4.0";
+const ELECTRON_APP_VERSION = "1.5.0";
 const ELECTRON_APP_URL_LINUX = "https://github.com/zulip/zulip-electron/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-" + ELECTRON_APP_VERSION + "-x86_64.AppImage";
 const ELECTRON_APP_URL_MAC = "https://github.com/zulip/zulip-electron/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-" + ELECTRON_APP_VERSION + ".dmg";
 const ELECTRON_APP_URL_WINDOWS = "https://github.com/zulip/zulip-electron/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-Web-Setup-" + ELECTRON_APP_VERSION + ".exe";
@@ -47,6 +47,7 @@ var apps_events = function () {
             description: "Zulip for Windows is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
             link: ELECTRON_APP_URL_WINDOWS,
             show_instructions: true,
+            install_guide: "/help/desktop-app-install-guide#installing-on-windows",
         },
         mac: {
             image: "/static/images/landing-page/macbook.png",
@@ -54,6 +55,7 @@ var apps_events = function () {
             description: "Zulip on macOS is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
             link: ELECTRON_APP_URL_MAC,
             show_instructions: true,
+            install_guide: "/help/desktop-app-install-guide#installing-on-macos",
         },
         android: {
             image: "/static/images/app-screenshots/zulip-android.png",
@@ -73,6 +75,7 @@ var apps_events = function () {
             description: "Zulip on the Linux desktop is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
             link: ELECTRON_APP_URL_LINUX,
             show_instructions: true,
+            install_guide: "/help/desktop-app-install-guide#installing-on-linux",
         },
     };
 
@@ -128,7 +131,7 @@ var apps_events = function () {
         $(".info .description").text(version_info.description);
         $(".info .link").attr("href", version_info.link);
         $(".image img").attr("src", version_info.image);
-        $download_instructions.find("a").attr("href", "/help/desktop-app-install-guide#" + version);
+        $download_instructions.find("a").attr("href", version_info.install_guide);
 
         if (version_info.show_instructions) {
             $download_instructions.show();
@@ -166,6 +169,14 @@ var events = function () {
     ScrollTo();
 
     $("a").click(function (e) {
+        // if a user is holding the CMD/CTRL key while clicking a link, they
+        // want to open the link in another browser tab which means that we
+        // should preserve the state of this one. Return out, and don't fade
+        // the page.
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+
         // if the pathname is different than what we are already on, run the
         // custom transition function.
         if (window.location.pathname !== this.pathname && !this.hasAttribute("download") &&

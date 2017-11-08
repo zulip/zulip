@@ -440,11 +440,13 @@ input[type=checkbox].inline-block {
     padding: 1px 4px 1px 2px;
 }
 
-#attachments-settings table th.upload-size {
+#attachments-settings table th.upload-size,
+#attachments-settings table td.upload-size {
     width: 50px;
 }
 
-#attachments-settings table th.upload-actions {
+#attachments-settings table th.upload-actions,
+#attachments-settings table td.upload-actions {
     width: 75px;
 }
 
@@ -858,11 +860,12 @@ input[type=checkbox].inline-block {
     width: 100px;
     height: 100px;
 }
-/* -- new settings overlay -- */
-#settings_page {
-    min-height: 550px;
-}
 
+.invite-user-link i {
+    text-decoration: none;
+    margin-right: 5px;
+}
+/* -- new settings overlay -- */
 #settings_page {
     height: 95vh;
     width: 97vw;
@@ -883,7 +886,6 @@ input[type=checkbox].inline-block {
     position: relative;
     width: 250px;
     height: 100%;
-    min-height: 550px;
     overflow-y: auto;
     border-top-left-radius: 4px;
     border-right: 1px solid hsl(0, 0%, 93%);
@@ -946,6 +948,30 @@ input[type=checkbox].inline-block {
 #settings_page .table-striped thead th {
     background-color: inherit;
     color: inherit;
+    opacity: 0.5;
+}
+
+#settings_page .table-striped thead th.active {
+    opacity: 1;
+    -webkit-transition: opacity 100ms ease-out;
+    -moz-transition: opacity 100ms ease-out;
+    -o-transition: opacity 100ms ease-out;
+    transition: opacity 100ms ease-out;
+}
+
+#settings_page .table-striped thead th.active:after {
+    content: " \f0d8";
+    white-space: pre;
+    display: inline-block;
+    font: normal normal normal 12px/1 FontAwesome;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+#settings_page .table-striped thead th.active.descend:after {
+    content: " \f0d7";
 }
 
 #settings_page input.search {
@@ -1200,6 +1226,16 @@ input[type=text]#settings_search {
     }
 }
 
+@media (max-height: 530px) {
+    #settings_page .sidebar .sidebar-bottom-anchor {
+        position: static;
+    }
+
+    #settings_page .sidebar .sidebar-bottom-anchor .border-top {
+        border: none;
+    }
+}
+
 @media (max-width: 700px) {
     #settings_page .settings-header.mobile {
         display: block;
@@ -1215,6 +1251,13 @@ input[type=text]#settings_search {
 
     #settings_page .content-wrapper.right {
         top: 47px;
+    }
+
+    #settings_page .sidebar {
+        float: left;
+        position: relative;
+        width: 250px;
+        height: 100%;
     }
 }
 

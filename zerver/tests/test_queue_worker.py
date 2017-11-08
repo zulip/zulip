@@ -16,14 +16,14 @@ from zerver.models import get_client, UserActivity
 from zerver.worker import queue_processors
 
 class WorkerTest(ZulipTestCase):
-    class FakeClient(object):
+    class FakeClient:
         def __init__(self):
             # type: () -> None
-            self.consumers = {}  # type: Dict[str, Callable]
+            self.consumers = {}  # type: Dict[str, Callable[[Dict[str, Any]], None]]
             self.queue = []  # type: List[Tuple[str, Dict[str, Any]]]
 
         def register_json_consumer(self, queue_name, callback):
-            # type: (str, Callable) -> None
+            # type: (str, Callable[[Dict[str, Any]], None]) -> None
             self.consumers[queue_name] = callback
 
         def start_consuming(self):
@@ -67,7 +67,7 @@ class WorkerTest(ZulipTestCase):
         retries sending the email 3 times and then gives up."""
         fake_client = self.FakeClient()
 
-        data = {'test': 'test', 'failed_tries': 0, 'id': 'test_missed'}
+        data = {'test': 'test', 'id': 'test_missed'}
         fake_client.queue.append(('missedmessage_email_senders', data))
 
         def fake_publish(queue_name, event, processor):
@@ -92,7 +92,7 @@ class WorkerTest(ZulipTestCase):
         fake_client = self.FakeClient()
 
         user_id = self.example_user('hamlet').id
-        data = {'user_id': user_id, 'failed_tries': 0, 'id': 'test_missed'}
+        data = {'user_id': user_id, 'id': 'test_missed'}
         fake_client.queue.append(('signups', data))
 
         def fake_publish(queue_name, event, processor):
@@ -189,7 +189,7 @@ class WorkerTest(ZulipTestCase):
         class TestWorker(queue_processors.QueueProcessingWorker):
             def __init__(self):
                 # type: () -> None
-                super(TestWorker, self).__init__()
+                super().__init__()
 
             def consume(self, data):
                 # type: (Mapping[str, Any]) -> None
@@ -203,7 +203,7 @@ class WorkerTest(ZulipTestCase):
         class TestWorker(queue_processors.QueueProcessingWorker):
             def __init__(self):
                 # type: () -> None
-                super(TestWorker, self).__init__()
+                super().__init__()
 
         with self.assertRaises(queue_processors.WorkerDeclarationException):
             worker = TestWorker()

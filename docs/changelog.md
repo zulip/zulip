@@ -5,65 +5,82 @@ All notable changes to the Zulip server are documented in this file.
 ### Unreleased
 
 This section lists notable unreleased changes; it is generally updated
-bursts.
+in bursts.
 
-Highlights:
+### 1.7.0 -- 2017-10-25
 
-- Migrated the project to run exclusively on Python 3.
-- Completely redesigned the emoji picker with a beautiful new design,
-  with categories, a showcase, and much better data.
-- Completely redesigned the /integrations and /apps pages to be
-  more usable and more attractive.
-- Completely redesigned the onboarding process to more effectively
-  explain Zulip and topics to new users.
-- Added support for iOS mobile push notifications.
-- Overhauled the emails sent by Zulip to be more consistent and
-  readable, and have a nice illustrated visual design.
-- Redesigned several settings subpages to be visually cleaner.
-- Redesigned the /help/ documentation site to have a nice sidebar
-  index.
-- We're now recommending the new electron desktop app to everyone.
-  Users should upgrade to the new desktop app; the legacy desktop app
-  from 2014 doesn't support useful browser features like local
-  storage and will be deprecated completely soon.
-- Added a new API for fetching unread messages organized by topic to
-  support the mobile apps.  The React Native mobile apps will likely
-  start requiring Zulip 1.7 soon.  We don't intend to break app
-  compatibility with older server versions often, but it makes sense
-  in this case, since the new API is necessary for providing a
-  performant mobile experience.
-- Fixed Zulip's historically buggy support for running multiple
-  organizations (realms) on a single Zulip server.
-- Fixed a number of issues with untranslateable strings.  Zulip is now
-  fully translated into Spanish, German, Czech, and Japanese, with
-  significant translations for a number of other languages.
-- Added automatic "soft deactivation", which dramatically improves
-  performance for organizations with a large number of inactive users,
-  without any impact to the experience should those users return.
-  Zulip's performance now scales primarily with number of active
-  users; chat.zulip.org serves 300MAUs and over 3000 total users on a
-  VM with just 8GB of RAM (and its CPU is essentially always idle).
+**Highlights:**
 
-Upgrade notes:
+Web
+- We’ve completely redesigned our onboarding process to explain Zulip,
+  and especially topics, to new users.
+- We’ve built a beautiful new emoji picker with categories, a
+  showcase, and much better data. Note the clean, underscore-free
+  display!
+- The emails sent by Zulip are more consistent, readable, and visually
+  interesting.
+- Chinese (Simplified) and Japanese join Spanish, German, and Czech in
+  having the user interface fully translated, in addition to partial
+  translations for many other languages. We also fixed many small
+  issues where strings weren’t tagged for translation.
+- Many pages have been redesigned to be easier to use and visually
+  cleaner, including the settings pages and the user documentation at
+  /help, /integrations, and /apps.
 
-* There are some significant database migrations that will be in the
-next release that can take several minutes to run.  These migrations
-will be automatically run during the upgrade process, but before
-user-facing downtime begins to avoid disruption.  However, if you'd
-like to watch the downtime part of the upgrade process carefully, we
-recommend
-[running these migrations manually](expensive-migrations.html) before
-starting the upgrade.
+Mobile and Desktop support
+- Zulip Server 1.7 adds several new APIs that are critical for mobile
+  app performance and that let the app track unread messages. If
+  you’re using the mobile apps at all (iOS or Android), you will
+  definitely want to upgrade to Zulip 1.7.
+- The iOS and Android apps can receive push notifications
+  (configurable, naturally) for events like PMs and @-mentions. While
+  Zulip Server 1.6 has basic support for these, 1.7 brings a new,
+  clearer format to notifications, and gives each user more options
+  for finer-grained control.
+- The new Electron desktop app is out of beta and replaces our legacy
+  desktop apps.
 
-* We fixed Zulip's previously buggy support for multiple organizations
-on the same Zulip server.  A consequence of doing this correctly means
-is that we require each organization to have its own subdomain.  This
-change should have no effect for the vast major of Zulip servers that
-only have one organization.  If you manage a server that hosts
-multiple organizations, you'll want to read
-[our guide on multiple organizations](prod-multiple-organizations.html).
+Backend and scaling
+- Zulip now runs exclusively on Python 3.  This is the culmination of
+  an 18-month migration effort.  We are very excited about this!
+- We’ve added an automatic "soft deactivation" process, which
+  dramatically improves performance for organizations with a large
+  number of inactive users, without any impact on those users’
+  experience if they later come back.
+- Zulip's performance at scale has improved significantly. Performance
+  now scales primarily with number of active users (not total
+  users). As an example, chat.zulip.org serves 400 monthly active
+  users and about 3500 total users, on one VM with just 8GB of RAM and
+  a CPU consistently over 90% idle.
 
-Full feature Changelog:
+**Upgrade notes:**
+
+* Zulip 1.7 contains some significant database migrations that can
+  take several minutes to run.  The upgrade process automatically
+  minimizes disruption by running these first, before beginning the
+  user-facing downtime.  However, if you'd like to watch the downtime
+  phase of the upgrade closely, we recommend
+  [running them first manually](expensive-migrations.html) and as well
+  as the usual trick of
+  [doing an apt upgrade first](prod-maintain-secure-upgrade.html#applying-ubuntu-system-updates).
+
+* We've removed support for an uncommon legacy deployment model where
+  a Zulip server served multiple organizations on the same domain.
+  Installs with multiple organizations now require each organization
+  to have its own subdomain.
+
+  This change should have no effect for the vast majority of Zulip
+  servers that only have one organization.  If you manage a server
+  that hosts multiple organizations, you'll want to read [our guide on
+  multiple organizations](prod-multiple-organizations.html).
+
+* We simplified the configuration for our password strength checker to
+  be much more intuitive.  If you were using the
+  `PASSWORD_MIN_ZXCVBN_QUALITY` setting,
+  [it has been replaced](https://github.com/zulip/zulip/commit/a116303604e362796afa54b5d923ea5312b2ea23) by
+  the more intuitive `PASSWORD_MIN_GUESSES`.
+
+**Full feature changelog:**
 
 - Simplified the process for installing a new Zulip server, as well as
   fixing the most common roadbumps and confusing error messages.
@@ -80,10 +97,14 @@ Full feature Changelog:
 - Added new "getting started" guides to the user documentation.
 - Added support for installing a Zulip server from a Git checkout.
 - Added support for mentioning a user when editing a message.
-- Added an OpsGenie integration.
+- Added OpsGenie, Google Code-In, Google Search, and xkcd integrations.
 - Added support for organization administrators deleting private streams.
 - Added support for using any LDAP attribute for login username.
 - Added support for searching by group-pm-with.
+- Added support for mentioning users when editing messages.
+- Added a much prettier prompt for enabling desktop notifications.
+- Added a new PHYSICAL_ADDRESS setting to be used in outgoing emails
+  to support compliance with anti-spam regulations.
 - Dramatically improved the search typeahead experience when using
   multiple operators.
 - Improved design for /stats page and added a link to it in the gear menu.
@@ -97,6 +118,7 @@ Full feature Changelog:
   Git frequently.
 - Improve mention typeahead sort order to prioritize recent senders in
   a stream.
+- Swapped the 'q' and 'w' hotkeys to better match the UI.
 - Fixed most issues with the registration flow, including adding Oauth
   support for mobile and many corner case problems.
 - Significantly improved sort ordering for the emoji picker.
@@ -109,6 +131,7 @@ Full feature Changelog:
   "mentions" database queries through new indexes.
 - Upgraded to Django 1.11.x.
 - Upgraded to a more modern version of the SourceSansPro font.
+- Redesigned several settings subpages to be visually cleaner.
 - Redesigned Zulip's error pages to feature cute illustrations.
 - Dramatically improved the user typeahead algorithm to suggest
   relevant users even in large organizations with 1000s of accounts.
@@ -133,6 +156,8 @@ Full feature Changelog:
 - Fixed handling of desktop and mobile apps in new-login emails.
 - Fixed caching of source repository in upgrade-zulip-from-git.
 - Fixed numerous minor internationalization bugs.
+- Fixed several bugs with the LDAP authentication backend.
+- Fixed several corner case bugs with push notification.
 - Fixed rendering of realm emoji in missed-message emails.
 - Fixed various endpoints incorrectly using the PUT HTTP method.
 - Fixed bugs in scrolling up using the home key repeatedly.
@@ -142,6 +167,9 @@ Full feature Changelog:
 - Fixed zombie process leaks on servers with <4GB of RAM.
 - Fixed markdown previews of /me messages.
 - Fixed a subtle bug involving timestamps of locally echoed messages.
+- Fixed the behavior of key combintions like Ctrl+Enter in the compose box.
+- Worked around Google Compute Engine's default boto configuration,
+  which broke Zulip (and any other app using boto).
 - Zulip now will gracefully handle the Postgres server being restarted.
 - Optimized marking an entire topic as read.
 - Switched from npm to yarn for downloading JS packages.
@@ -162,7 +190,7 @@ Full feature Changelog:
 
 ### 1.6.0 -- 2017-06-06
 
-Highlights:
+**Highlights:**
 
 - A complete visual redesign of the logged-out pages, including login,
 registration, integrations, etc.
@@ -196,7 +224,7 @@ Zulip apps.
 [electron-app]: https://github.com/zulip/zulip-electron/releases
 [ios-app]: https://itunes.apple.com/us/app/zulip/id1203036395
 
-Full feature Changelog:
+**Full feature changelog:**
 
 * Added Basecamp, Gogs, Greenhouse, Home Assistant, Slack, Splunk, and
   WordPress webhook integrations.
@@ -296,7 +324,7 @@ Full feature Changelog:
 
 ### 1.5.0 -- 2017-02-06
 
-Highlights:
+**Highlights:**
 
 - Completely redesigned the Manage streams interface.
 - Added support for emoji reactions to messages.
@@ -310,7 +338,7 @@ Highlights:
   setting, `INLINE_URL_EMBED_PREVIEW`, is disabled by default in this
   release).
 
-Full feature Changelog:
+**Full feature changelog:**
 
 - Added an emoji picker/browser to the compose box.
 - Added markdown preview support to the compose box.

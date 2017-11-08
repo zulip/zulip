@@ -5,7 +5,6 @@ from typing import Any, Iterator, List, Optional, Tuple, Text
 
 from django.conf import settings
 from zerver.lib.redis_utils import get_redis_client
-from six.moves import zip
 
 from zerver.models import UserProfile
 
@@ -19,9 +18,9 @@ import logging
 client = get_redis_client()
 rules = settings.RATE_LIMITING_RULES  # type: List[Tuple[int, int]]
 
-KEY_PREFIX = u''
+KEY_PREFIX = ''
 
-class RateLimitedObject(object):
+class RateLimitedObject:
     def get_keys(self):
         # type: () -> List[Text]
         key_fragment = self.key_fragment()
@@ -59,7 +58,7 @@ class RateLimitedUser(RateLimitedObject):
 def bounce_redis_key_prefix_for_testing(test_name):
     # type: (Text) -> None
     global KEY_PREFIX
-    KEY_PREFIX = test_name + u':' + Text(os.getpid()) + u':'
+    KEY_PREFIX = test_name + ':' + Text(os.getpid()) + ':'
 
 def max_api_calls(entity):
     # type: (RateLimitedObject) -> int

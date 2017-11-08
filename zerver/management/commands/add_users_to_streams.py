@@ -5,13 +5,11 @@ from django.core.management.base import CommandParser
 
 from zerver.lib.actions import create_stream_if_needed, bulk_add_subscriptions
 from zerver.lib.management import ZulipBaseCommand
-from zerver.models import UserProfile
 
 class Command(ZulipBaseCommand):
     help = """Add some or all users in a realm to a set of streams."""
 
-    def add_arguments(self, parser):
-        # type: (CommandParser) -> None
+    def add_arguments(self, parser: CommandParser) -> None:
         self.add_realm_args(parser, True)
         self.add_user_list_args(parser, all_users_help="Add all users in realm to these streams.")
 
@@ -22,8 +20,7 @@ class Command(ZulipBaseCommand):
             required=True,
             help='A comma-separated list of stream names.')
 
-    def handle(self, **options):
-        # type: (**Any) -> None
+    def handle(self, **options: Any) -> None:
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
 

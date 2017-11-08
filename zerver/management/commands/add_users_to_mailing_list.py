@@ -14,8 +14,7 @@ from typing import Any
 class Command(BaseCommand):
     help = """Add users to a MailChimp mailing list."""
 
-    def add_arguments(self, parser):
-        # type: (argparse.ArgumentParser) -> None
+    def add_arguments(self, parser: argparse.ArgumentParser) -> None:
         parser.add_argument('--api-key',
                             dest='api_key',
                             type=str,
@@ -30,8 +29,7 @@ class Command(BaseCommand):
                             default=datetime.isoformat(timezone_now().replace(microsecond=0)),
                             help='Opt-in time of the users.')
 
-    def handle(self, *args, **options):
-        # type: (*Any, **str) -> None
+    def handle(self, *args: Any, **options: str) -> None:
         if options['api_key'] is None:
             try:
                 if settings.MAILCHIMP_API_KEY is None:

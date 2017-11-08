@@ -5,8 +5,8 @@ from django.db import connection
 
 from zerver.lib.management import ZulipBaseCommand
 
-def create_index_if_not_exist(index_name, table_name, column_string, where_clause):
-    # type: (Text, Text, Text, Text) -> None
+def create_index_if_not_exist(index_name: Text, table_name: Text,
+                              column_string: Text, where_clause: Text) -> None:
     #
     #  This function is somewhat similar to
     #  zerver.lib.migrate.create_index_if_not_exist.
@@ -46,8 +46,7 @@ def create_index_if_not_exist(index_name, table_name, column_string, where_claus
         print('Finished creating %s.' % (index_name,))
 
 
-def create_indexes():
-    # type: () -> None
+def create_indexes() -> None:
 
     # copied from 0082
     create_index_if_not_exist(
@@ -92,6 +91,5 @@ def create_indexes():
 class Command(ZulipBaseCommand):
     help = """Create concurrent indexes for large tables."""
 
-    def handle(self, *args, **options):
-        # type: (*Any, **str) -> None
+    def handle(self, *args: Any, **options: str) -> None:
         create_indexes()

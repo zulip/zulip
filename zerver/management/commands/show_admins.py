@@ -9,13 +9,11 @@ import sys
 class Command(BaseCommand):
     help = """Show the admins in a realm."""
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('realm', metavar='<realm>', type=str,
                             help="realm to show admins for")
 
-    def handle(self, *args, **options):
-        # type: (*Any, **str) -> None
+    def handle(self, *args: Any, **options: str) -> None:
         realm_name = options['realm']
 
         try:

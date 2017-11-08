@@ -12,11 +12,12 @@ from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.camo import get_camo_url
 from zerver.lib.create_user import create_user
 from zerver.lib.emoji import get_emoji_url
-from zerver.lib.mention import possible_mentions
+from zerver.lib.mention import possible_mentions, possible_user_group_mentions
 from zerver.lib.message import render_markdown
 from zerver.lib.request import (
     JsonableError,
 )
+from zerver.lib.user_groups import create_user_group
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
@@ -36,6 +37,7 @@ from zerver.models import (
     RealmFilter,
     Recipient,
     UserProfile,
+    UserGroup,
 )
 
 import copy
@@ -43,7 +45,7 @@ import mock
 import os
 import ujson
 
-from six.moves import urllib
+import urllib
 from zerver.lib.str_utils import NonBinaryStr
 from typing import Any, AnyStr, Dict, List, Optional, Set, Tuple, Text
 
@@ -201,6 +203,18 @@ class BugdownMiscTest(ZulipTestCase):
             id=fred2.id
         ))
 
+    def test_mention_data(self):
+        # type: () -> None
+        realm = get_realm('zulip')
+        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user('cordelia')
+        content = '@**King Hamlet** @**Cordelia lear**'
+        mention_data = bugdown.MentionData(realm.id, content)
+        self.assertEqual(mention_data.get_user_ids(), {hamlet.id, cordelia.id})
+
+        user = mention_data.get_user('king hamLET')
+        self.assertEqual(user['email'], hamlet.email)
+
 class BugdownTest(ZulipTestCase):
     def load_bugdown_tests(self):
         # type: () -> Tuple[Dict[Text, Any], List[List[Text]]]
@@ -216,8 +230,14 @@ class BugdownTest(ZulipTestCase):
     def test_bugdown_fixtures(self):
         # type: () -> None
         format_tests, linkify_tests = self.load_bugdown_tests()
+        valid_keys = set(['name', "input", "expected_output",
+                          "backend_only_rendering",
+                          "marked_expected_output", "text_content"])
 
         for name, test in format_tests.items():
+            # Check that there aren't any unexpected keys as those are often typos
+            self.assertEqual(len(set(test.keys()) - valid_keys), 0)
+
             converted = bugdown_convert(test['input'])
 
             print("Running Bugdown test %s" % (name,))
@@ -414,15 +434,15 @@ class BugdownTest(ZulipTestCase):
             # type: (Text) -> Text
             return '<a href="%s" target="_blank" title="%s">%s</a>' % (url, url, url)
 
-        normal_tweet_html = ('<a href="https://twitter.com/twitter" target="_blank"'
-                             ' title="https://twitter.com/twitter">@twitter</a> '
+        normal_tweet_html = ('<a href="https://twitter.com/Twitter" target="_blank"'
+                             ' title="https://twitter.com/Twitter">@Twitter</a> '
                              'meets @seepicturely at #tcdisrupt cc.'
                              '<a href="https://twitter.com/boscomonkey" target="_blank"'
                              ' title="https://twitter.com/boscomonkey">@boscomonkey</a> '
                              '<a href="https://twitter.com/episod" target="_blank"'
                              ' title="https://twitter.com/episod">@episod</a> '
                              '<a href="http://t.co/6J2EgYM" target="_blank"'
-                             ' title="http://t.co/6J2EgYM">http://instagram.com/p/MuW67/</a>')
+                             ' title="http://t.co/6J2EgYM">http://instagr.am/p/MuW67/</a>')
 
         mention_in_link_tweet_html = """<a href="http://t.co/@foo" target="_blank" title="http://t.co/@foo">http://foo.com</a>"""
 
@@ -438,10 +458,12 @@ class BugdownTest(ZulipTestCase):
                     '<div class="twitter-tweet">'
                     '<a href="%s" target="_blank">'
                     '<img class="twitter-avatar"'
-                    ' src="https://si0.twimg.com/profile_images/1380912173/Screen_shot_2011-06-03_at_7.35.36_PM_normal.png">'
+                    ' src="https://external-content.zulipcdn.net/1f7cd2436976d410eab8189ebceda87ae0b34ead/687474703a2f2f7062732e7477696d672e63'
+                    '6f6d2f70726f66696c655f696d616765732f313338303931323137332f53637265656e5f73686f745f323031312d30362d30335f61745f372e33352e33'
+                    '365f504d5f6e6f726d616c2e706e67">'
                     '</a>'
                     '<p>%s</p>'
-                    '<span>- Eoin McMillan  (@imeoin)</span>'
+                    '<span>- Eoin McMillan (@imeoin)</span>'
                     '%s'
                     '</div>'
                     '</div>') % (url, tweet_html, image_html)
@@ -602,7 +624,7 @@ class BugdownTest(ZulipTestCase):
                                    url_format_string=url_format_string)
         realm_filter.save()
         self.assertEqual(
-            realm_filter.__unicode__(),
+            realm_filter.__str__(),
             '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
             ' https://trac.zulip.net/ticket/%(id)s>')
 
@@ -654,7 +676,7 @@ class BugdownTest(ZulipTestCase):
             flush_realm_filter is a post-save hook, so calling it
             directly for testing is kind of awkward
             '''
-            class Instance(object):
+            class Instance:
                 realm_id = None  # type: Optional[int]
             instance = Instance()
             instance.realm_id = realm.id
@@ -831,6 +853,86 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(render_markdown(msg, content),
                          '<p>Hey @<strong>Nonexistent User</strong></p>')
         self.assertEqual(msg.mentions_user_ids, set())
+
+    def create_user_group_for_test(self, user_group_name):
+        # type: (Text) -> UserGroup
+        othello = self.example_user('othello')
+        return create_user_group(user_group_name, [othello], get_realm('zulip'))
+
+    def test_user_group_mention_single(self):
+        # type: () -> None
+        sender_user_profile = self.example_user('othello')
+        user_profile = self.example_user('hamlet')
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        user_id = user_profile.id
+        user_group = self.create_user_group_for_test('support')
+
+        content = "@**King Hamlet** @*support*"
+        self.assertEqual(render_markdown(msg, content),
+                         '<p><span class="user-mention" '
+                         'data-user-email="%s" '
+                         'data-user-id="%s">'
+                         '@King Hamlet</span> '
+                         '<span class="user-group-mention" '
+                         'data-user-group-id="%s">'
+                         '@support</span></p>' % (self.example_email("hamlet"),
+                                                  user_id,
+                                                  user_group.id))
+        self.assertEqual(msg.mentions_user_ids, set([user_profile.id]))
+        self.assertEqual(msg.mentions_user_group_ids, set([user_group.id]))
+
+    def test_possible_user_group_mentions(self):
+        # type: () -> None
+        def assert_mentions(content, names):
+            # type: (Text, Set[Text]) -> None
+            self.assertEqual(possible_user_group_mentions(content), names)
+
+        assert_mentions('', set())
+        assert_mentions('boring', set())
+        assert_mentions('@all', set())
+        assert_mentions('smush@*steve*smush', set())
+
+        assert_mentions(
+            '@*support* Hello @**King Hamlet** and @**Cordelia Lear**\n'
+            '@**Foo van Barson** @**all**', {'support'}
+        )
+
+        assert_mentions(
+            'Attention @*support*, @*frontend* and @*backend*\ngroups.',
+            {'support', 'frontend', 'backend'}
+        )
+
+    def test_user_group_mention_multiple(self):
+        # type: () -> None
+        sender_user_profile = self.example_user('othello')
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        support = self.create_user_group_for_test('support')
+        backend = self.create_user_group_for_test('backend')
+
+        content = "@*support* and @*backend*, check this out"
+        self.assertEqual(render_markdown(msg, content),
+                         '<p>'
+                         '<span class="user-group-mention" '
+                         'data-user-group-id="%s">'
+                         '@support</span> '
+                         'and '
+                         '<span class="user-group-mention" '
+                         'data-user-group-id="%s">'
+                         '@backend</span>, '
+                         'check this out'
+                         '</p>' % (support.id, backend.id))
+
+        self.assertEqual(msg.mentions_user_group_ids, set([support.id, backend.id]))
+
+    def test_user_group_mention_invalid(self):
+        # type: () -> None
+        sender_user_profile = self.example_user('othello')
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+
+        content = "Hey @*Nonexistent group*"
+        self.assertEqual(render_markdown(msg, content),
+                         '<p>Hey @<em>Nonexistent group</em></p>')
+        self.assertEqual(msg.mentions_user_group_ids, set())
 
     def test_stream_single(self):
         # type: () -> None
@@ -1086,7 +1188,7 @@ class BugdownErrorTests(ZulipTestCase):
             # We don't use assertRaisesRegex because it seems to not
             # handle i18n properly here on some systems.
             with self.assertRaises(JsonableError):
-                self.send_message(self.example_email("othello"), "Denmark", Recipient.STREAM, message)
+                self.send_stream_message(self.example_email("othello"), "Denmark", message)
 
 
 class BugdownAvatarTestCase(ZulipTestCase):

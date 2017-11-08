@@ -24,9 +24,13 @@ var emoji_see_no_evil = {
     emoji_name: 'see_no_evil',
     emoji_url: 'TBD',
 };
+var emoji_thumbs_up = {
+    emoji_name: '+1',
+    emoji_url: 'TBD',
+};
 
 var emoji_list = [emoji_tada, emoji_moneybag, emoji_stadium, emoji_japanese_post_office,
-                  emoji_panda_face, emoji_see_no_evil];
+                  emoji_panda_face, emoji_see_no_evil, emoji_thumbs_up];
 var stream_list = ['Denmark', 'Sweden', 'The Netherlands'];
 var sweden_stream = {
     name: 'Sweden',
@@ -345,15 +349,11 @@ global.people.add(deactivated_user);
 
     var pm_recipient_typeahead_called = false;
     $('#private_message_recipient').typeahead = function (options) {
-        // options.source()
-        //
         // This should match the users added at the beginning of this test file.
         var actual_value = options.source();
-        var expected_value = [othello, cordelia, deactivated_user];
+        var expected_value = [othello, cordelia];
         assert.deepEqual(actual_value, expected_value);
 
-        // options.highlighter()
-        //
         // Even though the items passed to .highlighter() are the full
         // objects of the users matching the query, it only returns the
         // HTML string with the "User_name <email>" format, with the
@@ -377,44 +377,37 @@ global.people.add(deactivated_user);
         options.query = 'el';  // Matches both "othELlo" and "cordELia"
         assert.equal(options.matcher(othello), true);
         assert.equal(options.matcher(cordelia), true);
-        assert.equal(options.matcher(deactivated_user), false);
 
         // Othello is already filled in, now typeahead makes suggestions for
         // the value after the comma.
         options.query = 'othello@zulip.com, cor';
         assert.equal(options.matcher(othello), false);
         assert.equal(options.matcher(cordelia), true);
-        assert.equal(options.matcher(deactivated_user), false);
 
         // No suggestions are made if the query is just a comma.
         options.query = ',';
         assert.equal(options.matcher(othello), false);
         assert.equal(options.matcher(cordelia), false);
-        assert.equal(options.matcher(deactivated_user), false);
 
         options.query = 'bender';  // Doesn't exist
         assert.equal(options.matcher(othello), false);
         assert.equal(options.matcher(cordelia), false);
-        assert.equal(options.matcher(deactivated_user), false);
 
         // Don't make suggestions if the last name only has whitespaces
         // (we're between typing names).
         options.query = 'othello@zulip.com,     ';
         assert.equal(options.matcher(othello), false);
         assert.equal(options.matcher(cordelia), false);
-        assert.equal(options.matcher(deactivated_user), false);
 
         options.query = 'othello@zulip.com,, , cord';
         assert.equal(options.matcher(othello), false);
         assert.equal(options.matcher(cordelia), true);
-        assert.equal(options.matcher(deactivated_user), false);
 
         // If the user is already in the list, typeahead doesn't include it
         // again.
         options.query = 'cordelia@zulip.com, cord';
         assert.equal(options.matcher(othello), false);
         assert.equal(options.matcher(cordelia), false);
-        assert.equal(options.matcher(deactivated_user), false);
 
         // options.sorter()
         //
@@ -781,15 +774,20 @@ global.people.add(deactivated_user);
     assert_typeahead_equals(":", false);
     assert_typeahead_equals(": ", false);
     assert_typeahead_equals(" :", false);
+    assert_typeahead_equals(":)", false);
+    assert_typeahead_equals(":4", false);
     assert_typeahead_equals("test :-P", false);
     assert_typeahead_equals("hi emoji :", false);
     assert_typeahead_equals("hi emoj:i", false);
+    assert_typeahead_equals("hi emoji :D", false);
+    assert_typeahead_equals("hi emoji :t", emoji_list);
     assert_typeahead_equals("hi emoji :ta", emoji_list);
     assert_typeahead_equals("hi emoji :da", emoji_list);
     assert_typeahead_equals("hi emoji :da_", emoji_list);
     assert_typeahead_equals("hi emoji :da ", emoji_list);
     assert_typeahead_equals("hi emoji\n:da", emoji_list);
     assert_typeahead_equals("hi emoji\n :ra", emoji_list);
+    assert_typeahead_equals(":+", emoji_list);
     assert_typeahead_equals(":la", emoji_list);
     assert_typeahead_equals(" :lee", emoji_list);
     assert_typeahead_equals("hi :see no", emoji_list);

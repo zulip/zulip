@@ -2,16 +2,22 @@
 import os
 import re
 import hashlib
+import sys
 from typing import Any, List, Optional, Text
 from importlib import import_module
-from six.moves import cStringIO as StringIO
+from io import StringIO
 
 from django.db import connections, DEFAULT_DB_ALIAS
 from django.db.utils import OperationalError
 from django.apps import apps
+from django.conf import settings
 from django.core.management import call_command
 from django.utils.module_loading import module_has_submodule
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+from scripts.lib.zulip_tools import get_dev_uuid_var_path
+
+UUID_VAR_DIR = get_dev_uuid_var_path()
 FILENAME_SPLITTER = re.compile('[\W\-_]')
 
 def database_exists(database_name, **options):
@@ -94,9 +100,9 @@ def _check_hash(target_hash_file, status_dir):
 
 def is_template_database_current(
         database_name='zulip_test_template',
-        migration_status='var/migration_status_test',
+        migration_status=None,
         settings='zproject.test_settings',
-        status_dir='var/test_db_status',
+        status_dir=None,
         check_files=None):
     # type: (str, str, str, str, Optional[List[str]]) -> bool
     # Using str type for check_files because re.split doesn't accept unicode
@@ -107,6 +113,10 @@ def is_template_database_current(
             'tools/setup/postgres-init-test-db',
             'tools/setup/postgres-init-dev-db',
         ]
+    if status_dir is None:
+        status_dir = os.path.join(UUID_VAR_DIR, 'test_db_status')
+    if migration_status is None:
+        migration_status = os.path.join(UUID_VAR_DIR, 'migration_status_test')
 
     if not os.path.exists(status_dir):
         os.mkdir(status_dir)

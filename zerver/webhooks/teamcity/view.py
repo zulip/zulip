@@ -4,17 +4,16 @@ from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
 from typing import Any, Dict, List, Optional
 
-from zerver.models import UserProfile, Realm
+from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.actions import check_send_private_message, check_send_stream_message
 from zerver.lib.response import json_success, json_error
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
-
+from zerver.lib.request import REQ, has_request_variables
+from zerver.models import UserProfile, Realm
 
 import logging
 import ujson
 
-def guess_zulip_user_from_teamcity(teamcity_username, realm):
-    # type: (str, Realm) -> Optional[UserProfile]
+def guess_zulip_user_from_teamcity(teamcity_username: str, realm: Realm) -> Optional[UserProfile]:
     try:
         # Try to find a matching user in Zulip
         # We search a user's full name, short name,
@@ -29,8 +28,7 @@ def guess_zulip_user_from_teamcity(teamcity_username, realm):
     except IndexError:
         return None
 
-def get_teamcity_property_value(property_list, name):
-    # type: (List[Dict[str, str]], str) -> Optional[str]
+def get_teamcity_property_value(property_list: List[Dict[str, str]], name: str) -> Optional[str]:
     for property in property_list:
         if property['name'] == name:
             return property['value']
@@ -75,8 +73,9 @@ def api_teamcity_webhook(request, user_profile, payload=REQ(argument_type='body'
 
     # Check if this is a personal build, and if so try to private message the user who triggered it.
     if get_teamcity_property_value(message['teamcityProperties'], 'env.BUILD_IS_PERSONAL') == 'true':
-        # The triggeredBy field gives us the teamcity user full name, and the "teamcity.build.triggeredBy.username"
-        # property gives us the teamcity username. Let's try finding the user email from both.
+        # The triggeredBy field gives us the teamcity user full name, and the
+        # "teamcity.build.triggeredBy.username" property gives us the teamcity username.
+        # Let's try finding the user email from both.
         teamcity_fullname = message['triggeredBy'].split(';')[0]
         teamcity_user = guess_zulip_user_from_teamcity(teamcity_fullname, user_profile.realm)
 
@@ -88,8 +87,8 @@ def api_teamcity_webhook(request, user_profile, payload=REQ(argument_type='body'
 
         if teamcity_user is None:
             # We can't figure out who started this build - there's nothing we can do here.
-            logging.info("Teamcity webhook couldn't find a matching Zulip user for Teamcity user '%s' or '%s'" % (
-                teamcity_fullname, teamcity_shortname))
+            logging.info("Teamcity webhook couldn't find a matching Zulip user for "
+                         "Teamcity user '%s' or '%s'" % (teamcity_fullname, teamcity_shortname))
             return json_success()
 
         body = "Your personal build of " + body

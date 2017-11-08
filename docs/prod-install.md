@@ -8,7 +8,10 @@ You will need an Ubuntu system that satisfies
 [the installation requirements](prod-requirements.html).  In short,
 you need:
 * Either a dedicated machine, or a fresh VM on an existing machine.
-* Ubuntu 14.04 Trusty or Ubuntu 16.04 Xenial, 64-bit.
+* Ubuntu 16.04 Xenial or Ubuntu 14.04 Trusty, 64-bit.  If you have a
+  choice, install on Xenial, since Trusty is approaching its
+  end-of-life and you'll save yourself the work of upgrading a
+  production installation.
 * At least 2GB RAM and 10 GB disk space (4GB and 2 CPUs recommended for 100+ users).
 * A DNS name, an SSL certificate, and credentials for sending email.
 
@@ -27,7 +30,7 @@ paths, and move on to the next step.
 
 ## Step 2: Download and install latest release
 
-If you haven't already, download and unpack [the latest built server
+Download and unpack [the latest built server
 tarball](https://www.zulip.org/dist/releases/zulip-server-latest.tar.gz)
 with the following commands:
 
@@ -36,6 +39,9 @@ cd $(mktemp -d)
 wget https://www.zulip.org/dist/releases/zulip-server-latest.tar.gz
 tar -xf zulip-server-latest.tar.gz
 ```
+
+If you'd like to verify the download, we
+[publish the sha256sums of our release tarballs](https://www.zulip.org/dist/releases/SHA256SUMS.txt).
 
 Then, run the Zulip install script:
 ```
@@ -61,7 +67,7 @@ it's running from (which you unpacked from a tarball above) to a
 directory there, and makes `/home/zulip/deployments/current` as a
 symbolic link to it.
 * Installs Zulip's various dependencies.
-* Cconfigures the various third-party services Zulip uses, including
+* Configures the various third-party services Zulip uses, including
 Postgres, RabbitMQ, Memcached and Redis.
 
 ## Step 3: Configure Zulip
@@ -70,12 +76,10 @@ Configure the Zulip server instance by editing `/etc/zulip/settings.py` and
 providing values for the mandatory settings, which are all found under the
 heading `### MANDATORY SETTINGS`.  These settings include:
 
-- `EXTERNAL_HOST`: the user-accessible Zulip domain name for your
+- `EXTERNAL_HOST`: the user-accessible domain name for your
   Zulip installation (i.e., what users will type in their web
   browser). This should of course match the DNS name you configured to
   point to your server and for which you configured SSL certificates.
-  If you plan to use multiple domains, add the others to
-  `ALLOWED_HOSTS`.
 
 - `ZULIP_ADMINISTRATOR`: the email address of the person or team
   maintaining this installation and who will get support and error
@@ -94,8 +98,7 @@ heading `### MANDATORY SETTINGS`.  These settings include:
 
 ## Step 4: Test email configuration
 
-If you haven't already,
-[test your outgoing email configuration](prod-email.html#testing-and-troubleshooting).
+[Test your outgoing email configuration](prod-email.html#testing-and-troubleshooting).
 This is important to test now, because email configuration errors are
 common, and your outgoing email configuration needs to be working in
 order for you to complete the installation.
@@ -103,11 +106,12 @@ order for you to complete the installation.
 ## Step 5: Initialize Zulip database
 
 At this point, you are done doing things as root. The remaining
-commands are run as the `zulip` user using `su zulip`. To initialize
-the Zulip database for your production install, run:
+commands are run as the `zulip` user. Change to the `zulip` user
+and initialize the Zulip database for your production install:
 
 ```
-su zulip -c /home/zulip/deployments/current/scripts/setup/initialize-database
+su zulip # If you weren't already the zulip user
+/home/zulip/deployments/current/scripts/setup/initialize-database
 ```
 
 The `initialize-database` script will report an error if you did not
@@ -157,12 +161,20 @@ new releases, security issues, etc.
 
 ## Troubleshooting
 
-If you get an error after `scripts/setup/install` completes, check the
-bottom of `/var/log/zulip/errors.log` for a traceback, and consult the
-[troubleshooting section](prod-troubleshooting.html) for advice on how
-to debug.
+* The `zulip` user's password.  By default, the `zulip` user doesn't
+have a password, and is intended to be accessed by `su zulip` from the
+`root` user (or via SSH keys or a password, if you want to set those
+up, but that's up to you as the system administrator).  Most people
+who are prompted for a password when running `su zulip` turn out to
+already have switched to the `zulip` user earlier in their session,
+and can just skip that step.
 
-If that doesn't help, please visit
+* If you get an error after `scripts/setup/install` completes, check
+the bottom of `/var/log/zulip/errors.log` for a traceback, and consult
+the [troubleshooting section](prod-troubleshooting.html) for advice on
+how to debug.
+
+* If that doesn't help, please visit
 [#production help](https://chat.zulip.org/#narrow/stream/production.20help)
 in the [Zulip development community server](chat-zulip-org.html) for
 realtime help or email zulip-help@googlegroups.com with the full

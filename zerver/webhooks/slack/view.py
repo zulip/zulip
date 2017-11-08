@@ -1,10 +1,11 @@
 from django.utils.translation import ugettext as _
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
+from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.actions import check_send_stream_message, create_stream_if_needed
 from zerver.lib.response import json_success, json_error
+from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.validator import check_string, check_int
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from zerver.models import UserProfile
 
 ZULIP_MESSAGE_TEMPLATE = u"**{message_sender}**: `{text}`"

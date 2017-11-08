@@ -8,7 +8,6 @@ import signal
 import subprocess
 import re
 
-from six.moves import range
 # check for the venv
 from lib import sanity_check
 sanity_check.check_venv(__file__)
@@ -36,7 +35,7 @@ successful_worker_launches = [
 ]
 
 def check_worker_launch(logfile):
-    # type: (IO) -> Text
+    # type: (IO[str]) -> Text
     def check(content):
         # type: (str) -> bool
         flag = True

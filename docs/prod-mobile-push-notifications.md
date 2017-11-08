@@ -41,7 +41,7 @@ Please follow the instructions carefully:
   (normally they're only sent if you're idle, which isn't ideal for
   this sort of testing).
 * On an Android device, download and login to the
-[Zulip Android app](https://play.google.com/store/apps/details?id=com.zulip.android).
+[Zulip Android app](https://play.google.com/store/apps/details?id=com.zulipmobile).
 If you were already logged in before configuring the server, you'll
 need to logout first, since the app only registers for push
 notifications on login.
@@ -75,8 +75,8 @@ forwarding service).
 
 ## Security and privacy implications
 
-We've designed this push notification bouncer service with security in
-mind:
+We've designed this push notification bouncer service with security
+and privacy in mind:
 
 * All of the network requests (both from Zulip servers to the Push
   Notification Service and from the Push Notification Service to the
@@ -85,10 +85,17 @@ mind:
 * The code for the push notification forwarding service is 100% open
   source and available as part of the
   [Zulip server project on GitHub](https://github.com/zulip/zulip).
-  The service's logging is designed to protect the privacy of users of
-  Zulip servers that are using the forwarding service.
+  The Push Notification Service is designed to avoid any message
+  content being stored or logged, even in error cases.
 * The push notification forwarding servers are professionally managed
-  by a small team.
+  by a small team of security experts.
+* There's a `PUSH_NOTIFICATION_REDACT_CONTENT` setting available to
+  disable any message content being sent via the push notification
+  bouncer (i.e. message content will be replaced with
+  `***REDACTED***`).  Note that this setting makes push notifications
+  significantly less usable.  We plan to
+  [replace this feature with end-to-end encryption](https://github.com/zulip/zulip/issues/6954)
+  which would eliminate that usability tradeoff.
 
 If you have any questions about the security model, contact
 support@zulipchat.com.

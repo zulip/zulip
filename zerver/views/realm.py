@@ -40,7 +40,7 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
                  authentication_methods=REQ(validator=check_dict([]), default=None),
                  notifications_stream_id=REQ(validator=check_int, default=None),
                  message_retention_days=REQ(converter=to_not_negative_int_or_none, default=None)):
-    # type: (HttpRequest, UserProfile, Optional[str], Optional[str], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[int], Optional[bool], Optional[str], Optional[int], Optional[dict], Optional[int], Optional[int]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Optional[str], Optional[str], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[int], Optional[bool], Optional[str], Optional[int], Optional[Dict[Any,Any]], Optional[int], Optional[int]) -> HttpResponse
     realm = user_profile.realm
 
     # Additional validation/error checking beyond types go here, so
@@ -74,7 +74,8 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
     # The following realm properties do not fit the pattern above
     # authentication_methods is not supported by the do_set_realm_property
     # framework because of its bitfield.
-    if authentication_methods is not None and realm.authentication_methods_dict() != authentication_methods:
+    if authentication_methods is not None and (realm.authentication_methods_dict() !=
+                                               authentication_methods):
         do_set_realm_authentication_methods(realm, authentication_methods)
         data['authentication_methods'] = authentication_methods
     # The message_editing settings are coupled to each other, and thus don't fit
@@ -86,17 +87,21 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
             allow_message_editing = realm.allow_message_editing
         if message_content_edit_limit_seconds is None:
             message_content_edit_limit_seconds = realm.message_content_edit_limit_seconds
-        do_set_realm_message_editing(realm, allow_message_editing, message_content_edit_limit_seconds)
+        do_set_realm_message_editing(realm, allow_message_editing,
+                                     message_content_edit_limit_seconds)
         data['allow_message_editing'] = allow_message_editing
         data['message_content_edit_limit_seconds'] = message_content_edit_limit_seconds
     # Realm.notifications_stream is not a boolean, Text or integer field, and thus doesn't fit
     # into the do_set_realm_property framework.
     if notifications_stream_id is not None:
-        if realm.notifications_stream is None or realm.notifications_stream.id != notifications_stream_id:
+        if realm.notifications_stream is None or (realm.notifications_stream.id !=
+                                                  notifications_stream_id):
             new_notifications_stream = None
             if notifications_stream_id >= 0:
-                (new_notifications_stream, recipient, sub) = access_stream_by_id(user_profile, notifications_stream_id)
-            do_set_realm_notifications_stream(realm, new_notifications_stream, notifications_stream_id)
+                (new_notifications_stream, recipient, sub) = access_stream_by_id(
+                    user_profile, notifications_stream_id)
+            do_set_realm_notifications_stream(realm, new_notifications_stream,
+                                              notifications_stream_id)
             data['notifications_stream_id'] = notifications_stream_id
 
     return json_success(data)

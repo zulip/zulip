@@ -1,11 +1,11 @@
 
 import sys
 from unittest import TestCase
-from six.moves import cStringIO as StringIO
+from io import StringIO
 
 from zerver.lib.type_debug import print_types
 
-from typing import Any, Callable, Dict, Iterable, Tuple, TypeVar
+from typing import Any, Callable, Dict, Iterable, Tuple, TypeVar, List
 
 T = TypeVar('T')
 
@@ -90,7 +90,7 @@ class TypesPrintTest(TestCase):
 
     def test_class(self):
         # type: () -> None
-        class A(object):
+        class A:
             pass
 
         class B(str):
@@ -101,10 +101,10 @@ class TypesPrintTest(TestCase):
 
     def test_sequence(self):
         # type: () -> None
-        class A(list):
+        class A(List[Any]):
             pass
 
-        class B(list):
+        class B(List[Any]):
             pass
 
         self.check_signature("add(A([]), B([str])) -> [str]",
@@ -116,7 +116,7 @@ class TypesPrintTest(TestCase):
 
     def test_mapping(self):
         # type: () -> None
-        class A(dict):
+        class A(Dict[Any, Any]):
             pass
 
         def to_A(v=[]):

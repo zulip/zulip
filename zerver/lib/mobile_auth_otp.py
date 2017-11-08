@@ -9,7 +9,6 @@
 # have it here as part of testing the overall library.
 
 import binascii
-from six.moves import zip
 from zerver.lib.str_utils import force_str
 from zerver.models import UserProfile
 

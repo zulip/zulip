@@ -23,7 +23,7 @@ from zerver.models import get_user_profile_by_id, RealmEmoji
 from zerver.models import Attachment
 from zerver.models import Realm, RealmEmoji, UserProfile, Message
 
-from six.moves import urllib
+import urllib
 import base64
 import os
 import re
@@ -52,13 +52,13 @@ DEFAULT_EMOJI_SIZE = 64
 # "file name" is the original filename provided by the user run
 # through a sanitization function.
 
-attachment_url_re = re.compile(u'[/\-]user[\-_]uploads[/\.-].*?(?=[ )]|\Z)')
+attachment_url_re = re.compile('[/\-]user[\-_]uploads[/\.-].*?(?=[ )]|\Z)')
 
 def attachment_url_to_path_id(attachment_url):
     # type: (Text) -> Text
-    path_id_raw = re.sub(u'[/\-]user[\-_]uploads[/\.-]', u'', attachment_url)
+    path_id_raw = re.sub('[/\-]user[\-_]uploads[/\.-]', '', attachment_url)
     # Remove any extra '.' after file extension. These are probably added by the user
-    return re.sub(u'[.]+$', u'', path_id_raw, re.M)
+    return re.sub('[.]+$', '', path_id_raw, re.M)
 
 def sanitize_name(raw_value):
     # type: (NonBinaryStr) -> Text
@@ -124,7 +124,7 @@ def resize_emoji(image_data, size=DEFAULT_EMOJI_SIZE):
 
 ### Common
 
-class ZulipUploadBackend(object):
+class ZulipUploadBackend:
     def upload_message_image(self, uploaded_file_name, uploaded_file_size,
                              content_type, file_data, user_profile, target_realm=None):
         # type: (Text, int, Optional[Text], binary_type, UserProfile, Optional[Realm]) -> Text
@@ -194,7 +194,7 @@ def upload_image_to_s3(
     key.set_metadata("realm_id", str(user_profile.realm_id))
 
     if content_type is not None:
-        headers = {u'Content-Type': content_type}  # type: Optional[Dict[Text, Text]]
+        headers = {'Content-Type': content_type}  # type: Optional[Dict[Text, Text]]
     else:
         headers = None
 

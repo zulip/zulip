@@ -1,14 +1,13 @@
 # Create a stream
 
-In Zulip, streams are like mailing lists in an email tool; each stream
-has a set of subscribers. Your current subscriptions are visible in
-the left sidebar.  Streams can be either:
+Streams can either be public to anyone in the organization, or require an
+invitation to join. Organization admins can always see the names and
+membership of invite-only streams, but cannot read any of the messages.
 
-* **Public streams** - Public streams are for open discussions. All
-  users can subscribe to public streams and discuss there.
-* **Private streams** - Private streams are for confidential
-  discussions and are only visible to users who've been invited to
-  subscribe to them.
+If you are an administrator setting up streams for the first time, we highly
+recommend reading our
+[guide to streams](/help/getting-your-organization-started-with-zulip#create-streams)
+first.
 
 ## Create a new stream
 

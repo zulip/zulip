@@ -149,4 +149,4 @@ class JsonableError(Exception):
 class RateLimited(PermissionDenied):
     def __init__(self, msg=""):
         # type: (str) -> None
-        super(RateLimited, self).__init__(msg)
+        super().__init__(msg)

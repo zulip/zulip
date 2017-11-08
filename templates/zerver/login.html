@@ -139,7 +139,9 @@ common.autofocus('#id_username');
                 {% endif %}
 
                 <div class="actions">
+                    {% if email_auth_enabled %}
                     <a class="forgot-password" href="/accounts/password/reset/">Forgot your password?</a>
+                    {% endif %}
                     {% if not register_link_disabled %}
                     <a class="register-link float-right" href="/register/">Register</a>
                     {% endif %}

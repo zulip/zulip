@@ -1,8 +1,9 @@
 # Webhooks for external integrations.
 
+from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
+from zerver.lib.request import REQ, has_request_variables
 from zerver.models import Client, UserProfile
 
 from django.http import HttpRequest, HttpResponse
@@ -22,8 +23,7 @@ PAGER_DUTY_EVENT_NAMES = {
     'incident.delegate': 'delineated',
 }
 
-def build_pagerduty_formatdict(message):
-    # type: (Dict[str, Any]) -> Dict[str, Any]
+def build_pagerduty_formatdict(message: Dict[str, Any]) -> Dict[str, Any]:
     # Normalize the message dict, after this all keys will exist. I would
     # rather some strange looking messages than dropping pages.
 
@@ -39,9 +39,10 @@ def build_pagerduty_formatdict(message):
 
     # This key can be missing on null
     if message['data']['incident'].get('assigned_to_user', None):
-        format_dict['assigned_to_email'] = message['data']['incident']['assigned_to_user']['email']
-        format_dict['assigned_to_username'] = message['data']['incident']['assigned_to_user']['email'].split('@')[0]
-        format_dict['assigned_to_url'] = message['data']['incident']['assigned_to_user']['html_url']
+        assigned_to_user = message['data']['incident']['assigned_to_user']
+        format_dict['assigned_to_email'] = assigned_to_user['email']
+        format_dict['assigned_to_username'] = assigned_to_user['email'].split('@')[0]
+        format_dict['assigned_to_url'] = assigned_to_user['html_url']
     else:
         format_dict['assigned_to_email'] = 'nobody'
         format_dict['assigned_to_username'] = 'nobody'
@@ -49,9 +50,10 @@ def build_pagerduty_formatdict(message):
 
     # This key can be missing on null
     if message['data']['incident'].get('resolved_by_user', None):
-        format_dict['resolved_by_email'] = message['data']['incident']['resolved_by_user']['email']
-        format_dict['resolved_by_username'] = message['data']['incident']['resolved_by_user']['email'].split('@')[0]
-        format_dict['resolved_by_url'] = message['data']['incident']['resolved_by_user']['html_url']
+        resolved_by_user = message['data']['incident']['resolved_by_user']
+        format_dict['resolved_by_email'] = resolved_by_user['email']
+        format_dict['resolved_by_username'] = resolved_by_user['email'].split('@')[0]
+        format_dict['resolved_by_url'] = resolved_by_user['html_url']
     else:
         format_dict['resolved_by_email'] = 'nobody'
         format_dict['resolved_by_username'] = 'nobody'
@@ -68,8 +70,11 @@ def build_pagerduty_formatdict(message):
     return format_dict
 
 
-def send_raw_pagerduty_json(user_profile, client, stream, message, topic):
-    # type: (UserProfile, Client, Text, Dict[str, Any], Optional[Text]) -> None
+def send_raw_pagerduty_json(user_profile: UserProfile,
+                            client: Client,
+                            stream: Text,
+                            message: Dict[str, Any],
+                            topic: Optional[Text]) -> None:
     subject = topic or 'pagerduty'
     body = (
         u'Unknown pagerduty message\n'
@@ -79,8 +84,12 @@ def send_raw_pagerduty_json(user_profile, client, stream, message, topic):
     check_send_stream_message(user_profile, client, stream, subject, body)
 
 
-def send_formated_pagerduty(user_profile, client, stream, message_type, format_dict, topic):
-    # type: (UserProfile, Client, Text, Text, Dict[str, Any], Optional[Text]) -> None
+def send_formated_pagerduty(user_profile: UserProfile,
+                            client: Client,
+                            stream: Text,
+                            message_type: Text,
+                            format_dict: Dict[str, Any],
+                            topic: Optional[Text]) -> None:
     if message_type in ('incident.trigger', 'incident.unacknowledge'):
         template = (u':imp: Incident '
                     u'[{incident_num}]({incident_url}) {action} by '

@@ -1,15 +1,13 @@
 
 from typing import Any
 
-from django.conf import settings
 from django.core.mail import mail_admins, mail_managers, send_mail
 from django.core.management.commands import sendtestemail
 
 from zerver.lib.send_email import FromAddress
 
 class Command(sendtestemail.Command):
-    def handle(self, *args, **kwargs):
-        # type: (*Any, **str) -> None
+    def handle(self, *args: Any, **kwargs: str) -> None:
         subject = "Zulip Test email"
         message = ("Success!  If you receive this message, you've "
                    "successfully configured sending email from your "

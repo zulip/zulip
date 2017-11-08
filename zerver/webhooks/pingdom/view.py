@@ -4,16 +4,18 @@ from typing import Any, Dict, Text
 from django.utils.translation import ugettext as _
 from django.http import HttpRequest, HttpResponse
 
+from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success, json_error
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
+from zerver.lib.request import REQ, has_request_variables
 from zerver.models import UserProfile
 
 import ujson
 
 
 PINGDOM_SUBJECT_TEMPLATE = '{name} status.'
-PINGDOM_MESSAGE_TEMPLATE = 'Service {service_url} changed its {type} status from {previous_state} to {current_state}.'
+PINGDOM_MESSAGE_TEMPLATE = ('Service {service_url} changed its {type} status'
+                            ' from {previous_state} to {current_state}.')
 PINGDOM_MESSAGE_DESCRIPTION_TEMPLATE = 'Description: {description}.'
 
 
@@ -48,13 +50,11 @@ def api_pingdom_webhook(request, user_profile, payload=REQ(argument_type='body')
     return json_success()
 
 
-def get_subject_for_http_request(payload):
-    # type: (Dict[str, Any]) -> Text
+def get_subject_for_http_request(payload: Dict[str, Any]) -> Text:
     return PINGDOM_SUBJECT_TEMPLATE.format(name=payload['check_name'])
 
 
-def get_body_for_http_request(payload):
-    # type: (Dict[str, Any]) -> Text
+def get_body_for_http_request(payload: Dict[str, Any]) -> Text:
     current_state = payload['current_state']
     previous_state = payload['previous_state']
 
@@ -71,6 +71,5 @@ def get_body_for_http_request(payload):
     return body
 
 
-def get_check_type(payload):
-    # type: (Dict[str, Any]) -> Text
+def get_check_type(payload: Dict[str, Any]) -> Text:
     return payload['check_type']

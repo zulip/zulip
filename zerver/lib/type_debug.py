@@ -5,7 +5,7 @@ import functools
 from typing import Any, Callable, IO, Mapping, Sequence, TypeVar, Text
 
 def get_mapping_type_str(x):
-    # type: (Mapping) -> str
+    # type: (Mapping[Any, Any]) -> str
     container_type = type(x).__name__
     if not x:
         if container_type == 'dict':
@@ -27,7 +27,7 @@ def get_mapping_type_str(x):
             return '%s([(%s, %s), ...])' % (container_type, key_type, value_type)
 
 def get_sequence_type_str(x):
-    # type: (Sequence) -> str
+    # type: (Sequence[Any]) -> str
     container_type = type(x).__name__
     if not x:
         if container_type == 'list':
@@ -67,7 +67,7 @@ def get_type_str(x):
     else:
         return type(x).__name__
 
-FuncT = TypeVar('FuncT', bound=Callable)
+FuncT = TypeVar('FuncT', bound=Callable[..., Any])
 
 def print_types_to(file_obj):
     # type: (IO[str]) -> Callable[[FuncT], FuncT]

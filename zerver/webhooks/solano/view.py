@@ -3,9 +3,10 @@
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
+from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success, json_error
+from zerver.lib.request import REQ, has_request_variables
 from zerver.models import UserProfile, Client
 
 from typing import Any, Dict
@@ -64,8 +65,8 @@ def api_solano_webhook(request, user_profile,
     check_send_stream_message(user_profile, request.client, stream, topic, body)
     return json_success()
 
-def handle_test_event(user_profile, client, stream, topic):
-    # type: (UserProfile, Client, str, str) -> HttpResponse
+def handle_test_event(user_profile: UserProfile, client: Client, stream: str,
+                      topic: str) -> HttpResponse:
     body = 'Solano webhook set up correctly'
     check_send_stream_message(user_profile, client, stream, topic, body)
     return json_success()

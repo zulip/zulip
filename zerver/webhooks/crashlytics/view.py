@@ -1,11 +1,13 @@
 # Webhooks for external integrations.
+from typing import Any, Dict, Text
 from django.utils.translation import ugettext as _
+from django.http import HttpRequest, HttpResponse
+
+from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success, json_error
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
+from zerver.lib.request import REQ, has_request_variables
 from zerver.models import UserProfile
-from django.http import HttpRequest, HttpResponse
-from typing import Any, Dict, Text
 
 CRASHLYTICS_SUBJECT_TEMPLATE = '{display_id}: {title}'
 CRASHLYTICS_MESSAGE_TEMPLATE = '[Issue]({url}) impacts at least {impacted_devices_count} device(s).'

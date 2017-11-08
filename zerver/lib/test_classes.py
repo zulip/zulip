@@ -8,22 +8,23 @@ from django.test import TestCase
 from django.test.client import (
     BOUNDARY, MULTIPART_CONTENT, encode_multipart,
 )
-from django.template import loader
 from django.test.testcases import SerializeMixin
 from django.http import HttpResponse
 from django.db.utils import IntegrityError
 
 from zerver.lib.initial_password import initial_password
-from zerver.lib.db import TimeTrackingCursor
 from zerver.lib.str_utils import force_text
 from zerver.lib.utils import is_remote_server
-from zerver.lib import cache
-from zerver.tornado.handlers import allocate_handler_id
-from zerver.worker import queue_processors
+from zerver.views.users import add_service
 
 from zerver.lib.actions import (
     check_send_message, create_stream_if_needed, bulk_add_subscriptions,
-    get_display_recipient, bulk_remove_subscriptions
+    get_display_recipient, bulk_remove_subscriptions, do_create_user,
+    check_send_stream_message,
+)
+
+from zerver.lib.stream_subscription import (
+    get_stream_subscriptions_for_user,
 )
 
 from zerver.lib.test_helpers import (
@@ -39,13 +40,12 @@ from zerver.models import (
     Message,
     Realm,
     Recipient,
+    Service,
     Stream,
     Subscription,
-    UserMessage,
     UserProfile,
 )
 
-from zerver.lib.request import JsonableError
 from zilencer.models import get_remote_server_by_uuid
 
 
@@ -53,12 +53,8 @@ import base64
 import mock
 import os
 import re
-import time
 import ujson
-import unittest
-from six.moves import urllib
-from six import binary_type
-from zerver.lib.str_utils import NonBinaryStr
+import urllib
 
 from contextlib import contextmanager
 
@@ -110,17 +106,10 @@ class ZulipTestCase(TestCase):
     def set_http_host(self, kwargs):
         # type: (Dict[str, Any]) -> None
         if 'subdomain' in kwargs:
-            if kwargs['subdomain'] != "":
-                kwargs["HTTP_HOST"] = "%s.%s" % (kwargs["subdomain"], settings.EXTERNAL_HOST)
-            else:
-                kwargs["HTTP_HOST"] = settings.EXTERNAL_HOST
+            kwargs['HTTP_HOST'] = Realm.host_for_subdomain(kwargs['subdomain'])
             del kwargs['subdomain']
         elif 'HTTP_HOST' not in kwargs:
-            if self.DEFAULT_SUBDOMAIN == "":
-                kwargs["HTTP_HOST"] = settings.EXTERNAL_HOST
-            else:
-                kwargs["HTTP_HOST"] = "%s.%s" % (self.DEFAULT_SUBDOMAIN,
-                                                 settings.EXTERNAL_HOST,)
+            kwargs['HTTP_HOST'] = Realm.host_for_subdomain(self.DEFAULT_SUBDOMAIN)
 
     @instrument_url
     def client_patch(self, url, info={}, **kwargs):
@@ -215,35 +204,35 @@ class ZulipTestCase(TestCase):
         return django_client.get(url, info, **kwargs)
 
     example_user_map = dict(
-        hamlet=u'hamlet@zulip.com',
-        cordelia=u'cordelia@zulip.com',
-        iago=u'iago@zulip.com',
-        prospero=u'prospero@zulip.com',
-        othello=u'othello@zulip.com',
-        AARON=u'AARON@zulip.com',
-        aaron=u'aaron@zulip.com',
-        ZOE=u'ZOE@zulip.com',
-        webhook_bot=u'webhook-bot@zulip.com',
-        welcome_bot=u'welcome-bot@zulip.com',
-        outgoing_webhook_bot=u'outgoing-webhook@zulip.com'
+        hamlet='hamlet@zulip.com',
+        cordelia='cordelia@zulip.com',
+        iago='iago@zulip.com',
+        prospero='prospero@zulip.com',
+        othello='othello@zulip.com',
+        AARON='AARON@zulip.com',
+        aaron='aaron@zulip.com',
+        ZOE='ZOE@zulip.com',
+        webhook_bot='webhook-bot@zulip.com',
+        welcome_bot='welcome-bot@zulip.com',
+        outgoing_webhook_bot='outgoing-webhook@zulip.com'
     )
 
     mit_user_map = dict(
-        sipbtest=u"sipbtest@mit.edu",
-        starnine=u"starnine@mit.edu",
-        espuser=u"espuser@mit.edu",
+        sipbtest="sipbtest@mit.edu",
+        starnine="starnine@mit.edu",
+        espuser="espuser@mit.edu",
     )
 
     # Non-registered test users
     nonreg_user_map = dict(
-        test=u'test@zulip.com',
-        test1=u'test1@zulip.com',
-        alice=u'alice@zulip.com',
-        newuser=u'newuser@zulip.com',
-        bob=u'bob@zulip.com',
-        cordelia=u'cordelia@zulip.com',
-        newguy=u'newguy@zulip.com',
-        me=u'me@zulip.com',
+        test='test@zulip.com',
+        test1='test1@zulip.com',
+        alice='alice@zulip.com',
+        newuser='newuser@zulip.com',
+        bob='bob@zulip.com',
+        cordelia='cordelia@zulip.com',
+        newguy='newguy@zulip.com',
+        me='me@zulip.com',
     )
 
     def nonreg_user(self, name):
@@ -277,6 +266,17 @@ class ZulipTestCase(TestCase):
         # type: () -> UserProfile
         return get_user('notification-bot@zulip.com', get_realm('zulip'))
 
+    def create_test_bot(self, email, user_profile, full_name, short_name, bot_type, service_name=None):
+        # type: (Text, UserProfile, Text, Text, int, str) -> UserProfile
+        bot_profile = do_create_user(email=email, password='', realm=user_profile.realm,
+                                     full_name=full_name, short_name=short_name,
+                                     bot_type=bot_type, bot_owner=user_profile)
+        if bot_type in (UserProfile.OUTGOING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
+            add_service(name=service_name, user_profile=bot_profile,
+                        base_url='', interface=Service.GENERIC,
+                        token='abcdef')
+        return bot_profile
+
     def login_with_return(self, email, password=None, **kwargs):
         # type: (Text, Optional[Text], **Any) -> HttpResponse
         if password is None:
@@ -306,8 +306,9 @@ class ZulipTestCase(TestCase):
 
     def submit_reg_form_for_user(self, email, password, realm_name="Zulip Test",
                                  realm_subdomain="zuliptest",
-                                 from_confirmation='', full_name=None, timezone=u'', **kwargs):
-        # type: (Text, Text, Optional[Text], Optional[Text], Optional[Text], Optional[Text], Optional[Text], **Any) -> HttpResponse
+                                 from_confirmation='', full_name=None, timezone='',
+                                 realm_in_root_domain=None, **kwargs):
+        # type: (Text, Text, Optional[Text], Optional[Text], Optional[Text], Optional[Text], Optional[Text], Optional[Text], **Any) -> HttpResponse
         """
         Stage two of the two-step registration process.
 
@@ -318,24 +319,29 @@ class ZulipTestCase(TestCase):
         """
         if full_name is None:
             full_name = email.replace("@", "_")
-        return self.client_post('/accounts/register/',
-                                {'full_name': full_name,
-                                 'password': password,
-                                 'realm_name': realm_name,
-                                 'realm_subdomain': realm_subdomain,
-                                 'key': find_key_by_email(email),
-                                 'timezone': timezone,
-                                 'terms': True,
-                                 'from_confirmation': from_confirmation},
-                                **kwargs)
+        payload = {
+            'full_name': full_name,
+            'password': password,
+            'realm_name': realm_name,
+            'realm_subdomain': realm_subdomain,
+            'key': find_key_by_email(email),
+            'timezone': timezone,
+            'terms': True,
+            'from_confirmation': from_confirmation,
+        }
+        if realm_in_root_domain is not None:
+            payload['realm_in_root_domain'] = realm_in_root_domain
+        return self.client_post('/accounts/register/', payload, **kwargs)
 
-    def get_confirmation_url_from_outbox(self, email_address, path_pattern="(\S+)>"):
+    def get_confirmation_url_from_outbox(self, email_address, *, url_pattern=None):
         # type: (Text, Text) -> Text
         from django.core.mail import outbox
+        if url_pattern is None:
+            # This is a bit of a crude heuristic, but good enough for most tests.
+            url_pattern = settings.EXTERNAL_HOST + "(\S+)>"
         for message in reversed(outbox):
             if email_address in message.to:
-                return re.search(settings.EXTERNAL_HOST + path_pattern,
-                                 message.body).groups()[0]
+                return re.search(url_pattern, message.body).groups()[0]
         else:
             raise AssertionError("Couldn't find a confirmation email.")
 
@@ -353,9 +359,9 @@ class ZulipTestCase(TestCase):
                 api_key = get_user_profile_by_email(identifier).api_key
             API_KEYS[identifier] = api_key
 
-        credentials = u"%s:%s" % (identifier, api_key)
+        credentials = "%s:%s" % (identifier, api_key)
         return {
-            'HTTP_AUTHORIZATION': u'Basic ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
+            'HTTP_AUTHORIZATION': 'Basic ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
         }
 
     def get_streams(self, email, realm):
@@ -364,32 +370,50 @@ class ZulipTestCase(TestCase):
         Helper function to get the stream names for a user
         """
         user_profile = get_user(email, realm)
-        subs = Subscription.objects.filter(
-            user_profile=user_profile,
+        subs = get_stream_subscriptions_for_user(user_profile).filter(
             active=True,
-            recipient__type=Recipient.STREAM)
+        )
         return [cast(Text, get_display_recipient(sub.recipient)) for sub in subs]
 
-    def send_message(self, sender_name, raw_recipients, message_type,
-                     content=u"test content", subject=u"test", **kwargs):
-        # type: (Text, Union[Text, List[Text]], int, Text, Text, **Any) -> int
-        sender = get_user_profile_by_email(sender_name)
-        if message_type in [Recipient.PERSONAL, Recipient.HUDDLE]:
-            message_type_name = "private"
-        elif message_type == Recipient.STREAM:
-            message_type_name = "stream"
-        else:
-            raise AssertionError("Recipient type should be an Recipient.STREAM type enum")
-        if isinstance(raw_recipients, str):
-            recipient_list = [raw_recipients]
-        else:
-            recipient_list = raw_recipients
+    def send_personal_message(self, from_email, to_email, content="test content"):
+        # type: (Text, Text, Text) -> int
+        sender = get_user_profile_by_email(from_email)
+
+        recipient_list = [to_email]
         (sending_client, _) = Client.objects.get_or_create(name="test suite")
 
         return check_send_message(
-            sender, sending_client, message_type_name, recipient_list, subject,
-            content, forged=False, forged_timestamp=None,
-            forwarder_user_profile=sender, realm=sender.realm, **kwargs)
+            sender, sending_client, 'private', recipient_list, None,
+            content
+        )
+
+    def send_huddle_message(self, from_email, to_emails, content="test content"):
+        # type: (Text, List[Text], Text) -> int
+        sender = get_user_profile_by_email(from_email)
+
+        assert(len(to_emails) >= 2)
+
+        (sending_client, _) = Client.objects.get_or_create(name="test suite")
+
+        return check_send_message(
+            sender, sending_client, 'private', to_emails, None,
+            content
+        )
+
+    def send_stream_message(self, sender_email, stream_name,
+                            content="test content", topic_name="test"):
+        # type: (Text, Text, Text, Text) -> int
+        sender = get_user_profile_by_email(sender_email)
+
+        (sending_client, _) = Client.objects.get_or_create(name="test suite")
+
+        return check_send_stream_message(
+            sender=sender,
+            client=sending_client,
+            stream_name=stream_name,
+            topic=topic_name,
+            body=content,
+        )
 
     def get_messages(self, anchor=1, num_before=100, num_after=100,
                      use_first_unread_anchor=False):
@@ -452,7 +476,7 @@ class ZulipTestCase(TestCase):
         self.assertEqual(self.get_json_error(result, status_code=status_code), msg)
 
     def assert_length(self, items, count):
-        # type: (List, int) -> None
+        # type: (List[Any], int) -> None
         actual_count = len(items)
         if actual_count != count:  # nocoverage
             print('ITEMS:\n')

@@ -1,17 +1,9 @@
-from zerver.models import UserProfile
-
 from typing import Any, Callable, Dict, List, Optional, Text
 
 from zerver.models import (
-    bulk_get_recipients,
-    bulk_get_streams,
-    get_recipient,
-    get_stream,
-    get_recipient,
+    get_stream_recipient,
     get_stream,
     MutedTopic,
-    Recipient,
-    Stream,
     UserProfile
 )
 from sqlalchemy.sql import (
@@ -22,8 +14,6 @@ from sqlalchemy.sql import (
     or_,
     Selectable
 )
-
-import ujson
 
 def get_topic_mutes(user_profile):
     # type: (UserProfile) -> List[List[Text]]
@@ -51,7 +41,7 @@ def set_topic_mutes(user_profile, muted_topics):
 
     for stream_name, topic_name in muted_topics:
         stream = get_stream(stream_name, user_profile.realm)
-        recipient = get_recipient(Recipient.STREAM, stream.id)
+        recipient = get_stream_recipient(stream.id)
 
         add_topic_mute(
             user_profile=user_profile,

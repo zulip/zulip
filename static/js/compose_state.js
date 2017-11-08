@@ -51,6 +51,15 @@ exports.has_message_content = function () {
     return exports.message_content() !== "";
 };
 
+exports.insert_syntax_and_focus = function (syntax) {
+    // Generic helper for inserting syntax into the main compose box
+    // where the cursor was and focusing the area.  Mostly a thin
+    // wrapper around $.caret.
+    var textarea = $('#new_message_content');
+    textarea.caret(syntax);
+    textarea.focus();
+};
+
 return exports;
 }());
 

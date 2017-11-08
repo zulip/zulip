@@ -4,7 +4,6 @@ import os
 import glob
 from datetime import timedelta
 from mock import MagicMock, patch
-from six.moves import map, filter
 from typing import List, Dict, Any, Optional
 
 from django.conf import settings
@@ -176,7 +175,8 @@ class TestSendWebhookFixtureMessage(TestCase):
 
         client = client_mock()
 
-        call_command(self.COMMAND_NAME, fixture=self.fixture_path, url=self.url)
+        with self.assertRaises(SystemExit):
+            call_command(self.COMMAND_NAME, fixture=self.fixture_path, url=self.url)
         self.assertTrue(ujson_mock.dumps.called)
         self.assertTrue(ujson_mock.loads.called)
         self.assertTrue(open_mock.called)

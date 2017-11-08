@@ -11,7 +11,7 @@ from zerver.middleware import LogRequests
 
 request_logger = LogRequests()
 
-class MockSession(object):
+class MockSession:
     def __init__(self):
         # type: () -> None
         self.modified = False
@@ -23,8 +23,9 @@ class MockRequest(HttpRequest):
         self.path = '/'
         self.method = "POST"
         self.META = {"REMOTE_ADDR": "127.0.0.1"}
+        anchor = UserMessage.objects.filter(user_profile=self.user).order_by("-message")[200].message_id
         self.REQUEST = {
-            "anchor": UserMessage.objects.filter(user_profile=self.user).order_by("-message")[200].message_id,
+            "anchor": anchor,
             "num_before": 1200,
             "num_after": 200
         }

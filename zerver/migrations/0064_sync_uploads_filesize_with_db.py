@@ -14,8 +14,7 @@ import os
 class MissingUploadFileException(Exception):
     pass
 
-def get_file_size_local(path_id):
-    # type: (Text) -> int
+def get_file_size_local(path_id: Text) -> int:
     file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, 'files', path_id)
     try:
         size = os.path.getsize(file_path)
@@ -23,8 +22,7 @@ def get_file_size_local(path_id):
         raise MissingUploadFileException
     return size
 
-def sync_filesizes(apps, schema_editor):
-    # type: (StateApps, DatabaseSchemaEditor) -> None
+def sync_filesizes(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     attachments = apps.get_model('zerver', 'Attachment')
     if settings.LOCAL_UPLOADS_DIR is not None:
         for attachment in attachments.objects.all():
@@ -49,8 +47,7 @@ def sync_filesizes(apps, schema_editor):
                 attachment.size = new_size
                 attachment.save(update_fields=["size"])
 
-def reverse_sync_filesizes(apps, schema_editor):
-    # type: (StateApps, DatabaseSchemaEditor) -> None
+def reverse_sync_filesizes(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     """Does nothing"""
     return None
 

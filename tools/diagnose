@@ -11,9 +11,11 @@ if False:
 TOOLS_DIR = os.path.dirname(__file__)
 ROOT_DIR = os.path.dirname(TOOLS_DIR)
 sys.path.insert(0, ROOT_DIR)
+from scripts.lib.zulip_tools import get_dev_uuid_var_path
+UUID_VAR_PATH = get_dev_uuid_var_path()
 
 def run(check_func):
-    # type: (Callable) -> None
+    # type: (Callable[[], bool]) -> None
     '''
     This decorator simply runs functions.  It makes it more
     convenient to add new checks without a big main() function.
@@ -70,7 +72,7 @@ def check_django():
 @run
 def provision_version():
     # type: () -> bool
-    fn = os.path.join(ROOT_DIR, 'var/provision_version')
+    fn = os.path.join(UUID_VAR_PATH, 'provision_version')
     with open(fn) as f:
         version = f.read().strip()
     print('latest version provisioned:', version)

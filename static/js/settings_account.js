@@ -126,7 +126,7 @@ exports.set_up = function () {
                             'Sorry for the trouble!');
                         return false;
                     } else if (!password_ok) {
-                        settings_change_error('New password is too weak');
+                        settings_change_error(i18n.t('New password is too weak'));
                         return false;
                     }
                 }
@@ -134,10 +134,10 @@ exports.set_up = function () {
             return true;
         },
         success: function () {
-            settings_change_success("Updated settings!");
+            settings_change_success(i18n.t("Updated settings!"));
         },
         error: function (xhr) {
-            settings_change_error("Error changing settings", xhr);
+            settings_change_error(i18n.t("Error changing settings"), xhr);
         },
         complete: function () {
             // Whether successful or not, clear the password boxes.
@@ -169,7 +169,7 @@ exports.set_up = function () {
                 }
             },
             error: function (xhr) {
-                settings_change_error("Error changing settings", xhr);
+                settings_change_error(i18n.t("Error changing settings"), xhr);
             },
         });
     });

@@ -37,13 +37,6 @@ class EmailChangeTestCase(ZulipTestCase):
         response = self.client_get(url)
         self.assert_in_success_response(["Whoops. The confirmation link is malformed."], response)
 
-    def test_email_change_when_not_logging_in(self):
-        # type: () -> None
-        key = generate_key()
-        url = confirmation_url(key, 'testserver', Confirmation.EMAIL_CHANGE)
-        response = self.client_get(url)
-        self.assertEqual(response.status_code, 302)
-
     def test_confirm_email_change_when_time_exceeded(self):
         # type: () -> None
         user_profile = self.example_user('hamlet')

@@ -9,9 +9,9 @@ from sqlalchemy.sql import (
 from sqlalchemy.sql import compiler
 
 from zerver.models import (
-    Realm, Recipient, Stream, Subscription, UserProfile, Attachment,
-    get_display_recipient, get_recipient, get_realm, get_stream, get_user,
-    Reaction, UserMessage
+    Realm, Stream, Subscription, UserProfile, Attachment,
+    get_display_recipient, get_personal_recipient, get_realm, get_stream, get_user,
+    Reaction, UserMessage, get_stream_recipient,
 )
 from zerver.lib.message import (
     MessageDict,
@@ -41,7 +41,7 @@ from zerver.views.messages import (
 )
 
 from typing import Dict, List, Mapping, Sequence, Tuple, Generic, Union, Any, Optional, Text
-from six.moves import range
+import mock
 import os
 import re
 import ujson
@@ -59,12 +59,12 @@ def fix_ws(s):
 def get_recipient_id_for_stream_name(realm, stream_name):
     # type: (Realm, Text) -> Text
     stream = get_stream(stream_name, realm)
-    return get_recipient(Recipient.STREAM, stream.id).id
+    return get_stream_recipient(stream.id).id
 
 def mute_stream(realm, user_profile, stream_name):
     # type: (Realm, Text, Text) -> None
     stream = get_stream(stream_name, realm)
-    recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
+    recipient = get_stream_recipient(stream.id)
     subscription = Subscription.objects.get(recipient=recipient, user_profile=user_profile)
     subscription.in_home_view = False
     subscription.save()
@@ -244,7 +244,11 @@ class NarrowBuilderTest(ZulipTestCase):
     def test_add_term_using_group_pm_operator_and_not_the_same_user_as_operand(self):
         # type: () -> None
         term = dict(operator='group-pm-with', operand=self.example_email("othello"))
-        self._do_add_term_test(term, 'WHERE recipient_id != recipient_id')
+        with mock.patch("sqlalchemy.util.warn") as mock_warn:
+            self._do_add_term_test(term, 'WHERE recipient_id != recipient_id')
+
+            # SQLalchemy warns because this query is a tautology.
+            mock_warn.assert_called_once()
 
     def test_add_term_using_group_pm_operator_not_the_same_user_as_operand_and_negated(self):  # NEGATED
         # type: () -> None
@@ -442,7 +446,7 @@ class IncludeHistoryTest(ZulipTestCase):
 class GetOldMessagesTest(ZulipTestCase):
 
     def get_and_check_messages(self, modified_params, **kwargs):
-        # type: (Dict[str, Union[str, int]], **Any) -> Dict[str, Dict]
+        # type: (Dict[str, Union[str, int]], **Any) -> Dict[str, Any]
         post_params = {"anchor": 1, "num_before": 1, "num_after": 1}  # type: Dict[str, Union[str, int]]
         post_params.update(modified_params)
         payload = self.client_get("/json/messages", dict(post_params),
@@ -468,13 +472,39 @@ class GetOldMessagesTest(ZulipTestCase):
         query_ids = {}  # type: Dict[Text, int]
 
         scotland_stream = get_stream('Scotland', hamlet_user.realm)
-        query_ids['scotland_recipient'] = get_recipient(Recipient.STREAM, scotland_stream.id).id
+        query_ids['scotland_recipient'] = get_stream_recipient(scotland_stream.id).id
         query_ids['hamlet_id'] = hamlet_user.id
         query_ids['othello_id'] = othello_user.id
-        query_ids['hamlet_recipient'] = get_recipient(Recipient.PERSONAL, hamlet_user.id).id
-        query_ids['othello_recipient'] = get_recipient(Recipient.PERSONAL, othello_user.id).id
+        query_ids['hamlet_recipient'] = get_personal_recipient(hamlet_user.id).id
+        query_ids['othello_recipient'] = get_personal_recipient(othello_user.id).id
 
         return query_ids
+
+    def test_content_types(self):
+        # type: () -> None
+        """
+        Test old `/json/messages` returns reactions.
+        """
+        self.login(self.example_email("hamlet"))
+
+        def get_content_type(apply_markdown):
+            # type: (bool) -> Text
+            req = dict(
+                apply_markdown=ujson.dumps(apply_markdown),
+            )  # type: Dict[str, Any]
+            result = self.get_and_check_messages(req)
+            message = result['messages'][0]
+            return message['content_type']
+
+        self.assertEqual(
+            get_content_type(apply_markdown=False),
+            'text/x-markdown',
+        )
+
+        self.assertEqual(
+            get_content_type(apply_markdown=True),
+            'text/html',
+        )
 
     def test_successful_get_messages_reaction(self):
         # type: () -> None
@@ -519,6 +549,24 @@ class GetOldMessagesTest(ZulipTestCase):
 
         self.get_and_check_messages(dict(narrow=ujson.dumps([dict(operator='pm-with', operand=self.example_email("othello"))])))
 
+    def test_client_avatar(self):
+        # type: () -> None
+        """
+        The client_gravatar flag determines whether we send avatar_url.
+        """
+        hamlet = self.example_user('hamlet')
+        self.login(hamlet.email)
+
+        self.send_personal_message(hamlet.email, self.example_email("iago"))
+
+        result = self.get_and_check_messages({})
+        message = result['messages'][0]
+        self.assertIn('gravatar.com', message['avatar_url'])
+
+        result = self.get_and_check_messages(dict(client_gravatar=ujson.dumps(True)))
+        message = result['messages'][0]
+        self.assertEqual(message['avatar_url'], None)
+
     def test_get_messages_with_narrow_pm_with(self):
         # type: () -> None
         """
@@ -532,13 +580,13 @@ class GetOldMessagesTest(ZulipTestCase):
             assert isinstance(dr, list)
             return ','.join(sorted(set([r['email'] for r in dr] + [me])))
 
-        self.send_message(me, self.example_email("iago"), Recipient.PERSONAL)
-        self.send_message(me,
-                          [self.example_email("iago"), self.example_email("cordelia")],
-                          Recipient.HUDDLE)
+        self.send_personal_message(me, self.example_email("iago"))
+        self.send_huddle_message(
+            me,
+            [self.example_email("iago"), self.example_email("cordelia")],
+        )
         personals = [m for m in get_user_messages(self.example_user('hamlet'))
-                     if m.recipient.type == Recipient.PERSONAL or
-                     m.recipient.type == Recipient.HUDDLE]
+                     if not m.is_stream_message()]
         for personal in personals:
             emails = dr_emails(get_display_recipient(personal.recipient))
 
@@ -558,13 +606,53 @@ class GetOldMessagesTest(ZulipTestCase):
         me = self.example_email("hamlet")
 
         matching_message_ids = []
-        matching_message_ids.append(self.send_message(me, [self.example_email("iago"), self.example_email("cordelia"), self.example_email("othello")], Recipient.HUDDLE))
-        matching_message_ids.append(self.send_message(me, [self.example_email("cordelia"), self.example_email("othello")], Recipient.HUDDLE))
+
+        matching_message_ids.append(
+            self.send_huddle_message(
+                me,
+                [
+                    self.example_email("iago"),
+                    self.example_email("cordelia"),
+                    self.example_email("othello"),
+                ],
+            ),
+        )
+
+        matching_message_ids.append(
+            self.send_huddle_message(
+                me,
+                [
+                    self.example_email("cordelia"),
+                    self.example_email("othello"),
+                ],
+            ),
+        )
 
         non_matching_message_ids = []
-        non_matching_message_ids.append(self.send_message(me, self.example_email("cordelia"), Recipient.PERSONAL))
-        non_matching_message_ids.append(self.send_message(me, [self.example_email("iago"), self.example_email("othello")], Recipient.HUDDLE))
-        non_matching_message_ids.append(self.send_message(self.example_email("cordelia"), [self.example_email("iago"), self.example_email("othello")], Recipient.HUDDLE))
+
+        non_matching_message_ids.append(
+            self.send_personal_message(me, self.example_email("cordelia")),
+        )
+
+        non_matching_message_ids.append(
+            self.send_huddle_message(
+                me,
+                [
+                    self.example_email("iago"),
+                    self.example_email("othello"),
+                ],
+            ),
+        )
+
+        non_matching_message_ids.append(
+            self.send_huddle_message(
+                self.example_email("cordelia"),
+                [
+                    self.example_email("iago"),
+                    self.example_email("othello"),
+                ],
+            ),
+        )
 
         self.login(me)
         narrow = [dict(operator='group-pm-with', operand=self.example_email("cordelia"))]
@@ -572,6 +660,48 @@ class GetOldMessagesTest(ZulipTestCase):
         for message in result["messages"]:
             self.assertIn(message["id"], matching_message_ids)
             self.assertNotIn(message["id"], non_matching_message_ids)
+
+    def test_include_history(self):
+        # type: () -> None
+        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user('cordelia')
+
+        stream_name = 'test stream'
+        self.subscribe(cordelia, stream_name)
+
+        old_message_id = self.send_stream_message(cordelia.email, stream_name, content='foo')
+
+        self.subscribe(hamlet, stream_name)
+
+        content = 'hello @**King Hamlet**'
+        new_message_id = self.send_stream_message(cordelia.email, stream_name, content=content)
+
+        self.login(hamlet.email)
+        narrow = [
+            dict(operator='stream', operand=stream_name)
+        ]
+
+        req = dict(
+            narrow=ujson.dumps(narrow),
+            anchor=LARGER_THAN_MAX_MESSAGE_ID,
+            num_before=100,
+            num_after=100,
+        )
+
+        payload = self.client_get('/json/messages', req)
+        self.assert_json_success(payload)
+        result = ujson.loads(payload.content)
+        messages = result['messages']
+        self.assertEqual(len(messages), 2)
+
+        for message in messages:
+            if message['id'] == old_message_id:
+                old_message = message
+            elif message['id'] == new_message_id:
+                new_message = message
+
+        self.assertEqual(old_message['flags'], ['read', 'historical'])
+        self.assertEqual(new_message['flags'], ['mentioned'])
 
     def test_get_messages_with_narrow_stream(self):
         # type: () -> None
@@ -584,9 +714,9 @@ class GetOldMessagesTest(ZulipTestCase):
         # it to ensure that we actually have a stream message in this
         # narrow view.
         self.subscribe(self.example_user("hamlet"), 'Scotland')
-        self.send_message(self.example_email("hamlet"), "Scotland", Recipient.STREAM)
+        self.send_stream_message(self.example_email("hamlet"), "Scotland")
         messages = get_user_messages(self.example_user('hamlet'))
-        stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
+        stream_messages = [msg for msg in messages if msg.is_stream_message()]
         stream_name = get_display_recipient(stream_messages[0].recipient)
         stream_id = stream_messages[0].recipient.id
 
@@ -614,8 +744,8 @@ class GetOldMessagesTest(ZulipTestCase):
         lambda_stream_d_name = u"\u03bb-stream.d"
         self.subscribe(self.mit_user("starnine"), lambda_stream_d_name)
 
-        self.send_message(self.mit_email("starnine"), u"\u03bb-stream", Recipient.STREAM)
-        self.send_message(self.mit_email("starnine"), u"\u03bb-stream.d", Recipient.STREAM)
+        self.send_stream_message(self.mit_email("starnine"), u"\u03bb-stream")
+        self.send_stream_message(self.mit_email("starnine"), u"\u03bb-stream.d")
 
         narrow = [dict(operator='stream', operand=u'\u03bb-stream')]
         result = self.get_and_check_messages(dict(num_after=2,
@@ -623,7 +753,7 @@ class GetOldMessagesTest(ZulipTestCase):
                                              subdomain="zephyr")
 
         messages = get_user_messages(self.mit_user("starnine"))
-        stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
+        stream_messages = [msg for msg in messages if msg.is_stream_message()]
 
         self.assertEqual(len(result["messages"]), 2)
         for i, message in enumerate(result["messages"]):
@@ -645,16 +775,16 @@ class GetOldMessagesTest(ZulipTestCase):
         # narrow view.
         self.subscribe(mit_user_profile, "Scotland")
 
-        self.send_message(email, "Scotland", Recipient.STREAM,
-                          subject=u"\u03bb-topic")
-        self.send_message(email, "Scotland", Recipient.STREAM,
-                          subject=u"\u03bb-topic.d")
-        self.send_message(email, "Scotland", Recipient.STREAM,
-                          subject=u"\u03bb-topic.d.d")
-        self.send_message(email, "Scotland", Recipient.STREAM,
-                          subject=u"\u03bb-topic.d.d.d")
-        self.send_message(email, "Scotland", Recipient.STREAM,
-                          subject=u"\u03bb-topic.d.d.d.d")
+        self.send_stream_message(email, "Scotland",
+                                 topic_name=u"\u03bb-topic")
+        self.send_stream_message(email, "Scotland",
+                                 topic_name=u"\u03bb-topic.d")
+        self.send_stream_message(email, "Scotland",
+                                 topic_name=u"\u03bb-topic.d.d")
+        self.send_stream_message(email, "Scotland",
+                                 topic_name=u"\u03bb-topic.d.d.d")
+        self.send_stream_message(email, "Scotland",
+                                 topic_name=u"\u03bb-topic.d.d.d.d")
 
         narrow = [dict(operator='topic', operand=u'\u03bb-topic')]
         result = self.get_and_check_messages(
@@ -662,7 +792,7 @@ class GetOldMessagesTest(ZulipTestCase):
             subdomain="zephyr")
 
         messages = get_user_messages(mit_user_profile)
-        stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
+        stream_messages = [msg for msg in messages if msg.is_stream_message()]
         self.assertEqual(len(result["messages"]), 5)
         for i, message in enumerate(result["messages"]):
             self.assertEqual(message["type"], "stream")
@@ -681,20 +811,20 @@ class GetOldMessagesTest(ZulipTestCase):
         # narrow view.
         self.subscribe(mit_user_profile, "Scotland")
 
-        self.send_message(email, "Scotland", Recipient.STREAM,
-                          subject=u".d.d")
-        self.send_message(email, "Scotland", Recipient.STREAM,
-                          subject=u"PERSONAL")
-        self.send_message(email, "Scotland", Recipient.STREAM,
-                          subject=u'(instance "").d')
-        self.send_message(email, "Scotland", Recipient.STREAM,
-                          subject=u".d.d.d")
-        self.send_message(email, "Scotland", Recipient.STREAM,
-                          subject=u"personal.d")
-        self.send_message(email, "Scotland", Recipient.STREAM,
-                          subject=u'(instance "")')
-        self.send_message(email, "Scotland", Recipient.STREAM,
-                          subject=u".d.d.d.d")
+        self.send_stream_message(email, "Scotland",
+                                 topic_name=u".d.d")
+        self.send_stream_message(email, "Scotland",
+                                 topic_name=u"PERSONAL")
+        self.send_stream_message(email, "Scotland",
+                                 topic_name=u'(instance "").d')
+        self.send_stream_message(email, "Scotland",
+                                 topic_name=u".d.d.d")
+        self.send_stream_message(email, "Scotland",
+                                 topic_name=u"personal.d")
+        self.send_stream_message(email, "Scotland",
+                                 topic_name=u'(instance "")')
+        self.send_stream_message(email, "Scotland",
+                                 topic_name=u".d.d.d.d")
 
         narrow = [dict(operator='topic', operand=u'personal.d.d')]
         result = self.get_and_check_messages(
@@ -704,7 +834,7 @@ class GetOldMessagesTest(ZulipTestCase):
             subdomain="zephyr")
 
         messages = get_user_messages(mit_user_profile)
-        stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
+        stream_messages = [msg for msg in messages if msg.is_stream_message()]
         self.assertEqual(len(result["messages"]), 7)
         for i, message in enumerate(result["messages"]):
             self.assertEqual(message["type"], "stream")
@@ -720,10 +850,10 @@ class GetOldMessagesTest(ZulipTestCase):
         self.login(self.example_email("hamlet"))
         # We need to send a message here to ensure that we actually
         # have a stream message in this narrow view.
-        self.send_message(self.example_email("hamlet"), "Scotland", Recipient.STREAM)
-        self.send_message(self.example_email("othello"), "Scotland", Recipient.STREAM)
-        self.send_message(self.example_email("othello"), self.example_email("hamlet"), Recipient.PERSONAL)
-        self.send_message(self.example_email("iago"), "Scotland", Recipient.STREAM)
+        self.send_stream_message(self.example_email("hamlet"), "Scotland")
+        self.send_stream_message(self.example_email("othello"), "Scotland")
+        self.send_personal_message(self.example_email("othello"), self.example_email("hamlet"))
+        self.send_stream_message(self.example_email("iago"), "Scotland")
 
         narrow = [dict(operator='sender', operand=self.example_email("othello"))]
         result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow)))
@@ -752,10 +882,9 @@ class GetOldMessagesTest(ZulipTestCase):
 
         def send(content):
             # type: (Text) -> int
-            msg_id = self.send_message(
-                sender_name=email,
-                raw_recipients="Verona",
-                message_type=Recipient.STREAM,
+            msg_id = self.send_stream_message(
+                sender_email=email,
+                stream_name="Verona",
                 content=content,
             )
             return msg_id
@@ -793,17 +922,20 @@ class GetOldMessagesTest(ZulipTestCase):
             ('meetings', 'please bring your laptops to take notes'),
             ('dinner', 'Anybody staying late tonight?'),
             ('urltest', 'https://google.com'),
+            (u'日本', u'こんに ちは 。 今日は いい 天気ですね。'),
+            (u'日本', u'今朝はごはんを食べました。'),
+            (u'日本', u'昨日、日本 のお菓子を送りました。'),
+            ('english', u'I want to go to 日本!'),
         ]
 
         next_message_id = self.get_last_message().id + 1
 
         for topic, content in messages_to_search:
-            self.send_message(
-                sender_name=self.example_email("cordelia"),
-                raw_recipients="Verona",
-                message_type=Recipient.STREAM,
+            self.send_stream_message(
+                sender_email=self.example_email("cordelia"),
+                stream_name="Verona",
                 content=content,
-                subject=topic,
+                topic_name=topic,
             )
 
         self._update_tsvector_index()
@@ -817,7 +949,7 @@ class GetOldMessagesTest(ZulipTestCase):
             anchor=next_message_id,
             num_before=0,
             num_after=10,
-        ))  # type: Dict[str, Dict]
+        ))  # type: Dict[str, Any]
         self.assertEqual(len(result['messages']), 2)
         messages = result['messages']
 
@@ -827,7 +959,7 @@ class GetOldMessagesTest(ZulipTestCase):
             anchor=next_message_id,
             num_before=0,
             num_after=10,
-        ))  # type: Dict[str, Dict]
+        ))  # type: Dict[str, Any]
         self.assertEqual(len(link_search_result['messages']), 1)
         self.assertEqual(link_search_result['messages'][0]['match_content'],
                          '<p><a href="https://google.com" target="_blank" title="https://google.com">https://<span class="highlight">google.com</span></a></p>')
@@ -859,21 +991,65 @@ class GetOldMessagesTest(ZulipTestCase):
             anchor=next_message_id,
             num_after=10,
             num_before=0,
-        ))  # type: Dict[str, Dict]
+        ))  # type: Dict[str, Any]
         self.assertEqual(len(multi_search_result['messages']), 1)
         self.assertEqual(multi_search_result['messages'][0]['match_content'], '<p><span class="highlight">discuss</span> lunch <span class="highlight">after</span> lunch</p>')
+
+        # Test searching in messages with unicode characters
+        narrow = [
+            dict(operator='search', operand=u'日本'),
+        ]
+        result = self.get_and_check_messages(dict(
+            narrow=ujson.dumps(narrow),
+            anchor=next_message_id,
+            num_after=10,
+            num_before=0,
+        ))
+        self.assertEqual(len(result['messages']), 4)
+        messages = result['messages']
+
+        japanese_message = [m for m in messages if m['subject'] == u'日本'][-1]
+        self.assertEqual(
+            japanese_message['match_subject'],
+            u'<span class="highlight">日本</span>')
+        self.assertEqual(
+            japanese_message['match_content'],
+            u'<p>昨日、<span class="highlight">日本</span>' +
+            u' のお菓子を送りました。</p>')
+
+        english_message = [m for m in messages if m['subject'] == 'english'][0]
+        self.assertEqual(
+            english_message['match_subject'],
+            'english')
+        self.assertIn(
+            english_message['match_content'],
+            u'<p>I want to go to <span class="highlight">日本</span>!</p>')
+
+        # Multiple search operands with unicode
+        multi_search_narrow = [
+            dict(operator='search', operand='ちは'),
+            dict(operator='search', operand='今日は'),
+        ]
+        multi_search_result = self.get_and_check_messages(dict(
+            narrow=ujson.dumps(multi_search_narrow),
+            anchor=next_message_id,
+            num_after=10,
+            num_before=0,
+        ))
+        self.assertEqual(len(multi_search_result['messages']), 1)
+        self.assertEqual(multi_search_result['messages'][0]['match_content'],
+                         '<p>こんに <span class="highlight">ちは</span> 。 <span class="highlight">今日は</span> いい 天気ですね。</p>')
 
     @override_settings(USING_PGROONGA=False)
     def test_get_messages_with_search_not_subscribed(self):
         # type: () -> None
         """Verify support for searching a stream you're not subscribed to"""
         self.subscribe(self.example_user("hamlet"), "newstream")
-        self.send_message(
-            sender_name=self.example_email("hamlet"),
-            raw_recipients="newstream",
-            message_type=Recipient.STREAM,
+        self.send_stream_message(
+            sender_email=self.example_email("hamlet"),
+            stream_name="newstream",
             content="Public special content!",
-            subject="new",
+            topic_name="new",
         )
         self._update_tsvector_index()
 
@@ -888,7 +1064,7 @@ class GetOldMessagesTest(ZulipTestCase):
             anchor=0,
             num_after=10,
             num_before=10,
-        ))  # type: Dict[str, Dict]
+        ))  # type: Dict[str, Any]
         self.assertEqual(len(stream_search_result['messages']), 1)
         self.assertEqual(stream_search_result['messages'][0]['match_content'],
                          '<p>Public <span class="highlight">special</span> content!</p>')
@@ -910,12 +1086,11 @@ class GetOldMessagesTest(ZulipTestCase):
         ]
 
         for topic, content in messages_to_search:
-            self.send_message(
-                sender_name=self.example_email("cordelia"),
-                raw_recipients="Verona",
-                message_type=Recipient.STREAM,
+            self.send_stream_message(
+                sender_email=self.example_email("cordelia"),
+                stream_name="Verona",
                 content=content,
-                subject=topic,
+                topic_name=topic,
             )
 
         # We use brute force here and update our text search index
@@ -936,7 +1111,7 @@ class GetOldMessagesTest(ZulipTestCase):
             anchor=next_message_id,
             num_after=10,
             num_before=0,
-        ))  # type: Dict[str, Dict]
+        ))  # type: Dict[str, Any]
         self.assertEqual(len(result['messages']), 4)
         messages = result['messages']
 
@@ -972,10 +1147,25 @@ class GetOldMessagesTest(ZulipTestCase):
             anchor=next_message_id,
             num_after=10,
             num_before=0,
-        ))  # type: Dict[str, Dict]
+        ))  # type: Dict[str, Any]
         self.assertEqual(len(multi_search_result['messages']), 1)
         self.assertEqual(multi_search_result['messages'][0]['match_content'],
                          '<p><span class="highlight">Can</span> you <span class="highlight">speak</span> <a href="https://en.wikipedia.org/wiki/Japanese" target="_blank" title="https://en.wikipedia.org/wiki/Japanese">https://en.<span class="highlight">wiki</span>pedia.org/<span class="highlight">wiki</span>/Japanese</a>?</p>')
+
+        # Multiple search operands with unicode
+        multi_search_narrow = [
+            dict(operator='search', operand='朝は'),
+            dict(operator='search', operand='べました'),
+        ]
+        multi_search_result = self.get_and_check_messages(dict(
+            narrow=ujson.dumps(multi_search_narrow),
+            anchor=next_message_id,
+            num_after=10,
+            num_before=0,
+        ))
+        self.assertEqual(len(multi_search_result['messages']), 1)
+        self.assertEqual(multi_search_result['messages'][0]['match_content'],
+                         '<p>今<span class="highlight">朝は</span>ごはんを食<span class="highlight">べました</span>。</p>')
 
         narrow = [dict(operator='search', operand='https://google.com')]
         link_search_result = self.get_and_check_messages(dict(
@@ -983,7 +1173,7 @@ class GetOldMessagesTest(ZulipTestCase):
             anchor=next_message_id,
             num_after=10,
             num_before=0,
-        ))  # type: Dict[str, Dict]
+        ))  # type: Dict[str, Any]
         self.assertEqual(len(link_search_result['messages']), 1)
         self.assertEqual(link_search_result['messages'][0]['match_content'],
                          '<p><a href="https://google.com" target="_blank" title="https://google.com"><span class="highlight">https://google.com</span></a></p>')
@@ -995,11 +1185,10 @@ class GetOldMessagesTest(ZulipTestCase):
 
         def send(content):
             # type: (Text) -> int
-            msg_id = self.send_message(
-                sender_name=email,
-                raw_recipients="Verona",
-                message_type=Recipient.STREAM,
-                subject='test_topic',
+            msg_id = self.send_stream_message(
+                sender_email=email,
+                stream_name="Verona",
+                topic_name='test_topic',
                 content=content,
             )
             return msg_id
@@ -1031,12 +1220,12 @@ class GetOldMessagesTest(ZulipTestCase):
         returns at most 1 message.
         """
         self.login(self.example_email("cordelia"))
-        anchor = self.send_message(self.example_email("cordelia"), "Verona", Recipient.STREAM)
+        anchor = self.send_stream_message(self.example_email("cordelia"), "Verona")
 
         narrow = [dict(operator='sender', operand=self.example_email("cordelia"))]
         result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow),
                                                   anchor=anchor, num_before=0,
-                                                  num_after=0))  # type: Dict[str, Dict]
+                                                  num_after=0))  # type: Dict[str, Any]
         self.assertEqual(len(result['messages']), 1)
 
         narrow = [dict(operator='is', operand='mentioned')]
@@ -1128,8 +1317,8 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assert_json_error_contains(result, 'elem["operand"] is not a string')
 
     def exercise_bad_narrow_operand(self, operator, operands, error_msg):
-        # type: (Text, Sequence, Text) -> None
-        other_params = [("anchor", 0), ("num_before", 0), ("num_after", 0)]  # type: List
+        # type: (Text, Sequence[Any], Text) -> None
+        other_params = [("anchor", 0), ("num_before", 0), ("num_after", 0)]  # type: List[Tuple[str, Any]]
         for operand in operands:
             post_params = dict(other_params + [
                 ("narrow", ujson.dumps([[operator, operand]]))])
@@ -1143,7 +1332,7 @@ class GetOldMessagesTest(ZulipTestCase):
         returned.
         """
         self.login(self.example_email("hamlet"))
-        bad_stream_content = (0, [], ["x", "y"])  # type: Sequence
+        bad_stream_content = (0, [], ["x", "y"])  # type: Tuple[int, List[None], List[Text]]
         self.exercise_bad_narrow_operand("stream", bad_stream_content,
                                          "Bad value for 'narrow'")
 
@@ -1176,8 +1365,8 @@ class GetOldMessagesTest(ZulipTestCase):
         m = self.get_last_message()
         m.rendered_content = m.rendered_content_version = None
         m.content = 'test content'
-        # Use to_dict_uncached_helper directly to avoid having to deal with remote cache
-        d = MessageDict.to_dict_uncached_helper(m, True)
+        d = MessageDict.wide_dict(m)
+        MessageDict.finalize_payload(d, apply_markdown=True, client_gravatar=False)
         self.assertEqual(d['content'], '<p>test content</p>')
 
     def common_check_get_messages_query(self, query_params, expected):
@@ -1199,13 +1388,16 @@ class GetOldMessagesTest(ZulipTestCase):
         user_profile = self.example_user('hamlet')
 
         # Have Othello send messages to Hamlet that he hasn't read.
-        self.send_message(self.example_email("othello"), "Scotland", Recipient.STREAM)
-        last_message_id_to_hamlet = self.send_message(self.example_email("othello"), self.example_email("hamlet"), Recipient.PERSONAL)
+        self.send_stream_message(self.example_email("othello"), "Scotland")
+        last_message_id_to_hamlet = self.send_personal_message(
+            self.example_email("othello"),
+            self.example_email("hamlet"),
+        )
 
         # Add a few messages that help us test that our query doesn't
         # look at messages that are irrelevant to Hamlet.
-        self.send_message(self.example_email("othello"), self.example_email("cordelia"), Recipient.PERSONAL)
-        self.send_message(self.example_email("othello"), self.example_email("iago"), Recipient.PERSONAL)
+        self.send_personal_message(self.example_email("othello"), self.example_email("cordelia"))
+        self.send_personal_message(self.example_email("othello"), self.example_email("iago"))
 
         query_params = dict(
             use_first_unread_anchor='true',
@@ -1298,7 +1490,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(len(queries), 1)
 
         stream = get_stream('Scotland', realm)
-        recipient_id = get_recipient(Recipient.STREAM, stream.id).id
+        recipient_id = get_stream_recipient(stream.id).id
         cond = '''AND NOT (recipient_id = {scotland} AND upper(subject) = upper('golf'))'''.format(scotland=recipient_id)
         self.assertIn(cond, queries[0]['sql'])
 
@@ -1488,12 +1680,11 @@ class GetOldMessagesTest(ZulipTestCase):
         next_message_id = self.get_last_message().id + 1
 
         for topic, content in messages_to_search:
-            self.send_message(
-                sender_name=self.example_email("cordelia"),
-                raw_recipients="Verona",
-                message_type=Recipient.STREAM,
+            self.send_stream_message(
+                sender_email=self.example_email("cordelia"),
+                stream_name="Verona",
                 content=content,
-                subject=topic,
+                topic_name=topic,
             )
 
         self._update_tsvector_index()
@@ -1506,7 +1697,7 @@ class GetOldMessagesTest(ZulipTestCase):
             narrow=ujson.dumps(narrow),
             anchor=next_message_id,
             num_after=10,
-        ))  # type: Dict[str, Dict]
+        ))  # type: Dict[str, Any]
         self.assertEqual(len(result['messages']), 0)
 
         narrow = [

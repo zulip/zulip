@@ -6,12 +6,12 @@ from django.core import validators
 from django.core.exceptions import ValidationError
 from django.db import connection
 from django.http import HttpRequest, HttpResponse
-from typing import Dict, List, Set, Text, Any, AnyStr, Callable, Iterable, \
+from typing import Dict, List, Set, Text, Any, Callable, Iterable, \
     Optional, Tuple, Union
-from zerver.lib.str_utils import force_text
+from zerver.lib.str_utils import force_text, force_bytes
 from zerver.lib.exceptions import JsonableError, ErrorCode
 from zerver.lib.html_diff import highlight_html_differences
-from zerver.decorator import authenticated_json_post_view, has_request_variables, \
+from zerver.decorator import has_request_variables, \
     REQ, to_non_negative_int
 from django.utils.html import escape as escape_html
 from zerver.lib import bugdown
@@ -21,16 +21,10 @@ from zerver.lib.actions import recipient_for_emails, do_update_message_flags, \
     extract_recipients, truncate_body, render_incoming_message, do_delete_message, \
     do_mark_all_as_read, do_mark_stream_messages_as_read, get_user_info_for_message_updates
 from zerver.lib.queue import queue_json_publish
-from zerver.lib.cache import (
-    generic_bulk_cached_fetch,
-    to_dict_cache_key_id,
-)
 from zerver.lib.message import (
     access_message,
-    MessageDict,
-    extract_message_dict,
+    messages_for_ids,
     render_markdown,
-    stringify_message_dict,
 )
 from zerver.lib.response import json_success, json_error
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
@@ -41,9 +35,9 @@ from zerver.lib.utils import statsd
 from zerver.lib.validator import \
     check_list, check_int, check_dict, check_string, check_bool
 from zerver.models import Message, UserProfile, Stream, Subscription, \
-    Realm, RealmDomain, Recipient, UserMessage, bulk_get_recipients, get_recipient, \
-    get_stream, parse_usermessage_flags, email_to_domain, get_realm, get_active_streams, \
-    get_user_including_cross_realm
+    Realm, RealmDomain, Recipient, UserMessage, bulk_get_recipients, get_personal_recipient, \
+    get_stream, email_to_domain, get_realm, get_active_streams, \
+    get_user_including_cross_realm, get_stream_recipient
 
 from sqlalchemy import func
 from sqlalchemy.sql import select, join, column, literal_column, literal, and_, \
@@ -52,8 +46,6 @@ from sqlalchemy.sql import select, join, column, literal_column, literal, and_, 
 import re
 import ujson
 import datetime
-
-from six.moves import map
 
 LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000
 
@@ -74,7 +66,7 @@ Query = Any  # TODO: Should be Select, but sqlalchemy stubs are busted
 ConditionTransform = Any  # TODO: should be Callable[[ColumnElement], ColumnElement], but sqlalchemy stubs are busted
 
 # When you add a new operator to this, also update zerver/lib/narrow.py
-class NarrowBuilder(object):
+class NarrowBuilder:
     '''
     Build up a SQLAlchemy query to find messages matching a narrow.
     '''
@@ -237,7 +229,7 @@ class NarrowBuilder(object):
             cond = column("recipient_id").in_([recipient.id for recipient in recipients_map.values()])
             return query.where(maybe_negate(cond))
 
-        recipient = get_recipient(Recipient.STREAM, type_id=stream.id)
+        recipient = get_stream_recipient(stream.id)
         cond = column("recipient_id") == recipient.id
         return query.where(maybe_negate(cond))
 
@@ -321,7 +313,7 @@ class NarrowBuilder(object):
             return query.where(maybe_negate(cond))
         else:
             # Personal message
-            self_recipient = get_recipient(Recipient.PERSONAL, type_id=self.user_profile.id)
+            self_recipient = get_personal_recipient(self.user_profile.id)
             if operand == self.user_profile.email:
                 # Personals with self
                 cond = and_(column("sender_id") == self.user_profile.id,
@@ -334,7 +326,7 @@ class NarrowBuilder(object):
             except UserProfile.DoesNotExist:
                 raise BadNarrowOperator('unknown user ' + operand)
 
-            narrow_recipient = get_recipient(Recipient.PERSONAL, narrow_profile.id)
+            narrow_recipient = get_personal_recipient(narrow_profile.id)
             cond = or_(and_(column("sender_id") == narrow_profile.id,
                             column("recipient_id") == self_recipient.id),
                        and_(column("sender_id") == self.user_profile.id,
@@ -411,33 +403,57 @@ class NarrowBuilder(object):
         cond = column("search_tsvector").op("@@")(tsquery)
         return query.where(maybe_negate(cond))
 
-# Apparently, the offsets we get from tsearch_extras are counted in
-# unicode characters, not in bytes, so we do our processing with text,
-# not bytes.
+# The offsets we get from PGroonga are counted in characters
+# whereas the offsets from tsearch_extras are in bytes, so we
+# have to account for both cases in the logic below.
 def highlight_string(text, locs):
-    # type: (AnyStr, Iterable[Tuple[int, int]]) -> Text
-    string = force_text(text)
+    # type: (Text, Iterable[Tuple[int, int]]) -> Text
     highlight_start = u'<span class="highlight">'
     highlight_stop = u'</span>'
     pos = 0
-    result = u''
+    result = ''
     in_tag = False
+
+    text_utf8 = text.encode('utf8')
+
     for loc in locs:
         (offset, length) = loc
-        for character in string[pos:offset + length]:
-            if character == u'<':
+
+        # These indexes are in byte space for tsearch,
+        # and they are in string space for pgroonga.
+        prefix_start = pos
+        prefix_end = offset
+        match_start = offset
+        match_end = offset + length
+
+        if settings.USING_PGROONGA:
+            prefix = text[prefix_start:prefix_end]
+            match = text[match_start:match_end]
+        else:
+            prefix = text_utf8[prefix_start:prefix_end].decode()
+            match = text_utf8[match_start:match_end].decode()
+
+        for character in (prefix + match):
+            if character == '<':
                 in_tag = True
-            elif character == u'>':
+            elif character == '>':
                 in_tag = False
         if in_tag:
-            result += string[pos:offset + length]
+            result += prefix
+            result += match
         else:
-            result += string[pos:offset]
+            result += prefix
             result += highlight_start
-            result += string[offset:offset + length]
+            result += match
             result += highlight_stop
-        pos = offset + length
-    result += string[pos:]
+        pos = match_end
+
+    if settings.USING_PGROONGA:
+        final_frag = text[pos:]
+    else:
+        final_frag = text_utf8[pos:].decode()
+
+    result += final_frag
     return result
 
 def get_search_fields(rendered_content, subject, content_matches, subject_matches):
@@ -456,7 +472,7 @@ def narrow_parameter(json):
         return None
 
     def convert_term(elem):
-        # type: (Union[Dict, List]) -> Dict[str, Any]
+        # type: (Union[Dict[str, Any], List[str]]) -> Dict[str, Any]
 
         # We have to support a legacy tuple format.
         if isinstance(elem, list):
@@ -562,10 +578,10 @@ def get_messages_backend(request, user_profile,
                          num_before = REQ(converter=to_non_negative_int),
                          num_after = REQ(converter=to_non_negative_int),
                          narrow = REQ('narrow', converter=narrow_parameter, default=None),
-                         use_first_unread_anchor = REQ(default=False, converter=ujson.loads),
-                         apply_markdown=REQ(default=True,
-                                            converter=ujson.loads)):
-    # type: (HttpRequest, UserProfile, int, int, int, Optional[List[Dict[str, Any]]], bool, bool) -> HttpResponse
+                         use_first_unread_anchor = REQ(validator=check_bool, default=False),
+                         client_gravatar = REQ(validator=check_bool, default=False),
+                         apply_markdown = REQ(validator=check_bool, default=True)):
+    # type: (HttpRequest, UserProfile, int, int, int, Optional[List[Dict[str, Any]]], bool, bool, bool) -> HttpResponse
     include_history = ok_to_include_history(narrow, user_profile.realm)
 
     if include_history and not use_first_unread_anchor:
@@ -706,61 +722,42 @@ def get_messages_backend(request, user_profile,
     # rendered message dict before returning it.  We attempt to
     # bulk-fetch rendered message dicts from remote cache using the
     # 'messages' list.
-    search_fields = dict()  # type: Dict[int, Dict[str, Text]]
     message_ids = []  # type: List[int]
     user_message_flags = {}  # type: Dict[int, List[str]]
     if include_history:
         message_ids = [row[0] for row in query_result]
 
         # TODO: This could be done with an outer join instead of two queries
-        user_message_flags = dict((user_message.message_id, user_message.flags_list()) for user_message in
-                                  UserMessage.objects.filter(user_profile=user_profile,
-                                                             message__id__in=message_ids))
-        for row in query_result:
-            message_id = row[0]
-            if user_message_flags.get(message_id) is None:
+        um_rows = UserMessage.objects.filter(user_profile=user_profile,
+                                             message__id__in=message_ids)
+        user_message_flags = {um.message_id: um.flags_list() for um in um_rows}
+
+        for message_id in message_ids:
+            if message_id not in user_message_flags:
                 user_message_flags[message_id] = ["read", "historical"]
-            if is_search:
-                (_, subject, rendered_content, content_matches, subject_matches) = row
-                search_fields[message_id] = get_search_fields(rendered_content, subject,
-                                                              content_matches, subject_matches)
     else:
         for row in query_result:
             message_id = row[0]
             flags = row[1]
-            user_message_flags[message_id] = parse_usermessage_flags(flags)
-
+            user_message_flags[message_id] = UserMessage.flags_list_for_flags(flags)
             message_ids.append(message_id)
 
-            if is_search:
-                (_, _, subject, rendered_content, content_matches, subject_matches) = row
-                search_fields[message_id] = get_search_fields(rendered_content, subject,
-                                                              content_matches, subject_matches)
+    search_fields = dict()  # type: Dict[int, Dict[str, Text]]
+    if is_search:
+        for row in query_result:
+            message_id = row[0]
+            (subject, rendered_content, content_matches, subject_matches) = row[-4:]
+            search_fields[message_id] = get_search_fields(rendered_content, subject,
+                                                          content_matches, subject_matches)
 
-    cache_transformer = lambda row: MessageDict.build_dict_from_raw_db_row(row, apply_markdown)
-    id_fetcher = lambda row: row['id']
-
-    message_dicts = generic_bulk_cached_fetch(lambda message_id: to_dict_cache_key_id(message_id, apply_markdown),
-                                              Message.get_raw_db_rows,
-                                              message_ids,
-                                              id_fetcher=id_fetcher,
-                                              cache_transformer=cache_transformer,
-                                              extractor=extract_message_dict,
-                                              setter=stringify_message_dict)
-
-    message_list = []
-
-    for message_id in message_ids:
-        msg_dict = message_dicts[message_id]
-        msg_dict.update({"flags": user_message_flags[message_id]})
-        msg_dict.update(search_fields.get(message_id, {}))
-        # Make sure that we never send message edit history to clients
-        # in realms with allow_edit_history disabled.
-        if "edit_history" in msg_dict and not user_profile.realm.allow_edit_history:
-            del msg_dict["edit_history"]
-        message_list.append(msg_dict)
-
-    MessageDict.post_process_dicts(message_list)
+    message_list = messages_for_ids(
+        message_ids=message_ids,
+        user_message_flags=user_message_flags,
+        search_fields=search_fields,
+        apply_markdown=apply_markdown,
+        client_gravatar=client_gravatar,
+        allow_edit_history=user_profile.realm.allow_edit_history,
+    )
 
     statsd.incr('loaded_old_messages', len(message_list))
     ret = {'messages': message_list,
@@ -928,7 +925,7 @@ def send_message_backend(request, user_profile,
                          message_type_name = REQ('type'),
                          message_to = REQ('to', converter=extract_recipients, default=[]),
                          forged = REQ(default=False),
-                         subject_name = REQ('subject', lambda x: x.strip(), None),
+                         topic_name = REQ('subject', lambda x: x.strip(), None),
                          message_content = REQ('content'),
                          realm_str = REQ('realm_str', default=None),
                          local_id = REQ(default=None),
@@ -984,7 +981,7 @@ def send_message_backend(request, user_profile,
         sender = user_profile
 
     ret = check_send_message(sender, client, message_type_name, message_to,
-                             subject_name, message_content, forged=forged,
+                             topic_name, message_content, forged=forged,
                              forged_timestamp = request.POST.get('time'),
                              forwarder_user_profile=user_profile, realm=realm,
                              local_id=local_id, sender_queue_id=queue_id)
@@ -1130,7 +1127,7 @@ def update_message_backend(request, user_profile,
             # `render_incoming_message` call earlier in this function.
             'message_realm_id': user_profile.realm_id,
             'urls': links_for_embed}
-        queue_json_publish('embed_links', event_data, lambda x: None)
+        queue_json_publish('embed_links', event_data, lambda x: None, call_consume_in_tests=True)
     return json_success()
 
 

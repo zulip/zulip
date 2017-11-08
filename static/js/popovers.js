@@ -82,9 +82,8 @@ function show_user_info_popover(element, user, message) {
     var elt = $(element);
     if (elt.data('popover') === undefined) {
         if (user === undefined) {
-            // This case should not happen, because
-            // people.extract_people_from_message should have added
-            // the message sender to the people.js data set.
+            // This is never supposed to happen, not even for deactivated
+            // users, so we'll need to debug this error if it occurs.
             blueslip.error('Bad sender in message' + message.sender_id);
             return;
         }
@@ -100,6 +99,7 @@ function show_user_info_popover(element, user, message) {
             sent_by_uri: narrow.by_sender_uri(user.email),
             narrowed: narrow_state.active(),
             private_message_class: "respond_personal_button",
+            is_active: people.is_active_user_for_popover(user.user_id),
         };
 
         var ypos = elt.offset().top;
@@ -117,11 +117,11 @@ function show_user_info_popover(element, user, message) {
 
         elt.popover({
             placement: placement,
-            template:  templates.render('user_info_popover',   {class: "message-info-popover"}),
-            title:     templates.render('user_info_popover_title',
-                                        {user_avatar: "avatar/" + user.email}),
-            content:   templates.render('user_info_popover_content', args),
-            trigger:   "manual",
+            template: templates.render('user_info_popover', {class: "message-info-popover"}),
+            title: templates.render('user_info_popover_title',
+                                    {user_avatar: "avatar/" + user.email}),
+            content: templates.render('user_info_popover_content', args),
+            trigger: "manual",
         });
         elt.popover("show");
 
@@ -447,13 +447,14 @@ exports.register_click_handlers = function () {
             pm_with_uri: narrow.pm_with_uri(user_email),
             sent_by_uri: narrow.by_sender_uri(user_email),
             private_message_class: "compose_private_message",
+            is_active: people.is_active_user_for_popover(user_id),
         };
 
         target.popover({
-            template:  templates.render('user_info_popover',   {class: "user_popover"}),
-            title:     templates.render('user_info_popover_title', {user_avatar: "avatar/" + user_email}),
-            content:   templates.render('user_info_popover_content', args),
-            trigger:   "manual",
+            template: templates.render('user_info_popover', {class: "user_popover"}),
+            title: templates.render('user_info_popover_title', {user_avatar: "avatar/" + user_email}),
+            content: templates.render('user_info_popover_content', args),
+            trigger: "manual",
             fixed: true,
             placement: userlist_placement === "left" ? "right" : "left",
         });
@@ -545,8 +546,7 @@ exports.register_click_handlers = function () {
         var stream = $(e.currentTarget).data('msg-stream');
         var topic = $(e.currentTarget).data('msg-topic');
         popovers.hide_actions_popover();
-        muting_ui.unmute_topic(stream, topic);
-        muting_ui.persist_and_rerender();
+        muting_ui.unmute(stream, topic);
         e.stopPropagation();
         e.preventDefault();
     });

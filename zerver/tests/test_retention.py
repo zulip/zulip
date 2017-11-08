@@ -11,8 +11,6 @@ from zerver.lib.retention import get_expired_messages, move_message_to_archive
 
 from typing import Any, List
 
-from six.moves import range
-
 
 class TestRetentionLib(ZulipTestCase):
     """
@@ -21,7 +19,7 @@ class TestRetentionLib(ZulipTestCase):
 
     def setUp(self):
         # type: () -> None
-        super(TestRetentionLib, self).setUp()
+        super().setUp()
         self.zulip_realm = self._set_realm_message_retention_value('zulip', 30)
         self.mit_realm = self._set_realm_message_retention_value('zephyr', 100)
 
@@ -45,7 +43,7 @@ class TestRetentionLib(ZulipTestCase):
         # send messages from mit.edu realm and change messages pub date
         sender = self.mit_user('espuser')
         recipient = self.mit_user('starnine')
-        msgs_ids = [self.send_message(sender.email, recipient.email, Recipient.PERSONAL) for i in
+        msgs_ids = [self.send_personal_message(sender.email, recipient.email) for i in
                     range(message_quantity)]
         mit_messages = self._change_messages_pub_date(msgs_ids, pub_date)
         return mit_messages
@@ -120,7 +118,7 @@ class TestMoveMessageToArchive(ZulipTestCase):
 
     def setUp(self):
         # type: () -> None
-        super(TestMoveMessageToArchive, self).setUp()
+        super().setUp()
         self.sender = 'hamlet@zulip.com'
         self.recipient = 'cordelia@zulip.com'
 
@@ -137,7 +135,7 @@ class TestMoveMessageToArchive(ZulipTestCase):
             create_attachment(file_name, path_id, user_profile, size)
 
     def _check_messages_before_archiving(self, msg_id):
-        # type: (int) -> List
+        # type: (int) -> List[int]
         user_messages_ids_before = list(UserMessage.objects.filter(
             message_id=msg_id).order_by('id').values_list('id', flat=True))
         self.assertEqual(ArchivedUserMessage.objects.count(), 0)
@@ -155,21 +153,21 @@ class TestMoveMessageToArchive(ZulipTestCase):
 
     def test_personal_message_archiving(self):
         # type: ()-> None
-        msg_id = self.send_message(self.sender, [self.recipient], Recipient.PERSONAL)
+        msg_id = self.send_personal_message(self.sender, self.recipient)
         user_messages_ids_before = self._check_messages_before_archiving(msg_id)
         move_message_to_archive(message_id=msg_id)
         self._check_messages_after_archiving(msg_id, user_messages_ids_before)
 
     def test_stream_message_archiving(self):
         # type: ()-> None
-        msg_id = self.send_message(self.sender, "Verona", Recipient.STREAM)
+        msg_id = self.send_stream_message(self.sender, "Verona")
         user_messages_ids_before = self._check_messages_before_archiving(msg_id)
         move_message_to_archive(message_id=msg_id)
         self._check_messages_after_archiving(msg_id, user_messages_ids_before)
 
     def test_archiving_message_second_time(self):
         # type: ()-> None
-        msg_id = self.send_message(self.sender, "Verona", Recipient.STREAM)
+        msg_id = self.send_stream_message(self.sender, "Verona")
         user_messages_ids_before = self._check_messages_before_archiving(msg_id)
         move_message_to_archive(message_id=msg_id)
         self._check_messages_after_archiving(msg_id, user_messages_ids_before)
@@ -184,7 +182,7 @@ class TestMoveMessageToArchive(ZulipTestCase):
             http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py ....
             Some more.... http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py
         """
-        msg_id = self.send_message(self.sender, [self.recipient], Recipient.PERSONAL, body)
+        msg_id = self.send_personal_message(self.sender, self.recipient, body)
         user_messages_ids_before = self._check_messages_before_archiving(msg_id)
         attachments_ids_before = list(Attachment.objects.filter(
             messages__id=msg_id).order_by("id").values_list("id", flat=True))
@@ -205,9 +203,15 @@ class TestMoveMessageToArchive(ZulipTestCase):
             http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py ....
             Some more.... http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py
         """
-        msg_id = self.send_message(self.sender, [self.recipient], Recipient.PERSONAL, body)
-        msg_id_shared_attachments = self.send_message(self.recipient, [self.sender],
-                                                      Recipient.PERSONAL, body)
+        msg_id = self.send_personal_message(self.sender, self.recipient, body)
+
+        # Simulate a reply with the same contents.
+        msg_id_shared_attachments = self.send_personal_message(
+            from_email=self.recipient,
+            to_email=self.sender,
+            content=body,
+        )
+
         user_messages_ids_before = self._check_messages_before_archiving(msg_id)
         attachments_ids_before = list(Attachment.objects.filter(
             messages__id=msg_id).order_by("id").values_list("id", flat=True))

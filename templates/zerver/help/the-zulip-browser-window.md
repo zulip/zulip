@@ -94,8 +94,9 @@ configuration settings on the right side of the browser window.
 
 ### Configuration settings
 
-You can access your configuration settings, such as **Settings**,  by clicking the cog (<i
-class="icon-vector-cog"></i>) icon in the top right corner of the right sidebar.
+You can access your configuration settings, such as **Settings**, by
+clicking the cog (<i class="icon-vector-cog"></i>) icon in the top
+right corner of the right sidebar.
 
 ### Users section
 

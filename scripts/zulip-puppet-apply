@@ -3,7 +3,7 @@
 import os
 import sys
 import subprocess
-import six.moves.configparser as configparser
+import configparser
 import re
 
 force = False

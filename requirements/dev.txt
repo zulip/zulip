@@ -5,10 +5,10 @@
 -r docs.txt
 
 # moto s3 mock
-moto==1.1.10
+moto==1.1.24
 
 # Needed for running tools/run-dev.py
-Twisted==17.5.0
+Twisted==17.9.0
 
 # Needed for documentation links test
 Scrapy==1.4.0
@@ -37,7 +37,10 @@ snakeviz==0.4.2
 # Needed to sync translations from transifex
 transifex-client==0.12.4
 
+# Needed for creating digital ocean droplets
+python-digitalocean==1.12
+
 # Needed for updating the locked pip dependencies
-pip-tools==1.9.0
+pip-tools==1.10.1
 
 -r mypy.txt

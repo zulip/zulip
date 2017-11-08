@@ -2,17 +2,17 @@ from django.utils.translation import ugettext as _
 from django.http import HttpRequest, HttpResponse
 from typing import Any, Dict, List
 
+from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success, json_error
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
+from zerver.lib.request import REQ, has_request_variables
 from zerver.models import UserProfile
 
 import ujson
 
 MESSAGE_TEMPLATE = "Applying for role:\n{}\n**Emails:**\n{}\n\n>**Attachments:**\n{}"
 
-def dict_list_to_string(some_list):
-    # type: (List[Any]) -> str
+def dict_list_to_string(some_list: List[Any]) -> str:
     internal_template = ''
     for item in some_list:
         item_type = item.get('type', '').title()
@@ -24,8 +24,7 @@ def dict_list_to_string(some_list):
             internal_template += "[{}]({})\n".format(item_type, item_url)
     return internal_template
 
-def message_creator(action, application):
-    # type: (str, Dict[str, Any]) -> str
+def message_creator(action: str, application: Dict[str, Any]) -> str:
     message = MESSAGE_TEMPLATE.format(
         application['jobs'][0]['name'],
         dict_list_to_string(application['candidate']['email_addresses']),

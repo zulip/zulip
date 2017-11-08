@@ -24,7 +24,7 @@ from zerver.worker.queue_processors import QueueProcessingWorker
 captured_request = None  # type: Optional[HttpRequest]
 captured_exc_info = None
 def capture_and_throw(domain=None):
-    # type: (Optional[Text]) -> Callable
+    # type: (Optional[Text]) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]
     def wrapper(view_func):
         # type: (Callable[..., HttpResponse]) -> Callable[..., HttpResponse]
         @wraps(view_func)
@@ -61,10 +61,10 @@ class AdminZulipHandlerTest(ZulipTestCase):
         settings.LOGGING_NOT_DISABLED = True
 
     def get_admin_zulip_handler(self):
-        # type: () -> Any
+        # type: () -> AdminZulipHandler
         return [
             h for h in logging.getLogger('').handlers
-            if h.__class__.__name__ == "AdminZulipHandler"
+            if isinstance(h, AdminZulipHandler)
         ][0]
 
     def test_basic(self):

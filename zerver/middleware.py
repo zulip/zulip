@@ -8,14 +8,15 @@ from django.utils.translation import ugettext as _
 from django.utils.deprecation import MiddlewareMixin
 
 from zerver.lib.response import json_error, json_response_from_error
+from zerver.lib.subdomains import get_subdomain
 from zerver.lib.exceptions import JsonableError, ErrorCode
 from django.db import connection
 from django.http import HttpRequest, HttpResponse, StreamingHttpResponse
-from zerver.lib.utils import statsd, get_subdomain
+from zerver.lib.utils import statsd
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.cache import get_remote_cache_time, get_remote_cache_requests
 from zerver.lib.bugdown import get_bugdown_time, get_bugdown_requests
-from zerver.models import flush_per_request_caches, get_realm
+from zerver.models import Realm, flush_per_request_caches, get_realm
 from zerver.lib.exceptions import RateLimited
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.views.csrf import csrf_failure as html_csrf_failure
@@ -89,7 +90,7 @@ def is_slow_query(time_delta, path):
     if time_delta < 1.2:
         return False
     is_exempt = \
-        path in ["/activity", "/json/report_error",
+        path in ["/activity", "/json/report/error",
                  "/api/v1/deployments/report_error"] \
         or path.startswith("/realm_activity/") \
         or path.startswith("/user_activity/")
@@ -112,7 +113,7 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
     else:
         statsd_path = u"webreq.%s" % (path[1:].replace('/', '.'),)
         # Remove non-ascii chars from path (there should be none, if there are it's
-        # because someone manually entered a nonexistant path), as UTF-8 chars make
+        # because someone manually entered a nonexistent path), as UTF-8 chars make
         # statsd sad when it sends the key name over the socket
         statsd_path = statsd_path.encode('ascii', errors='ignore').decode("ascii")
     blacklisted_requests = ['do_confirm', 'send_confirm',
@@ -207,6 +208,8 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
         logger.info(logger_line)
 
     if (is_slow_query(time_delta, path)):
+        # Since the slow query worker patches code, we can't directly
+        # use call_consume_in_tests here without further work.
         queue_json_publish("slow_queries", "%s (%s)" % (logger_line, email), lambda e: None)
 
     if settings.PROFILE_ALL_REQUESTS:
@@ -377,7 +380,7 @@ class SessionHostDomainMiddleware(SessionMiddleware):
         if (not request.path.startswith("/static/") and not request.path.startswith("/api/") and
                 not request.path.startswith("/json/")):
             subdomain = get_subdomain(request)
-            if subdomain != "":
+            if subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
                 realm = get_realm(subdomain)
                 if (realm is None):
                     return render(request, "zerver/invalid_realm.html")

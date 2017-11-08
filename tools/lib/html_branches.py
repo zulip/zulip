@@ -14,7 +14,7 @@ class HtmlBranchesException(Exception):
     pass
 
 
-class HtmlTreeBranch(object):
+class HtmlTreeBranch:
     """
     For <p><div id='yo'>bla<span class='bar'></span></div></p>, store a
     representation of the tags all the way down to the leaf, which would
@@ -59,7 +59,7 @@ class HtmlTreeBranch(object):
         return ' '.join(t.text() for t in self.tags)
 
 
-class Node(object):
+class Node:
     def __init__(self, token, parent):  # FIXME parent parameter is not used!
         # type: (Token, Optional[Node]) -> None
         self.token = token
@@ -67,7 +67,7 @@ class Node(object):
         self.parent = None  # type: Optional[Node]
 
 
-class TagInfo(object):
+class TagInfo:
     def __init__(self, tag, classes, ids, token):
         # type: (str, List[str], List[str], Token) -> None
         self.tag = tag

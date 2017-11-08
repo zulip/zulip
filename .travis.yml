@@ -1,9 +1,9 @@
-# See https://zulip.readthedocs.io/en/latest/events-system.html for
+# See https://zulip.readthedocs.io/en/latest/travis.html for
 # high-level documentation on our Travis CI setup.
 dist: trusty
 install:
-  # Install moreutils so we can use `ts` and `mispipe` in the following.
-  - sudo ./tools/travis/install-moreutils
+  # Disable broken riak sources.list in Travis base image 2017-10-18
+  - rm -vf "/etc/apt/sources.list.d/*riak*"
 
   # Disable Travis CI's built-in NVM installation
   - mispipe "mv ~/.nvm ~/.travis-nvm-disabled" ts
@@ -62,6 +62,9 @@ addons:
       - $(ls var/casper/* | tr "\n" ":")
       - $(ls /tmp/zulip-test-event-log/* | tr "\n" ":")
   postgresql: "9.3"
+  apt:
+    packages:
+      - moreutils
 after_success:
   - codecov
 notifications:

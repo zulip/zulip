@@ -10,6 +10,7 @@ from zerver.lib.utils import force_text
 import zerver.lib.bugdown.fenced_code
 
 import markdown
+import markdown.extensions.extra
 import markdown.extensions.admonition
 import markdown.extensions.codehilite
 import markdown.extensions.toc
@@ -67,6 +68,7 @@ def render_markdown_path(markdown_file_path, context=None):
     global md_extensions
     if md_extensions is None:
         md_extensions = [
+            markdown.extensions.extra.makeExtension(),
             markdown.extensions.toc.makeExtension(),
             markdown.extensions.admonition.makeExtension(),
             markdown.extensions.codehilite.makeExtension(

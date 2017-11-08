@@ -12,7 +12,7 @@ Start by cloning this repository: `git clone
 https://github.com/zulip/zulip.git`
 
 If you'd like to install a Zulip development environment on a computer
-that's already running Ubuntu 14.04 Trusty or Ubuntu 16.04 Xenial, you
+that's already running Ubuntu 16.04 Xenial or Ubuntu 14.04 Trusty, you
 can do that by just running:
 
 ```

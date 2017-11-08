@@ -1,7 +1,8 @@
 from django.utils.translation import ugettext as _
+from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success, json_error
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
+from zerver.lib.request import REQ, has_request_variables
 
 from zerver.models import UserProfile
 
@@ -9,10 +10,8 @@ from django.http import HttpRequest, HttpResponse
 from six import text_type
 from typing import Any, Dict, List
 
-def format_body(signatories, model_payload):
-    # type: (List[Dict[str, Any]], Dict[str, Any]) -> str
-    def append_separator(i):
-        # type: (int) -> None
+def format_body(signatories: List[Dict[str, Any]], model_payload: Dict[str, Any]) -> str:
+    def append_separator(i: int) -> None:
         if i + 1 == len(signatories):
             result.append('.')
         elif i + 2 == len(signatories):
@@ -32,8 +31,8 @@ def format_body(signatories, model_payload):
         append_separator(i)
     return ''.join(result)
 
-def ready_payload(signatories, payload):
-    # type: (List[Dict[str, Any]], Dict[str, Dict[str, Any]]) -> Dict[str, Any]
+def ready_payload(signatories: List[Dict[str, Any]],
+                  payload: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
     model_payload = {'contract_title': payload['signature_request']['title']}
     for i, signatory in enumerate(signatories):
         model_payload['name_{}'.format(i)] = signatory['signer_name']

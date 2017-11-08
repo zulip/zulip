@@ -9,38 +9,36 @@ from django.shortcuts import render
 import os
 import ujson
 
-from zerver.decorator import has_request_variables, REQ
 from zerver.lib import bugdown
 from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, HUBOT_LOZENGES
-from zerver.lib.utils import get_subdomain
+from zerver.lib.request import has_request_variables, REQ
+from zerver.lib.subdomains import get_subdomain
+from zerver.models import Realm
 from zerver.templatetags.app_filters import render_markdown_path
 
 def add_api_uri_context(context, request):
     # type: (Dict[str, Any], HttpRequest) -> None
     subdomain = get_subdomain(request)
-    if subdomain or not settings.ROOT_DOMAIN_LANDING_PAGE:
+    if (subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
+            or not settings.ROOT_DOMAIN_LANDING_PAGE):
         display_subdomain = subdomain
         html_settings_links = True
     else:
         display_subdomain = 'yourZulipDomain'
         html_settings_links = False
-    if display_subdomain != "":
-        external_api_path_subdomain = '%s.%s' % (display_subdomain,
-                                                 settings.EXTERNAL_API_PATH)
-    else:
-        external_api_path_subdomain = settings.EXTERNAL_API_PATH
 
-    external_api_uri_subdomain = '%s%s' % (settings.EXTERNAL_URI_SCHEME,
-                                           external_api_path_subdomain)
+    display_host = Realm.host_for_subdomain(display_subdomain)
+    api_url_scheme_relative = display_host + "/api"
+    api_url = settings.EXTERNAL_URI_SCHEME + api_url_scheme_relative
 
-    context['external_api_path_subdomain'] = external_api_path_subdomain
-    context['external_api_uri_subdomain'] = external_api_uri_subdomain
+    context['api_url'] = api_url
+    context['api_url_scheme_relative'] = api_url_scheme_relative
     context["html_settings_links"] = html_settings_links
 
 class ApiURLView(TemplateView):
     def get_context_data(self, **kwargs):
         # type: (**Any) -> Dict[str, str]
-        context = super(ApiURLView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         add_api_uri_context(context, self.request)
         return context
 
@@ -48,9 +46,8 @@ class APIView(ApiURLView):
     template_name = 'zerver/api.html'
 
 
-class HelpView(ApiURLView):
-    template_name = 'zerver/help/main.html'
-    path_template = 'zerver/help/%s.md'
+class MarkdownDirectoryView(ApiURLView):
+    path_template = ""
 
     def get_path(self, article):
         # type: (str) -> str
@@ -63,7 +60,7 @@ class HelpView(ApiURLView):
     def get_context_data(self, **kwargs):
         # type: (**Any) -> Dict[str, Any]
         article = kwargs["article"]
-        context = super(HelpView, self).get_context_data()  # type: Dict[str, Any]
+        context = super().get_context_data()  # type: Dict[str, Any]
         path = self.get_path(article)
         try:
             loader.get_template(path)
@@ -79,7 +76,7 @@ class HelpView(ApiURLView):
     def get(self, request, article=""):
         # type: (HttpRequest, str) -> HttpResponse
         path = self.get_path(article)
-        result = super(HelpView, self).get(self, article=article)
+        result = super().get(self, article=article)
         try:
             loader.get_template(path)
         except loader.TemplateDoesNotExist:
@@ -121,7 +118,7 @@ class IntegrationView(ApiURLView):
 
     def get_context_data(self, **kwargs):
         # type: (**Any) -> Dict[str, Any]
-        context = super(IntegrationView, self).get_context_data(**kwargs)  # type: Dict[str, Any]
+        context = super().get_context_data(**kwargs)  # type: Dict[str, Any]
         add_integrations_context(context)
         return context
 
@@ -149,10 +146,12 @@ def api_endpoint_docs(request):
     calls = ujson.loads(raw_calls)
     langs = set()
     for call in calls:
-        call["endpoint"] = "%s/v1/%s" % (context["external_api_uri_subdomain"],
-                                         call["endpoint"])
-        call["example_request"]["curl"] = call["example_request"]["curl"].replace("https://api.zulip.com",
-                                                                                  context["external_api_uri_subdomain"])
+        call["endpoint"] = "%s/v1/%s" % (
+            context["api_url"],
+            call["endpoint"])
+        call["example_request"]["curl"] = call["example_request"]["curl"].replace(
+            "https://api.zulip.com",
+            context["api_url"])
         response = call['example_response']
         if '\n' not in response:
             # For 1-line responses, pretty-print them

@@ -80,7 +80,7 @@ var keypress_mappings = {
     83: {name: 'narrow_by_subject', message_view_only: true}, //'S'
     86: {name: 'view_selected_stream', message_view_only: false}, //'V'
     99: {name: 'compose', message_view_only: true}, // 'c'
-    100: {name: 'open_drafts', message_view_only: false}, // 'd'
+    100: {name: 'open_drafts', message_view_only: true}, // 'd'
     103: {name: 'gear_menu', message_view_only: true}, // 'g'
     105: {name: 'message_actions', message_view_only: true}, // 'i'
     106: {name: 'vim_down', message_view_only: true}, // 'j'
@@ -166,7 +166,12 @@ exports.process_escape_key = function (e) {
     }
 
     if (message_edit.is_editing(current_msg_list.selected_id())) {
-        message_edit.end(current_msg_list.selected_row());
+        // Using this definition of "row" instead of "current_msg_list.selected_row()"
+        // because it returns a more complete object.
+        // Necessary for refocusing on message list in Firefox.
+        row = $(".message_edit_content").filter(":focus").closest(".message_row");
+        row.find('.message_edit_content').blur();
+        message_edit.end(row);
         return true;
     }
 
@@ -424,6 +429,10 @@ exports.process_hotkey = function (e, hotkey) {
             overlays.close_overlay('lightbox');
             return true;
         }
+        if (event_name === 'open_drafts' && overlays.drafts_open()) {
+            overlays.close_overlay('drafts');
+            return true;
+        }
         return false;
     }
 
@@ -546,6 +555,19 @@ exports.process_hotkey = function (e, hotkey) {
         }
     }
 
+    // Prevent navigation in the background when the overlays are active.
+    if (overlays.is_active()) {
+        if (event_name === 'view_selected_stream' && overlays.streams_open()) {
+            subs.view_stream();
+            return true;
+        }
+        if (event_name === 'n_key' && overlays.streams_open() && page_params.can_create_streams) {
+            subs.new_stream_clicked();
+            return true;
+        }
+        return false;
+    }
+
     // Shortcuts that don't require a message
     switch (event_name) {
         case 'compose': // 'c': compose
@@ -580,27 +602,11 @@ exports.process_hotkey = function (e, hotkey) {
         case 'stream_cycle_forward':
             narrow.stream_cycle_forward();
             return true;
-        case 'view_selected_stream':
-            if (overlays.streams_open()) {
-                subs.view_stream();
-                return true;
-            }
-            break;
         case 'n_key':
-            if (overlays.streams_open()) {
-                if (page_params.can_create_streams) {
-                    subs.new_stream_clicked();
-                    return true;
-                }
-                return false;
-            }
             narrow.narrow_to_next_topic();
             return true;
         case 'open_drafts':
-            if (overlays.is_active() && !overlays.drafts_open()) {
-                return false;
-            }
-            drafts.toggle();
+            drafts.launch();
             return true;
         case 'reply_message': // 'r': respond to message
             // Note that you can "enter" to respond to messages as well,
@@ -610,11 +616,6 @@ exports.process_hotkey = function (e, hotkey) {
     }
 
     if (current_msg_list.empty()) {
-        return false;
-    }
-
-    // Prevent navigation in the background when the overlays are active.
-    if (overlays.is_active()) {
         return false;
     }
 

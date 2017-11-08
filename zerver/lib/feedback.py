@@ -42,7 +42,7 @@ def deliver_feedback_by_zulip(message):
     if len(subject) > 60:
         subject = subject[:57].rstrip() + "..."
 
-    content = u''
+    content = ''
     sender_email = message['sender_email']
 
     # We generate ticket numbers if it's been more than a few minutes

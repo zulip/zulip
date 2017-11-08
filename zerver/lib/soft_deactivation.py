@@ -110,7 +110,7 @@ def add_missing_messages(user_profile):
         modified_stream__id__in=stream_ids,
         event_type__in=events).order_by('event_last_message_id'))
 
-    all_stream_subscription_logs = defaultdict(list)  # type: DefaultDict[int, List]
+    all_stream_subscription_logs = defaultdict(list)  # type: DefaultDict[int, List[RealmAuditLog]]
     for log in subscription_logs:
         all_stream_subscription_logs[log.modified_stream.id].append(log)
 
@@ -141,7 +141,7 @@ def add_missing_messages(user_profile):
     all_stream_msgs = [msg for msg in all_stream_msgs
                        if msg['id'] not in already_created_ums]
 
-    stream_messages = defaultdict(list)  # type: DefaultDict[int, List]
+    stream_messages = defaultdict(list)  # type: DefaultDict[int, List[Message]]
     for msg in all_stream_msgs:
         stream_messages[msg['recipient__type_id']].append(msg)
 
