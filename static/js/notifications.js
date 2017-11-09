@@ -29,16 +29,36 @@ if (window.webkitNotifications) {
         },
         requestPermission: window.Notification.requestPermission,
         createNotification: function createNotification(icon, title, content, tag) {
-            var notification_object = new window.Notification(title, {icon: icon,
-                                                                      body: content,
-                                                                      tag: tag});
-            notification_object.show = function () {};
-            notification_object.cancel = function () { notification_object.close(); };
-            return notification_object;
+            try {
+                var notification_object = new window.Notification(title, {icon: icon,
+                                                                          body: content,
+                                                                          tag: tag});
+                notification_object.show = function () {};
+                notification_object.cancel = function () { notification_object.close(); };
+                return notification_object;
+            } catch (e) {
+                if (e.name === 'TypeError') {
+                    return service_worker_notification(icon, title, content, tag);
+                }
+            }
         },
     };
 }
 
+function service_worker_notification(icon, title, content, tag) {
+    // we are probably on chrome android where non-persistent notifications are not supported.
+    // details: https://github.com/whatwg/notifications/issues/26
+    // use a service worker to send the notification instead.
+    if ('serviceworker' in navigator) {
+        return navigator.serviceworker.register('/static/js/sw.js').then(function (registration) {
+            return registration.shownotification(title, {
+                icon: icon,
+                body: content,
+                tag: tag,
+            });
+        });
+    }
+}
 
 function browser_desktop_notifications_on() {
     return (notifications_api &&
@@ -54,7 +74,9 @@ function cancel_notification_object(notification_object) {
         // We must remove the .onclose so that it does not trigger on .cancel
         notification_object.onclose = function () {};
         notification_object.onclick = function () {};
-        notification_object.cancel();
+        if ('cancel' in notification_object) {
+            notification_object.cancel();
+        }
 }
 
 exports.initialize = function () {
@@ -335,17 +357,21 @@ function process_notification(notification) {
             message_id: message.id,
         };
         notification_object = notice_memory[key].obj;
-        notification_object.onclick = function () {
-            notification_object.cancel();
-            if (feature_flags.clicking_notification_causes_narrow) {
-                narrow.by_subject(message.id, {trigger: 'notification'});
-            }
-            window.focus();
-        };
+        if ('onclick' in notification_object) {
+            notification_object.onclick = function () {
+                notification_object.cancel();
+                if (feature_flags.clicking_notification_causes_narrow) {
+                    narrow.by_subject(message.id, {trigger: 'notification'});
+                }
+                window.focus();
+            };
+        }
         notification_object.onclose = function () {
             delete notice_memory[key];
         };
-        notification_object.show();
+        if ('show' in notification_object) {
+            notification_object.show();
+        }
     } else if (notification.webkit_notify === false && typeof Notification !== "undefined" && /mozilla/i.test(navigator.userAgent) === true) {
         Notification.requestPermission(function (perm) {
             if (perm === 'granted') {
