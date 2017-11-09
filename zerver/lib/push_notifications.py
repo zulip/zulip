@@ -546,5 +546,5 @@ def handle_push_notification(user_profile_id, missed_message):
             send_android_push_notification(android_devices, gcm_payload)
 
     except UserMessage.DoesNotExist:
-        logging.error("Could not find UserMessage with message_id %s" % (
-            missed_message['message_id'],))
+        logging.error("Could not find UserMessage with message_id %s and user_id %s" % (
+            missed_message['message_id'], user_profile_id))

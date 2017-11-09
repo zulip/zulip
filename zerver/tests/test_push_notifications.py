@@ -522,7 +522,8 @@ class HandlePushNotificationTest(PushNotificationTest):
         with mock.patch('logging.error') as mock_logger:
             apn.handle_push_notification(self.user_profile.id, missed_message)
             mock_logger.assert_called_with("Could not find UserMessage with "
-                                           "message_id 100")
+                                           "message_id 100 and user_id %s" %
+                                           (self.user_profile.id,))
 
 class TestAPNs(PushNotificationTest):
     def devices(self):
