@@ -53,7 +53,7 @@ function get_old_messages_success(data, opts) {
         return;
     }
     if (! data) {
-        // The server occationally returns no data during a
+        // The server occasionally returns no data during a
         // restart.  Ignore those responses and try again
         setTimeout(function () {
             exports.load_old_messages(opts);

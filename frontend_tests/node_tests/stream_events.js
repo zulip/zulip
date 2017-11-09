@@ -190,7 +190,7 @@ stream_data.add_sub('Frontend', frontend);
         assert.equal(updated, true);
     });
 
-    // reset overriden value
+    // reset overridden value
     set_global('narrow_state', { is_for_stream_id: noop });
 
     with_overrides(function (override) {

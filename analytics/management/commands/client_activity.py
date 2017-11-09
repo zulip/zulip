@@ -25,7 +25,7 @@ Usage examples:
                                  "'realm' will calculate client activity of realm. "
                                  "'user' will calculate client activity of the user.")
         parser.add_argument('--user', dest='user', type=str,
-                            help="The email adress of the user you want to calculate activity.")
+                            help="The email address of the user you want to calculate activity.")
         self.add_realm_args(parser)
 
     def compute_activity(self, user_activity_objects):

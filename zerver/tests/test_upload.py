@@ -262,7 +262,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         d2_attachment.create_time = two_week_ago
         d2_attachment.save()
 
-        # Send message refering only dummy_1
+        # Send message referring only dummy_1
         self.subscribe(self.example_user("hamlet"), "Denmark")
         body = "Some files here ...[zulip.txt](http://localhost:9991/user_uploads/" + d1_path_id + ")"
         self.send_stream_message(self.example_email("hamlet"), "Denmark", body, "test")
@@ -302,7 +302,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
     def test_multiple_claim_attachments_different_owners(self):
         # type: () -> None
         """This test tries to claim the same attachment more than once, first
-        with a private stream and then with differnet recipients."""
+        with a private stream and then with different recipients."""
         self.login(self.example_email("hamlet"))
         d1 = StringIO("zulip!")
         d1.name = "dummy_1.txt"

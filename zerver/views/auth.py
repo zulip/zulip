@@ -237,7 +237,7 @@ def remote_user_jwt(request):
 def google_oauth2_csrf(request, value):
     # type: (HttpRequest, str) -> str
     # In Django 1.10, get_token returns a salted token which changes
-    # everytime get_token is called.
+    # every time get_token is called.
     from django.middleware.csrf import _unsalt_cipher_token
     token = _unsalt_cipher_token(get_token(request))
     return hmac.new(token.encode('utf-8'), value.encode("utf-8"), hashlib.sha256).hexdigest()
@@ -372,7 +372,7 @@ def finish_google_oauth2(request):
     try:
         full_name = body['name']['formatted']
     except KeyError:
-        # Only google+ users have a formated name. I am ignoring i18n here.
+        # Only google+ users have a formatted name. I am ignoring i18n here.
         full_name = u'{} {}'.format(
             body['name']['givenName'], body['name']['familyName']
         )

@@ -214,8 +214,8 @@ people.add(bob);
 
 (function test_validate_stream_message() {
     // This test is in kind of continuation to test_validate but since it is
-    // primarly used to get coverage over functions called from validate()
-    // we are seperating it up in different test. Though their relative position
+    // primarily used to get coverage over functions called from validate()
+    // we are separating it up in different test. Though their relative position
     // of execution should not be changed.
     global.page_params.realm_mandatory_topics = false;
     var sub = {

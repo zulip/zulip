@@ -30,7 +30,7 @@ different flows:
   equivalent to the previous one, as a *link* out of the browser history
   will be visited).
 * The user clicking some in-app click handler (e.g. "Stream settings"
-  for an invidual stream), that potentially does
+  for an individual stream), that potentially does
   several UI-manipulating things including e.g. loading the streams
   overlay, and needs to update the hash without re-triggering the open
   animation (etc.).

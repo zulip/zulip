@@ -190,7 +190,7 @@ def notify_bot_owner(event, request_data, status_code=None, response_content=Non
                                 "```\n%s\n```" % (response_content,)
     if exception:
         notification_message += "\nWhen trying to send a request to the webhook service, an exception " \
-                                "of type %s occured:\n```\n%s\n```" % (type(exception).__name__, str(exception))
+                                "of type %s occurred:\n```\n%s\n```" % (type(exception).__name__, str(exception))
     send_response_message(bot_id, message_info, notification_message)
 
 def request_retry(event, request_data, failure_message, exception=None):
@@ -256,7 +256,7 @@ def do_rest_call(rest_operation, request_data, event, service_handler, timeout=N
         request_retry(event, request_data, response_message, exception=e)
 
     except requests.exceptions.RequestException as e:
-        response_message = "An exception of type *%s* occured for message `%s`! " \
+        response_message = "An exception of type *%s* occurred for message `%s`! " \
                            "See the Zulip server logs for more information." % (type(e).__name__, event["command"],)
         logging.exception("Outhook trigger failed:\n %s" % (e,))
         fail_with_message(event, response_message)

@@ -657,7 +657,7 @@ exports.compute_placement = function (elt, popover_height, popover_width,
     }
 
     if (prefer_vertical_positioning && placement !== 'viewport_center') {
-        // If vertical positioning is prefered and the popover fits in
+        // If vertical positioning is preferred and the popover fits in
         // either top or bottom position then return.
         return placement;
     }

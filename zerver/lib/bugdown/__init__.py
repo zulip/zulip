@@ -955,7 +955,7 @@ def sanitize_url(url):
     locless_schemes = ['mailto', 'news', 'file']
     if netloc == '' and scheme not in locless_schemes:
         # This fails regardless of anything else.
-        # Return immediately to save additional proccessing
+        # Return immediately to save additional processing
         return None
 
     # Upstream code will accept a URL like javascript://foo because it

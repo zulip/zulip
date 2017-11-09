@@ -19,7 +19,7 @@ the various working copies.
 Sometimes you need to get commits.  Here are some scenarios:
 
 - You may fork the official Zulip repo to your GitHub fork.
-- You may fetch commits from the offical Zulip repo to your local copy.
+- You may fetch commits from the official Zulip repo to your local copy.
 - You occasionally may fetch commits from your forked copy.
 
 Sometimes you want to publish commits.  Here are scenarios:

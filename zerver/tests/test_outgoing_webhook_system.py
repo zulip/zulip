@@ -104,7 +104,7 @@ The webhook got a response with status code *400*.''')
         bot_owner_notification = self.get_last_message()
         self.assertEqual(bot_owner_notification.content,
                          '''[A message](http://zulip.testserver/#narrow/stream/Verona/subject/Foo/near/) triggered an outgoing webhook.
-When trying to send a request to the webhook service, an exception of type Timeout occured:
+When trying to send a request to the webhook service, an exception of type Timeout occurred:
 ```
 Time is up!
 ```''')
@@ -120,7 +120,7 @@ Time is up!
         self.assertTrue(mock_fail_with_message.called)
         self.assertEqual(bot_owner_notification.content,
                          '''[A message](http://zulip.testserver/#narrow/stream/Verona/subject/Foo/near/) triggered an outgoing webhook.
-When trying to send a request to the webhook service, an exception of type RequestException occured:
+When trying to send a request to the webhook service, an exception of type RequestException occurred:
 ```
 I'm a generic exception :(
 ```''')

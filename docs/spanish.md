@@ -35,7 +35,7 @@ Zulip friendly and usable.
 * Message - **Mensaje**
 * Private message (PM) - **Mensaje privado (MP)**
 * Group PM - **mensaje privado grupal**: even though "MP grupal" is the most
-  precise translation, preferrably don't use that one. Many users may not
+  precise translation, preferably don't use that one. Many users may not
   associate "MP" with *private message* in a group context. Better use it
   without abbreviations.
 * Realm - **Instancia**: the literal Spanish of realm is "reino",

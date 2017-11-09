@@ -99,7 +99,7 @@ Services to share content with others, anyone you've shared content with
 content.
 
 In order to provide the Services, our servers save a record of the messages
-received by each Zulip Account (the "Received Messsage Information" for the
+received by each Zulip Account (the "Received Message Information" for the
 account). If you are using our Services on behalf of a business and a
 representative of that business sends [data@zulip.com](mailto:data@zulip.com)
 a request to delete all of your business' accounts with us, then within a

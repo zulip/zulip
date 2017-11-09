@@ -49,7 +49,7 @@ def parse_file(config, gens, corpus_file):
     paragraphs = []  # type: List[str]
 
     with open(corpus_file, "r") as infile:
-        # OUR DATA: we need to seperate the person talking and what they say
+        # OUR DATA: we need to separate the person talking and what they say
         paragraphs = remove_line_breaks(infile)
         paragraphs = add_flair(paragraphs, gens)
 

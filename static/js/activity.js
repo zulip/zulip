@@ -613,7 +613,7 @@ exports.get_filter_text = function () {
     if (!meta.$user_list_filter) {
         // This may be overly defensive, but there may be
         // situations where get called before everything is
-        // fully intialized.  The empty string is a fine
+        // fully initialized.  The empty string is a fine
         // default here.
         blueslip.warn('get_filter_text() is called before initialization');
         return '';

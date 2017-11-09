@@ -1017,7 +1017,7 @@ class MessagePOSTTest(ZulipTestCase):
     def test_personal_message_copying_self(self):
         # type: () -> None
         """
-        Sending a personal message to yourself plus another user is succesful,
+        Sending a personal message to yourself plus another user is successful,
         and counts as a message just to that user.
         """
         self.login(self.example_email("hamlet"))

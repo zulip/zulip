@@ -169,7 +169,7 @@ Filter.canonicalize_term = function (opts) {
     var operator = opts.operator;
     var operand = opts.operand;
 
-    // Make negated be explictly false for both clarity and
+    // Make negated be explicitly false for both clarity and
     // simplifying deepEqual checks in the tests.
     if (!negated) {
         negated = false;

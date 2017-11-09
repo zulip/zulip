@@ -120,7 +120,7 @@ overlay over the message view area, to make exceptions in testing a
 new feature hard to miss.
 
 * Blueslip is implemented in `static/js/blueslip.js`.
-* In order to capture essentially any error occuring in the browser,
+* In order to capture essentially any error occurring in the browser,
 blueslip does the following:
   * Wraps every function passed into `$.ready()`, i.e., every
   on-webapp-startup method used by Zulip.

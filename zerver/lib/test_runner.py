@@ -45,7 +45,7 @@ def slow(slowness_reason):
     '''
     This is a decorate that annotates a test as being "known
     to be slow."  The decorator will set expected_run_time and slowness_reason
-    as atributes of the function.  Other code can use this annotation
+    as attributes of the function.  Other code can use this annotation
     as needed, e.g. to exclude these tests in "fast" mode.
     '''
     def decorator(f):

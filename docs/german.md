@@ -199,7 +199,7 @@ with Zulip could think of this as streams that are online.
 
 * Bot - **Bot**
 
-Not only is "bot" a short and easily rememberable term, it is also widely used
+Not only is "bot" a short and easily memorable term, it is also widely used
 in German technology magazines, forums, etc.
 
 *"Bot" (Transifex, Heise, Die Zeit)*

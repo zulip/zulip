@@ -349,10 +349,10 @@ zulip_first_start_init() {
     fi
     set -e
     touch "$DATA_DIR/.initiated"
-    echo "Zulip first start init sucessful."
+    echo "Zulip first start init successful."
 }
 # migrate_zulip_database Runs the zulip database migrations
-# This runs the migration everytime the container runs, to make sure Zulip has the
+# This runs the migration every time the container runs, to make sure Zulip has the
 # uptodate database version.
 migrate_zulip_database() {
     echo "Migrating Zulip to new version ..."
