@@ -13,11 +13,17 @@ exports.smart_insert = function (textarea, syntax) {
 
     var pos = textarea.caret();
     var before_str = textarea.val().slice(0, pos);
-
+    var after_str = textarea.val().slice(pos);
 
     if (pos > 0) {
         if (!is_space(before_str.slice(-1))) {
             syntax = ' ' + syntax;
+        }
+    }
+
+    if (after_str.length > 0) {
+        if (!is_space(after_str[0])) {
+            syntax += ' ';
         }
     }
 

@@ -57,13 +57,22 @@ function make_textbox(s) {
     assert.equal(textbox.val(), 'abc :smile: :airplane:');
     assert(textbox.focused);
 
-    // Test the current slightly-broken behavior.
     textbox.caret(0);
     textbox.blur();
     compose_ui.smart_insert(textbox, ':octopus:');
-    assert.equal(textbox.insert_text, ':octopus:');
-    assert.equal(textbox.val(), ':octopus:abc :smile: :airplane:');
+    assert.equal(textbox.insert_text, ':octopus: ');
+    assert.equal(textbox.val(), ':octopus: abc :smile: :airplane:');
     assert(textbox.focused);
 
+    textbox.caret(textbox.val().length);
+    textbox.blur();
+    compose_ui.smart_insert(textbox, ':heart:');
+    assert.equal(textbox.insert_text, ' :heart:');
+    assert.equal(textbox.val(), ':octopus: abc :smile: :airplane: :heart:');
+    assert(textbox.focused);
+
+    // Note that we don't have any special logic for strings that are
+    // already surrounded by spaces, since we are usually inserting things
+    // like emojis and file links.
 }());
 
