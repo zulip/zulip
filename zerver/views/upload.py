@@ -76,7 +76,7 @@ def upload_file_backend(request, user_profile):
         # strings containing bytes and is rendered incorrectly.
         #
         # Example:
-        # >>> from six.moves import urllib
+        # >>> import urllib.parse
         # >>> name = u'%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D0%B5%D0%B8%CC%86%D1%82%D0%B5.txt'
         # >>> print(urllib.parse.unquote(name))
         # ÐÐ´ÑÐ°Ð²ÐµÐ¸ÌÑÐµ  # This is wrong
