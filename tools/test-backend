@@ -2,7 +2,7 @@
 
 from typing import List, Any
 import glob
-import optparse
+import argparse
 import os
 import sys
 import subprocess
@@ -187,7 +187,7 @@ if __name__ == "__main__":
     # "-u" uses unbuffered IO, which is important when wrapping it in subprocess
     os.environ['PYTHONUNBUFFERED'] = 'y'
 
-    usage = """%prog [options]
+    usage = """test-backend [options]
     test-backend # Runs all backend tests
     test-backend zerver.tests.test_bugdown # run all tests in a test module
     test-backend zerver/tests/test_bugdown.py # run all tests in a test module
@@ -197,64 +197,64 @@ if __name__ == "__main__":
     test-backend zerver.tests.test_bugdown.BugdownTest.test_inline_youtube # run a single test
     test-backend BugdownTest.test_inline_youtube # run a single test"""
 
-    parser = optparse.OptionParser(usage)
+    parser = argparse.ArgumentParser(description=usage)
+    parser.formatter_class = argparse.RawTextHelpFormatter
 
-    parser.add_option('--nonfatal-errors', action="store_false", default=True,
-                      dest="fatal_errors", help="Continue past test failures to run all tests")
-    parser.add_option('--coverage', dest='coverage',
-                      action="store_true",
-                      default=False,
-                      help='Compute test coverage.')
-    parser.add_option('--verbose-coverage', dest='verbose_coverage',
-                      action="store_true",
-                      default=False, help='Enable verbose print of coverage report.')
+    parser.add_argument('--nonfatal-errors', action="store_false", default=True,
+                        dest="fatal_errors", help="Continue past test failures to run all tests")
+    parser.add_argument('--coverage', dest='coverage',
+                        action="store_true",
+                        default=False,
+                        help='Compute test coverage.')
+    parser.add_argument('--verbose-coverage', dest='verbose_coverage',
+                        action="store_true",
+                        default=False, help='Enable verbose print of coverage report.')
 
-    def allow_positive_int(option, opt_str, value, parser):
-        # type: (optparse.Option, str, int, optparse.OptionParser) -> None
-        if value < 1:
-            raise optparse.OptionValueError(
-                "option {}: Only positive integers are allowed.".format(opt_str))
-        setattr(parser.values, option.dest, value)
+    parser.add_argument('--processes', dest='processes',
+                        type=int,
+                        action='store',
+                        default=4,
+                        help='Specify the number of processes to run the '
+                             'tests in. Default is 4.')
+    parser.add_argument('--profile', dest='profile',
+                        action="store_true",
+                        default=False, help='Profile test runtime.')
+    parser.add_argument('--force', dest='force',
+                        action="store_true",
+                        default=False, help='Run tests despite possible problems.')
+    parser.add_argument('--no-shallow', dest='no_shallow',
+                        action="store_true",
+                        default=False,
+                        help="Don't allow shallow testing of templates (deprecated)")
+    parser.add_argument('--verbose', dest='verbose',
+                        action="store_true",
+                        default=False,
+                        help="Show detailed output")
+    parser.add_argument('--generate-fixtures', action="store_true", default=False,
+                        dest="generate_fixtures",
+                        help=("Force a call to generate-fixtures."))
+    parser.add_argument('--report-slow-tests', dest='report_slow_tests',
+                        action="store_true",
+                        default=False,
+                        help="Show which tests are slowest.")
+    parser.add_argument('--reverse', dest='reverse',
+                        action="store_true",
+                        default=False,
+                        help="Run tests in reverse order.")
+    parser.add_argument('--rerun', dest="rerun",
+                        action="store_true",
+                        default=False,
+                        help=("Run the tests which failed the last time "
+                              "test-backend was run.  Implies --nonfatal-errors."))
+    parser.add_argument('args', nargs=argparse.REMAINDER)
 
-    parser.add_option('--processes', dest='processes',
-                      type="int",
-                      callback=allow_positive_int,
-                      action='callback',
-                      default=None,
-                      help='Specify the number of processes to run the '
-                           'tests in. Default is 4.')
-    parser.add_option('--profile', dest='profile',
-                      action="store_true",
-                      default=False, help='Profile test runtime.')
-    parser.add_option('--force', dest='force',
-                      action="store_true",
-                      default=False, help='Run tests despite possible problems.')
-    parser.add_option('--no-shallow', dest='no_shallow',
-                      action="store_true",
-                      default=False,
-                      help="Don't allow shallow testing of templates (deprecated)")
-    parser.add_option('--verbose', dest='verbose',
-                      action="store_true",
-                      default=False,
-                      help="Show detailed output")
-    parser.add_option('--generate-fixtures', action="store_true", default=False,
-                      dest="generate_fixtures",
-                      help=("Force a call to generate-fixtures."))
-    parser.add_option('--report-slow-tests', dest='report_slow_tests',
-                      action="store_true",
-                      default=False,
-                      help="Show which tests are slowest.")
-    parser.add_option('--reverse', dest='reverse',
-                      action="store_true",
-                      default=False,
-                      help="Run tests in reverse order.")
-    parser.add_option('--rerun', dest="rerun",
-                      action = "store_true",
-                      default=False,
-                      help=("Run the tests which failed the last time "
-                            "test-backend was run.  Implies --nonfatal-errors."))
+    options = parser.parse_args()
+    args = options.args
 
-    (options, args) = parser.parse_args()
+    if options.processes < 1:
+        raise argparse.ArgumentError(
+            "option processes: Only positive integers are allowed.")
+
     zerver_test_dir = 'zerver/tests/'
 
     # While running --rerun, we read var/last_test_failure.json to get
@@ -356,9 +356,6 @@ if __name__ == "__main__":
         subprocess.call(generate_fixtures_command)
 
     subprocess.check_call(['tools/webpack', '--test'])
-
-    if options.processes is None:
-        options.processes = 4
 
     TestRunner = get_runner(settings)
     parallel = options.processes
