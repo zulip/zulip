@@ -795,10 +795,13 @@ exports.initialize = function () {
 
         if (i === -1) {
             // This is a paste, so there's no filename. Show the image directly
-            textbox.val(textbox.val() + "[pasted image](" + uri + ") ");
+            var pasted_image_uri = "[pasted image](" + uri + ") ";
+            compose_state.insert_syntax_and_focus(pasted_image_uri);
+
         } else {
             // This is a dropped file, so make the filename a link to the image
-            textbox.val(textbox.val() + "[" + filename + "](" + uri + ")" + " ");
+            var filename_uri = "[" + filename + "](" + uri + ")" + " ";
+            compose_state.insert_syntax_and_focus(filename_uri);
         }
         compose_ui.autosize_textarea();
         $("#compose-send-button").prop("disabled", false);
