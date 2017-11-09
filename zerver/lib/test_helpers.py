@@ -58,7 +58,6 @@ import time
 import ujson
 import unittest
 import urllib
-from six import binary_type
 from zerver.lib.str_utils import NonBinaryStr
 from moto import mock_s3_deprecated
 
@@ -134,13 +133,13 @@ def simulated_empty_cache():
 
 @contextmanager
 def queries_captured(include_savepoints=False):
-    # type: (Optional[bool]) -> Generator[List[Dict[str, Union[str, binary_type]]], None, None]
+    # type: (Optional[bool]) -> Generator[List[Dict[str, Union[str, bytes]]], None, None]
     '''
     Allow a user to capture just the queries executed during
     the with statement.
     '''
 
-    queries = []  # type: List[Dict[str, Union[str, binary_type]]]
+    queries = []  # type: List[Dict[str, Union[str, bytes]]]
 
     def wrapper_execute(self, action, sql, params=()):
         # type: (TimeTrackingCursor, Callable[[NonBinaryStr, Iterable[Any]], None], NonBinaryStr, Iterable[Any]) -> None

@@ -1,5 +1,4 @@
 
-from six import binary_type
 from typing import Any, AnyStr, Callable, Dict, Iterable, List, MutableMapping, Optional, Text
 
 from django.conf import settings
@@ -225,7 +224,7 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
             error_data = u''
         elif isinstance(error_content_list[0], Text):
             error_data = u''.join(error_content_list)
-        elif isinstance(error_content_list[0], binary_type):
+        elif isinstance(error_content_list[0], bytes):
             error_data = repr(b''.join(error_content_list))
         if len(error_data) > 100:
             error_data = u"[content more than 100 characters]"

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from typing import Any, Callable, List, Optional, Sequence, TypeVar, Iterable, Set, Tuple, Text
-from six import binary_type
 import base64
 import errno
 import hashlib
@@ -88,7 +87,7 @@ def run_in_batches(all_list, batch_size, callback, sleep_time = 0, logger = None
             sleep(sleep_time)
 
 def make_safe_digest(string, hash_func=hashlib.sha1):
-    # type: (Text, Callable[[binary_type], Any]) -> Text
+    # type: (Text, Callable[[bytes], Any]) -> Text
     """
     return a hex digest of `string`.
     """
