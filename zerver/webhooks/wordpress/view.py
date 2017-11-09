@@ -8,8 +8,6 @@ from zerver.lib.response import json_success, json_error
 from zerver.lib.request import REQ, has_request_variables
 from zerver.models import get_client, UserProfile
 
-from six import text_type
-
 PUBLISH_POST_OR_PAGE_TEMPLATE = 'New {type} published.\n[{title}]({url})'
 USER_REGISTER_TEMPLATE = 'New blog user registered.\nName: {name}\nemail: {email}'
 WP_LOGIN_TEMPLATE = 'User {name} logged in.'
@@ -26,7 +24,7 @@ def api_wordpress_webhook(request, user_profile,
                           display_name=REQ(default="New User Name"),
                           user_email=REQ(default="New User Email"),
                           user_login=REQ(default="Logged in User")):
-    # type: (HttpRequest, UserProfile, text_type, text_type, text_type, text_type, text_type, text_type, text_type, text_type, text_type) -> HttpResponse
+    # type: (HttpRequest, UserProfile, str, str, str, str, str, str, str, str, str) -> HttpResponse
 
     # remove trailing whitespace (issue for some test fixtures)
     hook = hook.rstrip()

@@ -7,7 +7,6 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.models import UserProfile
 
 from django.http import HttpRequest, HttpResponse
-from six import text_type
 from typing import Any, Dict, List
 
 def format_body(signatories: List[Dict[str, Any]], model_payload: Dict[str, Any]) -> str:
@@ -45,7 +44,7 @@ def api_hellosign_webhook(request, user_profile,
                           payload=REQ(argument_type='body'),
                           stream=REQ(default='hellosign'),
                           topic=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, Dict[str, Dict[str, Any]], text_type, text_type) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Dict[str, Dict[str, Any]], str, str) -> HttpResponse
     model_payload = ready_payload(payload['signature_request']['signatures'], payload)
     body = format_body(payload['signature_request']['signatures'], model_payload)
     topic = topic or model_payload['contract_title']
