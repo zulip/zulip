@@ -28,7 +28,6 @@ import base64
 import os
 import re
 from PIL import Image, ImageOps
-from six import binary_type
 import io
 import random
 import logging
@@ -89,7 +88,7 @@ class ExceededQuotaError(JsonableError):
     code = ErrorCode.QUOTA_EXCEEDED
 
 def resize_avatar(image_data, size=DEFAULT_AVATAR_SIZE):
-    # type: (binary_type, int) -> binary_type
+    # type: (bytes, int) -> bytes
     try:
         im = Image.open(io.BytesIO(image_data))
         im = ImageOps.fit(im, (size, size), Image.ANTIALIAS)
@@ -101,7 +100,7 @@ def resize_avatar(image_data, size=DEFAULT_AVATAR_SIZE):
 
 
 def resize_emoji(image_data, size=DEFAULT_EMOJI_SIZE):
-    # type: (binary_type, int) -> binary_type
+    # type: (bytes, int) -> bytes
     try:
         im = Image.open(io.BytesIO(image_data))
         image_format = im.format
@@ -127,7 +126,7 @@ def resize_emoji(image_data, size=DEFAULT_EMOJI_SIZE):
 class ZulipUploadBackend:
     def upload_message_image(self, uploaded_file_name, uploaded_file_size,
                              content_type, file_data, user_profile, target_realm=None):
-        # type: (Text, int, Optional[Text], binary_type, UserProfile, Optional[Realm]) -> Text
+        # type: (Text, int, Optional[Text], bytes, UserProfile, Optional[Realm]) -> Text
         raise NotImplementedError()
 
     def upload_avatar_image(self, user_file, acting_user_profile, target_user_profile):
@@ -184,7 +183,7 @@ def upload_image_to_s3(
         content_type,
         user_profile,
         contents):
-    # type: (NonBinaryStr, Text, Optional[Text], UserProfile, binary_type) -> None
+    # type: (NonBinaryStr, Text, Optional[Text], UserProfile, bytes) -> None
 
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
     bucket = get_bucket(conn, bucket_name)
@@ -259,7 +258,7 @@ class S3UploadBackend(ZulipUploadBackend):
 
     def upload_message_image(self, uploaded_file_name, uploaded_file_size,
                              content_type, file_data, user_profile, target_realm=None):
-        # type: (Text, int, Optional[Text], binary_type, UserProfile, Optional[Realm]) -> Text
+        # type: (Text, int, Optional[Text], bytes, UserProfile, Optional[Realm]) -> Text
         bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
         if target_realm is None:
             target_realm = user_profile.realm
@@ -434,7 +433,7 @@ def mkdirs(path):
         os.makedirs(dirname)
 
 def write_local_file(type, path, file_data):
-    # type: (Text, Text, binary_type) -> None
+    # type: (Text, Text, bytes) -> None
     file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, type, path)
     mkdirs(file_path)
     with open(file_path, 'wb') as f:
@@ -451,7 +450,7 @@ def get_local_file_path(path_id):
 class LocalUploadBackend(ZulipUploadBackend):
     def upload_message_image(self, uploaded_file_name, uploaded_file_size,
                              content_type, file_data, user_profile, target_realm=None):
-        # type: (Text, int, Optional[Text], binary_type, UserProfile, Optional[Realm]) -> Text
+        # type: (Text, int, Optional[Text], bytes, UserProfile, Optional[Realm]) -> Text
         # Split into 256 subdirectories to prevent directories from getting too big
         path = "/".join([
             str(user_profile.realm_id),
@@ -574,7 +573,7 @@ def upload_emoji_image(emoji_file, emoji_file_name, user_profile):
 
 def upload_message_image(uploaded_file_name, uploaded_file_size,
                          content_type, file_data, user_profile, target_realm=None):
-    # type: (Text, int, Optional[Text], binary_type, UserProfile, Optional[Realm]) -> Text
+    # type: (Text, int, Optional[Text], bytes, UserProfile, Optional[Realm]) -> Text
     return upload_backend.upload_message_image(uploaded_file_name, uploaded_file_size,
                                                content_type, file_data, user_profile, target_realm=target_realm)
 

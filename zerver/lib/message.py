@@ -5,7 +5,6 @@ import zlib
 
 from django.utils.translation import ugettext as _
 from django.utils.timezone import now as timezone_now
-from six import binary_type
 
 from zerver.lib.avatar import get_avatar_field
 import zerver.lib.bugdown as bugdown
@@ -111,16 +110,16 @@ def sew_messages_and_reactions(messages, reactions):
 
 
 def extract_message_dict(message_bytes):
-    # type: (binary_type) -> Dict[str, Any]
+    # type: (bytes) -> Dict[str, Any]
     return dict_with_str_keys(ujson.loads(zlib.decompress(message_bytes).decode("utf-8")))
 
 def stringify_message_dict(message_dict):
-    # type: (Dict[str, Any]) -> binary_type
+    # type: (Dict[str, Any]) -> bytes
     return zlib.compress(force_bytes(ujson.dumps(message_dict)))
 
 @cache_with_key(to_dict_cache_key, timeout=3600*24)
 def message_to_dict_json(message):
-    # type: (Message) -> binary_type
+    # type: (Message) -> bytes
     return MessageDict.to_dict_uncached(message)
 
 class MessageDict:
@@ -178,7 +177,7 @@ class MessageDict:
 
     @staticmethod
     def to_dict_uncached(message):
-        # type: (Message) -> binary_type
+        # type: (Message) -> bytes
         dct = MessageDict.to_dict_uncached_helper(message)
         return stringify_message_dict(dct)
 

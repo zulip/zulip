@@ -20,7 +20,6 @@ from zerver.lib.send_email import FromAddress
 from zerver.models import Stream, Recipient, \
     get_user_profile_by_id, get_display_recipient, get_personal_recipient, \
     Message, Realm, UserProfile, get_system_bot
-from six import binary_type
 import talon
 from talon import quotations
 
@@ -221,7 +220,7 @@ def get_message_part_by_type(message, content_type):
     for idx, part in enumerate(message.walk()):
         if part.get_content_type() == content_type:
             content = part.get_payload(decode=True)
-            assert isinstance(content, binary_type)
+            assert isinstance(content, bytes)
             if charsets[idx]:
                 return content.decode(charsets[idx], errors="ignore")
     return None
@@ -267,7 +266,7 @@ def extract_and_upload_attachments(message, realm):
         filename = part.get_filename()
         if filename:
             attachment = part.get_payload(decode=True)
-            if isinstance(attachment, binary_type):
+            if isinstance(attachment, bytes):
                 s3_url = upload_message_image(filename, len(attachment), content_type,
                                               attachment,
                                               user_profile,

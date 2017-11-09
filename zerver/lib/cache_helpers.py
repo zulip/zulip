@@ -1,5 +1,4 @@
 
-from six import binary_type
 from typing import Any, Callable, Dict, List, Tuple, Text
 
 # This file needs to be different from cache.py because cache.py
@@ -33,7 +32,7 @@ def message_fetch_objects():
                                                    id__gt=max_id - MESSAGE_CACHE_SIZE)
 
 def message_cache_items(items_for_remote_cache, message):
-    # type: (Dict[Text, Tuple[binary_type]], Message) -> None
+    # type: (Dict[Text, Tuple[bytes]], Message) -> None
     '''
     Note: this code is untested, and the caller has been
     commented out for a while.
