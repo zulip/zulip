@@ -497,54 +497,54 @@ def handle_push_notification(user_profile_id, missed_message):
     missed_message is the event received by the
     zerver.worker.queue_processors.PushNotificationWorker.consume function.
     """
-    try:
-        user_profile = get_user_profile_by_id(user_profile_id)
-        if not (receives_offline_notifications(user_profile) or
-                receives_online_notifications(user_profile)):
-            return
+    user_profile = get_user_profile_by_id(user_profile_id)
+    if not (receives_offline_notifications(user_profile) or
+            receives_online_notifications(user_profile)):
+        return
 
+    try:
         umessage = UserMessage.objects.get(user_profile=user_profile,
                                            message__id=missed_message['message_id'])
-        message = umessage.message
-        message.trigger = missed_message['trigger']
-        message.stream_name = missed_message.get('stream_name', None)
-
-        if umessage.flags.read:
-            return
-
-        apns_payload = get_apns_payload(message)
-        gcm_payload = get_gcm_payload(user_profile, message)
-        logging.info("Sending push notification to user %s" % (user_profile_id,))
-
-        if uses_notification_bouncer():
-            try:
-                send_notifications_to_bouncer(user_profile_id,
-                                              apns_payload,
-                                              gcm_payload)
-            except requests.ConnectionError:
-                def failure_processor(event):
-                    # type: (Dict[str, Any]) -> None
-                    logging.warning(
-                        "Maximum retries exceeded for trigger:%s event:push_notification" % (
-                            event['user_profile_id']))
-                retry_event('missedmessage_mobile_notifications', missed_message,
-                            failure_processor)
-
-            return
-
-        android_devices = list(PushDeviceToken.objects.filter(user=user_profile,
-                                                              kind=PushDeviceToken.GCM))
-
-        apple_devices = list(PushDeviceToken.objects.filter(user=user_profile,
-                                                            kind=PushDeviceToken.APNS))
-
-        if apple_devices:
-            send_apple_push_notification(user_profile.id, apple_devices,
-                                         apns_payload)
-
-        if android_devices:
-            send_android_push_notification(android_devices, gcm_payload)
-
     except UserMessage.DoesNotExist:
         logging.error("Could not find UserMessage with message_id %s and user_id %s" % (
             missed_message['message_id'], user_profile_id))
+        return
+
+    message = umessage.message
+    message.trigger = missed_message['trigger']
+    message.stream_name = missed_message.get('stream_name', None)
+
+    if umessage.flags.read:
+        return
+
+    apns_payload = get_apns_payload(message)
+    gcm_payload = get_gcm_payload(user_profile, message)
+    logging.info("Sending push notification to user %s" % (user_profile_id,))
+
+    if uses_notification_bouncer():
+        try:
+            send_notifications_to_bouncer(user_profile_id,
+                                          apns_payload,
+                                          gcm_payload)
+        except requests.ConnectionError:
+            def failure_processor(event):
+                # type: (Dict[str, Any]) -> None
+                logging.warning(
+                    "Maximum retries exceeded for trigger:%s event:push_notification" % (
+                        event['user_profile_id']))
+            retry_event('missedmessage_mobile_notifications', missed_message,
+                        failure_processor)
+        return
+
+    android_devices = list(PushDeviceToken.objects.filter(user=user_profile,
+                                                          kind=PushDeviceToken.GCM))
+
+    apple_devices = list(PushDeviceToken.objects.filter(user=user_profile,
+                                                        kind=PushDeviceToken.APNS))
+
+    if apple_devices:
+        send_apple_push_notification(user_profile.id, apple_devices,
+                                     apns_payload)
+
+    if android_devices:
+        send_android_push_notification(android_devices, gcm_payload)
