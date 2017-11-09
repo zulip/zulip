@@ -2429,6 +2429,25 @@ class DeleteMessageTest(ZulipTestCase):
         result = self.client_delete('/json/messages/{msg_id}'.format(msg_id=msg_id))
         self.assert_json_error(result, "Invalid message(s)")
 
+    def test_delete_message_by_user(self):
+        # type: () -> None
+
+        def change_allow_message_deleting_setting(value):
+            # type: (bool) -> None
+            self.login("iago@zulip.com")
+            admin_user = self.example_user("iago")
+            admin_user.realm.allow_message_deleting = value
+
+        change_allow_message_deleting_setting(False)
+        self.login("hamlet@zulip.com")
+        msg_id = self.send_stream_message("hamlet@zulip.com", "Scotland")
+        result = self.client_delete('/json/messages/{msg_id}'.format(msg_id=msg_id))
+        self.assert_json_error(result, "You don't have permission to edit this message")
+
+        change_allow_message_deleting_setting(True)
+        result = self.client_delete('/json/messages/{msg_id}'.format(msg_id=msg_id))
+        self.assert_json_success(result)
+
 class SoftDeactivationMessageTest(ZulipTestCase):
 
     def test_maybe_catch_up_soft_deactivated_user(self):
