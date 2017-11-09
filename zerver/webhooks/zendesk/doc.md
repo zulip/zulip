@@ -48,7 +48,7 @@ Next we need need to enter the message body into Message. You can use
 Zulip markdown and the Zendesk placeholders when creating your message.
 
 You can copy this example template:
-</p>
+
 {% raw %}
 ~~~
 Ticket [#{{ ticket.id }}: {{ ticket.title }}]({{ ticket.link }}), was updated by {{ current_user.name }}
