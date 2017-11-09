@@ -621,10 +621,6 @@ function test_raw_file_drop(raw_drop_func) {
     assert(compose_actions_start_checked);
     assert.equal($("#new_message_content").val(), 'Old content new contents');
     assert(compose_ui_autosize_textarea_checked);
-
-    // Now test the insert syntax code
-    $('#new_message_content').caret = noop;
-    compose_state.insert_syntax_and_focus('funtimes');
 }
 
 (function test_initialize() {
