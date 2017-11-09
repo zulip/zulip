@@ -3,7 +3,6 @@
 import ujson
 from typing import Any, Mapping, List
 from unittest import mock
-from six import string_types
 
 from zerver.lib.emoji import emoji_name_to_emoji_code
 from zerver.lib.request import JsonableError

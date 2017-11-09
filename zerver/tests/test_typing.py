@@ -2,7 +2,6 @@
 
 import ujson
 from typing import Any, Mapping, List
-from six import string_types
 
 from zerver.lib.test_helpers import tornado_redirected_to_list, get_display_recipient
 from zerver.lib.test_classes import (
