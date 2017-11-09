@@ -51,7 +51,6 @@ from urllib.parse import urljoin, urlencode
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 from configparser import RawConfigParser
-from six import text_type
 
 
 parser = OptionParser()
@@ -93,7 +92,7 @@ def process_response_error(e):
 
 
 def send_email_mirror(rcpt_to, shared_secret, host, url, test, verify_ssl):
-    # type: (text_type, text_type, text_type, text_type, bool, bool) -> None
+    # type: (str, str, str, str, bool, bool) -> None
     if not rcpt_to:
         print("5.1.1 Bad destination mailbox address: No missed message email address.")
         exit(posix.EX_NOUSER)  # type: ignore # There are no stubs for posix in python 3

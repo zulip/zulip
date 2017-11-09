@@ -6,7 +6,6 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.models import UserProfile
 
 from django.http import HttpRequest, HttpResponse
-from six import text_type
 from typing import Dict, Any, Optional
 
 def body_template(score: int) -> str:
@@ -21,7 +20,7 @@ def api_delighted_webhook(request, user_profile,
                           payload=REQ(argument_type='body'),
                           stream=REQ(default='delighted'),
                           topic=REQ(default='Survey Response')):
-    # type: (HttpRequest, UserProfile, Dict[str, Dict[str, Any]], text_type, text_type) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Dict[str, Dict[str, Any]], str, str) -> HttpResponse
     person = payload['event_data']['person']
     selected_payload = {'email': person['email']}
     selected_payload['score'] = payload['event_data']['score']

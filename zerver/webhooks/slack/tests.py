@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
-from six import text_type
 
 
 class SlackWebhookTests(WebhookTestCase):
@@ -52,6 +51,6 @@ class SlackWebhookTests(WebhookTestCase):
         result = self.client_post(url, payload, content_type="application/x-www-form-urlencoded")
         self.assert_json_error(result, 'Error: channels_map_to_topics parameter other than 0 or 1')
 
-    def get_body(self, fixture_name: text_type) -> text_type:
+    def get_body(self, fixture_name: str) -> str:
 
         return self.fixture_data("slack", fixture_name, file_type="txt")

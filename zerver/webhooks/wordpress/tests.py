@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from six import text_type
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.models import get_realm, get_user
 
@@ -89,5 +88,5 @@ class WordPressHookTests(WebhookTestCase):
 
         self.assert_json_error(result, "Unknown WordPress webhook action: WordPress Action")
 
-    def get_body(self, fixture_name: text_type) -> text_type:
+    def get_body(self, fixture_name: str) -> str:
         return self.fixture_data("wordpress", fixture_name, file_type="txt")
