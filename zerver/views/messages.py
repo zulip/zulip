@@ -61,8 +61,11 @@ class BadNarrowOperator(JsonableError):
         # type: () -> str
         return _('Invalid narrow operator: {desc}')
 
-Query = Any  # TODO: Should be Select, but sqlalchemy stubs are busted
-ConditionTransform = Any  # TODO: should be Callable[[ColumnElement], ColumnElement], but sqlalchemy stubs are busted
+# TODO: Should be Select, but sqlalchemy stubs are busted
+Query = Any
+
+# TODO: should be Callable[[ColumnElement], ColumnElement], but sqlalchemy stubs are busted
+ConditionTransform = Any
 
 # When you add a new operator to this, also update zerver/lib/narrow.py
 class NarrowBuilder:

@@ -46,7 +46,8 @@ Omit both <email> and <full name> for interactive user creation.
                             help='The file containing the password of the new user.')
         parser.add_argument('email', metavar='<email>', type=str, nargs='?', default=argparse.SUPPRESS,
                             help='email address of new user')
-        parser.add_argument('full_name', metavar='<full name>', type=str, nargs='?', default=argparse.SUPPRESS,
+        parser.add_argument('full_name', metavar='<full name>', type=str, nargs='?',
+                            default=argparse.SUPPRESS,
                             help='full name of new user')
         self.add_realm_args(parser, True, "The name of the existing realm to which to add the user.")
 

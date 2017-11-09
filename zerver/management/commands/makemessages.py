@@ -25,7 +25,7 @@ unfortunately isn't extensible, so we can:
 We are currently doing that last thing. It turns out there we are lucky
 for once: It's simply a matter of extending two regular expressions.
 Credit for the approach goes to:
-http://stackoverflow.com/questions/2090717/getting-translation-strings-for-jinja2-templates-integrated-with-django-1-x
+http://stackoverflow.com/questions/2090717
 
 """
 
@@ -44,7 +44,8 @@ from django.utils.translation import template
 
 from zerver.lib.str_utils import force_text
 
-strip_whitespace_right = re.compile("(%s-?\\s*(trans|pluralize).*?-%s)\\s+" % (BLOCK_TAG_START, BLOCK_TAG_END), re.U)
+strip_whitespace_right = re.compile("(%s-?\\s*(trans|pluralize).*?-%s)\\s+" % (
+                                    BLOCK_TAG_START, BLOCK_TAG_END), re.U)
 strip_whitespace_left = re.compile("\\s+(%s-\\s*(endtrans|pluralize).*?-?%s)" % (
                                    BLOCK_TAG_START, BLOCK_TAG_END), re.U)
 

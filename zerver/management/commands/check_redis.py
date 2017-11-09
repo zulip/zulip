@@ -12,7 +12,8 @@ import logging
 import time
 
 class Command(BaseCommand):
-    help = """Checks redis to make sure our rate limiting system hasn't grown a bug and left redis with a bunch of data
+    help = """Checks redis to make sure our rate limiting system hasn't grown a bug
+    and left redis with a bunch of data
 
     Usage: ./manage.py [--trim] check_redis"""
 

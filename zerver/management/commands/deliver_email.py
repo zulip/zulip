@@ -43,7 +43,8 @@ Usage: ./manage.py deliver_email
 
         with lockfile("/tmp/zulip_email_deliver.lockfile"):
             while True:
-                email_jobs_to_deliver = ScheduledEmail.objects.filter(scheduled_timestamp__lte=timezone_now())
+                email_jobs_to_deliver = ScheduledEmail.objects.filter(
+                    scheduled_timestamp__lte=timezone_now())
                 if email_jobs_to_deliver:
                     for job in email_jobs_to_deliver:
                         try:
@@ -53,5 +54,6 @@ Usage: ./manage.py deliver_email
                             logger.warning("%r not delivered" % (job,))
                     time.sleep(10)
                 else:
-                    # Less load on the db during times of activity, and more responsiveness when the load is low
+                    # Less load on the db during times of activity,
+                    # and more responsiveness when the load is low
                     time.sleep(2)

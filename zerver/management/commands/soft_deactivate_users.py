@@ -64,7 +64,8 @@ class Command(ZulipBaseCommand):
                 user_emails_found = [user.email for user in users_to_activate]
                 for user in user_emails:
                     if user not in user_emails_found:
-                        raise Exception('User with email %s was not found. Check if the email is correct.' % (user))
+                        raise Exception('User with email %s was not found. '
+                                        'Check if the email is correct.' % (user))
 
             users_activated = do_soft_activate_users(users_to_activate)
             logger.info('Soft Reactivated %d user(s)' % (len(users_activated)))
@@ -86,7 +87,8 @@ class Command(ZulipBaseCommand):
             else:
                 if realm is not None:
                     filter_kwargs = dict(user_profile__realm=realm)
-                users_to_deactivate = get_users_for_soft_deactivation(int(options['inactive_for']), filter_kwargs)
+                users_to_deactivate = get_users_for_soft_deactivation(int(options['inactive_for']),
+                                                                      filter_kwargs)
 
             if users_to_deactivate:
                 users_deactivated = do_soft_deactivate_users(users_to_deactivate)

@@ -43,7 +43,8 @@ import a database dump from one or more JSON files."""
         if count:
             print("Zulip instance is not empty, found %d rows in %s table. "
                   % (count, model._meta.db_table))
-            print("You may use --destroy-rebuild-database to destroy and rebuild the database prior to import.")
+            print("You may use --destroy-rebuild-database to destroy and "
+                  "rebuild the database prior to import.")
             exit(1)
 
     def do_destroy_and_rebuild_database(self, db_name: str) -> None:

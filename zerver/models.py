@@ -374,7 +374,8 @@ def get_realm_domains(realm):
 class RealmEmoji(models.Model):
     author = models.ForeignKey('UserProfile', blank=True, null=True, on_delete=CASCADE)
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
-    # Second part of the regex (negative lookbehind) disallows names ending with one of the punctuation characters
+    # Second part of the regex (negative lookbehind) disallows names ending with
+    # one of the punctuation characters
     name = models.TextField(validators=[MinLengthValidator(1),
                                         RegexValidator(regex=r'^[0-9a-z.\-_]+(?<![.\-_])$',
                                                        message=_("Invalid characters in emoji name"))])  # type: Text
@@ -435,7 +436,8 @@ def filter_format_validator(value):
     regex = re.compile(r'^[\.\/:a-zA-Z0-9_?=-]+%\(([a-zA-Z0-9_-]+)\)s[a-zA-Z0-9_-]*$')
 
     if not regex.match(value):
-        raise ValidationError('URL format string must be in the following format: `https://example.com/%(\w+)s`')
+        raise ValidationError('URL format string must be in the following format: '
+                              '`https://example.com/%(\w+)s`')
 
 class RealmFilter(models.Model):
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
@@ -479,7 +481,9 @@ def all_realm_filters():
     # type: () -> Dict[int, List[Tuple[Text, Text, int]]]
     filters = defaultdict(list)  # type: DefaultDict[int, List[Tuple[Text, Text, int]]]
     for realm_filter in RealmFilter.objects.all():
-        filters[realm_filter.realm_id].append((realm_filter.pattern, realm_filter.url_format_string, realm_filter.id))
+        filters[realm_filter.realm_id].append((realm_filter.pattern,
+                                               realm_filter.url_format_string,
+                                               realm_filter.id))
 
     return filters
 
@@ -503,7 +507,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     since they can't be used to read messages.
     """
     INCOMING_WEBHOOK_BOT = 2
-    # This value is also being used in static/js/settings_bots.js. On updating it here, update it there as well.
+    # This value is also being used in static/js/settings_bots.js.
+    # On updating it here, update it there as well.
     OUTGOING_WEBHOOK_BOT = 3
     """
     Embedded bots run within the Zulip server itself; events are added to the
@@ -1207,7 +1212,8 @@ class Message(AbstractMessage):
     @staticmethod
     def content_has_image(content):
         # type: (Text) -> bool
-        return bool(re.search(r'[/\-]user[\-_]uploads[/\.-]\S+\.(bmp|gif|jpg|jpeg|png|webp)', content, re.IGNORECASE))
+        return bool(re.search(r'[/\-]user[\-_]uploads[/\.-]\S+\.(bmp|gif|jpg|jpeg|png|webp)',
+                              content, re.IGNORECASE))
 
     @staticmethod
     def content_has_link(content):
@@ -1972,8 +1978,9 @@ class Service(models.Model):
 
 def get_realm_outgoing_webhook_services_name(realm):
     # type: (Realm) -> List[Any]
-    return list(Service.objects.filter(user_profile__realm=realm, user_profile__is_bot=True,
-                                       user_profile__bot_type=UserProfile.OUTGOING_WEBHOOK_BOT).values('name'))
+    return list(Service.objects.filter(
+        user_profile__realm=realm, user_profile__is_bot=True,
+        user_profile__bot_type=UserProfile.OUTGOING_WEBHOOK_BOT).values('name'))
 
 def get_bot_services(user_profile_id):
     # type: (str) -> List[Service]

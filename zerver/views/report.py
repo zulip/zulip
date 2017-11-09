@@ -38,7 +38,8 @@ def report_send_times(request: HttpRequest, user_profile: UserProfile,
                       received: int=REQ(converter=to_non_negative_int, default=-1),
                       displayed: int=REQ(converter=to_non_negative_int, default=-1),
                       locally_echoed: bool=REQ(validator=check_bool, default=False),
-                      rendered_content_disparity: bool=REQ(validator=check_bool, default=False)) -> HttpResponse:
+                      rendered_content_disparity: bool=REQ(validator=check_bool,
+                                                           default=False)) -> HttpResponse:
     received_str = "(unknown)"
     if received > 0:
         received_str = str(received)
