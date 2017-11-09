@@ -983,15 +983,26 @@ def url_to_a(url, text = None):
     a = markdown.util.etree.Element('a')
 
     href = sanitize_url(url)
+    target_blank = True
     if href is None:
         # Rejected by sanitize_url; render it as plain text.
         return url
     if text is None:
         text = markdown.util.AtomicString(url)
 
+    target_blank = 'mailto:' not in href[:7]
+
+    if db_data:
+        # If the link points to a local destination we can just switch to that
+        # instead of opening a new tab.
+        local_link = re.match("^{}\/(#.+)$".format(re.escape(db_data['realm_uri'])), url)
+        if local_link:
+            href = local_link.group(1)
+            target_blank = False
+
     a.set('href', href)
     a.text = text
-    fixup_link(a, 'mailto:' not in href[:7])
+    fixup_link(a, target_blank)
     return a
 
 class VerbosePattern(markdown.inlinepatterns.Pattern):
@@ -1704,6 +1715,7 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
             'email_info': email_info,
             'mention_data': mention_data,
             'realm_emoji': realm_emoji,
+            'realm_uri': message_realm.uri,
             'sent_by_bot': sent_by_bot,
             'stream_names': stream_name_info,
         }
