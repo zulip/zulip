@@ -27,6 +27,7 @@ from zerver.models import (
     Recipient,
     Stream,
 )
+from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib import push_notifications as apn
 from zerver.lib.push_notifications import get_mobile_push_content, \
     DeviceToken, PushNotificationBouncerException, get_apns_client
@@ -518,12 +519,63 @@ class HandlePushNotificationTest(PushNotificationTest):
 
     def test_user_message_does_not_exist(self):
         # type: () -> None
-        missed_message = {'message_id': 100}
+        """This simulates a condition that should only be an error if the user is
+        not long-term idle; we fake it, though, in the sense that the user should
+        not have received the message in the first place"""
+        self.make_stream('public_stream')
+        message_id = self.send_stream_message("iago@zulip.com", "public_stream", "test")
+        missed_message = {'message_id': message_id}
         with mock.patch('logging.error') as mock_logger:
             apn.handle_push_notification(self.user_profile.id, missed_message)
             mock_logger.assert_called_with("Could not find UserMessage with "
-                                           "message_id 100 and user_id %s" %
-                                           (self.user_profile.id,))
+                                           "message_id %s and user_id %s" %
+                                           (message_id, self.user_profile.id,))
+
+    def test_user_message_soft_deactivated(self):
+        # type: () -> None
+        """This simulates a condition that should only be an error if the user is
+        not long-term idle; we fake it, though, in the sense that the user should
+        not have received the message in the first place"""
+        self.make_stream('public_stream')
+        self.subscribe(self.user_profile, 'public_stream')
+        do_soft_deactivate_users([self.user_profile])
+
+        message_id = self.send_stream_message("iago@zulip.com", "public_stream", "test")
+        missed_message = {
+            'message_id': message_id,
+            'trigger': 'stream_push_notify',
+        }
+
+        for token in [u'dddd']:
+            PushDeviceToken.objects.create(
+                kind=PushDeviceToken.GCM,
+                token=apn.hex_to_b64(token),
+                user=self.user_profile)
+
+        android_devices = list(
+            PushDeviceToken.objects.filter(user=self.user_profile,
+                                           kind=PushDeviceToken.GCM))
+
+        apple_devices = list(
+            PushDeviceToken.objects.filter(user=self.user_profile,
+                                           kind=PushDeviceToken.APNS))
+
+        with mock.patch('zerver.lib.push_notifications.get_apns_payload',
+                        return_value={'apns': True}), \
+                mock.patch('zerver.lib.push_notifications.get_gcm_payload',
+                           return_value={'gcm': True}), \
+                mock.patch('zerver.lib.push_notifications'
+                           '.send_apple_push_notification') as mock_send_apple, \
+                mock.patch('zerver.lib.push_notifications'
+                           '.send_android_push_notification') as mock_send_android, \
+                mock.patch('logging.error') as mock_logger:
+            apn.handle_push_notification(self.user_profile.id, missed_message)
+            mock_logger.assert_not_called()
+            mock_send_apple.assert_called_with(self.user_profile.id,
+                                               apple_devices,
+                                               {'apns': True})
+            mock_send_android.assert_called_with(android_devices,
+                                                 {'gcm': True})
 
 class TestAPNs(PushNotificationTest):
     def devices(self):

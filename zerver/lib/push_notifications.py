@@ -26,6 +26,7 @@ import ujson
 from zerver.decorator import statsd_increment
 from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.exceptions import ErrorCode, JsonableError
+from zerver.lib.message import access_message
 from zerver.lib.queue import retry_event
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import generate_random_token
@@ -502,20 +503,27 @@ def handle_push_notification(user_profile_id, missed_message):
             receives_online_notifications(user_profile)):
         return
 
-    try:
-        umessage = UserMessage.objects.get(user_profile=user_profile,
-                                           message__id=missed_message['message_id'])
-    except UserMessage.DoesNotExist:
-        logging.error("Could not find UserMessage with message_id %s and user_id %s" % (
-            missed_message['message_id'], user_profile_id))
-        return
+    user_profile = get_user_profile_by_id(user_profile_id)
+    (message, user_message) = access_message(user_profile, missed_message['message_id'])
+    if user_message is not None:
+        # If ther user has read the message already, don't push-notify.
+        #
+        # TODO: It feels like this is already handled when things are
+        # put in the queue; maybe we should centralize this logic with
+        # the `zerver/tornado/event_queue.py` logic?
+        if user_message.flags.read:
+            return
+    else:
+        # Users should only be getting push notifications into this
+        # queue for messages they haven't received if they're
+        # long-term idle; anything else is likely a bug.
+        if not user_profile.long_term_idle:
+            logging.error("Could not find UserMessage with message_id %s and user_id %s" % (
+                missed_message['message_id'], user_profile_id))
+            return
 
-    message = umessage.message
     message.trigger = missed_message['trigger']
     message.stream_name = missed_message.get('stream_name', None)
-
-    if umessage.flags.read:
-        return
 
     apns_payload = get_apns_payload(message)
     gcm_payload = get_gcm_payload(user_profile, message)
