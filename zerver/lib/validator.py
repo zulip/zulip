@@ -36,10 +36,9 @@ Validator = Callable[[str, object], Optional[str]]
 
 Constraint = Callable[[object], Optional[str]]
 
-CheckT = TypeVar('CheckT')
 KeyT = TypeVar('KeyT')
 
-def check(T: Type[CheckT],
+def check(T: Type,
           sub_validator: Optional[Validator]=None,
           keyed_sub_validator: Optional[Iterable[Tuple[KeyT, Validator]]]=None,
           constraints: Optional[List[Constraint]]=None) -> Validator:
