@@ -179,6 +179,7 @@ DEFAULT_SETTINGS = {
     'REDIS_PORT': 6379,
     'REMOTE_POSTGRES_HOST': '',
     'REMOTE_POSTGRES_SSLMODE': '',
+    'THUMBOR_HOST': '',
 
     # ToS/Privacy templates
     'PRIVACY_POLICY': None,

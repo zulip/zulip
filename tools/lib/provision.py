@@ -15,7 +15,9 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING, \
     get_dev_uuid_var_path
-from scripts.lib.setup_venv import VENV_DEPENDENCIES
+from scripts.lib.setup_venv import (
+    setup_virtualenv, VENV_DEPENDENCIES, THUMBOR_VENV_DEPENDENCIES
+)
 from scripts.lib.node_cache import setup_node_modules, NODE_MODULES_CACHE_PATH
 
 from version import PROVISION_VERSION
@@ -128,7 +130,7 @@ UBUNTU_COMMON_APT_DEPENDENCIES = [
     "curl",                 # Used for fetching PhantomJS as wget occasionally fails on redirects
     "netcat",               # Used for flushing memcached
     "moreutils",            # Used for sponge command
-] + VENV_DEPENDENCIES
+] + VENV_DEPENDENCIES + THUMBOR_VENV_DEPENDENCIES
 
 APT_DEPENDENCIES = {
     "stretch": UBUNTU_COMMON_APT_DEPENDENCIES + [

@@ -112,6 +112,7 @@ proxy_port = base_port
 django_port = base_port + 1
 tornado_port = base_port + 2
 webpack_port = base_port + 3
+thumbor_port = base_port + 4
 
 os.chdir(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -152,7 +153,9 @@ cmds = [['./tools/compile-handlebars-templates', 'forever'],
         ['./tools/run-dev-queue-processors'] + manage_args,
         ['env', 'PGHOST=127.0.0.1',  # Force password authentication using .pgpass
          './puppet/zulip/files/postgresql/process_fts_updates'],
-        ['./manage.py', 'deliver_scheduled_messages']]
+        ['./manage.py', 'deliver_scheduled_messages'],
+        ['/srv/zulip-thumbor-venv/bin/thumbor', '-c', './zthumbor/thumbor.conf',
+         '-p', '%s' % (thumbor_port,)]]
 if options.test:
     # Webpack doesn't support 2 copies running on the same system, so
     # in order to support running the Casper tests while a Zulip
@@ -176,6 +179,10 @@ def transform_url(protocol, path, query, target_port, target_host):
     # type: (str, str, str, int, str) -> str
     # generate url with target host
     host = ":".join((target_host, str(target_port)))
+    # Here we are going to rewrite the path a bit so that it is in parity with
+    # what we will have for production
+    if path.startswith('/thumbor'):
+        path = path[len('/thumbor'):]
     newpath = urlunparse((protocol, host, path, '', query, ''))
     return newpath
 
@@ -353,6 +360,10 @@ class TornadoHandler(CombineHandler):
     target_port = tornado_port
 
 
+class ThumborHandler(CombineHandler):
+    target_port = thumbor_port
+
+
 class Application(web.Application):
     def __init__(self, enable_logging=False):
         # type: (bool) -> None
@@ -361,6 +372,7 @@ class Application(web.Application):
             (r"/api/v1/events.*", TornadoHandler),
             (r"/webpack.*", WebPackHandler),
             (r"/sockjs.*", TornadoHandler),
+            (r"/thumbor.*", ThumborHandler),
             (r"/.*", DjangoHandler)
         ]
         super().__init__(handlers, enable_logging=enable_logging)
@@ -386,7 +398,8 @@ def shutdown_handler(*args, **kwargs):
 
 # log which services/ports will be started
 print("Starting Zulip services on ports: web proxy: {},".format(proxy_port),
-      "Django: {}, Tornado: {}".format(django_port, tornado_port), end='')
+      "Django: {}, Tornado: {}, Thumbor: {}".format(django_port, tornado_port, thumbor_port),
+      end='')
 if options.test:
     print("")  # no webpack for --test
 else:
