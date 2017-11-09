@@ -98,6 +98,23 @@ global.people.add_in_realm(othello);
 global.people.add_in_realm(cordelia);
 global.people.add(deactivated_user);
 
+var hamletcharacters = {
+    name: "hamletcharacters",
+    id: 1,
+    description: "Characters of Hamlet",
+    members: [],
+};
+
+var backend = {
+    name: "Backend",
+    id: 2,
+    description: "Backend team",
+    members: [],
+};
+
+global.user_groups.add(hamletcharacters);
+global.user_groups.add(backend);
+
 (function test_add_topic() {
     ct.add_topic('Denmark', 'civil fears');
     ct.add_topic('devel', 'fading');
@@ -185,6 +202,20 @@ global.people.add(deactivated_user);
     expected_value = '@**Othello, the Moor of Venice** ';
     assert.equal(actual_value, expected_value);
 
+    // user group mention
+    var document_stub_group_trigger_called = false;
+    $('document-stub').trigger = function (event, params) {
+        assert.equal(event, 'usermention_completed.zulip');
+        assert.deepEqual(params, { user_group: backend });
+        document_stub_group_trigger_called = true;
+    };
+
+    fake_this.query = '@back';
+    fake_this.token = 'back';
+    actual_value = ct.content_typeahead_selected.call(fake_this, backend);
+    expected_value = '@*Backend* ';
+    assert.equal(actual_value, expected_value);
+
     // stream
     fake_this.completing = 'stream';
     var document_stub_trigger2_called = false;
@@ -237,6 +268,7 @@ global.people.add(deactivated_user);
     assert(autosize_called);
     assert(set_timeout_called);
     assert(document_stub_trigger1_called);
+    assert(document_stub_group_trigger_called);
     assert(document_stub_trigger2_called);
 }());
 
@@ -481,6 +513,11 @@ global.people.add(deactivated_user);
         expected_value = '<strong>Othello, the Moor of Venice</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">othello@zulip.com</small>';
         assert.equal(actual_value, expected_value);
 
+        fake_this = { completing: 'mention', token: 'hamletcharacters' };
+        actual_value = options.highlighter.call(fake_this, hamletcharacters);
+        expected_value = '<strong>hamletcharacters</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">Characters of Hamlet</small>';
+        assert.equal(actual_value, expected_value);
+
         // options.matcher()
         fake_this = { completing: 'emoji', token: 'ta' };
         assert.equal(options.matcher.call(fake_this, emoji_tada), true);
@@ -489,6 +526,10 @@ global.people.add(deactivated_user);
         fake_this = { completing: 'mention', token: 'Cord' };
         assert.equal(options.matcher.call(fake_this, cordelia), true);
         assert.equal(options.matcher.call(fake_this, othello), false);
+
+        fake_this = { completing: 'mention', token: 'hamletchar' };
+        assert.equal(options.matcher.call(fake_this, hamletcharacters), true);
+        assert.equal(options.matcher.call(fake_this, backend), false);
 
         fake_this = { completing: 'stream', token: 'swed' };
         assert.equal(options.matcher.call(fake_this, sweden_stream), true);
@@ -510,6 +551,11 @@ global.people.add(deactivated_user);
         fake_this = { completing: 'mention', token: 'co' };
         actual_value = options.sorter.call(fake_this, [othello, cordelia]);
         expected_value = [cordelia, othello];
+        assert.deepEqual(actual_value, expected_value);
+
+        fake_this = { completing: 'mention', token: 'ham' };
+        actual_value = options.sorter.call(fake_this, [backend, hamletcharacters]);
+        expected_value = [hamletcharacters, backend];
         assert.deepEqual(actual_value, expected_value);
 
         fake_this = { completing: 'stream', token: 'de' };
@@ -741,6 +787,7 @@ global.people.add(deactivated_user);
     ];
 
     var people_with_all = global.people.get_realm_persons().concat(all_items);
+    var all_mentions = people_with_all.concat(global.user_groups.get_realm_user_groups());
     var lang_list = Object.keys(pygments_data.langs);
 
     assert_typeahead_equals("test", false);
@@ -751,7 +798,7 @@ global.people.add(deactivated_user);
     assert_typeahead_equals("test *", false);
 
     // Make sure that the last token is the one we read.
-    assert_typeahead_equals("~~~ @zulip", people_with_all);
+    assert_typeahead_equals("~~~ @zulip", all_mentions);
     assert_typeahead_equals("@zulip :ta", emoji_list);
     assert_typeahead_equals(":tada: #foo", stream_list);
     assert_typeahead_equals("#foo\n~~~py", lang_list);
@@ -761,14 +808,14 @@ global.people.add(deactivated_user);
     assert_typeahead_equals("test @**o", false);
     assert_typeahead_equals("test @", false);
     assert_typeahead_equals("test no@o", false);
-    assert_typeahead_equals("@ ", people_with_all);
-    assert_typeahead_equals("test\n@i", people_with_all);
-    assert_typeahead_equals("test\n @l", people_with_all);
-    assert_typeahead_equals("@zuli", people_with_all);
-    assert_typeahead_equals("@ zuli", people_with_all);
-    assert_typeahead_equals(" @zuli", people_with_all);
-    assert_typeahead_equals("test @o", people_with_all);
-    assert_typeahead_equals("test @z", people_with_all);
+    assert_typeahead_equals("@ ", all_mentions);
+    assert_typeahead_equals("test\n@i", all_mentions);
+    assert_typeahead_equals("test\n @l", all_mentions);
+    assert_typeahead_equals("@zuli", all_mentions);
+    assert_typeahead_equals("@ zuli", all_mentions);
+    assert_typeahead_equals(" @zuli", all_mentions);
+    assert_typeahead_equals("test @o", all_mentions);
+    assert_typeahead_equals("test @z", all_mentions);
 
     assert_typeahead_equals(":", false);
     assert_typeahead_equals(": ", false);
@@ -868,6 +915,13 @@ global.people.add(deactivated_user);
     };
     ct.content_highlighter.call(fake_this, othello);
 
+    var th_render_user_group_called = false;
+    typeahead_helper.render_user_group = function (user_group) {
+        assert.deepEqual(user_group, backend);
+        th_render_user_group_called = true;
+    };
+    ct.content_highlighter.call(fake_this, backend);
+
     fake_this = { completing: 'stream' };
     var th_render_stream_called = false;
     typeahead_helper.render_stream = function (stream) {
@@ -890,6 +944,7 @@ global.people.add(deactivated_user);
     // Verify that all stub functions have been called.
     assert(th_render_typeahead_item_called);
     assert(th_render_person_called);
+    assert(th_render_user_group_called);
     assert(th_render_stream_called);
     assert(th_render_typeahead_item_called);
 }());
