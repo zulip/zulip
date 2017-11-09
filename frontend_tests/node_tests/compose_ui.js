@@ -51,11 +51,18 @@ function make_textbox(s) {
     assert.equal(textbox.val(), 'abc :smile:');
     assert(textbox.focused);
 
-    // Test the current slightly-broken behavior.
     textbox.blur();
     compose_ui.smart_insert(textbox, ':airplane:');
-    assert.equal(textbox.insert_text, ':airplane:');
-    assert.equal(textbox.val(), 'abc :smile::airplane:');
+    assert.equal(textbox.insert_text, ' :airplane:');
+    assert.equal(textbox.val(), 'abc :smile: :airplane:');
+    assert(textbox.focused);
+
+    // Test the current slightly-broken behavior.
+    textbox.caret(0);
+    textbox.blur();
+    compose_ui.smart_insert(textbox, ':octopus:');
+    assert.equal(textbox.insert_text, ':octopus:');
+    assert.equal(textbox.val(), ':octopus:abc :smile: :airplane:');
     assert(textbox.focused);
 
 }());

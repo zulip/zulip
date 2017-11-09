@@ -7,6 +7,20 @@ exports.autosize_textarea = function () {
 };
 
 exports.smart_insert = function (textarea, syntax) {
+    function is_space(c) {
+        return (c === ' ') || (c === '\t') || (c === '\n');
+    }
+
+    var pos = textarea.caret();
+    var before_str = textarea.val().slice(0, pos);
+
+
+    if (pos > 0) {
+        if (!is_space(before_str.slice(-1))) {
+            syntax = ' ' + syntax;
+        }
+    }
+
     textarea.caret(syntax);
     textarea.focus();
 };
