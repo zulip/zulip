@@ -28,7 +28,7 @@ for any particular type of object.
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email, URLValidator
-from typing import Callable, Iterable, Optional, Tuple, TypeVar, Text, Type, Sequence, Mapping, Any, Sized
+from typing import Callable, Iterable, Optional, Tuple, TypeVar, Text, Type, Sequence, Mapping, Any, Sized, List
 
 from zerver.lib.request import JsonableError
 
@@ -37,17 +37,29 @@ Validator = Callable[[str, object], Optional[str]]
 Constraint = Callable[[object], Optional[str]]
 
 CheckT = TypeVar('CheckT')
+KeyT = TypeVar('KeyT')
 
-def check(T: Type[CheckT], sub_validator: Optional[Validator]=None,
-          constraints: Optional[Sequence[Constraint]]=None) -> Validator:
+def check(T: Type[CheckT],
+          sub_validator: Optional[Validator]=None,
+          keyed_sub_validator: Optional[Iterable[Tuple[KeyT, Validator]]]=None,
+          constraints: Optional[List[Constraint]]=None) -> Validator:
     def checker(var_name: str, val: object) -> Optional[str]:
+        if sub_validator is not None and keyed_sub_validator is not None:
+            return _('check(T) called incorrectly with both validator types')
         if not isinstance(val, T):
             return _('%s is not a %s') % (val, str(T))
-        if constraints is not None and len(constraints) > 0:
-            for c in constraints:
-                error = c(val)
-                if error is not None:
-                    return "%s%s" % (var_name, error)
+
+        constraint_list = []  # type: List[Constraint]
+        if constraints is not None:
+            constraint_list = constraints
+        if isinstance(val, Mapping) and keyed_sub_validator is not None:
+            keys, validators = zip(*keyed_sub_validator)
+            constraint_list.append(has_keys(keys))  # Ensure dict has expected keys
+        for c in constraint_list:
+            error = c(val)
+            if error is not None:
+                return "%s%s" % (var_name, error)
+
         if sub_validator is not None:
             if isinstance(val, Sequence):  # from check_list
                 for i, item in enumerate(val):  # type: (int, Any)
@@ -55,8 +67,13 @@ def check(T: Type[CheckT], sub_validator: Optional[Validator]=None,
                     error = sub_validator(vname, item)
                     if error:
                         return error
-            elif isinstance(val, Mapping):
-                pass # TODO
+        elif keyed_sub_validator is not None:
+            if isinstance(val, Mapping):  # from check_dict
+                for key, validator in keyed_sub_validator:
+                    vname = '%s["%s"]' % (var_name, key)
+                    error = validator(vname, val[key])
+                    if error:
+                        return error
         return None
     return checker
 
