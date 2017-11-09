@@ -51,7 +51,7 @@ def check(T: Type,
         constraint_list = []  # type: List[Constraint]
         if constraints is not None:
             constraint_list = constraints
-        if isinstance(val, Mapping) and keyed_sub_validator is not None:
+        if isinstance(val, Mapping) and keyed_sub_validator:  # excludes empty list
             keys, validators = zip(*keyed_sub_validator)
             constraint_list.append(has_keys(keys))  # Ensure dict has expected keys
         for c in constraint_list:
@@ -143,11 +143,16 @@ def check_list(sub_validator: Optional[Validator], length: Optional[int]=None) -
 
 def check_dict(required_keys: Iterable[Tuple[str, Validator]],
                _allow_only_listed_keys: bool=False) -> Validator:
-    k, v = zip(*required_keys)
-    if _allow_only_listed_keys:
-        return check(Dict[Any, Any], keyed_sub_validator=required_keys, constraints=[only_keys(k)])
+    if len(required_keys) == 0:
+        keys = None
+        cons = None
     else:
-        return check(Dict[Any, Any], keyed_sub_validator=required_keys, constraints=[has_keys(k)])
+        keys, _ = zip(*required_keys)
+        if _allow_only_listed_keys:
+            cons = [only_keys(keys)]
+        else:
+            cons = [has_keys(keys)]
+    return check(Dict[Any, Any], keyed_sub_validator=required_keys, constraints=cons)
 
 def check_dict_only(required_keys: Iterable[Tuple[str, Validator]]) -> Validator:
     return check_dict(required_keys, _allow_only_listed_keys=True)
