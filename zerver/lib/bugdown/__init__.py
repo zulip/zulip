@@ -1698,9 +1698,6 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
 
     if md_engine_key in md_engines:
         _md_engine = md_engines[md_engine_key]
-    elif realm_filters_key is not None and email_gateway:
-        maybe_update_markdown_engines(realm_filters_key, email_gateway)
-        _md_engine = md_engines[md_engine_key]
     else:
         if DEFAULT_BUGDOWN_KEY not in md_engines:
             maybe_update_markdown_engines(realm_filters_key=None, email_gateway=False)
