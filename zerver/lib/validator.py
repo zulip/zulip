@@ -85,7 +85,7 @@ def max_length(length: int=200) -> Constraint:  # NOTE: from previous check_shor
         return None
     return checker
 
-def exact_length(length: int) -> Constraint: # NOTE: from previous check_list option
+def exact_length(length: int) -> Constraint:  # NOTE: from previous check_list option
     def checker(val: object) -> Optional[str]:
         if not isinstance(val, Sized):
             return " is not a container with a length"
@@ -94,7 +94,7 @@ def exact_length(length: int) -> Constraint: # NOTE: from previous check_list op
         return None
     return checker
 
-def has_keys(keys: Iterable[str], _only_listed_keys: bool=False) -> Constraint: # NOTE: from previous check_dict
+def has_keys(keys: Iterable[str], _only_listed_keys: bool=False) -> Constraint:  # NOTE: from previous check_dict
     def checker(val: object) -> Optional[str]:
         if not isinstance(val, Mapping):
             return " is not a mapping"
@@ -108,7 +108,7 @@ def has_keys(keys: Iterable[str], _only_listed_keys: bool=False) -> Constraint: 
         return None
     return checker
 
-def only_keys(keys: Iterable[str]) -> Constraint: # NOTE: from previous check_dict_only
+def only_keys(keys: Iterable[str]) -> Constraint:  # NOTE: from previous check_dict_only
     return has_keys(keys, _only_listed_keys=True)
 
 
