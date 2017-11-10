@@ -190,7 +190,8 @@ def notify_bot_owner(event, request_data, status_code=None, response_content=Non
                                 "```\n%s\n```" % (response_content,)
     if exception:
         notification_message += "\nWhen trying to send a request to the webhook service, an exception " \
-                                "of type %s occurred:\n```\n%s\n```" % (type(exception).__name__, str(exception))
+                                "of type %s occurred:\n```\n%s\n```" % (
+                                    type(exception).__name__, str(exception))
     send_response_message(bot_id, message_info, notification_message)
 
 def request_retry(event, request_data, failure_message, exception=None):
@@ -205,7 +206,8 @@ def request_retry(event, request_data, failure_message, exception=None):
         bot_user = get_user_profile_by_id(event['user_profile_id'])
         fail_with_message(event, "Maximum retries exceeded! " + failure_message)
         notify_bot_owner(event, request_data, exception=exception)
-        logging.warning("Maximum retries exceeded for trigger:%s event:%s" % (bot_user.email, event['command']))
+        logging.warning("Maximum retries exceeded for trigger:%s event:%s" % (
+            bot_user.email, event['command']))
 
     retry_event('outgoing_webhooks', event, failure_processor)
 
@@ -245,19 +247,22 @@ def do_rest_call(rest_operation, request_data, event, service_handler, timeout=N
             notify_bot_owner(event, request_data, response.status_code, response.content)
 
     except requests.exceptions.Timeout as e:
-        logging.info("Trigger event %s on %s timed out. Retrying" % (event["command"], event['service_name']))
+        logging.info("Trigger event %s on %s timed out. Retrying" % (
+            event["command"], event['service_name']))
         request_retry(event, request_data, 'Unable to connect with the third party.', exception=e)
 
     except requests.exceptions.ConnectionError as e:
-        response_message = "The message `%s` resulted in a connection error when sending a request to an outgoing " \
-                           "webhook! See the Zulip server logs for more information." % (event["command"],)
+        response_message = ("The message `%s` resulted in a connection error when "
+                            "sending a request to an outgoing "
+                            "webhook! See the Zulip server logs for more information." % (event["command"],))
         logging.info("Trigger event %s on %s resulted in a connection error. Retrying"
                      % (event["command"], event['service_name']))
         request_retry(event, request_data, response_message, exception=e)
 
     except requests.exceptions.RequestException as e:
-        response_message = "An exception of type *%s* occurred for message `%s`! " \
-                           "See the Zulip server logs for more information." % (type(e).__name__, event["command"],)
+        response_message = ("An exception of type *%s* occurred for message `%s`! "
+                            "See the Zulip server logs for more information." % (
+                                type(e).__name__, event["command"],))
         logging.exception("Outhook trigger failed:\n %s" % (e,))
         fail_with_message(event, response_message)
         notify_bot_owner(event, request_data, exception=e)

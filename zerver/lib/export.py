@@ -545,7 +545,8 @@ def sanity_check_stream_data(response, config, context):
         # complex to have a sanity check.
         return
 
-    actual_streams = set([stream.name for stream in Stream.objects.filter(realm=response["zerver_realm"][0]['id'])])
+    actual_streams = set([stream.name for stream in Stream.objects.filter(
+        realm=response["zerver_realm"][0]['id'])])
     streams_in_response = set([stream['name'] for stream in response['zerver_stream']])
 
     if streams_in_response != actual_streams:
@@ -638,8 +639,8 @@ def fetch_huddle_objects(response, config, context):
     user_profile_ids = set(r['id'] for r in response[config.parent.table])
 
     # First we get all huddles involving someone in the realm.
-    realm_huddle_subs = Subscription.objects.select_related("recipient").filter(recipient__type=Recipient.HUDDLE,
-                                                                                user_profile__in=user_profile_ids)
+    realm_huddle_subs = Subscription.objects.select_related(
+        "recipient").filter(recipient__type=Recipient.HUDDLE, user_profile__in=user_profile_ids)
     realm_huddle_recipient_ids = set(sub.recipient_id for sub in realm_huddle_subs)
 
     # Mark all Huddles whose recipient ID contains a cross-realm user.

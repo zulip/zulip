@@ -195,7 +195,13 @@ class WebhookIntegration(Integration):
 class HubotLozenge(Integration):
     GIT_URL_TEMPLATE = "https://github.com/hubot-scripts/hubot-{}"
 
-    def __init__(self, name, categories, display_name=None, logo=None, logo_alt=None, git_url=None, legacy=False):
+    def __init__(self, name,
+                 categories,
+                 display_name=None,
+                 logo=None,
+                 logo_alt=None,
+                 git_url=None,
+                 legacy=False):
         # type: (str, List[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[bool]) -> None
         if logo_alt is None:
             logo_alt = "{} logo".format(name.title())
@@ -372,7 +378,8 @@ INTEGRATIONS = {
                              doc='zerver/integrations/discourse.md'),
     'email': EmailIntegration('email', 'email', ['communication'],
                               doc='zerver/integrations/email.md'),
-    'errbot': Integration('errbot', 'errbot', ['meta-integration', 'bots'], doc='zerver/integrations/errbot.md'),
+    'errbot': Integration('errbot', 'errbot', ['meta-integration', 'bots'],
+                          doc='zerver/integrations/errbot.md'),
     'git': Integration('git', 'git', ['version-control'], doc='zerver/integrations/git.md'),
     'google-calendar': Integration(
         'google-calendar',
@@ -422,8 +429,10 @@ INTEGRATIONS = {
     'phabricator': Integration('phabricator', 'phabricator', ['version-control'],
                                doc='zerver/integrations/phabricator.md'),
     'puppet': Integration('puppet', 'puppet', ['deployment'], doc='zerver/integrations/puppet.md'),
-    'redmine': Integration('redmine', 'redmine', ['project-management'], doc='zerver/integrations/redmine.md'),
-    'rss': Integration('rss', 'rss', ['communication'], display_name='RSS', doc='zerver/integrations/rss.md'),
+    'redmine': Integration('redmine', 'redmine', ['project-management'],
+                           doc='zerver/integrations/redmine.md'),
+    'rss': Integration('rss', 'rss', ['communication'],
+                       display_name='RSS', doc='zerver/integrations/rss.md'),
     'svn': Integration('svn', 'svn', ['version-control'], doc='zerver/integrations/svn.md'),
     'trac': Integration('trac', 'trac', ['project-management'], doc='zerver/integrations/trac.md'),
     'trello-plugin': Integration(

@@ -152,21 +152,22 @@ def fetch_initial_state_data(user_profile, event_types, queue_id, client_gravata
         # Most state is handled via the property_types framework;
         # these manual entries are for those realm settings that don't
         # fit into that framework.
-        state['realm_authentication_methods'] = user_profile.realm.authentication_methods_dict()
-        state['realm_allow_message_editing'] = user_profile.realm.allow_message_editing
-        state['realm_message_content_edit_limit_seconds'] = user_profile.realm.message_content_edit_limit_seconds
-        state['realm_icon_url'] = realm_icon_url(user_profile.realm)
-        state['realm_icon_source'] = user_profile.realm.icon_source
+        realm = user_profile.realm
+        state['realm_authentication_methods'] = realm.authentication_methods_dict()
+        state['realm_allow_message_editing'] = realm.allow_message_editing
+        state['realm_message_content_edit_limit_seconds'] = realm.message_content_edit_limit_seconds
+        state['realm_icon_url'] = realm_icon_url(realm)
+        state['realm_icon_source'] = realm.icon_source
         state['max_icon_file_size'] = settings.MAX_ICON_FILE_SIZE
-        state['realm_bot_domain'] = user_profile.realm.get_bot_domain()
-        state['realm_uri'] = user_profile.realm.uri
-        state['realm_presence_disabled'] = user_profile.realm.presence_disabled
-        state['realm_show_digest_email'] = user_profile.realm.show_digest_email
-        state['realm_is_zephyr_mirror_realm'] = user_profile.realm.is_zephyr_mirror_realm
-        state['realm_email_auth_enabled'] = email_auth_enabled(user_profile.realm)
-        state['realm_password_auth_enabled'] = password_auth_enabled(user_profile.realm)
-        if user_profile.realm.notifications_stream and not user_profile.realm.notifications_stream.deactivated:
-            notifications_stream = user_profile.realm.notifications_stream
+        state['realm_bot_domain'] = realm.get_bot_domain()
+        state['realm_uri'] = realm.uri
+        state['realm_presence_disabled'] = realm.presence_disabled
+        state['realm_show_digest_email'] = realm.show_digest_email
+        state['realm_is_zephyr_mirror_realm'] = realm.is_zephyr_mirror_realm
+        state['realm_email_auth_enabled'] = email_auth_enabled(realm)
+        state['realm_password_auth_enabled'] = password_auth_enabled(realm)
+        if realm.notifications_stream and not realm.notifications_stream.deactivated:
+            notifications_stream = realm.notifications_stream
             state['realm_notifications_stream_id'] = notifications_stream.id
         else:
             state['realm_notifications_stream_id'] = -1
@@ -232,7 +233,8 @@ def fetch_initial_state_data(user_profile, event_types, queue_id, client_gravata
     if want('stream'):
         state['streams'] = do_get_streams(user_profile)
     if want('default_streams'):
-        state['realm_default_streams'] = streams_to_dicts_sorted(get_default_streams_for_realm(user_profile.realm_id))
+        state['realm_default_streams'] = streams_to_dicts_sorted(
+            get_default_streams_for_realm(user_profile.realm_id))
     if want('default_stream_groups'):
         state['realm_default_stream_groups'] = default_stream_groups_to_dicts_sorted(
             get_default_stream_groups(user_profile.realm))
