@@ -142,7 +142,7 @@ class QueueProcessingWorker:
         except Exception:
             self._log_problem()
             if not os.path.exists(settings.QUEUE_ERROR_DIR):
-                os.mkdir(settings.QUEUE_ERROR_DIR)
+                os.mkdir(settings.QUEUE_ERROR_DIR)  # nocoverage
             fname = '%s.errors' % (self.queue_name,)
             fn = os.path.join(settings.QUEUE_ERROR_DIR, fname)
             line = u'%s\t%s\n' % (time.asctime(), ujson.dumps(data))
@@ -174,7 +174,7 @@ class QueueProcessingWorker:
 class LoopQueueProcessingWorker(QueueProcessingWorker):
     sleep_delay = 0
 
-    def start(self) -> None:
+    def start(self) -> None:  # nocoverage
         while True:
             # TODO: Probably it'd be better to share code with consume_wrapper()
             events = self.q.drain_queue(self.queue_name, json=True)
