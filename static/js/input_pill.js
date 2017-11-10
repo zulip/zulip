@@ -150,6 +150,14 @@ var input_pill = function ($parent) {
             }
         },
 
+        removeAllPills: function () {
+            while (store.pills.length > 0) {
+                this.removeLastPill();
+            }
+
+            this.clear(store.$parent.find(".input"));
+        },
+
         // returns all data of the pills exclusive of their elements.
         data: function () {
             return store.pills.map(function (pill) {
@@ -314,6 +322,8 @@ var input_pill = function ($parent) {
         validate: function (callback) {
             store.validation = callback;
         },
+
+        clear: funcs.removeAllPills.bind(funcs),
     };
 
     return prototype;
