@@ -655,12 +655,6 @@ def get_muted_stream_ids(user_profile):
         for row in rows]
     return muted_stream_ids
 
-def get_unread_message_ids_per_recipient(user_profile):
-    # type: (UserProfile) -> UnreadMessagesResult
-    raw_unread_data = get_raw_unread_data(user_profile)
-    aggregated_data = aggregate_unread_data(raw_unread_data)
-    return aggregated_data
-
 def get_raw_unread_data(user_profile):
     # type: (UserProfile) -> Dict[str, Any]
 

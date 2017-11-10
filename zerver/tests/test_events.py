@@ -74,7 +74,8 @@ from zerver.lib.events import (
     fetch_initial_state_data,
 )
 from zerver.lib.message import (
-    get_unread_message_ids_per_recipient,
+    aggregate_unread_data,
+    get_raw_unread_data,
     render_markdown,
     UnreadMessagesResult,
 )
@@ -1859,7 +1860,9 @@ class FetchInitialStateDataTest(ZulipTestCase):
 
         def get_unread_data():
             # type: () -> UnreadMessagesResult
-            return get_unread_message_ids_per_recipient(user_profile)
+            raw_unread_data = get_raw_unread_data(user_profile)
+            aggregated_data = aggregate_unread_data(raw_unread_data)
+            return aggregated_data
 
         result = get_unread_data()
 
