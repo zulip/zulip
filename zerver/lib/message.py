@@ -696,6 +696,36 @@ def aggregate_message_dict(input_dict, lookup_fields, collect_senders):
 
     return [lookup_dict[k] for k in sorted_keys]
 
+def max_int_keys_for_groups(input_dict, lookup_fields):
+    # type: (Dict[int, Dict[str, Any]], List[str]) -> Set[int]
+    '''
+    A concrete example might help explain the inputs here:
+
+    input_dict = {
+        1002: dict(stream_id=5, topic='foo'),
+        1003: dict(stream_id=5, topic='foo'),
+        1004: dict(stream_id=6, topic='baz'),
+    }
+
+    lookup_fields = ['stream_id', 'topic']
+
+    returns {1003, 1004}
+    '''
+
+    lookup_dict = dict()  # type: Dict[Tuple[str, ...], int]
+
+    for int_key, attribute_dict in input_dict.items():
+        lookup_key = tuple([
+            attribute_dict[f]
+            for f in lookup_fields
+        ])
+        if lookup_key not in lookup_dict:
+            lookup_dict[lookup_key] = int_key
+        elif int_key > lookup_dict[lookup_key]:
+            lookup_dict[lookup_key] = int_key
+
+    return set(lookup_dict.values())
+
 def get_inactive_recipient_ids(user_profile):
     # type: (UserProfile) -> List[int]
     rows = get_stream_subscriptions_for_user(user_profile).filter(

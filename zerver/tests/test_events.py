@@ -76,6 +76,7 @@ from zerver.lib.events import (
 from zerver.lib.message import (
     aggregate_unread_data,
     get_raw_unread_data,
+    max_int_keys_for_groups,
     render_markdown,
     UnreadMessagesResult,
 )
@@ -1892,6 +1893,21 @@ class GetUnreadMsgsTest(ZulipTestCase):
             )
         )
 
+        max_msg_ids = max_int_keys_for_groups(
+            input_dict=stream_dict,
+            lookup_fields=['stream_id', 'topic'],
+        )
+
+        self.assertEqual(
+            max_msg_ids,
+            {
+                message_ids['lunch'][-1],
+                message_ids['python'][-1],
+                message_ids['ruby'][-1],
+                message_ids['bla'][-1],
+            }
+        )
+
     def test_raw_unread_huddle(self):
         # type: () -> None
         cordelia = self.example_user('cordelia')
@@ -1936,6 +1952,16 @@ class GetUnreadMsgsTest(ZulipTestCase):
             dict(user_ids_string=huddle_string),
         )
 
+        max_msg_ids = max_int_keys_for_groups(
+            input_dict=huddle_dict,
+            lookup_fields=['user_ids_string'],
+        )
+
+        self.assertEqual(
+            max_msg_ids,
+            {huddle1_message_ids[-1], huddle2_message_ids[-1]},
+        )
+
     def test_raw_unread_personal(self):
         # type: () -> None
         cordelia = self.example_user('cordelia')
@@ -1966,6 +1992,16 @@ class GetUnreadMsgsTest(ZulipTestCase):
         self.assertEqual(
             pm_dict[cordelia_pm_message_ids[0]],
             dict(sender_id=cordelia.id),
+        )
+
+        max_msg_ids = max_int_keys_for_groups(
+            input_dict=pm_dict,
+            lookup_fields=['sender_id'],
+        )
+
+        self.assertEqual(
+            max_msg_ids,
+            {cordelia_pm_message_ids[-1], othello_pm_message_ids[-1]},
         )
 
     def test_unread_msgs(self):
