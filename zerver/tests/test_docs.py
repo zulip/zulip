@@ -69,16 +69,6 @@ class DocPageTest(ZulipTestCase):
         self._test('/for/companies/', 'in a company')
         self._test('/for/working-groups-and-communities/', 'standards bodies')
         self._test('/plans/', 'Commercial support')
-        self._test('/integrations/',
-                   'Over 60 native integrations.',
-                   extra_strings=[
-                       'And hundreds more through',
-                       'Hubot',
-                       'Zapier',
-                       'IFTTT'
-                   ])
-        self._test('/integrations/doc-html/travis', 'Your Travis CI notifications may look like:')
-        self._test('/integrations/doc-html/googlesearch', 'This bot allows users to do Google search queries')
         self._test('/devlogin/', 'Normal users', landing_page=False)
         self._test('/devtools/', 'Useful development URLs')
         self._test('/errors/404/', 'Page not found')
@@ -108,6 +98,23 @@ class DocPageTest(ZulipTestCase):
 
         result = self.client_get('/static/favicon.ico')
         self.assertEqual(result.status_code, 200)
+
+    @slow("Tests dozens of endpoints, including all our integrations docs")
+    def test_integration_doc_endpoints(self):
+        # type: () -> None
+        self._test('/integrations/',
+                   'Over 60 native integrations.',
+                   extra_strings=[
+                       'And hundreds more through',
+                       'Hubot',
+                       'Zapier',
+                       'IFTTT'
+                   ])
+
+        for integration in INTEGRATIONS.keys():
+            url = '/integrations/doc-html/{}'.format(integration)
+            self._test(url, '')
+
 
 class IntegrationTest(TestCase):
     def test_check_if_every_integration_has_logo_that_exists(self):
