@@ -1824,6 +1824,50 @@ class GetUnreadMsgsTest(ZulipTestCase):
             topic_name=topic_name,
         )
 
+    def test_raw_unread_huddle(self):
+        # type: () -> None
+        cordelia = self.example_user('cordelia')
+        othello = self.example_user('othello')
+        hamlet = self.example_user('hamlet')
+        prospero = self.example_user('prospero')
+
+        huddle1_message_ids = [
+            self.send_huddle_message(
+                cordelia.email,
+                [hamlet.email, othello.email]
+            )
+            for i in range(3)
+        ]
+
+        huddle2_message_ids = [
+            self.send_huddle_message(
+                cordelia.email,
+                [hamlet.email, prospero.email]
+            )
+            for i in range(3)
+        ]
+
+        raw_unread_data = get_raw_unread_data(
+            user_profile=hamlet,
+        )
+
+        huddle_dict = raw_unread_data['huddle_dict']
+
+        self.assertEqual(
+            set(huddle_dict.keys()),
+            set(huddle1_message_ids) | set(huddle2_message_ids)
+        )
+
+        huddle_string = ','.join(
+            str(uid)
+            for uid in sorted([cordelia.id, hamlet.id, othello.id])
+        )
+
+        self.assertEqual(
+            huddle_dict[huddle1_message_ids[0]],
+            dict(user_ids_string=huddle_string),
+        )
+
     def test_raw_unread_personal(self):
         # type: () -> None
         cordelia = self.example_user('cordelia')
