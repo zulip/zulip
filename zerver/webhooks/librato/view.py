@@ -128,10 +128,12 @@ class LibratoWebhookHandler(LibratoWebhookParser):
             content += self.generate_violated_metric_condition(violation, condition)
         return content
 
-    def generate_violated_metric_condition(self, violation: Dict[str, Any], condition: Dict[str, Any]) -> Text:
+    def generate_violated_metric_condition(self, violation: Dict[str, Any],
+                                           condition: Dict[str, Any]) -> Text:
         summary_function, threshold, condition_type, duration = self.parse_condition(condition)
         metric_name, recorded_at = self.parse_violation(violation)
-        metric_condition_template = u"\n>Metric `{metric_name}`, {summary_function} was {condition_type} {threshold}"
+        metric_condition_template = (u"\n>Metric `{metric_name}`, {summary_function} "
+                                     "was {condition_type} {threshold}")
         content = metric_condition_template.format(
             metric_name=metric_name, summary_function=summary_function, condition_type=condition_type,
             threshold=threshold)
