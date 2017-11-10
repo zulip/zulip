@@ -1800,37 +1800,37 @@ class FetchInitialStateDataTest(ZulipTestCase):
         result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False)
         self.assertEqual(result['max_message_id'], -1)
 
+class GetUnreadMsgsTest(ZulipTestCase):
+    def mute_stream(self, user_profile, stream):
+        # type: (UserProfile, Stream) -> None
+        recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
+        subscription = Subscription.objects.get(
+            user_profile=user_profile,
+            recipient=recipient
+        )
+        subscription.in_home_view = False
+        subscription.save()
+
+    def mute_topic(self, user_profile, stream_name, topic_name):
+        # type: (UserProfile, Text, Text) -> None
+        realm = user_profile.realm
+        stream = get_stream(stream_name, realm)
+        recipient = get_stream_recipient(stream.id)
+
+        add_topic_mute(
+            user_profile=user_profile,
+            stream_id=stream.id,
+            recipient_id=recipient.id,
+            topic_name=topic_name,
+        )
+
     def test_unread_msgs(self):
         # type: () -> None
-        def mute_stream(user_profile, stream):
-            # type: (UserProfile, Stream) -> None
-            recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
-            subscription = Subscription.objects.get(
-                user_profile=user_profile,
-                recipient=recipient
-            )
-            subscription.in_home_view = False
-            subscription.save()
-
-        def mute_topic(user_profile, stream_name, topic_name):
-            # type: (UserProfile, Text, Text) -> None
-            stream = get_stream(stream_name, realm)
-            recipient = get_stream_recipient(stream.id)
-
-            add_topic_mute(
-                user_profile=user_profile,
-                stream_id=stream.id,
-                recipient_id=recipient.id,
-                topic_name='muted-topic',
-            )
-
         cordelia = self.example_user('cordelia')
         sender_id = cordelia.id
         sender_email = cordelia.email
         user_profile = self.example_user('hamlet')
         othello = self.example_user('othello')
-
-        realm = user_profile.realm
 
         # our tests rely on order
         assert(sender_email < user_profile.email)
@@ -1840,8 +1840,8 @@ class FetchInitialStateDataTest(ZulipTestCase):
         pm2_message_id = self.send_personal_message(sender_email, user_profile.email, "hello2")
 
         muted_stream = self.subscribe(user_profile, 'Muted Stream')
-        mute_stream(user_profile, muted_stream)
-        mute_topic(user_profile, 'Denmark', 'muted-topic')
+        self.mute_stream(user_profile, muted_stream)
+        self.mute_topic(user_profile, 'Denmark', 'muted-topic')
 
         stream_message_id = self.send_stream_message(sender_email, "Denmark", "hello")
         muted_stream_message_id = self.send_stream_message(sender_email, "Muted Stream", "hello")
