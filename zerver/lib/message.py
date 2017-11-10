@@ -849,6 +849,32 @@ def get_raw_unread_data(user_profile):
         mentions=mentions,
     )
 
+def get_pre_fetch_message_ids(raw_data):
+    # type: (RawUnreadMessagesResult) -> Set[int]
+
+    stream_dict = raw_data['stream_dict']
+    pm_dict = raw_data['pm_dict']
+    huddle_dict = raw_data['huddle_dict']
+
+    stream_ids = max_int_keys_for_groups(
+        input_dict=stream_dict,
+        lookup_fields=['stream_id', 'topic'],
+    )
+
+    personal_ids = max_int_keys_for_groups(
+        input_dict=pm_dict,
+        lookup_fields=['sender_id'],
+    )
+
+    huddle_ids = max_int_keys_for_groups(
+        input_dict=huddle_dict,
+        lookup_fields=['user_ids_string'],
+    )
+
+    all_ids = stream_ids | personal_ids | huddle_ids
+
+    return all_ids
+
 def aggregate_unread_data(raw_data):
     # type: (RawUnreadMessagesResult) -> UnreadMessagesResult
 
