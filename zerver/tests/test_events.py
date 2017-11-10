@@ -1824,6 +1824,74 @@ class GetUnreadMsgsTest(ZulipTestCase):
             topic_name=topic_name,
         )
 
+    def test_raw_unread_stream(self):
+        # type: () -> None
+        cordelia = self.example_user('cordelia')
+        hamlet = self.example_user('hamlet')
+        realm = hamlet.realm
+
+        for stream_name in ['social', 'devel', 'test here']:
+            self.subscribe(hamlet, stream_name)
+            self.subscribe(cordelia, stream_name)
+
+        all_message_ids = set()  # type: Set[int]
+        message_ids = dict()
+
+        tups = [
+            ('social', 'lunch'),
+            ('test here', 'bla'),
+            ('devel', 'python'),
+            ('devel', 'ruby'),
+        ]
+
+        for stream_name, topic_name in tups:
+            message_ids[topic_name] = [
+                self.send_stream_message(
+                    sender_email=cordelia.email,
+                    stream_name=stream_name,
+                    topic_name=topic_name,
+                ) for i in range(3)
+            ]
+            all_message_ids |= set(message_ids[topic_name])
+
+        self.assertEqual(len(all_message_ids), 12)  # sanity check on test setup
+
+        self.mute_stream(
+            user_profile=hamlet,
+            stream=get_stream('test here', realm),
+        )
+
+        self.mute_topic(
+            user_profile=hamlet,
+            stream_name='devel',
+            topic_name='ruby',
+        )
+
+        raw_unread_data = get_raw_unread_data(
+            user_profile=hamlet,
+        )
+
+        stream_dict = raw_unread_data['stream_dict']
+
+        self.assertEqual(
+            set(stream_dict.keys()),
+            all_message_ids,
+        )
+
+        self.assertEqual(
+            raw_unread_data['unmuted_stream_msgs'],
+            set(message_ids['python']) | set(message_ids['lunch']),
+        )
+
+        self.assertEqual(
+            stream_dict[message_ids['lunch'][0]],
+            dict(
+                sender_id=cordelia.id,
+                stream_id=get_stream('social', realm).id,
+                topic='lunch',
+            )
+        )
+
     def test_raw_unread_huddle(self):
         # type: () -> None
         cordelia = self.example_user('cordelia')
