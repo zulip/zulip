@@ -1,8 +1,7 @@
 # The chat.zulip.org community
 
-[chat.zulip.org](https://chat.zulip.org/) is the primary communication
-forum for the Zulip community.  It is a Zulip server that you can
-connect to from any modern web browser.
+[https://chat.zulip.org](https://chat.zulip.org/) is the primary communication
+forum for the Zulip community.
 
 You can go through the simple signup process at that link, and then
 you will soon be talking to core Zulip developers and other users.  To
@@ -72,7 +71,7 @@ everyone, even non-developers:
 * [#feedback](https://chat.zulip.org/#narrow/stream/feedback) is for
   posting feedback on Zulip.
 * [#design](https://chat.zulip.org/#narrow/stream/design) is where we
-  discuss the UI design and collect feedback on potential design
+  discuss UI and feature design and collect feedback on potential design
   changes.  We love feedback, so don't hesitate to speak up!
 * [#user community](https://chat.zulip.org/#narrow/stream/user.20community) is
   for Zulip users to discuss their experiences using and adopting Zulip.
