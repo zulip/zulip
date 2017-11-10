@@ -1474,6 +1474,12 @@ if PRODUCTION:
 # This is a debugging option only
 PROFILE_ALL_REQUESTS = False
 
-CROSS_REALM_BOT_EMAILS = set(('feedback@zulip.com', 'notification-bot@zulip.com', 'welcome-bot@zulip.com'))
+CROSS_REALM_BOT_EMAILS = {
+    'feedback@zulip.com',
+    'notification-bot@zulip.com',
+    'welcome-bot@zulip.com',
+    'new-user-bot@zulip.com',
+    'emailgateway@zulip.com',
+}
 
 CONTRIBUTORS_DATA = os.path.join(STATIC_ROOT, 'generated/github-contributors.json')

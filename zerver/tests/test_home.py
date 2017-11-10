@@ -181,8 +181,8 @@ class HomeTest(ZulipTestCase):
             with patch('zerver.lib.cache.cache_set') as cache_mock:
                 result = self._get_home_page(stream='Denmark')
 
-        self.assert_length(queries, 42)
-        self.assert_length(cache_mock.call_args_list, 10)
+        self.assert_length(queries, 44)
+        self.assert_length(cache_mock.call_args_list, 12)
 
         html = result.content.decode('utf-8')
 
@@ -246,7 +246,7 @@ class HomeTest(ZulipTestCase):
         with queries_captured() as queries2:
             result = self._get_home_page()
 
-        self.assert_length(queries2, 36)
+        self.assert_length(queries2, 38)
 
         # Do a sanity check that our new streams were in the payload.
         html = result.content.decode('utf-8')
@@ -470,12 +470,28 @@ class HomeTest(ZulipTestCase):
         self.assertNotIn('defunct-1@zulip.com', active_emails)
 
         cross_bots = page_params['cross_realm_bots']
-        self.assertEqual(len(cross_bots), 3)
+        self.assertEqual(len(cross_bots), 5)
         cross_bots.sort(key=lambda d: d['email'])
 
         notification_bot = self.notification_bot()
 
-        self.assertEqual(cross_bots, [
+        by_email = lambda d: d['email']
+
+        self.assertEqual(sorted(cross_bots, key=by_email), sorted([
+            dict(
+                user_id=get_user('new-user-bot@zulip.com', get_realm('zulip')).id,
+                is_admin=False,
+                email='new-user-bot@zulip.com',
+                full_name='Zulip New User Bot',
+                is_bot=True
+            ),
+            dict(
+                user_id=get_user('emailgateway@zulip.com', get_realm('zulip')).id,
+                is_admin=False,
+                email='emailgateway@zulip.com',
+                full_name='Email Gateway',
+                is_bot=True
+            ),
             dict(
                 user_id=get_user('feedback@zulip.com', get_realm('zulip')).id,
                 is_admin=False,
@@ -497,7 +513,7 @@ class HomeTest(ZulipTestCase):
                 full_name='Welcome Bot',
                 is_bot=True
             ),
-        ])
+        ], key=by_email))
 
     def test_new_stream(self):
         # type: () -> None
