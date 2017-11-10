@@ -15,7 +15,9 @@ Add a webhook to your Stripe account by going to **Your account** >
 {!append-stream-name.md!}
 
 {% if 'http:' in external_uri_scheme %}
+
     Note that Stripe will only accept HTTPS webhooks!
+
 {% endif %}
 
 ![](/static/images/integrations/stripe/001.png)
