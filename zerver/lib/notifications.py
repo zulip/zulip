@@ -336,10 +336,12 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
             huddle_display_name = u"%s" % (" and ".join(other_recipients))
             context.update({'huddle_display_name': huddle_display_name})
         elif len(other_recipients) == 3:
-            huddle_display_name = u"%s, %s, and %s" % (other_recipients[0], other_recipients[1], other_recipients[2])
+            huddle_display_name = u"%s, %s, and %s" % (
+                other_recipients[0], other_recipients[1], other_recipients[2])
             context.update({'huddle_display_name': huddle_display_name})
         else:
-            huddle_display_name = u"%s, and %s others" % (', '.join(other_recipients[:2]), len(other_recipients) - 2)
+            huddle_display_name = u"%s, and %s others" % (
+                ', '.join(other_recipients[:2]), len(other_recipients) - 2)
             context.update({'huddle_display_name': huddle_display_name})
     elif (missed_messages[0].recipient.type == Recipient.PERSONAL):
         context.update({'private_message': True})

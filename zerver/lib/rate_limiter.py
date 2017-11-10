@@ -245,8 +245,8 @@ def incr_ratelimit(entity):
                 break
             except redis.WatchError:
                 if count > 10:
-                    logging.error("Failed to complete incr_ratelimit transaction without interference 10 times "
-                                  "in a row! Aborting rate-limit increment")
+                    logging.error("Failed to complete incr_ratelimit transaction without "
+                                  "interference 10 times in a row! Aborting rate-limit increment")
                     break
                 count += 1
 

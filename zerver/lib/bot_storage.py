@@ -14,7 +14,8 @@ def get_bot_state(bot_profile, key):
     try:
         return BotUserStateData.objects.get(bot_profile=bot_profile, key=key).value
     except BotUserStateData.DoesNotExist:
-        raise StateError("Cannot get state. {} doesn't have an entry with the key '{}'.".format(bot_profile, key))
+        raise StateError("Cannot get state. {} doesn't have "
+                         "an entry with the key '{}'.".format(bot_profile, key))
 
 def get_bot_state_size(bot_profile, key=None):
     # type: (UserProfile, Optional[Text]) -> int

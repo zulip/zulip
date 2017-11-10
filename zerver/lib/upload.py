@@ -567,7 +567,8 @@ def upload_message_image(uploaded_file_name, uploaded_file_size,
                          content_type, file_data, user_profile, target_realm=None):
     # type: (Text, int, Optional[Text], bytes, UserProfile, Optional[Realm]) -> Text
     return upload_backend.upload_message_image(uploaded_file_name, uploaded_file_size,
-                                               content_type, file_data, user_profile, target_realm=target_realm)
+                                               content_type, file_data, user_profile,
+                                               target_realm=target_realm)
 
 def claim_attachment(user_profile, path_id, message, is_message_realm_public):
     # type: (UserProfile, Text, Message, bool) -> None

@@ -11,7 +11,9 @@ from datetime import datetime, timedelta
 # given dates
 def seconds_usage_between(user_profile, begin, end):
     # type: (UserProfile, datetime, datetime) -> timedelta
-    intervals = UserActivityInterval.objects.filter(user_profile=user_profile, end__gte=begin, start__lte=end)
+    intervals = UserActivityInterval.objects.filter(user_profile=user_profile,
+                                                    end__gte=begin,
+                                                    start__lte=end)
     duration = timedelta(0)
     for interval in intervals:
         start = max(begin, interval.start)

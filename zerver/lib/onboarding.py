@@ -13,8 +13,9 @@ def send_initial_pms(user):
     # type: (UserProfile) -> None
     organization_setup_text = ""
     if user.is_realm_admin:
-        organization_setup_text = "* [Read the guide](%s) for getting your organization started with Zulip\n" \
-                                  % (user.realm.uri + "/help/getting-your-organization-started-with-zulip",)
+        help_url = user.realm.uri + "/help/getting-your-organization-started-with-zulip"
+        organization_setup_text = ("* [Read the guide](%s) for getting your organization "
+                                   "started with Zulip\n" % (help_url,))
 
     content = (
         "Hello, and welcome to Zulip!\n\nThis is a private message from me, Welcome Bot. "
