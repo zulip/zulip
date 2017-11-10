@@ -14,6 +14,11 @@ from zerver.lib.test_helpers import simulated_queue_client
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import get_client, UserActivity
 from zerver.worker import queue_processors
+from zerver.worker.queue_processors import (
+    get_active_worker_queues,
+    QueueProcessingWorker,
+    LoopQueueProcessingWorker,
+)
 
 class WorkerTest(ZulipTestCase):
     class FakeClient:
@@ -195,3 +200,9 @@ class WorkerTest(ZulipTestCase):
         with self.assertRaises(queue_processors.WorkerDeclarationException):
             worker = TestWorker()
             worker.consume({})
+
+    def test_get_active_worker_queues(self) -> None:
+        worker_queue_count = (len(QueueProcessingWorker.__subclasses__()) +
+                              len(LoopQueueProcessingWorker.__subclasses__()) - 1)
+        self.assertEqual(worker_queue_count, len(get_active_worker_queues()))
+        self.assertEqual(1, len(get_active_worker_queues(queue_type='test')))
