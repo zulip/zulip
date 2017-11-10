@@ -16,7 +16,7 @@
                                 <span class="sender-status">
                                     <span class="sender_name-in-status auto-select sender_info_hover">{{msg/sender_full_name}}</span>
                                     {{#if sender_is_bot}}
-                                    <img class="bot-icon" title="{{t 'Bot' }}" src="/static/images/bot.svg" />
+                                    <i class="zulip-icon bot" aria-hidden="true"></i>
                                     {{/if}}
                                     <span class="status-message">
                                         {{{ status_message }}}
@@ -28,7 +28,7 @@
                             {{else}}
                                 <span class="sender_name auto-select">{{msg/sender_full_name}}</span>
                                 {{#if sender_is_bot}}
-                                <img class="bot-icon" title="{{t 'Bot' }}" src="/static/images/bot.svg" />
+                                <i class="zulip-icon bot" aria-hidden="true"></i>
                                 {{/if}}
                             {{/if}}
                         {{/include_sender}}
