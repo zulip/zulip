@@ -1901,7 +1901,7 @@
   , lookup: function (event) {
       var items
 
-      this.query = this.$element.val()
+      this.query = this.$element.is("[contenteditable]") ? this.$element.text() :  this.$element.val();
 
       if (!this.options.helpOnEmptyStrings) {
         if (!this.query || this.query.length < this.options.minLength) {
