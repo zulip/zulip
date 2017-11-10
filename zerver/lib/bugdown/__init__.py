@@ -269,7 +269,8 @@ META_END_RE = re.compile('^/meta[ >]')
 def fetch_open_graph_image(url):
     # type: (Text) -> Optional[Dict[str, Any]]
     in_head = False
-    # HTML will auto close meta tags, when we start the next tag add a closing tag if it has not been closed yet.
+    # HTML will auto close meta tags, when we start the next tag add
+    # a closing tag if it has not been closed yet.
     last_closed = True
     head = []
 
@@ -338,7 +339,8 @@ def get_tweet_id(url):
     if not (parsed_url.netloc == 'twitter.com' or parsed_url.netloc.endswith('.twitter.com')):
         return None
     to_match = parsed_url.path
-    # In old-style twitter.com/#!/wdaher/status/1231241234-style URLs, we need to look at the fragment instead
+    # In old-style twitter.com/#!/wdaher/status/1231241234-style URLs,
+    # we need to look at the fragment instead
     if parsed_url.path == '/' and len(parsed_url.fragment) > 5:
         to_match = parsed_url.fragment
 
@@ -740,11 +742,13 @@ def possible_avatar_emails(content):
 
     return emails
 
-path_to_name_to_codepoint = os.path.join(settings.STATIC_ROOT, "generated", "emoji", "name_to_codepoint.json")
+path_to_name_to_codepoint = os.path.join(settings.STATIC_ROOT,
+                                         "generated", "emoji", "name_to_codepoint.json")
 with open(path_to_name_to_codepoint) as name_to_codepoint_file:
     name_to_codepoint = ujson.load(name_to_codepoint_file)
 
-path_to_codepoint_to_name = os.path.join(settings.STATIC_ROOT, "generated", "emoji", "codepoint_to_name.json")
+path_to_codepoint_to_name = os.path.join(settings.STATIC_ROOT,
+                                         "generated", "emoji", "codepoint_to_name.json")
 with open(path_to_codepoint_to_name) as codepoint_to_name_file:
     codepoint_to_name = ujson.load(codepoint_to_name_file)
 
@@ -1287,7 +1291,8 @@ class Bugdown(markdown.Extension):
         self.config = {
             "realm_filters": [kwargs['realm_filters'], "Realm-specific filters for realm"],
             "realm": [kwargs['realm'], "Realm name"],
-            "code_block_processor_disabled": [kwargs['code_block_processor_disabled'], "Disabled for email gateway"]
+            "code_block_processor_disabled": [kwargs['code_block_processor_disabled'],
+                                              "Disabled for email gateway"]
         }
 
         super().__init__(*args, **kwargs)
@@ -1320,8 +1325,8 @@ class Bugdown(markdown.Extension):
 
         # Custom strikethrough syntax: ~~foo~~
         md.inlinePatterns.add('del',
-                              markdown.inlinepatterns.SimpleTagPattern(r'(?<!~)(\~\~)([^~{0}\n]+?)\2(?!~)', 'del'),
-                              '>strong')
+                              markdown.inlinepatterns.SimpleTagPattern(
+                                  r'(?<!~)(\~\~)([^~{0}\n]+?)\2(?!~)', 'del'), '>strong')
 
         # Text inside ** must start and end with a word character
         # it need for things like "const char *x = (char *)y"
@@ -1797,6 +1802,7 @@ def convert(content, message=None, message_realm=None, possible_words=None, sent
             mention_data=None, email_gateway=False):
     # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]], Optional[bool], Optional[MentionData], Optional[bool]) -> Text
     bugdown_stats_start()
-    ret = do_convert(content, message, message_realm, possible_words, sent_by_bot, mention_data, email_gateway)
+    ret = do_convert(content, message, message_realm,
+                     possible_words, sent_by_bot, mention_data, email_gateway)
     bugdown_stats_finish()
     return ret
