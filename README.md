@@ -8,16 +8,14 @@
 
 # Zulip overview
 
-Zulip is a powerful, open source group chat application. Written in
-Python and using the Django framework, Zulip supports both private
-messaging and group chats via conversation streams.
-
-Zulip also supports fast search, drag-and-drop file uploads, image
-previews, group private messages, audible notifications,
-missed-message emails, desktop apps, and much more.
-
-Further information on the Zulip project and its features can be found
-at <https://www.zulip.org>.
+Zulip is a powerful, open source group chat application that combines the
+immediacy of real-time chat with the productivity benefits of threaded
+conversations. Zulip is used by open source projects, Fortune 500 companies,
+large standards bodies, and others who need a real-time chat product that
+scales to individuals getting hundreds or thousands of messages a day.
+With over 300 contributors merging over 500 commits a month,
+Zulip is also the largest and fastest growing open source group chat
+project.
 
 [![Build Status](https://travis-ci.org/zulip/zulip.svg?branch=master)](https://travis-ci.org/zulip/zulip)
 [![Coverage Status](https://img.shields.io/codecov/c/github/zulip/zulip.svg)](https://codecov.io/gh/zulip/zulip)
