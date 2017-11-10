@@ -3,4 +3,4 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 USER=root
 
 # Cron job to renew certbot twice a day.
-52 0,12 * * * root /root/certbot-auto renew --webroot --webroot-path=/var/www/certbot/ --quiet
+52 0,12 * * * root /usr/local/sbin/certbot-auto renew --webroot --webroot-path=/var/www/certbot/ --quiet

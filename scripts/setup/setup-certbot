@@ -40,12 +40,12 @@ if [ -n "$show_help" ]; then
     usage
 fi
 
+CERTBOT_PATH="/usr/local/sbin/certbot-auto"
 # For reference https://certbot.eff.org/all-instructions/#debian-other-nginx
-# We download to /root as a reasonably safe place with only root having access
-wget https://dl.eff.org/certbot-auto -O /root/certbot-auto
-chmod a+x /root/certbot-auto
+wget https://dl.eff.org/certbot-auto -O "$CERTBOT_PATH"
+chmod a+x "$CERTBOT_PATH"
 
-/root/certbot-auto --standalone certonly -d "$DOMAIN" -m "$EMAIL" --agree-tos --non-interactive
+"$CERTBOT_PATH" --standalone certonly -d "$DOMAIN" -m "$EMAIL" --agree-tos --non-interactive
 
 # Link the generated cert to the path read by Zulip
 ln -nsf /etc/letsencrypt/live/"$DOMAIN"/privkey.pem /etc/ssl/private/zulip.key
