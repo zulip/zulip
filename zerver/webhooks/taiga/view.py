@@ -109,7 +109,8 @@ templates = {
         'blocked': u':lock: %(user)s blocked task **%(subject)s**.',
         'unblocked': u':unlock: %(user)s unblocked task **%(subject)s**.',
         'set_milestone': u':calendar: %(user)s added task **%(subject)s** to sprint %(new)s.',
-        'changed_milestone': u':calendar: %(user)s changed sprint of task **%(subject)s** from %(old)s to %(new)s.',
+        'changed_milestone': u':calendar: %(user)s changed sprint of task '
+                             '**%(subject)s** from %(old)s to %(new)s.',
         'changed_status': u':chart_with_upwards_trend: %(user)s changed status of task **%(subject)s**'
         ' from %(old)s to %(new)s.',
         'renamed': u':notebook: %(user)s renamed task %(old)s to **%(new)s**.',
@@ -124,8 +125,10 @@ templates = {
         'unset_assigned_to': u':busts_in_silhouette: %(user)s unassigned issue **%(subject)s**.',
         'changed_assigned_to': u':busts_in_silhouette: %(user)s reassigned issue **%(subject)s**'
         ' from %(old)s to %(new)s.',
-        'changed_priority': u':rocket: %(user)s changed priority of issue **%(subject)s** from %(old)s to %(new)s.',
-        'changed_severity': u':warning: %(user)s changed severity of issue **%(subject)s** from %(old)s to %(new)s.',
+        'changed_priority': u':rocket: %(user)s changed priority of issue '
+                            '**%(subject)s** from %(old)s to %(new)s.',
+        'changed_severity': u':warning: %(user)s changed severity of issue '
+                            '**%(subject)s** from %(old)s to %(new)s.',
         'changed_status': u':chart_with_upwards_trend: %(user)s changed status of issue **%(subject)s**'
                            ' from %(old)s to %(new)s.',
         'changed_type': u':bulb: %(user)s changed type of issue **%(subject)s** from %(old)s to %(new)s.',

@@ -114,8 +114,9 @@ _properties = {
     Confirmation.EMAIL_CHANGE: ConfirmationType('zerver.views.user_settings.confirm_email_change'),
     Confirmation.UNSUBSCRIBE: ConfirmationType('zerver.views.unsubscribe.email_unsubscribe',
                                                validity_in_days=1000000),  # should never expire
-    Confirmation.MULTIUSE_INVITE: ConfirmationType('zerver.views.registration.accounts_home_from_multiuse_invite',
-                                                   validity_in_days=settings.INVITATION_LINK_VALIDITY_DAYS)
+    Confirmation.MULTIUSE_INVITE: ConfirmationType(
+        'zerver.views.registration.accounts_home_from_multiuse_invite',
+        validity_in_days=settings.INVITATION_LINK_VALIDITY_DAYS)
 }
 
 # Confirmation pathways for which there is no content_object that we need to
