@@ -43,6 +43,15 @@ from mypy_extensions import TypedDict
 
 RealmAlertWords = Dict[int, List[Text]]
 
+RawUnreadMessagesResult = TypedDict('RawUnreadMessagesResult', {
+    'pm_dict': Dict[int, Any],
+    'stream_dict': Dict[int, Any],
+    'huddle_dict': Dict[int, Any],
+    'mentions': Set[int],
+    'muted_stream_ids': List[int],
+    'unmuted_stream_msgs': Set[int],
+})
+
 UnreadMessagesResult = TypedDict('UnreadMessagesResult', {
     'pms': List[Dict[str, Any]],
     'streams': List[Dict[str, Any]],
@@ -656,7 +665,7 @@ def get_muted_stream_ids(user_profile):
     return muted_stream_ids
 
 def get_raw_unread_data(user_profile):
-    # type: (UserProfile) -> Dict[str, Any]
+    # type: (UserProfile) -> RawUnreadMessagesResult
 
     excluded_recipient_ids = get_inactive_recipient_ids(user_profile)
 
@@ -754,7 +763,7 @@ def get_raw_unread_data(user_profile):
     )
 
 def aggregate_unread_data(raw_data):
-    # type: (Dict[str, Any]) -> UnreadMessagesResult
+    # type: (RawUnreadMessagesResult) -> UnreadMessagesResult
 
     pm_dict = raw_data['pm_dict']
     stream_dict = raw_data['stream_dict']
