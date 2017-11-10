@@ -21,6 +21,7 @@ from zerver.lib.actions import (
 from zerver.lib.message import (
     MessageDict,
     messages_for_ids,
+    get_full_messages,
     sew_messages_and_reactions,
 )
 
@@ -2857,3 +2858,63 @@ class MessageHydrationTest(ZulipTestCase):
 
         self.assertIn('class="user-mention"', new_message['content'])
         self.assertEqual(new_message['flags'], ['mentioned'])
+
+    def test_get_full_messages(self):
+        # type: () -> None
+
+        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user('cordelia')
+
+        # get test coverage
+        self.assertEqual(
+            get_full_messages(hamlet, []),
+            []
+        )
+
+        stream_name = 'test stream'
+        self.subscribe(cordelia, stream_name)
+
+        old_message_id = self.send_stream_message(cordelia.email, stream_name, content='foo')
+
+        self.subscribe(hamlet, stream_name)
+
+        # We currently don't let Hamlet see messages that he doesn't have UserMessage
+        # rows for (even though he's now subscribed to the public stream).
+        self.assertEqual(
+            get_full_messages(hamlet, [old_message_id]),
+            []
+        )
+
+        # We definitely don't want Hamlet looking at messages Cordelia sent to herself.
+        off_limits_message_id = self.send_personal_message(cordelia.email, cordelia.email)
+        self.assertEqual(
+            get_full_messages(hamlet, [off_limits_message_id]),
+            []
+        )
+
+        foo_id = self.send_stream_message(cordelia.email, stream_name, content='foo')
+
+        mention_content = 'hello @**King Hamlet**'
+        mention_id = self.send_stream_message(cordelia.email, stream_name, content=mention_content)
+
+        message_ids = [
+            off_limits_message_id,
+            foo_id,
+            mention_id,
+        ]
+
+        messages = get_full_messages(hamlet, message_ids)
+
+        self.assertEqual(len(messages), 2)
+
+        for message in messages:
+            if message['id'] == foo_id:
+                foo_message = message
+            elif message['id'] == mention_id:
+                mention_message = message
+
+        self.assertEqual(foo_message['content'], '<p>foo</p>')
+        self.assertEqual(foo_message['flags'], [])
+
+        self.assertIn('class="user-mention"', mention_message['content'])
+        self.assertEqual(mention_message['flags'], ['mentioned'])

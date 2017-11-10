@@ -43,6 +43,15 @@ from mypy_extensions import TypedDict
 
 RealmAlertWords = Dict[int, List[Text]]
 
+RawUnreadMessagesResult = TypedDict('RawUnreadMessagesResult', {
+    'pm_dict': Dict[int, Any],
+    'stream_dict': Dict[int, Any],
+    'huddle_dict': Dict[int, Any],
+    'mentions': Set[int],
+    'muted_stream_ids': List[int],
+    'unmuted_stream_msgs': Set[int],
+})
+
 UnreadMessagesResult = TypedDict('UnreadMessagesResult', {
     'pms': List[Dict[str, Any]],
     'streams': List[Dict[str, Any]],
@@ -52,6 +61,63 @@ UnreadMessagesResult = TypedDict('UnreadMessagesResult', {
 })
 
 MAX_UNREAD_MESSAGES = 5000
+
+def get_full_messages(user_profile: UserProfile,
+                      message_ids: List[int]) -> List[Dict[str, Any]]:
+    '''
+    This function gets full messages for message_ids for a user.  It
+    has some limitations:
+
+        * A user may be "allowed" to access a historical message (such
+          as on a public stream from before they subscribed), but we
+          won't return it here unless there's a UserMessage row.
+
+        * We hard code apply_markdown and client_gravatar.
+
+        * We don't support search fields or edit history.
+
+    Right now we're only using this for a couple mobile-app-related
+    use cases where the above restrictions are fine.  We may want
+    to add some flexibility down the road.
+    '''
+    user_message_flags = get_user_message_flags_for_message_ids(
+        user_profile=user_profile,
+        message_ids=message_ids
+    )
+
+    message_ids = list(user_message_flags.keys())
+
+    return messages_for_ids(
+        message_ids=message_ids,
+        user_message_flags=user_message_flags,
+        search_fields={},
+        apply_markdown=True,
+        client_gravatar=True,
+        allow_edit_history=False,
+    )
+
+def get_user_message_flags_for_message_ids(user_profile: UserProfile,
+                                           message_ids: List[int]) -> Dict[int, List[str]]:
+    '''
+    This only looks up flags for messages where the user
+    has UserMessage rows.  No historical rows for now.
+    '''
+    if not message_ids:
+        return {}
+
+    query = UserMessage.objects.filter(
+        user_profile=user_profile
+    ).values(
+        'message_id',
+        'flags',
+    )
+    query = query_for_ids(query, message_ids, 'message_id')
+
+    result = {
+        row['message_id']: UserMessage.flags_list_for_flags(row['flags'])
+        for row in query
+    }
+    return result
 
 def messages_for_ids(message_ids: List[int],
                      user_message_flags: Dict[int, List[str]],
@@ -630,6 +696,36 @@ def aggregate_message_dict(input_dict, lookup_fields, collect_senders):
 
     return [lookup_dict[k] for k in sorted_keys]
 
+def max_int_keys_for_groups(input_dict, lookup_fields):
+    # type: (Dict[int, Dict[str, Any]], List[str]) -> Set[int]
+    '''
+    A concrete example might help explain the inputs here:
+
+    input_dict = {
+        1002: dict(stream_id=5, topic='foo'),
+        1003: dict(stream_id=5, topic='foo'),
+        1004: dict(stream_id=6, topic='baz'),
+    }
+
+    lookup_fields = ['stream_id', 'topic']
+
+    returns {1003, 1004}
+    '''
+
+    lookup_dict = dict()  # type: Dict[Tuple[str, ...], int]
+
+    for int_key, attribute_dict in input_dict.items():
+        lookup_key = tuple([
+            attribute_dict[f]
+            for f in lookup_fields
+        ])
+        if lookup_key not in lookup_dict:
+            lookup_dict[lookup_key] = int_key
+        elif int_key > lookup_dict[lookup_key]:
+            lookup_dict[lookup_key] = int_key
+
+    return set(lookup_dict.values())
+
 def get_inactive_recipient_ids(user_profile):
     # type: (UserProfile) -> List[int]
     rows = get_stream_subscriptions_for_user(user_profile).filter(
@@ -655,14 +751,8 @@ def get_muted_stream_ids(user_profile):
         for row in rows]
     return muted_stream_ids
 
-def get_unread_message_ids_per_recipient(user_profile):
-    # type: (UserProfile) -> UnreadMessagesResult
-    raw_unread_data = get_raw_unread_data(user_profile)
-    aggregated_data = aggregate_unread_data(raw_unread_data)
-    return aggregated_data
-
 def get_raw_unread_data(user_profile):
-    # type: (UserProfile) -> Dict[str, Any]
+    # type: (UserProfile) -> RawUnreadMessagesResult
 
     excluded_recipient_ids = get_inactive_recipient_ids(user_profile)
 
@@ -759,8 +849,34 @@ def get_raw_unread_data(user_profile):
         mentions=mentions,
     )
 
+def get_pre_fetch_message_ids(raw_data):
+    # type: (RawUnreadMessagesResult) -> Set[int]
+
+    stream_dict = raw_data['stream_dict']
+    pm_dict = raw_data['pm_dict']
+    huddle_dict = raw_data['huddle_dict']
+
+    stream_ids = max_int_keys_for_groups(
+        input_dict=stream_dict,
+        lookup_fields=['stream_id', 'topic'],
+    )
+
+    personal_ids = max_int_keys_for_groups(
+        input_dict=pm_dict,
+        lookup_fields=['sender_id'],
+    )
+
+    huddle_ids = max_int_keys_for_groups(
+        input_dict=huddle_dict,
+        lookup_fields=['user_ids_string'],
+    )
+
+    all_ids = stream_ids | personal_ids | huddle_ids
+
+    return all_ids
+
 def aggregate_unread_data(raw_data):
-    # type: (Dict[str, Any]) -> UnreadMessagesResult
+    # type: (RawUnreadMessagesResult) -> UnreadMessagesResult
 
     pm_dict = raw_data['pm_dict']
     stream_dict = raw_data['stream_dict']

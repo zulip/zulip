@@ -74,7 +74,10 @@ from zerver.lib.events import (
     fetch_initial_state_data,
 )
 from zerver.lib.message import (
-    get_unread_message_ids_per_recipient,
+    aggregate_unread_data,
+    get_pre_fetch_message_ids,
+    get_raw_unread_data,
+    max_int_keys_for_groups,
     render_markdown,
     UnreadMessagesResult,
 )
@@ -1799,37 +1802,242 @@ class FetchInitialStateDataTest(ZulipTestCase):
         result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False)
         self.assertEqual(result['max_message_id'], -1)
 
+class GetUnreadMsgsTest(ZulipTestCase):
+    def mute_stream(self, user_profile, stream):
+        # type: (UserProfile, Stream) -> None
+        recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
+        subscription = Subscription.objects.get(
+            user_profile=user_profile,
+            recipient=recipient
+        )
+        subscription.in_home_view = False
+        subscription.save()
+
+    def mute_topic(self, user_profile, stream_name, topic_name):
+        # type: (UserProfile, Text, Text) -> None
+        realm = user_profile.realm
+        stream = get_stream(stream_name, realm)
+        recipient = get_stream_recipient(stream.id)
+
+        add_topic_mute(
+            user_profile=user_profile,
+            stream_id=stream.id,
+            recipient_id=recipient.id,
+            topic_name=topic_name,
+        )
+
+    def test_raw_unread_stream(self):
+        # type: () -> None
+        cordelia = self.example_user('cordelia')
+        hamlet = self.example_user('hamlet')
+        realm = hamlet.realm
+
+        for stream_name in ['social', 'devel', 'test here']:
+            self.subscribe(hamlet, stream_name)
+            self.subscribe(cordelia, stream_name)
+
+        all_message_ids = set()  # type: Set[int]
+        message_ids = dict()
+
+        tups = [
+            ('social', 'lunch'),
+            ('test here', 'bla'),
+            ('devel', 'python'),
+            ('devel', 'ruby'),
+        ]
+
+        for stream_name, topic_name in tups:
+            message_ids[topic_name] = [
+                self.send_stream_message(
+                    sender_email=cordelia.email,
+                    stream_name=stream_name,
+                    topic_name=topic_name,
+                ) for i in range(3)
+            ]
+            all_message_ids |= set(message_ids[topic_name])
+
+        self.assertEqual(len(all_message_ids), 12)  # sanity check on test setup
+
+        self.mute_stream(
+            user_profile=hamlet,
+            stream=get_stream('test here', realm),
+        )
+
+        self.mute_topic(
+            user_profile=hamlet,
+            stream_name='devel',
+            topic_name='ruby',
+        )
+
+        raw_unread_data = get_raw_unread_data(
+            user_profile=hamlet,
+        )
+
+        stream_dict = raw_unread_data['stream_dict']
+
+        self.assertEqual(
+            set(stream_dict.keys()),
+            all_message_ids,
+        )
+
+        self.assertEqual(
+            raw_unread_data['unmuted_stream_msgs'],
+            set(message_ids['python']) | set(message_ids['lunch']),
+        )
+
+        self.assertEqual(
+            stream_dict[message_ids['lunch'][0]],
+            dict(
+                sender_id=cordelia.id,
+                stream_id=get_stream('social', realm).id,
+                topic='lunch',
+            )
+        )
+
+        max_msg_ids = max_int_keys_for_groups(
+            input_dict=stream_dict,
+            lookup_fields=['stream_id', 'topic'],
+        )
+
+        self.assertEqual(
+            max_msg_ids,
+            {
+                message_ids['lunch'][-1],
+                message_ids['python'][-1],
+                message_ids['ruby'][-1],
+                message_ids['bla'][-1],
+            }
+        )
+
+        max_msg_ids = get_pre_fetch_message_ids(raw_unread_data)
+
+        self.assertEqual(
+            max_msg_ids,
+            {
+                message_ids['lunch'][-1],
+                message_ids['python'][-1],
+                message_ids['ruby'][-1],
+                message_ids['bla'][-1],
+            }
+        )
+
+    def test_raw_unread_huddle(self):
+        # type: () -> None
+        cordelia = self.example_user('cordelia')
+        othello = self.example_user('othello')
+        hamlet = self.example_user('hamlet')
+        prospero = self.example_user('prospero')
+
+        huddle1_message_ids = [
+            self.send_huddle_message(
+                cordelia.email,
+                [hamlet.email, othello.email]
+            )
+            for i in range(3)
+        ]
+
+        huddle2_message_ids = [
+            self.send_huddle_message(
+                cordelia.email,
+                [hamlet.email, prospero.email]
+            )
+            for i in range(3)
+        ]
+
+        raw_unread_data = get_raw_unread_data(
+            user_profile=hamlet,
+        )
+
+        huddle_dict = raw_unread_data['huddle_dict']
+
+        self.assertEqual(
+            set(huddle_dict.keys()),
+            set(huddle1_message_ids) | set(huddle2_message_ids)
+        )
+
+        huddle_string = ','.join(
+            str(uid)
+            for uid in sorted([cordelia.id, hamlet.id, othello.id])
+        )
+
+        self.assertEqual(
+            huddle_dict[huddle1_message_ids[0]],
+            dict(user_ids_string=huddle_string),
+        )
+
+        max_msg_ids = max_int_keys_for_groups(
+            input_dict=huddle_dict,
+            lookup_fields=['user_ids_string'],
+        )
+
+        self.assertEqual(
+            max_msg_ids,
+            {huddle1_message_ids[-1], huddle2_message_ids[-1]},
+        )
+
+        max_msg_ids = get_pre_fetch_message_ids(raw_unread_data)
+
+        self.assertEqual(
+            max_msg_ids,
+            {huddle1_message_ids[-1], huddle2_message_ids[-1]},
+        )
+
+    def test_raw_unread_personal(self):
+        # type: () -> None
+        cordelia = self.example_user('cordelia')
+        othello = self.example_user('othello')
+        hamlet = self.example_user('hamlet')
+
+        cordelia_pm_message_ids = [
+            self.send_personal_message(cordelia.email, hamlet.email)
+            for i in range(3)
+        ]
+
+        othello_pm_message_ids = [
+            self.send_personal_message(othello.email, hamlet.email)
+            for i in range(3)
+        ]
+
+        raw_unread_data = get_raw_unread_data(
+            user_profile=hamlet,
+        )
+
+        pm_dict = raw_unread_data['pm_dict']
+
+        self.assertEqual(
+            set(pm_dict.keys()),
+            set(cordelia_pm_message_ids) | set(othello_pm_message_ids)
+        )
+
+        self.assertEqual(
+            pm_dict[cordelia_pm_message_ids[0]],
+            dict(sender_id=cordelia.id),
+        )
+
+        max_msg_ids = max_int_keys_for_groups(
+            input_dict=pm_dict,
+            lookup_fields=['sender_id'],
+        )
+
+        self.assertEqual(
+            max_msg_ids,
+            {cordelia_pm_message_ids[-1], othello_pm_message_ids[-1]},
+        )
+
+        max_msg_ids = get_pre_fetch_message_ids(raw_unread_data)
+
+        self.assertEqual(
+            max_msg_ids,
+            {cordelia_pm_message_ids[-1], othello_pm_message_ids[-1]},
+        )
+
     def test_unread_msgs(self):
         # type: () -> None
-        def mute_stream(user_profile, stream):
-            # type: (UserProfile, Stream) -> None
-            recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
-            subscription = Subscription.objects.get(
-                user_profile=user_profile,
-                recipient=recipient
-            )
-            subscription.in_home_view = False
-            subscription.save()
-
-        def mute_topic(user_profile, stream_name, topic_name):
-            # type: (UserProfile, Text, Text) -> None
-            stream = get_stream(stream_name, realm)
-            recipient = get_stream_recipient(stream.id)
-
-            add_topic_mute(
-                user_profile=user_profile,
-                stream_id=stream.id,
-                recipient_id=recipient.id,
-                topic_name='muted-topic',
-            )
-
         cordelia = self.example_user('cordelia')
         sender_id = cordelia.id
         sender_email = cordelia.email
         user_profile = self.example_user('hamlet')
         othello = self.example_user('othello')
-
-        realm = user_profile.realm
 
         # our tests rely on order
         assert(sender_email < user_profile.email)
@@ -1839,8 +2047,8 @@ class FetchInitialStateDataTest(ZulipTestCase):
         pm2_message_id = self.send_personal_message(sender_email, user_profile.email, "hello2")
 
         muted_stream = self.subscribe(user_profile, 'Muted Stream')
-        mute_stream(user_profile, muted_stream)
-        mute_topic(user_profile, 'Denmark', 'muted-topic')
+        self.mute_stream(user_profile, muted_stream)
+        self.mute_topic(user_profile, 'Denmark', 'muted-topic')
 
         stream_message_id = self.send_stream_message(sender_email, "Denmark", "hello")
         muted_stream_message_id = self.send_stream_message(sender_email, "Muted Stream", "hello")
@@ -1859,7 +2067,9 @@ class FetchInitialStateDataTest(ZulipTestCase):
 
         def get_unread_data():
             # type: () -> UnreadMessagesResult
-            return get_unread_message_ids_per_recipient(user_profile)
+            raw_unread_data = get_raw_unread_data(user_profile)
+            aggregated_data = aggregate_unread_data(raw_unread_data)
+            return aggregated_data
 
         result = get_unread_data()
 
