@@ -272,11 +272,7 @@ class BugdownTest(ZulipTestCase):
 
         with self.settings(ENABLE_FILE_LINKS=False):
             realm = Realm.objects.create(string_id='file_links_test')
-            bugdown.make_md_engine(
-                realm.id,
-                {'realm_filters': [],
-                 'realm': 'file_links_test.example.com',
-                 'code_block_processor_disabled': False})
+            bugdown.maybe_update_markdown_engines(realm.id, False)
             converted = bugdown.convert(msg, message_realm=realm)
             self.assertEqual(converted, '<p>Check out this file file:///Volumes/myserver/Users/Shared/pi.py</p>')
 
@@ -1158,11 +1154,7 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(converted, expected_output)
 
         realm = Realm.objects.create(string_id='code_block_processor_test')
-        bugdown.make_md_engine(
-            realm.id,
-            {'realm_filters': [],
-             'realm': 'file_links_test.example.com',
-             'code_block_processor_disabled': True})
+        bugdown.maybe_update_markdown_engines(realm.id, True)
         converted = bugdown.convert(msg, message_realm=realm, email_gateway=True)
         expected_output = '<p>Hello,</p>\n' +     \
                           '<p>I am writing this message to test something. I am writing this message to test something.</p>'
