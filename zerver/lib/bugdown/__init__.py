@@ -1498,7 +1498,7 @@ def make_realm_filters(realm_filters_key, filters, email_gateway):
                     "realm": [realm_filters_key, "Realm name"],
                     "code_block_processor_disabled": [email_gateway, 'Disabled for email mirror']})
 
-def maybe_update_realm_filters(realm_filters_key, email_gateway):
+def maybe_update_markdown_engines(realm_filters_key, email_gateway):
     # type: (Optional[int], bool) -> None
     # If realm_filters_key is None, load all filters
     if realm_filters_key is None:
@@ -1699,17 +1699,17 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
         # delivered via zephyr_mirror
         realm_filters_key = ZEPHYR_MIRROR_BUGDOWN_KEY
 
-    maybe_update_realm_filters(realm_filters_key, email_gateway)
+    maybe_update_markdown_engines(realm_filters_key, email_gateway)
     md_engine_key = (realm_filters_key, email_gateway)
 
     if md_engine_key in md_engines:
         _md_engine = md_engines[md_engine_key]
     elif realm_filters_key is not None and email_gateway:
-        maybe_update_realm_filters(realm_filters_key, email_gateway)
+        maybe_update_markdown_engines(realm_filters_key, email_gateway)
         _md_engine = md_engines[md_engine_key]
     else:
         if DEFAULT_BUGDOWN_KEY not in md_engines:
-            maybe_update_realm_filters(realm_filters_key=None, email_gateway=False)
+            maybe_update_markdown_engines(realm_filters_key=None, email_gateway=False)
 
         _md_engine = md_engines[(DEFAULT_BUGDOWN_KEY, email_gateway)]
     # Reset the parser; otherwise it will get slower over time.

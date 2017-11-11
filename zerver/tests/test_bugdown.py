@@ -650,7 +650,7 @@ class BugdownTest(ZulipTestCase):
 
         self.assertEqual(converted, '<p><a href="https://trac.zulip.net/ticket/ZUL-123" target="_blank" title="https://trac.zulip.net/ticket/ZUL-123">#ZUL-123</a> was fixed and code was deployed to production, also <a href="https://trac.zulip.net/ticket/zul-321" target="_blank" title="https://trac.zulip.net/ticket/zul-321">#zul-321</a> was deployed to staging</p>')
 
-    def test_maybe_update_realm_filters(self):
+    def test_maybe_update_markdown_engines(self):
         # type: () -> None
         realm = get_realm('zulip')
         url_format_string = r"https://trac.zulip.net/ticket/%(id)s"
@@ -660,7 +660,7 @@ class BugdownTest(ZulipTestCase):
         realm_filter.save()
 
         bugdown.realm_filter_data = {}
-        bugdown.maybe_update_realm_filters(None, False)
+        bugdown.maybe_update_markdown_engines(None, False)
         all_filters = bugdown.realm_filter_data
         zulip_filters = all_filters[realm.id]
         self.assertEqual(len(zulip_filters), 1)
