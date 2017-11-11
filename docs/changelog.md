@@ -7,6 +7,45 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
+**Highlights:**
+
+- Added a user setting to choose the emoji set used in Zulip: Google,
+  Twitter, Apple, or Emoji One.
+- Added a video call integration powered by Jitsi.
+- Added certbot support to the installer, supporting much better automation.
+- Rewrote our API documentation to be much more friendly.
+- Lots of visual polish improvements.
+
+**Full feature changelog:**
+
+- New integrations: ErrBot, Google Code-In.
+- Added a setting to allow users to delete their messages.
+- Added new event types to several webhook integrations.
+- Added a display for whether the user is logged-in in logged-out
+  pages.
+- Added support for hosting multiple domains not as subdomains.
+- Added a new /team/ page explaining the team.
+- Added support for default bots to receive messages when they're
+  mentioned, even if they are not subscribed.
+- Added support for inviting a new user as an administrator.
+- Added a new organization settings page for managing invites.
+- Added support for clicking on a mention to see a user's profile.
+- Migrated the codebase to use nice Python 3 syntax that wasn't
+  available on Python 2.
+- Optimized how user avatar URLs are transmitted over the wire.
+- Optimized message sending performance a bit more.
+- Fixed several bugs around interacting with deactivated users.
+- Fixed image upload file pickers offering non-image files.
+- Fixed some subtle bugs with full-text search and unicode.
+- Fixed bugs in the "edit history" HTML rendering process.
+- Fixed several hotkeys scope bugs.
+- Fixed popovers being closed when new messages come in.
+- Fixed unexpected code blocks when using the email mirror.
+- Fixed clicking on links to a narrow opening a new window.
+- Improved syntax for inline LaTeX to be more convenient.
+- Improved the design for the "uploaded files" UI.
+- Improved placement of text when inserting emoji via picker.
+
 ### 1.7.0 -- 2017-10-25
 
 **Highlights:**
