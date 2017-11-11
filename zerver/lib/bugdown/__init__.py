@@ -1286,7 +1286,7 @@ ZEPHYR_MIRROR_BUGDOWN_KEY = -2
 
 class Bugdown(markdown.Extension):
     def __init__(self, *args, **kwargs):
-        # type: (*Any, **Union[bool, None, Text]) -> None
+        # type: (*Any, **Union[bool, int, List[Any]]) -> None
         # define default configs
         self.config = {
             "realm_filters": [kwargs['realm_filters'], "Realm-specific filters for realm"],
@@ -1466,9 +1466,9 @@ def make_md_engine(key, opts):
             ),
             fenced_code.makeExtension(),
             EscapeHtml(),
-            Bugdown(realm_filters=opts["realm_filters"][0],
-                    realm=opts["realm"][0],
-                    code_block_processor_disabled=opts["code_block_processor_disabled"][0])])
+            Bugdown(realm_filters=opts["realm_filters"],
+                    realm=opts["realm"],
+                    code_block_processor_disabled=opts["code_block_processor_disabled"])])
 
 def subject_links(realm_filters_key, subject):
     # type: (int, Text) -> List[Text]
@@ -1490,13 +1490,10 @@ def make_realm_filters(realm_filters_key, filters, email_gateway):
         del md_engines[md_engine_key]
     realm_filter_data[realm_filters_key] = filters
 
-    # Because of how the Markdown config API works, this has confusing
-    # large number of layers of dicts/arrays :(
     make_md_engine(md_engine_key,
-                   {"realm_filters": [
-                       filters, "Realm-specific filters for realm_filters_key %s" % (realm_filters_key,)],
-                    "realm": [realm_filters_key, "Realm name"],
-                    "code_block_processor_disabled": [email_gateway, 'Disabled for email mirror']})
+                   {"realm_filters": filters,
+                    "realm": realm_filters_key,
+                    "code_block_processor_disabled": email_gateway})
 
 def maybe_update_markdown_engines(realm_filters_key, email_gateway):
     # type: (Optional[int], bool) -> None

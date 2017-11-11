@@ -274,9 +274,9 @@ class BugdownTest(ZulipTestCase):
             realm = Realm.objects.create(string_id='file_links_test')
             bugdown.make_md_engine(
                 realm.id,
-                {'realm_filters': [[], u'file_links_test.example.com'],
-                 'realm': [u'file_links_test.example.com', 'Realm name'],
-                 'code_block_processor_disabled': [False, 'Disabled for email gateway']})
+                {'realm_filters': [],
+                 'realm': 'file_links_test.example.com',
+                 'code_block_processor_disabled': False})
             converted = bugdown.convert(msg, message_realm=realm)
             self.assertEqual(converted, '<p>Check out this file file:///Volumes/myserver/Users/Shared/pi.py</p>')
 
@@ -1160,9 +1160,9 @@ class BugdownTest(ZulipTestCase):
         realm = Realm.objects.create(string_id='code_block_processor_test')
         bugdown.make_md_engine(
             realm.id,
-            {'realm_filters': [[], u'file_links_test.example.com'],
-             'realm': [u'file_links_test.example.com', 'Realm name'],
-             'code_block_processor_disabled': [True, 'Disabled for email gateway']})
+            {'realm_filters': [],
+             'realm': 'file_links_test.example.com',
+             'code_block_processor_disabled': True})
         converted = bugdown.convert(msg, message_realm=realm, email_gateway=True)
         expected_output = '<p>Hello,</p>\n' +     \
                           '<p>I am writing this message to test something. I am writing this message to test something.</p>'
