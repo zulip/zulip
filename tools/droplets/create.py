@@ -154,22 +154,29 @@ def create_droplet(my_token, template_id, username, tags, user_data):
     print("...ip address for new droplet is: {0}.".format(droplet.ip_address))
     return droplet.ip_address
 
-def create_dns_record(my_token, username, ip_address):
+def delete_existing_records(records: List[digitalocean.Record], record_name: str) -> None:
+    count = 0
+    for record in records:
+        if record.name == record_name and record.domain == 'zulipdev.org' and record.type == 'A':
+            record.destroy()
+            count = count + 1
+    if count:
+        print("Deleted {0} existing A records for {1}.zulipdev.org.".format(count, record_name))
+
+def create_dns_record(my_token, username, ip_address="172.31.1.4"):
     # type: (str, str, str) -> None
     domain = digitalocean.Domain(token=my_token, name='zulipdev.org')
     domain.load()
     records = domain.get_records()
 
-    count = 0
-    for record in records:
-        if record.name == username and record.domain == 'zulipdev.org' and record.type == 'A':
-            record.destroy()
-            count = count + 1
-    if count:
-        print("Deleted {0} existing A records for {1}.zulipdev.org.".format(count, username))
+    delete_existing_records(records, username)
+    wildcard_name = "*." + username
+    delete_existing_records(records, wildcard_name)
 
     print("Creating new A record for {0}.zulipdev.org that points to {1}.".format(username, ip_address))
     domain.create_new_domain_record(type='A', name=username, data=ip_address)
+    print("Creating new A record for *.{0}.zulipdev.org that points to {1}.".format(username, ip_address))
+    domain.create_new_domain_record(type='A', name=wildcard_name, data=ip_address)
 
 def print_completion(username):
     # type: (str) -> None
