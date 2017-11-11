@@ -164,7 +164,6 @@ class Realm(models.Model):
     CORPORATE = 1
     COMMUNITY = 2
     org_type = models.PositiveSmallIntegerField(default=CORPORATE)  # type: int
-
     date_created = models.DateTimeField(default=timezone_now)  # type: datetime.datetime
     notifications_stream = models.ForeignKey('Stream', related_name='+', null=True, blank=True, on_delete=CASCADE)  # type: Optional[Stream]
     deactivated = models.BooleanField(default=False)  # type: bool
