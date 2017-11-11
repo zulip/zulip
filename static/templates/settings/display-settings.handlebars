@@ -82,15 +82,15 @@
             </div>
         </div>
 
-        <h3 class="light">Emoji settings</h3>
+        <h3 class="light">Emoji style</h3>
         <div class="input-group side-padded-container">
-            <label>{{t "Emoji style" }}:</label>
-            <div class="emojiset_choices">
-                {{#each page_params.emojiset_choices}}
+            <label>{{t "Choose a default emoji style to display throughout the web app." }}</label>
+            <div class="emojiset_choices grey-box">
+                {{#each page_params.emojiset_choices }}
                 <label>
                     <input type="radio" class="emojiset_choice" name="emojiset_group" value="{{@key}}" />
-                    {{this}}
-                    <span>
+                    <span>{{this}}</span>
+                    <span class="right">
                         <img class="emoji" src="/static/generated/emoji/images-{{@key}}-64/1f642.png" />
                         <img class="emoji" src="/static/generated/emoji/images-{{@key}}-64/1f44d.png" />
                         <img class="emoji" src="/static/generated/emoji/images-{{@key}}-64/1f680.png" />

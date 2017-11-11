@@ -643,10 +643,10 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     EMOJIONE_EMOJISET   = u'emojione'
     GOOGLE_EMOJISET     = u'google'
     TWITTER_EMOJISET    = u'twitter'
-    EMOJISET_CHOICES    = ((APPLE_EMOJISET, _("Apple style")),
-                           (EMOJIONE_EMOJISET, _("Emoji One style")),
-                           (GOOGLE_EMOJISET, _("Google style")),
-                           (TWITTER_EMOJISET, _("Twitter style")))
+    EMOJISET_CHOICES    = ((APPLE_EMOJISET, _("Apple")),
+                           (EMOJIONE_EMOJISET, _("Emoji One")),
+                           (GOOGLE_EMOJISET, _("Google")),
+                           (TWITTER_EMOJISET, _("Twitter")))
     emojiset = models.CharField(default=GOOGLE_EMOJISET, choices=EMOJISET_CHOICES, max_length=20)  # type: Text
 
     # Define the types of the various automatically managed properties
