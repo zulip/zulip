@@ -117,24 +117,18 @@
                     team have made major contributions to the project.
                 </p>
 
-                {% for row in data %}
-                    {% for group in (row[0:3], row[3:6]) %}
-                        {% for person in group %}
-                            {% if person %}
-                            <div class="person">
-                                <a href="https://github.com/{{ person.name }}" target="_blank" class="no-underline">
-                                    <div class="avatar">
-                                        <img class="avatar_img" src="{{ person.avatar }}" alt="{{ _('Avatar') }}" />
-                                    </div>
-                                    <div class='info'>
-                                        <b>@{{ person.name }}</b><br />
-                                        {{ person.commits }} commits
-                                    </div>
-                                </a>
-                            </div>
-                            {% endif %}
-                        {% endfor %}
-                    {% endfor %}
+                {% for person in data %}
+                <div class="person">
+                    <a href="https://github.com/{{ person.name }}" target="_blank" class="no-underline">
+                        <div class="avatar">
+                            <img class="avatar_img" src="{{ person.avatar }}" alt="{{ _('Avatar') }}" />
+                        </div>
+                        <div class='info'>
+                            <b>@{{ person.name }}</b><br />
+                            {{ person.commits }} commits
+                        </div>
+                    </a>
+                </div>
                 {% endfor %}
 
                 <p class="last-updated">

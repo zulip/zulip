@@ -1,39 +1,44 @@
 {
-    "date": "2050-11-5",
-    "data": [
-        [{
-            "commits": 4131,
-            "name": "timabbott",
-            "avatar": "https://avatars.githubusercontent.com/u/2746074?v=3"
-        }, {
-            "commits": 1102,
-            "name": "zbenjamin",
-            "avatar": "https://avatars.githubusercontent.com/u/58684?v=3"
-        }, {
-            "commits": 704,
-            "name": "wdaher",
-            "avatar": "https://avatars.githubusercontent.com/u/109246?v=3"
-        }, {
-            "commits": 671,
-            "name": "lfranchi",
-            "avatar": "https://avatars.githubusercontent.com/u/67976?v=3"
-        }],
-        [{
-            "commits": 524,
-            "name": "showell",
-            "avatar": "https://avatars.githubusercontent.com/u/142908?v=3"
-        }, {
-            "commits": 425,
-            "name": "lfaraone",
-            "avatar": "https://avatars.githubusercontent.com/u/73410?v=3"
-        }, {
-            "commits": 385,
-            "name": "sharmaeklavya2",
-            "avatar": "https://avatars.githubusercontent.com/u/3839472?v=3"
-        }, {
-            "commits": 295,
-            "name": "umairwaheed",
-            "avatar": "https://avatars.githubusercontent.com/u/641763?v=3"
-        }]
-    ]
+    "data": [{
+        "commits": 6031,
+        "name": "timabbott",
+        "avatar": "https://avatars0.githubusercontent.com/u/2746074?v=4"
+    }, {
+        "commits": 1615,
+        "name": "showell",
+        "avatar": "https://avatars2.githubusercontent.com/u/142908?v=4"
+    }, {
+        "commits": 1103,
+        "name": "zbenjamin",
+        "avatar": "https://avatars3.githubusercontent.com/u/58684?v=4"
+    }, {
+        "commits": 704,
+        "name": "wdaher",
+        "avatar": "https://avatars1.githubusercontent.com/u/109246?v=4"
+    }, {
+        "commits": 671,
+        "name": "lfranchi",
+        "avatar": "https://avatars2.githubusercontent.com/u/67976?v=4"
+    }, {
+        "commits": 644,
+        "name": "umairwaheed",
+        "avatar": "https://avatars1.githubusercontent.com/u/641763?v=4"
+    }, {
+        "commits": 633,
+        "name": "rishig",
+        "avatar": "https://avatars2.githubusercontent.com/u/890911?v=4"
+    }, {
+        "commits": 607,
+        "name": "brockwhittaker",
+        "avatar": "https://avatars0.githubusercontent.com/u/10321399?v=4"
+    }, {
+        "commits": 508,
+        "name": "hackerkid",
+        "avatar": "https://avatars1.githubusercontent.com/u/7190633?v=4"
+    }, {
+        "commits": 490,
+        "name": "adnrs96",
+        "avatar": "https://avatars3.githubusercontent.com/u/17237412?v=4"
+    }],
+    "date": "2017-11-10"
 }

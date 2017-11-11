@@ -83,10 +83,11 @@ def run_production():
             )
             contribs.append(result_user)
 
-        out_contrib_data = split_by(
-            sorted(contribs, key=lambda k: k.get('commits'), reverse=True),
-            6, None
-        )  # type: List[List[Optional[Dict[str, Union[Text, int]]]]]
+        out_contrib_data = sorted(
+            contribs,
+            key=lambda k: k.get('commits'),
+            reverse=True
+        )  # type: List[Dict[str, Union[Text, int]]]
 
         out_data = dict(
             data=out_contrib_data,
