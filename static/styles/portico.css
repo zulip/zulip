@@ -921,9 +921,10 @@ a.bottom-signup-button {
     font-weight: 400;
 }
 
-.authors_row {
-    width: 100%;
-    table-layout: fixed;
+.contributors {
+    display: grid;
+    grid-gap: 5px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 }
 
 .contributors .person a {
@@ -931,15 +932,9 @@ a.bottom-signup-button {
 }
 
 .contributors .person {
-    width: calc(33% - 20px - 2px);
-    display: inline-block;
-    vertical-align: top;
-
+    box-sizing: border-box;
     padding: 10px;
-    margin: 5px 0px;
-
     border: 1px solid #eee;
-
     border-radius: 4px;
     transition: all 0.3s ease;
 }
@@ -948,13 +943,8 @@ a.bottom-signup-button {
     border: 1px solid #bbb;
 }
 
-.contributors .person td:hover {
-    color: hsl(173, 100%, 24%);
-    box-shadow: 0px 0px 30px hsl(175, 41%, 78%);
-}
-
 .contributors .person .avatar {
-    width: 55px;
+    width: 60px;
     text-align: center;
     display: inline-block;
     vertical-align: top;
@@ -968,18 +958,18 @@ a.bottom-signup-button {
     margin-left: 10px;
 }
 
-.contributors .last-updated {
-    color: #aaa;
-    font-size: 0.8em;
-    text-align: center;
-}
-
 .avatar_img {
     width: auto;
     height: auto;
     max-width: 80%;
     max-height: 80%;
     border-radius: 20%;
+}
+
+.last-updated {
+    color: #aaa;
+    font-size: 0.8em;
+    text-align: center;
 }
 
 .integration-instruction-block .integration-lozenge {
@@ -1743,10 +1733,6 @@ input.new-organization-button {
 
     .app.help .sidebar.show ~ .markdown {
         -webkit-filter: brightness(0.7);
-    }
-
-    .contributors .person {
-        width: calc(50% - 20px - 4px);
     }
 }
 

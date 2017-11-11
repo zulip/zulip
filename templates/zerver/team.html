@@ -100,23 +100,24 @@
                 </div>
             </div>
 
-            <div class="contributors">
-                <h1>Our amazing community</h1>
-                <p>
-                    While the team at Kandra Labs provides important
-                    leadership, Zulip is built by an incredible
-                    distributed community of developers from all
-                    around the world.  You can read about
-                    the <a href="/history">project's history</a> if
-                    you want to learn more about Zulip's origins.
-                </p>
-                <p>
-                    Here, we recognize the top contributors to the
-                    Zulip server project on GitHub!  Zulip's community
-                    in unusual in how many people outside the core
-                    team have made major contributions to the project.
-                </p>
+            <!-- Contributors -->
+            <h1>Our amazing community</h1>
+            <p>
+                While the team at Kandra Labs provides important
+                leadership, Zulip is built by an incredible
+                distributed community of developers from all
+                around the world.  You can read about
+                the <a href="/history">project's history</a> if
+                you want to learn more about Zulip's origins.
+            </p>
+            <p>
+                Here, we recognize the top contributors to the
+                Zulip server project on GitHub!  Zulip's community
+                in unusual in how many people outside the core
+                team have made major contributions to the project.
+            </p>
 
+            <div class="contributors">
                 {% for person in data %}
                 <div class="person">
                     <a href="https://github.com/{{ person.name }}" target="_blank" class="no-underline">
@@ -130,11 +131,11 @@
                     </a>
                 </div>
                 {% endfor %}
-
-                <p class="last-updated">
-                    Statistic last updated: {{ date }}
-                </p>
             </div>
+
+            <p class="last-updated">
+                Statistic last updated: {{ date }}
+            </p>
         </div>
     </div>
 </div>
