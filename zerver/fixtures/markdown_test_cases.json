@@ -519,7 +519,6 @@
 	  "name": "tex_inline_prohibited_newline",
 	  "input": "$$x=3\ny=4$$",
 	  "expected_output": "<p>$$x=3<br>\ny=4$$</p>",
-	  "bugdown_matches_marked": true
 	},
     {
       "name": "tex_dollar_smiley",
