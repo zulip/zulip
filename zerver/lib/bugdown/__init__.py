@@ -1289,8 +1289,9 @@ class Bugdown(markdown.Extension):
         # type: (*Any, **Union[bool, int, List[Any]]) -> None
         # define default configs
         self.config = {
-            "realm_filters": [kwargs['realm_filters'], "Realm-specific filters for realm"],
-            "realm": [kwargs['realm'], "Realm name"],
+            "realm_filters": [kwargs['realm_filters'],
+                              "Realm-specific filters for realm_filters_key %s" % (kwargs['realm'],)],
+            "realm": [kwargs['realm'], "Realm id"],
             "code_block_processor_disabled": [kwargs['code_block_processor_disabled'],
                                               "Disabled for email gateway"]
         }
