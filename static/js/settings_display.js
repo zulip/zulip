@@ -6,7 +6,7 @@ exports.set_up = function () {
     $("#display-settings-status").hide();
 
     $("#user_timezone").val(page_params.timezone);
-    $("#emojiset_select").val(page_params.emojiset);
+    $(".emojiset_choice[value=" + page_params.emojiset + "]").prop("checked", true);
 
     $("#default_language_modal [data-dismiss]").click(function () {
         overlays.close_modal('default_language_modal');
@@ -160,7 +160,7 @@ exports.set_up = function () {
         });
     });
 
-    $("#emojiset_select").change(function () {
+    $(".emojiset_choice").click(function () {
         var emojiset = $(this).val();
         var data = {};
         data.emojiset = JSON.stringify(emojiset);
