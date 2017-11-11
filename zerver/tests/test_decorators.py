@@ -36,7 +36,7 @@ from zerver.decorator import (
 )
 from zerver.lib.validator import (
     check_string, check_dict, check_dict_only, check_bool, check_float, check_int, check_list, Validator,
-    check_variable_type, equals, check_none_or, check_url,
+    check_variable_type, equals, check_none_or, check_url, check_short_string
 )
 from zerver.models import \
     get_realm, get_user, UserProfile, Client, Realm, Recipient
@@ -451,6 +451,17 @@ class ValidatorTestCase(TestCase):
 
         x = 4
         self.assertEqual(check_string('x', x), 'x is not a string')
+
+    def test_check_short_string(self):
+        # type: () -> None
+        x = "hello"  # type: Any
+        self.assertEqual(check_short_string('x', x), None)
+
+        x = 'x' * 201
+        self.assertEqual(check_short_string('x', x), 'x is longer than 200.')
+
+        x = 4
+        self.assertEqual(check_short_string('x', x), 'x is not a string')
 
     def test_check_bool(self):
         # type: () -> None
