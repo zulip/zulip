@@ -518,7 +518,7 @@
 	{
 	  "name": "tex_inline_prohibited_newline",
 	  "input": "$$x=3\ny=4$$",
-	  "expected_output": "<p>$$x=3<br>\ny=4$$</p>",
+	  "expected_output": "<p>$$x=3<br>\ny=4$$</p>"
 	},
     {
       "name": "tex_dollar_smiley",
