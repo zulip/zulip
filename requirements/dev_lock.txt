@@ -7,7 +7,7 @@
 #
 # For details, see requirements/README.md .
 #
-git+https://github.com/zulip/fakeldap.git@37bc199e9589c31f4bb5bae1445ad1cd7f84e1ac#egg=fakeldap==0.5.1.zulip1
+git+https://github.com/zulip/fakeldap.git@0.6.1#egg=fakeldap==0.6.1.zulip1
 git+https://github.com/zulip/pyoembed.git@8a4855b5bbf83e18283d6e6e5d8fe401ede14923#egg=pyoembed==0.1.1.zulip2
 git+https://github.com/zulip/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#egg=talon==1.2.10.zulip1
 git+https://github.com/zulip/ultrajson@70ac02bec#egg=ujson==1.35+git
