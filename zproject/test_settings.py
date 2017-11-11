@@ -18,6 +18,9 @@ if os.getenv("EXTERNAL_HOST") is None:
     os.environ["EXTERNAL_HOST"] = "testserver"
 from .settings import *
 
+# Clear out the REALM_HOSTS set in dev_settings.py
+REALM_HOSTS = {}
+
 # Used to clone DBs in backend tests.
 BACKEND_DATABASE_TEMPLATE = 'zulip_test_template'
 
