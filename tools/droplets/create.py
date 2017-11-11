@@ -163,7 +163,7 @@ def delete_existing_records(records: List[digitalocean.Record], record_name: str
     if count:
         print("Deleted {0} existing A records for {1}.zulipdev.org.".format(count, record_name))
 
-def create_dns_record(my_token, username, ip_address="172.31.1.4"):
+def create_dns_record(my_token, username, ip_address):
     # type: (str, str, str) -> None
     domain = digitalocean.Domain(token=my_token, name='zulipdev.org')
     domain.load()
