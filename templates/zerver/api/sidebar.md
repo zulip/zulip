@@ -1,8 +1,8 @@
 ## REST API
 
-* [Installation instructions](/api-new/installation-instructions)
-* [API keys](/api-new/api-keys)
-* [Usage](/api-new/usage)
+* [Installation instructions](/api/installation-instructions)
+* [API keys](/api/api-keys)
+* [Usage](/api/usage)
 
 ## Integrations
 

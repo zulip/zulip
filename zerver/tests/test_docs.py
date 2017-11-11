@@ -53,10 +53,9 @@ class DocPageTest(ZulipTestCase):
         # type: () -> None
         self._test('/api/', 'We hear you like APIs')
         self._test('/api/endpoints/', 'pre-built API bindings for')
-        self._test('/api-new/', 'We hear you like APIs')
-        self._test('/api-new/api-keys', 'you can use its email and API key')
-        self._test('/api-new/installation-instructions', 'No download required!')
-        self._test('/api-new/usage', 'steal away your hearts')
+        self._test('/api/api-keys', 'you can use its email and API key')
+        self._test('/api/installation-instructions', 'No download required!')
+        self._test('/api/usage', 'steal away your hearts')
         self._test('/team/', 'industry veterans')
         self._test('/history/', 'Cambridge, Massachusetts')
         # Test the i18n version of one of these pages.
