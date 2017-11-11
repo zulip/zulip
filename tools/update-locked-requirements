@@ -10,6 +10,7 @@ source /srv/zulip-py3-venv/bin/activate
 compile_requirements () {
     source="$1"
     output="$2"
+    python_version="$3"
 
     pip-compile --output-file "$output" "$source"
 
@@ -19,9 +20,11 @@ compile_requirements () {
     # in the output of pip-compile it's no longer needed.
     sed -i 's/-e //' "$output"
 
-    # pip-tools bug; future, futures are obsolete in python3
-    sed -i '/futures==/d' "$output"
-    sed -i '/future==/d' "$output"
+    if [ "$python_version" != "py2" ]; then
+        # pip-tools bug; future, futures are obsolete in python3
+        sed -i '/futures==/d' "$output"
+        sed -i '/future==/d' "$output"
+    fi
 
     (
         cat <<EOF
