@@ -837,6 +837,40 @@ input[type=checkbox].inline-block {
     white-space: normal;
 }
 
+.emojiset_choices {
+    width: 250px;
+    margin-top: 10px;
+    padding: 0px 10px;
+}
+
+.emojiset_choices .emoji {
+    height: 22px;
+    width: 22px;
+}
+
+.emojiset_choices label {
+    border-bottom: 1px solid #ddd;
+    padding: 8px 0px 10px 0px;
+}
+
+.emojiset_choices label:last-of-type {
+    border-bottom: none;
+}
+
+.emojiset_choices label input[type=radio] {
+    position: relative;
+    top: -2px;
+    margin: 0px 5px 0px 0px;
+}
+
+.emojiset_choices label input[type=radio]:checked + span {
+    font-weight: 600;
+}
+
+.emojiset_choices .right {
+    float: right;
+}
+
 .open-user-form {
     min-width: initial !important;
 }
