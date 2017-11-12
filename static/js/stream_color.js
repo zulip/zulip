@@ -12,9 +12,6 @@ var stream_assignment_colors = ["#76ce90", "#fae589", "#a6c7e5", "#e79ab5",
                                 "#9987e1", "#e4523d", "#c2c2c2", "#4f8de4",
                                 "#c6a8ad", "#e7cc4d", "#c8bebf", "#a47462"];
 
-// Classes which could be returned by get_color_class.
-exports.color_classes = 'dark_background';
-
 exports.pick_color = function (used_colors) {
     var colors = _.shuffle(stream_assignment_colors);
     var used_color_hash = {};
@@ -185,7 +182,7 @@ exports.get_color_class = _.memoize(function (color) {
 
     // Determine if we're past the midpoint between the
     // dark and light label lightness.
-    return (lightness < lightness_threshold) ? 'dark_background' : '';
+    return (lightness < lightness_threshold) ? 'dark_background' : 'light_background';
 });
 
 return exports;

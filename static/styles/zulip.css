@@ -1261,18 +1261,6 @@ a.message_label_clickable:hover {
     opacity: 1;
 }
 
-/* Brighten text because of the dark background */
-.dark_background a,
-.dark_background a:hover,
-a.dark_background:hover,
-.dark_background {
-    color: #ffffff !important;
-}
-
-.dark_background a.message_label_clickable:hover {
-    color: hsl(200, 99%, 60%);
-}
-
 .message_top_line {
     pointer-events: none;
     position: relative;
