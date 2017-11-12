@@ -8,8 +8,20 @@ data system in real-time to all browsers the user may have open.
 
 As you read this, you may find you need to learn about Zulip's
 real-time push system; the
-[real-time push and events](../subsystems/events-system.html) documentation has a
-detailed explanation of how everything works.
+[real-time push and events](../subsystems/events-system.html)
+documentation has a detailed explanation of how everything works. You
+may also find it beneficial to read Zulip's
+[architectural overview](../overview/architecture-overview.html).
+Zulip is a web application built using the
+[Django framework](https://www.djangoproject.com/), and some of the
+processes listed in this tutorial, such as database migrations and
+tests, use Django's tooling.
+
+Zulip's [directory structure](../overview/directory-structure.html) will also be
+helpful to review when creating a new feature. Many aspects of the structure
+will be familiar to Django developers. Visit
+[Django's documentation](https://docs.djangoproject.com/en/1.11/#index-first-steps)
+for more information about how Django projects are typically organized.
 
 ## General Process
 
@@ -50,12 +62,17 @@ organization in Zulip). The following files are involved in the process:
 **Update the model:** The server accesses the underlying database in
 `zerver/models.py`. Add a new field in the appropriate class.
 
-**Create and run the migration:** To create and apply a migration, run:
+**Create and run the migration:** To create and apply a migration, run the
+following commands:
 
 ```
 ./manage.py makemigrations
 ./manage.py migrate
 ```
+
+You can read our
+[database migration documentation](../subsystems/schema-migrations.html)
+to learn more about creating and applying database migrations.
 
 **Test your changes:** Once you've run the migration, flush memcached
 on your development server (`./scripts/setup/flush-memcached`) and then
@@ -197,8 +214,8 @@ below will point out where to write additional code for these cases.
 
 ### Create the migration
 
-Create the migration file: `./manage.py makemigrations`. Make sure to
-commit the generated file to git:
+Create the migration file using the Django `makemigrations` command:
+`./manage.py makemigrations`. Make sure to commit the generated file to git:
 `git add zerver/migrations/NNNN_realm_mandatory_topics.py`
 (NNNN is a number that is equal to the number of migrations.)
 
@@ -208,7 +225,7 @@ is helpful.
 
 ### Test your migration changes
 
-Apply the migration: `./manage.py migrate`
+Apply the migration using Django's `migrate` command: `./manage.py migrate`.
 
 Output:
 ```
@@ -435,7 +452,7 @@ with the new value. E.g., for `authentication_methods`, we created
     # ...
 
 This completes the backend implementation. A great next step is to
-write the [backend tests](../testing/testing-with-django.html).
+write automated backend tests for your new feature.
 
 ### Backend Tests
 
@@ -451,7 +468,12 @@ framework is `do_set_realm_property_test`, and in `test_realm.py`, it is
 `do_test_realm_update_api`.
 
 One still needs to add a test for whether the setting actually
-controls the feature it is supposed to control, however.
+controls the feature it is supposed to control, however (e.g. for this
+example feature, whether sending a message without a topic fails with
+the setting enabled).
+
+Visit Zulip's [Django testing](../testing/testing-with-django.html)
+documentation to learn more about the backend testing framework.
 
 ### Update the front end
 
@@ -606,10 +628,11 @@ server repository, where the source for Zulip's user documentation is
 stored. For information on writing user documentation, see
 [Zulip's general user guide documentation](../subsystems/user-docs.html).
 
-For a more concrete example of writing documentation for a new feature, see
-[an example commit in the Zulip repo](
-https://github.com/zulip/zulip/commit/5b4d9774e02a45e43465b0a28ffb3d9b373c9098)
-that documented a new realm feature, [the current source](
-https://github.com/zulip/zulip/blob/master/templates/zerver/help/only-allow-admins-to-invite-new-users.md),
-and [the final rendered documentation](
-https://chat.zulip.org/help/only-allow-admins-to-invite-new-users).
+For a more concrete example of writing documentation for a new
+feature, see [an example commit in the Zulip repo][example-commit]
+that documented a new realm feature, [the current source][example-current-source],
+and [the final rendered documentation][example-docs].
+
+[example-commit]: https://github.com/zulip/zulip/commit/5b4d9774e02a45e43465b0a28ffb3d9b373c9098
+[example-current-source]: https://github.com/zulip/zulip/blob/master/templates/zerver/help/only-allow-admins-to-invite-new-users.md
+[example-docs]: https://chat.zulip.org/help/only-allow-admins-to-invite-new-users
