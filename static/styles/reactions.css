@@ -28,7 +28,7 @@
 }
 
 .emoji-popover-emoji.reacted.reaction:focus {
-    background: hsl(195,55%,88%);
+    background: hsl(195, 55%, 88%);
     outline: none;
 }
 
