@@ -3,4 +3,4 @@
 # To find them:   git grep 'zulip.readthedocs.io/en/[0-9]'
 ZULIP_VERSION = "1.7.0+git"
 
-PROVISION_VERSION = '12.0'
+PROVISION_VERSION = '12.1'
