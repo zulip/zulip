@@ -19,9 +19,9 @@ fs.readdir('./static/assets/icons', function (err, files) {
     // Generate webfonts
     const options = {
         files: svg,
-        dest: './static/icons/fonts',
+        dest: './static/generated/icons/fonts',
         fontName: 'zulip-icons',
-        cssDest: './static/icons/style.css',
+        cssDest: './static/generated/icons/style.css',
         cssFontsUrl: 'fonts/',
         templateOptions: {
             classPrefix: '',
@@ -34,6 +34,6 @@ fs.readdir('./static/assets/icons', function (err, files) {
             console.error(err);
             process.exit(1);
         }
-        console.log('SUCCESS! Webfonts generated in /static/icons/fonts.');
+        console.log('SUCCESS! Webfonts generated in ./static/generated/icons/fonts.');
     });
 });
