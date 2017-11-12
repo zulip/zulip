@@ -9,7 +9,17 @@ data system in real-time to all browsers the user may have open.
 As you read this, you may find you need to learn about Zulip's
 real-time push system; the
 [real-time push and events](events-system.html) documentation has a
-detailed explanation of how everything works.
+detailed explanation of how everything works. You may also find it
+beneficial to read Zulip's [architectural overview](architecture-overview.html).
+Zulip is a web application built using the [Django framework](https://www.djangoproject.com/),
+and some of the processes listed in this tutorial, such as database migrations and tests,
+use Django's tooling.
+
+Zulip's [directory structure](directory-structure.html) will also be
+helpful to review when creating a new feature. Many aspects of the structure
+will be familiar to Django developers. Visit
+[Django's documentation](https://docs.djangoproject.com/en/1.11/#index-first-steps)
+for more information about how Django projects are typically organized.
 
 ## General Process
 
@@ -50,12 +60,16 @@ organization in Zulip). The following files are involved in the process:
 **Update the model:** The server accesses the underlying database in
 `zerver/models.py`. Add a new field in the appropriate class.
 
-**Create and run the migration:** To create and apply a migration, run:
+**Create and run the migration:** To create and apply a migration, run the
+following commands:
 
 ```
 ./manage.py makemigrations
 ./manage.py migrate
 ```
+
+Zulip uses [Django's migration process](https://docs.djangoproject.com/en/1.11/topics/migrations/)
+for creating and applying database migrations.
 
 **Test your changes:** Once you've run the migration, flush memcached
 on your development server (`./scripts/setup/flush-memcached`) and then
@@ -197,8 +211,8 @@ below will point out where to write additional code for these cases.
 
 ### Create the migration
 
-Create the migration file: `./manage.py makemigrations`. Make sure to
-commit the generated file to git:
+Create the migration file using the Django `makemigrations` command:
+`./manage.py makemigrations`. Make sure to commit the generated file to git:
 `git add zerver/migrations/NNNN_realm_mandatory_topics.py`
 (NNNN is a number that is equal to the number of migrations.)
 
@@ -208,7 +222,7 @@ is helpful.
 
 ### Test your migration changes
 
-Apply the migration: `./manage.py migrate`
+Apply the migration using Django's `migrate` command: `./manage.py migrate`.
 
 Output:
 ```
@@ -452,6 +466,9 @@ framework is `do_set_realm_property_test`, and in `test_realm.py`, it is
 
 One still needs to add a test for whether the setting actually
 controls the feature it is supposed to control, however.
+
+Visit Zulip's [Django testing](testing-with-django.html) documentation
+to learn more about the backend testing framework.
 
 ### Update the front end
 
