@@ -13,6 +13,7 @@ var input_pill = function ($parent) {
     var store = {
         pills: [],
         $parent: $parent,
+        $input: $parent.find(".input"),
         getKeyFunction: function () {},
         validation: function () {},
         lastUpdated: null,
@@ -71,7 +72,7 @@ var input_pill = function ($parent) {
             // if the `rejected` global is now true, it means that the user's
             // created pill was not accepted, and we should no longer proceed.
             if (rejected) {
-                store.$parent.find(".input").addClass("shake");
+                store.$input.addClass("shake");
                 return;
             }
 
@@ -98,6 +99,10 @@ var input_pill = function ($parent) {
         // this appends a pill to the end of the container but before the
         // input block.
         appendPill: function (value, optionalKey) {
+            if (value.match(",")) {
+                funcs.insertManyPills(value);
+                return false;
+            }
             var payload = this.createPillObject(value, optionalKey);
             // if the pill object is undefined, then it means the pill was
             // rejected so we should return out of this.
@@ -106,7 +111,7 @@ var input_pill = function ($parent) {
             }
             var $pill = this.createPillElement(payload);
 
-            store.$parent.find(".input").before($pill);
+            store.$input.before($pill);
         },
 
         // this prepends a pill to the beginning of the container.
@@ -163,7 +168,42 @@ var input_pill = function ($parent) {
                 this.removeLastPill();
             }
 
-            this.clear(store.$parent.find(".input"));
+            this.clear(store.$input[0]);
+        },
+
+        insertManyPills: function (pills) {
+            if (typeof pills === "string") {
+                pills = pills.split(/,/g).map(function (pill) {
+                    return pill.trim();
+                });
+            }
+
+            store.$input.find(".input");
+
+            // this is an array to push all the errored values to, so it's drafts
+            // of pills for the user to fix.
+            var drafts = [];
+
+            pills.forEach(function (pill) {
+                // if this returns `false`, it erroed and we should push it to
+                // the draft pills.
+                if (funcs.appendPill(pill) === false) {
+                    drafts.push(pill);
+                }
+            });
+
+            store.$input.text(drafts.join(", "));
+            // when using the `text` insertion feature with jQuery the caret is
+            // placed at the beginning of the input field, so this moves it to
+            // the end.
+            ui_util.place_caret_at_end(store.$input[0]);
+
+            // this sends a flag that the operation wasn't completely successful,
+            // which in this case is defined as some of the pills not autofilling
+            // correclty.
+            if (drafts.length > 0) {
+                return false;
+            }
         },
 
         // returns all data of the pills exclusive of their elements.
@@ -291,6 +331,20 @@ var input_pill = function ($parent) {
         // we want to remove the class when finished automatically.
         store.$parent.on("animationend", ".input", function () {
             $(this).removeClass("shake");
+        });
+
+        // replace formatted input with plaintext to allow for sane copy-paste
+        // actions.
+        store.$parent.on("paste", ".input", function (e) {
+            e.preventDefault();
+
+            // get text representation of clipboard
+            var text = (e.originalEvent || e).clipboardData.getData('text/plain');
+
+            // insert text manually
+            document.execCommand("insertHTML", false, text);
+
+            funcs.insertManyPills(store.$input.text().trim());
         });
 
         // when the "×" is clicked on a pill, it should delete that pill and then
