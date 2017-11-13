@@ -299,6 +299,7 @@ body {
 .markdown ol > li > p:not(:first-child) {
     padding-left: 30px;
 }
+
 .markdown ul > li:before {
     content: none;
 }
@@ -597,7 +598,6 @@ input.text-error {
     position: relative;
     line-height: 0.8;
 }
-
 
 .header-main .logo .light {
     display: inline-block;
@@ -1758,7 +1758,6 @@ input.new-organization-button {
     .footer-navigation {
         margin-left: 0px;
     }
-
 }
 
 @media (max-width: 815px) {
@@ -1767,6 +1766,7 @@ input.new-organization-button {
         margin-left: auto;
         margin-right: auto;
     }
+
     .footer section {
         width: calc(50% - 40px);
     }
@@ -1916,7 +1916,6 @@ input.new-organization-button {
         padding-left: 6px;
         padding-right: 6px;
     }
-
 }
 
 @media (max-width: 475px) {

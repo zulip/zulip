@@ -9,8 +9,6 @@ try:
         CssParserException,
         CssSection,
         parse,
-        handle_prefluff,
-        handle_postfluff
     )
 except ImportError:
     print('ERROR!!! You need to run this via tools/test-tools.')
@@ -25,7 +23,7 @@ class ParserTestHappyPath(unittest.TestCase):
             }'''
         my_css = my_selector + ' ' + my_block
         res = parse(my_css)
-        self.assertEqual(res.text(), 'li.foo {\n    color: red;\n}')
+        self.assertEqual(res.text().strip(), 'li.foo {\n    color: red;\n}')
         section = cast(CssSection, res.sections[0])
         block = section.declaration_block
         self.assertEqual(block.text().strip(), '{\n    color: red;\n}')
@@ -54,11 +52,11 @@ class ParserTestHappyPath(unittest.TestCase):
             p { color: red }
         '''
 
-        reformatted_css = '\np {\n    color: red;\n}\n'
+        reformatted_css = 'p {\n    color: red;\n}'
 
         res = parse(my_css)
 
-        self.assertEqual(res.text(), reformatted_css)
+        self.assertEqual(res.text().strip(), reformatted_css)
 
         section = cast(CssSection, res.sections[0])
 
@@ -86,26 +84,6 @@ class ParserTestHappyPath(unittest.TestCase):
         selectors = section.selector_list.selectors
         self.assertEqual(len(selectors), 3)
 
-    def test_comment_at_end(self):
-        # type: () -> None
-        '''
-        This test verifies the current behavior, which is to
-        attach comments to the preceding rule, but we should
-        probably change it so the comments gets attached to
-        the next block, if possible.
-        '''
-        my_css = '''
-            p {
-                color: black;
-            }
-
-            /* comment at the end of the text */
-            '''
-        res = parse(my_css)
-        self.assertEqual(len(res.sections), 1)
-        section = res.sections[0]
-        self.assertIn('comment at the end', section.post_fluff)
-
     def test_media_block(self):
         # type: () -> None
         my_css = '''
@@ -116,39 +94,8 @@ class ParserTestHappyPath(unittest.TestCase):
             }'''
         res = parse(my_css)
         self.assertEqual(len(res.sections), 1)
-        self.assertEqual(res.text(), '\n            @media (max-width: 300px) {\n    h5 {\n        margin: 0;\n    }\n}')
-
-    def test_handle_prefluff(self):
-        # type: () -> None
-        PREFLUFF = '  \n  '
-        PREFLUFF1 = ' '
-        PREFLUFF2 = ' /* some comment \nhere */'
-        PREFLUFF3 = '\n /* some comment \nhere */'
-        self.assertEqual(handle_prefluff(PREFLUFF), '\n')
-        self.assertEqual(handle_prefluff(PREFLUFF, True), '\n    ')
-        self.assertEqual(handle_prefluff(PREFLUFF1), '')
-        self.assertEqual(handle_prefluff(PREFLUFF1, True), '\n    ')
-        self.assertEqual(handle_prefluff(PREFLUFF2), '/* some comment\n   here */\n')
-        self.assertEqual(handle_prefluff(PREFLUFF3, True), '\n    /* some comment\n       here */\n    ')
-
-    def test_handle_postfluff(self):
-        # type: () -> None
-        POSTFLUFF = '/* Comment Here */'
-        POSTFLUFF1 = '/* Comment \nHere */'
-        POSTFLUFF2 = ' '
-        POSTFLUFF3 = '\n /* some comment \nhere */'
-        self.assertEqual(handle_postfluff(POSTFLUFF), '/* Comment Here */\n')
-        self.assertEqual(handle_postfluff(POSTFLUFF, space_after_first_line=True), ' /* Comment Here */\n')
-        self.assertEqual(handle_postfluff(POSTFLUFF, indent=True, space_after_first_line=True), ' /* Comment Here */\n')
-        self.assertEqual(handle_postfluff(POSTFLUFF1), '/* Comment\n   Here */')
-        self.assertEqual(handle_postfluff(POSTFLUFF1, space_after_first_line=True), ' /* Comment\n   Here */\n')
-        self.assertEqual(handle_postfluff(POSTFLUFF1, indent=True, space_after_first_line=True), ' /* Comment\n       Here */\n')
-        self.assertEqual(handle_postfluff(POSTFLUFF2), '')
-        self.assertEqual(handle_postfluff(POSTFLUFF2, space_after_first_line=True), '')
-        self.assertEqual(handle_postfluff(POSTFLUFF2, indent=True, space_after_first_line=True), '\n')
-        self.assertEqual(handle_postfluff(POSTFLUFF3), '\n/* some comment\n   here */')
-        self.assertEqual(handle_postfluff(POSTFLUFF3, space_after_first_line=True), '\n/* some comment\n   here */\n')
-        self.assertEqual(handle_postfluff(POSTFLUFF3, indent=True, space_after_first_line=True), '\n    /* some comment\n       here */\n')
+        expected = '@media (max-width: 300px) {\n    h5 {\n        margin: 0;\n    }\n}'
+        self.assertEqual(res.text().strip(), expected)
 
 class ParserTestSadPath(unittest.TestCase):
     '''

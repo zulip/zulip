@@ -706,7 +706,6 @@ nav ul li.active::after {
     background: linear-gradient(0deg, #fff 0%, transparent 40%);
 }
 
-
 .portico-landing.hello .hero .waves {
     position: absolute;
 
@@ -759,9 +758,11 @@ nav ul li.active::after {
     0% {
         transform: rotate(0);
     }
+
     50% {
         transform: rotate(180deg);
     }
+
     100% {
         transform: rotate(360deg);
     }
@@ -771,9 +772,11 @@ nav ul li.active::after {
     0% {
         transform: rotate(0);
     }
+
     50% {
         transform: rotate(-180deg);
     }
+
     100% {
         transform: rotate(-360deg);
     }
@@ -1335,7 +1338,6 @@ nav ul li.active::after {
     font-weight: 400;
 }
 
-
 .portico-landing.hello .testimonials blockquote {
     padding: 0px;
 
@@ -1626,6 +1628,7 @@ nav ul li.active::after {
 .portico-landing.apps {
     padding-top: 0px;
 }
+
 .portico-landing.apps .main,
 .portico-landing.features-app .main {
     background-color: #fff;
@@ -1886,7 +1889,6 @@ nav ul li.active::after {
     margin: 0px 10px;
     text-align: left;
 }
-
 
 .portico-landing.hello .apps .screen.ios {
     width: 200px;
@@ -2194,7 +2196,6 @@ nav ul li.active::after {
     color: hsla(216, 23%, 13%, 0.5);
 }
 
-
 /* -- integration instructions -- */
 
 .portico-landing.integrations #integration-instructions-group {
@@ -2479,7 +2480,6 @@ nav ul li.active::after {
     top: -220px;
 }
 
-
 .pricing-overlay.pricing-model .pricing-container {
     padding: 50px;
     text-align: left;
@@ -2568,9 +2568,11 @@ nav ul li.active::after {
     0% {
         box-shadow: 0px 0px 0px rgba(106, 201, 185, 0);
     }
+
     50% {
         box-shadow: 0px 0px 25px rgba(106, 201, 185, 0.8);
     }
+
     100% {
         box-shadow: 0px 0px 0px rgba(106, 201, 185, 0);
     }
@@ -3061,7 +3063,6 @@ nav ul li.active::after {
         min-height: 0px;
     }
 
-
     .portico-landing.apps .other-apps {
         padding: 50px 5px 120px 5px;
     }
@@ -3334,7 +3335,6 @@ nav ul li.active::after {
     .gradients .gradient.sunburst {
         background: linear-gradient(5deg, transparent 20%, #e8d275 80%);
     }
-
 }
 
 @media (max-width: 375px) {

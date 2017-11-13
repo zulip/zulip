@@ -38,6 +38,17 @@ def find_end_brace(tokens, i, end):
 
     return i
 
+def get_whitespace(tokens, i, end):
+    # type: (List[Token], int, int) -> Tuple[int, str]
+
+    text = ''
+    while (i < end) and ws(tokens[i].s[0]):
+        s = tokens[i].s
+        text += s
+        i += 1
+
+    return i, text
+
 def get_whitespace_and_comments(tokens, i, end, line=None):
     # type: (List[Token], int, int, int) -> Tuple[int, str]
 
@@ -65,6 +76,43 @@ def get_whitespace_and_comments(tokens, i, end, line=None):
 
     return i, text
 
+def indent_count(s):
+    # type: (str) -> int
+    return len(s) - len(s.lstrip())
+
+def dedent_block(s):
+    # type: (str) -> (str)
+    s = s.lstrip()
+    lines = s.split('\n')
+    non_blank_lines = [line for line in lines if line]
+    if len(non_blank_lines) <= 1:
+        return s
+    min_indent = min(indent_count(line) for line in lines[1:])
+    lines = [lines[0]] + [line[min_indent:] for line in lines[1:]]
+    return '\n'.join(lines)
+
+def indent_block(s):
+    # type: (str) -> (str)
+    lines = s.split('\n')
+    lines = [
+        '    ' + line if line else ''
+        for line in lines
+    ]
+    return '\n'.join(lines)
+
+def ltrim(s):
+    # type: (str) -> (str)
+    content = s.lstrip()
+    padding = s[:-1 * len(content)]
+    s = padding.replace(' ', '')[1:] + content
+    return s
+
+def rtrim(s):
+    # type: (str) -> (str)
+    content = s.rstrip()
+    padding = s[len(content):]
+    s = content + padding.replace(' ', '')[:-1]
+    return s
 
 ############### Begin parsing here
 
@@ -82,7 +130,7 @@ def parse_sections(tokens, start, end):
         i = find_end_brace(tokens, start, end)
 
         section_end = i + 1
-        i, post_fluff = get_whitespace_and_comments(tokens, i+1, end)
+        i, post_fluff = get_whitespace(tokens, i+1, end)
 
         section = parse_section(
             tokens=tokens,
@@ -228,7 +276,7 @@ def parse_declaration(tokens, start, end):
     semicolon = (i < end) and (tokens[i].s == ';')
     if semicolon:
         i += 1
-    _, post_fluff = get_whitespace_and_comments(tokens, i, end)
+    _, post_fluff = get_whitespace_and_comments(tokens, i, end, line=tokens[i].line)
     declaration = CssDeclaration(
         tokens=tokens,
         pre_fluff=pre_fluff,
@@ -254,100 +302,6 @@ def parse_value(tokens, start, end):
         post_fluff=post_fluff,
     )
 
-def handle_prefluff(pre_fluff, indent=False):
-    # type: (str, bool) -> str
-    pre_fluff_lines = pre_fluff.split('\n')
-    formatted_pre_fluff_lines = []
-    comment_indent = ''
-    general_indent = ''
-    if indent:
-        general_indent = '    '
-    for i, ln in enumerate(pre_fluff_lines):
-        line_indent = ''
-        if ln.strip() != '':
-            if not i:
-                line_indent = general_indent
-                comment_indent = '   '
-            else:
-                if comment_indent:
-                    if ('*/' in ln or '*' in ln) and (ln.strip()[:2] in ('*/', '* ', '*')):
-                        line_indent = general_indent
-                        if '*/' in ln:
-                            comment_indent = ''
-                    else:
-                        line_indent = general_indent + comment_indent
-                else:
-                    line_indent = general_indent
-                    comment_indent = '   '
-        elif len(pre_fluff_lines) == 1 and indent and ln != '':
-            line_indent = ' '
-        formatted_pre_fluff_lines.append(line_indent + ln.strip())
-    if formatted_pre_fluff_lines[-1] != '':
-        if formatted_pre_fluff_lines[-1].strip() == '' and indent:
-            formatted_pre_fluff_lines[-1] = ''
-        formatted_pre_fluff_lines.append('')
-    pre_fluff = '\n'.join(formatted_pre_fluff_lines)
-    res = ''
-    if indent:
-        if '\n' in pre_fluff:
-            res = pre_fluff + '    '
-        elif pre_fluff == '':
-            res = '    '
-        else:
-            res = pre_fluff.rstrip() + ' '
-    else:
-        res = pre_fluff
-
-    return res
-
-def handle_postfluff(post_fluff, indent=False, space_after_first_line=False):
-    # type: (str, bool, bool) -> str
-    post_fluff_lines = post_fluff.split('\n')
-    formatted_post_fluff_lines = []
-    comment_indent = ''
-    general_indent = ''
-    if indent:
-        general_indent = '    '
-    for i, ln in enumerate(post_fluff_lines):
-        line_indent = ''
-        if ln.strip() != '':
-            if i:
-                if comment_indent:
-                    if ('*/' in ln or '*' in ln) and (ln.strip()[:2] in ('*/', '* ', '*')):
-                        line_indent = general_indent
-                        if '*/' in ln:
-                            comment_indent = ''
-                    else:
-                        line_indent = general_indent + comment_indent
-                else:
-                    line_indent = general_indent
-                    comment_indent = '   '
-            elif indent and not i and len(post_fluff_lines) > 2:
-                formatted_post_fluff_lines.append('')
-                line_indent = general_indent
-                comment_indent = '   '
-            elif space_after_first_line:
-                line_indent = ' '
-                if not i:
-                    comment_indent = '   '
-            elif not i:
-                comment_indent = '   '
-        formatted_post_fluff_lines.append(line_indent + ln.strip())
-    if len(formatted_post_fluff_lines) == 1 and not space_after_first_line:
-        if formatted_post_fluff_lines[-1].strip() == '':
-            if formatted_post_fluff_lines[-1] != '':
-                formatted_post_fluff_lines[-1] = ' '
-        else:
-            formatted_post_fluff_lines.append('')
-    elif formatted_post_fluff_lines[-1].strip() == '':
-        formatted_post_fluff_lines[-1] = ''
-        if len(formatted_post_fluff_lines) == 1 and indent:
-            formatted_post_fluff_lines.append('')
-    elif space_after_first_line:
-        formatted_post_fluff_lines.append('')
-    post_fluff = '\n'.join(formatted_post_fluff_lines)
-    return post_fluff
-
 #### Begin CSS classes here
 
 class CssSectionList:
@@ -358,7 +312,7 @@ class CssSectionList:
 
     def text(self):
         # type: () -> str
-        res = ''.join(section.text() for section in self.sections)
+        res = '\n\n'.join(section.text().strip() for section in self.sections) + '\n'
         return res
 
 class CssNestedSection:
@@ -373,19 +327,12 @@ class CssNestedSection:
     def text(self):
         # type: () -> str
         res = ''
-        res += self.pre_fluff
-        res += self.selector_list.text()
-        res += ' {'
-        section_list_lines = self.section_list.text().split('\n')
-        formatted_section_list = []
-        for ln in section_list_lines:
-            if ln.strip() == '':
-                formatted_section_list.append('')
-            else:
-                formatted_section_list.append('    ' + ln)
-        res += '\n'.join(formatted_section_list)
-        res += '}'
-        res += self.post_fluff
+        res += ltrim(self.pre_fluff)
+        res += self.selector_list.text().strip()
+        res += ' {\n'
+        res += indent_block(self.section_list.text().strip())
+        res += '\n}'
+        res += rtrim(self.post_fluff)
         return res
 
 class CssSection:
@@ -400,11 +347,14 @@ class CssSection:
     def text(self):
         # type: () -> str
         res = ''
-        res += handle_prefluff(self.pre_fluff)
-        res += self.selector_list.text()
+        res += rtrim(dedent_block(self.pre_fluff))
+        if res:
+            res += '\n'
+        res += self.selector_list.text().strip()
         res += ' '
         res += self.declaration_block.text()
-        res += handle_postfluff(self.post_fluff, space_after_first_line=True)
+        res += '\n'
+        res += rtrim(self.post_fluff)
         return res
 
 class CssSelectorList:
@@ -438,9 +388,9 @@ class CssDeclarationBlock:
 
     def text(self):
         # type: () -> str
-        res = '{'
+        res = '{\n'
         for declaration in self.declarations:
-            res += declaration.text()
+            res += '    ' + declaration.text()
         res += '}'
         return res
 
@@ -457,18 +407,23 @@ class CssDeclaration:
     def text(self):
         # type: () -> str
         res = ''
-        res += handle_prefluff(self.pre_fluff, True)
+        res += ltrim(self.pre_fluff).rstrip()
+        if res:
+            res += '\n    '
         res += self.css_property
         res += ':'
-        value_text = self.css_value.text()
-        if '\n' in value_text:
-            # gradient values can be multi-line
-            res += value_text.rstrip()
+        value_text = self.css_value.text().rstrip()
+        if value_text.startswith('\n'):
+            res += value_text
+        elif '\n' in value_text:
+            res += ' '
+            res += ltrim(value_text)
         else:
             res += ' '
             res += value_text.strip()
         res += ';'
-        res += handle_postfluff(self.post_fluff, True, True)
+        res += rtrim(self.post_fluff)
+        res += '\n'
         return res
 
 class CssValue:

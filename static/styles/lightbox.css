@@ -23,17 +23,17 @@
     max-height: 100%;
     max-width: 100%;
 
-    background-color: #FFF;
+    background-color: hsl(0, 0%, 100%);
     background-image:
-      -moz-linear-gradient(45deg, hsl(0, 0%, 80%) 25%, transparent 25%),
-      -moz-linear-gradient(-45deg, hsl(0, 0%, 80%) 25%, transparent 25%),
-      -moz-linear-gradient(45deg, transparent 75%, hsl(0, 0%, 0%) 75%),
-      -moz-linear-gradient(-45deg, transparent 75%, hsl(0, 0%, 0%) 75%);
+        -moz-linear-gradient(45deg, hsl(0, 0%, 80%) 25%, transparent 25%),
+        -moz-linear-gradient(-45deg, hsl(0, 0%, 80%) 25%, transparent 25%),
+        -moz-linear-gradient(45deg, transparent 75%, hsl(0, 0%, 0%) 75%),
+        -moz-linear-gradient(-45deg, transparent 75%, hsl(0, 0%, 0%) 75%);
     background-image:
-      -webkit-gradient(linear, 0 100%, 100% 0, color-stop(.25, hsl(0, 0%, 80%)), color-stop(.25, transparent)),
-      -webkit-gradient(linear, 0 0, 100% 100%, color-stop(.25, hsl(0, 0%, 80%)), color-stop(.25, transparent)),
-      -webkit-gradient(linear, 0 100%, 100% 0, color-stop(.75, transparent), color-stop(.75, hsl(0, 0%, 80%))),
-      -webkit-gradient(linear, 0 0, 100% 100%, color-stop(.75, transparent), color-stop(.75, hsl(0, 0%, 80%)));
+        -webkit-gradient(linear, 0 100%, 100% 0, color-stop(.25, hsl(0, 0%, 80%)), color-stop(.25, transparent)),
+        -webkit-gradient(linear, 0 0, 100% 100%, color-stop(.25, hsl(0, 0%, 80%)), color-stop(.25, transparent)),
+        -webkit-gradient(linear, 0 100%, 100% 0, color-stop(.75, transparent), color-stop(.75, hsl(0, 0%, 80%))),
+        -webkit-gradient(linear, 0 0, 100% 100%, color-stop(.75, transparent), color-stop(.75, hsl(0, 0%, 80%)));
 
     -moz-background-size: 20px 20px;
     background-size: 20px 20px;
@@ -96,7 +96,7 @@
     border: 1px solid rgba(255, 255, 255, 0.6);
 
     text-align: center;
-    color: #fff;
+    color: hsl(0, 0%, 100%);
 
     cursor: pointer;
 
@@ -104,7 +104,7 @@
 }
 
 #lightbox_overlay .image-actions .lightbox-canvas-trigger:hover {
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
     border: 1px solid #fff;
     color: hsl(227, 40%, 16%);
     opacity: 1;
@@ -162,7 +162,7 @@
     margin-bottom: 15px;
 
     font-size: 1.3rem;
-    color: #fff;
+    color: hsl(0, 0%, 100%);
 }
 
 #lightbox_overlay .image-description .title {
@@ -216,7 +216,7 @@
     margin-top: 25px;
     padding: 5px 10px;
 
-    color: #fff;
+    color: hsl(0, 0%, 100%);
     font-size: 1.8em;
     font-weight: 100;
 
@@ -268,13 +268,13 @@
     padding: 4px 10px;
     border: 1px solid hsla(0, 0%, 100%, 0.6);
     background-color: transparent;
-    color: #fff;
+    color: hsl(0, 0%, 100%);
     border-radius: 4px;
 }
 
 .image-actions .button:hover {
-    background-color: #fff;
-    border-color: #fff;
+    background-color: hsl(0, 0%, 100%);
+    border-color: hsl(0, 0%, 100%);
     color: hsl(227, 40%, 16%);
 }
 

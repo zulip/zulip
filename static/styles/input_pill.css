@@ -17,7 +17,7 @@
     padding: 0px 18px 0px 2px;
     margin: 1px 1px;
 
-    color: #5db7b3;
+    color: hsl(177, 38%, 54%);
     border: 1px solid #b2e4e2;
 
     border-radius: 4px;
@@ -26,7 +26,7 @@
 }
 
 .pill-container .pill:focus {
-    color: #b85e5e;
+    color: hsl(0, 38%, 54%);
     border: 1px solid #e4b2b2;
 
     outline: none;
@@ -74,15 +74,15 @@
 }
 
 .pm_recipient .pill-container .pill {
-    color: #fff;
+    color: hsl(0, 0%, 100%);
     border: 1px solid #36a29b;
-    background: #51c1af;
+    background: hsl(170, 47%, 53%);
     font-weight: 600;
 }
 
 .pm_recipient .pill-container .pill:focus {
     border: 1px solid #108179;
-    background: #36a29b;
+    background: hsl(176, 49%, 42%);
 }
 
 .pm_recipient .pill-container .input {

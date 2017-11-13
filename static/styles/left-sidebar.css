@@ -188,7 +188,7 @@ li.hidden-filter {
     background: hsl(105, 2%, 50%);
     padding: 1px 4px;
     border-radius: 0px;
-    color: #ffffff;
+    color: hsl(0, 0%, 100%);
     font-size: 12px;
     font-weight: normal;
     letter-spacing: 0.6px;
@@ -228,7 +228,7 @@ li.hidden-filter {
     top: 4px;
     padding: 1px 4px 1px 4px;
     background: hsl(107, 5%, 66%);
-    color: #ffffff;
+    color: hsl(0, 0%, 100%);
     border-radius: 1px;
     font-size: 12px;
     font-weight: normal;

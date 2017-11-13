@@ -418,7 +418,7 @@ form#add_new_subscription {
 .subscriptions-container {
     position: relative;
     height: 95%;
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
     border-radius: 4px;
     padding: 0px;
     width: 97%;
@@ -676,9 +676,9 @@ form#add_new_subscription {
     width: 35px;
     height: 35px;
     margin-right: 8px;
-    background-color: purple;
+    background-color: hsl(300, 100%, 25%);
     border-radius: 4px;
-    color: #fff;
+    color: hsl(0, 0%, 100%);
 }
 
 .stream-row .icon .symbol {

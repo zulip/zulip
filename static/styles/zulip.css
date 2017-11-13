@@ -19,7 +19,7 @@ body {
 /* Common background color */
 body,
 #tab_bar_underpadding {
-    background-color: #ffffff;
+    background-color: hsl(0, 0%, 100%);
     -webkit-transition: background-color 200ms linear;
     -moz-transition: background-color 200ms linear;
     -o-transition: background-color 200ms linear;
@@ -133,9 +133,11 @@ p.n-margin {
     0% {
         box-shadow: 0px 0px 30px hsla(0, 0%, 0%, 0.35);
     }
+
     50% {
         box-shadow: 0px 0px 30px hsla(0, 0%, 0%, 0.15);
     }
+
     100% {
         box-shadow: 0px 0px 30px hsla(0, 0%, 0%, 0.35);
     }
@@ -176,7 +178,7 @@ p.n-margin {
     position: fixed;
     z-index: 102; /* Needs to be higher than .alert-bar-container */
     width: 100%;
-    background: #ffffff;
+    background: hsl(0, 0%, 100%);
     border-bottom: 1px solid hsl(0, 0%, 85%);
     height: 40px;
 }
@@ -197,11 +199,11 @@ p.n-margin {
 
     text-align: center;
     text-shadow: none;
-    color: #fff;
+    color: hsl(0, 0%, 100%);
 }
 
 #panels .alert.alert-info {
-    background: #54c0ae;
+    background: hsl(170, 46%, 54%);
 }
 
 #panels .alert .close {
@@ -209,7 +211,7 @@ p.n-margin {
 }
 
 #panels .alert .alert-link {
-    color: #c6fff5;
+    color: hsl(169, 100%, 88%);
     font-weight: 600;
 }
 
@@ -284,7 +286,7 @@ p.n-margin {
 
 .app-main .column-middle {
     min-height: 100%;
-    background-color: #ffffff;
+    background-color: hsl(0, 0%, 100%);
 }
 
 .column-middle {
@@ -299,7 +301,6 @@ input {
 }
 
 /* Override Bootstrap's fixed sizes for various elements */
-
 textarea,
 label {
     font-size: inherit;
@@ -307,7 +308,6 @@ label {
 }
 
 /* List of text-like input types taken from Bootstrap */
-
 input[type="text"],
 input[type="password"],
 input[type="datetime"],
@@ -340,7 +340,7 @@ li,
 
 .copy_message,
 .copy_message:focus {
-    background-color: white;
+    background-color: hsl(0, 0%, 100%);
     height: 20px;
     width: 15px;
     padding: 5px 10px;
@@ -358,7 +358,7 @@ li,
 }
 
 .copy_message:hover svg path {
-    fill: black;
+    fill: hsl(0, 0%, 0%);
 }
 
 .btn-large {
@@ -370,7 +370,7 @@ li,
     font-size: 120%;
     font-weight: 900;
     text-shadow: none;
-    color: #ffffff;
+    color: hsl(0, 0%, 100%);
     font-variant: small-caps;
     letter-spacing: 2px;
     line-height: 18px;
@@ -427,7 +427,7 @@ code {
 .message_content code {
     white-space: pre-wrap;
     padding: 0px 4px;
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
 }
 
 /* This ensures bulleted lists are nicely centered in 1-line messages */
@@ -544,7 +544,7 @@ a:hover code {
 }
 
 .tooltip .tooltip-inner {
-    background-color: rgba(20, 20, 20, 0.8);
+    background-color: hsla(0, 0%, 7%, 0.8);
     padding: 3px 5px;
 }
 
@@ -597,11 +597,11 @@ li.actual-dropdown-menu i {
 td.pointer {
     vertical-align: top;
     padding-top: 10px;
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
 }
 
 .new_messages {
-    background-color: lightblue;
+    background-color: hsl(194, 53%, 79%);
 }
 
 .new_messages,
@@ -680,7 +680,7 @@ td.pointer {
     right: -110px;
     font-size: 14px;
     color: hsl(170, 47%, 54%);
-    background-color: white;
+    background-color: hsl(0, 0%, 100%);
     z-index: 999;
     padding-left: 20px;
     padding-right: 40px;
@@ -732,7 +732,7 @@ td.pointer {
     vertical-align: top;
     text-align: left;
     padding: 0px;
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
     position: relative;
 }
 
@@ -900,6 +900,7 @@ td.pointer {
     from {
         -webkit-transform: rotate(0deg);
     }
+
     to {
         -webkit-transform: rotate(359deg);
     }
@@ -909,6 +910,7 @@ td.pointer {
     from {
         -moz-transform: rotate(0deg);
     }
+
     to {
         -moz-transform: rotate(359deg);
     }
@@ -917,7 +919,9 @@ td.pointer {
 @-ms-keyframes rotate {
     from {
         -ms-transform: rotate(0deg);
+
     }
+
     to {
         -ms-transform: rotate(359deg);
     }
@@ -927,6 +931,7 @@ td.pointer {
     from {
         -o-transform: rotate(0deg);
     }
+
     to {
         -o-transform: rotate(359deg);
     }
@@ -936,6 +941,7 @@ td.pointer {
     from {
         transform: rotate(0deg);
     }
+
     to {
         transform: rotate(359deg);
     }
@@ -945,6 +951,7 @@ td.pointer {
     0% {
         opacity: 0;
     }
+
     100% {
         opacity: 1;
     }
@@ -954,6 +961,7 @@ td.pointer {
     0% {
         opacity: 0;
     }
+
     100% {
         opacity: 1;
     }
@@ -963,6 +971,7 @@ td.pointer {
     0% {
         opacity: 0;
     }
+
     100% {
         opacity: 1;
     }
@@ -972,6 +981,7 @@ td.pointer {
     0% {
         transform: translateX(-10px);
     }
+
     100% {
         transform: translateX(0px);
     }
@@ -981,6 +991,7 @@ td.pointer {
     0% {
         transform: translateX(-10px);
     }
+
     100% {
         transform: translateX(0px);
     }
@@ -990,6 +1001,7 @@ td.pointer {
     0% {
         transform: translateX(-10px);
     }
+
     100% {
         transform: translateX(0px);
     }
@@ -997,7 +1009,7 @@ td.pointer {
 
 .messagebox-bottom {
     height: 3px;
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
     border-radius: 0px 0px 3px 0px;
     /* box-shadow: 0px 2px 2px -1px hsl(0, 0%, 80%); */
     border: 1px solid hsl(166, 26%, 80%);
@@ -1032,7 +1044,7 @@ td.pointer {
    private messages, mentions, and unread messages */
 
 .messagebox {
-    background-color: #ffffff;
+    background-color: hsl(0, 0%, 100%);
     position: relative;
 }
 
@@ -1077,7 +1089,7 @@ td.pointer {
     background: hsl(107, 74%, 29%);
     width: 3px;
     height: 100%;
-    box-shadow: inset 0px -1px 0px 0px #ffffff;
+    box-shadow: inset 0px -1px 0px 0px hsl(0, 0%, 100%);
 }
 
 .last_message .unread-marker-fill {
@@ -1188,7 +1200,7 @@ td.pointer {
 
 .message_failed {
     font-weight: bold;
-    color: red;
+    color: hsl(0, 100%, 50%);
     position: relative;
 }
 
@@ -1418,6 +1430,7 @@ div.focused_table {
     max-height: 8.5em;
     overflow: hidden;
 }
+
 .message_content.collapsed {
     max-height: 0em;
     overflow: hidden;
@@ -1599,7 +1612,7 @@ blockquote p {
 }
 
 #tab_list li.private_message a {
-    color: #ffffff;
+    color: hsl(0, 0%, 100%);
 }
 
 #tab_list li.inactive:before {
@@ -1645,7 +1658,7 @@ blockquote p {
     border-bottom-color: hsla(0, 0%, 0%, 0.0);
     background-color: hsl(0, 0%, 27%);
     border-left-color: hsl(0, 0%, 27%);
-    color: #ffffff;
+    color: hsl(0, 0%, 100%);
     border-width: 0px;
 }
 
@@ -1659,7 +1672,6 @@ blockquote p {
     color: hsl(0, 0%, 52%);
     padding-right: 2px;
 }
-
 
 #tab_list .root a:hover {
     color: hsl(0, 0%, 0%);
@@ -1724,7 +1736,7 @@ blockquote p {
     font-size: 9px;
     z-index: 15;
     font-weight: normal;
-    color: #ffffff;
+    color: hsl(0, 0%, 100%);
 }
 
 .nav .dropdown-menu {
@@ -1792,7 +1804,6 @@ blockquote p {
     z-index: 5;
 }
 
-
 nav .column-left {
     text-align: center;
 }
@@ -1852,7 +1863,6 @@ nav a .no-style {
     font-weight: 300;
     line-height: 27px;
 }
-
 
 #search_query:focus {
     box-shadow: inset 0px 0px 0px 2px hsl(204, 20%, 74%);
@@ -2074,7 +2084,7 @@ div.floating_recipient {
 }
 
 .tex-error {
-    color: gray;
+    color: hsl(0, 0%, 50%);
 }
 
 .hotkeys_table {
@@ -2099,8 +2109,9 @@ div.floating_recipient {
 
 .operator_value {
     font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
-    color: maroon;
+    color: hsl(0, 100%, 25%);
 }
+
 .operator {
     font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
 }
@@ -2145,7 +2156,7 @@ div.floating_recipient {
 
 .table-striped thead th {
     background-color: hsl(0, 0%, 27%);
-    color: white;
+    color: hsl(0, 0%, 100%);
 }
 
 .help-table {
@@ -2197,7 +2208,7 @@ div.floating_recipient {
 button.primary {
     background-color: hsl(207, 21%, 62%);
     padding: 2px;
-    color: #fff;
+    color: hsl(0, 0%, 100%);
     border: none;
     border-radius: 0px;
 }
@@ -2268,7 +2279,7 @@ button.topic_edit_cancel {
 #invite-user .overlay-content {
     position: relative;
     width: 500px;
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
     border-radius: 4px;
 }
 
@@ -2473,10 +2484,12 @@ button.topic_edit_cancel {
 #message_edit_form {
     margin-bottom: 10px;
 }
+
 #message_edit_form .edit-controls {
     margin-left: 0px;
     margin-top: 0px;
 }
+
 #message_edit_form textarea {
     width: 100%;
     min-width: 206px;
@@ -2484,6 +2497,7 @@ button.topic_edit_cancel {
     -moz-box-sizing: border-box;
     box-sizing: border-box;
 }
+
 #message_edit_form .control-group.no-margin {
     margin-bottom: 0px;
 }
