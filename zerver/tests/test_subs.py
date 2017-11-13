@@ -65,6 +65,11 @@ from zerver.views.streams import (
     compose_views
 )
 
+from zerver.lib.message import (
+    aggregate_unread_data,
+    get_raw_unread_data,
+)
+
 from django.http import HttpResponse
 import mock
 import random
@@ -615,7 +620,7 @@ class StreamAdminTest(ZulipTestCase):
         those you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=14, is_admin=True, is_subbed=True, invite_only=False,
+            query_count=21, is_admin=True, is_subbed=True, invite_only=False,
             other_user_subbed=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
@@ -627,7 +632,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=14, is_admin=True, is_subbed=True, invite_only=True,
+            query_count=19, is_admin=True, is_subbed=True, invite_only=True,
             other_user_subbed=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
@@ -1783,7 +1788,7 @@ class SubscriptionAPITest(ZulipTestCase):
                     streams_to_sub,
                     dict(principals=ujson.dumps([user1.email, user2.email])),
                 )
-        self.assert_length(queries, 40)
+        self.assert_length(queries, 39)
 
         self.assert_length(events, 7)
         for ev in [x for x in events if x['event']['type'] not in ('message', 'stream')]:
@@ -2305,6 +2310,38 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertFalse(subscription.push_notifications)
         self.assertFalse(subscription.audible_notifications)
 
+    def test_mark_messages_as_unread_on_unsubscribe(self) -> None:
+        realm = get_realm("zulip")
+        user = self.example_user("iago")
+        random_user = self.example_user("hamlet")
+        (stream1, _) = create_stream_if_needed(realm, "stream1", invite_only=False)
+        (stream2, _) = create_stream_if_needed(realm, "stream2", invite_only=False)
+
+        self.subscribe(user, "stream1")
+        self.subscribe(user, "stream2")
+        self.subscribe(random_user, "stream1")
+        self.subscribe(random_user, "stream2")
+
+        self.send_stream_message(random_user.email, "stream1", "test", "test")
+        self.send_stream_message(random_user.email, "stream2", "test", "test")
+
+        def get_unread_stream_data() -> List[Dict[str, Any]]:
+            raw_unread_data = get_raw_unread_data(user)
+            aggregated_data = aggregate_unread_data(raw_unread_data)
+            return aggregated_data['streams']
+
+        result = get_unread_stream_data()
+        self.assert_length(result, 2)
+        self.assertEqual(result[0]['stream_id'], stream1.id)
+        self.assertEqual(result[1]['stream_id'], stream2.id)
+
+        # Unsubscribing should mark all the messages in stream2 as read
+        self.unsubscribe(user, "stream2")
+
+        self.subscribe(user, "stream2")
+        result = get_unread_stream_data()
+        self.assert_length(result, 1)
+        self.assertEqual(result[0]['stream_id'], stream1.id)
 
 class GetPublicStreamsTest(ZulipTestCase):
 
