@@ -838,87 +838,78 @@ a.bottom-signup-button {
     box-shadow: 0px 0px 4px rgba(0,0,0,0.1);
 }
 
-.team .team-profiles {
-    text-align: center;
-    margin: 20px 0px;
-}
-
-.team {
-    margin: 50px 0px;
-}
-
-.team .profile {
-    display: inline-block;
-    text-align: center;
-
-    margin: 10px 0px;
-}
-
-.team .profile .profile-picture {
-    display: block;
-
-    width: 130px;
-    height: 130px;
-    margin: 5px 5px;
-
-    border-radius: 50%;
-
-    background-color: #444;
-
-    pointer-events: none;
-
-    box-shadow: 1px 2px 2px hsla(217, 47%, 17%, 0.03), 2px 2px 12px hsla(217, 47%, 17%, 0.09);
-}
-
-.team .profile:not(.bdfl) .profile-picture {
-    margin: 5px 13px;
-}
-
-.team .profile.bdfl {
-    display: block;
-}
-
-.team .profile.bdfl .profile-information {
-    display: inline-block;
-    vertical-align: top;
-    text-align: left;
-    font-size: 1.4em;
-
-    width: calc(100% - 215px - 10px);
-    margin-left: 10px;
-}
-
-.team .profile.bdfl .profile-description {
-    margin-top: 20px;
-
-    font-weight: 400;
-    font-size: 0.8em;
-    opacity: 0.8;
-}
-
-.team .profile.bdfl .profile-description p {
-    font-size: 1em;
-    line-height: inherit;
-}
-
-.team .profile.bdfl .profile-picture {
-    display: inline-block;
-
-    width: 200px;
-    height: auto;
-    border-radius: 4px;
+.team-profiles {
+    /* Compensate for gutter width */
+    margin: -10px;
+    margin-bottom: 20px;
 }
 
 .team .profile .profile-name {
     font-weight: 600;
+    text-align: center;
 }
 
 .team .profile .profile-role {
     opacity: 0.5;
     text-transform: uppercase;
     font-size: 0.8em;
-
     font-weight: 400;
+    text-align: center;
+}
+
+.team .bdfl {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.team .bdfl .profile-picture {
+    width: 200px;
+    margin: 10px;
+}
+
+.team .bdfl .profile-picture>img {
+    height: auto;
+    border-radius: 5px;
+}
+
+.team .bdfl .profile-information {
+    flex: 1;
+    /* Wrap when screen is small to prevent very short line */
+    min-width: 300px;
+    font-size: 1.4em;
+    margin: 10px 10px 0 10px;
+}
+
+.team .bdfl .profile-description {
+    margin-top: 20px;
+    font-weight: 400;
+    font-size: 0.8em;
+    opacity: 0.8;
+}
+
+.team .core-team {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.team .core-team .profile {
+    flex: 1;
+    min-width: 130px;
+    text-align: center;
+    align-content: center;
+    margin-bottom: 20px;
+    margin: 10px;
+}
+
+.team .core-team .profile .profile-picture {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    pointer-events: none;
+    box-shadow: 1px 2px 2px hsla(217, 47%, 17%, 0.03), 2px 2px 12px hsla(217, 47%, 17%, 0.09);
+    margin-bottom: 10px;
 }
 
 .contributors {
