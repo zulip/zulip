@@ -1079,6 +1079,7 @@ JS_SPECS = {
             'js/settings_streams.js',
             'js/settings_filters.js',
             'js/settings_invites.js',
+            'js/settings_user_groups.js',
             'js/settings.js',
             'js/admin_sections.js',
             'js/admin.js',

@@ -56,6 +56,7 @@
         "settings_streams": false,
         "settings_filters": false,
         "settings_invites": false,
+        "settings_user_groups": false,
         "settings": false,
         "resize": false,
         "loading": false,
