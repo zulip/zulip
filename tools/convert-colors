@@ -1,0 +1,45 @@
+#!/usr/bin/env python3
+import glob
+
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
+from lib.css_parser import parse
+from lib.css_tools import is_color_scheme, convert_colors
+
+def process_file(fn):
+    dct = {}
+    text = open(fn).read()
+    section_list = parse(text)
+    for section in section_list.sections:
+        if hasattr(section, 'declaration_block'):
+            for declaration in section.declaration_block.declarations:
+                if not is_color_scheme(declaration, fn):
+                    continue
+
+                value = declaration.css_value.text().strip()
+                value = convert_colors(value)
+                declaration.css_value.value.s = value
+
+    payload = section_list.text()
+    open(fn, 'w').write(payload)
+
+def process_files(filenames):
+
+    for fn in filenames:
+        if 'portico' in fn:
+            continue
+        if 'landing-page' in fn:
+            continue
+        if 'stats' in fn:
+            continue
+        if 'stream_color' in fn:
+            # These styles should not be inverted for dark mode.
+            continue
+        process_file(fn)
+
+if __name__ == '__main__':
+    filenames = glob.glob('static/styles/*.css')
+    process_files(filenames)
+
