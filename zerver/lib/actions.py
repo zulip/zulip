@@ -2443,6 +2443,11 @@ def bulk_remove_subscriptions(users, streams, acting_user=None):
             continue
         notify_subscriptions_removed(user_profile, streams_by_user[user_profile.id])
 
+        event = {'type': 'mark_stream_messages_as_read',
+                 'user_profile_id': user_profile.id,
+                 'stream_ids': [stream.id for stream in streams]}
+        queue_json_publish("deferred_work", event, lambda x: None, call_consume_in_tests=True)
+
     all_subscribers_by_stream = get_user_ids_for_streams(streams=streams)
 
     for stream in streams:

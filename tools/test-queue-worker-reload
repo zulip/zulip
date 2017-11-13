@@ -19,6 +19,7 @@ TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 successful_worker_launches = [
     'launching queue worker thread error_reports',
     'launching queue worker thread user_presence',
+    'launching queue worker thread deferred_work',
     'launching queue worker thread digest_emails',
     'launching queue worker thread slow_queries',
     'launching queue worker thread missedmessage_mobile_notifications',

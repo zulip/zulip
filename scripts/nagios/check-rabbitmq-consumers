@@ -40,6 +40,7 @@ consumers = defaultdict(int)  # type: Dict[str, int]
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
 from scripts.lib.zulip_tools import su_to_zulip
 queues = {
+    'deferred_work'
     'digest_emails',
     'email_mirror',
     'embed_links',

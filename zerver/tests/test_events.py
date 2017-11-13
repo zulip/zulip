@@ -1861,7 +1861,7 @@ class EventsRegisterTest(ZulipTestCase):
             [stream])
         events = self.do_test(action,
                               include_subscribers=include_subscribers,
-                              num_events=2)
+                              num_events=3)
         error = remove_schema_checker('events[1]', events[1])
         self.assert_on_error(error)
 
