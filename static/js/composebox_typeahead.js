@@ -39,11 +39,6 @@ exports.topics_seen_for = function (stream) {
     return [];
 };
 
-function get_last_recipient_in_pm(query_string) {
-    var recipients = util.extract_pm_recipients(query_string);
-    return recipients[recipients.length-1];
-}
-
 function query_matches_language(query, lang) {
     query = query.toLowerCase();
     return lang.indexOf(query) !== -1;
@@ -621,17 +616,7 @@ exports.initialize = function () {
             return typeahead_helper.render_person(item);
         },
         matcher: function (item) {
-            var current_recipient = get_last_recipient_in_pm(this.query);
-            // If you type just a comma, there won't be any recipients.
-            if (!current_recipient) {
-                return false;
-            }
-            var recipients = util.extract_pm_recipients(this.query);
-            if (recipients.indexOf(item.email) > -1) {
-                return false;
-            }
-
-            return query_matches_person(current_recipient, item) &&
+            return query_matches_person(this.query, item) &&
                    pm_pill().keys().indexOf(item.user_id) === -1;
         },
         sorter: function (matches) {
