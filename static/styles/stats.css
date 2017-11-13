@@ -183,6 +183,7 @@ hr {
     .center-charts {
         width: calc(816px * 2); /* 790px + 4px for borders + 2px for il-block + 20px margins */
     }
+
     .center-charts .left,
     .center-charts .right {
         display: inline-block;

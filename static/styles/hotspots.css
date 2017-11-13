@@ -43,7 +43,6 @@
     }
 }
 
-
 /* popover */
 .hotspot.overlay {
     z-index: 104;
@@ -124,6 +123,7 @@
 .hotspot-popover:after {
     border-width: 12px;
 }
+
 .hotspot-popover:before {
     border-width: 13px;
 }
@@ -133,10 +133,12 @@
     bottom: 100%;
     right: 50%;
 }
+
 .hotspot-popover.arrow-top:after {
     border-bottom-color: hsl(164, 44%, 47%);
     margin-right: -12px;
 }
+
 .hotspot-popover.arrow-top:before {
     border-bottom-color: hsl(0, 0%, 80%);
     margin-right: -13px;
@@ -147,10 +149,12 @@
     right: 100%;
     top: 50%;
 }
+
 .hotspot-popover.arrow-left:after {
     border-right-color: #fff;
     margin-top: -12px;
 }
+
 .hotspot-popover.arrow-left:before {
     border-right-color: hsl(0, 0%, 80%);
     margin-top: -13px;
@@ -161,10 +165,12 @@
     top: 100%;
     right: 50%;
 }
+
 .hotspot-popover.arrow-bottom:after {
     border-top-color: #fff;
     margin-right: -12px;
 }
+
 .hotspot-popover.arrow-bottom:before {
     border-top-color: hsl(0, 0%, 80%);
     margin-right: -13px;
@@ -175,10 +181,12 @@
     left: 100%;
     top: 50%;
 }
+
 .hotspot-popover.arrow-right:after {
     border-left-color: #fff;
     margin-top: -12px;
 }
+
 .hotspot-popover.arrow-right:before {
     border-left-color: hsl(0, 0%, 80%);
     margin-top: -13px;

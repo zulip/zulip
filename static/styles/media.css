@@ -5,7 +5,6 @@
 
 /* This max-width must be synced with message_viewport.is_narrow */
 @media (max-width: 975px) {
-
     .screen-full-show {
         display: none !important;
     }
@@ -46,7 +45,6 @@
         width: 30px;
     }
 
-
     #top_navbar.rightside-userlist .navbar-search {
         margin-right: 100px;
     }
@@ -58,7 +56,6 @@
     .navbar-search {
         margin-right: 60px;
     }
-
 
     #userlist-toggle {
         display: block;
@@ -91,11 +88,9 @@
         left: 300px;
         right: 50px;
     }
-
 }
 
 @media (max-width: 775px) {
-
     body {
         padding: 0px;
     }
@@ -192,7 +187,6 @@
     #subscriptions-status {
         left: 35px;
     }
-
 }
 
 @media (max-width: 500px) {
@@ -341,6 +335,7 @@
     html {
         overflow-x: hidden;
     }
+
     .stream_row .description {
         display: none;
     }

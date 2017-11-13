@@ -171,12 +171,12 @@ a.button:hover {
     z-index: 100;
 }
 
-
 @media only screen and (max-width: 620px) {
     table[class=body] h1 {
         font-size: 28px !important;
         margin-bottom: 10px !important;
     }
+
     table[class=body] p,
     table[class=body] ul,
     table[class=body] ol,
@@ -193,24 +193,30 @@ a.button:hover {
     table[class=body] .article {
         padding: 10px !important;
     }
+
     table[class=body] .content {
         padding: 0 !important;
     }
+
     table[class=body] .container {
         padding: 0 !important;
         width: 100% !important;
     }
+
     table[class=body] .main {
         border-left-width: 0 !important;
         border-radius: 0 !important;
         border-right-width: 0 !important;
     }
+
     table[class=body] .btn table {
         width: 100% !important;
     }
+
     table[class=body] .btn a {
         width: 100% !important;
     }
+
     table[class=body] .img-responsive {
         height: auto !important;
         max-width: 100% !important;
@@ -222,6 +228,7 @@ a.button:hover {
     .ExternalClass {
         width: 100%;
     }
+
     .ExternalClass,
     .ExternalClass p,
     .ExternalClass span,
@@ -230,6 +237,7 @@ a.button:hover {
     .ExternalClass div {
         line-height: 100%;
     }
+
     /* iOS converts adreses in emails to links automatically*/
     .apple-link a {
         color: inherit !important;
