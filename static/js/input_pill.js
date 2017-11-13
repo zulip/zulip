@@ -6,6 +6,7 @@ var input_pill = function ($parent) {
         BACKSPACE: 8,
         LEFT_ARROW: 37,
         RIGHT_ARROW: 39,
+        COMMA: 188,
     };
 
     // a stateful object of this `pill_container` instance.
@@ -301,6 +302,21 @@ var input_pill = function ($parent) {
             if (char === KEY.LEFT_ARROW) {
                 if (window.getSelection().anchorOffset === 0) {
                     store.$parent.find(".pill").last().focus();
+                }
+            }
+
+            // users should not be able to type a comma if the last field doesn't
+            // validate.
+            if (char === KEY.COMMA) {
+                // if the pill is successful, it will create the pill and clear
+                // the input.
+                if (funcs.appendPill(store.$input.text().trim()) !== false) {
+                    funcs.clear(store.$input[0]);
+                // otherwise it will prevent the typing of the comma because they
+                // cannot add another pill until this input is valid.
+                } else {
+                    e.preventDefault();
+                    return;
                 }
             }
         });
