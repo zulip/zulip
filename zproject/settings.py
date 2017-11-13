@@ -889,7 +889,12 @@ PIPELINE = {
                 'styles/media.css',
                 'styles/typing_notifications.css',
                 'styles/hotspots.css',
+<<<<<<< HEAD
                 'styles/dark.css',
+||||||| parent of 29685c8... Add split-css
+=======
+                'styles/auto-dark.css',
+>>>>>>> 29685c8... Add split-css
             ),
             'output_filename': 'min/app.css'
         },
@@ -899,6 +904,7 @@ PIPELINE = {
                 'third/bootstrap/css/bootstrap-btn.css',
                 'third/bootstrap/css/bootstrap-responsive.css',
                 'node_modules/perfect-scrollbar/dist/css/perfect-scrollbar.css',
+                'styles/auto-bootstrap-dark.css',
             ),
             'output_filename': 'min/common.css'
         },
