@@ -1504,12 +1504,17 @@ def maybe_update_markdown_engines(realm_filters_key, email_gateway):
     else:
         realm_filters = realm_filters_for_realm(realm_filters_key)
         if realm_filters_key not in realm_filter_data or    \
-                realm_filter_data[realm_filters_key] != realm_filters or    \
-                (realm_filters_key, email_gateway) not in md_engines:
-            # Either realm filters data has changed or an email message has been
-            # forwarded to an realm by the email gateway for which the markdown
-            # engine specific to the email gateway hasn't been populated.
+                realm_filter_data[realm_filters_key] != realm_filters:
+            # Realm filters data has changed, update `realm_filter_data` and any
+            # of the existing markdown engines using this set of realm filters.
             realm_filter_data[realm_filters_key] = realm_filters
+            for email_gateway_flag in [True, False]:
+                if (realm_filters_key, email_gateway_flag) in md_engines:
+                    # Update only existing engines(if any), don't create new one.
+                    make_md_engine(realm_filters_key, email_gateway_flag)
+
+        if (realm_filters_key, email_gateway) not in md_engines:
+            # Markdown engine corresponding to this key doesn't exists so create one.
             make_md_engine(realm_filters_key, email_gateway)
 
 # We want to log Markdown parser failures, but shouldn't log the actual input
