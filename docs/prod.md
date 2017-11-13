@@ -1,9 +1,8 @@
 # Zulip in production
 
-To play around with Zulip and see what it looks like, you can [install
-a dev
-environment](readme-symlink.html#installing-the-zulip-development-environment)
-or check out the [Zulip development community server](chat-zulip-org.html).
+To play around with Zulip and see what it looks like, check out the
+[Zulip community server](chat-zulip-org.html) or create a test organization
+on <https://zulipchat.com>.
 
 If you like what you see, you can set up Zulip for your team by
 installing a production Zulip server.  These pages will walk you

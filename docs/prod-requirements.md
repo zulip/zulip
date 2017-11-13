@@ -1,12 +1,9 @@
 # Requirements
 
-Note that if you just want to play around with Zulip and see what it
-looks like, it is easier to install it in a development environment
-following
-[these instructions](readme-symlink.html#installing-the-zulip-development-environment),
-since then you don't need to worry about setting up SSL certificates
-and an authentication mechanism.  Or, you can check out the
-[Zulip development community server](chat-zulip-org.html).
+Note that if you just want to play around with Zulip and see what it looks
+like, we recommend creating an account on the
+[Zulip community server](chat-zulip-org.html), or creating a test
+organization on <https://zulipchat.com>.
 
 ## Server
 
