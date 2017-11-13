@@ -5,7 +5,7 @@
 .drafts-container {
     position: relative;
     height: 95%;
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
     border-radius: 4px;
     padding: 0px;
     width: 60%;

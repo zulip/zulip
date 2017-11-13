@@ -81,7 +81,7 @@
 
 .user_offline .user-status-indicator {
     background-color: none;
-    border-color: gray;
+    border-color: hsl(0, 0%, 50%);
 }
 
 .user_unknown .user-status-indicator {
@@ -151,7 +151,7 @@
     padding: 1px 4px 2px 4px;
     background: hsl(105, 2%, 50%);
     border-radius: 0px;
-    color: #ffffff;
+    color: hsl(0, 0%, 100%);
     font-size: 12px;
     font-weight: normal;
     letter-spacing: 0.6px;

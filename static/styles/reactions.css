@@ -14,7 +14,7 @@
     padding: 0 2px 0 0;
     height: 19px;
     cursor: pointer;
-    background-color: #ffffff;
+    background-color: hsl(0, 0%, 100%);
     border: 1px solid hsl(194, 37%, 84%);
     border-radius: 4px;
 }
@@ -145,11 +145,11 @@
 }
 
 .emoji-info-popover.bottom .arrow {
-    border-bottom-color: #eee;
+    border-bottom-color: hsl(0, 0%, 93%);
 }
 
 .emoji-info-popover.top .arrow {
-    border-top-color: #eee;
+    border-top-color: hsl(0, 0%, 93%);
 }
 
 .emoji-popover {
@@ -163,7 +163,7 @@
     padding: 8px 10px;
     margin-bottom: 0px;
 
-    background-color: #eee;
+    background-color: hsl(0, 0%, 93%);
 
     border-radius: 5px 5px 0px 0px;
 }
@@ -205,7 +205,7 @@
 
 .emoji-popover-subheading {
     font-weight: 600;
-    color: #333;
+    color: hsl(0, 0%, 20%);
     padding: 5px 3px;
 }
 
@@ -249,7 +249,7 @@
 }
 
 .emoji-popover-category-tabs {
-    background-color: #eee;
+    background-color: hsl(0, 0%, 93%);
     width: 100%;
     box-sizing: border-box;
     overflow: hidden;
@@ -261,13 +261,13 @@
     width: 25px;
     height: 25px;
     text-align: center;
-    color: #515151;
+    color: hsl(0, 0%, 31%);
     font-size: 16px;
     cursor: pointer;
 }
 
 .emoji-popover-category-tabs .emoji-popover-tab-item.active {
-    background: #cecece;
+    background: hsl(0, 0%, 80%);
 }
 
 .typeahead .emoji {
@@ -276,7 +276,7 @@
 
 .emoji-showcase-container {
     position: relative;
-    background-color: #eee;
+    background-color: hsl(0, 0%, 93%);
     min-height: 44px;
     width: 250px;
 }

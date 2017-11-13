@@ -1,5 +1,5 @@
 .activity_head {
-    background-color: aliceblue;
+    background-color: hsl(208, 100%, 97%);
 }
 
 .table td {
@@ -35,7 +35,7 @@ td.number {
 
 tr.admin td:first-child {
     font-weight: bold;
-    color: blue;
+    color: hsl(240, 100%, 50%);
     font-size: 110%;
 }
 
