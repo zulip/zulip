@@ -218,11 +218,6 @@ body {
     display: block;
 }
 
-/* show two of them by default */
-.help .sidebar #guides + ul {
-    display: block;
-}
-
 .app.help .hamburger {
     display: none;
 }
@@ -1505,6 +1500,27 @@ input.new-organization-button {
 .why-page h2,
 .why-page h3 {
     font-weight: 700;
+}
+
+.markdown h1:hover,
+.markdown h2:hover,
+.markdown h3:hover {
+    cursor: pointer;
+}
+
+.markdown h1:hover:after,
+.markdown h2:hover:after,
+.markdown h3:hover:after {
+    display: inline-block;
+    font: normal normal normal 16px/1 FontAwesome;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    cursor: pointer;
+    content: "\f0c1";
+    margin-left: 5px;
+    vertical-align: middle;
 }
 
 .markdown h1,

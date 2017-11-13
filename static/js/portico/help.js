@@ -81,6 +81,17 @@ function render_code_sections() {
         e.preventDefault();
     });
 
+    // Show Guides user docs in sidebar by default
+    $('.help .sidebar h2#guides + ul').css('display', 'block');
+
+    // Remove ID attributes from sidebar links so they don't conflict with index page anchor links
+    $('.help .sidebar h1, .help .sidebar h2, .help .sidebar h3').removeAttr('id');
+
+    // Scroll to anchor link when clicked
+    $('.markdown .content h1, .markdown .content h2, .markdown .content h3').on('click', function () {
+        window.location.href = window.location.href.replace(/#.*/, '') + '#' + $(this).attr("id");
+    });
+
     Ps.initialize($(".markdown")[0], {
         suppressScrollX: true,
         useKeyboard: false,
