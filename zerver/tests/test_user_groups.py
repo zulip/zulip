@@ -28,24 +28,25 @@ class UserGroupTestCase(ZulipTestCase):
     def test_user_groups_in_realm(self):
         # type: () -> None
         realm = get_realm('zulip')
-        self.assertEqual(len(user_groups_in_realm(realm)), 0)
+        self.assertEqual(len(user_groups_in_realm(realm)), 1)
         self.create_user_group_for_test('support')
         user_groups = user_groups_in_realm(realm)
-        self.assertEqual(len(user_groups), 1)
-        self.assertEqual(user_groups[0].name, 'support')
+        self.assertEqual(len(user_groups), 2)
+        names = set([ug.name for ug in user_groups])
+        self.assertEqual(names, set(['hamletcharacters', 'support']))
 
     def test_user_groups_in_realm_serialized(self):
         # type: () -> None
         realm = get_realm('zulip')
-        user_group = self.create_user_group_for_test('support')
-        hamlet = self.example_user('hamlet')
-        check_add_user_to_user_group(hamlet, user_group)
-        members = user_groups_in_realm_serialized(realm)
-        self.assertEqual(len(members), 1)
-        self.assertEqual(members[0]['id'], user_group.id)
-        self.assertEqual(members[0]['name'], user_group.name)
-        self.assertEqual(members[0]['description'], '')
-        self.assertEqual(members[0]['members'], [4, 6])
+        user_group = UserGroup.objects.first()
+        membership = UserGroupMembership.objects.filter(user_group=user_group)
+        membership = membership.values_list('user_profile_id', flat=True)
+        user_groups = user_groups_in_realm_serialized(realm)
+        self.assertEqual(len(user_groups), 1)
+        self.assertEqual(user_groups[0]['id'], user_group.id)
+        self.assertEqual(user_groups[0]['name'], 'hamletcharacters')
+        self.assertEqual(user_groups[0]['description'], 'Characters of Hamlet')
+        self.assertEqual(set(user_groups[0]['members']), set(membership))
 
     def test_get_user_groups(self):
         # type: () -> None
@@ -87,7 +88,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         }
         result = self.client_post('/json/user_groups/create', info=params)
         self.assert_json_success(result)
-        self.assert_length(UserGroup.objects.all(), 1)
+        self.assert_length(UserGroup.objects.all(), 2)
 
         # Test invalid member error
         params = {
@@ -97,7 +98,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         }
         result = self.client_post('/json/user_groups/create', info=params)
         self.assert_json_error(result, "Invalid user ID: 1111")
-        self.assert_length(UserGroup.objects.all(), 1)
+        self.assert_length(UserGroup.objects.all(), 2)
 
         # Test we cannot add hamlet again
         params = {
@@ -107,7 +108,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         }
         result = self.client_post('/json/user_groups/create', info=params)
         self.assert_json_error(result, "User group 'support' already exists.")
-        self.assert_length(UserGroup.objects.all(), 1)
+        self.assert_length(UserGroup.objects.all(), 2)
 
     def test_user_group_update(self):
         # type: () -> None
@@ -150,15 +151,15 @@ class UserGroupAPITestCase(ZulipTestCase):
             'description': 'Support team',
         }
         self.client_post('/json/user_groups/create', info=params)
-        user_group = UserGroup.objects.first()
+        user_group = UserGroup.objects.get(name='support')
 
         # Test success
-        self.assertEqual(UserGroup.objects.count(), 1)
-        self.assertEqual(UserGroupMembership.objects.count(), 1)
+        self.assertEqual(UserGroup.objects.count(), 2)
+        self.assertEqual(UserGroupMembership.objects.count(), 3)
         result = self.client_delete('/json/user_groups/{}'.format(user_group.id))
         self.assert_json_success(result)
-        self.assertEqual(UserGroup.objects.count(), 0)
-        self.assertEqual(UserGroupMembership.objects.count(), 0)
+        self.assertEqual(UserGroup.objects.count(), 1)
+        self.assertEqual(UserGroupMembership.objects.count(), 2)
 
         # Test when invalid user group is supplied
         result = self.client_delete('/json/user_groups/1111')
@@ -177,14 +178,14 @@ class UserGroupAPITestCase(ZulipTestCase):
         user_group = UserGroup.objects.first()
 
         # Test add members
-        self.assertEqual(UserGroupMembership.objects.count(), 1)
+        self.assertEqual(UserGroupMembership.objects.count(), 3)
         othello = self.example_user('othello')
         add = [othello.id]
         params = {'add': ujson.dumps(add)}
         result = self.client_post('/json/user_groups/{}/members'.format(user_group.id),
                                   info=params)
         self.assert_json_success(result)
-        self.assertEqual(UserGroupMembership.objects.count(), 2)
+        self.assertEqual(UserGroupMembership.objects.count(), 4)
         members = get_memberships_of_users(user_group, [hamlet, othello])
         self.assertEqual(len(members), 2)
 
@@ -192,7 +193,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         result = self.client_post('/json/user_groups/{}/members'.format(user_group.id),
                                   info=params)
         self.assert_json_error(result, "User 6 is already a member of this group")
-        self.assertEqual(UserGroupMembership.objects.count(), 2)
+        self.assertEqual(UserGroupMembership.objects.count(), 4)
         members = get_memberships_of_users(user_group, [hamlet, othello])
         self.assertEqual(len(members), 2)
 
@@ -201,7 +202,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         result = self.client_post('/json/user_groups/{}/members'.format(user_group.id),
                                   info=params)
         self.assert_json_success(result)
-        self.assertEqual(UserGroupMembership.objects.count(), 0)
+        self.assertEqual(UserGroupMembership.objects.count(), 2)
         members = get_memberships_of_users(user_group, [hamlet, othello])
         self.assertEqual(len(members), 0)
 
@@ -210,7 +211,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         result = self.client_post('/json/user_groups/{}/members'.format(user_group.id),
                                   info=params)
         self.assert_json_success(result)
-        self.assertEqual(UserGroupMembership.objects.count(), 0)
+        self.assertEqual(UserGroupMembership.objects.count(), 2)
         members = get_memberships_of_users(user_group, [hamlet, othello])
         self.assertEqual(len(members), 0)
 
