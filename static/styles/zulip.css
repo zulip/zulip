@@ -1640,7 +1640,9 @@ blockquote p {
     padding: 0px 10px;
 }
 
-#tab_list li.private_message {
+#tab_list li.private_message,
+#tab_list li.active.private_message,
+#tab_list li.inactive.private_message {
     border-top-color: hsla(0, 0%, 0%, 0.0);
     border-right-color: hsla(0, 0%, 0%, 0.0);
     border-bottom-color: hsla(0, 0%, 0%, 0.0);
@@ -1648,6 +1650,10 @@ blockquote p {
     border-left-color: hsl(0, 0%, 27%);
     color: hsl(0, 0%, 100%);
     border-width: 0px;
+}
+
+.private_message {
+    color: hsl(0, 0%, 100%);
 }
 
 #tab_list .root {
