@@ -14,6 +14,7 @@ from django.conf import settings
 from zerver.lib.bulk_create import bulk_create_streams, bulk_create_users
 from zerver.lib.generate_test_data import create_test_data
 from zerver.lib.upload import upload_backend
+from zerver.lib.user_groups import create_user_group
 
 
 import random
@@ -393,6 +394,7 @@ class Command(BaseCommand):
                     UserProfile.objects.filter(id=user['user_profile_id']).update(
                         pointer=user['pointer'])
 
+            create_user_groups()
             self.stdout.write("Successfully populated test database.\n")
 
 recipient_hash = {}  # type: Dict[int, Recipient]
@@ -512,3 +514,11 @@ def create_user_presences(user_profiles):
             client=client,
             timestamp=date,
             status=status)
+
+def create_user_groups():
+    # type: () -> None
+    zulip = get_realm('zulip')
+    members = [get_user('cordelia@zulip.com', zulip),
+               get_user('hamlet@zulip.com', zulip)]
+    create_user_group("hamletcharacters", members, zulip,
+                      description="Characters of Hamlet")

@@ -943,6 +943,7 @@ JS_SPECS = {
             'js/message_viewport.js',
             'js/rows.js',
             'js/people.js',
+            'js/user_groups.js',
             'js/unread.js',
             'js/topic_list.js',
             'js/pm_list.js',
