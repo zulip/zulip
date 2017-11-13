@@ -38,6 +38,7 @@ Contents:
    :caption: Overview
 
    readme-symlink
+   contributing
    architecture-overview
    directory-structure
    roadmap
