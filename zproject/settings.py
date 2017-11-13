@@ -825,6 +825,7 @@ PIPELINE = {
                 'styles/media.css',
                 'styles/typing_notifications.css',
                 'styles/hotspots.css',
+                'styles/auto-dark.css',
                 # We don't want fonts.css on QtWebKit, so its omitted here
             ),
             'output_filename': 'min/app-fontcompat.css'
@@ -857,6 +858,7 @@ PIPELINE = {
                 'styles/media.css',
                 'styles/typing_notifications.css',
                 'styles/hotspots.css',
+                'styles/auto-dark.css',
             ),
             'output_filename': 'min/app.css'
         },
@@ -866,6 +868,7 @@ PIPELINE = {
                 'third/bootstrap/css/bootstrap-btn.css',
                 'third/bootstrap/css/bootstrap-responsive.css',
                 'node_modules/perfect-scrollbar/dist/css/perfect-scrollbar.css',
+                'styles/auto-bootstrap-dark.css',
             ),
             'output_filename': 'min/common.css'
         },
