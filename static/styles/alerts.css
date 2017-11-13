@@ -38,7 +38,7 @@
 .alert-box .alert {
     font-size: 1rem;
     border-radius: 4px;
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
 }
 
 .alert-box .alert .faded {

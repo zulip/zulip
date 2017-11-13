@@ -24,7 +24,7 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    background: white;
+    background: hsl(0, 0%, 100%);
     border-radius: 50%;
     border: 1px solid hsl(205, 100%, 70%);
     animation: pulsate 1.5s ease-out;
@@ -55,7 +55,7 @@
     position: fixed;
     width: 250px;
     text-align: left;
-    box-shadow: 0 5px 10px rgba(133, 136, 144, 0.2);
+    box-shadow: 0 5px 10px hsla(223, 4%, 54%, 0.2);
     border: 1px solid hsl(0, 0%, 80%);
     border-radius: 4px;
 }
@@ -71,16 +71,16 @@
     margin: 0;
     font-size: 1.15em;
     font-weight: 600;
-    color: white;
+    color: hsl(0, 0%, 100%);
 }
 
 .hotspot.overlay .hotspot-popover-content {
-    background-color: white;
+    background-color: hsl(0, 0%, 100%);
     padding: 15px;
 }
 
 .hotspot.overlay .hotspot-popover-bottom {
-    background-color: white;
+    background-color: hsl(0, 0%, 100%);
     height: 90px;
     border-bottom-left-radius: 4px;
     border-bottom-right-radius: 4px;
@@ -104,7 +104,7 @@
 
     font-size: 1.15em;
     font-weight: 600;
-    color: white;
+    color: hsl(0, 0%, 100%);
     background-color: hsl(164, 44%, 47%);
     border-radius: 4px;
 }
@@ -151,7 +151,7 @@
 }
 
 .hotspot-popover.arrow-left:after {
-    border-right-color: #fff;
+    border-right-color: hsl(0, 0%, 100%);
     margin-top: -12px;
 }
 
@@ -167,7 +167,7 @@
 }
 
 .hotspot-popover.arrow-bottom:after {
-    border-top-color: #fff;
+    border-top-color: hsl(0, 0%, 100%);
     margin-right: -12px;
 }
 
@@ -183,7 +183,7 @@
 }
 
 .hotspot-popover.arrow-right:after {
-    border-left-color: #fff;
+    border-left-color: hsl(0, 0%, 100%);
     margin-top: -12px;
 }
 

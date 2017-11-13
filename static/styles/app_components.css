@@ -34,7 +34,7 @@
 }
 
 .bg-white {
-    background-color: #FFF;
+    background-color: hsl(0, 0%, 100%);
 }
 
 .clear-float {
@@ -54,7 +54,7 @@
     font-weight: 400;
     text-align: center;
 
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
     color: inherit;
     outline: none;
     border: 1px solid hsl(0, 0%, 80%);
@@ -192,7 +192,7 @@
     overflow: hidden;
     vertical-align: bottom; /* See http://stackoverflow.com/a/43266155/ */
     padding: 3px 10px;
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
     cursor: pointer;
     justify-content: center;
     align-items: center;
@@ -237,7 +237,7 @@
 .new-style .tab-switcher .ind-tab.selected {
     position: relative;
     background: hsl(0, 0%, 53%);
-    color: #fff;
+    color: hsl(0, 0%, 100%);
     border: 1px solid hsl(0, 0%, 46%);
     z-index: 2;
 }
