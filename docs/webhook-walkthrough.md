@@ -386,7 +386,7 @@ request:
 
 If you would like feedback on your integration as you go, feel free to post a
 message on the [public Zulip instance](https://chat.zulip.org/#narrow/stream/bots).
-You can also create a [`[WIP]` pull request](readme-symlink.html#ways-to-contribute)
+You can also create a [`[WIP]` pull request](contributing.html#working-on-an-issue)
 while you are still working on your integration. See the
 [Git guide](git-guide.html#create-a-pull-request) for more on Zulip's pull
 request process.
