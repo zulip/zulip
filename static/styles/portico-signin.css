@@ -202,7 +202,6 @@ html {
     stroke: #fff !important;
 }
 
-
 .new-style {
     -webkit-font-smoothing: antialiased;
 }
@@ -491,7 +490,6 @@ html {
     width: 328px;
 }
 
-
 .split-view .org-header .avatar,
 .register-page-container .org-header .avatar {
     display: inline-block;
@@ -630,6 +628,7 @@ button.login-google-button {
 .forgot-password-container .actions {
     line-height: 0;
 }
+
 .forgot-password-container .actions .back-to-login i {
     position: relative;
     top: 5px;
@@ -690,7 +689,6 @@ button.login-google-button {
     position: static !important;
     margin-left: 2px;
 }
-
 
 #registration [for="realm_in_root_domain"] {
     font-weight: normal !important;

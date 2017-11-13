@@ -25,15 +25,15 @@
 
     background-color: #FFF;
     background-image:
-      -moz-linear-gradient(45deg, hsl(0, 0%, 80%) 25%, transparent 25%),
-      -moz-linear-gradient(-45deg, hsl(0, 0%, 80%) 25%, transparent 25%),
-      -moz-linear-gradient(45deg, transparent 75%, hsl(0, 0%, 0%) 75%),
-      -moz-linear-gradient(-45deg, transparent 75%, hsl(0, 0%, 0%) 75%);
+        -moz-linear-gradient(45deg, hsl(0, 0%, 80%) 25%, transparent 25%),
+        -moz-linear-gradient(-45deg, hsl(0, 0%, 80%) 25%, transparent 25%),
+        -moz-linear-gradient(45deg, transparent 75%, hsl(0, 0%, 0%) 75%),
+        -moz-linear-gradient(-45deg, transparent 75%, hsl(0, 0%, 0%) 75%);
     background-image:
-      -webkit-gradient(linear, 0 100%, 100% 0, color-stop(.25, hsl(0, 0%, 80%)), color-stop(.25, transparent)),
-      -webkit-gradient(linear, 0 0, 100% 100%, color-stop(.25, hsl(0, 0%, 80%)), color-stop(.25, transparent)),
-      -webkit-gradient(linear, 0 100%, 100% 0, color-stop(.75, transparent), color-stop(.75, hsl(0, 0%, 80%))),
-      -webkit-gradient(linear, 0 0, 100% 100%, color-stop(.75, transparent), color-stop(.75, hsl(0, 0%, 80%)));
+        -webkit-gradient(linear, 0 100%, 100% 0, color-stop(.25, hsl(0, 0%, 80%)), color-stop(.25, transparent)),
+        -webkit-gradient(linear, 0 0, 100% 100%, color-stop(.25, hsl(0, 0%, 80%)), color-stop(.25, transparent)),
+        -webkit-gradient(linear, 0 100%, 100% 0, color-stop(.75, transparent), color-stop(.75, hsl(0, 0%, 80%))),
+        -webkit-gradient(linear, 0 0, 100% 100%, color-stop(.75, transparent), color-stop(.75, hsl(0, 0%, 80%)));
 
     -moz-background-size: 20px 20px;
     background-size: 20px 20px;

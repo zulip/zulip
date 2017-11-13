@@ -133,9 +133,11 @@ p.n-margin {
     0% {
         box-shadow: 0px 0px 30px hsla(0, 0%, 0%, 0.35);
     }
+
     50% {
         box-shadow: 0px 0px 30px hsla(0, 0%, 0%, 0.15);
     }
+
     100% {
         box-shadow: 0px 0px 30px hsla(0, 0%, 0%, 0.35);
     }
@@ -299,7 +301,6 @@ input {
 }
 
 /* Override Bootstrap's fixed sizes for various elements */
-
 textarea,
 label {
     font-size: inherit;
@@ -307,7 +308,6 @@ label {
 }
 
 /* List of text-like input types taken from Bootstrap */
-
 input[type="text"],
 input[type="password"],
 input[type="datetime"],
@@ -900,6 +900,7 @@ td.pointer {
     from {
         -webkit-transform: rotate(0deg);
     }
+
     to {
         -webkit-transform: rotate(359deg);
     }
@@ -909,6 +910,7 @@ td.pointer {
     from {
         -moz-transform: rotate(0deg);
     }
+
     to {
         -moz-transform: rotate(359deg);
     }
@@ -917,7 +919,9 @@ td.pointer {
 @-ms-keyframes rotate {
     from {
         -ms-transform: rotate(0deg);
+
     }
+
     to {
         -ms-transform: rotate(359deg);
     }
@@ -927,6 +931,7 @@ td.pointer {
     from {
         -o-transform: rotate(0deg);
     }
+
     to {
         -o-transform: rotate(359deg);
     }
@@ -936,6 +941,7 @@ td.pointer {
     from {
         transform: rotate(0deg);
     }
+
     to {
         transform: rotate(359deg);
     }
@@ -945,6 +951,7 @@ td.pointer {
     0% {
         opacity: 0;
     }
+
     100% {
         opacity: 1;
     }
@@ -954,6 +961,7 @@ td.pointer {
     0% {
         opacity: 0;
     }
+
     100% {
         opacity: 1;
     }
@@ -963,6 +971,7 @@ td.pointer {
     0% {
         opacity: 0;
     }
+
     100% {
         opacity: 1;
     }
@@ -972,6 +981,7 @@ td.pointer {
     0% {
         transform: translateX(-10px);
     }
+
     100% {
         transform: translateX(0px);
     }
@@ -981,6 +991,7 @@ td.pointer {
     0% {
         transform: translateX(-10px);
     }
+
     100% {
         transform: translateX(0px);
     }
@@ -990,6 +1001,7 @@ td.pointer {
     0% {
         transform: translateX(-10px);
     }
+
     100% {
         transform: translateX(0px);
     }
@@ -1418,6 +1430,7 @@ div.focused_table {
     max-height: 8.5em;
     overflow: hidden;
 }
+
 .message_content.collapsed {
     max-height: 0em;
     overflow: hidden;
@@ -1660,7 +1673,6 @@ blockquote p {
     padding-right: 2px;
 }
 
-
 #tab_list .root a:hover {
     color: hsl(0, 0%, 0%);
 }
@@ -1792,7 +1804,6 @@ blockquote p {
     z-index: 5;
 }
 
-
 nav .column-left {
     text-align: center;
 }
@@ -1852,7 +1863,6 @@ nav a .no-style {
     font-weight: 300;
     line-height: 27px;
 }
-
 
 #search_query:focus {
     box-shadow: inset 0px 0px 0px 2px hsl(204, 20%, 74%);
@@ -2101,6 +2111,7 @@ div.floating_recipient {
     font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
     color: maroon;
 }
+
 .operator {
     font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
 }
@@ -2473,10 +2484,12 @@ button.topic_edit_cancel {
 #message_edit_form {
     margin-bottom: 10px;
 }
+
 #message_edit_form .edit-controls {
     margin-left: 0px;
     margin-top: 0px;
 }
+
 #message_edit_form textarea {
     width: 100%;
     min-width: 206px;
@@ -2484,6 +2497,7 @@ button.topic_edit_cancel {
     -moz-box-sizing: border-box;
     box-sizing: border-box;
 }
+
 #message_edit_form .control-group.no-margin {
     margin-bottom: 0px;
 }

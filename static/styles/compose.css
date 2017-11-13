@@ -125,7 +125,6 @@
     box-shadow: none !important;
 }
 
-
 table.compose_table {
     table-layout: fixed;
     margin-left: auto;
@@ -315,7 +314,6 @@ textarea.new_message_textarea:focus,
 #stream.recipient_box:focus {
     border-left: none;
 }
-
 
 input.recipient_box {
     margin: 0px;

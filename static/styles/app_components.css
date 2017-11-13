@@ -160,7 +160,6 @@
     background-color: hsl(33, 48%, 96%);
 }
 
-
 .new-style .button[disabled="disabled"] {
     cursor: not-allowed;
     -moz-filter: saturate(0);

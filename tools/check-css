@@ -22,6 +22,11 @@ def validate(fn):
 def check_our_files(filenames):
     # type: (Iterable[str]) -> None
     for filename in filenames:
+        if 'pygments.css' in filename:
+            # This just has really strange formatting that our
+            # parser doesn't like
+            continue
+
         try:
             validate(filename)
         except CssParserException as e:
