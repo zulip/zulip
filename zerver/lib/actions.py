@@ -3824,10 +3824,10 @@ def do_send_confirmation_email(invitee, referrer, body):
     send_email('zerver/emails/invitation', to_email=invitee.email, from_name=from_name,
                from_address=FromAddress.NOREPLY, context=context)
 
-def user_email_is_unique(email):
+def user_email_is_unique(email, realm):
     # type: (Text) -> None
     try:
-        get_user_profile_by_email(email)
+        get_user(email, realm)
         raise ValidationError('%s already has an account' % (email,))
     except UserProfile.DoesNotExist:
         pass
@@ -3835,7 +3835,7 @@ def user_email_is_unique(email):
 def validate_email_for_realm(target_realm, email):
     # type: (Optional[Realm], Text) -> None
     try:
-        existing_user_profile = get_user_profile_by_email(email)
+        existing_user_profile = get_user(email, target_realm)
     except UserProfile.DoesNotExist:
         existing_user_profile = None
 

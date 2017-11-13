@@ -19,7 +19,7 @@ from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
     do_activate_user, do_create_user, do_create_realm, \
-    user_email_is_unique, compute_mit_user_fullname, validate_email_for_realm, \
+    compute_mit_user_fullname, validate_email_for_realm, \
     do_set_user_display_setting, lookup_default_stream_groups
 from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
     CreateUserForm, FindMyTeamForm
@@ -326,12 +326,6 @@ def create_realm(request, creation_key=None):
             if (creation_key is not None and check_key_is_valid(creation_key)):
                 RealmCreationKey.objects.get(creation_key=creation_key).delete()
             return HttpResponseRedirect(reverse('send_confirm', kwargs={'email': email}))
-        try:
-            email = request.POST['email']
-            user_email_is_unique(email)
-        except ValidationError:
-            # Maybe the user is trying to log in
-            return redirect_to_email_login_url(email)
     else:
         form = RealmCreationForm()
     return render(request,
