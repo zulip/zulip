@@ -105,7 +105,8 @@
 
 #lightbox_overlay .image-actions .lightbox-canvas-trigger:hover {
     background-color: hsl(0, 0%, 100%);
-    border: 1px solid #fff;
+    border: 1px solid;
+    border-color: #fff;
     color: hsl(227, 40%, 16%);
     opacity: 1;
 }
@@ -266,7 +267,8 @@
     font-size: 0.8rem;
     min-width: inherit;
     padding: 4px 10px;
-    border: 1px solid hsla(0, 0%, 100%, 0.6);
+    border: 1px solid;
+    border-color: hsla(0, 0%, 100%, 0.6);
     background-color: transparent;
     color: hsl(0, 0%, 100%);
     border-radius: 4px;

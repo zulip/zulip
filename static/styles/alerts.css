@@ -72,13 +72,15 @@
     text-shadow: none;
 
     color: hsl(16, 60%, 45%);
-    border: 1px solid hsl(16, 60%, 45%);
+    border: 1px solid;
+    border-color: hsl(16, 60%, 45%);
     box-shadow: 0 0 2px hsl(16, 60%, 45%);
 }
 
 .alert-box .alert.alert-error {
     color: hsl(0, 80%, 40%);
-    border: 1px solid hsl(0, 80%, 40%);
+    border: 1px solid;
+    border-color: hsl(0, 80%, 40%);
     box-shadow: 0 0 2px hsl(0, 80%, 40%);
 }
 

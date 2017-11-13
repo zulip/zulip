@@ -2,7 +2,8 @@
     display: inline-block;
 
     padding: 2px;
-    border: 1px solid hsl(0, 0%, 86%);
+    border: 1px solid;
+    border-color: hsl(0, 0%, 86%);
     border-radius: 4px;
 
     font-size: 0.9em;
@@ -18,8 +19,9 @@
     margin: 1px 1px;
 
     color: hsl(177, 38%, 54%);
-    border: 1px solid #b2e4e2;
+    border: 1px solid;
 
+    border-color: #b2e4e2;
     border-radius: 4px;
 
     cursor: pointer;
@@ -27,8 +29,9 @@
 
 .pill-container .pill:focus {
     color: hsl(0, 38%, 54%);
-    border: 1px solid #e4b2b2;
+    border: 1px solid;
 
+    border-color: #e4b2b2;
     outline: none;
 }
 
@@ -75,13 +78,15 @@
 
 .pm_recipient .pill-container .pill {
     color: hsl(0, 0%, 100%);
-    border: 1px solid #36a29b;
+    border: 1px solid;
+    border-color: #36a29b;
     background: hsl(170, 47%, 53%);
     font-weight: 600;
 }
 
 .pm_recipient .pill-container .pill:focus {
-    border: 1px solid #108179;
+    border: 1px solid;
+    border-color: #108179;
     background: hsl(176, 49%, 42%);
 }
 

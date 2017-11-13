@@ -134,7 +134,8 @@
     padding: 5px;
     font-size: 0.9em;
     background-color: hsl(0, 0%, 97%);
-    border: 1px solid hsl(0, 0%, 86%);
+    border: 1px solid;
+    border-color: hsl(0, 0%, 86%);
     border-radius: 4px;
 }
 
@@ -195,7 +196,8 @@
     display: none;
     float: right;
     padding: 3px 10px;
-    border: 1px solid hsl(0, 0%, 80%);
+    border: 1px solid;
+    border-color: hsl(0, 0%, 80%);
     margin: 9px 10px 0px 0px;
     color: hsl(0, 0%, 20%);
 }
@@ -204,7 +206,8 @@
     color: hsl(0, 0%, 20%);
     text-decoration: none;
     background-color: hsl(0, 0%, 92%);
-    border: 1px solid hsl(0, 0%, 68%);
+    border: 1px solid;
+    border-color: hsl(0, 0%, 68%);
 }
 
 .stream-row .btn.sub_unsub_button {
@@ -224,7 +227,8 @@
 #create_or_filter_stream_row td {
     background-color: hsl(0, 0%, 95%);
     border-color: hsl(0, 0%, 73%);
-    border-bottom: 1px solid hsl(0, 0%, 73%);
+    border-bottom: 1px solid;
+    border-bottom-color: hsl(0, 0%, 73%);
 }
 
 #create_or_filter_stream_row input[type="text"] {
@@ -286,7 +290,8 @@ form#add_new_subscription {
 
 .subscriber-list-box {
     text-align: center;
-    border: 1px solid hsl(0, 0%, 86%);
+    border: 1px solid;
+    border-color: hsl(0, 0%, 86%);
     border-radius: 4px;
 }
 
@@ -305,7 +310,8 @@ form#add_new_subscription {
 }
 
 .subscriber-list tr {
-    border-bottom: 1px solid hsl(0, 0%, 93%);
+    border-bottom: 1px solid;
+    border-bottom-color: hsl(0, 0%, 93%);
 }
 
 .subscriber-list tr:last-of-type {
@@ -432,7 +438,8 @@ form#add_new_subscription {
     text-align: center;
     text-transform: uppercase;
     font-weight: 700;
-    border-bottom: 1px solid hsl(0, 0%, 86%);
+    border-bottom: 1px solid;
+    border-bottom-color: hsl(0, 0%, 86%);
 }
 
 .subscriptions-header .fa-chevron-left {
@@ -517,19 +524,22 @@ form#add_new_subscription {
 }
 
 .subscriptions-container .left {
-    border-right: 1px solid hsl(0, 0%, 86%);
+    border-right: 1px solid;
+    border-right-color: hsl(0, 0%, 86%);
 }
 
 .subscriptions-container .left .search-container {
     padding: 6px 8px;
-    border-bottom: 1px solid hsl(0, 0%, 86%);
+    border-bottom: 1px solid;
+    border-bottom-color: hsl(0, 0%, 86%);
 }
 
 .subscriptions-container .right .display-type {
     padding: 6px;
     text-align: center;
     font-weight: 600;
-    border-bottom: 1px solid hsl(0, 0%, 86%);
+    border-bottom: 1px solid;
+    border-bottom-color: hsl(0, 0%, 86%);
 }
 
 .subscriptions-container .display-type.preview:after {
@@ -563,7 +573,8 @@ form#add_new_subscription {
 }
 
 .subscriptions-container input[type=text].small {
-    border: 1px solid hsl(0, 0%, 80%);
+    border: 1px solid;
+    border-color: hsl(0, 0%, 80%);
     border-radius: 4px;
     padding: 3px;
     outline: none;
@@ -625,7 +636,8 @@ form#add_new_subscription {
 
 .stream-row {
     padding: 15px 10px 11px 10px;
-    border-bottom: 1px solid hsl(0, 0%, 93%);
+    border-bottom: 1px solid;
+    border-bottom-color: hsl(0, 0%, 93%);
     cursor: pointer;
 }
 
@@ -933,7 +945,8 @@ form#add_new_subscription {
 }
 
 #subscription_overlay ul.grey-box li {
-    border-bottom: 1px solid hsl(0, 0%, 86%);
+    border-bottom: 1px solid;
+    border-bottom-color: hsl(0, 0%, 86%);
     padding: 5px 0px;
 }
 

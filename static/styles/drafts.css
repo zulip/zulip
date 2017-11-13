@@ -18,7 +18,8 @@
     padding-top: 4px;
     text-align: center;
     text-transform: uppercase;
-    border-bottom: 1px solid hsl(0, 0%, 86%);
+    border-bottom: 1px solid;
+    border-bottom-color: hsl(0, 0%, 86%);
 }
 
 .drafts-header h1 {
@@ -77,8 +78,10 @@
 .draft-row .draft-info-box {
     width: 100%;
     background: hsl(0, 0%, 94%);
-    border-bottom: 1px solid hsl(0, 0%, 88%);
-    border-top: 1px solid hsl(0, 0%, 88%);
+    border-bottom: 1px solid;
+    border-bottom-color: hsl(0, 0%, 88%);
+    border-top: 1px solid;
+    border-top-color: hsl(0, 0%, 88%);
     margin-bottom: 10px;
 }
 

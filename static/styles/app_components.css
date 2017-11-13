@@ -57,7 +57,8 @@
     background-color: hsl(0, 0%, 100%);
     color: inherit;
     outline: none;
-    border: 1px solid hsl(0, 0%, 80%);
+    border: 1px solid;
+    border-color: hsl(0, 0%, 80%);
     border-radius: 2px;
 
     box-shadow: none;
@@ -218,7 +219,8 @@
 }
 
 .new-style .tab-switcher .ind-tab:not(.selected) {
-    border: 1px solid hsl(0, 0%, 80%);
+    border: 1px solid;
+    border-color: hsl(0, 0%, 80%);
 }
 
 .new-style .tab-switcher .ind-tab.first {
@@ -238,7 +240,8 @@
     position: relative;
     background: hsl(0, 0%, 53%);
     color: hsl(0, 0%, 100%);
-    border: 1px solid hsl(0, 0%, 46%);
+    border: 1px solid;
+    border-color: hsl(0, 0%, 46%);
     z-index: 2;
 }
 
@@ -330,7 +333,8 @@
     margin: 0px;
     padding: 5px 10px;
     background-color: hsl(0, 0%, 97%);
-    border: 1px solid hsl(0, 0%, 86%);
+    border: 1px solid;
+    border-color: hsl(0, 0%, 86%);
     border-radius: 4px;
 
     list-style-type: none;

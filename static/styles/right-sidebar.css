@@ -176,7 +176,8 @@
     right: 0px;
     text-align: center;
     vertical-align: middle;
-    border-left: 2px solid hsl(204, 20%, 74%);
+    border-left: 2px solid;
+    border-left-color: hsl(204, 20%, 74%);
 }
 
 #userlist-toggle-button {
@@ -210,7 +211,8 @@
 #feedback_section {
     text-align: left;
     padding-bottom: 15px;
-    border-bottom: 1px solid hsl(0, 0%, 88%);
+    border-bottom: 1px solid;
+    border-bottom-color: hsl(0, 0%, 88%);
     margin-right: 10px;
 }
 

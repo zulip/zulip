@@ -157,7 +157,8 @@ p.n-margin {
 
 #unmute_muted_topic_notification .btn {
     background-color: transparent;
-    border: 1px solid hsl(0, 0%, 27%);
+    border: 1px solid;
+    border-color: hsl(0, 0%, 27%);
     outline: none;
     transition: all 0.2s ease;
 }
@@ -179,7 +180,8 @@ p.n-margin {
     z-index: 102; /* Needs to be higher than .alert-bar-container */
     width: 100%;
     background: hsl(0, 0%, 100%);
-    border-bottom: 1px solid hsl(0, 0%, 85%);
+    border-bottom: 1px solid;
+    border-bottom-color: hsl(0, 0%, 85%);
     height: 40px;
 }
 
@@ -751,12 +753,14 @@ td.pointer {
 
 .message_list .recipient_row {
     background: hsl(0, 0%, 94%);
-    border-bottom: 1px solid hsl(0, 0%, 88%);
+    border-bottom: 1px solid;
+    border-bottom-color: hsl(0, 0%, 88%);
     margin-bottom: 10px;
 }
 
 .floating_recipient .recipient_row {
-    border-top: 1px solid hsl(0, 0%, 88%);
+    border-top: 1px solid;
+    border-top-color: hsl(0, 0%, 88%);
 }
 
 .stream_label {
@@ -1012,7 +1016,8 @@ td.pointer {
     background-color: hsl(0, 0%, 100%);
     border-radius: 0px 0px 3px 0px;
     /* box-shadow: 0px 2px 2px -1px hsl(0, 0%, 80%); */
-    border: 1px solid hsl(166, 26%, 80%);
+    border: 1px solid;
+    border-color: hsl(166, 26%, 80%);
     border-top: none;
     border-left: none;
 }
@@ -1020,7 +1025,8 @@ td.pointer {
 .messagebox-bottom-colorblock {
     border-radius: 0px 0px 0px 3px;
     /* box-shadow: 0px 2px 2px -1px hsl(0, 0%, 80%); */
-    border: 1px solid hsl(166, 26%, 80%);
+    border: 1px solid;
+    border-color: hsl(166, 26%, 80%);
     border-top: none;
     border-right: none;
 }
@@ -1055,7 +1061,8 @@ td.pointer {
 }
 
 .message-header-contents {
-    border-right: 1px solid hsl(0, 0%, 88%);
+    border-right: 1px solid;
+    border-right-color: hsl(0, 0%, 88%);
 }
 
 .mention .messagebox {
@@ -1312,8 +1319,10 @@ div.message_table {
 
 .message_row {
     position: relative;
-    border-left: 1px solid hsl(0, 0%, 88%);
-    border-right: 1px solid hsl(0, 0%, 88%);
+    border-left: 1px solid;
+    border-left-color: hsl(0, 0%, 88%);
+    border-right: 1px solid;
+    border-right-color: hsl(0, 0%, 88%);
 }
 
 .message_row.selected_message {
@@ -1382,7 +1391,8 @@ div.focused_table {
     font-size: 14px;
 
     border-radius: 0px;
-    border: 1px solid hsl(204, 20%, 74%);
+    border: 1px solid;
+    border-color: hsl(204, 20%, 74%);
     box-shadow: none;
 }
 
@@ -1456,13 +1466,15 @@ div.message_content tr {
 }
 
 div.message_content tr th {
-    border: 1px solid hsl(0, 0%, 80%);
+    border: 1px solid;
+    border-color: hsl(0, 0%, 80%);
     padding: 4px;
     text-align: left;
 }
 
 div.message_content tr td {
-    border: 1px solid hsl(0, 0%, 80%);
+    border: 1px solid;
+    border-color: hsl(0, 0%, 80%);
     padding: 4px;
 }
 
@@ -1698,7 +1710,8 @@ blockquote p {
     left: 0px;
     text-align: center;
     vertical-align: middle;
-    border-right: 2px solid hsl(204, 20%, 74%);
+    border-right: 2px solid;
+    border-right-color: hsl(204, 20%, 74%);
 }
 
 #streamlist-toggle-button {
@@ -1723,7 +1736,8 @@ blockquote p {
     background: hsl(0, 100%, 20%);
     top: 4px;
     right: 4px;
-    border: 1px solid hsl(0, 0%, 93%);
+    border: 1px solid;
+    border-color: hsl(0, 0%, 93%);
     box-shadow: 0px 0px 1px hsla(0, 0%, 0%, 0.2);
     border-radius: 12px;
     padding: 1px 1px 1px 1px;
@@ -1751,7 +1765,8 @@ blockquote p {
     right: 10px;
     display: inline-block;
     border-right: 7px solid transparent;
-    border-bottom: 7px solid hsl(0, 0%, 66%);
+    border-bottom: 7px solid;
+    border-bottom-color: hsl(0, 0%, 66%);
     border-left: 7px solid transparent;
     content: '';
     z-index: 10;
@@ -1838,7 +1853,8 @@ nav a .no-style {
     width: auto;
     float: none;
     overflow: hidden;
-    border-right: 1px solid hsl(0, 0%, 85%);
+    border-right: 1px solid;
+    border-right-color: hsl(0, 0%, 85%);
     height: 40px;
 }
 
@@ -2346,7 +2362,8 @@ button.topic_edit_cancel {
 }
 
 .twitter-tweet {
-    border: 1px solid hsl(0, 0%, 86%);
+    border: 1px solid;
+    border-color: hsl(0, 0%, 86%);
     padding: .5em .75em;
     margin-bottom: 0.25em;
     word-break: break-word;
@@ -2416,8 +2433,10 @@ button.topic_edit_cancel {
     display: inline-block;
     vertical-align: middle;
     width: 33%;
-    border-top: 1px solid hsl(0, 0%, 88%);
-    border-bottom: 1px solid #fff;
+    border-top: 1px solid;
+    border-top-color: hsl(0, 0%, 88%);
+    border-bottom: 1px solid;
+    border-bottom-color: #fff;
     margin: 0px 5px 0px 5px;
 }
 
@@ -2448,8 +2467,10 @@ button.topic_edit_cancel {
     vertical-align: middle;
     width: 50%;
     height: 0px;
-    border-top: 1px solid hsl(0, 0%, 88%);
-    border-bottom: 1px solid #fff;
+    border-top: 1px solid;
+    border-top-color: hsl(0, 0%, 88%);
+    border-bottom: 1px solid;
+    border-bottom-color: #fff;
 }
 
 .sub-unsub-message span:before,
@@ -2624,7 +2645,8 @@ button.topic_edit_cancel {
     position: relative;
     margin: 5px 0px;
     border: none;
-    border-left: 3px solid hsl(0, 0%, 93%);
+    border-left: 3px solid;
+    border-left-color: hsl(0, 0%, 93%);
     height: 70px;
     padding: 5px;
     z-index: 1;
