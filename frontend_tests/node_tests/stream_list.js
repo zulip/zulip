@@ -30,6 +30,7 @@ set_global('topic_list', {});
         stream_id: 100,
         color: 'blue',
         subscribed: true,
+        pin_to_top: true,
     };
     global.stream_data.add_sub('devel', devel);
 
@@ -96,9 +97,9 @@ set_global('topic_list', {});
     stream_list.build_stream_list();
 
     var expected_elems = [
-        split,
-        devel_sidebar,
-        social_sidebar,
+        devel_sidebar,          //pinned
+        split,                  //separator
+        social_sidebar,         //not pinned
     ];
 
     assert.deepEqual(appended_elems, expected_elems);
@@ -143,25 +144,23 @@ set_global('topic_list', {});
     row.remove();
     assert(removed);
 }());
+function add_row(sub) {
+    global.stream_data.add_sub(sub.name, sub);
+    var row = {
+        update_whether_active: function () {},
+        get_li: function () {
+            var html = '<' + sub.name + ' sidebar row html>';
+            var obj = $(html);
 
+            obj.length = 1;  // bypass blueslip error
+
+            return obj;
+        },
+    };
+    stream_list.stream_sidebar.set_row(sub.stream_id, row);
+}
 function initialize_stream_data() {
     stream_data.clear_subscriptions();
-
-    function add_row(sub) {
-        global.stream_data.add_sub(sub.name, sub);
-        var row = {
-            update_whether_active: function () {},
-            get_li: function () {
-                var html = '<' + sub.name + ' sidebar row html>';
-                var obj = $(html);
-
-                obj.length = 1;  // bypass blueslip error
-
-                return obj;
-            },
-        };
-        stream_list.stream_sidebar.set_row(sub.stream_id, row);
-    }
 
     // pinned streams
     var develSub = {
@@ -330,6 +329,114 @@ function initialize_stream_data() {
     assert(!stream_list.stream_sidebar.has_row_for(stream_id));
 }());
 
+(function test_separators_only_pinned_and_dormant() {
+
+    // Test only pinned and dormant streams
+
+    stream_data.clear_subscriptions();
+
+    // Get coverage on early-exit.
+    stream_list.build_stream_list();
+
+    // pinned streams
+    var develSub = {
+        name: 'devel',
+        stream_id: 1000,
+        color: 'blue',
+        pin_to_top: true,
+        subscribed: true,
+    };
+    add_row(develSub);
+
+    var RomeSub = {
+        name: 'Rome',
+        stream_id: 2000,
+        color: 'blue',
+        pin_to_top: true,
+        subscribed: true,
+    };
+    add_row(RomeSub);
+    // dorment stream
+    var DenmarkSub = {
+        name: 'Denmark',
+        stream_id: 3000,
+        color: 'blue',
+        pin_to_top: false,
+        subscribed: true,
+    };
+    add_row(DenmarkSub);
+
+    global.stream_data.is_active = function (sub) {
+        return sub.name !== 'Denmark';
+    };
+
+    var appended_elems;
+    $('#stream_filters').append = function (elems) {
+        appended_elems = elems;
+    };
+
+    stream_list.build_stream_list();
+
+    var split = '<hr class="stream-split">';
+    var expected_elems = [
+        // pinned
+        $('<devel sidebar row html>'),
+        $('<Rome sidebar row html>'),
+        split,
+        // dormant
+        $('<Denmark sidebar row html>'),
+    ];
+
+    assert.deepEqual(appended_elems, expected_elems);
+
+}());
+
+(function test_separators_only_pinned() {
+
+    // Test only pinned streams
+
+    stream_data.clear_subscriptions();
+
+    // Get coverage on early-exit.
+    stream_list.build_stream_list();
+
+    // pinned streams
+    var develSub = {
+        name: 'devel',
+        stream_id: 1000,
+        color: 'blue',
+        pin_to_top: true,
+        subscribed: true,
+    };
+    add_row(develSub);
+
+    var RomeSub = {
+        name: 'Rome',
+        stream_id: 2000,
+        color: 'blue',
+        pin_to_top: true,
+        subscribed: true,
+    };
+    add_row(RomeSub);
+
+
+    var appended_elems;
+    $('#stream_filters').append = function (elems) {
+        appended_elems = elems;
+    };
+
+    stream_list.build_stream_list();
+
+    var expected_elems = [
+        // pinned
+        $('<devel sidebar row html>'),
+        $('<Rome sidebar row html>'),
+        // no separator at the end as no stream follows
+    ];
+
+    assert.deepEqual(appended_elems, expected_elems);
+
+}());
 (function test_update_count_in_dom() {
     function make_elem(elem, count_selector, value_selector) {
         var count = $(count_selector);
