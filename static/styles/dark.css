@@ -1,10 +1,6 @@
-:root {
-    --background-color: #212d3b;
-}
-
 html,
 body {
-    background-color: var(--background-color);
+    background-color: #212d3b;
     color: #dddeee;
 
     -webkit-font-smoothing: antialiased;
@@ -18,12 +14,12 @@ body {
 .floating_recipient .message-header-wrapper,
 .column-middle,
 #compose {
-    background-color: var(--background-color);
+    background-color: #212d3b;
 }
 
 .dark .message_label_clickable.stream_label,
 .dark .stream_label {
-    color: var(--background-color);
+    color: #212d3b;
 }
 
 .compose-content,
@@ -110,7 +106,7 @@ textarea.new_message_textarea,
 }
 
 .overlay .overlay-content > div {
-    background: var(--background-color);
+    background: #212d3b;
 }
 
 .overlay .flex.overlay-content > div,
@@ -127,7 +123,7 @@ textarea.new_message_textarea,
 .dropdown .dropdown-menu li.divider,
 .popover hr,
 hr {
-    color: var(--background-color);
+    color: #212d3b;
     opacity: 0.2;
 }
 
