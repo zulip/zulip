@@ -77,6 +77,7 @@ from zerver.lib.actions import (
     notify_realm_custom_profile_fields,
     check_add_user_group,
     do_update_user_group_name,
+    do_update_user_group_description,
 )
 from zerver.lib.events import (
     apply_events,
@@ -1017,6 +1018,20 @@ class EventsRegisterTest(ZulipTestCase):
         ])
         backend = UserGroup.objects.get(name='backend')
         events = self.do_test(lambda: do_update_user_group_name(backend, 'backendteam'))
+        error = user_group_update_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        # Test description update
+        user_group_update_checker = self.check_events_dict([
+            ('type', equals('user_group')),
+            ('op', equals('update')),
+            ('group_id', check_int),
+            ('data', check_dict_only([
+                ('description', check_string),
+            ])),
+        ])
+        description = "Backend team to deal with backend code."
+        events = self.do_test(lambda: do_update_user_group_description(backend, description))
         error = user_group_update_checker('events[0]', events[0])
         self.assert_on_error(error)
 

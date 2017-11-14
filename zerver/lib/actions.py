@@ -4312,6 +4312,7 @@ def do_update_user_group_description(user_group, description):
     # type: (UserGroup, Text) -> None
     user_group.description = description
     user_group.save(update_fields=['description'])
+    do_send_user_group_update_event(user_group, dict(description=description))
 
 def bulk_add_members_to_user_group(user_group, user_profiles):
     # type: (UserGroup, List[UserProfile]) -> None
