@@ -249,8 +249,7 @@ def main(options):
         # issue with the symlinks being improperly owned by root.
         if os.path.islink("node_modules"):
             run(["sudo", "rm", "-f", "node_modules"])
-        if not os.path.isdir(NODE_MODULES_CACHE_PATH):
-            run(["sudo", "mkdir", NODE_MODULES_CACHE_PATH])
+        run(["sudo", "mkdir", "-p", NODE_MODULES_CACHE_PATH])
         run(["sudo", "chown", "%s:%s" % (user_id, user_id), NODE_MODULES_CACHE_PATH])
         setup_node_modules(prefer_offline=True)
     except subprocess.CalledProcessError:

@@ -15,8 +15,7 @@ from zulip_bots.lib import get_bots_directory_path
 
 
 bots_dir = os.path.join(settings.STATIC_ROOT, 'generated/bots')
-if not os.path.isdir(bots_dir):
-    os.makedirs(bots_dir)
+os.makedirs(bots_dir, exist_ok=True)
 
 def copyfiles(paths):
     # type: (List[Text]) -> None
@@ -24,8 +23,7 @@ def copyfiles(paths):
         bot_name = os.path.basename(os.path.dirname(src_path))
 
         bot_dir = os.path.join(bots_dir, bot_name)
-        if not os.path.isdir(bot_dir):
-            os.mkdir(bot_dir)
+        os.makedirs(bot_dir, exist_ok=True)
 
         dst_path = os.path.join(bot_dir, os.path.basename(src_path))
         if not os.path.isfile(dst_path):
