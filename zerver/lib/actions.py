@@ -4296,9 +4296,9 @@ def do_update_user_group_description(user_group, description):
     user_group.description = description
     user_group.save(update_fields=['description'])
 
-def bulk_add_members_to_user_group(user_group_id, user_profiles):
-    # type: (int, List[UserProfile]) -> None
-    memberships = [UserGroupMembership(user_group_id=user_group_id,
+def bulk_add_members_to_user_group(user_group, user_profiles):
+    # type: (UserGroup, List[UserProfile]) -> None
+    memberships = [UserGroupMembership(user_group_id=user_group.id,
                                        user_profile=user_profile)
                    for user_profile in user_profiles]
     UserGroupMembership.objects.bulk_create(memberships)
