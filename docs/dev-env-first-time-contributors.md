@@ -171,10 +171,19 @@ Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
 #### Debian
 
 The setup for Debian 9.0 "stretch" is just like [for Ubuntu 16.04](#ubuntu),
-with one difference.
+with two differences.
 
-If you're in a hurry, you can copy and paste the following into your terminal
-after which you can jump to [Step 2: Get Zulip Code](#step-2-get-zulip-code):
+**Setup LXC networking**.  Debian's packages do not ship any default
+network setup for LXC containers. So, you will have to setup
+networking for `lxc` containers yourself by
+[following the steps][lxc-networking-quickstart] outlined in
+[Debian's LXC docs](https://wiki.debian.org/LXC#network_setup).
+
+[lxc-networking-quickstart]: https://wiki.debian.org/LXC#Minimal_changes_to_set_up_networking_for_LXC_for_Debian_.2BIBw-stretch.2BIB0_.28testing.29
+
+**Setup Vagrant with LXC**. If you're in a hurry, you can copy and
+paste the following into your terminal after which you can jump to
+[Step 2: Get Zulip Code](#step-2-get-zulip-code):
 
 ```
 sudo apt-get -y purge vagrant && \
@@ -192,7 +201,6 @@ command is
 ```
 sudo apt-get install build-essential git ruby lxc redir
 ```
-
 
 #### Windows 10
 
