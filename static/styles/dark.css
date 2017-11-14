@@ -1,0 +1,230 @@
+body.dark-mode {
+    background-color: #212d3b;
+    color: #dddeee;
+
+    -webkit-font-smoothing: antialiased;
+}
+
+body.dark-mode .dark .popover a {
+    color: #dddeee;
+}
+
+body.dark-mode #tab_bar_underpadding,
+body.dark-mode .floating_recipient .message-header-wrapper,
+body.dark-mode .column-middle,
+body.dark-mode #compose {
+    background-color: #212d3b;
+}
+
+body.dark-mode .dark .message_label_clickable.stream_label,
+body.dark-mode .dark .stream_label {
+    color: #212d3b;
+}
+
+body.dark-mode .compose-content,
+body.dark-mode .message_list .recipient_row,
+body.dark-mode .app-main .column-middle,
+body.dark-mode .messagebox,
+body.dark-mode .right-sidebar,
+body.dark-mode .sender_name,
+body.dark-mode ul.filters a,
+body.dark-mode .message_header_stream a.message_label_clickable,
+body.dark-mode .header,
+body.dark-mode #search_query,
+body.dark-mode .draft-row .draft-info-box,
+body.dark-mode .dark_background a,
+body.dark-mode .dark_background a:hover,
+body.dark-mode a.dark_background:hover,
+body.dark-mode .dark_background,
+body.dark-mode .private-message .messagebox,
+body.dark-mode .dropdown-menu a,
+body.dark-mode .popover,
+body.dark-mode .subscriptions-container .display-type .stream-info-title,
+body.dark-mode #settings_page .content-wrapper #settings_content,
+body.dark-mode #settings_page .sidebar .tab-container,
+body.dark-mode #settings_page,
+body.dark-mode .informational-overlays .overlay-content {
+    background-color: transparent;
+    color: inherit;
+}
+
+/* these are converting grey things to "new grey" */
+body.dark-mode .sidebar-title,
+body.dark-mode .recipient_row_date,
+body.dark-mode .stream-row .sub-info-box .top-bar .subscriber-count,
+body.dark-mode .stream-row .sub-info-box .top-bar .message-count {
+    color: inherit;
+    opacity: 0.5;
+}
+
+body.dark-mode .new-style .button,
+body.dark-mode input[type="text"],
+body.dark-mode input[type="email"],
+body.dark-mode textarea,
+body.dark-mode .new-style .tab-switcher .ind-tab:not(.selected) {
+    background-color: hsla(0, 0%, 0%, 0.2);
+    border-color: hsla(0, 0%, 0%, 0.6);
+    color: inherit;
+}
+
+body.dark-mode .new-style .tab-switcher .ind-tab.selected,
+body.dark-mode .table-striped thead th,
+body.dark-mode .message_reactions .message_reaction.reacted {
+    background-color: hsla(0, 0%, 0%, 0.5);
+    border-color: hsla(0, 0%, 0%, 0.9);
+}
+
+body.dark-mode .message_reactions .message_reaction {
+    background-color: hsla(0, 0%, 0%, 0.2);
+    border-color: hsla(0, 0%, 0%, 0.5);
+}
+
+body.dark-mode .new-style button.button:focus,
+body.dark-mode input[type="text"]:focus,
+body.dark-mode input[type="email"]:focus,
+body.dark-mode textarea:focus,
+body.dark-mode textarea.new_message_textarea:focus,
+body.dark-mode .compose_table .recipient_box:focus {
+    border-color: hsla(0, 0%, 0%, 0.9);
+}
+
+body.dark-mode .message-header-contents,
+body.dark-mode .message_header_private_message .message-header-contents,
+body.dark-mode #tab_list li.active {
+    background: hsla(0, 0%, 0%, 0.2);
+    border-color: transparent;
+}
+
+body.dark-mode .message_row,
+body.dark-mode .compose-content,
+body.dark-mode .header,
+body.dark-mode .message_list .recipient_row,
+body.dark-mode .navbar-search,
+body.dark-mode textarea.new_message_textarea,
+body.dark-mode .compose_table .recipient_box,
+body.dark-mode .message_row,
+body.dark-mode .draft-row .draft-info-box {
+    border-color: hsla(0, 0%, 0%, 0.2);
+}
+
+body.dark-mode #navbar-buttons ul.nav .dropdown-toggle,
+body.dark-mode #navbar-buttons ul.nav li.active .dropdown-toggle {
+    color: hsla(0, 0%, 0%, 0.8);
+}
+
+body.dark-mode .overlay,
+body.dark-mode .emoji-popover-emoji:not(.reacted):focus {
+    background-color: hsla(212, 28%, 8%, 0.75);
+}
+
+body.dark-mode .overlay .overlay-content > div {
+    background: #212d3b;
+}
+
+body.dark-mode .overlay .flex.overlay-content > div,
+body.dark-mode #settings_page,
+body.dark-mode .informational-overlays .overlay-content {
+    box-shadow: 0px 0px 30px hsl(235, 17%, 8%);
+}
+
+body.dark-mode .dropdown .dropdown-menu,
+body.dark-mode .popover {
+    background: hsl(235, 18%, 11%);
+}
+
+body.dark-mode .dropdown .dropdown-menu li.divider,
+body.dark-mode .popover hr,
+body.dark-mode hr {
+    color: #212d3b;
+    opacity: 0.2;
+}
+
+body.dark-mode .nav .dropdown-menu::after,
+body.dark-mode .emoji-info-popover.top .arrow,
+body.dark-mode .emoji-info-popover.bottom .arrow {
+    border-bottom-color: hsl(235, 18%, 7%);
+}
+
+body.dark-mode li.active-filter,
+body.dark-mode li.active-sub-filter {
+    background-color: hsla(199, 33%, 46%, 0.2);
+}
+
+body.dark-mode #global_filters li:hover,
+body.dark-mode #stream_filters li:hover,
+body.dark-mode #group-pms li:hover,
+body.dark-mode #user_presences li:hover {
+    background-color: hsla(136, 25%, 73%, 0.2);
+}
+
+body.dark-mode #stream_filters li.active-sub-filter:hover {
+    background-color: hsla(136, 25%, 73%, 0.5);
+}
+
+body.dark-mode .floating_recipient .recipient_row {
+    border-top: none;
+}
+
+body.dark-mode .drafts-header,
+body.dark-mode .nav > li > a:hover,
+body.dark-mode .subscriptions-header,
+body.dark-mode .grey-box,
+body.dark-mode .stream-email,
+body.dark-mode #settings_page .content-wrapper .settings-header,
+body.dark-mode #settings_page .sidebar li.active,
+body.dark-mode #settings_page .sidebar .tab-container,
+body.dark-mode .stream-row.active,
+body.dark-mode .table-striped tbody tr:nth-child(odd) td,
+body.dark-mode .table-striped tbody tr:nth-child(odd) th,
+body.dark-mode .modal-footer {
+    border-color: hsla(0, 0%, 0%, 0.2);
+    background-color: hsla(0, 0%, 0%, 0.2);
+}
+
+body.dark-mode .modal-footer {
+    -webkit-box-shadow: inset 0 1px 0 hsla(0, 0%, 0%, 0.2);
+    box-shadow: inset 0 1px 0 hsla(0, 0%, 0%, 0.2);
+}
+
+body.dark-mode .subscriptions-container .right .display-type,
+body.dark-mode .stream-row,
+body.dark-mode .subscriptions-container .left .search-container,
+body.dark-mode .subscriptions-container .left,
+body.dark-mode .subscriber-list-box,
+body.dark-mode .subscriber-list tr,
+body.dark-mode #subscription_overlay ul.grey-box li,
+body.dark-mode #settings_page .sidebar li,
+body.dark-mode #settings_page .sidebar,
+body.dark-mode #settings_page .sidebar li.border-top,
+body.dark-mode .table-bordered,
+body.dark-mode .table-bordered th,
+body.dark-mode .table-bordered td {
+    border-color: hsla(0, 0%, 0%, 0.2);
+}
+
+body.dark-mode .draft-row .draft-info-box {
+    border-top: none;
+}
+
+body.dark-mode .private-message .messagebox,
+body.dark-mode .message_header_private_message .message-header-contents {
+    box-shadow: none;
+}
+
+body.dark-mode .draft-row .message_header_private_message .message_label_clickable {
+    padding: 4px 6px 3px 6px;
+    color: inherit;
+}
+
+body.dark-mode .dark_background a:hover {
+    background: hsl(0, 0%, 27%);
+}
+
+body.dark-mode .nav-list > li > a,
+body.dark-mode .nav-list .nav-header {
+    text-shadow: none;
+}
+
+body.dark-mode .message-info-popover .popover-title {
+    border-bottom: none;
+}
