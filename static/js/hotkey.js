@@ -78,6 +78,7 @@ var keypress_mappings = {
     80: {name: 'narrow_private', message_view_only: true}, // 'P'
     82: {name: 'respond_to_author', message_view_only: true}, // 'R'
     83: {name: 'narrow_by_subject', message_view_only: true}, //'S'
+    84: {name: 'toggle_night_mode', message_view_only: false}, // 'T'
     86: {name: 'view_selected_stream', message_view_only: false}, //'V'
     99: {name: 'compose', message_view_only: true}, // 'c'
     100: {name: 'open_drafts', message_view_only: true}, // 'd'
@@ -580,6 +581,9 @@ exports.process_hotkey = function (e, hotkey) {
 
     // Shortcuts that don't require a message
     switch (event_name) {
+        case 'toggle_night_mode':
+            settings_display.set_night_mode(!page_params.night_mode);
+            return true;
         case 'compose': // 'c': compose
             compose_actions.start('stream', {trigger: "compose_hotkey"});
             return true;
@@ -717,6 +721,7 @@ exports.process_keydown = function (e) {
     if (!hotkey) {
         return false;
     }
+
     return exports.process_hotkey(e, hotkey);
 };
 
@@ -734,6 +739,7 @@ exports.process_keypress = function (e) {
     if (!hotkey) {
         return false;
     }
+
     return exports.process_hotkey(e, hotkey);
 };
 

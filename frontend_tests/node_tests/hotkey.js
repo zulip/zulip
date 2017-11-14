@@ -149,7 +149,7 @@ function stubbing(func_name_to_stub, test_function) {
     // Unmapped keys should immediately return false, without
     // calling any functions outside of hotkey.js.
     assert_unmapped('abefhlmoptxyz');
-    assert_unmapped('BEFHILNOQTUWXYZ');
+    assert_unmapped('BEFHILNOQUWXYZ');
 
     // We have to skip some checks due to the way the code is
     // currently organized for mapped keys.
