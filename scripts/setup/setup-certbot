@@ -42,7 +42,7 @@ fi
 
 CERTBOT_PATH="/usr/local/sbin/certbot-auto"
 # For reference https://certbot.eff.org/all-instructions/#debian-other-nginx
-wget https://dl.eff.org/certbot-auto -O "$CERTBOT_PATH"
+wget -q https://dl.eff.org/certbot-auto -O "$CERTBOT_PATH"
 chmod a+x "$CERTBOT_PATH"
 
 "$CERTBOT_PATH" --standalone certonly -d "$DOMAIN" -m "$EMAIL" --agree-tos --non-interactive
