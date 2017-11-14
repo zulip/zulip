@@ -32,9 +32,12 @@
             {% if user_is_authenticated %}
                 {% include 'zerver/portico-header-dropdown.html' %}
             {% else %}
+                {% if login_link_disabled %}
+                {% else %}
                 <li>
                     <a href="/login/">Login</a>
                 </li>
+                {% endif %}
                 {% if register_link_disabled %}
                 {% else %}
                 <li>

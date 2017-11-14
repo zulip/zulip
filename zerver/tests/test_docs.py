@@ -20,9 +20,8 @@ from zerver.views.integrations import (
 )
 
 class DocPageTest(ZulipTestCase):
-    def _test(self, url, expected_content, extra_strings=[],
-              landing_page=True):
-        # type: (str, str, List[str], bool) -> None
+    def _test(self, url: str, expected_content: str, extra_strings: List[str]=[],
+              landing_missing_strings: List[str]=[], landing_page: bool=True) -> None:
 
         # Test the URL on the "zulip" subdomain
         result = self.client_get(url, subdomain="zulip")
@@ -47,6 +46,8 @@ class DocPageTest(ZulipTestCase):
             self.assertIn(expected_content, str(result.content))
             for s in extra_strings:
                 self.assertIn(s, str(result.content))
+            for s in landing_missing_strings:
+                self.assertNotIn(s, str(result.content))
 
     @slow("Tests dozens of endpoints, including generating lots of emails")
     def test_doc_endpoints(self):
@@ -62,7 +63,7 @@ class DocPageTest(ZulipTestCase):
         self._test('/en/history/', 'Cambridge, Massachusetts')
         self._test('/apps/', 'Apps for every platform.')
         self._test('/features/', 'Beautiful messaging')
-        self._test('/hello/', 'productive group chat')
+        self._test('/hello/', 'productive group chat', landing_missing_strings=["Login"])
         self._test('/why-zulip/', 'all stakeholders can see and')
         self._test('/for/open-source/', 'for open source projects')
         self._test('/for/companies/', 'in a company')
