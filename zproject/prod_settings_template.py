@@ -89,6 +89,10 @@ EMAIL_USE_TLS = True
 # Enable at least one of the following authentication backends.
 # See http://zulip.readthedocs.io/en/latest/prod-authentication-methods.html
 # for documentation on our authentication backends.
+#
+# The install process requires EmailAuthBackend (the default) to be
+# enabled.  If you want to disable it, do so after creating the
+# initial realm and user.
 AUTHENTICATION_BACKENDS = (
     'zproject.backends.EmailAuthBackend',  # Email and password; just requires SMTP setup
     # 'zproject.backends.GoogleMobileOauth2Backend',  # Google Apps, setup below
