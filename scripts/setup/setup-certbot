@@ -47,8 +47,18 @@ chmod a+x "$CERTBOT_PATH"
 
 "$CERTBOT_PATH" --standalone certonly -d "$DOMAIN" -m "$EMAIL" --agree-tos --non-interactive
 
-# Link the generated cert to the path read by Zulip
-ln -nsf /etc/letsencrypt/live/"$DOMAIN"/privkey.pem /etc/ssl/private/zulip.key
-ln -nsf /etc/letsencrypt/live/"$DOMAIN"/fullchain.pem /etc/ssl/certs/zulip.combined-chain.crt
+symlink_with_backup() {
+    if [ -e "$2" ]; then
+        # If the user is setting up our automatic certbot-management on a
+        # system that already has certs for Zulip, use some extra caution
+        # to keep the old certs available.
+        mv -f --backup=numbered "$2" "$2".setup-certbot || true
+    fi
+    ln -nsf "$1" "$2"
+}
+
+CERT_DIR=/etc/letsencrypt/live/"$DOMAIN"
+symlink_with_backup "$CERT_DIR"/privkey.pem /etc/ssl/private/zulip.key
+symlink_with_backup "$CERT_DIR"/fullchain.pem /etc/ssl/certs/zulip.combined-chain.crt
 
 echo "Certbot SSL certificate configuration succeeded."
