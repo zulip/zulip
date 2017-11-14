@@ -79,6 +79,7 @@ from zerver.lib.actions import (
     do_update_user_group_name,
     do_update_user_group_description,
     bulk_add_members_to_user_group,
+    remove_members_from_user_group,
 )
 from zerver.lib.events import (
     apply_events,
@@ -1046,6 +1047,18 @@ class EventsRegisterTest(ZulipTestCase):
         hamlet = self.example_user('hamlet')
         events = self.do_test(lambda: bulk_add_members_to_user_group(backend, [hamlet]))
         error = user_group_add_member_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        # Test remove members
+        user_group_remove_member_checker = self.check_events_dict([
+            ('type', equals('user_group')),
+            ('op', equals('remove_members')),
+            ('group_id', check_int),
+            ('user_ids', check_list(check_int)),
+        ])
+        hamlet = self.example_user('hamlet')
+        events = self.do_test(lambda: remove_members_from_user_group(backend, [hamlet]))
+        error = user_group_remove_member_checker('events[0]', events[0])
         self.assert_on_error(error)
 
     def test_default_stream_groups_events(self):

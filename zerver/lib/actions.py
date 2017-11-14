@@ -4358,3 +4358,6 @@ def remove_members_from_user_group(user_group, user_profiles):
     UserGroupMembership.objects.filter(
         user_group_id=user_group.id,
         user_profile__in=user_profiles).delete()
+
+    user_ids = [up.id for up in user_profiles]
+    do_send_user_group_members_update_event('remove_members', user_group, user_ids)
