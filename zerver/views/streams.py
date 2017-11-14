@@ -20,7 +20,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
     do_remove_default_stream, get_topic_history_for_stream, \
     do_create_default_stream_group, do_add_streams_to_default_stream_group, \
     do_remove_streams_from_default_stream_group, do_remove_default_stream_group, \
-    do_change_default_stream_group_description, \
+    do_change_default_stream_group_description, do_change_default_stream_group_name, \
     prep_stream_welcome_message
 from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
@@ -90,12 +90,16 @@ def create_default_stream_group(request: HttpRequest, user_profile: UserProfile,
 @require_realm_admin
 @has_request_variables
 def update_default_stream_group_info(request: HttpRequest, user_profile: UserProfile, group_id: int,
+                                     new_group_name: Text=REQ(validator=check_string, default=None),
                                      new_description: Text=REQ(validator=check_string, default=None)) -> None:
-    if not new_description:
-        return json_error(_('You must pass "new_description".'))
+    if not new_group_name and not new_description:
+        return json_error(_('You must pass "new_description" or "new_group_name".'))
 
     group = access_default_stream_group_by_id(user_profile.realm, group_id,)
-    do_change_default_stream_group_description(user_profile.realm, group, new_description)
+    if new_group_name is not None:
+        do_change_default_stream_group_name(user_profile.realm, group, new_group_name)
+    if new_description is not None:
+        do_change_default_stream_group_description(user_profile.realm, group, new_description)
     return json_success()
 
 @require_realm_admin

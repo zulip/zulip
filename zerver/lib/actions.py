@@ -2972,6 +2972,17 @@ def do_remove_streams_from_default_stream_group(realm: Realm, group: DefaultStre
     group.save()
     notify_default_stream_groups(realm)
 
+def do_change_default_stream_group_name(realm: Realm, group: DefaultStreamGroup, new_group_name: Text) -> None:
+    if group.name == new_group_name:
+        raise JsonableError(_("This default stream group is already named '%s'") % (new_group_name,))
+
+    if DefaultStreamGroup.objects.filter(name=new_group_name, realm=realm).exists():
+        raise JsonableError(_("Default stream group '%s' already exists") % (new_group_name,))
+
+    group.name = new_group_name
+    group.save()
+    notify_default_stream_groups(realm)
+
 def do_change_default_stream_group_description(realm: Realm, group: DefaultStreamGroup, new_description: Text) -> None:
     group.description = new_description
     group.save()
