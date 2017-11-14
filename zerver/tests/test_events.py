@@ -14,7 +14,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.models import (
     get_client, get_realm, get_stream_recipient, get_stream, get_user,
     Message, RealmDomain, Recipient, UserMessage, UserPresence, UserProfile,
-    Realm, Subscription, Stream, flush_per_request_caches,
+    Realm, Subscription, Stream, flush_per_request_caches, UserGroup
 )
 
 from zerver.lib.actions import (
@@ -76,6 +76,7 @@ from zerver.lib.actions import (
     lookup_default_stream_groups,
     notify_realm_custom_profile_fields,
     check_add_user_group,
+    do_update_user_group_name,
 )
 from zerver.lib.events import (
     apply_events,
@@ -1003,6 +1004,20 @@ class EventsRegisterTest(ZulipTestCase):
         events = self.do_test(lambda: check_add_user_group(zulip, 'backend', [othello],
                                                            'Backend team'))
         error = user_group_add_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        # Test name update
+        user_group_update_checker = self.check_events_dict([
+            ('type', equals('user_group')),
+            ('op', equals('update')),
+            ('group_id', check_int),
+            ('data', check_dict_only([
+                ('name', check_string),
+            ])),
+        ])
+        backend = UserGroup.objects.get(name='backend')
+        events = self.do_test(lambda: do_update_user_group_name(backend, 'backendteam'))
+        error = user_group_update_checker('events[0]', events[0])
         self.assert_on_error(error)
 
     def test_default_stream_groups_events(self):

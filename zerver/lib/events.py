@@ -554,6 +554,10 @@ def apply_event(state, event, user_profile, client_gravatar, include_subscribers
         if event['op'] == 'add':
             state['realm_user_groups'].append(event['group'])
             state['realm_user_groups'].sort(key=lambda group: group['id'])
+        elif event['op'] == 'update':
+            for user_group in state['realm_user_groups']:
+                if user_group['id'] == event['group_id']:
+                    user_group.update(event['data'])
     else:
         raise AssertionError("Unexpected event type %s" % (event['type'],))
 
