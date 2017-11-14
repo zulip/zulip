@@ -19,6 +19,9 @@ coverage==4.4.1
 # fake for LDAP testing
 -e git+https://github.com/zulip/fakeldap.git@37bc199e9589c31f4bb5bae1445ad1cd7f84e1ac#egg=fakeldap==0.5.1.zulip1
 
+# For sorting imports
+isort==4.2.15
+
 # for pep8 linter
 pycodestyle==2.3.1
 
