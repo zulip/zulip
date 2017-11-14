@@ -4314,12 +4314,24 @@ def do_update_user_group_description(user_group, description):
     user_group.save(update_fields=['description'])
     do_send_user_group_update_event(user_group, dict(description=description))
 
+def do_send_user_group_members_update_event(event_name: Text,
+                                            user_group: UserGroup,
+                                            user_ids: List[int]) -> None:
+    event = dict(type="user_group",
+                 op=event_name,
+                 group_id=user_group.id,
+                 user_ids=user_ids)
+    send_event(event, active_user_ids(user_group.realm_id))
+
 def bulk_add_members_to_user_group(user_group, user_profiles):
     # type: (UserGroup, List[UserProfile]) -> None
     memberships = [UserGroupMembership(user_group_id=user_group.id,
                                        user_profile=user_profile)
                    for user_profile in user_profiles]
     UserGroupMembership.objects.bulk_create(memberships)
+
+    user_ids = [up.id for up in user_profiles]
+    do_send_user_group_members_update_event('add_members', user_group, user_ids)
 
 def remove_members_from_user_group(user_group, user_profiles):
     # type: (UserGroup, List[UserProfile]) -> None
