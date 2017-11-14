@@ -46,12 +46,11 @@ class zulip::nginx {
     mode       => 650
   }
 
-  # Directory for use by the certbot webroot plugin
-  file {['/var/www', '/var/www/certbot']:
+  file { ["/var/lib/zulip", "/var/lib/zulip/certbot-webroot"]:
     ensure     => "directory",
-    owner      => "root",
-    group      => "root",
-    mode       => 640,
+    owner      => "zulip",
+    group      => "adm",
+    mode       => 660,
   }
 
   service { 'nginx':
