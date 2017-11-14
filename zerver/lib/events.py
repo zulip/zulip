@@ -552,6 +552,10 @@ def apply_event(state, event, user_profile, client_gravatar, include_subscribers
     elif event['type'] == "update_global_notifications":
         assert event['notification_name'] in UserProfile.notification_setting_types
         state[event['notification_name']] = event['setting']
+    elif event['type'] == "user_group":
+        if event['op'] == 'add':
+            state['realm_user_groups'].append(event['group'])
+            state['realm_user_groups'].sort(key=lambda group: group['id'])
     else:
         raise AssertionError("Unexpected event type %s" % (event['type'],))
 

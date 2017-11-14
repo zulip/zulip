@@ -4299,10 +4299,22 @@ def do_update_user_custom_profile_data(user_profile, data):
                              field_id=field['id'],
                              defaults={'value': field['value']})
 
+def do_send_create_user_group_event(user_group: UserGroup, members: List[UserProfile]) -> None:
+    event = dict(type="user_group",
+                 op="add",
+                 group=dict(name=user_group.name,
+                            members=[member.id for member in members],
+                            description=user_group.description,
+                            id=user_group.id,
+                            ),
+                 )
+    send_event(event, active_user_ids(user_group.realm_id))
+
 def check_add_user_group(realm, name, initial_members, description):
     # type: (Realm, Text, List[UserProfile], Text) -> None
     try:
-        create_user_group(name, initial_members, realm, description=description)
+        user_group = create_user_group(name, initial_members, realm, description=description)
+        do_send_create_user_group_event(user_group, initial_members)
     except django.db.utils.IntegrityError:
         raise JsonableError(_("User group '%s' already exists." % (name,)))
 

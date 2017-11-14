@@ -75,6 +75,7 @@ from zerver.lib.actions import (
     log_event,
     lookup_default_stream_groups,
     notify_realm_custom_profile_fields,
+    check_add_user_group,
 )
 from zerver.lib.events import (
     apply_events,
@@ -984,6 +985,24 @@ class EventsRegisterTest(ZulipTestCase):
 
         events = self.do_test(lambda: do_remove_alert_words(self.user_profile, ["alert_word"]))
         error = alert_words_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_user_group_events(self) -> None:
+        user_group_add_checker = self.check_events_dict([
+            ('type', equals('user_group')),
+            ('op', equals('add')),
+            ('group', check_dict_only([
+                ('id', check_int),
+                ('name', check_string),
+                ('members', check_list(check_int)),
+                ('description', check_string),
+            ])),
+        ])
+        othello = self.example_user('othello')
+        zulip = get_realm('zulip')
+        events = self.do_test(lambda: check_add_user_group(zulip, 'backend', [othello],
+                                                           'Backend team'))
+        error = user_group_add_checker('events[0]', events[0])
         self.assert_on_error(error)
 
     def test_default_stream_groups_events(self):
