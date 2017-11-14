@@ -12,7 +12,7 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-args="$(getopt -o '' --long help,hostname:,email: -n "$0" -- "$@")"
+args="$(getopt -o '' --long help,hostname:,email:,no-zulip-conf -n "$0" -- "$@")"
 eval "set -- $args"
 while true; do
     case "$1" in
@@ -24,6 +24,10 @@ while true; do
         --email)
             EMAIL="$2"
             shift
+            shift
+            ;;
+        --no-zulip-conf)
+            no_zulip_conf=1
             shift
             ;;
         --help)
@@ -60,5 +64,9 @@ symlink_with_backup() {
 CERT_DIR=/etc/letsencrypt/live/"$DOMAIN"
 symlink_with_backup "$CERT_DIR"/privkey.pem /etc/ssl/private/zulip.key
 symlink_with_backup "$CERT_DIR"/fullchain.pem /etc/ssl/certs/zulip.combined-chain.crt
+
+if [ -z "$no_zulip_conf" ]; then
+    crudini --set /etc/zulip/zulip.conf certbot auto_renew yes
+fi
 
 echo "Certbot SSL certificate configuration succeeded."

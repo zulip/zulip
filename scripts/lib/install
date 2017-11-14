@@ -83,7 +83,8 @@ ZULIP_PATH="$(realpath $(dirname $0)/../..)"
 "$ZULIP_PATH"/scripts/lib/check-upstart
 
 if [ -n "$USE_CERTBOT" ]; then
-    "$ZULIP_PATH"/scripts/setup/setup-certbot --hostname "$EXTERNAL_HOST" --email "$ZULIP_ADMINISTRATOR"
+    "$ZULIP_PATH"/scripts/setup/setup-certbot --no-zulip-conf \
+        --hostname "$EXTERNAL_HOST" --email "$ZULIP_ADMINISTRATOR"
 fi
 
 # Check for missing SSL certificates early as well
@@ -133,6 +134,10 @@ mkdir -p /etc/zulip
     # we are checking for either empty or not-installed.
     if [ -n "$TRAVIS" ] || ! dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null | grep -vq ' not-installed$'; then
         echo -e "\n[rabbitmq]\nnodename = zulip@localhost"
+    fi
+
+    if [ -n "$USE_CERTBOT" ]; then
+        echo -e "\n[certbot]\nauto_renew = yes"
     fi
 ) > /etc/zulip/zulip.conf
 "$ZULIP_PATH"/scripts/zulip-puppet-apply -f
