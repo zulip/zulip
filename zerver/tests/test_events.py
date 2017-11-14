@@ -34,6 +34,7 @@ from zerver.lib.actions import (
     do_change_default_all_public_streams,
     do_change_default_events_register_stream,
     do_change_default_sending_stream,
+    do_change_default_stream_group_description,
     do_change_full_name,
     do_change_icon_source,
     do_change_is_admin,
@@ -991,6 +992,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('default_stream_groups', check_list(check_dict_only([
                 ('name', check_string),
                 ('id', check_int),
+                ('description', check_string),
                 ('streams', check_list(check_dict_only([
                     ('description', check_string),
                     ('invite_only', check_bool),
@@ -1003,8 +1005,8 @@ class EventsRegisterTest(ZulipTestCase):
         for stream_name in ["Scotland", "Verona", "Denmark"]:
             streams.append(get_stream(stream_name, self.user_profile.realm))
 
-        events = self.do_test(lambda: do_create_default_stream_group(self.user_profile.realm,
-                                                                     "group1", streams))
+        events = self.do_test(lambda: do_create_default_stream_group(
+            self.user_profile.realm, "group1", "This is group1", streams))
         error = default_stream_groups_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -1017,6 +1019,11 @@ class EventsRegisterTest(ZulipTestCase):
 
         events = self.do_test(lambda: do_remove_streams_from_default_stream_group(self.user_profile.realm,
                                                                                   group, [venice_stream]))
+        error = default_stream_groups_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        events = self.do_test(lambda: do_change_default_stream_group_description(self.user_profile.realm,
+                                                                                 group, "New description"))
         error = default_stream_groups_checker('events[0]', events[0])
         self.assert_on_error(error)
 
