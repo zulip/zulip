@@ -4303,8 +4303,8 @@ def bulk_add_members_to_user_group(user_group, user_profiles):
                    for user_profile in user_profiles]
     UserGroupMembership.objects.bulk_create(memberships)
 
-def remove_members_from_user_group(user_group_id, user_profiles):
-    # type: (int, List[UserProfile]) -> None
+def remove_members_from_user_group(user_group, user_profiles):
+    # type: (UserGroup, List[UserProfile]) -> None
     UserGroupMembership.objects.filter(
-        user_group_id=user_group_id,
+        user_group_id=user_group.id,
         user_profile__in=user_profiles).delete()
