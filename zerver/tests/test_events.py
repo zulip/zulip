@@ -35,6 +35,7 @@ from zerver.lib.actions import (
     do_change_default_events_register_stream,
     do_change_default_sending_stream,
     do_change_default_stream_group_description,
+    do_change_default_stream_group_name,
     do_change_full_name,
     do_change_icon_source,
     do_change_is_admin,
@@ -1024,6 +1025,11 @@ class EventsRegisterTest(ZulipTestCase):
 
         events = self.do_test(lambda: do_change_default_stream_group_description(self.user_profile.realm,
                                                                                  group, "New description"))
+        error = default_stream_groups_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        events = self.do_test(lambda: do_change_default_stream_group_name(self.user_profile.realm,
+                                                                          group, "New Group Name"))
         error = default_stream_groups_checker('events[0]', events[0])
         self.assert_on_error(error)
 
