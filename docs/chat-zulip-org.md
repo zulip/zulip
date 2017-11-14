@@ -10,16 +10,6 @@ developers roughly between 17:00 UTC and 2:00 UTC, but the sun never
 sets on the Zulip community.  Most questions get a reply within
 minutes to a few hours, depending on the time of day.
 
-## This is a bleeding edge development server
-
-The chat.zulip.org server is frequently deployed off of `master` from
-the Zulip Git repository, so please point out anything you notice that
-seems wrong!  We catch many bugs that escape code review this way.
-
-The chat.zulip.org server is a development and testing server, not a
-production service, so don't use it for anything mission-critical,
-secret/embarrassing, etc.
-
 ## Community conventions
 
 * Send any test messages to
@@ -58,6 +48,16 @@ and rarely a useful goal.
 To make the best use of your time, we highly recommend that you
 unsubscribe from streams that you aren't interested in, and mute
 streams that are only of occasional interest.
+
+## This is a bleeding edge development server
+
+The chat.zulip.org server is frequently deployed off of `master` from
+the Zulip Git repository, so please point out anything you notice that
+seems wrong!  We catch many bugs that escape code review this way.
+
+The chat.zulip.org server is a development and testing server, not a
+production service, so don't use it for anything mission-critical,
+secret/embarrassing, etc.
 
 ## Streams
 
