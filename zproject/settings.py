@@ -825,6 +825,7 @@ PIPELINE = {
                 'styles/media.css',
                 'styles/typing_notifications.css',
                 'styles/hotspots.css',
+                'styles/dark.css',
                 'styles/auto-dark.css',
                 # We don't want fonts.css on QtWebKit, so its omitted here
             ),
@@ -858,6 +859,7 @@ PIPELINE = {
                 'styles/media.css',
                 'styles/typing_notifications.css',
                 'styles/hotspots.css',
+                'styles/dark.css',
                 'styles/auto-dark.css',
             ),
             'output_filename': 'min/app.css'
