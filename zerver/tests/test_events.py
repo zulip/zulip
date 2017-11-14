@@ -71,6 +71,7 @@ from zerver.lib.actions import (
     do_update_pointer,
     do_update_user_presence,
     log_event,
+    lookup_default_stream_groups,
     notify_realm_custom_profile_fields,
 )
 from zerver.lib.events import (
@@ -989,6 +990,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('default_stream_groups')),
             ('default_stream_groups', check_list(check_dict_only([
                 ('name', check_string),
+                ('id', check_int),
                 ('streams', check_list(check_dict_only([
                     ('description', check_string),
                     ('invite_only', check_bool),
@@ -1006,19 +1008,19 @@ class EventsRegisterTest(ZulipTestCase):
         error = default_stream_groups_checker('events[0]', events[0])
         self.assert_on_error(error)
 
+        group = lookup_default_stream_groups(["group1"], self.user_profile.realm)[0]
         venice_stream = get_stream("Venice", self.user_profile.realm)
         events = self.do_test(lambda: do_add_streams_to_default_stream_group(self.user_profile.realm,
-                                                                             "group1", [venice_stream]))
+                                                                             group, [venice_stream]))
         error = default_stream_groups_checker('events[0]', events[0])
         self.assert_on_error(error)
 
         events = self.do_test(lambda: do_remove_streams_from_default_stream_group(self.user_profile.realm,
-                                                                                  "group1", [venice_stream]))
+                                                                                  group, [venice_stream]))
         error = default_stream_groups_checker('events[0]', events[0])
         self.assert_on_error(error)
 
-        events = self.do_test(lambda: do_remove_default_stream_group(self.user_profile.realm,
-                                                                     "group1"))
+        events = self.do_test(lambda: do_remove_default_stream_group(self.user_profile.realm, group))
         error = default_stream_groups_checker('events[0]', events[0])
         self.assert_on_error(error)
 
