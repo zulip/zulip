@@ -125,7 +125,7 @@ information on writing and running tests, see the
 After implementing the new feature, you should
 document it and update any existing documentation that might be
 relevant to the new feature. For more information on the kinds of
-documentation Zulip has, see [Documentation](README.html).
+documentation Zulip has, see [Documentation](documentation.html).
 
 ## Example Feature
 
