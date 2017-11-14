@@ -1,1 +1,280 @@
 
+
+
+/*
+   SOURCE FILE: static/styles/dark.css
+*/
+.dark-mode .overlay .overlay-content > div {
+    background: #212d3b;
+}
+
+.dark-mode #compose,
+.dark-mode #tab_bar_underpadding,
+.dark-mode .column-middle,
+.dark-mode .floating_recipient .message-header-wrapper,
+body.dark-mode,
+.dark-mode html {
+    background-color: #212d3b;
+}
+
+.dark-mode .dark .message_label_clickable.stream_label,
+.dark-mode .dark .stream_label,
+.dark-mode .dropdown .dropdown-menu li.divider,
+.dark-mode .popover hr,
+.dark-mode hr {
+    color: #212d3b;
+}
+
+.dark-mode .popover a,
+body.dark-mode,
+.dark-mode html {
+    color: #dddeee;
+}
+
+.dark-mode .dropdown .dropdown-menu li.divider,
+.dark-mode .popover hr,
+.dark-mode hr {
+    opacity: 0.2;
+}
+
+.dark-mode .recipient_row_date,
+.dark-mode .sidebar-title,
+.dark-mode .stream-row .sub-info-box .top-bar .message-count,
+.dark-mode .stream-row .sub-info-box .top-bar .subscriber-count {
+    opacity: 0.5;
+}
+
+.dark-mode #settings_page,
+.dark-mode .informational-overlays .overlay-content,
+.dark-mode .overlay .flex.overlay-content > div {
+    box-shadow: 0px 0px 30px hsl(235, 17%, 8%);
+}
+
+.dark-mode .draft-row .message_header_private_message .message_label_clickable {
+    padding: 4px 6px 3px 6px;
+}
+
+body.dark-mode,
+.dark-mode html {
+    -webkit-font-smoothing: antialiased;
+}
+
+.dark-mode .dark_background a:hover {
+    background: hsl(0, 0%, 27%);
+}
+
+.dark-mode .dropdown .dropdown-menu,
+.dark-mode .popover {
+    background: hsl(235, 18%, 11%);
+}
+
+.dark-mode .nav .dropdown-menu:after {
+    border-bottom-color: hsl(235, 18%, 9%);
+}
+
+.dark-mode .overlay {
+    background-color: hsla(0, 0%, 0%, 0%, 0.8);
+}
+
+.dark-mode #tab_list li.active,
+.dark-mode .message-header-contents,
+.dark-mode .message_header_private_message .message-header-contents {
+    background: hsla(0, 0%, 0%, 0.2);
+}
+
+.dark-mode #settings_page .content-wrapper .settings-header,
+.dark-mode #settings_page .sidebar li.active,
+.dark-mode .drafts-header,
+.dark-mode .grey-box,
+.dark-mode .modal-footer,
+.dark-mode .nav > li > a:hover,
+.dark-mode .new-style .button,
+.dark-mode .new-style .tab-switcher .ind-tab:not(.selected),
+.dark-mode .stream-email,
+.dark-mode .stream-row.active,
+.dark-mode .subscriptions-header,
+.dark-mode .table-striped tbody tr:nth-child(odd) td,
+.dark-mode .table-striped tbody tr:nth-child(odd) th,
+.dark-mode input[type="email"],
+.dark-mode input[type="text"],
+.dark-mode textarea {
+    background-color: hsla(0, 0%, 0%, 0.2);
+}
+
+.dark-mode #settings_page .content-wrapper .settings-header,
+.dark-mode #settings_page .sidebar,
+.dark-mode #settings_page .sidebar li,
+.dark-mode #settings_page .sidebar li.active,
+.dark-mode #settings_page .sidebar li.border-top,
+.dark-mode #subscription_overlay ul.grey-box li,
+.dark-mode .compose-content,
+.dark-mode .compose_table .recipient_box,
+.dark-mode .draft-row .draft-info-box,
+.dark-mode .drafts-header,
+.dark-mode .grey-box,
+.dark-mode .header,
+.dark-mode .message_list .recipient_row,
+.dark-mode .message_row,
+.dark-mode .message_row,
+.dark-mode .modal-footer,
+.dark-mode .nav > li > a:hover,
+.dark-mode .navbar-search,
+.dark-mode .stream-email,
+.dark-mode .stream-row,
+.dark-mode .stream-row.active,
+.dark-mode .subscriber-list tr,
+.dark-mode .subscriber-list-box,
+.dark-mode .subscriptions-container .left,
+.dark-mode .subscriptions-container .left .search-container,
+.dark-mode .subscriptions-container .right .display-type,
+.dark-mode .subscriptions-header,
+.dark-mode .table-bordered,
+.dark-mode .table-bordered td,
+.dark-mode .table-bordered th,
+.dark-mode .table-striped tbody tr:nth-child(odd) td,
+.dark-mode .table-striped tbody tr:nth-child(odd) th,
+.dark-mode textarea.new_message_textarea {
+    border-color: hsla(0, 0%, 0%, 0.2);
+}
+
+.dark-mode .new-style .tab-switcher .ind-tab.selected,
+.dark-mode .table-striped thead th {
+    background-color: hsla(0, 0%, 0%, 0.5);
+}
+
+.dark-mode .new-style .button,
+.dark-mode .new-style .tab-switcher .ind-tab:not(.selected),
+.dark-mode input[type="email"],
+.dark-mode input[type="text"],
+.dark-mode textarea {
+    border-color: hsla(0, 0%, 0%, 0.6);
+}
+
+.dark-mode #navbar-buttons ul.nav .dropdown-toggle,
+.dark-mode #navbar-buttons ul.nav li.active .dropdown-toggle {
+    color: hsla(0, 0%, 0%, 0.8);
+}
+
+.dark-mode .compose_table .recipient_box:focus,
+.dark-mode .new-style .tab-switcher .ind-tab.selected,
+.dark-mode .new-style button.button:focus,
+.dark-mode .table-striped thead th,
+.dark-mode input[type="email"]:focus,
+.dark-mode input[type="text"]:focus,
+.dark-mode textarea.new_message_textarea:focus,
+.dark-mode textarea:focus {
+    border-color: hsla(0, 0%, 0%, 0.9);
+}
+
+.dark-mode #global_filters li:hover,
+.dark-mode #group-pms li:hover,
+.dark-mode #stream_filters li:hover,
+.dark-mode #user_presences li:hover {
+    background-color: hsla(136, 25%, 73%, 0.2);
+}
+
+.dark-mode #stream_filters li.active-sub-filter:hover {
+    background-color: hsla(136, 25%, 73%, 0.5);
+}
+
+.dark-mode li.active-filter,
+.dark-mode li.active-sub-filter {
+    background-color: hsla(199, 33%, 46%, 0.2);
+}
+
+.dark-mode .overlay {
+    background-color: hsla(236, 18%, 15%, 0.75);
+}
+
+.dark-mode #search_query,
+.dark-mode #settings_page,
+.dark-mode #settings_page .content-wrapper #settings_content,
+.dark-mode #settings_page .sidebar .tab-container,
+.dark-mode .app-main .column-middle,
+.dark-mode .compose-content,
+.dark-mode .dark_background,
+.dark-mode .dark_background a,
+.dark-mode .dark_background a:hover,
+.dark-mode .draft-row .draft-info-box,
+.dark-mode .draft-row .message_header_private_message .message_label_clickable,
+.dark-mode .dropdown-menu a,
+.dark-mode .header,
+.dark-mode .informational-overlays .overlay-content,
+.dark-mode .message_header_stream a.message_label_clickable,
+.dark-mode .message_list .recipient_row,
+.dark-mode .messagebox,
+.dark-mode .new-style .button,
+.dark-mode .new-style .tab-switcher .ind-tab:not(.selected),
+.dark-mode .private-message .messagebox,
+.dark-mode .recipient_row_date,
+.dark-mode .right-sidebar,
+.dark-mode .sender_name,
+.dark-mode .sidebar-title,
+.dark-mode .stream-row .sub-info-box .top-bar .message-count,
+.dark-mode .stream-row .sub-info-box .top-bar .subscriber-count,
+.dark-mode .subscriptions-container .display-type .stream-info-title,
+.dark-mode a.dark_background:hover,
+.dark-mode input[type="email"],
+.dark-mode input[type="text"],
+.dark-mode textarea,
+.dark-mode ul.filters a {
+    color: inherit;
+}
+
+.dark-mode .modal-footer {
+    -webkit-box-shadow: inset 0 1px 0 hsla(0, 0%, 0%, 0.2);
+}
+
+.dark-mode .modal-footer {
+    box-shadow: inset 0 1px 0 hsla(0, 0%, 0%, 0.2);
+}
+
+.dark-mode .message-info-popover .popover-title {
+    border-bottom: none;
+}
+
+.dark-mode .draft-row .draft-info-box,
+.dark-mode .floating_recipient .recipient_row {
+    border-top: none;
+}
+
+.dark-mode .message_header_private_message .message-header-contents,
+.dark-mode .private-message .messagebox {
+    box-shadow: none;
+}
+
+.dark-mode .nav-list .nav-header,
+.dark-mode .nav-list > li > a {
+    text-shadow: none;
+}
+
+.dark-mode #search_query,
+.dark-mode #settings_page,
+.dark-mode #settings_page .content-wrapper #settings_content,
+.dark-mode #settings_page .sidebar .tab-container,
+.dark-mode .app-main .column-middle,
+.dark-mode .compose-content,
+.dark-mode .dark_background,
+.dark-mode .dark_background a,
+.dark-mode .dark_background a:hover,
+.dark-mode .draft-row .draft-info-box,
+.dark-mode .dropdown-menu a,
+.dark-mode .header,
+.dark-mode .informational-overlays .overlay-content,
+.dark-mode .message_header_stream a.message_label_clickable,
+.dark-mode .message_list .recipient_row,
+.dark-mode .messagebox,
+.dark-mode .private-message .messagebox,
+.dark-mode .right-sidebar,
+.dark-mode .sender_name,
+.dark-mode .subscriptions-container .display-type .stream-info-title,
+.dark-mode a.dark_background:hover,
+.dark-mode ul.filters a {
+    background-color: transparent;
+}
+
+.dark-mode #tab_list li.active,
+.dark-mode .message-header-contents,
+.dark-mode .message_header_private_message .message-header-contents {
+    border-color: transparent;
+}

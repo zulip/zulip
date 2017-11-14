@@ -1,1 +1,1575 @@
 
+
+/*
+   SOURCE FILE: static/styles/drafts.css
+*/
+.dark-mode .drafts-container .exit,
+.dark-mode .drafts-list .no-drafts {
+    color: hsl(0, 0%, 40%);
+}
+
+.dark-mode .draft_controls .restore-draft {
+    color: hsl(170, 47%, 51%);
+}
+
+.dark-mode .drafts-container {
+    background-color: hsl(180, 0%, 10%);
+}
+
+.dark-mode .draft-row .draft-info-box {
+    background: hsl(180, 0%, 15%);
+}
+
+.dark-mode .draft-row.active {
+    background-color: hsl(180, 0%, 16%);
+}
+
+.dark-mode .draft-row .draft-info-box {
+    border-bottom-color: hsl(180, 0%, 20%);
+}
+
+.dark-mode .draft-row .draft-info-box {
+    border-top-color: hsl(180, 0%, 20%);
+}
+
+.dark-mode .drafts-header {
+    border-bottom-color: hsl(180, 0%, 22%);
+}
+
+.dark-mode .draft_controls .delete-draft {
+    color: hsl(357, 52%, 48%);
+}
+
+/*
+   SOURCE FILE: static/styles/popovers.css
+*/
+.dark-mode .streams_popover .sp-container {
+    background: hsl(180, 0%, 10%);
+}
+
+/*
+   SOURCE FILE: static/styles/alerts.css
+*/
+.dark-mode .alert-box .alert.alert-error {
+    box-shadow: 0 0 2px hsl(0, 80%, 64%);
+}
+
+.dark-mode .alert-box .alert {
+    box-shadow: 0 0 2px hsl(16, 60%, 59%);
+}
+
+.dark-mode .alert-box .alert.alert-error {
+    border-color: hsl(0, 80%, 64%);
+}
+
+.dark-mode .alert-box .alert.alert-error,
+.dark-mode .alert-box .alert.alert-error::before {
+    color: hsl(0, 80%, 64%);
+}
+
+.dark-mode .alert-box .alert::before {
+    color: hsl(16, 60%, 50%);
+}
+
+.dark-mode .alert-box .alert {
+    border-color: hsl(16, 60%, 59%);
+}
+
+.dark-mode .alert-box .alert {
+    color: hsl(16, 60%, 59%);
+}
+
+.dark-mode .alert-box .alert {
+    background-color: hsl(180, 0%, 10%);
+}
+
+/*
+   SOURCE FILE: static/styles/reactions.css
+*/
+.dark-mode .emoji-popover-category-tabs .emoji-popover-tab-item.active {
+    background: hsl(0, 0%, 28%);
+}
+
+.dark-mode .message_reactions .message_reaction + .reaction_button {
+    border-color: hsl(0, 0%, 34%);
+}
+
+.dark-mode .emoji-popover-top .icon-vector-search,
+.dark-mode .message_reactions:hover .message_reaction + .reaction_button,
+.dark-mode .reaction_button_visible {
+    color: hsl(0, 0%, 34%);
+}
+
+.dark-mode .message_reactions .reaction_button .message_reaction_count,
+.dark-mode .message_reactions i {
+    color: hsl(0, 0%, 70%);
+}
+
+.dark-mode .emoji-popover-category-tabs .emoji-popover-tab-item {
+    color: hsl(0, 0%, 72%);
+}
+
+.dark-mode .emoji-popover-subheading,
+.dark-mode .emoji_alt_code {
+    color: hsl(0, 0%, 82%);
+}
+
+.dark-mode .message_reactions .message_reaction {
+    background-color: hsl(180, 0%, 10%);
+}
+
+.dark-mode .message_reactions:hover .message_reaction + .reaction_button {
+    background-color: hsl(180, 0%, 11%);
+}
+
+.dark-mode .emoji-popover-category-tabs,
+.dark-mode .emoji-popover-emoji:not(.reacted):focus,
+.dark-mode .emoji-popover-top,
+.dark-mode .emoji-showcase-container {
+    background-color: hsl(180, 0%, 16%);
+}
+
+.dark-mode .emoji-info-popover.bottom .arrow {
+    border-bottom-color: hsl(180, 0%, 16%);
+}
+
+.dark-mode .emoji-info-popover.top .arrow {
+    border-top-color: hsl(180, 0%, 16%);
+}
+
+.dark-mode .private-message .message_reactions .message_reaction {
+    background-color: hsl(180, 19%, 14%);
+}
+
+.dark-mode .message_reactions .message_reaction {
+    border-color: hsl(180, 37%, 24%);
+}
+
+.dark-mode .emoji-popover .reacted,
+.dark-mode .message_reactions .message_reaction.reacted,
+.dark-mode .message_reactions .reaction_button:hover {
+    background-color: hsl(180, 50%, 14%);
+}
+
+.dark-mode .private-message .message_reactions .message_reaction.reacted {
+    background-color: hsl(180, 51%, 16%);
+}
+
+.dark-mode .emoji-popover-emoji.reacted.reaction:focus {
+    background: hsl(180, 55%, 20%);
+}
+
+.dark-mode .private-message .message_reactions .message_reaction.reacted {
+    border-color: hsl(193, 38%, 37%);
+}
+
+.dark-mode .emoji-popover .reacted {
+    border-color: hsl(195, 52%, 28%);
+}
+
+.dark-mode .message_reactions .message_reaction:hover,
+.dark-mode .message_reactions .reaction_button:hover {
+    border-color: hsl(200, 100%, 64%);
+}
+
+.dark-mode .message_reactions .message_reaction_count,
+.dark-mode .message_reactions .reaction_button:hover,
+.dark-mode .message_reactions .reaction_button:hover .message_reaction_count,
+.dark-mode .message_reactions .reaction_button:hover i {
+    color: hsl(200, 100%, 64%);
+}
+
+/*
+   SOURCE FILE: static/styles/left-sidebar.css
+*/
+.dark-mode li.topic-list-item .topic-sidebar-arrow:hover,
+.dark-mode ul.filters li .arrow:hover {
+    color: hsl(0, 0%, 100%);
+}
+
+.dark-mode #join_unsub_stream,
+.dark-mode #streams_filter_icon,
+.dark-mode #streams_inline_cog {
+    color: hsl(0, 0%, 51%);
+}
+
+.dark-mode li.topic-list-item:hover .topic-sidebar-arrow,
+.dark-mode ul.filters li:hover .arrow {
+    color: hsl(0, 0%, 52%);
+}
+
+.dark-mode #topics_header {
+    color: hsl(0, 0%, 61%);
+}
+
+.dark-mode #join_unsub_stream:hover,
+.dark-mode #streams_filter_icon:hover,
+.dark-mode #streams_inline_cog:hover,
+.dark-mode .left-sidebar .sidebar-title:hover {
+    color: hsl(0, 0%, 70%);
+}
+
+.dark-mode .show-all-streams a,
+.dark-mode ul.filters a {
+    color: hsl(0, 0%, 82%);
+}
+
+.dark-mode #global_filters .count,
+.dark-mode #stream_filters .count {
+    background: hsl(105, 2%, 55%);
+}
+
+.dark-mode .private_message_count,
+.dark-mode .topic-unread-count {
+    background: hsl(107, 5%, 40%);
+}
+
+.dark-mode #stream_filters li.active-sub-filter:hover {
+    background-color: hsl(120, 11%, 26%);
+}
+
+.dark-mode #global_filters .count,
+.dark-mode #stream_filters .count,
+.dark-mode .private_message_count,
+.dark-mode .topic-unread-count {
+    color: hsl(180, 0%, 10%);
+}
+
+.dark-mode #global_filters li:hover,
+.dark-mode #stream_filters li:hover {
+    background-color: hsl(180, 19%, 20%);
+}
+
+.dark-mode li.active-filter,
+.dark-mode li.active-sub-filter {
+    background: hsl(180, 56%, 18%);
+}
+
+/*
+   SOURCE FILE: static/styles/input_pill.css
+*/
+.dark-mode .pill-container .pill:focus {
+    color: hsl(0, 38%, 51%);
+}
+
+.dark-mode .pill-container .pill:focus {
+    border-color: hsl(0, 48%, 28%);
+}
+
+.dark-mode .pm_recipient .pill-container .pill {
+    background: hsl(170, 47%, 52%);
+}
+
+.dark-mode .pm_recipient .pill-container .pill:focus {
+    border-color: hsl(175, 77%, 74%);
+}
+
+.dark-mode .pm_recipient .pill-container .pill:focus {
+    background: hsl(176, 49%, 62%);
+}
+
+.dark-mode .pm_recipient .pill-container .pill {
+    border-color: hsl(176, 49%, 62%);
+}
+
+.dark-mode .pill-container .pill {
+    color: hsl(177, 38%, 51%);
+}
+
+.dark-mode .pill-container .pill {
+    border-color: hsl(177, 48%, 28%);
+}
+
+.dark-mode .pm_recipient .pill-container .pill {
+    color: hsl(180, 0%, 10%);
+}
+
+.dark-mode .pill-container {
+    border-color: hsl(180, 0%, 22%);
+}
+
+/*
+   SOURCE FILE: static/styles/hotspots.css
+*/
+.dark-mode .hotspot.overlay .hotspot-popover {
+    box-shadow: 0 5px 10px hsla(223, 4%, 51%, 0.2);
+}
+
+.dark-mode .hotspot-popover.arrow-top:before {
+    border-bottom-color: hsl(0, 0%, 28%);
+}
+
+.dark-mode .hotspot.overlay .hotspot-popover {
+    border-color: hsl(0, 0%, 28%);
+}
+
+.dark-mode .hotspot-popover.arrow-right:before {
+    border-left-color: hsl(0, 0%, 28%);
+}
+
+.dark-mode .hotspot-popover.arrow-left:before {
+    border-right-color: hsl(0, 0%, 28%);
+}
+
+.dark-mode .hotspot-popover.arrow-bottom:before {
+    border-top-color: hsl(0, 0%, 28%);
+}
+
+.dark-mode .hotspot.overlay .hotspot-confirm,
+.dark-mode .hotspot.overlay .hotspot-popover-top {
+    background-color: hsl(164, 44%, 57%);
+}
+
+.dark-mode .hotspot-popover.arrow-top:after {
+    border-bottom-color: hsl(164, 44%, 57%);
+}
+
+.dark-mode .hotspot-icon .pulse {
+    background: hsl(180, 0%, 10%);
+}
+
+.dark-mode .hotspot.overlay .hotspot-popover-bottom,
+.dark-mode .hotspot.overlay .hotspot-popover-content {
+    background-color: hsl(180, 0%, 10%);
+}
+
+.dark-mode .hotspot-popover.arrow-right:after {
+    border-left-color: hsl(180, 0%, 10%);
+}
+
+.dark-mode .hotspot-popover.arrow-left:after {
+    border-right-color: hsl(180, 0%, 10%);
+}
+
+.dark-mode .hotspot-popover.arrow-bottom:after {
+    border-top-color: hsl(180, 0%, 10%);
+}
+
+.dark-mode .hotspot.overlay .hotspot-confirm,
+.dark-mode .hotspot.overlay .hotspot-title {
+    color: hsl(180, 0%, 10%);
+}
+
+.dark-mode .hotspot-icon .pulse {
+    border-color: hsl(205, 100%, 37%);
+}
+
+.dark-mode .hotspot-icon .dot {
+    border-color: hsl(215, 47%, 55%);
+}
+
+.dark-mode .hotspot.overlay {
+    background-color: hsla(191, 7%, 82%, 0.15);
+}
+
+.dark-mode .hotspot-icon .dot {
+    background: hsla(196, 100%, 26%, 0.3);
+}
+
+/*
+   SOURCE FILE: static/styles/informational-overlays.css
+*/
+.dark-mode .informational-overlays .overlay-tabs .exit {
+    color: hsl(0, 0%, 40%);
+}
+
+.dark-mode .informational-overlays .overlay-content {
+    background-color: hsl(180, 0%, 10%);
+}
+
+.dark-mode .informational-overlays .overlay-tabs {
+    border-bottom-color: hsl(180, 0%, 16%);
+}
+
+/*
+   SOURCE FILE: static/styles/settings.css
+*/
+.dark-mode #realm-icon-section,
+.dark-mode #realm-settings-icon,
+.dark-mode #user-settings-avatar,
+.dark-mode #user-settings-avatar,
+.dark-mode .realm-icon-section .inline-block,
+.dark-mode .user-avatar-section .inline-block {
+    box-shadow: 0px 0px 10px hsla(0, 0%, 100%, 0.1);
+}
+
+.dark-mode .grey-bg {
+    box-shadow: 0px 0px 2px hsla(0, 0%, 100%, 0.5);
+}
+
+.dark-mode .bots_list img.avatar {
+    box-shadow: 0px 0px 4px hsla(0, 0%, 100%, 0.1);
+}
+
+.dark-mode .dynamic-input:hover {
+    box-shadow: 0px 0px 4px hsla(199, 79%, 49%, 1.0);
+}
+
+.dark-mode #deactivate_self_modal {
+    box-shadow: 0px 0px 75px hsla(0, 0%, 100%, 0.5);
+}
+
+.dark-mode .control-label-disabled {
+    color: hsl(0, 0%, 26%);
+}
+
+.dark-mode .dynamic-input {
+    border-color: hsl(0, 0%, 28%);
+}
+
+.dark-mode input[type=text]:focus#settings_search {
+    border-color: hsl(0, 0%, 34%);
+}
+
+.dark-mode #attachments_list .attachment-messages .ind-message .message-id {
+    background-color: hsl(0, 0%, 40%);
+}
+
+.dark-mode #attachments_list .attachment-messages .ind-message {
+    border-color: hsl(0, 0%, 40%);
+}
+
+.dark-mode #attachments_list .attachment-messages .ind-message,
+.dark-mode #settings_page .settings-header .exit,
+.dark-mode .add-new-emoji-box #emoji-file-name,
+.dark-mode .bot_info .field,
+.dark-mode .bots_list .regenerate_bot_api_key,
+.dark-mode .dynamic-input div:empty::after,
+.dark-mode .dynamic-input.bot_user_name div:empty::after,
+.dark-mode .edit_bot_form label,
+.dark-mode .required-text:empty::after {
+    color: hsl(0, 0%, 40%);
+}
+
+.dark-mode #attachments_list .attachment-messages .ind-message:hover .message-id {
+    background-color: hsl(0, 0%, 52%);
+}
+
+.dark-mode #attachments_list .attachment-messages .ind-message:hover {
+    border-color: hsl(0, 0%, 52%);
+}
+
+.dark-mode #settings_page .sidebar li .icon {
+    color: hsl(0, 0%, 52%);
+}
+
+.dark-mode #settings_page .content-wrapper .settings-header h1 .section,
+.dark-mode .settings-section .tip {
+    color: hsl(0, 0%, 64%);
+}
+
+.dark-mode input[type=text]#settings_search {
+    color: hsl(0, 0%, 70%);
+}
+
+.dark-mode .bots_list .regenerate_bot_api_key:hover {
+    color: hsl(0, 0%, 75%);
+}
+
+.dark-mode #attachments_list .attachment-item .list-container .remove-attachment,
+.dark-mode .bots_list .edit-bot-buttons .danger-red {
+    color: hsl(0, 56%, 34%);
+}
+
+.dark-mode .bots_list .edit-bot-buttons .sea-green {
+    color: hsl(177, 70%, 58%);
+}
+
+.dark-mode #attachments_list,
+.dark-mode #settings_page,
+.dark-mode #settings_page .form-sidebar,
+.dark-mode #settings_page .sidebar .tab-container,
+.dark-mode .bots_list .bot-information-box,
+.dark-mode .dynamic-input {
+    background-color: hsl(180, 0%, 10%);
+}
+
+.dark-mode #attachments_list .attachment-item .list-container .file-icon,
+.dark-mode #attachments_list .attachment-messages .ind-message .message-id {
+    color: hsl(180, 0%, 10%);
+}
+
+.dark-mode #bots_lists_navbar .active a,
+.dark-mode #settings_page .content-wrapper #settings_content,
+.dark-mode #settings_page .form-sidebar .title {
+    background-color: hsl(180, 0%, 11%);
+}
+
+.dark-mode #settings_page .sidebar li.active {
+    background-color: hsl(180, 0%, 16%);
+}
+
+.dark-mode #attachments_list .attachment-item,
+.dark-mode #settings_page .sidebar li {
+    border-bottom-color: hsl(180, 0%, 16%);
+}
+
+.dark-mode #settings_page .sidebar {
+    border-right-color: hsl(180, 0%, 16%);
+}
+
+.dark-mode #settings_page .sidebar li.border-top {
+    border-top-color: hsl(180, 0%, 16%);
+}
+
+.dark-mode .grey-bg {
+    background: hsl(180, 0%, 19%);
+}
+
+.dark-mode #settings_page .content-wrapper .settings-header,
+.dark-mode #settings_page .form-sidebar .title,
+.dark-mode #settings_page .settings-header.mobile,
+.dark-mode #settings_page .sidebar .header,
+.dark-mode #settings_page .sidebar .tab-container,
+.dark-mode .emojiset_choices label,
+.dark-mode .table tbody,
+.dark-mode input[type=text]:focus#settings_search {
+    border-bottom-color: hsl(180, 0%, 22%);
+}
+
+.dark-mode .bots_list .bot-information-box,
+.dark-mode input[type=text]#settings_search {
+    border-color: hsl(180, 0%, 22%);
+}
+
+.dark-mode #settings_page .form-sidebar {
+    border-left-color: hsl(180, 0%, 22%);
+}
+
+.dark-mode .settings-section .tip {
+    border-color: hsl(180, 20%, 24%);
+}
+
+.dark-mode .green-bg {
+    background-color: hsl(180, 29%, 24%);
+}
+
+.dark-mode #settings_page .sidebar .header {
+    background-color: hsl(180, 6%, 16%);
+}
+
+.dark-mode .settings-section .tip {
+    background-color: hsl(180, 63%, 14%);
+}
+
+.dark-mode .bots_list .edit-bot-buttons .blue {
+    color: hsl(203, 77%, 49%);
+}
+
+/*
+   SOURCE FILE: static/styles/zulip.css
+*/
+.dark-mode .user-group-mention,
+.dark-mode .user-mention {
+    box-shadow: 0px 0px 0px 1px hsl(0, 0%, 28%);
+}
+
+.dark-mode #streamlist-toggle-unreadcount,
+.dark-mode #userlist-toggle-unreadcount {
+    box-shadow: 0px 0px 1px hsla(0, 0%, 100%, 0.2);
+}
+
+.dark-mode #unmute_muted_topic_notification {
+    box-shadow: 0px 0px 30px hsla(0, 0%, 100%, 0.25);
+}
+
+.dark-mode .nav .dropdown-menu {
+    box-shadow: 0px 0px 5px hsla(0, 0%, 100%, 0.2);
+}
+
+.dark-mode .screen,
+.dark-mode .summary_row_private_message .summary_colorblock {
+    background: hsl(0, 0%, 100%);
+}
+
+.dark-mode #message_edit_tooltip,
+.dark-mode #searchbox .search_button:hover,
+.dark-mode #searchbox a.search_icon:hover,
+.dark-mode #tab_list .root a:hover {
+    color: hsl(0, 0%, 100%);
+}
+
+.dark-mode .copy_message:hover svg path {
+    fill: hsl(0, 0%, 100%);
+}
+
+.dark-mode div.message_content tr td,
+.dark-mode div.message_content tr th {
+    border-color: hsl(0, 0%, 28%);
+}
+
+.dark-mode #searchbox .search_button,
+.dark-mode #searchbox .search_button[disabled]:hover,
+.dark-mode #searchbox a.search_icon {
+    color: hsl(0, 0%, 28%);
+}
+
+.dark-mode .date_row span,
+.dark-mode .edit_content,
+.dark-mode .empty-star,
+.dark-mode .highlight_text_deleted,
+.dark-mode .info,
+.dark-mode .message_controls > .reaction_button,
+.dark-mode .sub-unsub-message span {
+    color: hsl(0, 0%, 34%);
+}
+
+.dark-mode .message_time {
+    color: hsl(0, 0%, 37%);
+}
+
+.dark-mode .nav .dropdown-menu:after {
+    border-bottom-color: hsl(0, 0%, 40%);
+}
+
+.dark-mode #invite-user .modal-header .exit {
+    color: hsl(0, 0%, 40%);
+}
+
+.dark-mode .message_edit_countdown_timer,
+.dark-mode .message_edit_notice,
+.dark-mode .message_edit_tooltip {
+    color: hsl(0, 0%, 43%);
+}
+
+.dark-mode .recipient_row_date {
+    color: hsl(0, 0%, 52%);
+}
+
+.dark-mode #navbar-buttons ul.nav .dropdown-toggle,
+.dark-mode #navbar-buttons ul.nav li.active .dropdown-toggle,
+.dark-mode #streamlist-toggle-button,
+.dark-mode #tab_list li.root a {
+    color: hsl(0, 0%, 53%);
+}
+
+.dark-mode .tex-error {
+    color: hsl(0, 0%, 55%);
+}
+
+.dark-mode #message_edit_form a.message-control-button {
+    color: hsl(0, 0%, 58%);
+}
+
+.dark-mode .sidebar-title {
+    color: hsl(0, 0%, 61%);
+}
+
+.dark-mode .empty-star:hover {
+    color: hsl(0, 0%, 69%);
+}
+
+.dark-mode #tab_list li.active.private_message,
+.dark-mode #tab_list li.inactive.private_message,
+.dark-mode #tab_list li.private_message,
+.dark-mode #unmute_muted_topic_notification .btn:hover,
+.dark-mode .message_header_private_message .message_label_clickable,
+.dark-mode .table-striped thead th {
+    background-color: hsl(0, 0%, 75%);
+}
+
+.dark-mode #unmute_muted_topic_notification .btn {
+    border-color: hsl(0, 0%, 75%);
+}
+
+.dark-mode #tab_list li.active.private_message,
+.dark-mode #tab_list li.inactive.private_message,
+.dark-mode #tab_list li.private_message {
+    border-left-color: hsl(0, 0%, 75%);
+}
+
+.dark-mode .message_header_stream a.message_label_clickable,
+.dark-mode .sender_name {
+    color: hsl(0, 0%, 82%);
+}
+
+.dark-mode #search_query {
+    color: hsl(0, 0%, 88%);
+}
+
+.dark-mode #navbar-buttons ul.nav .dropdown-toggle,
+.dark-mode #navbar-buttons ul.nav li.active .dropdown-toggle:hover,
+.dark-mode #navbar-buttons ul.nav li.dropdown.open .dropdown-toggle {
+    color: hsl(0, 0%, 93%);
+}
+
+.dark-mode .message_failed {
+    color: hsl(0, 100%, 55%);
+}
+
+.dark-mode .operator_value {
+    color: hsl(0, 100%, 77%);
+}
+
+.dark-mode #streamlist-toggle-unreadcount,
+.dark-mode #userlist-toggle-unreadcount {
+    background: hsl(0, 100%, 82%);
+}
+
+.dark-mode .star {
+    color: hsl(106, 77%, 73%);
+}
+
+.dark-mode .unread-marker-fill {
+    background: hsl(107, 74%, 73%);
+}
+
+.dark-mode .highlight_text_inserted {
+    color: hsl(122, 72%, 73%);
+}
+
+.dark-mode .star:hover {
+    color: hsl(153, 80%, 77%);
+}
+
+.dark-mode .messagebox-bottom,
+.dark-mode .messagebox-bottom-colorblock {
+    border-color: hsl(166, 26%, 28%);
+}
+
+.dark-mode #panels .alert.alert-info {
+    background: hsl(170, 46%, 51%);
+}
+
+.dark-mode .alert-copied,
+.dark-mode nav .column-left .company-name {
+    color: hsl(170, 47%, 51%);
+}
+
+.dark-mode #search_query,
+.dark-mode .header {
+    background: hsl(180, 0%, 10%);
+}
+
+.dark-mode #invite-user .overlay-content,
+.dark-mode #tab_bar_underpadding,
+.dark-mode .alert-copied,
+.dark-mode .app-main .column-middle,
+.dark-mode .copy_message,
+.dark-mode .copy_message:focus,
+.dark-mode .message_content code,
+.dark-mode .message_data,
+.dark-mode .messagebox,
+.dark-mode .messagebox-bottom,
+body.dark-mode,
+.dark-mode td.pointer {
+    background-color: hsl(180, 0%, 10%);
+}
+
+.dark-mode .date_row .date-line,
+.dark-mode .date_row span:after,
+.dark-mode .date_row span:before,
+.dark-mode .sub-unsub-message span:after,
+.dark-mode .sub-unsub-message span:before {
+    border-bottom-color: hsl(180, 0%, 10%);
+}
+
+.dark-mode #panels .alert,
+.dark-mode #streamlist-toggle-unreadcount,
+.dark-mode #tab_list li.active.private_message,
+.dark-mode #tab_list li.inactive.private_message,
+.dark-mode #tab_list li.private_message,
+.dark-mode #tab_list li.private_message a,
+.dark-mode #userlist-toggle-unreadcount,
+.dark-mode .header-main .logo,
+.dark-mode .private_message,
+.dark-mode .table-striped thead th,
+.dark-mode button.primary {
+    color: hsl(180, 0%, 10%);
+}
+
+.dark-mode #unmute_muted_topic_notification {
+    background-color: hsl(180, 0%, 11%);
+}
+
+.dark-mode #unmute_muted_topic_notification .btn:hover {
+    color: hsl(180, 0%, 11%);
+}
+
+.dark-mode #tab_list li {
+    background-color: hsl(180, 0%, 12%);
+}
+
+.dark-mode .message_list .recipient_row {
+    background: hsl(180, 0%, 15%);
+}
+
+.dark-mode .user-group-mention,
+.dark-mode .user-mention,
+.dark-mode div.message_content thead {
+    background-color: hsl(180, 0%, 16%);
+}
+
+.dark-mode #streamlist-toggle-unreadcount,
+.dark-mode #userlist-toggle-unreadcount {
+    border-color: hsl(180, 0%, 16%);
+}
+
+.dark-mode .message_content .message_embed {
+    border-left-color: hsl(180, 0%, 16%);
+}
+
+.dark-mode #streamlist-toggle-button {
+    background-color: hsl(180, 0%, 19%);
+}
+
+.dark-mode #topic_edit_form,
+.dark-mode .message-header-contents {
+    background: hsl(180, 0%, 20%);
+}
+
+.dark-mode #tab_list .root,
+.dark-mode #tab_list li.active,
+.dark-mode #tab_list li.inactive,
+.dark-mode .stream_label {
+    background-color: hsl(180, 0%, 20%);
+}
+
+.dark-mode .message_list .recipient_row {
+    border-bottom-color: hsl(180, 0%, 20%);
+}
+
+.dark-mode #tab_list .root {
+    border-color: hsl(180, 0%, 20%);
+}
+
+.dark-mode .message_row {
+    border-left-color: hsl(180, 0%, 20%);
+}
+
+.dark-mode .message-header-contents,
+.dark-mode .message_row {
+    border-right-color: hsl(180, 0%, 20%);
+}
+
+.dark-mode .date_row .date-line,
+.dark-mode .date_row span:after,
+.dark-mode .date_row span:before,
+.dark-mode .floating_recipient .recipient_row,
+.dark-mode .sub-unsub-message span:after,
+.dark-mode .sub-unsub-message span:before {
+    border-top-color: hsl(180, 0%, 20%);
+}
+
+.dark-mode #invite-user .modal-header,
+.dark-mode .twitter-tweet {
+    border-color: hsl(180, 0%, 22%);
+}
+
+.dark-mode .messagebox blockquote {
+    border-left-color: hsl(180, 0%, 22%);
+}
+
+.dark-mode .header {
+    border-bottom-color: hsl(180, 0%, 23%);
+}
+
+.dark-mode .navbar-search {
+    border-right-color: hsl(180, 0%, 23%);
+}
+
+.dark-mode #panels .alert .alert-link {
+    color: hsl(180, 100%, 20%);
+}
+
+.dark-mode .message_header_private_message .message-header-contents,
+.dark-mode .private-message .alert-copied,
+.dark-mode .private-message .messagebox {
+    background-color: hsl(180, 19%, 14%);
+}
+
+.dark-mode .message_sender i.zulip-icon.bot,
+.dark-mode .popover_info i.zulip-icon.bot {
+    color: hsl(180, 5%, 33%);
+}
+
+.dark-mode .highlight_text_inserted {
+    background-color: hsl(180, 64%, 14%);
+}
+
+.dark-mode .alert-word,
+.dark-mode .user-mention-me {
+    background-color: hsl(180, 88%, 21%);
+}
+
+.dark-mode .highlight_text_deleted {
+    background-color: hsl(180, 90%, 17%);
+}
+
+.dark-mode .mention .messagebox {
+    background-color: hsl(180, 94%, 15%);
+}
+
+.dark-mode .new_messages {
+    background-color: hsl(194, 53%, 28%);
+}
+
+.dark-mode a code {
+    border-color: hsl(200, 100%, 64%);
+}
+
+.dark-mode .actions_hover:hover,
+.dark-mode .actions_hovered .info,
+.dark-mode .actions_hovered .message_time,
+.dark-mode .edit_content:hover,
+.dark-mode .message_controls > .reaction_button:hover,
+.dark-mode .message_length_controller,
+.dark-mode .sender_name_hovered .sender_name,
+.dark-mode .sender_name_hovered .sender_name-in-status,
+.dark-mode a code,
+.dark-mode a.message_label_clickable:hover {
+    color: hsl(200, 100%, 64%);
+}
+
+.dark-mode a:hover code {
+    border-color: hsl(200, 100%, 77%);
+}
+
+.dark-mode a:hover code {
+    color: hsl(200, 100%, 77%);
+}
+
+.dark-mode #inline_topic_edit.header-v {
+    border-color: hsl(204, 20%, 33%);
+}
+
+.dark-mode #streamlist-toggle {
+    border-right-color: hsl(204, 20%, 33%);
+}
+
+.dark-mode button.primary {
+    background-color: hsl(207, 21%, 44%);
+}
+
+.dark-mode button.primary:hover {
+    background-color: hsl(207, 25%, 41%);
+}
+
+.dark-mode .highlight {
+    background-color: hsl(51, 94%, 33%);
+}
+
+.dark-mode #tab_list li.active.private_message,
+.dark-mode #tab_list li.inactive.private_message,
+.dark-mode #tab_list li.private_message {
+    border-bottom-color: hsla(0, 0%, 100%, 0.0);
+}
+
+.dark-mode #tab_list li.active.private_message,
+.dark-mode #tab_list li.inactive.private_message,
+.dark-mode #tab_list li.private_message {
+    border-right-color: hsla(0, 0%, 100%, 0.0);
+}
+
+.dark-mode #tab_list li.active.private_message,
+.dark-mode #tab_list li.inactive.private_message,
+.dark-mode #tab_list li.private_message {
+    border-top-color: hsla(0, 0%, 100%, 0.0);
+}
+
+.dark-mode pre::-webkit-scrollbar {
+    background-color: hsla(0, 0%, 100%, 0.05);
+}
+
+.dark-mode pre::-webkit-scrollbar-thumb {
+    background-color: hsla(0, 0%, 100%, 0.3);
+}
+
+.dark-mode pre::-webkit-scrollbar-thumb:hover {
+    background-color: hsla(0, 0%, 100%, 0.6);
+}
+
+.dark-mode .tooltip .tooltip-inner {
+    background-color: hsla(0, 0%, 93%, 0.8);
+}
+
+.dark-mode .unread-marker-fill {
+    box-shadow: inset 0px -1px 0px 0px hsl(180, 0%, 10%);
+}
+
+.dark-mode #search_query:focus {
+    box-shadow: inset 0px 0px 0px 2px hsl(204, 20%, 33%);
+}
+
+.dark-mode .message_header_colorblock {
+    box-shadow: inset 0px 2px 1px -2px hsl(0, 0%, 82%), inset 2px 0px 1px -2px hsl(0, 0%, 82%) !important;
+}
+
+.dark-mode .message_header_private_message .message-header-contents,
+.dark-mode .private-message .messagebox {
+    box-shadow: inset 1px 1px 0px hsl(180, 0%, 20%);
+}
+
+/*
+   SOURCE FILE: static/styles/compose.css
+*/
+.dark-mode #compose-send-button:focus {
+    box-shadow: 0px 0px 10px hsl(170, 47%, 51%), 0px 0px 5px hsl(170, 47%, 51%);
+}
+
+.dark-mode #out-of-view-notification {
+    box-shadow: 0px 0px 1px 0px hsla(0, 0%, 100%, 0.5);
+}
+
+.dark-mode #compose a.message-control-button:hover,
+.dark-mode #out-of-view-notification .close,
+.dark-mode .send-status-close {
+    color: hsl(0, 0%, 100%);
+}
+
+.dark-mode #preview_message_area,
+.dark-mode .compose_table .recipient_box:focus,
+.dark-mode textarea.new_message_textarea:focus {
+    border-color: hsl(0, 0%, 40%);
+}
+
+.dark-mode #send_controls .compose_checkbox_label {
+    color: hsl(0, 0%, 40%);
+}
+
+.dark-mode #compose a.message-control-button,
+.dark-mode a#markdown_preview,
+.dark-mode a#undo_markdown_preview {
+    color: hsl(0, 0%, 58%);
+}
+
+.dark-mode .compose_table #private-message .you_text,
+.dark-mode .compose_table .message_header_colorblock.message_header_private_message {
+    background: hsl(0, 0%, 75%);
+}
+
+.dark-mode #out-of-view-notification {
+    background: hsl(112, 98%, 30%);
+}
+
+.dark-mode #send_controls #compose-send-button {
+    background-color: hsl(170, 47%, 51%);
+}
+
+.dark-mode #send_controls #compose-send-button {
+    border-color: hsl(170, 68%, 63%);
+}
+
+.dark-mode .compose-content {
+    background-color: hsl(180, 0%, 10%);
+}
+
+.dark-mode #out-of-view-notification {
+    border-bottom-color: hsl(180, 0%, 10%);
+}
+
+.dark-mode #out-of-view-notification {
+    border-left-color: hsl(180, 0%, 10%);
+}
+
+.dark-mode #out-of-view-notification {
+    border-right-color: hsl(180, 0%, 10%);
+}
+
+.dark-mode #send_controls #compose-send-button,
+.dark-mode .compose_table #private-message .you_text {
+    color: hsl(180, 0%, 10%);
+}
+
+.dark-mode #preview_message_area {
+    background-color: hsl(180, 0%, 11%);
+}
+
+.dark-mode .compose-content {
+    border-left-color: hsl(180, 0%, 16%);
+}
+
+.dark-mode .compose-content {
+    border-right-color: hsl(180, 0%, 16%);
+}
+
+.dark-mode .compose-content {
+    border-top-color: hsl(180, 0%, 16%);
+}
+
+.dark-mode .compose_table .message_header {
+    background-color: hsl(180, 0%, 17%);
+}
+
+.dark-mode .compose_table .recipient_box,
+.dark-mode textarea.new_message_textarea {
+    border-color: hsl(180, 0%, 22%);
+}
+
+.dark-mode #out-of-view-notification {
+    background: hsla(105, 42%, 37%, 0.95);
+}
+
+/*
+   SOURCE FILE: static/styles/right-sidebar.css
+*/
+.dark-mode #userlist-toggle-button {
+    color: hsl(0, 0%, 53%);
+}
+
+.dark-mode .user_offline .user-status-indicator {
+    border-color: hsl(0, 0%, 55%);
+}
+
+.dark-mode .right-sidebar {
+    color: hsl(0, 0%, 70%);
+}
+
+.dark-mode .group-pms-sidebar-entry .count,
+.dark-mode .user_sidebar_entry .count {
+    background: hsl(105, 2%, 55%);
+}
+
+.dark-mode .group-pm-status-indicator,
+.dark-mode .user_active .user-status-indicator {
+    background-color: hsl(106, 74%, 60%);
+}
+
+.dark-mode .group-pm-status-indicator,
+.dark-mode .user_active .user-status-indicator {
+    border-color: hsl(106, 74%, 60%);
+}
+
+.dark-mode .group-pms-sidebar-entry .count,
+.dark-mode .user_sidebar_entry .count {
+    color: hsl(180, 0%, 10%);
+}
+
+.dark-mode #userlist-toggle-button {
+    background-color: hsl(180, 0%, 19%);
+}
+
+.dark-mode #feedback_section {
+    border-bottom-color: hsl(180, 0%, 20%);
+}
+
+.dark-mode #group-pms li:hover,
+.dark-mode #user_presences li:hover {
+    background-color: hsl(180, 19%, 20%);
+}
+
+.dark-mode #userlist-toggle {
+    border-left-color: hsl(204, 20%, 33%);
+}
+
+.dark-mode .user_idle .user-status-indicator {
+    background-color: hsl(29, 84%, 54%);
+}
+
+.dark-mode .user_idle .user-status-indicator {
+    border-color: hsl(29, 84%, 54%);
+}
+
+/*
+   SOURCE FILE: static/styles/lightbox.css
+*/
+.dark-mode #lightbox_overlay .image-actions .lightbox-canvas-trigger:hover,
+.dark-mode #lightbox_overlay .image-preview img,
+.dark-mode .image-actions .button:hover {
+    background-color: hsl(180, 0%, 10%);
+}
+
+.dark-mode #lightbox_overlay .image-actions .lightbox-canvas-trigger:hover,
+.dark-mode .image-actions .button:hover {
+    border-color: hsl(180, 0%, 10%);
+}
+
+.dark-mode #lightbox_overlay .center .arrow,
+.dark-mode #lightbox_overlay .image-actions .lightbox-canvas-trigger,
+.dark-mode #lightbox_overlay .image-description,
+.dark-mode .image-actions .button {
+    color: hsl(180, 0%, 10%);
+}
+
+.dark-mode #lightbox_overlay {
+    background-color: hsl(227, 40%, 85%);
+}
+
+.dark-mode #lightbox_overlay .image-actions .lightbox-canvas-trigger:hover,
+.dark-mode .image-actions .button:hover {
+    color: hsl(227, 40%, 85%);
+}
+
+.dark-mode .image-actions .button {
+    border-color: hsla(180, 0%, 10%, 0.6);
+}
+
+.dark-mode #lightbox_overlay .exit {
+    color: hsla(180, 0%, 10%, 0.8);
+}
+
+.dark-mode #lightbox_overlay .center .image-list .image {
+    background-color: hsla(180, 0%, 15%, 0.2);
+}
+
+/*
+   SOURCE FILE: static/styles/activity.css
+*/
+.dark-mode .bad {
+    color: hsl(0, 100%, 64%);
+}
+
+.dark-mode .table-striped tr.long_inactive:nth-child(odd) td {
+    background-color: hsl(0, 70%, 31%);
+}
+
+.dark-mode .table-striped tr.long_inactive td {
+    background-color: hsl(0, 97%, 25%);
+}
+
+.dark-mode .good {
+    color: hsl(120, 100%, 70%);
+}
+
+.dark-mode .table-striped tr.recently_active:nth-child(odd) td {
+    background-color: hsl(120, 70%, 31%);
+}
+
+.dark-mode .table-striped tr.recently_active td {
+    background-color: hsl(120, 97%, 25%);
+}
+
+.dark-mode .activity_head {
+    background-color: hsl(180, 100%, 12%);
+}
+
+.dark-mode tr.admin td:first-child {
+    color: hsl(240, 100%, 55%);
+}
+
+/*
+   SOURCE FILE: static/styles/subscriptions.css
+*/
+.dark-mode .sp-preview {
+    box-shadow: 0px 0px 1px hsla(0, 0%, 100%, 1.0);
+}
+
+.dark-mode .sp-replacer {
+    box-shadow: 0px 0px 2px hsla(0, 0%, 100%, 0.8);
+}
+
+.dark-mode .preview-stream,
+.dark-mode .subscriptions-container input[type=text].small {
+    border-color: hsl(0, 0%, 28%);
+}
+
+.dark-mode #create_or_filter_stream_row td {
+    border-bottom-color: hsl(0, 0%, 34%);
+}
+
+.dark-mode #create_or_filter_stream_row td {
+    border-color: hsl(0, 0%, 34%);
+}
+
+.dark-mode .stream-row .check:not(.checked):hover svg,
+.dark-mode .stream-row.active .check:not(.checked):hover svg {
+    fill: hsl(0, 0%, 35%);
+}
+
+.dark-mode .preview-stream:hover {
+    border-color: hsl(0, 0%, 38%);
+}
+
+.dark-mode #settings_overlay_container .settings-header.mobile .icon-vector-chevron-left,
+.dark-mode #subscription_overlay .checkmark,
+.dark-mode #subscription_overlay .editable,
+.dark-mode #subscription_overlay .stream-description:empty:after,
+.dark-mode .create_stream_button,
+.dark-mode .stream-row .settings-dropdown-trigger,
+.dark-mode .stream-row .sub-info-box .description:empty:after,
+.dark-mode .stream-row .sub-info-box .top-bar .message-count,
+.dark-mode .stream-row .sub-info-box .top-bar .subscriber-count,
+.dark-mode .subscriber-list tbody:empty::after,
+.dark-mode .subscriber-list:empty::after,
+.dark-mode .subscriptions-container .exit,
+.dark-mode .subscriptions-container .right .nothing-selected span,
+.dark-mode .subscriptions-header .fa-chevron-left {
+    color: hsl(0, 0%, 40%);
+}
+
+.dark-mode .muted-sub {
+    color: hsl(0, 0%, 42%);
+}
+
+.dark-mode #subscription_overlay .subscription-type {
+    color: hsl(0, 0%, 52%);
+}
+
+.dark-mode #subscription_overlay .subscription-type b {
+    color: hsl(0, 0%, 64%);
+}
+
+.dark-mode .mute-note {
+    font-color: hsl(0, 0%, 71%);
+}
+
+.dark-mode #subscription_overlay .editable:hover,
+.dark-mode .create_stream_button:hover,
+.dark-mode .subscriptions-container .display-type .stream-info-title,
+.dark-mode .subscriptions-container input[type=text].small,
+.dark-mode .subscriptions-overlay-bg {
+    color: hsl(0, 0%, 75%);
+}
+
+.dark-mode .preview-stream,
+.dark-mode .preview-stream:hover {
+    color: hsl(0, 0%, 82%);
+}
+
+.dark-mode #stream_name_error {
+    color: hsl(0, 100%, 55%);
+}
+
+.dark-mode #subscription_overlay .stream-header .subscribe-button.unsubscribed {
+    border-color: hsl(156, 39%, 30%);
+}
+
+.dark-mode #subscription_overlay .stream-header .subscribe-button.unsubscribed {
+    color: hsl(156, 39%, 51%);
+}
+
+.dark-mode .editable-section[contenteditable=true] {
+    color: hsl(170, 47%, 51%);
+}
+
+.dark-mode .stream-row .checked svg {
+    fill: hsl(170, 47%, 51%);
+}
+
+.dark-mode .subscriptions-container {
+    background-color: hsl(180, 0%, 10%);
+}
+
+.dark-mode .stream-row .icon {
+    color: hsl(180, 0%, 10%);
+}
+
+.dark-mode .subscriptions-container .right #preview_iframe {
+    background-color: hsl(180, 0%, 11%);
+}
+
+.dark-mode .stream-email {
+    background-color: hsl(180, 0%, 12%);
+}
+
+.dark-mode #create_or_filter_stream_row td {
+    background-color: hsl(180, 0%, 14%);
+}
+
+.dark-mode .stream-row.active {
+    background-color: hsl(180, 0%, 16%);
+}
+
+.dark-mode .stream-row,
+.dark-mode .subscriber-list tr {
+    border-bottom-color: hsl(180, 0%, 16%);
+}
+
+.dark-mode .preview-stream:hover {
+    background-color: hsl(180, 0%, 17%);
+}
+
+.dark-mode #subscription_overlay ul.grey-box li,
+.dark-mode .subscriptions-container .left .search-container,
+.dark-mode .subscriptions-container .right .display-type,
+.dark-mode .subscriptions-header {
+    border-bottom-color: hsl(180, 0%, 22%);
+}
+
+.dark-mode .stream-email,
+.dark-mode .subscriber-list-box {
+    border-color: hsl(180, 0%, 22%);
+}
+
+.dark-mode .subscriptions-container .left {
+    border-right-color: hsl(180, 0%, 22%);
+}
+
+.dark-mode .stream-row.active:hover .check:not(.checked) svg,
+.dark-mode .stream-row:hover .check:not(.checked) svg {
+    fill: hsl(180, 0%, 22%);
+}
+
+.dark-mode .stream-row .icon {
+    background-color: hsl(300, 100%, 77%);
+}
+
+.dark-mode .subscriptions-overlay-bg {
+    background-color: hsla(0, 0%, 92%, 0.7);
+}
+
+.dark-mode #subscription_overlay .stream-header .subscribe-button.unsubscribed:active {
+    background-color: hsla(156, 39%, 51%, 0.2);
+}
+
+.dark-mode #stream_creation_form #stream_creating_indicator:not(:empty) {
+    background: hsla(180, 0%, 10%, 0.9);
+}
+
+.dark-mode .subscriptions-container .right #preview_iframe {
+    box-shadow: inset 0px 0px 50px hsla(0, 0%, 100%, 0.5);
+}
+
+/*
+   SOURCE FILE: static/styles/components.css
+*/
+.dark-mode .new-style label.checkbox input[type=checkbox] ~ span {
+    color: hsl(0, 0%, 28%);
+}
+
+.dark-mode .new-style label.checkbox input[type=checkbox] ~ span {
+    border-color: hsl(0, 0%, 46%);
+}
+
+/*
+   SOURCE FILE: static/styles/typing_notifications.css
+*/
+.dark-mode #typing_notifications {
+    color: hsl(0, 0%, 52%);
+}
+
+/*
+   SOURCE FILE: static/styles/app_components.css
+*/
+.dark-mode .box-shadow {
+    box-shadow: 0px 0px 10px hsla(0, 0%, 100%, 0.1);
+}
+
+.dark-mode .clear_search_button:hover {
+    color: hsl(0, 0%, 100%);
+}
+
+.dark-mode .new-style .button,
+.dark-mode .new-style .tab-switcher .ind-tab:not(.selected) {
+    border-color: hsl(0, 0%, 28%);
+}
+
+.dark-mode .clear_search_button,
+.dark-mode .clear_search_button:active,
+.dark-mode .clear_search_button:focus,
+.dark-mode .clear_search_button[disabled]:hover,
+.dark-mode .new-style .tab-switcher .ind-tab.disabled {
+    color: hsl(0, 0%, 28%);
+}
+
+.dark-mode .new-style .button.grey {
+    background-color: hsl(0, 0%, 40%);
+}
+
+.dark-mode .new-style .button:active,
+.dark-mode .new-style .button:hover {
+    border-color: hsl(0, 0%, 46%);
+}
+
+.dark-mode .new-style .tab-switcher .ind-tab.selected {
+    background: hsl(0, 0%, 52%);
+}
+
+.dark-mode .new-style .tab-switcher .ind-tab.selected {
+    border-color: hsl(0, 0%, 58%);
+}
+
+.dark-mode .new-style .button[disabled="disabled"] {
+    color: hsl(0, 3%, 53%);
+}
+
+.dark-mode .new-style .button.green {
+    background-color: hsl(150, 31%, 52%);
+}
+
+.dark-mode .new-style .button.sea-green:active,
+.dark-mode .new-style .button.sea-green:hover {
+    border-color: hsl(156, 30%, 50%);
+}
+
+.dark-mode .new-style .button.sea-green,
+.dark-mode .new-style .button[disabled="disabled"]:hover {
+    border-color: hsl(156, 39%, 30%);
+}
+
+.dark-mode .new-style .button.sea-green,
+.dark-mode .new-style .button[disabled="disabled"]:hover {
+    color: hsl(156, 39%, 51%);
+}
+
+.dark-mode .new-style .button.sea-green:active {
+    color: hsl(156, 44%, 61%);
+}
+
+.dark-mode .bg-white,
+.dark-mode .new-style .button,
+.dark-mode .new-style .tab-switcher .ind-tab {
+    background-color: hsl(180, 0%, 10%);
+}
+
+.dark-mode .new-style .tab-switcher .ind-tab.selected {
+    color: hsl(180, 0%, 10%);
+}
+
+.dark-mode .grey-box {
+    background-color: hsl(180, 0%, 12%);
+}
+
+.dark-mode .new-style .button:active {
+    background-color: hsl(180, 0%, 14%);
+}
+
+.dark-mode .new-style .button[disabled="disabled"],
+.dark-mode .new-style .button[disabled="disabled"]:hover {
+    background-color: hsl(180, 0%, 16%);
+}
+
+.dark-mode .grey-box,
+.dark-mode .new-style .tab-switcher .ind-tab.disabled {
+    border-color: hsl(180, 0%, 22%);
+}
+
+.dark-mode .new-style .button.sea-green:active {
+    background-color: hsl(180, 33%, 13%);
+}
+
+.dark-mode .new-style .button.btn-warning:active {
+    background-color: hsl(180, 48%, 13%);
+}
+
+.dark-mode .new-style .button.btn-danger:active {
+    background-color: hsl(180, 82%, 11%);
+}
+
+.dark-mode .new-style .button.btn-warning {
+    border-color: hsl(180, 98%, 24%);
+}
+
+.dark-mode .new-style .button.btn-danger:active,
+.dark-mode .new-style .button.btn-danger:hover {
+    border-color: hsl(2, 46%, 38%);
+}
+
+.dark-mode .new-style .button.btn-warning:active,
+.dark-mode .new-style .button.btn-warning:hover {
+    border-color: hsl(35, 55%, 37%);
+}
+
+.dark-mode .new-style .button.btn-warning {
+    color: hsl(35, 70%, 49%);
+}
+
+.dark-mode .new-style .button.btn-warning:active {
+    color: hsl(35, 82%, 64%);
+}
+
+.dark-mode .new-style .button.btn-danger:active {
+    color: hsl(357, 55%, 43%);
+}
+
+.dark-mode .new-style .button.btn-danger {
+    color: hsl(357, 64%, 35%);
+}
+
+.dark-mode .new-style .button.btn-danger {
+    border-color: hsl(4, 56%, 26%);
+}
+
+.dark-mode .overlay {
+    background-color: hsla(0, 0%, 88%, 0.8);
+}
