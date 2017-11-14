@@ -1804,6 +1804,7 @@ class DefaultStreamGroup(models.Model):
     name = models.CharField(max_length=MAX_NAME_LENGTH, db_index=True)  # type: Text
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
     streams = models.ManyToManyField('Stream')  # type: Manager
+    description = models.CharField(max_length=1024, default=u'')  # type: Text
 
     class Meta:
         unique_together = ("realm", "name")
@@ -1812,6 +1813,7 @@ class DefaultStreamGroup(models.Model):
         # type: () -> Dict[str, Any]
         return dict(name=self.name,
                     id=self.id,
+                    description=self.description,
                     streams=[stream.to_dict() for stream in self.streams.all()])
 
 def get_default_stream_groups(realm):

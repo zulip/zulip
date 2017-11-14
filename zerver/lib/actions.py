@@ -2932,14 +2932,15 @@ def do_remove_default_stream(stream):
     DefaultStream.objects.filter(realm_id=realm_id, stream_id=stream_id).delete()
     notify_default_streams(realm_id)
 
-def do_create_default_stream_group(realm: Realm, group_name: Text, streams: List[Stream]) -> None:
+def do_create_default_stream_group(realm: Realm, group_name: Text,
+                                   description: Text, streams: List[Stream]) -> None:
     default_streams = get_default_streams_for_realm(realm.id)
     for stream in streams:
         if stream in default_streams:
             raise JsonableError(_("'%s' is a default stream and cannot be added to '%s'") % (stream.name, group_name))
 
     check_default_stream_group_name(group_name)
-    (group, created) = DefaultStreamGroup.objects.get_or_create(name=group_name, realm=realm)
+    (group, created) = DefaultStreamGroup.objects.get_or_create(name=group_name, realm=realm, description=description)
     if not created:
         raise JsonableError(_("Default stream group '%s' already exists") % (group_name,))
 
@@ -2968,6 +2969,11 @@ def do_remove_streams_from_default_stream_group(realm: Realm, group: DefaultStre
                                 % (stream.name, group.name))
         group.streams.remove(stream)
 
+    group.save()
+    notify_default_stream_groups(realm)
+
+def do_change_default_stream_group_description(realm: Realm, group: DefaultStreamGroup, new_description: Text) -> None:
+    group.description = new_description
     group.save()
     notify_default_stream_groups(realm)
 

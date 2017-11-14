@@ -286,7 +286,8 @@ v1_api_and_json_patterns = [
     url(r'^default_stream_groups/create$', rest_dispatch,
         {'POST': 'zerver.views.streams.create_default_stream_group'}),
     url(r'^default_stream_groups/(?P<group_id>\d+)$', rest_dispatch,
-        {'DELETE': 'zerver.views.streams.remove_default_stream_group'}),
+        {'PATCH': 'zerver.views.streams.update_default_stream_group_info',
+         'DELETE': 'zerver.views.streams.remove_default_stream_group'}),
     url(r'^default_stream_groups/(?P<group_id>\d+)/streams$', rest_dispatch,
         {'PATCH': 'zerver.views.streams.update_default_stream_group_streams'}),
     # GET lists your streams, POST bulk adds, PATCH bulk modifies/removes
