@@ -56,6 +56,23 @@ our custom backend, `EmailLogBackEnd`.  It does the following:
 * Print a friendly message on console advertising `/emails` to make
   this nice and discoverable.
 
+You can also forward all the emails sent in the development environment
+to an email id of your choice by clicking on **Forward emails to a mail
+account** in `/emails` page. This feature can be used for testing how
+emails gets rendered by different email clients. Before enabling this
+you have to first configure the following SMTP settings.
+
+* The hostname `EMAIL_HOST` in `zproject/dev_settings.py`
+* The username `EMAIL_HOST_USER` in `zproject/dev_settings.py`.
+* The password `email_password` in `zproject/dev-secrets.conf`.
+
+See [this](prod-email.html#free-outgoing-email-services)
+section for instructions on obtaining SMTP details.
+
+**Note: The base_image_uri of the images in forwarded emails would be replaced
+with `https://chat.zulip.org/static/images/emails` inorder for the email clients
+to render the images. See `zproject/email_backends.py` for more details.**
+
 While running the backend test suite, we use
 `django.core.mail.backends.locmem.EmailBackend` as the email
 backend. The `locmem` backend stores messages in a special attribute
