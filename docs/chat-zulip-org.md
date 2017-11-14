@@ -6,13 +6,13 @@ forum for the Zulip community.
 You can go through the simple signup process at that link, and then
 you will soon be talking to core Zulip developers and other users.  To
 get help in real time, you will have the best luck finding core
-developers roughly between 17:00 UTC and 2:00 UTC, but the sun never
+developers roughly between 17:00 UTC and 6:00 UTC, but the sun never
 sets on the Zulip community.  Most questions get a reply within
 minutes to a few hours, depending on the time of day.
 
-## Community conventions
+## Community norms
 
-* Send any test messages to
+* Send test messages to
   [#test here](https://chat.zulip.org/#narrow/stream/test.20here) or
   as a PM to yourself to avoid disrupting others.
 * When asking for help, provide the details needed for others to help
@@ -28,8 +28,11 @@ minutes to a few hours, depending on the time of day.
   Mentioning other users is great for timely questions or making sure
   someone who is not online sees your message.
 * Converse informally; there's no need to use titles like "Sir" or "Madam".
-* Use gender-neutral language.
-* Follow the [community code of conduct](code-of-conduct.html).
+* Use
+  [gender-neutral language](https://en.wikipedia.org/wiki/Gender-neutral_language).
+  For example, avoid using a pronoun like her or his in sentences like
+  "Every developer should clean [their] keyboard at least once a week."
+* Follow the community [code of conduct](code-of-conduct.html).
 * Participate!  Zulip is a friendly and welcoming community, and we
   love meeting new people, hearing about what brought them to Zulip,
   and getting their feedback.  If you're not sure where to start,
