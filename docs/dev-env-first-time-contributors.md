@@ -193,6 +193,10 @@ command is
 sudo apt-get install build-essential git ruby lxc redir
 ```
 
+Debian's packages do not ship any default network setup for containers. So,
+you will have to setup networking for `lxc` containers by following the
+steps outlined [here](https://wiki.debian.org/LXC#network_setup) before
+proceeding to the next step.
 
 #### Windows 10
 
