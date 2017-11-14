@@ -536,6 +536,15 @@ exports.escape_search = function () {
 
 exports.initiate_search = function () {
     var filter = $('.user-list-filter').expectOne();
+    var column = $('.user-list-filter').closest(".app-main [class^='column-']");
+    if (!column.hasClass("expanded")) {
+        popovers.hide_all();
+        if (column.hasClass('column-left')) {
+            stream_popover.show_streamlist_sidebar();
+        } else if (column.hasClass('column-right')) {
+            popovers.show_userlist_sidebar();
+        }
+    }
     filter.focus();
 };
 
