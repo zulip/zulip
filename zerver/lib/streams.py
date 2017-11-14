@@ -8,7 +8,7 @@ from zerver.lib.actions import check_stream_name, create_streams_if_needed
 from zerver.lib.request import JsonableError
 from zerver.models import UserProfile, Stream, Subscription, \
     Realm, Recipient, bulk_get_recipients, get_stream_recipient, get_stream, \
-    bulk_get_streams, get_realm_stream
+    bulk_get_streams, get_realm_stream, DefaultStreamGroup
 
 def access_stream_for_delete(user_profile, stream_id):
     # type: (UserProfile, int) -> Stream
@@ -220,3 +220,9 @@ def list_to_streams(streams_raw, user_profile, autocreate=False):
         existing_streams += dup_streams
 
     return existing_streams, created_streams
+
+def access_default_stream_group_by_id(realm: Realm, group_id: int) -> DefaultStreamGroup:
+    try:
+        return DefaultStreamGroup.objects.get(realm=realm, id=group_id)
+    except DefaultStreamGroup.DoesNotExist:
+        raise JsonableError(_("Default stream group with id '%s' does not exist." % (group_id,)))

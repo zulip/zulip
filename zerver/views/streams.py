@@ -24,7 +24,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
 from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
     check_stream_name, check_stream_name_available, filter_stream_authorization, \
-    list_to_streams, access_stream_for_delete
+    list_to_streams, access_stream_for_delete, access_default_stream_group_by_id
 from zerver.lib.validator import check_string, check_int, check_list, check_dict, \
     check_bool, check_variable_type
 from zerver.models import UserProfile, Stream, Realm, Subscription, \
@@ -88,26 +88,30 @@ def create_default_stream_group(request: HttpRequest, user_profile: UserProfile,
 
 @require_realm_admin
 @has_request_variables
-def update_default_stream_group(request: HttpRequest, user_profile: UserProfile,
-                                group_name: Text=REQ(), op: Text=REQ(),
-                                stream_names: List[Text]=REQ(validator=check_list(check_string))) -> None:
+@require_realm_admin
+@has_request_variables
+def update_default_stream_group_streams(request: HttpRequest, user_profile: UserProfile,
+                                        group_id: int, op: Text=REQ(),
+                                        stream_names: List[Text]=REQ(validator=check_list(check_string))) -> None:
+    group = access_default_stream_group_by_id(user_profile.realm, group_id,)
     streams = []
     for stream_name in stream_names:
         (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
         streams.append(stream)
 
     if op == 'add':
-        do_add_streams_to_default_stream_group(user_profile.realm, group_name, streams)
+        do_add_streams_to_default_stream_group(user_profile.realm, group, streams)
     elif op == 'remove':
-        do_remove_streams_from_default_stream_group(user_profile.realm, group_name, streams)
+        do_remove_streams_from_default_stream_group(user_profile.realm, group, streams)
     else:
-        return json_error(_('Nothing to do. Specify at least one of "add" or "remove".'))
+        return json_error(_('Invalid value for "op". Specify one of "add" or "remove".'))
     return json_success()
 
 @require_realm_admin
 @has_request_variables
-def remove_default_stream_group(request: HttpRequest, user_profile: UserProfile, group_name: Text=REQ()) -> None:
-    do_remove_default_stream_group(user_profile.realm, group_name)
+def remove_default_stream_group(request: HttpRequest, user_profile: UserProfile, group_id: int) -> None:
+    group = access_default_stream_group_by_id(user_profile.realm, group_id)
+    do_remove_default_stream_group(user_profile.realm, group)
     return json_success()
 
 @require_realm_admin

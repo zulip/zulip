@@ -1810,7 +1810,9 @@ class DefaultStreamGroup(models.Model):
 
     def to_dict(self):
         # type: () -> Dict[str, Any]
-        return dict(name=self.name, streams=[stream.to_dict() for stream in self.streams.all()])
+        return dict(name=self.name,
+                    id=self.id,
+                    streams=[stream.to_dict() for stream in self.streams.all()])
 
 def get_default_stream_groups(realm):
     # type: (Realm) -> List[DefaultStreamGroup]

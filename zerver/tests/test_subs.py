@@ -56,6 +56,7 @@ from zerver.lib.actions import (
     do_create_default_stream_group,
     do_add_streams_to_default_stream_group, do_remove_streams_from_default_stream_group,
     do_remove_default_stream_group,
+    lookup_default_stream_groups,
 )
 
 from zerver.views.streams import (
@@ -852,6 +853,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
         self.assertEqual(list(default_stream_groups[0].streams.all()), streams)
 
         # Test adding streams to existing default stream group
+        group = lookup_default_stream_groups(["group1"], realm)[0]
         new_stream_names = ["stream4", "stream5"]
         new_streams = []
         for new_stream_name in new_stream_names:
@@ -859,14 +861,14 @@ class DefaultStreamGroupTest(ZulipTestCase):
             new_streams.append(new_stream)
             streams.append(new_stream)
 
-        do_add_streams_to_default_stream_group(realm, group_name, new_streams)
+        do_add_streams_to_default_stream_group(realm, group, new_streams)
         default_stream_groups = get_default_stream_groups(realm)
         self.assert_length(default_stream_groups, 1)
         self.assertEqual(default_stream_groups[0].name, group_name)
         self.assertEqual(list(default_stream_groups[0].streams.all()), streams)
 
         # Test removing streams from existing default stream group
-        do_remove_streams_from_default_stream_group(realm, group_name, new_streams)
+        do_remove_streams_from_default_stream_group(realm, group, new_streams)
         remaining_streams = streams[0:3]
         default_stream_groups = get_default_stream_groups(realm)
         self.assert_length(default_stream_groups, 1)
@@ -874,7 +876,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
         self.assertEqual(list(default_stream_groups[0].streams.all()), remaining_streams)
 
         # Test removing default stream group
-        do_remove_default_stream_group(realm, group_name)
+        do_remove_default_stream_group(realm, group)
         default_stream_groups = get_default_stream_groups(realm)
         self.assert_length(default_stream_groups, 0)
 
@@ -900,11 +902,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
             (stream, _) = create_stream_if_needed(realm, stream_name)
             streams.append(stream)
 
-        result = self.client_post('/json/default_stream_groups',
-                                  {"group_name": "", "stream_names": ujson.dumps(stream_names)})
-        self.assert_json_error(result, "Invalid default stream group name ''")
-
-        result = self.client_post('/json/default_stream_groups',
+        result = self.client_post('/json/default_stream_groups/create',
                                   {"group_name": group_name, "stream_names": ujson.dumps(stream_names)})
         self.assert_json_success(result)
         default_stream_groups = get_default_stream_groups(realm)
@@ -913,6 +911,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
         self.assertEqual(list(default_stream_groups[0].streams.all()), streams)
 
         # Test adding streams to existing default stream group
+        group_id = default_stream_groups[0].id
         new_stream_names = ["stream4", "stream5"]
         new_streams = []
         for new_stream_name in new_stream_names:
@@ -920,75 +919,69 @@ class DefaultStreamGroupTest(ZulipTestCase):
             new_streams.append(new_stream)
             streams.append(new_stream)
 
-        result = self.client_patch("/json/default_stream_groups",
-                                   {"group_name": group_name,
-                                    "stream_names": ujson.dumps(new_stream_names)})
+        result = self.client_patch("/json/default_stream_groups/{}/streams".format(group_id),
+                                   {"stream_names": ujson.dumps(new_stream_names)})
         self.assert_json_error(result, "Missing 'op' argument")
 
-        result = self.client_patch("/json/default_stream_groups",
-                                   {"group_name": group_name, "op": "invalid",
-                                    "stream_names": ujson.dumps(new_stream_names)})
-        self.assert_json_error(result, 'Nothing to do. Specify at least one of "add" or "remove".')
+        result = self.client_patch("/json/default_stream_groups/{}/streams".format(group_id),
+                                   {"op": "invalid", "stream_names": ujson.dumps(new_stream_names)})
+        self.assert_json_error(result, 'Invalid value for "op". Specify one of "add" or "remove".')
 
-        result = self.client_patch("/json/default_stream_groups",
-                                   {"group_name": "dumbledore's army", "op": "add",
-                                    "stream_names": ujson.dumps(new_stream_names)})
-        self.assert_json_error(result, "Default stream group 'dumbledore's army' does not exist")
+        result = self.client_patch("/json/default_stream_groups/12345/streams",
+                                   {"op": "add", "stream_names": ujson.dumps(new_stream_names)})
+        self.assert_json_error(result, "Default stream group with id '12345' does not exist.")
+
+        result = self.client_patch("/json/default_stream_groups/{}/streams".format(group_id), {"op": "add"})
+        self.assert_json_error(result, "Missing 'stream_names' argument")
 
         do_add_default_stream(new_streams[0])
-        result = self.client_patch('/json/default_stream_groups',
-                                   {"group_name": group_name, "op": "add", "stream_names": ujson.dumps(new_stream_names)})
+        result = self.client_patch("/json/default_stream_groups/{}/streams".format(group_id),
+                                   {"op": "add", "stream_names": ujson.dumps(new_stream_names)})
         self.assert_json_error(result, "'stream4' is a default stream and cannot be added to 'group1'")
 
         do_remove_default_stream(new_streams[0])
-        result = self.client_patch("/json/default_stream_groups",
-                                   {"group_name": group_name, "op": "add",
-                                    "stream_names": ujson.dumps(new_stream_names)})
-        default_stream_groups = get_default_stream_groups(realm)
-        self.assert_length(default_stream_groups, 1)
-        self.assertEqual(default_stream_groups[0].name, group_name)
-        self.assertEqual(list(default_stream_groups[0].streams.all()), streams)
-
-        result = self.client_patch('/json/default_stream_groups',
-                                   {"group_name": group_name, "op": "add", "stream_names": ujson.dumps(new_stream_names)})
-        self.assert_json_error(result, "Stream 'stream4' is already present in default stream group 'group1'")
-
-        # Test removing streams from default stream group
-        result = self.client_patch("/json/default_stream_groups",
-                                   {"group_name": "dumbledore's army", "op": "remove",
-                                    "stream_names": ujson.dumps(new_stream_names)})
-        self.assert_json_error(result, "Default stream group 'dumbledore's army' does not exist")
-
-        result = self.client_patch("/json/default_stream_groups",
-                                   {"group_name": group_name, "op": "remove",
-                                    "stream_names": ujson.dumps(["random stream name"])})
-        self.assert_json_error(result, "Invalid stream name 'random stream name'")
-
-        streams.remove(new_streams[0])
-        result = self.client_patch("/json/default_stream_groups",
-                                   {"group_name": group_name, "op": "remove",
-                                    "stream_names": ujson.dumps([new_stream_names[0]])})
+        result = self.client_patch("/json/default_stream_groups/{}/streams".format(group_id),
+                                   {"op": "add", "stream_names": ujson.dumps(new_stream_names)})
         self.assert_json_success(result)
         default_stream_groups = get_default_stream_groups(realm)
         self.assert_length(default_stream_groups, 1)
         self.assertEqual(default_stream_groups[0].name, group_name)
         self.assertEqual(list(default_stream_groups[0].streams.all()), streams)
 
-        result = self.client_patch("/json/default_stream_groups",
-                                   {"group_name": group_name, "op": "remove",
-                                    "stream_names": ujson.dumps(new_stream_names)})
+        result = self.client_patch("/json/default_stream_groups/{}/streams".format(group_id),
+                                   {"op": "add", "stream_names": ujson.dumps(new_stream_names)})
+        self.assert_json_error(result, "Stream 'stream4' is already present in default stream group 'group1'")
+
+        # Test removing streams from default stream group
+        result = self.client_patch("/json/default_stream_groups/12345/streams",
+                                   {"op": "remove", "stream_names": ujson.dumps(new_stream_names)})
+        self.assert_json_error(result, "Default stream group with id '12345' does not exist.")
+
+        result = self.client_patch("/json/default_stream_groups/{}/streams".format(group_id),
+                                   {"op": "remove", "stream_names": ujson.dumps(["random stream name"])})
+        self.assert_json_error(result, "Invalid stream name 'random stream name'")
+
+        streams.remove(new_streams[0])
+        result = self.client_patch("/json/default_stream_groups/{}/streams".format(group_id),
+                                   {"op": "remove", "stream_names": ujson.dumps([new_stream_names[0]])})
+        self.assert_json_success(result)
+        default_stream_groups = get_default_stream_groups(realm)
+        self.assert_length(default_stream_groups, 1)
+        self.assertEqual(default_stream_groups[0].name, group_name)
+        self.assertEqual(list(default_stream_groups[0].streams.all()), streams)
+
+        result = self.client_patch("/json/default_stream_groups/{}/streams".format(group_id),
+                                   {"op": "remove", "stream_names": ujson.dumps(new_stream_names)})
         self.assert_json_error(result, "Stream 'stream4' is not present in default stream group 'group1'")
 
         # Test deleting a default stream group
-        result = self.client_delete('/json/default_stream_groups', {"group_name": group_name})
+        result = self.client_delete('/json/default_stream_groups/{}'.format(group_id))
         self.assert_json_success(result)
         default_stream_groups = get_default_stream_groups(realm)
         self.assert_length(default_stream_groups, 0)
 
-        do_remove_default_stream(new_stream)
-        result = self.client_patch("/json/default_stream_groups",
-                                   {"group_name": group_name, "op": "add", "stream_names": ujson.dumps(new_stream_names)})
-        self.assert_json_error(result, "Default stream group 'group1' does not exist")
+        result = self.client_delete('/json/default_stream_groups/{}'.format(group_id))
+        self.assert_json_error(result, "Default stream group with id '{}' does not exist.".format(group_id))
 
 class SubscriptionPropertiesTest(ZulipTestCase):
     def test_set_stream_color(self):
