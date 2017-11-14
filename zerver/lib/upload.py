@@ -424,15 +424,10 @@ class S3UploadBackend(ZulipUploadBackend):
 
 ### Local
 
-def mkdirs(path):
-    # type: (Text) -> None
-    dirname = os.path.dirname(path)
-    os.makedirs(dirname, exist_ok=True)
-
 def write_local_file(type, path, file_data):
     # type: (Text, Text, bytes) -> None
     file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, type, path)
-    mkdirs(file_path)
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
     with open(file_path, 'wb') as f:
         f.write(file_data)
 
