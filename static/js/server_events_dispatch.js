@@ -272,6 +272,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             'emoji_alt_code',
             'emojiset',
             'high_contrast_mode',
+            'night_mode',
             'left_side_userlist',
             'timezone',
             'twenty_four_hour_time',
@@ -288,6 +289,13 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         }
         if (event.setting_name === 'high_contrast_mode') {
             $("body").toggleClass("high-contrast");
+        }
+        if (event.setting_name === 'night_mode') {
+            $("body").fadeOut(300);
+            setTimeout(function () {
+                $("body").toggleClass("dark-mode");
+                $("body").fadeIn(300);
+            }, 300);
         }
         if (event.setting_name === 'emoji_alt_code') {
             // Rerender the whole message list UI

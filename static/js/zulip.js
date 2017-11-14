@@ -10,3 +10,9 @@ var current_msg_list = home_msg_list;
 if (typeof module !== 'undefined') {
     module.exports.current_msg_list = current_msg_list;
 }
+
+$(function () {
+    if (page_params.night_mode) {
+        $("body").addClass("dark-mode");
+    }
+});

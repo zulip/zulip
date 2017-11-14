@@ -31,6 +31,17 @@
 
             <div class="input-group">
                 <label class="checkbox">
+                    <input type="checkbox" name="night_mode" id="night_mode"
+                    {{#if page_params.night_mode}}
+                      checked="checked"
+                    {{/if}} />
+                    <span></span>
+                </label>
+                <label for="night_mode" class="inline-block">{{t "Night mode" }}</label>
+            </div>
+
+            <div class="input-group">
+                <label class="checkbox">
                     <input type="checkbox" name="left_side_userlist" id="left_side_userlist"
                     {{#if page_params.left_side_userlist}}
                       checked="checked"

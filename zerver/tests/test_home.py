@@ -94,6 +94,7 @@ class HomeTest(ZulipTestCase):
             "narrow_stream",
             "needs_tutorial",
             "never_subscribed",
+            "night_mode",
             "password_min_guesses",
             "password_min_length",
             "pm_content_in_desktop_notifications",
