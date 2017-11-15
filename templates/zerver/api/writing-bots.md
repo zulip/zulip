@@ -17,12 +17,12 @@ third-party service.
 On this page you'll find:
 
 * A step-by-step
-  [guide](#installing-a-development-version-of-the-zulip-bots-package)
+  [guide](#installing-a-development-version-of-the-zulip_bots-package)
   on how to set up a development environment for writing bots with all
   of our nice tooling to make it easy to write and test your work.
 * A [guide](#writing-a-bot) on writing a bot.
 * A [guide](#adding-a-bot-to-zulip) on adding a bot to Zulip.
-* A [guide](#testing-a-bot-s-output) on testing a bot's output.
+* A [guide](#testing-a-bots-output) on testing a bot's output.
 * A [documentation](#bot-api) of the bot API.
 * Common [problems](#common-problems) when developing/running bots and their solutions.
 
@@ -119,7 +119,7 @@ above as an orientation.
 If you just want to see how a bot reacts to a message, but don't want to set it up on a server,
 we have a little tool to help you out: `zulip-bot-output`
 
-* [Install all requirements](#installing-a-development-version-of-the-zulip-bots-package).
+* [Install all requirements](#installing-a-development-version-of-the-zulip_bots-package).
 
 * Run `zulip-bot-output <bot-name> --message "<your-message>"` to test one of the bots in
   [`zulip_bots/bots`](https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots)
@@ -384,7 +384,7 @@ refactor them.
 
 *Unit tests for bots make heavy use of mocking. If you want to get comfortable with mocking,
  mocking strategies, etc. you should check out our [mocking guide](
- testing-with-django.html#testing-with-mocks).*
+ https://zulip.readthedocs.io/en/latest/testing-with-django.html#testing-with-mocks).*
 
 ### A simple example
 
