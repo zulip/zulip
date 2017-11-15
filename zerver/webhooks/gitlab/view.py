@@ -194,6 +194,10 @@ def get_build_hook_event_body(payload: Dict[str, Any]) -> Text:
         action
     )
 
+def get_test_event_body(payload: Dict[str, Any]) -> Text:
+    return u"Webhook for **{repo}** has been configured successfully! :tada:".format(
+        repo=get_repo_name(payload))
+
 def get_pipeline_event_body(payload: Dict[str, Any]) -> Text:
     pipeline_status = payload['object_attributes'].get('status')
     if pipeline_status == 'pending':
@@ -235,6 +239,7 @@ def get_object_url(payload: Dict[str, Any]) -> Text:
 EVENT_FUNCTION_MAPPER = {
     'Push Hook': get_push_event_body,
     'Tag Push Hook': get_tag_push_event_body,
+    'Test Hook': get_test_event_body,
     'Issue Hook open': get_issue_created_event_body,
     'Issue Hook close': partial(get_issue_event_body, action='closed'),
     'Issue Hook reopen': partial(get_issue_event_body, action='reopened'),
@@ -319,18 +324,16 @@ def get_subject_based_on_event(event: str, payload: Dict[str, Any]) -> Text:
     return get_repo_name(payload)
 
 def get_event(request: HttpRequest, payload: Dict[str, Any], branches: Optional[Text]) -> Optional[str]:
+    # if there is no 'action' attribute, then this is a test payload
+    # and we should ignore it
     event = request.META['HTTP_X_GITLAB_EVENT']
-    if event == 'Issue Hook':
+    if event in ['Issue Hook', 'Merge Request Hook', 'Wiki Page Hook']:
         action = payload['object_attributes'].get('action')
+        if action is None:
+            return 'Test Hook'
         event = "{} {}".format(event, action)
     elif event == 'Note Hook':
         action = payload['object_attributes'].get('noteable_type')
-        event = "{} {}".format(event, action)
-    elif event == 'Merge Request Hook':
-        action = payload['object_attributes'].get('action')
-        event = "{} {}".format(event, action)
-    elif event == 'Wiki Page Hook':
-        action = payload['object_attributes'].get('action')
         event = "{} {}".format(event, action)
     elif event == 'Push Hook':
         if branches is not None:
