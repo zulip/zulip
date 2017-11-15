@@ -276,7 +276,6 @@ class MissedMessageWorker(LoopQueueProcessingWorker):
     sleep_delay = 2 * 60
 
     def consume_batch(self, missed_events: List[Dict[str, Any]]) -> None:
-        missed_events = self.q.drain_queue("missedmessage_emails", json=True)
         by_recipient = defaultdict(list)  # type: Dict[int, List[Dict[str, Any]]]
 
         for event in missed_events:
