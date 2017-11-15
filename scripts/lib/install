@@ -7,7 +7,13 @@ export LC_ALL="en_US.UTF-8"
 export LC_CTYPE="en_US.UTF-8"
 
 usage() {
-    echo "Usage: install [--hostname=zulip.example.com] [--email=admin@example.com] [--help]"
+    cat <<EOF
+Usage:
+  install [--certbot] [--hostname=zulip.example.com] [--email=admin@example.com]
+  install --help
+
+If --certbot is used, --hostname and --email are required.
+EOF
     exit 0
 };
 
@@ -42,6 +48,11 @@ while true; do
 done
 
 if [ -n "$show_help" ]; then
+    usage
+fi
+
+if [ -n "$USE_CERTBOT" ] \
+       && { [ -z "$EXTERNAL_HOST" ] || [ -z "$ZULIP_ADMINISTRATOR" ]; }; then
     usage
 fi
 
