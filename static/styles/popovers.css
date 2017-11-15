@@ -96,6 +96,11 @@ ul.actions_popover i {
     word-wrap: break-word;
 }
 
+.message-info-popover .popover-title,
+.user_popover .popover-title {
+    border-color: hsla(0, 0%, 0%, 0.2);
+}
+
 .popover-avatar .popover-inner {
     width: 240px;
 }
