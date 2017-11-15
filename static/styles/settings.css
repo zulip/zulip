@@ -206,8 +206,8 @@ td .button {
 .settings-section .table-striped thead th {
     background-color: inherit;
     color: inherit;
-    border-top: 1px solid hsl(0, 0%, 86%) !important;
-    border-bottom: 1px solid hsl(0, 0%, 86%) !important;
+    border-top: 1px solid hsla(0, 0%, 0%, 0.2) !important;
+    border-bottom: 1px solid hsla(0, 0%, 0%, 0.2) !important;
 }
 
 #admin-user-list .table tr:first-of-type td,
@@ -951,7 +951,8 @@ input[type=checkbox].inline-block {
 
 #settings_page .content-wrapper .settings-header h1 .section {
     font-weight: 400;
-    color: hsl(0, 0%, 40%);
+    color: inherit;
+    opacity: 0.6;
 }
 
 #settings_page .settings-header.mobile {
@@ -981,7 +982,6 @@ input[type=checkbox].inline-block {
 #settings_page .table-striped thead th {
     background-color: inherit;
     color: inherit;
-    opacity: 0.5;
 }
 
 #settings_page .table-striped thead th.active {
