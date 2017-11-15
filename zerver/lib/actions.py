@@ -50,7 +50,7 @@ from zerver.lib.topic_mutes import (
     remove_topic_mute,
 )
 from zerver.lib.users import bulk_get_users, check_full_name
-from zerver.lib.user_groups import create_user_group
+from zerver.lib.user_groups import create_user_group, access_user_group_by_id
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
     RealmDomain, \
     Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, \
@@ -4361,3 +4361,7 @@ def remove_members_from_user_group(user_group, user_profiles):
 
     user_ids = [up.id for up in user_profiles]
     do_send_user_group_members_update_event('remove_members', user_group, user_ids)
+
+def check_delete_user_group(user_group_id: int, realm: Realm) -> None:
+    user_group = access_user_group_by_id(user_group_id, realm)
+    user_group.delete()

@@ -6,7 +6,7 @@ from typing import List, Text
 from zerver.context_processors import get_realm_from_request
 from zerver.lib.actions import check_add_user_group, do_update_user_group_name, \
     do_update_user_group_description, bulk_add_members_to_user_group, \
-    remove_members_from_user_group
+    remove_members_from_user_group, check_delete_user_group
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_success, json_error
@@ -51,8 +51,7 @@ def edit_user_group(request, user_profile,
 @has_request_variables
 def delete_user_group(request, user_profile, user_group_id=REQ(validator=check_int)):
     # type: (HttpRequest, UserProfile, int) -> HttpResponse
-    user_group = access_user_group_by_id(user_group_id, user_profile.realm)
-    user_group.delete()
+    check_delete_user_group(user_group_id, user_profile.realm)
     return json_success()
 
 @has_request_variables
