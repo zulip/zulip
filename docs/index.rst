@@ -3,23 +3,31 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Zulip documentation!
-===============================
+Welcome to the Zulip documentation!
+===================================
 
-Zulip is a powerful, open source group chat application. Written in
-Python and using the Django framework, Zulip supports both private
-messaging and group chats via conversation streams.
+Welcome! Zulip's documentation is split into four parts:
 
-Zulip also supports fast search, drag-and-drop file uploads, image
-previews, group private messages, audible notifications, missed-message
-emails, desktop apps, and much more.
+- `User documentation <https://zulipchat.com/help>`__, for users and
+  administrators of Zulip organizations.
+- `Installation documentation <https://zulip.readthedocs.io/en/latest/prod.html>`__,
+  for installing and maintaining a self-hosted Zulip installation.
+- `API documentation <https://zulipchat.com/api/>`__, for writing integrations
+  or bots using the Zulip API.
+- `Contributor documentation <https://zulip.readthedocs.io/en/latest/contributing.html>`__,
+  for developing the Zulip software, translating, submitting bug reports, or
+  making other contributions to the project.
 
+Zulip has well over 150,000 words of documentation. If you can't find what
+you're looking for, please
+`let us know <https://zulip.readthedocs.io/en/latest/chat-zulip-org.html>`__!
 Further information on the Zulip project and its features can be found
-at `https://www.zulip.org <https://www.zulip.org>`__ and in these
-docs.  Our code is available at `our GitHub repository
-<https://github.com/zulip/>`__.
+at `https://www.zulip.org <https://www.zulip.org>`__.
 
-This set of documents covers installation and contribution instructions.
+This site contains our installation and contributor documentation. If this
+is your first time here, you may want to start with
+`Production overview <https://zulip.readthedocs.io/en/latest/prod.html>`_ or
+`Contributing to Zulip <https://zulip.readthedocs.io/en/latest/contributing.html>`_.
 
 Contents:
 
