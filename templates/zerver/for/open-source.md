@@ -64,6 +64,12 @@ Efficiently refer to issues or code reviews with notation like `#1234` or
 [custom linkification filter](/help/add-a-custom-linkification-filter) for
 your organization.
 
+### Enforce a code of conduct
+
+Link to your community norms or give other instructions right on your Zulip
+registration page. Admins can delete messages and deactivate (ban) users at
+any time.
+
 ### Hundreds of integrations
 
 Get events from GitHub, Travis CI, JIRA, and
