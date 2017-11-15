@@ -1,28 +1,27 @@
 
-import sys
-import tornado.web
 import logging
+import sys
+import urllib
+from threading import Lock
+from typing import Any, Callable, Dict, List, Optional
+
+import tornado.web
 from django import http
 from django.conf import settings
-from django.core.handlers.wsgi import WSGIRequest, get_script_name
+from django.core import exceptions, signals, urlresolvers
+from django.core.exceptions import MiddlewareNotUsed
 from django.core.handlers import base
 from django.core.handlers.exception import convert_exception_to_response
+from django.core.handlers.wsgi import WSGIRequest, get_script_name
 from django.core.urlresolvers import set_script_prefix
-from django.core import signals
-from django.core import exceptions, urlresolvers
-from django.core.exceptions import MiddlewareNotUsed
 from django.http import HttpRequest, HttpResponse
 from django.utils.module_loading import import_string
-from threading import Lock
 from tornado.wsgi import WSGIContainer
-import urllib
 
 from zerver.decorator import RespondAsynchronously
 from zerver.lib.response import json_response
-from zerver.middleware import async_request_stop, async_request_restart
+from zerver.middleware import async_request_restart, async_request_stop
 from zerver.tornado.descriptors import get_descriptor_by_handler_id
-
-from typing import Any, Callable, Dict, List, Optional
 
 current_handler_id = 0
 handlers = {}  # type: Dict[int, 'AsyncDjangoHandler']

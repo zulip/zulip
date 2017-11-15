@@ -1,11 +1,11 @@
+import logging
+import select
+import time
 from typing import Any, List, Tuple
 
-import logging
-import time
-import select
 from django.conf import settings
-
 from tornado.ioloop import IOLoop, PollIOLoop
+
 # There isn't a good way to get at what the underlying poll implementation
 # will be without actually constructing an IOLoop, so we just assume it will
 # be epoll.

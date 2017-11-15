@@ -1,23 +1,21 @@
 
-from django.utils.translation import ugettext as _
-from django.http import HttpRequest, HttpResponse
-
-from zerver.models import get_client, UserProfile, Client
-
-from zerver.decorator import asynchronous, \
-    internal_notify_view, RespondAsynchronously, \
-    has_request_variables, REQ, _RespondAsynchronously
-
-from zerver.lib.response import json_success, json_error
-from zerver.lib.validator import check_bool, check_list, check_string
-from zerver.tornado.event_queue import get_client_descriptor, \
-    process_notification, fetch_events
-from zerver.tornado.exceptions import BadEventQueueIdError
-from django.core.handlers.base import BaseHandler
-
-from typing import Union, Optional, Iterable, Sequence, List, Text
 import time
+from typing import Iterable, List, Optional, Sequence, Text, Union
+
 import ujson
+from django.core.handlers.base import BaseHandler
+from django.http import HttpRequest, HttpResponse
+from django.utils.translation import ugettext as _
+
+from zerver.decorator import REQ, RespondAsynchronously, \
+    _RespondAsynchronously, asynchronous, \
+    has_request_variables, internal_notify_view
+from zerver.lib.response import json_error, json_success
+from zerver.lib.validator import check_bool, check_list, check_string
+from zerver.models import Client, UserProfile, get_client
+from zerver.tornado.event_queue import fetch_events, \
+    get_client_descriptor, process_notification
+from zerver.tornado.exceptions import BadEventQueueIdError
 
 @internal_notify_view(True)
 def notify(request: HttpRequest) -> HttpResponse:
