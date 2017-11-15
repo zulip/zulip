@@ -1,0 +1,111 @@
+#!/usr/bin/env python3
+import glob
+import colorsys
+import re
+
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
+from lib.css_parser import parse
+from lib.css_tools import (
+    is_color_scheme,
+)
+
+count = 0
+
+def process_file(fn, dct):
+    text = open(fn).read()
+    section_list = parse(text)
+    for section in section_list.sections:
+        color_declarations = []
+        if hasattr(section, 'declaration_block'):
+            for declaration in section.declaration_block.declarations:
+                if not is_color_scheme(declaration, fn):
+                    continue
+
+                prop = declaration.css_property
+                value = declaration.css_value.text().strip()
+
+                if 'hsl' in value:
+                    color_declarations.append((prop, value))
+
+                selectors = [
+                    sel.text().strip()
+                    for sel in section.selector_list.selectors
+                ]
+
+        if color_declarations:
+            global count
+            count += 1
+            color_declarations.sort(key=lambda item: item[0])
+            color_declarations = '\n'.join(
+                '    %s: %s;' % (prop, value)
+                for (prop, value) in color_declarations
+            )
+                
+            dct[count] = dict(
+                count=count,
+                declarations=color_declarations,
+                selectors='\n'.join(selectors)
+            )
+
+def td(s):
+    return '<td>%s</td>' % s
+
+def pre(s):
+    return '<pre>%s</td>' % s
+
+def tr(*td):
+    return '<tr valign="top">' + '\n'.join(td) + '</td>'
+
+def process_files(filenames):
+    dct = {}
+
+    for fn in filenames:
+        if 'portico' in fn:
+            continue
+        if 'landing-page' in fn:
+            continue
+        if 'pygments' in fn:
+            continue
+        if 'stats' in fn:
+            continue
+        if 'stream_color' in fn:
+            # These styles should not be inverted for dark mode.
+            continue
+        process_file(fn, dct)
+
+    keys = sorted(dct, key=lambda k: dct[k]['declarations'])
+    print('<style>')
+    for k in keys:
+        print('.foo%s {' % k)
+        print('    border: 2px solid;')
+        print('    height: 40px;')
+        print(dct[k]['declarations'])
+        print('}')
+    print('</style>')
+
+    print('<table>')
+    for k in keys:
+        selectors = dct[k]['selectors']
+        declarations = dct[k]['declarations']
+        if ' color:' in declarations:
+            msg = 'hello'
+        else:
+            msg = ''
+            
+        example = '<div class="foo%s">%s</div>' % (k, msg)
+
+        print(tr(
+            td(example),
+            td(pre(declarations)),
+            td(pre(selectors)),
+        ))
+    print('</table>')
+
+
+if __name__ == '__main__':
+    filenames = glob.glob('static/styles/*.css')
+    process_files(filenames)
+
