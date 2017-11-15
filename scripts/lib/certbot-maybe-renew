@@ -16,4 +16,5 @@ if ! zulip_conf_get_boolean certbot auto_renew; then
 fi
 
 /usr/local/sbin/certbot-auto renew --quiet \
-  --webroot --webroot-path=/var/lib/zulip/certbot-webroot/
+  --webroot --webroot-path=/var/lib/zulip/certbot-webroot/ \
+  --deploy-hook 'service nginx reload'
