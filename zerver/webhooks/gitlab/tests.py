@@ -346,6 +346,18 @@ class GitlabHookTests(WebhookTestCase):
             HTTP_X_GITLAB_EVENT="Pipeline Hook"
         )
 
+    def test_issue_type_test_payload(self):
+        # type: () -> None
+        expected_subject = u'public-repo'
+        expected_message = u"Webhook for **public-repo** has been configured successfully! :tada:"
+
+        self.send_and_test_stream_message(
+            'issue_test_payload',
+            expected_subject,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Test Hook"
+        )
+
     @patch('zerver.webhooks.gitlab.view.check_send_stream_message')
     def test_push_event_message_filtered_by_branches_ignore(
             self, check_send_stream_message_mock):
