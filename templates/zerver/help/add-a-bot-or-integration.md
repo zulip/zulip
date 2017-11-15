@@ -20,8 +20,8 @@ the creation of your bot.
 
 4. You now have access to your bot's API key and API
 configuration file (`.zuliprc`) which you will need for integrations that you would like
-to use with this bot. You can click on the download
-(<i class="icon-vector-download-alt"></i>) icon to download your `.zuliprc` file.
+to use with this bot. You can click on the download !icon(download) icon to download your
+`.zuliprc` file.
 
 ### Bot types
 
