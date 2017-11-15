@@ -62,7 +62,8 @@ def api_bitbucket2_webhook(request, user_profile, payload=REQ(argument_type='bod
                                       stream, subject, body)
     return json_success()
 
-def get_subject_for_branch_specified_events(payload: Dict[str, Any], branch_name: Optional[Text]=None) -> Text:
+def get_subject_for_branch_specified_events(payload: Dict[str, Any],
+                                            branch_name: Optional[Text]=None) -> Text:
     return SUBJECT_WITH_BRANCH_TEMPLATE.format(
         repo=get_repository_name(payload['repository']),
         branch=get_branch_name_for_push_event(payload) if branch_name is None else branch_name

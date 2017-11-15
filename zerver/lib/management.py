@@ -114,6 +114,7 @@ You can use the command list_realms to find ID of the realms in this server."""
             return UserProfile.objects.select_related().get(email__iexact=email.strip())
         except MultipleObjectsReturned:
             raise CommandError("This Zulip server contains multiple users with that email " +
-                               "(in different realms); please pass `--realm` to specify which one to modify.")
+                               "(in different realms); please pass `--realm` "
+                               "to specify which one to modify.")
         except UserProfile.DoesNotExist:
             raise CommandError("This Zulip server does not contain a user with email '%s'" % (email,))

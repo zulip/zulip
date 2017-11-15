@@ -29,7 +29,8 @@ if __name__ == "__main__":
                                                           r'visibleFill|visibleStroke|'
                                                           r'visible|painted|fill|stroke|all|inherit')
 
-    profile.addProfiles([(Profiles.CSS_LEVEL_2, properties[Profiles.CSS_LEVEL_2], macros[Profiles.CSS_LEVEL_2])])
+    profile.addProfiles([(Profiles.CSS_LEVEL_2, properties[Profiles.CSS_LEVEL_2],
+                         macros[Profiles.CSS_LEVEL_2])])
 
     os.chdir(os.path.join(ZULIP_PATH, 'templates', 'zerver', 'emails'))
 

@@ -610,7 +610,7 @@ def build_custom_checkers(by_lang):
         for fn in by_lang['py']:
             if 'custom_check.py' in fn:
                 continue
-            if custom_check_file(fn, 'py', python_rules, color, max_length=120):
+            if custom_check_file(fn, 'py', python_rules, color, max_length=110):
                 failed = True
         return failed
 

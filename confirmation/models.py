@@ -43,8 +43,9 @@ def generate_key() -> str:
     # 24 characters * 5 bits of entropy/character = 120 bits of entropy
     return ''.join(generator.choice(string.ascii_lowercase + string.digits) for _ in range(24))
 
+ObjT = Union[MultiuseInvite, PreregistrationUser, EmailChangeStatus]
 def get_object_from_key(confirmation_key: str,
-                        confirmation_type: int) -> Union[MultiuseInvite, PreregistrationUser, EmailChangeStatus]:
+                        confirmation_type: int) -> ObjT:
     # Confirmation keys used to be 40 characters
     if len(confirmation_key) not in (24, 40):
         raise ConfirmationKeyException(ConfirmationKeyException.WRONG_LENGTH)
@@ -113,8 +114,9 @@ _properties = {
     Confirmation.EMAIL_CHANGE: ConfirmationType('zerver.views.user_settings.confirm_email_change'),
     Confirmation.UNSUBSCRIBE: ConfirmationType('zerver.views.unsubscribe.email_unsubscribe',
                                                validity_in_days=1000000),  # should never expire
-    Confirmation.MULTIUSE_INVITE: ConfirmationType('zerver.views.registration.accounts_home_from_multiuse_invite',
-                                                   validity_in_days=settings.INVITATION_LINK_VALIDITY_DAYS)
+    Confirmation.MULTIUSE_INVITE: ConfirmationType(
+        'zerver.views.registration.accounts_home_from_multiuse_invite',
+        validity_in_days=settings.INVITATION_LINK_VALIDITY_DAYS)
 }
 
 # Confirmation pathways for which there is no content_object that we need to

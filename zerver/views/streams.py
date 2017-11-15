@@ -123,7 +123,9 @@ def update_default_stream_group_streams(request: HttpRequest, user_profile: User
 
 @require_realm_admin
 @has_request_variables
-def remove_default_stream_group(request: HttpRequest, user_profile: UserProfile, group_id: int) -> None:
+def remove_default_stream_group(request: HttpRequest,
+                                user_profile: UserProfile,
+                                group_id: int) -> None:
     group = access_default_stream_group_by_id(user_profile.realm, group_id)
     do_remove_default_stream_group(user_profile.realm, group)
     return json_success()

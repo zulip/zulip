@@ -1,6 +1,6 @@
 """
 The contents of this file are taken from
-[Django-admin](https://github.com/niwinz/django-jinja/blob/master/django_jinja/management/commands/makemessages.py)
+https://github.com/niwinz/django-jinja/blob/master/django_jinja/management/commands/makemessages.py
 
 Jinja2's i18n functionality is not exactly the same as Django's.
 In particular, the tags names and their syntax are different:

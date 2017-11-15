@@ -2937,7 +2937,8 @@ def do_create_default_stream_group(realm: Realm, group_name: Text,
     default_streams = get_default_streams_for_realm(realm.id)
     for stream in streams:
         if stream in default_streams:
-            raise JsonableError(_("'%s' is a default stream and cannot be added to '%s'") % (stream.name, group_name))
+            raise JsonableError(_("'%s' is a default stream and cannot be added to '%s'") % (
+                stream.name, group_name))
 
     check_default_stream_group_name(group_name)
     (group, created) = DefaultStreamGroup.objects.get_or_create(name=group_name, realm=realm, description=description)
@@ -2952,7 +2953,8 @@ def do_add_streams_to_default_stream_group(realm: Realm, group: DefaultStreamGro
     default_streams = get_default_streams_for_realm(realm.id)
     for stream in streams:
         if stream in default_streams:
-            raise JsonableError(_("'%s' is a default stream and cannot be added to '%s'") % (stream.name, group.name))
+            raise JsonableError(_("'%s' is a default stream and cannot be added to '%s'") % (
+                stream.name, group.name))
         if stream in group.streams.all():
             raise JsonableError(_("Stream '%s' is already present in default stream group '%s'")
                                 % (stream.name, group.name))

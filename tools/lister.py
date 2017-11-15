@@ -64,7 +64,8 @@ def list_files(targets=[], ftypes=[], use_shebang=True, modified_only=False,
     # Really this is all bytes -- it's a file path -- but we get paths in
     # sys.argv as str, so that battle is already lost.  Settle for hoping
     # everything is UTF-8.
-    repository_root = subprocess.check_output(['git', 'rev-parse', '--show-toplevel']).strip().decode('utf-8')
+    repository_root = subprocess.check_output(['git', 'rev-parse',
+                                               '--show-toplevel']).strip().decode('utf-8')
     exclude_abspaths = [os.path.abspath(os.path.join(repository_root, fpath)) for fpath in exclude]
 
     cmdline = ['git', 'ls-files'] + targets
