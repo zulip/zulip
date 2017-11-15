@@ -1,12 +1,10 @@
 
-from typing import Any
-
-from argparse import ArgumentParser
-
 import os
 import shutil
 import subprocess
 import tempfile
+from argparse import ArgumentParser
+from typing import Any
 
 from zerver.lib.export import do_export_user
 from zerver.lib.management import ZulipBaseCommand

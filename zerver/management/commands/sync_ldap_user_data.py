@@ -1,13 +1,13 @@
 
 from typing import Any
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db.utils import IntegrityError
-from django.conf import settings
 
-from zproject.backends import ZulipLDAPUserPopulator
-from zerver.models import UserProfile
 from zerver.lib.logging_util import create_logger
+from zerver.models import UserProfile
+from zproject.backends import ZulipLDAPUserPopulator
 
 ## Setup ##
 logger = create_logger(__name__, settings.LDAP_SYNC_LOG_PATH, 'INFO')

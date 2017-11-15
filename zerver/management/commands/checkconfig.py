@@ -1,9 +1,9 @@
 
+import sys
 from typing import Any
 
-from django.core.management.base import BaseCommand
 from django.conf import settings
-import sys
+from django.core.management.base import BaseCommand
 
 class Command(BaseCommand):
     help = """Checks your Zulip Voyager Django configuration for issues."""

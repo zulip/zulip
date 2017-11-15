@@ -1,7 +1,6 @@
 
-from typing import Any
-
 from argparse import ArgumentParser
+from typing import Any
 
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import Service, UserProfile

@@ -2,11 +2,12 @@
 import argparse
 import os
 from typing import Any
-from django.db import DEFAULT_DB_ALIAS
-from django.core.management.base import BaseCommand
 
-from zerver.lib.test_fixtures import get_migration_status
+from django.core.management.base import BaseCommand
+from django.db import DEFAULT_DB_ALIAS
+
 from scripts.lib.zulip_tools import get_dev_uuid_var_path
+from zerver.lib.test_fixtures import get_migration_status
 
 class Command(BaseCommand):
     help = "Get status of migrations."

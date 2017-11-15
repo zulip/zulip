@@ -29,17 +29,16 @@ http://stackoverflow.com/questions/2090717
 
 """
 
-from typing import Any, Dict, Iterable, Mapping, Text, List
-
-from argparse import ArgumentParser
-import os
-import re
 import glob
 import json
+import os
+import re
+from argparse import ArgumentParser
+from typing import Any, Dict, Iterable, List, Mapping, Text
 
-from django.core.management.commands import makemessages
-from django.template.base import BLOCK_TAG_START, BLOCK_TAG_END
 from django.conf import settings
+from django.core.management.commands import makemessages
+from django.template.base import BLOCK_TAG_END, BLOCK_TAG_START
 from django.utils.translation import template
 
 from zerver.lib.str_utils import force_text

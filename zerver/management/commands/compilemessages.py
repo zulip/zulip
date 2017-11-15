@@ -1,17 +1,15 @@
 
 import os
 import re
-import ujson
-
-from subprocess import check_output, CalledProcessError
+from subprocess import CalledProcessError, check_output
 from typing import Any, Dict, List, Text
 
-from django.core.management.commands import compilemessages
+import polib
+import ujson
 from django.conf import settings
 from django.conf.locale import LANG_INFO
+from django.core.management.commands import compilemessages
 from django.utils.translation.trans_real import to_language
-
-import polib
 
 from zerver.lib.i18n import with_language
 

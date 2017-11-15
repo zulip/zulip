@@ -1,13 +1,12 @@
 
-from typing import Any, IO
-
-from argparse import ArgumentParser
-from django.core.management.base import BaseCommand
-from zerver.lib.queue import queue_json_publish
-
 import sys
-import ujson
+from argparse import ArgumentParser
+from typing import IO, Any
 
+import ujson
+from django.core.management.base import BaseCommand
+
+from zerver.lib.queue import queue_json_publish
 
 def error(*args: Any) -> None:
     raise Exception('We cannot enqueue because settings.USING_RABBITMQ is False.')

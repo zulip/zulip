@@ -1,20 +1,15 @@
 
 import logging
 import sys
-
+from argparse import ArgumentParser
 from typing import Any, List, Optional, Text
 
-from argparse import ArgumentParser
 from django.core.management.base import CommandError
 from django.db import connection
 
-from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.fix_unreads import fix
-
-from zerver.models import (
-    Realm,
-    UserProfile
-)
+from zerver.lib.management import ZulipBaseCommand
+from zerver.models import Realm, UserProfile
 
 logging.getLogger('zulip.fix_unreads').setLevel(logging.INFO)
 

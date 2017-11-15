@@ -3,7 +3,7 @@ from typing import Any
 
 from django.core.management.base import CommandParser
 
-from zerver.lib.actions import create_stream_if_needed, bulk_add_subscriptions
+from zerver.lib.actions import bulk_add_subscriptions, create_stream_if_needed
 from zerver.lib.management import ZulipBaseCommand
 
 class Command(ZulipBaseCommand):

@@ -1,7 +1,7 @@
 
+from argparse import ArgumentParser
 from typing import Any
 
-from argparse import ArgumentParser
 from django.core.management.base import BaseCommand
 
 from zerver.lib.actions import do_delete_old_unclaimed_attachments
