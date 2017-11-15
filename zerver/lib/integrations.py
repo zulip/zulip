@@ -192,7 +192,7 @@ class WebhookIntegration(Integration):
         # type: () -> LocaleRegexProvider
         return url(self.url, self.function)
 
-class HubotLozenge(Integration):
+class HubotIntegration(Integration):
     GIT_URL_TEMPLATE = "https://github.com/hubot-scripts/hubot-{}"
 
     def __init__(self, name: str, categories: List[str],
@@ -459,23 +459,25 @@ BOT_INTEGRATIONS = [
 
 # Note: These are not actually displayed anywhere; we're keeping them
 # around so they can be migrated into the newer HUBOT_INTEGRATIONS
-HUBOT_LOZENGES_LEGACY = {
-    'bonusly': HubotLozenge('bonusly', ['hr']),
-    'chartbeat': HubotLozenge('chartbeat', ['marketing']),
-    'darksky': HubotLozenge('darksky', ['misc'], display_name='Dark Sky', logo_alt='Dark Sky logo'),
-    'hangouts': HubotLozenge('google-hangouts', ['communication'], display_name="Hangouts"),
-    'instagram': HubotLozenge('instagram', ['misc'],
-                              logo='static/images/integrations/logos/instagram.png'),
-    'mailchimp': HubotLozenge('mailchimp', ['communication', 'marketing'],
-                              display_name='MailChimp', logo_alt='MailChimp logo'),
-    'translate': HubotLozenge('google-translate', ['misc'],
-                              display_name="Translate", logo_alt='Google Translate logo'),
-    'youtube': HubotLozenge('youtube', ['misc'], display_name='YouTube', logo_alt='YouTube logo')
+HUBOT_INTEGRATIONS_LEGACY = {
+    'bonusly': HubotIntegration('bonusly', ['hr']),
+    'chartbeat': HubotIntegration('chartbeat', ['marketing']),
+    'darksky': HubotIntegration('darksky', ['misc'], display_name='Dark Sky',
+                                logo_alt='Dark Sky logo'),
+    'hangouts': HubotIntegration('google-hangouts', ['communication'], display_name="Hangouts"),
+    'instagram': HubotIntegration('instagram', ['misc'],
+                                  logo='static/images/integrations/logos/instagram.png'),
+    'mailchimp': HubotIntegration('mailchimp', ['communication', 'marketing'],
+                                  display_name='MailChimp', logo_alt='MailChimp logo'),
+    'translate': HubotIntegration('google-translate', ['misc'],
+                                  display_name="Translate", logo_alt='Google Translate logo'),
+    'youtube': HubotIntegration('youtube', ['misc'], display_name='YouTube',
+                                logo_alt='YouTube logo')
 }
 
 HUBOT_INTEGRATIONS = {
-    HubotLozenge('assembla', ['version-control', 'project-management'],
-                 display_name='Assembla', logo_alt='Assembla'),
+    HubotIntegration('assembla', ['version-control', 'project-management'],
+                     display_name='Assembla', logo_alt='Assembla'),
 }
 
 for hubot_integration in HUBOT_INTEGRATIONS:
