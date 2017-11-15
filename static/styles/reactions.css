@@ -163,7 +163,7 @@
     padding: 8px 10px;
     margin-bottom: 0px;
 
-    background-color: hsl(0, 0%, 93%);
+    background-color: hsla(0, 0%, 0%, 0.07);
 
     border-radius: 5px 5px 0px 0px;
 }
@@ -248,7 +248,7 @@
 }
 
 .emoji-popover-category-tabs {
-    background-color: hsl(0, 0%, 93%);
+    background-color: hsla(0, 0%, 0%, 0.07);
     width: 100%;
     box-sizing: border-box;
     overflow: hidden;
@@ -265,7 +265,7 @@
 }
 
 .emoji-popover-category-tabs .emoji-popover-tab-item.active {
-    background: hsl(0, 0%, 80%);
+    background: hsla(0, 0%, 0%, 0.2);
 }
 
 .typeahead .emoji {
@@ -274,7 +274,7 @@
 
 .emoji-showcase-container {
     position: relative;
-    background-color: hsl(0, 0%, 93%);
+    background-color: hsla(0, 0%, 0%, 0.07);
     min-height: 44px;
     width: 250px;
 }
