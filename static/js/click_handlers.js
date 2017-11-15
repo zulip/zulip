@@ -812,7 +812,7 @@ $(function () {
                         $("li[data-section='organization-profile']").click();
                     }
                 } else {
-                    $("li:not(.admin)").show();
+                    $(".settings-list li:not(.admin)").show();
                     if (!payload.dont_switch_tab) {
                         $("li[data-section='your-account']").click();
                     }
