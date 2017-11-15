@@ -22,7 +22,7 @@ https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots
 in your Zulip organization.
 
 *Hint: Looking for an easy way to test a bot's output? Check out [this](
- writing-bots#testing-a-bot-s-output) guide.*
+ writing-bots#testing-a-bots-output) guide.*
 
 You need:
 
@@ -38,10 +38,10 @@ You need:
 
 1. Run `pip install zulip_bots` to install the package.
 
-*Hint: Do you want to install the latest development version? Check
- out [this](
- writing-bots#installing-a-development-version-of-the-zulip-bots-package)
- guide.*
+     *Hint: Do you want to install the latest development version? Check
+     out [this](
+     writing-bots#installing-a-development-version-of-the-zulip-bots-package)
+     guide.*
 
 2. Register a new bot user on the Zulip server's web interface.
 
