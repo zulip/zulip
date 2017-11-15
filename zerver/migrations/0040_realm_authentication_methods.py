@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from django.db import migrations, models
-import bitfield.models
 
+import bitfield.models
 
 class Migration(migrations.Migration):
 
