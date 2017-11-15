@@ -26,7 +26,7 @@
     line-height: 0.8;
     font-size: 1.3rem;
     text-align: center;
-    border: 1px solid hsl(0, 0%, 60%);
+    border: 1px solid hsla(0, 0%, 0%, 0.6);
     color: hsl(0, 0%, 80%);
 
     border-radius: 4px;
