@@ -5,13 +5,13 @@
 __revision__ = '$Id: views.py 21 2008-12-05 09:21:03Z jarek.zgoda $'
 
 
-from django.shortcuts import render
-from django.http import HttpRequest, HttpResponse
-
-from confirmation.models import Confirmation, get_object_from_key, ConfirmationKeyException, \
-    render_confirmation_key_error
-
 from typing import Any, Dict
+
+from django.http import HttpRequest, HttpResponse
+from django.shortcuts import render
+
+from confirmation.models import Confirmation, ConfirmationKeyException, \
+    get_object_from_key, render_confirmation_key_error
 
 # This is currently only used for confirming PreregistrationUser.
 # Do not add other confirmation paths here.

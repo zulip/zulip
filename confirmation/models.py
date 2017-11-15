@@ -5,22 +5,23 @@
 __revision__ = '$Id: models.py 28 2009-10-22 15:03:02Z jarek.zgoda $'
 
 import datetime
+import string
+from random import SystemRandom
+from typing import Any, Dict, Optional, Text, Union
 
-from django.db import models
-from django.core.urlresolvers import reverse
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+from django.core.urlresolvers import reverse
+from django.db import models
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.send_email import send_email
 from zerver.lib.utils import generate_random_token
-from zerver.models import PreregistrationUser, EmailChangeStatus, MultiuseInvite, UserProfile
-from random import SystemRandom
-import string
-from typing import Any, Dict, Optional, Text, Union
+from zerver.models import EmailChangeStatus, \
+    MultiuseInvite, PreregistrationUser, UserProfile
 
 class ConfirmationKeyException(Exception):
     WRONG_LENGTH = 1
