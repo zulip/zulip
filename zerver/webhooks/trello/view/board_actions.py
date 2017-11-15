@@ -1,4 +1,5 @@
-from typing import Any, Dict, Optional, Mapping, MutableMapping, Text, Tuple
+from typing import Any, Dict, Mapping, MutableMapping, Optional, Text, Tuple
+
 from .exceptions import UnknownUpdateBoardAction
 
 SUPPORTED_BOARD_ACTIONS = [

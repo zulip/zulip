@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
-from django.utils.translation import ugettext as _
-from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.actions import check_send_stream_message
-from zerver.lib.response import json_success, json_error
-from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.webhooks.git import get_push_commits_event_message, \
-    get_pull_request_event_message, get_create_branch_event_message, \
-    SUBJECT_WITH_BRANCH_TEMPLATE, SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE
-from zerver.models import UserProfile
+from typing import Any, Dict, Iterable, Optional, Text
 
 from django.http import HttpRequest, HttpResponse
-from typing import Dict, Any, Iterable, Optional, Text
+from django.utils.translation import ugettext as _
+
+from zerver.decorator import api_key_only_webhook_view
+from zerver.lib.actions import check_send_stream_message
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_error, json_success
+from zerver.lib.webhooks.git import SUBJECT_WITH_BRANCH_TEMPLATE, \
+    SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE, get_create_branch_event_message, \
+    get_pull_request_event_message, get_push_commits_event_message
+from zerver.models import UserProfile
 
 def format_push_event(payload: Dict[str, Any]) -> Text:
 

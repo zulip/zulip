@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from typing import Text
-from zerver.lib.test_classes import WebhookTestCase
 
 import mock
+
+from zerver.lib.test_classes import WebhookTestCase
 
 class StripeHookTests(WebhookTestCase):
     STREAM_NAME = 'test'

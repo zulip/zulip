@@ -1,9 +1,10 @@
-import ujson
 from typing import Dict, Optional, Text
 
-from zerver.models import Message
-from zerver.lib.webhooks.git import COMMITS_LIMIT
+import ujson
+
 from zerver.lib.test_classes import WebhookTestCase
+from zerver.lib.webhooks.git import COMMITS_LIMIT
+from zerver.models import Message
 
 class GithubV1HookTests(WebhookTestCase):
     STREAM_NAME = None  # type: Optional[Text]

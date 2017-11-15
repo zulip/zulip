@@ -1,5 +1,6 @@
-from typing import Dict, Tuple, Any, Optional, MutableMapping, Mapping, Text
 from datetime import datetime
+from typing import Any, Dict, Mapping, MutableMapping, Optional, Text, Tuple
+
 from .exceptions import UnknownUpdateCardAction
 
 SUPPORTED_CARD_ACTIONS = [

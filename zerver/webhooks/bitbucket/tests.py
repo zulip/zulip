@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-from mock import patch, MagicMock
-from typing import Dict, Union, Text, Optional
+from typing import Dict, Optional, Text, Union
+
+from mock import MagicMock, patch
 
 from zerver.lib.test_classes import WebhookTestCase
 

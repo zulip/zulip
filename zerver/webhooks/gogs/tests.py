@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-from mock import patch, MagicMock
-from typing import Text, Optional
+from typing import Optional, Text
 
-from zerver.lib.webhooks.git import COMMITS_LIMIT
+from mock import MagicMock, patch
+
 from zerver.lib.test_classes import WebhookTestCase
-
+from zerver.lib.webhooks.git import COMMITS_LIMIT
 
 class GogsHookTests(WebhookTestCase):
     STREAM_NAME = 'commits'
