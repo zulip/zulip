@@ -4362,6 +4362,13 @@ def remove_members_from_user_group(user_group, user_profiles):
     user_ids = [up.id for up in user_profiles]
     do_send_user_group_members_update_event('remove_members', user_group, user_ids)
 
+def do_send_delete_user_group_event(user_group_id: int, realm_id: int) -> None:
+    event = dict(type="user_group",
+                 op="remove",
+                 group_id=user_group_id)
+    send_event(event, active_user_ids(realm_id))
+
 def check_delete_user_group(user_group_id: int, realm: Realm) -> None:
     user_group = access_user_group_by_id(user_group_id, realm)
     user_group.delete()
+    do_send_delete_user_group_event(user_group_id, realm.id)
