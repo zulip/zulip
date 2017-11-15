@@ -1,8 +1,8 @@
-from analytics.lib.counts import CountStat
-
 from math import sqrt
 from random import gauss, random, seed
 from typing import List
+
+from analytics.lib.counts import CountStat
 
 def generate_time_series_data(days=100, business_hours_base=10, non_business_hours_base=10,
                               growth=1, autocorrelation=0, spikiness=1, holiday_rate=0,

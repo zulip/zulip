@@ -1,4 +1,8 @@
 
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional, Text, Tuple, Type, Union
+
+import ujson
 from django.apps import apps
 from django.db import models
 from django.db.models import Sum
@@ -6,23 +10,20 @@ from django.test import TestCase
 from django.utils.timezone import now as timezone_now
 from django.utils.timezone import utc as timezone_utc
 
-from analytics.lib.counts import CountStat, COUNT_STATS, process_count_stat, \
-    do_fill_count_stat_at_hour, do_increment_logging_stat, DataCollector, \
-    sql_data_collector, LoggingCountStat, do_aggregate_to_summary_table, \
-    do_drop_all_analytics_tables, do_drop_single_stat, DependentCountStat
-from analytics.models import BaseCount, InstallationCount, RealmCount, \
-    UserCount, StreamCount, FillState, Anomaly, installation_epoch, \
-    last_successful_fill
-from zerver.lib.actions import do_create_user, do_deactivate_user, \
-    do_activate_user, do_reactivate_user, update_user_activity_interval
-from zerver.lib.timestamp import floor_to_day, TimezoneNotUTCException
-from zerver.models import Realm, UserProfile, Message, Stream, Recipient, \
-    Huddle, Client, UserActivityInterval, RealmAuditLog, get_client, get_user
-
-from datetime import datetime, timedelta
-import ujson
-
-from typing import Any, Dict, List, Optional, Text, Tuple, Type, Union
+from analytics.lib.counts import COUNT_STATS, CountStat, DataCollector, \
+    DependentCountStat, LoggingCountStat, do_aggregate_to_summary_table, \
+    do_drop_all_analytics_tables, do_drop_single_stat, \
+    do_fill_count_stat_at_hour, do_increment_logging_stat, \
+    process_count_stat, sql_data_collector
+from analytics.models import Anomaly, BaseCount, \
+    FillState, InstallationCount, RealmCount, StreamCount, \
+    UserCount, installation_epoch, last_successful_fill
+from zerver.lib.actions import do_activate_user, do_create_user, \
+    do_deactivate_user, do_reactivate_user, update_user_activity_interval
+from zerver.lib.timestamp import TimezoneNotUTCException, floor_to_day
+from zerver.models import Client, Huddle, Message, Realm, \
+    RealmAuditLog, Recipient, Stream, UserActivityInterval, \
+    UserProfile, get_client, get_user
 
 class AnalyticsTestCase(TestCase):
     MINUTE = timedelta(seconds = 60)

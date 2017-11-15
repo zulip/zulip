@@ -1,11 +1,11 @@
-from argparse import ArgumentParser
 import datetime
+from argparse import ArgumentParser
 from typing import Any
 
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
 
-from zerver.models import UserProfile, Realm, Stream, Message, get_realm
+from zerver.models import Message, Realm, Stream, UserProfile, get_realm
 
 class Command(BaseCommand):
     help = "Generate statistics on user activity."

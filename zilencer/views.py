@@ -1,20 +1,19 @@
 
-from django.utils.translation import ugettext as _
-from django.utils import timezone
-from django.http import HttpResponse, HttpRequest
+from typing import Any, Dict, Optional, Text, Union, cast
 
-from zilencer.models import RemotePushDeviceToken, RemoteZulipServer
+from django.http import HttpRequest, HttpResponse
+from django.utils import timezone
+from django.utils.translation import ugettext as _
 
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import send_android_push_notification, \
     send_apple_push_notification
+from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
-from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.validator import check_int
 from zerver.models import UserProfile
 from zerver.views.push_notifications import validate_token
-
-from typing import Any, Dict, Optional, Union, Text, cast
+from zilencer.models import RemotePushDeviceToken, RemoteZulipServer
 
 def validate_entity(entity):
     # type: (Union[UserProfile, RemoteZulipServer]) -> None

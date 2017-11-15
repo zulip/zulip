@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
+from django.db import migrations
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
-from django.db import migrations
 
 def clear_message_sent_by_message_type_values(apps, schema_editor):
     # type: (StateApps, DatabaseSchemaEditor) -> None

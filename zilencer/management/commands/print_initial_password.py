@@ -1,6 +1,6 @@
+from argparse import ArgumentParser
 from typing import Any
 
-from argparse import ArgumentParser
 from zerver.lib.initial_password import initial_password
 from zerver.lib.management import ZulipBaseCommand
 

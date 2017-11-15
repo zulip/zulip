@@ -1,20 +1,18 @@
 import os
-from scripts.lib.zulip_tools import ENDC, WARNING
-
-from argparse import ArgumentParser
 import time
+from argparse import ArgumentParser
+from typing import Any, Dict
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
+from django.utils.dateparse import parse_datetime
 from django.utils.timezone import now as timezone_now
 from django.utils.timezone import utc as timezone_utc
-from django.utils.dateparse import parse_datetime
-from django.conf import settings
 
 from analytics.lib.counts import COUNT_STATS, logger, process_count_stat
+from scripts.lib.zulip_tools import ENDC, WARNING
 from zerver.lib.timestamp import floor_to_hour
 from zerver.models import Realm
-
-from typing import Any, Dict
 
 class Command(BaseCommand):
     help = """Fills Analytics tables.

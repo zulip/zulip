@@ -1,15 +1,14 @@
+import datetime
+from argparse import ArgumentParser
 from typing import Any, List
 
-from argparse import ArgumentParser
-import datetime
 import pytz
-
 from django.core.management.base import BaseCommand
 from django.db.models import Count
 from django.utils.timezone import now as timezone_now
 
-from zerver.models import UserProfile, Realm, Stream, Message, Recipient, UserActivity, \
-    Subscription, UserMessage, get_realm
+from zerver.models import Message, Realm, Recipient, Stream, \
+    Subscription, UserActivity, UserMessage, UserProfile, get_realm
 
 MOBILE_CLIENT_LIST = ["Android", "ios"]
 HUMAN_CLIENT_LIST = MOBILE_CLIENT_LIST + ["website"]

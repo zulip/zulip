@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from django.core.management.base import BaseCommand
-from zerver.lib.actions import create_stream_if_needed, \
-    internal_prep_stream_message, do_create_user, do_send_messages, \
-    do_add_reaction_legacy, bulk_add_subscriptions, do_change_avatar_fields
-from zerver.lib.upload import upload_avatar_image
-from zerver.models import get_realm, UserProfile, Message
-
 from typing import Any, Dict, List
+
+from django.core.management.base import BaseCommand
+
+from zerver.lib.actions import bulk_add_subscriptions, \
+    create_stream_if_needed, do_add_reaction_legacy, do_change_avatar_fields, \
+    do_create_user, do_send_messages, internal_prep_stream_message
+from zerver.lib.upload import upload_avatar_image
+from zerver.models import Message, UserProfile, get_realm
 
 class Command(BaseCommand):
     help = """Add a mock conversation to the development environment.

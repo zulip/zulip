@@ -1,9 +1,8 @@
-from zerver.lib.timestamp import floor_to_hour, floor_to_day, \
-    verify_UTC
-from analytics.lib.counts import CountStat
-
 from datetime import datetime, timedelta
 from typing import List, Optional
+
+from analytics.lib.counts import CountStat
+from zerver.lib.timestamp import floor_to_day, floor_to_hour, verify_UTC
 
 # If min_length is None, returns end_times from ceiling(start) to floor(end), inclusive.
 # If min_length is greater than 0, pads the list to the left.

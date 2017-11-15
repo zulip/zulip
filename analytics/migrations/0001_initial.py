@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-from django.db import models, migrations
 import django.db.models.deletion
 from django.conf import settings
-import zerver.lib.str_utils
+from django.db import migrations, models
 
+import zerver.lib.str_utils
 
 class Migration(migrations.Migration):
 

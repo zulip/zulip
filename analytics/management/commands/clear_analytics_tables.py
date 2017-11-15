@@ -1,11 +1,10 @@
 import sys
-
 from argparse import ArgumentParser
+from typing import Any
+
 from django.core.management.base import BaseCommand
 
 from analytics.lib.counts import do_drop_all_analytics_tables
-
-from typing import Any
 
 class Command(BaseCommand):
     help = """Clear analytics tables."""

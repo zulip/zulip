@@ -1,9 +1,10 @@
+from typing import Any
+
 from django.core.management.base import CommandParser
+
 from zerver.lib.actions import do_create_user
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import Realm, UserProfile
-
-from typing import Any
 
 class Command(ZulipBaseCommand):
     help = """Add a new user for manual testing of the onboarding process.

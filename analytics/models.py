@@ -1,11 +1,10 @@
+import datetime
+from typing import Any, Dict, Optional, Text, Tuple, Union
+
 from django.db import models
 
-from zerver.models import Realm, UserProfile, Stream, Recipient
 from zerver.lib.timestamp import floor_to_day
-
-import datetime
-
-from typing import Optional, Tuple, Union, Dict, Any, Text
+from zerver.models import Realm, Recipient, Stream, UserProfile
 
 class FillState(models.Model):
     property = models.CharField(max_length=40, unique=True)  # type: Text

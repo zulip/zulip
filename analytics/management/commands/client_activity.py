@@ -1,13 +1,12 @@
+import datetime
+from argparse import ArgumentParser
 from typing import Any
 
-from argparse import ArgumentParser
 from django.db.models import Count, QuerySet
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import UserActivity
-
-import datetime
 
 class Command(ZulipBaseCommand):
     help = """Report rough client activity globally, for a realm, or for a user

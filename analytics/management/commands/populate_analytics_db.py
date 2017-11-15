@@ -1,19 +1,17 @@
 
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Mapping, Optional, Text, Type, Union
+
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
 
-from analytics.lib.counts import COUNT_STATS, CountStat, do_drop_all_analytics_tables
+from analytics.lib.counts import COUNT_STATS, \
+    CountStat, do_drop_all_analytics_tables
 from analytics.lib.fixtures import generate_time_series_data
 from analytics.lib.time_utils import time_range
-from analytics.models import BaseCount, RealmCount, \
-    UserCount, FillState
+from analytics.models import BaseCount, FillState, RealmCount, UserCount
 from zerver.lib.timestamp import floor_to_day
-from zerver.models import Realm, UserProfile, Client, \
-    RealmAuditLog
-
-from datetime import datetime, timedelta
-
-from typing import Any, Dict, List, Optional, Text, Type, Union, Mapping
+from zerver.models import Client, Realm, RealmAuditLog, UserProfile
 
 class Command(BaseCommand):
     help = """Populates analytics tables with randomly generated data."""

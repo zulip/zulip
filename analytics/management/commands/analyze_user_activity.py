@@ -1,11 +1,11 @@
+import datetime
 from typing import Any, Dict
 
-from zerver.lib.statistics import seconds_usage_between
-
 from django.core.management.base import BaseCommand, CommandParser
-from zerver.models import UserProfile
-import datetime
 from django.utils.timezone import utc
+
+from zerver.lib.statistics import seconds_usage_between
+from zerver.models import UserProfile
 
 def analyze_activity(options):
     # type: (Dict[str, Any]) -> None

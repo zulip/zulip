@@ -1,9 +1,9 @@
-from django.conf.urls import url, include
 from typing import Any
 
-from zerver.lib.rest import rest_dispatch
+from django.conf.urls import include, url
 
 import zilencer.views
+from zerver.lib.rest import rest_dispatch
 
 i18n_urlpatterns = []  # type: Any
 

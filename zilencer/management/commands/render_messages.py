@@ -1,13 +1,12 @@
 import os
-import ujson
 from typing import Any, Iterator
 
+import ujson
 from django.core.management.base import BaseCommand, CommandParser
 from django.db.models import QuerySet
 
 from zerver.lib.message import render_markdown
 from zerver.models import Message
-
 
 def queryset_iterator(queryset, chunksize=5000):
     # type: (QuerySet, int) -> Iterator[Any]

@@ -1,11 +1,12 @@
+import datetime
+import logging
+import time
 from typing import Any, Dict
 
 from django.core.management.base import BaseCommand, CommandParser
-from zerver.models import Recipient, Message
+
 from zerver.lib.timestamp import timestamp_to_datetime
-import datetime
-import time
-import logging
+from zerver.models import Message, Recipient
 
 def compute_stats(log_level):
     # type: (int) -> None

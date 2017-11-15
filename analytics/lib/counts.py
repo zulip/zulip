@@ -1,21 +1,21 @@
+import time
+from collections import OrderedDict, defaultdict
+from datetime import datetime, timedelta
+from typing import Any, Callable, Dict, List, \
+    Optional, Text, Tuple, Type, Union
+
 from django.conf import settings
 from django.db import connection, models
 from django.db.models import F
 
-from analytics.models import InstallationCount, RealmCount, \
-    UserCount, StreamCount, BaseCount, FillState, Anomaly, installation_epoch, \
-    last_successful_fill
-from zerver.models import Realm, UserProfile, Message, Stream, \
-    UserActivityInterval, RealmAuditLog, models
-from zerver.lib.timestamp import floor_to_hour, ceiling_to_day, \
-    ceiling_to_hour, verify_UTC
-
-from typing import Any, Callable, Dict, List, Optional, Text, Tuple, Type, Union
-
-from collections import defaultdict, OrderedDict
-from datetime import timedelta, datetime
+from analytics.models import Anomaly, BaseCount, \
+    FillState, InstallationCount, RealmCount, StreamCount, \
+    UserCount, installation_epoch, last_successful_fill
 from zerver.lib.logging_util import create_logger
-import time
+from zerver.lib.timestamp import ceiling_to_day, \
+    ceiling_to_hour, floor_to_hour, verify_UTC
+from zerver.models import Message, Realm, RealmAuditLog, \
+    Stream, UserActivityInterval, UserProfile, models
 
 ## Logging setup ##
 

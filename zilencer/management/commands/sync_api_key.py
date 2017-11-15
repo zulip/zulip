@@ -1,9 +1,10 @@
+import os
+from configparser import ConfigParser
 from typing import Any
 
 from django.core.management.base import BaseCommand
-from zerver.models import get_realm, get_user, UserProfile
-import os
-from configparser import ConfigParser
+
+from zerver.models import UserProfile, get_realm, get_user
 
 class Command(BaseCommand):
     help = """Sync your API key from ~/.zuliprc into your development instance"""

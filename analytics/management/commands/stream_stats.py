@@ -1,9 +1,11 @@
+from argparse import ArgumentParser
 from typing import Any
 
-from argparse import ArgumentParser
 from django.core.management.base import BaseCommand
 from django.db.models import Q
-from zerver.models import Realm, Stream, Message, Subscription, Recipient, get_realm
+
+from zerver.models import Message, Realm, \
+    Recipient, Stream, Subscription, get_realm
 
 class Command(BaseCommand):
     help = "Generate statistics on the streams for a realm."

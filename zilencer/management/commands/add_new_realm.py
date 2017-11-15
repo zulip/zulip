@@ -1,10 +1,10 @@
-from zerver.lib.actions import do_create_user, do_create_realm
-from zerver.lib.management import ZulipBaseCommand
-from zerver.lib.onboarding import setup_initial_streams, \
-    setup_initial_private_stream, send_initial_realm_messages
-from zerver.models import Realm, UserProfile
-
 from typing import Any
+
+from zerver.lib.actions import do_create_realm, do_create_user
+from zerver.lib.management import ZulipBaseCommand
+from zerver.lib.onboarding import send_initial_realm_messages, \
+    setup_initial_private_stream, setup_initial_streams
+from zerver.models import Realm, UserProfile
 
 class Command(ZulipBaseCommand):
     help = """Add a new realm and initial user for manual testing of the onboarding process."""

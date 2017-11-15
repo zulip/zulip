@@ -1,42 +1,40 @@
 
+import itertools
+import json
+import logging
+import re
+import time
+from collections import defaultdict
+from datetime import datetime, timedelta
+from typing import Any, Callable, Dict, List, \
+    Optional, Set, Text, Tuple, Type, Union
+
+import pytz
 from django.conf import settings
 from django.core import urlresolvers
 from django.db import connection
 from django.db.models import Sum
 from django.db.models.query import QuerySet
-from django.http import HttpResponseNotFound, HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
+from django.shortcuts import render
 from django.template import RequestContext, loader
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
-from django.shortcuts import render
 from jinja2 import Markup as mark_safe
 
-from analytics.lib.counts import CountStat, process_count_stat, COUNT_STATS
+from analytics.lib.counts import COUNT_STATS, CountStat, process_count_stat
 from analytics.lib.time_utils import time_range
-from analytics.models import BaseCount, InstallationCount, RealmCount, \
-    UserCount, StreamCount, last_successful_fill
-
-from zerver.decorator import require_server_admin, zulip_login_required, \
-    to_non_negative_int, to_utc_datetime
+from analytics.models import BaseCount, InstallationCount, \
+    RealmCount, StreamCount, UserCount, last_successful_fill
+from zerver.decorator import require_server_admin, \
+    to_non_negative_int, to_utc_datetime, zulip_login_required
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.request import has_request_variables, REQ
+from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.timestamp import ceiling_to_hour, ceiling_to_day, \
-    timestamp_to_datetime, convert_to_UTC
-from zerver.models import Realm, UserProfile, UserActivity, \
-    UserActivityInterval, Client
-
-from collections import defaultdict
-from datetime import datetime, timedelta
-import itertools
-import json
-import logging
-import pytz
-import re
-import time
-
-from typing import Any, Callable, Dict, List, Optional, Set, Text, \
-    Tuple, Type, Union
+from zerver.lib.timestamp import ceiling_to_day, \
+    ceiling_to_hour, convert_to_UTC, timestamp_to_datetime
+from zerver.models import Client, Realm, \
+    UserActivity, UserActivityInterval, UserProfile
 
 @zulip_login_required
 def stats(request):

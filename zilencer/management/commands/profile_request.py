@@ -1,13 +1,14 @@
-from typing import Any, Dict
-
-from django.http import HttpRequest, HttpResponse
-from django.core.management.base import CommandParser
-from zerver.lib.management import ZulipBaseCommand
-from zerver.models import UserMessage, UserProfile
-from zerver.views.messages import get_messages_backend
 import cProfile
 import logging
+from typing import Any, Dict
+
+from django.core.management.base import CommandParser
+from django.http import HttpRequest, HttpResponse
+
+from zerver.lib.management import ZulipBaseCommand
 from zerver.middleware import LogRequests
+from zerver.models import UserMessage, UserProfile
+from zerver.views.messages import get_messages_backend
 
 request_logger = LogRequests()
 

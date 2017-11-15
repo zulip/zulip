@@ -1,27 +1,26 @@
-from django.core.management.base import BaseCommand, CommandParser
-from django.utils.timezone import now as timezone_now
-from django.db.models import F, Max
+import itertools
+import os
+import random
+from typing import Any, Callable, Dict, Iterable, List, \
+    Mapping, Optional, Sequence, Set, Text, Tuple
 
-from zerver.models import Message, UserProfile, Stream, Recipient, UserPresence, \
-    Subscription, RealmAuditLog, get_huddle, Realm, RealmEmoji, UserMessage, \
-    RealmDomain, clear_database, get_client, get_user_profile_by_id, \
-    email_to_username, Service, get_user, DefaultStream, get_stream, \
-    get_realm, get_system_bot
-
-from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, do_send_messages, \
-    do_change_is_admin
+import ujson
 from django.conf import settings
+from django.core.management.base import BaseCommand, CommandParser
+from django.db.models import F, Max
+from django.utils.timezone import now as timezone_now
+
+from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, \
+    do_change_is_admin, do_send_messages
 from zerver.lib.bulk_create import bulk_create_streams, bulk_create_users
 from zerver.lib.generate_test_data import create_test_data
 from zerver.lib.upload import upload_backend
 from zerver.lib.user_groups import create_user_group
-
-
-import random
-import os
-import ujson
-import itertools
-from typing import Any, Callable, Dict, List, Iterable, Mapping, Optional, Sequence, Set, Tuple, Text
+from zerver.models import DefaultStream, Message, Realm, RealmAuditLog, \
+    RealmDomain, RealmEmoji, Recipient, Service, Stream, Subscription, \
+    UserMessage, UserPresence, UserProfile, clear_database, \
+    email_to_username, get_client, get_huddle, get_realm, get_stream, \
+    get_system_bot, get_user, get_user_profile_by_id
 
 settings.TORNADO_SERVER = None
 # Disable using memcached caches to avoid 'unsupported pickle
