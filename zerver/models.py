@@ -167,6 +167,7 @@ class Realm(models.Model):
 
     date_created = models.DateTimeField(default=timezone_now)  # type: datetime.datetime
     notifications_stream = models.ForeignKey('Stream', related_name='+', null=True, blank=True, on_delete=CASCADE)  # type: Optional[Stream]
+    signup_notifications_stream = models.ForeignKey('Stream', related_name='+', null=True, blank=True, on_delete=CASCADE)  # type: Optional[Stream]
     deactivated = models.BooleanField(default=False)  # type: bool
     default_language = models.CharField(default=u'en', max_length=MAX_LANGUAGE_ID_LENGTH)  # type: Text
     authentication_methods = BitField(flags=AUTHENTICATION_FLAGS,
@@ -253,6 +254,12 @@ class Realm(models.Model):
         # type: () -> Optional[Realm]
         if self.notifications_stream is not None and not self.notifications_stream.deactivated:
             return self.notifications_stream
+        return None
+
+    def get_signup_notifications_stream(self):
+        # type: () -> Optional[Realm]
+        if self.signup_notifications_stream is not None and not self.signup_notifications_stream.deactivated:
+            return self.signup_notifications_stream
         return None
 
     @property
