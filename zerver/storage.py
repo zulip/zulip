@@ -2,7 +2,7 @@
 
 import os
 import shutil
-from typing import Dict, List, Any, Tuple
+from typing import Any, Dict, List, Tuple
 
 from django.conf import settings
 from django.contrib.staticfiles.storage import ManifestStaticFilesStorage

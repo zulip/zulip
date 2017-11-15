@@ -1,12 +1,11 @@
 # System documented in https://zulip.readthedocs.io/en/latest/logging.html
 
-from django.conf import settings
+import logging
+import platform
+import traceback
 from typing import Any, Dict, Optional
 
-import logging
-import traceback
-import platform
-
+from django.conf import settings
 from django.core import mail
 from django.http import HttpRequest
 from django.utils.log import AdminEmailHandler

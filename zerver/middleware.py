@@ -1,32 +1,31 @@
 
-from typing import Any, AnyStr, Callable, Dict, Iterable, List, MutableMapping, Optional, Text
-
-from django.conf import settings
-from django.core.exceptions import DisallowedHost
-from django.utils.translation import ugettext as _
-from django.utils.deprecation import MiddlewareMixin
-
-from zerver.lib.response import json_error, json_response_from_error
-from zerver.lib.subdomains import get_subdomain
-from zerver.lib.exceptions import JsonableError, ErrorCode
-from django.db import connection
-from django.http import HttpRequest, HttpResponse, StreamingHttpResponse
-from zerver.lib.utils import statsd
-from zerver.lib.queue import queue_json_publish
-from zerver.lib.cache import get_remote_cache_time, get_remote_cache_requests
-from zerver.lib.bugdown import get_bugdown_time, get_bugdown_requests
-from zerver.models import Realm, flush_per_request_caches, get_realm
-from zerver.lib.exceptions import RateLimited
-from django.contrib.sessions.middleware import SessionMiddleware
-from django.views.csrf import csrf_failure as html_csrf_failure
-from django.utils.cache import patch_vary_headers
-from django.utils.http import cookie_date
-from django.shortcuts import redirect, render
-
+import cProfile
 import logging
 import time
-import cProfile
 import traceback
+from typing import Any, AnyStr, Callable, Dict, \
+    Iterable, List, MutableMapping, Optional, Text
+
+from django.conf import settings
+from django.contrib.sessions.middleware import SessionMiddleware
+from django.core.exceptions import DisallowedHost
+from django.db import connection
+from django.http import HttpRequest, HttpResponse, StreamingHttpResponse
+from django.shortcuts import redirect, render
+from django.utils.cache import patch_vary_headers
+from django.utils.deprecation import MiddlewareMixin
+from django.utils.http import cookie_date
+from django.utils.translation import ugettext as _
+from django.views.csrf import csrf_failure as html_csrf_failure
+
+from zerver.lib.bugdown import get_bugdown_requests, get_bugdown_time
+from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time
+from zerver.lib.exceptions import ErrorCode, JsonableError, RateLimited
+from zerver.lib.queue import queue_json_publish
+from zerver.lib.response import json_error, json_response_from_error
+from zerver.lib.subdomains import get_subdomain
+from zerver.lib.utils import statsd
+from zerver.models import Realm, flush_per_request_caches, get_realm
 
 logger = logging.getLogger('zulip.requests')
 

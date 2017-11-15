@@ -1,12 +1,11 @@
 
-from django.apps import AppConfig
-from django.db.models.signals import post_migrate
-from django.core.cache import cache
-from django.conf import settings
+import logging
 from typing import Any, Dict
 
-import logging
-
+from django.apps import AppConfig
+from django.conf import settings
+from django.core.cache import cache
+from django.db.models.signals import post_migrate
 
 def flush_cache(sender, **kwargs):
     # type: (AppConfig, **Any) -> None

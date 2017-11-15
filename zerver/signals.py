@@ -1,12 +1,15 @@
 
-from django.dispatch import receiver
-from django.contrib.auth.signals import user_logged_in
-from django.conf import settings
-from django.template import loader
-from django.utils.timezone import get_current_timezone_name as timezone_get_current_timezone_name
-from django.utils.timezone import now as timezone_now
 from typing import Any, Dict, Optional
-from zerver.lib.send_email import send_email, FromAddress
+
+from django.conf import settings
+from django.contrib.auth.signals import user_logged_in
+from django.dispatch import receiver
+from django.template import loader
+from django.utils.timezone import \
+    get_current_timezone_name as timezone_get_current_timezone_name
+from django.utils.timezone import now as timezone_now
+
+from zerver.lib.send_email import FromAddress, send_email
 from zerver.models import UserProfile
 
 def get_device_browser(user_agent):
