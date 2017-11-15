@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from django.db import models, migrations
+from django.db import migrations, models
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
