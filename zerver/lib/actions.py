@@ -337,7 +337,7 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None,
         default_stream_group_streams = default_stream_group.streams.all()
         for stream in default_stream_group_streams:
             if stream not in streams:
-                streams.add(stream)
+                streams.append(stream)
 
     bulk_add_subscriptions(streams, [user_profile], acting_user=acting_user)
 
