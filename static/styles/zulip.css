@@ -178,7 +178,7 @@ p.n-margin {
     position: fixed;
     z-index: 102; /* Needs to be higher than .alert-bar-container */
     width: 100%;
-    border-bottom: 1px solid hsl(0, 0%, 85%);
+    border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
     height: 40px;
 }
 
@@ -1319,8 +1319,8 @@ div.message_table {
 
 .message_row {
     position: relative;
-    border-left: 1px solid hsl(0, 0%, 88%);
-    border-right: 1px solid hsl(0, 0%, 88%);
+    border-left: 1px solid hsla(0, 0%, 0%, 0.10);
+    border-right: 1px solid hsla(0, 0%, 0%, 0.10);
 }
 
 .message_row.selected_message {
@@ -1843,7 +1843,7 @@ nav a .no-style {
     width: auto;
     float: none;
     overflow: hidden;
-    border-right: 1px solid hsl(0, 0%, 85%);
+    border-right: 1px solid hsla(0, 0%, 0%, 0.2);
     height: 40px;
 }
 
