@@ -528,6 +528,7 @@ exports.change_state = (function () {
 
 exports.launch = function (hash) {
     exports.setup_page(function () {
+        overlays.close_active();
         overlays.open_overlay({
             name: 'subscriptions',
             overlay: $("#subscription_overlay"),
