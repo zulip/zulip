@@ -453,13 +453,16 @@ BOT_INTEGRATIONS = [
     BotIntegration('xkcd', ['bots', 'misc'], display_name='xkcd'),
 ]  # type: List[BotIntegration]
 
-HUBOT_LOZENGES = {
+# Note: These are not actually displayed anywhere; we're keeping them
+# around so they can be migrated into the newer HUBOT_INTEGRATIONS
+HUBOT_LOZENGES_LEGACY = {
     'assembla': HubotLozenge('assembla', ['project-management', 'version-control']),
     'bonusly': HubotLozenge('bonusly', ['hr']),
     'chartbeat': HubotLozenge('chartbeat', ['marketing']),
     'darksky': HubotLozenge('darksky', ['misc'], display_name='Dark Sky', logo_alt='Dark Sky logo'),
     'hangouts': HubotLozenge('google-hangouts', ['communication'], display_name="Hangouts"),
-    'instagram': HubotLozenge('instagram', ['misc'], logo='static/images/integrations/logos/instagram.png'),
+    'instagram': HubotLozenge('instagram', ['misc'],
+                              logo='static/images/integrations/logos/instagram.png'),
     'mailchimp': HubotLozenge('mailchimp', ['communication', 'marketing'],
                               display_name='MailChimp', logo_alt='MailChimp logo'),
     'translate': HubotLozenge('google-translate', ['misc'],

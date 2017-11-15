@@ -10,7 +10,7 @@ import os
 import ujson
 
 from zerver.lib import bugdown
-from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, HUBOT_LOZENGES
+from zerver.lib.integrations import CATEGORIES, INTEGRATIONS
 from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.subdomains import get_subdomain
 from zerver.models import Realm
@@ -98,10 +98,8 @@ def add_integrations_context(context):
     # type: (Dict[str, Any]) -> None
     alphabetical_sorted_categories = OrderedDict(sorted(CATEGORIES.items()))
     alphabetical_sorted_integration = OrderedDict(sorted(INTEGRATIONS.items()))
-    alphabetical_sorted_hubot_lozenges = OrderedDict(sorted(HUBOT_LOZENGES.items()))
     context['categories_dict'] = alphabetical_sorted_categories
     context['integrations_dict'] = alphabetical_sorted_integration
-    context['hubot_lozenges_dict'] = alphabetical_sorted_hubot_lozenges
 
     if "html_settings_links" in context and context["html_settings_links"]:
         settings_html = '<a href="../../#settings">Zulip settings page</a>'
@@ -115,9 +113,6 @@ def add_integrations_context(context):
 
     for name in alphabetical_sorted_integration:
         alphabetical_sorted_integration[name].add_doc_context(context)
-
-    for name in alphabetical_sorted_hubot_lozenges:
-        alphabetical_sorted_hubot_lozenges[name].add_doc_context(context)
 
 
 class IntegrationView(ApiURLView):

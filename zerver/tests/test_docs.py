@@ -9,7 +9,7 @@ from django.test import TestCase, override_settings
 from typing import Any, Dict, List
 
 from zproject.settings import DEPLOY_ROOT
-from zerver.lib.integrations import INTEGRATIONS, HUBOT_LOZENGES
+from zerver.lib.integrations import INTEGRATIONS
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
 from zerver.lib.test_runner import slow
@@ -107,11 +107,6 @@ class IntegrationTest(TestCase):
     def test_check_if_every_integration_has_logo_that_exists(self):
         # type: () -> None
         for integration in INTEGRATIONS.values():
-            self.assertTrue(os.path.isfile(os.path.join(DEPLOY_ROOT, integration.logo)))
-
-    def test_check_if_every_hubot_lozenges_has_logo_that_exists(self):
-        # type: () -> None
-        for integration in HUBOT_LOZENGES.values():
             self.assertTrue(os.path.isfile(os.path.join(DEPLOY_ROOT, integration.logo)))
 
     def test_api_url_view_subdomains_base(self):

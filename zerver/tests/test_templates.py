@@ -185,7 +185,6 @@ class TemplateTestCase(ZulipTestCase):
                 emails=get_form_value(email),
             ),
             current_url=lambda: 'www.zulip.com',
-            hubot_lozenges_dict={},
             integrations_dict={},
             referrer=dict(
                 full_name='John Doe',
