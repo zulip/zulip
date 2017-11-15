@@ -890,7 +890,7 @@ form#add_new_subscription {
 #subscription_overlay .subscription-type {
     margin-bottom: 10px;
     font-size: 0.9em;
-    color: hsl(0, 0%, 53%);
+    opacity: 0.5;
 }
 
 #subscription_overlay .subscription-type .subscription-type-text {
@@ -899,7 +899,6 @@ form#add_new_subscription {
 
 #subscription_overlay .subscription-type b {
     font-weight: 600;
-    color: hsl(0, 0%, 40%);
 }
 
 #subscription_overlay .stream-header .large-icon.hash::after {
