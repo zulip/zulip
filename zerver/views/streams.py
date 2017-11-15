@@ -91,7 +91,8 @@ def create_default_stream_group(request: HttpRequest, user_profile: UserProfile,
 @has_request_variables
 def update_default_stream_group_info(request: HttpRequest, user_profile: UserProfile, group_id: int,
                                      new_group_name: Text=REQ(validator=check_string, default=None),
-                                     new_description: Text=REQ(validator=check_string, default=None)) -> None:
+                                     new_description: Text=REQ(validator=check_string,
+                                                               default=None)) -> None:
     if not new_group_name and not new_description:
         return json_error(_('You must pass "new_description" or "new_group_name".'))
 
@@ -106,7 +107,8 @@ def update_default_stream_group_info(request: HttpRequest, user_profile: UserPro
 @has_request_variables
 def update_default_stream_group_streams(request: HttpRequest, user_profile: UserProfile,
                                         group_id: int, op: Text=REQ(),
-                                        stream_names: List[Text]=REQ(validator=check_list(check_string))) -> None:
+                                        stream_names: List[Text]=REQ(
+                                            validator=check_list(check_string))) -> None:
     group = access_default_stream_group_by_id(user_profile.realm, group_id,)
     streams = []
     for stream_name in stream_names:
