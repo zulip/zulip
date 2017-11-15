@@ -1,13 +1,14 @@
 
+import sys
+from argparse import ArgumentParser
 from typing import Any
 
-from argparse import ArgumentParser
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
-from zerver.models import RealmDomain, get_realm_domains
-from zerver.lib.management import ZulipBaseCommand
+
 from zerver.lib.domains import validate_domain
-import sys
+from zerver.lib.management import ZulipBaseCommand
+from zerver.models import RealmDomain, get_realm_domains
 
 class Command(ZulipBaseCommand):
     help = """Manage domains for the specified realm"""

@@ -1,10 +1,10 @@
 
 import os
-import ujson
 
-from django.test import Client
+import ujson
 from django.conf import settings
 from django.core.management.base import CommandParser
+from django.test import Client
 
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import get_realm

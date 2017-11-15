@@ -10,18 +10,18 @@ on all but one machine to make the command have no effect.)
 """
 
 
+import time
+from typing import Any
+
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
-
-from zerver.models import ScheduledEmail
-from zerver.lib.context_managers import lockfile
-from zerver.lib.send_email import send_email, EmailNotDeliveredException
-
-import time
-from zerver.lib.logging_util import create_logger
 from ujson import loads
-from typing import Any
+
+from zerver.lib.context_managers import lockfile
+from zerver.lib.logging_util import create_logger
+from zerver.lib.send_email import EmailNotDeliveredException, send_email
+from zerver.models import ScheduledEmail
 
 ## Setup ##
 logger = create_logger(__name__, settings.EMAIL_DELIVERER_LOG_PATH, 'DEBUG')

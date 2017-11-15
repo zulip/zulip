@@ -1,16 +1,17 @@
 
+import logging
+import signal
+import sys
+import threading
+from argparse import ArgumentParser
 from types import FrameType
 from typing import Any, List
 
-from argparse import ArgumentParser
-from django.core.management.base import BaseCommand
 from django.conf import settings
+from django.core.management.base import BaseCommand
 from django.utils import autoreload
-from zerver.worker.queue_processors import get_worker, get_active_worker_queues
-import sys
-import signal
-import logging
-import threading
+
+from zerver.worker.queue_processors import get_active_worker_queues, get_worker
 
 class Command(BaseCommand):
     def add_arguments(self, parser: ArgumentParser) -> None:

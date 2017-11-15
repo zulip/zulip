@@ -1,16 +1,14 @@
 
-from typing import Any, Iterable
-
 import logging
 import sys
+from typing import Any, Iterable
 
 from django.core.management.base import CommandParser
+from django.db import models
 
 from zerver.lib import utils
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import UserMessage
-from django.db import models
-
 
 class Command(ZulipBaseCommand):
     help = """Sets user message flags. Used internally by actions.py. Marks all

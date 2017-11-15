@@ -1,8 +1,9 @@
 
+from argparse import ArgumentParser
 from typing import Any
 
-from argparse import ArgumentParser
 from django.core.management.base import CommandError
+
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import PreregistrationUser, email_allowed_for_realm

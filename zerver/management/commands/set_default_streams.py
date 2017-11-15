@@ -1,11 +1,10 @@
 
+import sys
 from argparse import ArgumentParser, RawTextHelpFormatter
 from typing import Any, Dict, Text
 
 from zerver.lib.actions import set_default_streams
 from zerver.lib.management import ZulipBaseCommand
-
-import sys
 
 class Command(ZulipBaseCommand):
     help = """Set default streams for a realm

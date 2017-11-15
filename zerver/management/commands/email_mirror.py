@@ -22,18 +22,16 @@ recipient address and retrieve, forward, and archive the message.
 """
 
 
-from typing import Any, List, Generator
-
+import email
 import logging
+from email.message import Message
+from imaplib import IMAP4_SSL
+from typing import Any, Generator, List
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from zerver.lib.email_mirror import logger, process_message
-
-import email
-from email.message import Message
-from imaplib import IMAP4_SSL
 
 ## Setup ##
 

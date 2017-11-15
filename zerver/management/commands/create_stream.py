@@ -1,12 +1,11 @@
 
+import sys
+from argparse import ArgumentParser
 from typing import Any
 
 from zerver.lib.actions import create_stream_if_needed
-from zerver.lib.str_utils import force_text
 from zerver.lib.management import ZulipBaseCommand
-
-from argparse import ArgumentParser
-import sys
+from zerver.lib.str_utils import force_text
 
 class Command(ZulipBaseCommand):
     help = """Create a stream, and subscribe all active users (excluding bots).

@@ -1,17 +1,12 @@
 
+from argparse import ArgumentParser
 from typing import Any, Dict, List, Set
 
-from argparse import ArgumentParser
 from django.core.management.base import CommandError
 
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.topic_mutes import build_topic_mute_checker
-from zerver.models import (
-    Recipient,
-    Subscription,
-    UserMessage,
-    UserProfile
-)
+from zerver.models import Recipient, Subscription, UserMessage, UserProfile
 
 def get_unread_messages(user_profile: UserProfile) -> List[Dict[str, Any]]:
     user_msgs = UserMessage.objects.filter(

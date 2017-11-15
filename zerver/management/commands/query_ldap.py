@@ -1,14 +1,12 @@
 
+from argparse import ArgumentParser
 from typing import Any
 
-from argparse import ArgumentParser
-
+from django.conf import settings
 from django.contrib.auth import get_backends
 from django.core.management.base import BaseCommand
-from django.conf import settings
 
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
-
 
 # Quick tool to test whether you're correctly authenticating to LDAP
 def query_ldap(**options: str) -> None:

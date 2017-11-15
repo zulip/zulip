@@ -1,15 +1,15 @@
 
+import argparse
+from datetime import datetime
+from typing import Any
+
+import requests
+import ujson
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
+
 from zerver.models import UserProfile
-
-import argparse
-from datetime import datetime
-import requests
-import ujson
-
-from typing import Any
 
 class Command(BaseCommand):
     help = """Add users to a MailChimp mailing list."""

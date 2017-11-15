@@ -1,16 +1,14 @@
 
+import sys
+from argparse import ArgumentParser
+from typing import Any, Dict, List
+
 from django.conf import settings
 
-from typing import Any, List, Dict
-from argparse import ArgumentParser
-import sys
-
-from zerver.models import UserProfile, Realm
-from zerver.lib.soft_deactivation import (
-    do_soft_deactivate_users, do_soft_activate_users,
-    get_users_for_soft_deactivation, logger
-)
 from zerver.lib.management import ZulipBaseCommand
+from zerver.lib.soft_deactivation import do_soft_activate_users, \
+    do_soft_deactivate_users, get_users_for_soft_deactivation, logger
+from zerver.models import Realm, UserProfile
 
 class Command(ZulipBaseCommand):
     help = """Soft activate/deactivate users. Users are recognised by there emails here."""

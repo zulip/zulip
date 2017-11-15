@@ -1,14 +1,12 @@
 
+import sys
+from argparse import ArgumentParser
 from typing import Any
 
-from argparse import ArgumentParser
-
 from zerver.lib.actions import do_rename_stream
-from zerver.lib.str_utils import force_text
 from zerver.lib.management import ZulipBaseCommand
+from zerver.lib.str_utils import force_text
 from zerver.models import get_stream
-
-import sys
 
 class Command(ZulipBaseCommand):
     help = """Change the stream name for a realm."""

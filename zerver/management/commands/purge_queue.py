@@ -1,9 +1,10 @@
 
+from argparse import ArgumentParser
 from typing import Any
 
-from argparse import ArgumentParser
-from django.core.management.base import BaseCommand
 from django.core.management import CommandError
+from django.core.management.base import BaseCommand
+
 from zerver.lib.queue import SimpleQueueClient
 from zerver.worker.queue_processors import get_active_worker_queues
 
