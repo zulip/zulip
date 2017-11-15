@@ -1,8 +1,8 @@
 from typing import Any, Dict
 
-from django.template import Node, Library, TemplateSyntaxError
 from django.conf import settings
 from django.contrib.staticfiles.storage import staticfiles_storage
+from django.template import Library, Node, TemplateSyntaxError
 
 if False:
     # no need to add dependency

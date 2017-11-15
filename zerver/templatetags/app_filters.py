@@ -1,19 +1,18 @@
-from typing import Dict, Optional, Any, List
 import os
-
-from django.conf import settings
-from django.template import Library, loader, engines
-from django.utils.safestring import mark_safe
-from django.utils.lru_cache import lru_cache
-
-import zerver.lib.bugdown.fenced_code
+from typing import Any, Dict, List, Optional
 
 import markdown
-import markdown.extensions.extra
 import markdown.extensions.admonition
 import markdown.extensions.codehilite
+import markdown.extensions.extra
 import markdown.extensions.toc
 import markdown_include.include
+from django.conf import settings
+from django.template import Library, engines, loader
+from django.utils.lru_cache import lru_cache
+from django.utils.safestring import mark_safe
+
+import zerver.lib.bugdown.fenced_code
 
 register = Library()
 
