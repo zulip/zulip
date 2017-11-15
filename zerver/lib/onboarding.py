@@ -49,9 +49,7 @@ def setup_initial_streams(realm):
 # For the first user in a realm
 def setup_initial_private_stream(user):
     # type: (UserProfile) -> None
-    stream, _ = create_stream_if_needed(user.realm, "core team", invite_only=True,
-                                        stream_description="A private stream for core team members.")
-    bulk_add_subscriptions([stream], [user])
+    bulk_add_subscriptions([user.realm.signup_notifications_stream], [user])
 
 def send_initial_realm_messages(realm):
     # type: (Realm) -> None
