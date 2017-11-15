@@ -651,7 +651,7 @@ def build_custom_checkers(by_lang):
         color = next(colors)
         markdown_docs_length_exclude = {
             "api/bots/converter/readme.md",
-            "docs/running-bots-guide.md",
+            "templates/zerver/api/running-bots.md",
             "docs/dev-env-first-time-contributors.md",
             "docs/webhook-walkthrough.md",
             "docs/life-of-a-request.md",

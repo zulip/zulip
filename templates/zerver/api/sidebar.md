@@ -17,5 +17,5 @@
 
 ## Interactive bots (experimental)
 
-* [Running bots](https://zulip.readthedocs.io/en/latest/running-bots-guide.html)
-* [Writing bots](https://zulip.readthedocs.io/en/latest/writing-bots-guide.html)
+* [Running bots](/api/running-bots)
+* [Writing bots](/api/writing-bots)

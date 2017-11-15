@@ -12,7 +12,7 @@ third-party service.
 
 * This guide is about writing and testing interactive bots. We assume
  familiarity with our
- [guide for running bots](running-bots-guide.html).
+ [guide for running bots](running-bots).
 
 On this page you'll find:
 * A step-by-step
