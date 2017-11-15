@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+from mock import MagicMock, patch
+
 from zerver.lib.test_classes import WebhookTestCase
-from mock import patch, MagicMock
 
 class TrelloHookTests(WebhookTestCase):
     STREAM_NAME = 'trello'

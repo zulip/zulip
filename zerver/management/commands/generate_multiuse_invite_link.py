@@ -1,10 +1,10 @@
 
+from argparse import ArgumentParser
 from typing import Any
 
-from argparse import ArgumentParser
 from confirmation.models import Confirmation, create_confirmation_link
-from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.actions import create_stream_if_needed
+from zerver.lib.management import ZulipBaseCommand
 from zerver.models import MultiuseInvite
 
 class Command(ZulipBaseCommand):

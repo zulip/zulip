@@ -1,19 +1,20 @@
-import re
 import logging
+import re
 from functools import partial
-from typing import Any, Callable, Text, Dict, Optional
+from typing import Any, Callable, Dict, Optional, Text
+
 from django.http import HttpRequest, HttpResponse
+
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.actions import check_send_stream_message
+from zerver.lib.request import REQ, JsonableError, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.request import JsonableError, REQ, has_request_variables
+from zerver.lib.webhooks.git import CONTENT_MESSAGE_TEMPLATE, \
+    SUBJECT_WITH_BRANCH_TEMPLATE, SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE, \
+    get_commits_comment_action_message, get_issue_event_message, \
+    get_pull_request_event_message, get_push_commits_event_message, \
+    get_push_tag_event_message, get_setup_webhook_message
 from zerver.models import UserProfile
-
-from zerver.lib.webhooks.git import get_issue_event_message, SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE,\
-    get_pull_request_event_message, SUBJECT_WITH_BRANCH_TEMPLATE,\
-    get_push_commits_event_message, CONTENT_MESSAGE_TEMPLATE,\
-    get_commits_comment_action_message, get_push_tag_event_message, \
-    get_setup_webhook_message
 
 class UnknownEventType(Exception):
     pass

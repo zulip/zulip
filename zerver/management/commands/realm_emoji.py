@@ -1,12 +1,12 @@
 
-from argparse import RawTextHelpFormatter
+import sys
+from argparse import ArgumentParser, RawTextHelpFormatter
 from typing import Any
 
-from argparse import ArgumentParser
 from django.core.management.base import CommandParser
+
 from zerver.lib.actions import check_add_realm_emoji, do_remove_realm_emoji
 from zerver.lib.management import ZulipBaseCommand
-import sys
 
 class Command(ZulipBaseCommand):
     help = """Manage emoji for the specified realm

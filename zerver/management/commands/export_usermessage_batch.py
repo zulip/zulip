@@ -1,13 +1,12 @@
 
-from typing import Any
-
-from argparse import ArgumentParser
-from django.core.management.base import BaseCommand
-
 import glob
 import logging
 import os
 import shutil
+from argparse import ArgumentParser
+from typing import Any
+
+from django.core.management.base import BaseCommand
 
 from zerver.lib.export import export_usermessages_batch
 

@@ -1,21 +1,19 @@
 # Webhooks for external integrations.
+import logging
+import re
 from typing import Any, Dict, List, Optional, Text, Tuple
 
-from django.utils.translation import ugettext as _
-from django.db.models import Q
+import ujson
 from django.conf import settings
+from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
+from django.utils.translation import ugettext as _
 
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.actions import check_send_stream_message
-from zerver.lib.response import json_success, json_error
 from zerver.lib.request import REQ, has_request_variables
-from zerver.models import UserProfile, get_user, Realm
-
-import logging
-import re
-import ujson
-
+from zerver.lib.response import json_error, json_success
+from zerver.models import Realm, UserProfile, get_user
 
 IGNORED_EVENTS = [
     'comment_created',  # we handle issue_update event instead

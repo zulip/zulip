@@ -4,13 +4,13 @@ Shows backlog count of ScheduledEmail
 """
 
 
+from datetime import timedelta
 from typing import Any
+
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
 
 from zerver.models import ScheduledEmail
-
-from datetime import timedelta
 
 class Command(BaseCommand):
     help = """Shows backlog count of ScheduledEmail

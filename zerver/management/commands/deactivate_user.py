@@ -1,11 +1,10 @@
 
+from argparse import ArgumentParser
 from typing import Any
 
-from argparse import ArgumentParser
-
 from zerver.lib.actions import do_deactivate_user
-from zerver.lib.sessions import user_sessions
 from zerver.lib.management import ZulipBaseCommand
+from zerver.lib.sessions import user_sessions
 from zerver.models import UserProfile
 
 class Command(ZulipBaseCommand):

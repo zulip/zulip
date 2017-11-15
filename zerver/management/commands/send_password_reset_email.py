@@ -1,16 +1,16 @@
 
 import logging
+from argparse import ArgumentParser
 from typing import Any, Dict, List, Optional, Text
 
-from argparse import ArgumentParser
-from zerver.models import UserProfile
-from django.utils.http import urlsafe_base64_encode
+from django.contrib.auth.tokens import PasswordResetTokenGenerator, \
+    default_token_generator
 from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 
-from django.contrib.auth.tokens import default_token_generator, PasswordResetTokenGenerator
-
-from zerver.lib.send_email import send_email, FromAddress
-from zerver.lib.management import ZulipBaseCommand, CommandError
+from zerver.lib.management import CommandError, ZulipBaseCommand
+from zerver.lib.send_email import FromAddress, send_email
+from zerver.models import UserProfile
 
 class Command(ZulipBaseCommand):
     help = """Send email to specified email address."""

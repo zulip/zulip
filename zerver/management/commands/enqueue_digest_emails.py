@@ -1,12 +1,11 @@
 import datetime
-
 from typing import Any, List
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.digest import enqueue_emails, DIGEST_CUTOFF
+from zerver.lib.digest import DIGEST_CUTOFF, enqueue_emails
 from zerver.lib.logging_util import create_logger
 
 ## Logging setup ##

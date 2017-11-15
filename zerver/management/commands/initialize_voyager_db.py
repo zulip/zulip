@@ -1,15 +1,14 @@
 
-from typing import Any, Iterable, Tuple, Text
+from argparse import ArgumentParser
+from typing import Any, Iterable, Text, Tuple
 
+from django.conf import settings
+from django.contrib.sites.models import Site
 from django.core.management.base import BaseCommand
 
-from django.contrib.sites.models import Site
-from zerver.models import UserProfile, Realm, get_client, email_to_username
-from django.conf import settings
 from zerver.lib.bulk_create import bulk_create_users
-from zerver.models import get_system_bot
-
-from argparse import ArgumentParser
+from zerver.models import Realm, UserProfile, \
+    email_to_username, get_client, get_system_bot
 
 settings.TORNADO_SERVER = None
 

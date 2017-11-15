@@ -1,11 +1,13 @@
 
+import sys
 from argparse import ArgumentParser, RawTextHelpFormatter
 from typing import Any
+
 from django.core.management.base import BaseCommand
 from django.db import ProgrammingError
+
 from confirmation.models import generate_realm_creation_url
 from zerver.models import Realm
-import sys
 
 class Command(BaseCommand):
     help = """

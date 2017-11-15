@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import urllib
 from typing import Optional, Text
+
 from zerver.lib.test_classes import WebhookTestCase
 
 class LibratoHookTests(WebhookTestCase):

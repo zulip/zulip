@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 
+import hashlib
+from typing import Text
+
 from django.conf import settings
 from django.db import migrations
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
-
 from mock import patch
-from zerver.lib.utils import make_safe_digest
+
 from zerver.lib.upload import upload_backend
+from zerver.lib.utils import make_safe_digest
 from zerver.models import UserProfile
-from typing import Text
-import hashlib
 
 # We hackishly patch this function in order to revert it to the state
 # it had when this migration was first written.  This is a balance

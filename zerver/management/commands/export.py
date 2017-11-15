@@ -1,17 +1,15 @@
 
-from typing import Any
-
-from argparse import ArgumentParser, RawTextHelpFormatter
-from django.core.management.base import CommandError
-
 import os
 import shutil
 import subprocess
 import tempfile
+from argparse import ArgumentParser, RawTextHelpFormatter
+from typing import Any
 
-from zerver.lib.export import (
-    do_export_realm, do_write_stats_file_for_realm_export
-)
+from django.core.management.base import CommandError
+
+from zerver.lib.export import do_export_realm, \
+    do_write_stats_file_for_realm_export
 from zerver.lib.management import ZulipBaseCommand
 
 class Command(ZulipBaseCommand):

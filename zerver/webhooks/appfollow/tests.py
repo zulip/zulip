@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from typing import Text
-from zerver.lib.test_classes import WebhookTestCase
+
 from django.test import TestCase
 
+from zerver.lib.test_classes import WebhookTestCase
 from zerver.webhooks.appfollow.view import convert_markdown
 
 class AppFollowHookTests(WebhookTestCase):
