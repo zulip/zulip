@@ -95,7 +95,7 @@ def custom_check_file(fn, identifier, rules, color, skip_rules=None, max_length=
             '# type' not in line and 'test' not in fn and 'example' not in fn and
             not re.match("\[[ A-Za-z0-9_:,&()-]*\]: http.*", line) and
             not re.match("`\{\{ api_url \}\}[^`]+`", line) and
-                "#ignorelongline" not in line and 'migrations' not in fn):
+                "# ignorelongline" not in line and 'migrations' not in fn):
             print("Line too long (%s) at %s line %s: %s" % (len(line), fn, i+1, line_newline_stripped))
             failed = True
         lastLine = line
