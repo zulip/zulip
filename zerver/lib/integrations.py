@@ -195,8 +195,9 @@ class WebhookIntegration(Integration):
 class HubotLozenge(Integration):
     GIT_URL_TEMPLATE = "https://github.com/hubot-scripts/hubot-{}"
 
-    def __init__(self, name, categories, display_name=None, logo=None, logo_alt=None, git_url=None, legacy=False):
-        # type: (str, List[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[bool]) -> None
+    def __init__(self, name, categories, display_name=None, logo=None, logo_alt=None, git_url=None,
+                 doc=None, legacy=False):
+        # type: (str, List[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[bool]) -> None
         if logo_alt is None:
             logo_alt = "{} logo".format(name.title())
         self.logo_alt = logo_alt
@@ -204,9 +205,13 @@ class HubotLozenge(Integration):
         if git_url is None:
             git_url = self.GIT_URL_TEMPLATE.format(name)
         self.git_url = git_url
+
+        self.doc = doc
+
         super().__init__(
             name, name, categories,
             logo=logo, display_name=display_name,
+            doc=doc,
             legacy=legacy
         )
 
@@ -359,6 +364,8 @@ WEBHOOK_INTEGRATIONS = [
 
 INTEGRATIONS = {
     'asana': Integration('asana', 'asana', ['project-management'], doc='zerver/integrations/asana.md'),
+    'assembla': HubotLozenge('assembla', ['version-control', 'project-management'], display_name='Assembla',
+                             logo_alt='Assembla', doc='zerver/integrations/assembla.md'),
     'capistrano': Integration(
         'capistrano',
         'capistrano',
@@ -449,7 +456,8 @@ BOT_INTEGRATIONS = [
 ]  # type: List[BotIntegration]
 
 HUBOT_LOZENGES = {
-    'assembla': HubotLozenge('assembla', ['project-management', 'version-control']),
+    'assembla': HubotLozenge('assembla', ['project-management', 'version-control'],
+                             display_name='Assembla', logo_alt='Assembla'),
     'bonusly': HubotLozenge('bonusly', ['hr']),
     'chartbeat': HubotLozenge('chartbeat', ['marketing']),
     'darksky': HubotLozenge('darksky', ['misc'], display_name='Dark Sky', logo_alt='Dark Sky logo'),
