@@ -1,16 +1,15 @@
 # Webhooks for external integrations.
-from typing import Any, Callable, Dict, Iterable, Optional, Tuple, Text
+from typing import Any, Callable, Dict, Iterable, Optional, Text, Tuple
 
-from django.utils.translation import ugettext as _
 from django.http import HttpRequest, HttpResponse
+from django.utils.translation import ugettext as _
 
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.actions import check_send_stream_message
-from zerver.lib.response import json_success, json_error
 from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_dict
-from zerver.models import UserProfile, Stream
-
+from zerver.models import Stream, UserProfile
 
 @api_key_only_webhook_view("NewRelic")
 @has_request_variables

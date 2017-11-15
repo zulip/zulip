@@ -1,17 +1,18 @@
 # Webhooks for teamcity integration
 
-from django.db.models import Q
-from django.http import HttpRequest, HttpResponse
+import logging
 from typing import Any, Dict, List, Optional
 
-from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.actions import check_send_private_message, check_send_stream_message
-from zerver.lib.response import json_success, json_error
-from zerver.lib.request import REQ, has_request_variables
-from zerver.models import UserProfile, Realm
-
-import logging
 import ujson
+from django.db.models import Q
+from django.http import HttpRequest, HttpResponse
+
+from zerver.decorator import api_key_only_webhook_view
+from zerver.lib.actions import check_send_private_message, \
+    check_send_stream_message
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_error, json_success
+from zerver.models import Realm, UserProfile
 
 def guess_zulip_user_from_teamcity(teamcity_username: str, realm: Realm) -> Optional[UserProfile]:
     try:

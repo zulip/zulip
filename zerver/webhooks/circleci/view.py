@@ -1,16 +1,15 @@
 # Webhooks for external integrations.
 
-from django.http import HttpRequest, HttpResponse
 from typing import Any, Dict, Text
+
+import ujson
+from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.actions import check_send_stream_message
-from zerver.lib.response import json_success, json_error
 from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_error, json_success
 from zerver.models import UserProfile
-
-import ujson
-
 
 CIRCLECI_SUBJECT_TEMPLATE = u'{repository_name}'
 CIRCLECI_MESSAGE_TEMPLATE = u'[Build]({build_url}) triggered by {username} on {branch} branch {status}.'

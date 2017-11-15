@@ -1,17 +1,16 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Callable, Tuple, Text
-
-from django.utils.timezone import utc as timezone_utc
-from django.utils.translation import ugettext as _
-from django.http import HttpRequest, HttpResponse
-
-from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.response import json_success, json_error
-from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.actions import check_send_stream_message
-from zerver.models import UserProfile
+from typing import Any, Callable, Dict, List, Optional, Text, Tuple
 
 import ujson
+from django.http import HttpRequest, HttpResponse
+from django.utils.timezone import utc as timezone_utc
+from django.utils.translation import ugettext as _
+
+from zerver.decorator import api_key_only_webhook_view
+from zerver.lib.actions import check_send_stream_message
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_error, json_success
+from zerver.models import UserProfile
 
 ALERT_CLEAR = 'clear'
 ALERT_VIOLATION = 'violations'

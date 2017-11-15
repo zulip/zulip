@@ -1,16 +1,16 @@
 # Webhooks for external integrations.
 
+from typing import Dict
+
+import ujson
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.actions import check_send_stream_message
-from zerver.lib.response import json_success
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.validator import check_dict, check_string, check_bool
+from zerver.lib.response import json_success
+from zerver.lib.validator import check_bool, check_dict, check_string
 from zerver.models import UserProfile
-from typing import Dict
-
-import ujson
 
 GOOD_STATUSES = ['Passed', 'Fixed']
 BAD_STATUSES = ['Failed', 'Broken', 'Still Failing']

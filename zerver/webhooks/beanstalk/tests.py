@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-from mock import patch, MagicMock
 from typing import Dict, Text
 
-from zerver.lib.webhooks.git import COMMITS_LIMIT
+from mock import MagicMock, patch
+
 from zerver.lib.test_classes import WebhookTestCase
+from zerver.lib.webhooks.git import COMMITS_LIMIT
 
 class BeanstalkHookTests(WebhookTestCase):
     STREAM_NAME = 'commits'

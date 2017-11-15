@@ -1,13 +1,13 @@
 # Webhooks for external integrations.
+from typing import Text
+
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import authenticated_rest_api_view
 from zerver.lib.actions import check_send_stream_message
-from zerver.lib.response import json_success
 from zerver.lib.request import REQ, has_request_variables
-from zerver.models import get_client, UserProfile
-
-from typing import Text
+from zerver.lib.response import json_success
+from zerver.models import UserProfile, get_client
 
 # Desk.com's integrations all make the user supply a template, where it fills
 # in stuff like {{customer.name}} and posts the result as a "data" parameter.

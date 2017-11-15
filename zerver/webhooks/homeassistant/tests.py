@@ -1,5 +1,6 @@
-from zerver.lib.test_classes import WebhookTestCase
 from typing import Text
+
+from zerver.lib.test_classes import WebhookTestCase
 
 class HomeAssistantHookTests(WebhookTestCase):
     STREAM_NAME = 'homeassistant'
