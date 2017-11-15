@@ -15,14 +15,14 @@ largest and fastest growing open source group chat project.
 [![Zulip chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://chat.zulip.org)
 [![Twitter](https://img.shields.io/badge/twitter-@zulip-blue.svg?style=flat)](http://twitter.com/zulip)
 
-## Next steps
+## Getting started
 
 Click on the appropriate link below. If nothing seems to apply,
 join us on the
 [Zulip community server](https://zulip.readthedocs.io/en/latest/chat-zulip-org.html)
 and tell us what's up!
 
-I am interested in:
+You might be interested in:
 
 * **Contributing code**. Check out our
   [guide for new contributors](https://zulip.readthedocs.io/en/latest/contributing.html)
@@ -66,8 +66,9 @@ I am interested in:
   [Outreachy](https://www.outreachy.org/),
   [Google Summer of Code](https://developers.google.com/open-source/gsoc/),
   and the
-  [MIT Externship program](https://alum.mit.edu/students/NetworkwithAlumni/ExternshipProgram),
-  and also takes summer interns from Harvard, MIT, and Stanford.  More
+  [MIT Externship program](https://alum.mit.edu/students/NetworkwithAlumni/ExternshipProgram). Zulip
+  also participates in
+  [Google Code-In](https://developers.google.com/open-source/gci/). More
   information is available
   [here](https://zulip.readthedocs.io/en/latest/contributing.html#internship-programs).
 

@@ -106,7 +106,7 @@ on.
   important thing to say is whether you're looking for a backend (Python),
   frontend (JavaScript), mobile (React Native), desktop (Electron),
   documentation (English) or visual design (JavaScript + CSS) issue, and a
-  bit about your programming experience.
+  bit about your programming experience and available time.
 
 We also welcome suggestions of features that you feel would be valuable or
 changes that you feel would make Zulip a better open source project. If you
@@ -117,7 +117,7 @@ feature idea and the problem that you're hoping to solve.
 Other notes:
 * For a first pull request, it's better to aim for a smaller contribution
   than a bigger one. Many first contributions have fewer than 10 lines of
-  changes (not counting tests).
+  changes (not counting changes to tests).
 * The full list of issues looking for a contributor can be found with the
   [help wanted](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
   label.
@@ -154,8 +154,9 @@ labels.
 
 ## What makes a great Zulip contributor?
 
-Zulip runs a lot of internship programs, so we have a lot of experience with
-new contributors. In our experience, these are the best predictors of success:
+Zulip runs a lot of [internship programs](#internship-programs), so we have
+a lot of experience with new contributors. In our experience, these are the
+best predictors of success:
 
 * Posting good questions. This generally means explaining your current
   understanding, saying what you've done or tried so far, and including
@@ -227,7 +228,7 @@ Zulip runs internship programs with [Outreachy](https://www.outreachy.org/),
 [Google Summer of Code](https://developers.google.com/open-source/gsoc/),
 and the
 [MIT Externship program](https://alum.mit.edu/students/NetworkwithAlumni/ExternshipProgram),
-and also takes summer interns from Harvard, MIT, and Stanford.
+and has in the past taken summer interns from Harvard, MIT, and Stanford.
 
 The application process and selection criteria for all our internship
 programs is the same. A few notes:
