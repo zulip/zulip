@@ -94,7 +94,8 @@ ZULIP_PATH="$(realpath $(dirname $0)/../..)"
 "$ZULIP_PATH"/scripts/lib/check-upstart
 
 if [ -n "$USE_CERTBOT" ]; then
-    "$ZULIP_PATH"/scripts/setup/setup-certbot --no-zulip-conf \
+    "$ZULIP_PATH"/scripts/setup/setup-certbot \
+        --no-zulip-conf --method=standalone \
         --hostname "$EXTERNAL_HOST" --email "$ZULIP_ADMINISTRATOR"
 fi
 
