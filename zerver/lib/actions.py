@@ -2937,14 +2937,16 @@ def do_create_default_stream_group(realm: Realm, group_name: Text,
     default_streams = get_default_streams_for_realm(realm.id)
     for stream in streams:
         if stream in default_streams:
-            raise JsonableError(_("'%s' is a default stream and cannot be added to '%s'") % (
-                stream.name, group_name))
+            raise JsonableError(_(
+                "'%(stream.name)s' is a default stream and cannot be added to '%(group_name)s'")
+                % {'stream.name': stream.name, 'group_name': group_name})
 
     check_default_stream_group_name(group_name)
     (group, created) = DefaultStreamGroup.objects.get_or_create(
         name=group_name, realm=realm, description=description)
     if not created:
-        raise JsonableError(_("Default stream group '%s' already exists") % (group_name,))
+        raise JsonableError(_("Default stream group '%(group_name)s' already exists")
+                            % {'group_name': group_name})
 
     group.streams = streams
     group.save()
@@ -2955,11 +2957,13 @@ def do_add_streams_to_default_stream_group(realm: Realm, group: DefaultStreamGro
     default_streams = get_default_streams_for_realm(realm.id)
     for stream in streams:
         if stream in default_streams:
-            raise JsonableError(_("'%s' is a default stream and cannot be added to '%s'") % (
-                stream.name, group.name))
+            raise JsonableError(_(
+                "'%(stream.name)s' is a default stream and cannot be added to '%(group.name)s'")
+                % {'stream.name': stream.name, 'group.name': group.name})
         if stream in group.streams.all():
-            raise JsonableError(_("Stream '%s' is already present in default stream group '%s'")
-                                % (stream.name, group.name))
+            raise JsonableError(_(
+                "Stream '%(stream.name)s' is already present in default stream group '%(group.name)s'")
+                % {'stream.name': stream.name, 'group.name': group.name})
         group.streams.add(stream)
 
     group.save()
@@ -2969,8 +2973,9 @@ def do_remove_streams_from_default_stream_group(realm: Realm, group: DefaultStre
                                                 streams: List[Stream]) -> None:
     for stream in streams:
         if stream not in group.streams.all():
-            raise JsonableError(_("Stream '%s' is not present in default stream group '%s'")
-                                % (stream.name, group.name))
+            raise JsonableError(_(
+                "Stream '%(stream.name)s' is not present in default stream group '%(group.name)s'")
+                % {'stream.name': stream.name, 'group.name': group.name})
         group.streams.remove(stream)
 
     group.save()
