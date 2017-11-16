@@ -653,16 +653,17 @@ def build_custom_checkers(by_lang):
 
         color = next(colors)
         markdown_docs_length_exclude = {
-            "api/bots/converter/readme.md",
-            "templates/zerver/api/running-bots.md",
+            # Has some example Vagrant output that's very long
             "docs/development/setup-vagrant.md",
+            # Has some example code that could perhaps be wrapped
             "docs/tutorials/webhook-walkthrough.md",
-            "docs/tutorials/life-of-a-request.md",
+            # Have wide output in code blocks
             "docs/subsystems/logging.md",
             "docs/migration-renumbering.md",
-            "docs/overview/readme-symlink.md",
+            # Have curl commands with JSON that would be messy to wrap
             "zerver/webhooks/helloworld/doc.md",
             "zerver/webhooks/trello/doc.md",
+            # Has a very long configuration line
             "templates/zerver/integrations/perforce.md",
         }
         for fn in by_lang['md']:

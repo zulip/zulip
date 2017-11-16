@@ -62,8 +62,11 @@ application.
 
 ## Django routes the request to a view in urls.py files
 
-There are various [urls.py](https://docs.djangoproject.com/en/1.8/topics/http/urls/) files throughout the server codebase, which are
-covered in more detail in [the directory structure doc](../overview/directory-structure.html).
+There are various
+[urls.py](https://docs.djangoproject.com/en/1.8/topics/http/urls/)
+files throughout the server codebase, which are covered in more detail
+in
+[the directory structure doc](../overview/directory-structure.html).
 
 The main Zulip Django app is `zerver`. The routes are found in
 ```
@@ -77,9 +80,10 @@ on how the REST API handles our user creation example.
 
 ## Views serving HTML are internationalized by server path
 
-If we look in [zproject/urls.py](https://github.com/zulip/zulip/blob/master/zproject/urls.py), we can see something called
-`i18n_urls`. These urls show up in the address bar of the browser, and
-serve HTML.
+If we look in
+[zproject/urls.py](https://github.com/zulip/zulip/blob/master/zproject/urls.py),
+we can see something called `i18n_urls`. These urls show up in the
+address bar of the browser, and serve HTML.
 
 For example, the `/features` page (preview
 [here](https://zulipchat.com/features/)) gets translated in Chinese at
@@ -96,7 +100,8 @@ With the exception of Webhooks (which we do not usually control the
 format of), legacy endpoints, and logged-out endpoints, Zulip uses REST
 for its API. This means that we use:
 
-* POST for creating something new where we don't have a unique ID. Also used as a catch-all if no other verb is appropriate.
+* POST for creating something new where we don't have a unique
+  ID. Also used as a catch-all if no other verb is appropriate.
 * PUT for creating something for which we have a unique ID.
 * DELETE for deleting something
 * PATCH for updating or editing attributes of something.
@@ -205,7 +210,8 @@ in a
 with a content type of 'application/json'.
 
 To pass back data from the server to the calling client, in the event of
-a successfully handled request, we use `json_success(data=<some python object which can be converted to a JSON string>`.
+a successfully handled request, we use
+`json_success(data=<some python object which can be converted to a JSON string>`.
 
 This will result in a JSON string:
 

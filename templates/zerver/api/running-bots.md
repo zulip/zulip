@@ -161,8 +161,7 @@ running it manually.
 1.  Configure *supervisord*.  *supervisord* stores its configuration in
     `/etc/supervisor/conf.d`.
     * Do **one** of the following:
-      * Download the [sample config file](
-        https://raw.githubusercontent.com/zulip/python-zulip-api/master/zulip_botserver/zulip-botserver-supervisord.conf)
+      * Download the [sample config file][supervisord-config-file]
         and store it in `/etc/supervisor/conf.d/zulip-botserver.conf`.
       * Copy the following section into your existing supervisord config file.
         ```
@@ -173,6 +172,8 @@ running it manually.
         redirect_stderr=true
         ```
     * Edit the `<>` sections according to your preferences.
+
+[supervisord-config-file]: https://raw.githubusercontent.com/zulip/python-zulip-api/master/zulip_botserver/zulip-botserver-supervisord.conf
 
 2. Update *supervisord* to read the configuration file:
    ```
