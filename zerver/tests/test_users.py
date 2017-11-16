@@ -279,6 +279,21 @@ class UserProfileTest(ZulipTestCase):
         with self.assertRaises(JsonableError):
             user_ids_to_users(real_user_ids, get_realm("zephyr"))
 
+    def test_bulk_get_users(self) -> None:
+        from zerver.lib.users import bulk_get_users
+        hamlet = self.example_email("hamlet")
+        cordelia = self.example_email("cordelia")
+        webhook_bot = self.example_email("webhook_bot")
+        result = bulk_get_users([hamlet, cordelia], get_realm("zulip"))
+        self.assertEqual(result[hamlet].email, hamlet)
+        self.assertEqual(result[cordelia].email, cordelia)
+
+        result = bulk_get_users([hamlet, cordelia, webhook_bot], None,
+                                base_query=UserProfile.objects.all())
+        self.assertEqual(result[hamlet].email, hamlet)
+        self.assertEqual(result[cordelia].email, cordelia)
+        self.assertEqual(result[webhook_bot].email, webhook_bot)
+
 class ActivateTest(ZulipTestCase):
     def test_basics(self) -> None:
         user = self.example_user('hamlet')

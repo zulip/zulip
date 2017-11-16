@@ -49,7 +49,7 @@ from zerver.lib.topic_mutes import (
     add_topic_mute,
     remove_topic_mute,
 )
-from zerver.lib.users import check_full_name
+from zerver.lib.users import bulk_get_users, check_full_name
 from zerver.lib.user_groups import create_user_group
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
     RealmDomain, \
@@ -3824,7 +3824,9 @@ def get_status_dict(requesting_user_profile):
 
 def get_cross_realm_dicts():
     # type: () -> List[Dict[str, Any]]
-    users = [get_system_bot(email) for email in get_cross_realm_emails()]
+    users = bulk_get_users(list(get_cross_realm_emails()), None,
+                           base_query=UserProfile.objects.filter(
+                               realm__string_id="zulip")).values()
     return [{'email': user.email,
              'user_id': user.id,
              'is_admin': user.is_realm_admin,
