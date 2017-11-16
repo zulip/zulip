@@ -218,3 +218,9 @@ body.dark-mode .nav-list > li > a,
 body.dark-mode .nav-list .nav-header {
     text-shadow: none;
 }
+
+body.dark-mode .message_content code {
+    background-color: hsl(212, 25%, 15%);
+    border-color: hsla(0, 0%, 0%, 0.5);
+    color: inherit;
+}
