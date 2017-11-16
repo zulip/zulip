@@ -6,7 +6,7 @@ third-party service.
 * **Incoming webhook integrations**, for when you just want notifications from
   a tool to be sent into Zulip.  See the
   [integrations guide](
-  http://zulip.readthedocs.io/en/latest/integration-guide.html?highlight=integrations).
+  https://zulip.readthedocs.io/en/latest/tutorials/integration-guide.html?highlight=integrations).
 * **Interactive bots**, for when you want the tool to react to
   messages in Zulip.
 
@@ -384,7 +384,7 @@ refactor them.
 
 *Unit tests for bots make heavy use of mocking. If you want to get comfortable with mocking,
  mocking strategies, etc. you should check out our [mocking guide](
- https://zulip.readthedocs.io/en/latest/testing-with-django.html#testing-with-mocks).*
+ https://zulip.readthedocs.io/en/latest/testing/testing-with-django.html#testing-with-mocks).*
 
 ### A simple example
 

@@ -19,34 +19,34 @@ largest and fastest growing open source group chat project.
 
 Click on the appropriate link below. If nothing seems to apply,
 join us on the
-[Zulip community server](https://zulip.readthedocs.io/en/latest/chat-zulip-org.html)
+[Zulip community server](https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html)
 and tell us what's up!
 
 You might be interested in:
 
 * **Contributing code**. Check out our
-  [guide for new contributors](https://zulip.readthedocs.io/en/latest/contributing.html)
+  [guide for new contributors](https://zulip.readthedocs.io/en/latest/overview/contributing.html)
   to get started. Zulip prides itself on maintaining a clean and well-tested
   codebase, and a stock of hundreds of
   [beginner-friendly issues](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22).
 
 * **Contributing non-code**.
-  [Report an issue](https://zulip.readthedocs.io/en/latest/contributing.html#reporting-issue),
-  [translate](https://zulip.readthedocs.io/en/latest/translating.html) Zulip
+  [Report an issue](https://zulip.readthedocs.io/en/latest/overview/contributing.html#reporting-issue),
+  [translate](https://zulip.readthedocs.io/en/latest/translating/translating.html) Zulip
   into your language,
-  [write](https://zulip.readthedocs.io/en/latest/contributing.html#zulip-outreach)
+  [write](https://zulip.readthedocs.io/en/latest/overview/contributing.html#zulip-outreach)
   for the Zulip blog, or
-  [give us feedback](https://zulip.readthedocs.io/en/latest/contributing.html#user-feedback). We
+  [give us feedback](https://zulip.readthedocs.io/en/latest/overview/contributing.html#user-feedback). We
   would love to hear from you, even if you're just trying the product out.
 
 * **Supporting Zulip**. Advocate for your organization to use Zulip, write a
   review in the mobile app stores, or
-  [upvote Zulip](https://zulip.readthedocs.io/en/latest/contributing.html#zulip-outreach) on
+  [upvote Zulip](https://zulip.readthedocs.io/en/latest/overview/contributing.html#zulip-outreach) on
   product comparison sites.
 
 * **Checking Zulip out**. The best way to see Zulip in action is to drop by
   the
-  [Zulip community server](https://zulip.readthedocs.io/en/latest/chat-zulip-org.html). We
+  [Zulip community server](https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html). We
   also recommend reading Zulip for
   [open source](https://zulipchat.com/for/open-source/), Zulip for
   [companies](https://zulipchat.com/for/companies/), or Zulip for
@@ -55,7 +55,7 @@ You might be interested in:
 * **Running a Zulip server**. Setting up a server takes just a couple of
   minutes. Zulip runs on Ubuntu 16.04 Xenial and Ubuntu 14.04 Trusty. The
   installation process is
-  [documented here](https://zulip.readthedocs.io/en/latest/prod.html).
+  [documented here](https://zulip.readthedocs.io/en/latest/production/overview.html).
   Commercial support is available; see <https://zulipchat.com/plans> for
   details.
 
@@ -70,7 +70,7 @@ You might be interested in:
   also participates in
   [Google Code-In](https://developers.google.com/open-source/gci/). More
   information is available
-  [here](https://zulip.readthedocs.io/en/latest/contributing.html#internship-programs).
+  [here](https://zulip.readthedocs.io/en/latest/overview/contributing.html#internship-programs).
 
 You may also be interested in reading our [blog](http://blog.zulip.org/) or
 following us on [twitter](https://twitter.com/zulip).

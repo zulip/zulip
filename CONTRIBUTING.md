@@ -5,11 +5,11 @@ Welcome to the Zulip community!
 ## Community
 
 The
-[Zulip community server](https://zulip.readthedocs.io/en/latest/chat-zulip-org.html)
+[Zulip community server](https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html)
 is the primary communication forum for the Zulip community. It is a good
 place to start whether you have a question, are a new contributor, are a new
 user, or anything else. Make sure to read the
-[community norms](http://zulip.readthedocs.io/en/latest/chat-zulip-org.html#community-norms)
+[community norms](http://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html#community-norms)
 before posting. The Zulip community is also governed by a
 [code of conduct](http://zulip.readthedocs.io/en/latest/code-of-conduct.html).
 
@@ -31,10 +31,10 @@ needs doing:
   [desktop app](https://github.com/zulip/zulip-electron).
 * Building out our
   [Python API and bots](https://github.com/zulip/python-zulip-api) framework.
-* [Writing an integration](http://zulip.readthedocs.io/en/latest/integration-guide.html).
+* [Writing an integration](http://zulip.readthedocs.io/en/latest/tutorials/integration-guide.html).
 * Improving our [user](https://chat.zulip.org/help/) or
   [developer](https://zulip.readthedocs.io/en/latest/) documentation.
-* [Reviewing code](http://zulip.readthedocs.io/en/latest/code-reviewing.html)
+* [Reviewing code](http://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html)
   and manually testing pull requests.
 
 **Non-code contributions**: Some of the most valuable ways to contribute
@@ -43,7 +43,7 @@ don't require touching the codebase at all. We list a few of them below:
 * [Reporting issues](#reporting-issues), including both feature requests and
   bug reports.
 * [Giving feedback](#user-feedback) if you are evaluating or using Zulip.
-* [Translating](https://zulip.readthedocs.io/en/latest/translating.html)
+* [Translating](https://zulip.readthedocs.io/en/latest/translating/translating.html)
   Zulip.
 * [Outreach](#zulip-outreach): Star us on GitHub, upvote us
   on product comparison sites, or write for the Zulip blog.
@@ -55,7 +55,7 @@ contributor. It's long, but don't worry about doing all the steps perfectly;
 no one gets it right the first time, and there are a lot of people available
 to help.
 * First, make an account on the
-  [Zulip community server](http://zulip.readthedocs.io/en/latest/chat-zulip-org.html),
+  [Zulip community server](http://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html),
   paying special attention to the community norms. If you'd like, introduce
   yourself in
   [#new members](https://chat.zulip.org/#narrow/stream/new.20members), using
@@ -63,12 +63,12 @@ to help.
   Zulip, and anything that felt confusing/broken as you started using the
   product.
 * Read [What makes a great Zulip contributor](#what-makes-a-great-zulip-contributor).
-* [Install the development environment](https://zulip.readthedocs.io/en/latest/dev-overview.html),
+* [Install the development environment](https://zulip.readthedocs.io/en/latest/development/overview.html),
   getting help in
   [#development help](https://chat.zulip.org/#narrow/stream/development.20help)
   if you run into any troubles.
 * Read the
-  [Zulip guide to Git](http://zulip.readthedocs.io/en/latest/git-guide.html)
+  [Zulip guide to Git](http://zulip.readthedocs.io/en/latest/contributing/git-guide.html)
   and do the Git tutorial (coming soon) if you are unfamiliar with Git,
   getting help in
   [#git help](https://chat.zulip.org/#narrow/stream/git.20help) if you run
@@ -162,14 +162,14 @@ best predictors of success:
   understanding, saying what you've done or tried so far, and including
   tracebacks or other error messages if appropriate.
 * Learning and practicing
-  [Git commit discipline](http://zulip.readthedocs.io/en/latest/version-control.html#commit-discipline).
+  [Git commit discipline](http://zulip.readthedocs.io/en/latest/contributing/version-control.html#commit-discipline).
 * Submitting carefully tested code. This generally means checking your work
   through a combination of automated tests and manually clicking around the
   UI trying to find bugs in your work. See
-  [things to look for](http://zulip.readthedocs.io/en/latest/code-reviewing.html#things-to-look-for)
+  [things to look for](http://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html#things-to-look-for)
   for additional ideas.
 * Posting
-  [screenshots or GIFs](http://zulip.readthedocs.io/en/latest/screenshot-and-gif-software.html)
+  [screenshots or GIFs](http://zulip.readthedocs.io/en/latest/tutorials/screenshot-and-gif-software.html)
   for frontend changes.
 * Being responsive to feedback on pull requests. This means incorporating or
   responding to all suggested changes, and leaving a note if you won't be
@@ -189,12 +189,12 @@ is, the best place to post issues is
 [#issues](https://chat.zulip.org/#narrow/stream/issues) (or
 [#mobile](https://chat.zulip.org/#narrow/stream/mobile) or
 [#electron](https://chat.zulip.org/#narrow/stream/electron)) on the
-[Zulip community server](http://zulip.readthedocs.io/en/latest/chat-zulip-org.html).
+[Zulip community server](http://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html).
 This allows us to interactively figure out what is going on, let you know if
 a similar issue has already been opened, and collect any other information
 we need. Choose a 2-4 word topic that describes the issue, explain the issue
 and how to reproduce it if known, your browser/OS if relevant, and a
-[screenshot or screenGIF](http://zulip.readthedocs.io/en/latest/screenshot-and-gif-software.html)
+[screenshot or screenGIF](http://zulip.readthedocs.io/en/latest/tutorials/screenshot-and-gif-software.html)
 if appropriate.
 
 **Reporting security issues**. Please do not report security issues

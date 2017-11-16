@@ -53,7 +53,7 @@ These articles contain great ideas for streams you might want to create
 in your organization:
 
 - [How the Recurse Center uses Zulip](https://www.recurse.com/blog/112-how-rc-uses-zulip)
-- [The Zulip community](http://zulip.readthedocs.io/en/latest/chat-zulip-org.html#streams)
+- [The Zulip community](http://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html#streams)
 
 ## Understanding topics
 
@@ -139,7 +139,7 @@ you use!  A few recommendations:
   GitHub or wiki page with a nice badge.
 - [Automatically linkify](/help/add-a-custom-linkification-filter)
   issue numbers and commit IDs.
-- [Write custom integrations](https://zulip.readthedocs.io/en/latest/integration-guide.html)
+- [Write custom integrations](https://zulip.readthedocs.io/en/latest/tutorials/integration-guide.html)
   for your community’s unique tools.
 - If your users primarily speak a language other than English,
   [set a default language for your organization](/help/change-the-default-language-for-your-organization).
@@ -170,4 +170,4 @@ Here are some tips for improving the organization of your Zulip community over t
   useful. Don’t worry — if you delete a stream, the old stream history
   is still searchable, and old links will still work.
 - If you’re running your own Zulip server,
-  [keep it up to date](http://zulip.readthedocs.io/en/latest/prod-maintain-secure-upgrade.html)!
+  [keep it up to date](http://zulip.readthedocs.io/en/latest/production/maintain-secure-upgrade.html)!
