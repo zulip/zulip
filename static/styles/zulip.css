@@ -1745,6 +1745,10 @@ blockquote p {
     box-shadow: 0px 0px 5px hsla(0, 0%, 0%, 0.2);
 }
 
+.nav .dropdown-menu a {
+    color: inherit;
+}
+
 .nav .dropdown-menu:after {
     position: absolute;
     width: 0px;
