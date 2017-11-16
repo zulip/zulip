@@ -38,7 +38,6 @@ if ! git diff --exit-code >/dev/null; then
 fi
 
 TMPDIR=$(mktemp -d)
-TMP_CHECKOUT=$TMPDIR/$prefix
 TARBALL=$TMPDIR/$prefix.tar
 BASEDIR=$(pwd)
 
@@ -46,8 +45,8 @@ git archive -o "$TARBALL" "--prefix=$prefix/" HEAD
 
 cd "$TMPDIR"
 tar -xf "$TARBALL"
-for i in `cat "$TMP_CHECKOUT"/tools/release-tarball-exclude.txt`; do
-    rm -r --interactive=never "$TMP_CHECKOUT/$i";
+for i in `cat "$TMPDIR/$prefix/tools/release-tarball-exclude.txt"`; do
+    rm -r --interactive=never "$TMPDIR/$prefix/$i";
 done
 tar -cf "$TARBALL" "$prefix"
 rm -rf "$prefix"
@@ -60,8 +59,8 @@ fi
 cd "$BASEDIR"
 
 # Check out a temporary full copy of the index to generate static files
-git checkout-index -f -a --prefix "$TMP_CHECKOUT/"
-cd "$TMP_CHECKOUT"
+git checkout-index -f -a --prefix "$TMPDIR/$prefix/"
+cd "$TMPDIR/$prefix"
 
 # create var/log directory in the new temporary checkout
 mkdir -p "var/log"
@@ -87,14 +86,14 @@ EOF
 # We do a bit of gymnastics to have update-prod-static.log be easily
 # visible to the user and end up in the same directory as the final
 # release tarball.
-USER_PROD_STATIC_LOGPATH="${TMPDIR}/update-prod-static.log"
-BUILD_PROD_STATIC_LOGPATH="${TMP_CHECKOUT}/var/log/update-prod-static.log"
+USER_PROD_STATIC_LOGPATH="$TMPDIR/update-prod-static.log"
+BUILD_PROD_STATIC_LOGPATH="$TMPDIR/$prefix/var/log/update-prod-static.log"
 ln -nfs "$BUILD_PROD_STATIC_LOGPATH" "$USER_PROD_STATIC_LOGPATH"
 
 ./tools/update-prod-static $authors_not_required || (
     set +x
     echo; echo -ne "\033[33mRunning update-prod-static failed. "
-    echo -e "Check ${TMPDIR}/update-prod-static.log for more information.\033[0m"
+    echo -e "Check $TMPDIR/update-prod-static.log for more information.\033[0m"
     exit 1
 )
 rm -f "$USER_PROD_STATIC_LOGPATH"
