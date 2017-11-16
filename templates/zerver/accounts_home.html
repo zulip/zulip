@@ -92,6 +92,14 @@ $(function () {
                             </form>
                         </div>
                         {% endif %}
+
+                        {% if mediawiki_auth_enabled %}
+                        <div class="login-mediawiki">
+                            <form class="form-inline" action="{{ url('signup-social', args=('mediawiki',)) }}" method="get">
+                                <button class="login-social-button login-mediawiki-button">{{ _('Sign up with MediaWiki') }}</button>
+                            </form>
+                        </div>
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>

@@ -572,6 +572,7 @@ html {
     left: 5px;
 }
 
+.login-github,
 .login-google {
     margin-bottom: 10px;
 }

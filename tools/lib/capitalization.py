@@ -31,6 +31,7 @@ IGNORED_PHRASES = [
     r"Mac",
     r"macOS",
     r"MiB",
+    r"MediaWiki",
     r"OTP",
     r"Pivotal",
     r"Play Store",
