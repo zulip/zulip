@@ -11,7 +11,7 @@ largest and fastest growing open source group chat project.
 [![Build Status](https://travis-ci.org/zulip/zulip.svg?branch=master)](https://travis-ci.org/zulip/zulip)
 [![Coverage Status](https://img.shields.io/codecov/c/github/zulip/zulip.svg)](https://codecov.io/gh/zulip/zulip)
 [![Mypy coverage](https://img.shields.io/badge/mypy-100%25-green.svg)](http://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/)
-[![docs](https://readthedocs.org/projects/zulip/badge/?version=latest)](http://zulip.readthedocs.io/en/latest/)
+[![docs](https://readthedocs.org/projects/zulip/badge/?version=latest)](https://zulip.readthedocs.io/en/latest/)
 [![Zulip chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://chat.zulip.org)
 [![Twitter](https://img.shields.io/badge/twitter-@zulip-blue.svg?style=flat)](http://twitter.com/zulip)
 

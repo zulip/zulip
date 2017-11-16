@@ -1,4 +1,4 @@
-// See http://zulip.readthedocs.io/en/latest/subsystems/pointer.html for notes on
+// See https://zulip.readthedocs.io/en/latest/subsystems/pointer.html for notes on
 // how this system is designed.
 
 var pointer = (function () {

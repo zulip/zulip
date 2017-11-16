@@ -37,16 +37,16 @@ if __name__ == '__main__':
         data = json.load(f)
 
     found = find_handlebars(list(data.keys()))
-    if found:
-        print(WARNING + "Translation strings contain handlebars:" + ENDC)
-        print('\n'.join(found))
-
-        print(WARNING +
-              "See http://zulip.readthedocs.io/en/latest/translating/translating.html#frontend-translations "
-              "on how you can insert variables in the frontend translatable "
-              "strings." +
-              ENDC)
-        print(FAIL + "Failed!" + ENDC)
-        sys.exit(1)
-    else:
+    if not found:
         sys.exit(0)
+
+    print(WARNING + "Translation strings contain handlebars:" + ENDC)
+    print('\n'.join(found))
+
+    print(WARNING +
+          "See https://zulip.readthedocs.io/en/latest/translating/translating.html#frontend-translations "
+          "on how you can insert variables in the frontend translatable "
+          "strings." +
+          ENDC)
+    print(FAIL + "Failed!" + ENDC)
+    sys.exit(1)

@@ -139,6 +139,9 @@ def build_custom_checkers(by_lang):
     whitespace_rules = [
         # This linter should be first since bash_rules depends on it.
         trailing_whitespace_rule,
+        {'pattern': 'http://zulip.readthedocs.io',
+         'description': 'Use HTTPS when linking to ReadTheDocs',
+         },
         {'pattern': '\t',
          'strip': '\n',
          'exclude': set(['tools/travis/success-http-headers.txt']),

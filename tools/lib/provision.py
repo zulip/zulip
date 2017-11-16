@@ -80,7 +80,7 @@ try:
 except OSError as err:
     print("Error: Unable to create symlinks. Make sure you have permission to create symbolic links.")
     print("See this page for more information:")
-    print("  http://zulip.readthedocs.io/en/latest/development/setup-vagrant.html#os-symlink-error")
+    print("  https://zulip.readthedocs.io/en/latest/development/setup-vagrant.html#os-symlink-error")
     sys.exit(1)
 
 if platform.architecture()[0] == '64bit':

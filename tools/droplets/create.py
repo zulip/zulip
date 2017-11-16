@@ -198,10 +198,10 @@ Your remote Zulip dev server has been created!
   http://{0}.zulipdev.org:9991.
 """.format(username))
 
-    print("See [Developing remotely](http://zulip.readthedocs.io/en/latest/development/remote.html) "
+    print("See [Developing remotely](https://zulip.readthedocs.io/en/latest/development/remote.html) "
           "for tips on using the remote dev instance and "
-          "[Git & GitHub Guide](http://zulip.readthedocs.io/en/latest/contributing/git-guide.html) to learn "
-          "how to use Git with Zulip.\n")
+          "[Git & GitHub Guide](https://zulip.readthedocs.io/en/latest/contributing/git-guide.html) "
+          "to learn how to use Git with Zulip.\n")
     print("Note that this droplet will automatically be deleted after a month of inactivity. "
           "If you are leaving Zulip for more than a few weeks, we recommend pushing all of your "
           "active branches to GitHub.")

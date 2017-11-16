@@ -3,7 +3,7 @@
 Zulip is designed with accessibility in mind. We aim to provide all
 users with the same quality of experience with our product: you can
 read more about our practises in our
-[documentation](http://zulip.readthedocs.io/en/latest/contributing/accessibility.html).
+[documentation](https://zulip.readthedocs.io/en/latest/contributing/accessibility.html).
 
 By default, some items of the UI (such as date/time stamps, certain
 buttons, links and unread counts) are intentionally light in order to

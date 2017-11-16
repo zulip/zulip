@@ -97,9 +97,9 @@ Your remote Zulip dev server has been created!
   at http://<username>.zulipdev.org:9991.
 
 See [Developing
-remotely](http://zulip.readthedocs.io/en/latest/development/remote.html) for tips on
+remotely](https://zulip.readthedocs.io/en/latest/development/remote.html) for tips on
 using the remote dev instance and [Git & GitHub
-Guide](http://zulip.readthedocs.io/en/latest/contributing/git-guide.html) to learn how to
+Guide](https://zulip.readthedocs.io/en/latest/contributing/git-guide.html) to learn how to
 use Git with Zulip.
 ```
 

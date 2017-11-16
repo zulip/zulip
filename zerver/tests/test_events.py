@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# See http://zulip.readthedocs.io/en/latest/subsystems/events-system.html for
+# See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html for
 # high-level documentation on how this system works.
 from typing import Any, Callable, Dict, List, Optional, Set, Text, Tuple, Union
 import os

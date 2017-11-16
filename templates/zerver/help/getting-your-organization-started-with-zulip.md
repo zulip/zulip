@@ -53,7 +53,7 @@ These articles contain great ideas for streams you might want to create
 in your organization:
 
 - [How the Recurse Center uses Zulip](https://www.recurse.com/blog/112-how-rc-uses-zulip)
-- [The Zulip community](http://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html#streams)
+- [The Zulip community](https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html#streams)
 
 ## Understanding topics
 
@@ -170,4 +170,4 @@ Here are some tips for improving the organization of your Zulip community over t
   useful. Don’t worry — if you delete a stream, the old stream history
   is still searchable, and old links will still work.
 - If you’re running your own Zulip server,
-  [keep it up to date](http://zulip.readthedocs.io/en/latest/production/maintain-secure-upgrade.html)!
+  [keep it up to date](https://zulip.readthedocs.io/en/latest/production/maintain-secure-upgrade.html)!
