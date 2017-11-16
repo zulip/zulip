@@ -115,6 +115,7 @@ def set_user_data(username, userkeys):
     runcmd:
       - su -c 'cd /home/zulipdev/zulip && {2} https://github.com/{0}/zulip.git && git fetch origin' zulipdev
       - su -c 'git config --global core.editor nano' zulipdev
+      - su -c 'git config --global pull.rebase true' zulipdev
     power_state:
      mode: reboot
      condition: True
