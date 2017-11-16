@@ -11,4 +11,4 @@ Translating Zulip
    german
    polish
    russian
-   spanish   
+   spanish

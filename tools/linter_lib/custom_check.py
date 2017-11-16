@@ -691,6 +691,11 @@ def build_custom_checkers(by_lang):
                 failed = True
 
         color = next(colors)
+        for fn in by_lang['rst']:
+            if custom_check_file(fn, 'rst', txt_rules, color):
+                failed = True
+
+        color = next(colors)
         for fn in by_lang['yaml']:
             if custom_check_file(fn, 'yaml', txt_rules, color):
                 failed = True

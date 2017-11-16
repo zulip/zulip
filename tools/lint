@@ -90,7 +90,7 @@ def run():
             print('If you really know what you are doing, use --force to run anyway.')
             sys.exit(1)
 
-    backend_file_types = ['py', 'sh', 'pp', 'json', 'md', 'txt', 'text', 'yaml']
+    backend_file_types = ['py', 'sh', 'pp', 'json', 'md', 'txt', 'text', 'yaml', 'rst']
     frontend_file_types = ['js', 'css', 'handlebars', 'html']
     file_types = backend_file_types + frontend_file_types
     if args.backend:

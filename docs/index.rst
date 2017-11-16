@@ -45,7 +45,7 @@ Contents:
 .. toctree::
    :maxdepth: 3
 
-   overview/index 
+   overview/index
 
 .. _zulip-in-production:
 
