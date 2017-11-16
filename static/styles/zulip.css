@@ -573,7 +573,7 @@ a:hover code {
 }
 
 .message_header_stream a.message_label_clickable {
-    color: hsl(0, 0%, 20%);
+    color: inherit;
 }
 
 li.actual-dropdown-menu i {
@@ -1134,7 +1134,6 @@ td.pointer {
 }
 
 .sender_name {
-    color: hsl(0, 0%, 20%);
     display: inline-block;
     font-weight: 700;
     vertical-align: top;
@@ -1263,7 +1262,7 @@ a.message_label_clickable:hover {
 .dark_background a:hover,
 a.dark_background:hover,
 .dark_background {
-    color: #ffffff !important;
+    color: #fff !important;
 }
 
 .dark_background a.message_label_clickable:hover {
