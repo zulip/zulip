@@ -1,46 +1,71 @@
 # SSL Certificates
 
-### Using Let's Encrypt
+To keep your communications secure, Zulip runs over HTTPS only.
+You'll need an SSL/TLS certificate.  Fortunately, as of 2017 new
+options can make getting and maintaining a genuine,
+trusted-by-browsers certificate no longer the chore (nor expense)
+that it used to be.
 
-If you have a domain name and you've configured DNS to point to the
-server where you want to install Zulip, you can use [Let's
-Encrypt](https://letsencrypt.org/) to generate a valid, properly
-signed SSL certificates, for free.
+## Using Certbot / Let's Encrypt
 
-Run all of these commands as root. If you're not already logged in as root, use
-`sudo -i` to start an interactive root shell.
+[Let's Encrypt](https://letsencrypt.org/) is a free, completely
+automated CA launched in 2016 to help make HTTPS routine for the
+entire Web.  Zulip offers a simple automation for
+[Certbot](https://certbot.eff.org/), a Let's Encrypt client, to get
+SSL certificates from Let's Encrypt and renew them automatically.
 
-First, install the Let's Encrypt client [Certbot](https://certbot.eff.org/) and
-then generate the certificate:
+We recommend most Zulip servers use Certbot.  You'll want something
+else if:
+* you have an existing workflow for managing SSL certificates
+  that you prefer;
+* you need wildcard certificates (support from Let's Encrypt planned
+  for [January 2018][letsencrypt-wildcard]); or
+* your Zulip server is not on the public Internet. (In this case you
+  can [still use Certbot][certbot-manual-mode], but it's less
+  convenient; and you'll want to ignore Zulip's automation.)
 
+[letsencrypt-wildcard]: https://letsencrypt.org/2017/07/06/wildcard-certificates-coming-jan-2018.html
+[certbot-manual-mode]: https://certbot.eff.org/docs/using.html#manual
+
+### At initial Zulip install
+
+To enable the Certbot automation when first installing Zulip, just
+pass the `--certbot` flag when running the install script.
+
+The `--hostname` and `--email` options are required when using
+`--certbot`.  You'll need the hostname to be a real DNS name, and the
+Zulip server machine to be reachable by that name from the public
+Internet.
+
+### After Zulip is already installed
+
+To enable the Certbot automation on an already-installed Zulip
+server, run the following commands:
 ```
-wget https://dl.eff.org/certbot-auto
-chmod a+x certbot-auto
-./certbot-auto certonly --standalone
+sudo -s  # If not already root
+/home/zulip/deployments/current/scripts/setup/setup-certbot --hostname=HOSTNAME --email=EMAIL
 ```
+where HOSTNAME is the domain name users see in their browser when
+using the server (e.g., `zulip.example.com`), and EMAIL is a contact
+address for the server admins.
 
-Note: If you already had a webserver installed on this system (e.g. you
-previously installed Zulip and are now getting a cert), you will
-need to stop the webserver (e.g. `service nginx stop`) and start it
-again after (e.g. `service nginx start`) running the certbot command above.
+### How it works
 
-Next, symlink the certificates to make them available where Zulip expects them.
-Be sure to replace YOUR_DOMAIN with your domain name.
+When the Certbot automation in Zulip is first enabled, by either
+method, it creates an account for the server at the Let's Encrypt CA;
+requests a certificate for the given hostname; proves to the CA that
+the server controls the website at that hostname; and is then given a
+certificate.  (For details, refer to
+[Let's Encrypt](https://letsencrypt.org/how-it-works/).)
 
-```
-ln -s /etc/letsencrypt/live/YOUR_DOMAIN/privkey.pem /etc/ssl/private/zulip.key
-ln -s /etc/letsencrypt/live/YOUR_DOMAIN/fullchain.pem /etc/ssl/certs/zulip.combined-chain.crt
-```
+Then it records a flag in `/etc/zulip/zulip.conf` saying Certbot is in
+use and should be auto-renewed.  A cron job checks that flag, then
+checks if any certificates are due for renewal, and if they are (so
+approximately once every 60 days), repeats the process of request,
+prove, get a fresh certificate.
 
-Note: Certificates provided by Let's Encrypt are valid for 90 days and then
-need to be [renewed](https://certbot.eff.org/docs/using.html#renewal). You can
-renew with this command:
 
-```
-./certbot-auto renew
-```
-
-### Generating a self-signed certificate
+## Generating a self-signed certificate
 
 If you aren't able to use Let's Encrypt, you can generate a
 self-signed ssl certificate.  We recommend getting a real certificate
@@ -62,7 +87,7 @@ from the root of your Zulip directory (replacing `zulip.example.com`
 with the hostname of your server i.e. whatever you're going to set as
 `EXTERNAL_HOST`).
 
-#### Generating a self-signed cert manually
+### Generating a self-signed cert manually
 
 We also document the steps below if you want to create a cert
 manually, which will offer you an opportunity to set your organization
