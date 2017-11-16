@@ -1,5 +1,11 @@
+import re
+import jwt
+import time
 import logging
-from typing import Any, Dict, List, Set, Tuple, Optional, Text
+import requests
+from urllib.parse import urlparse
+from typing import cast, Any, Dict, List, Set, Tuple, Optional, Text
+from requests_oauthlib import OAuth1
 
 from apiclient.sample_tools import client as googleapiclient
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
@@ -11,7 +17,9 @@ from oauth2client.crypt import AppIdentityError
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
     GithubTeamOAuth2
 from social_core.utils import handle_http_errors
-from social_core.exceptions import AuthFailed, SocialAuthBaseException
+from social_core.backends.mediawiki import MediaWiki, force_unicode
+from social_core.exceptions import AuthFailed, SocialAuthBaseException, \
+    AuthException
 from social_django.models import DjangoStorage
 from social_django.strategy import DjangoStrategy
 
@@ -488,6 +496,91 @@ class DevAuthBackend(ZulipAuthMixin):
         if not dev_auth_enabled(realm):
             return None
         return common_get_active_user(dev_auth_username, realm, return_data=return_data)
+
+class MediaWikiAuthBackend(SocialAuthMixin, MediaWiki):
+    auth_backend_name = "MediaWiki"
+
+    def get_email_address(self, *args, **kwargs):
+        # type: (*Any, **Any) -> Optional[Text]
+        try:
+            return kwargs['response']['email']
+        except KeyError:
+            return None
+
+    def get_full_name(self, *args, **kwargs):
+        # type: (*Any, **Any) -> Text
+        try:
+            name = kwargs['response']['realname'] or kwargs['response']['username']
+        except KeyError:
+            name = ''
+
+        return name
+
+    def get_authenticated_user(self, *args: Any, **kwargs: Any) -> Optional[UserProfile]:
+        """Finish the auth process once the access_token was retrieved"""
+        access_token = cast(Dict[Text, Text], args[0])
+        data = self.get_user_details(access_token)
+        if data is not None and 'access_token' not in data:
+            data['access_token'] = access_token
+        kwargs.update({'response': data, 'backend': self})
+        return self.strategy.authenticate(*args, **kwargs)
+
+    def get_user_details(self, access_token: Dict[Text, Text]) -> Dict[Text, Any]:
+        """
+        Gets the user details from Special:OAuth/identify
+
+        The reason to override this function is to make it return the complete
+        information about the user. The base class function only returns
+        username and user id, whereas we also need email and real name of the
+        user. One annoying thing this results in is that we need to copy a
+        lot of code from the base class.
+        """
+        key, secret = self.get_key_and_secret()
+
+        auth = OAuth1(key,
+                      client_secret=secret,
+                      resource_owner_key=access_token['oauth_token'],
+                      resource_owner_secret=access_token['oauth_token_secret'])
+
+        url = self.setting('MEDIAWIKI_URL')
+        params = {'title': 'Special:OAuth/identify'}
+        req_resp = requests.post(url=url, params=params, auth=auth)
+
+        try:
+            raw_identity = jwt.decode(req_resp.content, secret, audience=key,
+                                      algorithms=['HS256'], leeway=self.LEEWAY)
+            identity = cast(Dict[Text, Any], raw_identity)
+        except jwt.InvalidTokenError as exception:
+            msg = 'An error occurred while trying to read json content: {0}'
+            msg = msg.format(exception)
+            raise AuthException(self, msg)
+
+        issuer = urlparse(identity['iss']).netloc
+        expected_domain = urlparse(self.setting('MEDIAWIKI_URL')).netloc
+
+        if not issuer == expected_domain:
+            msg = 'Unexpected issuer {0}, expected {1}'
+            msg = msg.format(issuer, expected_domain)
+            raise AuthException(self, msg)
+
+        now = time.time()
+        issued_at = float(identity['iat'])
+        if not now >= (issued_at - self.LEEWAY):
+            msg = 'Identity issued {0} seconds in the future'
+            msg = msg.format(issued_at - now)
+            raise AuthException(self, msg)
+
+        raw_header = req_resp.request.headers['Authorization']
+        authorization_header = force_unicode(raw_header)
+        regex = r'oauth_nonce="(.*?)"'
+        request_nonce = re.search(regex, authorization_header).group(1)
+
+        if identity['nonce'] != request_nonce:
+            msg = 'Replay attack detected: {0} != {1}'
+            msg = msg.format(identity['nonce'], request_nonce)
+            raise AuthException(self, msg)
+
+        return identity
 
 class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
     auth_backend_name = "GitHub"
