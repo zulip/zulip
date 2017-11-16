@@ -447,7 +447,7 @@ input.recipient_box {
 
     border: 1px solid hsl(0, 0%, 66%);
     border-radius: 4px;
-    background-color: hsl(0, 0%, 98%);
+    background-color: hsla(0, 0%, 0%, 0.02);
     cursor: not-allowed;
 }
 
