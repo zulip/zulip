@@ -137,16 +137,17 @@ def json_change_settings(request, user_profile,
 
 @human_users_only
 @has_request_variables
-def update_display_settings_backend(request, user_profile,
-                                    twenty_four_hour_time=REQ(validator=check_bool, default=None),
-                                    high_contrast_mode=REQ(validator=check_bool, default=None),
-                                    night_mode=REQ(validator=check_bool, default=None),
-                                    default_language=REQ(validator=check_string, default=None),
-                                    left_side_userlist=REQ(validator=check_bool, default=None),
-                                    emoji_alt_code=REQ(validator=check_bool, default=None),
-                                    emojiset=REQ(validator=check_string, default=None),
-                                    timezone=REQ(validator=check_string, default=None)):
-    # type: (HttpRequest, UserProfile, Optional[bool], Optional[bool], Optional[str], Optional[bool], Optional[bool], Optional[Text], Optional[Text]) -> HttpResponse
+def update_display_settings_backend(
+        request: HttpRequest, user_profile: UserProfile,
+        twenty_four_hour_time: Optional[bool]=REQ(validator=check_bool, default=None),
+        high_contrast_mode: Optional[bool]=REQ(validator=check_bool, default=None),
+        night_mode: Optional[bool]=REQ(validator=check_bool, default=None),
+        default_language: Optional[bool]=REQ(validator=check_string, default=None),
+        left_side_userlist: Optional[bool]=REQ(validator=check_bool, default=None),
+        emoji_alt_code: Optional[bool]=REQ(validator=check_bool, default=None),
+        emojiset: Optional[str]=REQ(validator=check_string, default=None),
+        timezone: Optional[str]=REQ(validator=check_string, default=None)) -> HttpResponse:
+
     if (default_language is not None and
             default_language not in get_available_language_codes()):
         raise JsonableError(_("Invalid language '%s'" % (default_language,)))
