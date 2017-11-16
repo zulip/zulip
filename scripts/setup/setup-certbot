@@ -3,8 +3,10 @@
 set -e
 
 usage() {
-  echo "Usage: $0 <domain name> <email>" >&2
-  exit 1
+    cat <<EOF >&2
+Usage: $0 --hostname=zulip.example.com --email=admin@example.com [--method={webroot|standalone}] [--no-zulip-conf]
+EOF
+    exit 1
 }
 
 if [ "$EUID" -ne 0 ]; then
