@@ -2,7 +2,7 @@ var common = require('../casper_lib/common.js').common;
 
 common.start_and_log_in();
 
-casper.waitUntilVisible('#new_message_content', function () {
+casper.waitUntilVisible('#zhome', function () {
     casper.test.info('compose box visible');
     casper.page.sendEvent('keypress', "c"); // brings up the compose box
 });

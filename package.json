@@ -43,7 +43,7 @@
     "zxcvbn": "4.4.2"
   },
   "devDependencies": {
-    "casperjs": "1.1.3",
+    "casperjs": "casperjs/casperjs",
     "cssstyle": "0.2.29",
     "eslint": "3.9.1",
     "htmlparser2": "3.8.3",
