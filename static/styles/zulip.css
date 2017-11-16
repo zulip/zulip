@@ -749,7 +749,6 @@ td.pointer {
 }
 
 .message_list .recipient_row {
-    background: hsl(0, 0%, 94%);
     border-bottom: 1px solid hsl(0, 0%, 88%);
     margin-bottom: 10px;
 }
@@ -1043,7 +1042,6 @@ td.pointer {
    private messages, mentions, and unread messages */
 
 .messagebox {
-    background-color: hsl(0, 0%, 100%);
     position: relative;
 }
 
