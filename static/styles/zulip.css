@@ -1047,7 +1047,7 @@ td.pointer {
 
 .private-message .messagebox,
 .message_header_private_message .message-header-contents {
-    background-color: hsl(192, 19%, 95%);
+    background-color: hsla(192, 19%, 75%, 0.2);
     box-shadow: inset 1px 1px 0px hsl(0, 0%, 88%);
 }
 
