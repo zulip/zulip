@@ -76,7 +76,6 @@
 
 .draft-row .draft-info-box {
     width: 100%;
-    background: hsl(0, 0%, 94%);
     border-bottom: 1px solid hsl(0, 0%, 88%);
     border-top: 1px solid hsl(0, 0%, 88%);
     margin-bottom: 10px;
