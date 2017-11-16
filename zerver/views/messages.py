@@ -749,8 +749,15 @@ def get_messages_backend(request, user_profile,
         for row in query_result:
             message_id = row[0]
             (subject, rendered_content, content_matches, subject_matches) = row[-4:]
-            search_fields[message_id] = get_search_fields(rendered_content, subject,
-                                                          content_matches, subject_matches)
+
+            try:
+                search_fields[message_id] = get_search_fields(rendered_content, subject,
+                                                              content_matches, subject_matches)
+            except UnicodeDecodeError as err:  # nocoverage
+                # No coverage for this block since it should be
+                # impossible, and we plan to remove it once we've
+                # debugged the case that makes it happen.
+                raise Exception(str(err), message_id, search_term)
 
     message_list = messages_for_ids(
         message_ids=message_ids,
