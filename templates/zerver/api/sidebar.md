@@ -6,14 +6,14 @@
 
 ## Integrations
 
-* [Overview](https://zulip.readthedocs.io/en/latest/tutorials/integration-guide.html)
+* [Overview](/api/integration-guide)
 * [Existing integrations](/integrations)
 
 ## Writing webhook integrations
 
-* [Overview](https://zulip.readthedocs.io/en/latest/tutorials/integration-guide.html#webhook-integrations)
-* [Walkthrough](https://zulip.readthedocs.io/en/latest/tutorials/webhook-walkthrough.html)
-* [Documenting integrations](https://zulip.readthedocs.io/en/latest/tutorials/integration-docs-guide.html)
+* [Overview](/api/integration-guide#webhook-integrations)
+* [Walkthrough](/api/webhook-walkthrough)
+* [Documenting integrations](/api/integration-docs-guide)
 
 ## Interactive bots (experimental)
 

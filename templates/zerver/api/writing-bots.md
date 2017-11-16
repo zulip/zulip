@@ -4,9 +4,7 @@ Zulip's API supports a few different ways of integrating with a
 third-party service.
 
 * **Incoming webhook integrations**, for when you just want notifications from
-  a tool to be sent into Zulip.  See the
-  [integrations guide](
-  https://zulip.readthedocs.io/en/latest/tutorials/integration-guide.html?highlight=integrations).
+  a tool to be sent into Zulip. See the [integrations guide](integration-guide).
 * **Interactive bots**, for when you want the tool to react to
   messages in Zulip.
 

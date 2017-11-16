@@ -15,11 +15,11 @@ On this page you'll find:
 * Details about writing [Python script and plugin
   integrations](#python-script-and-plugin-integrations).
 * A guide to
-  [documenting your integration](integration-docs-guide.html) is on a
+  [documenting your integration](integration-docs-guide) is on a
   separate page.
 
 A detailed walkthrough of a simple "Hello World" integration can be
-found in the [webhook walkthrough](../tutorials/webhook-walkthrough.html).
+found in the [webhook walkthrough](webhook-walkthrough).
 
 Contributions to this guide are very welcome, so if you run into any
 issues following these instructions or come up with any tips or tools
@@ -99,7 +99,7 @@ New Zulip webhook integrations can take just a few hours to write,
 including tests and documentation, if you use the right process.
 
 **For detailed instructions, check out the ["Hello World" webhook walkthrough](
-../tutorials/webhook-walkthrough.html)**.
+webhook-walkthrough)**.
 
 For a quick guide, read on.
 
@@ -130,8 +130,8 @@ For a quick guide, read on.
   test-backend zerver/webhooks/pagerduty/
   ```
 
-  See [this guide](../testing/testing.html) for more details on the Zulip test
-  runner.
+  See [this guide](https://zulip.readthedocs.io/en/latest/testing/testing.html)
+  for more details on the Zulip test runner.
 
 * Once you've gotten your webhook working and passing a test, capture
   payloads for the other common types of posts the service's webhook
@@ -142,7 +142,7 @@ For a quick guide, read on.
   the service.
 
 * Finally, write documentation for the integration; there's a
-  [detailed guide](integration-docs-guide.html).
+  [detailed guide](integration-docs-guide).
 
 ### Files that need to be created
 
@@ -152,22 +152,24 @@ for a webhook named 'MyWebHook'.
 * `static/images/integrations/logos/mywebhook.svg`: An image to represent
   your integration in the user interface. Generally this should be the logo of the
   platform/server/product you are integrating. See [Documenting your
-  integration](integration-docs-guide.html) for details.
+  integration](integration-docs-guide) for details.
 * `static/images/integrations/mywebbook/001.svg`: A screen capture of your
   integration for use in the user interface. You can add as many images as needed
   to effectively document your webhook integration. See [Documenting your
-  integration](integration-docs-guide.html) for details.
+  integration](integration-docs-guide) for details.
 * `zerver/webhooks/mywebhook/fixtures/messagetype.json`: Sample json payload data
   used by tests. Add one fixture file per type of message supported by your
-  integration. See [Testing and writing tests](../testing/testing.html) for details.
+  integration. See [Testing and writing tests](
+  https://zulip.readthedocs.io/en/latest/testing/testing.html) for details.
 * `zerver/webhooks/mywebhook/__init__.py`: Empty file that is obligatory
    part of every python package.  Remember to `git add` it.
 * `zerver/webhooks/mywebhook/view.py`: Includes the main webhook integration
   function including any needed helper functions.
 * `zerver/webhooks/mywebhook/tests.py`: Add tests for your
-  webbook. See [Testing and writing tests](../testing/testing.html) for details.
+  webbook. See [Testing and writing tests](
+  https://zulip.readthedocs.io/en/latest/testing/testing.html) for details.
 * `zerver/webhooks/mywebhook/doc.html`: Add end-user documentation. See
-  [Documenting your integration](integration-docs-guide.html) for details.
+  [Documenting your integration](integration-docs-guide) for details.
 
 ### Files that need to be updated
 
