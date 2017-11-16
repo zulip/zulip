@@ -40,7 +40,7 @@ for each distinct message condition your webhook supports. You'll also need a
 corresponding fixture for each of these tests. Depending on the type of data
 the 3rd party service sends, your fixture may contain JSON, URL encoded text, or
 some other kind of data. See [Step 4: Create tests](#step-4-create-tests) or
-[Testing](../testing/testing.html) for further details.
+[Testing](https://zulip.readthedocs.io/en/latest/testing/testing.html) for further details.
 
 ## Step 1: Initialize your webhook python package
 
@@ -94,7 +94,8 @@ The above code imports the required functions and defines the main webhook
 function `api_helloworld_webhook`, decorating it with `api_key_only_webhook_view` and
 `has_request_variables`. The `has_request_variables` decorator allows you to
 access request variables with `REQ()`. You can find more about `REQ` and request
-variables in [Writing views](writing-views.html#request-variables).
+variables in [Writing views](
+https://zulip.readthedocs.io/en/latest/tutorials/writing-views.html#request-variables).
 
 You must pass the name of your webhook to the `api_key_only_webhook_view`
 decorator so your webhook can access the `user_profile` and `request.client`
@@ -124,8 +125,8 @@ it must exist before a message can be created in it. (See
 [Step 4: Create tests](#step-4-create-tests) for how to handle this in tests.)
 
 The line that begins `# type` is a mypy type annotation. See [this
-page](../contributing/mypy.html) for details about how to properly annotate your webhook
-functions.
+page](https://zulip.readthedocs.io/en/latest/contributing/mypy.html) for details about
+how to properly annotate your webhook functions.
 
 In the body of the function we define the body of the message as `Hello! I am
 happy to be here! :smile:`. The `:smile:` indicates an emoji. Then we append a
@@ -204,7 +205,7 @@ After which you should see:
 
 Using either method will create a message in Zulip:
 
-![Image of Hello World webhook message](../images/helloworld-webhook.png)
+<img class="screenshot" src="/static/images/api/helloworld-webhook.png" />
 
 ## Step 4: Create tests
 
@@ -332,7 +333,7 @@ The Hello World webhook will use the `test` stream, which is
 created by default in the Zulip dev environment. If you are running
 Zulip in production, you should make sure that this stream exists.
 
-Next, on your {{ ../subsystems/settings.html|safe }}, create a Hello World bot.
+Next, on your {{ settings_html|safe }}, create a Hello World bot.
 Construct the URL for the Hello World bot using the API key and
 stream name:
 
@@ -362,7 +363,7 @@ Markdown/Jinja2 framework that includes macros for common instructions in
 Zulip's webhooks/integrations documentation.
 
 See
-[our guide on documenting an integration](integration-docs-guide.html)
+[our guide on documenting an integration](integration-docs-guide)
 for further details, including how to easily create the message
 screenshot.
 
@@ -373,11 +374,14 @@ available in the Zulip product, follow these steps to prepare your pull
 request:
 
 1. Run tests including linters and ensure you have addressed any issues they
-   report. See [Testing](../testing/testing.html) and [Linters](../testing/linters.html) for details.
-2. Read through [Code styles and conventions](../contributing/code-style.html) and take a look
+   report. See [Testing](https://zulip.readthedocs.io/en/latest/testing/testing.html)
+   and [Linters](https://zulip.readthedocs.io/en/latest/testing/linters.html) for details.
+2. Read through [Code styles and conventions](
+   https://zulip.readthedocs.io/en/latest/contributing/code-style.html) and take a look
    through your code to double-check that you've followed Zulip's guidelines.
 3. Take a look at your git history to ensure your commits have been clear and
-   logical (see [Version Control](../contributing/version-control.html) for tips). If not,
+   logical (see [Version Control](
+   https://zulip.readthedocs.io/en/latest/contributing/version-control.html) for tips). If not,
    consider revising them with `git rebase --interactive`. For most webhooks,
    you'll want to squash your changes into a single commit and include a good,
    clear commit message.
@@ -386,10 +390,11 @@ request:
 
 If you would like feedback on your integration as you go, feel free to post a
 message on the [public Zulip instance](https://chat.zulip.org/#narrow/stream/bots).
-You can also create a [`[WIP]` pull request](../overview/contributing.html#working-on-an-issue)
-while you are still working on your integration. See the
-[Git guide](../contributing/git-guide.html#create-a-pull-request) for more on Zulip's pull
-request process.
+You can also create a [`[WIP]` pull request](
+https://zulip.readthedocs.io/en/latest/overview/contributing.html#working-on-an-issue) while you
+are still working on your integration. See the
+[Git guide](https://zulip.readthedocs.io/en/latest/contributing/git-guide.html#create-a-pull-request)
+for more on Zulip's pull request process.
 
 ## Advanced topics
 

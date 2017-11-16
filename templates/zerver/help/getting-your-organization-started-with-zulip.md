@@ -139,7 +139,7 @@ you use!  A few recommendations:
   GitHub or wiki page with a nice badge.
 - [Automatically linkify](/help/add-a-custom-linkification-filter)
   issue numbers and commit IDs.
-- [Write custom integrations](https://zulip.readthedocs.io/en/latest/tutorials/integration-guide.html)
+- [Write custom integrations](https://zulipchat.com/api/integration-guide)
   for your community’s unique tools.
 - If your users primarily speak a language other than English,
   [set a default language for your organization](/help/change-the-default-language-for-your-organization).

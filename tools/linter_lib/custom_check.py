@@ -664,8 +664,6 @@ def build_custom_checkers(by_lang):
         markdown_docs_length_exclude = {
             # Has some example Vagrant output that's very long
             "docs/development/setup-vagrant.md",
-            # Has some example code that could perhaps be wrapped
-            "docs/tutorials/webhook-walkthrough.md",
             # Have wide output in code blocks
             "docs/subsystems/logging.md",
             "docs/migration-renumbering.md",
@@ -674,6 +672,8 @@ def build_custom_checkers(by_lang):
             "zerver/webhooks/trello/doc.md",
             # Has a very long configuration line
             "templates/zerver/integrations/perforce.md",
+            # Has some example code that could perhaps be wrapped
+            "templates/zerver/api/webhook-walkthrough.md",
         }
         for fn in by_lang['md']:
             max_length = None
