@@ -1,4 +1,4 @@
-# See http://zulip.readthedocs.io/en/latest/events-system.html for
+# See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html for
 # high-level documentation on how this system works.
 
 import copy

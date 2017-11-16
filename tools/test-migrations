@@ -11,7 +11,7 @@ if [ "$new_auto_named_migrations" != "" ]; then
     echo
     echo "$new_auto_named_migrations" | sed 's/\[[x ]\] /  /'
     echo
-    echo 'See https://zulip.readthedocs.io/en/latest/schema-migrations.html for advice.'
+    echo 'See https://zulip.readthedocs.io/en/latest/subsystems/schema-migrations.html for advice.'
     echo
     exit 1
 fi
@@ -19,7 +19,7 @@ fi
 if ! ./manage.py makemigrations --check --dry-run; then
     echo
     echo 'ERROR: Migrations are not consistent with models!  Fix with `./tools/renumber-migrations`.'
-    echo 'See http://zulip.readthedocs.io/en/latest/schema-migrations.html for details.'
+    echo 'See https://zulip.readthedocs.io/en/latest/subsystems/schema-migrations.html for details.'
     echo
     exit 1
 else

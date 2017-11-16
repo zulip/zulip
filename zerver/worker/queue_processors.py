@@ -1,4 +1,4 @@
-# Documented in http://zulip.readthedocs.io/en/latest/queuing.html
+# Documented in http://zulip.readthedocs.io/en/latest/subsystems/queuing.html
 from typing import Any, Callable, Dict, List, Mapping, Optional, cast
 
 import signal

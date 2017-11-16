@@ -1,4 +1,4 @@
-# Useful reading is https://zulip.readthedocs.io/en/latest/front-end-build-process.html
+# Useful reading is https://zulip.readthedocs.io/en/latest/subsystems/front-end-build-process.html
 
 import os
 import shutil

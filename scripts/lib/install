@@ -107,7 +107,7 @@ if [ "$PUPPET_CLASSES" = "zulip::voyager" ] && { ! [ -e "/etc/ssl/private/zulip.
    for f in "/etc/ssl/private/zulip.key" "/etc/ssl/certs/zulip.combined-chain.crt"; do
        [ -e "$f" ] || echo " - $f is missing!"
    done
-   echo "See http://zulip.readthedocs.io/en/latest/ssl-certificates.html for help."
+   echo "See https://zulip.readthedocs.io/en/latest/production/ssl-certificates.html for help."
    echo
    echo "Once fixed, just rerun scripts/setup/install; it'll pick up from here!"
    echo
@@ -184,7 +184,7 @@ if [ "$has_nginx" = 0 ]; then
         echo "Verifying the Zulip nginx configuration failed!"
         echo
         echo "This is almost always a problem with your SSL certificates."
-        echo "See http://zulip.readthedocs.io/en/latest/ssl-certificates.html for help"
+        echo "See https://zulip.readthedocs.io/en/latest/production/ssl-certificates.html for help"
         echo
         echo "Once fixed, just rerun scripts/setup/install; it'll pick up from here!"
         echo

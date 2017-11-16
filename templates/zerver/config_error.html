@@ -31,13 +31,13 @@
                         <p>
                             You may also want to test your email configuration,
                             as described in the
-                            <a href="https://zulip.readthedocs.io/en/latest/prod-email.html">
+                            <a href="https://zulip.readthedocs.io/en/latest/production/email.html">
                             Production installation docs</a>.
                         </p>
                         {% else %}
                         <p>
                             Please have a look at our
-                            <a target="_blank" href="https://zulip.readthedocs.io/en/latest/email.html#development-and-testing">
+                            <a target="_blank" href="https://zulip.readthedocs.io/en/latest/subsystems/email.html#development-and-testing">
                             setup guide</a> for forwarding emails sent in development
                             environment to an email account.
                         </p>
@@ -56,13 +56,13 @@
                         {% if development_environment %}
                         <p>
                             For more information, have a look at
-                            the <a href="http://zulip.readthedocs.io/en/latest/settings.html#testing-google-github-authentication">authentication
+                            the <a href="http://zulip.readthedocs.io/en/latest/subsystems/settings.html#testing-google-github-authentication">authentication
                             setup guide</a> for the development environment.
                         </p>
                         {% else %}
                         <p>
                             For more information, have a look at
-                            our <a href="http://zulip.readthedocs.io/en/latest/prod-authentication-methods.html">authentication
+                            our <a href="http://zulip.readthedocs.io/en/latest/production/authentication-methods.html">authentication
                             setup guide</a> and the comments in <code>{{ settings_comments_path }}</code>.
                         </p>
                         {% endif %}

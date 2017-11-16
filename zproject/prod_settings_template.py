@@ -2,7 +2,7 @@ from typing import Optional
 
 # Zulip Settings intended to be set by a system administrator.
 #
-# See http://zulip.readthedocs.io/en/latest/settings.html for
+# See https://zulip.readthedocs.io/en/latest/subsystems/settings.html for
 # detailed technical documentation on the Zulip settings system.
 #
 ### MANDATORY SETTINGS
@@ -35,7 +35,7 @@ ZULIP_ADMINISTRATOR = 'zulip-admin@example.com'
 # SMTP server already, we recommend services intended for developers
 # such as Mailgun.  Detailed documentation is available at:
 #
-#   https://zulip.readthedocs.io/en/latest/prod-email.html
+#   https://zulip.readthedocs.io/en/latest/production/email.html
 #
 # To configure SMTP, you will need to complete the following steps:
 #
@@ -87,7 +87,7 @@ EMAIL_USE_TLS = True
 ### AUTHENTICATION SETTINGS
 #
 # Enable at least one of the following authentication backends.
-# See http://zulip.readthedocs.io/en/latest/prod-authentication-methods.html
+# See https://zulip.readthedocs.io/en/latest/production/authentication-methods.html
 # for documentation on our authentication backends.
 #
 # The install process requires EmailAuthBackend (the default) to be
@@ -154,7 +154,7 @@ SSO_APPEND_DOMAIN = None  # type: Optional[str]
 # Support for mobile push notifications.  Setting controls whether
 # push notifications will be forwarded through a Zulip push
 # notification bouncer server to the mobile apps.  See
-# https://zulip.readthedocs.io/en/latest/prod-mobile-push-notifications.html
+# https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html
 # for information on how to sign up for and configure this.
 #PUSH_NOTIFICATION_BOUNCER_URL = 'https://push.zulipchat.com'
 
@@ -171,7 +171,7 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2  # 2 weeks
 
 # Password strength requirements; learn about configuration at
-# http://zulip.readthedocs.io/en/latest/security-model.html.
+# https://zulip.readthedocs.io/en/latest/production/security-model.html.
 # PASSWORD_MIN_LENGTH = 6
 # PASSWORD_MIN_GUESSES = 10000
 

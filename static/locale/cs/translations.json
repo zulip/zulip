@@ -191,7 +191,7 @@
   "Filter streams": "Filtrovat skupiny",
   "Filter users": "Filtrovat uživatele",
   "First time? Read our <a href=\"/help/create-a-stream\" target=\"_blank\">guidelines</a> for creating and naming streams.": "Poprvé? Přečtěte si naše <a href=\"/help/create-a-stream\" target=\"_blank\">pokyny</a>, jak tvořit a pojmenovávat skupiny.",
-  "For more information on public/private streams, check out our <a href=\"http://zulip.readthedocs.io/en/latest/security-model.html?highlight=private%20stream#messages-and-history\">docs</a>.": "Další údaje k veřejným/soukromým skupinám zjistíte v našich <a href=\"http://zulip.readthedocs.io/en/latest/security-model.html?highlight=private%20stream#messages-and-history\">dokumentech</a>.",
+  "For more information on public/private streams, check out our <a href=\"https://zulip.readthedocs.io/en/latest/production/security-model.html?highlight=private%20stream#messages-and-history\">docs</a>.": "Další údaje k veřejným/soukromým skupinám zjistíte v našich <a href=\"https://zulip.readthedocs.io/en/latest/production/security-model.html?highlight=private%20stream#messages-and-history\">dokumentech</a>.",
   "Forgotten it?": "Zapomněl jste?",
   "Formatting": "Formátování",
   "Full name": "Plný název",

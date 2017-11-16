@@ -74,7 +74,7 @@ issue its own place for discussion.
 
 Don’t like something? You can
 [open an issue](https://github.com/zulip/zulip/issues),
-[submit a patch](http://zulip.readthedocs.io/en/latest/dev-overview.html),
+[submit a patch](http://zulip.readthedocs.io/en/latest/development/overview.html),
 [fork the project](https://github.com/zulip/zulip), or chat with us directly
 at [chat.zulip.org](https://chat.zulip.org). All code, including the
 [desktop](https://github.com/zulip/zulip-electron) and

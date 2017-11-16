@@ -7,7 +7,7 @@
 # * settings.py imports prod_settings.py, and any site-specific configuration
 # belongs there.  The template for prod_settings.py is prod_settings_template.py
 #
-# See http://zulip.readthedocs.io/en/latest/settings.html for more information
+# See https://zulip.readthedocs.io/en/latest/subsystems/settings.html for more information
 #
 ########################################################################
 from copy import deepcopy
@@ -762,7 +762,7 @@ STATIC_HEADER_FILE = 'zerver/static_header.txt'
 # static files.
 #
 # Useful reading on how this works is in
-# https://zulip.readthedocs.io/en/latest/front-end-build-process.html
+# https://zulip.readthedocs.io/en/latest/subsystems/front-end-build-process.html
 
 PIPELINE = {
     'PIPELINE_ENABLED': PIPELINE_ENABLED,
@@ -898,7 +898,7 @@ PIPELINE = {
 }
 
 # Useful reading on how this works is in
-# https://zulip.readthedocs.io/en/latest/front-end-build-process.html
+# https://zulip.readthedocs.io/en/latest/subsystems/front-end-build-process.html
 JS_SPECS = {
     'app': {
         'source_filenames': [

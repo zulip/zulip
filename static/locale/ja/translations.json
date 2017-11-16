@@ -191,7 +191,7 @@
   "Filter streams": "ストリームをフィルター",
   "Filter users": "ユーザーを絞り込み",
   "First time? Read our <a href=\"/help/create-a-stream\" target=\"_blank\">guidelines</a> for creating and naming streams.": "初めてですか？ストリームを作成するために<a href=\"/help/create-a-stream\" target=\"_blank\">ガイドライン</a>を読んでみてください。",
-  "For more information on public/private streams, check out our <a href=\"http://zulip.readthedocs.io/en/latest/security-model.html?highlight=private%20stream#messages-and-history\">docs</a>.": "公開/プライベートのストリームの詳細については <a href=\"http://zulip.readthedocs.io/en/latest/security-model.html?highlight=private%20stream#messages-and-history\">ドキュメント</a>を確認してください。",
+  "For more information on public/private streams, check out our <a href=\"https://zulip.readthedocs.io/en/latest/production/security-model.html?highlight=private%20stream#messages-and-history\">docs</a>.": "公開/プライベートのストリームの詳細については <a href=\"https://zulip.readthedocs.io/en/latest/production/security-model.html?highlight=private%20stream#messages-and-history\">ドキュメント</a>を確認してください。",
   "Forgotten it?": "忘れましたか？",
   "Formatting": "フォーマット",
   "Full name": "姓名",

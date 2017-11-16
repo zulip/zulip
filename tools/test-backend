@@ -163,7 +163,7 @@ def block_internet():
         # type: (*Any, **Any) -> None
         raise Exception("Outgoing network requests are not allowed in the Zulip tests. "
                         "More details and advice are available here:"
-                        "https://zulip.readthedocs.io/en/latest/testing.html#internet-access-inside-test-suits")
+                        "https://zulip.readthedocs.io/en/latest/testing/testing.html#internet-access-inside-test-suites")
 
     httplib2.Http.request = internet_guard
     requests.request = internet_guard

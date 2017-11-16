@@ -1,4 +1,4 @@
-// Read https://zulip.readthedocs.io/en/latest/hashchange-system.html
+// Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
 var reload = (function () {
 
 var exports = {};

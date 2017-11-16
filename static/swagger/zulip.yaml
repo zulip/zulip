@@ -5,7 +5,7 @@
 #
 # Our own documentation lives at
 #
-#   https://zulip.readthedocs.io/en/latest/swagger-api-docs.html
+#   https://zulip.readthedocs.io/en/latest/subsystems/swagger-api-docs.html
 #
 # Basic Swagger UI info
 swagger: '2.0'

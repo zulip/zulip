@@ -1,4 +1,4 @@
-# System documented in https://zulip.readthedocs.io/en/latest/logging.html
+# System documented in https://zulip.readthedocs.io/en/latest/subsystems/logging.html
 
 from django.utils.timezone import now as timezone_now
 from django.utils.timezone import utc as timezone_utc

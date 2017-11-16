@@ -1,4 +1,4 @@
-# System documented in https://zulip.readthedocs.io/en/latest/logging.html
+# System documented in https://zulip.readthedocs.io/en/latest/subsystems/logging.html
 
 from typing import Any, Dict, Optional, Text, Union
 

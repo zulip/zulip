@@ -191,7 +191,7 @@
   "Filter streams": "Filtrer les canaux",
   "Filter users": "Filtrer les utilisateurs",
   "First time? Read our <a href=\"/help/create-a-stream\" target=\"_blank\">guidelines</a> for creating and naming streams.": "Première fois? Lisez nos <a href=\"/help/create-a-stream\" target=\"_blank\">instructions</a> pour créer et nommer des canaux.",
-  "For more information on public/private streams, check out our <a href=\"http://zulip.readthedocs.io/en/latest/security-model.html?highlight=private%20stream#messages-and-history\">docs</a>.": "Pour plus d'information sur les canaux publics/privés, visiter notre <a href=\"http://zulip.readthedocs.io/en/latest/security-model.html?highlight=private%20stream#messages-and-history\">documentation</a>.",
+  "For more information on public/private streams, check out our <a href=\"https://zulip.readthedocs.io/en/latest/production/security-model.html?highlight=private%20stream#messages-and-history\">docs</a>.": "Pour plus d'information sur les canaux publics/privés, visiter notre <a href=\"https://zulip.readthedocs.io/en/latest/production/security-model.html?highlight=private%20stream#messages-and-history\">documentation</a>.",
   "Forgotten it?": "Oublier?",
   "Formatting": "Formater",
   "Full name": "Nom complet",

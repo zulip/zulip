@@ -8,7 +8,7 @@
 # remove some and reconfigure others to make things run smoothly and
 # quickly.
 #
-# More description in https://zulip.readthedocs.io/en/latest/events-system.html.
+# More description in https://zulip.readthedocs.io/en/latest/testing/travis.html.
 set -e
 set -x
 

@@ -1,4 +1,4 @@
-# See https://zulip.readthedocs.io/en/latest/travis.html for
+# See https://zulip.readthedocs.io/en/latest/testing/travis.html for
 # high-level documentation on our Travis CI setup.
 dist: trusty
 install:
