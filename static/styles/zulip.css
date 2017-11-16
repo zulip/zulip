@@ -1853,10 +1853,8 @@ nav a .no-style {
     font-size: 16px;
     height: 40px;
     padding: 0px;
-    color: hsl(0, 0%, 13%);
     padding-left: 35px;
     padding-right: 20px;
-    background: hsl(0, 0%, 100%); /* Old browsers */
     border: none;
     border-radius: 0px;
     font-family: 'Source Sans Pro';
