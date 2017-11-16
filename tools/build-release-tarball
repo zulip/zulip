@@ -6,11 +6,14 @@ usage() {
     exit 1
 }
 
-args="$(getopt -o '' -l '' -n "$0" -- "$@")"
+args="$(getopt -o '' -l 'authors-not-required' -n "$0" -- "$@")"
 eval "set -- $args"
 
+authors_not_required=
 while true; do
     case "$1" in
+        --authors-not-required)
+            authors_not_required=--authors-not-required; shift;;
         --) shift; break;;
         *) usage;;
     esac
@@ -98,7 +101,7 @@ BUILD_PROD_STATIC_LOGPATH="${TMP_CHECKOUT}/var/log/update-prod-static.log"
 ln -nfs "$BUILD_PROD_STATIC_LOGPATH" "$USER_PROD_STATIC_LOGPATH"
 set -x
 
-./tools/update-prod-static || (
+./tools/update-prod-static $authors_not_required || (
     set +x
     echo; echo -ne "\033[33mRunning update-prod-static failed. "
     echo -e "Check ${TMPDIR}/update-prod-static.log for more information.\033[0m"
