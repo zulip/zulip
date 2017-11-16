@@ -595,7 +595,16 @@ def build_custom_checkers(by_lang):
     ]
     markdown_rules = markdown_whitespace_rules + prose_style_rules + [
         {'pattern': '\[(?P<url>[^\]]+)\]\((?P=url)\)',
-         'description': 'Linkified markdown URLs should use cleaner <http://example.com> syntax.'}
+         'description': 'Linkified markdown URLs should use cleaner <http://example.com> syntax.'},
+        {'pattern': 'https://zulip.readthedocs.io/en/latest/[a-zA-Z0-9]',
+         'exclude': ['docs/overview/contributing.md', 'docs/overview/readme-symlink.md'],
+         'include_only': set(['docs']),
+         'description': "Use relatve links (../foo/bar.html) to other documents in docs/",
+         },
+        {'pattern': '\][(][^#h]',
+         'include_only': set(['README.md', 'CONTRIBUTING.md']),
+         'description': "Use absolute links from docs served by GitHub",
+         },
     ]
     help_markdown_rules = markdown_rules + [
         {'pattern': '[a-z][.][A-Z]',
