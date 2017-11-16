@@ -303,11 +303,11 @@ class ZulipTestCase(TestCase):
                          **kwargs)
         return self.submit_reg_form_for_user(email, password, **kwargs)
 
-    def submit_reg_form_for_user(self, email, password, realm_name="Zulip Test",
-                                 realm_subdomain="zuliptest",
-                                 from_confirmation='', full_name=None, timezone='',
-                                 realm_in_root_domain=None, **kwargs):
-        # type: (Text, Text, Optional[Text], Optional[Text], Optional[Text], Optional[Text], Optional[Text], Optional[Text], **Any) -> HttpResponse
+    def submit_reg_form_for_user(self, email: Text, password: Text, realm_name: Optional[Text]="Zulip Test",
+                                 realm_subdomain: Optional[Text]="zuliptest",
+                                 from_confirmation: Optional[Text]='', full_name: Optional[Text]=None,
+                                 timezone: Optional[Text]='', realm_in_root_domain: Optional[Text]=None,
+                                 default_stream_groups: Optional[List[Text]]=[], **kwargs: Any) -> HttpResponse:
         """
         Stage two of the two-step registration process.
 
@@ -327,6 +327,7 @@ class ZulipTestCase(TestCase):
             'timezone': timezone,
             'terms': True,
             'from_confirmation': from_confirmation,
+            'default_stream_group': default_stream_groups,
         }
         if realm_in_root_domain is not None:
             payload['realm_in_root_domain'] = realm_in_root_domain
