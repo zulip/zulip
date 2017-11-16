@@ -28,14 +28,6 @@ fi
 version="$1"
 prefix="zulip-server-$version"
 
-if [ "$(uname)" = "Darwin" ]; then
-    TMPDIR=/tmp/voyager-build
-    rm -Rf "$TMPDIR"
-    mkdir -p "$TMPDIR"
-else
-    TMPDIR=$(mktemp -d)
-fi
-
 if ! git diff --exit-code >/dev/null; then
     set +x
     echo "ERROR: tarballs builds are based on a commit hash so your changes "
@@ -45,6 +37,7 @@ if ! git diff --exit-code >/dev/null; then
     exit 1
 fi
 
+TMPDIR=$(mktemp -d)
 TMP_CHECKOUT=$TMPDIR/$prefix
 TARBALL=$TMPDIR/$prefix.tar
 BASEDIR=$(pwd)
