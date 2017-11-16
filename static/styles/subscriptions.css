@@ -744,7 +744,7 @@ form#add_new_subscription {
 #subscription_overlay #stream-creation .modal-footer {
     position: absolute;
     bottom: 0;
-    width: calc(100% - 30px);
+    width: calc(100% - 27px);
 }
 
 #stream-creation .stream-creation-body {
