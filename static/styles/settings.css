@@ -849,7 +849,7 @@ input[type=checkbox].inline-block {
 }
 
 .emojiset_choices label {
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
     padding: 8px 0px 10px 0px;
 }
 
@@ -975,7 +975,7 @@ input[type=checkbox].inline-block {
     overflow-y: auto;
     overflow-x: hidden;
 
-    background-color: hsl(0, 0%, 98%);
+    background-color: hsla(0, 0%, 0%, 0.02);
 }
 
 #settings_page .table-striped thead th {
