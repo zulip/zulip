@@ -47,14 +47,14 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     ZulipLDAPUserPopulator, DevAuthBackend, GitHubAuthBackend, ZulipAuthMixin, \
     dev_auth_enabled, password_auth_enabled, github_auth_enabled, \
     require_email_format_usernames, SocialAuthMixin, AUTH_BACKEND_NAME_MAP, \
-    ZulipLDAPConfigurationError
+    ZulipLDAPConfigurationError, MediaWikiAuthBackend
 
 from zerver.views.auth import (maybe_send_to_registration,
                                login_or_register_remote_user,
                                _subdomain_token_salt)
 from version import ZULIP_VERSION
 
-from social_core.exceptions import AuthFailed, AuthStateForbidden
+from social_core.exceptions import AuthFailed, AuthStateForbidden, AuthException
 from social_django.strategy import DjangoStrategy
 from social_django.storage import BaseDjangoStorage
 from social_core.backends.github import GithubOrganizationOAuth2, GithubTeamOAuth2, \
@@ -340,6 +340,19 @@ class AuthBackendTest(ZulipTestCase):
                             good_kwargs=good_kwargs,
                             bad_kwargs=bad_kwargs)
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.MediaWikiAuthBackend',))
+    def test_mediawiki_backend(self):
+        # type: () -> None
+        user = self.example_user('hamlet')
+        email = user.email
+        good_kwargs = dict(response=dict(email=email), return_data=dict(),
+                           realm=get_realm('zulip'))
+        bad_kwargs = dict(response=dict(email=email), return_data=dict(),
+                          realm=get_realm('acme'))
+        self.verify_backend(MediaWikiAuthBackend(),
+                            good_kwargs=good_kwargs,
+                            bad_kwargs=bad_kwargs)
+
 class SocialAuthMixinTest(ZulipTestCase):
     def test_social_auth_mixing(self) -> None:
         mixin = SocialAuthMixin()
@@ -347,6 +360,109 @@ class SocialAuthMixinTest(ZulipTestCase):
             mixin.get_email_address()
         with self.assertRaises(NotImplementedError):
             mixin.get_full_name()
+
+class MediaWikiBackendTest(ZulipTestCase):
+    def setUp(self):
+        # type: () -> None
+        self.user_profile = self.example_user('hamlet')
+        self.email = self.user_profile.email
+        self.name = 'Hamlet'
+        self.backend = MediaWikiAuthBackend()
+        self.backend.strategy = DjangoStrategy(storage=BaseDjangoStorage())
+        self.user_profile.backend = self.backend
+        self.backend.strategy.authenticate = lambda *a, **k: self.user_profile
+
+        rf = RequestFactory()
+        request = rf.get('/complete/mediawiki/')
+        request.session = self.client.session
+        request.get_host = lambda: 'zulip.testserver'
+        request.user = self.user_profile
+        self.backend.strategy.request = request
+
+    def test_get_user_details(self) -> None:
+        access_token = {'oauth_token': 'owner_key',
+                        'oauth_token_secret': 'owner_secret'}
+
+        # Test exception when jwt token is invalid
+        identity = {'iss': 'fake'}
+        with mock.patch('requests.post'), \
+                mock.patch('jwt.decode', side_effect=jwt.InvalidTokenError):
+            msg = 'An error occurred while trying to read json content:'
+            with self.assertRaisesMessage(AuthException, msg):
+                self.backend.get_user_details(access_token)
+
+        # Test exception when issuer is incorrect
+        identity = {'iss': 'fake'}
+        with mock.patch('requests.post'), \
+                mock.patch('jwt.decode', return_value=identity):
+            msg = 'Unexpected issuer , expected meta.wikimedia.org'
+            with self.assertRaisesMessage(AuthException, msg):
+                self.backend.get_user_details(access_token)
+
+        # Test exception timestamps are wrong
+        identity = {'iss': 'http://meta.wikimedia.org',
+                    'iat': '100'}
+        with mock.patch('requests.post'), \
+                mock.patch('jwt.decode', return_value=identity), \
+                mock.patch('time.time', return_value=10):
+            msg = 'Identity issued 90.0 seconds in the future'
+            with self.assertRaisesMessage(AuthException, msg):
+                self.backend.get_user_details(access_token)
+
+        # Test exception nonce is invalid
+        identity = {'iss': 'http://meta.wikimedia.org',
+                    'iat': '100',
+                    'nonce': 'invalid'}
+        response = mock.MagicMock()
+        response.request.headers = {'Authorization': 'oauth_nonce="nonce"'}
+        with mock.patch('requests.post', return_value=response), \
+                mock.patch('jwt.decode', return_value=identity), \
+                mock.patch('time.time', return_value=200):
+            msg = 'Replay attack detected: invalid != nonce'
+            with self.assertRaisesMessage(AuthException, msg):
+                self.backend.get_user_details(access_token)
+
+        # Test success
+        identity = {'iss': 'http://meta.wikimedia.org',
+                    'iat': '100',
+                    'nonce': 'nonce'}
+        response = mock.MagicMock()
+        response.request.headers = {'Authorization': 'oauth_nonce="nonce"'}
+        with mock.patch('requests.post', return_value=response), \
+                mock.patch('jwt.decode', return_value=identity), \
+                mock.patch('time.time', return_value=200):
+            actual_identity = self.backend.get_user_details(access_token)
+            self.assertDictEqual(identity, actual_identity)
+
+    def test_do_auth(self) -> None:
+        access_token = {'oauth_token': 'owner_key',
+                        'oauth_token_secret': 'owner_secret'}
+
+        # Test success
+        identity = {'iss': 'http://meta.wikimedia.org',
+                    'iat': '100',
+                    'nonce': 'nonce',
+                    'email': self.user_profile.email,
+                    'realname': self.user_profile.full_name}
+        response = mock.MagicMock()
+        response.request.headers = {'Authorization': 'oauth_nonce="nonce"'}
+        with mock.patch('requests.post', return_value=response), \
+                mock.patch('jwt.decode', return_value=identity), \
+                mock.patch('time.time', return_value=200):
+            result = self.backend.do_auth(access_token)
+            self.assertEqual(result.status_code, 302)
+
+            session = self.backend.strategy.request.session
+            user_profile_id = get_session_dict_user(session)
+            self.assertEqual(user_profile_id, self.user_profile.id)
+
+    def test_get_email_address_returns_none(self) -> None:
+        email_address = self.backend.get_email_address(response={})
+        self.assertIsNone(email_address)
+
+    def test_get_full_name_returns_empty_string(self) -> None:
+        full_name = self.backend.get_full_name(response={})
+        self.assertEqual(full_name, '')
 
 class GitHubAuthBackendTest(ZulipTestCase):
     def setUp(self) -> None:
