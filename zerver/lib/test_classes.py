@@ -19,7 +19,7 @@ from zerver.views.users import add_service
 from zerver.lib.actions import (
     check_send_message, create_stream_if_needed, bulk_add_subscriptions,
     get_display_recipient, bulk_remove_subscriptions, do_create_user,
-    check_send_stream_message,
+    check_send_stream_message, gather_subscriptions
 )
 
 from zerver.lib.stream_subscription import (
@@ -563,6 +563,15 @@ class ZulipTestCase(TestCase):
         result = self.client_post("/api/v1/users/me/subscriptions", post_data,
                                   **kw)
         return result
+
+    def check_user_subscribed_only_to_streams(self, user_name: Text, streams: List[Stream]) -> None:
+        streams = sorted(streams, key=lambda x: x.name)
+        subscribed_streams = gather_subscriptions(self.nonreg_user(user_name))[0]
+
+        self.assertEqual(len(subscribed_streams), len(streams))
+
+        for x, y in zip(subscribed_streams, streams):
+            self.assertEqual(x["name"], y.name)
 
     def send_json_payload(self, user_profile, url, payload, stream_name=None, **post_params):
         # type: (UserProfile, Text, Union[Text, Dict[str, Any]], Optional[Text], **Any) -> Message
