@@ -35,11 +35,13 @@ def user_groups_in_realm_serialized(realm):
                  membership.user_group.description)
         groups[group].append(membership.user_profile_id)
 
-    return [dict(id=group[0],
-                 name=group[1],
-                 description=group[2],
-                 members=sorted(members))
-            for group, members in groups.items()]
+    user_groups = [dict(id=group[0],
+                        name=group[1],
+                        description=group[2],
+                        members=sorted(members))
+                   for group, members in groups.items()]
+    user_groups.sort(key=lambda item: item['id'])
+    return user_groups
 
 def get_user_groups(user_profile):
     # type: (UserProfile) -> List[UserGroup]

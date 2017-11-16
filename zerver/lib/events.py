@@ -552,6 +552,28 @@ def apply_event(state, event, user_profile, client_gravatar, include_subscribers
     elif event['type'] == "update_global_notifications":
         assert event['notification_name'] in UserProfile.notification_setting_types
         state[event['notification_name']] = event['setting']
+    elif event['type'] == "user_group":
+        if event['op'] == 'add':
+            state['realm_user_groups'].append(event['group'])
+            state['realm_user_groups'].sort(key=lambda group: group['id'])
+        elif event['op'] == 'update':
+            for user_group in state['realm_user_groups']:
+                if user_group['id'] == event['group_id']:
+                    user_group.update(event['data'])
+        elif event['op'] == 'add_members':
+            for user_group in state['realm_user_groups']:
+                if user_group['id'] == event['group_id']:
+                    user_group['members'].extend(event['user_ids'])
+                    user_group['members'].sort()
+        elif event['op'] == 'remove_members':
+            for user_group in state['realm_user_groups']:
+                if user_group['id'] == event['group_id']:
+                    members = set(user_group['members'])
+                    user_group['members'] = list(members - set(event['user_ids']))
+                    user_group['members'].sort()
+        elif event['op'] == 'remove':
+            state['realm_user_groups'] = [ug for ug in state['realm_user_groups']
+                                          if ug['id'] != event['group_id']]
     else:
         raise AssertionError("Unexpected event type %s" % (event['type'],))
 

@@ -49,7 +49,7 @@ from zerver.lib.topic_mutes import (
     add_topic_mute,
     remove_topic_mute,
 )
-from zerver.lib.user_groups import create_user_group
+from zerver.lib.user_groups import create_user_group, access_user_group_by_id
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
     RealmDomain, \
     Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, \
@@ -4286,32 +4286,76 @@ def do_update_user_custom_profile_data(user_profile, data):
                              field_id=field['id'],
                              defaults={'value': field['value']})
 
+def do_send_create_user_group_event(user_group: UserGroup, members: List[UserProfile]) -> None:
+    event = dict(type="user_group",
+                 op="add",
+                 group=dict(name=user_group.name,
+                            members=[member.id for member in members],
+                            description=user_group.description,
+                            id=user_group.id,
+                            ),
+                 )
+    send_event(event, active_user_ids(user_group.realm_id))
+
 def check_add_user_group(realm, name, initial_members, description):
     # type: (Realm, Text, List[UserProfile], Text) -> None
     try:
-        create_user_group(name, initial_members, realm, description=description)
+        user_group = create_user_group(name, initial_members, realm, description=description)
+        do_send_create_user_group_event(user_group, initial_members)
     except django.db.utils.IntegrityError:
         raise JsonableError(_("User group '%s' already exists." % (name,)))
+
+def do_send_user_group_update_event(user_group: UserGroup, data: Dict[str, Any]) -> None:
+    event = dict(type="user_group", op='update', group_id=user_group.id, data=data)
+    send_event(event, active_user_ids(user_group.realm_id))
 
 def do_update_user_group_name(user_group, name):
     # type: (UserGroup, Text) -> None
     user_group.name = name
     user_group.save(update_fields=['name'])
+    do_send_user_group_update_event(user_group, dict(name=name))
 
 def do_update_user_group_description(user_group, description):
     # type: (UserGroup, Text) -> None
     user_group.description = description
     user_group.save(update_fields=['description'])
+    do_send_user_group_update_event(user_group, dict(description=description))
 
-def bulk_add_members_to_user_group(user_group_id, user_profiles):
-    # type: (int, List[UserProfile]) -> None
-    memberships = [UserGroupMembership(user_group_id=user_group_id,
+def do_send_user_group_members_update_event(event_name: Text,
+                                            user_group: UserGroup,
+                                            user_ids: List[int]) -> None:
+    event = dict(type="user_group",
+                 op=event_name,
+                 group_id=user_group.id,
+                 user_ids=user_ids)
+    send_event(event, active_user_ids(user_group.realm_id))
+
+def bulk_add_members_to_user_group(user_group, user_profiles):
+    # type: (UserGroup, List[UserProfile]) -> None
+    memberships = [UserGroupMembership(user_group_id=user_group.id,
                                        user_profile=user_profile)
                    for user_profile in user_profiles]
     UserGroupMembership.objects.bulk_create(memberships)
 
-def remove_members_from_user_group(user_group_id, user_profiles):
-    # type: (int, List[UserProfile]) -> None
+    user_ids = [up.id for up in user_profiles]
+    do_send_user_group_members_update_event('add_members', user_group, user_ids)
+
+def remove_members_from_user_group(user_group, user_profiles):
+    # type: (UserGroup, List[UserProfile]) -> None
     UserGroupMembership.objects.filter(
-        user_group_id=user_group_id,
+        user_group_id=user_group.id,
         user_profile__in=user_profiles).delete()
+
+    user_ids = [up.id for up in user_profiles]
+    do_send_user_group_members_update_event('remove_members', user_group, user_ids)
+
+def do_send_delete_user_group_event(user_group_id: int, realm_id: int) -> None:
+    event = dict(type="user_group",
+                 op="remove",
+                 group_id=user_group_id)
+    send_event(event, active_user_ids(realm_id))
+
+def check_delete_user_group(user_group_id: int, realm: Realm) -> None:
+    user_group = access_user_group_by_id(user_group_id, realm)
+    user_group.delete()
+    do_send_delete_user_group_event(user_group_id, realm.id)

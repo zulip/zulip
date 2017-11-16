@@ -14,7 +14,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.models import (
     get_client, get_realm, get_stream_recipient, get_stream, get_user,
     Message, RealmDomain, Recipient, UserMessage, UserPresence, UserProfile,
-    Realm, Subscription, Stream, flush_per_request_caches,
+    Realm, Subscription, Stream, flush_per_request_caches, UserGroup
 )
 
 from zerver.lib.actions import (
@@ -75,6 +75,12 @@ from zerver.lib.actions import (
     log_event,
     lookup_default_stream_groups,
     notify_realm_custom_profile_fields,
+    check_add_user_group,
+    do_update_user_group_name,
+    do_update_user_group_description,
+    bulk_add_members_to_user_group,
+    remove_members_from_user_group,
+    check_delete_user_group,
 )
 from zerver.lib.events import (
     apply_events,
@@ -984,6 +990,86 @@ class EventsRegisterTest(ZulipTestCase):
 
         events = self.do_test(lambda: do_remove_alert_words(self.user_profile, ["alert_word"]))
         error = alert_words_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_user_group_events(self) -> None:
+        user_group_add_checker = self.check_events_dict([
+            ('type', equals('user_group')),
+            ('op', equals('add')),
+            ('group', check_dict_only([
+                ('id', check_int),
+                ('name', check_string),
+                ('members', check_list(check_int)),
+                ('description', check_string),
+            ])),
+        ])
+        othello = self.example_user('othello')
+        zulip = get_realm('zulip')
+        events = self.do_test(lambda: check_add_user_group(zulip, 'backend', [othello],
+                                                           'Backend team'))
+        error = user_group_add_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        # Test name update
+        user_group_update_checker = self.check_events_dict([
+            ('type', equals('user_group')),
+            ('op', equals('update')),
+            ('group_id', check_int),
+            ('data', check_dict_only([
+                ('name', check_string),
+            ])),
+        ])
+        backend = UserGroup.objects.get(name='backend')
+        events = self.do_test(lambda: do_update_user_group_name(backend, 'backendteam'))
+        error = user_group_update_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        # Test description update
+        user_group_update_checker = self.check_events_dict([
+            ('type', equals('user_group')),
+            ('op', equals('update')),
+            ('group_id', check_int),
+            ('data', check_dict_only([
+                ('description', check_string),
+            ])),
+        ])
+        description = "Backend team to deal with backend code."
+        events = self.do_test(lambda: do_update_user_group_description(backend, description))
+        error = user_group_update_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        # Test add members
+        user_group_add_member_checker = self.check_events_dict([
+            ('type', equals('user_group')),
+            ('op', equals('add_members')),
+            ('group_id', check_int),
+            ('user_ids', check_list(check_int)),
+        ])
+        hamlet = self.example_user('hamlet')
+        events = self.do_test(lambda: bulk_add_members_to_user_group(backend, [hamlet]))
+        error = user_group_add_member_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        # Test remove members
+        user_group_remove_member_checker = self.check_events_dict([
+            ('type', equals('user_group')),
+            ('op', equals('remove_members')),
+            ('group_id', check_int),
+            ('user_ids', check_list(check_int)),
+        ])
+        hamlet = self.example_user('hamlet')
+        events = self.do_test(lambda: remove_members_from_user_group(backend, [hamlet]))
+        error = user_group_remove_member_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        # Test delete event
+        user_group_remove_checker = self.check_events_dict([
+            ('type', equals('user_group')),
+            ('op', equals('remove')),
+            ('group_id', check_int),
+        ])
+        events = self.do_test(lambda: check_delete_user_group(backend.id, backend.realm))
+        error = user_group_remove_checker('events[0]', events[0])
         self.assert_on_error(error)
 
     def test_default_stream_groups_events(self):
