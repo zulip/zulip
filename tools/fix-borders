@@ -1,0 +1,109 @@
+#!/usr/bin/env python3
+import glob
+import re
+
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
+from lib.css_parser import parse, CssParserException
+
+def is_border(declaration):
+    color_properties = [
+        'border',
+        'border-bottom',
+        'border-left',
+        'border-right',
+        'border-top',
+    ]
+
+    if declaration.css_property not in color_properties: 
+        return False
+
+    value = declaration.css_value.text().strip()
+    if value in ['none', 'inherit']:
+        return False
+
+    if 'transparent' in value:
+        return False
+
+    if '!important' in value:
+        return False
+
+    if '\n' in value:
+        return False
+
+    if 'hsl' in value or '#' in value:
+        return True
+
+    return False
+
+def make_declaration(prop, value):
+    class DeclarationLite:
+        def text(self):
+            return self.s
+
+    declaration = DeclarationLite()
+    declaration.s = '%s: %s;\n' % (prop, value)
+    return declaration
+
+def process_file(fn, dct):
+    # type: (str) -> None
+    text = open(fn).read()
+    section_list = parse(text)
+    for section in section_list.sections:
+        if hasattr(section, 'declaration_block'):
+            new_declarations =  []
+            for declaration in section.declaration_block.declarations:
+                if not is_border(declaration):
+                    new_declarations.append(declaration)
+                    continue
+
+                prop = declaration.css_property
+                value = declaration.css_value.text()
+                m = re.match('(.*?)(hsl.*)', value)
+                if m:
+                    parms, color = m.groups()
+                else:
+                    m = re.match('(.*?)(#[0-9a-fA-F].*)', value)
+                    parms, color = m.groups()
+
+                parms = parms.strip()
+                declaration.css_value.value.s = parms
+                new_declarations.append(declaration)
+
+                declaration = make_declaration(
+                    prop + '-color',
+                    color
+                )
+                new_declarations.append(declaration)
+
+            section.declaration_block.declarations = new_declarations
+
+    open(fn, 'w').write(section_list.text())
+
+def process_files(filenames):
+    dct = {}
+
+    for fn in filenames:
+        if 'portico' in fn:
+            continue
+        if 'landing-page' in fn:
+            continue
+        if 'pygments' in fn:
+            continue
+        if 'stats' in fn:
+            continue
+        process_file(fn, dct)
+
+    def print_colors():
+        for k in sorted(dct):
+            print(k)
+            for selector in dct[k]:
+                print('    ' + selector)
+            print()
+
+if __name__ == '__main__':
+    filenames = glob.glob('static/styles/*.css')
+    process_files(filenames)
+

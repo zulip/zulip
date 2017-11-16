@@ -1,0 +1,212 @@
+html,
+body {
+    background-color: #212d3b;
+    color: #dddeee;
+
+    -webkit-font-smoothing: antialiased;
+}
+
+.popover a {
+    color: #dddeee;
+}
+
+#tab_bar_underpadding,
+.floating_recipient .message-header-wrapper,
+.column-middle,
+#compose {
+    background-color: #212d3b;
+}
+
+.dark .message_label_clickable.stream_label,
+.dark .stream_label {
+    color: #212d3b;
+}
+
+.compose-content,
+.message_list .recipient_row,
+.app-main .column-middle,
+.messagebox,
+.right-sidebar,
+.sender_name,
+ul.filters a,
+.message_header_stream a.message_label_clickable,
+.header,
+#search_query,
+.draft-row .draft-info-box,
+.dark_background a, .dark_background a:hover, a.dark_background:hover, .dark_background,
+.private-message .messagebox,
+.dropdown-menu a,
+.subscriptions-container .display-type .stream-info-title,
+#settings_page .content-wrapper #settings_content,
+#settings_page .sidebar .tab-container,
+#settings_page,
+.informational-overlays .overlay-content {
+    background-color: transparent;
+    color: inherit;
+}
+
+/* these are converting grey things to "new grey" */
+.sidebar-title,
+.recipient_row_date,
+.stream-row .sub-info-box .top-bar .subscriber-count,
+.stream-row .sub-info-box .top-bar .message-count {
+    color: inherit;
+    opacity: 0.5;
+}
+
+.new-style .button,
+input[type="text"],
+input[type="email"],
+textarea,
+.new-style .tab-switcher .ind-tab:not(.selected) {
+    background-color: hsla(0, 0%, 0%, 0.2);
+    border-color: hsla(0, 0%, 0%, 0.6);
+    color: inherit;
+}
+
+.new-style .tab-switcher .ind-tab.selected,
+.table-striped thead th {
+    background-color: hsla(0, 0%, 0%, 0.5);
+    border-color: hsla(0, 0%, 0%, 0.9);
+}
+
+.new-style button.button:focus,
+input[type="text"]:focus,
+input[type="email"]:focus,
+textarea:focus,
+textarea.new_message_textarea:focus, .compose_table .recipient_box:focus {
+    border-color: hsla(0, 0%, 0%, 0.9);
+}
+
+.message-header-contents,
+.message_header_private_message .message-header-contents,
+#tab_list li.active {
+    background: hsla(0, 0%, 0%, 0.2);
+    border-color: transparent;
+}
+
+.message_row,
+.compose-content,
+.header,
+.message_list .recipient_row,
+.navbar-search,
+textarea.new_message_textarea,
+.compose_table .recipient_box,
+.message_row,
+.draft-row .draft-info-box {
+    border-color: hsla(0, 0%, 0%, 0.2);
+}
+
+#navbar-buttons ul.nav .dropdown-toggle, #navbar-buttons ul.nav li.active .dropdown-toggle {
+    color: hsla(0, 0%, 0%, 0.8);
+}
+
+.overlay {
+    background-color: hsla(236, 18%, 15%, 0.75);
+}
+
+.overlay .overlay-content > div {
+    background: #212d3b;
+}
+
+.overlay .flex.overlay-content > div,
+#settings_page,
+.informational-overlays .overlay-content {
+    box-shadow: 0px 0px 30px hsl(235, 17%, 8%);
+}
+
+.dropdown .dropdown-menu,
+.popover {
+    background: hsl(235, 18%, 11%);
+}
+
+.dropdown .dropdown-menu li.divider,
+.popover hr,
+hr {
+    color: #212d3b;
+    opacity: 0.2;
+}
+
+.nav .dropdown-menu:after {
+    border-bottom-color: hsl(235, 18%, 9%);
+}
+
+li.active-filter, li.active-sub-filter {
+    background-color: hsla(199, 33%, 46%, 0.2);
+}
+
+#global_filters li:hover, #stream_filters li:hover,
+#group-pms li:hover, #user_presences li:hover {
+    background-color: hsla(136, 25%, 73%, 0.2);
+}
+
+#stream_filters li.active-sub-filter:hover {
+    background-color: hsla(136, 25%, 73%, 0.5);
+}
+
+.floating_recipient .recipient_row {
+    border-top: none;
+}
+
+.overlay {
+    background-color: hsla(0, 0%, 0%, 0%, 0.8);
+}
+
+.drafts-header,
+.nav > li > a:hover,
+.subscriptions-header,
+.grey-box,
+.stream-email,
+#settings_page .content-wrapper .settings-header,
+#settings_page .sidebar li.active,
+.stream-row.active,
+.table-striped tbody tr:nth-child(odd) td, .table-striped tbody tr:nth-child(odd) th,
+.modal-footer {
+    border-color: hsla(0, 0%, 0%, 0.2);
+    background-color: hsla(0, 0%, 0%, 0.2);
+}
+
+.modal-footer {
+    -webkit-box-shadow: inset 0 1px 0 hsla(0, 0%, 0%, 0.2);
+    box-shadow: inset 0 1px 0 hsla(0, 0%, 0%, 0.2);
+}
+
+.subscriptions-container .right .display-type,
+.stream-row,
+.subscriptions-container .left .search-container,
+.subscriptions-container .left,
+.subscriber-list-box,
+.subscriber-list tr,
+#subscription_overlay ul.grey-box li,
+#settings_page .sidebar li,
+#settings_page .sidebar,
+#settings_page .sidebar li.border-top,
+.table-bordered,
+.table-bordered th, .table-bordered td {
+    border-color: hsla(0, 0%, 0%, 0.2);
+}
+
+.draft-row .draft-info-box {
+    border-top: none;
+}
+
+.private-message .messagebox, .message_header_private_message .message-header-contents {
+    box-shadow: none;
+}
+
+.draft-row .message_header_private_message .message_label_clickable {
+    padding: 4px 6px 3px 6px;
+    color: inherit;
+}
+
+.dark_background a:hover {
+    background: hsl(0, 0%, 27%);
+}
+
+.nav-list > li > a, .nav-list .nav-header {
+    text-shadow: none;
+}
+
+.message-info-popover .popover-title {
+    border-bottom: none;
+}

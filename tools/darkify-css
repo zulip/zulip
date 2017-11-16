@@ -1,0 +1,58 @@
+#!/usr/bin/env python3
+import glob
+import colorsys
+import re
+
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
+from lib.css_parser import parse
+
+def dark_modify(s):
+    if s.startswith('#') or s.startswith('.'):
+        return '.dark-mode ' + s
+    elif s == 'body':
+        return s + '.dark-mode'
+    else:
+        return '.dark-mode ' + s
+
+def process_file(fn):
+    dct = {}
+    text = open(fn).read()
+    section_list = parse(text)
+    for section in section_list.sections:
+        if hasattr(section, 'declaration_block'):
+            for declaration in section.declaration_block.declarations:
+                prop = declaration.css_property
+                value = declaration.css_value.text().strip()
+
+                selectors = [
+                    sel.text().strip()
+                    for sel in section.selector_list.selectors
+                ]
+                sig = (value, prop)
+                if sig not in dct:
+                    dct[sig] = []
+                dct[sig] += selectors
+
+
+    def write_dark():
+        text = '\n\n/*\n   SOURCE FILE: %s\n*/\n' % (fn,)
+        for k in sorted(dct):
+            selectors = dct[k]
+            lst = ',\n'.join(dark_modify(s) for s in sorted(selectors)) + ' {\n'
+            value, prop = k
+            text += lst
+            text += '    %s: %s;\n' % (prop, value)
+            text += '}\n\n'
+        text = text.rstrip()
+        out_fn = 'static/styles/manual-dark.css'
+
+        open(out_fn, 'a').write(text)
+
+    write_dark()
+
+if __name__ == '__main__':
+    process_file('static/styles/dark.css')
+

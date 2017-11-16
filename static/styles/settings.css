@@ -143,7 +143,8 @@ label {
 }
 
 .table tbody {
-    border-bottom: 1px solid hsl(0, 0%, 86%);
+    border-bottom: 1px solid;
+    border-bottom-color: hsl(0, 0%, 86%);
 }
 
 .table-condensed td {
@@ -236,7 +237,8 @@ td .button {
     position: relative;
     display: block;
     background-color: hsl(46, 63%, 95%);
-    border: 1px solid hsl(49, 20%, 84%);
+    border: 1px solid;
+    border-color: hsl(49, 20%, 84%);
     border-radius: 4px;
     padding: 10px;
     margin: 10px 0px;
@@ -259,7 +261,8 @@ td .button {
     display: inline-block;
     padding: 5px;
     background-color: hsl(0, 0%, 100%);
-    border: 1px solid hsl(0, 0%, 80%);
+    border: 1px solid;
+    border-color: hsl(0, 0%, 80%);
     border-radius: 3px;
     transition: box-shadow 0.3s ease;
     min-width: 208px;
@@ -339,7 +342,8 @@ input[type=checkbox].inline-block {
 }
 
 #attachments_list .attachment-item {
-    border-bottom: 1px solid hsl(0, 0%, 93%);
+    border-bottom: 1px solid;
+    border-bottom-color: hsl(0, 0%, 93%);
 }
 
 #attachments_list .attachment-item .list-container {
@@ -402,8 +406,9 @@ input[type=checkbox].inline-block {
     border-radius: 4px;
     overflow: hidden;
 
-    border: 1px solid hsl(0, 0%, 66%);
+    border: 1px solid;
 
+    border-color: hsl(0, 0%, 66%);
     transition: all 0.2s ease;
 }
 
@@ -419,7 +424,8 @@ input[type=checkbox].inline-block {
 }
 
 #attachments_list .attachment-messages .ind-message:hover {
-    border: 1px solid hsl(0, 0%, 53%);
+    border: 1px solid;
+    border-color: hsl(0, 0%, 53%);
 }
 
 #attachments_list .attachment-messages .ind-message:hover .message-id {
@@ -687,7 +693,8 @@ input[type=checkbox].inline-block {
     margin: 5px;
 
     background-color: hsl(0, 0%, 100%);
-    border: 1px solid hsl(0, 0%, 86%);
+    border: 1px solid;
+    border-color: hsl(0, 0%, 86%);
     border-radius: 4px;
     box-sizing: border-box;
 
@@ -849,7 +856,8 @@ input[type=checkbox].inline-block {
 }
 
 .emojiset_choices label {
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid;
+    border-bottom-color: #ddd;
     padding: 8px 0px 10px 0px;
 }
 
@@ -923,13 +931,15 @@ input[type=checkbox].inline-block {
     height: 100%;
     overflow-y: auto;
     border-top-left-radius: 4px;
-    border-right: 1px solid hsl(0, 0%, 93%);
+    border-right: 1px solid;
+    border-right-color: hsl(0, 0%, 93%);
 }
 
 #settings_page .sidebar .tab-container {
     background-color: hsl(0, 0%, 100%);
     padding: 6px;
-    border-bottom: 1px solid hsl(0, 0%, 86%);
+    border-bottom: 1px solid;
+    border-bottom-color: hsl(0, 0%, 86%);
 }
 
 #settings_page .sidebar .settings-list {
@@ -948,7 +958,8 @@ input[type=checkbox].inline-block {
 #settings_page .content-wrapper .settings-header {
     width: 100%;
     height: 43px;
-    border-bottom: 1px solid hsl(0, 0%, 86%);
+    border-bottom: 1px solid;
+    border-bottom-color: hsl(0, 0%, 86%);
 }
 
 #settings_page .content-wrapper .settings-header h1 .section {
@@ -958,7 +969,8 @@ input[type=checkbox].inline-block {
 
 #settings_page .settings-header.mobile {
     display: none;
-    border-bottom: 1px solid hsl(0, 0%, 86%);
+    border-bottom: 1px solid;
+    border-bottom-color: hsl(0, 0%, 86%);
 }
 
 .settings-header.mobile .icon-vector-chevron-left {
@@ -1023,8 +1035,9 @@ input[type=checkbox].inline-block {
     height: calc(100% - 45px);
 
     background-color: hsl(0, 0%, 100%);
-    border-left: 1px solid hsl(0, 0%, 86%);
+    border-left: 1px solid;
 
+    border-left-color: hsl(0, 0%, 86%);
     pointer-events: none;
     transition: all 0.3s ease;
 }
@@ -1056,7 +1069,8 @@ input[type=checkbox].inline-block {
 #settings_page .form-sidebar .title {
     background-color: hsl(0, 0%, 98%);
     padding: 10px 20px;
-    border-bottom: 1px solid hsl(0, 0%, 86%);
+    border-bottom: 1px solid;
+    border-bottom-color: hsl(0, 0%, 86%);
 }
 
 #settings_page .form-sidebar .title h1 {
@@ -1082,7 +1096,8 @@ input[type=checkbox].inline-block {
     text-transform: uppercase;
 
     background-color: hsl(180, 6%, 93%);
-    border-bottom: 1px solid hsl(0, 0%, 86%);
+    border-bottom: 1px solid;
+    border-bottom-color: hsl(0, 0%, 86%);
 }
 
 #settings_page .settings-header {
@@ -1148,15 +1163,18 @@ input[type=text]#settings_search {
     font-size: 0.9rem;
     padding: 3px 5px;
     outline: none;
-    border: 1px solid hsl(0, 0%, 86%);
+    border: 1px solid;
+    border-color: hsl(0, 0%, 86%);
     border-radius: 4px;
 }
 
 input[type=text]:focus#settings_search {
     box-shadow: none;
-    border: 1px solid hsl(0, 0%, 73%);
+    border: 1px solid;
 
-    border-bottom: 1px solid hsl(0, 0%, 86%);
+    border-color: hsl(0, 0%, 73%);
+    border-bottom: 1px solid;
+    border-bottom-color: hsl(0, 0%, 86%);
 }
 
 input[type=text]#settings_search {
@@ -1175,11 +1193,13 @@ input[type=text]#settings_search {
     outline: none;
     cursor: pointer;
     transition: all 0.2s ease;
-    border-bottom: 1px solid hsl(0, 0%, 93%);
+    border-bottom: 1px solid;
+    border-bottom-color: hsl(0, 0%, 93%);
 }
 
 #settings_page .sidebar li.border-top {
-    border-top: 1px solid hsl(0, 0%, 93%);
+    border-top: 1px solid;
+    border-top-color: hsl(0, 0%, 93%);
     border-bottom: none;
 }
 

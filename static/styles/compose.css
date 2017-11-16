@@ -1,6 +1,7 @@
 .compose-content {
     background-color: hsl(0, 0%, 100%);
-    border-top: 1px solid hsl(0, 0%, 93%);
+    border-top: 1px solid;
+    border-top-color: hsl(0, 0%, 93%);
     -webkit-transition: background-color 200ms linear;
     -moz-transition: background-color 200ms linear;
     -o-transition: background-color 200ms linear;
@@ -180,8 +181,10 @@ table.compose_table {
     margin-right: 250px;
     position: relative;
 
-    border-left: 1px solid hsl(0, 0%, 93%);
-    border-right: 1px solid hsl(0, 0%, 93%);
+    border-left: 1px solid;
+    border-left-color: hsl(0, 0%, 93%);
+    border-right: 1px solid;
+    border-right-color: hsl(0, 0%, 93%);
 }
 
 #compose_close {
@@ -250,9 +253,12 @@ table.compose_table {
 #out-of-view-notification {
     background: hsl(112, 98%, 77%);
     background: hsla(105, 42%, 70%, 0.95);
-    border-bottom: 1px solid #ffffff;
-    border-right: 1px solid #ffffff;
-    border-left: 1px solid #ffffff;
+    border-bottom: 1px solid;
+    border-bottom-color: #ffffff;
+    border-right: 1px solid;
+    border-right-color: #ffffff;
+    border-left: 1px solid;
+    border-left-color: #ffffff;
     border-radius: 0px 0px 2px 2px;
     font-weight: 400;
     font-size: 12px;
@@ -298,7 +304,8 @@ textarea.new_message_textarea {
 
 textarea.new_message_textarea,
 .compose_table .recipient_box {
-    border: 1px solid hsl(0, 0%, 86%);
+    border: 1px solid;
+    border-color: hsl(0, 0%, 86%);
     box-shadow: none;
     -webkit-box-shadow: none;
     transition: border 0.2s ease;
@@ -306,7 +313,8 @@ textarea.new_message_textarea,
 
 textarea.new_message_textarea:focus,
 .compose_table .recipient_box:focus {
-    border: 1px solid hsl(0, 0%, 66%);
+    border: 1px solid;
+    border-color: hsl(0, 0%, 66%);
     box-shadow: none;
     -webkit-box-shadow: none;
 }
@@ -366,7 +374,8 @@ input.recipient_box {
     padding-bottom: 3px;
     margin-right: 7px;
     font-weight: 600;
-    border: 1px solid hsl(170, 68%, 41%);
+    border: 1px solid;
+    border-color: hsl(170, 68%, 41%);
     background-color: hsl(170, 47%, 54%);
     color: hsl(0, 0%, 100%);
 }
@@ -444,7 +453,8 @@ input.recipient_box {
 
     margin-top: 5px;
 
-    border: 1px solid hsl(0, 0%, 66%);
+    border: 1px solid;
+    border-color: hsl(0, 0%, 66%);
     border-radius: 4px;
     background-color: hsl(0, 0%, 98%);
     cursor: not-allowed;

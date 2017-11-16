@@ -1,0 +1,1076 @@
+
+
+/*
+   SOURCE FILE: static/third/bootstrap/css/bootstrap.css
+*/
+.dark-mode .navbar-inverse .navbar-search .search-query.focused,
+.dark-mode .navbar-inverse .navbar-search .search-query:focus {
+    box-shadow: 0 0 3px hsla(0, 0%, 100%, 0.15);
+}
+
+.dark-mode input:focus:required:invalid:focus,
+.dark-mode select:focus:required:invalid:focus,
+.dark-mode textarea:focus:required:invalid:focus {
+    box-shadow: 0 0 6px hsl(180, 82%, 24%);
+}
+
+.dark-mode .navbar .btn-navbar .icon-bar {
+    box-shadow: 0 1px 0 hsla(0, 0%, 100%, 0.25);
+}
+
+.dark-mode .pagination ul {
+    box-shadow: 0 1px 2px hsla(0, 0%, 100%, 0.05);
+}
+
+.dark-mode .thumbnail {
+    box-shadow: 0 1px 3px hsla(0, 0%, 100%, 0.055);
+}
+
+.dark-mode .img-polaroid {
+    box-shadow: 0 1px 3px hsla(0, 0%, 100%, 0.1);
+}
+
+.dark-mode .navbar-inner {
+    box-shadow: 0 1px 4px hsla(0, 0%, 100%, 0.065);
+}
+
+.dark-mode a.thumbnail:hover {
+    box-shadow: 0 1px 4px hsla(210, 100%, 63%, 0.25);
+}
+
+.dark-mode .modal {
+    box-shadow: 0 3px 7px hsla(0, 0%, 100%, 0.3);
+}
+
+.dark-mode .dropdown-menu,
+.dark-mode .popover {
+    box-shadow: 0 5px 10px hsla(0, 0%, 100%, 0.2);
+}
+
+.dark-mode .navbar-inner {
+    border: 1px solid hsl(0, 0%, 25%);
+}
+
+.dark-mode .dropdown-menu,
+.dark-mode .img-polaroid,
+.dark-mode .input-append .add-on,
+.dark-mode .input-prepend .add-on,
+.dark-mode .popover,
+.dark-mode .uneditable-input,
+.dark-mode input[type="color"],
+.dark-mode input[type="date"],
+.dark-mode input[type="datetime"],
+.dark-mode input[type="datetime-local"],
+.dark-mode input[type="email"],
+.dark-mode input[type="month"],
+.dark-mode input[type="number"],
+.dark-mode input[type="password"],
+.dark-mode input[type="search"],
+.dark-mode input[type="tel"],
+.dark-mode input[type="text"],
+.dark-mode input[type="time"],
+.dark-mode input[type="url"],
+.dark-mode input[type="week"],
+.dark-mode pre,
+.dark-mode select,
+.dark-mode textarea {
+    border: 1px solid hsl(0, 0%, 28%);
+}
+
+.dark-mode .modal {
+    border: 1px solid hsl(0, 0%, 46%);
+}
+
+.dark-mode .accordion-group,
+.dark-mode .well {
+    border: 1px solid hsl(180, 0%, 19%);
+}
+
+.dark-mode .nav-tabs > .active > a,
+.dark-mode .nav-tabs > .active > a:hover,
+.dark-mode .nav-tabs.nav-stacked > li > a,
+.dark-mode .pager a,
+.dark-mode .pager span,
+.dark-mode .pagination ul > li > a,
+.dark-mode .pagination ul > li > span,
+.dark-mode .table-bordered,
+.dark-mode .thumbnail {
+    border: 1px solid hsl(180, 0%, 22%);
+}
+
+.dark-mode code {
+    border: 1px solid hsl(180, 13%, 19%);
+}
+
+.dark-mode .alert {
+    border: 1px solid hsl(180, 82%, 19%);
+}
+
+.dark-mode pre {
+    border: 1px solid hsla(0, 0%, 100%, 0.15);
+}
+
+.dark-mode .dropdown-menu,
+.dark-mode .img-polaroid,
+.dark-mode .popover {
+    border: 1px solid hsla(0, 0%, 100%, 0.2);
+}
+
+.dark-mode .modal {
+    border: 1px solid hsla(0, 0%, 100%, 0.3);
+}
+
+.dark-mode .carousel-control {
+    border: 3px solid hsl(180, 0%, 10%);
+}
+
+.dark-mode .modal-backdrop,
+.dark-mode .tooltip-inner {
+    background-color: hsl(0, 0%, 100%);
+}
+
+.dark-mode .tooltip.bottom .tooltip-arrow {
+    border-bottom-color: hsl(0, 0%, 100%);
+}
+
+.dark-mode .tooltip.left .tooltip-arrow {
+    border-left-color: hsl(0, 0%, 100%);
+}
+
+.dark-mode .tooltip.right .tooltip-arrow {
+    border-right-color: hsl(0, 0%, 100%);
+}
+
+.dark-mode .tooltip.top .tooltip-arrow {
+    border-top-color: hsl(0, 0%, 100%);
+}
+
+.dark-mode .close,
+.dark-mode .close:hover,
+.dark-mode code {
+    color: hsl(0, 0%, 100%);
+}
+
+.dark-mode .uneditable-input,
+.dark-mode .uneditable-textarea {
+    border-color: hsl(0, 0%, 28%);
+}
+
+.dark-mode .dropdown-submenu > a:after {
+    border-left-color: hsl(0, 0%, 28%);
+}
+
+.dark-mode .breadcrumb .divider,
+.dark-mode .navbar-inverse .navbar-search .search-query:-moz-placeholder,
+.dark-mode .navbar-inverse .navbar-search .search-query:-ms-input-placeholder,
+.dark-mode .navbar-inverse .navbar-search .search-query::-webkit-input-placeholder {
+    color: hsl(0, 0%, 28%);
+}
+
+.dark-mode .badge,
+.dark-mode .label,
+.dark-mode .nav > li.dropdown.open.active > a:hover,
+.dark-mode .nav-pills .open .dropdown-toggle,
+.dark-mode .nav-tabs .open .dropdown-toggle {
+    background-color: hsl(0, 0%, 46%);
+}
+
+.dark-mode .navbar-inverse .nav li.dropdown > .dropdown-toggle .caret {
+    border-bottom-color: hsl(0, 0%, 46%);
+}
+
+.dark-mode .nav > li.dropdown.open.active > a:hover,
+.dark-mode .nav-pills .open .dropdown-toggle,
+.dark-mode .nav-tabs .open .dropdown-toggle,
+.dark-mode .tabs-stacked .open > a:hover {
+    border-color: hsl(0, 0%, 46%);
+}
+
+.dark-mode .navbar-inverse .nav li.dropdown > .dropdown-toggle .caret {
+    border-top-color: hsl(0, 0%, 46%);
+}
+
+.dark-mode .breadcrumb .active,
+.dark-mode .dropdown-menu .disabled > a,
+.dark-mode .dropdown-menu .disabled > a:hover,
+.dark-mode .muted,
+.dark-mode .nav > .disabled > a,
+.dark-mode .nav-header,
+.dark-mode .navbar-inverse,
+.dark-mode .navbar-inverse .brand,
+.dark-mode .navbar-inverse .nav > li > a,
+.dark-mode .navbar-inverse .navbar-link,
+.dark-mode .pager .disabled a,
+.dark-mode .pager .disabled a:hover,
+.dark-mode .pager .disabled span,
+.dark-mode .pagination ul > .active > a,
+.dark-mode .pagination ul > .active > span,
+.dark-mode .pagination ul > .disabled > a,
+.dark-mode .pagination ul > .disabled > a:hover,
+.dark-mode .pagination ul > .disabled > span,
+.dark-mode .uneditable-input,
+.dark-mode .uneditable-textarea,
+.dark-mode blockquote small,
+.dark-mode h1 small,
+.dark-mode h2 small,
+.dark-mode h3 small,
+.dark-mode h4 small,
+.dark-mode h5 small,
+.dark-mode h6 small,
+.dark-mode input:-moz-placeholder,
+.dark-mode input:-ms-input-placeholder,
+.dark-mode input::-webkit-input-placeholder,
+.dark-mode legend small,
+.dark-mode textarea:-moz-placeholder,
+.dark-mode textarea:-ms-input-placeholder,
+.dark-mode textarea::-webkit-input-placeholder {
+    color: hsl(0, 0%, 46%);
+}
+
+.dark-mode .navbar .nav li.dropdown > .dropdown-toggle .caret {
+    border-bottom-color: hsl(0, 0%, 58%);
+}
+
+.dark-mode .navbar .nav li.dropdown > .dropdown-toggle .caret {
+    border-top-color: hsl(0, 0%, 58%);
+}
+
+.dark-mode .navbar,
+.dark-mode .navbar .brand,
+.dark-mode .navbar .nav > li > a,
+.dark-mode .navbar-link {
+    color: hsl(0, 0%, 58%);
+}
+
+.dark-mode .help-block,
+.dark-mode .help-inline {
+    color: hsl(0, 0%, 69%);
+}
+
+.dark-mode .nav-tabs .active .dropdown-toggle .caret,
+.dark-mode .navbar .nav li.dropdown.active > .dropdown-toggle .caret,
+.dark-mode .navbar .nav li.dropdown.open > .dropdown-toggle .caret,
+.dark-mode .navbar .nav li.dropdown.open.active > .dropdown-toggle .caret {
+    border-bottom-color: hsl(0, 0%, 70%);
+}
+
+.dark-mode .nav-tabs .active .dropdown-toggle .caret,
+.dark-mode .navbar .nav li.dropdown.active > .dropdown-toggle .caret,
+.dark-mode .navbar .nav li.dropdown.open > .dropdown-toggle .caret,
+.dark-mode .navbar .nav li.dropdown.open.active > .dropdown-toggle .caret {
+    border-top-color: hsl(0, 0%, 70%);
+}
+
+.dark-mode .nav-tabs > .active > a,
+.dark-mode .nav-tabs > .active > a:hover,
+.dark-mode .navbar .nav > .active > a,
+.dark-mode .navbar .nav > .active > a:focus,
+.dark-mode .navbar .nav > .active > a:hover,
+.dark-mode .navbar .nav li.dropdown.active > .dropdown-toggle,
+.dark-mode .navbar .nav li.dropdown.open > .dropdown-toggle,
+.dark-mode .navbar .nav li.dropdown.open.active > .dropdown-toggle,
+.dark-mode .thumbnail .caption,
+.dark-mode .uneditable-input,
+.dark-mode input[type="color"],
+.dark-mode input[type="date"],
+.dark-mode input[type="datetime"],
+.dark-mode input[type="datetime-local"],
+.dark-mode input[type="email"],
+.dark-mode input[type="month"],
+.dark-mode input[type="number"],
+.dark-mode input[type="password"],
+.dark-mode input[type="search"],
+.dark-mode input[type="tel"],
+.dark-mode input[type="text"],
+.dark-mode input[type="time"],
+.dark-mode input[type="url"],
+.dark-mode input[type="week"],
+.dark-mode select,
+.dark-mode textarea {
+    color: hsl(0, 0%, 70%);
+}
+
+.dark-mode .navbar-inverse .navbar-search .search-query {
+    background-color: hsl(0, 0%, 72%);
+}
+
+.dark-mode .carousel-caption {
+    background: hsl(0, 0%, 82%);
+}
+
+.dark-mode .badge-inverse,
+.dark-mode .label-inverse {
+    background-color: hsl(0, 0%, 82%);
+}
+
+.dark-mode .dropdown-menu a,
+.dark-mode .navbar .nav > li > a:focus,
+.dark-mode .navbar .nav > li > a:hover,
+.dark-mode .navbar-inverse .navbar-search .search-query.focused,
+.dark-mode .navbar-inverse .navbar-search .search-query:focus,
+.dark-mode .navbar-link:hover,
+body.dark-mode,
+.dark-mode code,
+.dark-mode legend,
+.dark-mode pre {
+    color: hsl(0, 0%, 82%);
+}
+
+.dark-mode .navbar-inverse .navbar-inner {
+    border-color: hsl(0, 0%, 87%);
+}
+
+.dark-mode .carousel-control {
+    background: hsl(0, 0%, 88%);
+}
+
+.dark-mode .navbar-inverse .divider-vertical {
+    border-right-color: hsl(0, 0%, 88%);
+}
+
+.dark-mode .badge-inverse[href],
+.dark-mode .label-inverse[href],
+.dark-mode .navbar-inverse .navbar-inner {
+    background-color: hsl(0, 0%, 91%);
+}
+
+.dark-mode .navbar-inverse .nav .active > a,
+.dark-mode .navbar-inverse .nav .active > a:focus,
+.dark-mode .navbar-inverse .nav .active > a:hover,
+.dark-mode .navbar-inverse .nav li.dropdown.active > .dropdown-toggle,
+.dark-mode .navbar-inverse .nav li.dropdown.open > .dropdown-toggle,
+.dark-mode .navbar-inverse .nav li.dropdown.open.active > .dropdown-toggle {
+    background-color: hsl(0, 0%, 94%);
+}
+
+.dark-mode .navbar-inverse .navbar-search .search-query {
+    border-color: hsl(0, 0%, 94%);
+}
+
+.dark-mode .navbar-inverse .divider-vertical {
+    border-left-color: hsl(0, 0%, 94%);
+}
+
+.dark-mode .navbar-inverse .btn-navbar {
+    background-color: hsl(0, 0%, 95%);
+}
+
+.dark-mode .navbar-inverse .btn-navbar.active,
+.dark-mode .navbar-inverse .btn-navbar.disabled,
+.dark-mode .navbar-inverse .btn-navbar:active,
+.dark-mode .navbar-inverse .btn-navbar:hover,
+.dark-mode .navbar-inverse .btn-navbar[disabled] {
+    background-color: hsl(0, 0%, 99%);
+}
+
+.dark-mode .navbar-inverse .btn-navbar {
+    border-color: hsl(0, 0%, 99%);
+}
+
+.dark-mode .badge-important,
+.dark-mode .label-important {
+    background-color: hsl(1, 44%, 55%);
+}
+
+.dark-mode .control-group.error .input-append .add-on,
+.dark-mode .control-group.error .input-prepend .add-on,
+.dark-mode .control-group.error input,
+.dark-mode .control-group.error select,
+.dark-mode .control-group.error textarea {
+    border-color: hsl(1, 44%, 55%);
+}
+
+.dark-mode .alert-danger,
+.dark-mode .alert-error,
+.dark-mode .control-group.error .checkbox,
+.dark-mode .control-group.error .help-block,
+.dark-mode .control-group.error .help-inline,
+.dark-mode .control-group.error .input-append .add-on,
+.dark-mode .control-group.error .input-prepend .add-on,
+.dark-mode .control-group.error .radio,
+.dark-mode .control-group.error > label,
+.dark-mode .control-group.error input,
+.dark-mode .control-group.error select,
+.dark-mode .control-group.error textarea,
+.dark-mode .text-error,
+.dark-mode input:focus:required:invalid,
+.dark-mode select:focus:required:invalid,
+.dark-mode textarea:focus:required:invalid {
+    color: hsl(1, 44%, 55%);
+}
+
+.dark-mode .badge-important[href],
+.dark-mode .label-important[href] {
+    background-color: hsl(1, 44%, 64%);
+}
+
+.dark-mode .control-group.error input:focus,
+.dark-mode .control-group.error select:focus,
+.dark-mode .control-group.error textarea:focus {
+    border-color: hsl(1, 44%, 64%);
+}
+
+.dark-mode .progress-danger.progress-striped .bar,
+.dark-mode .progress-striped .bar-danger {
+    background-color: hsl(1, 81%, 42%);
+}
+
+.dark-mode input:focus:required:invalid,
+.dark-mode select:focus:required:invalid,
+.dark-mode textarea:focus:required:invalid {
+    border-color: hsl(1, 81%, 42%);
+}
+
+.dark-mode input:focus:required:invalid:focus,
+.dark-mode select:focus:required:invalid:focus,
+.dark-mode textarea:focus:required:invalid:focus {
+    border-color: hsl(1, 81%, 51%);
+}
+
+.dark-mode .badge-success[href],
+.dark-mode .label-success[href] {
+    background-color: hsl(120, 31%, 73%);
+}
+
+.dark-mode .control-group.success input:focus,
+.dark-mode .control-group.success select:focus,
+.dark-mode .control-group.success textarea:focus {
+    border-color: hsl(120, 31%, 73%);
+}
+
+.dark-mode .badge-success,
+.dark-mode .label-success {
+    background-color: hsl(120, 32%, 64%);
+}
+
+.dark-mode .control-group.success .input-append .add-on,
+.dark-mode .control-group.success .input-prepend .add-on,
+.dark-mode .control-group.success input,
+.dark-mode .control-group.success select,
+.dark-mode .control-group.success textarea {
+    border-color: hsl(120, 32%, 64%);
+}
+
+.dark-mode .alert-success,
+.dark-mode .control-group.success .checkbox,
+.dark-mode .control-group.success .help-block,
+.dark-mode .control-group.success .help-inline,
+.dark-mode .control-group.success .input-append .add-on,
+.dark-mode .control-group.success .input-prepend .add-on,
+.dark-mode .control-group.success .radio,
+.dark-mode .control-group.success > label,
+.dark-mode .control-group.success input,
+.dark-mode .control-group.success select,
+.dark-mode .control-group.success textarea,
+.dark-mode .text-success {
+    color: hsl(120, 32%, 64%);
+}
+
+.dark-mode .progress .bar-success,
+.dark-mode .progress-success .bar {
+    background-color: hsl(120, 39%, 51%);
+}
+
+.dark-mode .input-append .active,
+.dark-mode .input-prepend .active {
+    background-color: hsl(120, 40%, 31%);
+}
+
+.dark-mode .input-append .active,
+.dark-mode .input-prepend .active {
+    border-color: hsl(120, 40%, 58%);
+}
+
+.dark-mode .progress-striped .bar-success,
+.dark-mode .progress-success.progress-striped .bar {
+    background-color: hsl(120, 45%, 48%);
+}
+
+.dark-mode .dropdown-menu,
+.dark-mode .img-polaroid,
+.dark-mode .modal,
+.dark-mode .nav-tabs > .active > a,
+.dark-mode .nav-tabs > .active > a:hover,
+.dark-mode .navbar-inverse .navbar-search .search-query.focused,
+.dark-mode .navbar-inverse .navbar-search .search-query:focus,
+.dark-mode .pager .disabled a,
+.dark-mode .pager .disabled a:hover,
+.dark-mode .pager .disabled span,
+.dark-mode .pager a,
+.dark-mode .pager span,
+.dark-mode .pagination ul > li > a,
+.dark-mode .pagination ul > li > span,
+.dark-mode .popover,
+.dark-mode .uneditable-input,
+body.dark-mode,
+.dark-mode input[type="color"],
+.dark-mode input[type="date"],
+.dark-mode input[type="datetime"],
+.dark-mode input[type="datetime-local"],
+.dark-mode input[type="email"],
+.dark-mode input[type="month"],
+.dark-mode input[type="number"],
+.dark-mode input[type="password"],
+.dark-mode input[type="search"],
+.dark-mode input[type="tel"],
+.dark-mode input[type="text"],
+.dark-mode input[type="time"],
+.dark-mode input[type="url"],
+.dark-mode input[type="week"],
+.dark-mode select,
+.dark-mode textarea {
+    background-color: hsl(180, 0%, 10%);
+}
+
+.dark-mode .nav .active .dropdown-toggle .caret,
+.dark-mode .nav li.dropdown.open .caret,
+.dark-mode .nav li.dropdown.open a:hover .caret,
+.dark-mode .nav li.dropdown.open.active .caret,
+.dark-mode .navbar-inverse .nav li.dropdown.active > .dropdown-toggle .caret,
+.dark-mode .navbar-inverse .nav li.dropdown.open > .dropdown-toggle .caret,
+.dark-mode .navbar-inverse .nav li.dropdown.open.active > .dropdown-toggle .caret,
+.dark-mode .popover.bottom .arrow {
+    border-bottom-color: hsl(180, 0%, 10%);
+}
+
+.dark-mode .dropdown-submenu:hover > a:after,
+.dark-mode .popover.left .arrow {
+    border-left-color: hsl(180, 0%, 10%);
+}
+
+.dark-mode .popover.right .arrow {
+    border-right-color: hsl(180, 0%, 10%);
+}
+
+.dark-mode .nav .active .dropdown-toggle .caret,
+.dark-mode .nav li.dropdown.open .caret,
+.dark-mode .nav li.dropdown.open a:hover .caret,
+.dark-mode .nav li.dropdown.open.active .caret,
+.dark-mode .navbar-inverse .nav li.dropdown.active > .dropdown-toggle .caret,
+.dark-mode .navbar-inverse .nav li.dropdown.open > .dropdown-toggle .caret,
+.dark-mode .navbar-inverse .nav li.dropdown.open.active > .dropdown-toggle .caret,
+.dark-mode .popover.top .arrow {
+    border-top-color: hsl(180, 0%, 10%);
+}
+
+.dark-mode .actual-dropdown-menu li > a:hover,
+.dark-mode .badge,
+.dark-mode .carousel-caption h4,
+.dark-mode .carousel-caption p,
+.dark-mode .carousel-control,
+.dark-mode .carousel-control:hover,
+.dark-mode .dropdown-menu .active > a,
+.dark-mode .dropdown-menu li > a:focus,
+.dark-mode .label,
+.dark-mode .nav > li.dropdown.open.active > a:hover,
+.dark-mode .nav-list > .active > a,
+.dark-mode .nav-list > .active > a:hover,
+.dark-mode .nav-pills .open .dropdown-toggle,
+.dark-mode .nav-pills > .active > a,
+.dark-mode .nav-pills > .active > a:hover,
+.dark-mode .nav-tabs .open .dropdown-toggle,
+.dark-mode .navbar .btn-navbar,
+.dark-mode .navbar .btn-navbar.active,
+.dark-mode .navbar .btn-navbar.disabled,
+.dark-mode .navbar .btn-navbar:active,
+.dark-mode .navbar .btn-navbar:hover,
+.dark-mode .navbar .btn-navbar[disabled],
+.dark-mode .navbar-inverse .brand:hover,
+.dark-mode .navbar-inverse .btn-navbar,
+.dark-mode .navbar-inverse .btn-navbar.active,
+.dark-mode .navbar-inverse .btn-navbar.disabled,
+.dark-mode .navbar-inverse .btn-navbar:active,
+.dark-mode .navbar-inverse .btn-navbar:hover,
+.dark-mode .navbar-inverse .btn-navbar[disabled],
+.dark-mode .navbar-inverse .nav .active > a,
+.dark-mode .navbar-inverse .nav .active > a:focus,
+.dark-mode .navbar-inverse .nav .active > a:hover,
+.dark-mode .navbar-inverse .nav > li > a:focus,
+.dark-mode .navbar-inverse .nav > li > a:hover,
+.dark-mode .navbar-inverse .nav > li > a:hover,
+.dark-mode .navbar-inverse .nav li.dropdown.active > .dropdown-toggle,
+.dark-mode .navbar-inverse .nav li.dropdown.open > .dropdown-toggle,
+.dark-mode .navbar-inverse .nav li.dropdown.open.active > .dropdown-toggle,
+.dark-mode .navbar-inverse .navbar-link:hover,
+.dark-mode .navbar-inverse .navbar-search .search-query,
+.dark-mode .progress .bar,
+.dark-mode .tooltip-inner,
+.dark-mode a.badge:hover,
+.dark-mode a.label:hover {
+    color: hsl(180, 0%, 10%);
+}
+
+.dark-mode .navbar-inner,
+.dark-mode .uneditable-input,
+.dark-mode .uneditable-textarea {
+    background-color: hsl(180, 0%, 11%);
+}
+
+.dark-mode .table-striped tbody tr:nth-child(odd) td,
+.dark-mode .table-striped tbody tr:nth-child(odd) th {
+    background-color: hsl(180, 0%, 12%);
+}
+
+.dark-mode .breadcrumb,
+.dark-mode .form-actions,
+.dark-mode .modal-footer,
+.dark-mode .navbar .btn-navbar .icon-bar,
+.dark-mode .pager a:hover,
+.dark-mode .pagination ul > .active > a,
+.dark-mode .pagination ul > .active > span,
+.dark-mode .pagination ul > li > a:hover,
+.dark-mode .popover-title,
+.dark-mode .progress,
+.dark-mode .table-hover tbody tr:hover td,
+.dark-mode .table-hover tbody tr:hover th,
+.dark-mode .well,
+.dark-mode pre {
+    background-color: hsl(180, 0%, 13%);
+}
+
+.dark-mode .hero-unit,
+.dark-mode .input-append .add-on,
+.dark-mode .input-prepend .add-on,
+.dark-mode .nav > li > a:hover,
+.dark-mode input[disabled],
+.dark-mode input[readonly],
+.dark-mode select[disabled],
+.dark-mode select[readonly],
+.dark-mode textarea[disabled],
+.dark-mode textarea[readonly] {
+    background-color: hsl(180, 0%, 16%);
+}
+
+.dark-mode .nav-tabs > li > a:hover,
+.dark-mode .tabs-left > .nav-tabs > li > a:hover,
+.dark-mode .tabs-right > .nav-tabs > li > a:hover {
+    border-color: hsl(180, 0%, 16%);
+}
+
+.dark-mode .navbar .btn-navbar {
+    background-color: hsl(180, 0%, 17%);
+}
+
+.dark-mode .dropdown-menu .divider,
+.dark-mode .nav-list .divider,
+.dark-mode .navbar .btn-navbar.active,
+.dark-mode .navbar .btn-navbar.disabled,
+.dark-mode .navbar .btn-navbar:active,
+.dark-mode .navbar .btn-navbar:hover,
+.dark-mode .navbar .btn-navbar[disabled],
+.dark-mode .navbar .nav > .active > a,
+.dark-mode .navbar .nav > .active > a:focus,
+.dark-mode .navbar .nav > .active > a:hover,
+.dark-mode .navbar .nav li.dropdown.active > .dropdown-toggle,
+.dark-mode .navbar .nav li.dropdown.open > .dropdown-toggle,
+.dark-mode .navbar .nav li.dropdown.open.active > .dropdown-toggle {
+    background-color: hsl(180, 0%, 19%);
+}
+
+.dark-mode .navbar .btn-navbar {
+    border-color: hsl(180, 0%, 19%);
+}
+
+.dark-mode .nav-tabs.nav-stacked > li > a:hover,
+.dark-mode .well blockquote {
+    border-color: hsl(180, 0%, 22%);
+}
+
+.dark-mode .tabs-below > .nav-tabs > li > a:hover {
+    border-top-color: hsl(180, 0%, 22%);
+}
+
+.dark-mode code {
+    background-color: hsl(180, 14%, 12%);
+}
+
+.dark-mode .alert-danger,
+.dark-mode .alert-error,
+.dark-mode .control-group.error .input-append .add-on,
+.dark-mode .control-group.error .input-prepend .add-on,
+.dark-mode .table tbody tr.error td {
+    background-color: hsl(180, 43%, 19%);
+}
+
+.dark-mode .table-hover tbody tr.error:hover td {
+    background-color: hsl(180, 43%, 22%);
+}
+
+.dark-mode .alert-success,
+.dark-mode .control-group.success .input-append .add-on,
+.dark-mode .control-group.success .input-prepend .add-on,
+.dark-mode .table tbody tr.success td {
+    background-color: hsl(180, 44%, 19%);
+}
+
+.dark-mode .alert-danger,
+.dark-mode .alert-error {
+    border-color: hsl(180, 44%, 20%);
+}
+
+.dark-mode .table-hover tbody tr.success:hover td {
+    background-color: hsl(180, 44%, 24%);
+}
+
+.dark-mode .alert-success {
+    border-color: hsl(180, 44%, 24%);
+}
+
+.dark-mode .alert-info,
+.dark-mode .control-group.info .input-append .add-on,
+.dark-mode .control-group.info .input-prepend .add-on,
+.dark-mode .table tbody tr.info td {
+    background-color: hsl(180, 65%, 19%);
+}
+
+.dark-mode .alert-info {
+    border-color: hsl(180, 65%, 24%);
+}
+
+.dark-mode .table-hover tbody tr.info:hover td {
+    background-color: hsl(180, 66%, 22%);
+}
+
+.dark-mode .alert,
+.dark-mode .control-group.warning .input-append .add-on,
+.dark-mode .control-group.warning .input-prepend .add-on,
+.dark-mode .table tbody tr.warning td {
+    background-color: hsl(180, 80%, 16%);
+}
+
+.dark-mode .table-hover tbody tr.warning:hover td {
+    background-color: hsl(180, 82%, 19%);
+}
+
+.dark-mode .progress .bar-info,
+.dark-mode .progress-info .bar {
+    background-color: hsl(193, 57%, 50%);
+}
+
+.dark-mode .progress-info.progress-striped .bar,
+.dark-mode .progress-striped .bar-info {
+    background-color: hsl(193, 66%, 45%);
+}
+
+.dark-mode .actual-dropdown-menu li > a:hover,
+.dark-mode .dropdown-menu .active > a,
+.dark-mode .dropdown-menu li > a:focus,
+.dark-mode .nav-list > .active > a,
+.dark-mode .nav-list > .active > a:hover,
+.dark-mode .nav-pills > .active > a,
+.dark-mode .nav-pills > .active > a:hover {
+    background-color: hsl(199, 100%, 64%);
+}
+
+.dark-mode .nav .dropdown-toggle .caret {
+    border-bottom-color: hsl(199, 100%, 64%);
+}
+
+.dark-mode a.thumbnail:hover {
+    border-color: hsl(199, 100%, 64%);
+}
+
+.dark-mode .nav .dropdown-toggle .caret {
+    border-top-color: hsl(199, 100%, 64%);
+}
+
+.dark-mode a {
+    color: hsl(199, 100%, 64%);
+}
+
+.dark-mode .badge-info,
+.dark-mode .label-info {
+    background-color: hsl(199, 49%, 59%);
+}
+
+.dark-mode .control-group.info .input-append .add-on,
+.dark-mode .control-group.info .input-prepend .add-on,
+.dark-mode .control-group.info input,
+.dark-mode .control-group.info select,
+.dark-mode .control-group.info textarea {
+    border-color: hsl(199, 49%, 59%);
+}
+
+.dark-mode .alert-info,
+.dark-mode .control-group.info .checkbox,
+.dark-mode .control-group.info .help-block,
+.dark-mode .control-group.info .help-inline,
+.dark-mode .control-group.info .input-append .add-on,
+.dark-mode .control-group.info .input-prepend .add-on,
+.dark-mode .control-group.info .radio,
+.dark-mode .control-group.info > label,
+.dark-mode .control-group.info input,
+.dark-mode .control-group.info select,
+.dark-mode .control-group.info textarea,
+.dark-mode .text-info {
+    color: hsl(199, 49%, 59%);
+}
+
+.dark-mode .badge-info[href],
+.dark-mode .label-info[href] {
+    background-color: hsl(199, 49%, 68%);
+}
+
+.dark-mode .control-group.info input:focus,
+.dark-mode .control-group.info select:focus,
+.dark-mode .control-group.info textarea:focus {
+    border-color: hsl(199, 49%, 68%);
+}
+
+.dark-mode .progress .bar-danger,
+.dark-mode .progress-danger .bar {
+    background-color: hsl(2, 68%, 47%);
+}
+
+.dark-mode .actual-dropdown-menu li > a:hover,
+.dark-mode .dropdown-menu .active > a,
+.dark-mode .dropdown-menu li > a:focus {
+    background-color: hsl(200, 100%, 65%);
+}
+
+.dark-mode .nav .dropdown-toggle:hover .caret {
+    border-bottom-color: hsl(200, 100%, 77%);
+}
+
+.dark-mode .nav .dropdown-toggle:hover .caret {
+    border-top-color: hsl(200, 100%, 77%);
+}
+
+.dark-mode a:hover {
+    color: hsl(200, 100%, 77%);
+}
+
+.dark-mode .progress-striped .bar {
+    background-color: hsl(200, 83%, 57%);
+}
+
+.dark-mode .progress .bar {
+    background-color: hsl(200, 87%, 61%);
+}
+
+.dark-mode .progress-striped .bar-warning,
+.dark-mode .progress-warning.progress-striped .bar {
+    background-color: hsl(35, 95%, 42%);
+}
+
+.dark-mode .progress .bar-warning,
+.dark-mode .progress-warning .bar {
+    background-color: hsl(35, 95%, 47%);
+}
+
+.dark-mode .badge-warning,
+.dark-mode .label-warning {
+    background-color: hsl(35, 95%, 55%);
+}
+
+.dark-mode .badge-warning[href],
+.dark-mode .label-warning[href] {
+    background-color: hsl(35, 95%, 64%);
+}
+
+.dark-mode .control-group.warning .input-append .add-on,
+.dark-mode .control-group.warning .input-prepend .add-on,
+.dark-mode .control-group.warning input,
+.dark-mode .control-group.warning select,
+.dark-mode .control-group.warning textarea {
+    border-color: hsl(37, 46%, 52%);
+}
+
+.dark-mode .alert,
+.dark-mode .control-group.warning .checkbox,
+.dark-mode .control-group.warning .help-block,
+.dark-mode .control-group.warning .help-inline,
+.dark-mode .control-group.warning .input-append .add-on,
+.dark-mode .control-group.warning .input-prepend .add-on,
+.dark-mode .control-group.warning .radio,
+.dark-mode .control-group.warning > label,
+.dark-mode .control-group.warning input,
+.dark-mode .control-group.warning select,
+.dark-mode .control-group.warning textarea,
+.dark-mode .text-warning {
+    color: hsl(37, 46%, 52%);
+}
+
+.dark-mode .control-group.warning input:focus,
+.dark-mode .control-group.warning select:focus,
+.dark-mode .control-group.warning textarea:focus {
+    border-color: hsl(38, 46%, 61%);
+}
+
+.dark-mode .navbar .btn-navbar,
+.dark-mode .navbar-inverse .btn-navbar {
+    border-color: hsla(0, 0%, 100%, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+}
+
+.dark-mode .well blockquote {
+    border-color: hsla(0, 0%, 100%, 0.15);
+}
+
+.dark-mode .navbar .nav > li > .dropdown-menu:before {
+    border-bottom-color: hsla(0, 0%, 100%, 0.2);
+}
+
+.dark-mode .navbar-fixed-bottom .nav > li > .dropdown-menu:before {
+    border-top-color: hsla(0, 0%, 100%, 0.2);
+}
+
+.dark-mode .popover.bottom .arrow:after {
+    border-bottom-color: hsla(0, 0%, 100%, 0.25);
+}
+
+.dark-mode .popover.left .arrow:after {
+    border-left-color: hsla(0, 0%, 100%, 0.25);
+}
+
+.dark-mode .popover.right .arrow:after {
+    border-right-color: hsla(0, 0%, 100%, 0.25);
+}
+
+.dark-mode .popover.top .arrow:after {
+    border-top-color: hsla(0, 0%, 100%, 0.25);
+}
+
+.dark-mode .carousel-caption {
+    background: hsla(0, 0%, 100%, 0.75);
+}
+
+.dark-mode .uneditable-input:focus,
+.dark-mode input[type="color"]:focus,
+.dark-mode input[type="date"]:focus,
+.dark-mode input[type="datetime"]:focus,
+.dark-mode input[type="datetime-local"]:focus,
+.dark-mode input[type="email"]:focus,
+.dark-mode input[type="month"]:focus,
+.dark-mode input[type="number"]:focus,
+.dark-mode input[type="password"]:focus,
+.dark-mode input[type="search"]:focus,
+.dark-mode input[type="tel"]:focus,
+.dark-mode input[type="text"]:focus,
+.dark-mode input[type="time"]:focus,
+.dark-mode input[type="url"]:focus,
+.dark-mode input[type="week"]:focus,
+.dark-mode textarea:focus {
+    border-color: hsla(206, 80%, 44%, 0.8);
+}
+
+.dark-mode .navbar-fixed-top .navbar-inner,
+.dark-mode .navbar-static-top .navbar-inner {
+    box-shadow: inset 0 -1px 0 hsla(0, 0%, 100%, 0.1), 0 1px 10px rgba(0, 0, 0, 0.1);
+}
+
+.dark-mode .progress .bar {
+    box-shadow: inset 0 -1px 0 hsla(0, 0%, 100%, 0.15);
+}
+
+.dark-mode .modal-footer {
+    box-shadow: inset 0 1px 0 hsl(180, 0%, 10%);
+}
+
+.dark-mode .navbar-fixed-bottom .navbar-inner {
+    box-shadow: inset 0 1px 0 hsla(0, 0%, 100%, 0.1), 0 -1px 10px rgba(0, 0, 0, 0.1);
+}
+
+.dark-mode .navbar .btn-navbar {
+    box-shadow: inset 0 1px 0 hsla(180, 0%, 10%, 0.1), 0 1px 0 rgba(255, 255, 255, 0.075);
+}
+
+.dark-mode .well {
+    box-shadow: inset 0 1px 1px hsla(0, 0%, 100%, 0.05);
+}
+
+.dark-mode .control-group.error input,
+.dark-mode .control-group.error select,
+.dark-mode .control-group.error textarea,
+.dark-mode .control-group.info input,
+.dark-mode .control-group.info select,
+.dark-mode .control-group.info textarea,
+.dark-mode .control-group.success input,
+.dark-mode .control-group.success select,
+.dark-mode .control-group.success textarea,
+.dark-mode .control-group.warning input,
+.dark-mode .control-group.warning select,
+.dark-mode .control-group.warning textarea,
+.dark-mode .uneditable-input,
+.dark-mode input[type="color"],
+.dark-mode input[type="date"],
+.dark-mode input[type="datetime"],
+.dark-mode input[type="datetime-local"],
+.dark-mode input[type="email"],
+.dark-mode input[type="month"],
+.dark-mode input[type="number"],
+.dark-mode input[type="password"],
+.dark-mode input[type="search"],
+.dark-mode input[type="tel"],
+.dark-mode input[type="text"],
+.dark-mode input[type="time"],
+.dark-mode input[type="url"],
+.dark-mode input[type="week"],
+.dark-mode textarea {
+    box-shadow: inset 0 1px 1px hsla(0, 0%, 100%, 0.075);
+}
+
+.dark-mode .uneditable-input:focus,
+.dark-mode input[type="color"]:focus,
+.dark-mode input[type="date"]:focus,
+.dark-mode input[type="datetime"]:focus,
+.dark-mode input[type="datetime-local"]:focus,
+.dark-mode input[type="email"]:focus,
+.dark-mode input[type="month"]:focus,
+.dark-mode input[type="number"]:focus,
+.dark-mode input[type="password"]:focus,
+.dark-mode input[type="search"]:focus,
+.dark-mode input[type="tel"]:focus,
+.dark-mode input[type="text"]:focus,
+.dark-mode input[type="time"]:focus,
+.dark-mode input[type="url"]:focus,
+.dark-mode input[type="week"]:focus,
+.dark-mode textarea:focus {
+    box-shadow: inset 0 1px 1px hsla(0, 0%, 100%, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+}
+
+.dark-mode .control-group.error input:focus,
+.dark-mode .control-group.error select:focus,
+.dark-mode .control-group.error textarea:focus {
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px hsl(0, 44%, 37%);
+}
+
+.dark-mode .control-group.success input:focus,
+.dark-mode .control-group.success select:focus,
+.dark-mode .control-group.success textarea:focus {
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px hsl(120, 31%, 46%);
+}
+
+.dark-mode .control-group.info input:focus,
+.dark-mode .control-group.info select:focus,
+.dark-mode .control-group.info textarea:focus {
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px hsl(200, 50%, 41%);
+}
+
+.dark-mode .control-group.warning input:focus,
+.dark-mode .control-group.warning select:focus,
+.dark-mode .control-group.warning textarea:focus {
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px hsl(38, 45%, 34%);
+}
+
+.dark-mode .uneditable-input,
+.dark-mode .uneditable-textarea {
+    box-shadow: inset 0 1px 2px hsla(0, 0%, 100%, 0.025);
+}
+
+.dark-mode .progress {
+    box-shadow: inset 0 1px 2px hsla(0, 0%, 100%, 0.1);
+}
+
+.dark-mode .navbar-inverse .navbar-search .search-query {
+    box-shadow: inset 0 1px 2px hsla(0, 0%, 100%, 0.1), 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.dark-mode .navbar .nav > .active > a,
+.dark-mode .navbar .nav > .active > a:focus,
+.dark-mode .navbar .nav > .active > a:hover {
+    box-shadow: inset 0 3px 8px hsla(0, 0%, 100%, 0.125);
+}
+
+.dark-mode .progress .bar + .bar {
+    box-shadow: inset 1px 0 0 hsla(0, 0%, 100%, 0.15), inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+}

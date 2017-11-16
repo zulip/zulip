@@ -15,7 +15,8 @@
     height: 19px;
     cursor: pointer;
     background-color: hsl(0, 0%, 100%);
-    border: 1px solid hsl(194, 37%, 84%);
+    border: 1px solid;
+    border-color: hsl(194, 37%, 84%);
     border-radius: 4px;
 }
 
@@ -97,7 +98,8 @@
 }
 
 .message_reactions .message_reaction:hover {
-    border: 1px solid hsl(200, 100%, 40%);
+    border: 1px solid;
+    border-color: hsl(200, 100%, 40%);
 }
 
 .message_reactions .reaction_button:only-child {
@@ -112,13 +114,15 @@
     height: 14px;
     border-radius: 4px;
     padding-left: 0.3em;
-    border: 1px solid hsl(0, 0%, 73%);
+    border: 1px solid;
+    border-color: hsl(0, 0%, 73%);
     padding-right: 0.3em;
     float: left;
 }
 
 .message_reactions .reaction_button:hover {
-    border: 1px solid hsl(200, 100%, 40%);
+    border: 1px solid;
+    border-color: hsl(200, 100%, 40%);
     background-color: hsl(195, 50%, 95%);
     cursor: pointer;
     opacity: 1.0;
