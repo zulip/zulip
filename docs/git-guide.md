@@ -270,10 +270,13 @@ the main server app, this is [zulip/zulip][github-zulip-zulip].
 
 ### Step 1b: Clone to your machine
 
-Next, clone your fork to your local machine:
+Next, clone your fork to your local machine using -c/--config flag to set the git
+pull mode to rebase in the repository configuration, because in zulip we do not
+use the default `git pull`, which is a shortcut for `git fetch && git merge FETCH_HEAD`,
+instead we use `git fetch` and then `git rebase`.
 
 ```
-$ git clone git@github.com:christi3k/zulip.git
+$ git clone -c pull.rebase git@github.com:christi3k/zulip.git
 Cloning into 'zulip'
 remote: Counting objects: 86768, done.
 remote: Compressing objects: 100% (15/15), done.

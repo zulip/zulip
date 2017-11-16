@@ -278,9 +278,10 @@ Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
    do this.
 2. Open Terminal (macOS/Ubuntu) or Git BASH (Windows; must
    **run as an Administrator**).
-3. In Terminal/Git BASH, clone your fork:
+3. In Terminal/Git BASH, [clone your fork to your local machine using -c flag](#step-1b-clone-to-your-machine):
+
 ```
-git clone git@github.com:YOURUSERNAME/zulip.git
+git clone -c pull.rebase git@github.com:YOURUSERNAME/zulip.git
 ```
 
 This will create a 'zulip' directory and download the Zulip code into it.
@@ -290,7 +291,7 @@ something like:
 
 ```
 christie@win10 ~
-$ git clone git@github.com:YOURUSERNAME/zulip.git
+$ git clone -c pull.rebase git@github.com:YOURUSERNAME/zulip.git
 Cloning into 'zulip'...
 remote: Counting objects: 73571, done.
 remote: Compressing objects: 100% (2/2), done.

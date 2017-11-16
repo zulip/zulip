@@ -8,8 +8,9 @@ Contents:
 
 ## Installing directly on Ubuntu
 
-Start by cloning this repository: `git clone
-https://github.com/zulip/zulip.git`
+Start by [cloning this repository using -c flag](#step-1b-clone-to-your-machine):
+
+`git clone -c pull.rebase https://github.com/zulip/zulip.git`
 
 If you'd like to install a Zulip development environment on a computer
 that's already running Ubuntu 16.04 Xenial or Ubuntu 14.04 Trusty, you
@@ -61,9 +62,9 @@ Install the following non-Python dependencies:
 
 #### Using the official Ubuntu repositories, PGroonga PPA and `tsearch-extras` deb package:
 
-Start by cloning this repository: `git clone
-https://github.com/zulip/zulip.git`
+Start by [cloning this repository using -c flag](#step-1b-clone-to-your-machine):
 
+`git clone -c pull.rebase https://github.com/zulip/zulip.git`
 ```
 sudo apt-get install closure-compiler libfreetype6-dev libffi-dev \
     memcached rabbitmq-server libldap2-dev redis-server \
@@ -119,8 +120,9 @@ Now continue with the [All Systems](#all-systems) instructions below.
 
 [zulip-ppa]: https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+packages
 
-Start by cloning this repository: `git clone
-https://github.com/zulip/zulip.git`
+Start by [cloning this repository using -c flag](#step-1b-clone-to-your-machine):
+
+`git clone -c pull.rebase https://github.com/zulip/zulip.git`
 
 ```
 sudo add-apt-repository ppa:tabbott/zulip
@@ -139,8 +141,9 @@ Now continue with the [All Systems](#all-systems) instructions below.
 These instructions are experimental and may have bugs; patches
 welcome!
 
-Start by cloning this repository: `git clone
-https://github.com/zulip/zulip.git`
+Start by [cloning this repository using -c flag](#step-1b-clone-to-your-machine):
+
+`git clone -c pull.rebase https://github.com/zulip/zulip.git`
 
 ```
 sudo dnf install libffi-devel memcached rabbitmq-server \
@@ -156,8 +159,9 @@ Now continue with the [Common to Fedora/CentOS](#common-to-fedora-centos-instruc
 These instructions are experimental and may have bugs; patches
 welcome!
 
-Start by cloning this repository: `git clone
-https://github.com/zulip/zulip.git`
+Start by [cloning this repository using -c flag](#step-1b-clone-to-your-machine):
+
+`git clone -c pull.rebase https://github.com/zulip/zulip.git``
 
 ```
 # Add user zulip to the system (not necessary if you configured zulip
@@ -190,7 +194,7 @@ sudo yum install libffi-devel memcached rabbitmq-server openldap-devel \
 sudo yum groupinstall "Development Tools"
 
 # clone Zulip's git repo and cd into it
-cd && git clone https://github.com/zulip/zulip && cd zulip/
+cd && git clone -c pull.rebase https://github.com/zulip/zulip && cd zulip/
 
 ## NEEDS TESTING: The next few DB setup items may not be required at all.
 # Initialize the postgres db
@@ -214,8 +218,9 @@ Now continue with the [Common to Fedora/CentOS](#common-to-fedora-centos-instruc
 These instructions are experimental and may have bugs; patches
 welcome!
 
-Start by cloning this repository: `git clone
-https://github.com/zulip/zulip.git`
+Start by [cloning this repository using -c flag](#step-1b-clone-to-your-machine):
+
+`git clone -c pull.rebase https://github.com/zulip/zulip.git`
 
 ```
 doas pkg_add sudo bash gcc postgresql-server redis rabbitmq \
@@ -248,8 +253,9 @@ Finally continue with the [All Systems](#all-systems) instructions below.
 
 ### Common to Fedora/CentOS instructions
 
-Start by cloning this repository: `git clone
-https://github.com/zulip/zulip.git`
+Start by [cloning this repository using -c flag](#step-1b-clone-to-your-machine):
+
+`git clone -c pull.rebase https://github.com/zulip/zulip.git`
 
 ```
 # Build and install postgres tsearch-extras module
@@ -367,8 +373,9 @@ proxy in the environment as follows:
 
 ## Using Docker (experimental)
 
-Start by cloning this repository: `git clone
-https://github.com/zulip/zulip.git`
+Start by [cloning this repository using -c flag](#step-1b-clone-to-your-machine):
+
+`git clone -c pull.rebase https://github.com/zulip/zulip.git`
 
 The docker instructions for development are experimental, so they may
 have bugs.  If you try them and run into any issues, please report
