@@ -1,5 +1,4 @@
 .compose-content {
-    background-color: hsl(0, 0%, 100%);
     border-top: 1px solid hsl(0, 0%, 93%);
     -webkit-transition: background-color 200ms linear;
     -moz-transition: background-color 200ms linear;
@@ -164,6 +163,8 @@ table.compose_table {
     left: 0px;
     z-index: 2;
     width: 100%;
+
+    background: #fff;
 }
 
 #compose-container {
