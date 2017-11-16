@@ -10,24 +10,24 @@ Welcome! Zulip's documentation is split into four parts:
 
 - `User documentation <https://zulipchat.com/help>`__, for users and
   administrators of Zulip organizations.
-- `Installation documentation <https://zulip.readthedocs.io/en/latest/production/overview.html>`__,
-  for installing and maintaining a self-hosted Zulip installation.
-- `API documentation <https://zulipchat.com/api/>`__, for writing integrations
-  or bots using the Zulip API.
-- `Contributor documentation <https://zulip.readthedocs.io/en/latest/overview/contributing.html>`__,
-  for developing the Zulip software, translating, submitting bug reports, or
-  making other contributions to the project.
+- `Installation documentation <production/overview.html>`__, for
+  installing and maintaining a self-hosted Zulip installation.
+- `API documentation <https://zulipchat.com/api/>`__, for writing
+  integrations or bots using the Zulip API.
+- `Contributor documentation <overview/contributing.html>`__, for
+  developing the Zulip software, translating, submitting bug reports,
+  or making other contributions to the project.
 
-Zulip has well over 150,000 words of documentation. If you can't find what
-you're looking for, please
-`let us know <https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html>`__!
-Further information on the Zulip project and its features can be found
-at `https://www.zulip.org <https://www.zulip.org>`__.
+Zulip has well over 150,000 words of documentation. If you can't find
+what you're looking for, please `let us know
+<contributing/chat-zulip-org.html>`__!  Further information on the
+Zulip project and its features can be found at `https://www.zulip.org
+<https://www.zulip.org>`__.
 
-This site contains our installation and contributor documentation. If this
-is your first time here, you may want to start with
-`Production overview <https://zulip.readthedocs.io/en/latest/production/overview.html>`_ or
-`Contributing to Zulip <https://zulip.readthedocs.io/en/latest/overview/contributing.html>`_.
+This site contains our installation and contributor documentation. If
+this is your first time here, you may want to start with `Production
+overview <production/overview.html>`_ or `Contributing to Zulip
+<overview/contributing.html>`_.
 
 Contents:
 
