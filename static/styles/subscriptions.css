@@ -544,9 +544,7 @@ form#add_new_subscription {
     font-size: 1em;
     line-height: 1;
     margin: 9px 0px;
-    font-weight: 400;
     font-weight: 600;
-    color: hsl(0, 0%, 27%);
 }
 
 .subscriptions-container .right #preview_iframe {
