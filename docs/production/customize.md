@@ -74,7 +74,7 @@ been added in more recent versions of Zulip.
 
 Since Zulip's settings file is a Python script, there are a number of
 other things that one can configure that are not documented; ask on
-[chat.zulip.org](../contributing/chat-zulip-org.html
+[chat.zulip.org](../contributing/chat-zulip-org.html)
 if there's something you'd like to do but can't figure out how to.
 
 [settings-py-template]: https://github.com/zulip/zulip/blob/master/zproject/prod_settings_template.py

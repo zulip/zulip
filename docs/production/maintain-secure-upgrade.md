@@ -347,7 +347,7 @@ running Zulip with larger teams (especially >1000 users).
   [queue processors](../subsystems/queuing.html) multithreaded to conserve memory;
   this creates a significant performance bottleneck.
 
-* [chat.zulip.org](../contributing/chat-zulip-org.html, with thousands of user
+* [chat.zulip.org](../contributing/chat-zulip-org.html), with thousands of user
   accounts and thousands of messages sent every week, has 8GB of RAM,
   4 cores, and 80GB of disk.  The CPUs are essentially always idle,
   but the 8GB of RAM is important.

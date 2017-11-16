@@ -170,7 +170,7 @@ how to debug.
 
 * If that doesn't help, please visit
 [#production help](https://chat.zulip.org/#narrow/stream/production.20help)
-in the [Zulip development community server](../contributing/chat-zulip-org.html for
+in the [Zulip development community server](../contributing/chat-zulip-org.html) for
 realtime help or email zulip-help@googlegroups.com with the full
 traceback, and we'll try to help you out!  Please provide details like
 the full traceback from the bottom of `/var/log/zulip/errors.log` in

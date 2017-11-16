@@ -2,7 +2,7 @@
 
 Note that if you just want to play around with Zulip and see what it looks
 like, we recommend creating an account on the
-[Zulip community server](../contributing/chat-zulip-org.html, or creating a test
+[Zulip community server](../contributing/chat-zulip-org.html), or creating a test
 organization on <https://zulipchat.com>.
 
 ## Server

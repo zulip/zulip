@@ -1,7 +1,7 @@
 # Zulip in production
 
 To play around with Zulip and see what it looks like, check out the
-[Zulip community server](../contributing/chat-zulip-org.html or create a test organization
+[Zulip community server](../contributing/chat-zulip-org.html) or create a test organization
 on <https://zulipchat.com>.
 
 If you like what you see, you can set up Zulip for your team by
