@@ -308,8 +308,6 @@ class Command(BaseCommand):
                 ]
                 create_users(mit_realm, testsuite_mit_users)
 
-            create_simple_community_realm()
-
             if not options["test_suite"]:
                 # Initialize the email gateway bot as an API Super User
                 email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT)
@@ -485,22 +483,6 @@ def send_messages(data):
         recipients[num_messages] = (message_type, message.recipient.id, saved_data)
         num_messages += 1
     return tot_messages
-
-def create_simple_community_realm():
-    # type: () -> None
-    simple_realm = Realm.objects.create(
-        string_id="simple", name="Simple Realm", restricted_to_domain=False,
-        invite_required=False, org_type=Realm.CORPORATE)
-
-    names = [
-        ("alice", "alice@example.com"),
-        ("bob", "bob@foo.edu"),
-        ("cindy", "cindy@foo.tv"),
-    ]
-    create_users(simple_realm, names)
-
-    user_profiles = UserProfile.objects.filter(realm__string_id='simple')
-    create_user_presences(user_profiles)
 
 def create_user_presences(user_profiles):
     # type: (Iterable[UserProfile]) -> None
