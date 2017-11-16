@@ -906,7 +906,6 @@ input[type=checkbox].inline-block {
     width: 97vw;
     max-width: 1024px;
     margin: 2.5vh auto;
-    background-color: hsl(0, 0%, 100%);
     overflow: hidden;
     border-radius: 4px;
 
@@ -927,7 +926,6 @@ input[type=checkbox].inline-block {
 }
 
 #settings_page .sidebar .tab-container {
-    background-color: hsl(0, 0%, 100%);
     padding: 6px;
     border-bottom: 1px solid hsl(0, 0%, 86%);
 }

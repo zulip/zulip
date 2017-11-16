@@ -418,7 +418,6 @@ form#add_new_subscription {
 .subscriptions-container {
     position: relative;
     height: 95%;
-    background-color: hsl(0, 0%, 100%);
     border-radius: 4px;
     padding: 0px;
     width: 97%;

@@ -1848,6 +1848,10 @@ nav a .no-style {
     height: 40px;
 }
 
+.modal-bg {
+    background: hsl(0, 0%, 100%);
+}
+
 #search_query {
     width: 100%;
     font-size: 16px;
