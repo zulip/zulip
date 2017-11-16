@@ -15,7 +15,7 @@ from confirmation.models import Confirmation, create_confirmation_link, Multiuse
 from confirmation import settings as confirmation_settings
 
 from zerver.forms import HomepageForm, WRONG_SUBDOMAIN_ERROR
-from zerver.lib.actions import do_change_password, gather_subscriptions
+from zerver.lib.actions import do_change_password
 from zerver.views.auth import login_or_register_remote_user, \
     redirect_and_log_into_subdomain
 from zerver.views.invite import get_invitee_emails_set
@@ -1029,16 +1029,6 @@ class MultiuseInviteTest(ZulipTestCase):
 
         from django.core.mail import outbox
         outbox.pop()
-
-    def check_user_subscribed_only_to_streams(self, user_name, streams):
-        # type: (str, List[Stream]) -> None
-        streams = sorted(streams, key=lambda x: x.name)
-        subscribed_streams = gather_subscriptions(self.nonreg_user(user_name))[0]
-
-        self.assertEqual(len(subscribed_streams), len(streams))
-
-        for x, y in zip(subscribed_streams, streams):
-            self.assertEqual(x["name"], y.name)
 
     def test_valid_multiuse_link(self):
         # type: () -> None
