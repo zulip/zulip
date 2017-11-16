@@ -101,7 +101,7 @@ ul.filters {
 }
 
 ul.filters a {
-    color: hsl(0, 0%, 20%);
+    color: inherit;
 }
 
 ul.filters hr {
