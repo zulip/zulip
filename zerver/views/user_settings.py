@@ -13,7 +13,8 @@ from zerver.lib.actions import do_change_password, \
     do_change_enter_sends, do_change_notification_settings, \
     do_change_default_desktop_notifications, do_change_autoscroll_forever, \
     do_regenerate_api_key, do_change_avatar_fields, do_set_user_display_setting, \
-    validate_email, do_change_user_email, do_start_email_change_process
+    validate_email, do_change_user_email, do_start_email_change_process, \
+    check_change_full_name
 from zerver.lib.avatar import avatar_url
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.i18n import get_available_language_codes
@@ -21,7 +22,6 @@ from zerver.lib.response import json_success, json_error
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_string
 from zerver.lib.request import JsonableError
-from zerver.lib.users import check_change_full_name
 from zerver.lib.timezone import get_all_timezones
 from zerver.models import UserProfile, Realm, name_changes_disabled, \
     EmailChangeStatus

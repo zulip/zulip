@@ -49,6 +49,7 @@ from zerver.lib.topic_mutes import (
     add_topic_mute,
     remove_topic_mute,
 )
+from zerver.lib.users import check_full_name
 from zerver.lib.user_groups import create_user_group
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
     RealmDomain, \
@@ -2497,6 +2498,16 @@ def do_change_full_name(user_profile, full_name, acting_user):
     if user_profile.is_bot:
         send_event(dict(type='realm_bot', op='update', bot=payload),
                    bot_owner_user_ids(user_profile))
+
+def check_change_full_name(user_profile, full_name_raw, acting_user):
+    # type: (UserProfile, Text, UserProfile) -> Text
+    """Verifies that the user's proposed full name is valid.  The caller
+    is responsible for checking check permissions.  Returns the new
+    full name, which may differ from what was passed in (because this
+    function strips whitespace)."""
+    new_full_name = check_full_name(full_name_raw)
+    do_change_full_name(user_profile, new_full_name, acting_user)
+    return new_full_name
 
 def do_change_bot_owner(user_profile, bot_owner, acting_user):
     # type: (UserProfile, UserProfile, UserProfile) -> None
