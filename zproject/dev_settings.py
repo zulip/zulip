@@ -78,3 +78,5 @@ TWO_FACTOR_SMS_GATEWAY = 'two_factor.gateways.fake.Fake'
 
 # Make sendfile use django to serve files in development
 SENDFILE_BACKEND = 'sendfile.backends.development'
+
+SOCIAL_AUTH_MEDIAWIKI_CALLBACK = 'http://zulipdev.com:9991/complete/mediawiki/'

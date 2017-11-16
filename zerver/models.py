@@ -132,7 +132,8 @@ def get_realm_emoji_cache_key(realm: 'Realm') -> Text:
 class Realm(models.Model):
     MAX_REALM_NAME_LENGTH = 40
     MAX_REALM_SUBDOMAIN_LENGTH = 40
-    AUTHENTICATION_FLAGS = [u'Google', u'Email', u'GitHub', u'LDAP', u'Dev', u'RemoteUser']
+    AUTHENTICATION_FLAGS = [u'Google', u'Email', u'GitHub', u'LDAP', u'Dev', u'RemoteUser',
+                            u'MediaWiki']
     SUBDOMAIN_FOR_ROOT_DOMAIN = ''
 
     name = models.CharField(max_length=MAX_REALM_NAME_LENGTH, null=True)  # type: Optional[Text]

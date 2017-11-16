@@ -139,6 +139,11 @@ DEFAULT_SETTINGS = {
     'SOCIAL_AUTH_GITHUB_ORG_NAME': None,
     'SOCIAL_AUTH_GITHUB_TEAM_ID': None,
 
+    'SOCIAL_AUTH_MEDIAWIKI_KEY': None,
+    # If your URL is https://myurl.org/ use:
+    # 'https://myurl.org/complete/mediawiki'
+    'SOCIAL_AUTH_MEDIAWIKI_CALLBACK': None,
+
     # Email gateway
     'EMAIL_GATEWAY_PATTERN': '',
     'EMAIL_GATEWAY_LOGIN': None,
@@ -1540,6 +1545,9 @@ SOCIAL_AUTH_GITHUB_ORG_KEY = SOCIAL_AUTH_GITHUB_KEY
 SOCIAL_AUTH_GITHUB_ORG_SECRET = SOCIAL_AUTH_GITHUB_SECRET
 SOCIAL_AUTH_GITHUB_TEAM_KEY = SOCIAL_AUTH_GITHUB_KEY
 SOCIAL_AUTH_GITHUB_TEAM_SECRET = SOCIAL_AUTH_GITHUB_SECRET
+
+SOCIAL_AUTH_MEDIAWIKI_SECRET = get_secret('social_auth_mediawiki_secret')
+SOCIAL_AUTH_MEDIAWIKI_URL = 'https://meta.wikimedia.org/w/index.php'
 
 ########################################################################
 # EMAIL SETTINGS

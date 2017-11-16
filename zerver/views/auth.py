@@ -34,8 +34,9 @@ from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email
     get_realm
 from zerver.signals import email_on_new_login
 from zproject.backends import password_auth_enabled, dev_auth_enabled, \
-    github_auth_enabled, google_auth_enabled, ldap_auth_enabled, \
-    ZulipLDAPConfigurationError, ZulipLDAPAuthBackend, email_auth_enabled
+    github_auth_enabled, mediawiki_auth_enabled, google_auth_enabled, \
+    ldap_auth_enabled, ZulipLDAPConfigurationError, ZulipLDAPAuthBackend, \
+    email_auth_enabled
 from version import ZULIP_VERSION
 
 import hashlib
@@ -697,6 +698,7 @@ def get_auth_backends_data(request: HttpRequest) -> Dict[str, Any]:
         "dev": dev_auth_enabled(realm),
         "email": email_auth_enabled(realm),
         "github": github_auth_enabled(realm),
+        "mediawiki": mediawiki_auth_enabled(realm),
         "google": google_auth_enabled(realm),
         "ldap": ldap_auth_enabled(realm),
     }

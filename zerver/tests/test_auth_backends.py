@@ -1319,6 +1319,7 @@ class FetchAuthBackends(ZulipTestCase):
                     ('github', check_bool),
                     ('email', check_bool),
                     ('ldap', check_bool),
+                    ('mediawiki', check_bool),
                     ('dev', check_bool),
                     ('password', check_bool),
                 ])),
@@ -1353,7 +1354,7 @@ class FetchAuthBackends(ZulipTestCase):
         data = result.json()
         self.assertEqual(set(data.keys()),
                          {'msg', 'password', 'github', 'google', 'email', 'ldap',
-                          'dev', 'result', 'zulip_version'})
+                          'dev', 'mediawiki', 'result', 'zulip_version'})
         for backend in set(data.keys()) - {'msg', 'result', 'zulip_version'}:
             self.assertTrue(isinstance(data[backend], bool))
 
@@ -1371,6 +1372,7 @@ class FetchAuthBackends(ZulipTestCase):
                 'dev': True,
                 'email': False,
                 'ldap': False,
+                'mediawiki': False,
                 'result': 'success',
                 'zulip_version': ZULIP_VERSION,
             })
@@ -1388,6 +1390,7 @@ class FetchAuthBackends(ZulipTestCase):
                     'email': False,
                     'ldap': False,
                     'dev': True,
+                    'mediawiki': False,
                     'result': 'success',
                     'zulip_version': ZULIP_VERSION,
                 })
@@ -1413,6 +1416,7 @@ class FetchAuthBackends(ZulipTestCase):
                     'email': False,
                     'ldap': False,
                     'dev': True,
+                    'mediawiki': False,
                     'result': 'success',
                     'zulip_version': ZULIP_VERSION,
                 })
@@ -1435,6 +1439,7 @@ class FetchAuthBackends(ZulipTestCase):
                     'email': False,
                     'ldap': False,
                     'dev': True,
+                    'mediawiki': False,
                     'result': 'success',
                     'zulip_version': ZULIP_VERSION,
                 })

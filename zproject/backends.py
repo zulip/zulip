@@ -71,10 +71,13 @@ def google_auth_enabled(realm: Optional[Realm]=None) -> bool:
 def github_auth_enabled(realm: Optional[Realm]=None) -> bool:
     return auth_enabled_helper(['GitHub'], realm)
 
+def mediawiki_auth_enabled(realm: Optional[Realm]=None) -> bool:
+    return auth_enabled_helper(['MediaWiki'], realm)
+
 def any_oauth_backend_enabled(realm: Optional[Realm]=None) -> bool:
     """Used by the login page process to determine whether to show the
     'OR' for login with Google"""
-    return auth_enabled_helper(['GitHub', 'Google'], realm)
+    return auth_enabled_helper(['GitHub', 'Google', 'MediaWiki'], realm)
 
 def require_email_format_usernames(realm: Optional[Realm]=None) -> bool:
     if ldap_auth_enabled(realm):
@@ -648,6 +651,7 @@ AUTH_BACKEND_NAME_MAP = {
     'Dev': DevAuthBackend,
     'Email': EmailAuthBackend,
     'GitHub': GitHubAuthBackend,
+    'MediaWiki': MediaWikiAuthBackend,
     'Google': GoogleMobileOauth2Backend,
     'LDAP': ZulipLDAPAuthBackend,
     'RemoteUser': ZulipRemoteUserBackend,
