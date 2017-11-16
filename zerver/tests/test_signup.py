@@ -1032,7 +1032,7 @@ class MultiuseInviteTest(ZulipTestCase):
 
     def check_user_subscribed_only_to_streams(self, user_name, streams):
         # type: (str, List[Stream]) -> None
-        sorted(streams, key=lambda x: x.name)
+        streams = sorted(streams, key=lambda x: x.name)
         subscribed_streams = gather_subscriptions(self.nonreg_user(user_name))[0]
 
         self.assertEqual(len(subscribed_streams), len(streams))
