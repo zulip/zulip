@@ -63,6 +63,8 @@ IGNORED_PHRASES = [
     r"e.g.",
     r"etc.",
     r"images",
+    r"enabled",
+    r"disabled",
 
     # Fragments of larger strings
     (r'Change notification settings for individual streams on your '
