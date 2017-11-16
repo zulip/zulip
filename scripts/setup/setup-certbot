@@ -52,6 +52,10 @@ if [ -n "$show_help" ]; then
     usage
 fi
 
+if [ -z "$DOMAIN" -o -z "$EMAIL" ]; then
+    usage
+fi
+
 case "$method" in
     standalone)
         method_args=(--standalone)
