@@ -747,10 +747,13 @@ def get_messages_backend(request, user_profile,
     search_fields = dict()  # type: Dict[int, Dict[str, Text]]
     if is_search:
         for row in query_result:
-            message_id = row[0]
-            (subject, rendered_content, content_matches, subject_matches) = row[-4:]
-            search_fields[message_id] = get_search_fields(rendered_content, subject,
-                                                          content_matches, subject_matches)
+            try:
+                message_id = row[0]
+                (subject, rendered_content, content_matches, subject_matches) = row[-4:]
+                search_fields[message_id] = get_search_fields(rendered_content, subject,
+                                                              content_matches, subject_matches)
+            except UnicodeDecodeError as err:
+                raise Exception(str(err), row, search_term)
 
     message_list = messages_for_ids(
         message_ids=message_ids,
