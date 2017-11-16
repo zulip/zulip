@@ -69,14 +69,12 @@ def zulip_default_context(request):
 
     register_link_disabled = settings.REGISTER_LINK_DISABLED
     login_link_disabled = settings.LOGIN_LINK_DISABLED
-    about_link_disabled = settings.ABOUT_LINK_DISABLED
     find_team_link_disabled = settings.FIND_TEAM_LINK_DISABLED
 
     if (settings.ROOT_DOMAIN_LANDING_PAGE
             and get_subdomain(request) == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN):
         register_link_disabled = True
         login_link_disabled = True
-        about_link_disabled = True
         find_team_link_disabled = False
 
     apps_page_url = 'https://zulipchat.com/apps/'
@@ -106,7 +104,6 @@ def zulip_default_context(request):
         'custom_logo_url': settings.CUSTOM_LOGO_URL,
         'register_link_disabled': register_link_disabled,
         'login_link_disabled': login_link_disabled,
-        'about_link_disabled': about_link_disabled,
         'terms_of_service': settings.TERMS_OF_SERVICE,
         'privacy_policy': settings.PRIVACY_POLICY,
         'login_url': settings.HOME_NOT_LOGGED_IN,
