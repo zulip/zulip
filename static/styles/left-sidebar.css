@@ -14,7 +14,7 @@
 #streams_filter_icon,
 #join_unsub_stream {
     float: right;
-    color: hsl(0, 0%, 54%);
+    opacity: 0.50;
     font-size: 13px;
     margin-top: 3px;
     margin-left: 10px;
@@ -23,7 +23,7 @@
 #streams_inline_cog:hover,
 #streams_filter_icon:hover,
 #join_unsub_stream:hover {
-    color: hsl(0, 0%, 33%);
+    opacity: 1;
     cursor: pointer;
 }
 
@@ -122,7 +122,7 @@ li.active-sub-filter {
 }
 
 .left-sidebar .sidebar-title:hover {
-    color: hsl(0, 0%, 33%);
+    opacity: 1;
 }
 
 li.hidden-filter {
