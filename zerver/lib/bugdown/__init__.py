@@ -1286,11 +1286,12 @@ ZEPHYR_MIRROR_BUGDOWN_KEY = -2
 
 class Bugdown(markdown.Extension):
     def __init__(self, *args, **kwargs):
-        # type: (*Any, **Union[bool, None, Text]) -> None
+        # type: (*Any, **Union[bool, int, List[Any]]) -> None
         # define default configs
         self.config = {
-            "realm_filters": [kwargs['realm_filters'], "Realm-specific filters for realm"],
-            "realm": [kwargs['realm'], "Realm name"],
+            "realm_filters": [kwargs['realm_filters'],
+                              "Realm-specific filters for realm_filters_key %s" % (kwargs['realm'],)],
+            "realm": [kwargs['realm'], "Realm id"],
             "code_block_processor_disabled": [kwargs['code_block_processor_disabled'],
                                               "Disabled for email gateway"]
         }
@@ -1453,9 +1454,14 @@ class EscapeHtml(markdown.Extension):
         del md.preprocessors['html_block']
         del md.inlinePatterns['html']
 
-def make_md_engine(key, opts):
-    # type: (Tuple[int, bool], Dict[str, Any]) -> None
-    md_engines[key] = markdown.Markdown(
+def make_md_engine(realm_filters_key, email_gateway):
+    # type: (int, bool) -> None
+    md_engine_key = (realm_filters_key, email_gateway)
+    if md_engine_key in md_engines:
+        del md_engines[md_engine_key]
+
+    realm_filters = realm_filter_data[realm_filters_key]
+    md_engines[md_engine_key] = markdown.Markdown(
         output_format = 'html',
         extensions    = [
             'markdown.extensions.nl2br',
@@ -1466,9 +1472,9 @@ def make_md_engine(key, opts):
             ),
             fenced_code.makeExtension(),
             EscapeHtml(),
-            Bugdown(realm_filters=opts["realm_filters"][0],
-                    realm=opts["realm"][0],
-                    code_block_processor_disabled=opts["code_block_processor_disabled"][0])])
+            Bugdown(realm_filters=realm_filters,
+                    realm=realm_filters_key,
+                    code_block_processor_disabled=email_gateway)])
 
 def subject_links(realm_filters_key, subject):
     # type: (int, Text) -> List[Text]
@@ -1482,41 +1488,34 @@ def subject_links(realm_filters_key, subject):
             matches += [realm_filter[1] % m.groupdict()]
     return matches
 
-def make_realm_filters(realm_filters_key, filters, email_gateway):
-    # type: (int, List[Tuple[Text, Text, int]], bool) -> None
-    global md_engines, realm_filter_data
-    md_engine_key = (realm_filters_key, email_gateway)
-    if md_engine_key in md_engines:
-        del md_engines[md_engine_key]
-    realm_filter_data[realm_filters_key] = filters
-
-    # Because of how the Markdown config API works, this has confusing
-    # large number of layers of dicts/arrays :(
-    make_md_engine(md_engine_key,
-                   {"realm_filters": [
-                       filters, "Realm-specific filters for realm_filters_key %s" % (realm_filters_key,)],
-                    "realm": [realm_filters_key, "Realm name"],
-                    "code_block_processor_disabled": [email_gateway, 'Disabled for email mirror']})
-
-def maybe_update_realm_filters(realm_filters_key, email_gateway):
+def maybe_update_markdown_engines(realm_filters_key, email_gateway):
     # type: (Optional[int], bool) -> None
     # If realm_filters_key is None, load all filters
+    global realm_filter_data
     if realm_filters_key is None:
         all_filters = all_realm_filters()
         all_filters[DEFAULT_BUGDOWN_KEY] = []
         for realm_filters_key, filters in all_filters.items():
-            make_realm_filters(realm_filters_key, filters, email_gateway)
+            realm_filter_data[realm_filters_key] = filters
+            make_md_engine(realm_filters_key, email_gateway)
         # Hack to ensure that getConfig("realm") is right for mirrored Zephyrs
-        make_realm_filters(ZEPHYR_MIRROR_BUGDOWN_KEY, [], False)
+        realm_filter_data[ZEPHYR_MIRROR_BUGDOWN_KEY] = []
+        make_md_engine(ZEPHYR_MIRROR_BUGDOWN_KEY, False)
     else:
         realm_filters = realm_filters_for_realm(realm_filters_key)
         if realm_filters_key not in realm_filter_data or    \
-                realm_filter_data[realm_filters_key] != realm_filters or    \
-                (realm_filters_key, email_gateway) not in md_engines:
-            # Either realm filters data has changed or an email message has been
-            # forwarded to an realm by the email gateway for which the markdown
-            # engine specific to the email gateway hasn't been populated.
-            make_realm_filters(realm_filters_key, realm_filters, email_gateway)
+                realm_filter_data[realm_filters_key] != realm_filters:
+            # Realm filters data has changed, update `realm_filter_data` and any
+            # of the existing markdown engines using this set of realm filters.
+            realm_filter_data[realm_filters_key] = realm_filters
+            for email_gateway_flag in [True, False]:
+                if (realm_filters_key, email_gateway_flag) in md_engines:
+                    # Update only existing engines(if any), don't create new one.
+                    make_md_engine(realm_filters_key, email_gateway_flag)
+
+        if (realm_filters_key, email_gateway) not in md_engines:
+            # Markdown engine corresponding to this key doesn't exists so create one.
+            make_md_engine(realm_filters_key, email_gateway)
 
 # We want to log Markdown parser failures, but shouldn't log the actual input
 # message for privacy reasons.  The compromise is to replace all alphanumeric
@@ -1699,17 +1698,14 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
         # delivered via zephyr_mirror
         realm_filters_key = ZEPHYR_MIRROR_BUGDOWN_KEY
 
-    maybe_update_realm_filters(realm_filters_key, email_gateway)
+    maybe_update_markdown_engines(realm_filters_key, email_gateway)
     md_engine_key = (realm_filters_key, email_gateway)
 
     if md_engine_key in md_engines:
         _md_engine = md_engines[md_engine_key]
-    elif realm_filters_key is not None and email_gateway:
-        maybe_update_realm_filters(realm_filters_key, email_gateway)
-        _md_engine = md_engines[md_engine_key]
     else:
         if DEFAULT_BUGDOWN_KEY not in md_engines:
-            maybe_update_realm_filters(realm_filters_key=None, email_gateway=False)
+            maybe_update_markdown_engines(realm_filters_key=None, email_gateway=False)
 
         _md_engine = md_engines[(DEFAULT_BUGDOWN_KEY, email_gateway)]
     # Reset the parser; otherwise it will get slower over time.

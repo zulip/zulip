@@ -272,11 +272,7 @@ class BugdownTest(ZulipTestCase):
 
         with self.settings(ENABLE_FILE_LINKS=False):
             realm = Realm.objects.create(string_id='file_links_test')
-            bugdown.make_md_engine(
-                realm.id,
-                {'realm_filters': [[], u'file_links_test.example.com'],
-                 'realm': [u'file_links_test.example.com', 'Realm name'],
-                 'code_block_processor_disabled': [False, 'Disabled for email gateway']})
+            bugdown.maybe_update_markdown_engines(realm.id, False)
             converted = bugdown.convert(msg, message_realm=realm)
             self.assertEqual(converted, '<p>Check out this file file:///Volumes/myserver/Users/Shared/pi.py</p>')
 
@@ -650,7 +646,7 @@ class BugdownTest(ZulipTestCase):
 
         self.assertEqual(converted, '<p><a href="https://trac.zulip.net/ticket/ZUL-123" target="_blank" title="https://trac.zulip.net/ticket/ZUL-123">#ZUL-123</a> was fixed and code was deployed to production, also <a href="https://trac.zulip.net/ticket/zul-321" target="_blank" title="https://trac.zulip.net/ticket/zul-321">#zul-321</a> was deployed to staging</p>')
 
-    def test_maybe_update_realm_filters(self):
+    def test_maybe_update_markdown_engines(self):
         # type: () -> None
         realm = get_realm('zulip')
         url_format_string = r"https://trac.zulip.net/ticket/%(id)s"
@@ -660,7 +656,7 @@ class BugdownTest(ZulipTestCase):
         realm_filter.save()
 
         bugdown.realm_filter_data = {}
-        bugdown.maybe_update_realm_filters(None, False)
+        bugdown.maybe_update_markdown_engines(None, False)
         all_filters = bugdown.realm_filter_data
         zulip_filters = all_filters[realm.id]
         self.assertEqual(len(zulip_filters), 1)
@@ -1158,11 +1154,7 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(converted, expected_output)
 
         realm = Realm.objects.create(string_id='code_block_processor_test')
-        bugdown.make_md_engine(
-            realm.id,
-            {'realm_filters': [[], u'file_links_test.example.com'],
-             'realm': [u'file_links_test.example.com', 'Realm name'],
-             'code_block_processor_disabled': [True, 'Disabled for email gateway']})
+        bugdown.maybe_update_markdown_engines(realm.id, True)
         converted = bugdown.convert(msg, message_realm=realm, email_gateway=True)
         expected_output = '<p>Hello,</p>\n' +     \
                           '<p>I am writing this message to test something. I am writing this message to test something.</p>'
