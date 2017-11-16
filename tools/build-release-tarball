@@ -42,7 +42,6 @@ TMP_CHECKOUT=$TMPDIR/$prefix
 TARBALL=$TMPDIR/$prefix.tar
 BASEDIR=$(pwd)
 
-# .gitattributes lists the files that are not exported
 git archive -o "$TARBALL" "--prefix=$prefix/" HEAD
 
 cd "$TMPDIR"
