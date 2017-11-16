@@ -10,10 +10,12 @@ largest and fastest growing open source group chat project.
 
 [![Build Status](https://travis-ci.org/zulip/zulip.svg?branch=master)](https://travis-ci.org/zulip/zulip)
 [![Coverage Status](https://img.shields.io/codecov/c/github/zulip/zulip.svg)](https://codecov.io/gh/zulip/zulip)
-[![Mypy coverage](https://img.shields.io/badge/mypy-100%25-green.svg)](http://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/)
+[![Mypy coverage](https://img.shields.io/badge/mypy-100%25-green.svg)][mypy-coverage]
 [![docs](https://readthedocs.org/projects/zulip/badge/?version=latest)](https://zulip.readthedocs.io/en/latest/)
 [![Zulip chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://chat.zulip.org)
-[![Twitter](https://img.shields.io/badge/twitter-@zulip-blue.svg?style=flat)](http://twitter.com/zulip)
+[![Twitter](https://img.shields.io/badge/twitter-@zulip-blue.svg?style=flat)](https://twitter.com/zulip)
+
+[mypy-coverage]: https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/
 
 ## Getting started
 
@@ -26,9 +28,11 @@ You might be interested in:
 
 * **Contributing code**. Check out our
   [guide for new contributors](https://zulip.readthedocs.io/en/latest/overview/contributing.html)
-  to get started. Zulip prides itself on maintaining a clean and well-tested
-  codebase, and a stock of hundreds of
-  [beginner-friendly issues](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22).
+  to get started. Zulip prides itself on maintaining a clean and
+  well-tested codebase, and a stock of hundreds of
+  [beginner-friendly issues][beginner-friendly].
+
+[beginner-friendly]: https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22
 
 * **Contributing non-code**.
   [Report an issue](https://zulip.readthedocs.io/en/latest/overview/contributing.html#reporting-issue),

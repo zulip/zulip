@@ -661,7 +661,6 @@ def build_custom_checkers(by_lang):
             "docs/subsystems/logging.md",
             "docs/migration-renumbering.md",
             "docs/overview/readme-symlink.md",
-            "README.md",
             "zerver/webhooks/helloworld/doc.md",
             "zerver/webhooks/trello/doc.md",
             "templates/zerver/integrations/perforce.md",
