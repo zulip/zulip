@@ -5,7 +5,7 @@ Overview
 .. toctree::
    :maxdepth: 3
 
-   readme-symlink
+   readme
    contributing
    architecture-overview
    directory-structure

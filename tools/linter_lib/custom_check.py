@@ -597,7 +597,7 @@ def build_custom_checkers(by_lang):
         {'pattern': '\[(?P<url>[^\]]+)\]\((?P=url)\)',
          'description': 'Linkified markdown URLs should use cleaner <http://example.com> syntax.'},
         {'pattern': 'https://zulip.readthedocs.io/en/latest/[a-zA-Z0-9]',
-         'exclude': ['docs/overview/contributing.md', 'docs/overview/readme-symlink.md'],
+         'exclude': ['docs/overview/contributing.md', 'docs/overview/readme.md'],
          'include_only': set(['docs/']),
          'description': "Use relatve links (../foo/bar.html) to other documents in docs/",
          },
