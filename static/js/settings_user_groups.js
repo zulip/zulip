@@ -10,6 +10,12 @@ exports.reset = function () {
     meta.loaded = false;
 };
 
+exports.reload = function () {
+    var user_groups_section = $('#user-groups').expectOne();
+    user_groups_section.html('');
+    exports.populate_user_groups();
+};
+
 exports.populate_user_groups = function () {
     if (!meta.loaded) {
         return;
@@ -46,6 +52,39 @@ exports.set_up = function () {
     meta.loaded = true;
 
     exports.populate_user_groups();
+
+    $(".organization").on("submit", "form.admin-user-group-form", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        var user_group_status = $('#admin-user-group-status');
+
+        var group = {
+            members: JSON.stringify([people.my_current_user_id()]),
+        };
+        _.each($(this).serializeArray(), function (obj) {
+            if (obj.value.trim() === "") {
+                return;
+            }
+            group[obj.name] = obj.value;
+        });
+
+        channel.post({
+            url: "/json/user_groups/create",
+            data: group,
+            success: function () {
+                user_group_status.hide();
+                ui_report.success(i18n.t("User group added!"), user_group_status);
+                $("form.admin-user-group-form input[type='text']").val("");
+            },
+            error: function (xhr) {
+                user_group_status.hide();
+                var errors = JSON.parse(xhr.responseText).msg;
+                xhr.responseText = JSON.stringify({msg: errors});
+                ui_report.error(i18n.t("Failed"), xhr, user_group_status);
+            },
+        });
+    });
 };
 
 return exports;

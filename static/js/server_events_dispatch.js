@@ -359,6 +359,13 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         ui.remove_message(msg_id);
         break;
 
+    case 'user_group':
+        if (event.op === 'add') {
+            user_groups.add(event.group);
+            settings_user_groups.reload();
+        }
+        break;
+
     }
 };
 
