@@ -510,8 +510,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                                            "message_id %s and user_id %s" %
                                            (message_id, self.user_profile.id,))
 
-    def test_user_message_soft_deactivated(self):
-        # type: () -> None
+    def test_user_message_soft_deactivated(self) -> None:
         """This simulates a condition that should only be an error if the user is
         not long-term idle; we fake it, though, in the sense that the user should
         not have received the message in the first place"""

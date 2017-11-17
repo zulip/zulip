@@ -10,8 +10,7 @@ from django.test import RequestFactory, TestCase
 from django.utils.log import AdminEmailHandler
 from functools import wraps
 from mock import patch
-if False:
-    from mypy_extensions import NoReturn
+from mypy_extensions import NoReturn
 from typing import Any, Callable, Dict, Mapping, Optional, Text, Iterator
 
 from zerver.lib.request import JsonableError
@@ -23,13 +22,11 @@ from zerver.worker.queue_processors import QueueProcessingWorker
 
 captured_request = None  # type: Optional[HttpRequest]
 captured_exc_info = None
-def capture_and_throw(domain=None):
-    # type: (Optional[Text]) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]
-    def wrapper(view_func):
-        # type: (Callable[..., HttpResponse]) -> Callable[..., HttpResponse]
+def capture_and_throw(
+        domain: Optional[Text]=None) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]:
+    def wrapper(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
         @wraps(view_func)
-        def wrapped_view(request, *args, **kwargs):
-            # type: (HttpRequest, *Any, **Any) -> NoReturn
+        def wrapped_view(request: HttpRequest, *args: Any, **kwargs: Any) -> NoReturn:
             global captured_request
             captured_request = request
             try:
@@ -44,8 +41,7 @@ def capture_and_throw(domain=None):
 class AdminZulipHandlerTest(ZulipTestCase):
     logger = logging.getLogger('django')
 
-    def setUp(self):
-        # type: () -> None
+    def setUp(self) -> None:
         self.handler = AdminZulipHandler()
         # Prevent the exceptions we're going to raise from being printed
         # You may want to disable this when debugging tests
@@ -56,19 +52,16 @@ class AdminZulipHandlerTest(ZulipTestCase):
         captured_request = None
         captured_exc_info = None
 
-    def tearDown(self):
-        # type: () -> None
+    def tearDown(self) -> None:
         settings.LOGGING_NOT_DISABLED = True
 
-    def get_admin_zulip_handler(self):
-        # type: () -> AdminZulipHandler
+    def get_admin_zulip_handler(self) -> AdminZulipHandler:
         return [
             h for h in logging.getLogger('').handlers
             if isinstance(h, AdminZulipHandler)
         ][0]
 
-    def test_basic(self):
-        # type: () -> None
+    def test_basic(self) -> None:
         """A random exception passes happily through AdminZulipHandler"""
         handler = self.get_admin_zulip_handler()
         try:
@@ -79,8 +72,7 @@ class AdminZulipHandlerTest(ZulipTestCase):
                                         'message', {}, exc_info)
         handler.emit(record)
 
-    def run_handler(self, record):
-        # type: (logging.LogRecord) -> Dict[str, Any]
+    def run_handler(self, record: logging.LogRecord) -> Dict[str, Any]:
         with patch('zerver.logging_handlers.queue_json_publish') as patched_publish:
             self.handler.emit(record)
             patched_publish.assert_called_once()
@@ -88,8 +80,7 @@ class AdminZulipHandlerTest(ZulipTestCase):
             self.assertIn("report", event)
             return event["report"]
 
-    def test_long_exception_request(self):
-        # type: () -> None
+    def test_long_exception_request(self) -> None:
         """A request with with no stack where report.getMessage() has newlines
         in it is handled properly"""
         email = self.example_email('hamlet')
@@ -114,8 +105,7 @@ class AdminZulipHandlerTest(ZulipTestCase):
             self.assertEqual(report['stack_trace'], 'message\nmoremesssage\nmore')
             self.assertEqual(report['message'], 'message')
 
-    def test_request(self):
-        # type: () -> None
+    def test_request(self) -> None:
         """A normal request is handled properly"""
         email = self.example_email('hamlet')
         self.login(email)
@@ -154,8 +144,7 @@ class AdminZulipHandlerTest(ZulipTestCase):
             self.assertIn("stack_trace", report)
 
             # Now simulate a DisallowedHost exception
-            def get_host_error():
-                # type: () -> None
+            def get_host_error() -> None:
                 raise Exception("Get Host Failure!")
             orig_get_host = record.request.get_host  # type: ignore # this field is dynamically added
             record.request.get_host = get_host_error  # type: ignore # this field is dynamically added
@@ -207,8 +196,7 @@ class AdminZulipHandlerTest(ZulipTestCase):
 
 class LoggingConfigTest(TestCase):
     @staticmethod
-    def all_loggers():
-        # type: () -> Iterator[logging.Logger]
+    def all_loggers() -> Iterator[logging.Logger]:
         # There is no documented API for enumerating the loggers; but the
         # internals of `logging` haven't changed in ages, so just use them.
         loggerDict = logging.Logger.manager.loggerDict  # type: ignore
@@ -217,8 +205,7 @@ class LoggingConfigTest(TestCase):
                 continue
             yield logger
 
-    def test_django_emails_disabled(self):
-        # type: () -> None
+    def test_django_emails_disabled(self) -> None:
         for logger in self.all_loggers():
             # The `handlers` attribute is undocumented, but see comment on
             # `all_loggers`.

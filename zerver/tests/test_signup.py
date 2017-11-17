@@ -321,8 +321,7 @@ class LoginTest(ZulipTestCase):
         self.assert_in_response("Please enter a correct email and password", result)
         self.assertIsNone(get_session_dict_user(self.client.session))
 
-    def test_login_wrong_subdomain(self):
-        # type: () -> None
+    def test_login_wrong_subdomain(self) -> None:
         with patch("logging.warning") as mock_warning:
             result = self.login_with_return(self.mit_email("sipbtest"), "xxx")
             mock_warning.assert_called_once()
@@ -331,8 +330,7 @@ class LoginTest(ZulipTestCase):
                                 "organization associated with this subdomain.", result)
         self.assertIsNone(get_session_dict_user(self.client.session))
 
-    def test_login_invalid_subdomain(self):
-        # type: () -> None
+    def test_login_invalid_subdomain(self) -> None:
         result = self.login_with_return(self.example_email("hamlet"), "xxx",
                                         subdomain="invalid")
         self.assertEqual(result.status_code, 200)
