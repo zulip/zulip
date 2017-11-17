@@ -38,7 +38,7 @@ def try_git_describe() -> Optional[str]:
         return subprocess.check_output(
             ['git',
              '--git-dir', os.path.join(os.path.dirname(__file__), '../../.git'),
-             'describe', '--tags', '--dirty', '--long'],
+             'describe', '--tags', '--always', '--dirty', '--long'],
             stderr=subprocess.PIPE,
         ).strip().decode('utf-8')
     except Exception:
