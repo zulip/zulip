@@ -124,6 +124,14 @@ class AuthBackendTest(ZulipTestCase):
         index = getattr(user_profile.realm.authentication_methods, backend_name).number
         user_profile.realm.authentication_methods.set_bit(index, False)
         user_profile.realm.save()
+        if 'realm' in good_kwargs:
+            # Because this test is a little unfaithful to the ordering
+            # (i.e. we fetched the realm object before this function
+            # was called, when in fact it should be fetched after we
+            # changed the allowed authentication methods), we need to
+            # propagate the changes we just made to the actual realm
+            # object in good_kwargs.
+            good_kwargs['realm'] = user_profile.realm
         self.assertIsNone(backend.authenticate(**good_kwargs))
         user_profile.realm.authentication_methods.set_bit(index, True)
         user_profile.realm.save()
@@ -282,9 +290,19 @@ class AuthBackendTest(ZulipTestCase):
         username = self.get_username()
         self.verify_backend(ZulipRemoteUserBackend(),
                             good_kwargs=dict(remote_user=username,
-                                             realm_subdomain='zulip'),
+                                             realm=get_realm('zulip')),
                             bad_kwargs=dict(remote_user=username,
-                                            realm_subdomain='acme'))
+                                            realm=get_realm('zephyr')))
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',))
+    def test_remote_user_backend_invalid_realm(self):
+        # type: () -> None
+        username = self.get_username()
+        self.verify_backend(ZulipRemoteUserBackend(),
+                            good_kwargs=dict(remote_user=username,
+                                             realm=get_realm('zulip')),
+                            bad_kwargs=dict(remote_user=username,
+                                            realm=None))
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',))
     @override_settings(SSO_APPEND_DOMAIN='zulip.com')
@@ -293,9 +311,9 @@ class AuthBackendTest(ZulipTestCase):
         username = self.get_username(email_to_username)
         self.verify_backend(ZulipRemoteUserBackend(),
                             good_kwargs=dict(remote_user=username,
-                                             realm_subdomain='zulip'),
+                                             realm=get_realm("zulip")),
                             bad_kwargs=dict(remote_user=username,
-                                            realm_subdomain='acme'))
+                                            realm=get_realm('zephyr')))
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GitHubAuthBackend',))
     def test_github_backend(self):

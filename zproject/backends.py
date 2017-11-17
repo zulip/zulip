@@ -411,15 +411,17 @@ class ZulipRemoteUserBackend(RemoteUserBackend):
     create_unknown_user = False
 
     def authenticate(self, remote_user: Optional[str],
-                     realm_subdomain: Optional[str]=None) -> Optional[UserProfile]:
-        if not remote_user:
+                     realm: Optional[Realm]=None) -> Optional[UserProfile]:
+        if realm is None:
+            return None
+        if remote_user is None:
             return None
 
         email = remote_user_to_email(remote_user)
         user_profile = common_get_active_user_by_email(email)
         if user_profile is None:
             return None
-        if not user_matches_subdomain(realm_subdomain, user_profile):
+        if not user_matches_subdomain(realm.subdomain, user_profile):
             return None
         if not auth_enabled_helper(["RemoteUser"], user_profile.realm):
             return None
