@@ -2303,6 +2303,7 @@ nav ul li.active::after {
 }
 
 .pricing-model .pricing-container {
+    margin-top: 50px;
     text-align: center;
 }
 
@@ -2319,6 +2320,8 @@ nav ul li.active::after {
 
     font-size: 2em;
     font-weight: 300;
+
+    background: linear-gradient(45deg, rgba(181, 243, 255, 0.08), rgba(181, 243, 255, 0.20), rgba(181, 243, 255, 0.08));
 }
 
 .pricing-model .pricing-container .price-box {
@@ -2596,6 +2599,18 @@ nav ul li.active::after {
 @media (max-width: 1390px) {
     .portico-landing.plans .pricing-container .block .use-our-servers {
         color: inherit;
+    }
+
+    .pricing-model .pricing-container {
+        margin: 0;
+    }
+
+    .pricing-model .pricing-container .block {
+        margin-top: 50px;
+    }
+
+    .pricing-model .pricing-container .block .plan-title {
+        background: transparent;
     }
 }
 
