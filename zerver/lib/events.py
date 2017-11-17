@@ -172,6 +172,12 @@ def fetch_initial_state_data(user_profile, event_types, queue_id, client_gravata
         else:
             state['realm_notifications_stream_id'] = -1
 
+        if user_profile.realm.get_signup_notifications_stream():
+            signup_notifications_stream = user_profile.realm.get_signup_notifications_stream()
+            state['realm_signup_notifications_stream_id'] = signup_notifications_stream.id
+        else:
+            state['realm_signup_notifications_stream_id'] = -1
+
     if want('realm_domains'):
         state['realm_domains'] = get_realm_domains(user_profile.realm)
 

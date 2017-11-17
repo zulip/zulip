@@ -28,9 +28,9 @@ casper.then(function () {
     casper.test.info('Changing notifications stream to Verona by filtering with "verona"');
     casper.click("#id_realm_notifications_stream > button.dropdown-toggle");
 
-    casper.waitUntilVisible('ul.dropdown-menu', function () {
-        casper.sendKeys('.dropdown-search > input[type=text]', 'verona');
-        casper.click(".dropdown-list-body li.stream_name");
+    casper.waitUntilVisible('#id_realm_notifications_stream ul.dropdown-menu', function () {
+        casper.sendKeys('#id_realm_notifications_stream .dropdown-search > input[type=text]', 'verona');
+        casper.click("#id_realm_notifications_stream .dropdown-list-body li.stream_name");
     });
 
     casper.waitUntilVisible('#admin-realm-notifications-stream-status', function () {
@@ -46,6 +46,32 @@ casper.then(function () {
         casper.test.assertSelectorHasText('#admin-realm-notifications-stream-status',
                                           'Notifications stream disabled!');
         casper.test.assertSelectorHasText('#realm_notifications_stream_name', 'Disabled');
+    });
+});
+
+// Test changing signup notifications stream
+casper.then(function () {
+    casper.test.info('Changing signup notifications stream to Verona by filtering with "verona"');
+    casper.click("#id_realm_signup_notifications_stream > button.dropdown-toggle");
+
+    casper.waitUntilVisible('#id_realm_signup_notifications_stream ul.dropdown-menu', function () {
+        casper.sendKeys('#id_realm_signup_notifications_stream .dropdown-search > input[type=text]', 'verona');
+        casper.click("#id_realm_signup_notifications_stream .dropdown-list-body li.stream_name");
+    });
+
+    casper.waitUntilVisible('#admin-realm-signup-notifications-stream-status', function () {
+        casper.test.assertSelectorHasText('#admin-realm-signup-notifications-stream-status',
+                                          'Signup notifications stream changed!');
+        casper.test.assertSelectorHasText('#realm_signup_notifications_stream_name', '#Verona');
+    });
+});
+
+casper.then(function () {
+    casper.click(".signup-notifications-stream-disable");
+    casper.waitUntilVisible('#admin-realm-signup-notifications-stream-status', function () {
+        casper.test.assertSelectorHasText('#admin-realm-signup-notifications-stream-status',
+                                          'Signup notifications stream disabled!');
+        casper.test.assertSelectorHasText('#realm_signup_notifications_stream_name', 'Disabled');
     });
 });
 

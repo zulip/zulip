@@ -378,7 +378,7 @@ def build_custom_checkers(by_lang):
              # This one in check_message is kinda terrible, since it's
              # how most instances are written, but better to exclude something than nothing
              ('zerver/lib/actions.py', 'stream = get_stream(stream_name, realm)'),
-             ('zerver/lib/actions.py', 'get_stream(signups_stream, admin_realm)'),
+             ('zerver/lib/actions.py', 'get_stream(admin_realm_signup_notifications_stream, admin_realm)'),
              # Here we need get_stream to access streams you've since unsubscribed from.
              ('zerver/views/messages.py', 'stream = get_stream(operand, self.user_profile.realm)'),
              # Use stream_id to exclude mutes.

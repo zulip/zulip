@@ -214,6 +214,45 @@ class RealmTest(ZulipTestCase):
         do_deactivate_stream(notifications_stream)
         self.assertIsNone(realm.get_notifications_stream())
 
+    def test_change_signup_notifications_stream(self):
+        # type: () -> None
+        # We need an admin user.
+        email = 'iago@zulip.com'
+        self.login(email)
+
+        disabled_signup_notifications_stream_id = -1
+        req = dict(signup_notifications_stream_id = ujson.dumps(disabled_signup_notifications_stream_id))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_success(result)
+        realm = get_realm('zulip')
+        self.assertEqual(realm.signup_notifications_stream, None)
+
+        new_signup_notifications_stream_id = 4
+        req = dict(signup_notifications_stream_id = ujson.dumps(new_signup_notifications_stream_id))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_success(result)
+        realm = get_realm('zulip')
+        self.assertEqual(realm.signup_notifications_stream.id, new_signup_notifications_stream_id)
+
+        invalid_signup_notifications_stream_id = 1234
+        req = dict(signup_notifications_stream_id = ujson.dumps(invalid_signup_notifications_stream_id))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_error(result, 'Invalid stream id')
+        realm = get_realm('zulip')
+        self.assertNotEqual(realm.signup_notifications_stream.id, invalid_signup_notifications_stream_id)
+
+    def test_get_default_signup_notifications_stream(self):
+        # type: () -> None
+        realm = get_realm("zulip")
+        verona = get_stream("verona", realm)
+        realm.signup_notifications_stream = verona
+        realm.save()
+
+        signup_notifications_stream = realm.get_signup_notifications_stream()
+        self.assertEqual(signup_notifications_stream, verona)
+        do_deactivate_stream(signup_notifications_stream)
+        self.assertIsNone(realm.get_signup_notifications_stream())
+
     def test_change_realm_default_language(self):
         # type: () -> None
         new_lang = "de"
