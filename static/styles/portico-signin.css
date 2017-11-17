@@ -572,8 +572,7 @@ html {
     margin-bottom: 10px;
 }
 
-button.login-google-button,
-button.login-github-button {
+button.login-social-button {
     width: 328px;
     padding-left: 35px;
 
@@ -586,21 +585,18 @@ button.login-github-button {
     color: #fff;
 }
 
-button.login-google-button,
-button.login-github-button {
+button.login-social-button {
     background-color: #fff;
     box-shadow: 0px 1px 3px hsla(0, 0%, 0%, 0.3), 0px 0px 5px hsla(0, 0%, 0%, 0.1);
     color: hsl(0, 0%, 34%);
 }
 
-button.login-google-button:hover,
-button.login-github-button:hover {
+button.login-social-button:hover {
     background-color: hsl(0, 0%, 98%);
     box-shadow: 1px 2px 5px hsla(0, 0%, 0%, 0.2);
 }
 
-button.login-google-button:active,
-button.login-github-button:active {
+button.login-social-button:active {
     background-color: hsl(0, 0%, 93%);
     box-shadow: 0px 1px 1px hsla(0, 0%, 0%, 0.3);
 }
