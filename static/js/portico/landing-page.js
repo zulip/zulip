@@ -3,6 +3,8 @@ const ELECTRON_APP_URL_LINUX = "https://github.com/zulip/zulip-electron/releases
 const ELECTRON_APP_URL_MAC = "https://github.com/zulip/zulip-electron/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-" + ELECTRON_APP_VERSION + ".dmg";
 const ELECTRON_APP_URL_WINDOWS = "https://github.com/zulip/zulip-electron/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-Web-Setup-" + ELECTRON_APP_VERSION + ".exe";
 
+import render_tabs from './team.js';
+
 // this will either smooth scroll to an anchor where the `name`
 // is the same as the `scroll-to` reference, or to a px height
 // (as specified like `scroll-to='0px'`).
@@ -241,3 +243,9 @@ if (document.readyState === "complete") {
 } else {
     $(load);
 }
+
+$(function () {
+    if (window.location.pathname === '/team/') {
+        render_tabs();
+    }
+});
