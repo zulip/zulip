@@ -2,7 +2,7 @@
 set -eu
 
 usage() {
-    echo "Usage: $0 <ZULIP_VERSION>" >&2
+    echo "Usage: $0 <ZULIP_VERSION> [--authors-not-required]" >&2
     exit 1
 }
 
@@ -35,6 +35,7 @@ if ! git diff --exit-code >/dev/null; then
     echo "will not be included; you should commit or stash them based on "
     echo "what you want and then try again."
     echo
+    git diff
     exit 1
 fi
 
