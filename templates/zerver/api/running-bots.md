@@ -40,7 +40,7 @@ You need:
 
      *Hint: Do you want to install the latest development version? Check
      out [this](
-     writing-bots#installing-a-development-version-of-the-zulip_bots-package)
+     writing-bots#installing-a-development-version-of-the-zulip-bots-package)
      guide.*
 
 2. Register a new bot user on the Zulip server's web interface.
