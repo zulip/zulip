@@ -15,7 +15,7 @@ exports.init = function () {
 // WE INITIALIZE DATA STRUCTURES HERE!
 exports.init();
 
-exports.add = function add(user_group) {
+exports.add = function (user_group) {
     user_group_name_dict.set(user_group.name, user_group);
     user_group_by_id_dict.set(user_group.id, user_group);
 };
