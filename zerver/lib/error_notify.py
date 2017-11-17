@@ -2,13 +2,14 @@
 
 import logging
 import os
+import subprocess
 
 from collections import defaultdict
 from django.conf import settings
 from django.core.mail import mail_admins
 from django.http import HttpResponse
 from django.utils.translation import ugettext as _
-from typing import Any, Dict, Text
+from typing import Any, Dict, Optional, Text
 
 from zerver.models import get_system_bot
 from zerver.lib.actions import internal_send_message
@@ -32,12 +33,31 @@ def user_info_str(report):
     user_info += " on %s deployment"  % (report['deployment'],)
     return user_info
 
+def try_git_describe():
+    # type: () -> Optional[str]
+    try:
+        return subprocess.check_output(
+            ['git',
+             '--git-dir', os.path.join(os.path.dirname(__file__), '../../.git'),
+             'describe', '--tags', '--dirty', '--long'],
+            stderr=subprocess.PIPE,
+        ).strip().decode('utf-8')
+    except Exception:
+        return None
+
 def deployment_repr():
     deployment = 'Deployed code:\n'
+
+    git_described = try_git_describe()
+    if git_described is not None:
+        deployment += '- git: %s\n' % (git_described,)
+
     deployment += '- ZULIP_VERSION: %s\n' % (ZULIP_VERSION,)
+
     version_path = os.path.join(os.path.dirname(__file__), '../../version')
     if os.path.exists(version_path):
         deployment += '- version: %s\n' % (open(version_path).read().strip(),)
+
     return deployment
 
 def notify_browser_error(report):
