@@ -10,6 +10,7 @@ from django.http import HttpResponse
 from oauth2client.crypt import AppIdentityError
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
     GithubTeamOAuth2
+from social_core.utils import handle_http_errors
 from social_core.exceptions import AuthFailed, SocialAuthBaseException
 from social_django.models import DjangoStorage
 from social_django.strategy import DjangoStrategy
@@ -119,6 +120,32 @@ class SocialAuthMixin(ZulipAuthMixin):
     def get_full_name(self, *args, **kwargs):
         # type: (*Any, **Any) -> Text
         raise NotImplementedError
+
+    def get_authenticated_user(self, *args: Any, **kwargs: Any) -> Optional[UserProfile]:
+        raise NotImplementedError
+
+    @handle_http_errors
+    def do_auth(self, *args: Any, **kwargs: Any) -> Optional[HttpResponse]:
+        """
+        This function is called once the authentication workflow is complete.
+        We override this function to:
+            1. Inject `return_data` and `realm_subdomain` kwargs. These will be
+               used by `authenticate()` functions of backends to make the
+               decision.
+            2. Call the proper authentication function to get the user in
+               `get_authenticated_user`.
+
+        The actual decision on authentication is done in
+        SocialAuthMixin._common_authenticate().
+
+        SocialAuthMixin.get_authenticated_user is expected to be overridden by
+        the derived class to add custom logic for authenticating the user and
+        returning the user.
+        """
+        kwargs['return_data'] = {}
+        kwargs['realm_subdomain'] = get_subdomain(self.strategy.request)  # type: ignore # `strategy` comes from Python Social Auth.
+        user_profile = self.get_authenticated_user(*args, **kwargs)
+        return self.process_do_auth(user_profile, *args, **kwargs)
 
     def authenticate(self,
                      realm_subdomain='',  # type: Optional[Text]
@@ -522,24 +549,14 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
 
         return name
 
-    def do_auth(self, *args, **kwargs):
-        # type: (*Any, **Any) -> Optional[HttpResponse]
+    def get_authenticated_user(self, *args: Any, **kwargs: Any) -> Optional[UserProfile]:
         """
         This function is called once the OAuth2 workflow is complete. We
-        override this function to:
-            1. Inject `return_data` and `realm_admin` kwargs. These will
-               be used by `authenticate()` function to make the decision.
-            2. Call the proper `do_auth` function depending on whether
-               we are doing individual, team or organization based GitHub
-               authentication.
-        The actual decision on authentication is done in
+        override this function to call the proper `do_auth` function depending
+        on whether we are doing individual, team or organization based GitHub
+        authentication. The actual decision on authentication is done in
         SocialAuthMixin._common_authenticate().
         """
-        kwargs['return_data'] = {}
-
-        request = self.strategy.request
-        kwargs['realm_subdomain'] = get_subdomain(request)
-
         user_profile = None
 
         team_id = settings.SOCIAL_AUTH_GITHUB_TEAM_ID
@@ -568,7 +585,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
                 logging.info("User is not member of GitHub organization.")
                 user_profile = None
 
-        return self.process_do_auth(user_profile, *args, **kwargs)
+        return user_profile
 
 AUTH_BACKEND_NAME_MAP = {
     'Dev': DevAuthBackend,
