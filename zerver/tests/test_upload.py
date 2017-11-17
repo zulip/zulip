@@ -452,7 +452,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
                 content=body,
             )
 
-        self.login(user1_email, 'test')
+        self.login(user1_email, 'test', realm=r1)
         response = self.client_get(uri, subdomain=test_subdomain)
         self.assertEqual(response.status_code, 200)
         data = b"".join(response.streaming_content)
@@ -460,7 +460,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.logout()
 
         # Confirm other cross-realm users can't read it.
-        self.login(user3_email, 'test')
+        self.login(user3_email, 'test', realm=r1)
         response = self.client_get(uri, subdomain=test_subdomain)
         self.assertEqual(response.status_code, 403)
         self.assert_in_response("You are not authorized to view this file.", response)

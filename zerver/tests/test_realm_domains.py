@@ -55,7 +55,7 @@ class RealmDomainTest(ZulipTestCase):
         self.assert_json_error(result, 'The domain acme.com is already a part of your organization.')
 
         mit_user_profile = self.mit_user("sipbtest")
-        self.login(mit_user_profile.email)
+        self.login(mit_user_profile.email, realm=get_realm("zephyr"))
 
         do_change_is_admin(mit_user_profile, True)
 

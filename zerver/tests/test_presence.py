@@ -23,6 +23,7 @@ from zerver.models import (
     UserProfile,
     UserPresence,
     flush_per_request_caches,
+    get_realm,
 )
 
 import datetime
@@ -172,7 +173,7 @@ class UserPresenceTests(ZulipTestCase):
 
     def test_no_mit(self) -> None:
         """Zephyr mirror realms such as MIT never get a list of users"""
-        self.login(self.mit_email("espuser"))
+        self.login(self.mit_email("espuser"), realm=get_realm("zephyr"))
         result = self.client_post("/json/users/me/presence", {'status': 'idle'},
                                   subdomain="zephyr")
         self.assert_json_success(result)
@@ -182,7 +183,7 @@ class UserPresenceTests(ZulipTestCase):
         """Zephyr mirror realms find out the status of their mirror bot"""
         user_profile = self.mit_user('espuser')
         email = user_profile.email
-        self.login(email)
+        self.login(email, realm=user_profile.realm)
 
         def post_presence() -> Dict[str, Any]:
             result = self.client_post("/json/users/me/presence", {'status': 'idle'},
@@ -211,7 +212,7 @@ class UserPresenceTests(ZulipTestCase):
         )
 
     def test_same_realm(self) -> None:
-        self.login(self.mit_email("espuser"))
+        self.login(self.mit_email("espuser"), realm=get_realm("zephyr"))
         self.client_post("/json/users/me/presence", {'status': 'idle'},
                          subdomain="zephyr")
         self.logout()
@@ -254,7 +255,7 @@ class SingleUserPresenceTests(ZulipTestCase):
         result = self.client_get("/json/users/new-user-bot@zulip.com/presence")
         self.assert_json_error(result, "Presence is not supported for bot users.")
 
-        self.login(self.mit_email("sipbtest"))
+        self.login(self.mit_email("sipbtest"), realm=get_realm("zephyr"))
         result = self.client_get("/json/users/othello@zulip.com/presence",
                                  subdomain="zephyr")
         self.assert_json_error(result, "No such user")

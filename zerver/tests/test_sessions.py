@@ -10,7 +10,7 @@ from zerver.lib.sessions import (
 )
 
 from zerver.models import (
-    UserProfile, get_user_profile_by_id, get_realm
+    UserProfile, get_user_profile_by_id, get_realm, Realm
 )
 
 from zerver.lib.test_classes import ZulipTestCase
@@ -20,12 +20,13 @@ class TestSessions(ZulipTestCase):
 
     def do_test_session(self, user: Text,
                         action: Callable[[], Any],
+                        realm: Realm,
                         expected_result: bool) -> None:
-        self.login(user)
+        self.login(user, realm=realm)
         self.assertIn('_auth_user_id', self.client.session)
         action()
         if expected_result:
-            result = self.client_get('/')
+            result = self.client_get('/', subdomain=realm.subdomain)
             self.assertEqual('/login', result.url)
         else:
             self.assertIn('_auth_user_id', self.client.session)
@@ -43,17 +44,28 @@ class TestSessions(ZulipTestCase):
     def test_delete_user_sessions(self) -> None:
         user_profile = self.example_user('hamlet')
         email = user_profile.email
-        self.do_test_session(str(email), lambda: delete_user_sessions(user_profile), True)
-        self.do_test_session(str(self.example_email("othello")), lambda: delete_user_sessions(user_profile), False)
+        self.do_test_session(str(email), lambda: delete_user_sessions(user_profile),
+                             get_realm("zulip"), True)
+        self.do_test_session(str(self.example_email("othello")),
+                             lambda: delete_user_sessions(user_profile),
+                             get_realm("zulip"), False)
 
     def test_delete_realm_user_sessions(self) -> None:
         realm = get_realm('zulip')
-        self.do_test_session(self.example_email("hamlet"), lambda: delete_realm_user_sessions(realm), True)
-        self.do_test_session(self.mit_email("sipbtest"), lambda: delete_realm_user_sessions(realm), False)
+        self.do_test_session(self.example_email("hamlet"),
+                             lambda: delete_realm_user_sessions(realm),
+                             get_realm("zulip"), True)
+        self.do_test_session(self.mit_email("sipbtest"),
+                             lambda: delete_realm_user_sessions(realm),
+                             get_realm("zephyr"), False)
 
     def test_delete_all_user_sessions(self) -> None:
-        self.do_test_session(self.example_email("hamlet"), lambda: delete_all_user_sessions(), True)
-        self.do_test_session(self.mit_email("sipbtest"), lambda: delete_all_user_sessions(), True)
+        self.do_test_session(self.example_email("hamlet"),
+                             lambda: delete_all_user_sessions(),
+                             get_realm("zulip"), True)
+        self.do_test_session(self.mit_email("sipbtest"),
+                             lambda: delete_all_user_sessions(),
+                             get_realm("zephyr"), True)
 
     def test_delete_all_deactivated_user_sessions(self) -> None:
 

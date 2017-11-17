@@ -29,7 +29,7 @@ class ZephyrTest(ZulipTestCase):
 
         email = str(self.mit_email("starnine"))
         realm = get_realm('zephyr')
-        self.login(email)
+        self.login(email, realm=realm)
 
         def ccache_mock(**kwargs):
             # type: (**Any) -> Any

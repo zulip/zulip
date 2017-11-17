@@ -284,14 +284,18 @@ class ZulipTestCase(TestCase):
                                 {'username': email, 'password': password},
                                 **kwargs)
 
-    def login(self, email, password=None, fails=False):
-        # type: (Text, Optional[Text], bool) -> HttpResponse
+    def login(self, email, password=None, fails=False, realm=None):
+        # type: (Text, Optional[Text], bool, Optional[Realm]) -> HttpResponse
+        if realm is None:
+            realm = get_realm("zulip")
         if password is None:
             password = initial_password(email)
         if not fails:
-            self.assertTrue(self.client.login(username=email, password=password))
+            self.assertTrue(self.client.login(username=email, password=password,
+                                              realm_subdomain=realm.subdomain))
         else:
-            self.assertFalse(self.client.login(username=email, password=password))
+            self.assertFalse(self.client.login(username=email, password=password,
+                                               realm_subdomain=realm.subdomain))
 
     def logout(self):
         # type: () -> None

@@ -683,7 +683,7 @@ class GetOldMessagesTest(ZulipTestCase):
         A request for old messages for a user in the mit.edu relam with unicode
         stream name should be correctly escaped in the database query.
         """
-        self.login(self.mit_email("starnine"))
+        self.login(self.mit_email("starnine"), realm=get_realm("zephyr"))
         # We need to susbcribe to a stream and then send a message to
         # it to ensure that we actually have a stream message in this
         # narrow view.
@@ -718,7 +718,7 @@ class GetOldMessagesTest(ZulipTestCase):
         """
         mit_user_profile = self.mit_user("starnine")
         email = mit_user_profile.email
-        self.login(email)
+        self.login(email, realm=get_realm("zephyr"))
         # We need to susbcribe to a stream and then send a message to
         # it to ensure that we actually have a stream message in this
         # narrow view.
@@ -754,9 +754,11 @@ class GetOldMessagesTest(ZulipTestCase):
         """
         mit_user_profile = self.mit_user("starnine")
         email = mit_user_profile.email
-        self.login(email)  # We need to susbcribe to a stream and then send a message to
+
+        # We need to susbcribe to a stream and then send a message to
         # it to ensure that we actually have a stream message in this
         # narrow view.
+        self.login(email, realm=mit_user_profile.realm)
         self.subscribe(mit_user_profile, "Scotland")
 
         self.send_stream_message(email, "Scotland",

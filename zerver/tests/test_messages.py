@@ -1050,7 +1050,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         Sending a mirrored huddle message works
         """
-        self.login(self.mit_email("starnine"))
+        self.login(self.mit_email("starnine"), realm=get_realm("zephyr"))
         result = self.client_post("/json/messages", {"type": "private",
                                                      "sender": self.mit_email("sipbtest"),
                                                      "content": "Test message",
@@ -1064,7 +1064,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         Sending a mirrored personal message works
         """
-        self.login(self.mit_email("starnine"))
+        self.login(self.mit_email("starnine"), realm=get_realm("zephyr"))
         result = self.client_post("/json/messages", {"type": "private",
                                                      "sender": self.mit_email("sipbtest"),
                                                      "content": "Test message",
@@ -1077,7 +1077,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         Sending a mirrored personal message to someone else is not allowed.
         """
-        self.login(self.mit_email("starnine"))
+        self.login(self.mit_email("starnine"), realm=get_realm("zephyr"))
         result = self.client_post("/json/messages", {"type": "private",
                                                      "sender": self.mit_email("sipbtest"),
                                                      "content": "Test message",
@@ -1098,11 +1098,11 @@ class MessagePOSTTest(ZulipTestCase):
                                   self.mit_email("starnine")])}
 
         with mock.patch('DNS.dnslookup', return_value=[['starnine:*:84233:101:Athena Consulting Exchange User,,,:/mit/starnine:/bin/bash']]):
-            self.login(self.mit_email("starnine"))
+            self.login(self.mit_email("starnine"), realm=get_realm("zephyr"))
             result1 = self.client_post("/json/messages", msg,
                                        subdomain="zephyr")
         with mock.patch('DNS.dnslookup', return_value=[['espuser:*:95494:101:Esp Classroom,,,:/mit/espuser:/bin/athena/bash']]):
-            self.login(self.mit_email("espuser"))
+            self.login(self.mit_email("espuser"), realm=get_realm("zephyr"))
             result2 = self.client_post("/json/messages", msg,
                                        subdomain="zephyr")
         self.assertEqual(ujson.loads(result1.content)['id'],
@@ -1200,7 +1200,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.assert_json_error(result, "Unknown realm non-existing")
 
     def test_send_message_when_sender_is_not_set(self) -> None:
-        self.login(self.mit_email("starnine"))
+        self.login(self.mit_email("starnine"), realm=get_realm("zephyr"))
         result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "Test message",
                                                      "client": "zephyr_mirror",
@@ -1209,7 +1209,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.assert_json_error(result, "Missing sender")
 
     def test_send_message_as_not_superuser_when_type_is_not_private(self) -> None:
-        self.login(self.mit_email("starnine"))
+        self.login(self.mit_email("starnine"), realm=get_realm("zephyr"))
         result = self.client_post("/json/messages", {"type": "not-private",
                                                      "sender": self.mit_email("sipbtest"),
                                                      "content": "Test message",
@@ -1222,7 +1222,7 @@ class MessagePOSTTest(ZulipTestCase):
     def test_send_message_create_mirrored_message_user_returns_invalid_input(
             self, create_mirrored_message_users_mock: Any) -> None:
         create_mirrored_message_users_mock.return_value = (False, True)
-        self.login(self.mit_email("starnine"))
+        self.login(self.mit_email("starnine"), realm=get_realm("zephyr"))
         result = self.client_post("/json/messages", {"type": "private",
                                                      "sender": self.mit_email("sipbtest"),
                                                      "content": "Test message",
@@ -1239,7 +1239,7 @@ class MessagePOSTTest(ZulipTestCase):
         email = user.email
         user.realm.string_id = 'notzephyr'
         user.realm.save()
-        self.login(email)
+        self.login(email, realm=get_realm("notzephyr"))
         result = self.client_post("/json/messages", {"type": "private",
                                                      "sender": self.mit_email("sipbtest"),
                                                      "content": "Test message",
@@ -1353,7 +1353,7 @@ class EditMessageTest(ZulipTestCase):
         result = self.client_get('/json/messages/' + str(msg_id))
         self.assert_json_success(result)
 
-        self.login(self.mit_email("sipbtest"))
+        self.login(self.mit_email("sipbtest"), realm=get_realm("zephyr"))
         result = self.client_get('/json/messages/' + str(msg_id), subdomain="zephyr")
         self.assert_json_error(result, 'Invalid message(s)')
 
@@ -2066,7 +2066,7 @@ class StarTests(ZulipTestCase):
         self.assert_json_success(result)
 
         # But it still doesn't work if you're in another realm
-        self.login(self.mit_email("sipbtest"))
+        self.login(self.mit_email("sipbtest"), realm=get_realm("zephyr"))
         result = self.change_star(message_ids, subdomain="zephyr")
         self.assert_json_error(result, 'Invalid message(s)')
 
