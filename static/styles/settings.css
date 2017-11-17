@@ -477,15 +477,18 @@ input[type=checkbox].inline-block {
     max-width: 100%;
 }
 
-.add-new-emoji-box {
+.add-new-emoji-box,
+.add-new-user-group-box {
     margin-bottom: 20px;
 }
 
-.add-new-emoji-box .new-emoji-form {
+.add-new-emoji-box .new-emoji-form,
+.add-new-user-group-box .new-user-group-form {
     margin: 10px 0px;
 }
 
 .add-new-emoji-box input[type=text],
+.add-new-user-group-box input[type=text],
 .add-new-default-stream-box input[type=text] {
     padding: 6px;
 }
@@ -818,6 +821,10 @@ input[type=checkbox].inline-block {
 .invite-user-link i {
     text-decoration: none;
     margin-right: 5px;
+}
+
+#user-groups .user-group h4 > span {
+    font-weight: initial;
 }
 
 /* -- new settings overlay -- */

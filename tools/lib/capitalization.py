@@ -20,6 +20,7 @@ IGNORED_PHRASES = [
     r"Dropbox",
     r"GitHub",
     r"Google",
+    r"Hamlet",
     r"HTTP",
     r"ID",
     r"IDs",
