@@ -19,7 +19,7 @@ from zerver.views.users import add_service
 from zerver.lib.actions import (
     check_send_message, create_stream_if_needed, bulk_add_subscriptions,
     get_display_recipient, bulk_remove_subscriptions, do_create_user,
-    check_send_stream_message,
+    check_send_stream_message, gather_subscriptions
 )
 
 from zerver.lib.stream_subscription import (
@@ -303,11 +303,11 @@ class ZulipTestCase(TestCase):
                          **kwargs)
         return self.submit_reg_form_for_user(email, password, **kwargs)
 
-    def submit_reg_form_for_user(self, email, password, realm_name="Zulip Test",
-                                 realm_subdomain="zuliptest",
-                                 from_confirmation='', full_name=None, timezone='',
-                                 realm_in_root_domain=None, **kwargs):
-        # type: (Text, Text, Optional[Text], Optional[Text], Optional[Text], Optional[Text], Optional[Text], Optional[Text], **Any) -> HttpResponse
+    def submit_reg_form_for_user(self, email: Text, password: Text, realm_name: Optional[Text]="Zulip Test",
+                                 realm_subdomain: Optional[Text]="zuliptest",
+                                 from_confirmation: Optional[Text]='', full_name: Optional[Text]=None,
+                                 timezone: Optional[Text]='', realm_in_root_domain: Optional[Text]=None,
+                                 default_stream_groups: Optional[List[Text]]=[], **kwargs: Any) -> HttpResponse:
         """
         Stage two of the two-step registration process.
 
@@ -327,6 +327,7 @@ class ZulipTestCase(TestCase):
             'timezone': timezone,
             'terms': True,
             'from_confirmation': from_confirmation,
+            'default_stream_group': default_stream_groups,
         }
         if realm_in_root_domain is not None:
             payload['realm_in_root_domain'] = realm_in_root_domain
@@ -563,6 +564,15 @@ class ZulipTestCase(TestCase):
         result = self.client_post("/api/v1/users/me/subscriptions", post_data,
                                   **kw)
         return result
+
+    def check_user_subscribed_only_to_streams(self, user_name: Text, streams: List[Stream]) -> None:
+        streams = sorted(streams, key=lambda x: x.name)
+        subscribed_streams = gather_subscriptions(self.nonreg_user(user_name))[0]
+
+        self.assertEqual(len(subscribed_streams), len(streams))
+
+        for x, y in zip(subscribed_streams, streams):
+            self.assertEqual(x["name"], y.name)
 
     def send_json_payload(self, user_profile, url, payload, stream_name=None, **post_params):
         # type: (UserProfile, Text, Union[Text, Dict[str, Any]], Optional[Text], **Any) -> Message

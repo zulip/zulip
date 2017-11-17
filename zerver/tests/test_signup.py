@@ -15,7 +15,7 @@ from confirmation.models import Confirmation, create_confirmation_link, Multiuse
 from confirmation import settings as confirmation_settings
 
 from zerver.forms import HomepageForm, WRONG_SUBDOMAIN_ERROR
-from zerver.lib.actions import do_change_password, gather_subscriptions
+from zerver.lib.actions import do_change_password
 from zerver.views.auth import login_or_register_remote_user, \
     redirect_and_log_into_subdomain
 from zerver.views.invite import get_invitee_emails_set
@@ -33,6 +33,8 @@ from zerver.lib.actions import (
     do_change_is_admin,
     get_stream,
     do_create_realm,
+    do_create_default_stream_group,
+    do_add_default_stream,
 )
 from zerver.lib.send_email import send_email, send_future_email, FromAddress
 from zerver.lib.initial_password import initial_password
@@ -1030,16 +1032,6 @@ class MultiuseInviteTest(ZulipTestCase):
         from django.core.mail import outbox
         outbox.pop()
 
-    def check_user_subscribed_only_to_streams(self, user_name, streams):
-        # type: (str, List[Stream]) -> None
-        sorted(streams, key=lambda x: x.name)
-        subscribed_streams = gather_subscriptions(self.nonreg_user(user_name))[0]
-
-        self.assertEqual(len(subscribed_streams), len(streams))
-
-        for x, y in zip(subscribed_streams, streams):
-            self.assertEqual(x["name"], y.name)
-
     def test_valid_multiuse_link(self):
         # type: () -> None
         email1 = self.nonreg_email("test")
@@ -1636,6 +1628,72 @@ class UserSignUpTest(ZulipTestCase):
              'full_name': "New Guy",
              'from_confirmation': '1'})
         self.assert_in_success_response(["You're almost there."], result)
+
+    def test_signup_with_default_stream_group(self) -> None:
+        # Check if user is subscribed to the streams of default
+        # stream group as well as default streams.
+        email = self.nonreg_email('newguy')
+        password = "newpassword"
+        realm = get_realm("zulip")
+
+        result = self.client_post('/accounts/home/', {'email': email})
+        self.assertEqual(result.status_code, 302)
+        result = self.client_get(result["Location"])
+
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url)
+        self.assertEqual(result.status_code, 200)
+
+        default_streams = []
+        for stream_name in ["venice", "verona"]:
+            stream = get_stream(stream_name, realm)
+            do_add_default_stream(stream)
+            default_streams.append(stream)
+
+        group1_streams = []
+        for stream_name in ["scotland", "denmark"]:
+            stream = get_stream(stream_name, realm)
+            group1_streams.append(stream)
+        do_create_default_stream_group(realm, "group 1", "group 1 description", group1_streams)
+
+        result = self.submit_reg_form_for_user(email, password, default_stream_groups=["group 1"])
+        self.check_user_subscribed_only_to_streams("newguy", default_streams + group1_streams)
+
+    def test_signup_with_multiple_default_stream_groups(self) -> None:
+        # Check if user is subscribed to the streams of default
+        # stream groups as well as default streams.
+        email = self.nonreg_email('newguy')
+        password = "newpassword"
+        realm = get_realm("zulip")
+
+        result = self.client_post('/accounts/home/', {'email': email})
+        self.assertEqual(result.status_code, 302)
+        result = self.client_get(result["Location"])
+
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url)
+        self.assertEqual(result.status_code, 200)
+
+        default_streams = []
+        for stream_name in ["venice", "verona"]:
+            stream = get_stream(stream_name, realm)
+            do_add_default_stream(stream)
+            default_streams.append(stream)
+
+        group1_streams = []
+        for stream_name in ["scotland", "denmark"]:
+            stream = get_stream(stream_name, realm)
+            group1_streams.append(stream)
+        do_create_default_stream_group(realm, "group 1", "group 1 description", group1_streams)
+
+        group2_streams = []
+        for stream_name in ["scotland", "rome"]:
+            stream = get_stream(stream_name, realm)
+            group2_streams.append(stream)
+        do_create_default_stream_group(realm, "group 2", "group 2 description", group2_streams)
+
+        result = self.submit_reg_form_for_user(email, password, default_stream_groups=["group 1", "group 2"])
+        self.check_user_subscribed_only_to_streams("newguy", list(set(default_streams + group1_streams + group2_streams)))
 
     def test_signup_invalid_subdomain(self):
         # type: () -> None
