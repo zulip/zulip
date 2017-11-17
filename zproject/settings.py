@@ -162,6 +162,8 @@ DEFAULT_SETTINGS = {
     # Max state storage per user
     # TODO: Add this to zproject/prod_settings_template.py once stateful bots are fully functional.
     'USER_STATE_SIZE_LIMIT': 10000000,
+    # Max size of a single configuration entry of an embedded bot.
+    'BOT_CONFIG_SIZE_LIMIT': 10000,
 
     # External service configuration
     'CAMO_URI': '',
