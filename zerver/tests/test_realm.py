@@ -20,7 +20,8 @@ from zerver.lib.test_runner import slow
 from zerver.models import get_realm, Realm, UserProfile, ScheduledEmail, get_stream
 
 class RealmTest(ZulipTestCase):
-    def assert_user_profile_cache_gets_new_name(self, user_profile: UserProfile, new_realm_name: Text) -> None:
+    def assert_user_profile_cache_gets_new_name(self, user_profile: UserProfile,
+                                                new_realm_name: Text) -> None:
         self.assertEqual(user_profile.realm.name, new_realm_name)
 
     def test_do_set_realm_name_caching(self) -> None:

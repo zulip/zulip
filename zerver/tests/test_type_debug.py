@@ -24,7 +24,8 @@ class TypesPrintTest(TestCase):
     def _post_teardown(self) -> None:
         pass
 
-    def check_signature(self, signature: str, retval: T, func: Callable[..., T], *args: Any, **kwargs: Any) -> None:
+    def check_signature(self, signature: str, retval: T, func: Callable[..., T],
+                        *args: Any, **kwargs: Any) -> None:
         """
         Checks if print_types outputs `signature` when func is called with *args and **kwargs.
         Do not decorate func with print_types before passing into this function.

@@ -139,7 +139,8 @@ class TestSendWebhookFixtureMessage(TestCase):
         print_help_mock.assert_any_call('./manage.py', self.COMMAND_NAME)
 
     @patch('zerver.management.commands.send_webhook_fixture_message.os.path.exists')
-    def test_check_if_command_exits_when_fixture_path_does_not_exist(self, os_path_exists_mock: MagicMock) -> None:
+    def test_check_if_command_exits_when_fixture_path_does_not_exist(
+            self, os_path_exists_mock: MagicMock) -> None:
         os_path_exists_mock.return_value = False
 
         with self.assertRaises(SystemExit):

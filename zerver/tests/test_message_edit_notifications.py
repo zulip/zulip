@@ -80,7 +80,8 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
         return message_id
 
-    def _get_queued_data_for_message_update(self, message_id: int, content: Text, expect_short_circuit: bool=False) -> Dict[str, Any]:
+    def _get_queued_data_for_message_update(self, message_id: int, content: Text,
+                                            expect_short_circuit: bool=False) -> Dict[str, Any]:
         '''
         This function updates a message with a post to
         /json/messages/(message_id).

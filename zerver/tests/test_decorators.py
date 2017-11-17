@@ -149,7 +149,8 @@ class DecoratorTestCase(TestCase):
     def test_REQ_validator(self) -> None:
 
         @has_request_variables
-        def get_total(request: HttpRequest, numbers: Iterable[int]=REQ(validator=check_list(check_int))) -> int:
+        def get_total(request: HttpRequest,
+                      numbers: Iterable[int]=REQ(validator=check_list(check_int))) -> int:
             return sum(numbers)
 
         class Request:
@@ -177,7 +178,8 @@ class DecoratorTestCase(TestCase):
 
     def test_REQ_argument_type(self) -> None:
         @has_request_variables
-        def get_payload(request: HttpRequest, payload: Dict[str, Any]=REQ(argument_type='body')) -> Dict[str, Any]:
+        def get_payload(request: HttpRequest,
+                        payload: Dict[str, Any]=REQ(argument_type='body')) -> Dict[str, Any]:
             return payload
 
         class MockRequest:
@@ -1136,7 +1138,7 @@ class TestRequireServerAdminDecorator(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
 
 class ReturnSuccessOnHeadRequestDecorator(ZulipTestCase):
-    def test_return_success_on_head_request_returns_200_if_request_method_is_head(self) -> None:
+    def test_returns_200_if_request_method_is_head(self) -> None:
         class HeadRequest:
             method = 'HEAD'
 
@@ -1150,7 +1152,7 @@ class ReturnSuccessOnHeadRequestDecorator(ZulipTestCase):
         self.assert_json_success(response)
         self.assertNotEqual(ujson.loads(response.content).get('msg'), u'from_test_function')
 
-    def test_return_success_on_head_request_returns_normal_response_if_request_method_is_not_head(self) -> None:
+    def test_returns_normal_response_if_request_method_is_not_head(self) -> None:
             class HeadRequest:
                 method = 'POST'
 

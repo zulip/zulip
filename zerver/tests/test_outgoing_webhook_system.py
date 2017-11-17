@@ -104,7 +104,8 @@ Time is up!
     @mock.patch('logging.exception')
     @mock.patch('requests.request', side_effect=request_exception_error)
     @mock.patch('zerver.lib.outgoing_webhook.fail_with_message')
-    def test_request_exception(self, mock_fail_with_message: mock.Mock, mock_requests_request: mock.Mock, mock_logger: mock.Mock) -> None:
+    def test_request_exception(self, mock_fail_with_message: mock.Mock,
+                               mock_requests_request: mock.Mock, mock_logger: mock.Mock) -> None:
         do_rest_call(self.rest_operation, None, self.mock_event, service_handler, None)
         bot_owner_notification = self.get_last_message()
         self.assertTrue(mock_fail_with_message.called)

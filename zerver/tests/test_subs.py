@@ -867,7 +867,8 @@ class DefaultStreamGroupTest(ZulipTestCase):
 
         # Test creating a default stream group which contains a default stream
         do_add_default_stream(remaining_streams[0])
-        with self.assertRaisesRegex(JsonableError, "'stream1' is a default stream and cannot be added to 'new group1'"):
+        with self.assertRaisesRegex(
+                JsonableError, "'stream1' is a default stream and cannot be added to 'new group1'"):
             do_create_default_stream_group(realm, new_group_name, "This is group1", remaining_streams)
 
     def test_api_calls(self) -> None:
@@ -938,7 +939,8 @@ class DefaultStreamGroupTest(ZulipTestCase):
 
         result = self.client_patch("/json/default_stream_groups/{}/streams".format(group_id),
                                    {"op": "add", "stream_names": ujson.dumps(new_stream_names)})
-        self.assert_json_error(result, "Stream 'stream4' is already present in default stream group 'group1'")
+        self.assert_json_error(result,
+                               "Stream 'stream4' is already present in default stream group 'group1'")
 
         # Test removing streams from default stream group
         result = self.client_patch("/json/default_stream_groups/12345/streams",
@@ -1741,7 +1743,8 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assert_json_error(result,
                                "Invalid stream name '%s'" % (invalid_stream_name,))
 
-    def assert_adding_subscriptions_for_principal(self, invitee_email: Text, invitee_realm: Realm, streams: List[Text], invite_only: bool=False) -> None:
+    def assert_adding_subscriptions_for_principal(self, invitee_email: Text, invitee_realm: Realm,
+                                                  streams: List[Text], invite_only: bool=False) -> None:
         """
         Calling POST /json/users/me/subscriptions on behalf of another principal (for
         whom you have permission to add subscriptions) should successfully add

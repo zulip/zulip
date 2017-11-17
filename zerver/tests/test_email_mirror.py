@@ -262,7 +262,8 @@ class TestEmptyGatewaySetting(ZulipTestCase):
 class TestDigestEmailMessages(ZulipTestCase):
     @mock.patch('zerver.lib.digest.enough_traffic')
     @mock.patch('zerver.lib.digest.send_future_email')
-    def test_receive_digest_email_messages(self, mock_send_future_email: mock.MagicMock, mock_enough_traffic: mock.MagicMock) -> None:
+    def test_receive_digest_email_messages(self, mock_send_future_email: mock.MagicMock,
+                                           mock_enough_traffic: mock.MagicMock) -> None:
 
         # build dummy messages for missed messages email reply
         # have Hamlet send Othello a PM. Othello will reply via email
@@ -284,8 +285,8 @@ class TestDigestEmailMessages(ZulipTestCase):
 
     @mock.patch('zerver.lib.digest.queue_digest_recipient')
     @mock.patch('zerver.lib.digest.timezone_now')
-    def test_inactive_users_queued_for_digest(self, mock_django_timezone: mock.MagicMock, mock_queue_digest_recipient: mock.MagicMock) -> None:
-
+    def test_inactive_users_queued_for_digest(self, mock_django_timezone: mock.MagicMock,
+                                              mock_queue_digest_recipient: mock.MagicMock) -> None:
         cutoff = timezone_now()
         # Test Tuesday
         mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=5)
@@ -340,8 +341,8 @@ class TestDigestEmailMessages(ZulipTestCase):
 
     @mock.patch('zerver.lib.digest.queue_digest_recipient')
     @mock.patch('zerver.lib.digest.timezone_now')
-    def test_only_enqueue_on_valid_day(self, mock_django_timezone: mock.MagicMock, mock_queue_digest_recipient: mock.MagicMock) -> None:
-
+    def test_only_enqueue_on_valid_day(self, mock_django_timezone: mock.MagicMock,
+                                       mock_queue_digest_recipient: mock.MagicMock) -> None:
         # Not a Tuesday
         mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=6)
 
@@ -352,8 +353,8 @@ class TestDigestEmailMessages(ZulipTestCase):
 
     @mock.patch('zerver.lib.digest.queue_digest_recipient')
     @mock.patch('zerver.lib.digest.timezone_now')
-    def test_no_email_digest_for_bots(self, mock_django_timezone: mock.MagicMock, mock_queue_digest_recipient: mock.MagicMock) -> None:
-
+    def test_no_email_digest_for_bots(self, mock_django_timezone: mock.MagicMock,
+                                      mock_queue_digest_recipient: mock.MagicMock) -> None:
         cutoff = timezone_now()
         # A Tuesday
         mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=5)
@@ -519,7 +520,8 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
         return create_missed_message_address(user_profile, user_message.message)
 
     @mock.patch('zerver.lib.email_mirror.queue_json_publish')
-    def send_offline_message(self, to_address: str, sender: str, mock_queue_json_publish: mock.Mock) -> HttpResponse:
+    def send_offline_message(self, to_address: str, sender: str,
+                             mock_queue_json_publish: mock.Mock) -> HttpResponse:
         template_path = os.path.join(MAILS_DIR, "simple.txt")
         with open(template_path) as template_file:
             mail_template = template_file.read()

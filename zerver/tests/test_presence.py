@@ -279,7 +279,8 @@ class SingleUserPresenceTests(ZulipTestCase):
         self.assertEqual(result.json()['msg'], '')
 
 class UserPresenceAggregationTests(ZulipTestCase):
-    def _send_presence_for_aggregated_tests(self, email: str, status: str, validate_time: datetime.datetime) -> Dict[str, Dict[str, Any]]:
+    def _send_presence_for_aggregated_tests(self, email: str, status: str,
+                                            validate_time: datetime.datetime) -> Dict[str, Dict[str, Any]]:
         self.login(email)
         timezone_util = 'zerver.views.presence.timezone_now'
         with mock.patch(timezone_util, return_value=validate_time - datetime.timedelta(seconds=5)):

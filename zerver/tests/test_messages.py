@@ -1219,7 +1219,8 @@ class MessagePOSTTest(ZulipTestCase):
         self.assert_json_error(result, "User not authorized for this query")
 
     @mock.patch("zerver.views.messages.create_mirrored_message_users")
-    def test_send_message_create_mirrored_message_user_returns_invalid_input(self, create_mirrored_message_users_mock: Any) -> None:
+    def test_send_message_create_mirrored_message_user_returns_invalid_input(
+            self, create_mirrored_message_users_mock: Any) -> None:
         create_mirrored_message_users_mock.return_value = (False, True)
         self.login(self.mit_email("starnine"))
         result = self.client_post("/json/messages", {"type": "private",
@@ -1231,7 +1232,8 @@ class MessagePOSTTest(ZulipTestCase):
         self.assert_json_error(result, "Invalid mirrored message")
 
     @mock.patch("zerver.views.messages.create_mirrored_message_users")
-    def test_send_message_when_client_is_zephyr_mirror_but_string_id_is_not_zephyr(self, create_mirrored_message_users_mock: Any) -> None:
+    def test_send_message_when_client_is_zephyr_mirror_but_string_id_is_not_zephyr(
+            self, create_mirrored_message_users_mock: Any) -> None:
         create_mirrored_message_users_mock.return_value = (True, True)
         user = self.mit_user("starnine")
         email = user.email
@@ -1283,7 +1285,8 @@ class MessagePOSTTest(ZulipTestCase):
         self.assert_json_success(result)
 
 class EditMessageTest(ZulipTestCase):
-    def check_message(self, msg_id: int, subject: Optional[Text]=None, content: Optional[Text]=None) -> Message:
+    def check_message(self, msg_id: int, subject: Optional[Text]=None,
+                      content: Optional[Text]=None) -> Message:
         msg = Message.objects.get(id=msg_id)
         cached = MessageDict.wide_dict(msg)
         MessageDict.finalize_payload(cached, apply_markdown=False, client_gravatar=False)
@@ -1698,7 +1701,8 @@ class EditMessageTest(ZulipTestCase):
             else:
                 self.check_message(id_, subject=new_subject, content=new_content)
 
-        def do_edit_message_assert_error(id_: int, unique_str: Text, error: Text, topic_only: bool=False) -> None:
+        def do_edit_message_assert_error(id_: int, unique_str: Text, error: Text,
+                                         topic_only: bool=False) -> None:
             message = Message.objects.get(id=id_)
             old_subject = message.topic_name()
             old_content = message.content

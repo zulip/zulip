@@ -33,7 +33,8 @@ class TestMissedMessages(ZulipTestCase):
     def _get_tokens(self) -> List[str]:
         return [str(random.getrandbits(32)) for _ in range(30)]
 
-    def _test_cases(self, tokens: List[str], msg_id: int, body: str, subject: str, send_as_user: bool, verify_html_body: bool=False) -> None:
+    def _test_cases(self, tokens: List[str], msg_id: int, body: str, subject: str,
+                    send_as_user: bool, verify_html_body: bool=False) -> None:
         othello = self.example_user('othello')
         hamlet = self.example_user('hamlet')
         handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
@@ -57,7 +58,8 @@ class TestMissedMessages(ZulipTestCase):
             self.assertIn(body, self.normalize_string(msg.body))
 
     @patch('zerver.lib.email_mirror.generate_random_token')
-    def _extra_context_in_missed_stream_messages_mention(self, send_as_user: bool, mock_random_token: MagicMock) -> None:
+    def _extra_context_in_missed_stream_messages_mention(self, send_as_user: bool,
+                                                         mock_random_token: MagicMock) -> None:
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
@@ -74,7 +76,8 @@ class TestMissedMessages(ZulipTestCase):
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
-    def _extra_context_in_missed_stream_messages_mention_two_senders(self, send_as_user: bool, mock_random_token: MagicMock) -> None:
+    def _extra_context_in_missed_stream_messages_mention_two_senders(
+            self, send_as_user: bool, mock_random_token: MagicMock) -> None:
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
@@ -88,7 +91,8 @@ class TestMissedMessages(ZulipTestCase):
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
-    def _extra_context_in_personal_missed_stream_messages(self, send_as_user: bool, mock_random_token: MagicMock) -> None:
+    def _extra_context_in_personal_missed_stream_messages(self, send_as_user: bool,
+                                                          mock_random_token: MagicMock) -> None:
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
@@ -102,7 +106,8 @@ class TestMissedMessages(ZulipTestCase):
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
-    def _reply_to_email_in_personal_missed_stream_messages(self, send_as_user: bool, mock_random_token: MagicMock) -> None:
+    def _reply_to_email_in_personal_missed_stream_messages(self, send_as_user: bool,
+                                                           mock_random_token: MagicMock) -> None:
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
@@ -116,7 +121,8 @@ class TestMissedMessages(ZulipTestCase):
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
-    def _reply_warning_in_personal_missed_stream_messages(self, send_as_user: bool, mock_random_token: MagicMock) -> None:
+    def _reply_warning_in_personal_missed_stream_messages(self, send_as_user: bool,
+                                                          mock_random_token: MagicMock) -> None:
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
@@ -130,7 +136,8 @@ class TestMissedMessages(ZulipTestCase):
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
-    def _extra_context_in_huddle_missed_stream_messages_two_others(self, send_as_user: bool, mock_random_token: MagicMock) -> None:
+    def _extra_context_in_huddle_missed_stream_messages_two_others(self, send_as_user: bool,
+                                                                   mock_random_token: MagicMock) -> None:
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
@@ -149,7 +156,8 @@ class TestMissedMessages(ZulipTestCase):
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
-    def _extra_context_in_huddle_missed_stream_messages_three_others(self, send_as_user: bool, mock_random_token: MagicMock) -> None:
+    def _extra_context_in_huddle_missed_stream_messages_three_others(self, send_as_user: bool,
+                                                                     mock_random_token: MagicMock) -> None:
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
@@ -169,7 +177,8 @@ class TestMissedMessages(ZulipTestCase):
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
-    def _extra_context_in_huddle_missed_stream_messages_many_others(self, send_as_user: bool, mock_random_token: MagicMock) -> None:
+    def _extra_context_in_huddle_missed_stream_messages_many_others(self, send_as_user: bool,
+                                                                    mock_random_token: MagicMock) -> None:
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
@@ -186,7 +195,8 @@ class TestMissedMessages(ZulipTestCase):
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
-    def _deleted_message_in_missed_stream_messages(self, send_as_user: bool, mock_random_token: MagicMock) -> None:
+    def _deleted_message_in_missed_stream_messages(self, send_as_user: bool,
+                                                   mock_random_token: MagicMock) -> None:
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
@@ -204,7 +214,8 @@ class TestMissedMessages(ZulipTestCase):
         self.assertEqual(len(mail.outbox), 0)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
-    def _deleted_message_in_personal_missed_stream_messages(self, send_as_user: bool, mock_random_token: MagicMock) -> None:
+    def _deleted_message_in_personal_missed_stream_messages(self, send_as_user: bool,
+                                                            mock_random_token: MagicMock) -> None:
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
@@ -222,7 +233,8 @@ class TestMissedMessages(ZulipTestCase):
         self.assertEqual(len(mail.outbox), 0)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
-    def _deleted_message_in_huddle_missed_stream_messages(self, send_as_user: bool, mock_random_token: MagicMock) -> None:
+    def _deleted_message_in_huddle_missed_stream_messages(self, send_as_user: bool,
+                                                          mock_random_token: MagicMock) -> None:
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 

@@ -323,7 +323,8 @@ class NarrowBuilderTest(ZulipTestCase):
         query = self._build_query(term)
         self.assertEqual(str(query), 'SELECT id \nFROM zerver_message')
 
-    def _do_add_term_test(self, term: Dict[str, Any], where_clause: Text, params: Optional[Dict[str, Any]]=None) -> None:
+    def _do_add_term_test(self, term: Dict[str, Any], where_clause: Text,
+                          params: Optional[Dict[str, Any]]=None) -> None:
         query = self._build_query(term)
         if params is not None:
             actual_params = query.compile().params

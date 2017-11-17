@@ -194,7 +194,8 @@ class PreviewTestCase(ZulipTestCase):
         self.assertIn(embedded_link, msg.rendered_content)
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
-    def _send_message_with_test_org_url(self, sender_email: str, queue_should_run: bool=True, relative_url: bool=False) -> Message:
+    def _send_message_with_test_org_url(self, sender_email: str, queue_should_run: bool=True,
+                                        relative_url: bool=False) -> Message:
         url = 'http://test.org/'
         with mock.patch('zerver.lib.actions.queue_json_publish') as patched:
             msg_id = self.send_personal_message(

@@ -1692,8 +1692,10 @@ class UserSignUpTest(ZulipTestCase):
             group2_streams.append(stream)
         do_create_default_stream_group(realm, "group 2", "group 2 description", group2_streams)
 
-        result = self.submit_reg_form_for_user(email, password, default_stream_groups=["group 1", "group 2"])
-        self.check_user_subscribed_only_to_streams("newguy", list(set(default_streams + group1_streams + group2_streams)))
+        result = self.submit_reg_form_for_user(email, password,
+                                               default_stream_groups=["group 1", "group 2"])
+        self.check_user_subscribed_only_to_streams(
+            "newguy", list(set(default_streams + group1_streams + group2_streams)))
 
     def test_signup_invalid_subdomain(self):
         # type: () -> None
