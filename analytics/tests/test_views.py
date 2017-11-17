@@ -37,7 +37,8 @@ class TestGetChartData(ZulipTestCase):
     def data(self, i: int) -> List[int]:
         return [0, 0, i, 0]
 
-    def insert_data(self, stat: CountStat, realm_subgroups: List[Optional[str]], user_subgroups: List[str]) -> None:
+    def insert_data(self, stat: CountStat, realm_subgroups: List[Optional[str]],
+                    user_subgroups: List[str]) -> None:
         if stat.frequency == CountStat.HOUR:
             insert_time = self.end_times_hour[2]
             fill_time = self.end_times_hour[-1]
@@ -133,7 +134,8 @@ class TestGetChartData(ZulipTestCase):
 
     def test_include_empty_subgroups(self) -> None:
         FillState.objects.create(
-            property='realm_active_humans::day', end_time=self.end_times_day[0], state=FillState.DONE)
+            property='realm_active_humans::day', end_time=self.end_times_day[0],
+            state=FillState.DONE)
         result = self.client_get('/json/analytics/chart_data',
                                  {'chart_name': 'number_of_humans'})
         self.assert_json_success(result)
@@ -142,7 +144,8 @@ class TestGetChartData(ZulipTestCase):
         self.assertFalse('user' in data)
 
         FillState.objects.create(
-            property='messages_sent:is_bot:hour', end_time=self.end_times_hour[0], state=FillState.DONE)
+            property='messages_sent:is_bot:hour', end_time=self.end_times_hour[0],
+            state=FillState.DONE)
         result = self.client_get('/json/analytics/chart_data',
                                  {'chart_name': 'messages_sent_over_time'})
         self.assert_json_success(result)
@@ -151,18 +154,22 @@ class TestGetChartData(ZulipTestCase):
         self.assertEqual(data['user'], {'human': [0], 'bot': [0]})
 
         FillState.objects.create(
-            property='messages_sent:message_type:day', end_time=self.end_times_day[0], state=FillState.DONE)
+            property='messages_sent:message_type:day', end_time=self.end_times_day[0],
+            state=FillState.DONE)
         result = self.client_get('/json/analytics/chart_data',
                                  {'chart_name': 'messages_sent_by_message_type'})
         self.assert_json_success(result)
         data = result.json()
         self.assertEqual(data['realm'], {
-            'Public streams': [0], 'Private streams': [0], 'Private messages': [0], 'Group private messages': [0]})
+            'Public streams': [0], 'Private streams': [0],
+            'Private messages': [0], 'Group private messages': [0]})
         self.assertEqual(data['user'], {
-            'Public streams': [0], 'Private streams': [0], 'Private messages': [0], 'Group private messages': [0]})
+            'Public streams': [0], 'Private streams': [0],
+            'Private messages': [0], 'Group private messages': [0]})
 
         FillState.objects.create(
-            property='messages_sent:client:day', end_time=self.end_times_day[0], state=FillState.DONE)
+            property='messages_sent:client:day', end_time=self.end_times_day[0],
+            state=FillState.DONE)
         result = self.client_get('/json/analytics/chart_data',
                                  {'chart_name': 'messages_sent_by_client'})
         self.assert_json_success(result)

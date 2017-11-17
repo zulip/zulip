@@ -103,7 +103,8 @@ class AnalyticsTestCase(TestCase):
             queryset = queryset.filter(subgroup=subgroup)
         self.assertEqual(queryset.values_list('value', flat=True)[0], value)
 
-    def assertTableState(self, table: Type[BaseCount], arg_keys: List[str], arg_values: List[List[object]]) -> None:
+    def assertTableState(self, table: Type[BaseCount], arg_keys: List[str],
+                         arg_values: List[List[object]]) -> None:
         """Assert that the state of a *Count table is what it should be.
 
         Example usage:
@@ -153,7 +154,8 @@ class TestProcessCountStat(AnalyticsTestCase):
                    VALUES (%s, 1, '%s', %%%%(time_end)s)""" % (self.default_realm.id, property)
         return CountStat(property, sql_data_collector(RealmCount, query, None), CountStat.HOUR)
 
-    def assertFillStateEquals(self, stat: CountStat, end_time: datetime, state: int=FillState.DONE) -> None:
+    def assertFillStateEquals(self, stat: CountStat, end_time: datetime,
+                              state: int=FillState.DONE) -> None:
         fill_state = FillState.objects.filter(property=stat.property).first()
         self.assertEqual(fill_state.end_time, end_time)
         self.assertEqual(fill_state.state, state)
@@ -216,9 +218,13 @@ class TestProcessCountStat(AnalyticsTestCase):
         self.assertTableState(UserCount, ['property', 'value'], [[user_stat.property, 5]])
         self.assertTableState(StreamCount, ['property', 'value'], [[stream_stat.property, 5]])
         self.assertTableState(RealmCount, ['property', 'value'],
-                              [[user_stat.property, 5], [stream_stat.property, 5], [realm_stat.property, 5]])
+                              [[user_stat.property, 5],
+                               [stream_stat.property, 5],
+                               [realm_stat.property, 5]])
         self.assertTableState(InstallationCount, ['property', 'value'],
-                              [[user_stat.property, 5], [stream_stat.property, 5], [realm_stat.property, 5]])
+                              [[user_stat.property, 5],
+                               [stream_stat.property, 5],
+                               [realm_stat.property, 5]])
 
         # Change the logged data and mark FillState as dirty
         UserCount.objects.update(value=6)
@@ -232,16 +238,21 @@ class TestProcessCountStat(AnalyticsTestCase):
         self.assertTableState(UserCount, ['property', 'value'], [[user_stat.property, 6]])
         self.assertTableState(StreamCount, ['property', 'value'], [[stream_stat.property, 6]])
         self.assertTableState(RealmCount, ['property', 'value'],
-                              [[user_stat.property, 6], [stream_stat.property, 6], [realm_stat.property, 6]])
+                              [[user_stat.property, 6],
+                               [stream_stat.property, 6],
+                               [realm_stat.property, 6]])
         self.assertTableState(InstallationCount, ['property', 'value'],
-                              [[user_stat.property, 6], [stream_stat.property, 6], [realm_stat.property, 6]])
+                              [[user_stat.property, 6],
+                               [stream_stat.property, 6],
+                               [realm_stat.property, 6]])
 
     def test_process_dependent_stat(self) -> None:
         stat1 = self.make_dummy_count_stat('stat1')
         stat2 = self.make_dummy_count_stat('stat2')
         query = """INSERT INTO analytics_realmcount (realm_id, value, property, end_time)
                    VALUES (%s, 1, '%s', %%%%(time_end)s)""" % (self.default_realm.id, 'stat3')
-        stat3 = DependentCountStat('stat3', sql_data_collector(RealmCount, query, None), CountStat.HOUR,
+        stat3 = DependentCountStat('stat3', sql_data_collector(RealmCount, query, None),
+                                   CountStat.HOUR,
                                    dependencies=['stat1', 'stat2'])
         hour = [installation_epoch() + i*self.HOUR for i in range(5)]
 
@@ -274,7 +285,8 @@ class TestProcessCountStat(AnalyticsTestCase):
         # test daily dependent stat with hourly dependencies
         query = """INSERT INTO analytics_realmcount (realm_id, value, property, end_time)
                    VALUES (%s, 1, '%s', %%%%(time_end)s)""" % (self.default_realm.id, 'stat4')
-        stat4 = DependentCountStat('stat4', sql_data_collector(RealmCount, query, None), CountStat.DAY,
+        stat4 = DependentCountStat('stat4', sql_data_collector(RealmCount, query, None),
+                                   CountStat.DAY,
                                    dependencies=['stat1', 'stat2'])
         hour24 = installation_epoch() + 24*self.HOUR
         hour25 = installation_epoch() + 25*self.HOUR
@@ -332,7 +344,9 @@ class TestCountStats(AnalyticsTestCase):
                               [[2, 'true'], [1, 'false'],
                                [3, 'false', self.second_realm],
                                [1, 'false', self.no_message_realm]])
-        self.assertTableState(InstallationCount, ['value', 'subgroup'], [[2, 'true'], [5, 'false']])
+        self.assertTableState(InstallationCount,
+                              ['value', 'subgroup'],
+                              [[2, 'true'], [5, 'false']])
         self.assertTableState(UserCount, [], [])
         self.assertTableState(StreamCount, [], [])
 
@@ -343,7 +357,8 @@ class TestCountStats(AnalyticsTestCase):
         bot = self.create_user(is_bot=True)
         human1 = self.create_user()
         human2 = self.create_user()
-        recipient_human1 = Recipient.objects.create(type_id=human1.id, type=Recipient.PERSONAL)
+        recipient_human1 = Recipient.objects.create(type_id=human1.id,
+                                                    type=Recipient.PERSONAL)
 
         recipient_stream = self.create_stream_with_recipient()[1]
         recipient_huddle = self.create_huddle_with_recipient()[1]
@@ -517,7 +532,8 @@ class TestCountStats(AnalyticsTestCase):
         self.assertTableState(InstallationCount, ['value', 'subgroup'], [[5, 'false'], [2, 'true']])
         self.assertTableState(UserCount, [], [])
 
-    def create_interval(self, user: UserProfile, start_offset: timedelta, end_offset: timedelta) -> None:
+    def create_interval(self, user: UserProfile, start_offset: timedelta,
+                        end_offset: timedelta) -> None:
         UserActivityInterval.objects.create(
             user_profile=user, start=self.TIME_ZERO-start_offset,
             end=self.TIME_ZERO-end_offset)
@@ -786,7 +802,8 @@ class TestActiveUsersAudit(AnalyticsTestCase):
         self.stat = COUNT_STATS['active_users_audit:is_bot:day']
         self.current_property = self.stat.property
 
-    def add_event(self, event_type: str, days_offset: float, user: Optional[UserProfile]=None) -> None:
+    def add_event(self, event_type: str, days_offset: float,
+                  user: Optional[UserProfile]=None) -> None:
         hours_offset = int(24*days_offset)
         if user is None:
             user = self.user
