@@ -166,11 +166,9 @@ class AboutPageTest(ZulipTestCase):
             subprocess.check_call([update_script, '--use-fixture'])  # nocoverage
 
     def test_endpoint(self) -> None:
+        """ We can't check the contributors list since it is rendered client-side """
         result = self.client_get('/team/')
-        self.assert_in_success_response(
-            ['Our amazing community', 'commits', '@timabbott'],
-            result
-        )
+        self.assert_in_success_response(['Our amazing community'], result)
 
     def test_split_by(self) -> None:
         """Utility function primarily used in authors page"""
