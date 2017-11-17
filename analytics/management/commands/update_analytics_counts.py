@@ -19,8 +19,7 @@ class Command(BaseCommand):
 
     Run as a cron job that runs every hour."""
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--time', '-t',
                             type=str,
                             help='Update stat tables from current state to'
@@ -38,8 +37,7 @@ class Command(BaseCommand):
                             help="Print timing information to stdout.",
                             default=False)
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         try:
             os.mkdir(settings.ANALYTICS_LOCK_DIR)
         except OSError:
@@ -51,8 +49,7 @@ class Command(BaseCommand):
         finally:
             os.rmdir(settings.ANALYTICS_LOCK_DIR)
 
-    def run_update_analytics_counts(self, options):
-        # type: (Dict[str, Any]) -> None
+    def run_update_analytics_counts(self, options: Dict[str, Any]) -> None:
         # installation_epoch relies on there being at least one realm; we
         # shouldn't run the analytics code if that condition isn't satisfied
         if not Realm.objects.exists():

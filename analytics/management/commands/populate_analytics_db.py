@@ -19,8 +19,11 @@ class Command(BaseCommand):
     DAYS_OF_DATA = 100
     random_seed = 26
 
-    def create_user(self, email, full_name, is_staff, date_joined, realm):
-        # type: (Text, Text, Text, bool, datetime, Realm) -> UserProfile
+    def create_user(self, email: Text,
+                    full_name: Text,
+                    is_staff: bool,
+                    date_joined: datetime,
+                    realm: Realm) -> UserProfile:
         user = UserProfile.objects.create(
             email=email, full_name=full_name, is_staff=is_staff,
             realm=realm, short_name=full_name, pointer=-1, last_pointer_updater='none',
@@ -41,8 +44,7 @@ class Command(BaseCommand):
             autocorrelation=autocorrelation, spikiness=spikiness, holiday_rate=holiday_rate,
             frequency=stat.frequency, partial_sum=partial_sum, random_seed=self.random_seed)
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         do_drop_all_analytics_tables()
         # I believe this also deletes any objects with this realm as a foreign key
         Realm.objects.filter(string_id='analytics').delete()
@@ -53,8 +55,9 @@ class Command(BaseCommand):
             string_id='analytics', name='Analytics', date_created=installation_time)
         shylock = self.create_user('shylock@analytics.ds', 'Shylock', True, installation_time, realm)
 
-        def insert_fixture_data(stat, fixture_data, table):
-            # type: (CountStat, Mapping[Optional[str], List[int]], Type[BaseCount]) -> None
+        def insert_fixture_data(stat: CountStat,
+                                fixture_data: Mapping[Optional[str], List[int]],
+                                table: Type[BaseCount]) -> None:
             end_times = time_range(last_end_time, last_end_time, stat.frequency,
                                    len(list(fixture_data.values())[0]))
             if table == RealmCount:
