@@ -32,8 +32,6 @@ You might be interested in:
   well-tested codebase, and a stock of hundreds of
   [beginner-friendly issues][beginner-friendly].
 
-[beginner-friendly]: https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22
-
 * **Contributing non-code**.
   [Report an issue](https://zulip.readthedocs.io/en/latest/overview/contributing.html#reporting-issue),
   [translate](https://zulip.readthedocs.io/en/latest/translating/translating.html) Zulip
@@ -80,3 +78,5 @@ You may also be interested in reading our [blog](http://blog.zulip.org/) or
 following us on [twitter](https://twitter.com/zulip).
 Zulip is distributed under the
 [Apache 2.0](https://github.com/zulip/zulip/blob/master/LICENSE) license.
+
+[beginner-friendly]: https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22
