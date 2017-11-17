@@ -21,7 +21,7 @@ from zerver.lib.subdomains import user_matches_subdomain, get_subdomain
 from zerver.lib.users import check_full_name
 from zerver.models import UserProfile, Realm, get_user_profile_by_id, \
     get_user_profile_by_email, remote_user_to_email, email_to_username, \
-    get_realm
+    get_realm, get_user
 
 def pad_method_dict(method_dict):
     # type: (Dict[Text, bool]) -> Dict[Text, bool]
@@ -84,6 +84,32 @@ def require_email_format_usernames(realm=None):
         if settings.LDAP_EMAIL_ATTR or settings.LDAP_APPEND_DOMAIN:
             return False
     return True
+
+def common_get_active_user(email: str, realm: Realm,
+                           return_data: Dict[str, Any]=None) -> Optional[UserProfile]:
+    try:
+        user_profile = get_user(email, realm)
+    except UserProfile.DoesNotExist:
+        # If the user doesn't have an account in the target realm, we
+        # check whether they might have an account in another realm,
+        # and if so, provide a helpful error message via
+        # `invalid_subdomain`.
+        try:
+            user_profile = get_user_profile_by_email(email)
+        except UserProfile.DoesNotExist:
+            return None
+        if return_data is not None:
+            return_data['invalid_subdomain'] = True
+        return None
+    if not user_profile.is_active:
+        if return_data is not None:
+            return_data['inactive_user'] = True
+        return None
+    if user_profile.realm.deactivated:
+        if return_data is not None:
+            return_data['inactive_realm'] = True
+        return None
+    return user_profile
 
 def common_get_active_user_by_email(email, return_data=None):
     # type: (Text, Optional[Dict[str, Any]]) -> Optional[UserProfile]
@@ -285,23 +311,19 @@ class SocialAuthMixin(ZulipAuthMixin):
 
 class ZulipDummyBackend(ZulipAuthMixin):
     """
-    Used when we want to log you in but we don't know which backend to use.
+    Used when we want to log you in without checking any
+    authentication (i.e. new user registration or when otherwise
+    authentication has already been checked earlier in the process).
     """
 
-    def authenticate(self, username: Optional[Text]=None, realm: Optional[Realm]=None,
+    def authenticate(self, username: Optional[str]=None, realm: Optional[Realm]=None,
                      use_dummy_backend: bool=False,
-                     return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
-        assert username is not None
-        assert realm is not None
+                     return_data: Dict[str, Any]=None) -> Optional[UserProfile]:
         if use_dummy_backend:
-            user_profile = common_get_active_user_by_email(username)
-            if user_profile is None:
-                return None
-            if not user_matches_subdomain(realm.subdomain, user_profile):
-                if return_data is not None:
-                    return_data["invalid_subdomain"] = True
-                return None
-            return user_profile
+            # These are kwargs only for readability; they should never be None
+            assert username is not None
+            assert realm is not None
+            return common_get_active_user(username, realm, return_data)
         return None
 
 class EmailAuthBackend(ZulipAuthMixin):
