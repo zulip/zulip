@@ -1337,6 +1337,7 @@ div.focused_table {
 
 .message_content {
     line-height: 17px;
+    min-height: 17px;
     font-size: 14px;
     margin-left: 46px;
     display: block;
@@ -1423,11 +1424,13 @@ div.focused_table {
 
 .message_content.condensed {
     max-height: 8.5em;
+    min-height: 0em;
     overflow: hidden;
 }
 
 .message_content.collapsed {
     max-height: 0em;
+    min-height: 0em;
     overflow: hidden;
 }
 
