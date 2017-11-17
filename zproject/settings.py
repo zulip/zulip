@@ -287,7 +287,6 @@ DEFAULT_SETTINGS.update({
     'EMAIL_DELIVERER_DISABLED': False,
     'REGISTER_LINK_DISABLED': None,
     'LOGIN_LINK_DISABLED': False,
-    'ABOUT_LINK_DISABLED': False,
     'FIND_TEAM_LINK_DISABLED': True,
 
     # What domains to treat like the root domain
