@@ -414,18 +414,26 @@ exports.validate_stream_message_address_info = function (stream_name) {
     }
 
     var response;
-    const context={para:'<p>',closepara:'</p>',bold:'<b>',closebold:'</b>',link:'<a href="#streams/all">',closelink:'</a>',streamname: Handlebars.Utils.escapeExpression(stream_name)};
+    var context={
+       'streamname': Handlebars.Utils.escapeExpression(stream_name),
+       'link' : "<a href='#streams/all'>",
+       'para' : '<p>',
+       'bold' : '<b>',
+       'closepara' : '</p>',
+       'closelink' : '</a>',
+       'closebold' : '</b>'
+     };
     switch (check_unsubscribed_stream_for_send(stream_name,
                                                page_params.narrow_stream !== undefined)) {
     case "does-not-exist":
-        response = i18n.t("{{-para}}The stream {{-bold}}{{streamname}}{{-closebold}} does not exist.{{-closepara}}{{-para}}Manage your subscriptions{{-link}} on your Streams page{{-closelink}}.{{-closepara}}",context);
+        response = i18n.t("__para__The stream __-bold____streamname____-closebold__ does not exist.__-closepara____-para__Manage your subscriptions __-link__on your Streams page__-closelink__.__-closepara__",context);
         compose_error(response, $('#stream'));
         return false;
     case "error":
         compose_error(i18n.t("Error checking subscription"), $("#stream"));
         return false;
     case "not-subscribed":
-        response = i18n.t("{{-para}}You're not subscribed to the stream {{-bold}}{{streamname}}{{-closebold}}.{{-closepara}}{{-para}}Manage your subscriptions{{-link}} on your Streams page{{-closelink}}.{{-closepara}}",context);
+        response=i18n.t("__para__You're not subscribed to the stream __bold____streamname____closebold__.__closepara____para__Manage your subscriptions __link__on your Streams page__closelink__.__closepara__",context);
         compose_error(response, $('#stream'));
         return false;
     }
