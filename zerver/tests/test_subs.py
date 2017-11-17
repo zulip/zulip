@@ -897,7 +897,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
         self.assert_length(default_stream_groups, 1)
         self.assertEqual(default_stream_groups[0].name, group_name)
         self.assertEqual(default_stream_groups[0].description, description)
-        self.assertEqual(list(default_stream_groups[0].streams.all()), streams)
+        self.assertEqual(list(default_stream_groups[0].streams.all().order_by("id")), streams)
 
         # Test adding streams to existing default stream group
         group_id = default_stream_groups[0].id
