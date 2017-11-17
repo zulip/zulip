@@ -10,7 +10,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0117_add_desc_to_user_group'),
+        ('zerver', '0119_userprofile_night_mode'),
     ]
 
     operations = [
