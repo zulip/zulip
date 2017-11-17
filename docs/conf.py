@@ -113,6 +113,11 @@ if not on_rtd:
     import sphinx_rtd_theme
     html_theme = 'sphinx_rtd_theme'
     html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+else:
+    html_theme = 'sphinx_rtd_theme'
+    html_style = None
+    html_theme_options = {'collapse_navigation': False}
+    using_rtd_theme = True
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
