@@ -26,7 +26,7 @@ On this page you'll find:
 * A [documentation](#bot-api) of the bot API.
 * Common [problems](#common-problems) when developing/running bots and their solutions.
 
-## Installing a development version of the `zulip_bots` package
+## Installing a development version of the Zulip bots package
 
 1. `git clone https://github.com/zulip/python-zulip-api.git` - clone the [python-zulip-api](
   https://github.com/zulip/python-zulip-api) repository.

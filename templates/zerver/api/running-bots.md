@@ -11,7 +11,7 @@ On this page you'll find:
 * A [guide](#zulip-botserver) on running a Zulip botserver.
 * Common [problems](#common-problems) when developing/running bots and their solutions.
 
-## Installing the `zulip_bots` package
+## Installing the Zulip bots package
 
 ## Running a bot
 
@@ -143,7 +143,7 @@ pip install zulip_botserver
 5.  Congrats, everything is set up! Test your botserver like you would
     test a normal bot.
 
-### Running Zulip Botserver with `supervisord`
+### Running Zulip Botserver with supervisord
 
 [supervisord](http://supervisord.org/) is a popular tool for running
 services in production.  It helps ensure the service starts on boot,
