@@ -288,8 +288,9 @@ Please contact %s to reactivate this group.""" % (
 
         if username is not None and password:
             subdomain = get_subdomain(self.request)
+            realm = get_realm(subdomain)
             self.user_cache = authenticate(self.request, username=username, password=password,
-                                           realm_subdomain=subdomain)
+                                           realm=realm)
             if self.user_cache is None:
                 raise forms.ValidationError(
                     self.error_messages['invalid_login'],

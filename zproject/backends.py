@@ -335,7 +335,7 @@ class EmailAuthBackend(ZulipAuthMixin):
     """
 
     def authenticate(self, username: Optional[str]=None, password: Optional[str]=None,
-                     realm_subdomain: Optional[str]=None,
+                     realm: Optional[Realm]=None,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         """ Authenticate a user based on email address as the user name. """
         if username is None or password is None:
@@ -343,20 +343,22 @@ class EmailAuthBackend(ZulipAuthMixin):
             # specify which backend to use when not using
             # EmailAuthBackend, username and password should always be set.
             raise AssertionError("Invalid call to authenticate for EmailAuthBackend")
+        if realm is None:
+            return None
 
         user_profile = common_get_active_user_by_email(username, return_data=return_data)
         if user_profile is None:
             return None
-        if not password_auth_enabled(user_profile.realm):
+        if not password_auth_enabled(realm):
             if return_data is not None:
                 return_data['password_auth_disabled'] = True
             return None
-        if not email_auth_enabled(user_profile.realm):
+        if not email_auth_enabled(realm):
             if return_data is not None:
                 return_data['email_auth_disabled'] = True
             return None
         if user_profile.check_password(password):
-            if not user_matches_subdomain(realm_subdomain, user_profile):
+            if not user_matches_subdomain(realm.subdomain, user_profile):
                 if return_data is not None:
                     return_data["invalid_subdomain"] = True
                 return None
@@ -460,21 +462,22 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
 class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
     REALM_IS_NONE_ERROR = 1
 
-    def authenticate(self, username: str, password: str, realm_subdomain: Optional[Text]=None,
+    def authenticate(self, username: str, password: str, realm: Optional[Realm]=None,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
+        if realm is None:
+            return None
+        self._realm = realm
+
         try:
-            self._realm = get_realm(realm_subdomain)
             username = self.django_to_ldap_username(username)
             user_profile = ZulipLDAPAuthBackendBase.authenticate(self,
                                                                  username=username,
                                                                  password=password)
             if user_profile is None:
                 return None
-            if not user_matches_subdomain(realm_subdomain, user_profile):
+            if not user_matches_subdomain(realm.subdomain, user_profile):
                 return None
             return user_profile
-        except Realm.DoesNotExist:
-            return None  # nocoverage # TODO: this may no longer be possible
         except ZulipLDAPException:
             return None  # nocoverage # TODO: this may no longer be possible
 
@@ -518,7 +521,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
 
 # Just like ZulipLDAPAuthBackend, but doesn't let you log in.
 class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
-    def authenticate(self, username: str, password: str, realm_subdomain: Optional[Text]=None,
+    def authenticate(self, username: str, password: str, realm: Optional[Realm]=None,
                      return_data: Optional[Dict[str, Any]]=None) -> None:
         return None
 

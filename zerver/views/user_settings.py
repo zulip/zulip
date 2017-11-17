@@ -92,7 +92,8 @@ def json_change_settings(request, user_profile,
     if new_password != "" or confirm_password != "":
         if new_password != confirm_password:
             return json_error(_("New password must match confirmation password!"))
-        if not authenticate(username=user_profile.email, password=old_password):
+        if not authenticate(username=user_profile.email, password=old_password,
+                            realm=user_profile.realm):
             return json_error(_("Wrong password!"))
         do_change_password(user_profile, new_password)
         # In Django 1.10, password changes invalidates sessions, see

@@ -43,7 +43,7 @@ def is_subdomain_root_or_alias(request: HttpRequest) -> bool:
 
 def user_matches_subdomain(realm_subdomain: Optional[Text], user_profile: UserProfile) -> bool:
     if realm_subdomain is None:
-        return True
+        return True  # nocoverage # This state may no longer be possible.
     return user_profile.realm.subdomain == realm_subdomain
 
 def is_root_domain_available() -> bool:

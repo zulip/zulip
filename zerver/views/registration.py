@@ -191,7 +191,7 @@ def accounts_register(request):
             auth_result = authenticate(request,
                                        username=email,
                                        password=password,
-                                       realm_subdomain=realm.subdomain,
+                                       realm=realm,
                                        return_data=return_data)
             if auth_result is None:
                 # TODO: This probably isn't going to give a

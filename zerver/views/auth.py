@@ -644,10 +644,10 @@ def api_dev_get_emails(request):
 def api_fetch_api_key(request, username=REQ(), password=REQ()):
     # type: (HttpRequest, str, str) -> HttpResponse
     return_data = {}  # type: Dict[str, bool]
+    subdomain = get_subdomain(request)
+    realm = get_realm(subdomain)
     if username == "google-oauth2-token":
         # This code path is auth for the legacy Android app
-        subdomain = get_subdomain(request)
-        realm = get_realm(subdomain)
         user_profile = authenticate(google_oauth2_token=password,
                                     realm=realm,
                                     return_data=return_data)
@@ -659,7 +659,7 @@ def api_fetch_api_key(request, username=REQ(), password=REQ()):
 
         user_profile = authenticate(username=username,
                                     password=password,
-                                    realm_subdomain=get_subdomain(request),
+                                    realm=realm,
                                     return_data=return_data)
     if return_data.get("inactive_user"):
         return json_error(_("Your account has been disabled."),
@@ -756,9 +756,11 @@ def api_get_server_settings(request):
 @has_request_variables
 def json_fetch_api_key(request, user_profile, password=REQ(default='')):
     # type: (HttpRequest, UserProfile, str) -> HttpResponse
+    subdomain = get_subdomain(request)
+    realm = get_realm(subdomain)
     if password_auth_enabled(user_profile.realm):
         if not authenticate(username=user_profile.email, password=password,
-                            realm_subdomain=get_subdomain(request)):
+                            realm=realm):
             return json_error(_("Your username or password is incorrect."))
     return json_success({"api_key": user_profile.api_key})
 
