@@ -7,7 +7,6 @@
 #
 # For details, see requirements/README.md .
 #
-git+https://github.com/zulip/pyoembed.git@8a4855b5bbf83e18283d6e6e5d8fe401ede14923#egg=pyoembed==0.1.1.zulip2
 git+https://github.com/zulip/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#egg=talon==1.2.10.zulip1
 git+https://github.com/zulip/ultrajson@70ac02bec#egg=ujson==1.35+git
 git+https://github.com/zulip/virtualenv-clone.git@44e831da39ffb6b9bb5c7d103d98babccdca0456#egg=virtualenv-clone==0.2.6.zulip1
@@ -113,6 +112,7 @@ pygments==2.2.0
 pyjwt==1.5.3
 pyldap==2.4.37
 pylibmc==1.5.2
+pyoembed==0.1.2
 pyopenssl==17.0.0         # via ndg-httpsclient, scrapy, service-identity
 python-dateutil==2.6.1
 python-digitalocean==1.12
@@ -126,7 +126,7 @@ recommonmark==0.4.0
 redis==2.10.6
 regex==2017.7.28
 requests-oauthlib==0.8.0
-requests==2.18.4          # via aws-xray-sdk, docker, moto, premailer, python-digitalocean, python-gcm, python-twitter, requests-oauthlib, social-auth-core, sphinx
+requests==2.18.4          # via aws-xray-sdk, docker, moto, premailer, pyoembed, python-digitalocean, python-gcm, python-twitter, requests-oauthlib, social-auth-core, sphinx
 rsa==3.4.2
 s3transfer==0.1.11        # via boto3
 scrapy==1.4.0
