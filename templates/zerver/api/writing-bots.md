@@ -17,7 +17,7 @@ third-party service.
 On this page you'll find:
 
 * A step-by-step
-  [guide](#installing-a-development-version-of-the-zulip_bots-package)
+  [guide](#installing-a-development-version-of-the-zulip-bots-package)
   on how to set up a development environment for writing bots with all
   of our nice tooling to make it easy to write and test your work.
 * A [guide](#writing-a-bot) on writing a bot.
