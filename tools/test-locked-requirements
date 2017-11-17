@@ -12,10 +12,10 @@ ZULIP_PATH = os.path.dirname(TOOLS_DIR)
 sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import run
 
-PROD_LOCK_FILE = os.path.join(ZULIP_PATH, 'requirements', 'prod_lock.txt')
-DEV_LOCK_FILE = os.path.join(ZULIP_PATH, 'requirements', 'dev_lock.txt')
-TEST_PROD_LOCK_FILE = '/var/tmp/test_prod_lock.txt'
-TEST_DEV_LOCK_FILE = '/var/tmp/test_dev_lock.txt'
+PROD_LOCK_FILE = os.path.join(ZULIP_PATH, 'requirements', 'prod.txt')
+DEV_LOCK_FILE = os.path.join(ZULIP_PATH, 'requirements', 'dev.txt')
+TEST_PROD_LOCK_FILE = '/var/tmp/test_prod.txt'
+TEST_DEV_LOCK_FILE = '/var/tmp/test_dev.txt'
 
 def print_diff(path_file1, path_file2):
     # type: (Text, Text) -> None

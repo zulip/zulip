@@ -107,7 +107,7 @@ def check_venv():
     # type: () -> bool
     path = os.path.join(ROOT_DIR, 'scripts', 'lib', 'hash_reqs.py')
     cache_dir = '/srv/zulip-venv-cache/'
-    for fn in ['dev_lock.txt']:
+    for fn in ['dev.txt']:
         requirements_file = os.path.join(ROOT_DIR, "requirements", fn)
         output = subprocess.check_output([path, requirements_file], universal_newlines=True)
         sha1sum = output.split()[0]

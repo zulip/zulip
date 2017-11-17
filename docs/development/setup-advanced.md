@@ -318,7 +318,7 @@ sudo virtualenv /srv/zulip-py3-venv -p python3 # Create a python3 virtualenv
 sudo chown -R `whoami`:`whoami` /srv/zulip-py3-venv
 source /srv/zulip-py3-venv/bin/activate # Activate python3 virtualenv
 pip install --upgrade pip # upgrade pip itself because older versions have known issues
-pip install --no-deps -r requirements/dev_lock.txt # install python packages required for development
+pip install --no-deps -r requirements/dev.txt # install python packages required for development
 ```
 
 Now run these commands:

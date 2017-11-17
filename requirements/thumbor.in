@@ -1,0 +1,12 @@
+tc-aws==6.0.3
+thumbor==6.3.2
+typing==3.6.2
+
+# Below dependencies should ideally have been added to thumbor.txt by the
+# use of tools/update-locked-requirements but for some reason `pip-compile`
+# doesn't do so. An issue relating to this is
+# https://github.com/thumbor/thumbor/issues/1006
+backports-abc==0.5
+backports.ssl-match-hostname==3.5.0.1
+certifi==2016.9.26
+singledispatch==3.4.0.3

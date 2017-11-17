@@ -58,7 +58,8 @@ Markdown, though that won't be as faithful as the `make html`
 approach.
 
 When editing dependencies for the Zulip documentation, you should edit
-`requirements/docs.txt` (which is used by ReadTheDocs to build the
+`requirements/docs.in` and then run `tools/update-locked-requirements`
+which updates docs.txt file (which is used by ReadTheDocs to build the
 Zulip developer documentation, without installing all of Zulip's
 dependencies).
 

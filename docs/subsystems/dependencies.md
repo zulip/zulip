@@ -117,8 +117,8 @@ highlighting.  The system is largely managed by the code in
   versions in a `requirements.txt` file to declare what we're using.
   Since we have a few different installation targets, we maintain
   several `requirements.txt` format files in the `requirements/`
-  directory (e.g. `dev.txt` for development, `prod.txt` for
-  production, `docs.txt` for ReadTheDocs, `common.txt` for the vast
+  directory (e.g. `dev.in` for development, `prod.in` for
+  production, `docs.in` for ReadTheDocs, `common.in` for the vast
   majority of packages common to prod and development, etc.).  We use
   `pip install --no-deps` to ensure we only install the packages we
   explicitly declare as dependencies.
@@ -133,6 +133,23 @@ highlighting.  The system is largely managed by the code in
   effect is that it's easy to debug problems caused by dependency
   upgrades, since we're always doing those upgrades with an explicit
   commit updating the `requirements/` directory.
+* **Pinning versions of indirect dependencies**.  We "pin" or "lock"
+  the versions of our indirect dependencies files with
+  `tools/update-locked-requirements` (powered by `pip-compile`).  What
+  this means is that we have some "source" requirements files, like
+  `requirements/common.in`, that declare the packages that Zulip
+  depends on directly.  Those packages have their own recursive
+  dependencies.  When adding or removing a dependency from Zulip, one
+  simply edits the appropriate "source" requirements files, and then
+  runs `tools/update-locked-requirements`.  That tool will use `pip
+  compile` to generate the locked requirements files like `prod.txt`,
+  `dev.txt` etc files that explicitly declare versions of all of
+  Zulip's recursive dependencies.  For indirect dependencies (i.e.
+  dependencies not explicitly declared in the source requirements files),
+  it provides helpful comments explaining which direct dependency (or
+  dependencies) needed that indirect dependency.  The process for
+  using this system is documented in more detail in
+  `requirements/README.md`.
 * **Caching of virtualenvs and packages**.  To make updating the
   dependencies of a Zulip installation efficient, we maintain a cache
   of virtualenvs named by the hash of the relevant `requirements.txt`
@@ -153,23 +170,6 @@ highlighting.  The system is largely managed by the code in
   production deployment directory under `/home/zulip/deployments/`.
   This helps ensure that a Zulip installation doesn't leak large
   amounts of disk over time.
-* **Pinning versions of indirect dependencies**.  We "pin" or "lock"
-  the versions of our indirect dependencies files with
-  `tools/update-locked-requirements` (powered by `pip-compile`).  What
-  this means is that we have some "source" requirements files, like
-  `requirements/common.txt`, that declare the packages that Zulip
-  depends on directly.  Those packages have their own recursive
-  dependencies.  When adding or removing a dependency from Zulip, one
-  simply edits the appropriate "source" requirements files, and then
-  runs `tools/update-locked-requirements`.  That tool will use `pip
-  compile` to generate the `prod_lock.txt` and `dev_lock.txt` files
-  that explicitly declare versions of all of Zulip's recursive
-  dependencies.  For indirect dependencies (i.e. dependencies not
-  explicitly declared in the source requirements files), it provides
-  helpful comments explaining which direct dependency (or
-  dependencies) needed that indirect dependency.  The process for
-  using this system is documented in more detail in
-  `requirements/README.md`.
 * **Scripts**.  Often, we want a script running in production to use
   the Zulip virtualenv.  To make that work without a lot of duplicated
   code, we have a helpful library,

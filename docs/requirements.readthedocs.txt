@@ -1,1 +1,1 @@
-../requirements/docs_lock.txt
+../requirements/docs.txt

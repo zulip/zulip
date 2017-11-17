@@ -21,5 +21,5 @@ run(["apt-get", "-y", "install"] + THUMBOR_VENV_DEPENDENCIES)
 venv_name = "zulip-thumbor-venv"
 cached_venv_path = setup_virtualenv(
     os.path.join(args.deploy_path, venv_name),
-    os.path.join(ZULIP_PATH, "requirements", "thumbor_lock.txt"),
+    os.path.join(ZULIP_PATH, "requirements", "thumbor.txt"),
     virtualenv_args=['-p', 'python'])
