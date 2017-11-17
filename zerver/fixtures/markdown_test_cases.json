@@ -57,6 +57,21 @@
       "text_content": "I heard about this second hand...\n\nHe said:\n\nThe customer is complaining.\nThey looked at this code:\ndef hello(): print 'hello\n\n\n\nThey would prefer:\n\ndef hello()\n  puts 'hello'\nend\n\nPlease advise.\nShe said:\n~~~ quote\nJust send them this:\n```\necho \"hello\n\"\n```\n"
     },
     {
+      "name": "empty_single_blockquote",
+      "input": ">",
+      "expected_output": "<p>&gt;</p>"
+    },
+    {
+      "name": "empty_multiple_blockquote",
+      "input": ">>>>>",
+      "expected_output": "<blockquote>\n<blockquote>\n<blockquote>\n<blockquote>\n<p>&gt;</p>\n</blockquote>\n</blockquote>\n</blockquote>\n</blockquote>"
+    },
+	{
+	  "name": "non_empty_blockquote",
+	  "input": ">\n>\ntext",
+	  "expected_output": "<blockquote>\n<p>text</p>\n</blockquote>"
+	},
+    {
       "name": "fenced_quote_with_hashtag",
       "input": "```quote\n# line 1\n# line 2\n```",
       "expected_output": "<blockquote>\n<p># line 1<br>\n# line 2</p>\n</blockquote>",
