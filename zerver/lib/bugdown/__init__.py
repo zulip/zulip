@@ -1342,6 +1342,11 @@ class Bugdown(markdown.Extension):
         md.parser.blockprocessors.add('ulist', UListProcessor(md.parser), '>hr')
         md.parser.blockprocessors.add('indent', ListIndentProcessor(md.parser), '<ulist')
 
+        # Original regex for blockquote is RE = re.compile(r'(^|\n)[ ]{0,3}>[ ]?(.*)')
+        md.parser.blockprocessors['quote'].RE = re.compile(
+            r'(^|\n)(?!(?:[ ]{0,3}>\s*(?:$|\n))*(?:$|\n))'
+            r'[ ]{0,3}>[ ]?(.*)')
+
         # Note that !gravatar syntax should be deprecated long term.
         md.inlinePatterns.add('avatar', Avatar(AVATAR_REGEX), '>backtick')
         md.inlinePatterns.add('gravatar', Avatar(GRAVATAR_REGEX), '>backtick')
