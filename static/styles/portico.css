@@ -732,8 +732,6 @@ input.text-error {
     margin: 0px 5px 0px -4px;
     padding: 1px 0px 1px 5px;
 
-    border-left: 1px solid rgba(0,0,0,0.2);
-
     font-size: 0.9em;
     font-weight: 600;
 
