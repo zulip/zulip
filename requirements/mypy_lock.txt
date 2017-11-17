@@ -1,0 +1,12 @@
+#
+# This file is GENERATED.  Don't edit directly.
+#
+# To update, edit the non-"lock" files in requirements/*.txt, then:
+#
+#    tools/update-locked-requirements
+#
+# For details, see requirements/README.md .
+#
+mypy==0.540
+typed-ast==1.1.0          # via mypy
+typing==3.6.2             # via mypy

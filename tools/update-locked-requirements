@@ -43,25 +43,19 @@ EOF
     ) | sponge "$output"
 }
 
-OUTPUT_PROD_FILE='requirements/prod_lock.txt'
-OUTPUT_DEV_FILE='requirements/dev_lock.txt'
-OUTPUT_THUMBOR_FILE='requirements/thumbor_lock.txt'
+OUTPUT_BASE_DIR='requirements'
 
 # Parse arguments.
 if [ $# -gt 0 ]; then
     while [ "$1" != "" ]; do
         case $1 in
-            --prod)
+            --output-dir)
                 shift
-                OUTPUT_PROD_FILE="$1"
-                ;;
-            --dev)
-                shift
-                OUTPUT_DEV_FILE="$1"
+                OUTPUT_BASE_DIR=$(readlink -m "$1")
                 ;;
             *)
                 echo "Invalid arguments passed."
-                echo "Usage: $0 [--prod <prod-lock-file-path> --dev <dev-lock-file-path>]"
+                echo "Usage: $0 [--output-dir <path-to-output-dir>]"
                 exit
                 ;;
         esac
@@ -69,6 +63,8 @@ if [ $# -gt 0 ]; then
     done
 fi
 
-compile_requirements requirements/prod.txt $OUTPUT_PROD_FILE
-compile_requirements requirements/dev.txt $OUTPUT_DEV_FILE
-compile_requirements requirements/thumbor.txt $OUTPUT_THUMBOR_FILE py2
+compile_requirements requirements/prod.txt $OUTPUT_BASE_DIR/prod_lock.txt
+compile_requirements requirements/dev.txt $OUTPUT_BASE_DIR/dev_lock.txt
+compile_requirements requirements/mypy.txt $OUTPUT_BASE_DIR/mypy_lock.txt
+compile_requirements requirements/docs.txt $OUTPUT_BASE_DIR/docs_lock.txt
+compile_requirements requirements/thumbor.txt $OUTPUT_BASE_DIR/thumbor_lock.txt py2
