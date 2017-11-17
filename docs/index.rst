@@ -95,3 +95,5 @@ Contents:
    :maxdepth: 3
 
    translating/index
+
+   Index <https://zulip.readthedocs.io/en/latest/>
