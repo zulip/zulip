@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
-set -eux
+set -eu
 
 usage() {
-    set +x
     echo "Usage: $0 <ZULIP_VERSION>" >&2
     exit 1
 }
 
-args="$(getopt -o '' -l 'authors-not-required' -n "$0" -- "$@")"
+args="$(getopt -o '' -l 'authors-not-required,help' -n "$0" -- "$@")"
 eval "set -- $args"
 
 authors_not_required=
@@ -20,13 +19,15 @@ while true; do
     esac
 done
 
-GITID=$(git rev-parse HEAD)
-
 if [ -z "${1:-}" ]; then
     usage
 fi
+
 version="$1"
 prefix="zulip-server-$version"
+
+set -x
+GITID=$(git rev-parse HEAD)
 
 if ! git diff --exit-code >/dev/null; then
     set +x
