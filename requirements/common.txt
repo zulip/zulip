@@ -165,7 +165,7 @@ ijson==2.3
 
 # Needed for link preview
 beautifulsoup4==4.6.0
--e git+https://github.com/zulip/pyoembed.git@8a4855b5bbf83e18283d6e6e5d8fe401ede14923#egg=pyoembed==0.1.1.zulip2
+pyoembed==0.1.2
 
 # The Zulip API bindings, from its own repository.
 # We integrate with these tightly, so often it makes sense to pin a
