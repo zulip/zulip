@@ -283,6 +283,31 @@ function render(template_name, args) {
     global.write_handlebars_output("admin_tab", html);
 }());
 
+(function admin_user_group_list() {
+    var args = {
+        user_group: {
+            id: "9",
+            name: "uranohoshi",
+            description: "Students at Uranohoshi Academy",
+        },
+    };
+
+    var html = '';
+    html += '<div id="user-groups">';
+    html += render('admin_user_group_list', args);
+    html += '</div>';
+
+    global.write_handlebars_output('admin_user_group_list', html);
+
+    var group_id = $(html).find('.user-group:first').prop('id');
+    var group_name = $(html).find('.user-group:first .pill-container').attr('data-group-pills');
+    var group_description = $(html).find('.user-group:first h4').text();
+
+    assert.equal(group_id, '9');
+    assert.equal(group_name, 'uranohoshi');
+    assert.equal(group_description, 'uranohoshi — Students at Uranohoshi Academy');
+}());
+
 (function admin_user_list() {
     var html = '<table>';
     var users = ['alice', 'bob', 'carl'];
