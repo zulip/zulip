@@ -210,8 +210,6 @@ class ZulipPasswordResetForm(PasswordResetForm):
 
         subdomain = get_subdomain(request)
         realm = get_realm(subdomain)
-        if realm is None:
-            raise ValidationError("Invalid realm")
 
         if not email_auth_enabled(realm):
             logging.info("Password reset attempted for %s even though password auth is disabled." % (email,))
