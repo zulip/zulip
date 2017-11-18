@@ -264,13 +264,9 @@ class OurAuthenticationForm(AuthenticationForm):
             return_data = {}  # type: Dict[str, Any]
             self.user_cache = authenticate(self.request, username=username, password=password,
                                            realm=realm, return_data=return_data)
-            if return_data.get("inactive_realm"):
-                error_msg = (u"""Sorry for the trouble, but %s has been deactivated.
 
-                             Please contact %s to reactivate this group.""" % (
-                                 realm.name,
-                                 FromAddress.SUPPORT))
-                raise ValidationError(mark_safe(error_msg))
+            if return_data.get("inactive_realm"):
+                raise AssertionError("Programming error: inactive realm in authentication form")
 
             if return_data.get("inactive_user") and not return_data.get("is_mirror_dummy"):
                 # We exclude mirror dummy accounts here. They should be treated as the
