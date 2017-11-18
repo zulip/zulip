@@ -202,9 +202,8 @@ class PasswordResetTest(ZulipTestCase):
         # type: () -> None
         email = 'nonexisting@mars.com'
 
-        with patch('logging.info'):
-            # start the password reset process by supplying an email address
-            result = self.client_post('/accounts/password/reset/', {'email': email})
+        # start the password reset process by supplying an email address
+        result = self.client_post('/accounts/password/reset/', {'email': email})
 
         # check the redirect link telling you to check mail for password reset link
         self.assertEqual(result.status_code, 302)
@@ -291,7 +290,9 @@ class PasswordResetTest(ZulipTestCase):
         # type: () -> None
         """If the email auth backend is not enabled, password reset should do nothing"""
         email = self.example_email("hamlet")
-        result = self.client_post('/accounts/password/reset/', {'email': email})
+        with patch('logging.info') as mock_logging:
+            result = self.client_post('/accounts/password/reset/', {'email': email})
+            mock_logging.assert_called_once()
 
         # check the redirect link telling you to check mail for password reset link
         self.assertEqual(result.status_code, 302)
