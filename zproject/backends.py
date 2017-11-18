@@ -103,6 +103,9 @@ def common_get_active_user(email: str, realm: Realm,
         return None
     if not user_profile.is_active:
         if return_data is not None:
+            if user_profile.is_mirror_dummy:
+                # Record whether it's a mirror dummy account
+                return_data['is_mirror_dummy'] = True
             return_data['inactive_user'] = True
         return None
     if user_profile.realm.deactivated:
