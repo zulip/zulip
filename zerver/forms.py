@@ -54,7 +54,7 @@ def email_is_not_mit_mailing_list(email):
             if e.rcode == DNS.Status.NXDOMAIN:
                 raise ValidationError(mark_safe(MIT_VALIDATION_ERROR))
             else:
-                raise
+                raise AssertionError("Unexpected DNS error")
 
 def check_subdomain_available(subdomain):
     # type: (str) -> None
