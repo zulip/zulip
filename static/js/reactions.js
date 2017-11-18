@@ -28,6 +28,15 @@ exports.open_reactions_popover = function () {
     return true;
 };
 
+exports.current_user_has_reacted_to_emoji = function (message, emoji_name, type) {
+    var user_id = page_params.user_id;
+    return _.any(message.reactions, function (r) {
+        return (r.user.id === user_id) &&
+               (r.reaction_type === type) &&
+               (r.emoji_name === emoji_name);
+    });
+};
+
 function send_reaction_ajax(message_id, reaction_info, operation) {
     var args = {
         url: '/json/messages/' + message_id + '/reactions',
@@ -49,15 +58,6 @@ function send_reaction_ajax(message_id, reaction_info, operation) {
         channel.del(args);
     }
 }
-
-exports.current_user_has_reacted_to_emoji = function (message, emoji_name, type) {
-    var user_id = page_params.user_id;
-    return _.any(message.reactions, function (r) {
-        return (r.user.id === user_id) &&
-               (r.reaction_type === type) &&
-               (r.emoji_name === emoji_name);
-    });
-};
 
 function get_user_list_for_message_reaction(message, local_id) {
     var matching_reactions = message.reactions.filter(function (reaction) {
