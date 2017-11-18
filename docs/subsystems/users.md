@@ -1,3 +1,5 @@
+# Users data model
+
 We track different types of users in our browser code.
 
 There are three disjoint sets of users you care about

@@ -29,6 +29,7 @@ Subsystems Documentation
    client
    logging
    typing-indicators
+   users
    release-checklist
    api-release-checklist
    swagger-api-docs
