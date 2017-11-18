@@ -1231,7 +1231,7 @@ def do_send_messages(messages_maybe_none, email_gateway=False):
                 )
 
         if message['message'].recipient.type == Recipient.PERSONAL:
-            welcome_bot_id = get_user_profile_by_email(settings.WELCOME_BOT).id
+            welcome_bot_id = get_system_bot(settings.WELCOME_BOT).id
             if (welcome_bot_id in message['active_user_ids'] and
                     welcome_bot_id != message['message'].sender_id):
                 send_welcome_bot_response(message)
