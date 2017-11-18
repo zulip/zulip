@@ -302,6 +302,15 @@ class LoginTest(ZulipTestCase):
         user_profile = self.example_user('hamlet')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
+    def test_login_deactivated_user(self):
+        # type: () -> None
+        user_profile = self.example_user('hamlet')
+        do_deactivate_user(user_profile)
+        result = self.login_with_return(self.example_email("hamlet"), "xxx")
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_response("your account has been deactivated.", result)
+        self.assertIsNone(get_session_dict_user(self.client.session))
+
     def test_login_bad_password(self):
         # type: () -> None
         self.login(self.example_email("hamlet"), password="wrongpassword", fails=True)
@@ -310,7 +319,27 @@ class LoginTest(ZulipTestCase):
     def test_login_nonexist_user(self):
         # type: () -> None
         result = self.login_with_return("xxx@zulip.com", "xxx")
+        self.assertEqual(result.status_code, 200)
         self.assert_in_response("Please enter a correct email and password", result)
+        self.assertIsNone(get_session_dict_user(self.client.session))
+
+    def test_login_wrong_subdomain(self):
+        # type: () -> None
+        with patch("logging.warning") as mock_warning:
+            result = self.login_with_return(self.mit_email("sipbtest"), "xxx")
+            mock_warning.assert_called_once()
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_response("Your Zulip account is not a member of the "
+                                "organization associated with this subdomain.", result)
+        self.assertIsNone(get_session_dict_user(self.client.session))
+
+    def test_login_invalid_subdomain(self):
+        # type: () -> None
+        result = self.login_with_return(self.example_email("hamlet"), "xxx",
+                                        subdomain="invalid")
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_response("There is no Zulip organization hosted at this subdomain.", result)
+        self.assertIsNone(get_session_dict_user(self.client.session))
 
     def test_register(self):
         # type: () -> None
@@ -376,7 +405,7 @@ class LoginTest(ZulipTestCase):
         with self.assertRaises(UserProfile.DoesNotExist):
             self.nonreg_user('test')
 
-    def test_login_deactivated(self):
+    def test_login_deactivated_realm(self):
         # type: () -> None
         """
         If you try to log in to a deactivated realm, you get a clear error page.
