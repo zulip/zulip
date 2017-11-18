@@ -67,6 +67,7 @@ class DocPageTest(ZulipTestCase):
         self._test('/for/open-source/', 'for open source projects')
         self._test('/for/companies/', 'in a company')
         self._test('/for/working-groups-and-communities/', 'standards bodies')
+        self._test('/for/mystery-hunt/', 'four SIPB alums')
         self._test('/plans/', 'Commercial support')
         self._test('/devlogin/', 'Normal users', landing_page=False)
         self._test('/devtools/', 'Useful development URLs')
