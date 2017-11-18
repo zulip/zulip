@@ -2113,6 +2113,24 @@ class TestLDAP(ZulipTestCase):
             self.assertEqual(user_profile.email, self.example_email("hamlet"))
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
+    def test_login_failure_due_to_deactivated_user(self):
+        # type: () -> None
+        self.mock_ldap.directory = {
+            'uid=hamlet,ou=users,dc=zulip,dc=com': {
+                'userPassword': 'testing'
+            }
+        }
+        user_profile = self.example_user("hamlet")
+        do_deactivate_user(user_profile)
+        with self.settings(
+                LDAP_APPEND_DOMAIN='zulip.com',
+                AUTH_LDAP_BIND_PASSWORD='',
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
+            user_profile = self.backend.authenticate(self.example_email("hamlet"), 'testing',
+                                                     realm=get_realm('zulip'))
+            self.assertIs(user_profile, None)
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_success_when_user_does_not_exist_with_valid_subdomain(self):
         # type: () -> None
         self.mock_ldap.directory = {

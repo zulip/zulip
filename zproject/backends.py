@@ -474,8 +474,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         if return_data.get("inactive_realm"):
             raise ZulipLDAPException("Realm has been deactivated")
         if return_data.get("inactive_user"):
-            # Bug: This isn't the correct response, but it's what the old code did.
-            raise ZulipLDAPException("Realm has been deactivated")
+            raise ZulipLDAPException("User has been deactivated")
         if return_data.get("invalid_subdomain"):
             # TODO: Implement something in the caller for this to
             # provide a nice user-facing error message for this
