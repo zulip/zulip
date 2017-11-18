@@ -37,6 +37,16 @@ exports.current_user_has_reacted_to_emoji = function (message, emoji_name, type)
     });
 };
 
+function get_message(message_id) {
+    var message = message_store.get(message_id);
+    if (!message) {
+        blueslip.error('reactions: Bad message id: ' + message_id);
+        return;
+    }
+
+    return message;
+}
+
 function send_reaction_ajax(message_id, reaction_info, operation) {
     var args = {
         url: '/json/messages/' + message_id + '/reactions',
@@ -66,16 +76,6 @@ function get_user_list_for_message_reaction(message, local_id) {
     return matching_reactions.map(function (reaction) {
         return reaction.user.id;
     });
-}
-
-function get_message(message_id) {
-    var message = message_store.get(message_id);
-    if (!message) {
-        blueslip.error('reactions: Bad message id: ' + message_id);
-        return;
-    }
-
-    return message;
 }
 
 exports.toggle_emoji_reaction = function (message_id, emoji_name) {
