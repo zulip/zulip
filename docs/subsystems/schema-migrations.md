@@ -30,7 +30,7 @@ migrations.
   fix this, you can either run `./tools/renumber-migrations` which
   renumbers your migration(s) and fixes up the "dependencies" entries in your
   migration(s), and then rewrite your git history as needed, or you can do it
-  manually. There is a tutorial [here](../migration-renumbering.html) that
+  manually. There is a tutorial [here](migration-renumbering.html) that
   walks you though that process.
 
 * **Atomicity**.  By default, each Django migration is run atomically
