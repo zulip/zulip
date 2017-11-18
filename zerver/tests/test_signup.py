@@ -227,19 +227,11 @@ class PasswordResetTest(ZulipTestCase):
     def test_wrong_subdomain(self):
         # type: () -> None
         email = self.example_email("hamlet")
-        string_id = 'hamlet'
-        name = 'Hamlet'
-        do_create_realm(
-            string_id,
-            name,
-            restricted_to_domain=False,
-            invite_required=False
-        )
 
-        with patch('zerver.forms.get_subdomain', return_value=string_id):
-            # start the password reset process by supplying an email address
-            result = self.client_post(
-                '/accounts/password/reset/', {'email': email})
+        # start the password reset process by supplying an email address
+        result = self.client_post(
+            '/accounts/password/reset/', {'email': email},
+            subdomain="zephyr")
 
         # check the redirect link telling you to check mail for password reset link
         self.assertEqual(result.status_code, 302)
@@ -258,31 +250,22 @@ class PasswordResetTest(ZulipTestCase):
         self.assertIn("hamlet@zulip.com does not have an active account in\nhttp://zephyr.testserver",
                       message.body)
 
-    def test_correct_subdomain(self):
+    def test_invalid_subdomain(self):
         # type: () -> None
         email = self.example_email("hamlet")
-        string_id = 'zulip'
 
-        with patch('zerver.forms.get_subdomain', return_value=string_id):
-            # start the password reset process by supplying an email address
-            result = self.client_post(
-                '/accounts/password/reset/', {'email': email})
+        # start the password reset process by supplying an email address
+        result = self.client_post(
+            '/accounts/password/reset/', {'email': email},
+            subdomain="invalid")
 
         # check the redirect link telling you to check mail for password reset link
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(
-            "/accounts/password/reset/done/"))
-        result = self.client_get(result["Location"])
-
-        self.assert_in_response("Check your email to finish the process.", result)
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(["There is no Zulip organization hosted at this subdomain."],
+                                        result)
 
         from django.core.mail import outbox
-        self.assertEqual(len(outbox), 1)
-        message = outbox.pop()
-        self.assertIn("Zulip Account Security", message.from_email)
-        self.assertIn(FromAddress.NOREPLY, message.from_email)
-        self.assertIn("Psst. Word on the street is that you",
-                      message.body)
+        self.assertEqual(len(outbox), 0)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
                                                 'zproject.backends.ZulipDummyBackend'))

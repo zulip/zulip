@@ -5,6 +5,7 @@ from django.core.validators import validate_email
 from django.contrib.auth import authenticate, get_backends
 from django.contrib.auth.views import login as django_login_page, \
     logout_then_login as django_logout_then_login
+from django.contrib.auth.views import password_reset as django_password_reset
 from django.core.urlresolvers import reverse
 from zerver.decorator import authenticated_json_post_view, require_post, \
     process_client, do_login, log_view_func
@@ -22,7 +23,7 @@ from typing import Any, Dict, List, Optional, Tuple, Text
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.context_processors import zulip_default_context, get_realm_from_request
 from zerver.forms import HomepageForm, OurAuthenticationForm, \
-    WRONG_SUBDOMAIN_ERROR
+    WRONG_SUBDOMAIN_ERROR, ZulipPasswordResetForm
 from zerver.lib.mobile_auth_otp import is_valid_otp, otp_encrypt_api_key
 from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
@@ -760,3 +761,17 @@ def api_fetch_google_client_id(request):
 def logout_then_login(request, **kwargs):
     # type: (HttpRequest, **Any) -> HttpResponse
     return django_logout_then_login(request, kwargs)
+
+def password_reset(request: HttpRequest, **kwargs: Any) -> HttpResponse:
+    realm = get_realm(get_subdomain(request))
+
+    if realm is None:
+        # If trying to get to password reset on a subdomain that
+        # doesn't exist, just go to find_account.
+        redirect_url = reverse('zerver.views.registration.find_account')
+        return HttpResponseRedirect(redirect_url)
+
+    return django_password_reset(request,
+                                 template_name='zerver/reset.html',
+                                 password_reset_form=ZulipPasswordResetForm,
+                                 post_reset_redirect='/accounts/password/reset/done/')
