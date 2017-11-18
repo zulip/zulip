@@ -14,6 +14,7 @@ Subsystems Documentation
    markdown
    realms
    management-commands
+   migration-renumbering
    front-end-build-process
    schema-migrations
    html_css
@@ -32,4 +33,8 @@ Subsystems Documentation
    api-release-checklist
    swagger-api-docs
    documentation
+   conversion
+   input-pills
+   unread_messages
    user-docs
+   users
