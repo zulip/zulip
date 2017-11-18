@@ -484,26 +484,25 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         if user_profile is not None:
             return user_profile, False
 
-        if user_profile is None:
-            if self._realm is None:
-                raise ZulipLDAPConfigurationError("Realm is None", self.REALM_IS_NONE_ERROR)
-            # No need to check for an inactive user since they don't exist yet
-            if self._realm.deactivated:
-                raise ZulipLDAPException("Realm has been deactivated")
+        if self._realm is None:
+            raise ZulipLDAPConfigurationError("Realm is None", self.REALM_IS_NONE_ERROR)
+        # No need to check for an inactive user since they don't exist yet
+        if self._realm.deactivated:
+            raise ZulipLDAPException("Realm has been deactivated")
 
-            full_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["full_name"]
-            short_name = full_name = ldap_user.attrs[full_name_attr][0]
-            try:
-                full_name = check_full_name(full_name)
-            except JsonableError as e:
-                raise ZulipLDAPException(e.msg)
-            if "short_name" in settings.AUTH_LDAP_USER_ATTR_MAP:
-                short_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["short_name"]
-                short_name = ldap_user.attrs[short_name_attr][0]
+        full_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["full_name"]
+        short_name = full_name = ldap_user.attrs[full_name_attr][0]
+        try:
+            full_name = check_full_name(full_name)
+        except JsonableError as e:
+            raise ZulipLDAPException(e.msg)
+        if "short_name" in settings.AUTH_LDAP_USER_ATTR_MAP:
+            short_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["short_name"]
+            short_name = ldap_user.attrs[short_name_attr][0]
 
-            user_profile = do_create_user(username, None, self._realm, full_name, short_name)
+        user_profile = do_create_user(username, None, self._realm, full_name, short_name)
 
-            return user_profile, True
+        return user_profile, True
 
 # Just like ZulipLDAPAuthBackend, but doesn't let you log in.
 class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
