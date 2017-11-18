@@ -472,6 +472,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         return_data = {}  # type: Dict[str, Any]
         user_profile = common_get_active_user(username, self._realm, return_data)
         if return_data.get("inactive_realm"):
+            # This happens if there is a user account in a deactivated realm
             raise ZulipLDAPException("Realm has been deactivated")
         if return_data.get("inactive_user"):
             raise ZulipLDAPException("User has been deactivated")
@@ -483,13 +484,12 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             raise ZulipLDAPException("Wrong subdomain")
         if user_profile is not None:
             return user_profile, False
-
-        if self._realm is None:
-            raise ZulipLDAPConfigurationError("Realm is None", self.REALM_IS_NONE_ERROR)
-        # No need to check for an inactive user since they don't exist yet
         if self._realm.deactivated:
+            # This happens if no account exists, but the realm is
+            # deactivated, so we shouldn't create a new user account
             raise ZulipLDAPException("Realm has been deactivated")
 
+        # We have valid LDAP credentials; time to create an account.
         full_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["full_name"]
         short_name = full_name = ldap_user.attrs[full_name_attr][0]
         try:
