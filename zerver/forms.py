@@ -14,7 +14,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponseRedirect
 from jinja2 import Markup as mark_safe
 
 from zerver.lib.actions import do_change_password, user_email_is_unique, \
@@ -211,7 +211,10 @@ class ZulipPasswordResetForm(PasswordResetForm):
         subdomain = get_subdomain(request)
         realm = get_realm(subdomain)
         if realm is None:
-            raise ValidationError("Invalid realm")
+            # If trying to get to password reset on a subdomain that
+            # doesn't exist, just go to find_account.
+            redirect_url = reverse('zerver.views.registration.find_account')
+            return HttpResponseRedirect(redirect_url)
 
         if not email_auth_enabled(realm):
             logging.info("Password reset attempted for %s even though password auth is disabled." % (email,))
