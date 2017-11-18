@@ -192,7 +192,7 @@ We also strongly recommend reviewers to go through the following resources.
 * [Code Review - A consolidation of advice and stuff from the
    sinternet](https://gist.github.com/porterjamesj/002fb27dd70df003646df46f15e898de)
   article by James J. Porter
-* [Zulip Code of Conduct](../code-of-conduct.html)
+* [Zulip Code of Conduct](code-of-conduct.html)
 
 [code-style]: ../contributing/code-style.html
 [commit-messages]: ../contributing/version-control.html#commit-messages

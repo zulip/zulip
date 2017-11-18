@@ -11,7 +11,7 @@ place to start whether you have a question, are a new contributor, are a new
 user, or anything else. Make sure to read the
 [community norms](https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html#community-norms)
 before posting. The Zulip community is also governed by a
-[code of conduct](https://zulip.readthedocs.io/en/latest/code-of-conduct.html).
+[code of conduct](https://zulip.readthedocs.io/en/latest/contributing/code-of-conduct.html).
 
 You can subscribe to zulip-devel@googlegroups.com for a lower traffic (~1
 email/month) way to hear about things like mentorship opportunities with Google
