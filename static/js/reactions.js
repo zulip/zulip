@@ -47,7 +47,15 @@ function get_message(message_id) {
     return message;
 }
 
-function send_reaction_ajax(message_id, reaction_info, operation) {
+function send_reaction_ajax(message_id, reaction_info) {
+    var message = get_message(message_id);
+    var has_reacted = exports.current_user_has_reacted_to_emoji(
+        message,
+        reaction_info.emoji_name,
+        reaction_info.reaction_type
+    );
+    var operation = has_reacted ? 'remove' : 'add';
+
     var args = {
         url: '/json/messages/' + message_id + '/reactions',
         data: reaction_info,
@@ -80,12 +88,6 @@ function get_user_list_for_message_reaction(message, local_id) {
 
 exports.toggle_emoji_reaction = function (message_id, emoji_name) {
     // This toggles the current user's reaction to the clicked emoji.
-
-    var message = get_message(message_id);
-    if (!message) {
-        return;
-    }
-
     var reaction_info = {
         emoji_name: emoji_name,
     };
@@ -105,14 +107,7 @@ exports.toggle_emoji_reaction = function (message_id, emoji_name) {
         return;
     }
 
-    var has_reacted = exports.current_user_has_reacted_to_emoji(
-        message,
-        reaction_info.emoji_name,
-        reaction_info.reaction_type
-    );
-    var operation = has_reacted ? 'remove' : 'add';
-
-    send_reaction_ajax(message_id, reaction_info, operation);
+    send_reaction_ajax(message_id, reaction_info);
 
     // The next line isn't always necessary, but it is harmless/quick
     // when no popovers are there.
@@ -121,15 +116,8 @@ exports.toggle_emoji_reaction = function (message_id, emoji_name) {
 
 exports.process_reaction_click = function (message_id, local_id) {
     var reaction_info = exports.get_reaction_info(local_id);
-    var message = get_message(message_id);
-    var has_reacted = exports.current_user_has_reacted_to_emoji(
-        message,
-        reaction_info.emoji_name,
-        reaction_info.reaction_type
-    );
-    var operation = has_reacted ? 'remove' : 'add';
 
-    send_reaction_ajax(message_id, reaction_info, operation);
+    send_reaction_ajax(message_id, reaction_info);
 };
 
 function full_name(user_id) {

@@ -635,8 +635,12 @@ set_global('current_msg_list', {
             user_id: 99,
         },
     };
-    reactions.toggle_emoji_reaction(55);
+
+    var original_func = reactions.current_user_has_reacted_to_emoji;
+    reactions.current_user_has_reacted_to_emoji = function () { return true; };
+    reactions.toggle_emoji_reaction(55, bogus_event.emoji_name);
     assert.equal(error_msg, 'reactions: Bad message id: 55');
+    reactions.current_user_has_reacted_to_emoji = original_func;
 
     error_msg = undefined;
     reactions.add_reaction(bogus_event);
