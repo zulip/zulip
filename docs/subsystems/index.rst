@@ -16,6 +16,7 @@ Subsystems Documentation
    management-commands
    front-end-build-process
    schema-migrations
+   migration-renumbering
    html_css
    hashchange-system
    emoji
