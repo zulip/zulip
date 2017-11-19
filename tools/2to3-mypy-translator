@@ -118,7 +118,11 @@ for i in range(length):
                     if len(proper_hints) >= 1:
                         # if the function requires at
                         # least one argument
-                        hint = proper_hints[k]
+                        try:
+                            hint = proper_hints[k]
+                        except Exception:
+                            print(proper_hints)
+                            print(args_l)
                         if '=' in arg:
                             # contains default value
                             equal_location = arg.index('=')
@@ -146,8 +150,23 @@ for i in range(length):
             skipline = i + 1
         else:
             # multiline function
+            boundary_found = False
+            boundary_index = i + 1
+            while True:
+                if '-> ' in lines[boundary_index]:
+                    # Already in the fancy new syntax
+                    break
+                elif '):' in lines[boundary_index]:
+                    # function signature boundary found
+                    boundary_found = True
+                    break
+                boundary_index += 1
             # TODO: handle this
-            new_lines += line + '\n'
+            if boundary_found:
+                func_sig = ' '.join(lines[i:boundary_index + 1])
+                t = lines[boundary_index + 1]
+            else:
+                new_lines += line + '\n'
     else:
         new_lines += line + '\n'
 
