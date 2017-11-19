@@ -28,12 +28,12 @@ exports.open_reactions_popover = function () {
     return true;
 };
 
-exports.current_user_has_reacted_to_emoji = function (message, emoji_name, type) {
+exports.current_user_has_reacted_to_emoji = function (message, emoji_code, type) {
     var user_id = page_params.user_id;
     return _.any(message.reactions, function (r) {
         return (r.user.id === user_id) &&
                (r.reaction_type === type) &&
-               (r.emoji_name === emoji_name);
+               (r.emoji_code === emoji_code);
     });
 };
 
@@ -51,7 +51,7 @@ function send_reaction_ajax(message_id, reaction_info) {
     var message = get_message(message_id);
     var has_reacted = exports.current_user_has_reacted_to_emoji(
         message,
-        reaction_info.emoji_name,
+        reaction_info.emoji_code,
         reaction_info.reaction_type
     );
     var operation = has_reacted ? 'remove' : 'add';

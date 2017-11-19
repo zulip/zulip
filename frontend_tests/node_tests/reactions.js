@@ -61,6 +61,8 @@ set_global('emoji_codes', {
     name_to_codepoint: {
         alien: '1f47d',
         smile: '1f604',
+        frown: '1f626',
+        octopus: '1f419',
     },
 });
 set_global('emoji_picker', {
@@ -89,15 +91,15 @@ people.add_in_realm(cali);
 var message = {
     id: 1001,
     reactions: [
-        {emoji_name: 'smile', user: {id: 5}, reaction_type: 'unicode_emoji', emoji_code: '1'},
-        {emoji_name: 'smile', user: {id: 6}, reaction_type: 'unicode_emoji', emoji_code: '1'},
-        {emoji_name: 'frown', user: {id: 7}, reaction_type: 'unicode_emoji', emoji_code: '2'},
+        {emoji_name: 'smile', user: {id: 5}, reaction_type: 'unicode_emoji', emoji_code: '1f604'},
+        {emoji_name: 'smile', user: {id: 6}, reaction_type: 'unicode_emoji', emoji_code: '1f604'},
+        {emoji_name: 'frown', user: {id: 7}, reaction_type: 'unicode_emoji', emoji_code: '1f626'},
         {emoji_name: 'inactive_realm_emoji', user: {id: 5}, reaction_type: 'realm_emoji',
-         emoji_code: '1'},
+         emoji_code: 'inactive_realm_emoji'},
 
         // add some bogus user_ids
-        {emoji_name: 'octopus', user: {id: 8888}, reaction_type: 'unicode_emoji', emoji_code: '3'},
-        {emoji_name: 'frown', user: {id: 9999}, reaction_type: 'unicode_emoji', emoji_code: '2'},
+        {emoji_name: 'octopus', user: {id: 8888}, reaction_type: 'unicode_emoji', emoji_code: '1f419'},
+        {emoji_name: 'frown', user: {id: 9999}, reaction_type: 'unicode_emoji', emoji_code: '1f626'},
     ],
 };
 
@@ -150,8 +152,8 @@ set_global('current_msg_list', {
 (function test_basics() {
     var result = reactions.get_message_reactions(message);
 
-    assert(reactions.current_user_has_reacted_to_emoji(message, 'smile', 'unicode_emoji'));
-    assert(!reactions.current_user_has_reacted_to_emoji(message, 'frown', 'unicode_emoji'));
+    assert(reactions.current_user_has_reacted_to_emoji(message, '1f604', 'unicode_emoji'));
+    assert(!reactions.current_user_has_reacted_to_emoji(message, '1f626', 'unicode_emoji'));
 
     result.sort(function (a, b) { return a.count - b.count; });
 
@@ -159,8 +161,8 @@ set_global('current_msg_list', {
       {
          emoji_name: 'frown',
          reaction_type: 'unicode_emoji',
-         emoji_code: '2',
-         local_id: 'unicode_emoji,frown,2',
+         emoji_code: '1f626',
+         local_id: 'unicode_emoji,frown,1f626',
          count: 1,
          user_ids: [7],
          title: 'Cali reacted with :frown:',
@@ -170,8 +172,8 @@ set_global('current_msg_list', {
       {
          emoji_name: 'inactive_realm_emoji',
          reaction_type: 'realm_emoji',
-         emoji_code: '1',
-         local_id: 'realm_emoji,inactive_realm_emoji,1',
+         emoji_code: 'inactive_realm_emoji',
+         local_id: 'realm_emoji,inactive_realm_emoji,inactive_realm_emoji',
          count: 1,
          user_ids: [5],
          title: 'You (click to remove) reacted with :inactive_realm_emoji:',
@@ -183,8 +185,8 @@ set_global('current_msg_list', {
       {
          emoji_name: 'smile',
          reaction_type: 'unicode_emoji',
-         emoji_code: '1',
-         local_id: 'unicode_emoji,smile,1',
+         emoji_code: '1f604',
+         local_id: 'unicode_emoji,smile,1f604',
          count: 2,
          user_ids: [5, 6],
          title: 'You (click to remove) and Bob van Roberts reacted with :smile:',
@@ -256,8 +258,15 @@ set_global('current_msg_list', {
         });
     });
 
-    emoji_name = 'unknown-emoji';
+    var orig_func = global.blueslip.warn;
+    var error_msg;
+    global.blueslip.warn = function (msg) {
+        error_msg = msg;
+    };
+    emoji_name = 'unknown-emoji';   // Test sending an emoji unknown to frontend.
     reactions.toggle_emoji_reaction(message_id, emoji_name);
+    assert.equal(error_msg, 'Bad emoji name: ' + emoji_name);
+    global.blueslip.warn = orig_func;
 }());
 
 (function test_set_reaction_count() {
@@ -686,11 +695,11 @@ set_global('current_msg_list', {
     expected_reaction_info = {
         reaction_type: 'unicode_emoji',
         emoji_name: 'smile',
-        emoji_code: '1',
+        emoji_code: '1f604',
     };
     global.with_stub(function (stub) {
         global.channel.del = stub.f;
-        reactions.process_reaction_click(message_id, 'unicode_emoji,smile,1');
+        reactions.process_reaction_click(message_id, 'unicode_emoji,smile,1f604');
         var args = stub.get_args('args').args;
         assert.equal(args.url, '/json/messages/1001/reactions');
         assert.deepEqual(args.data, expected_reaction_info);
