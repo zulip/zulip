@@ -66,16 +66,14 @@ import ujson
 from zerver.lib.test_helpers import MockLDAP, load_subdomain_token
 
 class AuthBackendTest(ZulipTestCase):
-    def get_username(self, email_to_username=None):
-        # type: (Optional[Callable[[Text], Text]]) -> Text
+    def get_username(self, email_to_username: Optional[Callable[[Text], Text]]=None) -> Text:
         username = self.example_email('hamlet')
         if email_to_username is not None:
             username = email_to_username(self.example_email('hamlet'))
 
         return username
 
-    def verify_backend(self, backend, good_kwargs=None, bad_kwargs=None):
-        # type: (Any, Optional[Dict[str, Any]], Optional[Dict[str, Any]]) -> None
+    def verify_backend(self, backend: Any, good_kwargs: Optional[Dict[str, Any]]=None, bad_kwargs: Optional[Dict[str, Any]]=None) -> None:
 
         user_profile = self.example_user('hamlet')
 
@@ -148,8 +146,7 @@ class AuthBackendTest(ZulipTestCase):
                                             realm=realm,
                                             use_dummy_backend=False))
 
-    def setup_subdomain(self, user_profile):
-        # type: (UserProfile) -> None
+    def setup_subdomain(self, user_profile: UserProfile) -> None:
         realm = user_profile.realm
         realm.string_id = 'zulip'
         realm.save()
@@ -381,8 +378,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
         request.user = self.user_profile
         self.backend.strategy.request = request
 
-    def do_auth(self, *args, **kwargs):
-        # type: (*Any, **Any) -> UserProfile
+    def do_auth(self, *args: Any, **kwargs: Any) -> UserProfile:
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.GitHubAuthBackend',)):
             return authenticate(**kwargs)
 
@@ -530,10 +526,8 @@ class GitHubAuthBackendTest(ZulipTestCase):
         result = self.backend.process_do_auth(user, return_data=return_data, response=response)
         self.assertIs(result, None)
 
-    def test_github_backend_inactive_user(self):
-        # type: () -> None
-        def do_auth_inactive(*args, **kwargs):
-            # type: (*Any, **Any) -> UserProfile
+    def test_github_backend_inactive_user(self) -> None:
+        def do_auth_inactive(*args: Any, **kwargs: Any) -> UserProfile:
             return_data = kwargs['return_data']
             return_data['inactive_user'] = True
             return self.user_profile
@@ -556,8 +550,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
         session_data = {'subdomain': Realm.SUBDOMAIN_FOR_ROOT_DOMAIN, 'is_signup': '1'}
         self.backend.strategy.session_get = lambda k: session_data.get(k)
 
-        def do_auth(*args, **kwargs):
-            # type: (*Any, **Any) -> None
+        def do_auth(*args: Any, **kwargs: Any) -> None:
             return_data = kwargs['return_data']
             return_data['valid_attestation'] = True
             return None
@@ -582,8 +575,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
         session_data = {'subdomain': Realm.SUBDOMAIN_FOR_ROOT_DOMAIN, 'is_signup': '1'}
         self.backend.strategy.session_get = lambda k: session_data.get(k)
 
-        def do_auth(*args, **kwargs):
-            # type: (*Any, **Any) -> None
+        def do_auth(*args: Any, **kwargs: Any) -> None:
             return_data = kwargs['return_data']
             return_data['valid_attestation'] = True
             return None
@@ -628,8 +620,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
         session_data = {'subdomain': Realm.SUBDOMAIN_FOR_ROOT_DOMAIN, 'is_signup': '1'}
         self.backend.strategy.session_get = lambda k: session_data.get(k)
 
-        def do_auth(*args, **kwargs):
-            # type: (*Any, **Any) -> None
+        def do_auth(*args: Any, **kwargs: Any) -> None:
             return_data = kwargs['return_data']
             return_data['valid_attestation'] = True
             return None
@@ -653,8 +644,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
         session_data = {'subdomain': Realm.SUBDOMAIN_FOR_ROOT_DOMAIN, 'is_signup': '0'}
         self.backend.strategy.session_get = lambda k: session_data.get(k)
 
-        def do_auth(*args, **kwargs):
-            # type: (*Any, **Any) -> None
+        def do_auth(*args: Any, **kwargs: Any) -> None:
             return_data = kwargs['return_data']
             return_data['valid_attestation'] = True
             return None
@@ -709,18 +699,15 @@ class GitHubAuthBackendTest(ZulipTestCase):
         utils.BACKENDS = settings.AUTHENTICATION_BACKENDS
 
 class ResponseMock:
-    def __init__(self, status_code, data):
-        # type: (int, Any) -> None
+    def __init__(self, status_code: int, data: Any) -> None:
         self.status_code = status_code
         self.data = data
 
-    def json(self):
-        # type: () -> str
+    def json(self) -> str:
         return self.data
 
     @property
-    def text(self):
-        # type: () -> str
+    def text(self) -> str:
         return "Response text"
 
 class GoogleOAuthTest(ZulipTestCase):
@@ -842,8 +829,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn('Zulip on Android', mail.outbox[0].body)
 
-    def get_log_into_subdomain(self, data, *, key=None, subdomain='zulip'):
-        # type: (Dict[str, Any], Optional[str], str) -> HttpResponse
+    def get_log_into_subdomain(self, data: Dict[str, Any], *, key: Optional[str]=None, subdomain: str='zulip') -> HttpResponse:
         token = signing.dumps(data, salt=_subdomain_token_salt, key=key)
         url_path = reverse('zerver.views.auth.log_into_subdomain', args=[token])
         return self.client_get(url_path, subdomain=subdomain)
@@ -1378,8 +1364,7 @@ class DevGetEmailsTest(ZulipTestCase):
             self.assert_json_error_contains(result, "Dev environment not enabled.", 400)
 
 class FetchAuthBackends(ZulipTestCase):
-    def assert_on_error(self, error):
-        # type: (Optional[str]) -> None
+    def assert_on_error(self, error: Optional[str]) -> None:
         if error:
             raise AssertionError(error)
 
@@ -1851,8 +1836,7 @@ class TestLDAP(ZulipTestCase):
         self.mock_ldap.reset()
         self.mock_initialize.stop()
 
-    def setup_subdomain(self, user_profile):
-        # type: (UserProfile) -> None
+    def setup_subdomain(self, user_profile: UserProfile) -> None:
         realm = user_profile.realm
         realm.string_id = 'zulip'
         realm.save()
@@ -2192,8 +2176,7 @@ class TestMaybeSendToRegistration(ZulipTestCase):
         # and will always be valid so that the code that we want to test
         # actually runs.
         class Form:
-            def is_valid(self):
-                # type: () -> bool
+            def is_valid(self) -> bool:
                 return True
 
         with self.settings(ONLY_SSO=True):
@@ -2222,8 +2205,7 @@ class TestMaybeSendToRegistration(ZulipTestCase):
         # and will always be valid so that the code that we want to test
         # actually runs.
         class Form:
-            def is_valid(self):
-                # type: () -> bool
+            def is_valid(self) -> bool:
                 return True
 
         email = self.example_email("hamlet")

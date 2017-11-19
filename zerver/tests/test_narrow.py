@@ -79,13 +79,12 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='stream', operand='Scotland')
         self._do_add_term_test(term, 'WHERE recipient_id = :recipient_id_1')
 
-    def test_add_term_using_stream_operator_and_negated(self):  # NEGATED
-        # type: () -> None
+    def test_add_term_using_stream_operator_and_negated(self) -> None:  # NEGATED
         term = dict(operator='stream', operand='Scotland', negated=True)
         self._do_add_term_test(term, 'WHERE recipient_id != :recipient_id_1')
 
-    def test_add_term_using_stream_operator_and_non_existing_operand_should_raise_error(self):  # NEGATED
-        # type: () -> None
+    def test_add_term_using_stream_operator_and_non_existing_operand_should_raise_error(
+            self) -> None:  # NEGATED
         term = dict(operator='stream', operand='NonExistingStream')
         self.assertRaises(BadNarrowOperator, self._build_query, term)
 
@@ -93,8 +92,8 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='is', operand='private')
         self._do_add_term_test(term, 'WHERE type = :type_1 OR type = :type_2')
 
-    def test_add_term_using_is_operator_private_operand_and_negated(self):  # NEGATED
-        # type: () -> None
+    def test_add_term_using_is_operator_private_operand_and_negated(
+            self) -> None:  # NEGATED
         term = dict(operator='is', operand='private', negated=True)
         self._do_add_term_test(term, 'WHERE NOT (type = :type_1 OR type = :type_2)')
 
@@ -107,13 +106,13 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='is', operand='unread')
         self._do_add_term_test(term, 'WHERE (flags & :flags_1) = :param_1')
 
-    def test_add_term_using_is_operator_and_unread_operand_and_negated(self):  # NEGATED
-        # type: () -> None
+    def test_add_term_using_is_operator_and_unread_operand_and_negated(
+            self) -> None:  # NEGATED
         term = dict(operator='is', operand='unread', negated=True)
         self._do_add_term_test(term, 'WHERE (flags & :flags_1) != :param_1')
 
-    def test_add_term_using_is_operator_non_private_operand_and_negated(self):  # NEGATED
-        # type: () -> None
+    def test_add_term_using_is_operator_non_private_operand_and_negated(
+            self) -> None:  # NEGATED
         term = dict(operator='is', operand='starred', negated=True)
         where_clause = 'WHERE (flags & :flags_1) = :param_1'
         params = dict(
@@ -148,8 +147,8 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='topic', operand='lunch')
         self._do_add_term_test(term, 'WHERE upper(subject) = upper(:param_1)')
 
-    def test_add_term_using_topic_operator_lunch_operand_and_negated(self):  # NEGATED
-        # type: () -> None
+    def test_add_term_using_topic_operator_lunch_operand_and_negated(
+            self) -> None:  # NEGATED
         term = dict(operator='topic', operand='lunch', negated=True)
         self._do_add_term_test(term, 'WHERE upper(subject) != upper(:param_1)')
 
@@ -157,8 +156,8 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='topic', operand='personal')
         self._do_add_term_test(term, 'WHERE upper(subject) = upper(:param_1)')
 
-    def test_add_term_using_topic_operator_personal_operand_and_negated(self):  # NEGATED
-        # type: () -> None
+    def test_add_term_using_topic_operator_personal_operand_and_negated(
+            self) -> None:  # NEGATED
         term = dict(operator='topic', operand='personal', negated=True)
         self._do_add_term_test(term, 'WHERE upper(subject) != upper(:param_1)')
 
@@ -166,13 +165,12 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='sender', operand=self.example_email("othello"))
         self._do_add_term_test(term, 'WHERE sender_id = :param_1')
 
-    def test_add_term_using_sender_operator_and_negated(self):  # NEGATED
-        # type: () -> None
+    def test_add_term_using_sender_operator_and_negated(self) -> None:  # NEGATED
         term = dict(operator='sender', operand=self.example_email("othello"), negated=True)
         self._do_add_term_test(term, 'WHERE sender_id != :param_1')
 
-    def test_add_term_using_sender_operator_with_non_existing_user_as_operand(self):  # NEGATED
-        # type: () -> None
+    def test_add_term_using_sender_operator_with_non_existing_user_as_operand(
+            self) -> None:  # NEGATED
         term = dict(operator='sender', operand='non-existing@zulip.com')
         self.assertRaises(BadNarrowOperator, self._build_query, term)
 
@@ -180,8 +178,8 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='pm-with', operand=self.example_email("othello"))
         self._do_add_term_test(term, 'WHERE sender_id = :sender_id_1 AND recipient_id = :recipient_id_1 OR sender_id = :sender_id_2 AND recipient_id = :recipient_id_2')
 
-    def test_add_term_using_pm_with_operator_not_the_same_user_as_operand_and_negated(self):  # NEGATED
-        # type: () -> None
+    def test_add_term_using_pm_with_operator_not_the_same_user_as_operand_and_negated(
+            self) -> None:  # NEGATED
         term = dict(operator='pm-with', operand=self.example_email("othello"), negated=True)
         self._do_add_term_test(term, 'WHERE NOT (sender_id = :sender_id_1 AND recipient_id = :recipient_id_1 OR sender_id = :sender_id_2 AND recipient_id = :recipient_id_2)')
 
@@ -189,8 +187,8 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='pm-with', operand=self.example_email("hamlet"))
         self._do_add_term_test(term, 'WHERE sender_id = :sender_id_1 AND recipient_id = :recipient_id_1')
 
-    def test_add_term_using_pm_with_operator_the_same_user_as_operand_and_negated(self):  # NEGATED
-        # type: () -> None
+    def test_add_term_using_pm_with_operator_the_same_user_as_operand_and_negated(
+            self) -> None:  # NEGATED
         term = dict(operator='pm-with', operand=self.example_email("hamlet"), negated=True)
         self._do_add_term_test(term, 'WHERE NOT (sender_id = :sender_id_1 AND recipient_id = :recipient_id_1)')
 
@@ -198,8 +196,8 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='pm-with', operand='hamlet@zulip.com, othello@zulip.com')
         self._do_add_term_test(term, 'WHERE recipient_id = :recipient_id_1')
 
-    def test_add_term_using_pm_with_operator_more_than_user_as_operand_and_negated(self):  # NEGATED
-        # type: () -> None
+    def test_add_term_using_pm_with_operator_more_than_user_as_operand_and_negated(
+            self) -> None:  # NEGATED
         term = dict(operator='pm-with', operand='hamlet@zulip.com, othello@zulip.com', negated=True)
         self._do_add_term_test(term, 'WHERE recipient_id != :recipient_id_1')
 
@@ -215,8 +213,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='id', operand=555)
         self._do_add_term_test(term, 'WHERE id = :param_1')
 
-    def test_add_term_using_id_operator_and_negated(self):  # NEGATED
-        # type: () -> None
+    def test_add_term_using_id_operator_and_negated(self) -> None:  # NEGATED
         term = dict(operator='id', operand=555, negated=True)
         self._do_add_term_test(term, 'WHERE id != :param_1')
 
@@ -228,8 +225,8 @@ class NarrowBuilderTest(ZulipTestCase):
             # SQLalchemy warns because this query is a tautology.
             mock_warn.assert_called_once()
 
-    def test_add_term_using_group_pm_operator_not_the_same_user_as_operand_and_negated(self):  # NEGATED
-        # type: () -> None
+    def test_add_term_using_group_pm_operator_not_the_same_user_as_operand_and_negated(
+            self) -> None:  # NEGATED
         term = dict(operator='group-pm-with', operand=self.example_email("othello"), negated=True)
         self._do_add_term_test(term, 'WHERE recipient_id = recipient_id')
 
@@ -243,8 +240,8 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(term, 'WHERE (lower(content) LIKE lower(:content_1) OR lower(subject) LIKE lower(:subject_1)) AND (search_tsvector @@ plainto_tsquery(:param_2, :param_3))')
 
     @override_settings(USING_PGROONGA=False)
-    def test_add_term_using_search_operator_and_negated(self):  # NEGATED
-        # type: () -> None
+    def test_add_term_using_search_operator_and_negated(
+            self) -> None:  # NEGATED
         term = dict(operator='search', operand='"french fries"', negated=True)
         self._do_add_term_test(term, 'WHERE NOT (lower(content) LIKE lower(:content_1) OR lower(subject) LIKE lower(:subject_1)) AND NOT (search_tsvector @@ plainto_tsquery(:param_2, :param_3))')
 
@@ -254,8 +251,8 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(term, 'WHERE search_pgroonga @@ :search_pgroonga_1')
 
     @override_settings(USING_PGROONGA=True)
-    def test_add_term_using_search_operator_and_negated_pgroonga(self):  # NEGATED
-        # type: () -> None
+    def test_add_term_using_search_operator_and_negated_pgroonga(
+            self) -> None:  # NEGATED
         term = dict(operator='search', operand='"french fries"', negated=True)
         self._do_add_term_test(term, 'WHERE NOT (search_pgroonga @@ :search_pgroonga_1)')
 
@@ -263,8 +260,8 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='has', operand='attachment')
         self._do_add_term_test(term, 'WHERE has_attachment')
 
-    def test_add_term_using_has_operator_attachment_operand_and_negated(self):  # NEGATED
-        # type: () -> None
+    def test_add_term_using_has_operator_attachment_operand_and_negated(
+            self) -> None:  # NEGATED
         term = dict(operator='has', operand='attachment', negated=True)
         self._do_add_term_test(term, 'WHERE NOT has_attachment')
 
@@ -272,8 +269,8 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='has', operand='image')
         self._do_add_term_test(term, 'WHERE has_image')
 
-    def test_add_term_using_has_operator_image_operand_and_negated(self):  # NEGATED
-        # type: () -> None
+    def test_add_term_using_has_operator_image_operand_and_negated(
+            self) -> None:  # NEGATED
         term = dict(operator='has', operand='image', negated=True)
         self._do_add_term_test(term, 'WHERE NOT has_image')
 
@@ -281,8 +278,8 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='has', operand='link')
         self._do_add_term_test(term, 'WHERE has_link')
 
-    def test_add_term_using_has_operator_link_operand_and_negated(self):  # NEGATED
-        # type: () -> None
+    def test_add_term_using_has_operator_link_operand_and_negated(
+            self) -> None:  # NEGATED
         term = dict(operator='has', operand='link', negated=True)
         self._do_add_term_test(term, 'WHERE NOT has_link')
 
