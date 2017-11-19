@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import sys
+from typing import List
 
 
 def isa_function(l: str) -> bool:
@@ -24,6 +25,86 @@ def handle_0_or_1_arg_fn(l: str, t: str, arg: str, t_arg: str) -> (str, str):
     else:
         new_arg = arg
     return new_arg, return_type
+
+def isa_hint_with_braces(x: str) -> bool:
+    return ('[' in x) and (']' in x)
+
+def isa_hint_without_braces(x: str) -> bool:
+    return ('[' not in x) and (']' not in x)
+
+def isa_opening_compound_hint(x: str) -> bool:
+    return ('[' in x) and (']' not in x)
+
+def isa_closing_compound_hint(x: str) -> bool:
+    return (']' in x) and ('[' not in x)
+
+def handle_multiarg_fn(l: str, t: str, args: str, hints: str) -> (str, str):
+    args_l = args.replace(' ', '').split(',')
+
+    contain_self = False
+    if 'self' in args_l:
+        args_l.remove('self')
+        contain_self = True
+
+    # properly format the hints
+    raw_hints = hints.replace(' ', '').replace('**', '').replace('*', '').split(',')
+    proper_hints = []
+
+    compound_hint = ''
+    compound_hint_mode = False
+
+    # parse raw_hints into hints
+    for h in raw_hints:
+        if (not isa_opening_compound_hint(h)) and \
+           (not isa_closing_compound_hint(h)) and \
+           (not compound_hint_mode):
+            if isa_hint_without_braces(h) or isa_hint_with_braces(h):
+                # simple hinting without compound
+                # and
+                # simple hinting with one []
+                proper_hints.append(h)
+        elif isa_opening_compound_hint(h):
+            compound_hint += h
+            compound_hint_mode = True
+        elif isa_closing_compound_hint(h):
+            compound_hint += (', ' + h)
+            compound_hint_mode = False
+            proper_hints.append(str(compound_hint))
+            compound_hint = ''
+        else:
+            compound_hint += (', ' + h)
+
+        return_type = t.split(' -> ')[1].rstrip()
+
+        arg_list = ['self'] if contain_self else []
+        for k in range(len(args_l)):
+            arg = args_l[k]
+            if len(proper_hints) >= 1:
+                # if the function requires at
+                # least one argument
+                try:
+                    hint = proper_hints[k]
+                except Exception:
+                    print(proper_hints)
+                    print(args_l)
+                if '=' in arg:
+                    # contains default value
+                    equal_location = arg.index('=')
+                    name = arg[:equal_location]
+                    default_value = arg[equal_location + 1:]
+                    arg_list.append(name + ': ' + hint + '=' + default_value)
+                else:
+                    arg_list.append(arg + ': ' + hint)
+            else:
+                arg_list.append(arg)
+            # except:
+            #     print("error")
+            #     print(args)
+            #     print(proper_hints)
+            #     traceback.print_exc()
+            #     exit(1)
+        new_args = ', '.join(arg_list)
+        return new_args, return_type
 
 fname = sys.argv[1]
 with open(fname, 'r') as f:
@@ -61,85 +142,9 @@ for i in range(length):
             hints = t[t_leftparen + 1:t_rightparen]
 
             if ',' in line:  # the function has multiple arguments
-                # TODO: handle multi-argument functions
-                # new_lines += l + '\n'
-                # continue
-                args_l = args.replace(' ', '').split(',')
-                contain_self = False
-                if 'self' in args_l:
-                    args_l.remove('self')
-                    contain_self = True
+                new_args, return_type = handle_multiarg_fn(line, t, args, hints)
 
-                # properly format the hints
-                raw_hints = hints.replace(' ', '').replace('**', '').replace('*', '').split(',')
-                proper_hints = []
 
-                def isa_hint_with_braces(x: str) -> bool:
-                    return ('[' in x) and (']' in x)
-
-                def isa_hint_without_braces(x: str) -> bool:
-                    return ('[' not in x) and (']' not in x)
-
-                def isa_opening_compound_hint(x: str) -> bool:
-                    return ('[' in x) and (']' not in x)
-
-                def isa_closing_compound_hint(x: str) -> bool:
-                    return (']' in x) and ('[' not in x)
-
-                compound_hint = ''
-                compount_hint_mode = False
-
-                # parse raw_hints into hints
-                for h in raw_hints:
-                    if (not isa_opening_compound_hint(h)) and \
-                       (not isa_closing_compound_hint(h)) and \
-                       (not compount_hint_mode):
-                        if isa_hint_without_braces(h) or isa_hint_with_braces(h):
-                            # simple hinting without compound
-                            # and
-                            # simple hinting with one []
-                            proper_hints.append(h)
-                    elif isa_opening_compound_hint(h):
-                        compound_hint += h
-                        compound_hint_mode = True
-                    elif isa_closing_compound_hint(h):
-                        compound_hint += (', ' + h)
-                        compound_hint_mode = False
-                        proper_hints.append(str(compound_hint))
-                        compound_hint = ''
-                    else:
-                        compound_hint += (', ' + h)
-
-                return_type = t.split(' -> ')[1].rstrip()
-
-                arg_list = ['self'] if contain_self else []
-                for k in range(len(args_l)):
-                    arg = args_l[k]
-                    if len(proper_hints) >= 1:
-                        # if the function requires at
-                        # least one argument
-                        try:
-                            hint = proper_hints[k]
-                        except Exception:
-                            print(proper_hints)
-                            print(args_l)
-                        if '=' in arg:
-                            # contains default value
-                            equal_location = arg.index('=')
-                            name = arg[:equal_location]
-                            default_value = arg[equal_location + 1:]
-                            arg_list.append(name + ': ' + hint + '=' + default_value)
-                        else:
-                            arg_list.append(arg + ': ' + hint)
-                    else:
-                        arg_list.append(arg)
-                    # except:
-                    #     print("error")
-                    #     print(args)
-                    #     print(proper_hints)
-                    #     traceback.print_exc()
-                    #     exit(1)
-                new_args = ', '.join(arg_list)
                 new_line = line[:leftparen + 1] + new_args + ') -> ' + return_type + ':'
                 new_lines += new_line + '\n'
             else:  # the function has only one argument
@@ -165,6 +170,18 @@ for i in range(length):
             if boundary_found:
                 func_sig = ' '.join(lines[i:boundary_index + 1])
                 t = lines[boundary_index + 1]
+
+                leftparen = line.index('(')
+                rightparen = line.rindex(')')
+                t_leftparen = t.index('(')
+                t_rightparen = t.rindex(')')
+
+                args = func_sig[leftparen + 1:rightparen]
+                hints = t[t_leftparen + 1:t_rightparen]
+
+                if ',' in func_sig:
+                    new_args, return_type = handle_multiarg_fn(func_sig, t, args, hints)
+
             else:
                 new_lines += line + '\n'
     else:
