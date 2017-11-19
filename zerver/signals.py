@@ -21,7 +21,7 @@ def get_device_browser(user_agent):
         return "Edge"
     elif "opera" in user_agent or "opr/" in user_agent:
         return "Opera"
-    elif "chrome" in user_agent and "chromium" not in user_agent:
+    elif ("chrome" in user_agent or "crios" in user_agent) and "chromium" not in user_agent:
         return 'Chrome'
     elif "firefox" in user_agent and "seamonkey" not in user_agent and "chrome" not in user_agent:
         return "Firefox"
