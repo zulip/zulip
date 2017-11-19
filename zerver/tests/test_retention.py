@@ -17,29 +17,25 @@ class TestRetentionLib(ZulipTestCase):
         Test receiving expired messages retention tool.
     """
 
-    def setUp(self):
-        # type: () -> None
+    def setUp(self) -> None:
         super().setUp()
         self.zulip_realm = self._set_realm_message_retention_value('zulip', 30)
         self.mit_realm = self._set_realm_message_retention_value('zephyr', 100)
 
     @staticmethod
-    def _set_realm_message_retention_value(realm_str, retention_period):
-        # type: (str, int) -> Realm
+    def _set_realm_message_retention_value(realm_str: str, retention_period: int) -> Realm:
         realm = Realm.objects.get(string_id=realm_str)
         realm.message_retention_days = retention_period
         realm.save()
         return realm
 
     @staticmethod
-    def _change_messages_pub_date(msgs_ids, pub_date):
-        # type: (List[int], datetime) -> Any
+    def _change_messages_pub_date(msgs_ids: List[int], pub_date: datetime) -> Any:
         messages = Message.objects.filter(id__in=msgs_ids).order_by('id')
         messages.update(pub_date=pub_date)
         return messages
 
-    def _make_mit_messages(self, message_quantity, pub_date):
-        # type: (int, datetime) -> Any
+    def _make_mit_messages(self, message_quantity: int, pub_date: datetime) -> Any:
         # send messages from mit.edu realm and change messages pub date
         sender = self.mit_user('espuser')
         recipient = self.mit_user('starnine')
@@ -48,19 +44,16 @@ class TestRetentionLib(ZulipTestCase):
         mit_messages = self._change_messages_pub_date(msgs_ids, pub_date)
         return mit_messages
 
-    def test_expired_messages_result_type(self):
-        # type: () -> None
+    def test_expired_messages_result_type(self) -> None:
         # Check return type of get_expired_message method.
         result = get_expired_messages()
         self.assertIsInstance(result, types.GeneratorType)
 
-    def test_no_expired_messages(self):
-        # type: () -> None
+    def test_no_expired_messages(self) -> None:
         result = list(get_expired_messages())
         self.assertFalse(result)
 
-    def test_expired_messages_in_each_realm(self):
-        # type: () -> None
+    def test_expired_messages_in_each_realm(self) -> None:
         # Check result realm messages order and result content
         # when all realm has expired messages.
         expired_mit_messages = self._make_mit_messages(3, timezone_now() - timedelta(days=101))
@@ -88,8 +81,7 @@ class TestRetentionLib(ZulipTestCase):
             [message.id for message in expired_messages_result[1]['expired_messages']]
         )
 
-    def test_expired_messages_in_one_realm(self):
-        # type: () -> None
+    def test_expired_messages_in_one_realm(self) -> None:
         # Check realm with expired messages and messages
         # with one day to expiration data.
         expired_mit_messages = self._make_mit_messages(5, timezone_now() - timedelta(days=101))
@@ -116,14 +108,12 @@ class TestRetentionLib(ZulipTestCase):
 
 class TestMoveMessageToArchive(ZulipTestCase):
 
-    def setUp(self):
-        # type: () -> None
+    def setUp(self) -> None:
         super().setUp()
         self.sender = 'hamlet@zulip.com'
         self.recipient = 'cordelia@zulip.com'
 
-    def _create_attachments(self):
-        # type: () -> None
+    def _create_attachments(self) -> None:
         sample_size = 10
         dummy_files = [
             ('zulip.txt', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt', sample_size),
@@ -134,16 +124,14 @@ class TestMoveMessageToArchive(ZulipTestCase):
         for file_name, path_id, size in dummy_files:
             create_attachment(file_name, path_id, user_profile, size)
 
-    def _check_messages_before_archiving(self, msg_id):
-        # type: (int) -> List[int]
+    def _check_messages_before_archiving(self, msg_id: int) -> List[int]:
         user_messages_ids_before = list(UserMessage.objects.filter(
             message_id=msg_id).order_by('id').values_list('id', flat=True))
         self.assertEqual(ArchivedUserMessage.objects.count(), 0)
         self.assertEqual(ArchivedMessage.objects.count(), 0)
         return user_messages_ids_before
 
-    def _check_messages_after_archiving(self, msg_id, user_msgs_ids_before):
-        # type: (int, List[int]) -> None
+    def _check_messages_after_archiving(self, msg_id: int, user_msgs_ids_before: List[int]) -> None:
         self.assertEqual(ArchivedMessage.objects.filter(id=msg_id).count(), 1)
         self.assertEqual(Message.objects.filter(id=msg_id).count(), 0)
         self.assertEqual(UserMessage.objects.filter(message_id=msg_id).count(), 0)
@@ -151,22 +139,19 @@ class TestMoveMessageToArchive(ZulipTestCase):
             message_id=msg_id).order_by('id').values_list('id', flat=True))
         self.assertEqual(arc_user_messages_ids_after, user_msgs_ids_before)
 
-    def test_personal_message_archiving(self):
-        # type: ()-> None
+    def test_personal_message_archiving(self) -> None:
         msg_id = self.send_personal_message(self.sender, self.recipient)
         user_messages_ids_before = self._check_messages_before_archiving(msg_id)
         move_message_to_archive(message_id=msg_id)
         self._check_messages_after_archiving(msg_id, user_messages_ids_before)
 
-    def test_stream_message_archiving(self):
-        # type: ()-> None
+    def test_stream_message_archiving(self) -> None:
         msg_id = self.send_stream_message(self.sender, "Verona")
         user_messages_ids_before = self._check_messages_before_archiving(msg_id)
         move_message_to_archive(message_id=msg_id)
         self._check_messages_after_archiving(msg_id, user_messages_ids_before)
 
-    def test_archiving_message_second_time(self):
-        # type: ()-> None
+    def test_archiving_message_second_time(self) -> None:
         msg_id = self.send_stream_message(self.sender, "Verona")
         user_messages_ids_before = self._check_messages_before_archiving(msg_id)
         move_message_to_archive(message_id=msg_id)
@@ -174,8 +159,7 @@ class TestMoveMessageToArchive(ZulipTestCase):
         with self.assertRaises(Message.DoesNotExist):
             move_message_to_archive(message_id=msg_id)
 
-    def test_archiving_message_with_attachment(self):
-        # type: () -> None
+    def test_archiving_message_with_attachment(self) -> None:
         self._create_attachments()
         body = """Some files here ...[zulip.txt](
             http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)
@@ -194,8 +178,7 @@ class TestMoveMessageToArchive(ZulipTestCase):
             messages__id=msg_id).order_by("id").values_list("id", flat=True))
         self.assertEqual(attachments_ids_before, arc_attachments_ids_after)
 
-    def test_archiving_message_with_shared_attachment(self):
-        # type: () -> None
+    def test_archiving_message_with_shared_attachment(self) -> None:
         # Check do not removing attachments which is used in other messages.
         self._create_attachments()
         body = """Some files here ...[zulip.txt](
