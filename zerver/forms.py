@@ -224,13 +224,17 @@ class ZulipPasswordResetForm(PasswordResetForm):
             'email': email,
             'realm_uri': realm.uri,
             'user': user,
-            'protocol': 'https' if use_https else 'http',
         }
 
         if user is not None and user_matches_subdomain(subdomain, user):
             context['no_account_in_realm'] = False
             context['token'] = token_generator.make_token(user)
             context['uid'] = urlsafe_base64_encode(force_bytes(user.id))
+
+            protocol = 'https' if use_https else 'http'
+            endpoint = reverse('django.contrib.auth.views.password_reset_confirm',
+                               kwargs=dict(uidb64=context['uid'], token=context['token']))
+            context['reset_url'] = "{}://{}{}".format(protocol, user.realm.host, endpoint)
 
             send_email('zerver/emails/password_reset', to_user_id=user.id,
                        from_name="Zulip Account Security",
