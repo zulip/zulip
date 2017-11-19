@@ -428,7 +428,7 @@ class DefaultEmojiReactionTests(EmojiReactionBase):
             'emoji_code': 'TBD',
         }
         result = self.post_reaction(reaction_info)
-        self.assert_json_error(result, 'Emoji for this emoji code not found.')
+        self.assert_json_error(result, 'No unicode emoji with this emoji code found.')
 
     def test_add_default_emoji_invalid_name(self) -> None:
         reaction_info = {
@@ -567,6 +567,15 @@ class ZulipExtraEmojiReactionTest(EmojiReactionBase):
         result = self.post_zulip_reaction()
         self.assert_json_error(result, 'Reaction already exists.')
 
+    def test_add_invalid_extra_emoji(self) -> None:
+        reaction_info = {
+            'emoji_name': 'extra_emoji',
+            'emoji_code': 'extra_emoji',
+            'reaction_type': 'zulip_extra_emoji',
+        }
+        result = self.post_reaction(reaction_info)
+        self.assert_json_error(result, 'No such extra emoji found.')
+
     def test_delete_zulip_emoji(self) -> None:
         result = self.post_zulip_reaction()
         self.assert_json_success(result)
@@ -593,7 +602,7 @@ class RealmEmojiReactionTests(EmojiReactionBase):
             'emoji_code': 'non_existent',
         }
         result = self.post_reaction(reaction_info)
-        self.assert_json_error(result, 'Emoji for this emoji code not found.')
+        self.assert_json_error(result, 'No such realm emoji found.')
 
     def test_add_deactivated_realm_emoji(self) -> None:
         emoji = RealmEmoji.objects.get(name="green_tick")
@@ -605,7 +614,7 @@ class RealmEmojiReactionTests(EmojiReactionBase):
             'emoji_code': 'green_tick',
         }
         result = self.post_reaction(reaction_info)
-        self.assert_json_error(result, 'Emoji for this emoji code not found.')
+        self.assert_json_error(result, 'This realm emoji has been deactivated.')
 
     def test_add_to_existing_deactivated_realm_emoji_reaction(self) -> None:
         reaction_info = {
@@ -670,7 +679,7 @@ class RealmEmojiReactionTests(EmojiReactionBase):
         result = self.client_post('/api/v1/messages/%s/reactions' % (message_id,),
                                   reaction_info,
                                   **self.api_auth(sender))
-        self.assert_json_error(result, "Emoji for this emoji code not found.")
+        self.assert_json_error(result, "Invalid emoji type.")
 
 class ReactionAPIEventTest(EmojiReactionBase):
     def test_add_event(self) -> None:
