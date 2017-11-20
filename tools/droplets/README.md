@@ -110,7 +110,7 @@ so they are notified.
 [image-zulip-team]: http://cdn.subfictional.com/dropshare/Screen-Shot-2016-11-28-10-53-24-X86JYrrOzu.png
 [zulip-zulip]: https://github.com/zulip/zulip
 [python-digitalocean]: https://github.com/koalalorenzo/python-digitalocean
-[how-to-request]: https://github.com/zulip/zulip-gci/blob/master/request-remote-dev.md
+[how-to-request]: https://github.com/zulip/zulip-gci/blob/master/development/request-remote.md
 
 ## Updating the base image
 
