@@ -46,11 +46,6 @@ def setup_initial_streams(realm):
     create_streams_if_needed(realm, stream_dicts)
     set_default_streams(realm, {stream['name']: {} for stream in stream_dicts})
 
-# For the first user in a realm
-def setup_initial_private_stream(user):
-    # type: (UserProfile) -> None
-    bulk_add_subscriptions([user.realm.signup_notifications_stream], [user])
-
 def send_initial_realm_messages(realm):
     # type: (Realm) -> None
     welcome_bot = get_system_bot(settings.WELCOME_BOT)
