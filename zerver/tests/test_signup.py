@@ -322,7 +322,7 @@ class LoginTest(ZulipTestCase):
         do_deactivate_user(user_profile)
         result = self.login_with_return(self.example_email("hamlet"), "xxx")
         self.assertEqual(result.status_code, 200)
-        self.assert_in_response("your account has been deactivated.", result)
+        self.assert_in_response("Your account is no longer active.", result)
         self.assertIsNone(get_session_dict_user(self.client.session))
 
     def test_login_bad_password(self):

@@ -271,9 +271,8 @@ Please contact %s to reactivate this group.""" % (
 
         if not user_profile.is_active and not user_profile.is_mirror_dummy:
             error_msg = (
-                u"Sorry for the trouble, but your account has been deactivated. "
-                u"Please contact your organization administrator to reactivate it. "
-                u"If you're not sure who that is, try contacting %s.") % (FromAddress.SUPPORT,)
+                u"Your account is no longer active. "
+                u"Please contact your organization administrator to reactivate it.")
             raise ValidationError(mark_safe(error_msg))
 
         if not user_matches_subdomain(get_subdomain(self.request), user_profile):
