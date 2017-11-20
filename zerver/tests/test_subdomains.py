@@ -15,9 +15,10 @@ class SubdomainsTest(TestCase):
             request.attach_mock(mock.Mock(return_value=host), 'get_host')
             return request
 
-        def test(expected, host, *, plusport=True,
-                 external_host='example.org', realm_hosts={}, root_aliases=[]):
-            # type: (str, str, bool, str, Dict[str, str], List[str]) -> None
+        def test(expected: str, host: str, *, plusport: bool=True,
+                 external_host: str='example.org',
+                 realm_hosts: Dict[str, str]={},
+                 root_aliases: List[str]=[]) -> None:
             with self.settings(EXTERNAL_HOST=external_host,
                                REALM_HOSTS=realm_hosts,
                                ROOT_SUBDOMAIN_ALIASES=root_aliases):
