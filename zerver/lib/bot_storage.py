@@ -14,8 +14,7 @@ def get_bot_state(bot_profile, key):
     try:
         return BotUserStateData.objects.get(bot_profile=bot_profile, key=key).value
     except BotUserStateData.DoesNotExist:
-        raise StateError("Cannot get state. {} doesn't have "
-                         "an entry with the key '{}'.".format(bot_profile, key))
+        raise StateError("Key does not exist.")
 
 def get_bot_state_size(bot_profile, key=None):
     # type: (UserProfile, Optional[Text]) -> int
@@ -37,13 +36,12 @@ def set_bot_state(bot_profile, key, value):
     old_state_size = get_bot_state_size(bot_profile)
     new_state_size = old_state_size + (new_entry_size - old_entry_size)
     if new_state_size > state_size_limit:
-        raise StateError("Cannot set state. Request would require {} bytes storage. "
-                         "The current storage limit is {}.".format(new_state_size,
-                                                                   state_size_limit))
+        raise StateError("Request exceeds storage limit by {} characters. The limit is {} characters."
+                         .format(new_state_size - state_size_limit, state_size_limit))
     elif type(key) is not str:
-        raise StateError("Cannot set state. The key type is {}, but it should be str.".format(type(key)))
+        raise StateError("Key type is {}, but should be str.".format(type(key)))
     elif type(value) is not str:
-        raise StateError("Cannot set state. The value type is {}, but it should be str.".format(type(value)))
+        raise StateError("Value type is {}, but should be str.".format(type(value)))
     else:
         obj, created = BotUserStateData.objects.get_or_create(bot_profile=bot_profile, key=key,
                                                               defaults={'value': value})
@@ -56,7 +54,7 @@ def remove_bot_state(bot_profile, key):
     try:
         BotUserStateData.objects.get(bot_profile=bot_profile, key=key).delete()
     except BotUserStateData.DoesNotExist:
-        raise StateError("Cannot remove state. The key {} does not exist.".format(key))
+        raise StateError("Key does not exist.".format(key))
 
 def is_key_in_bot_state(bot_profile, key):
     # type: (UserProfile, Text) -> bool
