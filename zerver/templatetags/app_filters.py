@@ -82,26 +82,6 @@ def render_markdown_path(markdown_file_path, context=None):
     if context is None:
         context = {}
 
-    if context.get('integrations_dict') is not None:
-        integration_dir = None
-        if markdown_file_path.endswith('doc.md'):
-            integration_dir = os.path.basename(os.path.dirname(markdown_file_path))
-        elif 'integrations' in markdown_file_path.split('/'):
-            integration_dir = os.path.splitext(os.path.basename(markdown_file_path))[0]
-
-        integration = context['integrations_dict'][integration_dir]
-
-        context['integration_name'] = integration.name
-        context['integration_display_name'] = integration.display_name
-        if hasattr(integration, 'stream_name'):
-            context['recommended_stream_name'] = integration.stream_name
-        if hasattr(integration, 'url'):
-            context['integration_url'] = integration.url[3:]
-        if hasattr(integration, 'hubot_docs_url'):
-            context['hubot_docs_url'] = integration.hubot_docs_url
-            # HACK: The actual file doesn't exist; we rewrite it here.
-            markdown_file_path = 'zerver/integrations/hubot_common.md'
-
     jinja = engines['Jinja2']
     markdown_string = jinja.env.loader.get_source(jinja.env, markdown_file_path)[0]
     html = md_engine.convert(markdown_string)
