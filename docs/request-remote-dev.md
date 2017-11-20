@@ -63,14 +63,14 @@ Once your remote dev instance is ready:
 
 Once you've confirmed you can connect to your remote server, take a look at:
 
-* [developing remotely](remote.html) for tips on using the remote dev
+* [developing remotely](development/remote.html) for tips on using the remote dev
   instance, and
-* our [Git & GitHub Guide](../contributing/git-guide.html) to learn how to use Git with Zulip.
+* our [Git & GitHub Guide](contributing/git-guide.html) to learn how to use Git with Zulip.
 
 Next, read the following to learn more about developing for Zulip:
 
-* [Using the Development Environment](using.html)
-* [Testing](../testing/testing.html)
+* [Using the Development Environment](development/using.html)
+* [Testing](testing/testing.html)
 
 [github-join]: https://github.com/join
 [github-help-add-ssh-key]: https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/
