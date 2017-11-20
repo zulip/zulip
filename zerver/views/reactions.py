@@ -26,7 +26,7 @@ def create_historical_message(user_profile, message):
                                flags=UserMessage.flags.historical | UserMessage.flags.read)
 
 @has_request_variables
-def add_reaction_backend(request, user_profile, message_id, emoji_name):
+def add_reaction_legacy(request, user_profile, message_id, emoji_name):
     # type: (HttpRequest, UserProfile, int, Text) -> HttpResponse
 
     # access_message will throw a JsonableError exception if the user
@@ -50,7 +50,7 @@ def add_reaction_backend(request, user_profile, message_id, emoji_name):
     return json_success()
 
 @has_request_variables
-def remove_reaction_backend(request, user_profile, message_id, emoji_name):
+def remove_reaction_legacy(request, user_profile, message_id, emoji_name):
     # type: (HttpRequest, UserProfile, int, Text) -> HttpResponse
 
     # access_message will throw a JsonableError exception if the user
