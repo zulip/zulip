@@ -225,7 +225,32 @@ class ZulipPasswordResetForm(PasswordResetForm):
                    from_name="Zulip Account Security",
                    from_address=FromAddress.NOREPLY, context=context)
 
+    def send_mail_to_non_existent_user(self, to_email):
+        # type: (str) -> None
+        """
+        This function is used to send an email when the email address does
+        not belong to any active Zulip account.
+        """
+        context = {'email': to_email}  # type: Dict[str, Text]
+        realm = get_realm(get_subdomain(getattr(self, 'request')))
+        if realm:
+            org_name = realm.name
+            org_uri = realm.uri
+        else:
+            org_name = u'Zulip'
+            org_uri = settings.ROOT_DOMAIN_URI
+
+        context['org_name'] = org_name
+        context['org_uri'] = org_uri
+
+        send_email('zerver/emails/password_reset_non_existent_user',
+                   to_email=to_email,
+                   from_name="Zulip Account Security",
+                   from_address=FromAddress.NOREPLY,
+                   context=context)
+
     def save(self,
+             domain_override=None,  # type: Optional[bool]
              subject_template_name='registration/password_reset_subject.txt',  # type: Text
              email_template_name='registration/password_reset_email.html',  # type: Text
              use_https=False,  # type: bool
@@ -242,6 +267,13 @@ class ZulipPasswordResetForm(PasswordResetForm):
         email in multiple subdomains, we may be able to delete or refactor this
         function.
 
+        We inject request parameter in context. This parameter will be used by
+        ZulipPasswordResetForm.send_mail and
+        ZulipPasswordResetForm.send_mail_to_non_existent_user function.
+
+        We also send an email when an associated account does not exist in the
+        database.
+
         Generates a one-use only link for resetting password and sends to the
         user.
 
@@ -252,6 +284,10 @@ class ZulipPasswordResetForm(PasswordResetForm):
         setattr(self, 'request', request)
         email = self.cleaned_data["email"]
         users = list(self.get_users(email))
+
+        if not len(users):
+            self.send_mail_to_non_existent_user(email)
+            return
 
         for user in users:
             context = {

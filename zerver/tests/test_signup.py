@@ -197,6 +197,31 @@ class PasswordResetTest(ZulipTestCase):
         # make sure old password no longer works
         self.login(email, password=old_password, fails=True)
 
+    def test_password_reset_for_non_existent_user(self):
+        # type: () -> None
+        email = 'nonexisting@mars.com'
+
+        with patch('logging.info'):
+            # start the password reset process by supplying an email address
+            result = self.client_post('/accounts/password/reset/', {'email': email})
+
+        # check the redirect link telling you to check mail for password reset link
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(
+            "/accounts/password/reset/done/"))
+        result = self.client_get(result["Location"])
+
+        self.assert_in_response("Check your email to finish the process.", result)
+
+        # Check that the password reset email is from a noreply address.
+        from django.core.mail import outbox
+        from_email = outbox[0].from_email
+        self.assertIn("Zulip Account Security", from_email)
+        self.assertIn(FromAddress.NOREPLY, from_email)
+
+        self.assertIn('but we could not find any associated account',
+                      outbox[0].body)
+
     def test_invalid_subdomain(self):
         # type: () -> None
         email = self.example_email("hamlet")
