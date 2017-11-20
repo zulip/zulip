@@ -7,6 +7,9 @@ to checkout your branch.
 
 ## Screenshot tools by platform
 ### Browser
+- Firefox can take screenshots without any plugins (stable feature starting from v57)
+    - You can find it under `page actions / Take a screenshot`
+    - It is capable of screenshoting the entire page, visible area and individual DOM elements
 - [LightShot Screenshot](https://app.prntscr.com/en/index.html) (Chrome, Firefox, IE & Opera)
 
 ### macOS
