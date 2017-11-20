@@ -404,9 +404,8 @@ class PersonalMessagesTest(ZulipTestCase):
 
 class StreamMessagesTest(ZulipTestCase):
 
-    def assert_stream_message(self, stream_name, topic_name="test topic",
-                              content="test content"):
-        # type: (Text, Text, Text) -> None
+    def assert_stream_message(self, stream_name: Text, topic_name: Text="test topic",
+                              content: Text="test content") -> None:
         """
         Check that messages sent to a stream reach all subscribers to that stream.
         """
@@ -1679,9 +1678,8 @@ class EditMessageTest(ZulipTestCase):
         self.assertEqual(message_history[5]['topic'], 'topic 1')
 
     def test_edit_message_content_limit(self) -> None:
-        def set_message_editing_params(allow_message_editing,
-                                       message_content_edit_limit_seconds):
-            # type: (bool, int) -> None
+        def set_message_editing_params(allow_message_editing: bool,
+                                       message_content_edit_limit_seconds: int) -> None:
             result = self.client_patch("/json/realm", {
                 'allow_message_editing': ujson.dumps(allow_message_editing),
                 'message_content_edit_limit_seconds': message_content_edit_limit_seconds

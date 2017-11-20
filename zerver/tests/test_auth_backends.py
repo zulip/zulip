@@ -190,8 +190,7 @@ class AuthBackendTest(ZulipTestCase):
                                             realm=None,
                                             return_data=dict()))
 
-    def test_email_auth_backend_disabled_password_auth(self):
-        # type: () -> None
+    def test_email_auth_backend_disabled_password_auth(self) -> None:
         user_profile = self.example_user('hamlet')
         password = "testpassword"
         user_profile.set_password(password)
@@ -711,9 +710,10 @@ class ResponseMock:
         return "Response text"
 
 class GoogleOAuthTest(ZulipTestCase):
-    def google_oauth2_test(self, token_response, account_response, *, subdomain=None,
-                           mobile_flow_otp=None, is_signup=None):
-        # type: (ResponseMock, ResponseMock, Optional[str], Optional[str], Optional[str]) -> HttpResponse
+    def google_oauth2_test(self, token_response: ResponseMock, account_response: ResponseMock,
+                           *, subdomain: Optional[str]=None,
+                           mobile_flow_otp: Optional[str]=None,
+                           is_signup: Optional[str]=None) -> HttpResponse:
         url = "/accounts/login/google/"
         params = {}
         headers = {}
