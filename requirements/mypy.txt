@@ -9,4 +9,4 @@
 #
 mypy==0.540
 typed-ast==1.1.0          # via mypy
-typing==3.6.2             # via mypy
+typing==3.6.2

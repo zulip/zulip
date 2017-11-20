@@ -26,5 +26,5 @@ snowballstemmer==1.2.1
 sphinx-rtd-theme==0.2.4
 sphinx==1.6.5
 sphinxcontrib-websupport==1.0.1  # via sphinx
-typing==3.6.2             # via sphinx
+typing==3.6.2
 urllib3==1.22             # via requests
