@@ -88,6 +88,9 @@ def generate_all_emails(request):
     user_profile = get_user(registered_email, realm)
     result = client.get(url)
     assert result.status_code == 200
+    # Reset the email value
+    user_profile.email = registered_email
+    user_profile.save()
 
     # Follow up day1 day2 emails
     enqueue_welcome_emails(user_profile)
