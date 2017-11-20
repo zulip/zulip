@@ -135,6 +135,16 @@ def integration_doc(request, integration_name=REQ(default=None)):
 
     context = integration.doc_context or {}
     add_integrations_context(context)
+
+    context['integration_name'] = integration.name
+    context['integration_display_name'] = integration.display_name
+    if hasattr(integration, 'stream_name'):
+        context['recommended_stream_name'] = integration.stream_name
+    if hasattr(integration, 'url'):
+        context['integration_url'] = integration.url[3:]
+    if hasattr(integration, 'hubot_docs_url'):
+        context['hubot_docs_url'] = integration.hubot_docs_url
+
     doc_html_str = render_markdown_path(integration.doc, context)
 
     return HttpResponse(doc_html_str)
