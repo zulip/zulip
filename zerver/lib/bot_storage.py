@@ -57,3 +57,7 @@ def remove_bot_state(bot_profile, keys):
 def is_key_in_bot_state(bot_profile, key):
     # type: (UserProfile, Text) -> bool
     return BotUserStateData.objects.filter(bot_profile=bot_profile, key=key).exists()
+
+def get_keys_in_bot_state(bot_profile):
+    # type: (UserProfile) -> List[Text]
+    return list(BotUserStateData.objects.filter(bot_profile=bot_profile).values_list('key', flat=True))

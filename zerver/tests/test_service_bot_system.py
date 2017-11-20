@@ -22,6 +22,8 @@ from zerver.models import (
     Recipient,
 )
 
+import ujson
+
 BOT_TYPE_TO_QUEUE_NAME = {
     UserProfile.OUTGOING_WEBHOOK_BOT: 'outgoing_webhooks',
     UserProfile.EMBEDDED_BOT: 'embedded_bots',
@@ -173,6 +175,87 @@ class TestServiceBotStateHandler(ZulipTestCase):
         self.assertFalse(storage.contains('some key'))
         self.assertTrue(storage.contains('another key'))
         self.assertRaises(StateError, lambda: storage.remove('some key'))
+
+    def test_internal_endpoint(self):
+        # type: () -> None
+        self.login(self.user_profile.email)
+        # Store some data.
+        initial_dict = {'key 1': 'value 1', 'key 2': 'value 2', 'key 3': 'value 3'}
+        params = {
+            'state': ujson.dumps(initial_dict)
+        }
+        result = self.client_put('/json/user_state', params)
+        self.assert_json_success(result)
+        # Assert the stored data for some keys.
+        params = {
+            'keys': ujson.dumps(['key 1', 'key 3'])
+        }
+        result = self.client_get('/json/user_state', params)
+        self.assert_json_success(result)
+        self.assertEqual(result.json()['state'], {'key 3': 'value 3', 'key 1': 'value 1'})
+        # Assert the stored data for all keys.
+        result = self.client_get('/json/user_state')
+        self.assert_json_success(result)
+        self.assertEqual(result.json()['state'], initial_dict)
+        # Store some more data; update an entry and store a new entry
+        dict_update = {'key 1': 'new value', 'key 4': 'value 4'}
+        params = {
+            'state': ujson.dumps(dict_update)
+        }
+        result = self.client_put('/json/user_state', params)
+        self.assert_json_success(result)
+        # Assert the data was updated.
+        updated_dict = initial_dict.copy()
+        updated_dict.update(dict_update)
+        result = self.client_get('/json/user_state')
+        self.assert_json_success(result)
+        self.assertEqual(result.json()['state'], updated_dict)
+        # Assert errors on invalid requests.
+        params = {  # type: ignore # Ignore 'incompatible type "str": "List[str]"; expected "str": "str"' for testing
+            'keys': ["This is a list, but should be a serialized string."]
+        }
+        result = self.client_get('/json/user_state', params)
+        self.assert_json_error(result, 'Argument "keys" is not valid JSON.')
+        params = {
+            'keys': ujson.dumps(["key 1", "nonexistent key"])
+        }
+        result = self.client_get('/json/user_state', params)
+        self.assert_json_error(result, "Key does not exist.")
+        params = {  # type: ignore # Ignore 'incompatible type "str": "List[str]"; expected "str": "str"' for testing
+            'state': ujson.dumps({'foo': [1, 2, 3]})
+        }
+        result = self.client_put('/json/user_state', params)
+        self.assert_json_error(result, "Value type is <class 'list'>, but should be str.")
+        # Remove some entries.
+        keys_to_remove = ['key 1', 'key 2']
+        params = {
+            'keys': ujson.dumps(keys_to_remove)
+        }
+        result = self.client_delete('/json/user_state', params)
+        self.assert_json_success(result)
+        # Assert the entries were removed.
+        for key in keys_to_remove:
+            updated_dict.pop(key)
+        result = self.client_get('/json/user_state')
+        self.assert_json_success(result)
+        self.assertEqual(result.json()['state'], updated_dict)
+        # Try to remove an existing and a nonexistent key.
+        params = {
+            'keys': ujson.dumps(['key 3', 'nonexistent key'])
+        }
+        result = self.client_delete('/json/user_state', params)
+        self.assert_json_error(result, "Key does not exist.")
+        # Assert an error has been thrown and no entries were removed.
+        result = self.client_get('/json/user_state')
+        self.assert_json_success(result)
+        self.assertEqual(result.json()['state'], updated_dict)
+        # Remove the entire state.
+        result = self.client_delete('/json/user_state')
+        self.assert_json_success(result)
+        # Assert the entire state has been removed.
+        result = self.client_get('/json/user_state')
+        self.assert_json_success(result)
+        self.assertEqual(result.json()['state'], {})
 
 class TestServiceBotConfigHandler(ZulipTestCase):
     def setUp(self) -> None:
