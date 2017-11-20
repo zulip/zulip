@@ -844,7 +844,6 @@ a.bottom-signup-button {
 
 .team .profile .profile-name {
     font-weight: 600;
-    text-align: center;
 }
 
 .team .profile .profile-role {
@@ -852,7 +851,6 @@ a.bottom-signup-button {
     text-transform: uppercase;
     font-size: 0.8em;
     font-weight: 400;
-    text-align: center;
 }
 
 .team .bdfl {
@@ -862,6 +860,7 @@ a.bottom-signup-button {
 }
 
 .team .bdfl .profile-picture {
+    flex: 0 auto;
     width: 200px;
     margin: 10px;
 }
@@ -1797,6 +1796,13 @@ input.new-organization-button {
 @media (max-height: 600px) {
     .password-container {
         margin-top: 10px;
+    }
+}
+
+@media (max-width: 558px) {
+    .team .bdfl .profile-name,
+    .team .bdfl .profile-role {
+        text-align: center;
     }
 }
 
