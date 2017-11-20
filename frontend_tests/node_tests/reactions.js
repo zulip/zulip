@@ -25,10 +25,19 @@ set_global('emoji', {
             emoji_url: 'TBD',
             deactivated: true,
         },
+        zulip: {
+            emoji_name: 'zulip',
+            emoji_url: 'TBD',
+            deactivated: false,
+        },
     },
     active_realm_emojis: {
         realm_emoji: {
             emoji_name: 'realm_emoji',
+            emoji_url: 'TBD',
+        },
+        zulip: {
+            emoji_name: 'zulip',
             emoji_url: 'TBD',
         },
     },
@@ -52,6 +61,8 @@ set_global('emoji_codes', {
     name_to_codepoint: {
         alien: '1f47d',
         smile: '1f604',
+        frown: '1f626',
+        octopus: '1f419',
     },
 });
 set_global('emoji_picker', {
@@ -80,15 +91,15 @@ people.add_in_realm(cali);
 var message = {
     id: 1001,
     reactions: [
-        {emoji_name: 'smile', user: {id: 5}, reaction_type: 'unicode_emoji', emoji_code: '1'},
-        {emoji_name: 'smile', user: {id: 6}, reaction_type: 'unicode_emoji', emoji_code: '1'},
-        {emoji_name: 'frown', user: {id: 7}, reaction_type: 'unicode_emoji', emoji_code: '2'},
+        {emoji_name: 'smile', user: {id: 5}, reaction_type: 'unicode_emoji', emoji_code: '1f604'},
+        {emoji_name: 'smile', user: {id: 6}, reaction_type: 'unicode_emoji', emoji_code: '1f604'},
+        {emoji_name: 'frown', user: {id: 7}, reaction_type: 'unicode_emoji', emoji_code: '1f626'},
         {emoji_name: 'inactive_realm_emoji', user: {id: 5}, reaction_type: 'realm_emoji',
-         emoji_code: '1'},
+         emoji_code: 'inactive_realm_emoji'},
 
         // add some bogus user_ids
-        {emoji_name: 'octopus', user: {id: 8888}, reaction_type: 'unicode_emoji', emoji_code: '3'},
-        {emoji_name: 'frown', user: {id: 9999}, reaction_type: 'unicode_emoji', emoji_code: '2'},
+        {emoji_name: 'octopus', user: {id: 8888}, reaction_type: 'unicode_emoji', emoji_code: '1f419'},
+        {emoji_name: 'frown', user: {id: 9999}, reaction_type: 'unicode_emoji', emoji_code: '1f626'},
     ],
 };
 
@@ -141,8 +152,8 @@ set_global('current_msg_list', {
 (function test_basics() {
     var result = reactions.get_message_reactions(message);
 
-    assert(reactions.current_user_has_reacted_to_emoji(message, 'smile'));
-    assert(!reactions.current_user_has_reacted_to_emoji(message, 'frown'));
+    assert(reactions.current_user_has_reacted_to_emoji(message, '1f604', 'unicode_emoji'));
+    assert(!reactions.current_user_has_reacted_to_emoji(message, '1f626', 'unicode_emoji'));
 
     result.sort(function (a, b) { return a.count - b.count; });
 
@@ -150,8 +161,8 @@ set_global('current_msg_list', {
       {
          emoji_name: 'frown',
          reaction_type: 'unicode_emoji',
-         emoji_code: '2',
-         emoji_name_css_class: '2',
+         emoji_code: '1f626',
+         local_id: 'unicode_emoji,frown,1f626',
          count: 1,
          user_ids: [7],
          title: 'Cali reacted with :frown:',
@@ -161,8 +172,8 @@ set_global('current_msg_list', {
       {
          emoji_name: 'inactive_realm_emoji',
          reaction_type: 'realm_emoji',
-         emoji_code: '1',
-         emoji_name_css_class: '1',
+         emoji_code: 'inactive_realm_emoji',
+         local_id: 'realm_emoji,inactive_realm_emoji,inactive_realm_emoji',
          count: 1,
          user_ids: [5],
          title: 'You (click to remove) reacted with :inactive_realm_emoji:',
@@ -174,8 +185,8 @@ set_global('current_msg_list', {
       {
          emoji_name: 'smile',
          reaction_type: 'unicode_emoji',
-         emoji_code: '1',
-         emoji_name_css_class: '1',
+         emoji_code: '1f604',
+         local_id: 'unicode_emoji,smile,1f604',
          count: 2,
          user_ids: [5, 6],
          title: 'You (click to remove) and Bob van Roberts reacted with :smile:',
@@ -194,8 +205,12 @@ set_global('current_msg_list', {
         global.channel.del = stub.f;
         reactions.toggle_emoji_reaction(message_id, emoji_name);
         var args = stub.get_args('args').args;
-        assert.equal(args.url, '/json/messages/1001/emoji_reactions/smile');
-
+        assert.equal(args.url, '/json/messages/1001/reactions');
+        assert.deepEqual(args.data, {
+            reaction_type: 'unicode_emoji',
+            emoji_name: 'smile',
+            emoji_code: '1f604',
+        });
         // args.success() does nothing; just make sure it doesn't crash
         args.success();
 
@@ -206,10 +221,15 @@ set_global('current_msg_list', {
 
     emoji_name = 'alien'; // not set yet
     global.with_stub(function (stub) {
-        global.channel.put = stub.f;
+        global.channel.post = stub.f;
         reactions.toggle_emoji_reaction(message_id, emoji_name);
         var args = stub.get_args('args').args;
-        assert.equal(args.url, '/json/messages/1001/emoji_reactions/alien');
+        assert.equal(args.url, '/json/messages/1001/reactions');
+        assert.deepEqual(args.data, {
+            reaction_type: 'unicode_emoji',
+            emoji_name: 'alien',
+            emoji_code: '1f47d',
+        });
     });
 
     emoji_name = 'inactive_realm_emoji'; // Test removing a deactivated realm emoji.
@@ -217,11 +237,36 @@ set_global('current_msg_list', {
         global.channel.del = stub.f;
         reactions.toggle_emoji_reaction(message_id, emoji_name);
         var args = stub.get_args('args').args;
-        assert.equal(args.url, '/json/messages/1001/emoji_reactions/inactive_realm_emoji');
+        assert.equal(args.url, '/json/messages/1001/reactions');
+        assert.deepEqual(args.data, {
+            reaction_type: 'realm_emoji',
+            emoji_name: 'inactive_realm_emoji',
+            emoji_code: 'inactive_realm_emoji',
+        });
     });
 
-    emoji_name = 'unknown-emoji';
+    emoji_name = 'zulip'; // Test adding zulip emoji.
+    global.with_stub(function (stub) {
+        global.channel.post = stub.f;
+        reactions.toggle_emoji_reaction(message_id, emoji_name);
+        var args = stub.get_args('args').args;
+        assert.equal(args.url, '/json/messages/1001/reactions');
+        assert.deepEqual(args.data, {
+            reaction_type: 'zulip_extra_emoji',
+            emoji_name: 'zulip',
+            emoji_code: 'zulip',
+        });
+    });
+
+    var orig_func = global.blueslip.warn;
+    var error_msg;
+    global.blueslip.warn = function (msg) {
+        error_msg = msg;
+    };
+    emoji_name = 'unknown-emoji';   // Test sending an emoji unknown to frontend.
     reactions.toggle_emoji_reaction(message_id, emoji_name);
+    assert.equal(error_msg, 'Bad emoji name: ' + emoji_name);
+    global.blueslip.warn = orig_func;
 }());
 
 (function test_set_reaction_count() {
@@ -252,7 +297,9 @@ set_global('current_msg_list', {
     // Insert 8ball for Alice.
     var alice_event = {
         message_id: 1001,
+        reaction_type: 'unicode_emoji',
         emoji_name: '8ball',
+        emoji_code: '1f3b1',
         user: {
             user_id: alice.user_id,
         },
@@ -296,7 +343,9 @@ set_global('current_msg_list', {
 
     var bob_event = {
         message_id: 1001,
+        reaction_type: 'unicode_emoji',
         emoji_name: '8ball',
+        emoji_code: '1f3b1',
         user: {
             user_id: bob.user_id,
         },
@@ -316,7 +365,7 @@ set_global('current_msg_list', {
     };
 
     message_reactions.find = function (selector) {
-        assert.equal(selector, "[data-emoji-name='8ball']");
+        assert.equal(selector, "[data-reaction-id='unicode_emoji,8ball,1f3b1']");
         return reaction_element;
     };
 
@@ -358,7 +407,9 @@ set_global('current_msg_list', {
     // Now add Cali's realm_emoji reaction.
     var cali_event = {
         message_id: 1001,
+        reaction_type: 'realm_emoji',
         emoji_name: 'realm_emoji',
+        emoji_code: 'realm_emoji',
         user: {
             user_id: cali.user_id,
         },
@@ -384,14 +435,16 @@ set_global('current_msg_list', {
     // And then have Alice update it.
     alice_event = {
         message_id: 1001,
+        reaction_type: 'realm_emoji',
         emoji_name: 'realm_emoji',
+        emoji_code: 'realm_emoji',
         user: {
             user_id: alice.user_id,
         },
     };
 
     message_reactions.find = function (selector) {
-        assert.equal(selector, "[data-emoji-name='realm_emoji']");
+        assert.equal(selector, "[data-reaction-id='realm_emoji,realm_emoji,realm_emoji']");
         return reaction_element;
     };
     reaction_element.prop = function () {};
@@ -450,7 +503,9 @@ set_global('current_msg_list', {
 
     var alice_8ball_event = {
         message_id: 2001,
+        reaction_type: 'unicode_emoji',
         emoji_name: '8ball',
+        emoji_code: '1f3b1',
         user: {
             user_id: alice.user_id,
         },
@@ -458,7 +513,9 @@ set_global('current_msg_list', {
 
     var bob_8ball_event = {
         message_id: 2001,
+        reaction_type: 'unicode_emoji',
         emoji_name: '8ball',
+        emoji_code: '1f3b1',
         user: {
             user_id: bob.user_id,
         },
@@ -466,7 +523,9 @@ set_global('current_msg_list', {
 
     var cali_airplane_event = {
         message_id: 2001,
+        reaction_type: 'unicode_emoji',
         emoji_name: 'airplane',
+        emoji_code: '2708',
         user: {
             user_id: cali.user_id,
         },
@@ -481,7 +540,9 @@ set_global('current_msg_list', {
                 name: 'insert_new_reaction',
                 opts: {
                     message_id: 2001,
+                    reaction_type: 'unicode_emoji',
                     emoji_name: '8ball',
+                    emoji_code: '1f3b1',
                     user_id: alice.user_id,
                 },
             },
@@ -497,7 +558,9 @@ set_global('current_msg_list', {
                 name: 'update_existing_reaction',
                 opts: {
                     message_id: 2001,
+                    reaction_type: 'unicode_emoji',
                     emoji_name: '8ball',
+                    emoji_code: '1f3b1',
                     user_id: bob.user_id,
                     user_list: [alice.user_id, bob.user_id],
                 },
@@ -514,7 +577,9 @@ set_global('current_msg_list', {
                 name: 'insert_new_reaction',
                 opts: {
                     message_id: 2001,
+                    reaction_type: 'unicode_emoji',
                     emoji_name: 'airplane',
+                    emoji_code: '2708',
                     user_id: cali.user_id,
                 },
             },
@@ -530,7 +595,9 @@ set_global('current_msg_list', {
                 name: 'remove_reaction',
                 opts: {
                     message_id: 2001,
+                    reaction_type: 'unicode_emoji',
                     emoji_name: '8ball',
+                    emoji_code: '1f3b1',
                     user_id: bob.user_id,
                     user_list: [alice.user_id],
                 },
@@ -547,7 +614,9 @@ set_global('current_msg_list', {
                 name: 'remove_reaction',
                 opts: {
                     message_id: 2001,
+                    reaction_type: 'unicode_emoji',
                     emoji_name: '8ball',
+                    emoji_code: '1f3b1',
                     user_id: alice.user_id,
                     user_list: [],
                 },
@@ -575,8 +644,12 @@ set_global('current_msg_list', {
             user_id: 99,
         },
     };
-    reactions.toggle_emoji_reaction(55);
+
+    var original_func = reactions.current_user_has_reacted_to_emoji;
+    reactions.current_user_has_reacted_to_emoji = function () { return true; };
+    reactions.toggle_emoji_reaction(55, bogus_event.emoji_name);
     assert.equal(error_msg, 'reactions: Bad message id: 55');
+    reactions.current_user_has_reacted_to_emoji = original_func;
 
     error_msg = undefined;
     reactions.add_reaction(bogus_event);
@@ -584,4 +657,51 @@ set_global('current_msg_list', {
 
     reactions.remove_reaction(bogus_event);
     assert.equal(error_msg, undefined);
+}());
+
+(function test_local_reaction_id() {
+    var reaction_info = {
+        reaction_type: 'unicode_emoji',
+        emoji_name: 'thumbs_up',
+        emoji_code: '1f44d',
+    };
+    var local_id = reactions.get_local_reaction_id(reaction_info);
+    assert.equal(local_id, 'unicode_emoji,thumbs_up,1f44d');
+
+    var reverse_info = reactions.get_reaction_info(local_id);
+    assert.deepEqual(reverse_info, reaction_info);
+}());
+
+(function test_process_reaction_click() {
+    var message_id = 1001;
+    var expected_reaction_info = {
+        reaction_type: 'unicode_emoji',
+        emoji_name: '8ball',
+        emoji_code: '1f3b1',
+    };
+    global.message_store.get = function (message_id) {
+        assert.equal(message_id, 1001);
+        return message;
+    };
+
+    global.with_stub(function (stub) {
+        global.channel.post = stub.f;
+        reactions.process_reaction_click(message_id, 'unicode_emoji,8ball,1f3b1');
+        var args = stub.get_args('args').args;
+        assert.equal(args.url, '/json/messages/1001/reactions');
+        assert.deepEqual(args.data, expected_reaction_info);
+    });
+
+    expected_reaction_info = {
+        reaction_type: 'unicode_emoji',
+        emoji_name: 'smile',
+        emoji_code: '1f604',
+    };
+    global.with_stub(function (stub) {
+        global.channel.del = stub.f;
+        reactions.process_reaction_click(message_id, 'unicode_emoji,smile,1f604');
+        var args = stub.get_args('args').args;
+        assert.equal(args.url, '/json/messages/1001/reactions');
+        assert.deepEqual(args.data, expected_reaction_info);
+    });
 }());
