@@ -35,26 +35,8 @@ def check_valid_emoji(realm, emoji_name):
     # type: (Realm, Text) -> None
     emoji_name_to_emoji_code(realm, emoji_name)
 
-def check_emoji_name_consistency(emoji_name: str, emoji_code: str, emoji_type: str) -> None:
-    # Given a realm, emoji code and emoji type, checks whether the
-    # passed emoji name is a valid name for that emoji. It is assumed
-    # here that the emoji code has been checked for validity before
-    # calling this function.
-    if emoji_type == "realm_emoji":
-        if emoji_code == emoji_name:
-            return
-    elif emoji_type == "zulip_extra_emoji":
-        if emoji_name in ["zulip"]:
-            return
-    elif emoji_type == "unicode_emoji":
-        if name_to_codepoint.get(emoji_name) == emoji_code:
-            return
-    else:
-        raise AssertionError("Emoji type should have been checked previously.")
-
-    raise JsonableError(_("Invalid emoji name."))
-
-def check_emoji_code_consistency(realm: Realm, emoji_code: str, emoji_type: str) -> None:
+def check_emoji_request(realm: Realm, emoji_name: str, emoji_code: str,
+                        emoji_type: str) -> None:
     # For a given realm and emoji type, checks whether an emoji
     # code is valid for new reactions, or not.
     if emoji_type == "realm_emoji":
@@ -63,12 +45,18 @@ def check_emoji_code_consistency(realm: Realm, emoji_code: str, emoji_type: str)
             raise JsonableError(_("No such realm emoji found."))
         if realm_emojis[emoji_code]["deactivated"]:
             raise JsonableError(_("This realm emoji has been deactivated."))
+        if emoji_name != emoji_code:
+            raise JsonableError(_("Invalid emoji name."))
     elif emoji_type == "zulip_extra_emoji":
         if emoji_code not in ["zulip"]:
             raise JsonableError(_("No such extra emoji found."))
+        if emoji_name != emoji_code:
+            raise JsonableError(_("Invalid emoji name."))
     elif emoji_type == "unicode_emoji":
         if emoji_code not in codepoint_to_name:
             raise JsonableError(_("No unicode emoji with this emoji code found."))
+        if name_to_codepoint.get(emoji_name) != emoji_code:
+            raise JsonableError(_("Invalid emoji name."))
     else:
         # The above are the only valid emoji types
         raise JsonableError(_("Invalid emoji type."))

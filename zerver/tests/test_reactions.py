@@ -576,6 +576,15 @@ class ZulipExtraEmojiReactionTest(EmojiReactionBase):
         result = self.post_reaction(reaction_info)
         self.assert_json_error(result, 'No such extra emoji found.')
 
+    def test_add_invalid_emoji_name(self) -> None:
+        reaction_info = {
+            'emoji_name': 'zulip_invalid',
+            'emoji_code': 'zulip',
+            'reaction_type': 'zulip_extra_emoji',
+        }
+        result = self.post_reaction(reaction_info)
+        self.assert_json_error(result, 'Invalid emoji name.')
+
     def test_delete_zulip_emoji(self) -> None:
         result = self.post_zulip_reaction()
         self.assert_json_success(result)
@@ -603,6 +612,14 @@ class RealmEmojiReactionTests(EmojiReactionBase):
         }
         result = self.post_reaction(reaction_info)
         self.assert_json_error(result, 'No such realm emoji found.')
+
+    def test_add_realm_emoji_invalid_name(self) -> None:
+        reaction_info = {
+            'emoji_name': 'bogus_name',
+            'emoji_code': 'green_tick',
+        }
+        result = self.post_reaction(reaction_info)
+        self.assert_json_error(result, 'Invalid emoji name.')
 
     def test_add_deactivated_realm_emoji(self) -> None:
         emoji = RealmEmoji.objects.get(name="green_tick")

@@ -7,8 +7,7 @@ from zerver.decorator import \
     has_request_variables, REQ, to_non_negative_int
 from zerver.lib.actions import do_add_reaction, do_add_reaction_legacy,\
     do_remove_reaction, do_remove_reaction_legacy
-from zerver.lib.emoji import check_emoji_code_consistency,\
-    check_emoji_name_consistency, check_valid_emoji
+from zerver.lib.emoji import check_emoji_request, check_valid_emoji
 from zerver.lib.message import access_message
 from zerver.lib.request import JsonableError
 from zerver.lib.response import json_success
@@ -64,8 +63,8 @@ def add_reaction(request: HttpRequest, user_profile: UserProfile, message_id: in
         # Otherwise, use the name provided in this request, but verify
         # it is valid in the user's realm (e.g. not a deactivated
         # realm emoji).
-        check_emoji_code_consistency(message.sender.realm, emoji_code, reaction_type)
-        check_emoji_name_consistency(emoji_name, emoji_code, reaction_type)
+        check_emoji_request(message.sender.realm, emoji_name,
+                            emoji_code, reaction_type)
 
     if user_message is None:
         create_historical_message(user_profile, message)
