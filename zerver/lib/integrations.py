@@ -210,9 +210,7 @@ class HubotIntegration(Integration):
         super().__init__(
             name, name, categories,
             logo=logo, display_name=display_name,
-            # HACK: This isn't actually used.  We'll rewrite this to
-            # `hubot_common.md` in `app_filters.py`
-            doc = 'zerver/integrations/%s.md' % (name,),
+            doc = 'zerver/integrations/hubot_common.md',
             legacy=legacy
         )
 
