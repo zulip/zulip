@@ -39,9 +39,10 @@ parser.add_argument('--not-required', action='store_true', default=False,
                     help='Consider failures to reach GitHub nonfatal')
 args = parser.parse_args()
 
+
 ContributorsJSON = TypedDict('ContributorsJSON', {
     'date': str,
-    'contrib': Dict[str, Dict[str, Union[str, int]]],
+    'contrib': List[Dict[str, Union[str, int]]],
 })
 
 
@@ -61,9 +62,9 @@ def write_to_disk(json_data: ContributorsJSON, out_file: str) -> None:
 
 def run_production() -> None:
     """
-    Get contributors data from Github and insert them into a temporaril
-    dictionary. Retry fetching each repository if responded with non HTTP
-    200 status.
+    Get contributors data from Github and insert them into a temporary
+    dictionary. Retry fetching each repository if responded with non HTTP 200
+    status.
     """
     repositories = {
         'server': 'https://api.github.com/repos/zulip/zulip/stats/contributors',
@@ -73,27 +74,27 @@ def run_production() -> None:
         'zulipbot': 'https://api.github.com/repos/zulip/zulipbot/stats/contributors',
     }
 
-    data = dict(date=str(date.today()), contrib={})  # type: ContributorsJSON
-    contribs_data = {}  # type: Dict[str, Dict[str, Union[str, int]]]
+    data = dict(date=str(date.today()), contrib=[])  # type: ContributorsJSON
+    contribs_list = {}  # type: Dict[str, Dict[str, Union[str, int]]]
 
-    for t in range(args.max_retries):
-        repo_done = []
-        for k, v in repositories.items():
-            contribs = fetch_contributors(v)
+    for _ in range(args.max_retries):
+        repos_done = []
+        for name, link in repositories.items():
+            contribs = fetch_contributors(link)
             if contribs:
-                repo_done.append(k)
+                repos_done.append(name)
                 for contrib in contribs:
                     username = contrib.get('author').get('login')
                     contrib_data = {
                         'avatar': contrib.get('author').get('avatar_url'),
-                        k: contrib.get('total'),
+                        name: contrib.get('total'),
                     }
-                    if username in contribs_data:
-                        contribs_data[username].update(contrib_data)
+                    if username in contribs_list:
+                        contribs_list[username].update(contrib_data)
                     else:
-                        contribs_data[username] = contrib_data
-        for k in repo_done:
-            del repositories[k]
+                        contribs_list[username] = contrib_data
+        for repo in repos_done:
+            del repositories[repo]
 
         if not repositories:
             break
@@ -105,7 +106,9 @@ def run_production() -> None:
         if not args.not_required:
             sys.exit(1)
 
-    data['contrib'] = contribs_data
+    for contributor_name, contributor_data in contribs_list.items():
+        contributor_data['name'] = contributor_name
+        data['contrib'].append(contributor_data)
 
     write_to_disk(data, settings.CONTRIBUTORS_DATA)
 
