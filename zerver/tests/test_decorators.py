@@ -765,7 +765,7 @@ class InactiveUserTest(ZulipTestCase):
 
         result = self.login_with_return(self.example_email("hamlet"))
         self.assert_in_response(
-            "Sorry for the trouble, but your account has been deactivated",
+            "Your account is no longer active.",
             result)
 
     def test_login_deactivated_mirror_dummy(self) -> None:
@@ -808,7 +808,7 @@ class InactiveUserTest(ZulipTestCase):
                                            'password': password})
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',)):
             self.assertFalse(form.is_valid())
-            self.assertIn("your account has been deactivated", str(form.errors))
+            self.assertIn("Your account is no longer active", str(form.errors))
 
     def test_webhook_deactivated_user(self) -> None:
         """
