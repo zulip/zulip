@@ -367,11 +367,8 @@ i18n_urls = [
         zerver.views.zephyr.webathena_kerberos_login,
         name='zerver.views.zephyr.webathena_kerberos_login'),
 
-    url(r'^accounts/password/reset/$', password_reset,
-        {'post_reset_redirect': '/accounts/password/reset/done/',
-         'template_name': 'zerver/reset.html',
-         'password_reset_form': zerver.forms.ZulipPasswordResetForm,
-         }, name='django.contrib.auth.views.password_reset'),
+    url(r'^accounts/password/reset/$', zerver.views.auth.password_reset,
+        name='zerver.views.auth.password_reset'),
     url(r'^accounts/password/reset/done/$', password_reset_done,
         {'template_name': 'zerver/reset_emailed.html'}),
     url(r'^accounts/password/reset/(?P<uidb64>[0-9A-Za-z]+)/(?P<token>.+)/$',
