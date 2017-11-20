@@ -185,8 +185,6 @@ class TemplateTestCase(ZulipTestCase):
                 full_name='John Doe',
                 realm=dict(name='zulip.com'),
             ),
-            uid='uid',
-            token='token',
             message_count=0,
             messages=[dict(header='Header')],
             new_streams=dict(html=''),

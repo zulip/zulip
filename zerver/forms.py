@@ -203,8 +203,8 @@ class ZulipPasswordResetForm(PasswordResetForm):
         We send a different email if an associated account does not exist in the
         database, or an account does exist, but not in the realm.
 
-        Note: We ignore the various email template arguments (those
-        are an artifact of using Django's password reset framework)
+        Note: We ignore protocol and the various email template arguments (those
+        are an artifact of using Django's password reset framework).
         """
         email = self.cleaned_data["email"]
 
@@ -227,14 +227,13 @@ class ZulipPasswordResetForm(PasswordResetForm):
         }
 
         if user is not None and user_matches_subdomain(subdomain, user):
-            context['no_account_in_realm'] = False
-            context['token'] = token_generator.make_token(user)
-            context['uid'] = urlsafe_base64_encode(force_bytes(user.id))
-
-            protocol = 'https' if use_https else 'http'
+            token = token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.id))
             endpoint = reverse('django.contrib.auth.views.password_reset_confirm',
-                               kwargs=dict(uidb64=context['uid'], token=context['token']))
-            context['reset_url'] = "{}://{}{}".format(protocol, user.realm.host, endpoint)
+                               kwargs=dict(uidb64=uid, token=token))
+
+            context['no_account_in_realm'] = False
+            context['reset_url'] = "{}{}".format(user.realm.uri, endpoint)
 
             send_email('zerver/emails/password_reset', to_user_id=user.id,
                        from_name="Zulip Account Security",
