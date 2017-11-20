@@ -49,9 +49,10 @@ class StateHandler:
 
     def put(self, key: Text, value: Text) -> None:
         set_bot_state(self.user_profile, key, self.marshal(value))
+        set_bot_state(self.user_profile, [(key, self.marshal(value))])
 
     def remove(self, key: Text) -> None:
-        remove_bot_state(self.user_profile, key)
+        remove_bot_state(self.user_profile, [key])
 
     def contains(self, key: Text) -> bool:
         return is_key_in_bot_state(self.user_profile, key)
