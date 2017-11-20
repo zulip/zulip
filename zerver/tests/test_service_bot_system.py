@@ -116,8 +116,7 @@ class TestServiceBotStateHandler(ZulipTestCase):
         self.assertTrue(storage.contains('some key'))
         self.assertFalse(storage.contains('nonexistent key'))
         self.assertRaisesMessage(StateError,
-                                 "Cannot get state. <UserProfile: embedded-bot-1@zulip.com <Realm: zulip 1>> "
-                                 "doesn't have an entry with the key 'nonexistent key'.",
+                                 "Key does not exist.",
                                  lambda: storage.get('nonexistent key'))
         storage.put('some key', 'a new value')
         self.assertEqual(storage.get('some key'), 'a new value')
@@ -138,11 +137,9 @@ class TestServiceBotStateHandler(ZulipTestCase):
         storage.marshal = lambda obj: obj
         storage.demarshal = lambda obj: obj
         serializable_obj = {'foo': 'bar', 'baz': [42, 'cux']}
-        with self.assertRaisesMessage(StateError, "Cannot set state. The value type is "
-                                                  "<class 'dict'>, but it should be str."):
+        with self.assertRaisesMessage(StateError, "Value type is <class 'dict'>, but should be str."):
             storage.put('some key', serializable_obj)  # type: ignore # We intend to test an invalid type.
-        with self.assertRaisesMessage(StateError, "Cannot set state. The key type is "
-                                                  "<class 'dict'>, but it should be str."):
+        with self.assertRaisesMessage(StateError, "Key type is <class 'dict'>, but should be str."):
             storage.put(serializable_obj, 'some value')  # type: ignore # We intend to test an invalid type.
 
     # Reduce maximal state size for faster test string construction.
@@ -158,8 +155,8 @@ class TestServiceBotStateHandler(ZulipTestCase):
         key = 'capacity-filling entry'
         storage.put(key, 'x' * (settings.USER_STATE_SIZE_LIMIT - len(key)))
 
-        with self.assertRaisesMessage(StateError, "Cannot set state. Request would require 132 bytes storage. "
-                                                  "The current storage limit is 100."):
+        with self.assertRaisesMessage(StateError, "Request exceeds storage limit by 32 characters. "
+                                                  "The limit is 100 characters."):
             storage.put('too much data', 'a few bits too long')
 
         second_storage = StateHandler(self.second_bot_profile)
