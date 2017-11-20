@@ -97,9 +97,6 @@ function _setup_page() {
         return tab;
     }());
 
-    // Most browsers do not allow filenames to start with `.` without the user manually changing it.
-    // So we use zuliprc, not .zuliprc.
-
     var settings_tab = templates.render('settings_tab', {
         full_name: people.my_full_name(),
         page_params: page_params,

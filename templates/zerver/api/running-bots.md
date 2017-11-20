@@ -50,20 +50,23 @@ You need:
       Select *Generic bot* for bot type, fill out the form and click on *Create bot*.
     * A new bot user should appear in the *Active bots* panel.
 
-3. Download the bot's `.zuliprc` configuration file to your computer.
+3. Download the bot's `zuliprc` configuration file to your computer.
 
+    * Go to *Settings* -> *Your bots*
     * In the *Active bots* panel, click on the little green download icon
-      to download its configuration file *.zuliprc* (the structure of this file is
+      to download its configuration file *zuliprc* (the structure of this file is
       explained [here](writing-bots#configuration-file)).
-    * Copy the file to a destination of your choice, e.g. to `~/.zuliprc`.
+    * The file will be downloaded to some place like `~/Downloads/zuliprc` (depends
+      on your browser and OS).
+    * Copy the file to a destination of your choice, e.g. to `~/zuliprc-my-bot`.
 
 4. Run the bot.
 
     * Run
       ```
-      zulip-run-bot <bot-name> --config-file ~/.zuliprc
+      zulip-run-bot <bot-name> --config-file ~/zuliprc-my-bot
       ```
-      (using the path to the `.zuliprc` file from step 3).
+      (using the path to the `zuliprc` file from step 3).
     * Check the output of the command. It should start with the text
       the `usage` function returns, followed by logging output similar
       to this:
@@ -111,7 +114,7 @@ pip install zulip_botserver
 
 2.  Download the `flaskbotrc` from the `your-bots` settings page. It
     contains the configuration details for all the active outgoing
-    webhook bots. It's structure is very similar to that of .zuliprc.
+    webhook bots. It's structure is very similar to that of zuliprc.
 
 3.  Run the Zulip Botserver by passing the `flaskbotrc` to it. The
     command format is:
