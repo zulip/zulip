@@ -166,13 +166,21 @@ casper.then(function () {
 casper.then(function () {
     casper.waitUntilVisible('input[type="checkbox"][id="id_realm_allow_message_editing"] + span', function () {
         casper.click('input[type="checkbox"][id="id_realm_allow_message_editing"] + span');
+    });
+});
+
+casper.then(function () {
+    casper.waitUntilVisible('input:checked[type="checkbox"][id="id_realm_allow_message_editing"] + span', function () {
         casper.click('form.org-settings-form button.button');
-        casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
-            casper.test.assertSelectorHasText('#admin-realm-message-editing-status', 'Users can now edit topics for all their messages, and the content of messages which are less than 10 minutes old.');
-            casper.test.assertEval(function () {
-                return document.querySelector('input[type="checkbox"][id="id_realm_allow_message_editing"]').checked;
-            }, 'Allow message editing Setting re-activated');
-        });
+    });
+});
+
+casper.then(function () {
+    casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
+        casper.test.assertSelectorHasText('#admin-realm-message-editing-status', 'Users can now edit topics for all their messages, and the content of messages which are less than 10 minutes old.');
+        casper.test.assertEval(function () {
+            return document.querySelector('input[type="checkbox"][id="id_realm_allow_message_editing"]').checked;
+        }, 'Allow message editing Setting re-activated');
     });
 });
 
