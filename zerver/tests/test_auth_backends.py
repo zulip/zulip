@@ -282,7 +282,7 @@ class AuthBackendTest(ZulipTestCase):
     def test_devauth_backend(self):
         # type: () -> None
         self.verify_backend(DevAuthBackend(),
-                            good_kwargs=dict(username=self.get_username()))
+                            good_kwargs=dict(dev_auth_username=self.get_username()))
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',))
     def test_remote_user_backend(self):

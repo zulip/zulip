@@ -584,7 +584,9 @@ def dev_direct_login(request, **kwargs):
         # an enabled DevAuthBackend.
         raise Exception('Direct login not supported.')
     email = request.POST['direct_email']
-    user_profile = authenticate(username=email, realm_subdomain=get_subdomain(request))
+    subdomain = get_subdomain(request)
+    realm = get_realm(subdomain)
+    user_profile = authenticate(dev_auth_username=email, realm_subdomain=realm.subdomain)
     if user_profile is None:
         raise Exception("User cannot login")
     do_login(request, user_profile)
@@ -608,9 +610,12 @@ def api_dev_fetch_api_key(request, username=REQ()):
     # enabled.
     validate_login_email(username)
 
+    subdomain = get_subdomain(request)
+    realm = get_realm(subdomain)
+
     return_data = {}  # type: Dict[str, bool]
-    user_profile = authenticate(username=username,
-                                realm_subdomain=get_subdomain(request),
+    user_profile = authenticate(dev_auth_username=username,
+                                realm_subdomain=realm.subdomain,
                                 return_data=return_data)
     if return_data.get("inactive_realm"):
         return json_error(_("Your realm has been deactivated."),
