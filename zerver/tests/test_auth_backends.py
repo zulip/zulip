@@ -344,9 +344,13 @@ class AuthBackendTest(ZulipTestCase):
         user = self.example_user('hamlet')
         email = user.email
         good_kwargs = dict(response=dict(email=email), return_data=dict(),
-                           realm_subdomain='zulip')
+                           realm=get_realm('zulip'))
         bad_kwargs = dict(response=dict(email=email), return_data=dict(),
-                          realm_subdomain='acme')
+                          realm=None)
+        self.verify_backend(GitHubAuthBackend(),
+                            good_kwargs=good_kwargs,
+                            bad_kwargs=bad_kwargs)
+        bad_kwargs['realm'] = get_realm("zephyr")
         self.verify_backend(GitHubAuthBackend(),
                             good_kwargs=good_kwargs,
                             bad_kwargs=bad_kwargs)
@@ -425,7 +429,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
             response = dict(email=self.email, name=self.name)
             self.backend.do_auth('fake-access-token', response=response)
 
-            kwargs = {'realm_subdomain': 'zulip',
+            kwargs = {'realm': get_realm('zulip'),
                       'response': response,
                       'return_data': {}}
             result.assert_called_with(self.user_profile, 'fake-access-token', **kwargs)
@@ -440,7 +444,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
             response = dict(email=self.email, name=self.name)
 
             self.backend.do_auth('fake-access-token', response=response)
-            kwargs = {'realm_subdomain': 'zulip',
+            kwargs = {'realm': get_realm('zulip'),
                       'response': response,
                       'return_data': {}}
             result.assert_called_with(None, 'fake-access-token', **kwargs)
@@ -455,7 +459,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
             with self.settings(SOCIAL_AUTH_GITHUB_TEAM_ID='zulip-webapp'):
                 self.backend.do_auth('fake-access-token', response=response)
 
-                kwargs = {'realm_subdomain': 'zulip',
+                kwargs = {'realm': get_realm('zulip'),
                           'response': response,
                           'return_data': {}}
                 result.assert_called_with(self.user_profile, 'fake-access-token', **kwargs)
@@ -470,7 +474,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
             response = dict(email=self.email, name=self.name)
             with self.settings(SOCIAL_AUTH_GITHUB_TEAM_ID='zulip-webapp'):
                 self.backend.do_auth('fake-access-token', response=response)
-                kwargs = {'realm_subdomain': 'zulip',
+                kwargs = {'realm': get_realm('zulip'),
                           'response': response,
                           'return_data': {}}
                 result.assert_called_with(None, 'fake-access-token', **kwargs)
@@ -485,7 +489,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
             with self.settings(SOCIAL_AUTH_GITHUB_ORG_NAME='Zulip'):
                 self.backend.do_auth('fake-access-token', response=response)
 
-                kwargs = {'realm_subdomain': 'zulip',
+                kwargs = {'realm': get_realm('zulip'),
                           'response': response,
                           'return_data': {}}
                 result.assert_called_with(self.user_profile, 'fake-access-token', **kwargs)
@@ -500,7 +504,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
             response = dict(email=self.email, name=self.name)
             with self.settings(SOCIAL_AUTH_GITHUB_ORG_NAME='Zulip'):
                 self.backend.do_auth('fake-access-token', response=response)
-                kwargs = {'realm_subdomain': 'zulip',
+                kwargs = {'realm': get_realm('zulip'),
                           'response': response,
                           'return_data': {}}
                 result.assert_called_with(None, 'fake-access-token', **kwargs)
@@ -510,7 +514,8 @@ class GitHubAuthBackendTest(ZulipTestCase):
         self.backend.strategy.session_set('subdomain', 'zulip')
         response = dict(email="invalid@zulip.com", name=self.name)
         return_data = dict()  # type: Dict[str, Any]
-        user = self.backend.authenticate(return_data=return_data, response=response)
+        user = self.backend.authenticate(return_data=return_data, response=response,
+                                         realm=get_realm("zulip"))
         self.assertIs(user, None)
         self.assertTrue(return_data['valid_attestation'])
 
@@ -518,7 +523,8 @@ class GitHubAuthBackendTest(ZulipTestCase):
         # type: () -> None
         response = dict(email=None, name=self.name)
         return_data = dict()  # type: Dict[str, Any]
-        user = self.backend.authenticate(return_data=return_data, response=response)
+        user = self.backend.authenticate(return_data=return_data, response=response,
+                                         realm=get_realm("zulip"))
         self.assertIs(user, None)
         self.assertTrue(return_data['invalid_email'])
         result = self.backend.process_do_auth(user, return_data=return_data, response=response)

@@ -153,12 +153,14 @@ class SocialAuthMixin(ZulipAuthMixin):
         returning the user.
         """
         kwargs['return_data'] = {}
-        kwargs['realm_subdomain'] = get_subdomain(self.strategy.request)  # type: ignore # `strategy` comes from Python Social Auth.
+        subdomain = self.strategy.session_get('subdomain')  # type: ignore # `strategy` comes from Python Social Auth.
+        realm = get_realm(subdomain)
+        kwargs['realm'] = realm
         user_profile = self.get_authenticated_user(*args, **kwargs)
         return self.process_do_auth(user_profile, *args, **kwargs)
 
     def authenticate(self,
-                     realm_subdomain: Optional[Text]='',
+                     realm: Optional[Realm]=None,
                      storage: Optional[DjangoStorage]=None,
                      strategy: Optional[DjangoStrategy]=None,
                      user: Optional[Dict[str, Any]]=None,
@@ -181,7 +183,7 @@ class SocialAuthMixin(ZulipAuthMixin):
         assert response is not None
 
         return self._common_authenticate(self,
-                                         realm_subdomain=realm_subdomain,
+                                         realm=realm,
                                          storage=storage,
                                          strategy=strategy,
                                          user=user,
@@ -192,6 +194,9 @@ class SocialAuthMixin(ZulipAuthMixin):
     def _common_authenticate(self, *args, **kwargs):
         # type: (*Any, **Any) -> Optional[UserProfile]
         return_data = kwargs.get('return_data', {})
+        realm = kwargs.get("realm")
+        if realm is None:
+            return None
 
         email_address = self.get_email_address(*args, **kwargs)
         if not email_address:
@@ -212,12 +217,11 @@ class SocialAuthMixin(ZulipAuthMixin):
             return_data["inactive_realm"] = True
             return None
 
-        if not user_matches_subdomain(kwargs.get("realm_subdomain"),
-                                      user_profile):
+        if not user_matches_subdomain(realm.subdomain, user_profile):
             return_data["invalid_subdomain"] = True
             return None
 
-        if not auth_enabled_helper([self.auth_backend_name], user_profile.realm):
+        if not auth_enabled_helper([self.auth_backend_name], realm):
             return_data["auth_backend_disabled"] = True
             return None
 
