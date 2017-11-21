@@ -28,6 +28,37 @@ function render_code_sections() {
     var loading = {
         name: null,
     };
+    var no_of_images = 0;
+    var no_of_loaded_images = 0;
+
+    function scroll_to_anchor(path) {
+        var container = $(".markdown")[0];
+        var path_split = path.split("#");
+        if (path_split.length === 2) {
+            document.getElementById(path_split[1]).scrollIntoView();
+        } else {
+               container.scrollTop = 0;
+        }
+    }
+
+    function scroll_when_ready() {
+        no_of_loaded_images+=1;
+        if (no_of_loaded_images === no_of_images) {
+            scroll_to_anchor(window.location.href);
+        }
+    }
+
+    function scroll_to_anchor_once_images_ready() {
+        var imgs = document.images;
+        no_of_loaded_images = 0;
+        no_of_images = (imgs && imgs.length) || 0;
+        if ((!imgs) || no_of_images === 0) {
+            scroll_to_anchor(window.location.href);
+        }
+        [].forEach.call(imgs, function (img) {
+            img.addEventListener('load', scroll_when_ready, false);
+        });
+    }
 
     var fetch_page = function (path, callback) {
         $.get(path, function (res) {
@@ -62,14 +93,15 @@ function render_code_sections() {
 
         if (html_map[path]) {
             $(".markdown .content").html(html_map[path]);
+            scroll_to_anchor_once_images_ready();
             Ps.update(container);
             render_code_sections();
         } else {
             loading.name = path;
-
             fetch_page(path, function (res) {
                 html_map[path] = res;
                 $(".markdown .content").html(html_map[path]);
+                scroll_to_anchor_once_images_ready();
                 loading.name = null;
                 Ps.update(container);
             });
