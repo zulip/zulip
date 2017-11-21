@@ -197,6 +197,9 @@ class SocialAuthMixin(ZulipAuthMixin):
         realm = kwargs.get("realm")
         if realm is None:
             return None
+        if not auth_enabled_helper([self.auth_backend_name], realm):
+            return_data["auth_backend_disabled"] = True
+            return None
 
         email_address = self.get_email_address(*args, **kwargs)
         if not email_address:
@@ -219,10 +222,6 @@ class SocialAuthMixin(ZulipAuthMixin):
 
         if not user_matches_subdomain(realm.subdomain, user_profile):
             return_data["invalid_subdomain"] = True
-            return None
-
-        if not auth_enabled_helper([self.auth_backend_name], realm):
-            return_data["auth_backend_disabled"] = True
             return None
 
         return user_profile
