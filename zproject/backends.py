@@ -365,14 +365,15 @@ class EmailAuthBackend(ZulipAuthMixin):
 
 class GoogleMobileOauth2Backend(ZulipAuthMixin):
     """
-    Google Apps authentication for mobile devices
+    Google Apps authentication for the legacy Android app.
+    DummyAuthBackend is what's actually used for our modern Google auth,
+    both for web and mobile (the latter via the mobile_flow_otp feature).
 
     Allows a user to sign in using a Google-issued OAuth2 token.
 
     Ref:
         https://developers.google.com/+/mobile/android/sign-in#server-side_access_for_your_app
         https://developers.google.com/accounts/docs/CrossClientAuth#offlineAccess
-
     """
 
     def authenticate(self, google_oauth2_token: str=None, realm: Optional[Realm]=None,

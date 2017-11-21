@@ -645,6 +645,7 @@ def api_fetch_api_key(request, username=REQ(), password=REQ()):
     # type: (HttpRequest, str, str) -> HttpResponse
     return_data = {}  # type: Dict[str, bool]
     if username == "google-oauth2-token":
+        # This code path is auth for the legacy Android app
         subdomain = get_subdomain(request)
         realm = get_realm(subdomain)
         user_profile = authenticate(google_oauth2_token=password,
