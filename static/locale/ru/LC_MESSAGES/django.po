@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-10-24 23:08+0000\n"
-"PO-Revision-Date: 2017-10-23 23:18+0000\n"
+"PO-Revision-Date: 2017-11-03 12:14+0000\n"
 "Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
 "Language-Team: Russian (http://www.transifex.com/zulip/zulip/language/ru/)\n"
 "MIME-Version: 1.0\n"
@@ -103,7 +103,7 @@ msgstr ""
 
 #: templates/analytics/stats.html:76
 msgid "Active users"
-msgstr ""
+msgstr "Активных пользователей"
 
 #: templates/analytics/stats.html:80 templates/zerver/settings_overlay.html:69
 msgid "Users"
@@ -231,7 +231,7 @@ msgstr ""
 #: templates/zerver/compose.html:98
 #: templates/zerver/keyboard_shortcuts.html:173
 msgid "Drafts"
-msgstr ""
+msgstr "Черновики"
 
 #: templates/zerver/compose.html:17 templates/zerver/compose.html:18
 msgid "New topic"
@@ -373,7 +373,7 @@ msgstr ""
 
 #: templates/zerver/delete_message.html:4
 msgid "Delete message"
-msgstr ""
+msgstr "Удалить сообщение"
 
 #: templates/zerver/delete_message.html:8
 msgid "Are you sure you want to delete this message?"
@@ -1120,7 +1120,7 @@ msgstr "Настройки"
 
 #: templates/zerver/navbar.html:85
 msgid "Manage organization"
-msgstr ""
+msgstr "Управление организацией"
 
 #: templates/zerver/navbar.html:91
 msgid "User documentation"
@@ -1435,7 +1435,7 @@ msgstr "Ваши боты"
 
 #: templates/zerver/settings_overlay.html:32
 msgid "Alert words"
-msgstr ""
+msgstr "Сигнальные слова"
 
 #: templates/zerver/settings_overlay.html:36
 msgid "Uploaded files"
@@ -1443,7 +1443,7 @@ msgstr ""
 
 #: templates/zerver/settings_overlay.html:40
 msgid "Muted topics"
-msgstr ""
+msgstr "Заглушенные темы"
 
 #: templates/zerver/settings_overlay.html:44
 msgid "Zulip labs"
@@ -1451,7 +1451,7 @@ msgstr ""
 
 #: templates/zerver/settings_overlay.html:49
 msgid "Organization profile"
-msgstr ""
+msgstr "Профиль организации"
 
 #: templates/zerver/settings_overlay.html:53
 msgid "Organization settings"
@@ -1483,7 +1483,7 @@ msgstr "Каналы по умолчанию"
 
 #: templates/zerver/settings_overlay.html:93
 msgid "Filter settings"
-msgstr ""
+msgstr "Настройки фильтров"
 
 #: templates/zerver/settings_sidebar.html:9
 msgid "Edit bot"
