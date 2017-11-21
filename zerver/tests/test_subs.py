@@ -1434,6 +1434,14 @@ class SubscriptionPropertiesTest(ZulipTestCase):
         self.assert_json_error(result,
                                '%s is not a boolean' % (property_name,))
 
+        property_name = "email_notifications"
+        result = self.api_post(test_email, "/api/v1/users/me/subscriptions/properties",
+                               {"subscription_data": ujson.dumps([{"property": property_name,
+                                                                   "value": "bad",
+                                                                   "stream_id": subs[0]["stream_id"]}])})
+        self.assert_json_error(result,
+                               '%s is not a boolean' % (property_name,))
+
         property_name = "color"
         result = self.api_post(test_email, "/api/v1/users/me/subscriptions/properties",
                                {"subscription_data": ujson.dumps([{"property": property_name,
@@ -2537,6 +2545,7 @@ class SubscriptionAPITest(ZulipTestCase):
         user_profile.enable_stream_desktop_notifications = True
         user_profile.enable_stream_push_notifications = True
         user_profile.enable_stream_sounds = True
+        user_profile.enable_stream_email_notifications = True
         user_profile.save()
         current_stream = self.get_streams(invitee_email, invitee_realm)[0]
         invite_streams = self.make_random_stream_names([current_stream])
@@ -2551,6 +2560,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertTrue(subscription.desktop_notifications)
         self.assertTrue(subscription.push_notifications)
         self.assertTrue(subscription.audible_notifications)
+        self.assertTrue(subscription.email_notifications)
 
     def test_subscriptions_add_notification_default_false(self) -> None:
         """

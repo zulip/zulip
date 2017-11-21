@@ -917,6 +917,7 @@ RecipientInfoResult = TypedDict('RecipientInfoResult', {
     'active_user_ids': Set[int],
     'push_notify_user_ids': Set[int],
     'stream_push_user_ids': Set[int],
+    'stream_email_user_ids': Set[int],
     'um_eligible_user_ids': Set[int],
     'long_term_idle_user_ids': Set[int],
     'default_bot_user_ids': Set[int],
@@ -928,6 +929,7 @@ def get_recipient_info(recipient: Recipient,
                        stream_topic: Optional[StreamTopicTarget],
                        possibly_mentioned_user_ids: Optional[Set[int]]=None) -> RecipientInfoResult:
     stream_push_user_ids = set()  # type: Set[int]
+    stream_email_user_ids = set()  # type: Set[int]
 
     if recipient.type == Recipient.PERSONAL:
         # The sender and recipient may be the same id, so
@@ -944,6 +946,7 @@ def get_recipient_info(recipient: Recipient,
         subscription_rows = stream_topic.get_active_subscriptions().values(
             'user_profile_id',
             'push_notifications',
+            'email_notifications',
             'in_home_view',
         ).order_by('user_profile_id')
 
@@ -952,12 +955,21 @@ def get_recipient_info(recipient: Recipient,
             for row in subscription_rows
         ]
 
+        user_ids_muting_topic = stream_topic.user_ids_muting_topic()
+
         stream_push_user_ids = {
             row['user_profile_id']
             for row in subscription_rows
             # Note: muting a stream overrides stream_push_notify
             if row['push_notifications'] and row['in_home_view']
-        } - stream_topic.user_ids_muting_topic()
+        } - user_ids_muting_topic
+
+        stream_email_user_ids = {
+            row['user_profile_id']
+            for row in subscription_rows
+            # Note: muting a stream overrides stream_email_notify
+            if row['email_notifications'] and row['in_home_view']
+        } - user_ids_muting_topic
 
     elif recipient.type == Recipient.HUDDLE:
         message_to_user_ids = get_huddle_user_ids(recipient)
@@ -1056,6 +1068,7 @@ def get_recipient_info(recipient: Recipient,
         active_user_ids=active_user_ids,
         push_notify_user_ids=push_notify_user_ids,
         stream_push_user_ids=stream_push_user_ids,
+        stream_email_user_ids=stream_email_user_ids,
         um_eligible_user_ids=um_eligible_user_ids,
         long_term_idle_user_ids=long_term_idle_user_ids,
         default_bot_user_ids=default_bot_user_ids,
@@ -1193,6 +1206,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
         message['active_user_ids'] = info['active_user_ids']
         message['push_notify_user_ids'] = info['push_notify_user_ids']
         message['stream_push_user_ids'] = info['stream_push_user_ids']
+        message['stream_email_user_ids'] = info['stream_email_user_ids']
         message['um_eligible_user_ids'] = info['um_eligible_user_ids']
         message['long_term_idle_user_ids'] = info['long_term_idle_user_ids']
         message['default_bot_user_ids'] = info['default_bot_user_ids']
@@ -1316,6 +1330,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
                 flags=user_flags.get(user_id, []),
                 always_push_notify=(user_id in message['push_notify_user_ids']),
                 stream_push_notify=(user_id in message['stream_push_user_ids']),
+                stream_email_notify=(user_id in message['stream_email_user_ids']),
             )
             for user_id in user_ids
         ]
@@ -2387,6 +2402,7 @@ def notify_subscriptions_added(user_profile: UserProfile,
                     desktop_notifications=subscription.desktop_notifications,
                     audible_notifications=subscription.audible_notifications,
                     push_notifications=subscription.push_notifications,
+                    email_notifications=subscription.email_notifications,
                     description=stream.description,
                     pin_to_top=subscription.pin_to_top,
                     is_old_stream=is_old_stream(stream.date_created),
@@ -2494,6 +2510,7 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
                                   desktop_notifications=user_profile.enable_stream_desktop_notifications,
                                   audible_notifications=user_profile.enable_stream_sounds,
                                   push_notifications=user_profile.enable_stream_push_notifications,
+                                  email_notifications=user_profile.enable_stream_email_notifications,
                                   )
         subs_by_user[user_profile.id].append(sub_to_add)
         subs_to_add.append((sub_to_add, stream))
@@ -3811,6 +3828,7 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
 
         event['push_notify_user_ids'] = list(info['push_notify_user_ids'])
         event['stream_push_user_ids'] = list(info['stream_push_user_ids'])
+        event['stream_email_user_ids'] = list(info['stream_email_user_ids'])
         event['prior_mention_user_ids'] = list(prior_mention_user_ids)
         event['mention_user_ids'] = list(mention_user_ids)
         event['presence_idle_user_ids'] = filter_presence_idle_user_ids(info['active_user_ids'])
@@ -4033,7 +4051,8 @@ def gather_subscriptions_helper(user_profile: UserProfile,
                                 include_subscribers: bool=True) -> SubHelperT:
     sub_dicts = get_stream_subscriptions_for_user(user_profile).values(
         "recipient_id", "in_home_view", "color", "desktop_notifications",
-        "audible_notifications", "push_notifications", "active", "pin_to_top"
+        "audible_notifications", "push_notifications", "email_notifications",
+        "active", "pin_to_top"
     ).order_by("recipient_id")
 
     sub_dicts = list(sub_dicts)
@@ -4113,6 +4132,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
                        'desktop_notifications': sub["desktop_notifications"],
                        'audible_notifications': sub["audible_notifications"],
                        'push_notifications': sub["push_notifications"],
+                       'email_notifications': sub["email_notifications"],
                        'pin_to_top': sub["pin_to_top"],
                        'stream_id': stream["id"],
                        'description': stream["description"],
