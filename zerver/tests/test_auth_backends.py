@@ -507,13 +507,12 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
     def test_github_backend_authenticate_nonexisting_user(self):
         # type: () -> None
-        with mock.patch('zproject.backends.get_user_profile_by_email',
-                        side_effect=UserProfile.DoesNotExist("Do not exist")):
-            response = dict(email=self.email, name=self.name)
-            return_data = dict()  # type: Dict[str, Any]
-            user = self.backend.authenticate(return_data=return_data, response=response)
-            self.assertIs(user, None)
-            self.assertTrue(return_data['valid_attestation'])
+        self.backend.strategy.session_set('subdomain', 'zulip')
+        response = dict(email="invalid@zulip.com", name=self.name)
+        return_data = dict()  # type: Dict[str, Any]
+        user = self.backend.authenticate(return_data=return_data, response=response)
+        self.assertIs(user, None)
+        self.assertTrue(return_data['valid_attestation'])
 
     def test_github_backend_authenticate_invalid_email(self):
         # type: () -> None
