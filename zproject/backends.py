@@ -540,11 +540,7 @@ class DevAuthBackend(ZulipAuthMixin):
             return None
         if not dev_auth_enabled(realm):
             return None
-        user_profile = common_get_active_user_by_email(dev_auth_username, return_data=return_data)
-        if user_profile is None:
-            return None
-        assert realm == user_profile.realm
-        return user_profile
+        return common_get_active_user(dev_auth_username, realm, return_data=return_data)
 
 class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
     auth_backend_name = "GitHub"
