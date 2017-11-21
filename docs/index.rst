@@ -95,3 +95,7 @@ Contents:
    :maxdepth: 3
 
    translating/index
+   [ Docs Index ] <https://zulip.readthedocs.io/en/latest/>
+.. Ideally, [ Docs Index ] should also be a relative link. However,
+   index.html does not exist until after the docs have been built.
+   Sphinx complains/ignores the entry if we don't use an absolute link.
