@@ -375,8 +375,10 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
 
     """
 
-    def authenticate(self, google_oauth2_token: str=None, realm_subdomain: str=None,
+    def authenticate(self, google_oauth2_token: str=None, realm: Optional[Realm]=None,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
+        if realm is None:
+            return None
         if return_data is None:
             return_data = {}
 
@@ -396,7 +398,7 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
             if user_profile.realm.deactivated:
                 return_data["inactive_realm"] = True
                 return None
-            if not user_matches_subdomain(realm_subdomain, user_profile):
+            if not user_matches_subdomain(realm.subdomain, user_profile):
                 return_data["invalid_subdomain"] = True
                 return None
             if not google_auth_enabled(realm=user_profile.realm):

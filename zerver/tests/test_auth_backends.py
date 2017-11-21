@@ -224,14 +224,15 @@ class AuthBackendTest(ZulipTestCase):
 
         with mock.patch('apiclient.sample_tools.client.verify_id_token', return_value=payload):
             self.verify_backend(backend,
-                                good_kwargs=dict(realm_subdomain="zulip"),
-                                bad_kwargs=dict(realm_subdomain='acme'))
+                                good_kwargs=dict(realm=get_realm("zulip")),
+                                bad_kwargs=dict(realm=get_realm('invalid')))
 
         # Verify valid_attestation parameter is set correctly
         unverified_payload = dict(email_verified=False)
-        with mock.patch('apiclient.sample_tools.client.verify_id_token', return_value=unverified_payload):
+        with mock.patch('apiclient.sample_tools.client.verify_id_token',
+                        return_value=unverified_payload):
             ret = dict()  # type: Dict[str, str]
-            result = backend.authenticate(return_data=ret)
+            result = backend.authenticate(realm=get_realm("zulip"), return_data=ret)
             self.assertIsNone(result)
             self.assertFalse(ret["valid_attestation"])
 
@@ -239,13 +240,13 @@ class AuthBackendTest(ZulipTestCase):
         with mock.patch('apiclient.sample_tools.client.verify_id_token',
                         return_value=nonexistent_user_payload):
             ret = dict()
-            result = backend.authenticate(return_data=ret)
+            result = backend.authenticate(realm=get_realm("zulip"), return_data=ret)
             self.assertIsNone(result)
             self.assertTrue(ret["valid_attestation"])
         with mock.patch('apiclient.sample_tools.client.verify_id_token',
                         side_effect=AppIdentityError):
             ret = dict()
-            result = backend.authenticate(return_data=ret)
+            result = backend.authenticate(realm=get_realm("zulip"), return_data=ret)
             self.assertIsNone(result)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
