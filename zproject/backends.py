@@ -111,22 +111,6 @@ def common_get_active_user(email: str, realm: Realm,
         return None
     return user_profile
 
-def common_get_active_user_by_email(email, return_data=None):
-    # type: (Text, Optional[Dict[str, Any]]) -> Optional[UserProfile]
-    try:
-        user_profile = get_user_profile_by_email(email)
-    except UserProfile.DoesNotExist:
-        return None
-    if not user_profile.is_active:
-        if return_data is not None:
-            return_data['inactive_user'] = True
-        return None
-    if user_profile.realm.deactivated:
-        if return_data is not None:
-            return_data['inactive_realm'] = True
-        return None
-    return user_profile
-
 class ZulipAuthMixin:
     def get_user(self, user_profile_id):
         # type: (int) -> Optional[UserProfile]
@@ -354,14 +338,10 @@ class EmailAuthBackend(ZulipAuthMixin):
                 return_data['email_auth_disabled'] = True
             return None
 
-        user_profile = common_get_active_user_by_email(username, return_data=return_data)
+        user_profile = common_get_active_user(username, realm, return_data=return_data)
         if user_profile is None:
             return None
         if user_profile.check_password(password):
-            if not user_matches_subdomain(realm.subdomain, user_profile):
-                if return_data is not None:
-                    return_data["invalid_subdomain"] = True
-                return None
             return user_profile
         return None
 
