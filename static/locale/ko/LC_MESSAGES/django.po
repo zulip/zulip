@@ -1,165 +1,166 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-#
+# 
 # Translators:
+# Greg Price <gnprice@gmail.com>, 2017
+# Ki Heo <reo119@marunet.co.kr>, 2017
 # Wonha Ryu <wonha.ryu@gmail.com>, 2015
 msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-10-25 16:18+0000\n"
-"PO-Revision-Date: 2017-09-04 03:34+0000\n"
+"POT-Creation-Date: 2017-10-24 23:08+0000\n"
+"PO-Revision-Date: 2017-11-21 01:35+0000\n"
 "Last-Translator: Greg Price <gnprice@gmail.com>\n"
 "Language-Team: Korean (http://www.transifex.com/zulip/zulip/language/ko/)\n"
-"Language: ko\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: ko\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
 #: analytics/views.py:83
 #, python-format
 msgid "Unknown chart name: %s"
-msgstr ""
+msgstr "알 수 없는 챠트 이름 : %s"
 
 #: analytics/views.py:92
 #, python-format
 msgid "Start time is later than end time. Start: %(start)s, End: %(end)s"
-msgstr ""
+msgstr "시작 시간이 종료 시간보다 늦습니다.  시작 : %(start)s 종료 : %(end)s"
 
 #: analytics/views.py:105
 msgid "No analytics data available. Please contact your server administrator."
-msgstr ""
+msgstr "분석 데이터가 없습니다. 서버 관리자에게 문의하세요."
 
 #: templates/analytics/stats.html:17
 #, python-format
 msgid "Zulip analytics for %(realm_name)s"
-msgstr ""
+msgstr "%(realm_name)s에 대한 Zulip 분석"
 
 #: templates/analytics/stats.html:21
 msgid "Messages sent over time"
-msgstr ""
+msgstr "시간 경과에 따라 메시지 전송"
 
 #: templates/analytics/stats.html:23
 msgid "Aggregation"
-msgstr ""
+msgstr "집계"
 
 #: templates/analytics/stats.html:25
 msgid "Daily"
-msgstr ""
+msgstr "매일"
 
 #: templates/analytics/stats.html:26
 msgid "Weekly"
-msgstr ""
+msgstr "매주"
 
 #: templates/analytics/stats.html:27
 msgid "Cumulative"
-msgstr ""
+msgstr "누적"
 
 #: templates/analytics/stats.html:33 templates/analytics/stats.html:47
 #: templates/analytics/stats.html:65
 msgid "Me"
-msgstr ""
+msgstr "나"
 
 #: templates/analytics/stats.html:35
 msgid "Humans"
-msgstr ""
+msgstr "인간"
 
 #: templates/analytics/stats.html:37 templates/zerver/settings_overlay.html:79
 msgid "Bots"
-msgstr ""
+msgstr "봇"
 
 #: templates/analytics/stats.html:44
 msgid "Messages sent by client"
-msgstr ""
+msgstr "클라이언트가 보낸 메시지"
 
 #: templates/analytics/stats.html:48 templates/analytics/stats.html:66
 msgid "Everyone"
-msgstr ""
+msgstr "모든 이"
 
 #: templates/analytics/stats.html:49 templates/analytics/stats.html:67
 msgid "Last week"
-msgstr ""
+msgstr "지난 주"
 
 #: templates/analytics/stats.html:50 templates/analytics/stats.html:68
 msgid "Last month"
-msgstr ""
+msgstr "지난 달"
 
 #: templates/analytics/stats.html:51 templates/analytics/stats.html:69
 msgid "Last year"
-msgstr ""
+msgstr "작년"
 
 #: templates/analytics/stats.html:52 templates/analytics/stats.html:70
 msgid "All time"
-msgstr ""
+msgstr "모든 시간"
 
 #: templates/analytics/stats.html:61
 msgid "Messages sent by recipient type"
-msgstr ""
+msgstr "받는 사람 유형별로 보낸 메시지"
 
 #: templates/analytics/stats.html:76
 msgid "Active users"
-msgstr ""
+msgstr "활성 사용자"
 
 #: templates/analytics/stats.html:80 templates/zerver/settings_overlay.html:69
 msgid "Users"
-msgstr ""
+msgstr "사용자"
 
 #: templates/analytics/stats.html:88
 msgid "Last update"
-msgstr ""
+msgstr "최근 업데이트"
 
 #: templates/analytics/stats.html:89
 msgid ""
 "A full update of all the graphs happens once a day.<br/>The “Messages Sent "
 "Over Time” graph is updated once an hour."
-msgstr ""
+msgstr "모든 그래프의 전체 업데이트가 하루에 한 번 발생합니다.<br/> \"시간 경과에 따라 보내진 메시지\" 그래프는 한시간에 한번 업데이트 됩니다."
 
 #: templates/analytics/stats.html:93
 msgid "Analytics documentation"
-msgstr ""
+msgstr "분석 설명서"
 
 #: templates/confirmation/confirm_email_change.html:8
 msgid "Email changed!"
-msgstr ""
+msgstr "이메일 변경!"
 
 #: templates/zerver/about.html:211
 msgid "Avatar"
-msgstr ""
+msgstr "아바타"
 
 #: templates/zerver/accounts_accept_terms.html:14
 msgid "There are new Terms of Service."
-msgstr ""
+msgstr "새로운 서비스 약관이 있습니다."
 
 #: templates/zerver/accounts_accept_terms.html:15
 msgid "Accept the terms of service"
-msgstr ""
+msgstr "서비스 약관 동의"
 
 #: templates/zerver/accounts_accept_terms.html:22
 #: templates/zerver/create_realm.html:27 templates/zerver/login.html:86
 #: templates/zerver/register.html:34 templates/zerver/reset.html:23
 #: templates/zerver/reset_confirm.html:23
 msgid "Email"
-msgstr ""
+msgstr "이메일"
 
 #: templates/zerver/accounts_accept_terms.html:41
 #, python-format
-msgid ""
-"I agree to the <a href=\"%(root_domain_uri)s/terms\">Terms of Service</a>."
-msgstr ""
+msgid "I agree to the <a href=\"%(root_domain_uri)s/terms\">Terms of Service</a>."
+msgstr "나는 <a href=\"%(root_domain_uri)s/terms\">서비스 약관</a>에 동의합니다."
 
 #: templates/zerver/accounts_accept_terms.html:53
 msgid "Enter"
-msgstr ""
+msgstr "들어가기"
 
 #: templates/zerver/accounts_home.html:16
 msgid "Sign up for Zulip"
-msgstr ""
+msgstr "Zulip에 가입하기"
 
 #: templates/zerver/accounts_home.html:35
 msgid "You need an invitation to join this organization."
-msgstr ""
+msgstr "이 조직에 가입하기 위해 초대가 필요합니다."
 
 #: templates/zerver/accounts_home.html:65
 msgid "Sign up"
@@ -171,7 +172,7 @@ msgstr "구글 계정으로 가입하기"
 
 #: templates/zerver/accounts_home.html:91
 msgid "Sign up with GitHub"
-msgstr ""
+msgstr "GitHub로 가입하기"
 
 #: templates/zerver/accounts_send_confirm.html:10
 msgid "Thanks for signing up!"
@@ -179,23 +180,23 @@ msgstr "가입해 주셔서 감사합니다!"
 
 #: templates/zerver/accounts_send_confirm.html:14
 msgid "Check your email so we can get started."
-msgstr ""
+msgstr "이메일을 확인하면 시작할 수 있습니다."
 
 #: templates/zerver/accounts_send_confirm.html:18
-msgid ""
-"Still no email? We can <a href=\"#\" id=\"resend_email_link\">resend it</a>."
-msgstr ""
+msgid "Still no email? We can <a href=\"#\" id=\"resend_email_link\">resend it</a>."
+msgstr "메일이 아직 없습니까? 우리는 <a href=\"#\" id=\"resend_email_link\">다시 보낼 수 있습니다</a>."
 
 #: templates/zerver/accounts_send_confirm.html:19
 msgid "Just in case, take a look at your Spam folder."
-msgstr ""
+msgstr "만일을 위해 스팸 폴더를 확인하세요."
 
 #: templates/zerver/bankruptcy.html:5 templates/zerver/delete_message.html:3
-#: templates/zerver/invite_user.html:5 templates/zerver/lightbox_overlay.html:7
+#: templates/zerver/invite_user.html:5
+#: templates/zerver/lightbox_overlay.html:7
 #: templates/zerver/message_history.html:4
 #: templates/zerver/message_history.html:12 templates/zerver/navbar.html:3
 msgid "Close"
-msgstr ""
+msgstr "닫기"
 
 #: templates/zerver/bankruptcy.html:6
 msgid "Welcome back"
@@ -203,74 +204,75 @@ msgstr "돌아오신 것을 환영합니다"
 
 #: templates/zerver/bankruptcy.html:13
 msgid "Yes, please!"
-msgstr ""
+msgstr "예!"
 
 #: templates/zerver/bankruptcy.html:15
 msgid "No, I'll catch up."
-msgstr ""
+msgstr "아니요."
 
 #: templates/zerver/closed_realm.html:4
 msgid "Closed realm"
-msgstr ""
+msgstr "닫힌 영역"
 
 #: templates/zerver/closed_realm.html:6 templates/zerver/invalid_realm.html:11
 msgid "Hi there! Thank you for your interest in Zulip."
-msgstr ""
+msgstr "안녕하세요. Zulip에 관심을 가져주셔서 감사합니다."
 
 #: templates/zerver/closed_realm.html:8
 #, python-format
 msgid ""
-"The organization you are trying to join, %(closed_domain_name)s, only allows "
-"users with e-mail addresses within the organization. Please ask for a new "
+"The organization you are trying to join, %(closed_domain_name)s, only allows"
+" users with e-mail addresses within the organization. Please ask for a new "
 "invite to an appropriate e-mail address."
-msgstr ""
+msgstr "당신이 가입하려는 단체,%(closed_domain_name)s, 단체내의 이메일 주소를 가진 사용자만 허락하고 있습니다. 적절한 이메일 주소로 새로운 초대를 요청하시기 바랍니다."
 
 #: templates/zerver/compose.html:8 templates/zerver/compose.html:10
 #: templates/zerver/compose.html:98
 #: templates/zerver/keyboard_shortcuts.html:173
 msgid "Drafts"
-msgstr ""
+msgstr "임시 보관함"
 
 #: templates/zerver/compose.html:17 templates/zerver/compose.html:18
 msgid "New topic"
-msgstr ""
+msgstr "새로운 주제"
 
 #: templates/zerver/compose.html:25 templates/zerver/compose.html:26
 #: templates/zerver/keyboard_shortcuts.html:69
 msgid "New private message"
-msgstr ""
+msgstr "새 비공개 메시지"
 
-#: templates/zerver/compose.html:41 templates/zerver/keyboard_shortcuts.html:85
+#: templates/zerver/compose.html:41
+#: templates/zerver/keyboard_shortcuts.html:85
 msgid "Cancel compose"
-msgstr ""
+msgstr "작성 취소"
 
 #: templates/zerver/compose.html:55
 msgid "This is an invite-only stream"
-msgstr ""
+msgstr "이것은 초대 제한 스트림입니다."
 
 #: templates/zerver/compose.html:59
 msgid "Stream"
-msgstr ""
+msgstr "스트림"
 
 #: templates/zerver/compose.html:63
 msgid "Topic"
-msgstr ""
+msgstr "주제"
 
 #: templates/zerver/compose.html:72
 msgid "You and"
-msgstr ""
+msgstr "당신과"
 
 #: templates/zerver/compose.html:74
 msgid "one or more people..."
-msgstr ""
+msgstr "하나 혹은 다수의 사람들..."
 
 #: templates/zerver/compose.html:81
 msgid "Compose your message here..."
-msgstr ""
+msgstr "여기에 당신의 메시지를 작성하세요..."
 
 #: templates/zerver/compose.html:90
 msgid "Add emoji"
-msgstr ""
+msgstr "이모티콘 추가"
 
 #: templates/zerver/compose.html:92
 msgid "Attach files from Dropbox"
@@ -282,19 +284,19 @@ msgstr "파일 첨부하기"
 
 #: templates/zerver/compose.html:95
 msgid "Formatting"
-msgstr ""
+msgstr "서식 작성"
 
 #: templates/zerver/compose.html:96
 msgid "Write"
-msgstr ""
+msgstr "쓰기"
 
 #: templates/zerver/compose.html:97
 msgid "Preview"
-msgstr ""
+msgstr "미리보기"
 
 #: templates/zerver/compose.html:99
 msgid "Sending..."
-msgstr ""
+msgstr "보내는 중..."
 
 #: templates/zerver/compose.html:101
 msgid "Press Enter to send"
@@ -302,204 +304,199 @@ msgstr "Enter 키를 눌러 보내기"
 
 #: templates/zerver/compose.html:103
 msgid "Send"
-msgstr ""
+msgstr "보내기"
 
 #: templates/zerver/config_error.html:14
 msgid ""
 "\n"
-"                        You are trying to login using LDAP without creating "
-"an\n"
-"                        organization first. Please use EmailAuthBackend to "
-"create\n"
+"                        You are trying to login using LDAP without creating an\n"
+"                        organization first. Please use EmailAuthBackend to create\n"
 "                        your organization and then try again.\n"
 "                        "
-msgstr ""
+msgstr "\n             먼저 단체를 만들지 않고 LDAP를 사용하여 로그인하려고합니다. \n              EmailAuthBackend를 사용하여 단체를 만든 다음 다시 시도하십시오."
 
 #: templates/zerver/confirm_continue_registration.html:10
 msgid "Zulip account not found."
-msgstr ""
+msgstr "Zulip계정이 업습니다."
 
 #: templates/zerver/confirm_continue_registration.html:17
 msgid ""
 "\n"
-"                            Please click the following button if you wish to "
-"register.\n"
+"                            Please click the following button if you wish to register.\n"
 "                            "
-msgstr ""
+msgstr "\n                          등록을 원하시면 다음 버튼을 클릭하세요."
 
 #: templates/zerver/confirm_continue_registration.html:24
 #, python-format
 msgid ""
 "\n"
 "\n"
-"                            No account found for %(email)s. Would you like "
-"to register instead?\n"
+"                            No account found for %(email)s. Would you like to register instead?\n"
 "\n"
 "                            "
-msgstr ""
+msgstr "\n\n                  %(email)s에 대한 계정이 없습니다. 대신 등록하시겠습니까?"
 
 #: templates/zerver/confirm_continue_registration.html:38
 msgid "Go back to login"
-msgstr ""
+msgstr "로그인으로 돌아가기"
 
 #: templates/zerver/confirm_continue_registration.html:52
 msgid "Register instead"
-msgstr ""
+msgstr "대신 등록"
 
 #: templates/zerver/create_realm.html:18
 msgid "Create a new Zulip organization"
-msgstr ""
+msgstr "새로운 Zulip 단체 생성"
 
 #: templates/zerver/create_realm.html:25
 msgid "Enter your email address"
-msgstr ""
+msgstr "당신의 이메일 주소를 등록하세요."
 
 #: templates/zerver/create_realm.html:30
 msgid "Create organization"
-msgstr ""
+msgstr "단체 만들기"
 
 #: templates/zerver/deactivated.html:9
 msgid "Deactivated organization"
-msgstr "비활성화된 조직"
+msgstr "비활성화된 단체"
 
 #: templates/zerver/deactivated.html:14
 #, python-format
 msgid ""
 "\n"
-"                    The organization you are trying to join, "
-"%(deactivated_domain_name)s, has been deactivated.\n"
-"                    Please contact <a href=\"mailto:%(support_email)s\">"
-"%(support_email)s</a> to reactivate\n"
+"                    The organization you are trying to join, %(deactivated_domain_name)s, has been deactivated.\n"
+"                    Please contact <a href=\"mailto:%(support_email)s\">%(support_email)s</a> to reactivate\n"
 "                    this group.\n"
 "                    "
-msgstr ""
+msgstr "\n                 당신이 가입하려는 단체,%(deactivated_domain_name)s,는 비활성화되었습니다.\n                이 그룹을 활성화하려면 <a href=\"mailto:%(support_email)s\">%(support_email)s</a>에 연락하세요."
 
 #: templates/zerver/delete_message.html:4
 msgid "Delete message"
-msgstr ""
+msgstr "메시지 삭제"
 
 #: templates/zerver/delete_message.html:8
 msgid "Are you sure you want to delete this message?"
-msgstr ""
+msgstr "이 메시지를 삭제하시겠습니까?"
 
-#: templates/zerver/delete_message.html:13 templates/zerver/invite_user.html:32
+#: templates/zerver/delete_message.html:13
+#: templates/zerver/invite_user.html:32
 #: templates/zerver/settings_sidebar.html:35
 msgid "Cancel"
-msgstr ""
+msgstr "취소"
 
 #: templates/zerver/delete_message.html:14
 msgid "Yes, delete this message"
-msgstr ""
+msgstr "예, 이 메시지를 삭제합니다."
 
 #: templates/zerver/dev_login.html:12
 msgid "(Or visit the <a href=\"/login\">normal login page</a>)"
-msgstr ""
+msgstr "(혹은 <a href=\"/login\">정상 로그인 페이지</a>를 방문세요.)"
 
 #: templates/zerver/dev_login.html:17
 msgid "Administrators"
-msgstr ""
+msgstr "관리자"
 
 #: templates/zerver/dev_login.html:29
 msgid "Normal users"
-msgstr ""
+msgstr "일반 사용자"
 
 #: templates/zerver/find_account.html:8
 msgid "Find your Zulip accounts"
-msgstr ""
+msgstr "당신의 Zulip 계정을 찾으세요."
 
 #: templates/zerver/find_account.html:41
 msgid "Email addresses"
-msgstr ""
+msgstr "이메일 주소"
 
 #: templates/zerver/find_account.html:43
 msgid "Find accounts"
-msgstr ""
+msgstr "계정 찾기"
 
 #: templates/zerver/footer.html:3
 msgid "About Zulip"
-msgstr ""
+msgstr "Zulip에 관하여"
 
 #: templates/zerver/footer.html:5 templates/zerver/left_sidebar.html:5
 #: templates/zerver/left_sidebar.html:10
 msgid "Home"
-msgstr ""
+msgstr "홈"
 
 #: templates/zerver/footer.html:6
 msgid "Why Zulip"
-msgstr ""
+msgstr "왜 Zulip인가?"
 
 #: templates/zerver/footer.html:7
 msgid "Features"
-msgstr ""
+msgstr "특징"
 
 #: templates/zerver/footer.html:8
 msgid "Plans &amp; pricing"
-msgstr ""
+msgstr "플랜 &amp; 가격"
 
 #: templates/zerver/footer.html:11
 msgid "About"
-msgstr ""
+msgstr "관하여"
 
 #: templates/zerver/footer.html:16
 msgid "Help &amp; community"
-msgstr ""
+msgstr "도움 &amp; 커뮤니티"
 
 #: templates/zerver/footer.html:18
 msgid "Help center"
-msgstr ""
+msgstr "도움 센터"
 
 #: templates/zerver/footer.html:25
 msgid "Accounts"
-msgstr ""
+msgstr "계정"
 
 #: templates/zerver/footer.html:29
 msgid "Find account"
-msgstr ""
+msgstr "계정 찾기"
 
 #: templates/zerver/footer.html:32
 msgid "New organization"
-msgstr ""
+msgstr "새 단체"
 
 #: templates/zerver/footer.html:36
 msgid "Login"
-msgstr ""
+msgstr "로그인"
 
 #: templates/zerver/footer.html:41 templates/zerver/portico-header.html:34
 #: templates/zerver/register.html:163
 msgid "Register"
-msgstr ""
+msgstr "등록"
 
 #: templates/zerver/footer.html:43 templates/zerver/terms.html:21
 msgid "Terms of Service"
-msgstr ""
+msgstr "서비스 약관"
 
 #: templates/zerver/footer.html:44 templates/zerver/privacy.html:23
 msgid "Privacy policy"
-msgstr ""
+msgstr "개인정보 보호정책"
 
 #: templates/zerver/footer.html:48
 msgid "Apps &amp; integrations"
-msgstr ""
+msgstr "앱 &amp; 통합"
 
 #: templates/zerver/footer.html:50
 msgid "Desktop &amp; mobile apps"
-msgstr ""
+msgstr "데스크탑 &amp; 모바일 앱"
 
 #: templates/zerver/footer.html:51 templates/zerver/navbar.html:117
 msgid "Integrations"
-msgstr ""
+msgstr "Integrations"
 
 #: templates/zerver/for-companies.html:23
 msgid "The best chat for workplaces"
-msgstr ""
+msgstr "직장을 위한 최고의 챗"
 
 #: templates/zerver/for-open-source.html:23
 msgid "The best chat for open source projects"
-msgstr ""
+msgstr "오픈소스 프로젝트을 위한 최고의 챗"
 
 #: templates/zerver/for-working-groups-and-communities.html:23
 msgid "The best chat for working groups and communities"
-msgstr ""
+msgstr "워킹 그룹과 커뮤니티를 위한 최고의 챗"
 
 #: templates/zerver/hello.html:43 templates/zerver/hello.html:609
 msgid "Log in now!"
@@ -511,35 +508,35 @@ msgstr "가입하세요!"
 
 #: templates/zerver/hello.html:517
 msgid "Travis logo"
-msgstr ""
+msgstr "Travis 로고"
 
 #: templates/zerver/hello.html:524
 msgid "Github logo"
-msgstr ""
+msgstr "Github 로고"
 
 #: templates/zerver/hello.html:531
 msgid "Heroku logo"
-msgstr ""
+msgstr "Heroku 로고"
 
 #: templates/zerver/hello.html:538
 msgid "Zendesk logo"
-msgstr ""
+msgstr "Zendesk 로고"
 
 #: templates/zerver/hello.html:545
 msgid "JIRA logo"
-msgstr ""
+msgstr "JIRA 로고"
 
 #: templates/zerver/hello.html:552
 msgid "Sentry logo"
-msgstr ""
+msgstr "Sentry 로고"
 
 #: templates/zerver/hello.html:559
 msgid "Pagerduty logo"
-msgstr ""
+msgstr "Pagerduty 로고"
 
 #: templates/zerver/home.html:14
 msgid "Welcome to Zulip."
-msgstr ""
+msgstr "Zulip에 오신 것을 환영합니다."
 
 #: templates/zerver/home.html:15
 msgid ""
@@ -552,11 +549,11 @@ msgid ""
 "        and <a href=\"#\" class=\"empty_feed_compose_stream\">\n"
 "        compose a new stream message</a>.</p>\n"
 "        "
-msgstr ""
+msgstr "\n     <p>저기, 그게 ... 지금 당장 당신 한테 메시지가 없어요. \n누군가가 결국 당신에게 보낼 것이라고 확신합니다.</p>\n\n     <p>또는, <strong>문제를 해결하고</strong>, 그리고 <a href=\"#\" class=\"empty_feed_compose_stream\">\n새로운 스트림 메시지를 작성하세요</a>.</p>"
 
 #: templates/zerver/home.html:26
 msgid "Nothing's been sent here yet!"
-msgstr ""
+msgstr "아직 아무것도 보내지 않았습니다."
 
 #: templates/zerver/home.html:28
 msgid ""
@@ -564,11 +561,11 @@ msgid ""
 "        <p>Why not <a href=\"#\" class=\"empty_feed_compose_stream\">\n"
 "            start the conversation</a>?</p>\n"
 "        "
-msgstr ""
+msgstr "\n       <p>왜 아직 <a href=\"#\" class=\"empty_feed_compose_stream\">\n       대화를 시작하지 않나요</a>?</p>"
 
 #: templates/zerver/home.html:34
 msgid "You have no private messages yet!"
-msgstr ""
+msgstr "아직 비공개 메시지는 없습니다."
 
 #: templates/zerver/home.html:36 templates/zerver/home.html:44
 #: templates/zerver/home.html:52 templates/zerver/home.html:60
@@ -577,104 +574,102 @@ msgid ""
 "        <p>Why not <a href=\"#\" class=\"empty_feed_compose_private\">\n"
 "            start the conversation</a>?</p>\n"
 "        "
-msgstr ""
+msgstr "\n       <p>왜  <a href=\"#\" class=\"empty_feed_compose_private\">\n       대화를 시작하지 않나요</a>?</p>"
 
 #: templates/zerver/home.html:42
 msgid "You have no private messages with this person yet!"
-msgstr ""
+msgstr "당신은 아직 이 사람과의 비공개 메시지는 없습니다."
 
 #: templates/zerver/home.html:50
 msgid "You have no group private messages with this person yet!"
-msgstr ""
+msgstr "당신은 아직 이 사람과의 그룹 비공개 메시지가 없습니다."
 
 #: templates/zerver/home.html:58
 msgid "You have no private messages with these people yet!"
-msgstr ""
+msgstr "당신은 아직 이 사람들과의 비공개 메시지가 업습니다."
 
 #: templates/zerver/home.html:66
 msgid "You haven't received any messages sent by this user yet!"
-msgstr ""
+msgstr "당신은 아직 이 사용자가 보낸 어떠한 메시지도 받은 적이 없습니다."
 
 #: templates/zerver/home.html:69
 msgid "This user does not exist!"
-msgstr ""
+msgstr "이 사용자는 존재하지 않습니다."
 
 #: templates/zerver/home.html:72
 msgid ""
 "You aren't subscribed to this stream and nobody has talked about that yet!"
-msgstr ""
+msgstr "당신은 이 스트림에 가입하지 않았고, 어떠한 사람도 아직 그것에 대하여 이야기 하지 않았습니다."
 
 #: templates/zerver/home.html:75
 msgid "Subscribe"
-msgstr ""
+msgstr "가입"
 
 #: templates/zerver/home.html:80
 msgid "You are not subscribed to this stream."
-msgstr ""
+msgstr "당신은 이 스트림에 가입하지 않았습니다."
 
 #: templates/zerver/home.html:83
 msgid "You haven't starred anything yet!"
-msgstr ""
+msgstr "당신은 아직 별표 표시된 어떤 것도 없습니다."
 
 #: templates/zerver/home.html:85
 #, python-format
 msgid ""
 "\n"
-"        <p>Learn more about starring messages at <a href=\"/help/star-a-"
-"message\">\n"
+"        <p>Learn more about starring messages at <a href=\"/help/star-a-message\">\n"
 "           %(realm_uri)s/help/star-a-message</a>.</p>\n"
 "        "
-msgstr ""
+msgstr "\n      <p><a href=\"/help/star-a-message\">%(realm_uri)s/help/star-a-message</a>에 표시된 메시지에 대해 알아보기.</p>"
 
 #: templates/zerver/home.html:91
 msgid "You have no unread messages!"
-msgstr ""
+msgstr "당신은 읽지 않은 메시지가 없습니다."
 
 #: templates/zerver/home.html:94
 msgid "You haven't been mentioned yet!"
-msgstr ""
+msgstr "당신은 아직 언급한적이 없습니다."
 
 #: templates/zerver/home.html:96
 #, python-format
 msgid ""
 "\n"
-"        <p>Learn more about mentions at <a href=\"/help/at-mention-a-team-"
-"member\">\n"
+"        <p>Learn more about mentions at <a href=\"/help/at-mention-a-team-member\">\n"
 "           %(realm_uri)s/help/at-mention-a-team-member</a>.</p>\n"
 "        "
-msgstr ""
+msgstr "\n       <p><a href=\"/help/at-mention-a-team-member\">%(realm_uri)s/help/at-mention-a-team-member</a>에서 \n       언급에 관하여 알아보자.</p>"
 
 #: templates/zerver/home.html:102
 msgid "Nobody has talked about that yet!"
-msgstr ""
+msgstr "아직 아무도 그것에 대하여 말하지 않았습니다."
 
 #: templates/zerver/index.html:49
 msgid "Loading..."
-msgstr ""
+msgstr "불러오는 중..."
 
 #: templates/zerver/index.html:50
 msgid ""
-"If this message does not go away, please wait a couple seconds and <a href="
-"\"javascript:location.reload(true)\">reload</a> the page."
-msgstr ""
+"If this message does not go away, please wait a couple seconds and <a "
+"href=\"javascript:location.reload(true)\">reload</a> the page."
+msgstr "이 메시지가 사라지지 않으면, 몇 초 후에 페이지를 <a href=\"javascript:location.reload(true)\">다시로드</a>하십시오."
 
 #: templates/zerver/index.html:70
 msgid ""
 "<strong class=\"message\">Unable to connect to\n"
 "        Zulip.</strong>  Updates may be delayed."
-msgstr ""
+msgstr "<strong class=\"message\">Zulip1에 연결할 수 없습니다.</strong>\n 업데이트가 지연 될 수 있습니다."
 
 #: templates/zerver/index.html:71
 msgid "Retrying soon..."
-msgstr ""
+msgstr "곧 재시도 중..."
 
 #: templates/zerver/index.html:71
 msgid "Try now."
-msgstr ""
+msgstr "지금 시도하기."
 
 #: templates/zerver/integrations/index.html:28
 msgid "Over 60 native integrations."
-msgstr ""
+msgstr "60개 이상의 integration"
 
 #: templates/zerver/integrations/index.html:32
 msgid ""
@@ -685,269 +680,269 @@ msgid ""
 "                        and\n"
 "                        <a href=\"/integrations/doc/iftt\">IFTTT</a>.\n"
 "                        "
-msgstr ""
+msgstr "\n         그리고 <a href=\"/integrations/doc/hubot\">Hubot</a>,\n         <a href=\"/integrations/doc/zapier\">Zapier</a>,\n         와 <a href=\"/integrations/doc/iftt\">IFTTT</a> 을 \n        통하여 수백개 이상.\n "
 
 #: templates/zerver/integrations/index.html:46
 msgid "Search integrations"
-msgstr ""
+msgstr "Integration 찾기"
 
 #: templates/zerver/integrations/index.html:53
 msgid "Filter by category"
-msgstr ""
+msgstr "카테고리로 필터하기"
 
 #: templates/zerver/integrations/index.html:72
 msgid "Categories"
-msgstr ""
+msgstr "카테고리들"
 
 #: templates/zerver/integrations/index.html:74
 msgid "All"
-msgstr ""
+msgstr "전체"
 
 #: templates/zerver/integrations/index.html:116
 msgid "Create your own!"
-msgstr ""
+msgstr "당신 것을 만드세요."
 
 #: templates/zerver/invalid_realm.html:7
 msgid "Organization does not exist"
-msgstr ""
+msgstr "단체가 존재하지 않습니다."
 
 #: templates/zerver/invalid_realm.html:13
 msgid "There is no Zulip organization hosted at this subdomain."
-msgstr ""
+msgstr "이 서브도메인으로 운영되는 Zulip 단체는 없습니다."
 
 #: templates/zerver/invite_user.html:6
 msgid "Invite users to Zulip"
-msgstr ""
+msgstr "Zulip으로 사용자 초대하기."
 
 #: templates/zerver/invite_user.html:13
 msgid "Emails (one on each line or comma-separated)"
-msgstr ""
+msgstr "이메일(한 줄에 하나씩 혹은 컴마로 분리)"
 
 #: templates/zerver/invite_user.html:15
 msgid "One or more email addresses..."
-msgstr ""
+msgstr "하나 혹은 더 많은 이메일 주소들..."
 
 #: templates/zerver/invite_user.html:17
 msgid "Custom invitation message (if you want to add one)"
-msgstr ""
+msgstr "사용자 맞춤 초대 메시지 (추가하고자 할 경우)"
 
 #: templates/zerver/invite_user.html:19
 msgid "Custom message"
-msgstr ""
+msgstr "사용자 맞춤 메시지"
 
 #: templates/zerver/invite_user.html:27
 msgid "Streams they should join"
-msgstr ""
+msgstr "그들이 가입해야 할 스트림들"
 
 #: templates/zerver/invite_user.html:34
 msgid "Inviting..."
-msgstr ""
+msgstr "초대 중..."
 
 #: templates/zerver/invite_user.html:34
 msgid "Invite"
-msgstr ""
+msgstr "초대"
 
 #: templates/zerver/keyboard_shortcuts.html:2 templates/zerver/navbar.html:96
 msgid "Keyboard shortcuts"
-msgstr ""
+msgstr "키보드 단축"
 
 #: templates/zerver/keyboard_shortcuts.html:8
 msgid "Navigation"
-msgstr ""
+msgstr "네비게이션"
 
 #: templates/zerver/keyboard_shortcuts.html:13
 msgid "Initiate a search"
-msgstr ""
+msgstr "검색 시작"
 
 #: templates/zerver/keyboard_shortcuts.html:17
 #: templates/zerver/left_sidebar.html:58
 msgid "Search streams"
-msgstr ""
+msgstr "스트림 검색"
 
 #: templates/zerver/keyboard_shortcuts.html:21
 #: templates/zerver/right_sidebar.html:15
 msgid "Search people"
-msgstr ""
+msgstr "사람 검색"
 
 #: templates/zerver/keyboard_shortcuts.html:25
 msgid "Previous message"
-msgstr ""
+msgstr "이전 메시지"
 
 #: templates/zerver/keyboard_shortcuts.html:29
 msgid "Next message"
-msgstr ""
+msgstr "다음 메시지"
 
 #: templates/zerver/keyboard_shortcuts.html:33
 msgid "Scroll up"
-msgstr ""
+msgstr "위로 스크롤"
 
 #: templates/zerver/keyboard_shortcuts.html:37
 msgid "Scroll down"
-msgstr ""
+msgstr "아래로 스크롤"
 
 #: templates/zerver/keyboard_shortcuts.html:41
 msgid "Last message"
-msgstr ""
+msgstr "최근 메시지"
 
 #: templates/zerver/keyboard_shortcuts.html:45
 msgid "First message"
-msgstr ""
+msgstr "첫 메시지"
 
 #: templates/zerver/keyboard_shortcuts.html:52
 msgid "Composing messages"
-msgstr ""
+msgstr "메시지 작성"
 
 #: templates/zerver/keyboard_shortcuts.html:57
 msgid "Reply to message"
-msgstr ""
+msgstr "메시지에 답하기"
 
 #: templates/zerver/keyboard_shortcuts.html:61
 msgid "Reply to author"
-msgstr ""
+msgstr "작성자에게 답하기"
 
 #: templates/zerver/keyboard_shortcuts.html:65
 msgid "New stream message"
-msgstr ""
+msgstr "새로운 스트림 메시지"
 
 #: templates/zerver/keyboard_shortcuts.html:73
 msgid "Compose a reply @-mentioning author"
-msgstr ""
+msgstr "답변 작성 @-mentioning 저자"
 
 #: templates/zerver/keyboard_shortcuts.html:77
 msgid "Send message"
-msgstr ""
+msgstr "메시지 보내기"
 
 #: templates/zerver/keyboard_shortcuts.html:81
 msgid "Insert new line"
-msgstr ""
+msgstr "새 라인 삽입"
 
 #: templates/zerver/keyboard_shortcuts.html:94
 msgid "Narrowing"
-msgstr ""
+msgstr "좁히기"
 
 #: templates/zerver/keyboard_shortcuts.html:99
 msgid "Narrow by stream"
-msgstr ""
+msgstr "스트림으로 좁히기"
 
 #: templates/zerver/keyboard_shortcuts.html:103
 msgid "Narrow by topic"
-msgstr ""
+msgstr "주체로 좁히기"
 
 #: templates/zerver/keyboard_shortcuts.html:107
 msgid "Narrow to all private messages"
-msgstr ""
+msgstr "모든 비공개 메시지로 좁히기"
 
 #: templates/zerver/keyboard_shortcuts.html:111
 msgid "Narrow to next unread topic"
-msgstr ""
+msgstr "다음의 읽지 않은 주제로 좁히기"
 
 #: templates/zerver/keyboard_shortcuts.html:115
 msgid "Cycle between stream narrows"
-msgstr ""
+msgstr "스트림 사이 순환"
 
 #: templates/zerver/keyboard_shortcuts.html:119
 msgid "Return to home view"
-msgstr ""
+msgstr "홈뷰로 돌아가기"
 
 #: templates/zerver/keyboard_shortcuts.html:125
 msgid "Message actions"
-msgstr ""
+msgstr "메시지 동작"
 
 #: templates/zerver/keyboard_shortcuts.html:130
 msgid "Edit your last message"
-msgstr ""
+msgstr "최근 메시지 편집"
 
 #: templates/zerver/keyboard_shortcuts.html:134
 msgid "Show message sender's profile"
-msgstr ""
+msgstr "메시지를 보낸 사람의 프로파일 보기"
 
 #: templates/zerver/keyboard_shortcuts.html:138
 msgid "Show images in thread"
-msgstr ""
+msgstr "글안의 이미지 보기"
 
 #: templates/zerver/keyboard_shortcuts.html:142
 msgid "Edit selected message"
-msgstr ""
+msgstr "선택된 메시지 편집"
 
 #: templates/zerver/keyboard_shortcuts.html:146
 msgid "Star selected message"
-msgstr ""
+msgstr "선택된 별표 메시지"
 
 #: templates/zerver/keyboard_shortcuts.html:151
 msgid "React to selected message with"
-msgstr ""
+msgstr "선택한 메시지에 반응하십시오."
 
 #: templates/zerver/keyboard_shortcuts.html:160
 msgid "Collapse/show selected message"
-msgstr ""
+msgstr "병합/선택된 메시지 보기"
 
 #: templates/zerver/keyboard_shortcuts.html:164
 msgid "Toggle topic mute"
-msgstr ""
+msgstr "주제 소거 토글"
 
 #: templates/zerver/keyboard_shortcuts.html:178
 msgid "View drafts"
-msgstr ""
+msgstr "초안 보기"
 
 #: templates/zerver/keyboard_shortcuts.html:182
 msgid "Edit selected draft"
-msgstr ""
+msgstr "선택된 초안 보기"
 
 #: templates/zerver/keyboard_shortcuts.html:186
 msgid "Delete selected draft"
-msgstr ""
+msgstr "선택된 초안 삭제"
 
 #: templates/zerver/keyboard_shortcuts.html:192
 msgid "Menus"
-msgstr ""
+msgstr "메뉴"
 
 #: templates/zerver/keyboard_shortcuts.html:197
 msgid "Toggle the gear menu"
-msgstr ""
+msgstr "기어 메뉴 토글"
 
 #: templates/zerver/keyboard_shortcuts.html:201
 msgid "Open message menu"
-msgstr ""
+msgstr "메시지 메뉴 열기"
 
 #: templates/zerver/keyboard_shortcuts.html:205
 msgid "Open reactions menu"
-msgstr ""
+msgstr "반응 메뉴 열기"
 
 #: templates/zerver/keyboard_shortcuts.html:209
 msgid "Show keyboard shortcuts"
-msgstr ""
+msgstr "키보드 단축 보기"
 
 #: templates/zerver/keyboard_shortcuts.html:218
 msgid "Streams settings"
-msgstr ""
+msgstr "스트림 설정"
 
 #: templates/zerver/keyboard_shortcuts.html:223
 msgid "Scroll through streams"
-msgstr ""
+msgstr "스트림을 따라 스크롤"
 
 #: templates/zerver/keyboard_shortcuts.html:227
 msgid "Switch between tabs"
-msgstr ""
+msgstr "탭간 바꾸기"
 
 #: templates/zerver/keyboard_shortcuts.html:231
 msgid "View stream messages"
-msgstr ""
+msgstr "스트림 메시지 보기"
 
 #: templates/zerver/keyboard_shortcuts.html:235
 msgid "Subscribe to/unsubscribe from selected stream"
-msgstr ""
+msgstr "선택된 스트림으로 부터 등록/등록해제"
 
 #: templates/zerver/keyboard_shortcuts.html:239
 msgid "Create new stream"
-msgstr ""
+msgstr "새로운 스트림 만들기"
 
 #: templates/zerver/keyboard_shortcuts.html:244
 msgid "Detailed keyboard shortcuts documentation"
-msgstr ""
+msgstr "상세한 키보드 단축 명세서"
 
 #: templates/zerver/left_sidebar.html:16 templates/zerver/left_sidebar.html:21
 msgid "Private messages"
-msgstr ""
+msgstr "개인 메시지"
 
 #: templates/zerver/left_sidebar.html:32
 msgid "Starred messages"
@@ -955,259 +950,253 @@ msgstr "메세지 별표하기"
 
 #: templates/zerver/left_sidebar.html:40
 msgid "Mentions"
-msgstr ""
+msgstr "언급된 메시지"
 
 #: templates/zerver/left_sidebar.html:48
 msgid "Subscribed streams"
-msgstr ""
+msgstr "등록한 스트림"
 
 #: templates/zerver/left_sidebar.html:48
 msgid "STREAMS"
-msgstr ""
+msgstr "스트림"
 
 #: templates/zerver/left_sidebar.html:49
 msgid "Subscribe, add, or configure streams"
-msgstr ""
+msgstr "등록, 추가 혹은 스트림 조정"
 
 #: templates/zerver/left_sidebar.html:50
 msgid "Filter streams"
-msgstr ""
+msgstr "스트림 필터"
 
 #: templates/zerver/left_sidebar.html:51
 msgid "Join stream"
-msgstr ""
+msgstr "스트림 참여"
 
 #: templates/zerver/left_sidebar.html:54
 msgid "All streams"
-msgstr ""
+msgstr "모든 스트림"
 
 #: templates/zerver/lightbox_overlay.html:10
 msgid "Pan &amp; Zoom"
-msgstr ""
+msgstr "팬 &amp; 확대"
 
 #: templates/zerver/lightbox_overlay.html:11
 msgid "Disabled"
-msgstr ""
+msgstr "불가능"
 
 #: templates/zerver/lightbox_overlay.html:11
 msgid "Enabled"
-msgstr ""
+msgstr "가능"
 
 #: templates/zerver/lightbox_overlay.html:14
 msgid "Open"
-msgstr ""
+msgstr "열기"
 
 #: templates/zerver/lightbox_overlay.html:17
 msgid "Download"
-msgstr ""
+msgstr "다운로드"
 
 #: templates/zerver/login.html:27
 msgid "Sign in to Zulip"
-msgstr ""
+msgstr "Zulip에 로그인"
 
 #: templates/zerver/login.html:35
 msgid "Sign in with SSO"
-msgstr ""
+msgstr "SSO로 로그인"
 
 #: templates/zerver/login.html:82
 msgid "Email or username"
-msgstr ""
+msgstr "이메일 혹은 사용자명"
 
 #: templates/zerver/login.html:84
 msgid "Username"
-msgstr ""
+msgstr "사용자명"
 
 #: templates/zerver/login.html:93 templates/zerver/register.html:60
 #: templates/zerver/reset_confirm.html:30
 msgid "Password"
-msgstr ""
+msgstr "비밀번호"
 
 #: templates/zerver/login.html:106
 msgid ""
 "You've already registered with this email address. Please sign in below."
-msgstr ""
+msgstr "당신은 이미 이 이메일 주소로 등록되어 있습니다. 아래에서 로그인 하세요. "
 
 #: templates/zerver/login.html:116
 msgid "Sign in"
-msgstr ""
+msgstr "로그인"
 
 #: templates/zerver/login.html:128
 msgid "Sign in with Google"
-msgstr ""
+msgstr "Google로 로그인"
 
 #: templates/zerver/login.html:136
 msgid "Sign in with GitHub"
-msgstr ""
+msgstr "GitHub로 로그인"
 
 #: templates/zerver/markdown_help.html:2 templates/zerver/navbar.html:101
 msgid "Message formatting"
-msgstr ""
+msgstr "메시지 형식"
 
 #: templates/zerver/markdown_help.html:8
 msgid "You type"
-msgstr ""
+msgstr "당신은 적습니다."
 
 #: templates/zerver/markdown_help.html:9
 msgid "You get"
-msgstr ""
+msgstr "당신은 가집니다."
 
 #: templates/zerver/markdown_help.html:97
 msgid ""
 "To add syntax highlighting to a multi-line code block,\n"
-"                          add the language's <b>first</b> <a target=\"_blank"
-"\" href=\"http://pygments.org/docs/lexers/\">Pygments short name</a>\n"
+"                          add the language's <b>first</b> <a target=\"_blank\" href=\"http://pygments.org/docs/lexers/\">Pygments short name</a>\n"
 "                          after the first set of back-ticks.\n"
-"                          You can also make a code block by indenting each "
-"line with 4 spaces."
-msgstr ""
+"                          You can also make a code block by indenting each line with 4 spaces."
+msgstr "구문 강조를 여러 줄 코드 블록에 추가하려면\n 첫 번째 back-ticks 세트 뒤에 언어의 <b>첫 번째</b><a target=\"_blank\" href=\"http://pygments.org/docs/lexers/\"> Pygments short name</a>을 추가하십시오.\n    또한 각 행을 4 칸 들여서 들여 쓰기하여 코드 블록을 만들 수 있습니다."
 
 #: templates/zerver/markdown_help.html:128
 msgid ""
 "You can also make <a target=\"_blank\"\n"
-"                            href=\"https://github.com/adam-p/markdown-here/"
-"wiki/Markdown-Cheatsheet#wiki-tables\">tables</a>\n"
+"                            href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">tables</a>\n"
 "                            with this <a target=\"_blank\"\n"
-"                                          href=\"https://github.com/adam-p/"
-"markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">Markdown-ish\n"
+"                                          href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">Markdown-ish\n"
 "                        table syntax</a>."
-msgstr ""
+msgstr "이 <a target=\"_blank\"\n                                          href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">Markdown-ish 테이블 구문</a>을 사용하여 <a target=\"_blank\"\n                            href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">테이블</a>을 만들 수도 있습니다."
 
 #: templates/zerver/message_history.html:5
 msgid "Message edit history"
-msgstr ""
+msgstr "메시지 편집 이력"
 
 #: templates/zerver/navbar.html:5
 msgid ""
 "Zulip needs your permission to\n"
-"        <a class=\"request-desktop-notifications alert-link\">enable desktop "
-"notifications.</a>\n"
+"        <a class=\"request-desktop-notifications alert-link\">enable desktop notifications.</a>\n"
 "        "
-msgstr ""
+msgstr "Zulip은 <a class=\"request-desktop-notifications alert-link\"> 데스크탑 알림을 사용하도록</a> 사용자의 허가를 받아야합니다 ."
 
 #: templates/zerver/navbar.html:10
 msgid ""
 "We strongly recommend enabling desktop notifications. They help Zulip keep "
 "your team connected."
-msgstr ""
+msgstr "데스크톱 알림을 사용하는 것이 좋습니다. 그들은 Zulip이 당신의 팀을 계속 지킬 수 있도록 도와줍니다."
 
 #: templates/zerver/navbar.html:12
 msgid "Enable notifications"
-msgstr ""
+msgstr "알림 가능"
 
 #: templates/zerver/navbar.html:14
 msgid "Ask me later"
-msgstr ""
+msgstr "나중에 다시 확인"
 
 #: templates/zerver/navbar.html:16
 msgid "Never ask on this computer"
-msgstr ""
+msgstr "이 컴퓨터에서 절대 묻지 마세요."
 
 #: templates/zerver/navbar.html:43 templates/zerver/navbar.html:44
 msgid "Search"
-msgstr ""
+msgstr "검색"
 
 #: templates/zerver/navbar.html:46
 msgid "Exit search"
-msgstr ""
+msgstr "검색 나가기"
 
 #: templates/zerver/navbar.html:47
 msgid "Search help"
-msgstr ""
+msgstr "검색 도움"
 
 #: templates/zerver/navbar.html:62
 msgid "Menu"
-msgstr ""
+msgstr "메뉴"
 
 #: templates/zerver/navbar.html:74
 msgid "Manage streams"
-msgstr ""
+msgstr "스트림 관리"
 
 #: templates/zerver/navbar.html:79 templates/zerver/settings_overlay.html:4
 #: templates/zerver/settings_overlay.html:109
 msgid "Settings"
-msgstr ""
+msgstr "설정"
 
 #: templates/zerver/navbar.html:85
 msgid "Manage organization"
-msgstr ""
+msgstr "단체 관리"
 
 #: templates/zerver/navbar.html:91
 msgid "User documentation"
-msgstr ""
+msgstr "사용자 명세서"
 
 #: templates/zerver/navbar.html:106 templates/zerver/search_operators.html:2
 msgid "Search operators"
-msgstr ""
+msgstr "운영자 검색"
 
 #: templates/zerver/navbar.html:112
 msgid "Desktop & mobile apps"
-msgstr ""
+msgstr "데스크탑 & 모바일 앱"
 
 #: templates/zerver/navbar.html:122
 msgid "API documentation"
-msgstr ""
+msgstr "API 문서"
 
 #: templates/zerver/navbar.html:128
 msgid "Statistics"
-msgstr ""
+msgstr "통계"
 
 #: templates/zerver/navbar.html:135
 msgid "Feedback"
-msgstr ""
+msgstr "피드백"
 
 #: templates/zerver/navbar.html:142
 msgid "Invite users"
-msgstr ""
+msgstr "사용차 초대"
 
 #: templates/zerver/navbar.html:148
 msgid ""
 "Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via "
 "Webathena"
-msgstr ""
+msgstr "Zulip에게 Webathena를 통해 Zephyr 미러를 실행하는 데 필요한 Kerberos 티켓 부여"
 
 #: templates/zerver/navbar.html:150
 msgid "Link with Webathena"
-msgstr ""
+msgstr "웹안테나와 연결"
 
 #: templates/zerver/navbar.html:156 templates/zerver/settings_overlay.html:102
 msgid "Log out"
-msgstr ""
+msgstr "로그아웃"
 
 #: templates/zerver/navbar.html:162
 msgid "Debug"
-msgstr ""
+msgstr "디버그"
 
 #: templates/zerver/portico-header.html:6
 msgid "Zulip"
-msgstr ""
+msgstr "Zulip"
 
 #: templates/zerver/portico-header.html:27
 #: templates/zerver/portico-header.html:32
 msgid "Log in"
-msgstr ""
+msgstr "로그인"
 
 #: templates/zerver/privacy.html:31
 #, python-format
 msgid ""
 "\n"
-"                    This installation of Zulip does not have a configured "
-"privacy policy.\n"
-"                    Contact this <a href=\"mailto:%(support_email)s"
-"\">server's administrator</a>\n"
+"                    This installation of Zulip does not have a configured privacy policy.\n"
+"                    Contact this <a href=\"mailto:%(support_email)s\">server's administrator</a>\n"
 "                    if you have any questions.\n"
 "                    "
-msgstr ""
+msgstr "\n               이 Zulip 설치에는 개인 정보 보호 정책이 구성되어 있지 않습니다.\n                질문이 있으시면이 <a href=\"mailto:%(support_email)s\">서버 관리자</a>에게 문의하십시오 ."
 
 #: templates/zerver/realm_creation_failed.html:8
 msgid ""
-"This server does not allow members of the public to create new organizations."
-msgstr ""
+"This server does not allow members of the public to create new "
+"organizations."
+msgstr "이 서버는 일반 대중이 새 단체를 만들도록 허용하지 않습니다."
 
 #: templates/zerver/realm_creation_failed.html:9
 msgid ""
 "Zulip is open source, so you can install your own Zulip server by following "
 "the instructions on <a href=\"https://www.zulip.org/\">www.zulip.org</a>"
-msgstr ""
+msgstr "Zulip은 오픈 소스이기 때문에 <a href=\"https://www.zulip.org/\">www.zulip.org</a>의 지침에 따라 자신의 Zulip 서버를 설치할 수 있습니다."
 
 #: templates/zerver/register.html:20
 msgid ""
@@ -1215,204 +1204,203 @@ msgid ""
 "            <h1>You're almost there.</h1>\n"
 "            <p>We just need you to do one last thing.</p>\n"
 "            "
-msgstr ""
+msgstr "\n         <h1>거의 다 왔습니다.</h1>\n         <p>마지막으로 한 가지만하면 됩니다.</p>"
 
 #: templates/zerver/register.html:43
 msgid "Full name or 名前"
-msgstr ""
+msgstr "이름"
 
 #: templates/zerver/register.html:44 templates/zerver/settings_sidebar.html:17
 msgid "Full name"
-msgstr ""
+msgstr "이름"
 
 #: templates/zerver/register.html:63
 msgid ""
-"This is used for mobile applications and other tools that require a password."
-msgstr ""
+"This is used for mobile applications and other tools that require a "
+"password."
+msgstr "이것은 모바일 응용 프로그램 및 암호가 필요한 기타 도구에 사용됩니다."
 
 #: templates/zerver/register.html:71
 msgid "Password strength"
-msgstr ""
+msgstr "비밀번호 강도"
 
 #: templates/zerver/register.html:87
 msgid "Organization name"
-msgstr ""
+msgstr "단체명"
 
 #: templates/zerver/register.html:95
 msgid "Shorter is better than longer."
-msgstr ""
+msgstr "긴 것보다 짧은게 좋다."
 
 #: templates/zerver/register.html:101
 msgid "Organization URL"
-msgstr ""
+msgstr "단체 URL"
 
 #: templates/zerver/register.html:108
 #, python-format
 msgid "Use %(external_host)s"
-msgstr ""
+msgstr "%(external_host)s 사용"
 
 #: templates/zerver/register.html:132
 msgid "The address you'll use to sign in to your organization."
-msgstr ""
+msgstr "당신의 단체에 로그인하기 위해 사용할 주소입니다."
 
 #: templates/zerver/register.html:153
 #, python-format
 msgid ""
-"I agree to the <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\">Terms "
-"of Service</a>."
-msgstr ""
+"I agree to the <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\">Terms"
+" of Service</a>."
+msgstr "나는 <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\">서비스 약관</a>에 동의한다."
 
 #: templates/zerver/reset.html:8
 msgid "Reset your password"
-msgstr ""
+msgstr "당신의 비밀번호를 초기화하세요."
 
 #: templates/zerver/reset.html:30
 msgid "Reset password"
-msgstr ""
+msgstr "비밀번호 초기화"
 
 #: templates/zerver/reset_confirm.html:14
 msgid "Reset your password."
-msgstr ""
+msgstr "당신의 비밀번호를 초기화하세요."
 
 #: templates/zerver/reset_confirm.html:50
 msgid "Confirm password"
-msgstr ""
+msgstr "비밀번호 확정"
 
 #: templates/zerver/reset_confirm.html:72
 msgid "Sorry, the link you provided is invalid or has already been used."
-msgstr ""
+msgstr "죄송합니다. 지정한 링크가 유효하지 않거나 이미 사용중입니다."
 
 #: templates/zerver/reset_done.html:9
 msgid "We've reset your password!"
-msgstr ""
+msgstr "우리는 당신의 비밀번호를 초기화 했습니다."
 
 #: templates/zerver/reset_done.html:13
 #, python-format
 msgid "Please <a href=\"%(login_url)s\">log in</a> with your new password."
-msgstr ""
+msgstr "당신의 새 비밀번호로 <a href=\"%(login_url)s\">로그인</a>하세요."
 
 #: templates/zerver/reset_emailed.html:9
 msgid "Password reset sent!"
-msgstr ""
+msgstr "비밀번호 초기화를 보냈습니다!"
 
 #: templates/zerver/reset_emailed.html:13
 msgid "Check your email to finish the process."
-msgstr ""
+msgstr "이 과정을 마치기 위해 당신의 이메일을 확인하세요."
 
 #: templates/zerver/reset_emailed.html:13
 msgid "(Or don't, but then why did you fill out this form?)"
-msgstr ""
+msgstr "(또는 하지 말고, 그런데 왜 이 양식을 작성 했습니까?)"
 
 #: templates/zerver/right_sidebar.html:6
 msgid "Send feedback"
-msgstr ""
+msgstr "피드백 보내기"
 
 #: templates/zerver/right_sidebar.html:12
 msgid "USERS"
-msgstr ""
+msgstr "사용자"
 
 #: templates/zerver/right_sidebar.html:22
 msgid "Invite more users"
-msgstr ""
+msgstr "더 많은 사용자 초대하기"
 
 #: templates/zerver/right_sidebar.html:27
 msgid "GROUP PMs"
-msgstr ""
+msgstr "그룹 PM"
 
 #: templates/zerver/search_operators.html:7
 msgid "Operator"
-msgstr ""
+msgstr "운영자"
 
 #: templates/zerver/search_operators.html:8
 msgid "Effect"
-msgstr ""
+msgstr "효과"
 
 #: templates/zerver/search_operators.html:13
 msgid "Narrow to messages on stream"
-msgstr ""
+msgstr "스트림에서 메시지 범위 좁히기"
 
 #: templates/zerver/search_operators.html:17
 msgid "Narrow to messages with topic"
-msgstr ""
+msgstr "주제가 있는 메시지로 범위 좁히기"
 
 #: templates/zerver/search_operators.html:21
 msgid "Narrow to private messages with"
-msgstr ""
+msgstr "을 가진 비공개 메시지로 범위 좁히기"
 
 #: templates/zerver/search_operators.html:25
 msgid "Narrow to group private messages with"
-msgstr ""
+msgstr "을 가진 그룹 메시지로 범위 좁히기"
 
 #: templates/zerver/search_operators.html:29
 msgid "Narrow to messages sent by"
-msgstr ""
+msgstr "가 보낸 메시지로 범위 좁히기"
 
 #: templates/zerver/search_operators.html:33
 msgid "Narrow to messages sent by you."
-msgstr ""
+msgstr "당신이 보낸 메시지로 범위 좁히기"
 
 #: templates/zerver/search_operators.html:37
 msgid "Center the view around message ID"
-msgstr ""
+msgstr "메시지 ID 주위 보기를 중앙에 배치"
 
 #: templates/zerver/search_operators.html:41
 msgid "Narrow to just message ID"
-msgstr ""
+msgstr "메시지 ID로 범위 좁히기"
 
 #: templates/zerver/search_operators.html:46
 msgid "Narrow to messages with alert words."
-msgstr ""
+msgstr "경고문구를 가진 메시지로 범위 좁히기"
 
 #: templates/zerver/search_operators.html:49
 msgid "Narrow to messages that mention you."
-msgstr ""
+msgstr "당신을 언급한 메시지로 범위 좁히기"
 
 #: templates/zerver/search_operators.html:53
 msgid "Narrow to private messages."
-msgstr ""
+msgstr "비공개 메시지로 범위 좁히기"
 
 #: templates/zerver/search_operators.html:57
 msgid "Narrow to starred messages."
-msgstr ""
+msgstr "표시된 메시지로 범위 좁히기"
 
 #: templates/zerver/search_operators.html:61
 msgid "Narrow to unread messages."
-msgstr ""
+msgstr "읽지 않은 메시지로  범위 좁히기"
 
 #: templates/zerver/search_operators.html:65
 msgid "Narrow to messages containing links."
-msgstr ""
+msgstr "링크를 포함한 메시지로  범위 좁히기"
 
 #: templates/zerver/search_operators.html:69
 msgid "Narrow to messages containing images."
-msgstr ""
+msgstr "이미지를 포함한 메시지로  범위 좁히기"
 
 #: templates/zerver/search_operators.html:73
 msgid "Narrow to messages containing uploads."
-msgstr ""
+msgstr "업로드를 포함한 메시지로  범위 좁히기"
 
 #: templates/zerver/search_operators.html:77
 msgid ""
 "Search for <span class=\"operator_value\"> keyword </span> in the topic or "
 "message content "
-msgstr ""
+msgstr "주제 혹은 메시지 내용에 <span class=\"operator_value\"> 키워드 </span>에 대해 검색하기"
 
 #: templates/zerver/search_operators.html:81
 msgid "Exclude messages with topic <span class=\"operator_value\">topic</span>"
-msgstr ""
+msgstr "<span class=\"operator_value\"> 주제 </span>주제를 가진 메시지 배제"
 
 #: templates/zerver/search_operators.html:84
 msgid ""
 "\n"
-"        <p>You can use any combination of these search operators in a single "
-"query. For example:</p>\n"
+"        <p>You can use any combination of these search operators in a single query. For example:</p>\n"
 "\n"
 "        <p>\n"
 "            &nbsp;\n"
 "            <span class=\"operator\">\n"
 "                stream:<span class=\"operator_value\">streamname</span>\n"
-"                sender:<span class=\"operator_value\">user@example.com</"
-"span>\n"
+"                sender:<span class=\"operator_value\">user@example.com</span>\n"
 "                <span class=\"operator_value\">keyword</span>\n"
 "            </span>\n"
 "        </p>\n"
@@ -1426,1242 +1414,1237 @@ msgid ""
 "            <span class=\"operator_value\">keyword</span>.\n"
 "        </p>\n"
 "        "
-msgstr ""
+msgstr "\n      <p>단일 검색에서 이러한 검색 연산자의 조합을 사용할 수 있습니다. 예 :</p>\n\n      <p>\n         &nbsp;\n        <span class=\"operator\">\n          스트림 : <span class=\"operator_value\">streamname</span>\n          보낸사람 : <span class=\"operator_value\">user@example.com</span>\n          <span class=\"operator_value\">키워드</span>\n    </span>\n   </p>\n\n    <p>\n           would search for messages sent by\n          <span class=\"operator_value\">user@example.com</span>\n            to stream\n       <span class=\"operator_value\">streamname</span>\n           containing the keyword\n <span class=\"operator_value\">keyword</span>.\n </p>"
 
 #: templates/zerver/settings_overlay.html:16
 msgid "Your account"
-msgstr ""
+msgstr "당산의 계정"
 
 #: templates/zerver/settings_overlay.html:20
 msgid "Display settings"
-msgstr ""
+msgstr "디스플레이 설정"
 
 #: templates/zerver/settings_overlay.html:24
 msgid "Notifications"
-msgstr ""
+msgstr "알림"
 
 #: templates/zerver/settings_overlay.html:28
 msgid "Your bots"
-msgstr ""
+msgstr "당신의 봇"
 
 #: templates/zerver/settings_overlay.html:32
 msgid "Alert words"
-msgstr ""
+msgstr "경고문"
 
 #: templates/zerver/settings_overlay.html:36
 msgid "Uploaded files"
-msgstr ""
+msgstr "업로드된 파일들"
 
 #: templates/zerver/settings_overlay.html:40
 msgid "Muted topics"
-msgstr ""
+msgstr "소거된 주제들"
 
 #: templates/zerver/settings_overlay.html:44
 msgid "Zulip labs"
-msgstr ""
+msgstr "Zulip 실험실"
 
 #: templates/zerver/settings_overlay.html:49
 msgid "Organization profile"
-msgstr ""
+msgstr "단체 프로파일"
 
 #: templates/zerver/settings_overlay.html:53
 msgid "Organization settings"
-msgstr ""
+msgstr "단체 설정"
 
 #: templates/zerver/settings_overlay.html:57
 msgid "Organization permissions"
-msgstr ""
+msgstr "단체 권한"
 
 #: templates/zerver/settings_overlay.html:61
 msgid "Custom emoji"
-msgstr ""
+msgstr "사용자 지정 이모티콘"
 
 #: templates/zerver/settings_overlay.html:65
 msgid "Authentication methods"
-msgstr ""
+msgstr "인증 방법"
 
 #: templates/zerver/settings_overlay.html:74
 msgid "Deactivated users"
-msgstr ""
+msgstr "비활성화된 사용자들"
 
 #: templates/zerver/settings_overlay.html:84
 msgid "Delete streams"
-msgstr ""
+msgstr "지운 스트림"
 
 #: templates/zerver/settings_overlay.html:89
 msgid "Default streams"
-msgstr ""
+msgstr "기본 스트림"
 
 #: templates/zerver/settings_overlay.html:93
 msgid "Filter settings"
-msgstr ""
+msgstr "필터 설정"
 
 #: templates/zerver/settings_sidebar.html:9
 msgid "Edit bot"
-msgstr ""
+msgstr "봇 편집"
 
 #: templates/zerver/settings_sidebar.html:12
 msgid "Bot email"
-msgstr ""
+msgstr "봇 이메일"
 
 #: templates/zerver/settings_sidebar.html:22
 msgid "Owner"
-msgstr ""
+msgstr "소유자"
 
 #: templates/zerver/settings_sidebar.html:27
 msgid "Upload avatar"
-msgstr ""
+msgstr "아바트 업로드"
 
 #: templates/zerver/settings_sidebar.html:29
 msgid "Choose avatar"
-msgstr ""
+msgstr "아바타 선택"
 
 #: templates/zerver/settings_sidebar.html:30
 msgid "Clear avatar"
-msgstr ""
+msgstr "아바타 지우기"
 
 #: templates/zerver/settings_sidebar.html:34
 msgid "Save"
-msgstr ""
+msgstr "저장"
 
 #: templates/zerver/terms.html:29
 #, python-format
 msgid ""
 "\n"
-"                    This installation of Zulip does not have a configured "
-"terms of service.\n"
-"                    Contact this <a href=\"mailto:%(support_email)s"
-"\">server's administrator</a>\n"
+"                    This installation of Zulip does not have a configured terms of service.\n"
+"                    Contact this <a href=\"mailto:%(support_email)s\">server's administrator</a>\n"
 "                    if you have any questions.\n"
 "                    "
-msgstr ""
+msgstr "\n                     이 Zulip 설치에는 구성된 서비스 약관이 없습니다 .\n                     질문이 있으시면이 <a href=\"mailto:%(support_email)s\"> 서버 관리자</a>에게 문의하십시오 ."
 
 #: templates/zerver/unsubscribe_link_error.html:5
 msgid "Unknown email unsubscribe request"
-msgstr ""
+msgstr "알 수 없는 이메일 수신 거부 요청"
 
 #: templates/zerver/unsubscribe_link_error.html:7
 msgid ""
-"Hi there! It looks like you tried to unsubscribe from something, but we "
-"don't\n"
+"Hi there! It looks like you tried to unsubscribe from something, but we don't\n"
 "recognize the URL."
-msgstr ""
+msgstr "안녕하세요! 귀하가 무엇인가로 부터 구독취소를 시도했으나, URL을 인식하지 못했습니다."
 
 #: templates/zerver/unsubscribe_link_error.html:10
 #, python-format
 msgid ""
-"Please double-check that you have the full URL and try again, or <a href="
-"\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi"
-"%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a"
-"%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error"
-"%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A"
-"%%0AThanks%%2C%%0A_____________%%0A\">email us</a> and we'll get this "
-"squared away!"
-msgstr ""
+"Please double-check that you have the full URL and try again, or <a "
+"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip"
+"%%20e-"
+"mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
+" us</a> and we'll get this squared away!"
+msgstr "전체 URL을 가지고 있는지 다시 확인하고 다시 시도하십시오. 또는 <a href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">우리에게 메일을 주세요.</a> "
 
 #: templates/zerver/unsubscribe_success.html:5
 msgid "Email settings updated"
-msgstr ""
+msgstr "이메일 설정 업데이트 됨"
 
 #: templates/zerver/unsubscribe_success.html:7
 #, python-format
 msgid ""
 "We've updated your email subscription settings, and you won't get "
 "%(subscription_type)s emails anymore."
-msgstr ""
+msgstr "귀하의 이메일 가입 설정을 업데이트 했으며 더 이상 %(subscription_type)s의 이메일을 받지 않을 것입니다."
 
 #: templates/zerver/unsubscribe_success.html:9
 #, python-format
 msgid ""
-"To undo this change or review your other subscription settings, please visit "
-"your <a href=\"%(realm_uri)s/#settings\">Zulip Settings page</a>."
-msgstr ""
+"To undo this change or review your other subscription settings, please visit"
+" your <a href=\"%(realm_uri)s/#settings\">Zulip Settings page</a>."
+msgstr "이 변경 사항을 취소하거나 다른 구독 설정을 검토하려면 <a href=\"%(realm_uri)s/#settings\">Zulip 설정 페이지 </a>을 방문하십시오."
 
 #: templates/zerver/why-zulip.html:23
 msgid "Why Zulip?"
-msgstr ""
+msgstr "왜 Zulip인가?"
 
 #: templates/zerver/zulipchat_migration_tos.html:1
 msgid "Welcome! We think you'll like it here."
-msgstr ""
+msgstr "환영합니다! 우리는 당신이 여기를 좋아할 것이라고 생각합니다."
 
 #: templates/zerver/zulipchat_migration_tos.html:5
 msgid ""
 "\n"
-"    <p>Your organization has been migrated from zulip.com to zulipchat.com! "
-"New service, same great conversation. We just need you to do one last thing."
-"</p>\n"
+"    <p>Your organization has been migrated from zulip.com to zulipchat.com! New service, same great conversation. We just need you to do one last thing.</p>\n"
 "    <h3>Accept the Zulip terms of service</h3>\n"
 "    "
-msgstr ""
+msgstr "\n<p>귀하의 단체는 zulip.com에서 zulipchat.com으로 마이그레이션되었습니다! 새로운 서비스, 똑같은 대화. 마지막으로 한 가지만 더 해주세요..\n     <h3> Zulip 서비스 약관을 승인해주세요.</h3>"
 
 #: zerver/decorator.py:119 zerver/lib/emoji.py:42 zerver/views/invite.py:25
 msgid "Must be a realm administrator"
-msgstr ""
+msgstr "영역 관리자여야합니다."
 
 #: zerver/decorator.py:203
 msgid "Invalid subdomain for push notifications bouncer"
-msgstr ""
+msgstr "푸시 알림 Bouncer의 하위 도메인이 잘못되었습니다."
 
 #: zerver/decorator.py:212
 msgid "This API is not available to incoming webhook bots."
-msgstr ""
+msgstr "이 API는 수신 webhook 봇에서 사용할 수 없습니다."
 
 #: zerver/decorator.py:223
 msgid "Account not active"
-msgstr ""
+msgstr "계정이 활성 상태가 아닙니다."
 
 #: zerver/decorator.py:226
 msgid "Realm for account has been deactivated"
-msgstr ""
+msgstr "계정의 영역이 비활성화되었습니다."
 
 #: zerver/decorator.py:240
 msgid "Account is not associated with this subdomain"
-msgstr ""
+msgstr "계정이 하위 도메인과 연결되어 있지 않습니다."
 
 #: zerver/decorator.py:247 zerver/decorator.py:252
 msgid "Invalid API key"
-msgstr ""
+msgstr "API 키가 잘못되었습니다."
 
 #: zerver/decorator.py:392
 msgid "This endpoint does not accept bot requests."
-msgstr ""
+msgstr "이 엔드 포인트는 봇 요청을 허용하지 않습니다."
 
 #: zerver/decorator.py:468
 msgid "This endpoint requires HTTP basic authentication."
-msgstr ""
+msgstr "이 엔드 포인트는 HTTP 기본 인증이 필요합니다."
 
 #: zerver/decorator.py:471
 msgid "Invalid authorization header for basic auth"
-msgstr ""
+msgstr "기본 승인에 대한 권한 헤더가 잘못되었습니다."
 
 #: zerver/decorator.py:521
 msgid "Not logged in"
-msgstr ""
+msgstr "로그인하지 않았습니다"
 
 #: zerver/decorator.py:526
 msgid "Webhook bots can only access webhooks"
-msgstr ""
+msgstr "Webhook 봇은 Webhook에만 액세스 할 수 있습니다."
 
 #: zerver/decorator.py:591
 msgid "Access denied"
-msgstr ""
+msgstr "접근 불가"
 
 #: zerver/forms.py:62
 msgid "Subdomain needs to have length 3 or greater."
-msgstr ""
+msgstr "하위 도메인의 길이는 3 이상이어야합니다."
 
 #: zerver/forms.py:63
 msgid "Subdomain cannot start or end with a '-'."
-msgstr ""
+msgstr "하위 도메인은 '-'로 시작하거나 끝낼 수 없습니다."
 
 #: zerver/forms.py:64
 msgid "Subdomain can only have lowercase letters, numbers, and '-'s."
-msgstr ""
+msgstr "하위 도메인은 소문자, 숫자 및 '-'만 가질 수 있습니다."
 
 #: zerver/forms.py:65
 msgid "Subdomain unavailable. Please choose a different one."
-msgstr ""
+msgstr "하위 도메인을 사용할 수 없습니다. 다른 것을 선택하십시오."
 
 #: zerver/forms.py:147
 #, python-brace-format
 msgid "The organization you are trying to join using {email} does not exist."
-msgstr ""
+msgstr "{email}을 사용하여 가입하려는 단체가 존재하지 않습니다."
 
 #: zerver/forms.py:152
 #, python-brace-format
 msgid ""
 "Please request an invite for {email} from the organization administrator."
-msgstr ""
+msgstr "단체 관리자에게 {email} 초대장을 요청하십시오."
 
 #: zerver/forms.py:158
 #, python-brace-format
 msgid ""
 "Your email address, {email}, is not in one of the domains that are allowed "
 "to register for accounts in this organization."
-msgstr ""
+msgstr "귀하의 이메일 주소인 {email}은 이 단체의 계정에 등록 할 수있는 도메인에 속해 있지 않습니다."
 
 #: zerver/forms.py:172
 msgid "Please use your real email address."
-msgstr ""
+msgstr "귀하의 실제 이메일 주소를 사용하십시오."
 
 #: zerver/forms.py:340
 msgid "Add up to 10 comma-separated email addresses."
-msgstr ""
+msgstr "최대 10개의 쉼표로 구분 된 이메일 주소를 추가하십시오."
 
 #: zerver/forms.py:346
 msgid "Please enter at most 10 emails."
-msgstr ""
+msgstr "최대 10개의 이메일을 입력하십시오."
 
 #: zerver/lib/actions.py:765
 msgid "Unable to render message"
-msgstr ""
+msgstr "메시지를 렌더링 할 수 없습니다."
 
 #: zerver/lib/actions.py:1340
 msgid "Missing parameter: 'to' (recipient)"
-msgstr ""
+msgstr "누락된 매개 변수 : 'to'(recipient)"
 
 #: zerver/lib/actions.py:1342
 msgid "Invalid 'op' value (should be start or stop)"
-msgstr ""
+msgstr "잘못된 'op'값 (시작 또는 중지해야 함)"
 
 #: zerver/lib/actions.py:1356
 #, python-format
 msgid "Welcome to #**%s**."
-msgstr ""
+msgstr "# ** %s **에 오신 것을 환영합니다."
 
 #: zerver/lib/actions.py:1359
 msgid "Description"
-msgstr ""
+msgstr "서술"
 
 #: zerver/lib/actions.py:1368
 msgid "hello"
-msgstr ""
+msgstr "안녕하세요"
 
 #: zerver/lib/actions.py:1434 zerver/lib/actions.py:3885
 #: zerver/views/messages.py:940 zerver/views/messages.py:947
 #: zerver/views/messages.py:972
 msgid "User not authorized for this query"
-msgstr ""
+msgstr "이 쿼리에 대해 승인되지 않은 사용자"
 
 #: zerver/lib/actions.py:1461
 #, python-format
 msgid "'%s' is no longer using Zulip."
-msgstr ""
+msgstr "'%s' 는 더 이상 Zulip을 사용하지 않습니다."
 
 #: zerver/lib/actions.py:1467
 msgid "You can't send private messages outside of your organization."
-msgstr ""
+msgstr "단체 외부에 비공개 메시지를 보낼 수 없습니다."
 
 #: zerver/lib/actions.py:1574 zerver/lib/streams.py:88
 #, python-format
 msgid "Invalid stream name '%s'"
-msgstr ""
+msgstr "스트림 이름 '%s'이  잘못되었습니다."
 
 #: zerver/lib/actions.py:1576
 #, python-format
 msgid "Stream name too long (limit: %s characters)"
-msgstr ""
+msgstr "스트림 이름이 너무 깁니다. (한도 : %s 글자)"
 
 #: zerver/lib/actions.py:1579
 #, python-format
 msgid "Stream name '%s' contains NULL (0x00) characters."
-msgstr ""
+msgstr "스트림 이름 '%s'에 NULL (0x00) 문자가 포함되어 있습니다."
 
 #: zerver/lib/actions.py:1640
 msgid "Message must not be empty"
-msgstr ""
+msgstr "메시지는 비워 둘 수 없습니다."
 
 #: zerver/lib/actions.py:1642
 msgid "Message must not contain null bytes"
-msgstr ""
+msgstr "메시지에 null 바이트가 없어야합니다."
 
 #: zerver/lib/actions.py:1657
 msgid "Missing topic"
-msgstr ""
+msgstr "누락된 주제"
 
 #: zerver/lib/actions.py:1660 zerver/views/messages.py:1091
 msgid "Topic can't be empty"
-msgstr ""
+msgstr "주제는 비워둘 수 없습니다."
 
 #: zerver/lib/actions.py:1670
 #, python-format
 msgid "Stream '%(stream_name)s' does not exist"
-msgstr ""
+msgstr "'%(stream_name)s'스트림이 존재하지 않습니다."
 
 #: zerver/lib/actions.py:1692
 #, python-format
 msgid "Not authorized to send to stream '%s'"
-msgstr ""
+msgstr "스트림 '%s'에 보낼 수 있는 권한이 없습니다."
 
 #: zerver/lib/actions.py:1698
 msgid "Message must have recipients"
-msgstr ""
+msgstr "메시지에 수신자가 있어야합니다."
 
 #: zerver/lib/actions.py:1709 zerver/lib/addressee.py:111
 #: zerver/lib/outgoing_webhook.py:147
 msgid "Invalid message type"
-msgstr ""
+msgstr "잘못된 메시지 유형"
 
 #: zerver/lib/actions.py:1878
 msgid "You cannot get subscribers for public streams in this realm"
-msgstr ""
+msgstr "이 영역에서 공개 스트림 구독자를 확보 할 수 없습니다."
 
 #: zerver/lib/actions.py:1881
 msgid "Unable to retrieve subscribers for invite-only stream"
-msgstr ""
+msgstr "초대 전용 스트림의 구독자를 검색 할 수 없습니다."
 
-#: zerver/lib/actions.py:2493 zerver/views/users.py:72 zerver/views/users.py:85
-#: zerver/views/users.py:101 zerver/views/users.py:171
-#: zerver/views/users.py:229
+#: zerver/lib/actions.py:2493 zerver/views/users.py:72
+#: zerver/views/users.py:85 zerver/views/users.py:101
+#: zerver/views/users.py:171 zerver/views/users.py:229
 msgid "Insufficient permission"
-msgstr ""
+msgstr "불충분한 권한"
 
 #: zerver/lib/actions.py:3037 zerver/lib/actions.py:3039
 #: zerver/lib/message.py:422 zerver/lib/message.py:433
 #: zerver/lib/message.py:438 zerver/lib/message.py:442
 msgid "Invalid message(s)"
-msgstr ""
+msgstr "잘못된 메시지(들)"
 
 #: zerver/lib/actions.py:3671
 msgid "Invalid address."
-msgstr ""
+msgstr "잘못된 주소."
 
 #: zerver/lib/actions.py:3674
 msgid "Outside your domain."
-msgstr ""
+msgstr "도메인 외부."
 
 #: zerver/lib/actions.py:3679
 msgid "Already has an account."
-msgstr ""
+msgstr "이미 계정이 있습니다."
 
 #: zerver/lib/actions.py:3714
 msgid "Some emails did not validate, so we didn't send any invitations."
-msgstr ""
+msgstr "일부 이메일은 확인되지 않았으므로 초대장을 보내지 않았습니다."
 
 #: zerver/lib/actions.py:3719
 msgid "We weren't able to invite anyone."
-msgstr ""
+msgstr "우리는 누구도 초대할 수 없었습니다."
 
 #: zerver/lib/actions.py:3738
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
-msgstr ""
+msgstr "그 중 일부 주소는 이미 Zulip을 사용하고 있으므로 초대장을 보내지 않았습니다. 우리는 다른 모든 사람들에게 초대장을 보냈습니다!"
 
 #: zerver/lib/addressee.py:21
 #, python-format
 msgid "Invalid email '%s'"
-msgstr ""
+msgstr "유효하지 않은 이메일 '%s'"
 
 #: zerver/lib/addressee.py:92
 msgid "Cannot send to multiple streams"
-msgstr ""
+msgstr "여러 스트림에 보낼 수 없습니다."
 
 #: zerver/lib/addressee.py:104
 msgid "Missing stream"
-msgstr ""
+msgstr "누락된 스트림"
 
 #: zerver/lib/attachments.py:22
 msgid "Invalid attachment"
-msgstr ""
+msgstr "잘못된 첨부 파일"
 
 #: zerver/lib/attachments.py:30
-msgid "An error occured while deleting the attachment. Please try again later."
-msgstr ""
+msgid ""
+"An error occured while deleting the attachment. Please try again later."
+msgstr "첨부 파일을 삭제하는 동안 오류가 발생했습니다. 나중에 다시 시도 해주십시오."
 
 #: zerver/lib/domains.py:10
 msgid "Domain can't be empty."
-msgstr ""
+msgstr "도메인은 비워 둘 수 없습니다."
 
 #: zerver/lib/domains.py:12
 msgid "Domain must have at least one dot (.)"
-msgstr ""
+msgstr "도메인에는 점 (.)이 하나 이상 있어야 합니다."
 
 #: zerver/lib/domains.py:14
 msgid "Domain cannot start or end with a dot (.)"
-msgstr ""
+msgstr "도메인은 도트 (.)로 시작하거나 끝낼 수 없습니다."
 
 #: zerver/lib/domains.py:17
 msgid "Consecutive '.' are not allowed."
-msgstr ""
+msgstr "연속 '.' 허용되지 않는다."
 
 #: zerver/lib/domains.py:19
 msgid "Subdomains cannot start or end with a '-'."
-msgstr ""
+msgstr "하위 도메인은 '-'로 시작하거나 끝낼 수 없습니다."
 
 #: zerver/lib/domains.py:21
 msgid "Domain can only have letters, numbers, '.' and '-'s."
-msgstr ""
+msgstr "도메인은 글자, 숫자, '.' 그리고 '-' 만 가질 수 있습니다."
 
 #: zerver/lib/emoji.py:27
 #, python-format
 msgid "Emoji '%s' does not exist"
-msgstr ""
+msgstr "이모티콘 '%s'이 존재하지 않습니다."
 
 #: zerver/lib/emoji.py:54
 msgid "Must be a realm administrator or emoji author"
-msgstr ""
+msgstr "영역 관리자나 이모티콘 작성자여야 합니다."
 
 #: zerver/lib/emoji.py:60 zerver/models.py:379
 msgid "Invalid characters in emoji name"
-msgstr ""
+msgstr "이모티콘 이름에 잘못된 문자가 있습니다."
 
 #: zerver/lib/error_notify.py:133
 msgid "Invalid type parameter"
-msgstr ""
+msgstr "유형 매개 변수가 잘못되었습니다."
 
 #: zerver/lib/events.py:524
 msgid "Could not allocate event queue"
-msgstr ""
+msgstr "이벤트 큐를 할당 할 수 없습니다."
 
 #: zerver/lib/integrations.py:37
 msgid "Integration frameworks"
-msgstr ""
+msgstr "통합 프레임 워크"
 
 #: zerver/lib/integrations.py:38
 msgid "Continuous integration"
-msgstr ""
+msgstr "지속적인 통합"
 
 #: zerver/lib/integrations.py:39
 msgid "Customer support"
-msgstr ""
+msgstr "고객 지원"
 
 #: zerver/lib/integrations.py:40
 msgid "Deployment"
-msgstr ""
+msgstr "전개"
 
 #: zerver/lib/integrations.py:41
 msgid "Communication"
-msgstr ""
+msgstr "통신"
 
 #: zerver/lib/integrations.py:42
 msgid "Financial"
-msgstr ""
+msgstr "재정"
 
 #: zerver/lib/integrations.py:43
 msgid "HR"
-msgstr ""
+msgstr "HR"
 
 #: zerver/lib/integrations.py:44
 msgid "Marketing"
-msgstr ""
+msgstr "마케팅"
 
 #: zerver/lib/integrations.py:45
 msgid "Miscellaneous"
-msgstr ""
+msgstr "기타"
 
 #: zerver/lib/integrations.py:46
 msgid "Monitoring tools"
-msgstr ""
+msgstr "모니터링 툴"
 
 #: zerver/lib/integrations.py:47
 msgid "Project management"
-msgstr ""
+msgstr "프로젝트 관리"
 
 #: zerver/lib/integrations.py:48
 msgid "Productivity"
-msgstr ""
+msgstr "생산성"
 
 #: zerver/lib/integrations.py:49
 msgid "Version control"
-msgstr ""
+msgstr "버전관리"
 
 #: zerver/lib/integrations.py:50
 msgid "Interactive bots"
-msgstr ""
+msgstr "대화형 봇"
 
 #: zerver/lib/narrow.py:12
 #, python-format
 msgid "Operator %s not supported."
-msgstr ""
+msgstr "운영자 %s가지원되지 않습니다."
 
 #: zerver/lib/push_notifications.py:285
 msgid "Received 500 from push notification bouncer"
-msgstr ""
+msgstr "푸시 알림 바운서로부터 500 통 받음"
 
 #: zerver/lib/push_notifications.py:293
 #, python-format
 msgid "Push notifications bouncer error: %s"
-msgstr ""
+msgstr "푸시 알림 바운서 오류 : %s"
 
 #: zerver/lib/push_notifications.py:379 zilencer/views.py:66
 msgid "Token does not exist"
-msgstr ""
+msgstr "토큰이 존재하지 않습니다."
 
 #: zerver/lib/request.py:29
 #, python-brace-format
 msgid "Missing '{var_name}' argument"
-msgstr ""
+msgstr "'{var_name}'인수가 없습니다."
 
 #: zerver/lib/request.py:43
 #, python-brace-format
 msgid "Bad value for '{var_name}': {bad_value}"
-msgstr ""
+msgstr "'{var_name}'의 값이 잘못됨 : {bad_value}"
 
 #: zerver/lib/request.py:135
 msgid "Malformed JSON"
-msgstr ""
+msgstr "조작된 JSON"
 
 #: zerver/lib/request.py:140
 msgid "Invalid argument type"
-msgstr ""
+msgstr "잘못된 인수 유형"
 
 #: zerver/lib/request.py:166
 #, python-format
 msgid "Argument \"%s\" is not valid JSON."
-msgstr ""
+msgstr "인수 \"%s\"는 유효한 JSON이 아닙니다."
 
 #: zerver/lib/rest.py:113 zerver/lib/rest.py:116
 msgid "Not logged in: API authentication or user session required"
-msgstr ""
+msgstr "로그인하지 않음 : API 인증 또는 사용자 세션 필요"
 
 #: zerver/lib/streams.py:22 zerver/lib/streams.py:68
 msgid "Invalid stream id"
-msgstr ""
+msgstr "스트림 ID가 잘못되었습니다."
 
 #: zerver/lib/streams.py:82
 #, python-format
 msgid "Stream name '%s' is already taken"
-msgstr ""
+msgstr "스트림 이름 '%s'이 이미 사용 중입니다."
 
 #: zerver/lib/streams.py:208
 msgid "User cannot create streams."
-msgstr ""
+msgstr "사용자가 스트림을 만들 수 없습니다."
 
 #: zerver/lib/streams.py:210
 #, python-format
 msgid "Stream(s) (%s) do not exist"
-msgstr ""
+msgstr "스트림(들) (%s)이 존재하지 않습니다."
 
 #: zerver/lib/upload.py:111
 msgid "Animated emoji must be have same width and height."
-msgstr ""
+msgstr "애니메이션 이모티콘의 너비와 높이가 같아야합니다."
 
 #: zerver/lib/upload.py:114
 msgid "Animated emoji can't be larger than 64px in width or height."
-msgstr ""
+msgstr "애니메이션 이모티콘의 너비 또는 높이가 64px보다 클 수 없습니다."
 
 #: zerver/lib/users.py:13
 msgid "Name too long!"
-msgstr ""
+msgstr "이름이 너무 깁니다!"
 
 #: zerver/lib/users.py:15
 msgid "Name too short!"
-msgstr ""
+msgstr "이름이 너무 짧습니다!"
 
 #: zerver/lib/users.py:17
 msgid "Invalid characters in name!"
-msgstr ""
+msgstr "이름에 잘못된 문자가 있습니다!"
 
 #: zerver/lib/users.py:24 zerver/views/users.py:262 zerver/views/users.py:413
 msgid "Bad name or username"
-msgstr ""
+msgstr "잘못된 이름 또는 사용자 이름"
 
 #: zerver/lib/users.py:40
 msgid "Invalid bot type"
-msgstr ""
+msgstr "잘못된 봇 유형"
 
 #: zerver/lib/users.py:45
 msgid "Invalid interface type"
-msgstr ""
+msgstr "인터페이스 유형이 잘못되었습니다."
 
 #: zerver/lib/validator.py:40
 #, python-format
 msgid "%s is not a string"
-msgstr ""
+msgstr "%s는 문자열이 아닙니다."
 
 #: zerver/lib/validator.py:47
 #, python-brace-format
 msgid "{var_name} is longer than {max_length}."
-msgstr ""
+msgstr "{var_name}가 {max_length}보다 깁니다."
 
 #: zerver/lib/validator.py:54
 #, python-format
 msgid "%s is not an integer"
-msgstr ""
+msgstr "%s는 정수가 아니다."
 
 #: zerver/lib/validator.py:60
 #, python-format
 msgid "%s is not a float"
-msgstr ""
+msgstr "%s 는 float이 아닙니다."
 
 #: zerver/lib/validator.py:66
 #, python-format
 msgid "%s is not a boolean"
-msgstr ""
+msgstr "%s는 boolean이 아닙니다."
 
 #: zerver/lib/validator.py:84
 #, python-format
 msgid "%s is not a list"
-msgstr ""
+msgstr "%s는 목록이 아니다."
 
 #: zerver/lib/validator.py:87
 #, python-format
 msgid "%(container)s should have exactly %(length)s items"
-msgstr ""
+msgstr "%(container)s는 정확히 %(length)s의 항목을 가져야합니다."
 
 #: zerver/lib/validator.py:105
 #, python-format
 msgid "%s is not a dict"
-msgstr ""
+msgstr "%s는 dict가 아니다."
 
 #: zerver/lib/validator.py:109
 #, python-format
 msgid "%(key_name)s key is missing from %(var_name)s"
-msgstr ""
+msgstr "%(var_name)s에서 %(key_name)s키가 누락되었습니다."
 
 #: zerver/lib/validator.py:119
 #, python-format
 msgid "Unexpected arguments: %s"
-msgstr ""
+msgstr "예기치 않은 인수 : %s"
 
 #: zerver/lib/validator.py:143
 #, python-format
 msgid "%s is not an allowed_type"
-msgstr ""
+msgstr "%s는 허용된 유형이 아닙니다."
 
 #: zerver/lib/validator.py:151
 #, python-format
 msgid "%(variable)s != %(expected_value)s (%(value)s is wrong)"
-msgstr ""
+msgstr "%(variable)s!= %(expected_value)s (%(value)s는 잘못됨.)"
 
 #: zerver/middleware.py:292
 msgid "Internal server error"
-msgstr ""
+msgstr "내부 서버 오류"
 
 #: zerver/middleware.py:319
 #, python-brace-format
 msgid "CSRF Error: {reason}"
-msgstr ""
+msgstr "CSRF 오류: {reason}"
 
 #: zerver/middleware.py:349
 msgid "API usage exceeded rate limit"
-msgstr ""
+msgstr "API 사용량이 속도 제한을 초과했습니다."
 
 #: zerver/models.py:646
 msgid "Apple style"
-msgstr ""
+msgstr "Apple 스타일"
 
 #: zerver/models.py:647
 msgid "Emoji One style"
-msgstr ""
+msgstr "Emoji One 스타일"
 
 #: zerver/models.py:648
 msgid "Google style"
-msgstr ""
+msgstr "Google 스타일"
 
 #: zerver/models.py:649
 msgid "Twitter style"
-msgstr ""
+msgstr "Twitter 스타일"
 
 #: zerver/models.py:1208
 msgid "Unicode emoji"
-msgstr ""
+msgstr "유니코드 이모티콘"
 
 #: zerver/models.py:1209
 msgid "Realm emoji"
-msgstr ""
+msgstr "Realm 이모티콘"
 
 #: zerver/models.py:1210
 msgid "Zulip extra emoji"
-msgstr ""
+msgstr "Zulip etra 이모티콘"
 
 #: zerver/tornado/event_queue.py:520 zerver/tornado/socket.py:141
 msgid "Missing 'queue_id' argument"
-msgstr ""
+msgstr "누락된 'queue_id'  인수"
 
 #: zerver/tornado/event_queue.py:523
 msgid "Missing 'last_event_id' argument"
-msgstr ""
+msgstr "누락된 'last_event_id' 인수"
 
 #: zerver/tornado/event_queue.py:528
 msgid "You are not authorized to get events from this queue"
-msgstr ""
+msgstr "이 대기열에서 이벤트를 가져올 수있는 권한이 없습니다."
 
 #: zerver/tornado/exceptions.py:18
 #, python-brace-format
 msgid "Bad event queue id: {queue_id}"
-msgstr ""
+msgstr "잘못된 이벤트 대기열 ID : {queue_id}"
 
 #: zerver/tornado/socket.py:130
 msgid "Unknown or missing session"
-msgstr ""
+msgstr "알 수 없거나 누락된 세션"
 
 #: zerver/tornado/socket.py:136
 msgid "CSRF token entry missing from request"
-msgstr ""
+msgstr "요청에서 CSRF 토큰 항목이 누락되었습니다."
 
 #: zerver/tornado/socket.py:138
 msgid "CSRF token does not match that in cookie"
-msgstr ""
+msgstr "CSRF 토큰이 쿠키의 CSR 토큰과 일치하지 않습니다."
 
 #: zerver/tornado/socket.py:149
 #, python-format
 msgid "You are not the owner of the queue with id '%s'"
-msgstr ""
+msgstr "ID가 '%s'인 대기열의 소유자가 아닙니다."
 
 #: zerver/tornado/views.py:35
 msgid "You are not authorized to access this queue"
-msgstr ""
+msgstr "이 대기열에 액세스 할 수있는 권한이 없습니다."
 
 #: zerver/views/auth.py:175
 msgid "No REMOTE_USER set."
-msgstr ""
+msgstr "REMOTE_USER가 설정되지 않았습니다."
 
 #: zerver/views/auth.py:193
 msgid "Auth key for this subdomain not found."
-msgstr ""
+msgstr "이 하위 도메인의 인증 키를 찾을 수 없습니다."
 
 #: zerver/views/auth.py:200
 msgid "No JSON web token passed in request"
-msgstr ""
+msgstr "요청시 전달 된 JSON 웹 토큰이 없습니다."
 
 #: zerver/views/auth.py:202
 msgid "Bad JSON web token"
-msgstr ""
+msgstr "JSON 웹 토큰이 잘못되었습니다."
 
 #: zerver/views/auth.py:206
 msgid "No user specified in JSON web token claims"
-msgstr ""
+msgstr "JSON 웹 토큰 클레임에 지정된 사용자가 없습니다."
 
 #: zerver/views/auth.py:209
 msgid "No realm specified in JSON web token claims"
-msgstr ""
+msgstr "JSON 웹 토큰 클레임에 지정된 영역이 없습니다."
 
 #: zerver/views/auth.py:224
 msgid "Wrong subdomain"
-msgstr ""
+msgstr "잘못된 하위 도메인"
 
 #: zerver/views/auth.py:265
 msgid "Invalid OTP"
-msgstr ""
+msgstr "OTP가 잘못되었습니다."
 
 #: zerver/views/auth.py:571 zerver/views/auth.py:599
 msgid "Dev environment not enabled."
-msgstr ""
+msgstr "개발 환경을 사용할 수 없습니다."
 
 #: zerver/views/auth.py:584 zerver/views/auth.py:628
 msgid "Your realm has been deactivated."
-msgstr ""
+msgstr "영역이 비활성화되었습니다."
 
 #: zerver/views/auth.py:587 zerver/views/auth.py:625
 msgid "Your account has been disabled."
-msgstr ""
+msgstr "계정이 비활성화되었습니다."
 
 #: zerver/views/auth.py:590
 msgid "This user is not registered."
-msgstr ""
+msgstr "이 사용자는 등록되지 않았습니다."
 
 #: zerver/views/auth.py:631
 msgid "Password auth is disabled in your team."
-msgstr ""
+msgstr "팀에서 비밀번호 인증을 사용할 수 없습니다."
 
 #: zerver/views/auth.py:636
 msgid "This user is not registered; do so from a browser."
-msgstr ""
+msgstr "이 사용자는 등록되지 않았습니다. 브라우저에서 그렇게하십시오."
 
 #: zerver/views/auth.py:638 zerver/views/auth.py:721
 msgid "Your username or password is incorrect."
-msgstr ""
+msgstr "사용자 이름 또는 비밀번호가 잘못되었습니다."
 
 #: zerver/views/auth.py:663
 msgid "Invalid subdomain"
-msgstr ""
+msgstr "잘못된 하위 도메인"
 
 #: zerver/views/auth.py:669
 msgid "Subdomain required"
-msgstr ""
+msgstr "하위 도메인 필요"
 
 #: zerver/views/auth.py:728
 msgid "GOOGLE_CLIENT_ID is not configured"
-msgstr ""
+msgstr "GOOGLE_CLIENT_ID 가 구성되지 않았습니다."
 
 #: zerver/views/custom_profile_fields.py:33
 #: zerver/views/custom_profile_fields.py:66
 msgid "Name cannot be blank."
-msgstr ""
+msgstr "이름은 비워 둘 수 없습니다."
 
 #: zerver/views/custom_profile_fields.py:36
 msgid "Invalid field type."
-msgstr ""
+msgstr "필드 유형이 잘못되었습니다."
 
 #: zerver/views/custom_profile_fields.py:46
 #: zerver/views/custom_profile_fields.py:77
 msgid "A field with that name already exists."
-msgstr ""
+msgstr "해당 이름의 필드가 이미 있습니다."
 
 #: zerver/views/custom_profile_fields.py:54
 #: zerver/views/custom_profile_fields.py:72
 #: zerver/views/custom_profile_fields.py:92
 #, python-brace-format
 msgid "Field id {id} not found."
-msgstr ""
+msgstr "필드 ID {id} 를 찾을 수 없습니다."
 
 #: zerver/views/hotspots.py:16
 #, python-format
 msgid "Unknown hotspot: %s"
-msgstr ""
+msgstr "알 수없는 핫스팟 : %s"
 
 #: zerver/views/invite.py:27
 msgid "You must specify at least one email address."
-msgstr ""
+msgstr "이메일 주소를 하나 이상 지정해야합니다."
 
 #: zerver/views/invite.py:35
 msgid "You must specify at least one stream for invitees to join."
-msgstr ""
+msgstr "초대 대상자가 참여하려면 하나 이상의 스트림을 지정해야합니다."
 
 #: zerver/views/invite.py:48
 #, python-format
 msgid "Stream does not exist: %s. No invites were sent."
-msgstr ""
+msgstr "스트림은 존재하지 않습니다. %s. 초대가 발송되지 않았습니다."
 
 #: zerver/views/messages.py:71
 #, python-brace-format
 msgid "Invalid narrow operator: {desc}"
-msgstr ""
+msgstr "잘못된 좁혀진 운영자 : {desc}"
 
 #: zerver/views/messages.py:825
 #, python-format
 msgid "No such topic '%s'"
-msgstr ""
+msgstr "그런 주제 없습니다. '%s'"
 
 #: zerver/views/messages.py:950
 #, python-format
 msgid "Unknown realm %s"
-msgstr ""
+msgstr "알려지지 않은 영역 %s"
 
 #: zerver/views/messages.py:970
 msgid "Missing sender"
-msgstr ""
+msgstr "누락된 발신자"
 
 #: zerver/views/messages.py:976
 msgid "Invalid mirrored message"
-msgstr ""
+msgstr "미러된 메시지가 잘못되었습니다."
 
 #: zerver/views/messages.py:978
 msgid "Invalid mirrored realm"
-msgstr ""
+msgstr "미러링된 영역이 잘못되었습니다."
 
 #: zerver/views/messages.py:981
 msgid "IRC stream names must start with #"
-msgstr ""
+msgstr "RC 스트림 이름은 #로 시작하여야 합니다."
 
 #: zerver/views/messages.py:1040
 msgid "Message edit history is disabled in this organization"
-msgstr ""
+msgstr "이 단체에서 메시지 수정 기록을 사용할 수 없습니다."
 
 #: zerver/views/messages.py:1058
 msgid "Your organization has turned off message editing"
-msgstr ""
+msgstr "단체에서 메시지 수정을 사용 중지했습니다."
 
 #: zerver/views/messages.py:1073 zerver/views/messages.py:1142
 msgid "You don't have permission to edit this message"
-msgstr ""
+msgstr "이 메시지를 편집할 수있는 권한이 없습니다."
 
 #: zerver/views/messages.py:1084
 msgid "The time limit for editing this message has past"
-msgstr ""
+msgstr "이 메시지를 편집하는데 시간 제한이 지났습니다."
 
 #: zerver/views/messages.py:1087
 msgid "Nothing to change"
-msgstr ""
+msgstr "변경 사항 없음"
 
 #: zerver/views/muting.py:22
 msgid "Topic already muted"
-msgstr ""
+msgstr "주제가 이미 소거되었습니다."
 
 #: zerver/views/muting.py:29
 msgid "Topic is not there in the muted_topics list"
-msgstr ""
+msgstr "주제가 muted_topics 목록에 없습니다."
 
 #: zerver/views/pointer.py:29
 msgid "Invalid message ID"
-msgstr ""
+msgstr "잘못된 메시지 ID"
 
 #: zerver/views/presence.py:30 zerver/views/presence.py:32
 #: zerver/views/users.py:39 zerver/views/users.py:41 zerver/views/users.py:82
-#: zerver/views/users.py:98 zerver/views/users.py:168 zerver/views/users.py:226
+#: zerver/views/users.py:98 zerver/views/users.py:168
+#: zerver/views/users.py:226
 msgid "No such user"
-msgstr ""
+msgstr "그런 사용자가 없습니다."
 
 #: zerver/views/presence.py:34
 msgid "Presence is not supported for bot users."
-msgstr ""
+msgstr "현재 상태는 봇 사용자에게는 지원되지 않습니다."
 
 #: zerver/views/presence.py:38
 #, python-format
 msgid "No presence data for %s"
-msgstr ""
+msgstr "%s에 대한 현재 상태 데이터가 없습니다."
 
 #: zerver/views/presence.py:59
 #, python-format
 msgid "Invalid status: %s"
-msgstr ""
+msgstr "잘못된 상태 : %s"
 
 #: zerver/views/push_notifications.py:22
 msgid "Empty or invalid length token"
-msgstr ""
+msgstr "비어 있거나 유효하지 않은 길이의 토큰입니다."
 
 #: zerver/views/push_notifications.py:28
 msgid "Invalid APNS token"
-msgstr ""
+msgstr "APNS 토큰이 잘못되었습니다."
 
 #: zerver/views/reactions.py:41
 msgid "Reaction already exists"
-msgstr ""
+msgstr "반응이 이미 있습니다."
 
 #: zerver/views/reactions.py:63
 msgid "Reaction does not exist"
-msgstr ""
+msgstr "반응이 없습니다."
 
 #: zerver/views/realm.py:49 zerver/views/user_settings.py:155
 #, python-format
 msgid "Invalid language '%s'"
-msgstr ""
+msgstr "언어 '%s' 가 잘못되었습니다. "
 
 #: zerver/views/realm.py:51
 msgid "Realm description is too long."
-msgstr ""
+msgstr "영역 설명이 너무 깁니다."
 
 #: zerver/views/realm.py:53
 msgid "Realm name is too long."
-msgstr ""
+msgstr "영역 이름이 너무 깁니다."
 
 #: zerver/views/realm.py:55
 msgid "At least one authentication method must be enabled."
-msgstr ""
+msgstr "하나 이상의 인증 방법이 사용 가능해야합니다."
 
 #: zerver/views/realm_domains.py:29
 msgid "Invalid domain: {}"
-msgstr ""
+msgstr "유효하지 않은 도메인: {}"
 
 #: zerver/views/realm_domains.py:31
 #, python-format
 msgid "The domain %(domain)s is already a part of your organization."
-msgstr ""
+msgstr "도메인 %(domain)s는 이미 단체의 일부입니다."
 
 #: zerver/views/realm_domains.py:43 zerver/views/realm_domains.py:54
 #, python-format
 msgid "No entry found for domain %(domain)s."
-msgstr ""
+msgstr "도메인 %(domain)s에 대한 항목을 찾지 못했습니다."
 
 #: zerver/views/realm_emoji.py:31
 msgid "You must upload exactly one file."
-msgstr ""
+msgstr "정확히 하나의 파일을 업로드해야합니다."
 
 #: zerver/views/realm_emoji.py:34 zerver/views/realm_icon.py:23
 #: zerver/views/upload.py:60 zerver/views/user_settings.py:218
 #, python-format
 msgid "Uploaded file is larger than the allowed limit of %s MB"
-msgstr ""
+msgstr "업로드 한 파일이 허용 된 한도 인 %sMB 보다 큽니다."
 
 #: zerver/views/realm_filters.py:45
 msgid "Filter not found"
-msgstr ""
+msgstr "필터를 찾을 수 없음"
 
 #: zerver/views/realm_icon.py:19
 msgid "You must upload exactly one icon."
-msgstr ""
+msgstr "하나의 아이콘 만 업로드해야합니다."
 
 #: zerver/views/registration.py:332
 msgid "New organization creation disabled."
-msgstr ""
+msgstr "새로운 단체 생성이 비활성화되었습니다."
 
 #: zerver/views/registration.py:335
 msgid "The organization creation link has expired or is not valid."
-msgstr ""
+msgstr "단체 생성 링크가 만료되었거나 유효하지 않습니다."
 
 #: zerver/views/streams.py:47
 #, python-brace-format
 msgid "User not authorized to execute queries on behalf of '{principal}'"
-msgstr ""
+msgstr "'{principal}' 대신 쿼리를 실행할 권한이 없는 사용자"
 
 #: zerver/views/streams.py:97
 msgid "Stream already has that name!"
-msgstr ""
+msgstr "스트림은 이미 그 이름을 가지고 있습니다!"
 
 #: zerver/views/streams.py:119
 msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
-msgstr ""
+msgstr "할 것이 없다. \"추가\"또는 \"삭제\"중 적어도 하나를 지정하십시오."
 
 #: zerver/views/streams.py:159
 msgid "This action requires administrative rights"
-msgstr ""
+msgstr "이 작업에는 관리자 권한이 필요합니다."
 
 #: zerver/views/streams.py:172
 msgid "Cannot administer invite-only streams this way"
-msgstr ""
+msgstr "이런 식으로 초대 전용 스트림을 관리 할 수 없습니다."
 
 #: zerver/views/streams.py:249
 #, python-format
 msgid "Unable to access stream (%s)."
-msgstr ""
+msgstr "스트림 (%s)에 액세스 할 수 없습니다."
 
 #: zerver/views/streams.py:255
 msgid ""
 "You can only invite other Zephyr mirroring users to invite-only streams."
-msgstr ""
+msgstr "다른  Zephyr 미러링 사용자는 초대 전용 스트림에만 초대 할 수 있습니다."
 
 #: zerver/views/streams.py:455
 #, python-format
 msgid "Unknown subscription property: %s"
-msgstr ""
+msgstr "알려지지 않은 등록 속성 : %s"
 
 #: zerver/views/streams.py:459
 #, python-format
 msgid "Not subscribed to stream id %d"
-msgstr ""
+msgstr "스트림 id%d에 가입되지 않았습니다."
 
 #: zerver/views/upload.py:42
 msgid "<p>File not found.</p>"
-msgstr ""
+msgstr "<p>파일을 찾을 수 없습니다.</p>"
 
 #: zerver/views/upload.py:44
 msgid "<p>You are not authorized to view this file.</p>"
-msgstr ""
+msgstr "<p>이 파일을 볼 수있는 권한이 없습니다.</p>"
 
 #: zerver/views/upload.py:53
 msgid "You must specify a file to upload"
-msgstr ""
+msgstr "업로드 할 파일을 지정해야합니다."
 
 #: zerver/views/upload.py:55 zerver/views/users.py:203
 #: zerver/views/users.py:274
 msgid "You may only upload one file at a time"
-msgstr ""
+msgstr "한 번에 하나의 파일만 업로드 할 수 있습니다."
 
 #: zerver/views/upload.py:63
 msgid "Upload would exceed your maximum quota."
-msgstr ""
+msgstr "업로드가 최대 할당량을 초과합니다."
 
 #: zerver/views/user_settings.py:36 zerver/views/user_settings.py:121
 msgid "Email address changes are disabled in this organization."
-msgstr ""
+msgstr "이 단체에서는 전자 메일 주소 변경이 비활성화되어 있습니다."
 
 #: zerver/views/user_settings.py:94
 msgid "No new data supplied"
-msgstr ""
+msgstr "새로운 데이터가 제공되지 않았습니다."
 
 #: zerver/views/user_settings.py:98
 msgid "New password must match confirmation password!"
-msgstr ""
+msgstr "새 비밀번호가 확인 비밀번호와 일치하여야 합니다!"
 
 #: zerver/views/user_settings.py:100
 msgid "Wrong password!"
-msgstr ""
+msgstr "잘못된 비밀번호!"
 
 #: zerver/views/user_settings.py:129
 msgid "Check your email for a confirmation link. "
-msgstr ""
+msgstr "이메일에 확인 링크가 있는지 확인하십시오."
 
 #: zerver/views/user_settings.py:159
 #, python-format
 msgid "Invalid timezone '%s'"
-msgstr ""
+msgstr "유효하지 않은 타임존 '%s'"
 
 #: zerver/views/user_settings.py:163
 #, python-format
 msgid "Invalid emojiset '%s'"
-msgstr ""
+msgstr "유효하지 않은 이모티콘 세트 '%s'"
 
 #: zerver/views/user_settings.py:214
 msgid "You must upload exactly one avatar."
-msgstr ""
+msgstr "정확히 하나의 아바타를 업로드해야합니다."
 
 #: zerver/views/users.py:43 zerver/views/users.py:50
 msgid "Cannot deactivate the only organization administrator"
-msgstr ""
+msgstr "유일한 단체 관리자를 비활성화 할 수 없습니다."
 
 #: zerver/views/users.py:64 zerver/views/users.py:66
 msgid "No such bot"
-msgstr ""
+msgstr "그런 봇이 없다."
 
 #: zerver/views/users.py:105
 msgid "Cannot remove the only organization administrator"
-msgstr ""
+msgstr "유일한 단체 관리자를 제거 할 수 없습니다."
 
 #: zerver/views/users.py:265
 msgid "Username already in use"
-msgstr ""
+msgstr "사용자명은 이미 사용중입니다."
 
 #: zerver/views/users.py:420
 #, python-format
 msgid "Email '%(email)s' not allowed for realm '%(realm)s'"
-msgstr ""
+msgstr "이메일 '%(email)s'이 영역 '%(realm)s'에 허용되지 않았습니다."
 
 #: zerver/views/users.py:425
 #, python-format
 msgid "Email '%s' already in use"
-msgstr ""
+msgstr "이메일 '%s'은 이미 사용중입니다."
 
 #: zerver/views/zephyr.py:32
 msgid "Could not find Kerberos credential"
-msgstr ""
+msgstr "Kerberos 자격 증명을 찾을 수 없습니다."
 
 #: zerver/views/zephyr.py:34
 msgid "Webathena login not enabled"
-msgstr ""
+msgstr "Webathena 로그인을 사용할 수 없습니다."
 
 #: zerver/views/zephyr.py:44
 msgid "Invalid Kerberos cache"
-msgstr ""
+msgstr "잘못된 Kerberos 캐시"
 
 #: zerver/views/zephyr.py:55
 msgid "We were unable to setup mirroring for you"
-msgstr ""
+msgstr "미러링을 설정할 수 없습니다."
 
 #: zerver/webhooks/freshdesk/view.py:130
 #, python-format
 msgid "Missing key %s in JSON"
-msgstr ""
+msgstr "JSON에서 누락된 키 %s"
 
 #: zerver/webhooks/gogs/view.py:97
 msgid "Invalid event \"{}\" in request headers"
-msgstr ""
+msgstr "요청 헤더의 '{}'이벤트가 잘못되었습니다."
 
 #: zerver/webhooks/ifttt/view.py:19 zerver/webhooks/zapier/view.py:19
 msgid "Subject can't be empty"
-msgstr ""
+msgstr "제목은 비워 둘 수 없습니다."
 
 #: zerver/webhooks/ifttt/view.py:21 zerver/webhooks/zapier/view.py:21
 msgid "Content can't be empty"
-msgstr ""
+msgstr "콘텐츠는 비워 둘 수 없습니다."
 
 #: zerver/webhooks/jira/view.py:263
 msgid "Event is not given by JIRA"
-msgstr ""
+msgstr "이벤트는 JIRA에서 제공하지 않습니다."
 
 #: zerver/webhooks/librato/view.py:170
 msgid "Malformed JSON input"
-msgstr ""
+msgstr "잘못된 JSON 입력"
 
 #: zerver/webhooks/newrelic/view.py:33
 msgid "Unknown webhook request"
-msgstr ""
+msgstr "알려지지 않은 웹후크 요청"
 
 #: zerver/webhooks/pingdom/view.py:45
 #, python-brace-format
 msgid "Unsupported check_type: {check_type}"
-msgstr ""
+msgstr "지원하지 않는 check_type: {check_type}"
 
 #: zerver/webhooks/pivotal/view.py:174
 msgid "Unable to handle Pivotal payload"
-msgstr ""
+msgstr "피벗 페이로드를 처리 할 수 없습니다."
 
 #: zerver/webhooks/slack/view.py:24
 msgid "Error: channels_map_to_topics parameter other than 0 or 1"
-msgstr ""
+msgstr "오류: 0 또는 1 이외의 channels_map_to_topics 매개 변수"
 
 #: zerver/webhooks/slack/view.py:30
 msgid "Message from Slack"
-msgstr ""
+msgstr "Slack으로 부터의 메시지"
 
 #: zerver/webhooks/stripe/view.py:160
 msgid "We don't support {} event"
-msgstr ""
+msgstr "우리는 {} 이벤트를 지원하지 않는다."
 
 #: zerver/webhooks/transifex/view.py:24
 msgid "Transifex wrong request"
-msgstr ""
+msgstr "Transifex 잘못된 요청"
 
 #: zerver/webhooks/trello/view/__init__.py:30
 #, python-brace-format
 msgid "Unsupported action_type: {action_type}"
-msgstr ""
+msgstr "지원하지 않는 동작 타입: {action_type}"
 
 #: zerver/webhooks/updown/view.py:83
 #, python-format
 msgid "Unsupported Updown event type: %s"
-msgstr ""
+msgstr "지원하지 않는 업다운 이벤트 타입 : %s"
 
 #: zerver/webhooks/wordpress/view.py:42
 msgid "Unknown WordPress webhook action: "
-msgstr ""
+msgstr "알려지지 않은 워드프레스 웹후크 동작:"
 
 #: zilencer/views.py:22
 msgid "Must validate with valid Zulip server API key"
-msgstr ""
+msgstr "유효한 Zulip 서버 API키로 유효화해야 한다."
 
 #: zilencer/views.py:27
 msgid "Invalid token type"
-msgstr ""
+msgstr "유효하지 못한 토큰 타입"

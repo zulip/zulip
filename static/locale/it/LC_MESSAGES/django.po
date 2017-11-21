@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-10-25 16:18+0000\n"
+"POT-Creation-Date: 2017-11-21 01:20+0000\n"
 "PO-Revision-Date: 2017-09-04 03:34+0000\n"
 "Last-Translator: Greg Price <gnprice@gmail.com>\n"
 "Language-Team: Italian (http://www.transifex.com/zulip/zulip/language/it/)\n"
@@ -190,7 +190,8 @@ msgid "Just in case, take a look at your Spam folder."
 msgstr ""
 
 #: templates/zerver/bankruptcy.html:5 templates/zerver/delete_message.html:3
-#: templates/zerver/invite_user.html:5 templates/zerver/lightbox_overlay.html:7
+#: templates/zerver/invite_user.html:5
+#: templates/zerver/lightbox_overlay.html:7
 #: templates/zerver/message_history.html:4
 #: templates/zerver/message_history.html:12 templates/zerver/navbar.html:3
 msgid "Close"
@@ -239,7 +240,8 @@ msgstr ""
 msgid "New private message"
 msgstr ""
 
-#: templates/zerver/compose.html:41 templates/zerver/keyboard_shortcuts.html:85
+#: templates/zerver/compose.html:41
+#: templates/zerver/keyboard_shortcuts.html:85
 msgid "Cancel compose"
 msgstr ""
 
@@ -381,7 +383,8 @@ msgstr ""
 msgid "Are you sure you want to delete this message?"
 msgstr ""
 
-#: templates/zerver/delete_message.html:13 templates/zerver/invite_user.html:32
+#: templates/zerver/delete_message.html:13
+#: templates/zerver/invite_user.html:32
 #: templates/zerver/settings_sidebar.html:35
 msgid "Cancel"
 msgstr ""
@@ -1790,9 +1793,9 @@ msgstr ""
 msgid "Unable to retrieve subscribers for invite-only stream"
 msgstr ""
 
-#: zerver/lib/actions.py:2493 zerver/views/users.py:72 zerver/views/users.py:85
-#: zerver/views/users.py:101 zerver/views/users.py:171
-#: zerver/views/users.py:229
+#: zerver/lib/actions.py:2493 zerver/views/users.py:72
+#: zerver/views/users.py:85 zerver/views/users.py:101
+#: zerver/views/users.py:171 zerver/views/users.py:229
 msgid "Insufficient permission"
 msgstr ""
 
@@ -2360,7 +2363,8 @@ msgstr ""
 
 #: zerver/views/presence.py:30 zerver/views/presence.py:32
 #: zerver/views/users.py:39 zerver/views/users.py:41 zerver/views/users.py:82
-#: zerver/views/users.py:98 zerver/views/users.py:168 zerver/views/users.py:226
+#: zerver/views/users.py:98 zerver/views/users.py:168
+#: zerver/views/users.py:226
 msgid "No such user"
 msgstr ""
 

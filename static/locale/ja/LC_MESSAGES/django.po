@@ -4,15 +4,15 @@
 # 
 # Translators:
 # Greg Price <gnprice@gmail.com>, 2017
-# Kouhei Sutou <kou@cozmixng.org>, 2016
+# Kouhei Sutou <kou@cozmixng.org>, 2016-2017
 # Tetsuya Morimoto <tetsuya.morimoto@gmail.com>, 2017
 msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-10-24 23:08+0000\n"
-"PO-Revision-Date: 2017-10-24 01:09+0000\n"
-"Last-Translator: Tetsuya Morimoto <tetsuya.morimoto@gmail.com>\n"
+"PO-Revision-Date: 2017-11-03 11:15+0000\n"
+"Last-Translator: Greg Price <gnprice@gmail.com>\n"
 "Language-Team: Japanese (http://www.transifex.com/zulip/zulip/language/ja/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -41,7 +41,7 @@ msgstr "%(realm_name)s のZulip解析"
 
 #: templates/analytics/stats.html:21
 msgid "Messages sent over time"
-msgstr "メッセージは時間をかけて送信されました。"
+msgstr "時間毎の送信メッセージ数"
 
 #: templates/analytics/stats.html:23
 msgid "Aggregation"
@@ -74,7 +74,7 @@ msgstr "ボット"
 
 #: templates/analytics/stats.html:44
 msgid "Messages sent by client"
-msgstr "クライアントが送信したメッセージ"
+msgstr "クライアント毎の送信メッセージ数"
 
 #: templates/analytics/stats.html:48 templates/analytics/stats.html:66
 msgid "Everyone"
@@ -98,7 +98,7 @@ msgstr "全期間"
 
 #: templates/analytics/stats.html:61
 msgid "Messages sent by recipient type"
-msgstr "受信者の種別で送信されたメッセージ"
+msgstr "宛先タイプ毎の送信メッセージ数"
 
 #: templates/analytics/stats.html:76
 msgid "Active users"
@@ -492,7 +492,7 @@ msgstr "ワークプレースのベストチャート"
 
 #: templates/zerver/for-open-source.html:23
 msgid "The best chat for open source projects"
-msgstr "オープンソースプロジェクトのベストチャート"
+msgstr "オープンソースプロジェクトのベストチャット"
 
 #: templates/zerver/for-working-groups-and-communities.html:23
 msgid "The best chat for working groups and communities"
