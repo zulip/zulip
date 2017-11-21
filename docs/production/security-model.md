@@ -64,7 +64,7 @@ strength allowed is controlled by two settings in
   significant protection against online attacks, while limiting the
   burden imposed on users choosing a password.
 
-  <!--- Why 10000?  See password-strength.md. -->
+  <!--- Why 10000?  See /production/password-strength.md. -->
 
   Estimating the guessability of a password is a complex problem and
   impossible to efficiently do perfectly. For background or when
