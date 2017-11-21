@@ -662,6 +662,8 @@ exports.handle_global_notification_updates = function (notification_name, settin
     // particular stream should receive notifications.
     if (notification_name === "enable_stream_desktop_notifications") {
         page_params.enable_stream_desktop_notifications = setting;
+    } else if (notification_name === "enable_stream_email_notifications") {
+        page_params.enable_stream_email_notifications = setting;
     } else if (notification_name === "enable_stream_push_notifications") {
         page_params.enable_stream_push_notifications = setting;
     } else if (notification_name === "enable_stream_sounds") {
