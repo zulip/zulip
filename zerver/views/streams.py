@@ -504,6 +504,7 @@ def update_subscription_properties_backend(request, user_profile, subscription_d
                            "desktop_notifications": check_bool,
                            "audible_notifications": check_bool,
                            "push_notifications": check_bool,
+                           "email_notifications": check_bool,
                            "pin_to_top": check_bool}
     response_data = []
 
