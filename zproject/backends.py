@@ -538,10 +538,10 @@ class DevAuthBackend(ZulipAuthMixin):
         assert dev_auth_username is not None
         if realm is None:
             return None
+        if not dev_auth_enabled(realm):
+            return None
         user_profile = common_get_active_user_by_email(dev_auth_username, return_data=return_data)
         if user_profile is None:
-            return None
-        if not dev_auth_enabled(realm):
             return None
         assert realm == user_profile.realm
         return user_profile
