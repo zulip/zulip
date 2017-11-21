@@ -206,25 +206,8 @@ class SocialAuthMixin(ZulipAuthMixin):
             return_data['invalid_email'] = True
             return None
 
-        try:
-            user_profile = get_user_profile_by_email(email_address)
-        except UserProfile.DoesNotExist:
-            return None
         return_data["valid_attestation"] = True
-
-        if not user_profile.is_active:
-            return_data["inactive_user"] = True
-            return None
-
-        if user_profile.realm.deactivated:
-            return_data["inactive_realm"] = True
-            return None
-
-        if not user_matches_subdomain(realm.subdomain, user_profile):
-            return_data["invalid_subdomain"] = True
-            return None
-
-        return user_profile
+        return common_get_active_user(email_address, realm, return_data)
 
     def process_do_auth(self, user_profile, *args, **kwargs):
         # type: (UserProfile, *Any, **Any) -> Optional[HttpResponse]
