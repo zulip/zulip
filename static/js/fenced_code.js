@@ -107,7 +107,7 @@ exports.process_fenced_code = function (content) {
                         if (line === fence) {
                             this.done();
                         } else {
-                            consume_line(lines, line);
+                            lines.push(line);
                         }
                     },
 
