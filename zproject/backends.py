@@ -533,14 +533,17 @@ class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
 class DevAuthBackend(ZulipAuthMixin):
     # Allow logging in as any user without a password.
     # This is used for convenience when developing Zulip.
-    def authenticate(self, dev_auth_username: Optional[str]=None, realm_subdomain: Optional[str]=None,
+    def authenticate(self, dev_auth_username: Optional[str]=None, realm: Optional[Realm]=None,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         assert dev_auth_username is not None
+        if realm is None:
+            return None
         user_profile = common_get_active_user_by_email(dev_auth_username, return_data=return_data)
         if user_profile is None:
             return None
-        if not dev_auth_enabled(user_profile.realm):
+        if not dev_auth_enabled(realm):
             return None
+        assert realm == user_profile.realm
         return user_profile
 
 class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):

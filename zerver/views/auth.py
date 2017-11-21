@@ -586,7 +586,7 @@ def dev_direct_login(request, **kwargs):
     email = request.POST['direct_email']
     subdomain = get_subdomain(request)
     realm = get_realm(subdomain)
-    user_profile = authenticate(dev_auth_username=email, realm_subdomain=realm.subdomain)
+    user_profile = authenticate(dev_auth_username=email, realm=realm)
     if user_profile is None:
         raise Exception("User cannot login")
     do_login(request, user_profile)
@@ -615,7 +615,7 @@ def api_dev_fetch_api_key(request, username=REQ()):
 
     return_data = {}  # type: Dict[str, bool]
     user_profile = authenticate(dev_auth_username=username,
-                                realm_subdomain=realm.subdomain,
+                                realm=realm,
                                 return_data=return_data)
     if return_data.get("inactive_realm"):
         return json_error(_("Your realm has been deactivated."),
