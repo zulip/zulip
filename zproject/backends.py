@@ -382,6 +382,10 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
         if return_data is None:
             return_data = {}
 
+        if not google_auth_enabled(realm=realm):
+            return_data["google_auth_disabled"] = True
+            return None
+
         try:
             token_payload = googleapiclient.verify_id_token(google_oauth2_token, settings.GOOGLE_CLIENT_ID)
         except AppIdentityError:
@@ -400,9 +404,6 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
                 return None
             if not user_matches_subdomain(realm.subdomain, user_profile):
                 return_data["invalid_subdomain"] = True
-                return None
-            if not google_auth_enabled(realm=user_profile.realm):
-                return_data["google_auth_disabled"] = True
                 return None
             return user_profile
         else:
