@@ -71,6 +71,13 @@
                         </div>
                     </li>
                     <li>
+                        <div id="sub_email_notifications_setting"
+                          class="sub_setting_checkbox sub_notification_setting {{#unless in_home_view}}muted-sub{{/unless}}">
+                            <input id="email-notifystream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if email_notifications}}checked{{/if}} {{#unless in_home_view}}disabled="disabled"{{/unless}}/>
+                            <label class="subscription-control-label">{{t "Email notifications" }}</label>
+                        </div>
+                    </li>
+                    <li>
                         <div id="sub_pin_setting" class="sub_setting_checkbox">
                             <input id="pinstream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if pin_to_top}}checked{{/if}} />
                             <label class="subscription-control-label">{{t "Pin stream to top of left sidebar" }}</label>

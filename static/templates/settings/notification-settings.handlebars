@@ -26,6 +26,12 @@
               "label" settings_label.enable_stream_push_notifications
               "end_content" '<div class="propagate_stream_notifications_change"></div>'}}
 
+            {{partial "settings_checkbox"
+              "setting_name" "enable_stream_email_notifications"
+              "is_checked" page_params.enable_stream_email_notifications
+              "label" settings_label.enable_stream_email_notifications
+              "end_content" '<div class="propagate_stream_notifications_change"></div>'}}
+
             <p class="notification-settings-note">
                 {{#tr this}}Change notification settings for individual streams on your <a href="/#streams">Streams page</a>.{{/tr}}
             </p>

@@ -26,6 +26,12 @@ function update_stream_push_notifications(sub, value) {
     sub.push_notifications = value;
 }
 
+function update_stream_email_notifications(sub, value) {
+    var email_notifications_checkbox = $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #sub_email_notifications_setting .sub_setting_control");
+    email_notifications_checkbox.prop('checked', value);
+    sub.email_notifications = value;
+}
+
 function update_stream_pin(sub, value) {
     var pin_checkbox = $('#pinstream-' + sub.stream_id);
     pin_checkbox.prop('checked', value);
@@ -57,6 +63,9 @@ exports.update_property = function (stream_id, property, value) {
         break;
     case 'push_notifications':
         update_stream_push_notifications(sub, value);
+        break;
+    case 'email_notifications':
+        update_stream_email_notifications(sub, value);
         break;
     case 'name':
         subs.update_stream_name(sub, value);
