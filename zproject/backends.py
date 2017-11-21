@@ -419,12 +419,7 @@ class ZulipRemoteUserBackend(RemoteUserBackend):
             return None
 
         email = remote_user_to_email(remote_user)
-        user_profile = common_get_active_user_by_email(email)
-        if user_profile is None:
-            return None
-        if not user_matches_subdomain(realm.subdomain, user_profile):
-            return None
-        return user_profile
+        return common_get_active_user(email, realm)
 
 class ZulipLDAPException(_LDAPUser.AuthenticationFailed):
     pass
