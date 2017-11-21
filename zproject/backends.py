@@ -452,14 +452,9 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
 
         try:
             username = self.django_to_ldap_username(username)
-            user_profile = ZulipLDAPAuthBackendBase.authenticate(self,
-                                                                 username=username,
-                                                                 password=password)
-            if user_profile is None:
-                return None
-            if not user_matches_subdomain(realm.subdomain, user_profile):
-                return None
-            return user_profile
+            return ZulipLDAPAuthBackendBase.authenticate(self,
+                                                         username=username,
+                                                         password=password)
         except ZulipLDAPException:
             return None  # nocoverage # TODO: this may no longer be possible
 
@@ -474,12 +469,23 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
 
             username = ldap_user.attrs[settings.LDAP_EMAIL_ATTR][0]
 
-        try:
-            user_profile = get_user_profile_by_email(username)
-            if not user_profile.is_active or user_profile.realm.deactivated:
-                raise ZulipLDAPException("Realm has been deactivated")
+        return_data = {}  # type: Dict[str, Any]
+        user_profile = common_get_active_user(username, self._realm, return_data)
+        if return_data.get("inactive_realm"):
+            raise ZulipLDAPException("Realm has been deactivated")
+        if return_data.get("inactive_user"):
+            # Bug: This isn't the correct response, but it's what the old code did.
+            raise ZulipLDAPException("Realm has been deactivated")
+        if return_data.get("invalid_subdomain"):
+            # TODO: Implement something in the caller for this to
+            # provide a nice user-facing error message for this
+            # situation (right now it just acts like any other auth
+            # failure).
+            raise ZulipLDAPException("Wrong subdomain")
+        if user_profile is not None:
             return user_profile, False
-        except UserProfile.DoesNotExist:
+
+        if user_profile is None:
             if self._realm is None:
                 raise ZulipLDAPConfigurationError("Realm is None", self.REALM_IS_NONE_ERROR)
             # No need to check for an inactive user since they don't exist yet
