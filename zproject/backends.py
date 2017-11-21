@@ -415,14 +415,14 @@ class ZulipRemoteUserBackend(RemoteUserBackend):
         assert remote_user is not None
         if realm is None:
             return None
+        if not auth_enabled_helper(["RemoteUser"], realm):
+            return None
 
         email = remote_user_to_email(remote_user)
         user_profile = common_get_active_user_by_email(email)
         if user_profile is None:
             return None
         if not user_matches_subdomain(realm.subdomain, user_profile):
-            return None
-        if not auth_enabled_helper(["RemoteUser"], user_profile.realm):
             return None
         return user_profile
 
