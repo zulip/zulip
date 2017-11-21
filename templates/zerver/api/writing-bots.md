@@ -93,6 +93,7 @@ zulip_bots
     │       ├───bot2.py
     │       ├───bot2.conf
     │       ├───doc.md
+    │       ├───requirements.txt
     │       ├───test_bot2.py
     │       ├───assets
     │       │   │
