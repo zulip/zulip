@@ -1,6 +1,6 @@
 # Webhooks for external integrations.
 import re
-from typing import Any, Dict, Text
+from typing import Any, Dict, Text, Optional
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
@@ -14,13 +14,15 @@ from zerver.models import UserProfile
 @api_key_only_webhook_view("AppFollow")
 @has_request_variables
 def api_appfollow_webhook(request, user_profile, stream=REQ(default="appfollow"),
-                          payload=REQ(argument_type="body")):
-    # type: (HttpRequest, UserProfile, Text, Dict[str, Any]) -> HttpResponse
+                          topic=REQ(default=None), payload=REQ(argument_type="body")):
+    # type: (HttpRequest, UserProfile, Text, Optional[Text], Dict[str, Any]) -> HttpResponse
     message = payload["text"]
     app_name = re.search('\A(.+)', message).group(0)
+    if topic is None:
+        topic = app_name
 
-    check_send_stream_message(user_profile, request.client, stream,
-                              app_name, convert_markdown(message))
+    check_send_stream_message(sender=user_profile, client=request.client, stream_name=stream,
+                              topic=topic, body=convert_markdown(message))
     return json_success()
 
 def convert_markdown(text: Text) -> Text:

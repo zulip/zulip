@@ -18,3 +18,7 @@ Then, log into your account on [appfollow.io](http://appfollow.io), and:
 New reviews for your app will be delivered to your Zulip stream.
 
 ![](/static/images/integrations/appfollow/002.png)
+
+By default, messages will be sent to topics based on the app's name.
+If you'd like them all to go to a single topic, add
+`&topic=your_topic` to the end of the URL.
