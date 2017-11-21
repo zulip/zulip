@@ -14,7 +14,7 @@
     Hello {{ name }},
 
     <p>
-        While you were away you received {{ message_count }} new message{{ message_count|pluralize }}{% if mention %} in which you were mentioned{% endif %}!
+        While you were away you received {% if mention %} {{ mention_count }} new message{{ mention_count|pluralize}} in which you were mentioned{% else %}{{ message_count }} new message{{ messages|pluralize }}{% endif %}!
     </p>
 
     <div id='messages' style="width: 600px;font-size: 12px;font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;overflow-y: auto;">
