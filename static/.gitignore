@@ -13,6 +13,8 @@
 /generated/pygments_data.js
 # From `tools/update-authors-json`
 /generated/github-contributors.json
+# From tools/generate-custom-icon-webfont
+/generated/icons/
 
 # Generated i18n data
 /locale/en
