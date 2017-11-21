@@ -1626,11 +1626,6 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
-    def test_authenticate_with_missing_user(self):
-        # type: () -> None
-        backend = ZulipRemoteUserBackend()
-        self.assertIs(backend.authenticate(None), None)
-
     def test_login_success_with_sso_append_domain(self):
         # type: () -> None
         username = 'hamlet'

@@ -412,9 +412,8 @@ class ZulipRemoteUserBackend(RemoteUserBackend):
 
     def authenticate(self, remote_user: Optional[str],
                      realm: Optional[Realm]=None) -> Optional[UserProfile]:
+        assert remote_user is not None
         if realm is None:
-            return None
-        if remote_user is None:
             return None
 
         email = remote_user_to_email(remote_user)
