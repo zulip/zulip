@@ -345,10 +345,6 @@ class EmailAuthBackend(ZulipAuthMixin):
             raise AssertionError("Invalid call to authenticate for EmailAuthBackend")
         if realm is None:
             return None
-
-        user_profile = common_get_active_user_by_email(username, return_data=return_data)
-        if user_profile is None:
-            return None
         if not password_auth_enabled(realm):
             if return_data is not None:
                 return_data['password_auth_disabled'] = True
@@ -356,6 +352,10 @@ class EmailAuthBackend(ZulipAuthMixin):
         if not email_auth_enabled(realm):
             if return_data is not None:
                 return_data['email_auth_disabled'] = True
+            return None
+
+        user_profile = common_get_active_user_by_email(username, return_data=return_data)
+        if user_profile is None:
             return None
         if user_profile.check_password(password):
             if not user_matches_subdomain(realm.subdomain, user_profile):
