@@ -431,7 +431,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
             kwargs = {'realm': get_realm('zulip'),
                       'response': response,
-                      'return_data': {}}
+                      'return_data': {'valid_attestation': True}}
             result.assert_called_with(self.user_profile, 'fake-access-token', **kwargs)
 
     def test_github_backend_do_auth_for_default_auth_failed(self):
@@ -461,7 +461,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
                 kwargs = {'realm': get_realm('zulip'),
                           'response': response,
-                          'return_data': {}}
+                          'return_data': {'valid_attestation': True}}
                 result.assert_called_with(self.user_profile, 'fake-access-token', **kwargs)
 
     def test_github_backend_do_auth_for_team_auth_failed(self):
@@ -491,7 +491,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
                 kwargs = {'realm': get_realm('zulip'),
                           'response': response,
-                          'return_data': {}}
+                          'return_data': {'valid_attestation': True}}
                 result.assert_called_with(self.user_profile, 'fake-access-token', **kwargs)
 
     def test_github_backend_do_auth_for_org_auth_failed(self):

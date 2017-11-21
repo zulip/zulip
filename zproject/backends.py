@@ -206,8 +206,8 @@ class SocialAuthMixin(ZulipAuthMixin):
         try:
             user_profile = get_user_profile_by_email(email_address)
         except UserProfile.DoesNotExist:
-            return_data["valid_attestation"] = True
             return None
+        return_data["valid_attestation"] = True
 
         if not user_profile.is_active:
             return_data["inactive_user"] = True
