@@ -390,25 +390,27 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
             token_payload = googleapiclient.verify_id_token(google_oauth2_token, settings.GOOGLE_CLIENT_ID)
         except AppIdentityError:
             return None
-        if token_payload["email_verified"] in (True, "true"):
-            return_data["valid_attestation"] = True
-            try:
-                user_profile = get_user_profile_by_email(token_payload["email"])
-            except UserProfile.DoesNotExist:
-                return None
-            if not user_profile.is_active:
-                return_data["inactive_user"] = True
-                return None
-            if user_profile.realm.deactivated:
-                return_data["inactive_realm"] = True
-                return None
-            if not user_matches_subdomain(realm.subdomain, user_profile):
-                return_data["invalid_subdomain"] = True
-                return None
-            return user_profile
-        else:
+
+        if token_payload["email_verified"] not in (True, "true"):
             return_data["valid_attestation"] = False
             return None
+
+        return_data["valid_attestation"] = True
+
+        try:
+            user_profile = get_user_profile_by_email(token_payload["email"])
+        except UserProfile.DoesNotExist:
+            return None
+        if not user_profile.is_active:
+            return_data["inactive_user"] = True
+            return None
+        if user_profile.realm.deactivated:
+            return_data["inactive_realm"] = True
+            return None
+        if not user_matches_subdomain(realm.subdomain, user_profile):
+            return_data["invalid_subdomain"] = True
+            return None
+        return user_profile
 
 class ZulipRemoteUserBackend(RemoteUserBackend):
     create_unknown_user = False
