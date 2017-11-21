@@ -465,15 +465,16 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
 
     def get_or_create_user(self, username, ldap_user):
         # type: (str, _LDAPUser) -> Tuple[UserProfile, bool]
+
+        if settings.LDAP_EMAIL_ATTR is not None:
+            # Get email from ldap attributes.
+            if settings.LDAP_EMAIL_ATTR not in ldap_user.attrs:
+                raise ZulipLDAPException("LDAP user doesn't have the needed %s attribute" % (
+                    settings.LDAP_EMAIL_ATTR,))
+
+            username = ldap_user.attrs[settings.LDAP_EMAIL_ATTR][0]
+
         try:
-            if settings.LDAP_EMAIL_ATTR is not None:
-                # Get email from ldap attributes.
-                if settings.LDAP_EMAIL_ATTR not in ldap_user.attrs:
-                    raise ZulipLDAPException("LDAP user doesn't have the needed %s attribute" % (
-                        settings.LDAP_EMAIL_ATTR,))
-
-                username = ldap_user.attrs[settings.LDAP_EMAIL_ATTR][0]
-
             user_profile = get_user_profile_by_email(username)
             if not user_profile.is_active or user_profile.realm.deactivated:
                 raise ZulipLDAPException("Realm has been deactivated")
