@@ -447,6 +447,8 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         if realm is None:
             return None
         self._realm = realm
+        if not ldap_auth_enabled(realm):
+            return None
 
         try:
             username = self.django_to_ldap_username(username)
@@ -475,8 +477,6 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             user_profile = get_user_profile_by_email(username)
             if not user_profile.is_active or user_profile.realm.deactivated:
                 raise ZulipLDAPException("Realm has been deactivated")
-            if not ldap_auth_enabled(user_profile.realm):
-                raise ZulipLDAPException("LDAP Authentication is not enabled")
             return user_profile, False
         except UserProfile.DoesNotExist:
             if self._realm is None:
