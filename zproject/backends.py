@@ -396,21 +396,7 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
             return None
 
         return_data["valid_attestation"] = True
-
-        try:
-            user_profile = get_user_profile_by_email(token_payload["email"])
-        except UserProfile.DoesNotExist:
-            return None
-        if not user_profile.is_active:
-            return_data["inactive_user"] = True
-            return None
-        if user_profile.realm.deactivated:
-            return_data["inactive_realm"] = True
-            return None
-        if not user_matches_subdomain(realm.subdomain, user_profile):
-            return_data["invalid_subdomain"] = True
-            return None
-        return user_profile
+        return common_get_active_user(token_payload["email"], realm, return_data)
 
 class ZulipRemoteUserBackend(RemoteUserBackend):
     create_unknown_user = False
