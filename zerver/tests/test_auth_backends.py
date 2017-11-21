@@ -421,6 +421,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
         with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
                         side_effect=self.do_auth), \
                 mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
+            self.backend.strategy.session_set('subdomain', 'zulip')
             response = dict(email=self.email, name=self.name)
             self.backend.do_auth('fake-access-token', response=response)
 
@@ -435,6 +436,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
                         side_effect=AuthFailed('Not found')), \
                 mock.patch('logging.info'), \
                 mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
+            self.backend.strategy.session_set('subdomain', 'zulip')
             response = dict(email=self.email, name=self.name)
 
             self.backend.do_auth('fake-access-token', response=response)
