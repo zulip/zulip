@@ -478,7 +478,15 @@ def send_messages(data):
             saved_data['subject'] = message.subject
 
         message.pub_date = timezone_now()
+        # We disable USING_RABBITMQ here, so that deferred work is
+        # executed in do_send_message_messages, rather than being
+        # queued.  This is important, because otherwise, if run-dev.py
+        # wasn't running when populate_db was run, a developer can end
+        # up with queued events that reference objects from a previous
+        # life of the database, which naturally throws exceptions.
+        settings.USING_RABBITMQ = False
         do_send_messages([{'message': message}])
+        settings.USING_RABBITMQ = True
 
         recipients[num_messages] = (message_type, message.recipient.id, saved_data)
         num_messages += 1
