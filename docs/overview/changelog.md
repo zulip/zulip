@@ -46,6 +46,28 @@ in bursts.
 - Improved the design for the "uploaded files" UI.
 - Improved placement of text when inserting emoji via picker.
 
+### 1.7.1 -- 2017-11-21
+
+This is a security release, with a handful of cherry-picked changes
+since 1.7.0.  All Zulip server admins are encouraged to upgrade
+promptly.
+
+This release includes fixes for the upgrade process, so server admins
+running a version from before 1.7 should upgrade directly to 1.7.1.
+
+- CVE-2017-0910: On a server with multiple realms, a vulnerability in
+  the invitation system allowed an authorized user of one realm to
+  create an account on any other realm.
+- The Korean translation is now complete, a huge advance from almost
+  nothing in 1.7.0.  The French translation is now nearly complete,
+  and several other languages have smaller updates.
+- The installer now sets LC_ALL to a known locale, working around an
+  issue where some dependencies fail to install in some locales.
+- We fixed a bug in the script that runs after upgrading Zulip (so
+  the fix applies when upgrading to this version), where the
+  garbage-collection of old deployments sometimes wouldn't preserve
+  the immediate last deployment.
+
 ### 1.7.0 -- 2017-10-25
 
 **Highlights:**
