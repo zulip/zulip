@@ -471,6 +471,10 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
 
         return_data = {}  # type: Dict[str, Any]
         user_profile = common_get_active_user(username, self._realm, return_data)
+        if user_profile is not None:
+            # An existing user, successfully authed; return it.
+            return user_profile, False
+
         if return_data.get("inactive_realm"):
             # This happens if there is a user account in a deactivated realm
             raise ZulipLDAPException("Realm has been deactivated")
@@ -482,8 +486,6 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             # situation (right now it just acts like any other auth
             # failure).
             raise ZulipLDAPException("Wrong subdomain")
-        if user_profile is not None:
-            return user_profile, False
         if self._realm.deactivated:
             # This happens if no account exists, but the realm is
             # deactivated, so we shouldn't create a new user account
