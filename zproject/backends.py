@@ -148,15 +148,14 @@ class SocialAuthMixin(ZulipAuthMixin):
         return self.process_do_auth(user_profile, *args, **kwargs)
 
     def authenticate(self,
-                     realm_subdomain='',  # type: Optional[Text]
-                     storage=None,  # type: Optional[DjangoStorage]
-                     strategy=None,  # type: Optional[DjangoStrategy]
-                     user=None,  # type: Optional[Dict[str, Any]]
-                     return_data=None,  # type: Optional[Dict[str, Any]]
-                     response=None,  # type: Optional[Dict[str, Any]]
-                     backend=None  # type: Optional[GithubOAuth2]
-                     ):
-        # type: (...) -> Optional[UserProfile]
+                     realm_subdomain: Optional[Text]='',
+                     storage: Optional[DjangoStorage]=None,
+                     strategy: Optional[DjangoStrategy]=None,
+                     user: Optional[Dict[str, Any]]=None,
+                     return_data: Optional[Dict[str, Any]]=None,
+                     response: Optional[Dict[str, Any]]=None,
+                     backend: Optional[GithubOAuth2]=None
+                     ) -> Optional[UserProfile]:
         """
         Django decides which `authenticate` to call by inspecting the
         arguments. So it's better to create `authenticate` function
@@ -289,9 +288,9 @@ class ZulipDummyBackend(ZulipAuthMixin):
     Used when we want to log you in but we don't know which backend to use.
     """
 
-    def authenticate(self, username=None, realm_subdomain=None, use_dummy_backend=False,
-                     return_data=None):
-        # type: (Optional[Text], Optional[Text], bool, Optional[Dict[str, Any]]) -> Optional[UserProfile]
+    def authenticate(self, username: Optional[Text]=None, realm_subdomain: Optional[Text]=None,
+                     use_dummy_backend: bool=False,
+                     return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         assert username is not None
         if use_dummy_backend:
             user_profile = common_get_active_user_by_email(username)
@@ -312,8 +311,9 @@ class EmailAuthBackend(ZulipAuthMixin):
     a username/password pair.
     """
 
-    def authenticate(self, username=None, password=None, realm_subdomain=None, return_data=None):
-        # type: (Optional[Text], Optional[str], Optional[Text], Optional[Dict[str, Any]]) -> Optional[UserProfile]
+    def authenticate(self, username: Optional[str]=None, password: Optional[str]=None,
+                     realm_subdomain: Optional[str]=None,
+                     return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         """ Authenticate a user based on email address as the user name. """
         if username is None or password is None:
             # Return immediately.  Otherwise we will look for a SQL row with
@@ -352,8 +352,8 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
 
     """
 
-    def authenticate(self, google_oauth2_token=None, realm_subdomain=None, return_data=None):
-        # type: (Optional[str], Optional[Text], Optional[Dict[str, Any]]) -> Optional[UserProfile]
+    def authenticate(self, google_oauth2_token: str=None, realm_subdomain: str=None,
+                     return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         if return_data is None:
             return_data = {}
 
@@ -387,8 +387,8 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
 class ZulipRemoteUserBackend(RemoteUserBackend):
     create_unknown_user = False
 
-    def authenticate(self, remote_user, realm_subdomain=None):
-        # type: (Optional[str], Optional[Text]) -> Optional[UserProfile]
+    def authenticate(self, remote_user: Optional[str],
+                     realm_subdomain: Optional[str]=None) -> Optional[UserProfile]:
         if not remote_user:
             return None
 
@@ -449,8 +449,8 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
 class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
     REALM_IS_NONE_ERROR = 1
 
-    def authenticate(self, username, password, realm_subdomain=None, return_data=None):
-        # type: (Text, str, Optional[Text], Optional[Dict[str, Any]]) -> Optional[UserProfile]
+    def authenticate(self, username: str, password: str, realm_subdomain: Optional[Text]=None,
+                     return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         try:
             self._realm = get_realm(realm_subdomain)
             username = self.django_to_ldap_username(username)
@@ -507,15 +507,15 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
 
 # Just like ZulipLDAPAuthBackend, but doesn't let you log in.
 class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
-    def authenticate(self, username, password, realm_subdomain=None):
-        # type: (Text, str, Optional[Text]) -> None
+    def authenticate(self, username: str, password: str, realm_subdomain: Optional[Text]=None,
+                     return_data: Optional[Dict[str, Any]]=None) -> None:
         return None
 
 class DevAuthBackend(ZulipAuthMixin):
     # Allow logging in as any user without a password.
     # This is used for convenience when developing Zulip.
-    def authenticate(self, username, realm_subdomain=None, return_data=None):
-        # type: (Text, Optional[Text], Optional[Dict[str, Any]]) -> Optional[UserProfile]
+    def authenticate(self, username: str, realm_subdomain: Optional[str]=None,
+                     return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         user_profile = common_get_active_user_by_email(username, return_data=return_data)
         if user_profile is None:
             return None
