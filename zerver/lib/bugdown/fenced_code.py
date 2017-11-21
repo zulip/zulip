@@ -255,7 +255,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
                 if line.rstrip() == self.fence:
                     self.done()
                 else:
-                    check_for_new_fence(self.lines, line)
+                    self.lines.append(line)
 
             def done(self):
                 # type: () -> None
