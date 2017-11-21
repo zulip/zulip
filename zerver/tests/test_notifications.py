@@ -118,6 +118,24 @@ class TestMissedMessages(ZulipTestCase):
                          trigger='mentioned')
 
     @patch('zerver.lib.email_mirror.generate_random_token')
+    def _extra_context_in_missed_stream_messages_email_notify(self, send_as_user: bool,
+                                                              mock_random_token: MagicMock) -> None:
+        tokens = self._get_tokens()
+        mock_random_token.side_effect = tokens
+
+        for i in range(0, 11):
+            self.send_stream_message(self.example_email('othello'), "Denmark", content=str(i))
+        self.send_stream_message(
+            self.example_email('othello'), "Denmark",
+            '11', topic_name='test2')
+        msg_id = self.send_stream_message(
+            self.example_email('othello'), "denmark",
+            '12')
+        body = 'Denmark > test Othello, the Moor of Venice 1 2 3 4 5 6 7 8 9 10 12'
+        subject = 'New messages in Denmark > test'
+        self._test_cases(tokens, msg_id, body, subject, send_as_user, trigger='stream_email_notify')
+
+    @patch('zerver.lib.email_mirror.generate_random_token')
     def _extra_context_in_missed_stream_messages_mention_two_senders(
             self, send_as_user: bool, mock_random_token: MagicMock) -> None:
         tokens = self._get_tokens()
@@ -363,6 +381,13 @@ class TestMissedMessages(ZulipTestCase):
     def test_reply_to_email_in_personal_missed_stream_messages(self) -> None:
         self._reply_to_email_in_personal_missed_stream_messages(False)
 
+    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
+    def test_extra_context_in_missed_stream_messages_email_notify_as_user(self) -> None:
+        self._extra_context_in_missed_stream_messages_email_notify(True)
+
+    def test_extra_context_in_missed_stream_messages_email_notify(self) -> None:
+        self._extra_context_in_missed_stream_messages_email_notify(False)
+
     @override_settings(EMAIL_GATEWAY_PATTERN="")
     def test_reply_warning_in_personal_missed_stream_messages(self) -> None:
         self._reply_warning_in_personal_missed_stream_messages(False)
@@ -481,6 +506,102 @@ class TestMissedMessages(ZulipTestCase):
         self.assertEqual(mail.outbox[0].subject, subject)
         subject = 'Iago sent you a message'
         self.assertEqual(mail.outbox[1].subject, subject)
+
+    @patch('zerver.lib.email_mirror.generate_random_token')
+    def test_multiple_stream_messages(self, mock_random_token: MagicMock) -> None:
+        tokens = self._get_tokens()
+        mock_random_token.side_effect = tokens
+
+        hamlet = self.example_user('hamlet')
+        msg_id_1 = self.send_stream_message(self.example_email('othello'),
+                                            "Denmark",
+                                            'Message1')
+        msg_id_2 = self.send_stream_message(self.example_email('iago'),
+                                            "Denmark",
+                                            'Message2')
+
+        handle_missedmessage_emails(hamlet.id, [
+            {'message_id': msg_id_1, "trigger": "stream_email_notify"},
+            {'message_id': msg_id_2, "trigger": "stream_email_notify"},
+        ])
+        self.assertEqual(len(mail.outbox), 1)
+        subject = 'New messages in Denmark > test'
+        self.assertEqual(mail.outbox[0].subject, subject)
+
+    @patch('zerver.lib.email_mirror.generate_random_token')
+    def test_multiple_stream_messages_and_mentions(self, mock_random_token: MagicMock) -> None:
+        """A mention should take precedence over regular stream messages for email subjects."""
+        tokens = self._get_tokens()
+        mock_random_token.side_effect = tokens
+
+        hamlet = self.example_user('hamlet')
+        msg_id_1 = self.send_stream_message(self.example_email('iago'),
+                                            "Denmark",
+                                            'Regular message')
+        msg_id_2 = self.send_stream_message(self.example_email('othello'),
+                                            "Denmark",
+                                            '@**King Hamlet**')
+
+        handle_missedmessage_emails(hamlet.id, [
+            {'message_id': msg_id_1, "trigger": "stream_email_notify"},
+            {'message_id': msg_id_2, "trigger": "mentioned"},
+        ])
+        self.assertEqual(len(mail.outbox), 1)
+        subject = 'Othello, the Moor of Venice mentioned you'
+        self.assertEqual(mail.outbox[0].subject, subject)
+
+    @patch('zerver.lib.email_mirror.generate_random_token')
+    def test_stream_mentions_multiple_people(self, mock_random_token: MagicMock) -> None:
+        """A mention should take precedence over regular stream messages for email subjects.
+
+        Each sender who has mentioned a user should appear in the email subject line.
+        """
+        tokens = self._get_tokens()
+        mock_random_token.side_effect = tokens
+
+        hamlet = self.example_user('hamlet')
+        msg_id_1 = self.send_stream_message(self.example_email('iago'),
+                                            "Denmark",
+                                            '@**King Hamlet**')
+        msg_id_2 = self.send_stream_message(self.example_email('othello'),
+                                            "Denmark",
+                                            '@**King Hamlet**')
+        msg_id_3 = self.send_stream_message(self.example_email('cordelia'),
+                                            "Denmark",
+                                            'Regular message')
+
+        handle_missedmessage_emails(hamlet.id, [
+            {'message_id': msg_id_1, "trigger": "mentioned"},
+            {'message_id': msg_id_2, "trigger": "mentioned"},
+            {'message_id': msg_id_3, "trigger": "stream_email_notify"},
+        ])
+        self.assertEqual(len(mail.outbox), 1)
+        subject = 'Iago, Othello, the Moor of Venice mentioned you'
+        self.assertEqual(mail.outbox[0].subject, subject)
+
+    @patch('zerver.lib.email_mirror.generate_random_token')
+    def test_multiple_stream_messages_different_topics(self, mock_random_token: MagicMock) -> None:
+        """Should receive separate emails for each topic within a stream."""
+        tokens = self._get_tokens()
+        mock_random_token.side_effect = tokens
+
+        hamlet = self.example_user('hamlet')
+        msg_id_1 = self.send_stream_message(self.example_email('othello'),
+                                            "Denmark",
+                                            'Message1')
+        msg_id_2 = self.send_stream_message(self.example_email('iago'),
+                                            "Denmark",
+                                            'Message2',
+                                            topic_name="test2")
+
+        handle_missedmessage_emails(hamlet.id, [
+            {'message_id': msg_id_1, "trigger": "stream_email_notify"},
+            {'message_id': msg_id_2, "trigger": "stream_email_notify"},
+        ])
+        self.assertEqual(len(mail.outbox), 2)
+        subjects = {mail.outbox[0].subject, mail.outbox[1].subject}
+        valid_subjects = {'New messages in Denmark > test', 'New messages in Denmark > test2'}
+        self.assertEqual(subjects, valid_subjects)
 
     def test_relative_to_full_url(self) -> None:
         # Run `relative_to_full_url()` function over test fixtures present in
