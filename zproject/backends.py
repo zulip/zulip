@@ -339,10 +339,10 @@ class EmailAuthBackend(ZulipAuthMixin):
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         """ Authenticate a user based on email address as the user name. """
         if username is None or password is None:
-            # Return immediately.  Otherwise we will look for a SQL row with
-            # NULL username.  While that's probably harmless, it's needless
-            # exposure.
-            return None
+            # Because of how we structure our auth calls to always
+            # specify which backend to use when not using
+            # EmailAuthBackend, username and password should always be set.
+            raise AssertionError("Invalid call to authenticate for EmailAuthBackend")
 
         user_profile = common_get_active_user_by_email(username, return_data=return_data)
         if user_profile is None:
