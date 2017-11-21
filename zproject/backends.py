@@ -391,10 +391,10 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
         except AppIdentityError:
             return None
         if token_payload["email_verified"] in (True, "true"):
+            return_data["valid_attestation"] = True
             try:
                 user_profile = get_user_profile_by_email(token_payload["email"])
             except UserProfile.DoesNotExist:
-                return_data["valid_attestation"] = True
                 return None
             if not user_profile.is_active:
                 return_data["inactive_user"] = True
