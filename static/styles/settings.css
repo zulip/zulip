@@ -150,7 +150,7 @@ label {
     vertical-align: middle;
 }
 
-#settings_content table + .progressive-table-wrapper table tr td:first-of-type {
+#settings_content table + .progressive-table-wrapper table tr.user_row td:first-of-type {
     width: 20%;
 }
 
