@@ -79,6 +79,12 @@ run_test('update_property', () => {
     checkbox = $(".subscription_settings[data-stream-id='1'] #sub_push_notifications_setting .sub_setting_control");
     assert.equal(checkbox.prop('checked'), true);
 
+    // Tests email notifications
+    stream_events.update_property(1, 'email_notifications', true);
+    assert.equal(frontend.email_notifications, true);
+    checkbox = $(".subscription_settings[data-stream-id='1'] #sub_email_notifications_setting .sub_setting_control");
+    assert.equal(checkbox.prop('checked'), true);
+
     // Test name change
     with_overrides(function (override) {
         global.with_stub(function (stub) {

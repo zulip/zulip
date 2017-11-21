@@ -90,6 +90,7 @@ function setup_settings_label() {
         enable_stream_desktop_notifications: i18n.t("Visual desktop notifications"),
         enable_stream_sounds: i18n.t("Audible desktop notifications"),
         enable_stream_push_notifications: i18n.t("Mobile notifications"),
+        enable_stream_email_notifications: i18n.t("Email notifications"),
 
         // pm_mention_notification_settings
         enable_desktop_notifications: i18n.t("Visual desktop notifications"),
