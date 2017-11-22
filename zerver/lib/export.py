@@ -826,7 +826,7 @@ def write_message_partial_for_query(realm, message_query, dump_file_id,
 
 def export_uploads_and_avatars(realm, output_dir):
     # type: (Realm, Path) -> None
-    uploads_output_dir = os.path.join(output_dir, 'uploads')
+    uploads_output_dir = os.path.join(output_dir, 'uploads-temp')
     avatars_output_dir = os.path.join(output_dir, 'avatars')
 
     for output_dir in (uploads_output_dir, avatars_output_dir):
@@ -1063,6 +1063,21 @@ def do_export_realm(realm, output_dir, threads, exportable_user_ids=None):
 
     sanity_check_output(response)
 
+    '''
+    In this step we get essentially all of the file assets
+    for a given realm and export them to our target output_dir.
+    We do this process BEFORE loading messages for operational
+    reasons and expediency.
+
+    Basically, we want to fail fast if there are any problems
+    finding our uploaded avatars or attachments BEFORE we
+    go into the long message loop.
+
+    Then, later, we build a list of attachment records that
+    are filtered according to the subset of messages we will
+    export, and we use that in turn to filter out files that
+    we don't want to put in the tarball.
+    '''
     logging.info("Exporting uploaded files and avatars")
     export_uploads_and_avatars(realm, output_dir)
 
@@ -1078,11 +1093,59 @@ def do_export_realm(realm, output_dir, threads, exportable_user_ids=None):
     # zerver_attachment
     export_attachment_table(realm=realm, output_dir=output_dir, message_ids=message_ids)
 
+    reject_unwanted_upload_files(output_dir=output_dir)
+
     # Start parallel jobs to export the UserMessage objects.
     launch_user_message_subprocesses(threads=threads, output_dir=output_dir)
 
     logging.info("Finished exporting %s" % (realm.string_id))
     create_soft_link(source=output_dir, in_progress=False)
+
+def reject_unwanted_upload_files(output_dir):
+    # type: (Path) -> None
+    def full_path(fn):
+        # type: (Path) -> Path
+        return os.path.join(output_dir, fn)
+
+    def load(fn):
+        with open(fn) as f:
+            return ujson.load(f)
+
+    fns = {} # type: Dict[str, Path]
+    fns['attachment-json'] = full_path('attachment.json')
+    fns['old-output-dir'] = full_path('uploads-temp')
+    fns['old-records-json'] = full_path('uploads-temp/records.json')
+    fns['new-output-dir'] = full_path('uploads')
+    fns['new-records-json'] = full_path('uploads/records.json')
+
+    mkdir_p(fns['new-output-dir'])
+
+    def move_file_to_output_dir(fn):
+        old_path = os.path.join(fns['old-output-dir'], fn)
+        new_path = os.path.join(fns['new-output-dir'], fn)
+        mkdir_p(os.path.dirname(new_path))
+        subprocess.check_call(['mv', old_path, new_path])
+
+    rows = load(fns['attachment-json'])['zerver_attachment']
+    attachment_paths =  set(r['path_id'] for r in rows)
+
+    old_records = load(fns['old-records-json'])
+    new_records = [] # type: List[Record]
+    for record in old_records:
+        if record['path'] in attachment_paths:
+            new_records.append(record)
+            move_file_to_output_dir(fn=record['path'])
+            logging.info('Keep upload file %s' % (record['path'],))
+        else:
+            logging.info('Reject upload file %s' % (record['path'],))
+
+    write_data_to_file(output_file=fns['new-records-json'],
+                       data=new_records)
+
+    # TODO: Decide what we want to do with the files still left over
+    #       in uploads-temp.  We could move that whole directory to
+    #       something like /tmp/export-reject, or we could simply
+    #       exclude it from the tarball.
 
 def export_attachment_table(realm, output_dir, message_ids):
     # type: (Realm, Path, Set[int]) -> None
