@@ -1,4 +1,4 @@
-from typing import Any, List, Dict, Optional, Text
+from typing import Any, List, Dict, Optional, Text, Iterator
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
@@ -32,7 +32,7 @@ import datetime
 import logging
 import os
 import re
-import simplejson
+import json
 import time
 
 @zulip_login_required
@@ -83,6 +83,33 @@ def home(request):
         return home_real(request)
 
     return render(request, 'zerver/hello.html')
+
+# Taken from
+# https://github.com/simplejson/simplejson/blob/8edc82afcf6f7512b05fba32baa536fe756bd273/simplejson/encoder.py#L378-L402
+# License: MIT
+class JSONEncoderForHTML(json.JSONEncoder):
+    """An encoder that produces JSON safe to embed in HTML.
+    To embed JSON content in, say, a script tag on a web page, the
+    characters &, < and > should be escaped. They cannot be escaped
+    with the usual entities (e.g. &amp;) because they are not expanded
+    within <script> tags.
+    """
+
+    def encode(self, o):
+        # type: (Dict[str, Any]) -> str
+        # Override JSONEncoder.encode because it has hacks for
+        # performance that make things more complicated.
+        chunks = self.iterencode(o, True)
+        return ''.join(chunks)
+
+    def iterencode(self, o, _one_shot=False):
+        # type: (Dict[str, Any], Optional[bool]) -> Iterator[str]
+        chunks = super().iterencode(o, _one_shot)
+        for chunk in chunks:
+            chunk = chunk.replace('&', '\\u0026')
+            chunk = chunk.replace('<', '\\u003c')
+            chunk = chunk.replace('>', '\\u003e')
+            yield chunk
 
 @zulip_login_required
 def home_real(request):
@@ -227,7 +254,7 @@ def home_real(request):
     request._log_data['extra'] = "[%s]" % (register_ret["queue_id"],)
     response = render(request, 'zerver/index.html',
                       context={'user_profile': user_profile,
-                               'page_params': simplejson.encoder.JSONEncoderForHTML().encode(page_params),
+                               'page_params': JSONEncoderForHTML().encode(page_params),
                                'nofontface': is_buggy_ua(request.META.get("HTTP_USER_AGENT", "Unspecified")),
                                'avatar_url': avatar_url(user_profile),
                                'show_debug':
