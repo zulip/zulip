@@ -714,9 +714,8 @@ input.text-error {
 .portico-header .dropdown-pill {
     border: 1px solid rgba(0,0,0,0.2);
     border-radius: 4px;
-
     font-weight: 400;
-
+    padding: 4px;
     cursor: pointer;
 }
 
@@ -755,11 +754,8 @@ input.text-error {
 .portico-header .dropdown-pill .header-realm-icon {
     width: 26px;
     height: 26px;
-
     vertical-align: top;
-
-    border-radius: 4px 0px 0px 4px;
-    background: #fff;
+    border-radius: 4px;
 }
 
 .app {

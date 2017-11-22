@@ -3204,7 +3204,8 @@ nav ul li.active::after {
     }
 
     nav ul li,
-    nav ul li a {
+    nav ul li a,
+    .portico-header .dropdown-pill .realm-name {
         color: hsl(0, 0%, 27%) !important;
     }
 
