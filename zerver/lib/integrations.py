@@ -61,7 +61,6 @@ class Integration:
         self.secondary_line_text = secondary_line_text
         self.legacy = legacy
         self.doc = doc
-        self.doc_context = None  # type: Optional[Dict[Any, Any]]
 
         for category in categories:
             if category not in CATEGORIES:
@@ -86,10 +85,6 @@ class Integration:
     def is_enabled(self):
         # type: () -> bool
         return True
-
-    def add_doc_context(self, context):
-        # type: (Dict[Any, Any]) -> None
-        self.doc_context = context
 
     def get_logo_url(self):
         # type: () -> Optional[str]
