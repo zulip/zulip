@@ -200,6 +200,12 @@ v1_api_and_json_patterns = [
     url(r'^user_uploads$', rest_dispatch,
         {'POST': 'zerver.views.upload.upload_file_backend'}),
 
+    # user_state -> zerver.views.state
+    url(r'^user_state$', rest_dispatch,
+        {'PUT': 'zerver.views.state.update_state',
+         'GET': 'zerver.views.state.get_state',
+         'DELETE': 'zerver.views.state.remove_state'}),
+
     # users/me -> zerver.views
     url(r'^users/me$', rest_dispatch,
         {'GET': 'zerver.views.users.get_profile_backend',

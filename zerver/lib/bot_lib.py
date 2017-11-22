@@ -52,11 +52,11 @@ class StateHandler:
 
     def put(self, key, value):
         # type: (Text, Text) -> None
-        set_bot_state(self.user_profile, key, self.marshal(value))
+        set_bot_state(self.user_profile, [(key, self.marshal(value))])
 
     def remove(self, key):
         # type: (Text) -> None
-        remove_bot_state(self.user_profile, key)
+        remove_bot_state(self.user_profile, [key])
 
     def contains(self, key):
         # type: (Text) -> bool
