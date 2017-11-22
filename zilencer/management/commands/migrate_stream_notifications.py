@@ -8,8 +8,7 @@ from zerver.models import Subscription
 class Command(BaseCommand):
     help = """One-off script to migration users' stream notification settings."""
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         for subscription in Subscription.objects.all():
             subscription.desktop_notifications = subscription.notifications
             subscription.audible_notifications = subscription.notifications

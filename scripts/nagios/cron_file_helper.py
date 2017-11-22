@@ -1,11 +1,8 @@
 import time
 
-# Avoid requiring the typing module to be installed
-if False:
-    from typing import Tuple
+from typing import Tuple
 
-def nagios_from_file(results_file):
-    # type: (str) -> Tuple[int, str]
+def nagios_from_file(results_file: str) -> Tuple[int, str]:
     """Returns a nagios-appropriate string and return code obtained by
     parsing the desired file on disk. The file on disk should be of format
 

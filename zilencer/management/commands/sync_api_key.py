@@ -9,8 +9,7 @@ from zerver.models import UserProfile, get_realm, get_user
 class Command(BaseCommand):
     help = """Sync your API key from ~/.zuliprc into your development instance"""
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         config_file = os.path.join(os.environ["HOME"], ".zuliprc")
         if not os.path.exists(config_file):
             raise RuntimeError("No ~/.zuliprc found")

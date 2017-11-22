@@ -30,8 +30,9 @@ settings.CACHES['default'] = {
     'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
 }
 
-def create_users(realm, name_list, bot_type=None, bot_owner=None):
-    # type: (Realm, Iterable[Tuple[Text, Text]], Optional[int], Optional[UserProfile]) -> None
+def create_users(realm: Realm, name_list: Iterable[Tuple[Text, Text]],
+                 bot_type: Optional[int]=None,
+                 bot_owner: Optional[UserProfile]=None) -> None:
     user_set = set()  # type: Set[Tuple[Text, Text, Text, bool]]
     for full_name, email in name_list:
         short_name = email_to_username(email)
@@ -42,8 +43,7 @@ def create_users(realm, name_list, bot_type=None, bot_owner=None):
 class Command(BaseCommand):
     help = "Populate a test database"
 
-    def add_arguments(self, parser):
-        # type: (CommandParser) -> None
+    def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument('-n', '--num-messages',
                             dest='num_messages',
                             type=int,
@@ -109,8 +109,7 @@ class Command(BaseCommand):
                             action="store_true",
                             help='Whether to delete all the existing messages.')
 
-    def handle(self, **options):
-        # type: (**Any) -> None
+    def handle(self, **options: Any) -> None:
         if options["percent_huddles"] + options["percent_personals"] > 100:
             self.stderr.write("Error!  More than 100% of messages allocated.\n")
             return
@@ -395,8 +394,7 @@ class Command(BaseCommand):
             self.stdout.write("Successfully populated test database.\n")
 
 recipient_hash = {}  # type: Dict[int, Recipient]
-def get_recipient_by_id(rid):
-    # type: (int) -> Recipient
+def get_recipient_by_id(rid: int) -> Recipient:
     if rid in recipient_hash:
         return recipient_hash[rid]
     return Recipient.objects.get(id=rid)
@@ -408,8 +406,8 @@ def get_recipient_by_id(rid):
 # - multiple personals converastions
 # - multiple messages per subject
 # - both single and multi-line content
-def send_messages(data):
-    # type: (Tuple[int, Sequence[Sequence[int]], Mapping[str, Any], Callable[[str], Any], int]) -> int
+def send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any],
+                              Callable[[str], Any], int]) -> int:
     (tot_messages, personals_pairs, options, output, random_seed) = data
     random.seed(random_seed)
 
@@ -492,8 +490,7 @@ def send_messages(data):
         num_messages += 1
     return tot_messages
 
-def create_user_presences(user_profiles):
-    # type: (Iterable[UserProfile]) -> None
+def create_user_presences(user_profiles: Iterable[UserProfile]) -> None:
     for user in user_profiles:
         status = 1  # type: int
         date = timezone_now()

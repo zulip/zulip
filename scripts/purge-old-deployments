@@ -12,8 +12,7 @@ sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, get_recent_deployments, \
     may_be_perform_purging, TIMESTAMP_FORMAT
 
-def parse_args():
-    # type: () -> argparse.Namespace
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="This script can be used for cleaning old unused deployments.",
         epilog="Orphaned/unused caches older than threshold days will be automatically "
@@ -35,8 +34,7 @@ def parse_args():
     args.verbose |= args.dry_run    # Always print a detailed report in case of dry run.
     return args
 
-def get_deployments_to_be_purged(recent_deployments):
-    # type: (Set[Text]) -> Set[Text]
+def get_deployments_to_be_purged(recent_deployments: Set[Text]) -> Set[Text]:
     all_deployments = set([os.path.join(DEPLOYMENTS_DIR, deployment)
                            for deployment in os.listdir(DEPLOYMENTS_DIR)])
     deployments_to_purge = set()
@@ -53,8 +51,7 @@ def get_deployments_to_be_purged(recent_deployments):
             deployments_to_purge.add(deployment)
     return deployments_to_purge
 
-def main():
-    # type: () -> None
+def main() -> None:
     args = parse_args()
     deployments_to_keep = get_recent_deployments(args.threshold_days)
     deployments_to_purge = get_deployments_to_be_purged(deployments_to_keep)
