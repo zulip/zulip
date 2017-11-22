@@ -33,10 +33,10 @@ class Command(BaseCommand):
             event_time=user.date_joined)
         return user
 
-    def generate_fixture_data(self, stat, business_hours_base, non_business_hours_base,
-                              growth, autocorrelation, spikiness, holiday_rate=0,
-                              partial_sum=False):
-        # type: (CountStat, float, float, float, float, float, float, bool) -> List[int]
+    def generate_fixture_data(self, stat: CountStat, business_hours_base: float,
+                              non_business_hours_base: float, growth: float,
+                              autocorrelation: float, spikiness: float,
+                              holiday_rate: float=0, partial_sum: bool=False) -> List[int]:
         self.random_seed += 1
         return generate_time_series_data(
             days=self.DAYS_OF_DATA, business_hours_base=business_hours_base,
