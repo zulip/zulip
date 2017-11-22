@@ -234,6 +234,7 @@ p.n-margin {
     margin: 0px auto;
     padding: 0px;
     position: relative;
+    background-color: #fff;
 }
 
 .app-main {
@@ -1846,7 +1847,7 @@ nav a .no-style {
     width: auto;
     float: none;
     overflow: hidden;
-    border-right: 1px solid hsla(0, 0%, 0%, 0.2);
+    border-right: 1px solid hsl(0, 0%, 87.8%);
     height: 40px;
 }
 
