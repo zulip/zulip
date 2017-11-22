@@ -1214,14 +1214,18 @@ class RealmCreationTest(ZulipTestCase):
 
     def test_create_realm_existing_email(self) -> None:
         """
-        Trying to create a realm with an existing email should just redirect to
-        a login page.
+        Trying to create a realm with an existing email should succeed.
         """
         with self.settings(OPEN_REALM_CREATION=True):
             email = self.example_email("hamlet")
             result = self.client_post('/create_realm/', {'email': email})
-            self.assertEqual(result.status_code, 302)
-            self.assertIn('login', result['Location'])
+            result = self.client_get(result["Location"])
+            self.assert_in_response("Check your email so we can get started.", result)
+
+    def test_create_realm_as_system_bot(self) -> None:
+        result = self.client_post('/create_realm/', {'email': 'notification-bot@zulip.com'})
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_response('notification-bot@zulip.com is an email address reserved', result)
 
     def test_create_realm_no_creation_key(self) -> None:
         """

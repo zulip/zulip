@@ -17,7 +17,7 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.http import HttpRequest
 from jinja2 import Markup as mark_safe
 
-from zerver.lib.actions import do_change_password, user_email_is_unique, \
+from zerver.lib.actions import do_change_password, email_not_system_bot, \
     validate_email_for_realm
 from zerver.lib.name_restrictions import is_reserved_subdomain, is_disposable_domain
 from zerver.lib.request import JsonableError
@@ -173,7 +173,8 @@ def email_is_not_disposable(email):
 
 class RealmCreationForm(forms.Form):
     # This form determines whether users can create a new realm.
-    email = forms.EmailField(validators=[user_email_is_unique, email_is_not_disposable])
+    email = forms.EmailField(validators=[email_not_system_bot,
+                                         email_is_not_disposable])
 
 class LoggingSetPasswordForm(SetPasswordForm):
     def save(self, commit=True):

@@ -3916,13 +3916,9 @@ def do_send_confirmation_email(invitee, referrer, body):
     send_email('zerver/emails/invitation', to_email=invitee.email, from_name=from_name,
                from_address=FromAddress.NOREPLY, context=context)
 
-def user_email_is_unique(email):
-    # type: (Text) -> None
-    try:
-        get_user_profile_by_email(email)
-        raise ValidationError('%s already has an account' % (email,))
-    except UserProfile.DoesNotExist:
-        pass
+def email_not_system_bot(email: Text) -> None:
+    if email.lower() in settings.CROSS_REALM_BOT_EMAILS:
+        raise ValidationError('%s is an email address reserved for system bots' % (email,))
 
 def validate_email_for_realm(target_realm, email):
     # type: (Optional[Realm], Text) -> None
