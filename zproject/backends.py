@@ -20,8 +20,7 @@ from zerver.lib.request import JsonableError
 from zerver.lib.subdomains import user_matches_subdomain, get_subdomain
 from zerver.lib.users import check_full_name
 from zerver.models import UserProfile, Realm, get_user_profile_by_id, \
-    get_user_profile_by_email, remote_user_to_email, email_to_username, \
-    get_realm, get_user
+    remote_user_to_email, email_to_username, get_realm, get_user
 
 def pad_method_dict(method_dict):
     # type: (Dict[Text, bool]) -> Dict[Text, bool]
@@ -94,9 +93,7 @@ def common_get_active_user(email: str, realm: Realm,
         # check whether they might have an account in another realm,
         # and if so, provide a helpful error message via
         # `invalid_subdomain`.
-        try:
-            user_profile = get_user_profile_by_email(email)
-        except UserProfile.DoesNotExist:
+        if not UserProfile.objects.filter(email__iexact=email).exists():
             return None
         if return_data is not None:
             return_data['invalid_subdomain'] = True
