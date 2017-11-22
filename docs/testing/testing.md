@@ -79,6 +79,25 @@ if you're working on new database migrations.  To do this, run:
 
 [lxc-sf]: https://github.com/fgrehm/vagrant-lxc/wiki/FAQ#help-my-shared-folders-have-the-wrong-owner
 
+- When running casper tests (`./tools/test-js-with-casper`), if you
+get an error like this:
+
+```
+Running node_modules/.bin/casperjs  test /srv/zulip/frontend_tests/casper_tests/00-realm-creation.js
+internal/child_process.js:289
+  var err = this._handle.spawn(options);
+                        ^
+
+TypeError: Bad argument
+```
+... it means that phantomjs is not installed. You can install it by running
+the following commands.
+
+```bash
+cd node_modules/phantomjs-prebuilt
+node install.js
+```
+
 ### Internet access inside test suites
 
 As a policy matter, the Zulip test suites should never make outgoing
