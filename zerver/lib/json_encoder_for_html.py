@@ -1,4 +1,5 @@
 import json
+from typing import Any, Dict, Iterator, Optional
 
 # Taken from
 # https://github.com/simplejson/simplejson/blob/8edc82afcf6f7512b05fba32baa536fe756bd273/simplejson/encoder.py#L378-L402
@@ -11,15 +12,13 @@ class JSONEncoderForHTML(json.JSONEncoder):
     within <script> tags.
     """
 
-    def encode(self, o):
-        # type: (Dict[str, Any]) -> str
+    def encode(self, o: Any) -> str:
         # Override JSONEncoder.encode because it has hacks for
         # performance that make things more complicated.
         chunks = self.iterencode(o, True)
         return ''.join(chunks)
 
-    def iterencode(self, o, _one_shot=False):
-        # type: (Dict[str, Any], Optional[bool]) -> Iterator[str]
+    def iterencode(self, o: Any, _one_shot: bool=False) -> Iterator[str]:
         chunks = super().iterencode(o, _one_shot)
         for chunk in chunks:
             chunk = chunk.replace('&', '\\u0026')
