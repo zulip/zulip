@@ -70,25 +70,28 @@ Here are a few common macros used to document Zulip's integrations:
 
 * **Contents:**
   See [source][1].
-  **Note:** `{{ integration_display_name }}` is replaced by
-  [Integration.display_name][2] and `{{ recommended_stream_name }}`
-  is replaced by [Integration.stream_name][3].
+
+    **Note:** `{{ integration_display_name }}` is replaced by
+    [Integration.display_name][2] and `{{ recommended_stream_name }}`
+    is replaced by [Integration.stream_name][3].
 
 * **Example usage:**
-  ```
-  {!create-stream.md!}
-  ```
+
+    ```
+    {!create-stream.md!}
+    ```
 
 * **Example rendering:**
-  ``` text
-  First, create the stream you would like to use for GitLab notifications,
-  and subscribe all interested parties to this stream. We recommend the
-  name gitlab.
 
-  The integration will use the default stream gitlab if no stream is
-  supplied in the URL; you still need to create the stream even if you
-  are using this default.
-  ```
+```text
+First, create the stream you would like to use for GitLab notifications,
+and subscribe all interested parties to this stream. We recommend the
+name gitlab.
+
+The integration will use the default stream gitlab if no stream is
+supplied in the URL; you still need to create the stream even if you
+are using this default.
+```
 
 ### `{!create-bot-construct-url.md!}` macro
 
@@ -97,30 +100,34 @@ Here are a few common macros used to document Zulip's integrations:
   generated automatically for every webhook by using attributes in the
   [WebhookIntegration][4] class.
 
-* **Contents:** See [source][5]. **Note:** If special configuration is
-  required to set up the URL and you can't use this macro, be sure to use the
-  `{{ api_url }}` template variable, so that your integration
-  documentation will provide the correct URL for whatever server it is
-  deployed on.  If special configuration is required to set the SITE
-  variable, you should document that too.
+* **Contents:** See [source][5].
+
+    **Note:** If special configuration is
+    required to set up the URL and you can't use this macro, be sure to use the
+    `{{ api_url }}` template variable, so that your integration
+    documentation will provide the correct URL for whatever server it is
+    deployed on.  If special configuration is required to set the SITE
+    variable, you should document that too.
 
 * **Example usage:**
-  ```
-  {!create-bot-construct-url.md!}
-  ```
+
+    ```
+    {!create-bot-construct-url.md!}
+    ```
   Usually used right after `{!create-stream!}`.
 
 * **Example rendering:**
-  ```
-  Next, on your Zulip settings page, create a bot for GitLab. Construct
-  the URL for the GitLab bot using the bot API key and stream name:
 
-  https://yourZulipDomain.zulipchat.com/api/v1/external/gitlab?api_key=abcdefgh&stream=gitlab
+```text
+Next, on your Zulip settings page, create a bot for GitLab. Construct
+the URL for the GitLab bot using the bot API key and stream name:
 
-  Modify the parameters of the URL above, where api_key is the API key of
-  your Zulip bot, and stream is the stream name you want the notifications
-  sent to.
-  ```
+https://yourZulipDomain.zulipchat.com/api/v1/external/gitlab?api_key=abcdefgh&stream=gitlab
+
+Modify the parameters of the URL above, where api_key is the API key of
+your Zulip bot, and stream is the stream name you want the notifications
+sent to.
+```
 
 ### `{!append-stream-name.md!}` macro
 
@@ -130,16 +137,18 @@ Here are a few common macros used to document Zulip's integrations:
 * **Contents:** See [source][6].
 
 * **Example usage:** Usually used right after `{!create-bot-construct-url.md!}`.
-  ```
-  {!append-stream-name.md!}
-  ```
+
+    ```
+    {!append-stream-name.md!}
+    ```
 
 * **Example rendering:**
-  ```
-  To specify the stream, you must explicitly append
-  `&stream=stream_name` to the end of the above URL, where
-  `stream_name` is the stream you want the notifications sent to.
-  ```
+
+```
+To specify the stream, you must explicitly append
+`&stream=stream_name` to the end of the above URL, where
+`stream_name` is the stream you want the notifications sent to.
+```
 
 ### `{!append-topic.md!}` macro
 
@@ -149,15 +158,17 @@ Here are a few common macros used to document Zulip's integrations:
 * **Contents:** See [source][7].
 
 * **Example usage:** Usually used right after `{!create-bot-construct-url.md!}`.
-  ```
-  {!append-topic.md!}
-  ```
+
+    ```
+    {!append-topic.md!}
+    ```
 
 * **Example rendering:**
-  ```
-  To change the topic used by the bot, simply append `&topic=name`
-  to the end of the above URL, where `name` is your topic.
-  ```
+
+```
+To change the topic used by the bot, simply append `&topic=name`
+to the end of the above URL, where `name` is your topic.
+```
 
 ### `{!congrats.md!}` macro
 
@@ -168,16 +179,18 @@ Here are a few common macros used to document Zulip's integrations:
 
 * **Example usage:** Usually used at the end of the documentation, right
   before the sample message screenshot.
-  ```
-  {!congrats.md!}
-  ```
+
+    ```
+    {!congrats.md!}
+    ```
 
 * **Example rendering:**
-  ```
-  **Congratulations! You're done!**
 
-  Your WebhookName notifications may look like:
-  ```
+```
+**Congratulations! You're done!**
+
+Your WebhookName notifications may look like:
+```
 
 ### `{!download-python-bindings.md!}` macro
 
@@ -188,15 +201,17 @@ Here are a few common macros used to document Zulip's integrations:
 
 * **Example usage:** Currently mostly used in non-webhook integrations docs
   under `templates/zerver/integrations/<integration_name>.md`.
-  ```
-  {!download-python-bindings.md!}
-  ```
+
+    ```
+    {!download-python-bindings.md!}
+    ```
 
 * **Example rendering:**
-  ``` text
-  Download and install our [Python bindings and example scripts](/api)
-  on the server where the IntegrationName bot will live.
-  ```
+
+``` text
+Download and install our [Python bindings and example scripts](/api)
+on the server where the IntegrationName bot will live.
+```
 
 ### `{!change-zulip-config-file.md!}` macro
 
@@ -207,22 +222,24 @@ Here are a few common macros used to document Zulip's integrations:
 
 * **Example usage:** Usually used in non-webhook integration docs under
   `templates/zerver/integrations/<integration_name>.md`.
-  ```
-  {!change-zulip-config-file.md!}
-  ```
+
+    ```
+    {!change-zulip-config-file.md!}
+    ```
 
 * **Example rendering:**
-  ```
-  On your Zulip settings page, create a bot for Codebase.
 
-  Next, open `integrations/codebase/zulip_codebase_config.py` with your
-  favorite editor, and change the following lines to specify the email
-  address and API key for your Codebase bot:
+```
+On your Zulip settings page, create a bot for Codebase.
 
-      ZULIP_USER = "codebase-bot@example.com"
-      ZULIP_API_KEY = "0123456789abcdef0123456789abcdef"
-      ZULIP_SITE = "http://localhost:9991/api"
-  ```
+Next, open `integrations/codebase/zulip_codebase_config.py` with your
+favorite editor, and change the following lines to specify the email
+address and API key for your Codebase bot:
+
+    ZULIP_USER = "codebase-bot@example.com"
+    ZULIP_API_KEY = "0123456789abcdef0123456789abcdef"
+    ZULIP_SITE = "http://localhost:9991/api"
+```
 
 ### `{!git-append-branches.md!}` and `{!git-webhook-url-with-branches.md!}`
 
@@ -233,10 +250,11 @@ Here are a few common macros used to document Zulip's integrations:
   [git-webhook-url-with-branches][13].
 
 * **Example usage:** Used exclusively in Git integrations.
-  ```
-  {!git-append-branches.md!}
-  {!git-webhook-url-with-branches.md!}
-  ```
+
+    ```
+    {!git-append-branches.md!}
+    {!git-webhook-url-with-branches.md!}
+    ```
 
 ### Other useful macros
 
@@ -249,9 +267,10 @@ Here are a few common macros used to document Zulip's integrations:
 
 * `{!webhook-url-with-bot-email.md!}` - Used in certain non-webhook integrations
   to generate URLs of the form (see [source][14]):
-  ```
-  https://bot_email:bot_api_key@yourZulipDomain.zulipchat.com/api/v1/external/beanstalk
-  ```
+
+    ```
+    https://bot_email:bot_api_key@yourZulipDomain.zulipchat.com/api/v1/external/beanstalk
+    ```
   A good example is
   [Zulip's Beanstalk integration](https://zulipchat.com/integrations/doc/beanstalk)
 
