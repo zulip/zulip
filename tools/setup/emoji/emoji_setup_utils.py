@@ -8,8 +8,7 @@ from typing import Any, Dict, List
 # Emojisets that we currently support.
 EMOJISETS = ['apple', 'emojione', 'google', 'twitter']
 
-def emoji_names_for_picker(emoji_name_maps):
-    # type: (Dict[str, Dict[str, Any]]) -> List[str]
+def emoji_names_for_picker(emoji_name_maps: Dict[str, Dict[str, Any]]) -> List[str]:
     emoji_names = []  # type: List[str]
     for emoji_code, name_info in emoji_name_maps.items():
         emoji_names.append(name_info["canonical_name"])
@@ -20,8 +19,8 @@ def emoji_names_for_picker(emoji_name_maps):
 # Returns a dict from categories to list of codepoints. The list of
 # codepoints are sorted according to the `sort_order` as defined in
 # `emoji_data`.
-def generate_emoji_catalog(emoji_data, emoji_name_maps):
-    # type: (List[Dict[str, Any]], Dict[str, Dict[str, Any]]) -> Dict[str, List[str]]
+def generate_emoji_catalog(emoji_data: List[Dict[str, Any]],
+                           emoji_name_maps: Dict[str, Dict[str, Any]]) -> Dict[str, List[str]]:
     sort_order = {}  # type: Dict[str, int]
     emoji_catalog = defaultdict(list)  # type: Dict[str, List[str]]
 
@@ -42,22 +41,19 @@ def generate_emoji_catalog(emoji_data, emoji_name_maps):
 
 # Use only those names for which images are present in all
 # the emoji sets so that we can switch emoji sets seemlessly.
-def emoji_is_universal(emoji_dict):
-    # type: (Dict[str, Any]) -> bool
+def emoji_is_universal(emoji_dict: Dict[str, Any]) -> bool:
     for emoji_set in EMOJISETS:
         if not emoji_dict['has_img_' + emoji_set]:
             return False
     return True
 
-def generate_codepoint_to_name_map(emoji_name_maps):
-    # type: (Dict[str, Dict[str, Any]]) -> Dict[str, str]
+def generate_codepoint_to_name_map(emoji_name_maps: Dict[str, Dict[str, Any]]) -> Dict[str, str]:
     codepoint_to_name = {}  # type: Dict[str, str]
     for emoji_code, name_info in emoji_name_maps.items():
         codepoint_to_name[emoji_code] = name_info["canonical_name"]
     return codepoint_to_name
 
-def generate_name_to_codepoint_map(emoji_name_maps):
-    # type: (Dict[str, Dict[str, Any]]) -> Dict[str, str]
+def generate_name_to_codepoint_map(emoji_name_maps: Dict[str, Dict[str, Any]]) -> Dict[str, str]:
     name_to_codepoint = {}
     for emoji_code, name_info in emoji_name_maps.items():
         canonical_name = name_info["canonical_name"]
