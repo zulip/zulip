@@ -43,11 +43,10 @@ def stats(request: HttpRequest) -> HttpResponse:
                   context=dict(realm_name = request.user.realm.name))
 
 @has_request_variables
-def get_chart_data(request, user_profile, chart_name=REQ(),
-                   min_length=REQ(converter=to_non_negative_int, default=None),
-                   start=REQ(converter=to_utc_datetime, default=None),
-                   end=REQ(converter=to_utc_datetime, default=None)):
-    # type: (HttpRequest, UserProfile, Text, Optional[int], Optional[datetime], Optional[datetime]) -> HttpResponse
+def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: Text=REQ(),
+                   min_length: Optional[int]=REQ(converter=to_non_negative_int, default=None),
+                   start: Optional[datetime]=REQ(converter=to_utc_datetime, default=None),
+                   end: Optional[datetime]=REQ(converter=to_utc_datetime, default=None)) -> HttpResponse:
     if chart_name == 'number_of_humans':
         stat = COUNT_STATS['realm_active_humans::day']
         tables = [RealmCount]
