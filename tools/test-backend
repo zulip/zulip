@@ -197,8 +197,8 @@ if __name__ == "__main__":
     test-backend zerver.tests.test_bugdown.BugdownTest.test_inline_youtube # run a single test
     test-backend BugdownTest.test_inline_youtube # run a single test"""
 
-    parser = argparse.ArgumentParser(description=usage)
-    parser.formatter_class = argparse.RawTextHelpFormatter
+    parser = argparse.ArgumentParser(description=usage,
+                                     formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument('--nonfatal-errors', action="store_false", default=True,
                         dest="fatal_errors", help="Continue past test failures to run all tests")
