@@ -3,6 +3,10 @@ var settings_display = (function () {
 var exports = {};
 
 exports.set_night_mode = function (bool) {
+    if (!page_params.development) {
+        return;
+    }
+
     var night_mode = bool;
     var data = { night_mode: JSON.stringify(night_mode) };
     var context = {
