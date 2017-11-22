@@ -64,6 +64,17 @@ def sent_time_in_epoch_seconds(user_message: Optional[UserMessage]) -> Optional[
     # Return the epoch seconds in UTC.
     return calendar.timegm(user_message.message.pub_date.utctimetuple())
 
+def get_bot_types():
+    # type: () -> List[Dict[Text, object]]
+    bot_types = []
+    for type_id, name in UserProfile.BOT_TYPES.items():
+        bot_types.append({
+            'type_id': type_id,
+            'name': name,
+            'allowed': type_id in UserProfile.ALLOWED_BOT_TYPES
+        })
+    return bot_types
+
 def home(request: HttpRequest) -> HttpResponse:
     if settings.DEVELOPMENT and os.path.exists('var/handlebars-templates/compile.error'):
         response = render(request, 'zerver/handlebars_compilation_failed.html')
@@ -189,6 +200,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
         prompt_for_invites    = prompt_for_invites,
         furthest_read_time    = sent_time_in_epoch_seconds(latest_read),
         has_mobile_devices    = num_push_devices_for_user(user_profile) > 0,
+        bot_types             = get_bot_types(),
     )
 
     undesired_register_ret_fields = [

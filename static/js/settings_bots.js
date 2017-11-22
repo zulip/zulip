@@ -17,17 +17,11 @@ function is_local_part(value, element) {
     return this.optional(element) || /^[\-!#$%&'*+\/=?\^_`{}|~0-9A-Z]+(\.[\-!#$%&'*+\/=?\^_`{}|~0-9A-Z]+)*$/i.test(value);
 }
 
-// Note: These strings are mostly duplicates with a similar data set
-// in the bot-settings.handlebars.  We'll probably want to move this
-// map to be sent from the backend and shared.
 exports.type_id_to_string = function (type_id) {
-    if (type_id === 1) {
-        return i18n.t("Generic bot");
-    } else if (type_id === 2) {
-        return i18n.t("Incoming webhook");
-    } else if (type_id === 3) {
-        return i18n.t("Outgoing webhook");
-    }
+    var name = _.find(page_params.bot_types, function (bot_type) {
+        return bot_type.type_id === type_id;
+    }).name;
+    return i18n.t(name);
 };
 
 function render_bots() {
