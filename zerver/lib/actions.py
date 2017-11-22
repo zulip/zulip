@@ -61,7 +61,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
     get_realm, bulk_get_recipients, get_stream_recipient, get_stream_recipients, \
     email_allowed_for_realm, email_to_username, display_recipient_cache_key, \
-    get_user_profile_by_email, get_user, get_stream_cache_key, \
+    get_user, get_stream_cache_key, \
     UserActivityInterval, active_user_ids, get_active_streams, \
     realm_filters_for_realm, RealmFilter, receives_offline_notifications, \
     get_owned_bot_dicts, stream_name_in_use, \
@@ -3920,18 +3920,28 @@ def email_not_system_bot(email: Text) -> None:
     if email.lower() in settings.CROSS_REALM_BOT_EMAILS:
         raise ValidationError('%s is an email address reserved for system bots' % (email,))
 
-def validate_email_for_realm(target_realm, email):
-    # type: (Optional[Realm], Text) -> None
+def validate_email_for_realm(target_realm: Realm, email: Text) -> None:
     try:
-        existing_user_profile = get_user_profile_by_email(email)
-    except UserProfile.DoesNotExist:
-        existing_user_profile = None
+        # Registering with a system bot's email is not allowed...
+        email_not_system_bot(email)
+    except ValidationError:
+        # ... unless this is the first user with that email.  This
+        # should be impossible in production, because these users are
+        # created by initialize_voyager_db, but it happens in a test's
+        # setup.  (This would be a good wrinkle to clean up.)
+        if UserProfile.objects.filter(email__iexact=email).exists():
+            raise
 
-    if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
+    try:
+        existing_user_profile = get_user(email, target_realm)
+    except UserProfile.DoesNotExist:
+        return
+
+    if existing_user_profile.is_mirror_dummy:
         # Mirror dummy users to be activated must be inactive
         if existing_user_profile.is_active:
             raise AssertionError("Mirror dummy user is already active!")
-    elif existing_user_profile:
+    else:
         # Other users should not already exist at all.
         raise ValidationError('%s already has an account' % (email,))
 

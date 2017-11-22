@@ -1213,14 +1213,7 @@ class RealmCreationTest(ZulipTestCase):
         self.check_able_to_create_realm("user1@test.com")
 
     def test_create_realm_existing_email(self) -> None:
-        """
-        Trying to create a realm with an existing email should succeed.
-        """
-        with self.settings(OPEN_REALM_CREATION=True):
-            email = self.example_email("hamlet")
-            result = self.client_post('/create_realm/', {'email': email})
-            result = self.client_get(result["Location"])
-            self.assert_in_response("Check your email so we can get started.", result)
+        self.check_able_to_create_realm("hamlet@zulip.com")
 
     def test_create_realm_as_system_bot(self) -> None:
         result = self.client_post('/create_realm/', {'email': 'notification-bot@zulip.com'})

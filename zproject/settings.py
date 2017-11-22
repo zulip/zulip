@@ -501,6 +501,15 @@ TORNADO_SERVER = 'http://127.0.0.1:9993'
 RUNNING_INSIDE_TORNADO = False
 AUTORELOAD = DEBUG
 
+SILENCED_SYSTEM_CHECKS = [
+    # auth.W004 checks that the UserProfile field named by USERNAME_FIELD has
+    # `unique=True`.  For us this is `email`, and it's unique only per-realm.
+    # Per Django docs, this is perfectly fine so long as our authentication
+    # backends support the username not being unique; and they do.
+    # See: https://docs.djangoproject.com/en/1.11/topics/auth/customizing/#django.contrib.auth.models.CustomUser.USERNAME_FIELD
+    "auth.W004",
+]
+
 ########################################################################
 # DATABASE CONFIGURATION
 ########################################################################

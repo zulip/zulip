@@ -77,11 +77,12 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         # contact support.
         return redirect_to_deactivation_notice()
 
-    try:
-        validate_email_for_realm(realm, email)
-    except ValidationError:  # nocoverage # We need to add a test for this.
-        return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' +
-                                    urllib.parse.quote_plus(email))
+    if not realm_creation:
+        try:
+            validate_email_for_realm(realm, email)
+        except ValidationError:  # nocoverage # We need to add a test for this.
+            return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' +
+                                        urllib.parse.quote_plus(email))
 
     name_validated = False
     full_name = None
