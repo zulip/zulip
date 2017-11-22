@@ -41,6 +41,7 @@
     "webpack-bundle-tracker": "0.2.0",
     "winchan": "0.2.0",
     "xdate": "0.8.2",
+    "yarn": "^1.3.2",
     "zxcvbn": "4.4.2"
   },
   "devDependencies": {
