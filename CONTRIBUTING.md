@@ -224,24 +224,31 @@ to:
 
 ## Internship programs
 
-Zulip runs internship programs with [Outreachy](https://www.outreachy.org/),
-[Google Summer of Code](https://developers.google.com/open-source/gsoc/),
-and the
+Zulip runs internship programs with
+[Outreachy](https://www.outreachy.org/),
+[Google Summer of Code (GSoC)](https://developers.google.com/open-source/gsoc/)
+[1], and the
 [MIT Externship program](https://alum.mit.edu/students/NetworkwithAlumni/ExternshipProgram),
-and has in the past taken summer interns from Harvard, MIT, and Stanford.
+and has in the past taken summer interns from Harvard, MIT, and
+Stanford.
 
-The application process and selection criteria for all our internship
-programs is the same. A few notes:
+While each third-party program has its own rules and requirements, the
+Zulip community's approaches all of these programs with these ideas in
+mind:
 * We try to make the application process as valuable for the applicant as
   possible. Expect high quality code reviews, a supportive community, and
   publicly viewable patches you can link to from your resume, regardless of
   whether you are selected.
 * To apply, you'll have to submit at least one pull request to a Zulip
-  repository. Strong applicants for most of our programs typically have
-  several complete pull requests by the time of the application deadline.
-* The main criteria we use is quality of your strongest contributions, and
+  repository.  Most students accepted to one of our programs have
+  several merged pull requests (including at least one larger PR) by
+  the time of the application deadline.
+* The main criteria we use is quality of your best contributions, and
   the bullets listed at
   [What makes a great Zulip contributor](#what-makes-a-great-zulip-contributor).
+  Because we focus on evaluating your best work, it doesn't hurt your
+  application to makes mistakes in your first few PRs as long as your
+  work improves.
 
 Zulip also participates in
 [Google Code-In](https://developers.google.com/open-source/gci/). Our
@@ -269,7 +276,19 @@ a strong application.  About half of Zulip's GSoC students for Summer
 [GSoC guide from last year][gsoc-2017] is mostly still accurate (with
 the exception that many of the project ideas are now completed).
 
+We also have in some past years run a Zulip Summer of Code (ZSoC)
+program for students who we didn't have enough slots to accept for
+GSoC but are able to find funding for.  Student expectations are the
+same as with GSoC, and it has no separate application process; your
+GSoC application is your ZSoC application.  If we'd like to select you
+for ZSoC, we'll contact you when GSoC results are announced.
+
 [gsoc-2017]: https://github.com/zulip/zulip.github.io/blob/master/gsoc-ideas.md
+[gsoc-faq]: https://developers.google.com/open-source/gsoc/faq
+
+[1] Formally, [GSoC isn't an internship][gsoc-faq], but it is similar
+enough that we're treating it as such for the purposes of this
+documentation.
 
 ## Zulip Outreach
 
