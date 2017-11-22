@@ -31,8 +31,8 @@ class CountStat:
     DAY = 'day'
     FREQUENCIES = frozenset([HOUR, DAY])
 
-    def __init__(self, property, data_collector, frequency, interval=None):
-        # type: (str, DataCollector, str, Optional[timedelta]) -> None
+    def __init__(self, property: str, data_collector: 'DataCollector', frequency: str,
+                 interval: Optional[timedelta]=None) -> None:
         self.property = property
         self.data_collector = data_collector
         # might have to do something different for bitfields
@@ -46,31 +46,28 @@ class CountStat:
         else:  # frequency == CountStat.DAY
             self.interval = timedelta(days=1)
 
-    def __str__(self):
-        # type: () -> Text
+    def __str__(self) -> Text:
         return "<CountStat: %s>" % (self.property,)
 
 class LoggingCountStat(CountStat):
-    def __init__(self, property, output_table, frequency):
-        # type: (str, Type[BaseCount], str) -> None
+    def __init__(self, property: str, output_table: Type[BaseCount], frequency: str) -> None:
         CountStat.__init__(self, property, DataCollector(output_table, None), frequency)
 
 class DependentCountStat(CountStat):
-    def __init__(self, property, data_collector, frequency, interval=None, dependencies=[]):
-        # type: (str, DataCollector, str, Optional[timedelta], List[str]) -> None
+    def __init__(self, property: str, data_collector: 'DataCollector', frequency: str,
+                 interval: Optional[timedelta]=None, dependencies: List[str]=[]) -> None:
         CountStat.__init__(self, property, data_collector, frequency, interval=interval)
         self.dependencies = dependencies
 
 class DataCollector:
-    def __init__(self, output_table, pull_function):
-        # type: (Type[BaseCount], Optional[Callable[[str, datetime, datetime], int]]) -> None
+    def __init__(self, output_table: Type[BaseCount],
+                 pull_function: Optional[Callable[[str, datetime, datetime], int]]) -> None:
         self.output_table = output_table
         self.pull_function = pull_function
 
 ## CountStat-level operations ##
 
-def process_count_stat(stat, fill_to_time):
-    # type: (CountStat, datetime) -> None
+def process_count_stat(stat: CountStat, fill_to_time: datetime) -> None:
     if stat.frequency == CountStat.HOUR:
         time_increment = timedelta(hours=1)
     elif stat.frequency == CountStat.DAY:
@@ -120,16 +117,14 @@ def process_count_stat(stat, fill_to_time):
         currently_filled = currently_filled + time_increment
         logger.info("DONE %s (%dms)" % (stat.property, (end-start)*1000))
 
-def do_update_fill_state(fill_state, end_time, state):
-    # type: (FillState, datetime, int) -> None
+def do_update_fill_state(fill_state: FillState, end_time: datetime, state: int) -> None:
     fill_state.end_time = end_time
     fill_state.state = state
     fill_state.save()
 
 # We assume end_time is valid (e.g. is on a day or hour boundary as appropriate)
 # and is timezone aware. It is the caller's responsibility to enforce this!
-def do_fill_count_stat_at_hour(stat, end_time):
-    # type: (CountStat, datetime) -> None
+def do_fill_count_stat_at_hour(stat: CountStat, end_time: datetime) -> None:
     start_time = end_time - stat.interval
     if not isinstance(stat, LoggingCountStat):
         timer = time.time()
@@ -139,8 +134,7 @@ def do_fill_count_stat_at_hour(stat, end_time):
                     (stat.property, (time.time()-timer)*1000, rows_added))
     do_aggregate_to_summary_table(stat, end_time)
 
-def do_delete_counts_at_hour(stat, end_time):
-    # type: (CountStat, datetime) -> None
+def do_delete_counts_at_hour(stat: CountStat, end_time: datetime) -> None:
     if isinstance(stat, LoggingCountStat):
         InstallationCount.objects.filter(property=stat.property, end_time=end_time).delete()
         if stat.data_collector.output_table in [UserCount, StreamCount]:
@@ -151,8 +145,7 @@ def do_delete_counts_at_hour(stat, end_time):
         RealmCount.objects.filter(property=stat.property, end_time=end_time).delete()
         InstallationCount.objects.filter(property=stat.property, end_time=end_time).delete()
 
-def do_aggregate_to_summary_table(stat, end_time):
-    # type: (CountStat, datetime) -> None
+def do_aggregate_to_summary_table(stat: CountStat, end_time: datetime) -> None:
     cursor = connection.cursor()
 
     # Aggregate into RealmCount
@@ -202,8 +195,9 @@ def do_aggregate_to_summary_table(stat, end_time):
 ## Utility functions called from outside counts.py ##
 
 # called from zerver/lib/actions.py; should not throw any errors
-def do_increment_logging_stat(zerver_object, stat, subgroup, event_time, increment=1):
-    # type: (Union[Realm, UserProfile, Stream], CountStat, Optional[Union[str, int, bool]], datetime, int) -> None
+def do_increment_logging_stat(zerver_object: Union[Realm, UserProfile, Stream], stat: CountStat,
+                              subgroup: Optional[Union[str, int, bool]], event_time: datetime,
+                              increment: int=1) -> None:
     table = stat.data_collector.output_table
     if table == RealmCount:
         id_args = {'realm': zerver_object}
@@ -224,8 +218,7 @@ def do_increment_logging_stat(zerver_object, stat, subgroup, event_time, increme
         row.value = F('value') + increment
         row.save(update_fields=['value'])
 
-def do_drop_all_analytics_tables():
-    # type: () -> None
+def do_drop_all_analytics_tables() -> None:
     UserCount.objects.all().delete()
     StreamCount.objects.all().delete()
     RealmCount.objects.all().delete()
@@ -233,8 +226,7 @@ def do_drop_all_analytics_tables():
     FillState.objects.all().delete()
     Anomaly.objects.all().delete()
 
-def do_drop_single_stat(property):
-    # type: (str) -> None
+def do_drop_single_stat(property: str) -> None:
     UserCount.objects.filter(property=property).delete()
     StreamCount.objects.filter(property=property).delete()
     RealmCount.objects.filter(property=property).delete()
@@ -243,8 +235,8 @@ def do_drop_single_stat(property):
 
 ## DataCollector-level operations ##
 
-def do_pull_by_sql_query(property, start_time, end_time, query, group_by):
-    # type: (str, datetime, datetime, str, Optional[Tuple[models.Model, str]]) -> int
+def do_pull_by_sql_query(property: str, start_time: datetime, end_time: datetime, query: str,
+                         group_by: Optional[Tuple[models.Model, str]]) -> int:
     if group_by is None:
         subgroup = 'NULL'
         group_by_clause  = ''
@@ -264,15 +256,13 @@ def do_pull_by_sql_query(property, start_time, end_time, query, group_by):
     cursor.close()
     return rowcount
 
-def sql_data_collector(output_table, query, group_by):
-    # type: (Type[BaseCount], str, Optional[Tuple[models.Model, str]]) -> DataCollector
-    def pull_function(property, start_time, end_time):
-        # type: (str, datetime, datetime) -> int
+def sql_data_collector(output_table: Type[BaseCount], query: str,
+                       group_by: Optional[Tuple[models.Model, str]]) -> DataCollector:
+    def pull_function(property: str, start_time: datetime, end_time: datetime) -> int:
         return do_pull_by_sql_query(property, start_time, end_time, query, group_by)
     return DataCollector(output_table, pull_function)
 
-def do_pull_minutes_active(property, start_time, end_time):
-    # type: (str, datetime, datetime) -> int
+def do_pull_minutes_active(property: str, start_time: datetime, end_time: datetime) -> int:
     user_activity_intervals = UserActivityInterval.objects.filter(
         end__gt=start_time, start__lt=end_time
     ).select_related(
