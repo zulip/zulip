@@ -54,6 +54,14 @@ def display_list(values, display_limit):
     return display_string
 
 md_extensions = None
+md_macro_extension = None
+# Prevent the automatic substitution of macros in these docs. If
+# they contain a macro, it is always used literally for documenting
+# the macro system.
+docs_without_macros = [
+    "integration-docs-guide.md",
+    "webhook-walkthrough.md",
+]
 
 @register.filter(name='render_markdown_path', is_safe=True)
 def render_markdown_path(markdown_file_path, context=None):
@@ -64,6 +72,7 @@ def render_markdown_path(markdown_file_path, context=None):
     trusted; it is intended to be used for documentation, not user
     data."""
     global md_extensions
+    global md_macro_extension
     if md_extensions is None:
         md_extensions = [
             markdown.extensions.extra.makeExtension(),
@@ -74,9 +83,15 @@ def render_markdown_path(markdown_file_path, context=None):
                 guess_lang=False
             ),
             zerver.lib.bugdown.fenced_code.makeExtension(),
-            markdown_include.include.makeExtension(base_path='templates/zerver/help/include/'),
         ]
-    md_engine = markdown.Markdown(extensions=md_extensions)
+    if md_macro_extension is None:
+        md_macro_extension = markdown_include.include.makeExtension(
+            base_path='templates/zerver/help/include/')
+
+    if any(doc in markdown_file_path for doc in docs_without_macros):
+        md_engine = markdown.Markdown(extensions=md_extensions)
+    else:
+        md_engine = markdown.Markdown(extensions=md_extensions + [md_macro_extension])
     md_engine.reset()
 
     if context is None:
