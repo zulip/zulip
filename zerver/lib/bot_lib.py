@@ -48,7 +48,6 @@ class StateHandler:
         return self.demarshal(get_bot_state(self.user_profile, key))
 
     def put(self, key: Text, value: Text) -> None:
-        set_bot_state(self.user_profile, key, self.marshal(value))
         set_bot_state(self.user_profile, [(key, self.marshal(value))])
 
     def remove(self, key: Text) -> None:
