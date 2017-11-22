@@ -47,7 +47,7 @@ class CountStat:
             self.interval = timedelta(days=1)
 
     def __str__(self) -> Text:
-        return "<CountStat: %s>" % (self.property,)
+        return "<CountStat: %s>" % (self.property,)  # nocoverage
 
 class LoggingCountStat(CountStat):
     def __init__(self, property: str, output_table: Type[BaseCount], frequency: str) -> None:

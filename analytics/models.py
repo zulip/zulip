@@ -18,7 +18,7 @@ class FillState(models.Model):
     last_modified = models.DateTimeField(auto_now=True)  # type: datetime.datetime
 
     def __str__(self) -> Text:
-        return "<FillState: %s %s %s>" % (self.property, self.end_time, self.state)
+        return "<FillState: %s %s %s>" % (self.property, self.end_time, self.state)  # nocoverage
 
 # The earliest/starting end_time in FillState
 # We assume there is at least one realm
@@ -39,7 +39,7 @@ class Anomaly(models.Model):
     info = models.CharField(max_length=1000)  # type: Text
 
     def __str__(self) -> Text:
-        return "<Anomaly: %s... %s>" % (self.info, self.id)
+        return "<Anomaly: %s... %s>" % (self.info, self.id)  # nocoverage
 
 class BaseCount(models.Model):
     # Note: When inheriting from BaseCount, you may want to rearrange
@@ -60,7 +60,7 @@ class InstallationCount(BaseCount):
         unique_together = ("property", "subgroup", "end_time")
 
     def __str__(self) -> Text:
-        return "<InstallationCount: %s %s %s>" % (self.property, self.subgroup, self.value)
+        return "<InstallationCount: %s %s %s>" % (self.property, self.subgroup, self.value)  # nocoverage
 
 class RealmCount(BaseCount):
     realm = models.ForeignKey(Realm)
@@ -70,7 +70,8 @@ class RealmCount(BaseCount):
         index_together = ["property", "end_time"]
 
     def __str__(self) -> Text:
-        return "<RealmCount: %s %s %s %s>" % (self.realm, self.property, self.subgroup, self.value)
+        return "<RealmCount: %s %s %s %s>" % (
+            self.realm, self.property, self.subgroup, self.value)  # nocoverage
 
 class UserCount(BaseCount):
     user = models.ForeignKey(UserProfile)
@@ -83,7 +84,8 @@ class UserCount(BaseCount):
         index_together = ["property", "realm", "end_time"]
 
     def __str__(self) -> Text:
-        return "<UserCount: %s %s %s %s>" % (self.user, self.property, self.subgroup, self.value)
+        return "<UserCount: %s %s %s %s>" % (
+            self.user, self.property, self.subgroup, self.value)  # nocoverage
 
 class StreamCount(BaseCount):
     stream = models.ForeignKey(Stream)
@@ -97,4 +99,4 @@ class StreamCount(BaseCount):
 
     def __str__(self) -> Text:
         return "<StreamCount: %s %s %s %s %s>" % (
-            self.stream, self.property, self.subgroup, self.value, self.id)
+            self.stream, self.property, self.subgroup, self.value, self.id)  # nocoverage
