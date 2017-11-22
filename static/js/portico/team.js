@@ -21,6 +21,14 @@ function contrib_total_commits(contrib) {
 export default function render_tabs() {
     var template = _.template($('#contributors-template').html());
 
+    // Since the Github API limits the number of output to 100, we want to
+    // remove anyone in the total tab with less commits than the 100th
+    // contributor to the server repo. (See #7470)
+    var least_server_commits = _.chain(contributors_list)
+        .filter('server')
+        .sortBy('server')
+        .value()[0].server;
+
     var total_tab_html = _.chain(contributors_list)
         .map(function (c) {
             return {
@@ -31,6 +39,7 @@ export default function render_tabs() {
         })
         .sortBy('commits')
         .reverse()
+        .filter(function (c) { return c.commits >= least_server_commits; })
         .map(function (c) { return template(c); })
         .value()
         .join('');
