@@ -10,6 +10,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 {% stylesheet 'portico' %}
 {% stylesheet 'landing-page' %}
+<script>
+    var contributors_list = {{ contrib|safe }};
+</script>
 {{ render_bundle('landing-page') }}
 
 {% endblock %}
@@ -127,21 +130,45 @@
                     team have made major contributions to the project.
                 </p>
 
-                <div class="contributors">
-                    {% for person in data %}
+                <input id="total" type="radio" name="tabs" checked>
+                <label for="total"><i class="fa fa-globe" aria-hidden="true"></i>&nbsp; Top contributions</label>
+
+                <input id="server" type="radio" name="tabs">
+                <label for="server"><i class="fa fa-server" aria-hidden="true"></i>&nbsp; Zulip server</label>
+
+                <input id="desktop" type="radio" name="tabs">
+                <label for="desktop"><i class="fa fa-desktop" aria-hidden="true"></i>&nbsp; Desktop</label>
+
+                <input id="mobile" type="radio" name="tabs">
+                <label for="mobile"><i class="fa fa-mobile" aria-hidden="true"></i>&nbsp; Mobile</label>
+
+                <input id="python-zulip-api" type="radio" name="tabs">
+                <label for="python-zulip-api"><i class="fa fa-code" aria-hidden="true"></i>&nbsp; Python API</label>
+
+                <input id="zulipbot" type="radio" name="tabs">
+                <label for="zulipbot"><i class="fa fa-at" aria-hidden="true"></i>&nbsp; Zulipbot</label>
+
+                <div id="tab-total" class="contributors"></div>
+                <div id="tab-server" class="contributors"></div>
+                <div id="tab-desktop" class="contributors"></div>
+                <div id="tab-mobile" class="contributors"></div>
+                <div id="tab-python-zulip-api" class="contributors"></div>
+                <div id="tab-zulipbot" class="contributors"></div>
+
+                <!-- Compiled using underscore -->
+                <script type="text/template" id="contributors-template">
                     <div class="person">
-                        <a href="https://github.com/{{ person.name }}" target="_blank" class="no-underline">
+                        <a href="https://github.com/<%= name %>" target="_blank" class="no-underline">
                             <div class="avatar">
-                                <img class="avatar_img" src="{{ person.avatar }}" alt="{{ _('Avatar') }}" />
+                                <img class="avatar_img" src="<%= avatar %>" alt="{{ _('Avatar') }}" />
                             </div>
                             <div class='info'>
-                                <b>@{{ person.name }}</b><br />
-                                {{ person.commits }} commits
+                                <b>@<%= name %></b><br />
+                                <%= commits %> commits
                             </div>
                         </a>
                     </div>
-                    {% endfor %}
-                </div>
+                </script>
 
                 <p class="last-updated">
                     Statistic last updated: {{ date }}

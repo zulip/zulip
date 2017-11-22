@@ -904,7 +904,41 @@ a.bottom-signup-button {
     margin-bottom: 10px;
 }
 
+.team input {
+    display: none;
+}
+
+.team label {
+    font-size: initial;
+    display: inline-block;
+    padding: 10px;
+    border: 1px solid transparent;
+    margin: 0 0 -1px 0;
+}
+
+.team label:hover {
+    cursor: pointer;
+}
+
+.team input:checked + label {
+    border: 1px solid #eee;
+    border-top: 2px solid yellowgreen;
+    border-bottom-color: #fff;
+}
+
 .contributors {
+    display: none;
+}
+
+/* Activated .contributors */
+input#total:checked ~ #tab-total,
+input#server:checked ~ #tab-server,
+input#desktop:checked ~ #tab-desktop,
+input#mobile:checked ~ #tab-mobile,
+input#python-zulip-api:checked ~ #tab-python-zulip-api,
+input#zulipbot:checked ~ #tab-zulipbot {
+    border-top: 1px solid #eee;
+    padding-top: 20px;
     display: grid;
     grid-gap: 5px;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
