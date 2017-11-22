@@ -49,7 +49,6 @@ not_yet_fully_covered = {
     # Major lib files should have 100% coverage
     'confirmation/models.py',
     'zerver/decorator.py',
-    'zerver/forms.py',
     'zerver/lib/actions.py',
     'zerver/lib/addressee.py',
     'zerver/lib/bugdown/__init__.py',
