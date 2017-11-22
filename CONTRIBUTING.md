@@ -265,23 +265,22 @@ students in summer 2017).  While we don't control how many slots
 Google allocates to Zulip, we hope to mentor a similar number of
 students in 2018.
 
-If you're reading this well before the application and deadling and
+If you're reading this well before the application deadline and
 want to make your application strong, we recommend getting involved in
-the community and fixing issues in Zulip now.  Since the most
-important part of your application is your contributors, building a
-reputation for doing good work is best way to spend time now on having
+the community and fixing issues in Zulip now. Having good contributions
+and building a reputation for doing good work is best way to have
 a strong application.  About half of Zulip's GSoC students for Summer
 2017 had made significant contributions to the project by February
-2017 (and about half did not!).  Our
+2017, and about half had not.  Our
 [GSoC guide from last year][gsoc-2017] is mostly still accurate (with
 the exception that many of the project ideas are now completed).
 
 We also have in some past years run a Zulip Summer of Code (ZSoC)
 program for students who we didn't have enough slots to accept for
-GSoC but are able to find funding for.  Student expectations are the
+GSoC but were able to find funding for.  Student expectations are the
 same as with GSoC, and it has no separate application process; your
 GSoC application is your ZSoC application.  If we'd like to select you
-for ZSoC, we'll contact you when GSoC results are announced.
+for ZSoC, we'll contact you when the GSoC results are announced.
 
 [gsoc-2017]: https://github.com/zulip/zulip.github.io/blob/master/gsoc-ideas.md
 [gsoc-faq]: https://developers.google.com/open-source/gsoc/faq
