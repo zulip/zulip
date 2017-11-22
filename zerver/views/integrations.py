@@ -127,8 +127,6 @@ def add_context_for_single_integration(context, name, request):
     context['settings_html'] = settings_html
     context['subscriptions_html'] = subscriptions_html
 
-    INTEGRATIONS[name].add_doc_context(context)
-
 
 class IntegrationView(ApiURLView):
     template_name = 'zerver/integrations/index.html'
@@ -148,7 +146,7 @@ def integration_doc(request, integration_name=REQ(default=None)):
     except KeyError:
         return HttpResponseNotFound()
 
-    context = integration.doc_context or {}
+    context = {}  # type: Dict[str, Any]
     add_context_for_single_integration(context, integration_name, request)
 
     context['integration_name'] = integration.name
