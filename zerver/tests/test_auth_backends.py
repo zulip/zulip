@@ -520,6 +520,8 @@ class GitHubAuthBackendTest(ZulipTestCase):
         user = self.backend.authenticate(return_data=return_data, response=response)
         self.assertIs(user, None)
         self.assertTrue(return_data['invalid_email'])
+        result = self.backend.process_do_auth(user, return_data=return_data, response=response)
+        self.assertIs(result, None)
 
     def test_github_backend_inactive_user(self):
         # type: () -> None
@@ -698,29 +700,6 @@ class GitHubAuthBackendTest(ZulipTestCase):
             self.assertIn('login', result.url)
 
         utils.BACKENDS = settings.AUTHENTICATION_BACKENDS
-
-    def test_github_complete_when_email_is_invalid(self):
-        # type: () -> None
-        from social_django import utils
-        utils.BACKENDS = ('zproject.backends.GitHubAuthBackend',)
-        with mock.patch('zproject.backends.GitHubAuthBackend.get_email_address',
-                        return_value=None) as mock_get_email_address, \
-                mock.patch('social_core.backends.oauth.OAuthAuth.validate_state',
-                           return_value='state'), \
-                mock.patch('social_core.backends.oauth.BaseOAuth2.request_access_token',
-                           return_value={'access_token': 'token'}), \
-                mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
-                           side_effect=self.do_auth), \
-                mock.patch('zproject.backends.logging.warning'):
-            result = self.client_get(reverse('social:complete', args=['github']),
-                                     info={'state': 'state'})
-            self.assertEqual(result.status_code, 200)
-            self.assert_in_response("Please click the following button "
-                                    "if you wish to register.", result)
-            self.assertEqual(mock_get_email_address.call_count, 2)
-
-        utils.BACKENDS = settings.AUTHENTICATION_BACKENDS
-
 
 class ResponseMock:
     def __init__(self, status_code, data):

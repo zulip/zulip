@@ -249,6 +249,7 @@ class SocialAuthMixin(ZulipAuthMixin):
             logging.warning(
                 "{} got invalid email argument.".format(self.auth_backend_name)
             )
+            return None
 
         strategy = self.strategy  # type: ignore # This comes from Python Social Auth.
         request = strategy.request
