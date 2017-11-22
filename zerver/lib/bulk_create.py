@@ -48,7 +48,7 @@ def bulk_create_users(realm: Realm,
     Recipient.objects.bulk_create(recipients_to_create)
 
     recipients_by_email = {}  # type: Dict[Text, Recipient]
-    for recipient in Recipient.objects.filter(type=Recipient.PERSONAL):
+    for recipient in recipients_to_create:
         recipients_by_email[profiles_by_id[recipient.type_id].email] = recipient
 
     subscriptions_to_create = []  # type: List[Subscription]
