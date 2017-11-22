@@ -229,7 +229,7 @@ def get_topic_history_for_stream(user_profile, recipient):
 
     return history
 
-def send_signup_message(sender, signups_stream, user_profile,
+def send_signup_message(sender, admin_realm_signup_notifications_stream, user_profile,
                         internal=False, realm=None):
     # type: (UserProfile, Text, UserProfile, bool, Optional[Realm]) -> None
     if internal:
@@ -239,24 +239,26 @@ def send_signup_message(sender, signups_stream, user_profile,
         internal_blurb = " "
 
     user_count = realm_user_count(user_profile.realm)
-    notifications_stream = user_profile.realm.get_notifications_stream()
-    # Send notification to realm notifications stream if it exists
+    signup_notifications_stream = user_profile.realm.get_signup_notifications_stream()
+    # Send notification to realm signup notifications stream if it exists
     # Don't send notification for the first user in a realm
-    if notifications_stream is not None and user_count > 1:
+    if signup_notifications_stream is not None and user_count > 1:
         internal_send_message(
             user_profile.realm,
             sender,
             "stream",
-            notifications_stream.name,
-            "New users", "%s just signed up for Zulip. Say hello!" % (
-                user_profile.full_name,)
+            signup_notifications_stream.name,
+            "signups",
+            "%s (%s) just signed up for Zulip. (total: %i)" % (
+                user_profile.full_name, user_profile.email, user_count
+            )
         )
 
     # We also send a notification to the Zulip administrative realm
     admin_realm = get_system_bot(sender).realm
     try:
         # Check whether the stream exists
-        get_stream(signups_stream, admin_realm)
+        get_stream(admin_realm_signup_notifications_stream, admin_realm)
     except Stream.DoesNotExist:
         # If the signups stream hasn't been created in the admin
         # realm, don't auto-create it to send to it; just do nothing.
@@ -265,7 +267,7 @@ def send_signup_message(sender, signups_stream, user_profile,
         admin_realm,
         sender,
         "stream",
-        signups_stream,
+        admin_realm_signup_notifications_stream,
         user_profile.realm.display_subdomain,
         "%s <`%s`> just signed up for Zulip!%s(total: **%i**)" % (
             user_profile.full_name,
@@ -568,6 +570,18 @@ def do_set_realm_notifications_stream(realm, stream, stream_id):
         type="realm",
         op="update",
         property="notifications_stream_id",
+        value=stream_id
+    )
+    send_event(event, active_user_ids(realm.id))
+
+def do_set_realm_signup_notifications_stream(realm, stream, stream_id):
+    # type: (Realm, Stream, int) -> None
+    realm.signup_notifications_stream = stream
+    realm.save(update_fields=['signup_notifications_stream'])
+    event = dict(
+        type="realm",
+        op="update",
+        property="signup_notifications_stream_id",
         value=stream_id
     )
     send_event(event, active_user_ids(realm.id))
@@ -1795,6 +1809,8 @@ def check_message(sender, client, addressee,
         elif sender.email == settings.WELCOME_BOT:
             # The welcome bot welcomes folks to the stream.
             pass
+        elif sender.email == settings.NEW_USER_BOT:
+            pass
         else:
             # All other cases are an error.
             raise JsonableError(_("Not authorized to send to stream '%s'") % (stream.name,))
@@ -2815,7 +2831,13 @@ def do_create_realm(string_id, name, restricted_to_domain=None,
     # Create stream once Realm object has been saved
     notifications_stream, _ = create_stream_if_needed(realm, Realm.DEFAULT_NOTIFICATION_STREAM_NAME)
     realm.notifications_stream = notifications_stream
-    realm.save(update_fields=['notifications_stream'])
+
+    signup_notifications_stream, _ = create_stream_if_needed(
+        realm, Realm.INITIAL_PRIVATE_STREAM_NAME, invite_only=True,
+        stream_description="A private stream for core team members.")
+    realm.signup_notifications_stream = signup_notifications_stream
+
+    realm.save(update_fields=['notifications_stream', 'signup_notifications_stream'])
 
     # Log the event
     log_event({"type": "realm_created",
