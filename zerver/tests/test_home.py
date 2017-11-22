@@ -607,9 +607,8 @@ class HomeTest(ZulipTestCase):
                 result = self._get_home_page()
             self._sanity_check(result)
 
-    def send_test_message(self, content, sender_name='iago',
-                          stream_name='Denmark', topic_name='foo'):
-        # type: (str, str, str, str) -> None
+    def send_test_message(self, content: str, sender_name: str='iago',
+                          stream_name: str='Denmark', topic_name: str='foo') -> None:
         sender = self.example_email(sender_name)
         self.send_stream_message(sender, stream_name,
                                  content=content, topic_name=topic_name)

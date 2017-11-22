@@ -449,9 +449,8 @@ class StreamAdminTest(ZulipTestCase):
                                    {'description': ujson.dumps('Test description')})
         self.assert_json_error(result, 'Must be a realm administrator')
 
-    def set_up_stream_for_deletion(self, stream_name, invite_only=False,
-                                   subscribed=True):
-        # type: (str, bool, bool) -> Stream
+    def set_up_stream_for_deletion(self, stream_name: str, invite_only: bool=False,
+                                   subscribed: bool=True) -> Stream:
         """
         Create a stream for deletion by an administrator.
         """
@@ -565,9 +564,9 @@ class StreamAdminTest(ZulipTestCase):
             "privstream", subscribed=False, invite_only=True)
         self.delete_stream(priv_stream)
 
-    def attempt_unsubscribe_of_principal(self, query_count, is_admin=False, is_subbed=True,
-                                         invite_only=False, other_user_subbed=True):
-        # type: (int, bool, bool, bool, bool) -> HttpResponse
+    def attempt_unsubscribe_of_principal(self, query_count: int, is_admin: bool=False,
+                                         is_subbed: bool=True, invite_only: bool=False,
+                                         other_user_subbed: bool=True) -> HttpResponse:
 
         # Set up the main user, who is in most cases an admin.
         user_profile = self.example_user('hamlet')
@@ -1501,10 +1500,13 @@ class SubscriptionAPITest(ZulipTestCase):
         # also check that this matches the list of your subscriptions
         self.assertEqual(sorted(list_streams), sorted(self.streams))
 
-    def helper_check_subs_before_and_after_add(self, subscriptions, other_params,
-                                               subscribed, already_subscribed,
-                                               email, new_subs, realm, invite_only=False):
-        # type: (List[Text], Dict[str, Any], List[Text], List[Text], Text, List[Text], Realm, bool) -> None
+    def helper_check_subs_before_and_after_add(self, subscriptions: List[Text],
+                                               other_params: Dict[str, Any],
+                                               subscribed: List[Text],
+                                               already_subscribed: List[Text],
+                                               email: Text, new_subs: List[Text],
+                                               realm: Realm,
+                                               invite_only: bool=False) -> None:
         """
         Check result of adding subscriptions.
 
@@ -2102,9 +2104,10 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assert_json_error(result, "User not authorized to execute queries on behalf of '%s'"
                                % (principal,), status_code=403)
 
-    def helper_check_subs_before_and_after_remove(self, subscriptions, json_dict,
-                                                  email, new_subs, realm):
-        # type: (List[Text], Dict[str, Any], Text, List[Text], Realm) -> None
+    def helper_check_subs_before_and_after_remove(self, subscriptions: List[Text],
+                                                  json_dict: Dict[str, Any],
+                                                  email: Text, new_subs: List[Text],
+                                                  realm: Realm) -> None:
         """
         Check result of removing subscriptions.
 

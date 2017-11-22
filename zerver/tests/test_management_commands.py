@@ -153,11 +153,10 @@ class TestSendWebhookFixtureMessage(TestCase):
     @patch('zerver.management.commands.send_webhook_fixture_message.ujson')
     @patch("zerver.management.commands.send_webhook_fixture_message.open", create=True)
     def test_check_if_command_post_request_to_url_with_fixture(self,
-                                                               open_mock,
-                                                               ujson_mock,
-                                                               client_mock,
-                                                               os_path_exists_mock):
-        # type: (MagicMock, MagicMock, MagicMock, MagicMock) -> None
+                                                               open_mock: MagicMock,
+                                                               ujson_mock: MagicMock,
+                                                               client_mock: MagicMock,
+                                                               os_path_exists_mock: MagicMock) -> None:
         ujson_mock.loads.return_value = '{}'
         ujson_mock.dumps.return_value = {}
         os_path_exists_mock.return_value = True
