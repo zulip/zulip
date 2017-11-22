@@ -183,8 +183,8 @@ Using `manage.py` from within the Zulip development environment:
 ```
 (zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
 ./manage.py send_webhook_fixture_message \
-> --fixture=zerver/webhooks/helloworld/fixtures/hello.json \
-> '--url=http://localhost:9991/api/v1/external/helloworld?api_key=<api_key>'
+    --fixture=zerver/webhooks/helloworld/fixtures/hello.json \
+    '--url=http://localhost:9991/api/v1/external/helloworld?api_key=<api_key>'
 ```
 After which you should see something similar to:
 
@@ -339,14 +339,13 @@ stream name:
 
 `{{ api_url }}/v1/external/helloworld?api_key=abcdefgh&stream=test`
 
-
 To trigger a notification using this webhook, use
 `send_webhook_fixture_message` from the Zulip command line:
 
     (zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
     ./manage.py send_webhook_fixture_message \
-    > --fixture=zerver/fixtures/helloworld/hello.json \
-    > '--url=http://localhost:9991/api/v1/external/helloworld?api_key=&lt;api_key&gt;'
+        --fixture=zerver/fixtures/helloworld/hello.json \
+        '--url=http://localhost:9991/api/v1/external/helloworld?api_key=&lt;api_key&gt;'
 
 Or, use curl:
 
