@@ -26,6 +26,12 @@
       "text_content": "Hamlet once said\ndef func():\n    x = 1\n\n    y = 2\n\n    z = 3\n\n\n\nAnd all was good."
     },
     {
+      "name": "inline_code_spaces",
+      "input": "` outer ` ```    space    ```",
+      "expected_output": "<p><code> outer </code> <code>    space    </code></p>",
+      "text_content": " outer      space    "
+    },
+    {
       "name": "codeblock_backticks",
       "input": "\n```\nfenced code\n```\n\n```inline code```\n",
       "expected_output": "<div class=\"codehilite\"><pre><span></span>fenced code\n</pre></div>\n\n\n<p><code>inline code</code></p>",
@@ -93,8 +99,8 @@
     {
       "name": "dangerous_block",
       "input": "``` one ```\n\n``` two ```\n\n~~~~\nx = 1",
-      "expected_output": "<p><code>one</code></p>\n<p><code>two</code></p>\n<div class=\"codehilite\"><pre><span></span>x = 1\n</pre></div>",
-      "text_content": "one\ntwo\nx = 1\n"
+      "expected_output": "<p><code> one </code></p>\n<p><code> two </code></p>\n<div class=\"codehilite\"><pre><span></span>x = 1\n</pre></div>",
+      "text_content": " one \n two \nx = 1\n"
     },
     {
       "name": "four_space_code_block",
