@@ -93,7 +93,10 @@ def custom_check_file(fn, identifier, rules, color, skip_rules=None, max_length=
             line_length = len(line)
         if (max_length is not None and line_length > max_length and
             '# type' not in line and 'test' not in fn and 'example' not in fn and
+            # Don't throw errors for markdown format URLs
             not re.match("\[[ A-Za-z0-9_:,&()-]*\]: http.*", line) and
+            # Don't throw errors for URLs in code comments
+            not re.match("[#].*http.*", line) and
             not re.match("`\{\{ api_url \}\}[^`]+`", line) and
                 "# ignorelongline" not in line and 'migrations' not in fn):
             print("Line too long (%s) at %s line %s: %s" % (len(line), fn, i+1, line_newline_stripped))
