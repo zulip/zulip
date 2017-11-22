@@ -38,6 +38,10 @@ function make_textbox(s) {
         return widget.s;
     };
 
+    widget.trigger = function () {
+        return;
+    };
+
     return widget;
 }
 
