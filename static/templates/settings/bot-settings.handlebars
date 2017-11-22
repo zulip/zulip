@@ -35,9 +35,11 @@
                              title='{{t "Incoming webhooks can only send messages." }}'></i>
                         </label>
                         <select name="bot_type" id="create_bot_type">
-                            <option value="1">{{t "Generic bot" }}</option>
-                            <option value="2">{{t "Incoming webhook" }}</option>
-                            <option value="3">{{t "Outgoing webhook" }}</option>
+                            {{#each page_params.bot_types}}
+                                {{#if this.allowed}}
+                                <option value="{{this.type_id}}">{{this.name}}</option>
+                                {{/if}}
+                            {{/each}}
                         </select>
                     </div>
                     <div class="input-group">

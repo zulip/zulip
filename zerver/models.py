@@ -489,6 +489,13 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     """
     EMBEDDED_BOT = 4
 
+    BOT_TYPES = {
+        DEFAULT_BOT: 'Generic bot',
+        INCOMING_WEBHOOK_BOT: 'Incoming webhook',
+        OUTGOING_WEBHOOK_BOT: 'Outgoing webhook',
+        EMBEDDED_BOT: 'Embedded bot',
+    }
+
     # For now, don't allow creating other bot types via the UI
     ALLOWED_BOT_TYPES = [
         DEFAULT_BOT,
