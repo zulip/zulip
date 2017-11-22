@@ -26,6 +26,7 @@ from zerver.models import (
 )
 
 from zerver.lib.actions import (
+    create_stream_if_needed,
     encode_email_address,
     do_create_user
 )
@@ -35,7 +36,7 @@ from zerver.lib.email_mirror import (
     get_missed_message_token_from_address,
 )
 
-from zerver.lib.digest import handle_digest_email, enqueue_emails
+from zerver.lib.digest import gather_new_streams, handle_digest_email, enqueue_emails
 from zerver.lib.send_email import FromAddress
 from zerver.lib.notifications import (
     handle_missedmessage_emails,
@@ -371,6 +372,16 @@ class TestDigestEmailMessages(ZulipTestCase):
         for arg in mock_queue_digest_recipient.call_args_list:
             user = arg[0][0]
             self.assertNotEqual(user.id, bot.id)
+
+    @mock.patch('zerver.lib.digest.timezone_now')
+    def test_new_stream_link(self, mock_django_timezone: mock.MagicMock) -> None:
+        cutoff = datetime.datetime(year=2017, month=11, day=1)
+        mock_django_timezone.return_value = datetime.datetime(year=2017, month=11, day=5)
+        cordelia = self.example_user('cordelia')
+        create_stream_if_needed(cordelia.realm, 'New stream')
+        new_stream = gather_new_streams(cordelia, cutoff)[1]
+        expected_html = "<a href='http://zulip.testserver/#narrow/stream/New.20stream'>New stream</a>"
+        self.assertIn(expected_html, new_stream['html'])
 
 class TestReplyExtraction(ZulipTestCase):
     def test_reply_is_extracted_from_plain(self) -> None:
