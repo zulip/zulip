@@ -20,14 +20,14 @@ from zerver.lib.events import do_events_register
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
     do_activate_user, do_create_user, do_create_realm, \
     user_email_is_unique, compute_mit_user_fullname, validate_email_for_realm, \
-    do_set_user_display_setting, lookup_default_stream_groups
+    do_set_user_display_setting, lookup_default_stream_groups, bulk_add_subscriptions
 from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
     CreateUserForm, FindMyTeamForm
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from zerver.decorator import require_post, has_request_variables, \
     JsonableError, REQ, do_login
 from zerver.lib.onboarding import setup_initial_streams, \
-    setup_initial_private_stream, send_initial_realm_messages
+    send_initial_realm_messages
 from zerver.lib.response import json_success
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.timezone import get_all_timezones
@@ -191,7 +191,7 @@ def accounts_register(request):
             auth_result = authenticate(request,
                                        username=email,
                                        password=password,
-                                       realm_subdomain=realm.subdomain,
+                                       realm=realm,
                                        return_data=return_data)
             if auth_result is None:
                 # TODO: This probably isn't going to give a
@@ -220,7 +220,7 @@ def accounts_register(request):
                                           default_stream_groups=default_stream_groups)
 
         if realm_creation:
-            setup_initial_private_stream(user_profile)
+            bulk_add_subscriptions([realm.signup_notifications_stream], [user_profile])
             send_initial_realm_messages(realm)
 
         if realm_creation:
@@ -232,7 +232,7 @@ def accounts_register(request):
         # This dummy_backend check below confirms the user is
         # authenticating to the correct subdomain.
         auth_result = authenticate(username=user_profile.email,
-                                   realm_subdomain=realm.subdomain,
+                                   realm=realm,
                                    return_data=return_data,
                                    use_dummy_backend=True)
         if return_data.get('invalid_subdomain'):

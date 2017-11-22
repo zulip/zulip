@@ -32,6 +32,7 @@
     "script-loader": "0.7.2",
     "source-map-loader": "0.2.2",
     "string.prototype.codepointat": "0.2.0",
+    "to-markdown": "3.1.0",
     "ts-loader": "2.1.0",
     "ts-node": "3.3.0",
     "typescript": "2.3.3",

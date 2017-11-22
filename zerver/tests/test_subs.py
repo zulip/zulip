@@ -65,6 +65,11 @@ from zerver.views.streams import (
     compose_views
 )
 
+from zerver.lib.message import (
+    aggregate_unread_data,
+    get_raw_unread_data,
+)
+
 from django.http import HttpResponse
 import mock
 import random
@@ -444,9 +449,8 @@ class StreamAdminTest(ZulipTestCase):
                                    {'description': ujson.dumps('Test description')})
         self.assert_json_error(result, 'Must be a realm administrator')
 
-    def set_up_stream_for_deletion(self, stream_name, invite_only=False,
-                                   subscribed=True):
-        # type: (str, bool, bool) -> Stream
+    def set_up_stream_for_deletion(self, stream_name: str, invite_only: bool=False,
+                                   subscribed: bool=True) -> Stream:
         """
         Create a stream for deletion by an administrator.
         """
@@ -560,9 +564,9 @@ class StreamAdminTest(ZulipTestCase):
             "privstream", subscribed=False, invite_only=True)
         self.delete_stream(priv_stream)
 
-    def attempt_unsubscribe_of_principal(self, query_count, is_admin=False, is_subbed=True,
-                                         invite_only=False, other_user_subbed=True):
-        # type: (int, bool, bool, bool, bool) -> HttpResponse
+    def attempt_unsubscribe_of_principal(self, query_count: int, is_admin: bool=False,
+                                         is_subbed: bool=True, invite_only: bool=False,
+                                         other_user_subbed: bool=True) -> HttpResponse:
 
         # Set up the main user, who is in most cases an admin.
         user_profile = self.example_user('hamlet')
@@ -615,7 +619,7 @@ class StreamAdminTest(ZulipTestCase):
         those you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=14, is_admin=True, is_subbed=True, invite_only=False,
+            query_count=21, is_admin=True, is_subbed=True, invite_only=False,
             other_user_subbed=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
@@ -627,7 +631,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=14, is_admin=True, is_subbed=True, invite_only=True,
+            query_count=19, is_admin=True, is_subbed=True, invite_only=True,
             other_user_subbed=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
@@ -1496,10 +1500,13 @@ class SubscriptionAPITest(ZulipTestCase):
         # also check that this matches the list of your subscriptions
         self.assertEqual(sorted(list_streams), sorted(self.streams))
 
-    def helper_check_subs_before_and_after_add(self, subscriptions, other_params,
-                                               subscribed, already_subscribed,
-                                               email, new_subs, realm, invite_only=False):
-        # type: (List[Text], Dict[str, Any], List[Text], List[Text], Text, List[Text], Realm, bool) -> None
+    def helper_check_subs_before_and_after_add(self, subscriptions: List[Text],
+                                               other_params: Dict[str, Any],
+                                               subscribed: List[Text],
+                                               already_subscribed: List[Text],
+                                               email: Text, new_subs: List[Text],
+                                               realm: Realm,
+                                               invite_only: bool=False) -> None:
         """
         Check result of adding subscriptions.
 
@@ -1783,7 +1790,7 @@ class SubscriptionAPITest(ZulipTestCase):
                     streams_to_sub,
                     dict(principals=ujson.dumps([user1.email, user2.email])),
                 )
-        self.assert_length(queries, 40)
+        self.assert_length(queries, 39)
 
         self.assert_length(events, 7)
         for ev in [x for x in events if x['event']['type'] not in ('message', 'stream')]:
@@ -2097,9 +2104,10 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assert_json_error(result, "User not authorized to execute queries on behalf of '%s'"
                                % (principal,), status_code=403)
 
-    def helper_check_subs_before_and_after_remove(self, subscriptions, json_dict,
-                                                  email, new_subs, realm):
-        # type: (List[Text], Dict[str, Any], Text, List[Text], Realm) -> None
+    def helper_check_subs_before_and_after_remove(self, subscriptions: List[Text],
+                                                  json_dict: Dict[str, Any],
+                                                  email: Text, new_subs: List[Text],
+                                                  realm: Realm) -> None:
         """
         Check result of removing subscriptions.
 
@@ -2305,6 +2313,38 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertFalse(subscription.push_notifications)
         self.assertFalse(subscription.audible_notifications)
 
+    def test_mark_messages_as_unread_on_unsubscribe(self) -> None:
+        realm = get_realm("zulip")
+        user = self.example_user("iago")
+        random_user = self.example_user("hamlet")
+        (stream1, _) = create_stream_if_needed(realm, "stream1", invite_only=False)
+        (stream2, _) = create_stream_if_needed(realm, "stream2", invite_only=False)
+
+        self.subscribe(user, "stream1")
+        self.subscribe(user, "stream2")
+        self.subscribe(random_user, "stream1")
+        self.subscribe(random_user, "stream2")
+
+        self.send_stream_message(random_user.email, "stream1", "test", "test")
+        self.send_stream_message(random_user.email, "stream2", "test", "test")
+
+        def get_unread_stream_data() -> List[Dict[str, Any]]:
+            raw_unread_data = get_raw_unread_data(user)
+            aggregated_data = aggregate_unread_data(raw_unread_data)
+            return aggregated_data['streams']
+
+        result = get_unread_stream_data()
+        self.assert_length(result, 2)
+        self.assertEqual(result[0]['stream_id'], stream1.id)
+        self.assertEqual(result[1]['stream_id'], stream2.id)
+
+        # Unsubscribing should mark all the messages in stream2 as read
+        self.unsubscribe(user, "stream2")
+
+        self.subscribe(user, "stream2")
+        result = get_unread_stream_data()
+        self.assert_length(result, 1)
+        self.assertEqual(result[0]['stream_id'], stream1.id)
 
 class GetPublicStreamsTest(ZulipTestCase):
 

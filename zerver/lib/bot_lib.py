@@ -24,8 +24,7 @@ our_dir = os.path.dirname(os.path.abspath(__file__))
 
 from zulip_bots.lib import RateLimit
 
-def get_bot_handler(service_name):
-    # type: (str) -> Any
+def get_bot_handler(service_name: str) -> Any:
 
     # Check that this service is present in EMBEDDED_BOTS, add exception handling.
     is_present_in_registry = any(service_name == embedded_bot_service.name for
@@ -40,31 +39,25 @@ def get_bot_handler(service_name):
 class StateHandler:
     state_size_limit = 10000000   # type: int # TODO: Store this in the server configuration model.
 
-    def __init__(self, user_profile):
-        # type: (UserProfile) -> None
+    def __init__(self, user_profile: UserProfile) -> None:
         self.user_profile = user_profile
         self.marshal = lambda obj: json.dumps(obj)
         self.demarshal = lambda obj: json.loads(obj)
 
-    def get(self, key):
-        # type: (Text) -> Text
+    def get(self, key: Text) -> Text:
         return self.demarshal(get_bot_state(self.user_profile, key))
 
-    def put(self, key, value):
-        # type: (Text, Text) -> None
-        set_bot_state(self.user_profile, key, self.marshal(value))
+    def put(self, key: Text, value: Text) -> None:
+        set_bot_state(self.user_profile, [(key, self.marshal(value))])
 
-    def remove(self, key):
-        # type: (Text) -> None
-        remove_bot_state(self.user_profile, key)
+    def remove(self, key: Text) -> None:
+        remove_bot_state(self.user_profile, [key])
 
-    def contains(self, key):
-        # type: (Text) -> bool
+    def contains(self, key: Text) -> bool:
         return is_key_in_bot_state(self.user_profile, key)
 
 class EmbeddedBotHandler:
-    def __init__(self, user_profile):
-        # type: (UserProfile) -> None
+    def __init__(self, user_profile: UserProfile) -> None:
         # Only expose a subset of our UserProfile's functionality
         self.user_profile = user_profile
         self._rate_limit = RateLimit(20, 5)
@@ -72,8 +65,7 @@ class EmbeddedBotHandler:
         self.email = user_profile.email
         self.storage = StateHandler(user_profile)
 
-    def send_message(self, message):
-        # type: (Dict[str, Any]) -> None
+    def send_message(self, message: Dict[str, Any]) -> None:
         if self._rate_limit.is_legal():
             recipients = message['to'] if message['type'] == 'stream' else ','.join(message['to'])
             internal_send_message(realm=self.user_profile.realm, sender_email=self.user_profile.email,
@@ -82,8 +74,7 @@ class EmbeddedBotHandler:
         else:
             self._rate_limit.show_error_and_exit()
 
-    def send_reply(self, message, response):
-        # type: (Dict[str, Any], str) -> None
+    def send_reply(self, message: Dict[str, Any], response: str) -> None:
         if message['type'] == 'private':
             self.send_message(dict(
                 type='private',
@@ -100,6 +91,5 @@ class EmbeddedBotHandler:
                 sender_email=message['sender_email'],
             ))
 
-    def get_config_info(self):
-        # type: () -> Dict[Text, Text]
+    def get_config_info(self) -> Dict[Text, Text]:
         return get_bot_config(self.user_profile)

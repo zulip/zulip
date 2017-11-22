@@ -21,32 +21,26 @@ rules = settings.RATE_LIMITING_RULES  # type: List[Tuple[int, int]]
 KEY_PREFIX = ''
 
 class RateLimitedObject:
-    def get_keys(self):
-        # type: () -> List[Text]
+    def get_keys(self) -> List[Text]:
         key_fragment = self.key_fragment()
         return ["{}ratelimit:{}:{}".format(KEY_PREFIX, key_fragment, keytype)
                 for keytype in ['list', 'zset', 'block']]
 
-    def key_fragment(self):
-        # type: () -> Text
+    def key_fragment(self) -> Text:
         raise NotImplementedError()
 
-    def rules(self):
-        # type: () -> List[Tuple[int, int]]
+    def rules(self) -> List[Tuple[int, int]]:
         raise NotImplementedError()
 
 class RateLimitedUser(RateLimitedObject):
-    def __init__(self, user, domain='all'):
-        # type: (UserProfile, Text) -> None
+    def __init__(self, user: UserProfile, domain: Text='all') -> None:
         self.user = user
         self.domain = domain
 
-    def key_fragment(self):
-        # type: () -> Text
+    def key_fragment(self) -> Text:
         return "{}:{}:{}".format(type(self.user), self.user.id, self.domain)
 
-    def rules(self):
-        # type: () -> List[Tuple[int, int]]
+    def rules(self) -> List[Tuple[int, int]]:
         if self.user.rate_limits != "":
             result = []  # type: List[Tuple[int, int]]
             for limit in self.user.rate_limits.split(','):
@@ -55,36 +49,30 @@ class RateLimitedUser(RateLimitedObject):
             return result
         return rules
 
-def bounce_redis_key_prefix_for_testing(test_name):
-    # type: (Text) -> None
+def bounce_redis_key_prefix_for_testing(test_name: Text) -> None:
     global KEY_PREFIX
     KEY_PREFIX = test_name + ':' + Text(os.getpid()) + ':'
 
-def max_api_calls(entity):
-    # type: (RateLimitedObject) -> int
+def max_api_calls(entity: RateLimitedObject) -> int:
     "Returns the API rate limit for the highest limit"
     return entity.rules()[-1][1]
 
-def max_api_window(entity):
-    # type: (RateLimitedObject) -> int
+def max_api_window(entity: RateLimitedObject) -> int:
     "Returns the API time window for the highest limit"
     return entity.rules()[-1][0]
 
-def add_ratelimit_rule(range_seconds, num_requests):
-    # type: (int , int) -> None
+def add_ratelimit_rule(range_seconds: int, num_requests: int) -> None:
     "Add a rate-limiting rule to the ratelimiter"
     global rules
 
     rules.append((range_seconds, num_requests))
     rules.sort(key=lambda x: x[0])
 
-def remove_ratelimit_rule(range_seconds, num_requests):
-    # type: (int , int) -> None
+def remove_ratelimit_rule(range_seconds: int, num_requests: int) -> None:
     global rules
     rules = [x for x in rules if x[0] != range_seconds and x[1] != num_requests]
 
-def block_access(entity, seconds):
-    # type: (RateLimitedObject, int) -> None
+def block_access(entity: RateLimitedObject, seconds: int) -> None:
     "Manually blocks an entity for the desired number of seconds"
     _, _, blocking_key = entity.get_keys()
     with client.pipeline() as pipe:
@@ -92,13 +80,11 @@ def block_access(entity, seconds):
         pipe.expire(blocking_key, seconds)
         pipe.execute()
 
-def unblock_access(entity):
-    # type: (RateLimitedObject) -> None
+def unblock_access(entity: RateLimitedObject) -> None:
     _, _, blocking_key = entity.get_keys()
     client.delete(blocking_key)
 
-def clear_history(entity):
-    # type: (RateLimitedObject) -> None
+def clear_history(entity: RateLimitedObject) -> None:
     '''
     This is only used by test code now, where it's very helpful in
     allowing us to run tests quickly, by giving a user a clean slate.
@@ -106,8 +92,7 @@ def clear_history(entity):
     for key in entity.get_keys():
         client.delete(key)
 
-def _get_api_calls_left(entity, range_seconds, max_calls):
-    # type: (RateLimitedObject, int, int) -> Tuple[int, float]
+def _get_api_calls_left(entity: RateLimitedObject, range_seconds: int, max_calls: int) -> Tuple[int, float]:
     list_key, set_key, _ = entity.get_keys()
     # Count the number of values in our sorted set
     # that are between now and the cutoff
@@ -134,16 +119,14 @@ def _get_api_calls_left(entity, range_seconds, max_calls):
 
     return calls_left, time_reset
 
-def api_calls_left(entity):
-    # type: (RateLimitedObject) -> Tuple[int, float]
+def api_calls_left(entity: RateLimitedObject) -> Tuple[int, float]:
     """Returns how many API calls in this range this client has, as well as when
        the rate-limit will be reset to 0"""
     max_window = max_api_window(entity)
     max_calls = max_api_calls(entity)
     return _get_api_calls_left(entity, max_window, max_calls)
 
-def is_ratelimited(entity):
-    # type: (RateLimitedObject) -> Tuple[bool, float]
+def is_ratelimited(entity: RateLimitedObject) -> Tuple[bool, float]:
     "Returns a tuple of (rate_limited, time_till_free)"
     list_key, set_key, blocking_key = entity.get_keys()
 
@@ -192,8 +175,7 @@ def is_ratelimited(entity):
     # No api calls recorded yet
     return False, 0.0
 
-def incr_ratelimit(entity):
-    # type: (RateLimitedObject) -> None
+def incr_ratelimit(entity: RateLimitedObject) -> None:
     """Increases the rate-limit for the specified entity"""
     list_key, set_key, _ = entity.get_keys()
     now = time.time()

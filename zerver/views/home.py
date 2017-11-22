@@ -1,4 +1,4 @@
-from typing import Any, List, Dict, Optional, Text
+from typing import Any, List, Dict, Optional, Text, Iterator
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
@@ -22,6 +22,7 @@ from zerver.lib.actions import update_user_presence, do_change_tos_version, \
 from zerver.lib.avatar import avatar_url
 from zerver.lib.i18n import get_language_list, get_language_name, \
     get_language_list_for_templates
+from zerver.lib.json_encoder_for_html import JSONEncoderForHTML
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
@@ -32,7 +33,6 @@ import datetime
 import logging
 import os
 import re
-import simplejson
 import time
 
 @zulip_login_required
@@ -227,7 +227,7 @@ def home_real(request):
     request._log_data['extra'] = "[%s]" % (register_ret["queue_id"],)
     response = render(request, 'zerver/index.html',
                       context={'user_profile': user_profile,
-                               'page_params': simplejson.encoder.JSONEncoderForHTML().encode(page_params),
+                               'page_params': JSONEncoderForHTML().encode(page_params),
                                'nofontface': is_buggy_ua(request.META.get("HTTP_USER_AGENT", "Unspecified")),
                                'avatar_url': avatar_url(user_profile),
                                'show_debug':

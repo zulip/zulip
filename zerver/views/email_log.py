@@ -67,7 +67,7 @@ def generate_all_emails(request):
     assert result.status_code == 302
 
     # New login email
-    logged_in = client.login(username=registered_email)
+    logged_in = client.login(dev_auth_username=registered_email, realm=realm)
     assert logged_in
 
     # New user invite and reminder emails

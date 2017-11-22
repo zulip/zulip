@@ -9,8 +9,7 @@ from zerver.models import Realm, UserProfile, Message, Reaction, get_system_bot
 
 from typing import Any, Dict, List, Mapping, Text
 
-def send_initial_pms(user):
-    # type: (UserProfile) -> None
+def send_initial_pms(user: UserProfile) -> None:
     organization_setup_text = ""
     if user.is_realm_admin:
         help_url = user.realm.uri + "/help/getting-your-organization-started-with-zulip"
@@ -33,8 +32,7 @@ def send_initial_pms(user):
     internal_send_private_message(user.realm, get_system_bot(settings.WELCOME_BOT),
                                   user, content)
 
-def setup_initial_streams(realm):
-    # type: (Realm) -> None
+def setup_initial_streams(realm: Realm) -> None:
     stream_dicts = [
         {'name': "general"},
         {'name': "new members",
@@ -46,15 +44,7 @@ def setup_initial_streams(realm):
     create_streams_if_needed(realm, stream_dicts)
     set_default_streams(realm, {stream['name']: {} for stream in stream_dicts})
 
-# For the first user in a realm
-def setup_initial_private_stream(user):
-    # type: (UserProfile) -> None
-    stream, _ = create_stream_if_needed(user.realm, "core team", invite_only=True,
-                                        stream_description="A private stream for core team members.")
-    bulk_add_subscriptions([stream], [user])
-
-def send_initial_realm_messages(realm):
-    # type: (Realm) -> None
+def send_initial_realm_messages(realm: Realm) -> None:
     welcome_bot = get_system_bot(settings.WELCOME_BOT)
     # Make sure each stream created in the realm creation process has at least one message below
     # Order corresponds to the ordering of the streams on the left sidebar, to make the initial Home
@@ -64,7 +54,7 @@ def send_initial_realm_messages(realm):
          'topic': "welcome",
          'content': "This is a message on stream `%s` with the topic `welcome`. We'll use this stream "
          "for system-generated notifications." % (Realm.DEFAULT_NOTIFICATION_STREAM_NAME,)},
-        {'stream': "core team",
+        {'stream': Realm.INITIAL_PRIVATE_STREAM_NAME,
          'topic': "private streams",
          'content': "This is a private stream. Only admins and people you invite "
          "to the stream will be able to see that this stream exists."},

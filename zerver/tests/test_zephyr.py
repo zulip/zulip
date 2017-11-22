@@ -10,13 +10,11 @@ from zerver.models import get_user, get_realm
 
 
 class ZephyrTest(ZulipTestCase):
-    def test_webathena_kerberos_login(self):
-        # type: () -> None
+    def test_webathena_kerberos_login(self) -> None:
         email = self.example_email('hamlet')
         self.login(email)
 
-        def post(subdomain, **kwargs):
-            # type: (**Any) -> HttpResponse
+        def post(subdomain: Any, **kwargs: Any) -> HttpResponse:
             params = {k: ujson.dumps(v) for k, v in kwargs.items()}
             return self.client_post('/accounts/webathena_kerberos_login/', params,
                                     subdomain=subdomain)
@@ -31,20 +29,16 @@ class ZephyrTest(ZulipTestCase):
         realm = get_realm('zephyr')
         self.login(email, realm=realm)
 
-        def ccache_mock(**kwargs):
-            # type: (**Any) -> Any
+        def ccache_mock(**kwargs: Any) -> Any:
             return patch('zerver.views.zephyr.make_ccache', **kwargs)
 
-        def ssh_mock(**kwargs):
-            # type: (**Any) -> Any
+        def ssh_mock(**kwargs: Any) -> Any:
             return patch('zerver.views.zephyr.subprocess.check_call', **kwargs)
 
-        def mirror_mock():
-            # type: () -> Any
+        def mirror_mock() -> Any:
             return self.settings(PERSONAL_ZMIRROR_SERVER='server')
 
-        def logging_mock():
-            # type: () -> Any
+        def logging_mock() -> Any:
             return patch('logging.exception')
 
         cred = dict(cname=dict(nameString=['starnine']))
@@ -78,8 +72,7 @@ class ZephyrTest(ZulipTestCase):
         # Accounts whose Kerberos usernames are known not to match their
         # zephyr accounts are hardcoded, and should be handled properly.
 
-        def kerberos_alter_egos_mock():
-            # type: () -> Any
+        def kerberos_alter_egos_mock() -> Any:
             return patch(
                 'zerver.views.zephyr.kerberos_alter_egos',
                 {'kerberos_alter_ego': 'starnine'})

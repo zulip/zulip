@@ -41,6 +41,7 @@
         "people": false,
         "user_groups": false,
         "navigate": false,
+        "toMarkdown": false,
         "settings_account": false,
         "settings_display": false,
         "settings_notifications": false,

@@ -93,7 +93,10 @@ def custom_check_file(fn, identifier, rules, color, skip_rules=None, max_length=
             line_length = len(line)
         if (max_length is not None and line_length > max_length and
             '# type' not in line and 'test' not in fn and 'example' not in fn and
+            # Don't throw errors for markdown format URLs
             not re.match("\[[ A-Za-z0-9_:,&()-]*\]: http.*", line) and
+            # Don't throw errors for URLs in code comments
+            not re.match("[#].*http.*", line) and
             not re.match("`\{\{ api_url \}\}[^`]+`", line) and
                 "# ignorelongline" not in line and 'migrations' not in fn):
             print("Line too long (%s) at %s line %s: %s" % (len(line), fn, i+1, line_newline_stripped))
@@ -386,7 +389,7 @@ def build_custom_checkers(by_lang):
              # This one in check_message is kinda terrible, since it's
              # how most instances are written, but better to exclude something than nothing
              ('zerver/lib/actions.py', 'stream = get_stream(stream_name, realm)'),
-             ('zerver/lib/actions.py', 'get_stream(signups_stream, admin_realm)'),
+             ('zerver/lib/actions.py', 'get_stream(admin_realm_signup_notifications_stream, admin_realm)'),
              # Here we need get_stream to access streams you've since unsubscribed from.
              ('zerver/views/messages.py', 'stream = get_stream(operand, self.user_profile.realm)'),
              # Use stream_id to exclude mutes.

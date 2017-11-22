@@ -112,8 +112,20 @@ def add_integrations_context(context):
     context['settings_html'] = settings_html
     context['subscriptions_html'] = subscriptions_html
 
-    for name in alphabetical_sorted_integration:
-        alphabetical_sorted_integration[name].add_doc_context(context)
+
+def add_context_for_single_integration(context, name, request):
+    # type: (Dict[str, Any], str, HttpRequest) -> None
+    add_api_uri_context(context, request)
+
+    if "html_settings_links" in context and context["html_settings_links"]:
+        settings_html = '<a href="../../#settings">Zulip settings page</a>'
+        subscriptions_html = '<a target="_blank" href="../../#streams">streams page</a>'
+    else:
+        settings_html = 'Zulip settings page'
+        subscriptions_html = 'streams page'
+
+    context['settings_html'] = settings_html
+    context['subscriptions_html'] = subscriptions_html
 
 
 class IntegrationView(ApiURLView):
@@ -134,8 +146,8 @@ def integration_doc(request, integration_name=REQ(default=None)):
     except KeyError:
         return HttpResponseNotFound()
 
-    context = integration.doc_context or {}
-    add_integrations_context(context)
+    context = {}  # type: Dict[str, Any]
+    add_context_for_single_integration(context, integration_name, request)
 
     context['integration_name'] = integration.name
     context['integration_display_name'] = integration.display_name

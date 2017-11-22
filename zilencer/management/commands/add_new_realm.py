@@ -1,9 +1,9 @@
 from typing import Any
 
-from zerver.lib.actions import do_create_realm, do_create_user
+from zerver.lib.actions import do_create_realm, do_create_user, bulk_add_subscriptions
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.onboarding import send_initial_realm_messages, \
-    setup_initial_private_stream, setup_initial_streams
+    setup_initial_streams
 from zerver.models import Realm, UserProfile
 
 class Command(ZulipBaseCommand):
@@ -20,6 +20,6 @@ class Command(ZulipBaseCommand):
             UserProfile.objects.filter(email__contains='user@').count(),)
         user = do_create_user('%s@%s.zulip.com' % (name, string_id),
                               'password', realm, name, name, is_realm_admin=True)
-        setup_initial_private_stream(user)
+        bulk_add_subscriptions([realm.signup_notifications_stream], [user])
 
         send_initial_realm_messages(realm)

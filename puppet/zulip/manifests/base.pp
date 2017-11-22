@@ -38,6 +38,7 @@ class zulip::base {
   }
 
   $normal_queues = [
+             'deferred_work',
              'digest_emails',
              'email_mirror',
              'embed_links',

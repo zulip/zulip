@@ -68,6 +68,7 @@ from zerver.lib.actions import (
     do_set_realm_property,
     do_set_user_display_setting,
     do_set_realm_notifications_stream,
+    do_set_realm_signup_notifications_stream,
     do_unmute_topic,
     do_update_embedded_data,
     do_update_message,
@@ -377,8 +378,7 @@ class GetEventsTest(ZulipTestCase):
         email = user_profile.email
         self.login(email)
 
-        def get_message(apply_markdown, client_gravatar):
-            # type: (bool, bool) -> Dict[str, Any]
+        def get_message(apply_markdown: bool, client_gravatar: bool) -> Dict[str, Any]:
             result = self.tornado_call(
                 get_events_backend,
                 user_profile,
@@ -462,11 +462,9 @@ class EventsRegisterTest(ZulipTestCase):
             ])),
         ])
 
-    def do_test(self, action, event_types=None,
-                include_subscribers=True, state_change_expected=True,
-                client_gravatar=False, num_events=1):
-        # type: (Callable[[], Any], Optional[List[str]], bool, bool, bool, int) -> List[Dict[str, Any]]
-
+    def do_test(self, action: Callable[[], Any], event_types: Optional[List[str]]=None,
+                include_subscribers: bool=True, state_change_expected: bool=True,
+                client_gravatar: bool=False, num_events: int=1) -> List[Dict[str, Any]]:
         '''
         Make sure we have a clean slate of client descriptors for these tests.
         If we don't do this, then certain failures will only manifest when you
@@ -1354,6 +1352,24 @@ class EventsRegisterTest(ZulipTestCase):
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
+    def test_change_realm_signup_notifications_stream(self) -> None:
+        schema_checker = self.check_events_dict([
+            ('type', equals('realm')),
+            ('op', equals('update')),
+            ('property', equals('signup_notifications_stream_id')),
+            ('value', check_int),
+        ])
+
+        stream = get_stream("Rome", self.user_profile.realm)
+
+        for signup_notifications_stream, signup_notifications_stream_id in ((stream, stream.id), (None, -1)):
+            events = self.do_test(
+                lambda: do_set_realm_signup_notifications_stream(self.user_profile.realm,
+                                                                 signup_notifications_stream,
+                                                                 signup_notifications_stream_id))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
     def test_change_is_admin(self) -> None:
         schema_checker = self.check_events_dict([
             ('type', equals('realm_user')),
@@ -1842,7 +1858,7 @@ class EventsRegisterTest(ZulipTestCase):
             [stream])
         events = self.do_test(action,
                               include_subscribers=include_subscribers,
-                              num_events=2)
+                              num_events=3)
         error = remove_schema_checker('events[1]', events[1])
         self.assert_on_error(error)
 
@@ -2059,8 +2075,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
             dict(user_ids_string=huddle_string),
         )
 
-    def test_raw_unread_personal(self):
-        # type: () -> None
+    def test_raw_unread_personal(self) -> None:
         cordelia = self.example_user('cordelia')
         othello = self.example_user('othello')
         hamlet = self.example_user('hamlet')
@@ -2091,8 +2106,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
             dict(sender_id=cordelia.id),
         )
 
-    def test_unread_msgs(self):
-        # type: () -> None
+    def test_unread_msgs(self) -> None:
         cordelia = self.example_user('cordelia')
         sender_id = cordelia.id
         sender_email = cordelia.email
@@ -2366,8 +2380,7 @@ class ClientDescriptorsTest(ZulipTestCase):
         cordelia = self.example_user('cordelia')
         realm = hamlet.realm
 
-        def test_get_info(apply_markdown, client_gravatar):
-            # type: (bool, bool) -> None
+        def test_get_info(apply_markdown: bool, client_gravatar: bool) -> None:
             clear_client_event_queues_for_testing()
 
             queue_data = dict(

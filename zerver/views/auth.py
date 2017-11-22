@@ -187,7 +187,11 @@ def remote_user_sso(request):
     # enabled.
     validate_login_email(remote_user_to_email(remote_user))
 
-    user_profile = authenticate(remote_user=remote_user, realm_subdomain=get_subdomain(request))
+    subdomain = get_subdomain(request)
+    realm = get_realm(subdomain)
+    # Since RemoteUserBackend will return None if Realm is None, we
+    # don't need to check whether `get_realm` returned None.
+    user_profile = authenticate(remote_user=remote_user, realm=realm)
     return login_or_register_remote_user(request, remote_user, user_profile)
 
 @csrf_exempt
@@ -228,7 +232,7 @@ def remote_user_jwt(request):
         # that the request.backend attribute gets set.
         return_data = {}  # type: Dict[str, bool]
         user_profile = authenticate(username=email,
-                                    realm_subdomain=realm.subdomain,
+                                    realm=realm,
                                     return_data=return_data,
                                     use_dummy_backend=True)
     except UserProfile.DoesNotExist:
@@ -417,7 +421,7 @@ def authenticate_remote_user(realm, email_address):
         return None, return_data
 
     user_profile = authenticate(username=email_address,
-                                realm_subdomain=realm.subdomain,
+                                realm=realm,
                                 use_dummy_backend=True,
                                 return_data=return_data)
     return user_profile, return_data
@@ -580,7 +584,9 @@ def dev_direct_login(request, **kwargs):
         # an enabled DevAuthBackend.
         raise Exception('Direct login not supported.')
     email = request.POST['direct_email']
-    user_profile = authenticate(username=email, realm_subdomain=get_subdomain(request))
+    subdomain = get_subdomain(request)
+    realm = get_realm(subdomain)
+    user_profile = authenticate(dev_auth_username=email, realm=realm)
     if user_profile is None:
         raise Exception("User cannot login")
     do_login(request, user_profile)
@@ -604,9 +610,12 @@ def api_dev_fetch_api_key(request, username=REQ()):
     # enabled.
     validate_login_email(username)
 
+    subdomain = get_subdomain(request)
+    realm = get_realm(subdomain)
+
     return_data = {}  # type: Dict[str, bool]
-    user_profile = authenticate(username=username,
-                                realm_subdomain=get_subdomain(request),
+    user_profile = authenticate(dev_auth_username=username,
+                                realm=realm,
                                 return_data=return_data)
     if return_data.get("inactive_realm"):
         return json_error(_("Your realm has been deactivated."),
@@ -635,9 +644,12 @@ def api_dev_get_emails(request):
 def api_fetch_api_key(request, username=REQ(), password=REQ()):
     # type: (HttpRequest, str, str) -> HttpResponse
     return_data = {}  # type: Dict[str, bool]
+    subdomain = get_subdomain(request)
+    realm = get_realm(subdomain)
     if username == "google-oauth2-token":
+        # This code path is auth for the legacy Android app
         user_profile = authenticate(google_oauth2_token=password,
-                                    realm_subdomain=get_subdomain(request),
+                                    realm=realm,
                                     return_data=return_data)
     else:
         if not ldap_auth_enabled(realm=get_realm_from_request(request)):
@@ -647,7 +659,7 @@ def api_fetch_api_key(request, username=REQ(), password=REQ()):
 
         user_profile = authenticate(username=username,
                                     password=password,
-                                    realm_subdomain=get_subdomain(request),
+                                    realm=realm,
                                     return_data=return_data)
     if return_data.get("inactive_user"):
         return json_error(_("Your account has been disabled."),
@@ -744,9 +756,11 @@ def api_get_server_settings(request):
 @has_request_variables
 def json_fetch_api_key(request, user_profile, password=REQ(default='')):
     # type: (HttpRequest, UserProfile, str) -> HttpResponse
+    subdomain = get_subdomain(request)
+    realm = get_realm(subdomain)
     if password_auth_enabled(user_profile.realm):
         if not authenticate(username=user_profile.email, password=password,
-                            realm_subdomain=get_subdomain(request)):
+                            realm=realm):
             return json_error(_("Your username or password is incorrect."))
     return json_success({"api_key": user_profile.api_key})
 

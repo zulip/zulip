@@ -8,8 +8,7 @@ from zerver.lib.request import JsonableError
 from zerver.models import UserProfile, Service, Realm, \
     get_user_profile_by_id, user_profile_by_email_cache_key
 
-def check_full_name(full_name_raw):
-    # type: (Text) -> Text
+def check_full_name(full_name_raw: Text) -> Text:
     full_name = full_name_raw.strip()
     if len(full_name) > UserProfile.MAX_NAME_LENGTH:
         raise JsonableError(_("Name too long!"))
@@ -19,20 +18,17 @@ def check_full_name(full_name_raw):
         raise JsonableError(_("Invalid characters in name!"))
     return full_name
 
-def check_short_name(short_name_raw):
-    # type: (Text) -> Text
+def check_short_name(short_name_raw: Text) -> Text:
     short_name = short_name_raw.strip()
     if len(short_name) == 0:
         raise JsonableError(_("Bad name or username"))
     return short_name
 
-def check_valid_bot_type(bot_type):
-    # type: (int) -> None
+def check_valid_bot_type(bot_type: int) -> None:
     if bot_type not in UserProfile.ALLOWED_BOT_TYPES:
         raise JsonableError(_('Invalid bot type'))
 
-def check_valid_interface_type(interface_type):
-    # type: (int) -> None
+def check_valid_interface_type(interface_type: int) -> None:
     if interface_type not in Service.ALLOWED_INTERFACE_TYPES:
         raise JsonableError(_('Invalid interface type'))
 

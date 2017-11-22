@@ -1,6 +1,6 @@
 var copy_and_paste = (function () {
 
-var exports = {}; // we don't actually export anything yet, but that's ok
+var exports = {};
 
 function find_boundary_tr(initial_tr, iterate_row) {
     var j;
@@ -140,10 +140,30 @@ function copy_handler() {
     },0);
 }
 
+exports.paste_handler = function (event) {
+    var clipboardData = event.originalEvent.clipboardData;
+
+    var paste_html = clipboardData.getData('text/html');
+    if (paste_html) {
+        event.preventDefault();
+        var markdown_html = toMarkdown(paste_html);
+
+        // Now that we've done the main conversion, we want to remove
+        // any HTML tags that weren't converted to markdown-style
+        // text, since Bugdown doesn't support those.
+        var div = document.createElement("div");
+        div.innerHTML = markdown_html;
+        // Using textContent for modern browsers, innerText works for Internet Explorer
+        var text = div.textContent || div.innerText || "";
+
+        compose_ui.insert_syntax_and_focus(text);
+    }
+};
+
 $(function () {
     $(document).on('copy', copy_handler);
+    $("#new_message_content").bind('paste', exports.paste_handler);
 });
-
 
 return exports;
 }());

@@ -21,7 +21,7 @@ from zerver.lib.subdomains import user_matches_subdomain, get_subdomain
 from zerver.lib.users import check_full_name
 from zerver.models import UserProfile, Realm, get_user_profile_by_id, \
     get_user_profile_by_email, remote_user_to_email, email_to_username, \
-    get_realm
+    get_realm, get_user
 
 def pad_method_dict(method_dict):
     # type: (Dict[Text, bool]) -> Dict[Text, bool]
@@ -85,14 +85,27 @@ def require_email_format_usernames(realm=None):
             return False
     return True
 
-def common_get_active_user_by_email(email, return_data=None):
-    # type: (Text, Optional[Dict[str, Any]]) -> Optional[UserProfile]
+def common_get_active_user(email: str, realm: Realm,
+                           return_data: Dict[str, Any]=None) -> Optional[UserProfile]:
     try:
-        user_profile = get_user_profile_by_email(email)
+        user_profile = get_user(email, realm)
     except UserProfile.DoesNotExist:
+        # If the user doesn't have an account in the target realm, we
+        # check whether they might have an account in another realm,
+        # and if so, provide a helpful error message via
+        # `invalid_subdomain`.
+        try:
+            user_profile = get_user_profile_by_email(email)
+        except UserProfile.DoesNotExist:
+            return None
+        if return_data is not None:
+            return_data['invalid_subdomain'] = True
         return None
     if not user_profile.is_active:
         if return_data is not None:
+            if user_profile.is_mirror_dummy:
+                # Record whether it's a mirror dummy account
+                return_data['is_mirror_dummy'] = True
             return_data['inactive_user'] = True
         return None
     if user_profile.realm.deactivated:
@@ -143,12 +156,14 @@ class SocialAuthMixin(ZulipAuthMixin):
         returning the user.
         """
         kwargs['return_data'] = {}
-        kwargs['realm_subdomain'] = get_subdomain(self.strategy.request)  # type: ignore # `strategy` comes from Python Social Auth.
+        subdomain = self.strategy.session_get('subdomain')  # type: ignore # `strategy` comes from Python Social Auth.
+        realm = get_realm(subdomain)
+        kwargs['realm'] = realm
         user_profile = self.get_authenticated_user(*args, **kwargs)
         return self.process_do_auth(user_profile, *args, **kwargs)
 
     def authenticate(self,
-                     realm_subdomain: Optional[Text]='',
+                     realm: Optional[Realm]=None,
                      storage: Optional[DjangoStorage]=None,
                      strategy: Optional[DjangoStrategy]=None,
                      user: Optional[Dict[str, Any]]=None,
@@ -171,7 +186,7 @@ class SocialAuthMixin(ZulipAuthMixin):
         assert response is not None
 
         return self._common_authenticate(self,
-                                         realm_subdomain=realm_subdomain,
+                                         realm=realm,
                                          storage=storage,
                                          strategy=strategy,
                                          user=user,
@@ -182,36 +197,20 @@ class SocialAuthMixin(ZulipAuthMixin):
     def _common_authenticate(self, *args, **kwargs):
         # type: (*Any, **Any) -> Optional[UserProfile]
         return_data = kwargs.get('return_data', {})
+        realm = kwargs.get("realm")
+        if realm is None:
+            return None
+        if not auth_enabled_helper([self.auth_backend_name], realm):
+            return_data["auth_backend_disabled"] = True
+            return None
 
         email_address = self.get_email_address(*args, **kwargs)
         if not email_address:
             return_data['invalid_email'] = True
             return None
 
-        try:
-            user_profile = get_user_profile_by_email(email_address)
-        except UserProfile.DoesNotExist:
-            return_data["valid_attestation"] = True
-            return None
-
-        if not user_profile.is_active:
-            return_data["inactive_user"] = True
-            return None
-
-        if user_profile.realm.deactivated:
-            return_data["inactive_realm"] = True
-            return None
-
-        if not user_matches_subdomain(kwargs.get("realm_subdomain"),
-                                      user_profile):
-            return_data["invalid_subdomain"] = True
-            return None
-
-        if not auth_enabled_helper([self.auth_backend_name], user_profile.realm):
-            return_data["auth_backend_disabled"] = True
-            return None
-
-        return user_profile
+        return_data["valid_attestation"] = True
+        return common_get_active_user(email_address, realm, return_data)
 
     def process_do_auth(self, user_profile, *args, **kwargs):
         # type: (UserProfile, *Any, **Any) -> Optional[HttpResponse]
@@ -239,6 +238,7 @@ class SocialAuthMixin(ZulipAuthMixin):
             logging.warning(
                 "{} got invalid email argument.".format(self.auth_backend_name)
             )
+            return None
 
         strategy = self.strategy  # type: ignore # This comes from Python Social Auth.
         request = strategy.request
@@ -285,22 +285,19 @@ class SocialAuthMixin(ZulipAuthMixin):
 
 class ZulipDummyBackend(ZulipAuthMixin):
     """
-    Used when we want to log you in but we don't know which backend to use.
+    Used when we want to log you in without checking any
+    authentication (i.e. new user registration or when otherwise
+    authentication has already been checked earlier in the process).
     """
 
-    def authenticate(self, username: Optional[Text]=None, realm_subdomain: Optional[Text]=None,
+    def authenticate(self, username: Optional[str]=None, realm: Optional[Realm]=None,
                      use_dummy_backend: bool=False,
-                     return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
-        assert username is not None
+                     return_data: Dict[str, Any]=None) -> Optional[UserProfile]:
         if use_dummy_backend:
-            user_profile = common_get_active_user_by_email(username)
-            if user_profile is None:
-                return None
-            if not user_matches_subdomain(realm_subdomain, user_profile):
-                if return_data is not None:
-                    return_data["invalid_subdomain"] = True
-                return None
-            return user_profile
+            # These are kwargs only for readability; they should never be None
+            assert username is not None
+            assert realm is not None
+            return common_get_active_user(username, realm, return_data)
         return None
 
 class EmailAuthBackend(ZulipAuthMixin):
@@ -312,95 +309,81 @@ class EmailAuthBackend(ZulipAuthMixin):
     """
 
     def authenticate(self, username: Optional[str]=None, password: Optional[str]=None,
-                     realm_subdomain: Optional[str]=None,
+                     realm: Optional[Realm]=None,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         """ Authenticate a user based on email address as the user name. """
         if username is None or password is None:
-            # Return immediately.  Otherwise we will look for a SQL row with
-            # NULL username.  While that's probably harmless, it's needless
-            # exposure.
+            # Because of how we structure our auth calls to always
+            # specify which backend to use when not using
+            # EmailAuthBackend, username and password should always be set.
+            raise AssertionError("Invalid call to authenticate for EmailAuthBackend")
+        if realm is None:
             return None
-
-        user_profile = common_get_active_user_by_email(username, return_data=return_data)
-        if user_profile is None:
-            return None
-        if not password_auth_enabled(user_profile.realm):
+        if not password_auth_enabled(realm):
             if return_data is not None:
                 return_data['password_auth_disabled'] = True
             return None
-        if not email_auth_enabled(user_profile.realm):
+        if not email_auth_enabled(realm):
             if return_data is not None:
                 return_data['email_auth_disabled'] = True
             return None
+
+        user_profile = common_get_active_user(username, realm, return_data=return_data)
+        if user_profile is None:
+            return None
         if user_profile.check_password(password):
-            if not user_matches_subdomain(realm_subdomain, user_profile):
-                if return_data is not None:
-                    return_data["invalid_subdomain"] = True
-                return None
             return user_profile
         return None
 
 class GoogleMobileOauth2Backend(ZulipAuthMixin):
     """
-    Google Apps authentication for mobile devices
+    Google Apps authentication for the legacy Android app.
+    DummyAuthBackend is what's actually used for our modern Google auth,
+    both for web and mobile (the latter via the mobile_flow_otp feature).
 
     Allows a user to sign in using a Google-issued OAuth2 token.
 
     Ref:
         https://developers.google.com/+/mobile/android/sign-in#server-side_access_for_your_app
         https://developers.google.com/accounts/docs/CrossClientAuth#offlineAccess
-
     """
 
-    def authenticate(self, google_oauth2_token: str=None, realm_subdomain: str=None,
+    def authenticate(self, google_oauth2_token: str=None, realm: Optional[Realm]=None,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
+        if realm is None:
+            return None
         if return_data is None:
             return_data = {}
+
+        if not google_auth_enabled(realm=realm):
+            return_data["google_auth_disabled"] = True
+            return None
 
         try:
             token_payload = googleapiclient.verify_id_token(google_oauth2_token, settings.GOOGLE_CLIENT_ID)
         except AppIdentityError:
             return None
-        if token_payload["email_verified"] in (True, "true"):
-            try:
-                user_profile = get_user_profile_by_email(token_payload["email"])
-            except UserProfile.DoesNotExist:
-                return_data["valid_attestation"] = True
-                return None
-            if not user_profile.is_active:
-                return_data["inactive_user"] = True
-                return None
-            if user_profile.realm.deactivated:
-                return_data["inactive_realm"] = True
-                return None
-            if not user_matches_subdomain(realm_subdomain, user_profile):
-                return_data["invalid_subdomain"] = True
-                return None
-            if not google_auth_enabled(realm=user_profile.realm):
-                return_data["google_auth_disabled"] = True
-                return None
-            return user_profile
-        else:
+
+        if token_payload["email_verified"] not in (True, "true"):
             return_data["valid_attestation"] = False
             return None
+
+        return_data["valid_attestation"] = True
+        return common_get_active_user(token_payload["email"], realm, return_data)
 
 class ZulipRemoteUserBackend(RemoteUserBackend):
     create_unknown_user = False
 
     def authenticate(self, remote_user: Optional[str],
-                     realm_subdomain: Optional[str]=None) -> Optional[UserProfile]:
-        if not remote_user:
+                     realm: Optional[Realm]=None) -> Optional[UserProfile]:
+        assert remote_user is not None
+        if realm is None:
+            return None
+        if not auth_enabled_helper(["RemoteUser"], realm):
             return None
 
         email = remote_user_to_email(remote_user)
-        user_profile = common_get_active_user_by_email(email)
-        if user_profile is None:
-            return None
-        if not user_matches_subdomain(realm_subdomain, user_profile):
-            return None
-        if not auth_enabled_helper(["RemoteUser"], user_profile.realm):
-            return None
-        return user_profile
+        return common_get_active_user(email, realm)
 
 class ZulipLDAPException(_LDAPUser.AuthenticationFailed):
     pass
@@ -449,79 +432,87 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
 class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
     REALM_IS_NONE_ERROR = 1
 
-    def authenticate(self, username: str, password: str, realm_subdomain: Optional[Text]=None,
+    def authenticate(self, username: str, password: str, realm: Optional[Realm]=None,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
+        if realm is None:
+            return None
+        self._realm = realm
+        if not ldap_auth_enabled(realm):
+            return None
+
         try:
-            self._realm = get_realm(realm_subdomain)
             username = self.django_to_ldap_username(username)
-            user_profile = ZulipLDAPAuthBackendBase.authenticate(self,
-                                                                 username=username,
-                                                                 password=password)
-            if user_profile is None:
-                return None
-            if not user_matches_subdomain(realm_subdomain, user_profile):
-                return None
-            return user_profile
-        except Realm.DoesNotExist:
-            return None  # nocoverage # TODO: this may no longer be possible
+            return ZulipLDAPAuthBackendBase.authenticate(self,
+                                                         username=username,
+                                                         password=password)
         except ZulipLDAPException:
             return None  # nocoverage # TODO: this may no longer be possible
 
     def get_or_create_user(self, username, ldap_user):
         # type: (str, _LDAPUser) -> Tuple[UserProfile, bool]
-        try:
-            if settings.LDAP_EMAIL_ATTR is not None:
-                # Get email from ldap attributes.
-                if settings.LDAP_EMAIL_ATTR not in ldap_user.attrs:
-                    raise ZulipLDAPException("LDAP user doesn't have the needed %s attribute" % (
-                        settings.LDAP_EMAIL_ATTR,))
 
-                username = ldap_user.attrs[settings.LDAP_EMAIL_ATTR][0]
+        if settings.LDAP_EMAIL_ATTR is not None:
+            # Get email from ldap attributes.
+            if settings.LDAP_EMAIL_ATTR not in ldap_user.attrs:
+                raise ZulipLDAPException("LDAP user doesn't have the needed %s attribute" % (
+                    settings.LDAP_EMAIL_ATTR,))
 
-            user_profile = get_user_profile_by_email(username)
-            if not user_profile.is_active or user_profile.realm.deactivated:
-                raise ZulipLDAPException("Realm has been deactivated")
-            if not ldap_auth_enabled(user_profile.realm):
-                raise ZulipLDAPException("LDAP Authentication is not enabled")
+            username = ldap_user.attrs[settings.LDAP_EMAIL_ATTR][0]
+
+        return_data = {}  # type: Dict[str, Any]
+        user_profile = common_get_active_user(username, self._realm, return_data)
+        if user_profile is not None:
+            # An existing user, successfully authed; return it.
             return user_profile, False
-        except UserProfile.DoesNotExist:
-            if self._realm is None:
-                raise ZulipLDAPConfigurationError("Realm is None", self.REALM_IS_NONE_ERROR)
-            # No need to check for an inactive user since they don't exist yet
-            if self._realm.deactivated:
-                raise ZulipLDAPException("Realm has been deactivated")
 
-            full_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["full_name"]
-            short_name = full_name = ldap_user.attrs[full_name_attr][0]
-            try:
-                full_name = check_full_name(full_name)
-            except JsonableError as e:
-                raise ZulipLDAPException(e.msg)
-            if "short_name" in settings.AUTH_LDAP_USER_ATTR_MAP:
-                short_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["short_name"]
-                short_name = ldap_user.attrs[short_name_attr][0]
+        if return_data.get("inactive_realm"):
+            # This happens if there is a user account in a deactivated realm
+            raise ZulipLDAPException("Realm has been deactivated")
+        if return_data.get("inactive_user"):
+            raise ZulipLDAPException("User has been deactivated")
+        if return_data.get("invalid_subdomain"):
+            # TODO: Implement something in the caller for this to
+            # provide a nice user-facing error message for this
+            # situation (right now it just acts like any other auth
+            # failure).
+            raise ZulipLDAPException("Wrong subdomain")
+        if self._realm.deactivated:
+            # This happens if no account exists, but the realm is
+            # deactivated, so we shouldn't create a new user account
+            raise ZulipLDAPException("Realm has been deactivated")
 
-            user_profile = do_create_user(username, None, self._realm, full_name, short_name)
+        # We have valid LDAP credentials; time to create an account.
+        full_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["full_name"]
+        short_name = full_name = ldap_user.attrs[full_name_attr][0]
+        try:
+            full_name = check_full_name(full_name)
+        except JsonableError as e:
+            raise ZulipLDAPException(e.msg)
+        if "short_name" in settings.AUTH_LDAP_USER_ATTR_MAP:
+            short_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["short_name"]
+            short_name = ldap_user.attrs[short_name_attr][0]
 
-            return user_profile, True
+        user_profile = do_create_user(username, None, self._realm, full_name, short_name)
+
+        return user_profile, True
 
 # Just like ZulipLDAPAuthBackend, but doesn't let you log in.
 class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
-    def authenticate(self, username: str, password: str, realm_subdomain: Optional[Text]=None,
+    def authenticate(self, username: str, password: str, realm: Optional[Realm]=None,
                      return_data: Optional[Dict[str, Any]]=None) -> None:
         return None
 
 class DevAuthBackend(ZulipAuthMixin):
     # Allow logging in as any user without a password.
     # This is used for convenience when developing Zulip.
-    def authenticate(self, username: str, realm_subdomain: Optional[str]=None,
+    def authenticate(self, dev_auth_username: Optional[str]=None, realm: Optional[Realm]=None,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
-        user_profile = common_get_active_user_by_email(username, return_data=return_data)
-        if user_profile is None:
+        assert dev_auth_username is not None
+        if realm is None:
             return None
-        if not dev_auth_enabled(user_profile.realm):
+        if not dev_auth_enabled(realm):
             return None
-        return user_profile
+        return common_get_active_user(dev_auth_username, realm, return_data=return_data)
 
 class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
     auth_backend_name = "GitHub"

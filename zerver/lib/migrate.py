@@ -3,8 +3,7 @@ from django.db.models.query import QuerySet
 import re
 import time
 
-def timed_ddl(db, stmt):
-    # type: (Any, str) -> None
+def timed_ddl(db: Any, stmt: str) -> None:
     print()
     print(time.asctime())
     print(stmt)
@@ -13,14 +12,17 @@ def timed_ddl(db, stmt):
     delay = time.time() - t
     print('Took %.2fs' % (delay,))
 
-def validate(sql_thingy):
-    # type: (str) -> None
+def validate(sql_thingy: str) -> None:
     # Do basic validation that table/col name is safe.
     if not re.match('^[a-z][a-z\d_]+$', sql_thingy):
         raise Exception('Invalid SQL object: %s' % (sql_thingy,))
 
-def do_batch_update(db, table, cols, vals, batch_size=10000, sleep=0.1):
-    # type: (Any, str, List[str], List[str], int, float) -> None
+def do_batch_update(db: Any,
+                    table: str,
+                    cols: List[str],
+                    vals: List[str],
+                    batch_size: int=10000,
+                    sleep: float=0.1) -> None:
     validate(table)
     for col in cols:
         validate(col)
@@ -46,8 +48,7 @@ def do_batch_update(db, table, cols, vals, batch_size=10000, sleep=0.1):
         min_id = upper
         time.sleep(sleep)
 
-def add_bool_columns(db, table, cols):
-    # type: (Any, str, List[str]) -> None
+def add_bool_columns(db: Any, table: str, cols: List[str]) -> None:
     validate(table)
     for col in cols:
         validate(col)
@@ -72,8 +73,8 @@ def add_bool_columns(db, table, cols):
             ', '.join(['ALTER %s SET NOT NULL' % (col,) for col in cols]))
     timed_ddl(db, stmt)
 
-def create_index_if_not_exist(index_name, table_name, column_string, where_clause):
-    # type: (Text, Text, Text, Text) -> Text
+def create_index_if_not_exist(index_name: Text, table_name: Text, column_string: Text,
+                              where_clause: Text) -> Text:
     #
     # FUTURE TODO: When we no longer need to support postgres 9.3 for Trusty,
     #              we can use "IF NOT EXISTS", which is part of postgres 9.5
@@ -95,8 +96,11 @@ def create_index_if_not_exist(index_name, table_name, column_string, where_claus
         ''' % (index_name, index_name, table_name, column_string, where_clause)
     return stmt
 
-def act_on_message_ranges(db, orm, tasks, batch_size=5000, sleep=0.5):
-    # type: (Any, Dict[str, Any], List[Tuple[Callable[[QuerySet], QuerySet], Callable[[QuerySet], None]]], int , float) -> None
+def act_on_message_ranges(db: Any,
+                          orm: Dict[str, Any],
+                          tasks: List[Tuple[Callable[[QuerySet], QuerySet], Callable[[QuerySet], None]]],
+                          batch_size: int=5000,
+                          sleep: float=0.5) -> None:
     # tasks should be an array of (filterer, action) tuples
     # where filterer is a function that returns a filtered QuerySet
     # and action is a function that acts on a QuerySet

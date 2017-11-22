@@ -119,9 +119,6 @@ redis==2.10.6
 requests_oauthlib==0.8.0
 rsa==3.4.2
 
-# Needed for its HTML encoder for page_params
-simplejson==3.11.1
-
 # Needed for Python 2+3 compatibility
 six==1.11.0
 smmap==0.9.0
@@ -184,6 +181,3 @@ social-auth-app-django==1.2.0
 
 # Needed for messages' rendered content parsing in push notifications.
 lxml==4.1.0
-
-# One occurrence left in home.py
-simplejson==3.11.1

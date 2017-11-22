@@ -221,8 +221,7 @@ EMOJI_TWEET = """{
     ]
 }"""
 
-def twitter(tweet_id):
-    # type: (Text) -> Optional[Dict[Text, Any]]
+def twitter(tweet_id: Text) -> Optional[Dict[Text, Any]]:
     if tweet_id in ["112652479837110273", "287977969287315456", "287977969287315457"]:
         return ujson.loads(NORMAL_TWEET)
     elif tweet_id == "287977969287315458":

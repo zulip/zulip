@@ -253,34 +253,6 @@ class CreateUserForm(forms.Form):
     email = forms.EmailField()
 
 class OurAuthenticationForm(AuthenticationForm):
-    def clean_username(self):
-        # type: () -> str
-        email = self.cleaned_data['username']
-        try:
-            user_profile = get_user_profile_by_email(email)
-        except UserProfile.DoesNotExist:
-            return email
-
-        if user_profile.realm.deactivated:
-            error_msg = u"""Sorry for the trouble, but %s has been deactivated.
-
-Please contact %s to reactivate this group.""" % (
-                user_profile.realm.name,
-                FromAddress.SUPPORT)
-            raise ValidationError(mark_safe(error_msg))
-
-        if not user_profile.is_active and not user_profile.is_mirror_dummy:
-            error_msg = (
-                u"Your account is no longer active. "
-                u"Please contact your organization administrator to reactivate it.")
-            raise ValidationError(mark_safe(error_msg))
-
-        if not user_matches_subdomain(get_subdomain(self.request), user_profile):
-            logging.warning("User %s attempted to password login to wrong subdomain %s" %
-                            (user_profile.email, get_subdomain(self.request)))
-            raise ValidationError(mark_safe(WRONG_SUBDOMAIN_ERROR))
-        return email
-
     def clean(self):
         # type: () -> Dict[str, Any]
         username = self.cleaned_data.get('username')
@@ -288,16 +260,36 @@ Please contact %s to reactivate this group.""" % (
 
         if username is not None and password:
             subdomain = get_subdomain(self.request)
+            realm = get_realm(subdomain)
+            return_data = {}  # type: Dict[str, Any]
             self.user_cache = authenticate(self.request, username=username, password=password,
-                                           realm_subdomain=subdomain)
+                                           realm=realm, return_data=return_data)
+
+            if return_data.get("inactive_realm"):
+                raise AssertionError("Programming error: inactive realm in authentication form")
+
+            if return_data.get("inactive_user") and not return_data.get("is_mirror_dummy"):
+                # We exclude mirror dummy accounts here. They should be treated as the
+                # user never having had an account, so we let them fall through to the
+                # normal invalid_login case below.
+                error_msg = (
+                    u"Your account is no longer active. "
+                    u"Please contact your organization administrator to reactivate it.")
+                raise ValidationError(mark_safe(error_msg))
+
+            if return_data.get("invalid_subdomain"):
+                logging.warning("User %s attempted to password login to wrong subdomain %s" %
+                                (username, subdomain))
+                raise ValidationError(mark_safe(WRONG_SUBDOMAIN_ERROR))
+
             if self.user_cache is None:
                 raise forms.ValidationError(
                     self.error_messages['invalid_login'],
                     code='invalid_login',
                     params={'username': self.username_field.verbose_name},
                 )
-            else:
-                self.confirm_login_allowed(self.user_cache)
+
+            self.confirm_login_allowed(self.user_cache)
 
         return self.cleaned_data
 

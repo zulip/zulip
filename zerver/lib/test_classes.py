@@ -292,10 +292,10 @@ class ZulipTestCase(TestCase):
             password = initial_password(email)
         if not fails:
             self.assertTrue(self.client.login(username=email, password=password,
-                                              realm_subdomain=realm.subdomain))
+                                              realm=realm))
         else:
             self.assertFalse(self.client.login(username=email, password=password,
-                                               realm_subdomain=realm.subdomain))
+                                               realm=realm))
 
     def logout(self):
         # type: () -> None

@@ -98,8 +98,7 @@ def get_push_commits_event_message(user_name, compare_url, branch_name,
             commits_data=get_commits_content(commits_data, is_truncated),
         ).rstrip()
 
-def get_force_push_commits_event_message(user_name, url, branch_name, head):
-    # type: (Text, Text, Text, Text) -> Text
+def get_force_push_commits_event_message(user_name: Text, url: Text, branch_name: Text, head: Text) -> Text:
     return FORCE_PUSH_COMMITS_MESSAGE_TEMPLATE.format(
         user_name=user_name,
         url=url,
@@ -107,16 +106,14 @@ def get_force_push_commits_event_message(user_name, url, branch_name, head):
         head=head
     )
 
-def get_create_branch_event_message(user_name, url, branch_name):
-    # type: (Text, Text, Text) -> Text
+def get_create_branch_event_message(user_name: Text, url: Text, branch_name: Text) -> Text:
     return CREATE_BRANCH_MESSAGE_TEMPLATE.format(
         user_name=user_name,
         url=url,
         branch_name=branch_name,
     )
 
-def get_remove_branch_event_message(user_name, branch_name):
-    # type: (Text, Text) -> Text
+def get_remove_branch_event_message(user_name: Text, branch_name: Text) -> Text:
     return REMOVE_BRANCH_MESSAGE_TEMPLATE.format(
         user_name=user_name,
         branch_name=branch_name,
@@ -147,15 +144,18 @@ def get_pull_request_event_message(
         main_message += '\n' + CONTENT_MESSAGE_TEMPLATE.format(message=message)
     return main_message.rstrip()
 
-def get_setup_webhook_message(integration, user_name=None):
-    # type: (Text, Optional[Text]) -> Text
+def get_setup_webhook_message(integration: Text, user_name: Optional[Text]=None) -> Text:
     content = SETUP_MESSAGE_TEMPLATE.format(integration=integration)
     if user_name:
         content += SETUP_MESSAGE_USER_PART.format(user_name=user_name)
     return content
 
-def get_issue_event_message(user_name, action, url, number=None, message=None, assignee=None):
-    # type: (Text, Text, Text, Optional[int], Optional[Text], Optional[Text]) -> Text
+def get_issue_event_message(user_name: Text,
+                            action: Text,
+                            url: Text,
+                            number: Optional[int]=None,
+                            message: Optional[Text]=None,
+                            assignee: Optional[Text]=None) -> Text:
     return get_pull_request_event_message(
         user_name,
         action,
@@ -166,8 +166,10 @@ def get_issue_event_message(user_name, action, url, number=None, message=None, a
         type='Issue'
     )
 
-def get_push_tag_event_message(user_name, tag_name, tag_url=None, action='pushed'):
-    # type: (Text, Text, Optional[Text], Optional[Text]) -> Text
+def get_push_tag_event_message(user_name: Text,
+                               tag_name: Text,
+                               tag_url: Optional[Text]=None,
+                               action: Optional[Text]='pushed') -> Text:
     if tag_url:
         tag_part = TAG_WITH_URL_TEMPLATE.format(tag_name=tag_name, tag_url=tag_url)
     else:
@@ -178,8 +180,11 @@ def get_push_tag_event_message(user_name, tag_name, tag_url=None, action='pushed
         tag=tag_part
     )
 
-def get_commits_comment_action_message(user_name, action, commit_url, sha, message=None):
-    # type: (Text, Text, Text, Text, Optional[Text]) -> Text
+def get_commits_comment_action_message(user_name: Text,
+                                       action: Text,
+                                       commit_url: Text,
+                                       sha: Text,
+                                       message: Optional[Text]=None) -> Text:
     content = COMMITS_COMMENT_MESSAGE_TEMPLATE.format(
         user_name=user_name,
         action=action,
@@ -192,8 +197,7 @@ def get_commits_comment_action_message(user_name, action, commit_url, sha, messa
         )
     return content
 
-def get_commits_content(commits_data, is_truncated=False):
-    # type: (List[Dict[str, Any]], Optional[bool]) -> Text
+def get_commits_content(commits_data: List[Dict[str, Any]], is_truncated: Optional[bool]=False) -> Text:
     commits_content = ''
     for commit in commits_data[:COMMITS_LIMIT]:
         commits_content += COMMIT_ROW_TEMPLATE.format(
@@ -212,12 +216,10 @@ def get_commits_content(commits_data, is_truncated=False):
         ).replace('  ', ' ')
     return commits_content.rstrip()
 
-def get_short_sha(sha):
-    # type: (Text) -> Text
+def get_short_sha(sha: Text) -> Text:
     return sha[:7]
 
-def get_all_committers(commits_data):
-    # type: (List[Dict[str, Any]]) -> List[Tuple[str, int]]
+def get_all_committers(commits_data: List[Dict[str, Any]]) -> List[Tuple[str, int]]:
     committers = defaultdict(int)  # type: Dict[str, int]
 
     for commit in commits_data:

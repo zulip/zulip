@@ -61,7 +61,6 @@ class Integration:
         self.secondary_line_text = secondary_line_text
         self.legacy = legacy
         self.doc = doc
-        self.doc_context = None  # type: Optional[Dict[Any, Any]]
 
         for category in categories:
             if category not in CATEGORIES:
@@ -83,16 +82,10 @@ class Integration:
             stream_name = self.name
         self.stream_name = stream_name
 
-    def is_enabled(self):
-        # type: () -> bool
+    def is_enabled(self) -> bool:
         return True
 
-    def add_doc_context(self, context):
-        # type: (Dict[Any, Any]) -> None
-        self.doc_context = context
-
-    def get_logo_url(self):
-        # type: () -> Optional[str]
+    def get_logo_url(self) -> Optional[str]:
         logo_file_path_svg = str(pathlib.PurePath(
             settings.STATIC_ROOT,
             *self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=self.name).split('/')[1:]
@@ -144,8 +137,7 @@ class BotIntegration(Integration):
         self.doc = doc
 
 class EmailIntegration(Integration):
-    def is_enabled(self):
-        # type: () -> bool
+    def is_enabled(self) -> bool:
         return settings.EMAIL_GATEWAY_PATTERN != ""
 
 class WebhookIntegration(Integration):
@@ -188,8 +180,7 @@ class WebhookIntegration(Integration):
         self.doc = doc
 
     @property
-    def url_object(self):
-        # type: () -> LocaleRegexProvider
+    def url_object(self) -> LocaleRegexProvider:
         return url(self.url, self.function)
 
 class HubotIntegration(Integration):
@@ -239,8 +230,7 @@ class GithubIntegration(WebhookIntegration):
         )
 
     @property
-    def url_object(self):
-        # type: () -> None
+    def url_object(self) -> None:
         return
 
 class EmbeddedBotIntegration(Integration):
@@ -250,8 +240,7 @@ class EmbeddedBotIntegration(Integration):
     '''
     DEFAULT_CLIENT_NAME = 'Zulip{name}EmbeddedBot'
 
-    def __init__(self, name, *args, **kwargs):
-        # type: (str, *Any, **Any) -> None
+    def __init__(self, name: str, *args: Any, **kwargs: Any) -> None:
         assert kwargs.get("client_name") is None
         client_name = self.DEFAULT_CLIENT_NAME.format(name=name.title())
         super().__init__(

@@ -12,8 +12,7 @@ from typing import Any, List, Dict, Optional, Text
 import os
 import ujson
 
-def with_language(string, language):
-    # type: (Text, Text) -> Text
+def with_language(string: Text, language: Text) -> Text:
     """
     This is an expensive function. If you are using it in a loop, it will
     make your code slow.
@@ -25,15 +24,13 @@ def with_language(string, language):
     return result
 
 @lru_cache()
-def get_language_list():
-    # type: () -> List[Dict[str, Any]]
+def get_language_list() -> List[Dict[str, Any]]:
     path = os.path.join(settings.STATIC_ROOT, 'locale', 'language_name_map.json')
     with open(path, 'r') as reader:
         languages = ujson.load(reader)
         return languages['name_map']
 
-def get_language_list_for_templates(default_language):
-    # type: (Text) -> List[Dict[str, Dict[str, str]]]
+def get_language_list_for_templates(default_language: Text) -> List[Dict[str, Dict[str, str]]]:
     language_list = [l for l in get_language_list()
                      if 'percent_translated' not in l or
                         l['percent_translated'] >= 5.]
@@ -70,15 +67,13 @@ def get_language_list_for_templates(default_language):
 
     return formatted_list
 
-def get_language_name(code):
-    # type: (str) -> Optional[Text]
+def get_language_name(code: str) -> Optional[Text]:
     for lang in get_language_list():
         if code in (lang['code'], lang['locale']):
             return lang['name']
     return None
 
-def get_available_language_codes():
-    # type: () -> List[Text]
+def get_available_language_codes() -> List[Text]:
     language_list = get_language_list()
     codes = [language['code'] for language in language_list]
     return codes

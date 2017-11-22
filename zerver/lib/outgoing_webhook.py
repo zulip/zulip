@@ -21,8 +21,7 @@ from zerver.decorator import JsonableError
 
 class OutgoingWebhookServiceInterface:
 
-    def __init__(self, base_url, token, user_profile, service_name):
-        # type: (Text, Text, UserProfile, Text) -> None
+    def __init__(self, base_url: Text, token: Text, user_profile: UserProfile, service_name: Text) -> None:
         self.base_url = base_url  # type: Text
         self.token = token  # type: Text
         self.user_profile = user_profile  # type: Text
@@ -37,20 +36,17 @@ class OutgoingWebhookServiceInterface:
     # - base_url
     # - relative_url_path
     # - request_kwargs
-    def process_event(self, event):
-        # type: (Dict[Text, Any]) -> Tuple[Dict[str, Any], Any]
+    def process_event(self, event: Dict[Text, Any]) -> Tuple[Dict[str, Any], Any]:
         raise NotImplementedError()
 
     # Given a successful outgoing webhook REST operation, returns the message
     # to sent back to the user (or None if no message should be sent).
-    def process_success(self, response, event):
-        # type: (Response, Dict[Text, Any]) -> Optional[str]
+    def process_success(self, response: Response, event: Dict[Text, Any]) -> Optional[str]:
         raise NotImplementedError()
 
 class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
-    def process_event(self, event):
-        # type: (Dict[Text, Any]) -> Tuple[Dict[str, Any], Any]
+    def process_event(self, event: Dict[Text, Any]) -> Tuple[Dict[str, Any], Any]:
         rest_operation = {'method': 'POST',
                           'relative_url_path': '',
                           'base_url': self.base_url,
@@ -60,8 +56,7 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
                         "token": self.token}
         return rest_operation, json.dumps(request_data)
 
-    def process_success(self, response, event):
-        # type: (Response, Dict[Text, Any]) -> Optional[str]
+    def process_success(self, response: Response, event: Dict[Text, Any]) -> Optional[str]:
         response_json = json.loads(response.text)
 
         if "response_not_required" in response_json and response_json['response_not_required']:
@@ -73,8 +68,7 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
 class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
-    def process_event(self, event):
-        # type: (Dict[Text, Any]) -> Tuple[Dict[str, Any], Any]
+    def process_event(self, event: Dict[Text, Any]) -> Tuple[Dict[str, Any], Any]:
         rest_operation = {'method': 'POST',
                           'relative_url_path': '',
                           'base_url': self.base_url,
@@ -99,8 +93,7 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
         return rest_operation, request_data
 
-    def process_success(self, response, event):
-        # type: (Response, Dict[Text, Any]) -> Optional[str]
+    def process_success(self, response: Response, event: Dict[Text, Any]) -> Optional[str]:
         response_json = json.loads(response.text)
         if "text" in response_json:
             return response_json["text"]
@@ -112,15 +105,13 @@ AVAILABLE_OUTGOING_WEBHOOK_INTERFACES = {
     SLACK_INTERFACE: SlackOutgoingWebhookService,
 }   # type: Dict[Text, Any]
 
-def get_service_interface_class(interface):
-    # type: (Text) -> Any
+def get_service_interface_class(interface: Text) -> Any:
     if interface is None or interface not in AVAILABLE_OUTGOING_WEBHOOK_INTERFACES:
         return AVAILABLE_OUTGOING_WEBHOOK_INTERFACES[GENERIC_INTERFACE]
     else:
         return AVAILABLE_OUTGOING_WEBHOOK_INTERFACES[interface]
 
-def get_outgoing_webhook_service_handler(service):
-    # type: (Service) -> Any
+def get_outgoing_webhook_service_handler(service: Service) -> Any:
 
     service_interface_class = get_service_interface_class(service.interface_name())
     service_interface = service_interface_class(base_url=service.base_url,
@@ -129,8 +120,7 @@ def get_outgoing_webhook_service_handler(service):
                                                 service_name=service.name)
     return service_interface
 
-def send_response_message(bot_id, message, response_message_content):
-    # type: (str, Dict[str, Any], Text) -> None
+def send_response_message(bot_id: str, message: Dict[str, Any], response_message_content: Text) -> None:
     recipient_type_name = message['type']
     bot_user = get_user_profile_by_id(bot_id)
     realm = bot_user.realm
@@ -146,18 +136,15 @@ def send_response_message(bot_id, message, response_message_content):
     else:
         raise JsonableError(_("Invalid message type"))
 
-def succeed_with_message(event, success_message):
-    # type: (Dict[str, Any], Text) -> None
+def succeed_with_message(event: Dict[str, Any], success_message: Text) -> None:
     success_message = "Success! " + success_message
     send_response_message(event['user_profile_id'], event['message'], success_message)
 
-def fail_with_message(event, failure_message):
-    # type: (Dict[str, Any], Text) -> None
+def fail_with_message(event: Dict[str, Any], failure_message: Text) -> None:
     failure_message = "Failure! " + failure_message
     send_response_message(event['user_profile_id'], event['message'], failure_message)
 
-def get_message_url(event, request_data):
-    # type: (Dict[str, Any], Dict[str, Any]) -> Text
+def get_message_url(event: Dict[str, Any], request_data: Dict[str, Any]) -> Text:
     bot_user = get_user_profile_by_id(event['user_profile_id'])
     message = event['message']
     if message['type'] == 'stream':
@@ -175,8 +162,11 @@ def get_message_url(event, request_data):
                           'id': str(message['id'])})
     return message_url
 
-def notify_bot_owner(event, request_data, status_code=None, response_content=None, exception=None):
-    # type: (Dict[str, Any], Dict[str, Any], Optional[int], Optional[AnyStr], Optional[Exception]) -> None
+def notify_bot_owner(event: Dict[str, Any],
+                     request_data: Dict[str, Any],
+                     status_code: Optional[int]=None,
+                     response_content: Optional[AnyStr]=None,
+                     exception: Optional[Exception]=None) -> None:
     message_url = get_message_url(event, request_data)
     bot_id = event['user_profile_id']
     bot_owner = get_user_profile_by_id(bot_id).bot_owner
@@ -194,10 +184,11 @@ def notify_bot_owner(event, request_data, status_code=None, response_content=Non
                                     type(exception).__name__, str(exception))
     send_response_message(bot_id, message_info, notification_message)
 
-def request_retry(event, request_data, failure_message, exception=None):
-    # type: (Dict[str, Any], Dict[str, Any], Text, Optional[Exception]) -> None
-    def failure_processor(event):
-        # type: (Dict[str, Any]) -> None
+def request_retry(event: Dict[str, Any],
+                  request_data: Dict[str, Any],
+                  failure_message: Text,
+                  exception: Optional[Exception]=None) -> None:
+    def failure_processor(event: Dict[str, Any]) -> None:
         """
         The name of the argument is 'event' on purpose. This argument will hide
         the 'event' argument of the request_retry function. Keeping the same name
@@ -211,8 +202,11 @@ def request_retry(event, request_data, failure_message, exception=None):
 
     retry_event('outgoing_webhooks', event, failure_processor)
 
-def do_rest_call(rest_operation, request_data, event, service_handler, timeout=None):
-    # type: (Dict[str, Any], Optional[Dict[str, Any]], Dict[str, Any], Any, Any) -> None
+def do_rest_call(rest_operation: Dict[str, Any],
+                 request_data: Optional[Dict[str, Any]],
+                 event: Dict[str, Any],
+                 service_handler: Any,
+                 timeout: Any=None) -> None:
     rest_operation_validator = check_dict([
         ('method', check_string),
         ('relative_url_path', check_string),
