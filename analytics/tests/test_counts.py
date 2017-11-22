@@ -89,9 +89,9 @@ class AnalyticsTestCase(TestCase):
         return Message.objects.create(**kwargs)
 
     # kwargs should only ever be a UserProfile or Stream.
-    def assertCountEquals(self, table, value, property=None, subgroup=None,
-                          end_time=TIME_ZERO, realm=None, **kwargs):
-        # type: (Type[BaseCount], int, Optional[Text], Optional[Text], datetime, Optional[Realm], **models.Model) -> None
+    def assertCountEquals(self, table: Type[BaseCount], value: int, property: Optional[Text]=None,
+                          subgroup: Optional[Text]=None, end_time: datetime=TIME_ZERO,
+                          realm: Optional[Realm]=None, **kwargs: models.Model) -> None:
         if property is None:
             property = self.current_property
         queryset = table.objects.filter(property=property, end_time=end_time).filter(**kwargs)
