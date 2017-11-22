@@ -74,8 +74,7 @@ if 'TRAVIS' in os.environ:
     # In Travis CI, we don't have root access
     EMOJI_CACHE_PATH = "/home/travis/zulip-emoji-cache"
 
-def main():
-    # type: () -> None
+def main() -> None:
     success_stamp = get_success_stamp()
     source_emoji_dump = os.path.dirname(success_stamp)
 
@@ -88,13 +87,11 @@ def main():
     run(['rm', '-rf', TARGET_EMOJI_DUMP])
     os.symlink(source_emoji_dump, TARGET_EMOJI_DUMP)
 
-def get_success_stamp():
-    # type: () -> str
+def get_success_stamp() -> str:
     sha1_hexdigest = generate_sha1sum_emoji(ZULIP_PATH)
     return os.path.join(EMOJI_CACHE_PATH, sha1_hexdigest, 'emoji', '.success-stamp')
 
-def generate_sprite_css_files(cache_path, emoji_data):
-    # type: (str, List[Dict[str, Any]]) -> None
+def generate_sprite_css_files(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None:
     # Spritesheet CSS generation code.
     emoji_positions = ""
     for emoji in emoji_data:
@@ -113,8 +110,7 @@ def generate_sprite_css_files(cache_path, emoji_data):
                                                           })
         sprite_css_file.close()
 
-def setup_emoji_farm(cache_path, emoji_data):
-    # type: (str, List[Dict[str, Any]]) -> None
+def setup_emoji_farm(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None:
     for emojiset in EMOJISETS:
         # Copy individual emoji images from npm packages.
         src_emoji_farm = os.path.join(
@@ -135,8 +131,7 @@ def setup_emoji_farm(cache_path, emoji_data):
 
     generate_sprite_css_files(cache_path, emoji_data)
 
-def setup_old_emoji_farm(cache_path, emoji_map):
-    # type: (str, Dict[str, str]) -> None
+def setup_old_emoji_farm(cache_path: str, emoji_map: Dict[str, str]) -> None:
     # Code for setting up old emoji farm.
     # Some image files in the old emoji farm had a different name than in the new emoji
     # farm. `remapped_emojis` is a map that contains a mapping of their name in the old
@@ -185,8 +180,7 @@ def setup_old_emoji_farm(cache_path, emoji_map):
         except FileExistsError:
             pass
 
-def generate_map_files(cache_path, emoji_catalog):
-    # type: (str, Dict[str, List[str]]) -> None
+def generate_map_files(cache_path: str, emoji_catalog: Dict[str, List[str]]) -> None:
     # This function generates the various data files consumed by webapp, mobile apps, bugdown etc.
     names = emoji_names_for_picker(EMOJI_NAME_MAPS)
     codepoint_to_name = generate_codepoint_to_name_map(EMOJI_NAME_MAPS)
@@ -209,8 +203,7 @@ def generate_map_files(cache_path, emoji_catalog):
     with open(CODEPOINT_TO_NAME_PATH, 'w') as codepoint_to_name_file:
         codepoint_to_name_file.write(ujson.dumps(codepoint_to_name))
 
-def dump_emojis(cache_path):
-    # type: (str) -> None
+def dump_emojis(cache_path: str) -> None:
     with open('emoji_map.json') as emoji_map_file:
         emoji_map = ujson.load(emoji_map_file)
 
