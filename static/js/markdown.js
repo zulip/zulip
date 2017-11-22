@@ -72,6 +72,18 @@ exports.apply_markdown = function (message) {
             }
             return undefined;
         },
+        groupMentionHandler: function (name) {
+            var group = user_groups.get_user_group_from_name(name);
+            if (group !== undefined) {
+                if (user_groups.is_member_of(group.id, people.my_current_user_id())) {
+                    push_uniquely(message.flags, 'mentioned');
+                }
+                return '<span class="user-group-mention" data-user-group-id="' + group.id + '">' +
+                       '@' + group.name +
+                       '</span>';
+            }
+            return undefined;
+        },
     };
     message.content = marked(message.raw_content + '\n\n', options).trim();
     message.is_me_message = (message.raw_content.indexOf('/me ') === 0 &&
