@@ -251,6 +251,26 @@ selection criteria for interns above.
 Most of our interns end up sticking around the project long-term, and many
 quickly become core team members. We hope you apply!
 
+### Google Summer of Code
+
+GSoC is by far the largest of our internship programs (we had 14 GSoC
+students in summer 2017).  While we don't control how many slots
+Google allocates to Zulip, we hope to mentor a similar number of
+students in 2018.
+
+If you're reading this well before the application and deadling and
+want to make your application strong, we recommend getting involved in
+the community and fixing issues in Zulip now.  Since the most
+important part of your application is your contributors, building a
+reputation for doing good work is best way to spend time now on having
+a strong application.  About half of Zulip's GSoC students for Summer
+2017 had made significant contributions to the project by February
+2017 (and about half did not!).  Our
+[GSoC guide from last year][gsoc-2017] is mostly still accurate (with
+the exception that many of the project ideas are now completed).
+
+[gsoc-2017]: https://github.com/zulip/zulip.github.io/blob/master/gsoc-ideas.md
+
 ## Zulip Outreach
 
 **Upvoting Zulip**. Upvotes and reviews make a big difference in the public
