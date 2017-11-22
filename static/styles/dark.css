@@ -5,6 +5,11 @@ body.dark-mode {
     -webkit-font-smoothing: antialiased;
 }
 
+body.dark-mode .app-main,
+body.dark-mode .header-main {
+    background-color: #212d3b;
+}
+
 body.dark-mode #tab_bar_underpadding,
 body.dark-mode .floating_recipient .message-header-wrapper,
 body.dark-mode .column-middle,
@@ -106,6 +111,10 @@ body.dark-mode #preview_message_area {
 body.dark-mode #navbar-buttons ul.nav .dropdown-toggle,
 body.dark-mode #navbar-buttons ul.nav li.active .dropdown-toggle {
     color: hsla(0, 0%, 0%, 0.8);
+}
+
+body.dark-mode .navbar-search {
+    border-right-color: hsla(0, 0%, 0%, 0.2);
 }
 
 body.dark-mode .overlay,
