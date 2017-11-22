@@ -274,13 +274,13 @@ def login_and_go_to_home(request, user_profile):
     do_login(request, user_profile)
     return HttpResponseRedirect(user_profile.realm.uri + reverse('zerver.views.home.home'))
 
-def send_registration_completion_email(email, request, realm_creation=False, streams=None):
-    # type: (str, HttpRequest, bool, Optional[List[Stream]]) -> None
+def send_registration_completion_email(email, request, referred_by=None, realm_creation=False, streams=None):
+    # type: (str, HttpRequest, UserProfile, bool, Optional[List[Stream]]) -> None
     """
     Send an email with a confirmation link to the provided e-mail so the user
     can complete their registration.
     """
-    prereg_user = create_preregistration_user(email, request, realm_creation)
+    prereg_user = create_preregistration_user(email, request, referred_by, realm_creation)
 
     if streams is not None:
         prereg_user.streams = streams
@@ -352,18 +352,19 @@ def accounts_home(request, multiuse_object=None):
 
     from_multiuse_invite = False
     streams_to_subscribe = None
-
+    referred_by = None
     if multiuse_object:
         realm = multiuse_object.realm
         streams_to_subscribe = multiuse_object.streams.all()
         from_multiuse_invite = True
+        referred_by = multiuse_object.referred_by
 
     if request.method == 'POST':
         form = HomepageForm(request.POST, realm=realm, from_multiuse_invite=from_multiuse_invite)
         if form.is_valid():
             email = form.cleaned_data['email']
             try:
-                send_registration_completion_email(email, request, streams=streams_to_subscribe)
+                send_registration_completion_email(email, request, referred_by, streams=streams_to_subscribe)
             except smtplib.SMTPException as e:
                 logging.error('Error in accounts_home: %s' % (str(e),))
                 return HttpResponseRedirect("/config-error/smtp")

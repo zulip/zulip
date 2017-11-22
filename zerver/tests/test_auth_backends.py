@@ -929,7 +929,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
     def test_log_into_subdomain_when_using_invite_link(self):
         # type: () -> None
         data = {'name': 'New User Name',
-                'email': 'new@zulip.com',
+                'email': self.nonreg_email('newuser'),
                 'subdomain': 'zulip',
                 'is_signup': True}
 
@@ -984,7 +984,26 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
              'key': confirmation_key,
              'terms': True})
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(sorted(self.get_streams('new@zulip.com', realm)), stream_names)
+        self.assertEqual(sorted(self.get_streams(self.nonreg_email('newuser'), realm)), stream_names)
+        self.assertEqual(self.nonreg_user('newuser').realm, realm)
+
+        # Now try registering to another realm using the invite link
+        data3 = {'name': 'New User Name',
+                 'email': self.nonreg_email('bob'),
+                 'subdomain': 'zephyr',
+                 'is_signup': True}
+
+        self.client_get(invite_link, subdomain="zephyr")
+        result = self.get_log_into_subdomain(data3, subdomain="zephyr")
+        self.assertEqual(result.status_code, 302)
+        confirmation = Confirmation.objects.all().last()
+        confirmation_key = confirmation.confirmation_key
+        self.client_get(result.url, subdomain="zephyr")
+        data4 = {"terms": True,
+                 "full_name": data3['name'],
+                 "key": confirmation_key}
+        self.client_post('/accounts/register/', data4, subdomain="zephyr")
+        self.assertEqual(self.nonreg_user('bob').realm, realm)
 
     def test_log_into_subdomain_when_email_is_none(self):
         # type: () -> None

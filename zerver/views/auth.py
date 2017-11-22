@@ -45,10 +45,10 @@ import requests
 import time
 import ujson
 
-def create_preregistration_user(email, request, realm_creation=False,
+def create_preregistration_user(email, request, referred_by=None, realm_creation=False,
                                 password_required=True):
-    # type: (Text, HttpRequest, bool, bool) -> HttpResponse
-    return PreregistrationUser.objects.create(email=email,
+    # type: (Text, HttpRequest, UserProfile, bool, bool) -> HttpResponse
+    return PreregistrationUser.objects.create(email=email, referred_by=referred_by,
                                               realm_creation=realm_creation,
                                               password_required=password_required)
 
@@ -60,11 +60,13 @@ def maybe_send_to_registration(request, email, full_name='', password_required=T
     multiuse_obj = None
     streams_to_subscribe = None
     multiuse_object_key = request.session.get("multiuse_object_key", None)
+    referred_by = None
     if multiuse_object_key is not None:
         from_multiuse_invite = True
         multiuse_obj = Confirmation.objects.get(confirmation_key=multiuse_object_key).content_object
         realm = multiuse_obj.realm
         streams_to_subscribe = multiuse_obj.streams.all()
+        referred_by = multiuse_obj.referred_by
 
     form = HomepageForm({'email': email}, realm=realm, from_multiuse_invite=from_multiuse_invite)
     request.verified_email = None
@@ -76,10 +78,10 @@ def maybe_send_to_registration(request, email, full_name='', password_required=T
             try:
                 prereg_user = PreregistrationUser.objects.filter(email__iexact=email).latest("invited_at")
             except PreregistrationUser.DoesNotExist:
-                prereg_user = create_preregistration_user(email, request,
+                prereg_user = create_preregistration_user(email, request, referred_by,
                                                           password_required=password_required)
         else:
-            prereg_user = create_preregistration_user(email, request,
+            prereg_user = create_preregistration_user(email, request, referred_by,
                                                       password_required=password_required)
 
         if multiuse_object_key is not None:
