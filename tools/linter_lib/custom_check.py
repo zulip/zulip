@@ -600,15 +600,6 @@ def build_custom_checkers(by_lang):
         {'pattern': "{{ _(.+) }}[\.\?!]",
          'description': "Period should be part of the translatable string."},
     ]
-    json_rules = [
-        trailing_whitespace_rule,
-        # Since most json files are fixtures containing 3rd party json code,
-        # we allow tab-based whitespace except for a whitelist of files.
-        {'pattern': '\t',
-         'strip': '\n',
-         'include_only': set(['zerver/fixtures/']),
-         'description': 'Fix tab-based whitespace'},
-    ]
     markdown_rules = markdown_whitespace_rules + prose_style_rules + [
         {'pattern': '\[(?P<url>[^\]]+)\]\((?P=url)\)',
          'description': 'Linkified markdown URLs should use cleaner <http://example.com> syntax.'},
@@ -669,11 +660,6 @@ def build_custom_checkers(by_lang):
         color = next(colors)
         for fn in by_lang['html']:
             if custom_check_file(fn, 'html', jinja2_rules, color):
-                failed = True
-
-        color = next(colors)
-        for fn in by_lang['json']:
-            if custom_check_file(fn, 'json', json_rules, color):
                 failed = True
 
         color = next(colors)
