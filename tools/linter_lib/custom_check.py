@@ -33,10 +33,13 @@ def custom_check_file(fn, identifier, rules, color, skip_rules=None, max_length=
         line_tups.append(tup)
 
     rules_to_apply = []
-    fn_dirname = os.path.dirname(fn)
     for rule in rules:
-        exclude_list = rule.get('exclude', set())
-        if fn in exclude_list or fn_dirname in exclude_list:
+        excluded = False
+        for item in rule.get('exclude', set()):
+            if fn.startswith(item):
+                excluded = True
+                break
+        if excluded:
             continue
         if rule.get("include_only"):
             found = False
