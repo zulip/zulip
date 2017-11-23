@@ -31,6 +31,7 @@ from typing import Any, Dict, List
 parser = argparse.ArgumentParser(description='Create a Zulip devopment VM Digital Ocean droplet.')
 parser.add_argument("username", help="Github username for whom you want to create a Zulip dev droplet")
 parser.add_argument('--tags', nargs='+', default=[])
+parser.add_argument('-f', '--recreate', dest='recreate', action="store_true", default=False)
 
 def get_config():
     # type: () -> configparser.ConfigParser
@@ -83,16 +84,20 @@ def fork_exists(username):
         print("Has user {0} forked zulip/zulip?".format(username))
         sys.exit(1)
 
-def exit_if_droplet_exists(my_token, username):
-    # type: (str, str) -> None
+def exit_if_droplet_exists(my_token: str, username: str, recreate: bool) -> None:
     print("Checking to see if droplet for {0} already exists...".format(username))
     manager = digitalocean.Manager(token=my_token)
     my_droplets = manager.get_all_droplets()
     for droplet in my_droplets:
         if droplet.name == "{0}.zulipdev.org".format(username):
-            print("Droplet for user {0} already exists.".format(username))
-            print("Delete droplet AND dns entry via Digital Ocean control panel if you need to re-create.")
-            sys.exit(1)
+            if not recreate:
+                print("Droplet for user {0} already exists. Pass --recreate if you "
+                      "need to recreate the droplet.".format(username))
+                sys.exit(1)
+            else:
+                print("Deleting existing droplet for {0}.".format(username))
+                droplet.destroy()
+                return
     print("...No droplet found...proceeding.")
 
 def set_user_data(username, userkeys):
@@ -235,7 +240,7 @@ if __name__ == '__main__':
 
     api_token = config['digitalocean']['api_token']
     # does the droplet already exist?
-    exit_if_droplet_exists(my_token=api_token, username=args.username)
+    exit_if_droplet_exists(my_token=api_token, username=args.username, recreate=args.recreate)
 
     # set user_data
     user_data = set_user_data(username=args.username, userkeys=public_keys)

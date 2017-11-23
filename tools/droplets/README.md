@@ -68,6 +68,15 @@ may contain letters, numbers, colons, dashes, and underscores.
 You'll need to run this from the Zulip development environment (e.g. in
 Vagrant).
 
+If you want to recreate a droplet for a user you can pass the
+`--recreate` flag.
+
+```
+$ python3 create.py <username> --recreate
+```
+This will destroy the old droplet and create a new droplet for
+the user.
+
 In order for the script to work, the GitHub user must have:
 
 - forked the [zulip/zulip][zulip-zulip] repository, and
