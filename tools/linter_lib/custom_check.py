@@ -601,9 +601,13 @@ def build_custom_checkers(by_lang):
          'description': "Period should be part of the translatable string."},
     ]
     json_rules = [
-        # Since most json files are fixtures containing 3rd party json code,
-        # we allow tab-based whitespaces.
         trailing_whitespace_rule,
+        # Since most json files are fixtures containing 3rd party json code,
+        # we allow tab-based whitespace except for a whitelist of files.
+        {'pattern': '\t',
+         'strip': '\n',
+         'include_only': set(['zerver/fixtures/']),
+         'description': 'Fix tab-based whitespace'},
     ]
     markdown_rules = markdown_whitespace_rules + prose_style_rules + [
         {'pattern': '\[(?P<url>[^\]]+)\]\((?P=url)\)',
