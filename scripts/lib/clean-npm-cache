@@ -19,7 +19,7 @@ NODE_MODULES_CACHE_PATH = "/srv/zulip-npm-cache"
 if ENV == "travis":
     NODE_MODULES_CACHE_PATH = os.path.join(os.environ["HOME"], "zulip-npm-cache")
     try:
-        subprocess.check_output(["/srv/zulip-yarn/bin/yarn", '--version'])
+        subprocess.check_output(["/home/travis/zulip-yarn/bin/yarn", '--version'])
     except OSError:
         print('yarn not found. Most probably we are running static-analysis and '
               'hence yarn is not installed. Exiting without cleaning npm cache.')
