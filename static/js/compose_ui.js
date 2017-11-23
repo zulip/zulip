@@ -27,8 +27,10 @@ exports.smart_insert = function (textarea, syntax) {
         }
     }
 
-    textarea.caret(syntax);
     textarea.focus();
+    if (!document.execCommand("insertText", false, syntax)) {
+        textarea.caret(syntax);
+    }
     // This should just call exports.autosize_textarea, but it's a bit
     // annoying for the unit tests, so we don't do that.
     textarea.trigger("autosize.resize");
