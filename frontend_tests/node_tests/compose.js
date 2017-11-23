@@ -52,6 +52,7 @@ zrequire('stream_data');
 zrequire('compose_state');
 zrequire('people');
 zrequire('compose');
+zrequire('upload');
 page_params.use_websockets = false;
 
 var me = {
@@ -1296,7 +1297,7 @@ function test_with_mock_socket(test_params) {
         return 'fake-html';
     };
 
-    compose.uploadStarted();
+    upload.uploadStarted();
 
     assert.equal($("#compose-send-button").attr("disabled"), '');
     assert($("#send-status").hasClass("alert-info"));
@@ -1311,7 +1312,7 @@ function test_with_mock_socket(test_params) {
         assert.equal(width_percent, '39%');
         width_update_checked = true;
     };
-    compose.progressUpdated(1, '', 39);
+    upload.progressUpdated(1, '', 39);
     assert(width_update_checked);
 }());
 
@@ -1336,7 +1337,7 @@ function test_with_mock_socket(test_params) {
 
     function test(err, file, msg) {
         setup_test();
-        compose.uploadError(err, file);
+        upload.uploadError(err, file);
         // The text function and html function in zjquery is not in sync
         // with each other. QuotaExceeded changes html while all other errors
         // changes body.
@@ -1420,7 +1421,7 @@ function test_with_mock_socket(test_params) {
         }
 
         setup();
-        compose.uploadFinished(i, {}, response);
+        upload.uploadFinished(i, {}, response);
         assert_side_effects();
     }
 

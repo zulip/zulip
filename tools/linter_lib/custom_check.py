@@ -236,7 +236,7 @@ def build_custom_checkers(by_lang):
              'frontend_tests/node_tests/compose.js',
              'frontend_tests/node_tests/copy_and_paste.js',
              'frontend_tests/node_tests/templates.js',
-             'static/js/compose.js',
+             'static/js/upload.js',
              'static/js/dynamic_text.js',
              'static/js/stream_color.js',
          ]),

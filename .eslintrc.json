@@ -150,6 +150,7 @@
         "recent_senders": false,
         "unread_ui": false,
         "unread_ops": false,
+        "upload": false,
         "user_events": false,
         "Plotly": false,
         "emoji_codes": false,
