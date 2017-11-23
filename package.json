@@ -24,7 +24,7 @@
     "i18next-xhr-backend": "1.4.3",
     "jquery": "3.2.1",
     "jquery-validation": "1.16.0",
-    "katex": "0.7.1",
+    "katex": "0.8.3",
     "moment": "2.18.1",
     "moment-timezone": "0.5.13",
     "perfect-scrollbar": "0.7.1",
