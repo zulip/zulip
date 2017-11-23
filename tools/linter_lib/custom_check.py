@@ -234,6 +234,7 @@ def build_custom_checkers(by_lang):
          'description': "Avoid using the `style=` attribute; we prefer styling in CSS files",
          'exclude': set([
              'frontend_tests/node_tests/compose.js',
+             'frontend_tests/node_tests/copy_and_paste.js',
              'frontend_tests/node_tests/templates.js',
              'static/js/compose.js',
              'static/js/dynamic_text.js',

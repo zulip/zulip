@@ -140,22 +140,25 @@ function copy_handler() {
     },0);
 }
 
+exports.paste_handler_converter = function (paste_html) {
+    var markdown_html = toMarkdown(paste_html);
+
+    // Now that we've done the main conversion, we want to remove
+    // any HTML tags that weren't converted to markdown-style
+    // text, since Bugdown doesn't support those.
+    var div = document.createElement("div");
+    div.innerHTML = markdown_html;
+    // Using textContent for modern browsers, innerText works for Internet Explorer
+    return div.textContent || div.innerText || "";
+};
+
 exports.paste_handler = function (event) {
     var clipboardData = event.originalEvent.clipboardData;
 
     var paste_html = clipboardData.getData('text/html');
     if (paste_html) {
         event.preventDefault();
-        var markdown_html = toMarkdown(paste_html);
-
-        // Now that we've done the main conversion, we want to remove
-        // any HTML tags that weren't converted to markdown-style
-        // text, since Bugdown doesn't support those.
-        var div = document.createElement("div");
-        div.innerHTML = markdown_html;
-        // Using textContent for modern browsers, innerText works for Internet Explorer
-        var text = div.textContent || div.innerText || "";
-
+        var text = exports.paste_handler_converter(paste_html);
         compose_ui.insert_syntax_and_focus(text);
     }
 };
