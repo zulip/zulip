@@ -1722,6 +1722,10 @@ class UserSignUpTest(ZulipTestCase):
         self.assertIn("organization you are trying to join using {} does "
                       "not exist".format(email), form.errors['email'][0])
 
+    def test_access_signup_page_in_root_domain_without_realm(self) -> None:
+        result = self.client_get('/register', subdomain="", follow=True)
+        self.assert_in_success_response(["Find your Zulip accounts"], result)
+
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
                                                 'zproject.backends.ZulipDummyBackend'))
     def test_ldap_registration_from_confirmation(self) -> None:

@@ -347,7 +347,10 @@ def confirmation_key(request):
 def accounts_home(request, multiuse_object=None):
     # type: (HttpRequest, Optional[MultiuseInvite]) -> HttpResponse
     realm = get_realm(get_subdomain(request))
-    if realm and realm.deactivated:
+
+    if realm is None:
+        return HttpResponseRedirect(reverse('zerver.views.registration.find_account'))
+    if realm.deactivated:
         return redirect_to_deactivation_notice()
 
     from_multiuse_invite = False

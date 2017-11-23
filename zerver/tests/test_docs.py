@@ -74,7 +74,6 @@ class DocPageTest(ZulipTestCase):
         self._test('/errors/404/', 'Page not found')
         self._test('/errors/5xx/', 'Internal server error')
         self._test('/emails/', 'manually generate most of the emails by clicking')
-        self._test('/register/', 'Sign up for Zulip')
 
         result = self.client_get('/integrations/doc-html/nonexistent_integration', follow=True)
         self.assertEqual(result.status_code, 404)
