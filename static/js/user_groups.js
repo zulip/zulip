@@ -40,6 +40,11 @@ exports.get_realm_user_groups = function () {
     return user_group_name_dict.values();
 };
 
+exports.is_member_of = function (user_group_id, user_id) {
+    var user_group = user_group_by_id_dict.get(user_group_id);
+    return user_group.members.indexOf(user_id) !== -1;
+};
+
 exports.initialize = function () {
     _.each(page_params.realm_user_groups, function (user_group) {
         exports.add(user_group);
