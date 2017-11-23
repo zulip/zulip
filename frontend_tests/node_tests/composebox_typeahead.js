@@ -202,6 +202,18 @@ global.user_groups.add(backend);
     expected_value = '@**Othello, the Moor of Venice** ';
     assert.equal(actual_value, expected_value);
 
+    fake_this.query = '@**oth';
+    fake_this.token = 'oth';
+    actual_value = ct.content_typeahead_selected.call(fake_this, othello);
+    expected_value = '@**Othello, the Moor of Venice** ';
+    assert.equal(actual_value, expected_value);
+
+    fake_this.query = '@*oth';
+    fake_this.token = 'oth';
+    actual_value = ct.content_typeahead_selected.call(fake_this, othello);
+    expected_value = '@**Othello, the Moor of Venice** ';
+    assert.equal(actual_value, expected_value);
+
     // user group mention
     var document_stub_group_trigger_called = false;
     $('document-stub').trigger = function (event, params) {
@@ -211,6 +223,12 @@ global.user_groups.add(backend);
     };
 
     fake_this.query = '@back';
+    fake_this.token = 'back';
+    actual_value = ct.content_typeahead_selected.call(fake_this, backend);
+    expected_value = '@*Backend* ';
+    assert.equal(actual_value, expected_value);
+
+    fake_this.query = '@*back';
     fake_this.token = 'back';
     actual_value = ct.content_typeahead_selected.call(fake_this, backend);
     expected_value = '@*Backend* ';
@@ -226,6 +244,12 @@ global.user_groups.add(backend);
     };
 
     fake_this.query = '#swed';
+    fake_this.token = 'swed';
+    actual_value = ct.content_typeahead_selected.call(fake_this, sweden_stream);
+    expected_value = '#**Sweden** ';
+    assert.equal(actual_value, expected_value);
+
+    fake_this.query = '#**swed';
     fake_this.token = 'swed';
     actual_value = ct.content_typeahead_selected.call(fake_this, sweden_stream);
     expected_value = '#**Sweden** ';
@@ -805,7 +829,9 @@ global.user_groups.add(backend);
 
     assert_typeahead_equals("@", false);
     assert_typeahead_equals(" @", false);
-    assert_typeahead_equals("test @**o", false);
+    assert_typeahead_equals("test @**o", all_mentions);
+    assert_typeahead_equals("test @*o", all_mentions);
+    assert_typeahead_equals("test @*h", all_mentions);
     assert_typeahead_equals("test @", false);
     assert_typeahead_equals("test no@o", false);
     assert_typeahead_equals("@ ", all_mentions);

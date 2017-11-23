@@ -321,6 +321,11 @@ exports.compose_content_begins_typeahead = function (query) {
 
     if (this.options.completions.mention && current_token[0] === '@') {
         current_token = current_token.substring(1);
+        if (current_token.startsWith('**')) {
+            current_token = current_token.substring(2);
+        } else if (current_token.startsWith('*')) {
+            current_token = current_token.substring(1);
+        }
         if (current_token.length < 1 || current_token.lastIndexOf('*') !== -1) {
             return false;
         }
@@ -352,6 +357,9 @@ exports.compose_content_begins_typeahead = function (query) {
         }
 
         current_token = current_token.substring(1);
+        if (current_token.startsWith('**')) {
+            current_token = current_token.substring(2);
+        }
 
         // Don't autocomplete if there is a space following a '#'
         if (current_token[0] === " ") {
@@ -401,6 +409,11 @@ exports.content_typeahead_selected = function (item) {
         }
     } else if (this.completing === 'mention') {
         beginning = beginning.substring(0, beginning.length - this.token.length - 1);
+        if (beginning.endsWith('@*')) {
+            beginning = beginning.substring(0, beginning.length - 2);
+        } else if (beginning.endsWith('@')) {
+            beginning = beginning.substring(0, beginning.length - 1);
+        }
         if (user_groups.is_user_group(item)) {
             beginning += '@*' + item.name + '* ';
             $(document).trigger('usermention_completed.zulip', {user_group: item});
@@ -409,8 +422,11 @@ exports.content_typeahead_selected = function (item) {
             $(document).trigger('usermention_completed.zulip', {mentioned: item});
         }
     } else if (this.completing === 'stream') {
-        beginning = (beginning.substring(0, beginning.length - this.token.length - 1)
-                + '#**' + item.name + '** ');
+        beginning = beginning.substring(0, beginning.length - this.token.length - 1);
+        if (beginning.endsWith('#*')) {
+            beginning = beginning.substring(0, beginning.length - 2);
+        }
+        beginning += '#**' + item.name + '** ';
         $(document).trigger('streamname_completed.zulip', {stream: item});
     } else if (this.completing === 'syntax') {
         // Isolate the end index of the triple backticks/tildes, including
