@@ -3139,7 +3139,7 @@ nav ul li.active::after {
         float: right;
     }
 
-    nav ul:before {
+    .portico-header .content > ul:before {
         content: "Zulip";
         display: block;
         margin-top: 20px;
@@ -3156,6 +3156,13 @@ nav ul li.active::after {
         background-size: 40px auto;
         background-image: url(/static/images/zulip-logo.svg);
         background-repeat: no-repeat;
+    }
+
+    .portico-header .dropdown ul {
+        width: 100%;
+        height: 85px;
+        margin: 42px 0 0 0;
+        font-size: 0.8em;
     }
 
     nav ul {
