@@ -13,33 +13,45 @@ preparing a new release.
 * Update `changelog.md` with major changes going into the release.
 * Create a burndown list of bugs that need to be fixed before we can
   release, and make sure all of them are being worked on.
+* Draft the release blog post (aka the release notes.)
 
 ### Final release preparation
 
-* Update `changelog.md` with any final changes since the last update.
-* Draft the release notes; see previous zulip-announce emails for the
-  tooling needed.
+* Update `changelog.md` with any changes since the last update, and
+  with revisions from the draft blog post.
 * Download updated translation strings from Transifex and commit them.
 * Use `build-release-tarball` to generate a release tarball.
 * Test the new tarball extensively, both new install and upgrade from last
   release, on both Trusty and Xenial.
 * Repeat until release is ready.
+* When near finished: move the blog post draft to Ghost.  (For a draft
+  in Dropbox Paper, use "··· > Download > Markdown" to get a pretty
+  good markup conversion.)  Proofread the post, especially for
+  formatting.
 
 ### Executing the release
 
-* Do final updates to `changelog.md`.
+* Do final updates to `changelog.md`, for any final changes and with
+  any revisions from the draft blog post.  (And the date!)
 * Update `ZULIP_VERSION` in `version.py`.
 * Update `version` and/or `release` in `docs/conf.py` (ReadTheDocs meta tags).
 * Use `build-release-tarball` to generate a final release tarball.
-* Post the release tarball on zulip.org and update zulip.org.
-* Add the sha256sum of the release to the file SHA256SUMS.txt in https://www.zulip.org/dist/releases/
-* Create a git tag and push the tag.
-* Upload the release on GitHub so it doesn't provide a broken release tarball.
-* Email zulip-announce with the release notes
-* For a major release, post on the blog, tweet, etc.
+* Post the release tarball on https://www.zulip.org/dist/releases/ :
+  add the file, update the `zulip-server-latest.tar.gz` symlink, and
+  add to SHA256SUMS.txt.
+* Create a Git tag and push the tag.
+* Post the release on GitHub, using the text from `changelog.md`.
+* Publish the blog post.
+* Email zulip-announce, and send a tweet.
+* For a major release: submit blog post to aggregators.
 
 ### Post-release
 
-* Update `ZULIP_VERSION` in `version.py` to e.g. `1.6.0+git`.  Also
-  update `docs/conf.py`.
+* Push the release commit to master, if applicable (typically for a
+  major release); otherwise, make sure any last changes make it back
+  to master.
+* Update `ZULIP_VERSION` in `version.py` and `release` in
+ `docs/conf.py` to e.g. `1.6.0+git`.
+* Update the handful of places where we link to docs for the latest
+  release, rather than for master.  See `git grep 'zulip.readthedocs.io/en/[0-9]'`.
 * Consider removing a few old releases from ReadTheDocs.
