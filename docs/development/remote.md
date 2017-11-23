@@ -87,7 +87,7 @@ don't have a favorite, here are some suggestions:
 * [spacemacs](https://github.com/syl20bnr/spacemacs)
 * [sublime](https://www.sublimetext.com/)
 
-Next, follow our [Git and GitHub Guide](../contributing/git-guide.html) to clone and configure
+Next, follow our [Git and GitHub Guide](../git/index.html) to clone and configure
 your fork of zulip on your local computer.
 
 Once you have cloned your code locally, you can get to work.
@@ -175,7 +175,7 @@ Next, read the following to learn more about developing for Zulip:
 [install-direct]: ../development/setup-advanced.html#installing-directly-on-ubuntu
 [install-generic]: ../development/setup-advanced.html#installing-manually-on-linux
 [install-vagrant]: ../development/setup-vagrant.html
-[rtd-git-guide]: ../contributing/git-guide.html
+[rtd-git-guide]: ../git/index.html
 [rtd-using-dev-env]: using.html
 [rtd-testing]: ../testing/testing.html
 [git-bash]: https://git-for-windows.github.io/

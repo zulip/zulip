@@ -92,4 +92,4 @@ machine, take a look at our tips for
 [configure-proxy]: ../development/setup-vagrant.html#specifying-a-proxy
 [using-dev-env]: using.html
 [testing]: ../testing/testing.html
-[travis-ci]: ../contributing/git-guide.html#step-3-configure-travis-ci-continuous-integration
+[travis-ci]: ../git/cloning.html#step-3-configure-travis-ci-continuous-integration

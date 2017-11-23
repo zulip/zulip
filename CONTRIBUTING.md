@@ -68,7 +68,7 @@ to help.
   [#development help](https://chat.zulip.org/#narrow/stream/development.20help)
   if you run into any troubles.
 * Read the
-  [Zulip guide to Git](https://zulip.readthedocs.io/en/latest/contributing/git-guide.html)
+  [Zulip guide to Git](https://zulip.readthedocs.io/en/latest/git/index.html)
   and do the Git tutorial (coming soon) if you are unfamiliar with Git,
   getting help in
   [#git help](https://chat.zulip.org/#narrow/stream/git.20help) if you run

@@ -279,7 +279,7 @@ Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
 2. Open Terminal (macOS/Ubuntu) or Git BASH (Windows; must
    **run as an Administrator**).
 3. In Terminal/Git BASH,
-   [clone your fork of the zulip repository](../contributing/git-guide.html#step-1b-clone-to-your-machine):
+   [clone your fork of the zulip repository](../git/cloning.html#step-1b-clone-to-your-machine):
 
 ```
 git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git
@@ -1060,11 +1060,11 @@ for the IP address that means any IP address can connect to your development ser
 [avoiding-sudo]: https://github.com/fgrehm/vagrant-lxc#avoiding-sudo-passwords
 [install-advanced]: ../development/setup-advanced.html
 [lxc-sf]: https://github.com/fgrehm/vagrant-lxc/wiki/FAQ#help-my-shared-folders-have-the-wrong-owner
-[rtd-git-guide]: ../contributing/git-guide.html
+[rtd-git-guide]: ../git/index.html
 [rtd-testing]: ../testing/testing.html
 [rtd-using-dev-env]: using.html
 [rtd-dev-remote]: remote.html
 [git-bash]: https://git-for-windows.github.io/
 [bash-admin-setup]: https://superuser.com/questions/1002262/run-applications-as-administrator-by-default-in-windows-10
-[set-up-git]: ../contributing/git-guide.html#set-up-git
-[travis-ci]: ../contributing/git-guide.html#step-3-configure-travis-ci-continuous-integration
+[set-up-git]: ../git/setup.html
+[travis-ci]: ../git/cloning.html#step-3-configure-travis-ci-continuous-integration

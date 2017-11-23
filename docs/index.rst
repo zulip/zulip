@@ -35,6 +35,7 @@ Contents:
 * :ref:`Zulip in Production <zulip-in-production>`
 * :ref:`Development Environment <development-environment>`
 * :ref:`Developer Tutorials <developer-tutorials>`
+* :ref:`Git Guide <git-guide>`
 * :ref:`Code Contribution Guide <code-contribution-guide>`
 * :ref:`Code Testing <code-testing>`
 * :ref:`Subsystem Documentation <subsystem-documentation>`
@@ -67,6 +68,13 @@ Contents:
    :maxdepth: 3
 
    tutorials/index
+
+.. _git-guide:
+
+.. toctree::
+   :maxdepth: 3
+
+   git/index
 
 .. _code-contribution-guide:
 
