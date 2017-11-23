@@ -8,7 +8,7 @@ Contents:
 
 ## Installing directly on Ubuntu
 
-Start by [cloning your fork of the zulip repository](../contributing/git-guide.html#step-1b-clone-to-your-machine):
+Start by [cloning your fork of the zulip repository][zulip-rtd-git-cloning]:
 
 `git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git`
 
@@ -62,7 +62,7 @@ Install the following non-Python dependencies:
 
 #### Using the official Ubuntu repositories, PGroonga PPA and `tsearch-extras` deb package:
 
-Start by [cloning your fork of the zulip repository](../contributing/git-guide.html#step-1b-clone-to-your-machine):
+Start by [cloning your fork of the zulip repository][zulip-rtd-git-cloning]:
 
 `git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git`
 
@@ -121,7 +121,7 @@ Now continue with the [All Systems](#all-systems) instructions below.
 
 [zulip-ppa]: https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+packages
 
-Start by [cloning your fork of the zulip repository](../contributing/git-guide.html#step-1b-clone-to-your-machine):
+Start by [cloning your fork of the zulip repository][zulip-rtd-git-cloning]:
 
 `git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git`
 
@@ -142,7 +142,7 @@ Now continue with the [All Systems](#all-systems) instructions below.
 These instructions are experimental and may have bugs; patches
 welcome!
 
-Start by [cloning your fork of the zulip repository](../contributing/git-guide.html#step-1b-clone-to-your-machine):
+Start by [cloning your fork of the zulip repository][zulip-rtd-git-cloning]:
 
 `git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git`
 
@@ -160,7 +160,7 @@ Now continue with the [Common to Fedora/CentOS](#common-to-fedora-centos-instruc
 These instructions are experimental and may have bugs; patches
 welcome!
 
-Start by [cloning your fork of the zulip repository](../contributing/git-guide.html#step-1b-clone-to-your-machine):
+Start by [cloning your fork of the zulip repository][zulip-rtd-git-cloning]:
 
 `git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git`
 
@@ -219,7 +219,7 @@ Now continue with the [Common to Fedora/CentOS](#common-to-fedora-centos-instruc
 These instructions are experimental and may have bugs; patches
 welcome!
 
-Start by [cloning your fork of the zulip repository](../contributing/git-guide.html#step-1b-clone-to-your-machine):
+Start by [cloning your fork of the zulip repository][zulip-rtd-git-cloning]:
 
 `git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git`
 
@@ -254,7 +254,7 @@ Finally continue with the [All Systems](#all-systems) instructions below.
 
 ### Common to Fedora/CentOS instructions
 
-Start by [cloning your fork of the zulip repository](../contributing/git-guide.html#step-1b-clone-to-your-machine):
+Start by [cloning your fork of the zulip repository][zulip-rtd-git-cloning]:
 
 `git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git`
 
@@ -375,7 +375,7 @@ proxy in the environment as follows:
 
 ## Using Docker (experimental)
 
-Start by [cloning your fork of the zulip repository](../contributing/git-guide.html#step-1b-clone-to-your-machine):
+Start by [cloning your fork of the zulip repository][zulip-rtd-git-cloning]:
 
 `git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git`
 
@@ -472,3 +472,5 @@ the results in your browser.
 Currently, the Docker workflow is substantially less convenient than
 the Vagrant workflow and less documented; please contribute to this
 guide and the Docker tooling if you are using Docker to develop Zulip!
+
+[zulip-rtd-git-cloning]: ../git/cloning.html#step-1b-clone-to-your-machine

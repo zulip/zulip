@@ -148,7 +148,7 @@ Some titles have been shortened for organizational purposes.
 
 You may want to take a look first at our [Git and GitHub guide][].
 
-[Git and GitHub guide]: ../contributing/git-guide.html
+[Git and GitHub guide]: ../git/index.html
 
 *Article* - [Git tips][]
 

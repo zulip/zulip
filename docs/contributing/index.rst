@@ -5,7 +5,6 @@ Code Contribution Guide
 .. toctree::
    :maxdepth: 3
 
-   git-guide
    version-control
    code-style
    mypy

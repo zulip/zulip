@@ -65,7 +65,7 @@ Once you've confirmed you can connect to your remote server, take a look at:
 
 * [developing remotely](../development/remote.html) for tips on using the remote dev
   instance, and
-* our [Git & GitHub Guide](../contributing/git-guide.html) to learn how to use Git with Zulip.
+* our [Git & GitHub Guide](../git/index.html) to learn how to use Git with Zulip.
 
 Next, read the following to learn more about developing for Zulip:
 

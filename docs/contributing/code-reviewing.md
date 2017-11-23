@@ -198,5 +198,5 @@ We also strongly recommend reviewers to go through the following resources.
 [commit-messages]: ../contributing/version-control.html#commit-messages
 [test-writing]: ../testing/testing.html
 [mypy]: ../contributing/mypy.html
-[git tool]: ../contributing/git-guide.html#fetch-a-pull-request-and-rebase
+[git tool]: ../git/zulip-tools.html#fetch-a-pull-request-and-rebase
 [translation]: ../translating/translating.html
