@@ -57,7 +57,7 @@ You might be interested in:
 * **Running a Zulip server**. Setting up a server takes just a couple of
   minutes. Zulip runs on Ubuntu 16.04 Xenial and Ubuntu 14.04 Trusty. The
   installation process is
-  [documented here](https://zulip.readthedocs.io/en/1.7.0/prod.html).
+  [documented here](https://zulip.readthedocs.io/en/1.7.1/prod.html).
   Commercial support is available; see <https://zulipchat.com/plans> for
   details.
 
