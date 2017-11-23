@@ -22,5 +22,5 @@ var copy_and_paste = zrequire('copy_and_paste');
     // TODO: for cases where one is just pasting a link, we'd prefer
     // that this not use markdown syntax, since that feels unnecessary.
     assert.equal(copy_and_paste.paste_handler_converter(input),
-                 '[https://zulip.readthedocs.io/en/latest/subsystems/logging.html](https://zulip.readthedocs.io/en/latest/subsystems/logging.html');
+                 '[https://zulip.readthedocs.io/en/latest/subsystems/logging.html](https://zulip.readthedocs.io/en/latest/subsystems/logging.html "https://zulip.readthedocs.io/en/latest/subsystems/logging.html")');
 }());
