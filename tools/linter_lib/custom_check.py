@@ -604,14 +604,19 @@ def build_custom_checkers(by_lang):
          'description': "Period should be part of the translatable string."},
     ]
     json_rules = [
+        # Here, we don't use `whitespace_rules`, because the tab-based
+        # whitespace rule flags a lot of third-party JSON fixtures
+        # under zerver/webhooks that we want preserved verbatim.  So
+        # we just include the trailing whitespace rule and a modified
+        # version of the tab-based whitespace rule (we can't just use
+        # exclude in whitespace_rules, since we only want to ignore
+        # JSON files with tab-based whitespace, not webhook code).
         trailing_whitespace_rule,
-        # Since most json files are fixtures containing 3rd party json code,
-        # we allow tab-based whitespace except for a whitelist of files.
         {'pattern': '\t',
          'strip': '\n',
-         'include_only': set(['zerver/fixtures/']),
+         'exclude': set(['zerver/webhooks/']),
          'description': 'Fix tab-based whitespace'},
-    ]
+    ]  # type: RuleList
     markdown_rules = markdown_whitespace_rules + prose_style_rules + [
         {'pattern': '\[(?P<url>[^\]]+)\]\((?P=url)\)',
          'description': 'Linkified markdown URLs should use cleaner <http://example.com> syntax.'},

@@ -1,16 +1,16 @@
 {
     "env": {
-	"shared-node-browser": true
+        "shared-node-browser": true
     },
     "globals": {
-	"assert": false,
-	"casper": false,
-	"document": false,
-	"set_global": false,
-	"window": false,
-	"zrequire": false
+        "assert": false,
+        "casper": false,
+        "document": false,
+        "set_global": false,
+        "window": false,
+        "zrequire": false
     },
     "rules": {
-	"no-sync": 0
+        "no-sync": 0
     }
 }
