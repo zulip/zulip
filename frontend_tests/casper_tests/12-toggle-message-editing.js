@@ -135,6 +135,12 @@ casper.then(function () {
 // Check that edit link has changed to "View source" in the popover menu
 // TODO: also check that the edit icon no longer appears next to the message
 casper.then(function () {
+    // This somehow makes the "View source" test deterministic. It seems that
+    // we are waiting on a wrong condition somewhere.
+    casper.wait(1000);
+});
+
+casper.then(function () {
     casper.waitUntilVisible('.message_row');
     // Note that this could have a false positive, e.g. if all the messages aren't
     // loaded yet. See Issue #1243
