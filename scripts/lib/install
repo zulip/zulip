@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-# Ensure that we're using a US locale, since some pip dependencies
-# can't install in random locales.
-export LC_ALL="en_US.UTF-8"
-export LC_CTYPE="en_US.UTF-8"
-
 usage() {
     cat <<EOF
 Usage:
@@ -58,6 +53,9 @@ fi
 
 # Do set -x after option parsing is complete
 set -x
+
+# Force a known locale.  Some packages on PyPI fail to install in some locales.
+export LC_ALL="en_US.UTF-8"
 
 # Specify options for apt.
 APT_OPTIONS="${APT_OPTIONS:-}"
