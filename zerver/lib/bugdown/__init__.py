@@ -361,6 +361,24 @@ class InlineHttpsProcessor(markdown.treeprocessors.Treeprocessor):
                 continue
             img.set("src", get_camo_url(url))
 
+class BacktickPattern(markdown.inlinepatterns.Pattern):
+    """ Return a `<code>` element containing the matching text. """
+    def __init__(self, pattern):
+        # type: (Text) -> None
+        markdown.inlinepatterns.Pattern.__init__(self, pattern)
+        self.ESCAPED_BSLASH = '%s%s%s' % (markdown.util.STX, ord('\\'), markdown.util.ETX)
+        self.tag = 'code'
+
+    def handleMatch(self, m):
+        # type: (Match[Text]) -> Union[Text, Element]
+        if m.group(4):
+            el = markdown.util.etree.Element(self.tag)
+            # Modified to not strip whitespace
+            el.text = markdown.util.AtomicString(m.group(4))
+            return el
+        else:
+            return m.group(2).replace('\\\\', self.ESCAPED_BSLASH)
+
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     TWITTER_MAX_IMAGE_HEIGHT = 400
     TWITTER_MAX_TO_PREVIEW = 3
@@ -1308,7 +1326,7 @@ class Bugdown(markdown.Extension):
         for k in ('image_link', 'image_reference', 'automail',
                   'autolink', 'link', 'reference', 'short_reference',
                   'escape', 'strong_em', 'emphasis', 'emphasis2',
-                  'linebreak', 'strong'):
+                  'linebreak', 'strong', 'backtick'):
             del md.inlinePatterns[k]
         try:
             # linebreak2 was removed upstream in version 3.2.1, so
@@ -1318,6 +1336,12 @@ class Bugdown(markdown.Extension):
             pass
 
         md.preprocessors.add("custom_text_notifications", AlertWordsNotificationProcessor(md), "_end")
+
+        # Inline code block without whitespace stripping
+        md.inlinePatterns.add(
+            "backtick",
+            BacktickPattern(r'(?:(?<!\\)((?:\\{2})+)(?=`+)|(?<!\\)(`+)(.+?)(?<!`)\3(?!`))'),
+            "_begin")
 
         # Custom bold syntax: **foo** but not __foo__
         md.inlinePatterns.add('strong',
