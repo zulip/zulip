@@ -9,8 +9,8 @@ import importlib
 from zerver.lib.actions import internal_send_private_message, \
     internal_send_stream_message, internal_send_huddle_message
 from zerver.models import UserProfile, get_user
-from zerver.lib.bot_storage import get_bot_state, set_bot_state, \
-    is_key_in_bot_state, get_bot_state_size, remove_bot_state
+from zerver.lib.bot_storage import get_bot_storage, set_bot_storage, \
+    is_key_in_bot_storage, get_bot_storage_size, remove_bot_storage
 from zerver.lib.bot_config import get_bot_config
 from zerver.lib.integrations import EMBEDDED_BOTS
 
@@ -38,7 +38,7 @@ def get_bot_handler(service_name: str) -> Any:
 
 
 class StateHandler:
-    state_size_limit = 10000000   # type: int # TODO: Store this in the server configuration model.
+    storage_size_limit = 10000000   # type: int # TODO: Store this in the server configuration model.
 
     def __init__(self, user_profile: UserProfile) -> None:
         self.user_profile = user_profile
@@ -46,16 +46,16 @@ class StateHandler:
         self.demarshal = lambda obj: json.loads(obj)
 
     def get(self, key: Text) -> Text:
-        return self.demarshal(get_bot_state(self.user_profile, key))
+        return self.demarshal(get_bot_storage(self.user_profile, key))
 
     def put(self, key: Text, value: Text) -> None:
-        set_bot_state(self.user_profile, [(key, self.marshal(value))])
+        set_bot_storage(self.user_profile, [(key, self.marshal(value))])
 
     def remove(self, key: Text) -> None:
-        remove_bot_state(self.user_profile, [key])
+        remove_bot_storage(self.user_profile, [key])
 
     def contains(self, key: Text) -> bool:
-        return is_key_in_bot_state(self.user_profile, key)
+        return is_key_in_bot_storage(self.user_profile, key)
 
 class EmbeddedBotHandler:
     def __init__(self, user_profile: UserProfile) -> None:

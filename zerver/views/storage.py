@@ -1,11 +1,11 @@
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 from zerver.lib.bot_storage import (
-    get_bot_state,
-    set_bot_state,
-    remove_bot_state,
-    get_keys_in_bot_state,
-    is_key_in_bot_state,
+    get_bot_storage,
+    set_bot_storage,
+    remove_bot_storage,
+    get_keys_in_bot_storage,
+    is_key_in_bot_storage,
     StateError,
 )
 from zerver.decorator import has_request_variables, REQ
@@ -16,30 +16,30 @@ from zerver.models import UserProfile
 from typing import Dict, List, Optional
 
 @has_request_variables
-def update_state(request, user_profile, state=REQ(validator=check_dict([]))):
+def update_storage(request, user_profile, storage=REQ(validator=check_dict([]))):
     # type: (HttpRequest, UserProfile, Optional[Dict[str, str]]) -> HttpResponse
     try:
-        set_bot_state(user_profile, list(state.items()))
+        set_bot_storage(user_profile, list(storage.items()))
     except StateError as e:
         return json_error(str(e))
     return json_success()
 
 @has_request_variables
-def get_state(request, user_profile, keys=REQ(validator=check_list(check_string), default=None)):
+def get_storage(request, user_profile, keys=REQ(validator=check_list(check_string), default=None)):
     # type: (HttpRequest, UserProfile, Optional[List[str]]) -> HttpResponse
-    keys = keys or get_keys_in_bot_state(user_profile)
+    keys = keys or get_keys_in_bot_storage(user_profile)
     try:
-        state = {key: get_bot_state(user_profile, key) for key in keys}
+        storage = {key: get_bot_storage(user_profile, key) for key in keys}
     except StateError as e:
         return json_error(str(e))
-    return json_success({'state': state})
+    return json_success({'storage': storage})
 
 @has_request_variables
-def remove_state(request, user_profile, keys=REQ(validator=check_list(check_string), default=None)):
+def remove_storage(request, user_profile, keys=REQ(validator=check_list(check_string), default=None)):
     # type: (HttpRequest, UserProfile, Optional[List[str]]) -> HttpResponse
-    keys = keys or get_keys_in_bot_state(user_profile)
+    keys = keys or get_keys_in_bot_storage(user_profile)
     try:
-        remove_bot_state(user_profile, keys)
+        remove_bot_storage(user_profile, keys)
     except StateError as e:
         return json_error(str(e))
     return json_success()
