@@ -222,8 +222,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
                                                  client_id=self.client_id,
                                                  return_queue="tornado_return",
                                                  log_data=log_data,
-                                                 request_environ=request_environ)),
-                           lambda x: None, call_consume_in_tests=True)
+                                                 request_environ=request_environ)))
 
     def on_close(self) -> None:
         log_data = dict(extra='[transport=%s]' % (self.session.transport_name,))
