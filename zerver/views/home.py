@@ -64,14 +64,14 @@ def sent_time_in_epoch_seconds(user_message: Optional[UserMessage]) -> Optional[
     # Return the epoch seconds in UTC.
     return calendar.timegm(user_message.message.pub_date.utctimetuple())
 
-def get_bot_types():
-    # type: () -> List[Dict[Text, object]]
+def get_bot_types(user_profile):
+    # type: (UserProfile) -> List[Dict[Text, object]]
     bot_types = []
     for type_id, name in UserProfile.BOT_TYPES.items():
         bot_types.append({
             'type_id': type_id,
             'name': name,
-            'allowed': type_id in UserProfile.ALLOWED_BOT_TYPES
+            'allowed': type_id in user_profile.allowed_bot_types
         })
     return bot_types
 
@@ -200,7 +200,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
         prompt_for_invites    = prompt_for_invites,
         furthest_read_time    = sent_time_in_epoch_seconds(latest_read),
         has_mobile_devices    = num_push_devices_for_user(user_profile) > 0,
-        bot_types             = get_bot_types(),
+        bot_types             = get_bot_types(user_profile),
     )
 
     undesired_register_ret_fields = [

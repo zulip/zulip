@@ -316,6 +316,11 @@ function _set_up() {
                 type: 'integer',
                 msg: i18n.t("Waiting period threshold changed!"),
             },
+            create_generic_bot_by_admins_only: {
+                type: 'bool',
+                checked_msg: i18n.t("Only administrators may now create new generic bots!"),
+                unchecked_msg: i18n.t("Any user may now create new generic bots!"),
+            },
         },
     };
 

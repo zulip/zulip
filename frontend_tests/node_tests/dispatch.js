@@ -182,6 +182,13 @@ var event_fixtures = {
         value: false,
     },
 
+    realm__update__create_generic_bot_by_admins_only: {
+        type: 'realm',
+        op: 'update',
+        property: 'create_generic_bot_by_admins_only',
+        value: false,
+    },
+
     realm__update_dict__default: {
         type: 'realm',
         op: 'update_dict',
@@ -544,6 +551,9 @@ with_overrides(function (override) {
 
     event = event_fixtures.realm__update__restricted_to_domain;
     test_realm_boolean(event, 'realm_restricted_to_domain');
+
+    event = event_fixtures.realm__update__create_stream_by_admins_only;
+    test_realm_boolean(event, 'realm_create_stream_by_admins_only');
 
     event = event_fixtures.realm__update_dict__default;
     page_params.realm_allow_message_editing = false;
