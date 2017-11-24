@@ -1164,7 +1164,7 @@ class RealmCreationTest(ZulipTestCase):
         password = "test"
         string_id = "zuliptest"
         email = "user1@test.com"
-        realm = get_realm('test')
+        realm = get_realm(string_id)
 
         # Make sure the realm does not exist
         self.assertIsNone(realm)
@@ -1228,10 +1228,6 @@ class RealmCreationTest(ZulipTestCase):
         OPEN_REALM_CREATION is false.
         """
         email = "user1@test.com"
-        realm = get_realm('test')
-
-        # Make sure the realm does not exist
-        self.assertIsNone(realm)
 
         with self.settings(OPEN_REALM_CREATION=False):
             # Create new realm with the email, but no creation key.
@@ -1247,7 +1243,7 @@ class RealmCreationTest(ZulipTestCase):
         realm_name = "Test"
 
         # Make sure the realm does not exist
-        self.assertIsNone(get_realm('test'))
+        self.assertIsNone(get_realm(string_id))
 
         # Create new realm with the email
         result = self.client_post('/create_realm/', {'email': email})
