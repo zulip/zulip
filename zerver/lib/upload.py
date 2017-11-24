@@ -100,7 +100,7 @@ def resize_emoji(image_data: bytes, size: int=DEFAULT_EMOJI_SIZE) -> bytes:
         if image_format == 'GIF' and im.is_animated:
             if im.size[0] != im.size[1]:
                 raise JsonableError(
-                    _("Animated emoji must be have same width and height."))
+                    _("Animated emoji must have the same width and height."))
             elif im.size[0] > size:
                 raise JsonableError(
                     _("Animated emoji can't be larger than 64px in width or height."))
