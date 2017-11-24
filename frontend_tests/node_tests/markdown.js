@@ -40,7 +40,7 @@ set_global('page_params', {
     ],
 });
 
-set_global('blueslip', {});
+set_global('blueslip', {error: function () {}});
 
 set_global('Image', function () {
   return {};
