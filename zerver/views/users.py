@@ -273,7 +273,7 @@ def add_bot_backend(
         return json_error(_("Username already in use"))
     except UserProfile.DoesNotExist:
         pass
-    check_valid_bot_type(bot_type)
+    check_valid_bot_type(user_profile, bot_type)
     check_valid_interface_type(interface_type)
 
     if len(request.FILES) == 0:

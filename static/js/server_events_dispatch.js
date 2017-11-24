@@ -56,6 +56,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             allow_edit_history: noop,
             allow_message_deleting: noop,
             allow_message_editing: noop,
+            create_generic_bot_by_admins_only: noop,
             create_stream_by_admins_only: noop,
             default_language: settings_org.reset_realm_default_language,
             description: settings_org.update_realm_description,

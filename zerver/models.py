@@ -144,6 +144,7 @@ class Realm(models.Model):
     inline_url_embed_preview = models.BooleanField(default=True)  # type: bool
     create_stream_by_admins_only = models.BooleanField(default=False)  # type: bool
     add_emoji_by_admins_only = models.BooleanField(default=False)  # type: bool
+    create_generic_bot_by_admins_only = models.BooleanField(default=False)  # type: bool
     mandatory_topics = models.BooleanField(default=False)  # type: bool
     show_digest_email = models.BooleanField(default=True)  # type: bool
     name_changes_disabled = models.BooleanField(default=False)  # type: bool
@@ -178,6 +179,7 @@ class Realm(models.Model):
         add_emoji_by_admins_only=bool,
         allow_edit_history=bool,
         allow_message_deleting=bool,
+        create_generic_bot_by_admins_only=bool,
         create_stream_by_admins_only=bool,
         default_language=Text,
         description=Text,
@@ -496,16 +498,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         EMBEDDED_BOT: 'Embedded bot',
     }
 
-    # For now, don't allow creating other bot types via the UI
-    ALLOWED_BOT_TYPES = [
-        DEFAULT_BOT,
-        INCOMING_WEBHOOK_BOT,
-        OUTGOING_WEBHOOK_BOT,
-    ]
-    if settings.DEVELOPMENT:
-        # Embedded bots are not yet enabled in production.
-        ALLOWED_BOT_TYPES.append(EMBEDDED_BOT)
-
     SERVICE_BOT_TYPES = [
         OUTGOING_WEBHOOK_BOT,
         EMBEDDED_BOT,
@@ -715,6 +707,20 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     @property
     def is_service_bot(self) -> bool:
         return self.is_bot and self.bot_type in UserProfile.SERVICE_BOT_TYPES
+
+    @property
+    def allowed_bot_types(self):
+        # type: () -> List[int]
+        allowed_bot_types = []
+        if self.is_realm_admin or not self.realm.create_generic_bot_by_admins_only:
+            allowed_bot_types.append(UserProfile.DEFAULT_BOT)
+        allowed_bot_types += [
+            UserProfile.INCOMING_WEBHOOK_BOT,
+            UserProfile.OUTGOING_WEBHOOK_BOT,
+        ]
+        if settings.EMBEDDED_BOTS_ENABLED:
+            allowed_bot_types.append(UserProfile.EMBEDDED_BOT)
+        return allowed_bot_types
 
     @staticmethod
     def emojiset_choices() -> Dict[Text, Text]:

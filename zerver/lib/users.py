@@ -24,8 +24,8 @@ def check_short_name(short_name_raw: Text) -> Text:
         raise JsonableError(_("Bad name or username"))
     return short_name
 
-def check_valid_bot_type(bot_type: int) -> None:
-    if bot_type not in UserProfile.ALLOWED_BOT_TYPES:
+def check_valid_bot_type(user_profile: UserProfile, bot_type: int) -> None:
+    if bot_type not in user_profile.allowed_bot_types:
         raise JsonableError(_('Invalid bot type'))
 
 def check_valid_interface_type(interface_type: int) -> None:

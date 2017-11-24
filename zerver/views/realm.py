@@ -34,6 +34,7 @@ def update_realm(
         inline_url_embed_preview: Optional[bool]=REQ(validator=check_bool, default=None),
         create_stream_by_admins_only: Optional[bool]=REQ(validator=check_bool, default=None),
         add_emoji_by_admins_only: Optional[bool]=REQ(validator=check_bool, default=None),
+        create_generic_bot_by_admins_only: Optional[bool]=REQ(validator=check_bool, default=None),
         allow_message_deleting: Optional[bool]=REQ(validator=check_bool, default=None),
         allow_message_editing: Optional[bool]=REQ(validator=check_bool, default=None),
         mandatory_topics: Optional[bool]=REQ(validator=check_bool, default=None),
