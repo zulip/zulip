@@ -1160,56 +1160,57 @@ class EmailUnsubscribeTests(ZulipTestCase):
         self.assertEqual(0, ScheduledEmail.objects.filter(user=user_profile).count())
 
 class RealmCreationTest(ZulipTestCase):
-    def test_create_realm(self) -> None:
+    @override_settings(OPEN_REALM_CREATION=True)
+    def check_able_to_create_realm(self, email: str) -> None:
         password = "test"
         string_id = "zuliptest"
-        email = "user1@test.com"
         realm = get_realm(string_id)
-
         # Make sure the realm does not exist
         self.assertIsNone(realm)
 
-        with self.settings(OPEN_REALM_CREATION=True):
-            # Create new realm with the email
-            result = self.client_post('/create_realm/', {'email': email})
-            self.assertEqual(result.status_code, 302)
-            self.assertTrue(result["Location"].endswith(
-                "/accounts/send_confirm/%s" % (email,)))
-            result = self.client_get(result["Location"])
-            self.assert_in_response("Check your email so we can get started.", result)
+        # Create new realm with the email
+        result = self.client_post('/create_realm/', {'email': email})
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(
+            "/accounts/send_confirm/%s" % (email,)))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started.", result)
 
-            # Visit the confirmation link.
-            confirmation_url = self.get_confirmation_url_from_outbox(email)
-            result = self.client_get(confirmation_url)
-            self.assertEqual(result.status_code, 200)
+        # Visit the confirmation link.
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url)
+        self.assertEqual(result.status_code, 200)
 
-            result = self.submit_reg_form_for_user(email, password, realm_subdomain=string_id)
-            self.assertEqual(result.status_code, 302)
-            self.assertTrue(result["Location"].startswith('http://zuliptest.testserver/accounts/login/subdomain/'))
+        result = self.submit_reg_form_for_user(email, password, realm_subdomain=string_id)
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].startswith('http://zuliptest.testserver/accounts/login/subdomain/'))
 
-            # Make sure the realm is created
-            realm = get_realm(string_id)
-            self.assertIsNotNone(realm)
-            self.assertEqual(realm.string_id, string_id)
-            self.assertEqual(get_user(email, realm).realm, realm)
+        # Make sure the realm is created
+        realm = get_realm(string_id)
+        self.assertIsNotNone(realm)
+        self.assertEqual(realm.string_id, string_id)
+        self.assertEqual(get_user(email, realm).realm, realm)
 
-            # Check defaults
-            self.assertEqual(realm.org_type, Realm.CORPORATE)
-            self.assertEqual(realm.restricted_to_domain, False)
-            self.assertEqual(realm.invite_required, True)
+        # Check defaults
+        self.assertEqual(realm.org_type, Realm.CORPORATE)
+        self.assertEqual(realm.restricted_to_domain, False)
+        self.assertEqual(realm.invite_required, True)
 
-            # Check welcome messages
-            for stream_name, text, message_count in [
-                    ('announce', 'This is', 1),
-                    (Realm.INITIAL_PRIVATE_STREAM_NAME, 'This is', 1),
-                    ('general', 'Welcome to', 1),
-                    ('new members', 'stream is', 1),
-                    ('zulip', 'Here is', 3)]:
-                stream = get_stream(stream_name, realm)
-                recipient = get_stream_recipient(stream.id)
-                messages = Message.objects.filter(recipient=recipient).order_by('pub_date')
-                self.assertEqual(len(messages), message_count)
-                self.assertIn(text, messages[0].content)
+        # Check welcome messages
+        for stream_name, text, message_count in [
+                ('announce', 'This is', 1),
+                (Realm.INITIAL_PRIVATE_STREAM_NAME, 'This is', 1),
+                ('general', 'Welcome to', 1),
+                ('new members', 'stream is', 1),
+                ('zulip', 'Here is', 3)]:
+            stream = get_stream(stream_name, realm)
+            recipient = get_stream_recipient(stream.id)
+            messages = Message.objects.filter(recipient=recipient).order_by('pub_date')
+            self.assertEqual(len(messages), message_count)
+            self.assertIn(text, messages[0].content)
+
+    def test_create_realm_non_existing_email(self) -> None:
+        self.check_able_to_create_realm("user1@test.com")
 
     def test_create_realm_existing_email(self) -> None:
         """
