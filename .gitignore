@@ -24,6 +24,7 @@
 
 ## Byproducts of setting up and using the dev environment
 *.pyc
+package-lock.json
 
 /.vagrant
 /var
