@@ -30,7 +30,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   host_ip_addr = "127.0.0.1"
 
   config.vm.synced_folder ".", "/vagrant", disabled: true
-  config.vm.synced_folder ".", "/srv/zulip"
+  if (/darwin/ =~ RUBY_PLATFORM) != nil
+    config.vm.synced_folder ".", "/srv/zulip", type: "nfs"
+    config.vm.network "private_network", type: "dhcp"
+  else
+    config.vm.synced_folder ".", "/srv/zulip"
+  end
 
   vagrant_config_file = ENV['HOME'] + "/.zulip-vagrant-config"
   if File.file?(vagrant_config_file)
