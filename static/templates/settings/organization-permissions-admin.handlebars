@@ -10,6 +10,7 @@
         <div class="alert" id="admin-realm-add-emoji-by-admins-only-status"></div>
         <div class="alert" id="admin-realm-create-stream-by-admins-only-status"></div>
         <div class="alert" id="admin-realm-waiting-period-threshold-status"></div>
+        <div class="alert" id="admin-realm-create-generic-bot-by-admins-only-status"></div>
 
         <div class="side-padded-container m-10 inline-block organization-permissions-parent">
             <div class="input-group admin-restricted-to-domain">
@@ -111,6 +112,21 @@
                 <label for="id_realm_add_emoji_by_admins_only" id="id_realm_add_emoji_by_admins_only_label" class="inline-block"
                     title="{{t 'If checked, only administrators may add new emoji.'}}">
                     {{t "Prevent users from adding custom emoji" }}
+                </label>
+            </div>
+        </div>
+
+        <h3 class="light">{{t "Interactive bots" }}</h3>
+        <div class="side-padded-container m-10 inline-block organization-permissions-parent">
+            <div class="input-group">
+                <label class="checkbox">
+                    <input type="checkbox" id="id_realm_create_generic_bot_by_admins_only" name="realm_create_generic_bot_by_admins_only"
+                           {{#if realm_create_generic_bot_by_admins_only}}checked="checked"{{/if}} />
+                    <span></span>
+                </label>
+                <label for="id_realm_create_generic_bot_by_admins_only" id="id_realm_create_generic_bot_by_admins_only_label" class="inline-block"
+                    title="{{t 'If checked, only administrators may create new generic bots.' }}">
+                    {{t "Prevent users from creating generic bots" }}
                 </label>
             </div>
         </div>

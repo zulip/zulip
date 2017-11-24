@@ -41,6 +41,8 @@ function _setup_page() {
         realm_email_changes_disabled: page_params.realm_email_changes_disabled,
         realm_add_emoji_by_admins_only: page_params.realm_add_emoji_by_admins_only,
         can_admin_emojis: page_params.is_admin || !page_params.realm_add_emoji_by_admins_only,
+        realm_create_generic_bot_by_admins_only:
+            page_params.realm_create_generic_bot_by_admins_only,
         realm_allow_message_deleting: page_params.realm_allow_message_deleting,
         realm_allow_message_editing: page_params.realm_allow_message_editing,
         realm_message_content_edit_limit_minutes:

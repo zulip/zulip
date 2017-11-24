@@ -144,6 +144,7 @@ class Realm(models.Model):
     inline_url_embed_preview = models.BooleanField(default=True)  # type: bool
     create_stream_by_admins_only = models.BooleanField(default=False)  # type: bool
     add_emoji_by_admins_only = models.BooleanField(default=False)  # type: bool
+    create_generic_bot_by_admins_only = models.BooleanField(default=False)  # type: bool
     mandatory_topics = models.BooleanField(default=False)  # type: bool
     show_digest_email = models.BooleanField(default=True)  # type: bool
     name_changes_disabled = models.BooleanField(default=False)  # type: bool
@@ -178,6 +179,7 @@ class Realm(models.Model):
         add_emoji_by_admins_only=bool,
         allow_edit_history=bool,
         allow_message_deleting=bool,
+        create_generic_bot_by_admins_only=bool,
         create_stream_by_admins_only=bool,
         default_language=Text,
         description=Text,
