@@ -8,6 +8,7 @@ zrequire('util');
 zrequire('fenced_code');
 zrequire('stream_data');
 zrequire('people');
+zrequire('user_groups');
 zrequire('emoji_codes', 'generated/emoji/emoji_codes');
 zrequire('emoji');
 zrequire('markdown');
@@ -71,6 +72,23 @@ people.add({
 
 people.initialize_current_user(cordelia.user_id);
 
+var hamletcharacters = {
+    name: "hamletcharacters",
+    id: 1,
+    description: "Characters of Hamlet",
+    members: [cordelia.user_id],
+};
+
+var backend = {
+    name: "Backend",
+    id: 2,
+    description: "Backend team",
+    members: [],
+};
+
+global.user_groups.add(hamletcharacters);
+global.user_groups.add(backend);
+
 var stream_data = global.stream_data;
 var denmark = {
     subscribed: false,
@@ -115,12 +133,14 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
                      "No png to be found here, a png",
                      "No user mention **leo**",
                      "No user mention @what there",
+                     "No group mention *hamletcharacters*",
                      "We like to code\n~~~\ndef code():\n    we = \"like to do\"\n~~~",
                      "This is a\nmultiline :emoji: here\n message",
                      "This is an :emoji: message",
                      "User Mention @**leo**",
                      "User Mention @**leo f**",
                      "User Mention @**leo with some name**",
+                     "Group Mention @*hamletcharacters*",
                      "Stream #**Verona**",
                      "This contains !gravatar(leo@zulip.com)",
                      "And an avatar !avatar(leo@zulip.com) is here",
@@ -249,6 +269,12 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
          expected: '<p>T<br>\n<a class="stream" data-stream-id="1" href="http://zulip.zulipdev.com/#narrow/stream/Denmark">#Denmark</a></p>'},
         {input: 'T\n@**Cordelia Lear**',
           expected: '<p>T<br>\n<span class="user-mention" data-user-id="101">@Cordelia Lear</span></p>'},
+        {input: 'T\n@hamletcharacters',
+         expected: '<p>T<br>\n@hamletcharacters</p>'},
+        {input: 'T\n@*hamletcharacters*',
+         expected: '<p>T<br>\n<span class="group-mention" data-user-group-id="1">@hamletcharacters</span></p>'},
+        {input: 'T\n@*backend*',
+         expected: '<p>T<br>\n<span class="group-mention" data-user-group-id="2">@Backend</span></p>'},
         {input: 'This is a realm filter `hello` with text after it',
          expected: '<p>This is a realm filter <code>hello</code> with text after it</p>'},
     ];
@@ -332,6 +358,18 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
     assert(message.flags.indexOf('mentioned') !== -1);
 
     input = "test @any";
+    message = {subject: "No links here", raw_content: input};
+    markdown.apply_markdown(message);
+    assert.equal(message.flags.length, 0);
+    assert(message.flags.indexOf('mentioned') === -1);
+
+    input = "test @*hamletcharacters*";
+    message = {subject: "No links here", raw_content: input};
+    markdown.apply_markdown(message);
+    assert.equal(message.flags.length, 1);
+    assert(message.flags.indexOf('mentioned') !== -1);
+
+    input = "test @*backend*";
     message = {subject: "No links here", raw_content: input};
     markdown.apply_markdown(message);
     assert.equal(message.flags.length, 0);
