@@ -392,7 +392,7 @@ message on the [public Zulip instance](https://chat.zulip.org/#narrow/stream/bot
 You can also create a [`[WIP]` pull request](
 https://zulip.readthedocs.io/en/latest/overview/contributing.html#working-on-an-issue) while you
 are still working on your integration. See the
-[Git guide](https://zulip.readthedocs.io/en/latest/contributing/git-guide.html#create-a-pull-request)
+[Git guide](https://zulip.readthedocs.io/en/latest/git/pull-requests.html#create-a-pull-request)
 for more on Zulip's pull request process.
 
 ## Advanced topics
