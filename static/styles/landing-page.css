@@ -2002,6 +2002,7 @@ nav ul li.active::after {
     display: inline-block;
     vertical-align: middle;
     max-width: 100%;
+    overflow: auto;
 
     font-family: Monaco, Menlo, Consolas, "Courier New", Courier, monospace;
     font-size: 0.85em;
