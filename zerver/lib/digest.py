@@ -56,7 +56,7 @@ def queue_digest_recipient(user_profile: UserProfile, cutoff: datetime.datetime)
     # Convert cutoff to epoch seconds for transit.
     event = {"user_profile_id": user_profile.id,
              "cutoff": cutoff.strftime('%s')}
-    queue_json_publish("digest_emails", event, lambda event: None, call_consume_in_tests=True)
+    queue_json_publish("digest_emails", event)
 
 def enqueue_emails(cutoff: datetime.datetime) -> None:
     # To be really conservative while we don't have user timezones or

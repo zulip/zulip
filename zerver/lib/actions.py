@@ -1231,7 +1231,7 @@ def do_send_messages(messages_maybe_none, email_gateway=False):
                 'message_content': message['message'].content,
                 'message_realm_id': message['realm'].id,
                 'urls': links_for_embed}
-            queue_json_publish('embed_links', event_data, lambda x: None, call_consume_in_tests=True)
+            queue_json_publish('embed_links', event_data)
 
         if (settings.ENABLE_FEEDBACK and settings.FEEDBACK_BOT and
                 message['message'].recipient.type == Recipient.PERSONAL):
@@ -1258,9 +1258,7 @@ def do_send_messages(messages_maybe_none, email_gateway=False):
                         "message": wide_message_dict,
                         "trigger": event['trigger'],
                         "user_profile_id": event["user_profile_id"],
-                    },
-                    lambda x: None,
-                    call_consume_in_tests=True
+                    }
                 )
 
     # Note that this does not preserve the order of message ids
@@ -2446,7 +2444,7 @@ def bulk_remove_subscriptions(users, streams, acting_user=None):
         event = {'type': 'mark_stream_messages_as_read',
                  'user_profile_id': user_profile.id,
                  'stream_ids': [stream.id for stream in streams]}
-        queue_json_publish("deferred_work", event, lambda x: None, call_consume_in_tests=True)
+        queue_json_publish("deferred_work", event)
 
     all_subscribers_by_stream = get_user_ids_for_streams(streams=streams)
 
@@ -3187,7 +3185,7 @@ def update_user_activity_interval(user_profile, log_time):
     # type: (UserProfile, datetime.datetime) -> None
     event = {'user_profile_id': user_profile.id,
              'time': datetime_to_timestamp(log_time)}
-    queue_json_publish("user_activity_interval", event, lambda x: None, call_consume_in_tests=True)
+    queue_json_publish("user_activity_interval", event)
 
 def update_user_presence(user_profile, client, log_time, status,
                          new_user_input):
@@ -3197,7 +3195,7 @@ def update_user_presence(user_profile, client, log_time, status,
              'time': datetime_to_timestamp(log_time),
              'client': client.name}
 
-    queue_json_publish("user_presence", event, lambda x: None, call_consume_in_tests=True)
+    queue_json_publish("user_presence", event)
 
     if new_user_input:
         update_user_activity_interval(user_profile, log_time)
@@ -3989,9 +3987,7 @@ def do_invite_users(user_profile, invitee_emails, streams, invite_as_admin=False
         prereg_user.streams.set(stream_ids)
 
         event = {"email": prereg_user.email, "referrer_id": user_profile.id, "email_body": body}
-        queue_json_publish("invites", event,
-                           lambda event: None,
-                           call_consume_in_tests=True)
+        queue_json_publish("invites", event)
 
     if skipped:
         raise InvitationError(_("Some of those addresses are already using Zulip, "

@@ -322,8 +322,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
 
             def check_values_passed(queue_name: Any,
                                     trigger_event: Union[Mapping[Any, Any], Any],
-                                    x: Callable[[Any], None],
-                                    call_consume_in_tests: bool) -> None:
+                                    x: Callable[[Any], None]=None) -> None:
                 self.assertEqual(queue_name, expected_queue_name)
                 self.assertEqual(trigger_event["message"]["content"], content)
                 self.assertEqual(trigger_event["message"]["display_recipient"], recipient)
@@ -368,8 +367,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
 
             def check_values_passed(queue_name: Any,
                                     trigger_event: Union[Mapping[Any, Any], Any],
-                                    x: Callable[[Any], None],
-                                    call_consume_in_tests: bool) -> None:
+                                    x: Callable[[Any], None]=None) -> None:
                 self.assertEqual(queue_name, expected_queue_name)
                 self.assertEqual(trigger_event["user_profile_id"], self.bot_profile.id)
                 self.assertEqual(trigger_event["trigger"], "private_message")
@@ -411,8 +409,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
 
             def check_values_passed(queue_name: Any,
                                     trigger_event: Union[Mapping[Any, Any], Any],
-                                    x: Callable[[Any], None],
-                                    call_consume_in_tests: bool) -> None:
+                                    x: Callable[[Any], None]=None) -> None:
                 self.assertEqual(queue_name, expected_queue_name)
                 self.assertIn(trigger_event["user_profile_id"], profile_ids)
                 profile_ids.remove(trigger_event["user_profile_id"])

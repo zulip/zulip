@@ -277,18 +277,17 @@ queue_lock = threading.RLock()
 
 def queue_json_publish(queue_name: str,
                        event: Union[Dict[str, Any], str],
-                       processor: Callable[[Any], None],
-                       call_consume_in_tests: bool=False) -> None:
+                       processor: Callable[[Any], None]=None) -> None:
     # most events are dicts, but zerver.middleware.write_log_line uses a str
     with queue_lock:
         if settings.USING_RABBITMQ:
             get_queue_client().json_publish(queue_name, event)
-        elif call_consume_in_tests:
+        elif processor:
+            processor(event)
+        else:
             # Must be imported here: A top section import leads to obscure not-defined-ish errors.
             from zerver.worker.queue_processors import get_worker
             get_worker(queue_name).consume_wrapper(event)  # type: ignore # https://github.com/python/mypy/issues/3360
-        else:
-            processor(event)
 
 def retry_event(queue_name: str,
                 event: Dict[str, Any],

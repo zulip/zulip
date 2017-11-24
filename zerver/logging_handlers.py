@@ -106,7 +106,7 @@ class AdminZulipHandler(logging.Handler):
                 queue_json_publish('error_reports', dict(
                     type = "server",
                     report = report,
-                ), lambda x: None, call_consume_in_tests=True)
+                ))
         except Exception:
             # If this breaks, complain loudly but don't pass the traceback up the stream
             # However, we *don't* want to use logging.exception since that could trigger a loop.
