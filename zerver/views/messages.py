@@ -936,9 +936,7 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
         #
         # For stream messages, the message must be (1) being forwarded
         # by an API superuser for your realm and (2) being sent to a
-        # mirrored stream (any stream for the Zephyr and Jabber
-        # mirrors, but only streams with names starting with a "#" for
-        # IRC mirrors)
+        # mirrored stream.
         #
         # The security checks are split between the below code
         # (especially create_mirrored_message_users which checks the
@@ -954,9 +952,6 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
             return json_error(_("Invalid mirrored message"))
         if client.name == "zephyr_mirror" and not user_profile.realm.is_zephyr_mirror_realm:
             return json_error(_("Invalid mirrored realm"))
-        if (client.name == "irc_mirror" and message_type_name != "private" and
-                not message_to[0].startswith("#")):
-            return json_error(_("IRC stream names must start with #"))
         sender = mirror_sender
     else:
         sender = user_profile
