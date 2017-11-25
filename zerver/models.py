@@ -2005,7 +2005,7 @@ def get_service_profile(user_profile_id, service_name):
     return Service.objects.get(user_profile__id=user_profile_id, name=service_name)
 
 
-class BotUserStateData(models.Model):
+class BotStorageData(models.Model):
     bot_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
     key = models.TextField(db_index=True)  # type: Text
     value = models.TextField()  # type: Text
