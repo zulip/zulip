@@ -2309,6 +2309,10 @@ button.topic_edit_cancel {
     text-transform: uppercase;
 }
 
+#invite-user .invite-stream-controls {
+    margin-top: 5px;
+}
+
 .settings-dropdown-caret {
     margin-left: 8px;
     margin-right: 8px;
