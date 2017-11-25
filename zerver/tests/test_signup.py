@@ -1477,6 +1477,28 @@ class UserSignUpTest(ZulipTestCase):
         # This is not really the right error message, but at least it's an error.
         self.assert_in_response("You've already registered", result)
 
+    def test_signup_existing_email(self) -> None:
+        """
+        Check if signing up with an email used in another realm succeeds.
+        """
+        email = self.example_email('hamlet')
+        password = "newpassword"
+        realm = get_realm('lear')
+
+        result = self.client_post('/accounts/home/', {'email': email}, subdomain="lear")
+        self.assertEqual(result.status_code, 302)
+        result = self.client_get(result["Location"], subdomain="lear")
+
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url, subdomain="lear")
+        self.assertEqual(result.status_code, 200)
+
+        result = self.submit_reg_form_for_user(email, password, subdomain="lear")
+        self.assertEqual(result.status_code, 302)
+
+        get_user(email, realm)
+        self.assertEqual(UserProfile.objects.filter(email=email).count(), 2)
+
     def test_signup_invalid_name(self) -> None:
         """
         Check if an invalid name during signup is handled properly.
