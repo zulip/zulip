@@ -238,7 +238,7 @@ class PasswordResetTest(ZulipTestCase):
         self.assertIn(FromAddress.NOREPLY, message.from_email)
         self.assertIn('Someone (possibly you) requested a password',
                       message.body)
-        self.assertIn("hamlet@zulip.com does not have an active account in\nhttp://zephyr.testserver",
+        self.assertIn("but\nyou do not have an active account in http://zephyr.testserver",
                       message.body)
 
     def test_invalid_subdomain(self) -> None:

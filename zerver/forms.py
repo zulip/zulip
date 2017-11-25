@@ -24,7 +24,7 @@ from zerver.lib.request import JsonableError
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain, is_root_domain_available
 from zerver.lib.users import check_full_name
-from zerver.models import Realm, get_user_profile_by_email, UserProfile, \
+from zerver.models import Realm, get_user, UserProfile, \
     get_realm, email_to_domain, email_allowed_for_realm
 from zproject.backends import email_auth_enabled
 
@@ -208,25 +208,23 @@ class ZulipPasswordResetForm(PasswordResetForm):
         """
         email = self.cleaned_data["email"]
 
-        subdomain = get_subdomain(request)
-        realm = get_realm(subdomain)
+        realm = get_realm(get_subdomain(request))
 
         if not email_auth_enabled(realm):
             logging.info("Password reset attempted for %s even though password auth is disabled." % (email,))
             return
 
         try:
-            user = get_user_profile_by_email(email)
+            user = get_user(email, realm)
         except UserProfile.DoesNotExist:
             user = None
 
         context = {
             'email': email,
             'realm_uri': realm.uri,
-            'user': user,
         }
 
-        if user is not None and user_matches_subdomain(subdomain, user):
+        if user is not None:
             token = token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.id))
             endpoint = reverse('django.contrib.auth.views.password_reset_confirm',
@@ -234,16 +232,15 @@ class ZulipPasswordResetForm(PasswordResetForm):
 
             context['no_account_in_realm'] = False
             context['reset_url'] = "{}{}".format(user.realm.uri, endpoint)
-
             send_email('zerver/emails/password_reset', to_user_id=user.id,
                        from_name="Zulip Account Security",
                        from_address=FromAddress.NOREPLY, context=context)
         else:
             context['no_account_in_realm'] = True
-            if user is not None:
-                context['account_exists_another_realm'] = True
-            else:
-                context['account_exists_another_realm'] = False
+            accounts = UserProfile.objects.filter(email__iexact=email)
+            if accounts:
+                context['accounts'] = accounts
+                context['multiple_accounts'] = accounts.count() != 1
             send_email('zerver/emails/password_reset', to_email=email,
                        from_name="Zulip Account Security",
                        from_address=FromAddress.NOREPLY, context=context)
