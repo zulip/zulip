@@ -221,7 +221,7 @@ class TestServiceBotStateHandler(ZulipTestCase):
         }
         result = self.client_get('/json/user_state', params)
         self.assert_json_error(result, "Key does not exist.")
-        params = {  # type: ignore # Ignore 'incompatible type "str": "List[str]"; expected "str": "str"' for testing
+        params = {
             'state': ujson.dumps({'foo': [1, 2, 3]})
         }
         result = self.client_put('/json/user_state', params)

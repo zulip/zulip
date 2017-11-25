@@ -71,7 +71,7 @@ def topic_narrow_url(realm, stream, topic):
 def relative_to_full_url(base_url, content):
     # type: (Text, Text) -> Text
     # Convert relative URLs to absolute URLs.
-    fragment = lxml.html.fromstring(content)  # type: ignore # https://github.com/python/typeshed/issues/525
+    fragment = lxml.html.fromstring(content)
 
     # We handle narrow URLs separately because of two reasons:
     # 1: 'lxml' seems to be having an issue in dealing with URLs that begin
@@ -98,16 +98,14 @@ def relative_to_full_url(base_url, content):
         container.drop_tree()
 
     fragment.make_links_absolute(base_url)
-    content = lxml.html.tostring(fragment).decode("utf-8")  # type: ignore # https://github.com/python/typeshed/issues/525
+    content = lxml.html.tostring(fragment).decode("utf-8")
 
     return content
 
 def fix_emojis(content, base_url, emojiset):
     # type: (Text, Text, Text) -> Text
     def make_emoji_img_elem(emoji_span_elem):
-        # type: (Any) -> Any
-        # Can't be annotated properly due to:
-        # type: ignore # https://github.com/python/typeshed/issues/525
+        # type: (Any) -> Dict[str, Any]
         # Convert the emoji spans to img tags.
         classes = emoji_span_elem.get('class')
         match = re.search('emoji-(?P<emoji_code>\S+)', classes)
@@ -118,7 +116,7 @@ def fix_emojis(content, base_url, emojiset):
             'emojiset': emojiset,
             'emoji_code': emoji_code
         }
-        img_elem = lxml.html.fromstring(      # type: ignore # https://github.com/python/typeshed/issues/525
+        img_elem = lxml.html.fromstring(
             '<img alt="%(alt_code)s" src="%(image_url)s" title="%(title)s">' % {
                 'alt_code': alt_code,
                 'image_url': image_url,
@@ -128,7 +126,7 @@ def fix_emojis(content, base_url, emojiset):
         img_elem.tail = emoji_span_elem.tail
         return img_elem
 
-    fragment = lxml.html.fromstring(content)    # type: ignore # https://github.com/python/typeshed/issues/525
+    fragment = lxml.html.fromstring(content)
     for elem in fragment.cssselect('span.emoji'):
         parent = elem.getparent()
         img_elem = make_emoji_img_elem(elem)
@@ -138,7 +136,7 @@ def fix_emojis(content, base_url, emojiset):
         del realm_emoji.attrib['class']
         realm_emoji.set('style', 'height: 20px;')
 
-    content = lxml.html.tostring(fragment).decode('utf-8')  # type: ignore # https://github.com/python/typeshed/issues/525
+    content = lxml.html.tostring(fragment).decode('utf-8')
     return content
 
 def build_message_list(user_profile, messages):

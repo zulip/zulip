@@ -8,7 +8,7 @@ def highlight_with_class(text: str, klass: str) -> str:
 
 def highlight_html_differences(s1: str, s2: str, msg_id: Optional[int]=None) -> str:
     retval = htmldiff(s1, s2)
-    fragment = lxml.html.fromstring(retval)  # type: ignore # https://github.com/python/typeshed/issues/525
+    fragment = lxml.html.fromstring(retval)
 
     for elem in fragment.cssselect('del'):
         elem.tag = 'span'
@@ -18,6 +18,6 @@ def highlight_html_differences(s1: str, s2: str, msg_id: Optional[int]=None) -> 
         elem.tag = 'span'
         elem.set('class', 'highlight_text_inserted')
 
-    retval = lxml.html.tostring(fragment)   # type: ignore # https://github.com/python/typeshed/issues/525
+    retval = lxml.html.tostring(fragment)
 
     return retval
