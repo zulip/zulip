@@ -140,6 +140,16 @@ casper.then(function () {
         casper.click('form#stream_creation_form button.button.white');
         casper.fill('form#add_new_subscription', {stream_name: '  '});
         casper.click('#add_new_subscription .create_stream_button');
+        casper.fill('form#stream_creation_form', {stream_name: 'Waseemio@'});
+        casper.click('form#stream_creation_form button.button.sea-green');
+    });
+});
+casper.then(function () {
+    casper.waitForSelectorText('#stream_name_error', 'Stream names cannot contain #, *, `, or @.', function () {
+        casper.test.assertTextExists('Stream names cannot contain #, *, `, or @.', "Can't create a stream with invalid characters");
+        casper.click('form#stream_creation_form button.button.white');
+        casper.fill('form#add_new_subscription', {stream_name: '  '});
+        casper.click('#add_new_subscription .create_stream_button');
         casper.fill('form#stream_creation_form', {stream_name: 'Waseemio'});
         casper.click('form#stream_creation_form button.button.sea-green');
     });

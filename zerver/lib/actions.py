@@ -1650,6 +1650,9 @@ def check_stream_name(stream_name: Text) -> None:
         raise JsonableError(_("Invalid stream name '%s'" % (stream_name)))
     if len(stream_name) > Stream.MAX_NAME_LENGTH:
         raise JsonableError(_("Stream name too long (limit: %s characters)" % (Stream.MAX_NAME_LENGTH)))
+    if set(stream_name).intersection(Stream.NAME_INVALID_CHARS):
+        raise JsonableError(_("Invalid characters in stream name (disallowed characters: %s)."
+                            % ((', ').join(Stream.NAME_INVALID_CHARS))))
     for i in stream_name:
         if ord(i) == 0:
             raise JsonableError(_("Stream name '%s' contains NULL (0x00) characters." % (stream_name)))
