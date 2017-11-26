@@ -23,7 +23,7 @@ function clear_out_file_list(jq_file_list) {
 
 exports.uploadStarted = function () {
     $("#compose-send-button").attr("disabled", "");
-    $("#send-status").addClass("alert-info").show();
+    $("#compose-send-status").addClass("alert-info").show();
     $(".send-status-close").one('click', compose.abort_xhr);
     $("#error-msg").html($("<p>").text(i18n.t("Uploading…"))
         .after('<div class="progress progress-striped active">' +
@@ -37,7 +37,7 @@ exports.progressUpdated = function (i, file, progress) {
 
 exports.uploadError = function (err, file) {
     var msg;
-    $("#send-status").addClass("alert-error")
+    $("#compose-send-status").addClass("alert-error")
         .removeClass("alert-info");
     $("#compose-send-button").prop("disabled", false);
     switch (err) {
@@ -94,7 +94,7 @@ exports.uploadFinished = function (i, file, response) {
     }
     compose_ui.autosize_textarea();
     $("#compose-send-button").prop("disabled", false);
-    $("#send-status").removeClass("alert-info")
+    $("#compose-send-status").removeClass("alert-info")
         .hide();
 
     // In order to upload the same file twice in a row, we need to clear out

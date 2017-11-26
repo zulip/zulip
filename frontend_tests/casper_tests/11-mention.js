@@ -41,7 +41,7 @@ casper.then(function () {
     casper.waitWhileVisible('.compose-all-everyone-confirm', function () {
         casper.test.info('Check that error messages are gone.');
         casper.test.assertNotVisible('.compose-all-everyone-msg');
-        casper.test.assertNotVisible('#send-status');
+        casper.test.assertNotVisible('#compose-send-status');
     });
 });
 

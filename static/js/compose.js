@@ -42,7 +42,7 @@ function show_all_everyone_warnings() {
 exports.clear_all_everyone_warnings = function () {
     $("#compose-all-everyone").hide();
     $("#compose-all-everyone").empty();
-    $("#send-status").hide();
+    $("#compose-send-status").hide();
 };
 
 exports.clear_invites = function () {
@@ -133,7 +133,7 @@ function create_message_object() {
 exports.create_message_object = create_message_object;
 
 function compose_error(error_text, bad_input) {
-    $('#send-status').removeClass(common.status_classes)
+    $('#compose-send-status').removeClass(common.status_classes)
                .addClass('alert-error')
                .stop(true).fadeTo(0, 1);
     $('#error-msg').html(error_text);
@@ -188,7 +188,7 @@ function clear_compose_box() {
     $("#new_message_content").val('').focus();
     drafts.delete_draft_after_send();
     compose_ui.autosize_textarea();
-    $("#send-status").hide(0);
+    $("#compose-send-status").hide(0);
     $("#compose-send-button").prop('disabled', false);
     $("#sending-indicator").hide();
     resize.resize_bottom_whitespace();

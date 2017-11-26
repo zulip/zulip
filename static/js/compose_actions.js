@@ -76,7 +76,7 @@ function show_box(msg_type, opts) {
         $("#stream_toggle").removeClass("active");
         $("#private_message_toggle").addClass("active");
     }
-    $("#send-status").removeClass(common.status_classes).hide();
+    $("#compose-send-status").removeClass(common.status_classes).hide();
     $('#compose').css({visibility: "visible"});
     $(".new_message_textarea").css("min-height", "3em");
 
@@ -98,7 +98,7 @@ function clear_box() {
     exports.clear_textarea();
     $("#new_message_content").removeData("draft-id");
     compose_ui.autosize_textarea();
-    $("#send-status").hide(0);
+    $("#compose-send-status").hide(0);
 }
 
 exports.autosize_message_content = function () {

@@ -18,7 +18,7 @@ zrequire('upload');
 
 (function test_upload_started() {
     $("#compose-send-button").prop('disabled', false);
-    $("#send-status").removeClass("alert-info").hide();
+    $("#compose-send-status").removeClass("alert-info").hide();
     $(".send-status-close").one = function (ev_name, handler) {
         assert.equal(ev_name, 'click');
         assert(handler);
@@ -35,8 +35,8 @@ zrequire('upload');
     upload.uploadStarted();
 
     assert.equal($("#compose-send-button").attr("disabled"), '');
-    assert($("#send-status").hasClass("alert-info"));
-    assert($("#send-status").visible());
+    assert($("#compose-send-status").hasClass("alert-info"));
+    assert($("#compose-send-status").visible());
     assert.equal($("<p>").text(), 'translated: Uploading…');
     assert.equal($("#error-msg").html(), 'fake-html');
 }());
@@ -53,15 +53,15 @@ zrequire('upload');
 
 (function test_upload_error() {
     function setup_test() {
-        $("#send-status").removeClass("alert-error");
-        $("#send-status").addClass("alert-info");
+        $("#compose-send-status").removeClass("alert-error");
+        $("#compose-send-status").addClass("alert-info");
         $("#compose-send-button").attr("disabled", 'disabled');
         $("#error-msg").text('');
     }
 
     function assert_side_effects(msg, check_html=false) {
-        assert($("#send-status").hasClass("alert-error"));
-        assert(!$("#send-status").hasClass("alert-info"));
+        assert($("#compose-send-status").hasClass("alert-error"));
+        assert(!$("#compose-send-status").hasClass("alert-info"));
         assert.equal($("#compose-send-button").prop("disabled"), false);
         if (check_html) {
             assert.equal($("#error-msg").html(), msg);
@@ -119,8 +119,8 @@ zrequire('upload');
                 },
             };
             $("#compose-send-button").attr('disabled', 'disabled');
-            $("#send-status").addClass("alert-info");
-            $("#send-status").show();
+            $("#compose-send-status").addClass("alert-info");
+            $("#compose-send-status").show();
             $('#file_input').clone = function (param) {
                 assert(param);
                 return $('#file_input');
@@ -133,8 +133,8 @@ zrequire('upload');
                 assert(compose_actions_start_checked);
                 assert(compose_ui_autosize_textarea_checked);
                 assert.equal($("#compose-send-button").prop('disabled'), false);
-                assert(!$('#send-status').hasClass('alert-info'));
-                assert(!$('#send-status').visible());
+                assert(!$('#compose-send-status').hasClass('alert-info'));
+                assert(!$('#compose-send-status').visible());
             }
         }
 

@@ -228,7 +228,7 @@ people.add(bob);
     compose_state.stream_name('social');
     assert(compose.validate());
     assert(!$("#compose-all-everyone").visible());
-    assert(!$("#send-status").visible());
+    assert(!$("#compose-send-status").visible());
 
     stream_data.get_subscriber_count = function (stream_name) {
         assert.equal(stream_name, 'social');
@@ -251,7 +251,7 @@ people.add(bob);
     compose_state.message_content('Hey @all');
     assert(!compose.validate());
     assert.equal($("#compose-send-button").prop('disabled'), false);
-    assert(!$("#send-status").visible());
+    assert(!$("#compose-send-status").visible());
     assert.equal(compose_content, 'compose_all_everyone_stub');
     assert($("#compose-all-everyone").visible());
 }());
@@ -261,7 +261,7 @@ people.add(bob);
     blueslip.log = noop;
     $("#new_message_content").val('foobarfoobar');
     $("#new_message_content").blur();
-    $("#send-status").show();
+    $("#compose-send-status").show();
     $("#compose-send-button").attr('disabled', 'disabled');
     $("#sending-indicator").show();
 
@@ -276,7 +276,7 @@ people.add(bob);
 
     assert.equal($("#new_message_content").val(), '');
     assert($("#new_message_content").is_focused());
-    assert(!$("#send-status").visible());
+    assert(!$("#compose-send-status").visible());
     assert.equal($("#compose-send-button").prop('disabled'), false);
     assert(!$("#sending-indicator").visible());
 
@@ -348,7 +348,7 @@ people.add(bob);
         $("#new_message_content").val('[foobar]' +
                                       '(https://foo.com/user_uploads/123456)');
         $("#new_message_content").blur();
-        $("#send-status").show();
+        $("#compose-send-status").show();
         $("#compose-send-button").attr('disabled', 'disabled');
         $("#sending-indicator").show();
 
@@ -363,7 +363,7 @@ people.add(bob);
         assert.deepEqual(stub_state, state);
         assert.equal($("#new_message_content").val(), '');
         assert($("#new_message_content").is_focused());
-        assert(!$("#send-status").visible());
+        assert(!$("#compose-send-status").visible());
         assert.equal($("#compose-send-button").prop('disabled'), false);
         assert(!$("#sending-indicator").visible());
     }());
@@ -443,7 +443,7 @@ people.add(bob);
         stub_state = initialize_state_stub_dict();
         $("#new_message_content").val('foobarfoobar');
         $("#new_message_content").blur();
-        $("#send-status").show();
+        $("#compose-send-status").show();
         $("#compose-send-button").attr('disabled', 'disabled');
         $("#sending-indicator").show();
         $("#new_message_content").select(noop);
@@ -477,7 +477,7 @@ people.add(bob);
                        'Error sending message: Server says 408');
         assert.equal($("#new_message_content").val(), 'foobarfoobar');
         assert($("#new_message_content").is_focused());
-        assert($("#send-status").visible());
+        assert($("#compose-send-status").visible());
         assert.equal($("#compose-send-button").prop('disabled'), false);
         assert(!$("#sending-indicator").visible());
     }());
@@ -957,7 +957,7 @@ function test_with_mock_socket(test_params) {
                                       '.compose-all-everyone');
 
         $("#compose-all-everyone").show();
-        $("#send-status").show();
+        $("#compose-send-status").show();
 
         var compose_finish_checked = false;
         compose.finish = function () {
@@ -969,7 +969,7 @@ function test_with_mock_socket(test_params) {
         assert(container_removed);
         assert(compose_finish_checked);
         assert(!$("#compose-all-everyone").visible());
-        assert(!$("#send-status").visible());
+        assert(!$("#compose-send-status").visible());
     }());
 
     (function test_compose_invite_users_clicked() {
