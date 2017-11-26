@@ -64,6 +64,16 @@ manually.
 You can publish events to a RabbitMQ queue using the
 `queue_json_publish` function defined in `zerver/lib/queue.py`.
 
+An interesting challenge with queue processors is what should happen
+when queued events in Zulip's backend tests.  Our current solution is
+that in the tests, `queue_json_publish` will (by default) simple call
+the `consume` method for the relevant queue processor.  However,
+`queue_json_publish` also supports being passed a function that should
+be called in the tests instead of the queue processor's `consume`
+method.  Where possible, we prefer the model of calling `consume` in
+tests since that's more predictable and automatically covers the queue
+processor's code path, but it isn't always possible.
+
 ### Clearing a RabbitMQ queue
 
 If you need to clear a queue (delete all the events in it), run
