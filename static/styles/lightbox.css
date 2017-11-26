@@ -154,6 +154,7 @@
 }
 
 #lightbox_overlay .image-description {
+    width: 100%;
     /* approx width of screen minus action buttons on the side. */
     max-width: calc(100% - 450px);
     /* add some extra margin top and remove some bottom to keep the
