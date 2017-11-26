@@ -140,6 +140,6 @@ def report_error(request, user_profile, message=REQ(), stacktrace=REQ(),
             log = log,
             more_info = more_info,
         )
-    ), lambda x: None, call_consume_in_tests=True)
+    ))
 
     return json_success()

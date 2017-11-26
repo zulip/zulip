@@ -380,8 +380,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
         'from_address': from_address,
         'reply_to_email': formataddr((reply_to_name, reply_to_address)),
         'context': context}
-    queue_json_publish("missedmessage_email_senders", email_dict, send_email_from_dict,
-                       call_consume_in_tests=True)
+    queue_json_publish("missedmessage_email_senders", email_dict)
 
     user_profile.last_reminder = timezone_now()
     user_profile.save(update_fields=['last_reminder'])

@@ -1136,7 +1136,7 @@ def update_message_backend(request, user_profile,
             # `render_incoming_message` call earlier in this function.
             'message_realm_id': user_profile.realm_id,
             'urls': links_for_embed}
-        queue_json_publish('embed_links', event_data, lambda x: None, call_consume_in_tests=True)
+        queue_json_publish('embed_links', event_data)
     return json_success()
 
 
