@@ -33,7 +33,7 @@ from zerver.lib.test_helpers import (
 from zerver.models import (
     get_stream,
     get_user,
-    get_user_profile_by_email,
+    get_user,
     get_realm,
     Client,
     Message,
@@ -349,8 +349,8 @@ class ZulipTestCase(TestCase):
         else:
             raise AssertionError("Couldn't find a confirmation email.")
 
-    def api_auth(self, identifier):
-        # type: (Text) -> Dict[str, Text]
+    def api_auth(self, identifier, realm="zulip"):
+        # type: (Text, Text) -> Dict[str, Text]
         """
         identifier: Can be an email or a remote server uuid.
         """
@@ -360,7 +360,7 @@ class ZulipTestCase(TestCase):
             if is_remote_server(identifier):
                 api_key = get_remote_server_by_uuid(identifier).api_key
             else:
-                api_key = get_user_profile_by_email(identifier).api_key
+                api_key = get_user(identifier, get_realm(realm)).api_key
             API_KEYS[identifier] = api_key
 
         credentials = "%s:%s" % (identifier, api_key)
@@ -379,9 +379,10 @@ class ZulipTestCase(TestCase):
         )
         return [cast(Text, get_display_recipient(sub.recipient)) for sub in subs]
 
-    def send_personal_message(self, from_email, to_email, content="test content"):
-        # type: (Text, Text, Text) -> int
-        sender = get_user_profile_by_email(from_email)
+    def send_personal_message(self, from_email, to_email, content="test content",
+                              sender_realm="zulip"):
+        # type: (Text, Text, Text, Text) -> int
+        sender = get_user(from_email, get_realm(sender_realm))
 
         recipient_list = [to_email]
         (sending_client, _) = Client.objects.get_or_create(name="test suite")
@@ -391,9 +392,10 @@ class ZulipTestCase(TestCase):
             content
         )
 
-    def send_huddle_message(self, from_email, to_emails, content="test content"):
-        # type: (Text, List[Text], Text) -> int
-        sender = get_user_profile_by_email(from_email)
+    def send_huddle_message(self, from_email, to_emails, content="test content",
+                            sender_realm="zulip"):
+        # type: (Text, List[Text], Text, Text) -> int
+        sender = get_user(from_email, get_realm(sender_realm))
 
         assert(len(to_emails) >= 2)
 
@@ -404,10 +406,10 @@ class ZulipTestCase(TestCase):
             content
         )
 
-    def send_stream_message(self, sender_email, stream_name,
-                            content="test content", topic_name="test"):
-        # type: (Text, Text, Text, Text) -> int
-        sender = get_user_profile_by_email(sender_email)
+    def send_stream_message(self, sender_email, stream_name, content="test content",
+                            topic_name="test", sender_realm="zulip"):
+        # type: (Text, Text, Text, Text, Text) -> int
+        sender = get_user(sender_email, get_realm(sender_realm))
 
         (sending_client, _) = Client.objects.get_or_create(name="test suite")
 
@@ -564,7 +566,7 @@ class ZulipTestCase(TestCase):
                      'invite_only': ujson.dumps(invite_only)}
         post_data.update(extra_post_data)
         kw = kwargs.copy()
-        kw.update(self.api_auth(email))
+        kw.update(self.api_auth(email, realm=kwargs.get('subdomain', 'zulip')))
         result = self.client_post("/api/v1/users/me/subscriptions", post_data,
                                   **kw)
         return result

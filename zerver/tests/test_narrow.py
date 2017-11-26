@@ -691,8 +691,8 @@ class GetOldMessagesTest(ZulipTestCase):
         lambda_stream_d_name = u"\u03bb-stream.d"
         self.subscribe(self.mit_user("starnine"), lambda_stream_d_name)
 
-        self.send_stream_message(self.mit_email("starnine"), u"\u03bb-stream")
-        self.send_stream_message(self.mit_email("starnine"), u"\u03bb-stream.d")
+        self.send_stream_message(self.mit_email("starnine"), u"\u03bb-stream", sender_realm="zephyr")
+        self.send_stream_message(self.mit_email("starnine"), u"\u03bb-stream.d", sender_realm="zephyr")
 
         narrow = [dict(operator='stream', operand=u'\u03bb-stream')]
         result = self.get_and_check_messages(dict(num_after=2,
@@ -720,17 +720,16 @@ class GetOldMessagesTest(ZulipTestCase):
         # it to ensure that we actually have a stream message in this
         # narrow view.
         self.subscribe(mit_user_profile, "Scotland")
-
-        self.send_stream_message(email, "Scotland",
-                                 topic_name=u"\u03bb-topic")
-        self.send_stream_message(email, "Scotland",
-                                 topic_name=u"\u03bb-topic.d")
-        self.send_stream_message(email, "Scotland",
-                                 topic_name=u"\u03bb-topic.d.d")
-        self.send_stream_message(email, "Scotland",
-                                 topic_name=u"\u03bb-topic.d.d.d")
-        self.send_stream_message(email, "Scotland",
-                                 topic_name=u"\u03bb-topic.d.d.d.d")
+        self.send_stream_message(email, "Scotland", topic_name=u"\u03bb-topic",
+                                 sender_realm="zephyr")
+        self.send_stream_message(email, "Scotland", topic_name=u"\u03bb-topic.d",
+                                 sender_realm="zephyr")
+        self.send_stream_message(email, "Scotland", topic_name=u"\u03bb-topic.d.d",
+                                 sender_realm="zephyr")
+        self.send_stream_message(email, "Scotland", topic_name=u"\u03bb-topic.d.d.d",
+                                 sender_realm="zephyr")
+        self.send_stream_message(email, "Scotland", topic_name=u"\u03bb-topic.d.d.d.d",
+                                 sender_realm="zephyr")
 
         narrow = [dict(operator='topic', operand=u'\u03bb-topic')]
         result = self.get_and_check_messages(
@@ -758,20 +757,20 @@ class GetOldMessagesTest(ZulipTestCase):
         self.login(email, realm=mit_user_profile.realm)
         self.subscribe(mit_user_profile, "Scotland")
 
-        self.send_stream_message(email, "Scotland",
-                                 topic_name=u".d.d")
-        self.send_stream_message(email, "Scotland",
-                                 topic_name=u"PERSONAL")
-        self.send_stream_message(email, "Scotland",
-                                 topic_name=u'(instance "").d')
-        self.send_stream_message(email, "Scotland",
-                                 topic_name=u".d.d.d")
-        self.send_stream_message(email, "Scotland",
-                                 topic_name=u"personal.d")
-        self.send_stream_message(email, "Scotland",
-                                 topic_name=u'(instance "")')
-        self.send_stream_message(email, "Scotland",
-                                 topic_name=u".d.d.d.d")
+        self.send_stream_message(email, "Scotland", topic_name=u".d.d",
+                                 sender_realm="zephyr")
+        self.send_stream_message(email, "Scotland", topic_name=u"PERSONAL",
+                                 sender_realm="zephyr")
+        self.send_stream_message(email, "Scotland", topic_name=u'(instance "").d',
+                                 sender_realm="zephyr")
+        self.send_stream_message(email, "Scotland", topic_name=u".d.d.d",
+                                 sender_realm="zephyr")
+        self.send_stream_message(email, "Scotland", topic_name=u"personal.d",
+                                 sender_realm="zephyr")
+        self.send_stream_message(email, "Scotland", topic_name=u'(instance "")',
+                                 sender_realm="zephyr")
+        self.send_stream_message(email, "Scotland", topic_name=u".d.d.d.d",
+                                 sender_realm="zephyr")
 
         narrow = [dict(operator='topic', operand=u'personal.d.d')]
         result = self.get_and_check_messages(
