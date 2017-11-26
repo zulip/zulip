@@ -75,7 +75,10 @@ See also [fixing commits][fix-commit]
 - log
     - `git log`: show commit logs
 - pull
-    - **do not use for Zulip**
+    - `git pull --rebase`: rebase your changes on top of master.
+    - `git pull` (with no options): Will either create a merge commit
+      (which you don't want) or do the asme as `git pull --rebase`,
+      depending on [whether you're configured Git properly][git-clone-config]
 - push
     - `git push origin +branch-name`: push your commits to your origin repository
 - rebase
@@ -98,3 +101,4 @@ See also [fixing commits][fix-commit]
     - `git status`: show the working tree status, unstaged and staged files
 
 [fix-commit]: fixing-commits.html
+[git-config-clone]: cloning.html#step-1b-clone-to-your-machine

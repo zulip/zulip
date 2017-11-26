@@ -1,5 +1,9 @@
 # Review changes
 
+**Note** - The following section covers reviewing changes on your local
+clone. Please read the section on [code reviews][zulip-rtd-review] for a guide
+on reviewing changes by other contributors.
+
 ## Changes on (local) working tree
 
 Display changes between index and working tree (what is not yet staged for commit):
@@ -56,3 +60,5 @@ Display changes you've committed so far since creating a branch from upstream/ma
 ```
 $ git diff upstream/master...HEAD
 ```
+
+[zulip-rtd-review]: ../contributing/code-reviewing.html
