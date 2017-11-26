@@ -10,6 +10,5 @@ Developer Tutorials
    life-of-a-request
    reading-list
    screenshot-and-gif-software
-   fixing-commits
    shell-tips
    working-copies

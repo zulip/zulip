@@ -13,6 +13,7 @@ Git Guide
    Using Git as you work <using>
    Pull Requests <pull-requests>
    Collaborate <collaborate>
+   Fixing commits <fixing-commits>
    Reviewing changes <reviewing>
    Get and stay out of trouble <troubleshooting>
    Zulip-specific-tools <zulip-tools>
