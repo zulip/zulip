@@ -11,4 +11,3 @@ Developer Tutorials
    reading-list
    screenshot-and-gif-software
    shell-tips
-   working-copies
