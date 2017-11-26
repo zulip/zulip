@@ -27,12 +27,12 @@ exports.uploadStarted = function () {
     $(".compose-send-status-close").one('click', compose.abort_xhr);
     $("#compose-error-msg").html($("<p>").text(i18n.t("Uploading…"))
         .after('<div class="progress progress-striped active">' +
-            '<div class="bar" id="upload-bar" style="width: 00%;"></div>' +
+            '<div class="bar" id="compose-upload-bar" style="width: 00%;"></div>' +
             '</div>'));
 };
 
 exports.progressUpdated = function (i, file, progress) {
-    $("#upload-bar").width(progress + "%");
+    $("#compose-upload-bar").width(progress + "%");
 };
 
 exports.uploadError = function (err, file) {

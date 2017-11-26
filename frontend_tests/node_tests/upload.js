@@ -25,7 +25,7 @@ zrequire('upload');
     };
     $("#compose-error-msg").html('');
     var test_html = '<div class="progress progress-striped active">' +
-                    '<div class="bar" id="upload-bar" style="width: 00%;">' +
+                    '<div class="bar" id="compose-upload-bar" style="width: 00%;">' +
                     '</div></div>';
     $("<p>").after = function (html) {
         assert.equal(html, test_html);
@@ -43,7 +43,7 @@ zrequire('upload');
 
 (function test_progress_updated() {
     var width_update_checked = false;
-    $("#upload-bar").width = function (width_percent) {
+    $("#compose-upload-bar").width = function (width_percent) {
         assert.equal(width_percent, '39%');
         width_update_checked = true;
     };
