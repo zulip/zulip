@@ -42,6 +42,10 @@ pull.rebase true`, or just be careful to always run `git pull
 Note: If you receive an error while cloning, you may not have [added your ssh
 key to GitHub][github-help-add-ssh-key].
 
+Once the repository is cloned, it is recommended to run the
+[setup-git-repo][zulip-rtd-tools-setup] script to install the
+pre-commit hook to run linters, etc. on commit.
+
 ## Step 1c: Connect your fork to Zulip upstream
 
 Next you'll want to [configure an upstream remote
@@ -133,3 +137,4 @@ Zulip. ([See screen cast](../_static/zulip-travisci.gif).)
 [travis-ci-profile]: https://travis-ci.org/profile
 [zulip-rtd-dev-first-time]: ../development/setup-vagrant.html
 [zulip-rtd-dev-overview]: ../development/overview.html
+[zulip-rtd-tools-setup]: ../git/zulip-tools.html#set-up-git-repo-script

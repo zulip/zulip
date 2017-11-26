@@ -1,6 +1,8 @@
 # Zulip-specific tools
 
-This section will document the zulip-specific git tools contributors will find helpful.
+Over time, Zulip developers have written some git tools to help the
+contributors work more effectively with the project. This section documents
+the zulip-specific git tools contributors will find helpful.
 
 ## Set up git repo script
 
