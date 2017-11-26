@@ -10,6 +10,7 @@ Git Guide
    How Git is different <the-git-difference>
    Important Git terms <terminology>
    Get Zulip code <cloning>
+   Working copies <working-copies>
    Using Git as you work <using>
    Pull Requests <pull-requests>
    Collaborate <collaborate>
