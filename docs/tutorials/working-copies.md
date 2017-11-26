@@ -3,28 +3,28 @@
 When you work on Zulip code, there are three working copies
 of the Zulip git repo that you are generally concerned with:
 
-- local copy: This lives on your laptop or your remove dev instance.
+- local copy: This lives on your laptop or your remote dev instance.
 - forked copy: This lives on GitHub, and it's tied to your account.
-- official Zulip repo: https://github.com/zulip/zulip
+- official Zulip repo: This lives on the Zulip org on GitHub. Link [here](https://github.com/zulip/zulip).
 
-We sometimes call the forked copy the **origin** remote.
+We call the forked copy the **origin** remote.
 
-We sometimes call the official repo the **upstream** remote.
+We call the official repo the **upstream** remote.
 
 When you work on Zulip code, you will end up moving code between
 the various working copies.
 
 ## Workflows
 
-Sometimes you need to get commits.  Here are some scenarios:
+Sometimes you need to get commits. Here are some scenarios:
 
 - You may fork the official Zulip repo to your GitHub fork.
 - You may fetch commits from the official Zulip repo to your local copy.
 - You occasionally may fetch commits from your forked copy.
 
-Sometimes you want to publish commits.  Here are scenarios:
+Sometimes you want to publish commits. Here are some scenarios:
 
-- You push code from your local copy to your GitHub fork.  (You usually
+- You push code from your local copy to your GitHub fork. (You usually
   want to put the commit on a feature branch.)
 - You submit a PR to the official Zulip repo.
 
@@ -49,5 +49,5 @@ working copies:
 - `git fetch`: This grabs code from another repo to your local copy.
 - `git push`: This pushes code from your local repo to one of the remotes.
 - `git remote`: This helps you configure short names for remotes.
-- `git pull`: **Do not use this, please**!
+- `git pull`: This pulls code, but by default creates a merge commit. **Do not use this, please**!
 
