@@ -472,6 +472,8 @@ paths:
 
                        * `realm_message_content_edit_limit_seconds`:
 
+                       * `realm_message_content_delete_limit_seconds`:
+
                        * `realm_name`:
 
                        * `realm_restricted_to_domain`:
@@ -1004,6 +1006,9 @@ definitions:
       realm_invite_required:
         type: boolean
       realm_message_content_edit_limit_seconds:
+        type: integer
+        format: int64
+      realm_message_content_delete_limit_seconds:
         type: integer
         format: int64
       realm_name:
