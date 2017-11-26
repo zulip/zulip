@@ -152,9 +152,6 @@ function create_stream() {
     var is_invite_only = $('#stream_creation_form input[name=privacy]:checked').val() === "invite-only";
     var principals = get_principals();
 
-    // You are always subscribed to streams you create.
-    principals.push(people.my_current_email());
-
     created_stream = stream_name;
 
     var announce = (!!page_params.notifications_stream &&
@@ -206,8 +203,14 @@ exports.new_stream_clicked = function (stream_name) {
 exports.show_new_stream_modal = function () {
     $("#stream-creation").removeClass("hide");
     $(".right .settings").hide();
+
+    var all_user = people.get_rest_of_realm();
+    // Add current user on top of list
+    all_user.unshift({email: people.my_current_email(),
+                      user_id: people.my_current_user_id(),
+                      full_name: people.my_full_name()});
     $('#people_to_add').html(templates.render('new_stream_users', {
-        users: people.get_rest_of_realm(),
+        users: all_user,
         streams: stream_data.get_streams_for_settings_page(),
     }));
 
