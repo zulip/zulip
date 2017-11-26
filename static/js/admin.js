@@ -49,6 +49,8 @@ function _setup_page() {
         realm_allow_message_editing: page_params.realm_allow_message_editing,
         realm_message_content_edit_limit_minutes:
             Math.ceil(page_params.realm_message_content_edit_limit_seconds / 60),
+        realm_message_content_delete_limit_minutes:
+            Math.ceil(page_params.realm_message_content_delete_limit_seconds / 60),
         realm_message_retention_days: page_params.realm_message_retention_days,
         realm_allow_edit_history: page_params.realm_allow_edit_history,
         language_list: page_params.language_list,
@@ -83,6 +85,7 @@ function _setup_page() {
     };
 
     options.msg_edit_limit_dropdown_values = settings_org.msg_edit_limit_dropdown_values;
+    options.msg_delete_limit_dropdown_values = settings_org.msg_delete_limit_dropdown_values;
     options.bot_creation_policy_values = settings_bots.bot_creation_policy_values;
     var rendered_admin_tab = templates.render('admin_tab', options);
     $("#settings_content .organization-box").html(rendered_admin_tab);

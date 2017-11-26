@@ -70,6 +70,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             invite_required: noop,
             mandatory_topics: noop,
             message_content_edit_limit_seconds: noop,
+            message_content_delete_limit_seconds: noop,
             message_retention_days: noop,
             name: notifications.redraw_title,
             name_changes_disabled: settings_account.update_name_change_display,

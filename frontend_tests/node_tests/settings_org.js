@@ -510,7 +510,9 @@ function test_sync_realm_settings() {
     var stub_render_notifications_stream_ui = settings_org.render_notifications_stream_ui;
     settings_org.render_notifications_stream_ui = noop;
     $("#id_realm_message_content_edit_limit_minutes").set_parent($.create('<stub edit limit parent>'));
+    $("#id_realm_message_content_delete_limit_minutes").set_parent($.create('<stub delete limti parent>'));
     $("#id_realm_msg_edit_limit_setting").change = noop;
+    $('#id_realm_msg_delete_limit_setting').change = noop;
     var parent_elem = $.create('waiting-period-parent-stub');
     $('#id_realm_waiting_period_threshold').set_parent(parent_elem);
     $("#allowed_domains_label").set_parent($.create('<stub-allowed-domain-label-parent>'));
