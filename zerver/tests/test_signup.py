@@ -2114,18 +2114,19 @@ class UserSignUpTest(ZulipTestCase):
         result = self.client_get(confirmation_url, subdomain="zephyr")
         self.assertEqual(result.status_code, 200)
 
-        # If the mirror dummy user is already active, attempting to submit the
-        # registration form should just redirect to a login page.
+        # If the mirror dummy user is already active, attempting to
+        # submit the registration form should raise an AssertionError
+        # (this is an invalid state, so it's a bug we got here):
         user_profile.is_active = True
         user_profile.save()
-        result = self.submit_reg_form_for_user(email,
-                                               password,
-                                               from_confirmation='1',
-                                               # Pass HTTP_HOST for the target subdomain
-                                               HTTP_HOST=subdomain + ".testserver")
+        with self.assertRaisesRegex(AssertionError, "Mirror dummy user is already active!"):
+            result = self.submit_reg_form_for_user(
+                email,
+                password,
+                from_confirmation='1',
+                # Pass HTTP_HOST for the target subdomain
+                HTTP_HOST=subdomain + ".testserver")
 
-        self.assertEqual(result.status_code, 302)
-        self.assertIn('login', result['Location'])
         user_profile.is_active = False
         user_profile.save()
 
@@ -2144,8 +2145,8 @@ class UserSignUpTest(ZulipTestCase):
 
     def test_registration_of_active_mirror_dummy_user(self: Any) -> None:
         """
-        Trying to activate an already-active mirror dummy user should just
-        redirect to a login page.
+        Trying to activate an already-active mirror dummy user should
+        raise an AssertionError.
         """
         user_profile = self.mit_user("sipbtest")
         email = user_profile.email
@@ -2153,10 +2154,8 @@ class UserSignUpTest(ZulipTestCase):
         user_profile.is_active = True
         user_profile.save()
 
-        result = self.client_post('/register/', {'email': email})
-
-        self.assertEqual(result.status_code, 302)
-        self.assertIn('login', result['Location'])
+        with self.assertRaisesRegex(AssertionError, "Mirror dummy user is already active!"):
+            self.client_post('/register/', {'email': email}, subdomain="zephyr")
 
 class DeactivateUserTest(ZulipTestCase):
 
