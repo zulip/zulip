@@ -24,7 +24,7 @@ function clear_out_file_list(jq_file_list) {
 exports.uploadStarted = function () {
     $("#compose-send-button").attr("disabled", "");
     $("#compose-send-status").addClass("alert-info").show();
-    $(".send-status-close").one('click', compose.abort_xhr);
+    $(".compose-send-status-close").one('click', compose.abort_xhr);
     $("#error-msg").html($("<p>").text(i18n.t("Uploading…"))
         .after('<div class="progress progress-striped active">' +
             '<div class="bar" id="upload-bar" style="width: 00%;"></div>' +

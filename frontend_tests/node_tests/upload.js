@@ -19,7 +19,7 @@ zrequire('upload');
 (function test_upload_started() {
     $("#compose-send-button").prop('disabled', false);
     $("#compose-send-status").removeClass("alert-info").hide();
-    $(".send-status-close").one = function (ev_name, handler) {
+    $(".compose-send-status-close").one = function (ev_name, handler) {
         assert.equal(ev_name, 'click');
         assert(handler);
     };

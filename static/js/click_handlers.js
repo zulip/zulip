@@ -421,7 +421,7 @@ $(function () {
 
     // NB: This just binds to current elements, and won't bind to elements
     // created after ready() is called.
-    $('#compose-send-status .send-status-close').click(
+    $('#compose-send-status .compose-send-status-close').click(
         function () { $('#compose-send-status').stop(true).fadeOut(500); }
     );
 
