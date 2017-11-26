@@ -60,7 +60,7 @@ exports.reset_user_acknowledged_all_everyone_flag = function () {
 };
 
 exports.clear_preview_area = function () {
-    $("#new_message_content").show();
+    $("#compose-textarea").show();
     $("#undo_markdown_preview").hide();
     $("#preview_message_area").hide();
     $("#preview_content").empty();
@@ -185,7 +185,7 @@ function send_message_socket(request, success, error) {
 }
 
 function clear_compose_box() {
-    $("#new_message_content").val('').focus();
+    $("#compose-textarea").val('').focus();
     drafts.delete_draft_after_send();
     compose_ui.autosize_textarea();
     $("#compose-send-status").hide(0);
@@ -266,7 +266,7 @@ exports.send_message = function send_message(request) {
         // If we're not local echo'ing messages, or if this message was not
         // locally echoed, show error in compose box
         if (!locally_echoed) {
-            compose_error(response, $('#new_message_content'));
+            compose_error(response, $('#compose-textarea'));
             return;
         }
 
@@ -288,7 +288,7 @@ exports.enter_with_preview_open = function () {
         exports.finish();
     } else {
         // Otherwise, we return to the compose box and focus it
-        $("#new_message_content").focus();
+        $("#compose-textarea").focus();
     }
 };
 
@@ -469,7 +469,7 @@ exports.validate = function () {
     $("#sending-indicator").show();
 
     if (/^\s*$/.test(compose_state.message_content())) {
-        compose_error(i18n.t("You have nothing to send!"), $("#new_message_content"));
+        compose_error(i18n.t("You have nothing to send!"), $("#compose-textarea"));
         return false;
     }
 
@@ -493,7 +493,7 @@ exports.initialize = function () {
        compose.finish();
     });
 
-    resize.watch_manual_resize("#new_message_content");
+    resize.watch_manual_resize("#compose-textarea");
 
     // Run a feature test and decide whether to display
     // the "Attach files" button
@@ -702,8 +702,8 @@ exports.initialize = function () {
 
     $("#compose").on("click", "#markdown_preview", function (e) {
         e.preventDefault();
-        var content = $("#new_message_content").val();
-        $("#new_message_content").hide();
+        var content = $("#compose-textarea").val();
+        $("#compose-textarea").hide();
         $("#markdown_preview").hide();
         $("#undo_markdown_preview").show();
         $("#preview_message_area").show();
@@ -757,7 +757,7 @@ exports.initialize = function () {
         var options = {
             // Required. Called when a user selects an item in the Chooser.
             success: function (files) {
-                var textbox = $("#new_message_content");
+                var textbox = $("#compose-textarea");
                 var links = _.map(files, function (file) { return '[' + file.name + '](' + file.link +')'; })
                              .join(' ') + ' ';
                 textbox.val(textbox.val() + links);

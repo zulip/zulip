@@ -390,7 +390,7 @@ exports.register_click_handlers = function () {
         var user_id = $(e.target).parents('ul').attr('data-user-id');
         compose_actions.start('stream', {trigger: 'sidebar user actions'});
         var name = people.get_person_from_user_id(user_id).full_name;
-        var textarea = $("#new_message_content");
+        var textarea = $("#compose-textarea");
         textarea.val('@**' + name + '** ');
         popovers.hide_user_sidebar_popover();
         e.stopPropagation();
@@ -419,7 +419,7 @@ exports.register_click_handlers = function () {
         compose_actions.respond_to_message({trigger: 'user sidebar popover'});
         var user_id = $(e.target).parents('ul').attr('data-user-id');
         var name = people.get_person_from_user_id(user_id).full_name;
-        var textarea = $("#new_message_content");
+        var textarea = $("#compose-textarea");
         textarea.val('@**' + name + '** ');
         popovers.hide_message_info_popover();
         e.stopPropagation();
@@ -480,7 +480,7 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.respond_button', function (e) {
-        var textarea = $("#new_message_content");
+        var textarea = $("#compose-textarea");
         var msgid = $(e.currentTarget).data("message-id");
 
         compose_actions.respond_to_message({trigger: 'popover respond'});
@@ -493,7 +493,7 @@ exports.register_click_handlers = function () {
                 } else {
                     textarea.val(textarea.val() + "\n```quote\n" + data.raw_content +"\n```\n");
                 }
-                $("#new_message_content").trigger("autosize.resize");
+                $("#compose-textarea").trigger("autosize.resize");
             },
         });
         popovers.hide_actions_popover();

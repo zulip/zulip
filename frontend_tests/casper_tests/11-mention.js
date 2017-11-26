@@ -13,7 +13,7 @@ casper.then(function () {
         subject: 'Test mention all',
     });
 });
-common.select_item_via_typeahead('#new_message_content', '@all', 'all');
+common.select_item_via_typeahead('#compose-textarea', '@all', 'all');
 
 casper.then(function () {
     common.turn_off_press_enter_to_send();

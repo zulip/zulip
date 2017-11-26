@@ -250,7 +250,7 @@ $(function () {
         scroll_finish();
     }));
 
-    $('#new_message_content').blur(function () {
+    $('#compose-textarea').blur(function () {
         saved_compose_cursor = $(this).caret();
     });
 
@@ -262,7 +262,7 @@ $(function () {
 });
 
 exports.restore_compose_cursor = function () {
-    $('#new_message_content')
+    $('#compose-textarea')
         .focus()
         .caret(saved_compose_cursor);
 };
@@ -272,7 +272,7 @@ $(function () {
         // Disable "spellchecking" in our desktop app. The "spellchecking"
         // in our Mac app is actually autocorrect, and frustrates our
         // users.
-        $("#new_message_content").attr('spellcheck', 'false');
+        $("#compose-textarea").attr('spellcheck', 'false');
         // Modify the zephyr mirroring error message in our desktop
         // app, since it doesn't work from the desktop version.
         $("#webathena_login_menu").hide();

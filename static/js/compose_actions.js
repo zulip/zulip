@@ -38,7 +38,7 @@ function get_focus_area(msg_type, opts) {
         if (opts.trigger === "new topic button") {
             return 'subject';
         }
-        return 'new_message_content';
+        return 'compose-textarea';
     }
 
     if (msg_type === 'stream') {
@@ -96,13 +96,13 @@ function clear_box() {
     compose.reset_user_acknowledged_all_everyone_flag();
 
     exports.clear_textarea();
-    $("#new_message_content").removeData("draft-id");
+    $("#compose-textarea").removeData("draft-id");
     compose_ui.autosize_textarea();
     $("#compose-send-status").hide(0);
 }
 
 exports.autosize_message_content = function () {
-    $("#new_message_content").autosize();
+    $("#compose-textarea").autosize();
 };
 
 exports.expand_compose_box = function () {
@@ -221,7 +221,7 @@ exports.start = function (msg_type, opts) {
 };
 
 exports.cancel = function () {
-    $("#new_message_content").height(40 + "px");
+    $("#compose-textarea").height(40 + "px");
 
     if (page_params.narrow !== undefined) {
         // Never close the compose box in narrow embedded windows, but
@@ -307,7 +307,7 @@ exports.reply_with_mention = function (opts) {
     exports.respond_to_message(opts);
     var message = current_msg_list.selected_message();
     var mention = '@**' + message.sender_full_name + '**';
-    $('#new_message_content').val(mention + ' ');
+    $('#compose-textarea').val(mention + ' ');
 };
 
 exports.on_topic_narrow = function () {
@@ -349,7 +349,7 @@ exports.on_topic_narrow = function () {
     // See #3300 for context--a couple users specifically asked
     // for this convenience.
     compose_state.subject(narrow_state.topic());
-    $('#new_message_content').focus().select();
+    $('#compose-textarea').focus().select();
 };
 
 exports.on_narrow = function () {

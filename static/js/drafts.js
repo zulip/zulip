@@ -88,7 +88,7 @@ exports.snapshot_message = function () {
 
 exports.update_draft = function () {
     var draft = drafts.snapshot_message();
-    var draft_id = $("#new_message_content").data("draft-id");
+    var draft_id = $("#compose-textarea").data("draft-id");
 
     if (draft_id !== undefined) {
         if (draft !== undefined) {
@@ -99,17 +99,17 @@ exports.update_draft = function () {
     } else {
         if (draft !== undefined) {
             var new_draft_id = draft_model.addDraft(draft);
-            $("#new_message_content").data("draft-id", new_draft_id);
+            $("#compose-textarea").data("draft-id", new_draft_id);
         }
     }
 };
 
 exports.delete_draft_after_send = function () {
-    var draft_id = $("#new_message_content").data("draft-id");
+    var draft_id = $("#compose-textarea").data("draft-id");
     if (draft_id) {
         draft_model.deleteDraft(draft_id);
     }
-    $("#new_message_content").removeData("draft-id");
+    $("#compose-textarea").removeData("draft-id");
 };
 
 exports.restore_draft = function (draft_id) {
@@ -148,7 +148,7 @@ exports.restore_draft = function (draft_id) {
     }
     compose_actions.start(draft_copy.type, draft_copy);
     compose_ui.autosize_textarea();
-    $("#new_message_content").data("draft-id", draft_id);
+    $("#compose-textarea").data("draft-id", draft_id);
 };
 
 exports.setup_page = function (callback) {
@@ -403,7 +403,7 @@ exports.initialize = function () {
         exports.update_draft();
     });
 
-    $("#new_message_content").focusout(exports.update_draft);
+    $("#compose-textarea").focusout(exports.update_draft);
 };
 
 return exports;

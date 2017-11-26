@@ -119,8 +119,8 @@ casper.then(function () {
 casper.then(function () {
     casper.waitUntilVisible('#compose', function () {
         casper.evaluate(function () {
-            $('#new_message_content').expectOne().focus();
-            $('#new_message_content').trigger($.Event('keydown', { which: 37 }));
+            $('#compose-textarea').expectOne().focus();
+            $('#compose-textarea').trigger($.Event('keydown', { which: 37 }));
         });
     });
 });
@@ -142,8 +142,8 @@ casper.then(function () {
 casper.then(function () {
     casper.waitUntilVisible('#compose', function () {
         casper.evaluate(function () {
-            $('#new_message_content').expectOne().focus().val('test');
-            $('#new_message_content').trigger($.Event('keydown', { which: 37 }));
+            $('#compose-textarea').expectOne().focus().val('test');
+            $('#compose-textarea').trigger($.Event('keydown', { which: 37 }));
         });
         casper.test.assertNotVisible('form.message_edit_form', "Last own message edit doesn't open if the compose box not empty");
     });

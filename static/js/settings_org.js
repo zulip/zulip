@@ -404,7 +404,7 @@ function _set_up() {
         // grab the first alert available and use it for the status.
         var status = $("#admin-realm-notifications-stream-status");
 
-        var new_message_content_edit_limit_minutes = $("#id_realm_message_content_edit_limit_minutes").val();
+        var compose_textarea_edit_limit_minutes = $("#id_realm_message_content_edit_limit_minutes").val();
         var new_allow_message_editing = $("#id_realm_allow_message_editing").prop("checked");
 
         // If allow_message_editing is unchecked, message_content_edit_limit_minutes
@@ -412,11 +412,11 @@ function _set_up() {
         // message_content_edit_limit_minutes is poorly formed, we set the latter to
         // a default value to prevent the server from returning an error.
         if (!new_allow_message_editing) {
-            if ((parseInt(new_message_content_edit_limit_minutes, 10).toString() !==
-                 new_message_content_edit_limit_minutes) ||
-                new_message_content_edit_limit_minutes < 0) {
+            if ((parseInt(compose_textarea_edit_limit_minutes, 10).toString() !==
+                 compose_textarea_edit_limit_minutes) ||
+                compose_textarea_edit_limit_minutes < 0) {
             // Realm.DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS / 60
-            new_message_content_edit_limit_minutes = 10;
+            compose_textarea_edit_limit_minutes = 10;
             }
         }
 
@@ -425,7 +425,7 @@ function _set_up() {
         data = populate_data_for_request({
             allow_message_editing: JSON.stringify(new_allow_message_editing),
             message_content_edit_limit_seconds:
-                JSON.stringify(parseInt(new_message_content_edit_limit_minutes, 10) * 60),
+                JSON.stringify(parseInt(compose_textarea_edit_limit_minutes, 10) * 60),
         }, 'settings');
 
         channel.patch({

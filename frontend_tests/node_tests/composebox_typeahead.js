@@ -510,8 +510,8 @@ global.user_groups.add(backend);
         pm_recipient_typeahead_called = true;
     };
 
-    var new_message_content_typeahead_called = false;
-    $('#new_message_content').typeahead = function (options) {
+    var compose_textarea_typeahead_called = false;
+    $('#compose-textarea').typeahead = function (options) {
         // options.source()
         //
         // For now we only test that compose_contents_begins_typeahead has been
@@ -603,7 +603,7 @@ global.user_groups.add(backend);
         fake_this = { completing: 'non-existing-completion' };
         assert.equal(options.sorter.call(fake_this), undefined);
 
-        new_message_content_typeahead_called = true;
+        compose_textarea_typeahead_called = true;
     };
 
     var pm_recipient_blur_called = false;
@@ -652,7 +652,7 @@ global.user_groups.add(backend);
     $('#subject').data = stub_typeahead_hidden;
     $('#stream').data = stub_typeahead_hidden;
     $('#private_message_recipient').data = stub_typeahead_hidden;
-    $('#new_message_content').data = stub_typeahead_hidden;
+    $('#compose-textarea').data = stub_typeahead_hidden;
     $('form#send_message_form').keydown(event);
 
     event.keyCode = undefined;
@@ -660,16 +660,16 @@ global.user_groups.add(backend);
     event.shiftKey = false;
     event.target.id = 'subject';
     $('form#send_message_form').keydown(event);
-    event.target.id = 'new_message_content';
+    event.target.id = 'compose-textarea';
     $('form#send_message_form').keydown(event);
     event.target.id = 'some_non_existing_id';
     $('form#send_message_form').keydown(event);
 
 
-    // Setup jquery functions used in new_message_content enter
+    // Setup jquery functions used in compose_textarea enter
     // handler.
     var range_length = 0;
-    $('#new_message_content').range = function () {
+    $('#compose-textarea').range = function () {
         return {
             length: range_length,
             range: noop,
@@ -677,12 +677,12 @@ global.user_groups.add(backend);
             end: 0 + range_length,
         };
     };
-    $('#new_message_content').caret = noop;
+    $('#compose-textarea').caret = noop;
 
     event.keyCode = 13;
     event.target.id = 'subject';
     $('form#send_message_form').keydown(event);
-    event.target.id = 'new_message_content';
+    event.target.id = 'compose-textarea';
     page_params.enter_sends = false;
     event.metaKey = true;
     var compose_finish_called = false;
@@ -776,7 +776,7 @@ global.user_groups.add(backend);
     assert(pm_recipient_typeahead_called);
     assert(pm_recipient_blur_called);
     assert(channel_post_called);
-    assert(new_message_content_typeahead_called);
+    assert(compose_textarea_typeahead_called);
     assert(focus_handler_called);
     assert(stream_one_called);
 }());

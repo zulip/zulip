@@ -205,7 +205,7 @@ exports.turn_off_press_enter_to_send = function () {
 exports.then_send_message = function (type, params) {
     casper.then(function () {
         casper.waitForSelector('#compose-send-button:enabled');
-        casper.waitForSelector('#new_message_content');
+        casper.waitForSelector('#compose-textarea');
     });
 
     casper.then(function () {

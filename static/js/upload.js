@@ -74,7 +74,7 @@ exports.uploadFinished = function (i, file, response) {
     if (response.uri === undefined) {
         return;
     }
-    var textbox = $("#new_message_content");
+    var textbox = $("#compose-textarea");
     var split_uri = response.uri.split("/");
     var filename = split_uri[split_uri.length - 1];
     // Urgh, yet another hack to make sure we're "composing"
@@ -120,7 +120,7 @@ exports.initialize = function () {
         error: exports.uploadError,
         uploadFinished: exports.uploadFinished,
         rawDrop: function (contents) {
-            var textbox = $("#new_message_content");
+            var textbox = $("#compose-textarea");
             if (!compose_state.composing()) {
                 compose_actions.start('stream');
             }

@@ -182,7 +182,7 @@ exports.paste_handler = function (event) {
 
 $(function () {
     $(document).on('copy', copy_handler);
-    $("#new_message_content").bind('paste', exports.paste_handler);
+    $("#compose-textarea").bind('paste', exports.paste_handler);
 });
 
 return exports;

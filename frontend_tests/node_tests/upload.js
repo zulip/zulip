@@ -107,7 +107,7 @@ zrequire('upload');
         var compose_actions_start_checked = false;
 
         function setup() {
-            $("#new_message_content").val('');
+            $("#compose-textarea").val('');
             compose_ui.autosize_textarea = function () {
                 compose_ui_autosize_textarea_checked = true;
             };
@@ -128,7 +128,7 @@ zrequire('upload');
         }
 
         function assert_side_effects() {
-            assert.equal($("#new_message_content").val(), textbox_val);
+            assert.equal($("#compose-textarea").val(), textbox_val);
             if (response.uri) {
                 assert(compose_actions_start_checked);
                 assert(compose_ui_autosize_textarea_checked);

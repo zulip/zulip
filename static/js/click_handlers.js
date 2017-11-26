@@ -730,7 +730,7 @@ $(function () {
         if (compose_state.composing()) {
             if ($(e.target).is("a")) {
                 // Refocus compose message text box if link is clicked
-                $("#new_message_content").focus();
+                $("#compose-textarea").focus();
             } else if (!$(e.target).closest(".overlay").length &&
             !window.getSelection().toString() &&
             !$(e.target).closest('.popover-content').length) {

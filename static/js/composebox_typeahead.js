@@ -95,8 +95,8 @@ function handle_keydown(e) {
             e.preventDefault();
         }
 
-        // In the new_message_content box, preventDefault() for tab but not for enter
-        if (e.target.id === "new_message_content" && code !== 13) {
+        // In the compose_textarea box, preventDefault() for tab but not for enter
+        if (e.target.id === 'compose-textarea' && code !== 13) {
             e.preventDefault();
         }
 
@@ -106,10 +106,10 @@ function handle_keydown(e) {
             if (code === 13) {
                 e.preventDefault();
             }
-            nextFocus = "new_message_content";
+            nextFocus = 'compose-textarea';
         } else if (e.target.id === "private_message_recipient") {
-            nextFocus = "new_message_content";
-        } else if (e.target.id === "new_message_content") {
+            nextFocus = 'compose-textarea';
+        } else if (e.target.id === 'compose-textarea') {
             if (code === 13) {
                 nextFocus = false;
             } else {
@@ -123,7 +123,7 @@ function handle_keydown(e) {
         if (!($("#subject").data().typeahead.shown ||
               $("#stream").data().typeahead.shown ||
               $("#private_message_recipient").data().typeahead.shown ||
-              $("#new_message_content").data().typeahead.shown)) {
+              $("#compose-textarea").data().typeahead.shown)) {
 
             // If no typeaheads are shown and the user is tabbing from the message content box,
             // then there's no need to wait and we can change the focus right away.
@@ -137,7 +137,7 @@ function handle_keydown(e) {
                 nextFocus = false;
             }
 
-            if (e.target.id === "new_message_content" && code === 13) {
+            if (e.target.id === 'compose-textarea' && code === 13) {
                 var has_non_shift_modifier_key = e.ctrlKey || e.metaKey || e.altKey;
                 var has_modifier_key = e.shiftKey || has_non_shift_modifier_key;
                 var this_enter_sends;
@@ -176,7 +176,7 @@ function handle_keydown(e) {
                 //
                 // We do this using caret and range from jquery-caret.
                 if (has_non_shift_modifier_key) {
-                    var textarea = $("#new_message_content");
+                    var textarea = $("#compose-textarea");
 
                     // To properly emulate browser "enter", if the
                     // user had selected something in the compose box,
@@ -546,7 +546,7 @@ exports.initialize = function () {
 
         // Refocus in the content box so you can continue typing or
         // press Enter to send.
-        $("#new_message_content").focus();
+        $("#compose-textarea").focus();
 
         return channel.post({
             url: '/json/users/me/enter-sends',
@@ -637,7 +637,7 @@ exports.initialize = function () {
         stopAdvance: true, // Do not advance to the next field on a tab or enter
     });
 
-    exports.initialize_compose_typeahead("#new_message_content");
+    exports.initialize_compose_typeahead("#compose-textarea");
 
     $("#private_message_recipient").blur(function () {
         var val = $(this).val();

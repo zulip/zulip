@@ -129,7 +129,7 @@ var draft_2 = {
 }());
 
 (function test_initialize() {
-    var message_content = $("#new_message_content");
+    var message_content = $("#compose-textarea");
     message_content.focusout = function (f) {
         assert.equal(f, drafts.update_draft);
         f();

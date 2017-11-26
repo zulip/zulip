@@ -531,11 +531,11 @@ exports.process_hotkey = function (e, hotkey) {
             compose_actions.cancel();
             // don't return, as we still want it to be picked up by the code below
         } else if (event_name === "page_up") {
-            $("#new_message_content").caret(0);
+            $("#compose-textarea").caret(0);
             return true;
         } else if (event_name === "page_down") {
             // so that it always goes to the end of the compose box.
-            $("#new_message_content").caret(Infinity);
+            $("#compose-textarea").caret(Infinity);
             return true;
         } else {
             // Let the browser handle the key normally.
