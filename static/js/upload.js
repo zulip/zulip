@@ -25,7 +25,7 @@ exports.uploadStarted = function () {
     $("#compose-send-button").attr("disabled", "");
     $("#compose-send-status").addClass("alert-info").show();
     $(".compose-send-status-close").one('click', compose.abort_xhr);
-    $("#error-msg").html($("<p>").text(i18n.t("Uploading…"))
+    $("#compose-error-msg").html($("<p>").text(i18n.t("Uploading…"))
         .after('<div class="progress progress-striped active">' +
             '<div class="bar" id="upload-bar" style="width: 00%;"></div>' +
             '</div>'));
@@ -61,13 +61,13 @@ exports.uploadError = function (err, file) {
             var translation_part1 = i18n.t('Upload would exceed your maximum quota. You can delete old attachments to free up space.');
             var translation_part2 = i18n.t('Click here');
             msg = translation_part1 + ' <a href="#settings/uploaded-files">' + translation_part2 + '</a>';
-            $("#error-msg").html(msg);
+            $("#compose-error-msg").html(msg);
             return;
         default:
             msg = i18n.t("An unknown error occurred.");
             break;
     }
-    $("#error-msg").text(msg);
+    $("#compose-error-msg").text(msg);
 };
 
 exports.uploadFinished = function (i, file, response) {

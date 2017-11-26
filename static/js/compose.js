@@ -136,7 +136,7 @@ function compose_error(error_text, bad_input) {
     $('#compose-send-status').removeClass(common.status_classes)
                .addClass('alert-error')
                .stop(true).fadeTo(0, 1);
-    $('#error-msg').html(error_text);
+    $('#compose-error-msg').html(error_text);
     $("#compose-send-button").prop('disabled', false);
     $("#sending-indicator").hide();
     if (bad_input !== undefined) {

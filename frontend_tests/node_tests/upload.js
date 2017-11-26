@@ -23,7 +23,7 @@ zrequire('upload');
         assert.equal(ev_name, 'click');
         assert(handler);
     };
-    $("#error-msg").html('');
+    $("#compose-error-msg").html('');
     var test_html = '<div class="progress progress-striped active">' +
                     '<div class="bar" id="upload-bar" style="width: 00%;">' +
                     '</div></div>';
@@ -38,7 +38,7 @@ zrequire('upload');
     assert($("#compose-send-status").hasClass("alert-info"));
     assert($("#compose-send-status").visible());
     assert.equal($("<p>").text(), 'translated: Uploading…');
-    assert.equal($("#error-msg").html(), 'fake-html');
+    assert.equal($("#compose-error-msg").html(), 'fake-html');
 }());
 
 (function test_progress_updated() {
@@ -56,7 +56,7 @@ zrequire('upload');
         $("#compose-send-status").removeClass("alert-error");
         $("#compose-send-status").addClass("alert-info");
         $("#compose-send-button").attr("disabled", 'disabled');
-        $("#error-msg").text('');
+        $("#compose-error-msg").text('');
     }
 
     function assert_side_effects(msg, check_html=false) {
@@ -64,9 +64,9 @@ zrequire('upload');
         assert(!$("#compose-send-status").hasClass("alert-info"));
         assert.equal($("#compose-send-button").prop("disabled"), false);
         if (check_html) {
-            assert.equal($("#error-msg").html(), msg);
+            assert.equal($("#compose-error-msg").html(), msg);
         } else {
-            assert.equal($("#error-msg").text(), msg);
+            assert.equal($("#compose-error-msg").text(), msg);
         }
     }
 

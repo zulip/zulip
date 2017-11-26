@@ -99,12 +99,12 @@ people.add(bob);
 
     $('#stream').select(noop);
     assert(!compose.validate_stream_message_address_info('foobar'));
-    assert.equal($('#error-msg').html(), "<p>The stream <b>foobar</b> does not exist.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
+    assert.equal($('#compose-error-msg').html(), "<p>The stream <b>foobar</b> does not exist.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
 
     sub.subscribed = false;
     stream_data.add_sub('social', sub);
     assert(!compose.validate_stream_message_address_info('social'));
-    assert.equal($('#error-msg').html(), "<p>You're not subscribed to the stream <b>social</b>.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
+    assert.equal($('#compose-error-msg').html(), "<p>You're not subscribed to the stream <b>social</b>.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
 
     global.page_params.narrow_stream = false;
     channel.post = function (payload) {
@@ -123,21 +123,21 @@ people.add(bob);
         payload.success(payload.data);
     };
     assert(!compose.validate_stream_message_address_info('Frontend'));
-    assert.equal($('#error-msg').html(), "<p>You're not subscribed to the stream <b>Frontend</b>.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
+    assert.equal($('#compose-error-msg').html(), "<p>You're not subscribed to the stream <b>Frontend</b>.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
 
     channel.post = function (payload) {
         assert.equal(payload.data.stream, 'Frontend');
         payload.error({status: 404});
     };
     assert(!compose.validate_stream_message_address_info('Frontend'));
-    assert.equal($('#error-msg').html(), "<p>The stream <b>Frontend</b> does not exist.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
+    assert.equal($('#compose-error-msg').html(), "<p>The stream <b>Frontend</b> does not exist.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
 
     channel.post = function (payload) {
         assert.equal(payload.data.stream, 'social');
         payload.error({status: 500});
     };
     assert(!compose.validate_stream_message_address_info('social'));
-    assert.equal($('#error-msg').html(), i18n.t("Error checking subscription"));
+    assert.equal($('#compose-error-msg').html(), i18n.t("Error checking subscription"));
 }());
 
 (function test_validate() {
@@ -149,7 +149,7 @@ people.add(bob);
     assert(!$("#sending-indicator").visible());
     assert(!$("#compose-send-button").is_focused());
     assert.equal($("#compose-send-button").prop('disabled'), false);
-    assert.equal($('#error-msg').html(), i18n.t('You have nothing to send!'));
+    assert.equal($('#compose-error-msg').html(), i18n.t('You have nothing to send!'));
 
     $("#new_message_content").val('foobarfoobar');
     var zephyr_checked = false;
@@ -162,13 +162,13 @@ people.add(bob);
     };
     assert(!compose.validate());
     assert(zephyr_checked);
-    assert.equal($('#error-msg').html(), i18n.t('You need to be running Zephyr mirroring in order to send messages!'));
+    assert.equal($('#compose-error-msg').html(), i18n.t('You need to be running Zephyr mirroring in order to send messages!'));
 
     compose_state.set_message_type('private');
     compose_state.recipient('');
     $("#private_message_recipient").select(noop);
     assert(!compose.validate());
-    assert.equal($('#error-msg').html(), i18n.t('Please specify at least one recipient'));
+    assert.equal($('#compose-error-msg').html(), i18n.t('Please specify at least one recipient'));
 
     compose_state.recipient('foo@zulip.com');
     global.page_params.realm_is_zephyr_mirror_realm = true;
@@ -176,11 +176,11 @@ people.add(bob);
 
     global.page_params.realm_is_zephyr_mirror_realm = false;
     assert(!compose.validate());
-    assert.equal($('#error-msg').html(), i18n.t('The recipient foo@zulip.com is not valid', {}));
+    assert.equal($('#compose-error-msg').html(), i18n.t('The recipient foo@zulip.com is not valid', {}));
 
     compose_state.recipient('foo@zulip.com,alice@zulip.com');
     assert(!compose.validate());
-    assert.equal($('#error-msg').html(), i18n.t('The recipients foo@zulip.com,alice@zulip.com are not valid', {}));
+    assert.equal($('#compose-error-msg').html(), i18n.t('The recipients foo@zulip.com,alice@zulip.com are not valid', {}));
 
     people.add_in_realm(bob);
     compose_state.recipient('bob@example.com');
@@ -190,14 +190,14 @@ people.add(bob);
     compose_state.stream_name('');
     $("#stream").select(noop);
     assert(!compose.validate());
-    assert.equal($('#error-msg').html(), i18n.t('Please specify a stream'));
+    assert.equal($('#compose-error-msg').html(), i18n.t('Please specify a stream'));
 
     compose_state.stream_name('Denmark');
     global.page_params.realm_mandatory_topics = true;
     compose_state.subject('');
     $("#subject").select(noop);
     assert(!compose.validate());
-    assert.equal($('#error-msg').html(), i18n.t('Please specify a topic'));
+    assert.equal($('#compose-error-msg').html(), i18n.t('Please specify a topic'));
 }());
 
 (function test_get_invalid_recipient_emails() {
@@ -473,7 +473,7 @@ people.add(bob);
         assert(xhr_error_msg_checked);
         assert(!echo_error_msg_checked);
         assert.equal($("#compose-send-button").prop('disabled'), false);
-        assert.equal($('#error-msg').html(),
+        assert.equal($('#compose-error-msg').html(),
                        'Error sending message: Server says 408');
         assert.equal($("#new_message_content").val(), 'foobarfoobar');
         assert($("#new_message_content").is_focused());
@@ -516,7 +516,7 @@ people.add(bob);
     compose.enter_with_preview_open();
 
     assert($("#enter_sends").prop("checked"));
-    assert.equal($("#error-msg").html(), i18n.t('You have nothing to send!'));
+    assert.equal($("#compose-error-msg").html(), i18n.t('You have nothing to send!'));
 }());
 
 (function test_finish() {
@@ -533,7 +533,7 @@ people.add(bob);
         assert(!$("#sending-indicator").visible());
         assert(!$("#compose-send-button").is_focused());
         assert.equal($("#compose-send-button").prop('disabled'), false);
-        assert.equal($('#error-msg').html(), i18n.t('You have nothing to send!'));
+        assert.equal($('#compose-error-msg').html(), i18n.t('You have nothing to send!'));
     }());
 
     (function test_when_compose_validation_succeed() {
