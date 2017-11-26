@@ -16,3 +16,4 @@ Git Guide
    Reviewing changes <reviewing>
    Get and stay out of trouble <troubleshooting>
    Zulip-specific-tools <zulip-tools>
+   Git Cheat Sheet <cheat-sheet>
