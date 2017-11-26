@@ -9,6 +9,7 @@ from django.views.decorators.http import require_GET
 from zerver.decorator import require_realm_admin, to_non_negative_int, to_not_negative_int_or_none
 from zerver.lib.actions import (
     do_set_realm_message_editing,
+    do_set_realm_message_deleting,
     do_set_realm_authentication_methods,
     do_set_realm_notifications_stream,
     do_set_realm_signup_notifications_stream,
@@ -40,6 +41,7 @@ def update_realm(
         add_emoji_by_admins_only: Optional[bool]=REQ(validator=check_bool, default=None),
         create_generic_bot_by_admins_only: Optional[bool]=REQ(validator=check_bool, default=None),
         allow_message_deleting: Optional[bool]=REQ(validator=check_bool, default=None),
+        message_content_delete_limit_seconds: Optional[int]=REQ(converter=to_non_negative_int, default=None),
         allow_message_editing: Optional[bool]=REQ(validator=check_bool, default=None),
         mandatory_topics: Optional[bool]=REQ(validator=check_bool, default=None),
         message_content_edit_limit_seconds: Optional[int]=REQ(converter=to_non_negative_int, default=None),
@@ -104,6 +106,17 @@ def update_realm(
                                      message_content_edit_limit_seconds)
         data['allow_message_editing'] = allow_message_editing
         data['message_content_edit_limit_seconds'] = message_content_edit_limit_seconds
+    if (allow_message_deleting is not None and realm.allow_message_deleting != allow_message_deleting) or \
+       (message_content_delete_limit_seconds is not None and
+            realm.message_content_delete_limit_seconds != message_content_delete_limit_seconds):
+        if allow_message_deleting is None:
+            allow_message_deleting = realm.allow_message_deleting
+        if message_content_delete_limit_seconds is None:
+            message_content_delete_limit_seconds = realm.message_content_delete_limit_seconds
+        do_set_realm_message_deleting(realm, allow_message_deleting,
+                                      message_content_delete_limit_seconds)
+        data['allow_message_deleting'] = allow_message_deleting
+        data['message_content_delete_limit_seconds'] = message_content_delete_limit_seconds
     # Realm.notifications_stream and Realm.signup_notifications_stream are not boolean,
     # Text or integer field, and thus doesn't fit into the do_set_realm_property framework.
     if notifications_stream_id is not None:

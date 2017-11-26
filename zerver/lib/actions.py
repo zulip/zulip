@@ -573,6 +573,21 @@ def do_set_realm_message_editing(realm: Realm,
     )
     send_event(event, active_user_ids(realm.id))
 
+def do_set_realm_message_deleting(realm: Realm,
+                                  allow_message_deleting: bool,
+                                  message_content_delete_limit_seconds: int) -> None:
+    realm.allow_message_deleting = allow_message_deleting
+    realm.message_content_delete_limit_seconds = message_content_delete_limit_seconds
+    realm.save(update_fields=['allow_message_deleting', 'message_content_delete_limit_seconds'])
+    event = dict(
+        type="realm",
+        op="update_dict",
+        property="default",
+        data=dict(allow_message_deleting=allow_message_deleting,
+                  message_content_delete_limit_seconds=message_content_delete_limit_seconds),
+    )
+    send_event(event, active_user_ids(realm.id))
+
 def do_set_realm_notifications_stream(realm: Realm, stream: Stream, stream_id: int) -> None:
     realm.notifications_stream = stream
     realm.save(update_fields=['notifications_stream'])

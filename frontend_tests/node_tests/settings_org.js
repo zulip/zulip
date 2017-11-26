@@ -335,6 +335,20 @@ function test_change_message_editing(change_message_editing) {
     assert.equal($('#id_realm_message_content_edit_limit_minutes').attr('disabled'), false);
 }
 
+function test_change_message_deleting(change_message_deleting) {
+    var parent_elem = $.create('deleting-parent-stub');
+
+    $('#id_realm_message_content_delete_limit_minutes_label').set_parent(parent_elem);
+
+    change_message_deleting.apply({checked: false});
+    assert(parent_elem.hasClass('control-label-disabled'));
+    assert.equal($('#id_realm_message_content_delete_limit_minutes').attr('disabled'), true);
+
+    change_message_deleting.apply({checked: true});
+    assert(!parent_elem.hasClass('control-label-disabled'));
+    assert.equal($('#id_realm_message_content_delete_limit_minutes').prop('disabled'), false);
+}
+
 function test_change_invite_required(change_invite_required) {
     var parent_elem = $.create('invite-parent-stub');
 
@@ -460,6 +474,7 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     $('#id_realm_create_stream_permission').change = set_callback('realm_create_stream_permission');
     $('#id_realm_invite_required').change = set_callback('change_invite_required');
     $('#id_realm_allow_message_editing').change = set_callback('change_message_editing');
+    $('#id_realm_allow_message_deleting').change = set_callback('change_message_deleting');
     $('#submit-add-realm-domain').click = set_callback('add_realm_domain');
     $('.notifications-stream-disable').click = set_callback('disable_notifications_stream');
     $('.signup-notifications-stream-disable').click = set_callback('disable_signup_notifications_stream');
@@ -514,6 +529,7 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     test_upload_realm_icon(upload_realm_icon);
     test_change_invite_required(callbacks.change_invite_required);
     test_change_message_editing(callbacks.change_message_editing);
+    test_change_message_deleting(callbacks.change_message_deleting);
     test_disable_notifications_stream(callbacks.disable_notifications_stream);
     test_disable_signup_notifications_stream(callbacks.disable_signup_notifications_stream);
     test_change_allow_subdomains(change_allow_subdomains);

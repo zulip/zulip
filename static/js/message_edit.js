@@ -57,6 +57,25 @@ function get_editability(message, edit_limit_seconds_buffer) {
 }
 exports.get_editability = get_editability;
 
+exports.get_deletability = function (message) {
+
+    if (page_params.is_admin) {
+        return true;
+    }
+    if (message.sent_by_me) {
+        if (page_params.realm_allow_message_deleting && !message.locally_echoed) {
+            var now = new XDate();
+            if (page_params.realm_message_content_delete_limit_seconds +
+                now.diffSeconds(message.timestamp * 1000) > 0 ||
+                page_params.realm_message_content_delete_limit_seconds === 0) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+};
+
 // Returns true if the edit task should end.
 exports.save = function (row, from_topic_edited_only) {
     var msg_list = current_msg_list;

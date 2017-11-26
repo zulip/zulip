@@ -131,6 +131,7 @@ class HomeTest(ZulipTestCase):
             "realm_invite_required",
             "realm_is_zephyr_mirror_realm",
             "realm_mandatory_topics",
+            "realm_message_content_delete_limit_seconds",
             "realm_message_content_edit_limit_seconds",
             "realm_message_retention_days",
             "realm_name",

@@ -50,6 +50,19 @@
                 title="{{t 'Administrators can always delete any message.' }}"/>
             </div>
 
+            <div class="input-group disableable {{#unless realm_allow_message_deleting}}control-label-disabled{{/unless}}">
+                <label for="id_realm_message_content_delete_limit_minutes"
+                    id="id_realm_message_content_delete_limit_minutes_label"
+                    title="{{t 'If non-zero, users can delete their message for this many minutes after it is sent. If zero, users can delete all their past messages.' }}">
+                    {{t 'Message delete limit in minutes (0 for no limit)' }}
+                </label>
+                <input type="text" id="id_realm_message_content_delete_limit_minutes"
+                       name="realm_message_content_delete_limit_minutes"
+                       class="admin-realm-message-content-delete-limit-minutes"
+                       value="{{ realm_message_content_delete_limit_minutes }}"
+                  {{#unless realm_allow_message_deleting}}disabled="disabled"{{/unless}} />
+            </div>
+
             <div class="input-group">
                 <label class="checkbox">
                     <input type="checkbox" id="id_realm_allow_edit_history" name="realm_allow_edit_history"
