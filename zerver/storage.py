@@ -11,8 +11,8 @@ from pipeline.storage import PipelineMixin
 from zerver.lib.str_utils import force_str
 
 class AddHeaderMixin:
-    def post_process(self, paths, dry_run=False, **kwargs):
-        # type: (Dict[str, Tuple[ZulipStorage, str]], bool, **Any) -> List[Tuple[str, str, bool]]
+    def post_process(self, paths: Dict[str, Tuple['ZulipStorage', str]], dry_run: bool=False,
+                     **kwargs: Any) -> List[Tuple[str, str, bool]]:
         if dry_run:
             return []
 
@@ -58,8 +58,8 @@ class AddHeaderMixin:
 
 
 class RemoveUnminifiedFilesMixin:
-    def post_process(self, paths, dry_run=False, **kwargs):
-        # type: (Dict[str, Tuple[ZulipStorage, str]], bool, **Any) -> List[Tuple[str, str, bool]]
+    def post_process(self, paths: Dict[str, Tuple['ZulipStorage', str]], dry_run: bool=False,
+                     **kwargs: Any) -> List[Tuple[str, str, bool]]:
         if dry_run:
             return []
 
@@ -88,8 +88,7 @@ if settings.PRODUCTION:
                                                             "staticfiles.json")
     orig_path = ManifestStaticFilesStorage.path
 
-    def path(self, name):
-        # type: (Any, str) -> str
+    def path(self: Any, name: str) -> str:
         if name == ManifestStaticFilesStorage.manifest_name:
             return name
         return orig_path(self, name)

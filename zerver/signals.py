@@ -12,8 +12,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.models import UserProfile
 
-def get_device_browser(user_agent):
-    # type: (str) -> Optional[str]
+def get_device_browser(user_agent: str) -> Optional[str]:
     user_agent = user_agent.lower()
     if "zulip" in user_agent:
         return "Zulip"
@@ -35,8 +34,7 @@ def get_device_browser(user_agent):
         return None
 
 
-def get_device_os(user_agent):
-    # type: (str) -> Optional[str]
+def get_device_os(user_agent: str) -> Optional[str]:
     user_agent = user_agent.lower()
     if "windows" in user_agent:
         return "Windows"
@@ -55,9 +53,7 @@ def get_device_os(user_agent):
 
 
 @receiver(user_logged_in, dispatch_uid="only_on_login")
-def email_on_new_login(sender, user, request, **kwargs):
-    # type: (Any, UserProfile, Any, **Any) -> None
-
+def email_on_new_login(sender: Any, user: UserProfile, request: Any, **kwargs: Any) -> None:
     # We import here to minimize the dependencies of this module,
     # since it runs as part of `manage.py` initialization
     from zerver.context_processors import common_context

@@ -30,8 +30,7 @@ from zerver.models import Realm, flush_per_request_caches, get_realm
 
 logger = logging.getLogger('zulip.requests')
 
-def record_request_stop_data(log_data):
-    # type: (MutableMapping[str, Any]) -> None
+def record_request_stop_data(log_data: MutableMapping[str, Any]) -> None:
     log_data['time_stopped'] = time.time()
     log_data['remote_cache_time_stopped'] = get_remote_cache_time()
     log_data['remote_cache_requests_stopped'] = get_remote_cache_requests()
@@ -40,12 +39,10 @@ def record_request_stop_data(log_data):
     if settings.PROFILE_ALL_REQUESTS:
         log_data["prof"].disable()
 
-def async_request_stop(request):
-    # type: (HttpRequest) -> None
+def async_request_stop(request: HttpRequest) -> None:
     record_request_stop_data(request._log_data)
 
-def record_request_restart_data(log_data):
-    # type: (MutableMapping[str, Any]) -> None
+def record_request_restart_data(log_data: MutableMapping[str, Any]) -> None:
     if settings.PROFILE_ALL_REQUESTS:
         log_data["prof"].enable()
     log_data['time_restarted'] = time.time()
@@ -54,16 +51,14 @@ def record_request_restart_data(log_data):
     log_data['bugdown_time_restarted'] = get_bugdown_time()
     log_data['bugdown_requests_restarted'] = get_bugdown_requests()
 
-def async_request_restart(request):
-    # type: (HttpRequest) -> None
+def async_request_restart(request: HttpRequest) -> None:
     if "time_restarted" in request._log_data:
         # Don't destroy data when being called from
         # finish_current_handler
         return
     record_request_restart_data(request._log_data)
 
-def record_request_start_data(log_data):
-    # type: (MutableMapping[str, Any]) -> None
+def record_request_start_data(log_data: MutableMapping[str, Any]) -> None:
     if settings.PROFILE_ALL_REQUESTS:
         log_data["prof"] = cProfile.Profile()
         log_data["prof"].enable()
@@ -74,18 +69,15 @@ def record_request_start_data(log_data):
     log_data['bugdown_time_start'] = get_bugdown_time()
     log_data['bugdown_requests_start'] = get_bugdown_requests()
 
-def timedelta_ms(timedelta):
-    # type: (float) -> float
+def timedelta_ms(timedelta: float) -> float:
     return timedelta * 1000
 
-def format_timedelta(timedelta):
-    # type: (float) -> str
+def format_timedelta(timedelta: float) -> str:
     if (timedelta >= 1):
         return "%.1fs" % (timedelta)
     return "%.0fms" % (timedelta_ms(timedelta),)
 
-def is_slow_query(time_delta, path):
-    # type: (float, Text) -> bool
+def is_slow_query(time_delta: float, path: Text) -> bool:
     if time_delta < 1.2:
         return False
     is_exempt = \
@@ -232,16 +224,15 @@ class LogRequests(MiddlewareMixin):
     # We primarily are doing logging using the process_view hook, but
     # for some views, process_view isn't run, so we call the start
     # method here too
-    def process_request(self, request):
-        # type: (HttpRequest) -> None
+    def process_request(self, request: HttpRequest) -> None:
         maybe_tracemalloc_listen()
         request._log_data = dict()
         record_request_start_data(request._log_data)
         if connection.connection is not None:
             connection.connection.queries = []
 
-    def process_view(self, request, view_func, args, kwargs):
-        # type: (HttpRequest, Callable[..., HttpResponse], List[str], Dict[str, Any]) -> None
+    def process_view(self, request: HttpRequest, view_func: Callable[..., HttpResponse],
+                     args: List[str], kwargs: Dict[str, Any]) -> None:
         # process_request was already run; we save the initialization
         # time (i.e. the time between receiving the request and
         # figuring out which view function to call, which is primarily
@@ -253,8 +244,8 @@ class LogRequests(MiddlewareMixin):
         if connection.connection is not None:
             connection.connection.queries = []
 
-    def process_response(self, request, response):
-        # type: (HttpRequest, StreamingHttpResponse) -> StreamingHttpResponse
+    def process_response(self, request: HttpRequest,
+                         response: StreamingHttpResponse) -> StreamingHttpResponse:
         # The reverse proxy might have sent us the real external IP
         remote_ip = request.META.get('HTTP_X_REAL_IP')
         if remote_ip is None:
@@ -283,8 +274,7 @@ class LogRequests(MiddlewareMixin):
         return response
 
 class JsonErrorHandler(MiddlewareMixin):
-    def process_exception(self, request, exception):
-        # type: (HttpRequest, Exception) -> Optional[HttpResponse]
+    def process_exception(self, request: HttpRequest, exception: Exception) -> Optional[HttpResponse]:
         if isinstance(exception, JsonableError):
             return json_response_from_error(exception)
         if request.error_format == "JSON":
@@ -293,12 +283,11 @@ class JsonErrorHandler(MiddlewareMixin):
         return None
 
 class TagRequests(MiddlewareMixin):
-    def process_view(self, request, view_func, args, kwargs):
-        # type: (HttpRequest, Callable[..., HttpResponse], List[str], Dict[str, Any]) -> None
+    def process_view(self, request: HttpRequest, view_func: Callable[..., HttpResponse],
+                     args: List[str], kwargs: Dict[str, Any]) -> None:
         self.process_request(request)
 
-    def process_request(self, request):
-        # type: (HttpRequest) -> None
+    def process_request(self, request: HttpRequest) -> None:
         if request.path.startswith("/api/") or request.path.startswith("/json/"):
             request.error_format = "JSON"
         else:
@@ -309,25 +298,21 @@ class CsrfFailureError(JsonableError):
     code = ErrorCode.CSRF_FAILED
     data_fields = ['reason']
 
-    def __init__(self, reason):
-        # type: (Text) -> None
+    def __init__(self, reason: Text) -> None:
         self.reason = reason  # type: Text
 
     @staticmethod
-    def msg_format():
-        # type: () -> Text
+    def msg_format() -> Text:
         return _("CSRF Error: {reason}")
 
-def csrf_failure(request, reason=""):
-    # type: (HttpRequest, Text) -> HttpResponse
+def csrf_failure(request: HttpRequest, reason: Text="") -> HttpResponse:
     if request.error_format == "JSON":
         return json_response_from_error(CsrfFailureError(reason))
     else:
         return html_csrf_failure(request, reason)
 
 class RateLimitMiddleware(MiddlewareMixin):
-    def process_response(self, request, response):
-        # type: (HttpRequest, HttpResponse) -> HttpResponse
+    def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:
         if not settings.RATE_LIMITING:
             return response
 
@@ -342,8 +327,7 @@ class RateLimitMiddleware(MiddlewareMixin):
                 response['X-RateLimit-Remaining'] = str(request._ratelimit_remaining)
         return response
 
-    def process_exception(self, request, exception):
-        # type: (HttpRequest, Exception) -> Optional[HttpResponse]
+    def process_exception(self, request: HttpRequest, exception: Exception) -> Optional[HttpResponse]:
         if isinstance(exception, RateLimited):
             resp = json_error(
                 _("API usage exceeded rate limit"),
@@ -355,16 +339,14 @@ class RateLimitMiddleware(MiddlewareMixin):
         return None
 
 class FlushDisplayRecipientCache(MiddlewareMixin):
-    def process_response(self, request, response):
-        # type: (HttpRequest, HttpResponse) -> HttpResponse
+    def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:
         # We flush the per-request caches after every request, so they
         # are not shared at all between requests.
         flush_per_request_caches()
         return response
 
 class SessionHostDomainMiddleware(SessionMiddleware):
-    def process_response(self, request, response):
-        # type: (HttpRequest, HttpResponse) -> HttpResponse
+    def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:
         try:
             request.get_host()
         except DisallowedHost:
@@ -431,8 +413,7 @@ class SetRemoteAddrFromForwardedFor(MiddlewareMixin):
     is set in the request, then it has properly been set by NGINX.
     Therefore HTTP_X_FORWARDED_FOR's value is trusted.
     """
-    def process_request(self, request):
-        # type: (HttpRequest) -> None
+    def process_request(self, request: HttpRequest) -> None:
         try:
             real_ip = request.META['HTTP_X_FORWARDED_FOR']
         except KeyError:

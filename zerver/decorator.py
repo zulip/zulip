@@ -58,27 +58,25 @@ class _RespondAsynchronously:
 # mode.
 RespondAsynchronously = _RespondAsynchronously()
 
-def asynchronous(method):
-    # type: (Callable[..., Union[HttpResponse, _RespondAsynchronously]]) -> Callable[..., Union[HttpResponse, _RespondAsynchronously]]
+AsyncWrapperT = Callable[..., Union[HttpResponse, _RespondAsynchronously]]
+def asynchronous(method: Callable[..., Union[HttpResponse, _RespondAsynchronously]]) -> AsyncWrapperT:
     # TODO: this should be the correct annotation when mypy gets fixed: type:
     #   (Callable[[HttpRequest, base.BaseHandler, Sequence[Any], Dict[str, Any]],
     #     Union[HttpResponse, _RespondAsynchronously]]) ->
     #   Callable[[HttpRequest, Sequence[Any], Dict[str, Any]], Union[HttpResponse, _RespondAsynchronously]]
     # TODO: see https://github.com/python/mypy/issues/1655
     @wraps(method)
-    def wrapper(request, *args, **kwargs):
-        # type: (HttpRequest, *Any, **Any) -> Union[HttpResponse, _RespondAsynchronously]
+    def wrapper(request: HttpRequest, *args: Any,
+                **kwargs: Any) -> Union[HttpResponse, _RespondAsynchronously]:
         return method(request, handler=request._tornado_handler, *args, **kwargs)
     if getattr(method, 'csrf_exempt', False):
         wrapper.csrf_exempt = True  # type: ignore # https://github.com/JukkaL/mypy/issues/1170
     return wrapper
 
-def cachify(method):
-    # type: (Callable[..., ReturnT]) -> Callable[..., ReturnT]
+def cachify(method: Callable[..., ReturnT]) -> Callable[..., ReturnT]:
     dct = {}  # type: Dict[Tuple[Any, ...], ReturnT]
 
-    def cache_wrapper(*args):
-        # type: (*Any) -> ReturnT
+    def cache_wrapper(*args: Any) -> ReturnT:
         tup = tuple(args)
         if tup in dct:
             return dct[tup]
@@ -87,8 +85,8 @@ def cachify(method):
         return result
     return cache_wrapper
 
-def update_user_activity(request, user_profile, query):
-    # type: (HttpRequest, UserProfile, Optional[str]) -> None
+def update_user_activity(request: HttpRequest, user_profile: UserProfile,
+                         query: Optional[str]) -> None:
     # update_active_status also pushes to rabbitmq, and it seems
     # redundant to log that here as well.
     if request.META["PATH_INFO"] == '/json/users/me/presence':
@@ -108,11 +106,9 @@ def update_user_activity(request, user_profile, query):
     queue_json_publish("user_activity", event, lambda event: None)
 
 # Based on django.views.decorators.http.require_http_methods
-def require_post(func):
-    # type: (ViewFuncT) -> ViewFuncT
+def require_post(func: ViewFuncT) -> ViewFuncT:
     @wraps(func)
-    def wrapper(request, *args, **kwargs):
-        # type: (HttpRequest, *Any, **Any) -> HttpResponse
+    def wrapper(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         if (request.method != "POST" and
             not (request.method == "SOCKET" and
                  request.META['zulip.emulated_method'] == "POST")):
@@ -126,11 +122,9 @@ def require_post(func):
         return func(request, *args, **kwargs)
     return wrapper  # type: ignore # https://github.com/python/mypy/issues/1927
 
-def require_realm_admin(func):
-    # type: (ViewFuncT) -> ViewFuncT
+def require_realm_admin(func: ViewFuncT) -> ViewFuncT:
     @wraps(func)
-    def wrapper(request, user_profile, *args, **kwargs):
-        # type: (HttpRequest, UserProfile, *Any, **Any) -> HttpResponse
+    def wrapper(request: HttpRequest, user_profile: UserProfile, *args: Any, **kwargs: Any) -> HttpResponse:
         if not user_profile.is_realm_admin:
             raise JsonableError(_("Must be a realm administrator"))
         return func(request, user_profile, *args, **kwargs)
@@ -138,8 +132,7 @@ def require_realm_admin(func):
 
 from zerver.lib.user_agent import parse_user_agent
 
-def get_client_name(request, is_browser_view):
-    # type: (HttpRequest, bool) -> Text
+def get_client_name(request: HttpRequest, is_browser_view: bool) -> Text:
     # If the API request specified a client in the request content,
     # that has priority.  Otherwise, extract the client from the
     # User-Agent.
@@ -184,19 +177,16 @@ class InvalidZulipServerError(JsonableError):
     code = ErrorCode.INVALID_ZULIP_SERVER
     data_fields = ['role']
 
-    def __init__(self, role):
-        # type: (Text) -> None
+    def __init__(self, role: Text) -> None:
         self.role = role  # type: Text
 
     @staticmethod
-    def msg_format():
-        # type: () -> Text
+    def msg_format() -> Text:
         return "Zulip server auth failure: {role} is not registered"
 
 class InvalidZulipServerKeyError(JsonableError):
     @staticmethod
-    def msg_format():
-        # type: () -> Text
+    def msg_format() -> Text:
         return "Zulip server auth failure: key does not match role {role}"
 
 def validate_api_key(request, role, api_key, is_webhook=False,
@@ -233,8 +223,7 @@ def validate_api_key(request, role, api_key, is_webhook=False,
 
     return user_profile
 
-def validate_account_and_subdomain(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> None
+def validate_account_and_subdomain(request: HttpRequest, user_profile: UserProfile) -> None:
     if not user_profile.is_active:
         raise JsonableError(_("Account not active"))
 
@@ -255,8 +244,7 @@ def validate_account_and_subdomain(request, user_profile):
             user_profile.email, user_profile.realm.subdomain, get_subdomain(request)))
         raise JsonableError(_("Account is not associated with this subdomain"))
 
-def access_user_by_api_key(request, api_key, email=None):
-    # type: (HttpRequest, Text, Optional[Text]) -> UserProfile
+def access_user_by_api_key(request: HttpRequest, api_key: Text, email: Optional[Text]=None) -> UserProfile:
     try:
         user_profile = get_user_profile_by_api_key(api_key)
     except UserProfile.DoesNotExist:
@@ -272,12 +260,11 @@ def access_user_by_api_key(request, api_key, email=None):
     return user_profile
 
 # Use this for webhook views that don't get an email passed in.
-def api_key_only_webhook_view(client_name):
-    # type: (Text) ->  Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]
+WrappedViewFuncT = Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]
+def api_key_only_webhook_view(client_name: Text) -> WrappedViewFuncT:
     # TODO The typing here could be improved by using the Extended Callable types:
     # https://mypy.readthedocs.io/en/latest/kinds_of_types.html#extended-callable-types
-    def _wrapped_view_func(view_func):
-        # type: (Callable[..., HttpResponse]) -> Callable[..., HttpResponse]
+    def _wrapped_view_func(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
         @csrf_exempt
         @has_request_variables
         @wraps(view_func)
@@ -341,18 +328,16 @@ def redirect_to_login(next, login_url=None,
     return HttpResponseRedirect(urllib.parse.urlunparse(login_url_parts))
 
 # From Django 1.8
-def user_passes_test(test_func, login_url=None, redirect_field_name=REDIRECT_FIELD_NAME):
-    # type: (Callable[[HttpResponse], bool], Optional[Text], Text) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]
+def user_passes_test(test_func: Callable[[HttpResponse], bool], login_url: Optional[Text]=None,
+                     redirect_field_name: Text=REDIRECT_FIELD_NAME) -> WrappedViewFuncT:
     """
     Decorator for views that checks that the user passes the given test,
     redirecting to the log-in page if necessary. The test should be a callable
     that takes the user object and returns True if the user passes.
     """
-    def decorator(view_func):
-        # type: (Callable[..., HttpResponse]) -> Callable[..., HttpResponse]
+    def decorator(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
         @wraps(view_func, assigned=available_attrs(view_func))
-        def _wrapped_view(request, *args, **kwargs):
-            # type: (HttpRequest, *Any, **Any) -> HttpResponse
+        def _wrapped_view(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
             if test_func(request):
                 return view_func(request, *args, **kwargs)
             path = request.build_absolute_uri()
@@ -369,8 +354,7 @@ def user_passes_test(test_func, login_url=None, redirect_field_name=REDIRECT_FIE
         return _wrapped_view
     return decorator
 
-def logged_in_and_active(request):
-    # type: (HttpRequest) -> bool
+def logged_in_and_active(request: HttpRequest) -> bool:
     if not request.user.is_authenticated:
         return False
     if not request.user.is_active:
@@ -379,8 +363,7 @@ def logged_in_and_active(request):
         return False
     return user_matches_subdomain(get_subdomain(request), request.user)
 
-def do_login(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> None
+def do_login(request: HttpRequest, user_profile: UserProfile) -> None:
     """Creates a session, logging in the user, using the Django method,
     and also adds helpful data needed by our server logs.
     """
@@ -388,31 +371,25 @@ def do_login(request, user_profile):
     request._email = user_profile.email
     process_client(request, user_profile, is_browser_view=True)
 
-def log_view_func(view_func):
-    # type: (ViewFuncT) -> ViewFuncT
+def log_view_func(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
-    def _wrapped_view_func(request, *args, **kwargs):
-        # type: (HttpRequest, *Any, **Any) -> HttpResponse
+    def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         request._query = view_func.__name__
         return view_func(request, *args, **kwargs)
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
-def add_logging_data(view_func):
-    # type: (ViewFuncT) -> ViewFuncT
+def add_logging_data(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
-    def _wrapped_view_func(request, *args, **kwargs):
-        # type: (HttpRequest, *Any, **Any) -> HttpResponse
+    def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         request._email = request.user.email
         process_client(request, request.user, is_browser_view=True,
                        query=view_func.__name__)
         return rate_limit()(view_func)(request, *args, **kwargs)
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
-def human_users_only(view_func):
-    # type: (ViewFuncT) -> ViewFuncT
+def human_users_only(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
-    def _wrapped_view_func(request, *args, **kwargs):
-        # type: (HttpRequest, *Any, **Any) -> HttpResponse
+    def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         if request.user.is_bot:
             return json_error(_("This endpoint does not accept bot requests."))
         return view_func(request, *args, **kwargs)
@@ -433,12 +410,10 @@ def zulip_login_required(function=None,
         return actual_decorator(add_logging_data(function))
     return actual_decorator
 
-def require_server_admin(view_func):
-    # type: (ViewFuncT) -> ViewFuncT
+def require_server_admin(view_func: ViewFuncT) -> ViewFuncT:
     @zulip_login_required
     @wraps(view_func)
-    def _wrapped_view_func(request, *args, **kwargs):
-        # type: (HttpRequest, *Any, **Any) -> HttpResponse
+    def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         if not request.user.is_staff:
             return HttpResponseRedirect(settings.HOME_NOT_LOGGED_IN)
 
@@ -449,10 +424,8 @@ def require_server_admin(view_func):
 # user_profile to the view function's arguments list, since we have to
 # look it up anyway.  It is deprecated in favor on the REST API
 # versions.
-def authenticated_api_view(is_webhook=False):
-    # type: (bool) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]
-    def _wrapped_view_func(view_func):
-        # type: (Callable[..., HttpResponse]) -> Callable[..., HttpResponse]
+def authenticated_api_view(is_webhook: bool=False) -> WrappedViewFuncT:
+    def _wrapped_view_func(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
         @csrf_exempt
         @require_post
         @has_request_variables
@@ -474,14 +447,11 @@ def authenticated_api_view(is_webhook=False):
 
 # A more REST-y authentication decorator, using, in particular, HTTP Basic
 # authentication.
-def authenticated_rest_api_view(is_webhook=False):
-    # type: (bool) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]
-    def _wrapped_view_func(view_func):
-        # type: (Callable[..., HttpResponse]) -> Callable[..., HttpResponse]
+def authenticated_rest_api_view(is_webhook: bool=False) -> WrappedViewFuncT:
+    def _wrapped_view_func(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
         @csrf_exempt
         @wraps(view_func)
-        def _wrapped_func_arguments(request, *args, **kwargs):
-            # type: (HttpRequest, *Any, **Any) -> HttpResponse
+        def _wrapped_func_arguments(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
             # First try block attempts to get the credentials we need to do authentication
             try:
                 # Grab the base64-encoded authentication string, decode it, and split it into
@@ -507,11 +477,9 @@ def authenticated_rest_api_view(is_webhook=False):
         return _wrapped_func_arguments
     return _wrapped_view_func
 
-def process_as_post(view_func):
-    # type: (ViewFuncT) -> ViewFuncT
+def process_as_post(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
-    def _wrapped_view_func(request, *args, **kwargs):
-        # type: (HttpRequest, *Any, **Any) -> HttpResponse
+    def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         # Adapted from django/http/__init__.py.
         # So by default Django doesn't populate request.POST for anything besides
         # POST requests. We want this dict populated for PATCH/PUT, so we have to
@@ -539,8 +507,9 @@ def process_as_post(view_func):
 
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
-def authenticate_log_and_execute_json(request, view_func, *args, **kwargs):
-    # type: (HttpRequest, Callable[..., HttpResponse], *Any, **Any) -> HttpResponse
+def authenticate_log_and_execute_json(request: HttpRequest,
+                                      view_func: Callable[..., HttpResponse],
+                                      *args: Any, **kwargs: Any) -> HttpResponse:
     if not request.user.is_authenticated:
         return json_error(_("Not logged in"), status=401)
     user_profile = request.user
@@ -557,8 +526,7 @@ def authenticate_log_and_execute_json(request, view_func, *args, **kwargs):
 # Checks if the request is a POST request and that the user is logged
 # in.  If not, return an error (the @login_required behavior of
 # redirecting to a login page doesn't make sense for json views)
-def authenticated_json_post_view(view_func):
-    # type: (ViewFuncT) -> ViewFuncT
+def authenticated_json_post_view(view_func: ViewFuncT) -> ViewFuncT:
     @require_post
     @has_request_variables
     @wraps(view_func)
@@ -568,8 +536,7 @@ def authenticated_json_post_view(view_func):
         return authenticate_log_and_execute_json(request, view_func, *args, **kwargs)
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
-def authenticated_json_view(view_func):
-    # type: (ViewFuncT) -> ViewFuncT
+def authenticated_json_view(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
     def _wrapped_view_func(request,
                            *args, **kwargs):
@@ -577,20 +544,17 @@ def authenticated_json_view(view_func):
         return authenticate_log_and_execute_json(request, view_func, *args, **kwargs)
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
-def is_local_addr(addr):
-    # type: (Text) -> bool
+def is_local_addr(addr: Text) -> bool:
     return addr in ('127.0.0.1', '::1')
 
 # These views are used by the main Django server to notify the Tornado server
 # of events.  We protect them from the outside world by checking a shared
 # secret, and also the originating IP (for now).
-def authenticate_notify(request):
-    # type: (HttpRequest) -> bool
+def authenticate_notify(request: HttpRequest) -> bool:
     return (is_local_addr(request.META['REMOTE_ADDR']) and
             request.POST.get('secret') == settings.SHARED_SECRET)
 
-def client_is_exempt_from_rate_limiting(request):
-    # type: (HttpRequest) -> bool
+def client_is_exempt_from_rate_limiting(request: HttpRequest) -> bool:
 
     # Don't rate limit requests from Django that come from our own servers,
     # and don't rate-limit dev instances
@@ -598,20 +562,17 @@ def client_is_exempt_from_rate_limiting(request):
             (is_local_addr(request.META['REMOTE_ADDR']) or
              settings.DEBUG_RATE_LIMITING))
 
-def internal_notify_view(is_tornado_view):
-    # type: (bool) ->  Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]
+def internal_notify_view(is_tornado_view: bool) -> WrappedViewFuncT:
     # The typing here could be improved by using the Extended Callable types:
     # https://mypy.readthedocs.io/en/latest/kinds_of_types.html#extended-callable-types
     """Used for situations where something running on the Zulip server
     needs to make a request to the (other) Django/Tornado processes running on
     the server."""
-    def _wrapped_view_func(view_func):
-        # type: (Callable[..., HttpResponse]) -> Callable[..., HttpResponse]
+    def _wrapped_view_func(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
         @csrf_exempt
         @require_post
         @wraps(view_func)
-        def _wrapped_func_arguments(request, *args, **kwargs):
-            # type: (HttpRequest, *Any, **Any) -> HttpResponse
+        def _wrapped_func_arguments(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
             if not authenticate_notify(request):
                 return json_error(_('Access denied'), status=403)
             is_tornado_request = hasattr(request, '_tornado_handler')
@@ -627,52 +588,46 @@ def internal_notify_view(is_tornado_view):
     return _wrapped_view_func
 
 # Converter functions for use with has_request_variables
-def to_non_negative_int(s):
-    # type: (Text) -> int
+def to_non_negative_int(s: Text) -> int:
     x = int(s)
     if x < 0:
         raise ValueError("argument is negative")
     return x
 
 
-def to_not_negative_int_or_none(s):
-    # type: (Text) -> Optional[int]
+def to_not_negative_int_or_none(s: Text) -> Optional[int]:
     if s:
         return to_non_negative_int(s)
     return None
 
 
-def flexible_boolean(boolean):
-    # type: (Text) -> bool
+def flexible_boolean(boolean: Text) -> bool:
     """Returns True for any of "1", "true", or "True".  Returns False otherwise."""
     if boolean in ("1", "true", "True"):
         return True
     else:
         return False
 
-def to_utc_datetime(timestamp):
-    # type: (Text) -> datetime.datetime
+def to_utc_datetime(timestamp: Text) -> datetime.datetime:
     return timestamp_to_datetime(float(timestamp))
 
+WrapperT = Callable[[Callable[..., ReturnT]], Callable[..., ReturnT]]
 def statsd_increment(counter, val=1):
     # type: (Text, int) -> Callable[[Callable[..., ReturnT]], Callable[..., ReturnT]]
     """Increments a statsd counter on completion of the
     decorated function.
 
     Pass the name of the counter to this decorator-returning function."""
-    def wrapper(func):
-        # type: (Callable[..., ReturnT]) -> Callable[..., ReturnT]
+    def wrapper(func: Callable[..., ReturnT]) -> Callable[..., ReturnT]:
         @wraps(func)
-        def wrapped_func(*args, **kwargs):
-            # type: (*Any, **Any) -> ReturnT
+        def wrapped_func(*args: Any, **kwargs: Any) -> ReturnT:
             ret = func(*args, **kwargs)
             statsd.incr(counter, val)
             return ret
         return wrapped_func
     return wrapper
 
-def rate_limit_user(request, user, domain):
-    # type: (HttpRequest, UserProfile, Text) -> None
+def rate_limit_user(request: HttpRequest, user: UserProfile, domain: Text) -> None:
     """Returns whether or not a user was rate limited. Will raise a RateLimited exception
     if the user has been rate limited, otherwise returns and modifies request to contain
     the rate limit information"""
@@ -693,17 +648,14 @@ def rate_limit_user(request, user, domain):
     request._ratelimit_remaining = calls_remaining
     request._ratelimit_secs_to_freedom = time_reset
 
-def rate_limit(domain='all'):
-    # type: (Text) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]
+def rate_limit(domain: Text='all') -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]:
     """Rate-limits a view. Takes an optional 'domain' param if you wish to
     rate limit different types of API calls independently.
 
     Returns a decorator"""
-    def wrapper(func):
-        # type: (Callable[..., HttpResponse]) -> Callable[..., HttpResponse]
+    def wrapper(func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
         @wraps(func)
-        def wrapped_func(request, *args, **kwargs):
-            # type: (HttpRequest, *Any, **Any) -> HttpResponse
+        def wrapped_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
 
             # It is really tempting to not even wrap our original function
             # when settings.RATE_LIMITING is False, but it would make

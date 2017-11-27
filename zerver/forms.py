@@ -42,8 +42,7 @@ WRONG_SUBDOMAIN_ERROR = "Your Zulip account is not a member of the " + \
                         "organization associated with this subdomain.  " + \
                         "Please contact %s with any questions!" % (FromAddress.SUPPORT,)
 
-def email_is_not_mit_mailing_list(email):
-    # type: (Text) -> None
+def email_is_not_mit_mailing_list(email: Text) -> None:
     """Prevent MIT mailing lists from signing up for Zulip"""
     if "@mit.edu" in email:
         username = email.rsplit("@", 1)[0]
@@ -56,8 +55,7 @@ def email_is_not_mit_mailing_list(email):
             else:
                 raise AssertionError("Unexpected DNS error")
 
-def check_subdomain_available(subdomain):
-    # type: (str) -> None
+def check_subdomain_available(subdomain: str) -> None:
     error_strings = {
         'too short': _("Subdomain needs to have length 3 or greater."),
         'extremal dash': _("Subdomain cannot start or end with a '-'."),
@@ -86,9 +84,7 @@ class RegistrationForm(forms.Form):
     password = forms.CharField(widget=forms.PasswordInput, max_length=MAX_PASSWORD_LENGTH)
     realm_subdomain = forms.CharField(max_length=Realm.MAX_REALM_SUBDOMAIN_LENGTH, required=False)
 
-    def __init__(self, *args, **kwargs):
-        # type: (*Any, **Any) -> None
-
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         # Since the superclass doesn't except random extra kwargs, we
         # remove it from the kwargs dict before initializing.
         self.realm_creation = kwargs['realm_creation']
@@ -101,15 +97,13 @@ class RegistrationForm(forms.Form):
             max_length=Realm.MAX_REALM_NAME_LENGTH,
             required=self.realm_creation)
 
-    def clean_full_name(self):
-        # type: () -> Text
+    def clean_full_name(self) -> Text:
         try:
             return check_full_name(self.cleaned_data['full_name'])
         except JsonableError as e:
             raise ValidationError(e.msg)
 
-    def clean_realm_subdomain(self):
-        # type: () -> str
+    def clean_realm_subdomain(self) -> str:
         if not self.realm_creation:
             # This field is only used if realm_creation
             return ""
@@ -127,14 +121,12 @@ class ToSForm(forms.Form):
 class HomepageForm(forms.Form):
     email = forms.EmailField()
 
-    def __init__(self, *args, **kwargs):
-        # type: (*Any, **Any) -> None
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.realm = kwargs.pop('realm', None)
         self.from_multiuse_invite = kwargs.pop('from_multiuse_invite', False)
         super().__init__(*args, **kwargs)
 
-    def clean_email(self):
-        # type: () -> str
+    def clean_email(self) -> str:
         """Returns the email if and only if the user's email address is
         allowed to join the realm they are trying to join."""
         email = self.cleaned_data['email']
@@ -166,8 +158,7 @@ class HomepageForm(forms.Form):
 
         return email
 
-def email_is_not_disposable(email):
-    # type: (Text) -> None
+def email_is_not_disposable(email: Text) -> None:
     if is_disposable_domain(email_to_domain(email)):
         raise ValidationError(_("Please use your real email address."))
 
@@ -177,8 +168,7 @@ class RealmCreationForm(forms.Form):
                                          email_is_not_disposable])
 
 class LoggingSetPasswordForm(SetPasswordForm):
-    def save(self, commit=True):
-        # type: (bool) -> UserProfile
+    def save(self, commit: bool=True) -> UserProfile:
         do_change_password(self.user, self.cleaned_data['new_password1'],
                            commit=commit)
         return self.user
@@ -251,8 +241,7 @@ class CreateUserForm(forms.Form):
     email = forms.EmailField()
 
 class OurAuthenticationForm(AuthenticationForm):
-    def clean(self):
-        # type: () -> Dict[str, Any]
+    def clean(self) -> Dict[str, Any]:
         username = self.cleaned_data.get('username')
         password = self.cleaned_data.get('password')
 
@@ -300,16 +289,14 @@ class OurAuthenticationForm(AuthenticationForm):
         return field_name
 
 class MultiEmailField(forms.Field):
-    def to_python(self, emails):
-        # type: (Text) -> List[Text]
+    def to_python(self, emails: Text) -> List[Text]:
         """Normalize data to a list of strings."""
         if not emails:
             return []
 
         return [email.strip() for email in emails.split(',')]
 
-    def validate(self, emails):
-        # type: (List[Text]) -> None
+    def validate(self, emails: List[Text]) -> None:
         """Check if value consists only of valid emails."""
         super().validate(emails)
         for email in emails:
@@ -319,8 +306,7 @@ class FindMyTeamForm(forms.Form):
     emails = MultiEmailField(
         help_text=_("Add up to 10 comma-separated email addresses."))
 
-    def clean_emails(self):
-        # type: () -> List[Text]
+    def clean_emails(self) -> List[Text]:
         emails = self.cleaned_data['emails']
         if len(emails) > 10:
             raise forms.ValidationError(_("Please enter at most 10 emails."))

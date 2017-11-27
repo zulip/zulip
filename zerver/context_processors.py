@@ -22,8 +22,7 @@ from zerver.lib.realm_icon import get_realm_icon_url
 
 from version import ZULIP_VERSION
 
-def common_context(user):
-    # type: (UserProfile) -> Dict[str, Any]
+def common_context(user: UserProfile) -> Dict[str, Any]:
     """Common context used for things like outgoing emails that don't
     have a request.
     """
@@ -34,15 +33,13 @@ def common_context(user):
         'external_host': settings.EXTERNAL_HOST,
     }
 
-def get_realm_from_request(request):
-    # type: (HttpRequest) -> Optional[Realm]
+def get_realm_from_request(request: HttpRequest) -> Optional[Realm]:
     if hasattr(request, "user") and hasattr(request.user, "realm"):
         return request.user.realm
     subdomain = get_subdomain(request)
     return get_realm(subdomain)
 
-def zulip_default_context(request):
-    # type: (HttpRequest) -> Dict[str, Any]
+def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
     """Context available to all Zulip Jinja2 templates that have a request
     passed in.  Designed to provide the long list of variables at the
     bottom of this function in a wide range of situations: logged-in
@@ -141,8 +138,7 @@ def zulip_default_context(request):
     }
 
 
-def add_metrics(request):
-    # type: (HttpRequest) -> Dict[str, str]
+def add_metrics(request: HttpRequest) -> Dict[str, str]:
     return {
         'dropboxAppKey': settings.DROPBOX_APP_KEY
     }

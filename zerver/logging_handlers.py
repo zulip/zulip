@@ -13,8 +13,7 @@ from django.views.debug import ExceptionReporter, get_exception_reporter_filter
 
 from zerver.lib.queue import queue_json_publish
 
-def add_request_metadata(report, request):
-    # type: (Dict[str, Any], HttpRequest) -> None
+def add_request_metadata(report: Dict[str, Any], request: HttpRequest) -> None:
     report['path'] = request.path
     report['method'] = request.method
     report['remote_addr'] = request.META.get('REMOTE_ADDR', None),
@@ -60,12 +59,10 @@ class AdminZulipHandler(logging.Handler):
 
     # adapted in part from django/utils/log.py
 
-    def __init__(self):
-        # type: () -> None
+    def __init__(self) -> None:
         logging.Handler.__init__(self)
 
-    def emit(self, record):
-        # type: (logging.LogRecord) -> None
+    def emit(self, record: logging.LogRecord) -> None:
         try:
             if record.exc_info:
                 stack_trace = ''.join(traceback.format_exception(*record.exc_info))  # type: Optional[str]
