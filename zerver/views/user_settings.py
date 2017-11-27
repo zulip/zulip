@@ -28,8 +28,7 @@ from zerver.models import UserProfile, Realm, name_changes_disabled, \
 from confirmation.models import get_object_from_key, render_confirmation_key_error, \
     ConfirmationKeyException, Confirmation
 
-def confirm_email_change(request, confirmation_key):
-    # type: (HttpRequest, str) -> HttpResponse
+def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpResponse:
     try:
         email_change_object = get_object_from_key(confirmation_key, Confirmation.EMAIL_CHANGE)
     except ConfirmationKeyException as exception:
@@ -207,8 +206,7 @@ def json_change_notify_settings(request, user_profile,
 
     return json_success(result)
 
-def set_avatar_backend(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
+def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     if len(request.FILES) != 1:
         return json_error(_("You must upload exactly one avatar."))
 
@@ -225,8 +223,7 @@ def set_avatar_backend(request, user_profile):
     )
     return json_success(json_result)
 
-def delete_avatar_backend(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
+def delete_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_GRAVATAR)
     gravatar_url = avatar_url(user_profile)
 
@@ -238,8 +235,7 @@ def delete_avatar_backend(request, user_profile):
 # We don't use @human_users_only here, because there are use cases for
 # a bot regenerating its own API key.
 @has_request_variables
-def regenerate_api_key(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
+def regenerate_api_key(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     do_regenerate_api_key(user_profile, user_profile)
     json_result = dict(
         api_key = user_profile.api_key

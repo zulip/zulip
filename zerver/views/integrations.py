@@ -17,8 +17,7 @@ from zerver.lib.subdomains import get_subdomain
 from zerver.models import Realm
 from zerver.templatetags.app_filters import render_markdown_path
 
-def add_api_uri_context(context, request):
-    # type: (Dict[str, Any], HttpRequest) -> None
+def add_api_uri_context(context: Dict[str, Any], request: HttpRequest) -> None:
     subdomain = get_subdomain(request)
     if (subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
             or not settings.ROOT_DOMAIN_LANDING_PAGE):
@@ -37,8 +36,7 @@ def add_api_uri_context(context, request):
     context["html_settings_links"] = html_settings_links
 
 class ApiURLView(TemplateView):
-    def get_context_data(self, **kwargs):
-        # type: (**Any) -> Dict[str, str]
+    def get_context_data(self, **kwargs: Any) -> Dict[str, str]:
         context = super().get_context_data(**kwargs)
         add_api_uri_context(context, self.request)
         return context
@@ -50,16 +48,14 @@ class APIView(ApiURLView):
 class MarkdownDirectoryView(ApiURLView):
     path_template = ""
 
-    def get_path(self, article):
-        # type: (str) -> str
+    def get_path(self, article: str) -> str:
         if article == "":
             article = "index"
         elif "/" in article:
             article = "missing"
         return self.path_template % (article,)
 
-    def get_context_data(self, **kwargs):
-        # type: (**Any) -> Dict[str, Any]
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         article = kwargs["article"]
         context = super().get_context_data()  # type: Dict[str, Any]
         path = self.get_path(article)
@@ -81,8 +77,7 @@ class MarkdownDirectoryView(ApiURLView):
         context["api_uri_context"] = api_uri_context
         return context
 
-    def get(self, request, article=""):
-        # type: (HttpRequest, str) -> HttpResponse
+    def get(self, request: HttpRequest, article: str="") -> HttpResponse:
         path = self.get_path(article)
         result = super().get(self, article=article)
         try:
@@ -95,8 +90,7 @@ class MarkdownDirectoryView(ApiURLView):
         return result
 
 
-def add_integrations_context(context):
-    # type: (Dict[str, Any]) -> None
+def add_integrations_context(context: Dict[str, Any]) -> None:
     alphabetical_sorted_categories = OrderedDict(sorted(CATEGORIES.items()))
     alphabetical_sorted_integration = OrderedDict(sorted(INTEGRATIONS.items()))
     context['categories_dict'] = alphabetical_sorted_categories
@@ -113,8 +107,7 @@ def add_integrations_context(context):
     context['subscriptions_html'] = subscriptions_html
 
 
-def add_context_for_single_integration(context, name, request):
-    # type: (Dict[str, Any], str, HttpRequest) -> None
+def add_context_for_single_integration(context: Dict[str, Any], name: str, request: HttpRequest) -> None:
     add_api_uri_context(context, request)
 
     if "html_settings_links" in context and context["html_settings_links"]:
@@ -131,16 +124,14 @@ def add_context_for_single_integration(context, name, request):
 class IntegrationView(ApiURLView):
     template_name = 'zerver/integrations/index.html'
 
-    def get_context_data(self, **kwargs):
-        # type: (**Any) -> Dict[str, Any]
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)  # type: Dict[str, Any]
         add_integrations_context(context)
         return context
 
 
 @has_request_variables
-def integration_doc(request, integration_name=REQ(default=None)):
-    # type: (HttpRequest, str) -> HttpResponse
+def integration_doc(request: HttpRequest, integration_name: str=REQ(default=None)) -> HttpResponse:
     try:
         integration = INTEGRATIONS[integration_name]
     except KeyError:
@@ -162,8 +153,7 @@ def integration_doc(request, integration_name=REQ(default=None)):
 
     return HttpResponse(doc_html_str)
 
-def api_endpoint_docs(request):
-    # type: (HttpRequest) -> HttpResponse
+def api_endpoint_docs(request: HttpRequest) -> HttpResponse:
     context = {}  # type: Dict[str, Any]
     add_api_uri_context(context, request)
 

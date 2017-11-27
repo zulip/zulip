@@ -52,13 +52,11 @@ class BadNarrowOperator(JsonableError):
     code = ErrorCode.BAD_NARROW
     data_fields = ['desc']
 
-    def __init__(self, desc):
-        # type: (str) -> None
+    def __init__(self, desc: str) -> None:
         self.desc = desc  # type: str
 
     @staticmethod
-    def msg_format():
-        # type: () -> str
+    def msg_format() -> str:
         return _('Invalid narrow operator: {desc}')
 
 # TODO: Should be Select, but sqlalchemy stubs are busted
@@ -90,14 +88,12 @@ class NarrowBuilder:
     #  * anything that would pull in additional rows, or information on
     #    other messages.
 
-    def __init__(self, user_profile, msg_id_column):
-        # type: (UserProfile, str) -> None
+    def __init__(self, user_profile: UserProfile, msg_id_column: str) -> None:
         self.user_profile = user_profile
         self.msg_id_column = msg_id_column
         self.user_realm = user_profile.realm
 
-    def add_term(self, query, term):
-        # type: (Query, Dict[str, Any]) -> Query
+    def add_term(self, query: Query, term: Dict[str, Any]) -> Query:
         """
         Extend the given query to one narrowed by the given term, and return the result.
 
@@ -130,16 +126,14 @@ class NarrowBuilder:
 
         return method(query, operand, maybe_negate)
 
-    def by_has(self, query, operand, maybe_negate):
-        # type: (Query, str, ConditionTransform) -> Query
+    def by_has(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
         if operand not in ['attachment', 'image', 'link']:
             raise BadNarrowOperator("unknown 'has' operand " + operand)
         col_name = 'has_' + operand
         cond = column(col_name)
         return query.where(maybe_negate(cond))
 
-    def by_in(self, query, operand, maybe_negate):
-        # type: (Query, str, ConditionTransform) -> Query
+    def by_in(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
         if operand == 'home':
             conditions = exclude_muting_conditions(self.user_profile, [])
             return query.where(and_(*conditions))
@@ -148,8 +142,7 @@ class NarrowBuilder:
 
         raise BadNarrowOperator("unknown 'in' operand " + operand)
 
-    def by_is(self, query, operand, maybe_negate):
-        # type: (Query, str, ConditionTransform) -> Query
+    def by_is(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
         if operand == 'private':
             # The `.select_from` method extends the query with a join.
             query = query.select_from(join(query.froms[0], table("zerver_recipient"),
@@ -177,8 +170,7 @@ class NarrowBuilder:
     _alphanum = frozenset(
         'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
 
-    def _pg_re_escape(self, pattern):
-        # type: (Text) -> Text
+    def _pg_re_escape(self, pattern: Text) -> Text:
         """
         Escape user input to place in a regex
 
@@ -197,8 +189,7 @@ class NarrowBuilder:
                     s[i] = '\\' + c
         return ''.join(s)
 
-    def by_stream(self, query, operand, maybe_negate):
-        # type: (Query, str, ConditionTransform) -> Query
+    def by_stream(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
         try:
             # Because you can see your own message history for
             # private streams you are no longer subscribed to, we
@@ -235,8 +226,7 @@ class NarrowBuilder:
         cond = column("recipient_id") == recipient.id
         return query.where(maybe_negate(cond))
 
-    def by_topic(self, query, operand, maybe_negate):
-        # type: (Query, str, ConditionTransform) -> Query
+    def by_topic(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
         if self.user_profile.realm.is_zephyr_mirror_realm:
             # MIT users expect narrowing to topic "foo" to also show messages to /^foo(.d)*$/
             # (foo, foo.d, foo.d.d, etc)
@@ -281,8 +271,7 @@ class NarrowBuilder:
         cond = func.upper(column("subject")) == func.upper(literal(operand))
         return query.where(maybe_negate(cond))
 
-    def by_sender(self, query, operand, maybe_negate):
-        # type: (Query, str, ConditionTransform) -> Query
+    def by_sender(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
         try:
             sender = get_user_including_cross_realm(operand, self.user_realm)
         except UserProfile.DoesNotExist:
@@ -291,17 +280,14 @@ class NarrowBuilder:
         cond = column("sender_id") == literal(sender.id)
         return query.where(maybe_negate(cond))
 
-    def by_near(self, query, operand, maybe_negate):
-        # type: (Query, str, ConditionTransform) -> Query
+    def by_near(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
         return query
 
-    def by_id(self, query, operand, maybe_negate):
-        # type: (Query, str, ConditionTransform) -> Query
+    def by_id(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
         cond = self.msg_id_column == literal(operand)
         return query.where(maybe_negate(cond))
 
-    def by_pm_with(self, query, operand, maybe_negate):
-        # type: (Query, str, ConditionTransform) -> Query
+    def by_pm_with(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
         if ',' in operand:
             # Huddle
             try:
@@ -335,8 +321,8 @@ class NarrowBuilder:
                             column("recipient_id") == narrow_recipient.id))
             return query.where(maybe_negate(cond))
 
-    def by_group_pm_with(self, query, operand, maybe_negate):
-        # type: (Query, str, ConditionTransform) -> Query
+    def by_group_pm_with(self, query: Query, operand: str,
+                         maybe_negate: ConditionTransform) -> Query:
         try:
             narrow_profile = get_user_including_cross_realm(operand, self.user_realm)
         except UserProfile.DoesNotExist:
@@ -359,15 +345,14 @@ class NarrowBuilder:
         cond = column("recipient_id").in_(recipient_ids)
         return query.where(maybe_negate(cond))
 
-    def by_search(self, query, operand, maybe_negate):
-        # type: (Query, str, ConditionTransform) -> Query
+    def by_search(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
         if settings.USING_PGROONGA:
             return self._by_search_pgroonga(query, operand, maybe_negate)
         else:
             return self._by_search_tsearch(query, operand, maybe_negate)
 
-    def _by_search_pgroonga(self, query, operand, maybe_negate):
-        # type: (Query, str, ConditionTransform) -> Query
+    def _by_search_pgroonga(self, query: Query, operand: str,
+                            maybe_negate: ConditionTransform) -> Query:
         match_positions_character = func.pgroonga.match_positions_character
         query_extract_keywords = func.pgroonga.query_extract_keywords
         keywords = query_extract_keywords(operand)
@@ -378,8 +363,8 @@ class NarrowBuilder:
         condition = column("search_pgroonga").op("@@")(operand)
         return query.where(maybe_negate(condition))
 
-    def _by_search_tsearch(self, query, operand, maybe_negate):
-        # type: (Query, str, ConditionTransform) -> Query
+    def _by_search_tsearch(self, query: Query, operand: str,
+                           maybe_negate: ConditionTransform) -> Query:
         tsquery = func.plainto_tsquery(literal("zulip.english_us_search"), literal(operand))
         ts_locs_array = func.ts_match_locs_array
         query = query.column(ts_locs_array(literal("zulip.english_us_search"),
@@ -408,8 +393,7 @@ class NarrowBuilder:
 # The offsets we get from PGroonga are counted in characters
 # whereas the offsets from tsearch_extras are in bytes, so we
 # have to account for both cases in the logic below.
-def highlight_string(text, locs):
-    # type: (Text, Iterable[Tuple[int, int]]) -> Text
+def highlight_string(text: Text, locs: Iterable[Tuple[int, int]]) -> Text:
     highlight_start = u'<span class="highlight">'
     highlight_stop = u'</span>'
     pos = 0
@@ -458,13 +442,12 @@ def highlight_string(text, locs):
     result += final_frag
     return result
 
-def get_search_fields(rendered_content, subject, content_matches, subject_matches):
-    # type: (Text, Text, Iterable[Tuple[int, int]], Iterable[Tuple[int, int]]) -> Dict[str, Text]
+def get_search_fields(rendered_content: Text, subject: Text, content_matches: Iterable[Tuple[int, int]],
+                      subject_matches: Iterable[Tuple[int, int]]) -> Dict[str, Text]:
     return dict(match_content=highlight_string(rendered_content, content_matches),
                 match_subject=highlight_string(escape_html(subject), subject_matches))
 
-def narrow_parameter(json):
-    # type: (str) -> Optional[List[Dict[str, Any]]]
+def narrow_parameter(json: str) -> Optional[List[Dict[str, Any]]]:
 
     data = ujson.loads(json)
     if not isinstance(data, list):
@@ -473,8 +456,7 @@ def narrow_parameter(json):
         # The "empty narrow" should be None, and not []
         return None
 
-    def convert_term(elem):
-        # type: (Union[Dict[str, Any], List[str]]) -> Dict[str, Any]
+    def convert_term(elem: Union[Dict[str, Any], List[str]]) -> Dict[str, Any]:
 
         # We have to support a legacy tuple format.
         if isinstance(elem, list):
@@ -505,8 +487,7 @@ def narrow_parameter(json):
 
     return list(map(convert_term, data))
 
-def ok_to_include_history(narrow, realm):
-    # type: (Optional[Iterable[Dict[str, Any]]], Realm) -> bool
+def ok_to_include_history(narrow: Optional[Iterable[Dict[str, Any]]], realm: Realm) -> bool:
 
     # There are occasions where we need to find Message rows that
     # have no corresponding UserMessage row, because the user is
@@ -533,16 +514,15 @@ def ok_to_include_history(narrow, realm):
 
     return include_history
 
-def get_stream_name_from_narrow(narrow):
-    # type: (Optional[Iterable[Dict[str, Any]]]) -> Optional[Text]
+def get_stream_name_from_narrow(narrow: Optional[Iterable[Dict[str, Any]]]) -> Optional[Text]:
     if narrow is not None:
         for term in narrow:
             if term['operator'] == 'stream':
                 return term['operand'].lower()
     return None
 
-def exclude_muting_conditions(user_profile, narrow):
-    # type: (UserProfile, Optional[Iterable[Dict[str, Any]]]) -> List[Selectable]
+def exclude_muting_conditions(user_profile: UserProfile,
+                              narrow: Optional[Iterable[Dict[str, Any]]]) -> List[Selectable]:
     conditions = []
     stream_name = get_stream_name_from_narrow(narrow)
 
@@ -791,8 +771,7 @@ def update_message_flags(request, user_profile,
                          'msg': ''})
 
 @has_request_variables
-def mark_all_as_read(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
+def mark_all_as_read(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     count = do_mark_all_as_read(user_profile)
 
     log_data_str = "[%s updated]" % (count,)
@@ -838,8 +817,8 @@ def mark_topic_as_read(request,
     return json_success({'result': 'success',
                          'msg': ''})
 
-def create_mirrored_message_users(request, user_profile, recipients):
-    # type: (HttpRequest, UserProfile, Iterable[Text]) -> Tuple[bool, Optional[UserProfile]]
+def create_mirrored_message_users(request: HttpRequest, user_profile: UserProfile,
+                                  recipients: Iterable[Text]) -> Tuple[bool, Optional[UserProfile]]:
     if "sender" not in request.POST:
         return (False, None)
 
@@ -874,8 +853,7 @@ def create_mirrored_message_users(request, user_profile, recipients):
     sender = get_user_including_cross_realm(sender_email, user_profile.realm)
     return (True, sender)
 
-def same_realm_zephyr_user(user_profile, email):
-    # type: (UserProfile, Text) -> bool
+def same_realm_zephyr_user(user_profile: UserProfile, email: Text) -> bool:
     #
     # Are the sender and recipient both addresses in the same Zephyr
     # mirroring realm?  We have to handle this specially, inferring
@@ -894,8 +872,7 @@ def same_realm_zephyr_user(user_profile, email):
     return user_profile.realm.is_zephyr_mirror_realm and \
         RealmDomain.objects.filter(realm=user_profile.realm, domain=domain).exists()
 
-def same_realm_irc_user(user_profile, email):
-    # type: (UserProfile, Text) -> bool
+def same_realm_irc_user(user_profile: UserProfile, email: Text) -> bool:
     # Check whether the target email address is an IRC user in the
     # same realm as user_profile, i.e. if the domain were example.com,
     # the IRC user would need to be username@irc.example.com
@@ -910,8 +887,7 @@ def same_realm_irc_user(user_profile, email):
     # these realms.
     return RealmDomain.objects.filter(realm=user_profile.realm, domain=domain).exists()
 
-def same_realm_jabber_user(user_profile, email):
-    # type: (UserProfile, Text) -> bool
+def same_realm_jabber_user(user_profile: UserProfile, email: Text) -> bool:
     try:
         validators.validate_email(email)
     except ValidationError:
@@ -996,8 +972,7 @@ def send_message_backend(request, user_profile,
                              local_id=local_id, sender_queue_id=queue_id)
     return json_success({"id": ret})
 
-def fill_edit_history_entries(message_history, message):
-    # type: (List[Dict[str, Any]], Message) -> None
+def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Message) -> None:
     """This fills out the message edit history entries from the database,
     which are designed to have the minimum data possible, to instead
     have the current topic + content as of that time, plus data on
@@ -1141,8 +1116,8 @@ def update_message_backend(request, user_profile,
 
 
 @has_request_variables
-def delete_message_backend(request, user_profile, message_id=REQ(converter=to_non_negative_int)):
-    # type: (HttpRequest, UserProfile, int) -> HttpResponse
+def delete_message_backend(request: HttpRequest, user_profile: UserProfile,
+                           message_id: int=REQ(converter=to_non_negative_int)) -> HttpResponse:
     message, ignored_user_message = access_message(user_profile, message_id)
     is_user_allowed_to_delete_message = user_profile.is_realm_admin or \
         (message.sender == user_profile and user_profile.realm.allow_message_deleting)
@@ -1159,8 +1134,8 @@ def json_fetch_raw_message(request, user_profile,
     return json_success({"raw_content": message.content})
 
 @has_request_variables
-def render_message_backend(request, user_profile, content=REQ()):
-    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
+def render_message_backend(request: HttpRequest, user_profile: UserProfile,
+                           content: Text=REQ()) -> HttpResponse:
     message = Message()
     message.sender = user_profile
     message.content = content

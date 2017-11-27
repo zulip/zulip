@@ -13,14 +13,12 @@ from zerver.lib.validator import check_bool
 from zerver.models import UserProfile, validate_attachment_request
 from django.conf import settings
 
-def serve_s3(request, url_path):
-    # type: (HttpRequest, str) -> HttpResponse
+def serve_s3(request: HttpRequest, url_path: str) -> HttpResponse:
     uri = get_signed_upload_url(url_path)
     return redirect(uri)
 
 # TODO: Rewrite this once we have django-sendfile
-def serve_local(request, path_id):
-    # type: (HttpRequest, str) -> FileResponse
+def serve_local(request: HttpRequest, path_id: str) -> FileResponse:
     import os
     import mimetypes
     local_path = get_local_file_path(path_id)
@@ -32,8 +30,8 @@ def serve_local(request, path_id):
     return response
 
 @has_request_variables
-def serve_file_backend(request, user_profile, realm_id_str, filename):
-    # type: (HttpRequest, UserProfile, str, str) -> HttpResponse
+def serve_file_backend(request: HttpRequest, user_profile: UserProfile,
+                       realm_id_str: str, filename: str) -> HttpResponse:
     path_id = "%s/%s" % (realm_id_str, filename)
     is_authorized = validate_attachment_request(user_profile, path_id)
 
@@ -46,8 +44,7 @@ def serve_file_backend(request, user_profile, realm_id_str, filename):
 
     return serve_s3(request, path_id)
 
-def upload_file_backend(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
+def upload_file_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     if len(request.FILES) == 0:
         return json_error(_("You must specify a file to upload"))
     if len(request.FILES) != 1:

@@ -32,8 +32,8 @@ from zerver.models import UserProfile, Stream, Message, email_allowed_for_realm,
 from zerver.lib.create_user import random_api_key
 
 
-def deactivate_user_backend(request, user_profile, email):
-    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
+def deactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
+                            email: Text) -> HttpResponse:
     try:
         target = get_user(email, user_profile.realm)
     except UserProfile.DoesNotExist:
@@ -44,21 +44,19 @@ def deactivate_user_backend(request, user_profile, email):
         return json_error(_('Cannot deactivate the only organization administrator'))
     return _deactivate_user_profile_backend(request, user_profile, target)
 
-def deactivate_user_own_backend(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
+def deactivate_user_own_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
 
     if user_profile.is_realm_admin and check_last_admin(user_profile):
         return json_error(_('Cannot deactivate the only organization administrator'))
     do_deactivate_user(user_profile, acting_user=user_profile)
     return json_success()
 
-def check_last_admin(user_profile):
-    # type: (UserProfile) -> bool
+def check_last_admin(user_profile: UserProfile) -> bool:
     admins = set(user_profile.realm.get_admin_users())
     return user_profile.is_realm_admin and len(admins) == 1
 
-def deactivate_bot_backend(request, user_profile, email):
-    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
+def deactivate_bot_backend(request: HttpRequest, user_profile: UserProfile,
+                           email: Text) -> HttpResponse:
     try:
         target = get_user(email, user_profile.realm)
     except UserProfile.DoesNotExist:
@@ -67,16 +65,16 @@ def deactivate_bot_backend(request, user_profile, email):
         return json_error(_('No such bot'))
     return _deactivate_user_profile_backend(request, user_profile, target)
 
-def _deactivate_user_profile_backend(request, user_profile, target):
-    # type: (HttpRequest, UserProfile, UserProfile) -> HttpResponse
+def _deactivate_user_profile_backend(request: HttpRequest, user_profile: UserProfile,
+                                     target: UserProfile) -> HttpResponse:
     if not user_profile.can_admin_user(target):
         return json_error(_('Insufficient permission'))
 
     do_deactivate_user(target, acting_user=user_profile)
     return json_success()
 
-def reactivate_user_backend(request, user_profile, email):
-    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
+def reactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
+                            email: Text) -> HttpResponse:
     try:
         target = get_user(email, user_profile.realm)
     except UserProfile.DoesNotExist:
@@ -118,8 +116,7 @@ def update_user_backend(request, user_profile, email,
 # different organizations, we'll eventually want this to be a
 # logged-in endpoint so that we can access the realm_id.
 @zulip_login_required
-def avatar(request, email_or_id, medium=False):
-    # type: (HttpRequest, str, bool) -> HttpResponse
+def avatar(request: HttpRequest, email_or_id: str, medium: bool=False) -> HttpResponse:
     """Accepts an email address or user ID and returns the avatar"""
     is_email = False
     try:
@@ -149,8 +146,7 @@ def avatar(request, email_or_id, medium=False):
     url += '&' + request.META['QUERY_STRING']
     return redirect(url)
 
-def get_stream_name(stream):
-    # type: (Optional[Stream]) -> Optional[Text]
+def get_stream_name(stream: Optional[Stream]) -> Optional[Text]:
     if stream:
         return stream.name
     return None
@@ -219,8 +215,7 @@ def patch_bot_backend(request, user_profile, email,
     return json_success(json_result)
 
 @has_request_variables
-def regenerate_bot_api_key(request, user_profile, email):
-    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
+def regenerate_bot_api_key(request: HttpRequest, user_profile: UserProfile, email: Text) -> HttpResponse:
     try:
         bot = get_user(email, user_profile.realm)
     except UserProfile.DoesNotExist:
@@ -236,8 +231,8 @@ def regenerate_bot_api_key(request, user_profile, email):
     return json_success(json_result)
 
 # Adds an outgoing webhook or embedded bot service.
-def add_service(name, user_profile, base_url=None, interface=None, token=None):
-    # type: (Text, UserProfile, Text, int, Text) -> None
+def add_service(name: Text, user_profile: UserProfile, base_url: Text=None,
+                interface: int=None, token: Text=None) -> None:
     Service.objects.create(name=name,
                            user_profile=user_profile,
                            base_url=base_url,
@@ -324,15 +319,13 @@ def add_bot_backend(request, user_profile, full_name_raw=REQ("full_name"), short
     )
     return json_success(json_result)
 
-def get_bots_backend(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
+def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     bot_profiles = UserProfile.objects.filter(is_bot=True, is_active=True,
                                               bot_owner=user_profile)
     bot_profiles = bot_profiles.select_related('default_sending_stream', 'default_events_register_stream')
     bot_profiles = bot_profiles.order_by('date_joined')
 
-    def bot_info(bot_profile):
-        # type: (UserProfile) -> Dict[str, Any]
+    def bot_info(bot_profile: UserProfile) -> Dict[str, Any]:
         default_sending_stream = get_stream_name(bot_profile.default_sending_stream)
         default_events_register_stream = get_stream_name(bot_profile.default_events_register_stream)
 
@@ -377,8 +370,7 @@ def get_members_backend(request, user_profile,
         'bot_owner__email',
     )
 
-    def get_member(row):
-        # type: (Dict[str, Any]) -> Dict[str, Any]
+    def get_member(row: Dict[str, Any]) -> Dict[str, Any]:
         email = row['email']
         user_id = row['id']
 
@@ -439,12 +431,10 @@ def create_user_backend(request, user_profile, email=REQ(), password=REQ(),
     do_create_user(email, password, realm, full_name, short_name)
     return json_success()
 
-def generate_client_id():
-    # type: () -> str
+def generate_client_id() -> str:
     return generate_random_token(32)
 
-def get_profile_backend(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
+def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     result = dict(pointer        = user_profile.pointer,
                   client_id      = generate_client_id(),
                   max_message_id = -1,
@@ -461,8 +451,7 @@ def get_profile_backend(request, user_profile):
 
     return json_success(result)
 
-def team_view(request):
-    # type: (HttpRequest) -> HttpResponse
+def team_view(request: HttpRequest) -> HttpResponse:
     with open(settings.CONTRIBUTORS_DATA) as f:
         data = ujson.load(f)
 

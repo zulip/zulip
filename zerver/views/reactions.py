@@ -13,8 +13,7 @@ from zerver.lib.request import JsonableError
 from zerver.lib.response import json_success
 from zerver.models import Message, Reaction, UserMessage, UserProfile
 
-def create_historical_message(user_profile, message):
-    # type: (UserProfile, Message) -> None
+def create_historical_message(user_profile: UserProfile, message: Message) -> None:
     # Users can see and react to messages sent to streams they
     # were not a subscriber to; in order to receive events for
     # those, we give the user a `historical` UserMessage objects
@@ -98,8 +97,8 @@ def remove_reaction(request: HttpRequest, user_profile: UserProfile, message_id:
     return json_success()
 
 @has_request_variables
-def add_reaction_legacy(request, user_profile, message_id, emoji_name):
-    # type: (HttpRequest, UserProfile, int, Text) -> HttpResponse
+def add_reaction_legacy(request: HttpRequest, user_profile: UserProfile,
+                        message_id: int, emoji_name: Text) -> HttpResponse:
 
     # access_message will throw a JsonableError exception if the user
     # cannot see the message (e.g. for messages to private streams).
@@ -122,8 +121,8 @@ def add_reaction_legacy(request, user_profile, message_id, emoji_name):
     return json_success()
 
 @has_request_variables
-def remove_reaction_legacy(request, user_profile, message_id, emoji_name):
-    # type: (HttpRequest, UserProfile, int, Text) -> HttpResponse
+def remove_reaction_legacy(request: HttpRequest, user_profile: UserProfile,
+                           message_id: int, emoji_name: Text) -> HttpResponse:
 
     # access_message will throw a JsonableError exception if the user
     # cannot see the message (e.g. for messages to private streams).

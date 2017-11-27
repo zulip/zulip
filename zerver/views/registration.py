@@ -48,8 +48,7 @@ import ujson
 import urllib
 
 @require_post
-def accounts_register(request):
-    # type: (HttpRequest) -> HttpResponse
+def accounts_register(request: HttpRequest) -> HttpResponse:
     key = request.POST['key']
     confirmation = Confirmation.objects.get(confirmation_key=key)
     prereg_user = confirmation.content_object
@@ -266,16 +265,16 @@ def accounts_register(request):
                  }
     )
 
-def login_and_go_to_home(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
+def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
 
     # Mark the user as having been just created, so no "new login" email is sent
     user_profile.just_registered = True
     do_login(request, user_profile)
     return HttpResponseRedirect(user_profile.realm.uri + reverse('zerver.views.home.home'))
 
-def send_registration_completion_email(email, request, realm_creation=False, streams=None):
-    # type: (str, HttpRequest, bool, Optional[List[Stream]]) -> None
+def send_registration_completion_email(email: str, request: HttpRequest,
+                                       realm_creation: bool=False,
+                                       streams: Optional[List[Stream]]=None) -> None:
     """
     Send an email with a confirmation link to the provided e-mail so the user
     can complete their registration.
@@ -293,15 +292,13 @@ def send_registration_completion_email(email, request, realm_creation=False, str
     if settings.DEVELOPMENT and realm_creation:
         request.session['confirmation_key'] = {'confirmation_key': activation_url.split('/')[-1]}
 
-def redirect_to_email_login_url(email):
-    # type: (str) -> HttpResponseRedirect
+def redirect_to_email_login_url(email: str) -> HttpResponseRedirect:
     login_url = reverse('django.contrib.auth.views.login')
     email = urllib.parse.quote_plus(email)
     redirect_url = login_url + '?already_registered=' + email
     return HttpResponseRedirect(redirect_url)
 
-def create_realm(request, creation_key=None):
-    # type: (HttpRequest, Optional[Text]) -> HttpResponse
+def create_realm(request: HttpRequest, creation_key: Optional[Text]=None) -> HttpResponse:
     if not settings.OPEN_REALM_CREATION:
         if creation_key is None:
             return render(request, "zerver/realm_creation_failed.html",
@@ -340,12 +337,10 @@ def create_realm(request, creation_key=None):
                   )
 
 # This is used only by the casper test in 00-realm-creation.js.
-def confirmation_key(request):
-    # type: (HttpRequest) -> HttpResponse
+def confirmation_key(request: HttpRequest) -> HttpResponse:
     return json_success(request.session.get('confirmation_key'))
 
-def accounts_home(request, multiuse_object=None):
-    # type: (HttpRequest, Optional[MultiuseInvite]) -> HttpResponse
+def accounts_home(request: HttpRequest, multiuse_object: Optional[MultiuseInvite]=None) -> HttpResponse:
     realm = get_realm(get_subdomain(request))
 
     if realm is None:
@@ -386,8 +381,7 @@ def accounts_home(request, multiuse_object=None):
                            'from_multiuse_invite': from_multiuse_invite},
                   )
 
-def accounts_home_from_multiuse_invite(request, confirmation_key):
-    # type: (HttpRequest, str) -> HttpResponse
+def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: str) -> HttpResponse:
     multiuse_object = None
     try:
         multiuse_object = get_object_from_key(confirmation_key, Confirmation.MULTIUSE_INVITE)
@@ -399,12 +393,10 @@ def accounts_home_from_multiuse_invite(request, confirmation_key):
             return render_confirmation_key_error(request, exception)
     return accounts_home(request, multiuse_object=multiuse_object)
 
-def generate_204(request):
-    # type: (HttpRequest) -> HttpResponse
+def generate_204(request: HttpRequest) -> HttpResponse:
     return HttpResponse(content=None, status=204)
 
-def find_account(request):
-    # type: (HttpRequest) -> HttpResponse
+def find_account(request: HttpRequest) -> HttpResponse:
     url = reverse('zerver.views.registration.find_account')
 
     emails = []  # type: List[Text]

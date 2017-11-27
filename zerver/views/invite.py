@@ -55,8 +55,7 @@ def invite_users_backend(request, user_profile,
     do_invite_users(user_profile, invitee_emails, streams, invite_as_admin, body)
     return json_success()
 
-def get_invitee_emails_set(invitee_emails_raw):
-    # type: (str) -> Set[str]
+def get_invitee_emails_set(invitee_emails_raw: str) -> Set[str]:
     invitee_emails_list = set(re.split(r'[,\n]', invitee_emails_raw))
     invitee_emails = set()
     for email in invitee_emails_list:
@@ -67,21 +66,20 @@ def get_invitee_emails_set(invitee_emails_raw):
     return invitee_emails
 
 @require_realm_admin
-def get_user_invites(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
+def get_user_invites(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     all_users = do_get_user_invites(user_profile)
     return json_success({'invites': all_users})
 
 @require_realm_admin
 @has_request_variables
-def revoke_user_invite(request, user_profile, prereg_id):
-    # type: (HttpRequest, UserProfile, int) -> HttpResponse
+def revoke_user_invite(request: HttpRequest, user_profile: UserProfile,
+                       prereg_id: int) -> HttpResponse:
     do_revoke_user_invite(prereg_id, user_profile.realm_id)
     return json_success()
 
 @require_realm_admin
 @has_request_variables
-def resend_user_invite_email(request, user_profile, prereg_id):
-    # type: (HttpRequest, UserProfile, int) -> HttpResponse
+def resend_user_invite_email(request: HttpRequest, user_profile: UserProfile,
+                             prereg_id: int) -> HttpResponse:
     timestamp = do_resend_user_invite_email(prereg_id, user_profile.realm_id)
     return json_success({'timestamp': timestamp})

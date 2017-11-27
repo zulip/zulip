@@ -36,8 +36,7 @@ import re
 import time
 
 @zulip_login_required
-def accounts_accept_terms(request):
-    # type: (HttpRequest) -> HttpResponse
+def accounts_accept_terms(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         form = ToSForm(request.POST)
         if form.is_valid():
@@ -58,16 +57,14 @@ def accounts_accept_terms(request):
                  'special_message_template': special_message_template},
     )
 
-def sent_time_in_epoch_seconds(user_message):
-    # type: (Optional[UserMessage]) -> Optional[float]
+def sent_time_in_epoch_seconds(user_message: Optional[UserMessage]) -> Optional[float]:
     if user_message is None:
         return None
     # We have USE_TZ = True, so our datetime objects are timezone-aware.
     # Return the epoch seconds in UTC.
     return calendar.timegm(user_message.message.pub_date.utctimetuple())
 
-def home(request):
-    # type: (HttpRequest) -> HttpResponse
+def home(request: HttpRequest) -> HttpResponse:
     if settings.DEVELOPMENT and os.path.exists('var/handlebars-templates/compile.error'):
         response = render(request, 'zerver/handlebars_compilation_failed.html')
         response.status_code = 500
@@ -85,8 +82,7 @@ def home(request):
     return render(request, 'zerver/hello.html')
 
 @zulip_login_required
-def home_real(request):
-    # type: (HttpRequest) -> HttpResponse
+def home_real(request: HttpRequest) -> HttpResponse:
     # We need to modify the session object every two weeks or it will expire.
     # This line makes reloading the page a sufficient action to keep the
     # session alive.
@@ -243,18 +239,15 @@ def home_real(request):
     return response
 
 @zulip_login_required
-def desktop_home(request):
-    # type: (HttpRequest) -> HttpResponse
+def desktop_home(request: HttpRequest) -> HttpResponse:
     return HttpResponseRedirect(reverse('zerver.views.home.home'))
 
-def apps_view(request, _):
-    # type: (HttpRequest, Text) -> HttpResponse
+def apps_view(request: HttpRequest, _: Text) -> HttpResponse:
     if settings.ZILENCER_ENABLED:
         return render(request, 'zerver/apps.html')
     return HttpResponseRedirect('https://zulipchat.com/apps/', status=301)
 
-def is_buggy_ua(agent):
-    # type: (str) -> bool
+def is_buggy_ua(agent: str) -> bool:
     """Discrimiate CSS served to clients based on User Agent
 
     Due to QTBUG-3467, @font-face is not supported in QtWebKit.

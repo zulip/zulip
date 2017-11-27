@@ -49,8 +49,8 @@ def edit_user_group(request, user_profile,
     return json_success(result)
 
 @has_request_variables
-def delete_user_group(request, user_profile, user_group_id=REQ(validator=check_int)):
-    # type: (HttpRequest, UserProfile, int) -> HttpResponse
+def delete_user_group(request: HttpRequest, user_profile: UserProfile,
+                      user_group_id: int=REQ(validator=check_int)) -> HttpResponse:
     check_delete_user_group(user_group_id, user_profile.realm)
     return json_success()
 
@@ -71,8 +71,8 @@ def update_user_group_backend(request, user_profile,
     ]  # type: List[FuncKwargPair]
     return compose_views(request, user_profile, method_kwarg_pairs)
 
-def add_members_to_group_backend(request, user_profile, user_group_id, members):
-    # type: (HttpRequest, UserProfile, int, List[int]) -> HttpResponse
+def add_members_to_group_backend(request: HttpRequest, user_profile: UserProfile,
+                                 user_group_id: int, members: List[int]) -> HttpResponse:
     if not members:
         return json_success()
 
@@ -87,8 +87,8 @@ def add_members_to_group_backend(request, user_profile, user_group_id, members):
     bulk_add_members_to_user_group(user_group, user_profiles)
     return json_success()
 
-def remove_members_from_group_backend(request, user_profile, user_group_id, members):
-    # type: (HttpRequest, UserProfile, int, List[int]) -> HttpResponse
+def remove_members_from_group_backend(request: HttpRequest, user_profile: UserProfile,
+                                      user_group_id: int, members: List[int]) -> HttpResponse:
     if not members:
         return json_success()
 

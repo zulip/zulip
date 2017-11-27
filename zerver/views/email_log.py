@@ -21,8 +21,7 @@ import datetime
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../')
 client = Client()
 
-def email_page(request):
-    # type: (HttpRequest) -> HttpResponse
+def email_page(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
         set_forward_address(request.POST["forward_address"])
         return json_success()
@@ -35,8 +34,7 @@ def email_page(request):
                   {'log': content,
                    'forward_address': get_forward_address()})
 
-def clear_emails(request):
-    # type: (HttpRequest) -> HttpResponse
+def clear_emails(request: HttpRequest) -> HttpResponse:
     try:
         os.remove(settings.EMAIL_CONTENT_LOG_PATH)
     except FileNotFoundError:  # nocoverage
@@ -44,8 +42,7 @@ def clear_emails(request):
     return redirect(email_page)
 
 @require_GET
-def generate_all_emails(request):
-    # type: (HttpRequest) -> HttpResponse
+def generate_all_emails(request: HttpRequest) -> HttpResponse:
 
     # write fake data for all variables
     registered_email = "hamlet@zulip.com"
