@@ -3,7 +3,7 @@ set_global('document', {
     location: { },
 });
 set_global('navigator', {
-    userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36',
+    userAgent: 'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)',
 });
 set_global('i18n', global.stub_i18n);
 set_global('page_params', { });
@@ -113,6 +113,7 @@ var upload_opts = upload.options({ mode: "compose" });
     function test(i, response, textbox_val) {
         var compose_ui_autosize_textarea_checked = false;
         var compose_actions_start_checked = false;
+        var file_input_clear = false;
 
         function setup() {
             $("#compose-textarea").val('');
@@ -129,9 +130,15 @@ var upload_opts = upload.options({ mode: "compose" });
             $("#compose-send-button").attr('disabled', 'disabled');
             $("#compose-send-status").addClass("alert-info");
             $("#compose-send-status").show();
+
             $('#file_input').clone = function (param) {
                 assert(param);
                 return $('#file_input');
+            };
+
+            $('#file_input').replaceWith = function (elem) {
+                assert.equal(elem, $('#file_input'));
+                file_input_clear = true;
             };
         }
 
@@ -143,6 +150,7 @@ var upload_opts = upload.options({ mode: "compose" });
                 assert.equal($("#compose-send-button").prop('disabled'), false);
                 assert(!$('#compose-send-status').hasClass('alert-info'));
                 assert(!$('#compose-send-status').visible());
+                assert(file_input_clear);
             }
         }
 
