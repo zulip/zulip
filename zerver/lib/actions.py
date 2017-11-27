@@ -2551,8 +2551,8 @@ def do_change_full_name(user_profile, full_name, acting_user):
         send_event(dict(type='realm_bot', op='update', bot=payload),
                    bot_owner_user_ids(user_profile))
 
-def check_change_full_name(user_profile, full_name_raw, acting_user):
-    # type: (UserProfile, Text, UserProfile) -> Text
+def check_change_full_name(user_profile: UserProfile, full_name_raw: Text,
+                           acting_user: UserProfile) -> Text:
     """Verifies that the user's proposed full name is valid.  The caller
     is responsible for checking check permissions.  Returns the new
     full name, which may differ from what was passed in (because this
@@ -4382,8 +4382,8 @@ def do_send_create_user_group_event(user_group: UserGroup, members: List[UserPro
                  )
     send_event(event, active_user_ids(user_group.realm_id))
 
-def check_add_user_group(realm, name, initial_members, description):
-    # type: (Realm, Text, List[UserProfile], Text) -> None
+def check_add_user_group(realm: Realm, name: Text, initial_members: List[UserProfile],
+                         description: Text) -> None:
     try:
         user_group = create_user_group(name, initial_members, realm, description=description)
         do_send_create_user_group_event(user_group, initial_members)
@@ -4394,14 +4394,12 @@ def do_send_user_group_update_event(user_group: UserGroup, data: Dict[str, Any])
     event = dict(type="user_group", op='update', group_id=user_group.id, data=data)
     send_event(event, active_user_ids(user_group.realm_id))
 
-def do_update_user_group_name(user_group, name):
-    # type: (UserGroup, Text) -> None
+def do_update_user_group_name(user_group: UserGroup, name: Text) -> None:
     user_group.name = name
     user_group.save(update_fields=['name'])
     do_send_user_group_update_event(user_group, dict(name=name))
 
-def do_update_user_group_description(user_group, description):
-    # type: (UserGroup, Text) -> None
+def do_update_user_group_description(user_group: UserGroup, description: Text) -> None:
     user_group.description = description
     user_group.save(update_fields=['description'])
     do_send_user_group_update_event(user_group, dict(description=description))
@@ -4415,8 +4413,7 @@ def do_send_user_group_members_update_event(event_name: Text,
                  user_ids=user_ids)
     send_event(event, active_user_ids(user_group.realm_id))
 
-def bulk_add_members_to_user_group(user_group, user_profiles):
-    # type: (UserGroup, List[UserProfile]) -> None
+def bulk_add_members_to_user_group(user_group: UserGroup, user_profiles: List[UserProfile]) -> None:
     memberships = [UserGroupMembership(user_group_id=user_group.id,
                                        user_profile=user_profile)
                    for user_profile in user_profiles]
@@ -4425,8 +4422,7 @@ def bulk_add_members_to_user_group(user_group, user_profiles):
     user_ids = [up.id for up in user_profiles]
     do_send_user_group_members_update_event('add_members', user_group, user_ids)
 
-def remove_members_from_user_group(user_group, user_profiles):
-    # type: (UserGroup, List[UserProfile]) -> None
+def remove_members_from_user_group(user_group: UserGroup, user_profiles: List[UserProfile]) -> None:
     UserGroupMembership.objects.filter(
         user_group_id=user_group.id,
         user_profile__in=user_profiles).delete()

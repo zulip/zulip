@@ -28,8 +28,7 @@ def get_bot_storage_size(bot_profile, key=None):
         except BotStorageData.DoesNotExist:
             return 0
 
-def set_bot_storage(bot_profile, entries):
-    # type: (UserProfile, List[Tuple[str, str]]) -> None
+def set_bot_storage(bot_profile: UserProfile, entries: List[Tuple[str, str]]) -> None:
     storage_size_limit = settings.USER_STATE_SIZE_LIMIT
     storage_size_difference = 0
     for key, value in entries:
@@ -47,17 +46,14 @@ def set_bot_storage(bot_profile, entries):
             BotStorageData.objects.update_or_create(bot_profile=bot_profile, key=key,
                                                     defaults={'value': value})
 
-def remove_bot_storage(bot_profile, keys):
-    # type: (UserProfile, List[Text]) -> None
+def remove_bot_storage(bot_profile: UserProfile, keys: List[Text]) -> None:
     queryset = BotStorageData.objects.filter(bot_profile=bot_profile, key__in=keys)
     if len(queryset) < len(keys):
         raise StateError("Key does not exist.")
     queryset.delete()
 
-def is_key_in_bot_storage(bot_profile, key):
-    # type: (UserProfile, Text) -> bool
+def is_key_in_bot_storage(bot_profile: UserProfile, key: Text) -> bool:
     return BotStorageData.objects.filter(bot_profile=bot_profile, key=key).exists()
 
-def get_keys_in_bot_storage(bot_profile):
-    # type: (UserProfile) -> List[Text]
+def get_keys_in_bot_storage(bot_profile: UserProfile) -> List[Text]:
     return list(BotStorageData.objects.filter(bot_profile=bot_profile).values_list('key', flat=True))

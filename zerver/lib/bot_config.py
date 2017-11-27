@@ -9,13 +9,11 @@ from typing import Text, Dict, Optional
 class ConfigError(Exception):
     pass
 
-def get_bot_config(bot_profile):
-    # type: (UserProfile) -> Dict[Text, Text]
+def get_bot_config(bot_profile: UserProfile) -> Dict[Text, Text]:
     entries = BotUserConfigData.objects.filter(bot_profile=bot_profile)
     return {entry.key: entry.value for entry in entries}
 
-def get_bot_config_size(bot_profile, key=None):
-    # type: (UserProfile, Optional[Text]) -> int
+def get_bot_config_size(bot_profile: UserProfile, key: Optional[Text]=None) -> int:
     if key is None:
         return BotUserConfigData.objects.filter(bot_profile=bot_profile) \
                                         .annotate(key_size=Length('key'), value_size=Length('value')) \
@@ -26,8 +24,7 @@ def get_bot_config_size(bot_profile, key=None):
         except BotUserConfigData.DoesNotExist:
             return 0
 
-def set_bot_config(bot_profile, key, value):
-    # type: (UserProfile, Text, Text) -> None
+def set_bot_config(bot_profile: UserProfile, key: Text, value: Text) -> None:
     config_size_limit = settings.BOT_CONFIG_SIZE_LIMIT
     old_entry_size = get_bot_config_size(bot_profile, key)
     new_entry_size = len(key) + len(value)

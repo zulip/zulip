@@ -535,8 +535,7 @@ def handle_push_notification(user_profile_id, missed_message):
                                           apns_payload,
                                           gcm_payload)
         except requests.ConnectionError:
-            def failure_processor(event):
-                # type: (Dict[str, Any]) -> None
+            def failure_processor(event: Dict[str, Any]) -> None:
                 logging.warning(
                     "Maximum retries exceeded for trigger:%s event:push_notification" % (
                         event['user_profile_id']))
