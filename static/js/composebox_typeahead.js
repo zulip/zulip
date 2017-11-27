@@ -320,6 +320,7 @@ exports.compose_content_begins_typeahead = function (query) {
     }
 
     if (this.options.completions.mention && current_token[0] === '@') {
+        // Don't autocomplete if there is a space following an '@'
         current_token = current_token.substring(1);
         if (current_token.startsWith('**')) {
             current_token = current_token.substring(2);
@@ -327,6 +328,10 @@ exports.compose_content_begins_typeahead = function (query) {
             current_token = current_token.substring(1);
         }
         if (current_token.length < 1 || current_token.lastIndexOf('*') !== -1) {
+            return false;
+        }
+
+        if (current_token[0] === " ") {
             return false;
         }
 
