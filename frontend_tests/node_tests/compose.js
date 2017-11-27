@@ -1089,7 +1089,6 @@ function test_with_mock_socket(test_params) {
                templates.render = function (template_name, context) {
                    called = true;
                    assert.equal(template_name, 'compose_private_stream_alert');
-                   assert.equal(context.invite_only, true);
                    assert.equal(context.stream_name, 'Denmark');
                    return 'fake-compose_private_stream_alert-template';
                };
