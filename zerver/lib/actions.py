@@ -3895,7 +3895,10 @@ def get_cross_realm_dicts():
              'is_admin': user.is_realm_admin,
              'is_bot': user.is_bot,
              'full_name': user.full_name}
-            for user in users]
+            for user in users
+            # Important: We filter here, rather than in base_query,
+            # because otherwise the fact that bulk_get_users
+            if user.realm.string_id == 'zulip']
 
 def do_send_confirmation_email(invitee, referrer, body):
     # type: (PreregistrationUser, UserProfile, Optional[str]) -> None
