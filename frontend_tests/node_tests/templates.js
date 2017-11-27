@@ -520,10 +520,15 @@ function render(template_name, args) {
 
 (function compose_private_stream_alert() {
     var args = {
-      name: 'Demark',
+      stream_name: 'Denmark',
       invite_only: true,
     };
     var html = render('compose_private_stream_alert', args);
+    assert($(html).hasClass('compose_private_stream_alert'));
+
+    var actual_text = $(html).text();
+    var expected_text = 'translated: Warning: Denmark is a private stream.';
+    assert(actual_text.indexOf(expected_text) >= 1);
     global.write_handlebars_output("compose_stream_alert", html);
 }());
 
