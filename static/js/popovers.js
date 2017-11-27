@@ -501,7 +501,11 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
     $('body').on('click', '.respond_personal_button', function (e) {
-        compose_actions.respond_to_message({reply_type: 'personal', trigger: 'popover respond pm'});
+        var user_id = $(e.target).parents('ul').attr('data-user-id');
+        var email = people.get_person_from_user_id(user_id).email;
+        compose_actions.start('private', {
+            trigger: 'popover send private',
+            private_message_recipient: email});
         popovers.hide_all();
         e.stopPropagation();
         e.preventDefault();
