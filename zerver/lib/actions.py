@@ -3896,8 +3896,9 @@ def get_cross_realm_dicts():
              'is_bot': user.is_bot,
              'full_name': user.full_name}
             for user in users
-            # Important: We filter here, rather than in base_query,
-            # because otherwise the fact that bulk_get_users
+            # Important: We filter here, is addition to in
+            # `base_query`, because of how bulk_get_users shares its
+            # cache with other UserProfile caches.
             if user.realm.string_id == 'zulip']
 
 def do_send_confirmation_email(invitee, referrer, body):

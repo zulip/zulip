@@ -39,10 +39,12 @@ def bulk_get_users(emails: List[str], realm: Optional[Realm],
         base_query = UserProfile.objects.filter(realm=realm, is_active=True)
         realm_id = realm.id
     else:
-        # WARNING: Here we use an invalid realm_id, just to keep the
-        # cache independent of the per-realm caches.  If you're using
-        # this flow, you'll need to re-do any filters in base_query in
-        # the code itself; base_query is just a perf optimization.
+        # WARNING: Currently, this code path only really supports one
+        # version of `base_query` being used (because otherwise,
+        # they'll share the cache, which can screw up the filtering).
+        # If you're using this flow, you'll need to re-do any filters
+        # in base_query in the code itself; base_query is just a perf
+        # optimization.
         realm_id = 0
 
     def fetch_users_by_email(emails: List[str]) -> List[UserProfile]:
@@ -63,7 +65,9 @@ def bulk_get_users(emails: List[str], realm: Optional[Realm],
             params=emails)
 
     return generic_bulk_cached_fetch(
-        lambda email: user_profile_cache_key_id(email, realm_id),
+        # Use a separate cache key to protect us from conflicts with
+        # the get_user cache.
+        lambda email: 'bulk_get_users:' + user_profile_cache_key_id(email, realm_id),
         fetch_users_by_email,
         [email.lower() for email in emails],
         id_fetcher=lambda user_profile: user_profile.email.lower()
