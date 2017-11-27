@@ -451,6 +451,7 @@ var inline = {
   emoji: noop,
   unicodeemoji: noop,
   usermention: noop,
+  groupmention: noop,
   stream: noop,
   avatar: noop,
   tex: noop,
@@ -516,6 +517,7 @@ inline.zulip = merge({}, inline.breaks, {
                        '[\u2000-\u206F]|[\u2300-\u27BF]|[\u2B00-\u2BFF]|' +
                        '[\u3000-\u303F]|[\u3200-\u32FF])'),
   usermention: /^(@(?:\*\*([^\*]+)\*\*|(\w+)))/, // Match multi-word string between @** ** or match any one-word
+  groupmention: /^@\*([^\*]+)\*/, // Match multi-word string between @* *
   stream: /^#\*\*([^\*]+)\*\*/,
   avatar: /^!avatar\(([^)]+)\)/,
   gravatar: /^!gravatar\(([^)]+)\)/,
@@ -710,6 +712,13 @@ InlineLexer.prototype.output = function(src) {
       continue;
     }
 
+    // groupmention (zulip)
+    if (cap = this.rules.groupmention.exec(src)) {
+      src = src.substring(cap[0].length);
+      out += this.groupmention(cap[1], cap[0]);
+      continue;
+    }
+
     // stream (zulip)
     if (cap = this.rules.stream.exec(src)) {
       src = src.substring(cap[0].length);
@@ -860,6 +869,20 @@ InlineLexer.prototype.usermention = function (username, orig) {
   }
 
   var handled = this.options.userMentionHandler(username);
+  if (handled !== undefined) {
+    return handled;
+  }
+
+  return orig;
+};
+
+InlineLexer.prototype.groupmention = function (groupname, orig) {
+  if (typeof this.options.groupMentionHandler !== 'function')
+  {
+    return orig;
+  }
+
+  var handled = this.options.groupMentionHandler(groupname);
   if (handled !== undefined) {
     return handled;
   }
