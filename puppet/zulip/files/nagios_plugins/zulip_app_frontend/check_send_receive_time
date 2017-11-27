@@ -51,7 +51,7 @@ parser.add_argument('--websocket',
                     dest='websocket',
                     action='store_true')
 
-parser.add_argument('config')
+parser.add_argument('config', nargs='?', default=None)
 
 options = parser.parse_args()
 
