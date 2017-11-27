@@ -497,6 +497,8 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     )
     return content
 
+# TODO next: finish /stats/realm/* , then link to those.  Then CSS for legend.
+
 
 def user_activity_intervals() -> Tuple[mark_safe, Dict[str, float]]:
     day_end = timestamp_to_datetime(time.time())
