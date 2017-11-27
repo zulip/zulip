@@ -6,8 +6,9 @@ import sys
 import time
 import re
 import importlib
-from zerver.lib.actions import internal_send_message
-from zerver.models import UserProfile
+from zerver.lib.actions import internal_send_private_message, \
+    internal_send_stream_message, internal_send_huddle_message
+from zerver.models import UserProfile, get_user
 from zerver.lib.bot_storage import get_bot_state, set_bot_state, \
     is_key_in_bot_state, get_bot_state_size, remove_bot_state
 from zerver.lib.bot_config import get_bot_config
@@ -68,10 +69,24 @@ class EmbeddedBotHandler:
     def send_message(self, message: Dict[str, Any]) -> None:
         if not self._rate_limit.is_legal():
             self._rate_limit.show_error_and_exit()
-        recipients = message['to'] if message['type'] == 'stream' else ','.join(message['to'])
-        internal_send_message(realm=self.user_profile.realm, sender_email=self.user_profile.email,
-                              recipient_type_name=message['type'], recipients=recipients,
-                              topic_name=message.get('subject', None), content=message['content'])
+
+        if message['type'] == 'stream':
+            internal_send_stream_message(self.user_profile.realm, self.user_profile, message['to'],
+                                         message['subject'], message['content'])
+            return
+
+        assert message['type'] == 'private'
+        # Ensure that it's a comma-separated list, even though the
+        # usual 'to' field could be either a List[str] or a str.
+        recipients = ','.join(message['to']).split(',')
+
+        if len(message['to']) == 1:
+            recipient_user = get_user(recipients[0], self.user_profile.realm)
+            internal_send_private_message(self.user_profile.realm, self.user_profile,
+                                          recipient_user, message['content'])
+        else:
+            internal_send_huddle_message(self.user_profile.realm, self.user_profile,
+                                         recipients, message['content'])
 
     def send_reply(self, message: Dict[str, Any], response: str) -> None:
         if message['type'] == 'private':
