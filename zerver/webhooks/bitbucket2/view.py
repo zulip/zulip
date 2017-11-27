@@ -54,6 +54,9 @@ def api_bitbucket2_webhook(request, user_profile, payload=REQ(argument_type='bod
         check_send_stream_message(user_profile, request.client,
                                   stream, subject, body)
     else:
+        # ignore push events with no changes
+        if not payload['push']['changes']:
+            return json_success()
         branch = get_branch_name_for_push_event(payload)
         if branch and branches:
             if branches.find(branch) == -1:
