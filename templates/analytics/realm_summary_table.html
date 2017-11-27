@@ -15,7 +15,7 @@
         <tr>
             <th>Realm</th>
             <th>DAU</th>
-            <th>WAU - DAU</th>
+            <th>WAU</th>
             <th>Total users</th>
             <th>Bots</th>
             <th>DAT/DAU (hr)</th>
@@ -34,11 +34,11 @@
             </td>
 
             <td class="number">
-                {{ row.active_user_count }}
+                {{ row.dau_count }}
             </td>
 
             <td class="number">
-                {{ row.at_risk_count }}
+                {{ row.wau_count }}
             </td>
 
             <td class="number">

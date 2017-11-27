@@ -287,8 +287,8 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     query = '''
         SELECT
             realm.string_id,
-            coalesce(user_counts.active_user_count, 0) active_user_count,
-            coalesce(at_risk_counts.at_risk_count, 0) at_risk_count,
+            coalesce(user_counts.dau_count, 0) dau_count,
+            coalesce(wau_counts.wau_count, 0) wau_count,
             (
                 SELECT
                     count(*)
@@ -310,7 +310,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
             (
                 SELECT
                     up.realm_id realm_id,
-                    count(distinct(ua.user_profile_id)) active_user_count
+                    count(distinct(ua.user_profile_id)) dau_count
                 FROM zerver_useractivity ua
                 JOIN zerver_userprofile up
                     ON up.id = ua.user_profile_id
@@ -334,7 +334,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
             (
                 SELECT
                     realm_id,
-                    count(*) at_risk_count
+                    count(*) wau_count
                 FROM (
                     SELECT
                         realm.id as realm_id,
@@ -356,13 +356,11 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
                             'update_pointer_backend'
                         )
                     GROUP by realm.id, up.email
-                    HAVING max(last_visit) between
-                        now() - interval '7 day' and
-                        now() - interval '1 day'
-                ) as at_risk_users
+                    HAVING max(last_visit) > now() - interval '7 day'
+                ) as wau_users
                 GROUP BY realm_id
-            ) at_risk_counts
-            ON at_risk_counts.realm_id = realm.id
+            ) wau_counts
+            ON wau_counts.realm_id = realm.id
         WHERE EXISTS (
                 SELECT *
                 FROM zerver_useractivity ua
@@ -382,7 +380,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
                 AND
                     last_visit > now() - interval '2 week'
         )
-        ORDER BY active_user_count DESC, string_id ASC
+        ORDER BY dau_count DESC, string_id ASC
         '''
 
     cursor = connection.cursor()
@@ -407,7 +405,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
         total_hours += hours
         row['hours'] = str(int(hours))
         try:
-            row['hours_per_user'] = '%.1f' % (hours / row['active_user_count'],)
+            row['hours_per_user'] = '%.1f' % (hours / row['dau_count'],)
         except Exception:
             pass
 
@@ -417,28 +415,28 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
 
     # Count active sites
     def meets_goal(row: Dict[str, int]) -> bool:
-        return row['active_user_count'] >= 5
+        return row['dau_count'] >= 5
 
     num_active_sites = len(list(filter(meets_goal, rows)))
 
     # create totals
-    total_active_user_count = 0
+    total_dau_count = 0
     total_user_profile_count = 0
     total_bot_count = 0
-    total_at_risk_count = 0
+    total_wau_count = 0
     for row in rows:
-        total_active_user_count += int(row['active_user_count'])
+        total_dau_count += int(row['dau_count'])
         total_user_profile_count += int(row['user_profile_count'])
         total_bot_count += int(row['bot_count'])
-        total_at_risk_count += int(row['at_risk_count'])
+        total_wau_count += int(row['wau_count'])
 
     rows.append(dict(
         string_id='Total',
-        active_user_count=total_active_user_count,
+        dau_count=total_dau_count,
         user_profile_count=total_user_profile_count,
         bot_count=total_bot_count,
         hours=int(total_hours),
-        at_risk_count=total_at_risk_count,
+        wau_count=total_wau_count,
     ))
 
     content = loader.render_to_string(
