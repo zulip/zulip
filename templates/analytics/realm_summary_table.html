@@ -1,18 +1,27 @@
 <h2 style="text-align: center;">{{ num_active_sites }} active sites</h2>
 
+<ul>
+    <li><strong>user</strong> - registered user, not deactivated, not a bot</li>
+    <li><strong>active (user)</strong> - sent a message, or advanced the pointer (reading messages doesn't count unless advances the pointer)</li>
+    <li><strong>DAU</strong> (Daily Active Users) - users active in last 24hr</li>
+    <li><strong>WAU</strong> (Weekly Active Users) - users active in last 7 * 24hr</li>
+    <li><strong>DAT</strong> (Daily Active Time) - total user-activity time in last 24hr</li>
+    <li><strong>Human message</strong> - message sent by non-bot user, and not with known-bot client</li>
+</ul>
+
 <table class="table summary-table sortable table-striped table-bordered">
 
     <thead class="activity_head">
         <tr>
             <th>Realm</th>
-            <th>Active users</th>
-            <th>At-risk users</th>
+            <th>DAU</th>
+            <th>WAU - DAU</th>
             <th>Total users</th>
             <th>Bots</th>
-            <th>Hours per user</th>
-            <th>Hours</th>
+            <th>DAT/DAU (hr)</th>
+            <th>DAT (hr)</th>
             <th></th>
-            <th colspan=8>Messages sent</th>
+            <th colspan=8>Human messages sent, last 8 x 24hr (latest first)</th>
         </tr>
     </thead>
 
@@ -20,46 +29,38 @@
         {% for row in rows %}
         <tr>
 
-            {# Realm #}
             <td>
                 {{ row.string_id }}
             </td>
 
-            {# Active users #}
             <td class="number">
                 {{ row.active_user_count }}
             </td>
 
-            {# At risk users #}
             <td class="number">
                 {{ row.at_risk_count }}
             </td>
 
-            {# Total users #}
             <td class="number">
                 {{ row.user_profile_count }}
             </td>
 
-            {# Bots #}
             <td class="number">
                 {{ row.bot_count }}
             </td>
 
-            {# Hours per user #}
             <td class="number">
                 {% if row.hours_per_user %}
                 {{ row.hours_per_user }}
                 {% endif %}
             </td>
 
-            {# Hours #}
             <td class="number">
                 {{ row.hours }}
             </td>
 
             <td>&nbsp;</td>
 
-            {# Messages sent #}
             {% if row.history %}
             {{ row.history|safe }}
             {% else %}
