@@ -521,7 +521,6 @@ function render(template_name, args) {
 (function compose_private_stream_alert() {
     var args = {
       stream_name: 'Denmark',
-      invite_only: true,
     };
     var html = render('compose_private_stream_alert', args);
     assert($(html).hasClass('compose_private_stream_alert'));

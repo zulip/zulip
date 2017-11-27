@@ -640,24 +640,34 @@ exports.initialize = function () {
 
     // Show a warning if a private stream is linked
     $(document).on('streamname_completed.zulip', function (event, data) {
+        // For PMs, we don't warn about links to private streams, since
+        // you are often specifically encouraging somebody to subscribe
+        // to the stream over PMs.
         if (compose_state.get_message_type() !== 'stream') {
             return;
         }
 
-        if (data !== undefined && data.stream !== undefined) {
-            var invite_only = data.stream.invite_only;
-            var stream_name = data.stream.name;
-
-            if (invite_only) {
-                var warning_area = $("#compose_private_stream_alert");
-                var context = { stream_name: stream_name, invite_only: invite_only };
-                var new_row = templates.render("compose_private_stream_alert", context);
-
-                warning_area.append(new_row);
-                warning_area.show();
-            }
+        if (data === undefined || data.stream === undefined) {
+            blueslip.error('Invalid options passed into handler.');
+            return;
         }
 
+        // data.stream refers to the stream we're linking to in
+        // typeahead.  If it's not invite-only, then it's public, and
+        // there is no need to warn about it, since all users can already
+        // see all the public streams.
+        if (!data.stream.invite_only) {
+            return;
+        }
+
+        var stream_name = data.stream.name;
+
+        var warning_area = $("#compose_private_stream_alert");
+        var context = { stream_name: stream_name };
+        var new_row = templates.render("compose_private_stream_alert", context);
+
+        warning_area.append(new_row);
+        warning_area.show();
     });
 
     $("#compose_private_stream_alert").on('click', '.compose_private_stream_alert_close', function (event) {
