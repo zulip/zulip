@@ -3,10 +3,10 @@ from typing import Dict, List, Optional, Text
 from django.db.models.query import QuerySet
 from django.utils.translation import ugettext as _
 
-from zerver.lib.cache import generic_bulk_cached_fetch
+from zerver.lib.cache import generic_bulk_cached_fetch, user_profile_cache_key_id
 from zerver.lib.request import JsonableError
 from zerver.models import UserProfile, Service, Realm, \
-    get_user_profile_by_id, user_profile_by_email_cache_key
+    get_user_profile_by_id
 
 def check_full_name(full_name_raw: Text) -> Text:
     full_name = full_name_raw.strip()
@@ -37,6 +37,13 @@ def bulk_get_users(emails: List[str], realm: Optional[Realm],
     if base_query is None:
         assert realm is not None
         base_query = UserProfile.objects.filter(realm=realm, is_active=True)
+        realm_id = realm.id
+    else:
+        # WARNING: Here we use an invalid realm_id, just to keep the
+        # cache independent of the per-realm caches.  If you're using
+        # this flow, you'll need to re-do any filters in base_query in
+        # the code itself; base_query is just a perf optimization.
+        realm_id = 0
 
     def fetch_users_by_email(emails: List[str]) -> List[UserProfile]:
         # This should be just
@@ -56,7 +63,7 @@ def bulk_get_users(emails: List[str], realm: Optional[Realm],
             params=emails)
 
     return generic_bulk_cached_fetch(
-        lambda email: user_profile_by_email_cache_key(email),
+        lambda email: user_profile_cache_key_id(email, realm_id),
         fetch_users_by_email,
         [email.lower() for email in emails],
         id_fetcher=lambda user_profile: user_profile.email.lower()

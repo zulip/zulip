@@ -318,9 +318,13 @@ def user_profile_by_email_cache_key(email):
     # with high likelihood be ASCII-only for the foreseeable future.
     return 'user_profile_by_email:%s' % (make_safe_digest(email.strip()),)
 
+def user_profile_cache_key_id(email, realm_id):
+    # type: (Text, int) -> Text
+    return u"user_profile:%s:%s" % (make_safe_digest(email.strip()), realm_id,)
+
 def user_profile_cache_key(email, realm):
     # type: (Text, Realm) -> Text
-    return u"user_profile:%s:%s" % (make_safe_digest(email.strip()), realm.id,)
+    return user_profile_cache_key_id(email, realm.id)
 
 def bot_profile_cache_key(email):
     # type: (Text) -> Text
