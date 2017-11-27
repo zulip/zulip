@@ -78,7 +78,8 @@ def maybe_send_to_registration(request, email, full_name='', password_required=T
         prereg_user = None
         if settings.ONLY_SSO:
             try:
-                prereg_user = PreregistrationUser.objects.filter(email__iexact=email, realm=realm).latest("invited_at")
+                prereg_user = PreregistrationUser.objects.filter(
+                    email__iexact=email, realm=realm).latest("invited_at")
             except PreregistrationUser.DoesNotExist:
                 prereg_user = create_preregistration_user(email, request,
                                                           password_required=password_required)
