@@ -58,11 +58,11 @@ From image editing program:
              "```math\n\\int_a^b f(t)\, dt=F(b)-F(a)\n```"},
             {'sender': fisher,
              'content': "My favorite is the syntax highlighting for code blocks\n"
-             "```python\ndef fib(n):\n    # returns the n-th Fibonacci number\n"
+             "```python\ndef fib(n: int) -> int:\n    # returns the n-th Fibonacci number\n"
              "    return fib(n-1) + fib(n-2)\n```"},
             {'sender': starr,
              'content': "I think you forgot your base case there, Bel :laughing:\n"
-             "```quote\n```python\ndef fib(n):\n    # returns the n-th Fibonacci number\n"
+             "```quote\n```python\ndef fib(n: int) -> int:\n    # returns the n-th Fibonacci number\n"
              "    return fib(n-1) + fib(n-2)\n```\n```"},
             {'sender': fisher,
              'content': "I'm also a big fan of inline link, tweet, video, and image previews. "
