@@ -1915,6 +1915,10 @@ def internal_send_message(realm, sender_email, recipient_type_name, recipients,
     """internal_send_message should only be used where `sender_email` is a
     system bot."""
 
+    # Verify the user is in fact a system bot
+    assert(sender_email.lower() in settings.CROSS_REALM_BOT_EMAILS or
+           sender_email == settings.ERROR_BOT)
+
     sender = get_system_bot(sender_email)
     parsed_recipients = extract_recipients(recipients)
 
