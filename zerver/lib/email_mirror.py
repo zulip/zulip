@@ -9,7 +9,8 @@ import email.message as message
 from django.conf import settings
 
 from zerver.lib.actions import decode_email_address, get_email_gateway_message_string_from_address, \
-    internal_send_message
+    internal_send_message, internal_send_private_message, \
+    internal_send_stream_message, internal_send_huddle_message
 from zerver.lib.notifications import convert_html_to_markdown
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.redis_utils import get_redis_client
@@ -19,7 +20,7 @@ from zerver.lib.str_utils import force_text
 from zerver.lib.send_email import FromAddress
 from zerver.models import Stream, Recipient, \
     get_user_profile_by_id, get_display_recipient, get_personal_recipient, \
-    Message, Realm, UserProfile, get_system_bot
+    Message, Realm, UserProfile, get_system_bot, get_user
 import talon
 from talon import quotations
 
@@ -158,23 +159,28 @@ def send_to_missed_message_address(address: Text, message: message.Message) -> N
     recipient = Recipient.objects.get(id=recipient_id)
     display_recipient = get_display_recipient(recipient)
 
-    # Testing with basestring so we don't depend on the list return type from
-    # get_display_recipient
-    if not isinstance(display_recipient, str):
-        recipient_str = ','.join([user['email'] for user in display_recipient])
-    else:
-        recipient_str = display_recipient
-
     body = construct_zulip_body(message, user_profile.realm)
 
     if recipient.type == Recipient.STREAM:
-        recipient_type_name = 'stream'
+        assert isinstance(display_recipient, str)
+        recipient_str = display_recipient
+        internal_send_stream_message(user_profile.realm, user_profile, recipient_str,
+                                     subject_b.decode('utf-8'), body)
+    elif recipient.type == Recipient.PERSONAL:
+        assert not isinstance(display_recipient, str)
+        recipient_str = display_recipient[0]['email']
+        recipient_user = get_user(recipient_str, user_profile.realm)
+        internal_send_private_message(user_profile.realm, user_profile,
+                                      recipient_user, body)
+    elif recipient.type == Recipient.HUDDLE:
+        assert not isinstance(display_recipient, str)
+        emails = [user_dict['email'] for user_dict in display_recipient]
+        recipient_str = ', '.join(emails)
+        internal_send_huddle_message(user_profile.realm, user_profile,
+                                     emails, body)
     else:
-        recipient_type_name = 'private'
+        raise AssertionError("Invalid recipient type!")
 
-    internal_send_message(user_profile.realm, user_profile.email,
-                          recipient_type_name, recipient_str,
-                          subject_b.decode('utf-8'), body)
     logger.info("Successfully processed email from %s to %s" % (
         user_profile.email, recipient_str))
 

@@ -1937,7 +1937,6 @@ def internal_send_message(realm, sender_email, recipient_type_name, recipients,
     # type: (Realm, Text, str, Text, Text, Text, Optional[bool]) -> None
     msg = internal_prep_message(realm, sender_email, recipient_type_name, recipients,
                                 topic_name, content)
-
     # internal_prep_message encountered an error
     if msg is None:
         return
@@ -1947,6 +1946,26 @@ def internal_send_message(realm, sender_email, recipient_type_name, recipients,
 def internal_send_private_message(realm, sender, recipient_user, content):
     # type: (Realm, UserProfile, UserProfile, Text) -> None
     message = internal_prep_private_message(realm, sender, recipient_user, content)
+    if message is None:
+        return
+    do_send_messages([message])
+
+def internal_send_stream_message(realm, sender, stream_name, topic, content):
+    # type: (Realm, UserProfile, str, str, str) -> None
+    message = internal_prep_stream_message(realm, sender, stream_name, topic, content)
+    if message is None:
+        return
+    do_send_messages([message])
+
+def internal_send_huddle_message(realm, sender, emails, content):
+    # type: (Realm, UserProfile, List[str], str) -> None
+    addressee = Addressee.for_private(emails, realm)
+    message = _internal_prep_message(
+        realm=realm,
+        sender=sender,
+        addressee=addressee,
+        content=content,
+    )
     if message is None:
         return
     do_send_messages([message])
