@@ -270,11 +270,16 @@ class BugdownTest(ZulipTestCase):
 
         self.assertEqual(converted, '<p>Check out the debate: <a href="http://www.youtube.com/watch?v=hx1mjT73xYE" target="_blank" title="http://www.youtube.com/watch?v=hx1mjT73xYE">http://www.youtube.com/watch?v=hx1mjT73xYE</a></p>\n<div class="youtube-video message_inline_image"><a data-id="hx1mjT73xYE" href="http://www.youtube.com/watch?v=hx1mjT73xYE" target="_blank" title="http://www.youtube.com/watch?v=hx1mjT73xYE"><img src="https://i.ytimg.com/vi/hx1mjT73xYE/default.jpg"></a></div>')
 
+        msg = 'http://www.youtube.com/watch?v=hx1mjT73xYE'
+        converted = bugdown_convert(msg)
+
+        self.assertEqual(converted, '<p><a href="http://www.youtube.com/watch?v=hx1mjT73xYE" target="_blank" title="http://www.youtube.com/watch?v=hx1mjT73xYE">http://www.youtube.com/watch?v=hx1mjT73xYE</a></p>\n<div class="youtube-video message_inline_image"><a data-id="hx1mjT73xYE" href="http://www.youtube.com/watch?v=hx1mjT73xYE" target="_blank" title="http://www.youtube.com/watch?v=hx1mjT73xYE"><img src="https://i.ytimg.com/vi/hx1mjT73xYE/default.jpg"></a></div>')
+
     @override_settings(INLINE_IMAGE_PREVIEW=True)
     def test_inline_image_preview(self) -> None:
-        with_preview = '<p><a href="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg" target="_blank" title="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg">http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg</a></p>\n<div class="message_inline_image"><a href="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg" target="_blank" title="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg"><img src="https://external-content.zulipcdn.net/389b5d7148a0cbc7475ed564e1b03ceb476bdacb/687474703a2f2f63646e2e77616c6c70617065727361666172692e636f6d2f31332f362f313665566a782e6a706567"></a></div>'
-        without_preview = '<p><a href="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg" target="_blank" title="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg">http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg</a></p>'
-        content = 'http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg'
+        with_preview = '<p>Test: <a href="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg" target="_blank" title="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg">http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg</a></p>\n<div class="message_inline_image"><a href="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg" target="_blank" title="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg"><img src="https://external-content.zulipcdn.net/389b5d7148a0cbc7475ed564e1b03ceb476bdacb/687474703a2f2f63646e2e77616c6c70617065727361666172692e636f6d2f31332f362f313665566a782e6a706567"></a></div>'
+        without_preview = '<p>Test: <a href="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg" target="_blank" title="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg">http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg</a></p>'
+        content = 'Test: http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg'
 
         sender_user_profile = self.example_user('othello')
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
@@ -383,15 +388,15 @@ class BugdownTest(ZulipTestCase):
 
     def test_inline_github_preview(self) -> None:
         # Test photo album previews
-        msg = 'https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png'
+        msg = 'Test: https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png'
         converted = bugdown_convert(msg)
 
-        self.assertEqual(converted, '<p><a href="https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png" target="_blank" title="https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png">https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png</a></p>\n<div class="message_inline_image"><a href="https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png" target="_blank" title="https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png"><img src="https://raw.githubusercontent.com/zulip/zulip/master/static/images/logo/zulip-icon-128x128.png"></a></div>')
+        self.assertEqual(converted, '<p>Test: <a href="https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png" target="_blank" title="https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png">https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png</a></p>\n<div class="message_inline_image"><a href="https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png" target="_blank" title="https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png"><img src="https://raw.githubusercontent.com/zulip/zulip/master/static/images/logo/zulip-icon-128x128.png"></a></div>')
 
-        msg = 'https://developer.github.com/assets/images/hero-circuit-bg.png'
+        msg = 'Test: https://developer.github.com/assets/images/hero-circuit-bg.png'
         converted = bugdown_convert(msg)
 
-        self.assertEqual(converted, '<p><a href="https://developer.github.com/assets/images/hero-circuit-bg.png" target="_blank" title="https://developer.github.com/assets/images/hero-circuit-bg.png">https://developer.github.com/assets/images/hero-circuit-bg.png</a></p>\n<div class="message_inline_image"><a href="https://developer.github.com/assets/images/hero-circuit-bg.png" target="_blank" title="https://developer.github.com/assets/images/hero-circuit-bg.png"><img src="https://developer.github.com/assets/images/hero-circuit-bg.png"></a></div>')
+        self.assertEqual(converted, '<p>Test: <a href="https://developer.github.com/assets/images/hero-circuit-bg.png" target="_blank" title="https://developer.github.com/assets/images/hero-circuit-bg.png">https://developer.github.com/assets/images/hero-circuit-bg.png</a></p>\n<div class="message_inline_image"><a href="https://developer.github.com/assets/images/hero-circuit-bg.png" target="_blank" title="https://developer.github.com/assets/images/hero-circuit-bg.png"><img src="https://developer.github.com/assets/images/hero-circuit-bg.png"></a></div>')
 
     def test_twitter_id_extraction(self) -> None:
         self.assertEqual(bugdown.get_tweet_id('http://twitter.com/#!/VizzQuotes/status/409030735191097344'), '409030735191097344')
