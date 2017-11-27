@@ -649,6 +649,25 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return (e.get("href"), e.get("href"))
         return None
 
+    def is_only_element(self, root, url):
+        # type: (Element, str) -> bool
+        # Check if the url is the only content of the message.
+
+        if not len(root) == 1:
+            return False
+
+        # Generate a <p><a>url</a></p> element
+        expected_elem = markdown.util.etree.Element('p')
+        expected_elem.append(url_to_a(url))
+        expected_html = markdown.util.etree.tostring(expected_elem)
+
+        actual_html = markdown.util.etree.tostring(root[0])
+
+        if not actual_html.strip() == expected_html.strip():
+            return False
+
+        return True
+
     def run(self, root):
         # type: (Element) -> None
         # Get all URLs from the blob
@@ -675,6 +694,9 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                       class_attr=class_attr)
                 continue
             if self.is_image(url):
+                if len(found_urls) == 1 and self.is_only_element(root, url):
+                    # If the complete message is the image link, remove the link
+                    root.remove(root[0])
                 add_a(root, self.get_actual_image_url(url), url, title=text)
                 continue
             if get_tweet_id(url) is not None:

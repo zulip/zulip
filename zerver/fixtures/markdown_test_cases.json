@@ -238,6 +238,17 @@
       "text_content": "Google logo today: https:\/\/www.google.com\/images\/srpr\/logo4w.png\nKinda boringGoogle logo today: https:\/\/www.google.com\/images\/srpr\/logo4w.png\nKinda boring\n"
     },
     {
+      "name": "only_inline_image",
+      "input": "https://www.google.com/images/srpr/logo4w.png",
+      "expected_output": "<div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\" target=\"_blank\" title=\"https://www.google.com/images/srpr/logo4w.png\"><img src=\"https://www.google.com/images/srpr/logo4w.png\"></a></div>",
+      "backend_only_rendering": true
+    },
+    {
+      "name": "only_non_image_link",
+      "input": "https://github.com",
+      "expected_output": "<p><a href=\"https://github.com\" target=\"_blank\" title=\"https://github.com\">https://github.com</a></p>"
+    },
+    {
       "name": "camo",
       "input": "Google logo today: http://www.google.com/images/srpr/logo4w.png",
       "expected_output": "<p>Google logo today: <a href=\"http://www.google.com/images/srpr/logo4w.png\" target=\"_blank\" title=\"http://www.google.com/images/srpr/logo4w.png\">http://www.google.com/images/srpr/logo4w.png</a></p>\n<div class=\"message_inline_image\"><a href=\"http://www.google.com/images/srpr/logo4w.png\" target=\"_blank\" title=\"http://www.google.com/images/srpr/logo4w.png\"><img src=\"https://external-content.zulipcdn.net/7b6552b60c635e41e8f6daeb36d88afc4eabde79/687474703a2f2f7777772e676f6f676c652e636f6d2f696d616765732f737270722f6c6f676f34772e706e67\"></a></div>",
