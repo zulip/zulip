@@ -86,7 +86,7 @@
     display: inline-block;
     vertical-align: top;
 
-    width: 75px;
+    min-width: 75px;
 
     margin: 0px 5px;
     padding: 0px 5px;
@@ -155,7 +155,7 @@
 
 #lightbox_overlay .image-description {
     /* approx width of screen minus action buttons on the side. */
-    width: calc(100% - 360px);
+    max-width: calc(100% - 450px);
     /* add some extra margin top and remove some bottom to keep the
        height the same. and vertically center the text with the buttons. */
     margin-top: 25px;
