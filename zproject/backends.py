@@ -22,8 +22,7 @@ from zerver.lib.users import check_full_name
 from zerver.models import UserProfile, Realm, get_user_profile_by_id, \
     remote_user_to_email, email_to_username, get_realm, get_user
 
-def pad_method_dict(method_dict):
-    # type: (Dict[Text, bool]) -> Dict[Text, bool]
+def pad_method_dict(method_dict: Dict[Text, bool]) -> Dict[Text, bool]:
     """Pads an authentication methods dict to contain all auth backends
     supported by the software, regardless of whether they are
     configured on this server"""
@@ -32,8 +31,7 @@ def pad_method_dict(method_dict):
             method_dict[key] = False
     return method_dict
 
-def auth_enabled_helper(backends_to_check, realm):
-    # type: (List[Text], Optional[Realm]) -> bool
+def auth_enabled_helper(backends_to_check: List[Text], realm: Optional[Realm]) -> bool:
     if realm is not None:
         enabled_method_dict = realm.authentication_methods_dict()
         pad_method_dict(enabled_method_dict)
@@ -47,38 +45,30 @@ def auth_enabled_helper(backends_to_check, realm):
                 return True
     return False
 
-def ldap_auth_enabled(realm=None):
-    # type: (Optional[Realm]) -> bool
+def ldap_auth_enabled(realm: Optional[Realm]=None) -> bool:
     return auth_enabled_helper(['LDAP'], realm)
 
-def email_auth_enabled(realm=None):
-    # type: (Optional[Realm]) -> bool
+def email_auth_enabled(realm: Optional[Realm]=None) -> bool:
     return auth_enabled_helper(['Email'], realm)
 
-def password_auth_enabled(realm=None):
-    # type: (Optional[Realm]) -> bool
+def password_auth_enabled(realm: Optional[Realm]=None) -> bool:
     return ldap_auth_enabled(realm) or email_auth_enabled(realm)
 
-def dev_auth_enabled(realm=None):
-    # type: (Optional[Realm]) -> bool
+def dev_auth_enabled(realm: Optional[Realm]=None) -> bool:
     return auth_enabled_helper(['Dev'], realm)
 
-def google_auth_enabled(realm=None):
-    # type: (Optional[Realm]) -> bool
+def google_auth_enabled(realm: Optional[Realm]=None) -> bool:
     return auth_enabled_helper(['Google'], realm)
 
-def github_auth_enabled(realm=None):
-    # type: (Optional[Realm]) -> bool
+def github_auth_enabled(realm: Optional[Realm]=None) -> bool:
     return auth_enabled_helper(['GitHub'], realm)
 
-def any_oauth_backend_enabled(realm=None):
-    # type: (Optional[Realm]) -> bool
+def any_oauth_backend_enabled(realm: Optional[Realm]=None) -> bool:
     """Used by the login page process to determine whether to show the
     'OR' for login with Google"""
     return auth_enabled_helper(['GitHub', 'Google'], realm)
 
-def require_email_format_usernames(realm=None):
-    # type: (Optional[Realm]) -> bool
+def require_email_format_usernames(realm: Optional[Realm]=None) -> bool:
     if ldap_auth_enabled(realm):
         if settings.LDAP_EMAIL_ATTR or settings.LDAP_APPEND_DOMAIN:
             return False
@@ -112,8 +102,7 @@ def common_get_active_user(email: str, realm: Realm,
     return user_profile
 
 class ZulipAuthMixin:
-    def get_user(self, user_profile_id):
-        # type: (int) -> Optional[UserProfile]
+    def get_user(self, user_profile_id: int) -> Optional[UserProfile]:
         """ Get a UserProfile object from the user_profile_id. """
         try:
             return get_user_profile_by_id(user_profile_id)
@@ -123,12 +112,10 @@ class ZulipAuthMixin:
 class SocialAuthMixin(ZulipAuthMixin):
     auth_backend_name = None  # type: Text
 
-    def get_email_address(self, *args, **kwargs):
-        # type: (*Any, **Any) -> Text
+    def get_email_address(self, *args: Any, **kwargs: Any) -> Text:
         raise NotImplementedError
 
-    def get_full_name(self, *args, **kwargs):
-        # type: (*Any, **Any) -> Text
+    def get_full_name(self, *args: Any, **kwargs: Any) -> Text:
         raise NotImplementedError
 
     def get_authenticated_user(self, *args: Any, **kwargs: Any) -> Optional[UserProfile]:
@@ -191,8 +178,7 @@ class SocialAuthMixin(ZulipAuthMixin):
                                          response=response,
                                          backend=backend)
 
-    def _common_authenticate(self, *args, **kwargs):
-        # type: (*Any, **Any) -> Optional[UserProfile]
+    def _common_authenticate(self, *args: Any, **kwargs: Any) -> Optional[UserProfile]:
         return_data = kwargs.get('return_data', {})
         realm = kwargs.get("realm")
         if realm is None:
@@ -209,8 +195,8 @@ class SocialAuthMixin(ZulipAuthMixin):
         return_data["valid_attestation"] = True
         return common_get_active_user(email_address, realm, return_data)
 
-    def process_do_auth(self, user_profile, *args, **kwargs):
-        # type: (UserProfile, *Any, **Any) -> Optional[HttpResponse]
+    def process_do_auth(self, user_profile: UserProfile, *args: Any,
+                        **kwargs: Any) -> Optional[HttpResponse]:
         # These functions need to be imported here to avoid cyclic
         # dependency.
         from zerver.views.auth import (login_or_register_remote_user,
@@ -265,8 +251,7 @@ class SocialAuthMixin(ZulipAuthMixin):
         return redirect_and_log_into_subdomain(realm, full_name, email_address,
                                                is_signup=is_signup)
 
-    def auth_complete(self, *args, **kwargs):
-        # type: (*Any, **Any) -> Optional[HttpResponse]
+    def auth_complete(self, *args: Any, **kwargs: Any) -> Optional[HttpResponse]:
         """
         Returning `None` from this function will redirect the browser
         to the login page.
@@ -390,38 +375,32 @@ class ZulipLDAPConfigurationError(Exception):
 
 class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
     # Don't use Django LDAP's permissions functions
-    def has_perm(self, user, perm, obj=None):
-        # type: (Optional[UserProfile], Any, Any) -> bool
+    def has_perm(self, user: Optional[UserProfile], perm: Any, obj: Any=None) -> bool:
         # Using Any type is safe because we are not doing anything with
         # the arguments.
         return False
 
-    def has_module_perms(self, user, app_label):
-        # type: (Optional[UserProfile], Optional[str]) -> bool
+    def has_module_perms(self, user: Optional[UserProfile], app_label: Optional[str]) -> bool:
         return False
 
-    def get_all_permissions(self, user, obj=None):
-        # type: (Optional[UserProfile], Any) -> Set[Any]
+    def get_all_permissions(self, user: Optional[UserProfile], obj: Any=None) -> Set[Any]:
         # Using Any type is safe because we are not doing anything with
         # the arguments and always return empty set.
         return set()
 
-    def get_group_permissions(self, user, obj=None):
-        # type: (Optional[UserProfile], Any) -> Set[Any]
+    def get_group_permissions(self, user: Optional[UserProfile], obj: Any=None) -> Set[Any]:
         # Using Any type is safe because we are not doing anything with
         # the arguments and always return empty set.
         return set()
 
-    def django_to_ldap_username(self, username):
-        # type: (Text) -> Text
+    def django_to_ldap_username(self, username: Text) -> Text:
         if settings.LDAP_APPEND_DOMAIN:
             if not username.endswith("@" + settings.LDAP_APPEND_DOMAIN):
                 raise ZulipLDAPException("Username does not match LDAP domain.")
             return email_to_username(username)
         return username
 
-    def ldap_to_django_username(self, username):
-        # type: (str) -> str
+    def ldap_to_django_username(self, username: str) -> str:
         if settings.LDAP_APPEND_DOMAIN:
             return "@".join((username, settings.LDAP_APPEND_DOMAIN))
         return username
@@ -445,8 +424,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         except ZulipLDAPException:
             return None  # nocoverage # TODO: this may no longer be possible
 
-    def get_or_create_user(self, username, ldap_user):
-        # type: (str, _LDAPUser) -> Tuple[UserProfile, bool]
+    def get_or_create_user(self, username: str, ldap_user: _LDAPUser) -> Tuple[UserProfile, bool]:
 
         if settings.LDAP_EMAIL_ATTR is not None:
             # Get email from ldap attributes.
@@ -514,15 +492,13 @@ class DevAuthBackend(ZulipAuthMixin):
 class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
     auth_backend_name = "GitHub"
 
-    def get_email_address(self, *args, **kwargs):
-        # type: (*Any, **Any) -> Optional[Text]
+    def get_email_address(self, *args: Any, **kwargs: Any) -> Optional[Text]:
         try:
             return kwargs['response']['email']
         except KeyError:  # nocoverage # TODO: investigate
             return None
 
-    def get_full_name(self, *args, **kwargs):
-        # type: (*Any, **Any) -> Text
+    def get_full_name(self, *args: Any, **kwargs: Any) -> Text:
         # In case of any error return an empty string. Name is used by
         # the registration page to pre-populate the name field. However,
         # if it is not supplied, our registration process will make sure

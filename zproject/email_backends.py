@@ -12,8 +12,7 @@ from django.core.mail.backends.base import BaseEmailBackend
 from django.core.mail import EmailMultiAlternatives
 from django.template import loader
 
-def get_forward_address():
-    # type: () -> str
+def get_forward_address() -> str:
     config = configparser.ConfigParser()
     config.read(settings.FORWARD_ADDRESS_CONFIG_FILE)
     try:
@@ -21,8 +20,7 @@ def get_forward_address():
     except (configparser.NoSectionError, configparser.NoOptionError) as e:
         return ""
 
-def set_forward_address(forward_address):
-    # type: (str) -> None
+def set_forward_address(forward_address: str) -> None:
     config = configparser.ConfigParser()
     config.read(settings.FORWARD_ADDRESS_CONFIG_FILE)
 
@@ -34,8 +32,7 @@ def set_forward_address(forward_address):
             config.write(cfgfile)
 
 class EmailLogBackEnd(BaseEmailBackend):
-    def send_email_smtp(self, email):
-        # type: (EmailMultiAlternatives) -> None
+    def send_email_smtp(self, email: EmailMultiAlternatives) -> None:
         from_email = email.from_email
         to = get_forward_address()
 
