@@ -225,6 +225,10 @@ DEFAULT_SETTINGS.update({
     'FEEDBACK_BOT': 'feedback@zulip.com',
     'FEEDBACK_BOT_NAME': 'Zulip Feedback Bot',
     'FEEDBACK_STREAM': None,
+    # SYSTEM_BOT_REALM would be a constant always set to 'zulip',
+    # except that it isn't that on zulipchat.com.  We will likely do a
+    # migration and eliminate this parameter in the future.
+    'SYSTEM_BOT_REALM': 'zulip',
 
     # Structurally, we will probably eventually merge
     # analytics into part of the main server, rather

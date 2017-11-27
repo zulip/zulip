@@ -3889,7 +3889,7 @@ def get_cross_realm_dicts():
     # type: () -> List[Dict[str, Any]]
     users = bulk_get_users(list(get_cross_realm_emails()), None,
                            base_query=UserProfile.objects.filter(
-                               realm__string_id="zulip")).values()
+                               realm__string_id=settings.SYSTEM_BOT_REALM)).values()
     return [{'email': user.email,
              'user_id': user.id,
              'is_admin': user.is_realm_admin,
@@ -3899,7 +3899,7 @@ def get_cross_realm_dicts():
             # Important: We filter here, is addition to in
             # `base_query`, because of how bulk_get_users shares its
             # cache with other UserProfile caches.
-            if user.realm.string_id == 'zulip']
+            if user.realm.string_id == settings.SYSTEM_BOT_REALM]
 
 def do_send_confirmation_email(invitee, referrer, body):
     # type: (PreregistrationUser, UserProfile, Optional[str]) -> None

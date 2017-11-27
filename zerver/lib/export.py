@@ -585,7 +585,7 @@ def fetch_user_profile(response: TableData, config: Config, context: Context) ->
 def fetch_user_profile_cross_realm(response: TableData, config: Config, context: Context) -> None:
     realm = context['realm']
 
-    if realm.string_id == "zulip":
+    if realm.string_id == settings.SYSTEM_BOT_REALM:
         response['zerver_userprofile_crossrealm'] = []
     else:
         response['zerver_userprofile_crossrealm'] = [dict(email=x.email, id=x.id) for x in [
