@@ -16,8 +16,8 @@ from zerver.models import UserProfile
 from typing import Dict, List, Optional
 
 @has_request_variables
-def update_storage(request, user_profile, storage=REQ(validator=check_dict([]))):
-    # type: (HttpRequest, UserProfile, Optional[Dict[str, str]]) -> HttpResponse
+def update_storage(request: HttpRequest, user_profile: UserProfile,
+                   storage: Optional[Dict[str, str]]=REQ(validator=check_dict([]))) -> HttpResponse:
     try:
         set_bot_storage(user_profile, list(storage.items()))
     except StateError as e:

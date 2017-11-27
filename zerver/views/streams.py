@@ -40,17 +40,14 @@ class PrincipalError(JsonableError):
     data_fields = ['principal']
     http_status_code = 403
 
-    def __init__(self, principal):
-        # type: (Text) -> None
+    def __init__(self, principal: Text) -> None:
         self.principal = principal  # type: Text
 
     @staticmethod
-    def msg_format():
-        # type: () -> Text
+    def msg_format() -> Text:
         return _("User not authorized to execute queries on behalf of '{principal}'")
 
-def principal_to_user_profile(agent, principal):
-    # type: (UserProfile, Text) -> UserProfile
+def principal_to_user_profile(agent: UserProfile, principal: Text) -> UserProfile:
     try:
         return get_user(principal, agent.realm)
     except UserProfile.DoesNotExist:
@@ -61,16 +58,16 @@ def principal_to_user_profile(agent, principal):
         raise PrincipalError(principal)
 
 @require_realm_admin
-def deactivate_stream_backend(request, user_profile, stream_id):
-    # type: (HttpRequest, UserProfile, int) -> HttpResponse
+def deactivate_stream_backend(request: HttpRequest, user_profile: UserProfile,
+                              stream_id: int) -> HttpResponse:
     stream = access_stream_for_delete(user_profile, stream_id)
     do_deactivate_stream(stream)
     return json_success()
 
 @require_realm_admin
 @has_request_variables
-def add_default_stream(request, user_profile, stream_name=REQ()):
-    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
+def add_default_stream(request: HttpRequest, user_profile: UserProfile,
+                       stream_name: Text=REQ()) -> HttpResponse:
     (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
     do_add_default_stream(stream)
     return json_success()
@@ -133,8 +130,8 @@ def remove_default_stream_group(request: HttpRequest, user_profile: UserProfile,
 
 @require_realm_admin
 @has_request_variables
-def remove_default_stream(request, user_profile, stream_name=REQ()):
-    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
+def remove_default_stream(request: HttpRequest, user_profile: UserProfile,
+                          stream_name: Text=REQ()) -> HttpResponse:
     (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
     do_remove_default_stream(stream)
     return json_success()
@@ -165,8 +162,7 @@ def update_stream_backend(
         do_change_stream_invite_only(stream, is_private)
     return json_success()
 
-def list_subscriptions_backend(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
+def list_subscriptions_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     return json_success({"subscriptions": gather_subscriptions(user_profile)[0]})
 
 FuncKwargPair = Tuple[Callable[..., HttpResponse], Dict[str, Union[int, Iterable[Any]]]]
@@ -187,8 +183,8 @@ def update_subscriptions_backend(
     ]  # type: List[FuncKwargPair]
     return compose_views(request, user_profile, method_kwarg_pairs)
 
-def compose_views(request, user_profile, method_kwarg_pairs):
-    # type: (HttpRequest, UserProfile, List[FuncKwargPair]) -> HttpResponse
+def compose_views(request: HttpRequest, user_profile: UserProfile,
+                  method_kwarg_pairs: List[FuncKwargPair]) -> HttpResponse:
     '''
     This takes a series of view methods from method_kwarg_pairs and calls
     them in sequence, and it smushes all the json results into a single
@@ -252,8 +248,8 @@ def remove_subscriptions_backend(
 
     return json_success(result)
 
-def you_were_just_subscribed_message(acting_user, stream_names, private_stream_names):
-    # type: (UserProfile, Set[Text], Set[Text]) -> Text
+def you_were_just_subscribed_message(acting_user: UserProfile, stream_names: Set[Text],
+                                     private_stream_names: Set[Text]) -> Text:
 
     # stream_names is the list of streams for which we should send notifications.
     #
@@ -469,14 +465,14 @@ def json_stream_exists(request: HttpRequest, user_profile: UserProfile, stream_n
     return json_success(result)  # results are ignored for HEAD requests
 
 @has_request_variables
-def json_get_stream_id(request, user_profile, stream_name=REQ('stream')):
-    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
+def json_get_stream_id(request: HttpRequest, user_profile: UserProfile,
+                       stream_name: Text=REQ('stream')) -> HttpResponse:
     (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
     return json_success({'stream_id': stream.id})
 
 @has_request_variables
-def update_subscriptions_property(request, user_profile, stream_id=REQ(), property=REQ(), value=REQ()):
-    # type: (HttpRequest, UserProfile, int, str, str) -> HttpResponse
+def update_subscriptions_property(request: HttpRequest, user_profile: UserProfile, stream_id: int=REQ(),
+                                  property: str=REQ(), value: str=REQ()) -> HttpResponse:
     subscription_data = [{"property": property,
                           "stream_id": stream_id,
                           "value": value}]
