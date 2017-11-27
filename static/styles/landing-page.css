@@ -1777,16 +1777,16 @@ nav ul li.active::after {
 }
 
 /* -- /for/open-source/ -- */
-.portico-landing.why-page {
+.portico-landing.page {
     padding-top: 0px;
     color: hsl(222, 20%, 40%);
 }
 
-.portico-landing.why-page .main {
+.portico-landing.page .main {
     max-width: 900px;
 }
 
-.portico-landing.why-page .hero {
+.portico-landing.page .hero {
     padding: 200px 50px 100px 50px;
 
 
@@ -1794,18 +1794,18 @@ nav ul li.active::after {
     color: #fff;
 }
 
-.portico-landing.why-page .hero.small-hero {
+.portico-landing.page .hero.small-hero {
     padding: 120px 50px 30px 50px;
 }
 
-.portico-landing.why-page .hero h1 {
+.portico-landing.page .hero h1 {
     margin: 0px 0px 20px 0px;
 
     font-size: 3.5em;
     font-weight: 300;
 }
 
-.portico-landing.why-page .hero p {
+.portico-landing.page .hero p {
     width: 70%;
     max-width: 700px;
     margin: 0 auto;
@@ -1816,31 +1816,31 @@ nav ul li.active::after {
     opacity: 0.7;
 }
 
-.portico-landing.why-page .main .inner-content h2 {
+.portico-landing.page .main .inner-content h2 {
     margin-top: 30px;
     margin-bottom: 10px;
 }
 
-.portico-landing.why-page .main li {
+.portico-landing.page .main li {
     line-height: 1.6;
     font-size: 1em;
 }
 
-.portico-landing.why-page .main p {
+.portico-landing.page .main p {
     font-size: 1em;
     margin: 0px 0px 20px;
 }
 
-.portico-landing.why-page .main h3 {
+.portico-landing.page .main h3 {
     margin-top: 20px;
 }
 
-.portico-landing.why-page .main li strong {
+.portico-landing.page .main li strong {
     font-weight: 600;
     color: #333;
 }
 
-.portico-landing.why-page .photo-description {
+.portico-landing.page .photo-description {
     position: relative;
     top: -40px;
     height: 0;
@@ -1850,11 +1850,11 @@ nav ul li.active::after {
     color: #888;
 }
 
-.portico-landing.why-page .team h2 {
+.portico-landing.page .team h2 {
     margin-top: 20px;
 }
 
-.portico-landing.why-page .bg-pycon {
+.portico-landing.page .bg-pycon {
     position: relative;
 
     background-image: url(/static/images/landing-page/pycon.jpg);
@@ -1862,15 +1862,15 @@ nav ul li.active::after {
     background-position: center;
 }
 
-.portico-landing.why-page .bg-pycon.drone {
+.portico-landing.page .bg-pycon.drone {
     background-image: url(/static/images/landing-page/pycon-drone.jpg);
 }
 
-.portico-landing.why-page .bg-pycon.mit {
+.portico-landing.page .bg-pycon.mit {
     background-image: url(/static/images/landing-page/mit-lobby-7.jpg);
 }
 
-.portico-landing.why-page .bg-pycon .bg-dimmer {
+.portico-landing.page .bg-pycon .bg-dimmer {
     position: absolute;
     width: 100%;
     height: 100%;
@@ -1882,7 +1882,7 @@ nav ul li.active::after {
     z-index: 0;
 }
 
-.portico-landing.why-page .bg-pycon .content {
+.portico-landing.page .bg-pycon .content {
     position: relative;
     z-index: 1;
 }
@@ -2885,7 +2885,7 @@ nav ul li.active::after {
         text-align: center;
     }
 
-    .portico-landing.why-page .hero p br {
+    .portico-landing.page .hero p br {
         display: none;
     }
 }
@@ -2954,26 +2954,26 @@ nav ul li.active::after {
         width: auto;
     }
 
-    .portico-landing.why-page .main {
+    .portico-landing.page .main {
         width: auto;
         margin: 0px;
     }
 
-    .portico-landing.why-page .hero {
+    .portico-landing.page .hero {
         padding-left: 20px;
         padding-right: 20px;
     }
 
-    .portico-landing.why-page .hero {
+    .portico-landing.page .hero {
         font-size: 0.6em;
     }
 
-    .portico-landing.why-page .hero p {
+    .portico-landing.page .hero p {
         font-size: 2em;
         width: 100%;
     }
 
-    .portico-landing.why-page .padded-content {
+    .portico-landing.page .padded-content {
         padding: 50px 20px;
     }
 

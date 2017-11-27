@@ -17,7 +17,7 @@ body {
     font-weight: normal;
 }
 
-.why-page h3.normal {
+.page h3.normal {
     font-size: 1.2em;
     margin-top: 20px;
     margin-bottom: 5px;
@@ -1526,9 +1526,9 @@ input.new-organization-button {
 .markdown h1,
 .markdown h2,
 .markdown h3,
-.why-page h1,
-.why-page h2,
-.why-page h3 {
+.page h1,
+.page h2,
+.page h3 {
     font-weight: 700;
 }
 
@@ -1554,20 +1554,20 @@ input.new-organization-button {
 }
 
 .markdown h1,
-.why-page .main h1 {
+.page .main h1 {
     border-bottom: 1px solid #eee;
     padding-bottom: 10px;
     margin-bottom: 15px;
 }
 
 .markdown h2,
-.why-page h2 {
+.page h2 {
     font-size: 1.4em;
     margin: 5px 0 0 0;
 }
 
 .markdown h3,
-.why-page h3 {
+.page h3 {
     font-size: 1.1em;
     opacity: 1;
     margin-bottom: 0px;
