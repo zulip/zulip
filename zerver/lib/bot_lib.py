@@ -66,13 +66,12 @@ class EmbeddedBotHandler:
         self.storage = StateHandler(user_profile)
 
     def send_message(self, message: Dict[str, Any]) -> None:
-        if self._rate_limit.is_legal():
-            recipients = message['to'] if message['type'] == 'stream' else ','.join(message['to'])
-            internal_send_message(realm=self.user_profile.realm, sender_email=self.user_profile.email,
-                                  recipient_type_name=message['type'], recipients=recipients,
-                                  topic_name=message.get('subject', None), content=message['content'])
-        else:
+        if not self._rate_limit.is_legal():
             self._rate_limit.show_error_and_exit()
+        recipients = message['to'] if message['type'] == 'stream' else ','.join(message['to'])
+        internal_send_message(realm=self.user_profile.realm, sender_email=self.user_profile.email,
+                              recipient_type_name=message['type'], recipients=recipients,
+                              topic_name=message.get('subject', None), content=message['content'])
 
     def send_reply(self, message: Dict[str, Any], response: str) -> None:
         if message['type'] == 'private':
