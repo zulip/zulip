@@ -1881,29 +1881,6 @@ def _internal_prep_message(realm, sender, addressee, content):
 
     return None
 
-def internal_prep_message(realm, sender_email, recipient_type_name, recipients,
-                          topic_name, content):
-    # type: (Realm, Text, str, Text, Text, Text) -> Optional[Dict[str, Any]]
-    """
-    See _internal_prep_message for details of how this works.
-    """
-    sender = get_system_bot(sender_email)
-    parsed_recipients = extract_recipients(recipients)
-
-    addressee = Addressee.legacy_build(
-        sender,
-        recipient_type_name,
-        parsed_recipients,
-        topic_name,
-        realm=realm)
-
-    return _internal_prep_message(
-        realm=realm,
-        sender=sender,
-        addressee=addressee,
-        content=content,
-    )
-
 def internal_prep_stream_message(realm, sender, stream_name, topic, content):
     # type: (Realm, UserProfile, Text, Text, Text) -> Optional[Dict[str, Any]]
     """
@@ -1935,9 +1912,25 @@ def internal_prep_private_message(realm, sender, recipient_user, content):
 def internal_send_message(realm, sender_email, recipient_type_name, recipients,
                           topic_name, content, email_gateway=False):
     # type: (Realm, Text, str, Text, Text, Text, Optional[bool]) -> None
-    msg = internal_prep_message(realm, sender_email, recipient_type_name, recipients,
-                                topic_name, content)
-    # internal_prep_message encountered an error
+    """internal_send_message should only be used where `sender_email` is a
+    system bot."""
+
+    sender = get_system_bot(sender_email)
+    parsed_recipients = extract_recipients(recipients)
+
+    addressee = Addressee.legacy_build(
+        sender,
+        recipient_type_name,
+        parsed_recipients,
+        topic_name,
+        realm=realm)
+
+    msg = _internal_prep_message(
+        realm=realm,
+        sender=sender,
+        addressee=addressee,
+        content=content,
+    )
     if msg is None:
         return
 
