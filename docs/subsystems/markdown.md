@@ -86,6 +86,7 @@ places:
 * The test suite, probably via adding entries to `zerver/fixtures/markdown_test_cases.json`.
 * The in-app markdown documentation (`templates/zerver/markdown_help.html`).
 * The list of changes to markdown at the end of this document.
+* The list of [external documentation](#external-documentation) at the end of this document.
 
 Important considerations for any changes are:
 
@@ -225,3 +226,12 @@ be non-standard.
   is used primarily by version control integrations.
 
 * We added the `~~~ quote` block quote syntax.
+
+## External Documentation
+
+Helpful backend implementation resources:
+
+* **[Python Markdown Extensions API](https://pythonhosted.org/Markdown/extensions/api.html)**
+  is used by Zulip to make the above listed changes to markdown syntax.
+* **[XML Element Tree](https://docs.python.org/3/library/xml.etree.elementtree.html)**
+  is used by Python Markdown and the extensions to modify the output HTML.
