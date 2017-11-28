@@ -58,7 +58,7 @@ location / {
 }
 
 location /api/ {
-    add_header Access-Control-Allow-Origin *;
+    add_header Access-Control-Allow-Origin * always;
     add_header Access-Control-Allow-Headers Authorization;
     add_header Access-Control-Allow-Methods 'GET, POST, DELETE, PUT, PATCH, HEAD';
 
