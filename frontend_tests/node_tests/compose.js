@@ -103,7 +103,7 @@ people.add(bob);
     sub.subscribed = false;
     stream_data.add_sub('social', sub);
     assert(!compose.validate_stream_message_address_info('social'));
-    assert.equal($('#error-msg').html(), "<p>You're not subscribed to the stream <b>social</b>.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
+    assert.equal($('#error-msg').html(), "<div>You're not subscribed to the stream <b>social</b>. <a href='#streams/101/social'>Subscribe now.</a></div>");
 
     global.page_params.narrow_stream = false;
     channel.post = function (payload) {
@@ -122,7 +122,7 @@ people.add(bob);
         payload.success(payload.data);
     };
     assert(!compose.validate_stream_message_address_info('Frontend'));
-    assert.equal($('#error-msg').html(), "<p>You're not subscribed to the stream <b>Frontend</b>.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
+    assert.equal($('#error-msg').html(), "<div>You're not subscribed to the stream <b>Frontend</b>. <a href='#streams/102/Frontend'>Subscribe now.</a></div>");
 
     channel.post = function (payload) {
         assert.equal(payload.data.stream, 'Frontend');

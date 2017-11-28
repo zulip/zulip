@@ -410,6 +410,9 @@ exports.validate_stream_message_address_info = function (stream_name) {
         return true;
     }
 
+    var stream_id = stream_data.get_stream_id(stream_name);
+    var safe_stream_name = Handlebars.Utils.escapeExpression(stream_name);
+
     var response;
 
     switch (check_unsubscribed_stream_for_send(stream_name,
@@ -424,9 +427,8 @@ exports.validate_stream_message_address_info = function (stream_name) {
         compose_error(i18n.t("Error checking subscription"), $("#stream"));
         return false;
     case "not-subscribed":
-        response = "<p>You're not subscribed to the stream <b>" +
-            Handlebars.Utils.escapeExpression(stream_name) + "</b>.</p>" +
-            "<p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>";
+        response = "<div>You're not subscribed to the stream <b>" + safe_stream_name + "</b>. " +
+        "<a href='#streams/" + stream_id + "/" + stream_name + "'>Subscribe now.</a></div>";
         compose_error(response, $('#stream'));
         return false;
     }
