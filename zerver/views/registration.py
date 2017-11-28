@@ -7,6 +7,7 @@ from django.contrib.auth import authenticate, get_backends
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponseForbidden, HttpResponse, HttpRequest
 from django.shortcuts import redirect, render
+from django.views.decorators.csrf import csrf_exempt
 from django.template import RequestContext, loader
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
@@ -50,6 +51,8 @@ import urllib
 @require_post
 def accounts_register(request):
     # type: (HttpRequest) -> HttpResponse
+    # print(request.POST['key'])
+    # print(request.POST['pereg_user'])
     key = request.POST['key']
     confirmation = Confirmation.objects.get(confirmation_key=key)
     prereg_user = confirmation.content_object
@@ -440,3 +443,43 @@ def find_account(request):
                   'zerver/find_account.html',
                   context={'form': form, 'current_url': lambda: url,
                            'emails': emails},)
+
+@csrf_exempt
+# Only used in development environment
+# def register_development_realm(request):
+#     email = "tast@exmple.com"
+#     form = RegistrationForm(realm_creation=True)
+#     prereg_user = create_preregistration_user(email, request, True)
+#     activation_url = create_confirmation_link(prereg_user, request.get_host(), Confirmation.USER_REGISTRATION)
+#     # print(activation_url)
+#     confirmation_key = activation_url.split('/')[-1]
+#     # create a request with the right stuff, and the form elements prefilled with random data
+#     request.POST = request.POST.copy()
+#     request.POST['key'] = confirmation_key
+#     request.POST['pereg_user'] = prereg_user
+#     request.POST['activation_url'] = activation_url
+#     request.POST['email'] = email
+#     request.POST['full_name'] = "SSumit"
+#     form.email = email
+#     form.full_name = "Sumit"
+#     form.password = "123456"
+#     # form.realm_creation = True
+#     form.realm_subdomain = "kgec"
+#     # print(request.POST['direct_email'])
+#     return accounts_register(request)
+def register_development_realm(request):
+    string_id = 'realm%02d' % (
+        Realm.objects.filter(string_id__startswith='realm').count(),)
+    realm = do_create_realm(string_id, string_id)
+    print(realm.name)
+    setup_initial_streams(realm)
+
+    name = '%02d-user' % (
+        UserProfile.objects.filter(email__contains='user@').count(),)
+    user = do_create_user('%s@%s.zulip.com' % (name, string_id),
+                          'password', realm, name, name, is_realm_admin=True)
+    setup_initial_private_stream(user)
+
+    send_initial_realm_messages(realm)
+    return redirect_and_log_into_subdomain(realm, full_name=user.full_name,
+                                           email_address=user.email)

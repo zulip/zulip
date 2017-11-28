@@ -49,7 +49,11 @@
                 {% endfor %}
             </select>
         </form>
-        <div id="devtools-wrapper">
+    <form name="register_realm_form" id="register_realm_form" method="post" class="login-form">
+    <p><input type="submit" formaction="/register_realm/"
+                                      name="direct_email" class="btn-direct btn-admin" value="Create Realm in one click" /></p>
+    </form>
+      <div id="devtools-wrapper">
             <a id="devtools-link" href="/devtools">Zulip developer tools</a>
         </div>
     </div>

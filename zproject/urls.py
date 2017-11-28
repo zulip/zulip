@@ -432,6 +432,8 @@ i18n_urls = [
         name='zerver.views.create_realm'),
     url(r'^create_realm/(?P<creation_key>[\w]+)$',
         zerver.views.registration.create_realm, name='zerver.views.create_realm'),
+    url(r'^register_realm/$', zerver.views.registration.register_development_realm,
+        name='zerver.views.register_realm'),
 
     # Login/registration
     url(r'^register/$', zerver.views.registration.accounts_home, name='register'),
