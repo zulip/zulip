@@ -2,9 +2,15 @@ set_global('$', global.make_zjquery());
 set_global('document', {
     location: { },
 });
+set_global('navigator', {
+    userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36',
+});
 set_global('i18n', global.stub_i18n);
 set_global('page_params', { });
 set_global('csrf_token', { });
+set_global('window', {
+    bridge: false,
+});
 
 // Setting these up so that we can test that links to uploads within messages are
 // automatically converted to server relative links.
@@ -15,6 +21,8 @@ zrequire('compose_ui');
 zrequire('compose_state');
 zrequire('compose');
 zrequire('upload');
+
+var upload_opts = upload.upload_options({ mode: "compose" });
 
 (function test_upload_started() {
     $("#compose-send-button").prop('disabled', false);
@@ -32,7 +40,7 @@ zrequire('upload');
         return 'fake-html';
     };
 
-    upload.uploadStarted();
+    upload_opts.drop();
 
     assert.equal($("#compose-send-button").attr("disabled"), '');
     assert($("#compose-send-status").hasClass("alert-info"));
@@ -47,7 +55,7 @@ zrequire('upload');
         assert.equal(width_percent, '39%');
         width_update_checked = true;
     };
-    upload.progressUpdated(1, '', 39);
+    upload_opts.progressUpdated(1, '', 39);
     assert(width_update_checked);
 }());
 
@@ -72,7 +80,7 @@ zrequire('upload');
 
     function test(err, file, msg) {
         setup_test();
-        upload.uploadError(err, file);
+        upload_opts.error(err, file);
         // The text function and html function in zjquery is not in sync
         // with each other. QuotaExceeded changes html while all other errors
         // changes body.
@@ -139,7 +147,7 @@ zrequire('upload');
         }
 
         setup();
-        upload.uploadFinished(i, {}, response);
+        upload_opts.uploadFinished(i, {}, response);
         assert_side_effects();
     }
 

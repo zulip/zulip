@@ -205,8 +205,15 @@ $(function () {
 
     $('body').on('click', '.edit_content_button', function (e) {
         var row = current_msg_list.get_row(rows.id($(this).closest(".message_row")));
-        current_msg_list.select_id(rows.id(row));
+        var row_id = rows.id(row);
+        current_msg_list.select_id(row_id);
         message_edit.start(row);
+        $('#message_edit_content_' + row_id).filedrop(
+            upload.upload_options({
+                mode: 'edit',
+                row: row_id,
+            })
+        );
         e.stopPropagation();
         popovers.hide_all();
     });
@@ -258,6 +265,11 @@ $(function () {
         if (document.activeElement === this) {
             ui_util.blur_active_element();
         }
+    });
+    $('#message_edit_form .send-status-close').click(function () {
+        var row_id = rows.id($(this).closest(".message_row"));
+        var send_status = $('#message-edit-send-status-' + row_id);
+        $(send_status).stop(true).fadeOut(200);
     });
 
     // MUTING

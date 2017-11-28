@@ -1,6 +1,10 @@
 {{! Client-side Mustache template for rendering the message edit form. }}
 
 <form id="message_edit_form" class="form-horizontal">
+    <div class="alert" id="message-edit-send-status-{{message_id}}">
+        <span class="send-status-close">&times;</span>
+        <span class="error-msg"></span>
+    </div>
     {{#if is_stream}}
     <div class="control-group no-margin">
         <div class="controls edit-controls">
