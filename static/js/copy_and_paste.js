@@ -156,7 +156,7 @@ exports.paste_handler = function (event) {
     var clipboardData = event.originalEvent.clipboardData;
 
     var paste_html = clipboardData.getData('text/html');
-    if (paste_html) {
+    if (paste_html && page_params.development) {
         event.preventDefault();
         var text = exports.paste_handler_converter(paste_html);
         compose_ui.insert_syntax_and_focus(text);
