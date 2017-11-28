@@ -12,7 +12,7 @@ GCI_MESSAGE_TEMPLATE = u'**{actor}** {action} the task [{task_name}]({task_url})
 GCI_SUBJECT_TEMPLATE = u'{student_name}'
 
 
-def build_instance_url(instance_id):
+def build_instance_url(instance_id: str) -> str:
     return "https://codein.withgoogle.com/dashboard/task-instances/{}/".format(instance_id)
 
 class UnknownEventType(Exception):
