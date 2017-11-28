@@ -11,7 +11,8 @@ See also [fixing commits][fix-commit]
     - `git checkout master`
     - `git checkout old-branch-name`
 - commit
-    - `git commit --amend`
+    - `git commit -m "topic: Commit message title."`
+    - `git commit --amend`: Modify the previous commit.
 - config
     - `git config --global core.editor nano`
     - `git config --global core.symlinks true`
@@ -27,7 +28,8 @@ See also [fixing commits][fix-commit]
 - log
     - `git log`
 - pull
-    - **do not use for Zulip**
+    - `git pull`: **DO NOT use for Zulip**
+    - `git pull --rebase`: **Use this**. Zulip uses a [rebase oriented workflow][git-overview].
 - push
     - `git push origin +branch-name`
 - rebase
@@ -54,11 +56,15 @@ See also [fixing commits][fix-commit]
 - add
     - `git add foo.py`: add `foo.py` to the staging area
     - `git add foo.py bar.py`: add `foo.py` AND `bar.py` to the staging area
+    - `git add -u`: Adds all tracked files to the staging area.
 - checkout
     - `git checkout -b new-branch-name`: create branch `new-branch-name` and switch/checkout to that new branch
     - `git checkout master`: switch to your `master` branch
     - `git checkout old-branch-name`: switch to an existing branch `old-branch-name`
 - commit
+    - `git commit -m "commit message"`: It is recommended to type a
+       multiline commit message, however.
+    - `git commit`: Opens your default text editor to write a commit message.
     - `git commit --amend`: changing the last commit message. Read more [here][fix-commit]
 - config
     - `git config --global core.editor nano`: set core editor to `nano` (you can set this to `vim` or others)
@@ -74,13 +80,16 @@ See also [fixing commits][fix-commit]
     - `git grep update_unread_counts -- '*.js'`: search all files (ending in `.js`) for `update_unread_counts`
 - log
     - `git log`: show commit logs
+    - `git log --oneline | head`: To quickly see the latest ten commits on a branch.
 - pull
     - `git pull --rebase`: rebase your changes on top of master.
     - `git pull` (with no options): Will either create a merge commit
       (which you don't want) or do the asme as `git pull --rebase`,
       depending on [whether you're configured Git properly][git-clone-config]
 - push
-    - `git push origin +branch-name`: push your commits to your origin repository
+    - `git push origin branch-name`: push you commits to the origin repository *only if* there are no conflicts.
+      Use this when collaborating with others to prevent overwriting their work.
+    - `git push origin +branch-name`: force push your commits to your origin repository.
 - rebase
     - `git rebase -i HEAD~3`: interactive rebasing current branch with first three items on HEAD
     - `git rebase -i master`: interactive rebasing current branch with master branch
@@ -102,3 +111,4 @@ See also [fixing commits][fix-commit]
 
 [fix-commit]: fixing-commits.html
 [git-config-clone]: cloning.html#step-1b-clone-to-your-machine
+[git-overview]: overview.html
