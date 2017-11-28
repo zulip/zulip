@@ -39,11 +39,13 @@ exports.smart_insert = function (textarea, syntax) {
     textarea.trigger("autosize.resize");
 };
 
-exports.insert_syntax_and_focus = function (syntax) {
+exports.insert_syntax_and_focus = function (syntax, textarea) {
     // Generic helper for inserting syntax into the main compose box
     // where the cursor was and focusing the area.  Mostly a thin
     // wrapper around smart_insert.
-    var textarea = $('#compose-textarea');
+    if (textarea === undefined) {
+        textarea = $('#compose-textarea');
+    }
     exports.smart_insert(textarea, syntax);
 };
 

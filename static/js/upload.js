@@ -36,6 +36,15 @@ exports.options = function (config) {
         upload_bar = 'compose-upload-bar';
         file_input = 'file_input';
         break;
+    case 'edit':
+        textarea = $('#message_edit_content_' + config.row);
+        send_button = textarea.closest('.message_edit_save');
+        send_status = $('#message-edit-send-status-' + config.row);
+        send_status_close = send_status.find('.send-status-close');
+        error_msg = send_status.find('.error-msg');
+        upload_bar = 'message-edit-upload-bar-' + config.row;
+        file_input = 'message_edit_file_input_' + config.row;
+        break;
     default:
         throw Error("Invalid upload mode!");
     }
@@ -104,11 +113,11 @@ exports.options = function (config) {
         if (i === -1) {
             // This is a paste, so there's no filename. Show the image directly
             var pasted_image_uri = "[pasted image](" + uri + ")";
-            compose_ui.insert_syntax_and_focus(pasted_image_uri);
+            compose_ui.insert_syntax_and_focus(pasted_image_uri, textarea);
         } else {
             // This is a dropped file, so make the filename a link to the image
             var filename_uri = "[" + filename + "](" + uri + ")";
-            compose_ui.insert_syntax_and_focus(filename_uri);
+            compose_ui.insert_syntax_and_focus(filename_uri, textarea);
         }
         compose_ui.autosize_textarea();
         send_button.prop("disabled", false);
@@ -148,6 +157,18 @@ exports.options = function (config) {
         },
     };
 };
+
+// Expose the internal file upload functions to the desktop app,
+// since the linux/windows QtWebkit based apps upload images
+// directly to the server
+if (window.bridge) {
+    var opts = exports.options({ mode: "compose" });
+
+    exports.uploadStarted = opts.drop;
+    exports.progressUpdated = opts.progressUpdated;
+    exports.uploadError = opts.error;
+    exports.uploadFinished = opts.uploadFinished;
+}
 
 return exports;
 }());
