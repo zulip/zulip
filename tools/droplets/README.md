@@ -68,7 +68,8 @@ may contain letters, numbers, colons, dashes, and underscores.
 You'll need to run this from the Zulip development environment (e.g. in
 Vagrant).
 
-If you want to recreate a droplet for a user you can pass the
+The script will also stop if a droplet has already been created for the
+user. If you want to recreate a droplet for a user you can pass the
 `--recreate` flag.
 
 ```
@@ -86,10 +87,6 @@ In order for the script to work, the GitHub user must have:
 steps.)
 
 The script will stop if it can't find the user's fork or ssh keys.
-
-The script will also stop if a droplet has already been created for the user.
-If you need to re-create a droplet, login to Digital Ocean with your browser
-and delete **both** the **droplet** and its **dns entry**.
 
 Once the droplet is created, you will see something similar to this message:
 
