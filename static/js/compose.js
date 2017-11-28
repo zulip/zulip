@@ -851,7 +851,7 @@ exports.initialize = function () {
     });
 
     $('#compose').filedrop(
-        upload.upload_options({
+        upload.options({
             mode: 'compose',
         })
     );

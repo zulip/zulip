@@ -22,7 +22,7 @@ zrequire('compose_state');
 zrequire('compose');
 zrequire('upload');
 
-var upload_opts = upload.upload_options({ mode: "compose" });
+var upload_opts = upload.options({ mode: "compose" });
 
 (function test_upload_started() {
     $("#compose-send-button").prop('disabled', false);
