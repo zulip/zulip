@@ -1470,6 +1470,16 @@ class UserSignUpTest(ZulipTestCase):
         result = self.client_get(result.url)
         self.assert_in_response("You've already registered", result)
 
+    def test_signup_system_bot(self) -> None:
+        email = "notification-bot@zulip.com"
+        result = self.client_post('/accounts/home/', {'email': email}, subdomain="lear")
+        self.assertEqual(result.status_code, 302)
+        self.assertIn('login', result['Location'])
+        result = self.client_get(result.url)
+
+        # This is not really the right error message, but at least it's an error.
+        self.assert_in_response("You've already registered", result)
+
     def test_signup_invalid_name(self) -> None:
         """
         Check if an invalid name during signup is handled properly.
