@@ -75,6 +75,14 @@ it in before you can see the frontend's rendering.
 
 ## Changing Zulip's markdown processor
 
+First, you will likely find these third-party resources helpful:
+
+* **[Python-Markdown Extensions API](https://pythonhosted.org/Markdown/extensions/api.html)**
+  is used by Zulip to make the above listed changes to markdown syntax.
+* **[Python's XML ElementTree](https://docs.python.org/3/library/xml.etree.elementtree.html)**
+  is the part of the Python standard library used by Python Markdown
+  and any custom extensions to generate and modify the output HTML.
+
 When changing Zulip's markdown syntax, you need to update several
 places:
 
