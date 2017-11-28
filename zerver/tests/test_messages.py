@@ -182,6 +182,7 @@ class TestCrossRealmPMs(ZulipTestCase):
 
     @slow("Sends a large number of messages")
     @override_settings(CROSS_REALM_BOT_EMAILS=['feedback@zulip.com',
+                                               'welcome-bot@zulip.com',
                                                'support@3.example.com'])
     def test_realm_scenarios(self) -> None:
         self.make_realm('1.example.com')
