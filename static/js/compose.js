@@ -14,28 +14,29 @@ var user_acknowledged_all_everyone;
 
 exports.all_everyone_warn_threshold = 15;
 
-var uploads_domain = document.location.protocol + '//' + document.location.host;
-var uploads_path = '/user_uploads';
-var uploads_re = new RegExp("\\]\\(" + uploads_domain + "(" + uploads_path + "[^\\)]+)\\)", 'g');
-var clone_file_input;
+exports.uploads_domain = document.location.protocol + '//' + document.location.host;
+exports.uploads_path = '/user_uploads';
+exports.uploads_re = new RegExp("\\]\\(" + exports.uploads_domain + "(" + exports.uploads_path + "[^\\)]+)\\)", 'g');
+exports.clone_file_input = undefined;
+
 function make_upload_absolute(uri) {
-    if (uri.indexOf(uploads_path) === 0) {
+    if (uri.indexOf(exports.uploads_path) === 0) {
         // Rewrite the URI to a usable link
-        return uploads_domain + uri;
+        return exports.uploads_domain + uri;
     }
     return uri;
 }
 
 function make_uploads_relative(content) {
     // Rewrite uploads in markdown links back to domain-relative form
-    return content.replace(uploads_re, "]($1)");
+    return content.replace(exports.uploads_re, "]($1)");
 }
 
 // This function resets an input type="file".  Pass in the
 // jquery object.
 function clear_out_file_list(jq_file_list) {
-    if (clone_file_input !== undefined) {
-        jq_file_list.replaceWith(clone_file_input.clone(true));
+    if (exports.clone_file_input !== undefined) {
+        jq_file_list.replaceWith(exports.clone_file_input.clone(true));
     }
     // Hack explanation:
     // IE won't let you do this (untested, but so says StackOverflow):
@@ -686,8 +687,8 @@ exports.initialize = function () {
 
     $("#compose").on("click", "#attach_files", function (e) {
         e.preventDefault();
-        if (clone_file_input === undefined) {
-            clone_file_input = $('#file_input').clone(true);
+        if (exports.clone_file_input === undefined) {
+            exports.clone_file_input = $('#file_input').clone(true);
         }
         $("#compose #file_input").trigger("click");
     });
