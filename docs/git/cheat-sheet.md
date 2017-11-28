@@ -28,8 +28,10 @@ See also [fixing commits][fix-commit]
 - log
     - `git log`
 - pull
-    - `git pull`: **DO NOT use for Zulip**
     - `git pull --rebase`: **Use this**. Zulip uses a [rebase oriented workflow][git-overview].
+    - `git pull` (with no options): Will either create a merge commit
+      (which you don't want) or do the same thing as `git pull --rebase`,
+      depending on [whether you're configured Git properly][git-clone-config]
 - push
     - `git push origin +branch-name`
 - rebase
@@ -84,7 +86,7 @@ See also [fixing commits][fix-commit]
 - pull
     - `git pull --rebase`: rebase your changes on top of master.
     - `git pull` (with no options): Will either create a merge commit
-      (which you don't want) or do the asme as `git pull --rebase`,
+      (which you don't want) or do the same thing as `git pull --rebase`,
       depending on [whether you're configured Git properly][git-clone-config]
 - push
     - `git push origin branch-name`: push you commits to the origin repository *only if* there are no conflicts.
