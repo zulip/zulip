@@ -313,6 +313,7 @@ class Command(BaseCommand):
 
                 testsuite_lear_users = [
                     ("King Lear", "king@lear.org"),
+                    ("Cordelia Lear", "cordelia@zulip.com"),
                 ]
                 create_users(lear_realm, testsuite_lear_users)
 
