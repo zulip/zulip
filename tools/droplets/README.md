@@ -148,3 +148,25 @@ Rough steps:
    appropriate `id`, and region with the appropriate region.
 1. Test that everything works.
 1. Open a PR with the updated template_id in zulip/zulip!
+
+## Remotely debugging a droplet
+
+To SSH into a droplet, first make sure you have a SSH key associated with your
+github account, then ask the student to run the following in their
+VM:
+
+```
+$ python3 ~/zulip/tools/droplets/add_mentor.py <your username>
+```
+
+You should now be able to connect to it using:
+
+```
+$ ssh zulipdev@<their username>.zulipdev.org
+```
+
+They can remove your SSH keys by running:
+
+```
+$ python3 ~/zulip/tools/droplets/add_mentor.py <your username> --remove
+```
