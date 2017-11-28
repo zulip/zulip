@@ -19,8 +19,7 @@ EXCLUDED_FILES = [
     "docs/_templates",
 ]
 
-def check_our_files(modified_only, all_dups, targets):
-    # type: (bool, bool, List[str]) -> None
+def check_our_files(modified_only: bool, all_dups: bool, targets: List[str]) -> None:
     by_lang = cast(
         Dict[str, List[str]],
         lister.list_files(
@@ -32,8 +31,7 @@ def check_our_files(modified_only, all_dups, targets):
     check_handlebar_templates(by_lang['handlebars'])
     check_html_templates(by_lang['html'], args.all_dups)
 
-def check_html_templates(templates, all_dups):
-    # type: (Iterable[str], bool) -> None
+def check_html_templates(templates: Iterable[str], all_dups: bool) -> None:
     # Our files with .html extensions are usually for Django, but we also
     # have a few static .html files.
     #
@@ -130,8 +128,7 @@ def check_html_templates(templates, all_dups):
             if not validate_indent_html(fn):
                 sys.exit(1)
 
-def check_handlebar_templates(templates):
-    # type: (Iterable[str]) -> None
+def check_handlebar_templates(templates: Iterable[str]) -> None:
     # Check all our handlebars templates.
     templates = [fn for fn in templates if fn.endswith('.handlebars')]
 

@@ -16,8 +16,7 @@ from typing import IO
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-def start_server(logfile):
-    # type: (IO[str]) -> bool
+def start_server(logfile: IO[str]) -> bool:
     failure = True
     key = "Quit the server with CTRL-C."
     for i in range(200):
@@ -31,8 +30,7 @@ def start_server(logfile):
     return failure
 
 
-def test_nagios(nagios_logfile):
-    # type: (IO[str]) -> bool
+def test_nagios(nagios_logfile: IO[str]) -> bool:
     ZULIP_DIR = os.path.join(TOOLS_DIR, '..')
     API_DIR = os.path.join(ZULIP_DIR, 'api')
     os.chdir(API_DIR)
@@ -57,8 +55,7 @@ def test_nagios(nagios_logfile):
     return False
 
 
-def close_and_get_content(file_handle):
-    # type: (IO[str]) -> str
+def close_and_get_content(file_handle: IO[str]) -> str:
     file_handle.seek(0)
     content = file_handle.read()
     file_handle.close()
