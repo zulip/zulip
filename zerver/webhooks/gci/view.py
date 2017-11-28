@@ -9,8 +9,11 @@ from zerver.lib.response import json_success
 from zerver.models import UserProfile
 
 GCI_MESSAGE_TEMPLATE = u'**{actor}** {action} the task [{task_name}]({task_url}).'
-GCI_SUBJECT_TEMPLATE = u'Task: {task_name}'
+GCI_SUBJECT_TEMPLATE = u'{student_name}'
 
+
+def build_instance_url(instance_id):
+    return "https://codein.withgoogle.com/dashboard/task-instances/{}/".format(instance_id)
 
 class UnknownEventType(Exception):
     pass
@@ -20,7 +23,7 @@ def get_abandon_event_body(payload: Dict[Text, Any]) -> Text:
         actor=payload['task_claimed_by'],
         action='{}ed'.format(payload['event_type']),
         task_name=payload['task_definition_name'],
-        task_url=payload['task_definition_url'],
+        task_url=build_instance_url(payload['task_instance']),
     )
 
 def get_submit_event_body(payload: Dict[Text, Any]) -> Text:
@@ -28,7 +31,7 @@ def get_submit_event_body(payload: Dict[Text, Any]) -> Text:
         actor=payload['task_claimed_by'],
         action='{}ted'.format(payload['event_type']),
         task_name=payload['task_definition_name'],
-        task_url=payload['task_definition_url'],
+        task_url=build_instance_url(payload['task_instance']),
     )
 
 def get_comment_event_body(payload: Dict[Text, Any]) -> Text:
@@ -36,7 +39,7 @@ def get_comment_event_body(payload: Dict[Text, Any]) -> Text:
         actor=payload['author'],
         action='{}ed on'.format(payload['event_type']),
         task_name=payload['task_definition_name'],
-        task_url=payload['task_definition_url'],
+        task_url=build_instance_url(payload['task_instance']),
     )
 
 def get_claim_event_body(payload: Dict[Text, Any]) -> Text:
@@ -44,7 +47,7 @@ def get_claim_event_body(payload: Dict[Text, Any]) -> Text:
         actor=payload['task_claimed_by'],
         action='{}ed'.format(payload['event_type']),
         task_name=payload['task_definition_name'],
-        task_url=payload['task_definition_url'],
+        task_url=build_instance_url(payload['task_instance']),
     )
 
 def get_approve_event_body(payload: Dict[Text, Any]) -> Text:
@@ -52,7 +55,7 @@ def get_approve_event_body(payload: Dict[Text, Any]) -> Text:
         actor=payload['author'],
         action='{}d'.format(payload['event_type']),
         task_name=payload['task_definition_name'],
-        task_url=payload['task_definition_url'],
+        task_url=build_instance_url(payload['task_instance']),
     )
 
 def get_needswork_event_body(payload: Dict[Text, Any]) -> Text:
@@ -61,7 +64,7 @@ def get_needswork_event_body(payload: Dict[Text, Any]) -> Text:
         actor=payload['author'],
         action='submitted',
         task_name=payload['task_definition_name'],
-        task_url=payload['task_definition_url'],
+        task_url=build_instance_url(payload['task_instance']),
     )
 
 @api_key_only_webhook_view("Google-Code-In")
@@ -73,7 +76,7 @@ def api_gci_webhook(request, user_profile, stream=REQ(default='gci'),
     if event is not None:
         body = get_body_based_on_event(event)(payload)
         subject = GCI_SUBJECT_TEMPLATE.format(
-            task_name=payload['task_definition_name']
+            student_name=payload['task_claimed_by']
         )
         check_send_stream_message(user_profile, request.client,
                                   stream, subject, body)
