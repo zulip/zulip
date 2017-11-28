@@ -112,7 +112,8 @@ echo "$version" > version
 if [ "$FULL" == "full" ] ;
 then
     cd "$BASEDIR"
-    pip download --no-deps -r requirements/prod.txt -d $TMPDIR/$prefix/pip_packages
+    ./scripts/pip_download_xenial requirements/prod.txt $TMPDIR/$prefix/pip_packages
+    ./scripts/pip_download_trusty requirements/prod.txt $TMPDIR/$prefix/pip_packages_trusty
 fi
 
 cd "$TMPDIR"
@@ -120,7 +121,8 @@ cd "$TMPDIR"
 tar --append -f "$TARBALL" "$prefix/prod-static" "$prefix/build_id" "$prefix/version" "$prefix/staticfiles.json" "$prefix/templates/zerver/emails/compiled" "$prefix/webpack-stats-production.json"
 if [ "$FULL" == "full" ] ;
 then
-    tar --append -f "$TARBALL" "$prefix/pip_packages"
+    tar --append -f "$TARBALL" "$prefix/pip_packages"  # Xenial packages
+    tar --append -f "$TARBALL" "$prefix/pip_packages_trusty"  # Trusty packages
 fi
 
 rm -rf "$prefix"
