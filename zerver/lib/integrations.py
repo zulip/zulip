@@ -440,7 +440,6 @@ INTEGRATIONS = {
 BOT_INTEGRATIONS = [
     BotIntegration('github_detail', ['version-control', 'bots'],
                    display_name='GitHub Detail'),
-    BotIntegration('googlesearch', ['bots'], display_name='Google Search'),
     BotIntegration('xkcd', ['bots', 'misc'], display_name='xkcd'),
 ]  # type: List[BotIntegration]
 
