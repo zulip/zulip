@@ -23,4 +23,10 @@ var copy_and_paste = zrequire('copy_and_paste');
     // that this not use markdown syntax, since that feels unnecessary.
     assert.equal(copy_and_paste.paste_handler_converter(input),
                  '[https://zulip.readthedocs.io/en/latest/subsystems/logging.html](https://zulip.readthedocs.io/en/latest/subsystems/logging.html "https://zulip.readthedocs.io/en/latest/subsystems/logging.html")');
+
+    input = '<meta http-equiv="content-type" content="text/html; charset=utf-8"><br class="Apple-interchange-newline"><span style="color: rgb(0, 0, 0); font-family: &quot;Helvetica Neue&quot;, &quot;Segoe UI&quot;, Helvetica, Arial, sans-serif; font-size: 13px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">1. text</span>';
+    // TODO: at minimum this should not be adding the '\\' before the '.',
+    // and the '  \n' is a bit strange as well
+    assert.equal(copy_and_paste.paste_handler_converter(input),
+                 '  \n1\\. text');
 }());
