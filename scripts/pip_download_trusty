@@ -1,0 +1,8 @@
+python tools/pip_download.py \
+    --platform linux_x86_64 \
+    --python-version 34 \
+    --implementation cp \
+    --abi cp34m \
+    --no-deps \
+    -r $1 \
+    -d $2

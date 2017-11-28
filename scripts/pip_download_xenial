@@ -1,0 +1,8 @@
+python tools/pip_download.py \
+    --platform manylinux1_x86_64 \
+    --python-version 35 \
+    --implementation cp \
+    --abi cp35m \
+    --no-deps \
+    -r $1 \
+    -d $2
