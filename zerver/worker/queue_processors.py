@@ -507,8 +507,8 @@ class EmbeddedBotWorker(QueueProcessingWorker):
                 continue
             bot_handler.handle_message(
                 message=message,
-                bot_handler=self.get_bot_api_client(user_profile),
-                state_handler=None)
+                bot_handler=self.get_bot_api_client(user_profile)
+            )
 
 @assign_queue('deferred_work')
 class DeferredWorker(QueueProcessingWorker):
