@@ -15,6 +15,7 @@ git+https://github.com/zulip/python-zulip-api.git@0.3.8#egg=zulip_bots==0.3.8+gi
 apns2==0.3.0
 argon2-cffi==16.3.0
 asn1crypto==0.23.0        # via cryptography
+babel==2.5.1              # via django-phonenumber-field
 backports-abc==0.5
 backports.ssl-match-hostname==3.5.0.1
 beautifulsoup4==4.6.0
@@ -30,8 +31,12 @@ decorator==4.1.2          # via ipython, traitlets
 defusedxml==0.5.0
 django-auth-ldap==1.2.16
 django-bitfield==1.9.3
+django-formtools==2.1     # via django-two-factor-auth
+django-otp==0.4.1.1       # via django-two-factor-auth
+django-phonenumber-field==1.3.0  # via django-two-factor-auth
 django-pipeline==1.6.13
 django-statsd-mozilla==0.4.0
+django-two-factor-auth==1.6.2
 django-webpack-loader==0.5.0
 django==1.11.6
 docopt==0.6.2
@@ -62,6 +67,7 @@ olefile==0.44             # via pillow
 parso==0.1.0              # via jedi
 pbr==3.1.1                # via mock
 pexpect==4.3.0            # via ipython
+phonenumberslite==8.8.6   # via django-phonenumber-field
 pickleshare==0.7.4        # via ipython
 pika==0.11.0
 pillow==4.3.0
@@ -81,15 +87,17 @@ pyldap==2.4.37
 pylibmc==1.5.2
 pyoembed==0.1.2
 pyopenssl==17.3.0         # via ndg-httpsclient
+pysocks==1.6.7            # via twilio
 python-dateutil==2.6.1
 python-gcm==0.4
 python-twitter==3.3
 python3-openid==3.1.0     # via social-auth-core
 pytz==2017.2
+qrcode==4.0.4             # via django-two-factor-auth
 redis==2.10.6
 regex==2017.11.9
 requests-oauthlib==0.8.0
-requests==2.18.4          # via premailer, pyoembed, python-gcm, python-twitter, requests-oauthlib, social-auth-core
+requests==2.18.4          # via premailer, pyoembed, python-gcm, python-twitter, requests-oauthlib, social-auth-core, twilio
 rsa==3.4.2
 simplegeneric==0.8.1      # via ipython
 six==1.11.0
@@ -102,6 +110,7 @@ sqlalchemy==1.1.14
 statsd==3.2.1             # via django-statsd-mozilla
 tornado==4.5.2
 traitlets==4.3.2          # via ipython
+twilio==6.9.0
 typing==3.6.2
 uritemplate==3.0.0
 urllib3==1.22             # via requests

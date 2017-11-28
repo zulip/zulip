@@ -181,3 +181,7 @@ social-auth-app-django==1.2.0
 
 # Needed for messages' rendered content parsing in push notifications.
 lxml==4.1.0
+
+# Needed for 2-factor authentication
+django-two-factor-auth==1.6.2
+twilio==6.9.0
