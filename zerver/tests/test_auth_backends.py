@@ -807,14 +807,12 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         user_profile = self.example_user('hamlet')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
-        # If authenticate_remote_user detects a subdomain mismatch, then
-        # the result should redirect to the login page.
         with mock.patch(
                 'zerver.views.auth.authenticate_remote_user',
                 return_value=(None, {'invalid_subdomain': True})):
             result = self.get_log_into_subdomain(data)
-            self.assertEqual(result.status_code, 302)
-            self.assertTrue(result['Location'].endswith, '?subdomain=1')
+            self.assert_in_success_response(['Would you like to register instead?'],
+                                            result)
 
     def test_log_into_subdomain_when_signature_is_bad(self) -> None:
         data = {'name': 'Full Name',
@@ -965,10 +963,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.assertTrue(result.url.startswith("http://zephyr.testserver/accounts/login/subdomain/"))
         result = self.client_get(result.url.replace('http://zephyr.testserver', ''),
                                  subdomain="zephyr")
-        self.assertEqual(result.status_code, 302)
-        result = self.client_get('/accounts/login/?subdomain=1', subdomain="zephyr")
-        self.assert_in_success_response(["Your Zulip account is not a member of the organization associated with this subdomain."],
-                                        result)
+        self.assert_in_success_response(['Would you like to register instead?'], result)
 
     def test_user_cannot_log_into_wrong_subdomain_with_cookie(self) -> None:
         data = {'name': 'Full Name',

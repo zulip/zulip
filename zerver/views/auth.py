@@ -120,9 +120,6 @@ def login_or_register_remote_user(request, remote_username, user_profile, full_n
                                   invalid_subdomain=False, mobile_flow_otp=None,
                                   is_signup=False):
     # type: (HttpRequest, Optional[Text], Optional[UserProfile], Text, bool, Optional[str], bool) -> HttpResponse
-    if invalid_subdomain:
-        # Show login page with an error message
-        return redirect_to_subdomain_login_url()
 
     if user_profile is None or user_profile.is_mirror_dummy:
         # Since execution has reached here, we have verified the user
@@ -148,6 +145,10 @@ def login_or_register_remote_user(request, remote_username, user_profile, full_n
         return render(request,
                       'zerver/confirm_continue_registration.html',
                       context=context)
+
+    if invalid_subdomain:
+        # Show login page with an error message
+        return redirect_to_subdomain_login_url()
 
     if mobile_flow_otp is not None:
         # For the mobile Oauth flow, we send the API key and other

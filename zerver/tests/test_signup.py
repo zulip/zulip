@@ -2447,14 +2447,13 @@ class LoginOrAskForRegistrationTestCase(ZulipTestCase):
         user_profile = None  # type: Optional[UserProfile]
         full_name = 'New User'
         invalid_subdomain = True
-        response = login_or_register_remote_user(
+        result = login_or_register_remote_user(
             request,
             email,
             user_profile,
             full_name=full_name,
             invalid_subdomain=invalid_subdomain)
-        self.assertEqual(response.status_code, 302)
-        self.assertIn('/accounts/login/?subdomain=1', response.url)
+        self.assert_in_success_response(['Would you like to register instead?'], result)
 
     def test_invalid_email(self) -> None:
         request = HostRequestMock()
