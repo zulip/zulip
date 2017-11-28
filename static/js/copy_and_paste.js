@@ -141,22 +141,22 @@ function copy_handler() {
 }
 
 exports.paste_handler_converter = function (paste_html) {
-    converters = {
+    var converters = {
         converters: [
             {
                 filter: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
                 replacement: function (content) {
                     return content;
-                }
+                },
             },
 
             {
                 filter: ['em', 'i'],
                 replacement: function (content) {
                     return '*' + content + '*';
-                }
-            }
-        ]
+                },
+            },
+        ],
     };
     var markdown_html = toMarkdown(paste_html, converters);
 
