@@ -502,6 +502,14 @@ def show_deactivation_notice(request: HttpRequest) -> HttpResponse:
 def redirect_to_deactivation_notice() -> HttpResponse:
     return HttpResponseRedirect(reverse('zerver.views.auth.show_deactivation_notice'))
 
+def add_dev_login_context(realm: Realm, context: Dict[str, Any]) -> None:
+    users = get_dev_users(realm)
+    context['current_realm'] = realm
+    context['all_realms'] = Realm.objects.all()
+
+    context['direct_admins'] = [u for u in users if u.is_realm_admin]
+    context['direct_users'] = [u for u in users if not u.is_realm_admin]
+
 def login_page(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     if request.user.is_authenticated:
         return HttpResponseRedirect(request.user.realm.uri)
@@ -520,13 +528,7 @@ def login_page(request: HttpRequest, **kwargs: Any) -> HttpResponse:
         else:
             realm = get_realm_from_request(request)
 
-        users = get_dev_users(realm)
-        extra_context['current_realm'] = realm
-        extra_context['all_realms'] = Realm.objects.all()
-
-        extra_context['direct_admins'] = [u for u in users if u.is_realm_admin]
-        extra_context['direct_users'] = [u for u in users if not u.is_realm_admin]
-
+        add_dev_login_context(realm, extra_context)
         if realm and 'new_realm' in request.POST:
             # If we're switching realms, redirect to that realm, but
             # only if it actually exists.
