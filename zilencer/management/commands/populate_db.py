@@ -133,6 +133,10 @@ class Command(BaseCommand):
                     invite_required=False, org_type=Realm.CORPORATE)
                 RealmDomain.objects.create(realm=mit_realm, domain="mit.edu")
 
+                lear_realm = Realm.objects.create(
+                    string_id="lear", name="Lear & Co.", restricted_to_domain=False,
+                    invite_required=False, org_type=Realm.CORPORATE)
+
             # Create test Users (UserProfiles are automatically created,
             # as are subscriptions to the ability to receive personals).
             names = [
@@ -306,6 +310,11 @@ class Command(BaseCommand):
                     ("Esp Classroom (MIT)", "espuser@mit.edu"),
                 ]
                 create_users(mit_realm, testsuite_mit_users)
+
+                testsuite_lear_users = [
+                    ("King Lear", "king@lear.org"),
+                ]
+                create_users(lear_realm, testsuite_lear_users)
 
             if not options["test_suite"]:
                 # Initialize the email gateway bot as an API Super User
