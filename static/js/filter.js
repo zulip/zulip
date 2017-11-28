@@ -485,7 +485,7 @@ Filter.operator_to_prefix = function (operator, negated) {
 // Convert a list of operators to a human-readable description.
 Filter.describe = function (operators) {
     if (operators.length === 0) {
-        return 'Go to Home view';
+        return 'all messages';
     }
 
     var parts = [];

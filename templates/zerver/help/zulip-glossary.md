@@ -68,7 +68,7 @@ order to send them as new messages.
 
 Also known as a [view](#view), a **filter** is one of the options for viewing
 different kinds of messages, listed in the upper left corner of the Zulip
-browser window, such as **Home**, **Private messages**, **Starred messages**,
+browser window, such as **All messages**, **Private messages**, **Starred messages**,
 and **Mentions**.
 
 ### group PM
@@ -77,12 +77,13 @@ Shorthand for **group private message**, a **group PM** is a
 [private message](#private-message) sent directly to two or more other
 users rather than through a [stream](#stream).
 
-### home
+### all messages
 
-**Home** is a specific [view](#view) (or [filter](#filter)) that shows all
+**All messages** is a specific [view](#view) (or [filter](#filter)) that shows all
 messages to the user's [subscribed](#subscribing) [streams](#stream) and all of
-the user's private messages in chronological order. This view is accessible by
-clicking the **Home** link, Zulip logo in the upper left sidebar, home (<i
+the user's private messages in chronological order, excluding messages to muted
+streams and topics. This view is accessible by
+clicking the **All messages** link, Zulip logo in the upper left sidebar, home (<i
 class="icon-vector-home"></i>) icon to the left of the search bar, or pressing
 the escape key.
 
@@ -231,4 +232,4 @@ stop receiving all messages from the stream that they unsubscribed from.
 
 Also known as [filter](#filter), a **view** is an option for viewing different
 kinds of messages, listed in the upper left sidebar, including sections
-**Home**, **Private messages**, **Starred messages**, and **Mentions**.
+**All messages**, **Private messages**, **Starred messages**, and **Mentions**.

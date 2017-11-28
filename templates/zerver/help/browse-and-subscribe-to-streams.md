@@ -47,7 +47,7 @@ When users create a public stream, they can choose to alert all users
 in the organization about their stream's creation.
 
 Thus, you may be notified about the stream's creation with a message
-in the **Home** view sent by the notification bot such as the one in the
+sent by the notification bot such as the one in the
 following image.
 
 ![Streams subscribe alert](/static/images/help/stream-subscribe.png)

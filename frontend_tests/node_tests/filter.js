@@ -661,7 +661,7 @@ function make_sub(name, stream_id) {
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [];
-    string = 'Go to Home view';
+    string = 'all messages';
     assert.equal(Filter.describe(narrow), string);
 }());
 
