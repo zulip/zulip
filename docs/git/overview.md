@@ -38,10 +38,14 @@ with these details in mind:
   integration with [Travis CI][travis-ci], and [mypy][zulip-rtd-mypy].
 
 - We use [zulipbot][zulip-rtd-zulipbot-usage] to manage our issues and
-pull requests to create a better GitHub workflow for contributors.
+  pull requests to create a better GitHub workflow for contributors.
 
-Finally, take a quick look at [Zulip-specific Git scripts][zulip-rtd-zulip-tools],
-install the [Zulip developer environment][zulip-rtd-dev-overview], and then
+- We provide some handy **[Zulip-specific Git scripts][zulip-rtd-zulip-tools]**
+  for developers to easily do tasks like fetching and rebasing a pull
+  request, cleaning unimportant branches, etc. These reduce the common
+  tasks of testing other contributors' pull requests to single commands.
+
+Finally, install the [Zulip developer environment][zulip-rtd-dev-overview], and then
 [configure your fork for use with Travis CI][zulip-git-guide-travisci].
 
 ***
