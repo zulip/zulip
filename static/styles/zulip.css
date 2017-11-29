@@ -1769,7 +1769,8 @@ blockquote p {
 #navbar-buttons ul.nav .dropdown-toggle,
 #navbar-buttons ul.nav li.active .dropdown-toggle {
     font-size: 20px;
-    color: hsl(0, 0%, 52%);
+    color: inherit;
+    opacity: 0.5;
     text-shadow: none;
     padding-left: 0px !important;
     background-color: inherit;
@@ -1784,12 +1785,12 @@ blockquote p {
 
 #navbar-buttons ul.nav .dropdown-toggle,
 #navbar-buttons ul.nav li.active .dropdown-toggle:hover {
-    color: hsl(0, 0%, 7%);
+    opacity: 1;
 }
 
 #navbar-buttons ul.nav li.dropdown.open .dropdown-toggle {
     background: none;
-    color: hsl(0, 0%, 7%);
+    opacity: 1;
     text-shadow: none;
 }
 

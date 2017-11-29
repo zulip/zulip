@@ -117,11 +117,6 @@ body.dark-mode #preview_message_area {
     border-color: hsla(0, 0%, 0%, 0.2);
 }
 
-body.dark-mode #navbar-buttons ul.nav .dropdown-toggle,
-body.dark-mode #navbar-buttons ul.nav li.active .dropdown-toggle {
-    color: hsla(0, 0%, 0%, 0.8);
-}
-
 body.dark-mode .navbar-search {
     border-right-color: hsla(0, 0%, 0%, 0.2);
 }
