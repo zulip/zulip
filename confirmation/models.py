@@ -125,11 +125,10 @@ _properties = {
 def check_key_is_valid(creation_key: Text) -> bool:
     if not RealmCreationKey.objects.filter(creation_key=creation_key).exists():
         return False
-    days_sofar = (timezone_now() - RealmCreationKey.objects.get(creation_key=creation_key).date_created).days
-    # Realm creation link expires after settings.REALM_CREATION_LINK_VALIDITY_DAYS
-    if days_sofar <= settings.REALM_CREATION_LINK_VALIDITY_DAYS:
-        return True
-    return False
+    time_elapsed = timezone_now() - RealmCreationKey.objects.get(creation_key=creation_key).date_created
+    if time_elapsed.total_seconds() > settings.REALM_CREATION_LINK_VALIDITY_DAYS * 24 * 3600:
+        return False
+    return True
 
 def generate_realm_creation_url() -> Text:
     key = generate_key()
