@@ -31,7 +31,7 @@ from zerver.lib.queue import retry_event
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import generate_random_token
 from zerver.models import PushDeviceToken, Message, Recipient, UserProfile, \
-    UserMessage, get_display_recipient, receives_offline_notifications, \
+    UserMessage, get_display_recipient, receives_offline_push_notifications, \
     receives_online_notifications, receives_stream_notifications, get_user_profile_by_id
 from version import ZULIP_VERSION
 
@@ -486,7 +486,7 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     zerver.worker.queue_processors.PushNotificationWorker.consume function.
     """
     user_profile = get_user_profile_by_id(user_profile_id)
-    if not (receives_offline_notifications(user_profile) or
+    if not (receives_offline_push_notifications(user_profile) or
             receives_online_notifications(user_profile)):
         return
 

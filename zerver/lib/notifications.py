@@ -17,7 +17,7 @@ from zerver.models import (
     UserProfile,
     get_user,
     get_user_profile_by_id,
-    receives_offline_notifications,
+    receives_offline_email_notifications,
     get_context_for_message,
     Message,
     Realm,
@@ -371,11 +371,12 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
     user_profile.last_reminder = timezone_now()
     user_profile.save(update_fields=['last_reminder'])
 
-def handle_missedmessage_emails(user_profile_id: int, missed_email_events: Iterable[Dict[str, Any]]) -> None:
+def handle_missedmessage_emails(user_profile_id: int,
+                                missed_email_events: Iterable[Dict[str, Any]]) -> None:
     message_ids = [event.get('message_id') for event in missed_email_events]
 
     user_profile = get_user_profile_by_id(user_profile_id)
-    if not receives_offline_notifications(user_profile):
+    if not receives_offline_email_notifications(user_profile):
         return
 
     messages = Message.objects.filter(usermessage__user_profile_id=user_profile,

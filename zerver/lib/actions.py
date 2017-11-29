@@ -63,7 +63,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     email_allowed_for_realm, email_to_username, display_recipient_cache_key, \
     get_user, get_stream_cache_key, \
     UserActivityInterval, active_user_ids, get_active_streams, \
-    realm_filters_for_realm, RealmFilter, receives_offline_notifications, \
+    realm_filters_for_realm, RealmFilter, \
     get_owned_bot_dicts, stream_name_in_use, \
     get_old_unclaimed_attachments, get_cross_realm_emails, \
     Reaction, EmailChangeStatus, CustomProfileField, \

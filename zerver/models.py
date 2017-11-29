@@ -747,9 +747,12 @@ class UserGroupMembership(models.Model):
     class Meta:
         unique_together = (('user_group', 'user_profile'),)
 
-def receives_offline_notifications(user_profile: UserProfile) -> bool:
-    return ((user_profile.enable_offline_email_notifications or
-             user_profile.enable_offline_push_notifications) and
+def receives_offline_push_notifications(user_profile: UserProfile) -> bool:
+    return (user_profile.enable_offline_push_notifications and
+            not user_profile.is_bot)
+
+def receives_offline_email_notifications(user_profile: UserProfile) -> bool:
+    return (user_profile.enable_offline_email_notifications and
             not user_profile.is_bot)
 
 def receives_online_notifications(user_profile: UserProfile) -> bool:
