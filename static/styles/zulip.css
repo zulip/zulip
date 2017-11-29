@@ -2285,7 +2285,6 @@ button.topic_edit_cancel {
 #invite-user .overlay-content {
     position: relative;
     width: 500px;
-    background-color: hsl(0, 0%, 100%);
     border-radius: 4px;
 }
 
