@@ -3,7 +3,7 @@ var settings_display = (function () {
 var exports = {};
 
 exports.set_night_mode = function (bool) {
-    if (!page_params.development) {
+    if (!page_params.development_environment) {
         return;
     }
 
