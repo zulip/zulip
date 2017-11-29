@@ -631,7 +631,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=19, is_admin=True, is_subbed=True, invite_only=True,
+            query_count=21, is_admin=True, is_subbed=True, invite_only=True,
             other_user_subbed=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
@@ -2319,14 +2319,18 @@ class SubscriptionAPITest(ZulipTestCase):
         random_user = self.example_user("hamlet")
         (stream1, _) = create_stream_if_needed(realm, "stream1", invite_only=False)
         (stream2, _) = create_stream_if_needed(realm, "stream2", invite_only=False)
+        (private, _) = create_stream_if_needed(realm, "private_stream", invite_only=True)
 
         self.subscribe(user, "stream1")
         self.subscribe(user, "stream2")
+        self.subscribe(user, "private_stream")
         self.subscribe(random_user, "stream1")
         self.subscribe(random_user, "stream2")
+        self.subscribe(random_user, "private_stream")
 
         self.send_stream_message(random_user.email, "stream1", "test", "test")
         self.send_stream_message(random_user.email, "stream2", "test", "test")
+        self.send_stream_message(random_user.email, "private_stream", "test", "test")
 
         def get_unread_stream_data() -> List[Dict[str, Any]]:
             raw_unread_data = get_raw_unread_data(user)
@@ -2334,14 +2338,17 @@ class SubscriptionAPITest(ZulipTestCase):
             return aggregated_data['streams']
 
         result = get_unread_stream_data()
-        self.assert_length(result, 2)
+        self.assert_length(result, 3)
         self.assertEqual(result[0]['stream_id'], stream1.id)
         self.assertEqual(result[1]['stream_id'], stream2.id)
+        self.assertEqual(result[2]['stream_id'], private.id)
 
         # Unsubscribing should mark all the messages in stream2 as read
         self.unsubscribe(user, "stream2")
+        self.unsubscribe(user, "private_stream")
 
         self.subscribe(user, "stream2")
+        self.subscribe(user, "private_stream")
         result = get_unread_stream_data()
         self.assert_length(result, 1)
         self.assertEqual(result[0]['stream_id'], stream1.id)

@@ -517,5 +517,9 @@ class DeferredWorker(QueueProcessingWorker):
             user_profile = get_user_profile_by_id(event['user_profile_id'])
 
             for stream_id in event['stream_ids']:
-                (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
+                # Since the user just unsubscribed, we don't require
+                # an active Subscription object (otherwise, private
+                # streams would never be accessible)
+                (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id,
+                                                               require_active=False)
                 do_mark_stream_messages_as_read(user_profile, stream)
