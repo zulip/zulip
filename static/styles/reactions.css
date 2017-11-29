@@ -77,7 +77,6 @@
     visibility: visible;
     pointer-events: all;
     background-color: hsl(0, 0%, 98%);
-    color: hsl(0, 0%, 73%);
 }
 
 .reaction_button_visible {
@@ -265,7 +264,7 @@
 }
 
 .emoji-popover-category-tabs .emoji-popover-tab-item.active {
-    background: hsl(0, 0%, 80%);
+    background: hsla(0, 0%, 100%, 0.2);
 }
 
 .typeahead .emoji {
