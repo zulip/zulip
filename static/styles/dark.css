@@ -45,13 +45,18 @@ body.dark-mode .popover a {
 }
 
 body.dark-mode .dark_background a,
-body.dark-mode .dark_background a:hover,
 body.dark-mode a.dark_background:hover,
 body.dark-mode .dark_background,
 body.dark-mode .message_reactions .message_reaction_count,
 body.dark-mode .message_reactions .reaction_button i,
 body.dark-mode .message_reactions:hover .message_reaction + .reaction_button {
     color: inherit !important;
+}
+
+/* do not turn the .message_header .stream_label text dark on hover because they're
+on a dark background, and don't change the dark labels dark either. */
+body.dark-mode .message_header:not(.dark_background) a.stream_label:not(.dark_background):hover {
+    color: #212d3b !important;
 }
 
 /* these are converting grey things to "new grey" */
