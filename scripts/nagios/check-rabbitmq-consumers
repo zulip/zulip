@@ -51,6 +51,7 @@ queues = {
     'message_sender',
     'missedmessage_emails',
     'missedmessage_email_senders',
+    'email_senders',
     'missedmessage_mobile_notifications',
     'outgoing_webhooks',
     'notify_tornado',
