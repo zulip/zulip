@@ -14,6 +14,7 @@
     <thead class="activity_head">
         <tr>
             <th>Realm</th>
+            <th>Created</th>
             <th>DAU</th>
             <th>WAU</th>
             <th>Total users</th>
@@ -31,6 +32,10 @@
 
             <td>
                 {{ row.string_id }}
+            </td>
+
+            <td>
+                {{ row.date_created }}
             </td>
 
             <td class="number">

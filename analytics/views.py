@@ -287,6 +287,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     query = '''
         SELECT
             realm.string_id,
+            to_char(realm.date_created, 'YYYY-MM-DD') date_created,
             coalesce(user_counts.dau_count, 0) dau_count,
             coalesce(wau_counts.wau_count, 0) wau_count,
             (
