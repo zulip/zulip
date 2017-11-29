@@ -535,6 +535,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     # Stream notifications.
     enable_stream_desktop_notifications = models.BooleanField(default=False)  # type: bool
+    enable_stream_email_notifications = models.BooleanField(default=False)  # type: bool
     enable_stream_push_notifications = models.BooleanField(default=False)  # type: bool
     enable_stream_sounds = models.BooleanField(default=False)  # type: bool
 
@@ -648,6 +649,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         enable_online_push_notifications=bool,
         enable_sounds=bool,
         enable_stream_desktop_notifications=bool,
+        enable_stream_email_notifications=bool,
         enable_stream_push_notifications=bool,
         enable_stream_sounds=bool,
         pm_content_in_desktop_notifications=bool,
@@ -747,7 +749,8 @@ class UserGroupMembership(models.Model):
 
 def receives_offline_notifications(user_profile: UserProfile) -> bool:
     return ((user_profile.enable_offline_email_notifications or
-             user_profile.enable_offline_push_notifications) and
+             user_profile.enable_offline_push_notifications or
+             user_profile.enable_stream_email_notifications) and
             not user_profile.is_bot)
 
 def receives_online_notifications(user_profile: UserProfile) -> bool:
@@ -1359,6 +1362,7 @@ class Subscription(models.Model):
     desktop_notifications = models.BooleanField(default=True)  # type: bool
     audible_notifications = models.BooleanField(default=True)  # type: bool
     push_notifications = models.BooleanField(default=False)  # type: bool
+    email_notifications = models.BooleanField(default=False)  # type: bool
 
     # Combination desktop + audible notifications superseded by the
     # above.
