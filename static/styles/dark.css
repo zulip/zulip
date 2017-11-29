@@ -43,7 +43,10 @@ body.dark-mode .popover a {
 body.dark-mode .dark_background a,
 body.dark-mode .dark_background a:hover,
 body.dark-mode a.dark_background:hover,
-body.dark-mode .dark_background {
+body.dark-mode .dark_background,
+body.dark-mode .message_reactions .message_reaction_count,
+body.dark-mode .message_reactions .reaction_button i,
+body.dark-mode .message_reactions:hover .message_reaction + .reaction_button {
     color: inherit !important;
 }
 
@@ -69,7 +72,8 @@ body.dark-mode select {
 
 body.dark-mode .new-style .tab-switcher .ind-tab.selected,
 body.dark-mode .table-striped thead th,
-body.dark-mode .message_reactions .message_reaction.reacted {
+body.dark-mode .message_reactions .message_reaction.reacted,
+body.dark-mode .message_reactions:hover .message_reaction + .reaction_button {
     background-color: hsla(0, 0%, 0%, 0.5);
     border-color: hsla(0, 0%, 0%, 0.9);
 }
@@ -77,6 +81,7 @@ body.dark-mode .message_reactions .message_reaction.reacted {
 body.dark-mode .message_reactions .message_reaction {
     background-color: hsla(0, 0%, 0%, 0.2);
     border-color: hsla(0, 0%, 0%, 0.5);
+    color: inherit;
 }
 
 body.dark-mode .new-style button.button:focus,
@@ -141,8 +146,7 @@ body.dark-mode hr {
 }
 
 body.dark-mode .nav .dropdown-menu::after,
-body.dark-mode .emoji-info-popover.top .arrow,
-body.dark-mode .emoji-info-popover.bottom .arrow {
+body.dark-mode .popover.bottom .arrow {
     border-bottom-color: hsl(235, 18%, 7%);
 }
 
@@ -166,7 +170,10 @@ body.dark-mode .floating_recipient .recipient_row {
     border-top: none;
 }
 
-body.dark-mode .stream-row.active {
+body.dark-mode .stream-row.active,
+body.dark-mode .emoji-showcase-container,
+body.dark-mode .emoji-popover-category-tabs,
+body.dark-mode .emoji-popover-top {
     background-color: hsla(0, 0%, 0%, 0.2);
 }
 
