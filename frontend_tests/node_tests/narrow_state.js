@@ -133,6 +133,10 @@ function set_filter(operators) {
     assert.equal(opts.stream, 'Foo');
     assert.equal(opts.subject, 'Bar');
 
+    set_filter([['pm-with', 'foo@bar.com']]);
+    narrow_state.set_compose_defaults(opts);
+    assert.equal(opts.private_message_recipient, 'foo@bar.com');
+
     stream_data.add_sub('ROME', {name: 'ROME', stream_id: 99});
     set_filter([['stream', 'rome']]);
 
