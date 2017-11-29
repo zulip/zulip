@@ -89,6 +89,7 @@ class HomeTest(ZulipTestCase):
             "max_icon_file_size",
             "max_message_id",
             "maxfilesize",
+            "message_content_in_email_notifications",
             "muted_topics",
             "narrow",
             "narrow_stream",

@@ -1,7 +1,10 @@
-{% if group_pm %} Group PMs with {{ huddle_display_name }}
-{% elif at_mention %} {{ sender_str }} mentioned you
-{% elif private_message %} {{ sender_str }} sent you a message
+{% if show_message_content %}
+	{% if group_pm %} Group PMs with {{ huddle_display_name }}
+	{% elif at_mention %} {{ sender_str }} mentioned you
+	{% elif private_message %} {{ sender_str }} sent you a message
+	{% endif %}
+{% else %}
+	New missed message
 {% endif %}
-{% if realm_name_in_notifications %}
- in {{ realm_str }}
+{% if realm_name_in_notifications %} in {{ realm_str }}
 {% endif %}

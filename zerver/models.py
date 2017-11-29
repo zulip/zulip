@@ -559,6 +559,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     pm_content_in_desktop_notifications = models.BooleanField(default=True)  # type: bool
     enable_sounds = models.BooleanField(default=True)  # type: bool
     enable_offline_email_notifications = models.BooleanField(default=True)  # type: bool
+    message_content_in_email_notifications = models.BooleanField(default=True)  # type: bool
     enable_offline_push_notifications = models.BooleanField(default=True)  # type: bool
     enable_online_push_notifications = models.BooleanField(default=False)  # type: bool
 
@@ -665,6 +666,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         enable_stream_email_notifications=bool,
         enable_stream_push_notifications=bool,
         enable_stream_sounds=bool,
+        message_content_in_email_notifications=bool,
         pm_content_in_desktop_notifications=bool,
         realm_name_in_notifications=bool,
     )

@@ -304,6 +304,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
         'mention': missed_messages[0].is_stream_message(),
         'unsubscribe_link': unsubscribe_link,
         'realm_name_in_notifications': user_profile.realm_name_in_notifications,
+        'show_message_content': user_profile.message_content_in_email_notifications,
     })
 
     # If this setting (email mirroring integration) is enabled, only then
@@ -317,6 +318,12 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
     else:
         context.update({
             'reply_warning': True,
+            'reply_to_zulip': False,
+        })
+
+    # If there is no content in message, it's not clear what user would be replying to.
+    if not user_profile.message_content_in_email_notifications:
+        context.update({
             'reply_to_zulip': False,
         })
 
