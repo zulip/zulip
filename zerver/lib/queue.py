@@ -187,7 +187,7 @@ class TornadoQueueClient(SimpleQueueClient):
         self.connection = ExceptionFreeTornadoConnection(
             self._get_parameters(),
             on_open_callback = self._on_open,
-            stop_ioloop_on_close = False)
+        )
         self.connection.add_on_close_callback(self._on_connection_closed)
 
     def _reconnect(self) -> None:
