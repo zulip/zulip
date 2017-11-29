@@ -34,8 +34,10 @@
                 {{ row.string_id }}
             </td>
 
-            <td>
-                {{ row.date_created }}
+            <td {% if row.is_new %}
+                class="good" {% else %}
+                class="neutral" {% endif %} >
+                {{ row.date_created_day }}
             </td>
 
             <td class="number">

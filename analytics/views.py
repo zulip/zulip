@@ -18,7 +18,7 @@ from django.db.models.query import QuerySet
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
 from django.shortcuts import render
 from django.template import RequestContext, loader
-from django.utils.timezone import now as timezone_now
+from django.utils.timezone import now as timezone_now, utc as timezone_utc
 from django.utils.translation import ugettext as _
 from jinja2 import Markup as mark_safe
 
@@ -287,7 +287,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     query = '''
         SELECT
             realm.string_id,
-            to_char(realm.date_created, 'YYYY-MM-DD') date_created,
+            realm.date_created,
             coalesce(user_counts.dau_count, 0) dau_count,
             coalesce(wau_counts.wau_count, 0) wau_count,
             (
@@ -388,6 +388,12 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     cursor.execute(query)
     rows = dictfetchall(cursor)
     cursor.close()
+
+    for row in rows:
+        row['date_created_day'] = row['date_created'].strftime('%Y-%m-%d')
+        row['age_days'] = int((timezone_now() - row['date_created']).total_seconds()
+                              / 86400)
+        row['is_new'] = row['age_days'] < 12 * 7
 
     # get messages sent per day
     counts = get_realm_day_counts()
