@@ -160,3 +160,33 @@ function set_filter(operators) {
     assert.deepEqual(filter.operands('sender'), ['showell@foo.com']);
     assert.deepEqual(filter.operands('stream'), ['steve@foo.com']);
 }());
+
+(function test_topic() {
+    set_filter([['stream', 'Foo'], ['topic', 'Bar']]);
+    assert.equal(narrow_state.topic(), 'Bar');
+
+    set_filter([['stream', 'release'], ['topic', '@#$$^test']]);
+    assert.equal(narrow_state.topic(), '@#$$^test');
+
+    set_filter(undefined);
+    assert.equal(narrow_state.topic(), undefined);
+
+    set_filter([
+        ['sender', 'test@foo.com'],
+        ['pm-with', 'test@foo.com'],
+    ]);
+    assert.equal(narrow_state.topic(), undefined);
+}());
+
+
+(function test_stream() {
+    set_filter(undefined);
+    assert.equal(narrow_state.stream(), undefined);
+
+    set_filter([['stream', 'Foo'], ['topic', 'Bar']]);
+    assert.equal(narrow_state.stream(), 'Foo');
+
+    set_filter([['sender', 'someone'], ['topic', 'random']]);
+    assert.equal(narrow_state.stream(), undefined);
+}());
+
