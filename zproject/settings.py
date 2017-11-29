@@ -483,13 +483,16 @@ INSTALLED_APPS = [
     'webpack_loader',
     'zerver',
     'social_django',
-    'django_otp',
-    'django_otp.plugins.otp_static',
-    'django_otp.plugins.otp_totp',
-    'two_factor',
 ]
 if USING_PGROONGA:
     INSTALLED_APPS += ['pgroonga']
+if TWO_FACTOR_AUTHENTICATION_ENABLED:
+    INSTALLED_APPS += [
+        'django_otp',
+        'django_otp.plugins.otp_static',
+        'django_otp.plugins.otp_totp',
+        'two_factor',
+    ]
 INSTALLED_APPS += EXTRA_INSTALLED_APPS
 
 ZILENCER_ENABLED = 'zilencer' in INSTALLED_APPS
