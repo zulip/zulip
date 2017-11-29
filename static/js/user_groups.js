@@ -29,10 +29,6 @@ exports.get_user_group_from_id = function (group_id) {
 };
 
 exports.get_user_group_from_name = function (name) {
-    if (!user_group_name_dict.has(name)) {
-        blueslip.error('Unknown name in get_user_group_from_name: ' + name);
-        return undefined;
-    }
     return user_group_name_dict.get(name);
 };
 
