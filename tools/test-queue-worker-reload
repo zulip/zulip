@@ -28,6 +28,7 @@ successful_worker_launches = [
     'launching queue worker thread test',
     'launching queue worker thread message_sender',
     'launching queue worker thread missedmessage_emails',
+    'launching queue worker thread email_senders',
     'launching queue worker thread missedmessage_email_senders',
     'launching queue worker thread email_mirror',
     'launching queue worker thread user_activity_interval',
