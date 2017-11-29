@@ -116,9 +116,9 @@ process the data, which isn't surprising for a top-down approach.)
 
 The next section of the document talks about risk factors.
 
-# Risk Mitigation
+## Risk Mitigation
 
-## Generic considerations
+### Generic considerations
 
 We have two major mechanisms for getting data:
 
@@ -144,9 +144,9 @@ duplicating some work, particularly on the message side of things.
 We have not yet integrated the approved-transfer model, which tells us
 which users can be moved.
 
-## Risk factors broken out by data categories
+### Risk factors broken out by data categories
 
-### Message Data
+#### Message Data
 
 - models: `Message`/`UserMessage`.
 - assets: `messages-*.json`, subprocesses, partial files
@@ -165,7 +165,7 @@ We currently have these measures in place for top-down processing:
 - messages are filtered by both sender and recipient
 
 
-### File Related Data
+#### File Related Data
 
 - models: `Attachment`
 - assets: S3, `attachment.json`, `uploads-temp/`, image files in
@@ -185,7 +185,7 @@ parts**:
 - At import time we have to populate the `m2m` table (but fortunately,
   this is pretty low risk in terms of breaking anything.)
 
-### Recipient Data
+#### Recipient Data
 - models: `Recipient/Stream/Subscription/Huddle`
 - assets: `realm.json`, `(user,stream,huddle)_(recipient,subscription)`
 
@@ -219,7 +219,7 @@ Recommendation: We probably want to get a backup of all this data that
 is very simply bulk-exported from the entire DB, and we should
 obviously put it in a secure place.
 
-### Cross Realm Data
+#### Cross Realm Data
 - models: `Client`
 - assets: `realm.json`, three bots (`notification`/`email`/`welcome`),
   `id_maps`
@@ -245,7 +245,7 @@ example.  As for possibly missing messages that the welcome bot and
 friends have sent in the past, I am not sure what our risk profile is
 there, but I imagine it is relatively low.
 
-### Disjoint User Data
+#### Disjoint User Data
 - models: `UserProfile/UserActivity/UserActivityInterval/UserPresence`
 - assets: `realm.json`, `password`, `api_key`, `avatar salt`,
   `id_maps`
@@ -259,7 +259,7 @@ We have code in place to exclude `password` and `api_key` from
 `UserProfile` rows.  The import process calls
 `set_unusable_password()`.
 
-### Public Realm Data
+#### Public Realm Data
 
 - models: `Realm/RealmDomain/RealmEmoji/RealmFilter/DefaultStream`
 - asserts: `realm.json`
