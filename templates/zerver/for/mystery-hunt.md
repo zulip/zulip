@@ -1,53 +1,60 @@
-Zulip was started in 2012 by four SIPB alums, to spread Zephyr's unique
-conversation model outside of MIT, and to modernize the protocol to support
-web and mobile clients, emoji reactions, file sharing, and more. Zulip today
-is used by Fortune 500 companies, alumni groups, standards bodies, and
-others who need a reliable chat system that can support dozens of
-simultaneous conversations in an organized way.
+Zulip was started in 2012 by four SIPB alums. We think it's the best team
+chat tool for mystery hunt teams.
 
 **How is this different from Slack?**
 
 In Slack, IRC, and nearly every other team chat application, users subscribe
 to chat rooms ("channels"), and get all the messages sent to each channel in
 a chronological dump. The model is largely designed to support real-time
-conversation; if there is a conversation in a busy channel at 3am, and you
-come by even a few hours later, you aren't going to be able to meaningfully
-respond to or continue that conversation.
+conversation, where it's easy to participate if you're on-line, but not easy
+to come back a few hours later and reply to a conversation that started
+while you were gone.
 
-In Zulip (or Zephyr), there is one additional layer of organization:
-messages have topics (like "puzzle: duck konundrum"). That makes it very
-easy for someone to come back after 8 hours (okay, 4 hours) of sleep, catch
-up on the state of various puzzles, and answer questions even if a question
-was asked many hours ago.
+In Zulip, there is an additional layer of organization in each channel:
+messages have topics (like "puzzle: duck konundrum"), so it is easy to
+follow conversational threads. It also makes it easy for someone to come
+back after 8 hours (okay, 4 hours) of sleep, catch up on the state of
+various puzzles, and answer questions even if a question was asked many
+hours ago.
 
-**Is it free? (beer)**
+**You have to write a topic for every message you send? Sounds like a bit much ..**
 
-Yes. We provide free hosting for all MIT mystery hunt teams, student groups,
+Nope! Just the first person writing a message to a given topic has to write
+it out. Replies to that message are automatically grouped in the way you'd
+expect. Sending a message in Zulip feels just as lightweight as sending a
+message in SMS, Google Hangouts, or Slack.
+
+**Is it free?**
+
+Yes! We provide free hosting for all MIT mystery hunt teams, student groups,
 and research groups.
 
-**Is it free? (libre)**
-
-Yes! All of Zulip (the server, web frontend, desktop apps, mobile apps, and
-even our deployment configuration) is licensed under the Apache 2.0
-license. We also make it easy to export your data from a
+Besides being easy on the wallet, Zulip is also free (open source)
+software. We make it easy to export your data from a
 [zulipchat.com](https://zulipchat.com) hosted Zulip and import it into a
 self-hosted installation.
 
 **Can I integrate Zulip with my current puzzlehunting software?**
 
-Yes. Zulip has a well thought out API, and it's easy to write bots that send
+Yup. Zulip has a well thought out API, and it's easy to write bots that send
 things into or out of Zulip.
 
-**How do I sign up?**
+**Where can I test it out?**
 
-Create an organization [here](https://zulipchat.com/create_realm), and email
+[Click here](https://zulipchat.com/create_realm) to create an organization; it
+only takes only about 30 seconds. If you decide to continue using it, just email
 support@zulipchat.com to tell us you're a mystery hunt team.
 
 **Where do I go for further information?**
 
-Come find us on the [Zulip community chat](https://chat.zulip.org)! Feel
+Come find us on the [Zulip community chat](https://chat.zulip.org). Feel
 free to post in
 [#mystery hunt](https://chat.zulip.org/#narrow/stream/mystery.20hunt) or
 anywhere else that seems appropriate.
 
-*This is not a puzzle.*
+**Help! I'm trapped in a mystery hunt puzzle.**
+
+This is not a puzzle! But feel free take a look at
+[Zulip for companies](/for/companies),
+[Zulip for working groups](/for/working-groups-and-communities), or
+[Zulip for open source projects](/for/open-source).
