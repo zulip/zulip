@@ -125,7 +125,7 @@ parameters, updating `last_event_id` each time to acknowledge any
 events it has received (see `call_on_each_event` in the
 [Zulip Python API bindings][api-bindings-code] for a complete example
 implementation).  When handling each `GET /json/events` request, the
-queue server can safely delete any events have have an event ID less
+queue server can safely delete any events have an event ID less
 than or equal to the client's `last_event_id` (event IDs are just a
 counter for the events a given queue has received.)
 
@@ -140,7 +140,7 @@ those events could be lost).
 [api-bindings-code]: https://github.com/zulip/python-zulip-api/blob/master/zulip/zulip/__init__.py
 
 The queue servers are a very high-traffic system, processing at a
-minimum a request for every message delivered to every Zulip client.
+minimum request for every message delivered to every Zulip client.
 Additionally, as a workaround for low-quality NAT servers that kill
 HTTP connections that are open without activity for more than 60s, the
 queue servers also send a heartbeat event to each queue at least once
