@@ -20,6 +20,7 @@ var pm_mention_notification_settings = [
 var other_notification_settings = [
     "enable_digest_emails",
     "realm_name_in_notifications",
+    "message_content_in_email_notifications",
 ];
 
 exports.notification_settings = other_notification_settings.concat(
