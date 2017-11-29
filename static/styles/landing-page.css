@@ -816,7 +816,7 @@ nav ul li.active::after {
     text-shadow: 0px 0px 5px rgba(10, 66, 51, 0.3), 0px 0px 20px rgba(255,255,255,0.2);
 }
 
-.portico-landing.hello .hero header a {
+.portico-landing.hello .hero header form {
     display: block;
     margin: 20px auto 0px auto;
     text-align: center;
@@ -847,8 +847,7 @@ nav ul li.active::after {
 }
 
 .portico-landing.hello .hero header .download-button {
-    display:block;
-    margin:0 auto;
+    margin-top: 10px;
 }
 
 .portico-landing.hello .hero header #see_all_apps {
