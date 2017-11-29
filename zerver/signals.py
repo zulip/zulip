@@ -9,6 +9,7 @@ from django.utils.timezone import \
     get_current_timezone_name as timezone_get_current_timezone_name
 from django.utils.timezone import now as timezone_now
 
+from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.models import UserProfile
 
@@ -82,6 +83,10 @@ def email_on_new_login(sender: Any, user: UserProfile, request: Any, **kwargs: A
         context['device_info'] = device_info
         context['user'] = user
 
-        send_email('zerver/emails/notify_new_login', to_user_id=user.id,
-                   from_name='Zulip Account Security', from_address=FromAddress.NOREPLY,
-                   context=context)
+        email_dict = {
+            'template_prefix': 'zerver/emails/notify_new_login',
+            'to_user_id': user.id,
+            'from_name': 'Zulip Account Security',
+            'from_address': FromAddress.NOREPLY,
+            'context': context}
+        queue_json_publish("email_senders", email_dict)
