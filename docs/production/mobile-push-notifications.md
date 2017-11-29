@@ -32,6 +32,10 @@ follows:
    Note that if you installed Zulip older than 1.6, you'll need to add
    the line (it won't be there to uncomment).
 
+4. If you or your users have already set up the Zulip mobile app,
+   you'll each need to log out and log back in again in order to start
+   getting push notifications.
+
 That should be all you need to do!
 
 If you'd like to verify the full pipeline, you can do the following.
