@@ -221,9 +221,9 @@ class TornadoQueueClient(SimpleQueueClient):
                 self._reconnect()
             except pika.exceptions.AMQPConnectionError:
                 self.log.critical("Failed to reconnect to RabbitMQ, retrying...")
-                ioloop.IOLoop.instance().add_timeout(time.time() + retry_seconds, on_timeout)
+                ioloop.IOLoop.instance().call_later(retry_seconds, on_timeout)
 
-        ioloop.IOLoop.instance().add_timeout(time.time() + retry_seconds, on_timeout)
+        ioloop.IOLoop.instance().call_later(retry_seconds, on_timeout)
 
     def ensure_queue(self, queue_name: str, callback: Callable[[], None]) -> None:
         def finish(frame: Any) -> None:

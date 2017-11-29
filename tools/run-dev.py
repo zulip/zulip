@@ -380,7 +380,7 @@ def shutdown_handler(*args, **kwargs):
     # type: (*Any, **Any) -> None
     io_loop = IOLoop.instance()
     if io_loop._callbacks:
-        io_loop.add_timeout(time.time() + 1, shutdown_handler)
+        io_loop.call_later(1, shutdown_handler)
     else:
         io_loop.stop()
 
