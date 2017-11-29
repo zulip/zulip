@@ -16,7 +16,7 @@ if EXTERNAL_HOST is None:
     user_name = pwd.getpwuid(user_id).pw_name
     if user_name == "zulipdev":
         # For our droplets, we use the external hostname by default.
-        EXTERNAL_HOST = os.uname()[1] + ":9991"
+        EXTERNAL_HOST = os.uname()[1].lower() + ":9991"
     else:
         # For local development environments, we use localhost by
         # default, via the "zulipdev.com" hostname.
