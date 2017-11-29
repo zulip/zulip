@@ -1,17 +1,18 @@
 
+from collections import defaultdict
+import logging
+import random
+import threading
+import time
+from typing import Any, Callable, Dict, List, Mapping, Optional, Set, Union
+
 from django.conf import settings
 import pika
 from pika.adapters.blocking_connection import BlockingChannel
 from pika.spec import Basic
-import logging
 import ujson
-import random
-import time
-import threading
-from collections import defaultdict
 
 from zerver.lib.utils import statsd
-from typing import Any, Callable, Dict, List, Mapping, Optional, Set, Union
 
 MAX_REQUEST_RETRIES = 3
 Consumer = Callable[[BlockingChannel, Basic.Deliver, pika.BasicProperties, str], None]
