@@ -78,7 +78,7 @@ class ClientDescriptor:
         self.client_gravatar = client_gravatar
         self.all_public_streams = all_public_streams
         self.client_type_name = client_type_name
-        self._timeout_handle = None  # type: Any # TODO: should be return type of ioloop.add_timeout
+        self._timeout_handle = None  # type: Any # TODO: should be return type of ioloop.call_later
         self.narrow = narrow
         self.narrow_filter = build_narrow_filter(narrow)
 
@@ -189,9 +189,9 @@ class ClientDescriptor:
             # All clients get heartbeat events
             self.add_event(dict(type='heartbeat'))
         ioloop = tornado.ioloop.IOLoop.instance()
-        heartbeat_time = time.time() + HEARTBEAT_MIN_FREQ_SECS + random.randint(0, 10)
+        interval = HEARTBEAT_MIN_FREQ_SECS + random.randint(0, 10)
         if self.client_type_name != 'API: heartbeat test':
-            self._timeout_handle = ioloop.add_timeout(heartbeat_time, timeout_callback)
+            self._timeout_handle = ioloop.call_later(interval, timeout_callback)
 
     def disconnect_handler(self, client_closed: bool=False) -> None:
         if self.current_handler_id:
