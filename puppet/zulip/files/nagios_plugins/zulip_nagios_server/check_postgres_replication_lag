@@ -4,8 +4,7 @@
 Nagios plugin to check the difference between the primary and
 secondary Postgres servers' xlog location.
 """
-if False:
-    from mypy_extensions import NoReturn
+from mypy_extensions import NoReturn
 
 import subprocess
 import re
@@ -17,13 +16,11 @@ states = {
     "UNKNOWN": 3
 }
 
-def report(state, msg):
-    # type: (str, str) -> NoReturn
+def report(state: str, msg: str) -> NoReturn:
     print("%s: %s" % (state, msg))
     exit(states[state])
 
-def get_loc_over_ssh(host, func):
-    # type: (str, str) -> str
+def get_loc_over_ssh(host: str, func: str) -> str:
     try:
         return subprocess.check_output(['ssh', host,
                                         'psql zulip -t -c "SELECT %s()"' % (func,)],
@@ -32,8 +29,7 @@ def get_loc_over_ssh(host, func):
     except subprocess.CalledProcessError as e:
         report('CRITICAL', 'ssh failed: %s: %s' % (str(e), e.output))
 
-def loc_to_abs_offset(loc_str):
-    # type: (str) -> int
+def loc_to_abs_offset(loc_str: str) -> int:
     m = re.match(r'^\s*([0-9a-fA-F]+)/([0-9a-fA-F]+)\s*$', loc_str)
     if not m:
         raise ValueError("Unknown xlog location format: " + loc_str)

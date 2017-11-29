@@ -8,8 +8,7 @@ This script works by just monitoring the files under
 mirrors when they receive the messages sent every minute by
 /etc/cron.d/test_zephyr_personal_mirrors
 """
-if False:
-    from typing import Dict
+from typing import Dict
 
 import os
 import time
@@ -23,8 +22,7 @@ states = {
     "UNKNOWN": 3
 }  # type: Dict[str, int]
 
-def report(state, output):
-    # type: (str, str) -> None
+def report(state: str, output: str) -> None:
     print("%s\n%s" % (state, output))
     exit(states[state])
 

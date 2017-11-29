@@ -14,8 +14,7 @@ states = {
     "UNKNOWN": 3
 }
 
-def report(state, msg):
-    # type: (str, str) -> None
+def report(state: str, msg: str) -> None:
     print("%s: %s" % (state, msg))
     exit(states[state])
 
