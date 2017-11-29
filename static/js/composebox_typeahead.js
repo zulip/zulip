@@ -274,10 +274,22 @@ exports.tokenize_compose_str = function (s) {
 };
 
 exports.compose_content_begins_typeahead = function (query) {
-    var q = exports.split_at_cursor(query, this.$element)[0];
-
+    var split = exports.split_at_cursor(query, this.$element);
+    var q = split[0];
+    var rest = split[1];
     var current_token = exports.tokenize_compose_str(q);
     if (current_token === '') {
+        return false;
+    }
+
+    // If the remaining content after the mention isn't a space or
+    // punctuation (or end of the message), don't try to typeahead; we
+    // probably just have the cursor in the middle of an
+    // already-completed object.
+
+    // TODO: Make this a better list.
+    var terminal_symbols = ',.?!) ';
+    if (rest !== '' && terminal_symbols.indexOf(rest[0]) === -1) {
         return false;
     }
 
