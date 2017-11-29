@@ -24,7 +24,9 @@ merged (e.g. it might not work or pass tests).  This sets expectations
 correctly for any feedback from other developers, and prevents your
 work from being merged before you're confident in it.
 
-## Step 1: Update your branch with git rebase
+## Create a pull request
+
+### Step 1: Update your branch with git rebase
 
 The best way to update your branch is with `git fetch` and `git rebase`. Do not
 use `git pull` or `git merge` as this will create merge commits. See [keep your
@@ -50,7 +52,7 @@ First, rewinding head to replay your work on top of it...
 Applying: troubleshooting tip about provisioning
 ```
 
-## Step 2: Push your updated branch to your remote fork
+### Step 2: Push your updated branch to your remote fork
 
 Once you've updated your local feature branch, push the changes to GitHub:
 
@@ -87,7 +89,7 @@ you, they might run into complications when they retrieve your changes because
 anyone who has based their changes off a branch you rebase will have to do a
 complicated rebase.
 
-## Step 3: Open the pull request
+### Step 3: Open the pull request
 
 If you've never created a pull request or need a refresher, take a look at
 GitHub's article [creating a pull request from a
@@ -122,7 +124,7 @@ Note: **Pull request titles are different from commit messages.** Commit
 messages can be edited with `git commit --amend`, `git rebase -i`, etc., while
 the title of a pull request can only be edited via GitHub.
 
-# Update a pull request
+## Update a pull request
 
 As you get make progress on your feature or bugfix, your pull request, once
 submitted, will be updated each time you [push commits][self-push-commits] to
