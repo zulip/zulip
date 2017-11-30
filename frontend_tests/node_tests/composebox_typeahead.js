@@ -785,13 +785,23 @@ global.user_groups.add(backend);
 }());
 
 (function test_begins_typeahead() {
-    // Stub out split_at_cursor that uses $(':focus')
-    ct.split_at_cursor = function (word) { return [word, '']; };
 
     var begin_typehead_this = {options: {completions: {
         emoji: true, mention: true, stream: true, syntax: true}}};
 
-    function assert_typeahead_equals(input, reference) {
+    function assert_typeahead_equals(input, rest, reference) {
+        // Usage:
+        // assert_typeahead_equals('#some', reference); => '#some|'
+        // assert_typeahead_equals('#some', 'thing', reference) => '#some|thing'
+        // In the above examples, '|' serves as the cursor.
+        if (reference === undefined) {
+            reference = rest;
+            rest = '';
+        }
+        // Stub out split_at_cursor that uses $(':focus')
+        ct.split_at_cursor = function () {
+            return [input, rest];
+        };
         var returned = ct.compose_content_begins_typeahead.call(
             begin_typehead_this, input
         );
@@ -906,32 +916,20 @@ global.user_groups.add(backend);
     assert_typeahead_equals("test\n~~~ p", lang_list);
     assert_typeahead_equals("test\n~~~  p", lang_list);
 
-    // Following tests place the cursor before the last character
-    ct.split_at_cursor = function (word) {
-        var cursor = word.length - 1;
-        return [word.slice(0, cursor), word.slice(cursor)];
-    };
-    assert_typeahead_equals("#test", false);
-    assert_typeahead_equals("#test ", stream_list);
-    assert_typeahead_equals("#test,", stream_list);
-    assert_typeahead_equals("#test.", stream_list);
-    assert_typeahead_equals("#test?", stream_list);
-    assert_typeahead_equals("#test!", stream_list);
-    assert_typeahead_equals("#test)", stream_list);
-    assert_typeahead_equals("#test(", stream_list);
-    assert_typeahead_equals("#test[", stream_list);
-    assert_typeahead_equals("#test]", stream_list);
-    assert_typeahead_equals("@test", false);
-    assert_typeahead_equals("@test ", all_mentions);
-    assert_typeahead_equals(":test", false);
-    assert_typeahead_equals(":test ", emoji_list);
-    assert_typeahead_equals("```test", false);
-    assert_typeahead_equals("```test ", lang_list);
-    assert_typeahead_equals("~~~test", false);
-    assert_typeahead_equals("~~~test ", lang_list);
-
-    // Return to the original split_at_cursor implementation.
-    ct.split_at_cursor = function (word) { return [word, '']; };
+    // Following tests place the cursor before the second string
+    assert_typeahead_equals("#test", "ing", false);
+    assert_typeahead_equals("@test", "ing", false);
+    assert_typeahead_equals(":test", "ing", false);
+    assert_typeahead_equals("```test", "ing", false);
+    assert_typeahead_equals("~~~test", "ing", false);
+    var terminal_symbols = ',.?!()[] ';
+    terminal_symbols.split().forEach(symbol => {
+        assert_typeahead_equals("#test", symbol, stream_list);
+        assert_typeahead_equals("@test", symbol, all_mentions);
+        assert_typeahead_equals(":test", symbol, emoji_list);
+        assert_typeahead_equals("```test", symbol, lang_list);
+        assert_typeahead_equals("~~~test", symbol, lang_list);
+    });
 }());
 
 (function test_tokenizing() {
