@@ -494,12 +494,14 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         DEFAULT_BOT,
         INCOMING_WEBHOOK_BOT,
         OUTGOING_WEBHOOK_BOT,
-        EMBEDDED_BOT,
     ]
+    if settings.DEVELOPMENT:
+        # Embedded bots are not yet enabled in production.
+        ALLOWED_BOT_TYPES.append(EMBEDDED_BOT)
 
     SERVICE_BOT_TYPES = [
         OUTGOING_WEBHOOK_BOT,
-        EMBEDDED_BOT
+        EMBEDDED_BOT,
     ]
 
     # Fields from models.AbstractUser minus last_name and first_name,
