@@ -7,6 +7,7 @@ __revision__ = '$Id: models.py 28 2009-10-22 15:03:02Z jarek.zgoda $'
 import datetime
 
 from django.db import models
+from django.db.models import CASCADE
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -17,7 +18,8 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.lib.send_email import send_email
 from zerver.lib.utils import generate_random_token
-from zerver.models import PreregistrationUser, EmailChangeStatus, MultiuseInvite, UserProfile
+from zerver.models import PreregistrationUser, EmailChangeStatus, MultiuseInvite, \
+    UserProfile, Realm
 from random import SystemRandom
 import string
 from typing import Any, Dict, Optional, Text, Union
@@ -70,7 +72,7 @@ def create_confirmation_link(obj: ContentType, host: str,
                              url_args: Optional[Dict[str, str]]=None) -> str:
     key = generate_key()
     Confirmation.objects.create(content_object=obj, date_sent=timezone_now(), confirmation_key=key,
-                                type=confirmation_type)
+                                realm=obj.realm, type=confirmation_type)
     return confirmation_url(key, host, confirmation_type, url_args)
 
 def confirmation_url(confirmation_key: str, host: str,
@@ -88,6 +90,7 @@ class Confirmation(models.Model):
     content_object = GenericForeignKey('content_type', 'object_id')
     date_sent = models.DateTimeField()  # type: datetime.datetime
     confirmation_key = models.CharField(max_length=40)  # type: str
+    realm = models.ForeignKey(Realm, null=True, on_delete=CASCADE)  # type: Optional[Realm]
 
     # The following list is the set of valid types
     USER_REGISTRATION = 1
