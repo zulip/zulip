@@ -5,10 +5,6 @@ body.dark-mode {
     -webkit-font-smoothing: antialiased;
 }
 
-body.dark-mode a:hover {
-    color: #65c0ed;
-}
-
 body.dark-mode .app-main,
 body.dark-mode .header-main {
     background-color: #212d3b;

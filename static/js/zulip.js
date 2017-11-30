@@ -13,6 +13,6 @@ if (typeof module !== 'undefined') {
 
 $(function () {
     if (page_params.night_mode) {
-        $("body").addClass("dark-mode");
+        ui.night_mode.enable();
     }
 });
