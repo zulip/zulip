@@ -860,13 +860,38 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
     # make sure users can't take a valid confirmation key from another
     # pathway and use it with the invitation url route
-    # Mainly a test of get_object_from_key, rather than of the invitation pathway
     def test_confirmation_key_of_wrong_type(self) -> None:
         user = self.example_user('hamlet')
-        registration_key = create_confirmation_link(user, 'host', Confirmation.USER_REGISTRATION).split('/')[-1]
+        url = create_confirmation_link(user, 'host', Confirmation.USER_REGISTRATION)
+        registration_key = url.split('/')[-1]
+
+        # Mainly a test of get_object_from_key, rather than of the invitation pathway
         with self.assertRaises(ConfirmationKeyException) as cm:
             get_object_from_key(registration_key, Confirmation.INVITATION)
         self.assertEqual(cm.exception.error_type, ConfirmationKeyException.DOES_NOT_EXIST)
+
+        # Verify that using the wrong type doesn't work in the main confirm code path
+        email_change_url = create_confirmation_link(user, 'host', Confirmation.EMAIL_CHANGE)
+        email_change_key = email_change_url.split('/')[-1]
+        url = '/accounts/do_confirm/' + email_change_key
+        result = self.client_get(url)
+        self.assert_in_success_response(["Whoops. We couldn't find your "
+                                         "confirmation link in the system."], result)
+
+    def test_confirmation_expired(self) -> None:
+        user = self.example_user('hamlet')
+        url = create_confirmation_link(user, 'host', Confirmation.USER_REGISTRATION)
+        registration_key = url.split('/')[-1]
+
+        conf = Confirmation.objects.filter(confirmation_key=registration_key).first()
+        conf.date_sent -= datetime.timedelta(weeks=3)
+        conf.save()
+
+        target_url = '/' + url.split('/', 3)[3]
+        print(target_url)
+        result = self.client_get(target_url)
+        self.assert_in_success_response(["Whoops. The confirmation link has expired "
+                                         "or been deactivated."], result)
 
 class InvitationsTestCase(InviteUserBase):
     def test_successful_get_open_invitations(self) -> None:
