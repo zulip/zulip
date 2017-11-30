@@ -323,3 +323,8 @@ body.dark-mode .date_row span:before,
 body.dark-mode .date_row span:after {
     opacity: 0.2;
 }
+
+body.dark-mode .star:not(.empty-star),
+body.dark-mode .empty-star:hover {
+    color: hsla(126, 66%, 72%, 0.75);
+}
