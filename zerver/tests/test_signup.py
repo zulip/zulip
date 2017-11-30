@@ -665,6 +665,25 @@ earl-test@zulip.com""", ["Denmark"]))
         self.check_sent_emails(["bob-test@zulip.com", "carol-test@zulip.com",
                                 "dave-test@zulip.com", "earl-test@zulip.com"])
 
+    def test_invite_too_many_users(self) -> None:
+        # Only a light test of this pathway; e.g. doesn't test that
+        # the limit gets reset after 24 hours
+        self.login(self.example_email("iago"))
+        self.client_post("/json/invites",
+                         {"invitee_emails": "1@zulip.com, 2@zulip.com",
+                          "stream": ["Denmark"],
+                          "custom_body": ''}),
+
+        self.assert_json_error(
+            self.client_post("/json/invites",
+                             {"invitee_emails": ", ".join(
+                                 [str(i) for i in range(get_realm("zulip").max_invites - 1)]),
+                              "stream": ["Denmark"],
+                              "custom_body": ''}),
+            "You do not have enough remaining invites; "
+            "try again with fewer emails, or contact zulip-admin@example.com. "
+            "No invitations were sent.")
+
     def test_missing_or_invalid_params(self) -> None:
         """
         Tests inviting with various missing or invalid parameters.

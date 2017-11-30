@@ -3931,6 +3931,19 @@ def do_invite_users(user_profile: UserProfile,
                     streams: Iterable[Stream],
                     invite_as_admin: Optional[bool]=False,
                     body: Optional[str]=None) -> None:
+    if settings.OPEN_REALM_CREATION:
+        # Discourage using invitation emails as a vector for carrying spam
+        sent_invites = Confirmation.objects.filter(
+            realm=user_profile.realm,
+            date_sent__gte=timezone_now() - datetime.timedelta(days=1),
+            type=Confirmation.INVITATION).count()
+        if len(invitee_emails) + sent_invites > user_profile.realm.max_invites:
+            raise InvitationError(
+                _("You do not have enough remaining invites; "
+                  "try again with fewer emails, or contact %s. "
+                  "No invitations were sent." % (settings.ZULIP_ADMINISTRATOR)),
+                [], sent_invitations=False)
+
     validated_emails = []  # type: List[Text]
     errors = []  # type: List[Tuple[Text, str]]
     skipped = []  # type: List[Tuple[Text, str]]
