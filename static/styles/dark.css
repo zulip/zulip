@@ -282,3 +282,13 @@ body.dark-mode .alert-box .alert {
 body.dark-mode .alert-box .alert.alert-error::before {
     color: 1px solid hsl(0, 75%, 65%);
 }
+
+body.dark-mode .top-messages-logo svg path {
+    fill: #222d3b;
+    stroke: #222d3b;
+}
+
+body.dark-mode .top-messages-logo svg circle {
+    fill: #fff;
+    stroke: #fff;
+}
