@@ -5,6 +5,10 @@ body.dark-mode {
     -webkit-font-smoothing: antialiased;
 }
 
+body.dark-mode a:hover {
+    color: #65c0ed;
+}
+
 body.dark-mode .app-main,
 body.dark-mode .header-main {
     background-color: #212d3b;
@@ -41,10 +45,18 @@ body.dark-mode .popover a {
 }
 
 body.dark-mode .dark_background a,
-body.dark-mode .dark_background a:hover,
 body.dark-mode a.dark_background:hover,
-body.dark-mode .dark_background {
+body.dark-mode .dark_background,
+body.dark-mode .message_reactions .message_reaction_count,
+body.dark-mode .message_reactions .reaction_button i,
+body.dark-mode .message_reactions:hover .message_reaction + .reaction_button {
     color: inherit !important;
+}
+
+/* do not turn the .message_header .stream_label text dark on hover because they're
+on a dark background, and don't change the dark labels dark either. */
+body.dark-mode .message_header:not(.dark_background) a.stream_label:not(.dark_background):hover {
+    color: #212d3b !important;
 }
 
 /* these are converting grey things to "new grey" */
@@ -69,7 +81,8 @@ body.dark-mode select {
 
 body.dark-mode .new-style .tab-switcher .ind-tab.selected,
 body.dark-mode .table-striped thead th,
-body.dark-mode .message_reactions .message_reaction.reacted {
+body.dark-mode .message_reactions .message_reaction.reacted,
+body.dark-mode .message_reactions:hover .message_reaction + .reaction_button {
     background-color: hsla(0, 0%, 0%, 0.5);
     border-color: hsla(0, 0%, 0%, 0.9);
 }
@@ -77,6 +90,7 @@ body.dark-mode .message_reactions .message_reaction.reacted {
 body.dark-mode .message_reactions .message_reaction {
     background-color: hsla(0, 0%, 0%, 0.2);
     border-color: hsla(0, 0%, 0%, 0.5);
+    color: inherit;
 }
 
 body.dark-mode .new-style button.button:focus,
@@ -108,11 +122,6 @@ body.dark-mode #preview_message_area {
     border-color: hsla(0, 0%, 0%, 0.2);
 }
 
-body.dark-mode #navbar-buttons ul.nav .dropdown-toggle,
-body.dark-mode #navbar-buttons ul.nav li.active .dropdown-toggle {
-    color: hsla(0, 0%, 0%, 0.8);
-}
-
 body.dark-mode .navbar-search {
     border-right-color: hsla(0, 0%, 0%, 0.2);
 }
@@ -141,9 +150,20 @@ body.dark-mode hr {
 }
 
 body.dark-mode .nav .dropdown-menu::after,
-body.dark-mode .emoji-info-popover.top .arrow,
-body.dark-mode .emoji-info-popover.bottom .arrow {
+body.dark-mode .popover.bottom .arrow {
     border-bottom-color: hsl(235, 18%, 7%);
+}
+
+body.dark-mode .popover.right .arrow {
+    border-right-color: hsl(235, 18%, 7%);
+}
+
+body.dark-mode .popover.left .arrow {
+    border-left-color: hsl(235, 18%, 7%);
+}
+
+body.dark-mode .popover.top .arrow {
+    border-top-color: hsl(235, 18%, 7%);
 }
 
 body.dark-mode li.active-filter,
@@ -166,7 +186,10 @@ body.dark-mode .floating_recipient .recipient_row {
     border-top: none;
 }
 
-body.dark-mode .stream-row.active {
+body.dark-mode .stream-row.active,
+body.dark-mode .emoji-showcase-container,
+body.dark-mode .emoji-popover-category-tabs,
+body.dark-mode .emoji-popover-top {
     background-color: hsla(0, 0%, 0%, 0.2);
 }
 
@@ -180,7 +203,8 @@ body.dark-mode #settings_page .sidebar li.active,
 body.dark-mode #settings_page .sidebar .tab-container,
 body.dark-mode .table-striped tbody tr:nth-child(odd) td,
 body.dark-mode .table-striped tbody tr:nth-child(odd) th,
-body.dark-mode .modal-footer {
+body.dark-mode .modal-footer,
+body.dark-mode #invite-user .modal-header {
     border-color: hsla(0, 0%, 0%, 0.2);
     background-color: hsla(0, 0%, 0%, 0.2);
 }
@@ -228,8 +252,42 @@ body.dark-mode .nav-list .nav-header {
     text-shadow: none;
 }
 
-body.dark-mode .message_content code {
-    background-color: hsl(212, 25%, 15%);
-    border-color: hsla(0, 0%, 0%, 0.5);
+body.dark-mode .mention .messagebox {
+    background-color: hsla(8, 78%, 43%, 0.15);
+}
+
+body.dark-mode .user-mention {
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,hsla(0, 0%, 0%, 0.1)), color-stop(100%,hsla(0, 0%, 0%, 0.0)));
+    background: -webkit-linear-gradient(top, hsla(0, 0%, 0%, 0.2) 0%, hsla(0, 0%, 0%, 0.1) 100%);
+    background: -o-linear-gradient(top, hsla(0, 0%, 0%, 0.2) 0%, hsla(0, 0%, 0%, 0.1) 100%);
+    background: -ms-linear-gradient(top, hsla(0, 0%, 0%, 0.2) 0%, hsla(0, 0%, 0%, 0.1) 100%);
+    background: linear-gradient(to bottom, hsla(0, 0%, 0%, 0.2) 0%, hsla(0, 0%, 0%, 0.1) 100%);
+
+    box-shadow: 0px 0px 0px 1px hsla(0, 0%, 0%, 0.4);
+}
+
+body.dark-mode .user-mention-me {
+    background: hsla(355, 37%, 31%, 1);
+    box-shadow: 0px 0px 0px 1px hsla(330, 40%, 20%, 1);
+}
+
+body.dark-mode .alert-box .alert {
+    background: hsl(318, 12%, 21%);
     color: inherit;
+
+    border: 1px solid hsl(0, 75%, 65%);
+}
+
+body.dark-mode .alert-box .alert.alert-error::before {
+    color: 1px solid hsl(0, 75%, 65%);
+}
+
+body.dark-mode .top-messages-logo svg path {
+    fill: #222d3b;
+    stroke: #222d3b;
+}
+
+body.dark-mode .top-messages-logo svg circle {
+    fill: #fff;
+    stroke: #fff;
 }
