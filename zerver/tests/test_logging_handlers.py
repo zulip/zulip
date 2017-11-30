@@ -183,7 +183,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
             self.assertIn("host", report)
             self.assertIn("user_email", report)
             self.assertIn("message", report)
-            self.assertEqual(report["stack_trace"], None)
+            self.assertEqual(report["stack_trace"], 'No stack trace available')
 
             # Test arbitrary exceptions from request.user
             record.request.user = None  # type: ignore # this field is dynamically added

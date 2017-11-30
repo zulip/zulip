@@ -69,11 +69,11 @@ class AdminNotifyHandler(logging.Handler):
             report['node'] = platform.node()
             report['host'] = platform.node()
 
-            stack_trace = None
             if record.exc_info:
                 stack_trace = ''.join(traceback.format_exception(*record.exc_info))
                 message = str(record.exc_info[1])
             else:
+                stack_trace = 'No stack trace available'
                 message = record.getMessage()
                 if '\n' in message:
                     # Some exception code paths in queue processors
