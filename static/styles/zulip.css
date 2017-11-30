@@ -99,6 +99,16 @@ p.n-margin {
     height: 24px;
 }
 
+.top-messages-logo svg circle {
+    fill: #444;
+    stroke: #444;
+}
+
+.top-messages-logo svg path {
+    fill: #fff;
+    stroke: #fff;
+}
+
 #unmute_muted_topic_notification {
     display: none;
     position: absolute;
