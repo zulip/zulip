@@ -2375,21 +2375,21 @@ button.topic_edit_cancel {
 .star {
     display: inline-block;
     font-size: 14px;
-    color: hsl(106, 77%, 29%);
 }
 
 .star:not(.empty-star) {
     opacity: 1 !important;
     pointer-events: all !important;
+    color: hsl(106, 77%, 29%);
 }
 
-.empty-star {
-    color: hsl(0, 0%, 73%);
+.messagebox:hover .message_controls .empty-star {
+    opacity: 0.4;
 }
 
-.empty-star:hover {
+.messagebox:hover .message_controls .empty-star:hover {
     cursor: pointer;
-    color: hsl(0, 0%, 34%);
+    opacity: 1;
 }
 
 .star:hover {
