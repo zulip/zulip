@@ -32,7 +32,7 @@ target_fully_covered = {path for target in [
     # As a project, we require 100% test coverage in the views files.
     'zerver/views/*.py',
     'zproject/backends.py',
-    'confirmation/models.py',
+    'confirmation/*.py',
     'zerver/webhooks/*/*.py',
     # Once we have a nice negative tests system, we can add these:
     # 'zerver/webhooks/*/*.py',
@@ -47,7 +47,6 @@ not_yet_fully_covered = {
     # We have 100% coverage on the new stuff; need to refactor old stuff.
     'analytics/views.py',
     # Major lib files should have 100% coverage
-    'confirmation/models.py',
     'zerver/decorator.py',
     'zerver/lib/actions.py',
     'zerver/lib/addressee.py',
