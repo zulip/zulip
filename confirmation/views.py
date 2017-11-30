@@ -22,7 +22,10 @@ def confirm(request: HttpRequest, confirmation_key: str) -> HttpResponse:
         try:
             get_object_from_key(confirmation_key, Confirmation.INVITATION)
         except ConfirmationKeyException as exception:
-            return render_confirmation_key_error(request, exception)
+            try:
+                get_object_from_key(confirmation_key, Confirmation.REALM_CREATION)
+            except ConfirmationKeyException as exception:
+                return render_confirmation_key_error(request, exception)
 
     return render(request, 'confirmation/confirm_preregistrationuser.html',
                   context={

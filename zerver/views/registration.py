@@ -289,8 +289,11 @@ def send_registration_completion_email(email: str, request: HttpRequest,
         prereg_user.streams = streams
         prereg_user.save()
 
-    activation_url = create_confirmation_link(prereg_user, request.get_host(),
-                                              Confirmation.USER_REGISTRATION)
+    confirmation_type = Confirmation.USER_REGISTRATION
+    if realm_creation:
+        confirmation_type = Confirmation.REALM_CREATION
+
+    activation_url = create_confirmation_link(prereg_user, request.get_host(), confirmation_type)
     send_email('zerver/emails/confirm_registration', to_email=email, from_address=FromAddress.NOREPLY,
                context={'activate_url': activation_url})
     if settings.DEVELOPMENT and realm_creation:
