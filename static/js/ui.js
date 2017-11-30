@@ -284,6 +284,10 @@ $(function () {
 exports.initialize = function () {
     i18n.ensure_i18n(_setup_info_overlay);
     exports.show_error_for_unsupported_platform();
+
+    if (page_params.night_mode) {
+        night_mode.enable();
+    }
 };
 
 return exports;
