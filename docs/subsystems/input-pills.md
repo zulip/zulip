@@ -3,7 +3,7 @@
 This is a high level and API explanation of the input pill interface in the
 frontend of the Zulip web application.
 
-# Setup
+## Setup
 
 A pill container should have the following markup:
 
@@ -15,13 +15,13 @@ A pill container should have the following markup:
 
 The pills will automatically be inserted in before the ".input" in order.
 
-# Basic Example
+## Basic Example
 
 ```js
 var pc = input_pill($("#input_container"));
 ```
 
-# Advanced Example
+## Advanced Example
 
 ```html
 <div class="pill-container" id="input_container">
@@ -61,7 +61,7 @@ $("#input_container + button").click(function () {
 });
 ```
 
-## `onPillCreate` method
+### `onPillCreate` method
 
 The `onPillCreate` method can have a few different key actions. The function can
 work as a validator, where if the `reject` function is called, it will disable

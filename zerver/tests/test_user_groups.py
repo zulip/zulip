@@ -38,12 +38,19 @@ class UserGroupTestCase(ZulipTestCase):
         user_group = UserGroup.objects.first()
         membership = UserGroupMembership.objects.filter(user_group=user_group)
         membership = membership.values_list('user_profile_id', flat=True)
+        empty_user_group = create_user_group('newgroup', [], realm)
+
         user_groups = user_groups_in_realm_serialized(realm)
-        self.assertEqual(len(user_groups), 1)
+        self.assertEqual(len(user_groups), 2)
         self.assertEqual(user_groups[0]['id'], user_group.id)
         self.assertEqual(user_groups[0]['name'], 'hamletcharacters')
         self.assertEqual(user_groups[0]['description'], 'Characters of Hamlet')
         self.assertEqual(set(user_groups[0]['members']), set(membership))
+
+        self.assertEqual(user_groups[1]['id'], empty_user_group.id)
+        self.assertEqual(user_groups[1]['name'], 'newgroup')
+        self.assertEqual(user_groups[1]['description'], '')
+        self.assertEqual(user_groups[1]['members'], [])
 
     def test_get_user_groups(self) -> None:
         othello = self.example_user('othello')

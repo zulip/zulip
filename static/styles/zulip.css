@@ -99,6 +99,16 @@ p.n-margin {
     height: 24px;
 }
 
+.top-messages-logo svg circle {
+    fill: #444;
+    stroke: #444;
+}
+
+.top-messages-logo svg path {
+    fill: #fff;
+    stroke: #fff;
+}
+
 #unmute_muted_topic_notification {
     display: none;
     position: absolute;
@@ -1769,7 +1779,8 @@ blockquote p {
 #navbar-buttons ul.nav .dropdown-toggle,
 #navbar-buttons ul.nav li.active .dropdown-toggle {
     font-size: 20px;
-    color: hsl(0, 0%, 52%);
+    color: inherit;
+    opacity: 0.5;
     text-shadow: none;
     padding-left: 0px !important;
     background-color: inherit;
@@ -1784,12 +1795,12 @@ blockquote p {
 
 #navbar-buttons ul.nav .dropdown-toggle,
 #navbar-buttons ul.nav li.active .dropdown-toggle:hover {
-    color: hsl(0, 0%, 7%);
+    opacity: 1;
 }
 
 #navbar-buttons ul.nav li.dropdown.open .dropdown-toggle {
     background: none;
-    color: hsl(0, 0%, 7%);
+    opacity: 1;
     text-shadow: none;
 }
 
@@ -2284,7 +2295,6 @@ button.topic_edit_cancel {
 #invite-user .overlay-content {
     position: relative;
     width: 500px;
-    background-color: hsl(0, 0%, 100%);
     border-radius: 4px;
 }
 
@@ -2546,42 +2556,26 @@ button.topic_edit_cancel {
     vertical-align: text-bottom;
 }
 
-.user-group-mention {
-    background-color: hsl(0, 0%, 93%);
-    border-radius: 3px;
-    padding: 0 0.2em;
-    box-shadow: 0px 0px 0px 1px hsl(0, 0%, 80%);
-    margin-right: 2px;
-    white-space: nowrap;
-    background-image: -moz-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
-    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,hsla(0, 0%, 0%, 0.1)), color-stop(100%,hsla(0, 0%, 0%, 0.0)));
-    background-image: -webkit-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
-    background-image: -o-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
-    background-image: -ms-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
-    background-image: linear-gradient(to bottom, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
-    display: inline-block;
-    margin-bottom: 1px;
-}
-
+.user-group-mention,
 .user-mention {
-    background-color: hsl(0, 0%, 93%);
+    background: hsl(0, 0%, 93%);
     border-radius: 3px;
     padding: 0 0.2em;
     box-shadow: 0px 0px 0px 1px hsl(0, 0%, 80%);
     margin-right: 2px;
     white-space: nowrap;
-    background-image: -moz-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
-    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,hsla(0, 0%, 0%, 0.1)), color-stop(100%,hsla(0, 0%, 0%, 0.0)));
-    background-image: -webkit-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
-    background-image: -o-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
-    background-image: -ms-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
-    background-image: linear-gradient(to bottom, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
+    background: -moz-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,hsla(0, 0%, 0%, 0.1)), color-stop(100%,hsla(0, 0%, 0%, 0.0)));
+    background: -webkit-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
+    background: -o-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
+    background: -ms-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
+    background: linear-gradient(to bottom, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
     display: inline-block;
     margin-bottom: 1px;
 }
 
 .user-mention-me {
-    background-color: hsl(112, 88%, 87%);
+    background: hsl(112, 88%, 87%);
 }
 
 .alert-word {

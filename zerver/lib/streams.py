@@ -30,7 +30,8 @@ def access_stream_for_delete(user_profile: UserProfile, stream_id: int) -> Strea
     return stream
 
 def access_stream_common(user_profile: UserProfile, stream: Stream,
-                         error: Text) -> Tuple[Recipient, Subscription]:
+                         error: Text,
+                         require_active: bool=True) -> Tuple[Recipient, Subscription]:
     """Common function for backend code where the target use attempts to
     access the target stream, returning all the data fetched along the
     way.  If that user does not have permission to access that stream,
@@ -46,7 +47,7 @@ def access_stream_common(user_profile: UserProfile, stream: Stream,
     try:
         sub = Subscription.objects.get(user_profile=user_profile,
                                        recipient=recipient,
-                                       active=True)
+                                       active=require_active)
     except Subscription.DoesNotExist:
         sub = None
 
@@ -62,14 +63,17 @@ def access_stream_common(user_profile: UserProfile, stream: Stream,
     # an error.
     raise JsonableError(error)
 
-def access_stream_by_id(user_profile: UserProfile, stream_id: int) -> Tuple[Stream, Recipient, Subscription]:
+def access_stream_by_id(user_profile: UserProfile,
+                        stream_id: int,
+                        require_active: bool=True) -> Tuple[Stream, Recipient, Subscription]:
     error = _("Invalid stream id")
     try:
         stream = Stream.objects.get(id=stream_id)
     except Stream.DoesNotExist:
         raise JsonableError(error)
 
-    (recipient, sub) = access_stream_common(user_profile, stream, error)
+    (recipient, sub) = access_stream_common(user_profile, stream, error,
+                                            require_active=require_active)
     return (stream, recipient, sub)
 
 def check_stream_name_available(realm: Realm, name: Text) -> None:

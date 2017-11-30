@@ -521,7 +521,10 @@ global.user_groups.add(backend);
             $element: {},
         };
         var caret_called = false;
-        fake_this.$element.caret = function () { caret_called = true; };
+        fake_this.$element.caret = function () {
+            caret_called = true;
+            return 7;
+        };
         fake_this.options = options;
         var actual_value = options.source.call(fake_this, 'test #s');
         var expected_value = stream_list;
@@ -902,6 +905,33 @@ global.user_groups.add(backend);
     assert_typeahead_equals("~~~ f", lang_list);
     assert_typeahead_equals("test\n~~~ p", lang_list);
     assert_typeahead_equals("test\n~~~  p", lang_list);
+
+    // Following tests place the cursor before the last character
+    ct.split_at_cursor = function (word) {
+        var cursor = word.length - 1;
+        return [word.slice(0, cursor), word.slice(cursor)];
+    };
+    assert_typeahead_equals("#test", false);
+    assert_typeahead_equals("#test ", stream_list);
+    assert_typeahead_equals("#test,", stream_list);
+    assert_typeahead_equals("#test.", stream_list);
+    assert_typeahead_equals("#test?", stream_list);
+    assert_typeahead_equals("#test!", stream_list);
+    assert_typeahead_equals("#test)", stream_list);
+    assert_typeahead_equals("#test(", stream_list);
+    assert_typeahead_equals("#test[", stream_list);
+    assert_typeahead_equals("#test]", stream_list);
+    assert_typeahead_equals("@test", false);
+    assert_typeahead_equals("@test ", all_mentions);
+    assert_typeahead_equals(":test", false);
+    assert_typeahead_equals(":test ", emoji_list);
+    assert_typeahead_equals("```test", false);
+    assert_typeahead_equals("```test ", lang_list);
+    assert_typeahead_equals("~~~test", false);
+    assert_typeahead_equals("~~~test ", lang_list);
+
+    // Return to the original split_at_cursor implementation.
+    ct.split_at_cursor = function (word) { return [word, '']; };
 }());
 
 (function test_tokenizing() {

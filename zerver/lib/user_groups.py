@@ -19,27 +19,29 @@ def user_groups_in_realm(realm: Realm) -> List[UserGroup]:
     return list(user_groups)
 
 def user_groups_in_realm_serialized(realm: Realm) -> List[Dict[Text, Any]]:
+    """This function is used in do_events_register code path so this code
+    should be performant.  We need to do 2 database queries because
+    Django's ORM doesn't properly support the left join between
+    UserGroup and UserGroupMembership that we need.
     """
-    This function is used in do_events_register code path so this code should
-    be performant. This is the reason why we get the groups through
-    UserGroupMembership table. It gives us the groups and members in one query.
-    """
-    memberships = UserGroupMembership.objects.filter(user_group__realm=realm)
-    memberships = memberships.select_related('user_group')
-    groups = defaultdict(list)  # type: Dict[Tuple[int, Text, Text], List[int]]
-    for membership in memberships:
-        group = (membership.user_group.id,
-                 membership.user_group.name,
-                 membership.user_group.description)
-        groups[group].append(membership.user_profile_id)
+    realm_groups = UserGroup.objects.filter(realm=realm)
+    group_dicts = {}  # type: Dict[str, Any]
+    for user_group in realm_groups:
+        group_dicts[user_group.id] = dict(
+            id=user_group.id,
+            name=user_group.name,
+            description=user_group.description,
+            members=[],
+        )
 
-    user_groups = [dict(id=group[0],
-                        name=group[1],
-                        description=group[2],
-                        members=sorted(members))
-                   for group, members in groups.items()]
-    user_groups.sort(key=lambda item: item['id'])
-    return user_groups
+    membership = UserGroupMembership.objects.filter(user_group__realm=realm).values_list(
+        'user_group_id', 'user_profile_id')
+    for (user_group_id, user_profile_id) in membership:
+        group_dicts[user_group_id]['members'].append(user_profile_id)
+    for group_dict in group_dicts.values():
+        group_dict['members'] = sorted(group_dict['members'])
+
+    return sorted(group_dicts.values(), key=lambda group_dict: group_dict['id'])
 
 def get_user_groups(user_profile: UserProfile) -> List[UserGroup]:
     return list(user_profile.usergroup_set.all())

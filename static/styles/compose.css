@@ -404,7 +404,8 @@ input.recipient_box {
 
 #compose a.message-control-button {
     display: block;
-    color: hsl(0, 0%, 46%);
+    opacity: 0.4;
+    color: inherit;
     text-decoration: none;
     font-size: 14px;
     width: 14px;
@@ -416,7 +417,7 @@ input.recipient_box {
 }
 
 #compose a.message-control-button:hover {
-    color: hsl(0, 0%, 0%);
+    opacity: 1;
 }
 
 .drag {

@@ -1,17 +1,19 @@
 
+from collections import defaultdict
+import logging
+import random
+import threading
+import time
+from typing import Any, Callable, Dict, List, Mapping, Optional, Set, Union
+
 from django.conf import settings
 import pika
 from pika.adapters.blocking_connection import BlockingChannel
 from pika.spec import Basic
-import logging
+from tornado import ioloop
 import ujson
-import random
-import time
-import threading
-from collections import defaultdict
 
 from zerver.lib.utils import statsd
-from typing import Any, Callable, Dict, List, Mapping, Optional, Set, Union
 
 MAX_REQUEST_RETRIES = 3
 Consumer = Callable[[BlockingChannel, Basic.Deliver, pika.BasicProperties, str], None]
@@ -187,14 +189,32 @@ class TornadoQueueClient(SimpleQueueClient):
         self.connection = ExceptionFreeTornadoConnection(
             self._get_parameters(),
             on_open_callback = self._on_open,
-            stop_ioloop_on_close = False)
-        self.connection.add_on_close_callback(self._on_connection_closed)
+            on_open_error_callback = self._on_connection_open_error,
+            on_close_callback = self._on_connection_closed,
+        )
 
     def _reconnect(self) -> None:
         self.connection = None
         self.channel = None
         self.queues = set()
+        self.log.warning("TornadoQueueClient attempting to reconnect to RabbitMQ")
         self._connect()
+
+    CONNECTION_RETRY_SECS = 2
+
+    def _on_connection_open_error(self, connection: pika.connection.Connection,
+                                  message: Optional[str]=None) -> None:
+        retry_secs = self.CONNECTION_RETRY_SECS
+        self.log.critical("TornadoQueueClient couldn't connect to RabbitMQ, retrying in %d secs..."
+                          % (retry_secs,))
+        ioloop.IOLoop.instance().call_later(retry_secs, self._reconnect)
+
+    def _on_connection_closed(self, connection: pika.connection.Connection,
+                              reply_code: int, reply_text: str) -> None:
+        retry_secs = self.CONNECTION_RETRY_SECS
+        self.log.warning("TornadoQueueClient lost connection to RabbitMQ, reconnecting in %d secs..."
+                         % (retry_secs,))
+        ioloop.IOLoop.instance().call_later(retry_secs, self._reconnect)
 
     def _on_open(self, connection: pika.connection.Connection) -> None:
         self.connection.channel(
@@ -206,23 +226,6 @@ class TornadoQueueClient(SimpleQueueClient):
             callback()
         self._reconnect_consumer_callbacks()
         self.log.info('TornadoQueueClient connected')
-
-    def _on_connection_closed(self, connection: pika.connection.Connection,
-                              reply_code: int, reply_text: str) -> None:
-        self.log.warning("TornadoQueueClient lost connection to RabbitMQ, reconnecting...")
-        from tornado import ioloop
-
-        # Try to reconnect in two seconds
-        retry_seconds = 2
-
-        def on_timeout() -> None:
-            try:
-                self._reconnect()
-            except pika.exceptions.AMQPConnectionError:
-                self.log.critical("Failed to reconnect to RabbitMQ, retrying...")
-                ioloop.IOLoop.instance().add_timeout(time.time() + retry_seconds, on_timeout)
-
-        ioloop.IOLoop.instance().add_timeout(time.time() + retry_seconds, on_timeout)
 
     def ensure_queue(self, queue_name: str, callback: Callable[[], None]) -> None:
         def finish(frame: Any) -> None:

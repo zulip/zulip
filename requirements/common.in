@@ -167,8 +167,8 @@ pyoembed==0.1.2
 # The Zulip API bindings, from its own repository.
 # We integrate with these tightly, so often it makes sense to pin a
 # version from Git rather than a release.
--e "git+https://github.com/zulip/python-zulip-api.git@0.3.8#egg=zulip==0.3.8_git&subdirectory=zulip"
--e "git+https://github.com/zulip/python-zulip-api.git@0.3.8#egg=zulip_bots==0.3.8+git&subdirectory=zulip_bots"
+-e "git+https://github.com/zulip/python-zulip-api.git@0.3.9#egg=zulip==0.3.9_git&subdirectory=zulip"
+-e "git+https://github.com/zulip/python-zulip-api.git@0.3.9#egg=zulip_bots==0.3.9+git&subdirectory=zulip_bots"
 
 # Used for Hesiod lookups, etc.
 py3dns==3.1.0
