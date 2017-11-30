@@ -655,7 +655,7 @@ td.pointer {
 .message_time {
     display: block;
     font-size: 12px;
-    color: hsl(0, 0%, 69%);
+    opacity: 0.4;
     vertical-align: middle;
     padding: 1px;
     font-weight: 400;
