@@ -626,7 +626,6 @@ td.pointer {
 .message_edit_notice {
     font-size: 10px;
     color: hsl(0, 0%, 63%);
-    font-weight: 300;
     line-height: 0px;
     text-align: right;
     width: 45px;
