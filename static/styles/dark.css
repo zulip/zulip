@@ -76,6 +76,10 @@ body.dark-mode select {
     color: inherit;
 }
 
+body.dark-mode .new-style .button.no-style {
+    background-color: transparent;
+}
+
 body.dark-mode .new-style .tab-switcher .ind-tab.selected,
 body.dark-mode .table-striped thead th,
 body.dark-mode .message_reactions .message_reaction.reacted,
