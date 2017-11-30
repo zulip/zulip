@@ -31,7 +31,6 @@ import zerver.views.user_groups
 import zerver.views.user_settings
 import zerver.views.muting
 import zerver.views.streams
-import confirmation.views
 
 from zerver.lib.rest import rest_dispatch
 
@@ -411,7 +410,7 @@ i18n_urls = [
     url(r'^accounts/register/', zerver.views.registration.accounts_register,
         name='zerver.views.registration.accounts_register'),
     url(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)',
-        confirmation.views.check_prereg_key_and_redirect,
+        zerver.views.registration.check_prereg_key_and_redirect,
         name='check_prereg_key_and_redirect'),
 
     url(r'^accounts/confirm_new_email/(?P<confirmation_key>[\w]+)',
