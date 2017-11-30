@@ -296,7 +296,8 @@ body.dark-mode .top-messages-logo svg circle {
 
 body.dark-mode #unmute_muted_topic_notification,
 body.dark-mode .message_content code,
-body.dark-mode .message_edit_content code {
+body.dark-mode .message_edit_content code,
+body.dark-mode .typeahead.dropdown-menu {
     background-color: hsl(212, 25%, 15%);
     border-color: hsla(0, 0%, 0%, 0.5);
     color: inherit;
