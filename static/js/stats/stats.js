@@ -72,6 +72,21 @@ $(function () {
     });
 });
 
+function get_chart_data(args, callback) {
+    $.get({
+        url: '/json/analytics/chart_data',
+        data: args,
+        idempotent: true,
+        success: function (data) {
+            callback(data);
+            update_last_full_update(data.end_times);
+        },
+        error: function (xhr) {
+            $('#id_stats_errors').show().text(JSON.parse(xhr.responseText).msg);
+        },
+    });
+}
+
 function populate_messages_sent_over_time(data) {
     if (data.end_times.length === 0) {
         // TODO: do something nicer here
@@ -291,18 +306,10 @@ function populate_messages_sent_over_time(data) {
     }
 }
 
-$.get({
-    url: '/json/analytics/chart_data',
-    data: {chart_name: 'messages_sent_over_time', min_length: '10'},
-    idempotent: true,
-    success: function (data) {
-        populate_messages_sent_over_time(data);
-        update_last_full_update(data.end_times);
-    },
-    error: function (xhr) {
-        $('#id_stats_errors').show().text(JSON.parse(xhr.responseText).msg);
-    },
-});
+get_chart_data(
+    {chart_name: 'messages_sent_over_time', min_length: '10'},
+    populate_messages_sent_over_time
+);
 
 function round_to_percentages(values, total) {
     return values.map(function (x) {
@@ -513,18 +520,10 @@ function populate_messages_sent_by_client(data) {
     });
 }
 
-$.get({
-    url: '/json/analytics/chart_data',
-    data: {chart_name: 'messages_sent_by_client', min_length: '10'},
-    idempotent: true,
-    success: function (data) {
-        populate_messages_sent_by_client(data);
-        update_last_full_update(data.end_times);
-    },
-    error: function (xhr) {
-        $('#id_stats_errors').show().text(JSON.parse(xhr.responseText).msg);
-    },
-});
+get_chart_data(
+    {chart_name: 'messages_sent_by_client', min_length: '10'},
+    populate_messages_sent_by_client
+);
 
 function populate_messages_sent_by_message_type(data) {
     var layout = {
@@ -631,18 +630,10 @@ function populate_messages_sent_by_message_type(data) {
     });
 }
 
-$.get({
-    url: '/json/analytics/chart_data',
-    data: {chart_name: 'messages_sent_by_message_type', min_length: '10'},
-    idempotent: true,
-    success: function (data) {
-        populate_messages_sent_by_message_type(data);
-        update_last_full_update(data.end_times);
-    },
-    error: function (xhr) {
-        $('#id_stats_errors').show().text(JSON.parse(xhr.responseText).msg);
-    },
-});
+get_chart_data(
+    {chart_name: 'messages_sent_by_message_type', min_length: '10'},
+    populate_messages_sent_by_message_type
+);
 
 function populate_number_of_users(data) {
     var layout = {
@@ -703,15 +694,7 @@ function populate_number_of_users(data) {
     });
 }
 
-$.get({
-    url: '/json/analytics/chart_data',
-    data: {chart_name: 'number_of_humans', min_length: '10'},
-    idempotent: true,
-    success: function (data) {
-        populate_number_of_users(data);
-        update_last_full_update(data.end_times);
-    },
-    error: function (xhr) {
-        $('#id_stats_errors').show().text(JSON.parse(xhr.responseText).msg);
-    },
-});
+get_chart_data(
+    {chart_name: 'number_of_humans', min_length: '10'},
+    populate_number_of_users
+);
