@@ -1612,7 +1612,7 @@ db_data = None  # type: Optional[Dict[Text, Any]]
 
 def log_bugdown_error(msg: str) -> None:
     """We use this unusual logging approach to log the bugdown error, in
-    order to prevent AdminZulipHandler from sending the santized
+    order to prevent AdminNotifyHandler from sending the santized
     original markdown formatting into another Zulip message, which
     could cause an infinite exception loop."""
     logging.getLogger('').error(msg)

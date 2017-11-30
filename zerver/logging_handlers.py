@@ -52,9 +52,9 @@ def add_request_metadata(report: Dict[str, Any], request: HttpRequest) -> None:
         # exception if the host is invalid
         report['host'] = platform.node()
 
-class AdminZulipHandler(logging.Handler):
-    """An exception log handler that sends the exception to the queue to be
-       sent to the Zulip feedback server.
+class AdminNotifyHandler(logging.Handler):
+    """An logging handler that sends the log/exception to the queue to be
+       turned into an email and/or a Zulip message for the server admins.
     """
 
     # adapted in part from django/utils/log.py
