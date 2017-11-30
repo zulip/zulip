@@ -15,7 +15,7 @@ from typing import Any, Callable, Dict, Mapping, Optional, Text, Iterator
 
 from zerver.lib.request import JsonableError
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.logging_handlers import AdminZulipHandler
+from zerver.logging_handlers import AdminNotifyHandler
 from zerver.middleware import JsonErrorHandler
 from zerver.views.compatibility import check_compatibility
 from zerver.worker.queue_processors import QueueProcessingWorker
@@ -38,11 +38,11 @@ def capture_and_throw(
         return wrapped_view
     return wrapper
 
-class AdminZulipHandlerTest(ZulipTestCase):
+class AdminNotifyHandlerTest(ZulipTestCase):
     logger = logging.getLogger('django')
 
     def setUp(self) -> None:
-        self.handler = AdminZulipHandler()
+        self.handler = AdminNotifyHandler()
         # Prevent the exceptions we're going to raise from being printed
         # You may want to disable this when debugging tests
         settings.LOGGING_NOT_DISABLED = False
@@ -55,14 +55,14 @@ class AdminZulipHandlerTest(ZulipTestCase):
     def tearDown(self) -> None:
         settings.LOGGING_NOT_DISABLED = True
 
-    def get_admin_zulip_handler(self) -> AdminZulipHandler:
+    def get_admin_zulip_handler(self) -> AdminNotifyHandler:
         return [
             h for h in logging.getLogger('').handlers
-            if isinstance(h, AdminZulipHandler)
+            if isinstance(h, AdminNotifyHandler)
         ][0]
 
     def test_basic(self) -> None:
-        """A random exception passes happily through AdminZulipHandler"""
+        """A random exception passes happily through AdminNotifyHandler"""
         handler = self.get_admin_zulip_handler()
         try:
             raise Exception("Testing Error!")
