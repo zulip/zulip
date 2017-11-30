@@ -15,6 +15,8 @@ i18n_urlpatterns = [
     # User-visible stats page
     url(r'^stats$', analytics.views.stats,
         name='analytics.views.stats'),
+    url(r'^stats/realm/(?P<realm_str>\S+)/$', analytics.views.stats_for_realm,
+        name='analytics.views.stats_for_realm'),
 ]
 
 # These endpoints are a part of the API (V1), which uses:

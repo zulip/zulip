@@ -33,14 +33,28 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import ceiling_to_day, \
     ceiling_to_hour, convert_to_UTC, timestamp_to_datetime
-from zerver.models import Client, Realm, \
+from zerver.models import Client, get_realm, Realm, \
     UserActivity, UserActivityInterval, UserProfile
 
 @zulip_login_required
 def stats(request: HttpRequest) -> HttpResponse:
+    realm = request.user.realm
     return render(request,
                   'analytics/stats.html',
-                  context=dict(realm_name = request.user.realm.name))
+                  context=dict(realm_name=realm.name,
+                               realm=realm.string_id))
+
+@zulip_login_required
+@require_server_admin
+@has_request_variables
+def stats_for_realm(request: HttpRequest, realm_str: str) -> HttpResponse:
+    realm = get_realm(realm_str)
+    if realm is None:
+        return HttpResponseNotFound("Realm %s does not exist" % (realm_str,))
+    return render(request,
+                  'analytics/stats.html',
+                  context=dict(realm_name=realm.name,
+                               realm=realm.string_id))
 
 @has_request_variables
 def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: Text=REQ(),

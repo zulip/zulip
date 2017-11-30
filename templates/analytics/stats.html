@@ -1,5 +1,16 @@
 {% extends "zerver/base.html" %}
 
+{% block page_params %}
+<script type="text/javascript">
+    {% autoescape off %}
+    var page_params = {
+        stats_realm: '{{ realm }}',
+        debug_mode: false
+    };
+    {% endautoescape %}
+</script>
+{% endblock %}
+
 {% block customhead %}
 {% stylesheet 'portico' %}
 {% endblock %}
