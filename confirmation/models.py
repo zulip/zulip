@@ -65,7 +65,7 @@ def get_object_from_key(confirmation_key: str,
         obj.save(update_fields=['status'])
     return obj
 
-def create_confirmation_link(obj: Union[ContentType, int], host: str,
+def create_confirmation_link(obj: ContentType, host: str,
                              confirmation_type: int,
                              url_args: Optional[Dict[str, str]]=None) -> str:
     key = generate_key()
