@@ -1022,6 +1022,7 @@ JS_SPECS = {
             'js/lightbox.js',
             'js/ui_report.js',
             'js/ui.js',
+            'js/night_mode.js',
             'js/ui_util.js',
             'js/pointer.js',
             'js/click_handlers.js',

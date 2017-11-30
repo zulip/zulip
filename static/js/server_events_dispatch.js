@@ -303,9 +303,9 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             $("body").fadeOut(300);
             setTimeout(function () {
                 if (event.setting === true) {
-                    ui.night_mode.enable();
+                    night_mode.enable();
                 } else {
-                    ui.night_mode.disable();
+                    night_mode.disable();
                 }
                 $("body").fadeIn(300);
             }, 300);
