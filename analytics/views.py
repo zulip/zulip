@@ -316,6 +316,9 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
                 JOIN zerver_userprofile up
                     ON up.id = ua.user_profile_id
                 WHERE
+                    up.is_active
+                AND (not up.is_bot)
+                AND
                     query in (
                         '/json/send_message',
                         'send_message_backend',
@@ -326,8 +329,6 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
                     )
                 AND
                     last_visit > now() - interval '1 day'
-                AND
-                    not is_bot
                 GROUP BY realm_id
             ) user_counts
             ON user_counts.realm_id = realm.id
@@ -368,6 +369,10 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
                 JOIN zerver_userprofile up
                     ON up.id = ua.user_profile_id
                 WHERE
+                    up.realm_id = realm.id
+                AND up.is_active
+                AND (not up.is_bot)
+                AND
                     query in (
                         '/json/send_message',
                         '/api/v1/send_message',
@@ -376,8 +381,6 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
                         '/json/users/me/pointer',
                         'update_pointer_backend'
                     )
-                AND
-                    up.realm_id = realm.id
                 AND
                     last_visit > now() - interval '2 week'
         )
