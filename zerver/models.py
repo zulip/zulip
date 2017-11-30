@@ -431,7 +431,7 @@ class RealmFilter(models.Model):
         return "<RealmFilter(%s): %s %s>" % (self.realm.string_id, self.pattern, self.url_format_string)
 
 def get_realm_filters_cache_key(realm_id: int) -> Text:
-    return u'all_realm_filters:%s' % (realm_id,)
+    return u'%s:all_realm_filters:%s' % (cache.KEY_PREFIX, realm_id,)
 
 # We have a per-process cache to avoid doing 1000 remote cache queries during page load
 per_request_realm_filters_cache = {}  # type: Dict[int, List[Tuple[Text, Text, int]]]
