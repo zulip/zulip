@@ -411,7 +411,8 @@ i18n_urls = [
     url(r'^accounts/register/', zerver.views.registration.accounts_register,
         name='zerver.views.registration.accounts_register'),
     url(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)',
-        confirmation.views.confirm, name='confirmation.views.confirm'),
+        confirmation.views.check_prereg_key_and_redirect,
+        name='check_prereg_key_and_redirect'),
 
     url(r'^accounts/confirm_new_email/(?P<confirmation_key>[\w]+)',
         zerver.views.user_settings.confirm_email_change,
