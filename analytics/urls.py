@@ -31,6 +31,8 @@ v1_api_and_json_patterns = [
     # get data for the graphs at /stats
     url(r'^analytics/chart_data$', rest_dispatch,
         {'GET': 'analytics.views.get_chart_data'}),
+    url(r'^analytics/chart_data/realm/(?P<realm_str>\S+)$', rest_dispatch,
+        {'GET': 'analytics.views.get_chart_data_for_realm'}),
 ]
 
 i18n_urlpatterns += [

@@ -74,7 +74,7 @@ $(function () {
 
 function get_chart_data(args, callback) {
     $.get({
-        url: '/json/analytics/chart_data',
+        url: '/json/analytics/chart_data/realm/' + page_params.stats_realm,
         data: args,
         idempotent: true,
         success: function (data) {
