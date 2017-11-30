@@ -290,8 +290,30 @@ body.dark-mode .top-messages-logo svg circle {
 }
 
 body.dark-mode #unmute_muted_topic_notification,
-body.dark-mode .message_content code {
+body.dark-mode .message_content code,
+body.dark-mode .message_edit_content code {
     background-color: hsl(212, 25%, 15%);
     border-color: hsla(0, 0%, 0%, 0.5);
     color: inherit;
+}
+
+body.dark-mode .highlight {
+    background-color: hsla(51, 100%, 64%, 0.42);
+}
+
+body.dark-mode .highlight_text_inserted {
+    color: hsl(122, 100%, 81%);
+    background-color: hsla(120, 64%, 95%, 0.3);
+}
+
+body.dark-mode .highlight_text_deleted {
+    text-decoration: line-through;
+    background-color: hsla(7, 54%, 62%, 0.38);
+}
+
+body.dark-mode .sub-unsub-message span:before,
+body.dark-mode .sub-unsub-message span:after,
+body.dark-mode .date_row span:before,
+body.dark-mode .date_row span:after {
+    opacity: 0.2;
 }
