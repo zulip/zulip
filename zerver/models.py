@@ -170,6 +170,8 @@ class Realm(models.Model):
     authentication_methods = BitField(flags=AUTHENTICATION_FLAGS,
                                       default=2**31 - 1)  # type: BitHandler
     waiting_period_threshold = models.PositiveIntegerField(default=0)  # type: int
+    DEFAULT_MAX_INVITES = 100
+    max_invites = models.IntegerField(default=DEFAULT_MAX_INVITES)  # type: int
 
     # Define the types of the various automatically managed properties
     property_types = dict(
