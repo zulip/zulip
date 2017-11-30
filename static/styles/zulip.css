@@ -663,10 +663,10 @@ td.pointer {
     right: -105px;
     line-height: 20px;
     text-align: right;
-    -webkit-transition: background-color 2.7s ease-in, color 2.7s ease-in;
-    -moz-transition: background-color 2.7s ease-in, color 2.7s ease-in;
-    -o-transition: background-color 2.7s ease-in, color 2.7s ease-in;
-    transition: background-color 2.7s ease-in, color 2.7s ease-in;
+    -webkit-transition: background-color 1.5s ease-in, color 1.5s ease-in;
+    -moz-transition: background-color 1.5s ease-in, color 1.5s ease-in;
+    -o-transition: background-color 1.5s ease-in, color 1.5s ease-in;
+    transition: background-color 1.5s ease-in, color 1.5s ease-in;
 }
 
 /* The way this overrides the menus with a background-color and a high
