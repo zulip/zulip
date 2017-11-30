@@ -2546,23 +2546,7 @@ button.topic_edit_cancel {
     vertical-align: text-bottom;
 }
 
-.user-group-mention {
-    background-color: hsl(0, 0%, 93%);
-    border-radius: 3px;
-    padding: 0 0.2em;
-    box-shadow: 0px 0px 0px 1px hsl(0, 0%, 80%);
-    margin-right: 2px;
-    white-space: nowrap;
-    background-image: -moz-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
-    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,hsla(0, 0%, 0%, 0.1)), color-stop(100%,hsla(0, 0%, 0%, 0.0)));
-    background-image: -webkit-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
-    background-image: -o-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
-    background-image: -ms-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
-    background-image: linear-gradient(to bottom, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
-    display: inline-block;
-    margin-bottom: 1px;
-}
-
+.user-group-mention,
 .user-mention {
     background: hsl(0, 0%, 93%);
     border-radius: 3px;
