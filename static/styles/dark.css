@@ -52,7 +52,7 @@ body.dark-mode .message_reactions:hover .message_reaction + .reaction_button {
 /* do not turn the .message_header .stream_label text dark on hover because they're
 on a dark background, and don't change the dark labels dark either. */
 body.dark-mode .message_header:not(.dark_background) a.stream_label:not(.dark_background):hover,
-body.dark-mode #tab_list li.active.stream:not(.dark_background) {
+body.dark-mode #tab_list li.stream:not(.dark_background) {
     color: #212d3b !important;
 }
 
@@ -242,10 +242,6 @@ body.dark-mode .message_header_private_message .message-header-contents {
 body.dark-mode .draft-row .message_header_private_message .message_label_clickable {
     padding: 4px 6px 3px 6px;
     color: inherit;
-}
-
-body.dark-mode .dark_background a:hover {
-    background: hsl(0, 0%, 27%);
 }
 
 body.dark-mode .nav-list > li > a,
