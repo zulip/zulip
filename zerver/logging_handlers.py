@@ -14,6 +14,8 @@ from django.views.debug import ExceptionReporter, get_exception_reporter_filter
 from zerver.lib.queue import queue_json_publish
 
 def add_request_metadata(report: Dict[str, Any], request: HttpRequest) -> None:
+    report['has_request'] = True
+
     report['path'] = request.path
     report['method'] = request.method
     report['remote_addr'] = request.META.get('REMOTE_ADDR', None),
