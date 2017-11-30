@@ -63,35 +63,33 @@ class AdminNotifyHandler(logging.Handler):
         logging.Handler.__init__(self)
 
     def emit(self, record: logging.LogRecord) -> None:
+        report = {}
+
         try:
+            report['node'] = platform.node()
+            report['host'] = platform.node()
+
+            stack_trace = None
             if record.exc_info:
-                stack_trace = ''.join(traceback.format_exception(*record.exc_info))  # type: Optional[str]
+                stack_trace = ''.join(traceback.format_exception(*record.exc_info))
                 message = str(record.exc_info[1])
             else:
-                stack_trace = None
                 message = record.getMessage()
                 if '\n' in message:
                     # Some exception code paths in queue processors
                     # seem to result in super-long messages
                     stack_trace = message
                     message = message.split('\n')[0]
+            report['stack_trace'] = stack_trace
+            report['message'] = message
 
-            report = dict(
-                node = platform.node(),
-                host = platform.node(),
-                message = message,
-                stack_trace = stack_trace,
-            )
             if hasattr(record, "request"):
                 add_request_metadata(report, record.request)  # type: ignore  # record.request is added dynamically
+
         except Exception:
-            traceback.print_exc()
-            report = dict(
-                node = platform.node(),
-                host = platform.node(),
-                message = record.getMessage(),
-                stack_trace = "See /var/log/zulip/errors.log",
-            )
+            report['message'] = "Exception in preparing exception report!"
+            logging.warning(report['message'], exc_info=True)
+            report['stack_trace'] = "See /var/log/zulip/errors.log"
 
         try:
             if settings.STAGING_ERROR_NOTIFICATIONS:
