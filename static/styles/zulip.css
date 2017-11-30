@@ -165,18 +165,6 @@ p.n-margin {
     animation-iteration-count: 1;
 }
 
-#unmute_muted_topic_notification .btn {
-    background-color: transparent;
-    border: 1px solid hsl(0, 0%, 27%);
-    outline: none;
-    transition: all 0.2s ease;
-}
-
-#unmute_muted_topic_notification .btn:hover {
-    background-color: hsl(0, 0%, 27%);
-    color: hsl(0, 0%, 98%);
-}
-
 #unmute_muted_topic_notification .exit-me {
     font-size: 30pt;
     font-weight: 200;
