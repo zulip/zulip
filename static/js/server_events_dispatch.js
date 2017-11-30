@@ -302,7 +302,11 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         if (event.setting_name === 'night_mode') {
             $("body").fadeOut(300);
             setTimeout(function () {
-                $("body").toggleClass("dark-mode");
+                if (event.setting === true) {
+                    night_mode.enable();
+                } else {
+                    night_mode.disable();
+                }
                 $("body").fadeIn(300);
             }, 300);
         }
