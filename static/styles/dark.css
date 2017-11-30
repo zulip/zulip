@@ -51,7 +51,8 @@ body.dark-mode .message_reactions:hover .message_reaction + .reaction_button {
 
 /* do not turn the .message_header .stream_label text dark on hover because they're
 on a dark background, and don't change the dark labels dark either. */
-body.dark-mode .message_header:not(.dark_background) a.stream_label:not(.dark_background):hover {
+body.dark-mode .message_header:not(.dark_background) a.stream_label:not(.dark_background):hover,
+body.dark-mode #tab_list li.active.stream:not(.dark_background) {
     color: #212d3b !important;
 }
 
