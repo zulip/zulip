@@ -35,6 +35,8 @@
 #user_presences li,
 #group-pms li {
     list-style-type: none;
+
+    border-radius: 4px;
 }
 
 #user_presences .arrow {
