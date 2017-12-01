@@ -270,7 +270,12 @@ body.dark-mode .user-mention-me {
     box-shadow: 0px 0px 0px 1px hsla(330, 40%, 20%, 1);
 }
 
-body.dark-mode .alert-box .alert {
+body.dark-mode .alert {
+    text-shadow: none;
+}
+
+body.dark-mode .alert-box .alert,
+body.dark-mode .alert.alert-error {
     background: hsl(318, 12%, 21%);
     color: inherit;
 
@@ -324,4 +329,8 @@ body.dark-mode .date_row span:after {
 body.dark-mode .star:not(.empty-star),
 body.dark-mode .empty-star:hover {
     color: hsla(126, 66%, 72%, 0.75);
+}
+
+body.dark-mode #out-of-view-notification {
+    border: 1px solid 1px solid hsl(144, 45%, 62%);
 }
