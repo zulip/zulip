@@ -11,6 +11,7 @@ from django.http import HttpRequest
 from django.utils.log import AdminEmailHandler
 from django.views.debug import ExceptionReporter, get_exception_reporter_filter
 
+from zerver.lib.logging_util import find_log_caller_module
 from zerver.lib.queue import queue_json_publish
 
 def add_request_metadata(report: Dict[str, Any], request: HttpRequest) -> None:
@@ -84,6 +85,10 @@ class AdminNotifyHandler(logging.Handler):
                     message = message.split('\n')[0]
             report['stack_trace'] = stack_trace
             report['message'] = message
+
+            report['logger_name'] = record.name
+            report['log_module'] = find_log_caller_module(record)
+            report['log_lineno'] = record.lineno
 
             if hasattr(record, "request"):
                 add_request_metadata(report, record.request)  # type: ignore  # record.request is added dynamically

@@ -119,7 +119,11 @@ def skip_site_packages_logs(record: logging.LogRecord) -> bool:
     return True
 
 def find_log_caller_module(record: logging.LogRecord) -> Optional[str]:
-    '''Find the module name corresponding to where this record was logged.'''
+    '''Find the module name corresponding to where this record was logged.
+
+    Sadly `record.module` is just the innermost component of the full
+    module name, so we have to go reconstruct this ourselves.
+    '''
     # Repeat a search similar to that in logging.Logger.findCaller.
     # The logging call should still be on the stack somewhere; search until
     # we find something in the same source file, and that should give the
