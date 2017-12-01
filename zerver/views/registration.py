@@ -83,9 +83,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         realm = None
     else:
         realm = get_realm(get_subdomain(request))
-        if prereg_user.realm is None:
-            return render(request, 'confirmation/link_expired.html')
-        if prereg_user.realm != realm:
+        if realm is None or realm != prereg_user.realm:
             return render(request, 'confirmation/link_does_not_exist.html')
 
     if realm and not email_allowed_for_realm(email, realm):
