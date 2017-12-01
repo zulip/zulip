@@ -253,20 +253,12 @@ table.compose_table {
 }
 
 #out-of-view-notification {
-    background: hsl(112, 98%, 77%);
-    background: hsla(105, 42%, 70%, 0.95);
-    border-bottom: 1px solid #ffffff;
-    border-right: 1px solid #ffffff;
-    border-left: 1px solid #ffffff;
-    border-radius: 0px 0px 2px 2px;
-    font-weight: 400;
-    font-size: 12px;
-    display: inline-block;
-    box-shadow: 0px 0px 1px 0px hsla(0, 0%, 0%, 0.5);
     position: relative;
-    top: -8px;
-    width: 100%;
-    padding-right: 5px;
+    margin-bottom: 6px;
+
+    background: hsla(152, 51%, 63%, 0.25);
+    border: 1px solid hsla(0, 0%, 0%, 0.1);
+    border-radius: 4px;
 }
 
 .compose-notifications-content {
