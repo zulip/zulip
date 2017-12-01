@@ -920,7 +920,7 @@ nav ul li.active::after {
 }
 
 .compare thead {
-    border-bottom: 5px solid hsla(0, 0%, 0%, 0.1);
+    border-bottom: 3px solid hsla(0, 0%, 0%, 0.1);
 }
 
 .compare thead th {
