@@ -228,7 +228,6 @@ table.compose_table {
 
 /* Like .nav-tabs > li > a */
 #compose-send-status {
-    width: calc(100% - 28px);
     padding: 8px 14px 8px 14px;
     margin-bottom: 8px;
     line-height: 20px;
