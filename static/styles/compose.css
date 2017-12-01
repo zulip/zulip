@@ -280,8 +280,8 @@ table.compose_table {
 
 #out-of-view-notification .close {
     position: absolute;
-    right: 5px;
-    top: 5px;
+    right: 14px;
+    top: 4px;
     font-size: 17px;
     font-weight: bold;
     color: hsl(0, 0%, 0%);
