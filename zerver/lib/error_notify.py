@@ -1,8 +1,6 @@
 # System documented in https://zulip.readthedocs.io/en/latest/subsystems/logging.html
 
 import logging
-import os
-import subprocess
 
 from collections import defaultdict
 from django.conf import settings
@@ -14,7 +12,6 @@ from typing import Any, Dict, Optional, Text
 from zerver.models import get_system_bot
 from zerver.lib.actions import internal_send_message
 from zerver.lib.response import json_success, json_error
-from version import ZULIP_VERSION
 
 def format_subject(subject: str) -> str:
     """
@@ -35,30 +32,14 @@ def user_info_str(report: Dict[str, Any]) -> str:
     user_info += " on %s deployment"  % (report['deployment'],)
     return user_info
 
-def try_git_describe() -> Optional[str]:
-    try:
-        return subprocess.check_output(
-            ['git',
-             '--git-dir', os.path.join(os.path.dirname(__file__), '../../.git'),
-             'describe', '--tags', '--always', '--dirty', '--long'],
-            stderr=subprocess.PIPE,
-        ).strip().decode('utf-8')
-    except Exception:
-        return None
-
-def deployment_repr() -> str:
+def deployment_repr(report: Dict[str, Any]) -> str:
     deployment = 'Deployed code:\n'
-
-    git_described = try_git_describe()
-    if git_described is not None:
-        deployment += '- git: %s\n' % (git_described,)
-
-    deployment += '- ZULIP_VERSION: %s\n' % (ZULIP_VERSION,)
-
-    version_path = os.path.join(os.path.dirname(__file__), '../../version')
-    if os.path.exists(version_path):
-        deployment += '- version: %s\n' % (open(version_path).read().strip(),)
-
+    for (label, field) in [('git', 'git_described'),
+                           ('ZULIP_VERSION', 'zulip_version_const'),
+                           ('version', 'zulip_version_file'),
+                           ]:
+        if report[field] is not None:
+            deployment += '- %s: %s\n' % (label, report[field])
     return deployment
 
 def notify_browser_error(report: Dict[str, Any]) -> None:
@@ -113,7 +94,7 @@ def zulip_server_error(report: Dict[str, Any]) -> None:
 
     logger_str = logger_repr(report)
     user_info = user_info_str(report)
-    deployment = deployment_repr()
+    deployment = deployment_repr(report)
 
     if report['has_request']:
         request_repr = (
@@ -138,7 +119,7 @@ def email_server_error(report: Dict[str, Any]) -> None:
 
     logger_str = logger_repr(report)
     user_info = user_info_str(report)
-    deployment = deployment_repr()
+    deployment = deployment_repr(report)
 
     if report['has_request']:
         request_repr = (
