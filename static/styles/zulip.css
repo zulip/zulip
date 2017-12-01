@@ -1749,6 +1749,10 @@ blockquote p {
     color: inherit;
 }
 
+.typeahead.dropdown-menu .active {
+    color: #fff;
+}
+
 .nav .dropdown-menu:after {
     position: absolute;
     width: 0px;
