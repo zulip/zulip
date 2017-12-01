@@ -73,12 +73,10 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         handler.emit(record)
 
     def run_handler(self, record: logging.LogRecord) -> Dict[str, Any]:
-        with patch('zerver.logging_handlers.queue_json_publish') as patched_publish:
+        with patch('zerver.lib.error_notify.notify_server_error') as patched_notify:
             self.handler.emit(record)
-            patched_publish.assert_called_once()
-            event = patched_publish.call_args[0][1]
-            self.assertIn("report", event)
-            return event["report"]
+            patched_notify.assert_called_once()
+            return patched_notify.call_args[0][0]
 
     def test_long_exception_request(self) -> None:
         """A request with with no stack where report.getMessage() has newlines
@@ -167,13 +165,11 @@ class AdminNotifyHandlerTest(ZulipTestCase):
             self.assertIn("stack_trace", report)
 
             # Test the catch-all exception handler doesn't throw
-            with patch('zerver.logging_handlers.queue_json_publish',
+            with patch('zerver.lib.error_notify.notify_server_error',
                        side_effect=Exception("queue error")):
                 self.handler.emit(record)
-
-            # Test the STAGING_ERROR_NOTIFICATIONS code path
-            with self.settings(STAGING_ERROR_NOTIFICATIONS=True):
-                with patch('zerver.lib.error_notify.notify_server_error',
+            with self.settings(STAGING_ERROR_NOTIFICATIONS=False):
+                with patch('zerver.logging_handlers.queue_json_publish',
                            side_effect=Exception("queue error")):
                     self.handler.emit(record)
 
