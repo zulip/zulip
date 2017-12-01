@@ -265,11 +265,13 @@ def get_realm_day_counts() -> Dict[str, Dict[str, str]]:
     result = {}
     for string_id in counts:
         raw_cnts = [counts[string_id].get(age, 0) for age in range(8)]
-        min_cnt = min(raw_cnts)
-        max_cnt = max(raw_cnts)
+        min_cnt = min(raw_cnts[1:])
+        max_cnt = max(raw_cnts[1:])
 
-        def format_count(cnt: int) -> str:
-            if cnt == min_cnt:
+        def format_count(cnt: int, style: Optional[str]=None) -> str:
+            if style is not None:
+                good_bad = style
+            elif cnt == min_cnt:
                 good_bad = 'bad'
             elif cnt == max_cnt:
                 good_bad = 'good'
@@ -278,7 +280,8 @@ def get_realm_day_counts() -> Dict[str, Dict[str, str]]:
 
             return '<td class="number %s">%s</td>' % (good_bad, cnt)
 
-        cnts = ''.join(map(format_count, raw_cnts))
+        cnts = (format_count(raw_cnts[0], 'neutral')
+                + ''.join(map(format_count, raw_cnts[1:])))
         result[string_id] = dict(cnts=cnts)
 
     return result
