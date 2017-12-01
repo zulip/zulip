@@ -72,15 +72,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
                                         'message', {}, exc_info)
         handler.emit(record)
 
-    def run_handler(self, record: logging.LogRecord) -> Dict[str, Any]:
-        with patch('zerver.lib.error_notify.notify_server_error') as patched_notify:
-            self.handler.emit(record)
-            patched_notify.assert_called_once()
-            return patched_notify.call_args[0][0]
-
-    def test_long_exception_request(self) -> None:
-        """A request with with no stack where report.getMessage() has newlines
-        in it is handled properly"""
+    def simulate_error(self) -> logging.LogRecord:
         email = self.example_email('hamlet')
         self.login(email)
         with patch("zerver.decorator.rate_limit") as rate_limit_patch:
@@ -89,12 +81,22 @@ class AdminNotifyHandlerTest(ZulipTestCase):
             self.assert_json_error(result, "Internal server error", status_code=500)
             rate_limit_patch.assert_called_once()
 
-            global captured_request
-            global captured_exc_info
-            record = self.logger.makeRecord('name', logging.ERROR, 'function', 15,
-                                            'message\nmoremesssage\nmore', {},
-                                            None)
-            record.request = captured_request  # type: ignore # this field is dynamically added
+        record = self.logger.makeRecord('name', logging.ERROR, 'function', 15,
+                                        'message', {}, captured_exc_info)
+        record.request = captured_request  # type: ignore # this field is dynamically added
+        return record
+
+    def run_handler(self, record: logging.LogRecord) -> Dict[str, Any]:
+        with patch('zerver.lib.error_notify.notify_server_error') as patched_notify:
+            self.handler.emit(record)
+            patched_notify.assert_called_once()
+            return patched_notify.call_args[0][0]
+
+    def test_long_exception_request(self) -> None:
+        """A request with no stack and multi-line report.getMessage() is handled properly"""
+        record = self.simulate_error()
+        record.exc_info = None
+        record.msg = 'message\nmoremesssage\nmore'
 
         report = self.run_handler(record)
         self.assertIn("user_email", report)
@@ -105,19 +107,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
 
     def test_request(self) -> None:
         """A normal request is handled properly"""
-        email = self.example_email('hamlet')
-        self.login(email)
-        with patch("zerver.decorator.rate_limit") as rate_limit_patch:
-            rate_limit_patch.side_effect = capture_and_throw
-            result = self.client_get("/json/users")
-            self.assert_json_error(result, "Internal server error", status_code=500)
-            rate_limit_patch.assert_called_once()
-
-            global captured_request
-            global captured_exc_info
-            record = self.logger.makeRecord('name', logging.ERROR, 'function', 15,
-                                            'message', {}, captured_exc_info)
-            record.request = captured_request  # type: ignore # this field is dynamically added
+        record = self.simulate_error()
 
         report = self.run_handler(record)
         self.assertIn("user_email", report)
