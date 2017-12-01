@@ -72,3 +72,7 @@ import a database dump from one or more JSON files."""
 
             print("Processing dump: %s ..." % (path,))
             do_import_realm(path)
+            if options["destroy_rebuild_database"]:
+                print("Resetting auto-increment sequence for Postgres......")
+                subprocess.check_call([os.path.join(settings.DEPLOY_ROOT,
+                                      "scripts/setup/postgres-reset-sequences")])
