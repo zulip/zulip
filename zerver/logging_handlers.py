@@ -2,6 +2,8 @@
 
 import logging
 import platform
+import os
+import subprocess
 import traceback
 from typing import Any, Dict, Optional
 
@@ -13,6 +15,26 @@ from django.views.debug import ExceptionReporter, get_exception_reporter_filter
 
 from zerver.lib.logging_util import find_log_caller_module
 from zerver.lib.queue import queue_json_publish
+from version import ZULIP_VERSION
+
+def try_git_describe() -> Optional[str]:
+    try:
+        return subprocess.check_output(
+            ['git',
+             '--git-dir', os.path.join(os.path.dirname(__file__), '../.git'),
+             'describe', '--tags', '--always', '--dirty', '--long'],
+            stderr=subprocess.PIPE,
+        ).strip().decode('utf-8')
+    except Exception:
+        return None
+
+def add_deployment_metadata(report: Dict[str, Any]) -> None:
+    report['git_described'] = try_git_describe()
+    report['zulip_version_const'] = ZULIP_VERSION
+
+    version_path = os.path.join(os.path.dirname(__file__), '../version')
+    if os.path.exists(version_path):
+        report['zulip_version_file'] = open(version_path).read().strip()
 
 def add_request_metadata(report: Dict[str, Any], request: HttpRequest) -> None:
     report['has_request'] = True
@@ -71,6 +93,8 @@ class AdminNotifyHandler(logging.Handler):
         try:
             report['node'] = platform.node()
             report['host'] = platform.node()
+
+            add_deployment_metadata(report)
 
             if record.exc_info:
                 stack_trace = ''.join(traceback.format_exception(*record.exc_info))
