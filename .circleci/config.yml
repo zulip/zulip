@@ -21,9 +21,11 @@ jobs:
               sudo chown -R circleci "${dirs[@]}"
       - restore_cache:
           keys:
+          - v1-node-base2
           - v1-node-base1
       - restore_cache:
           keys:
+          - v1-venv-base2
           - v1-venv-base1
 
       - run:
@@ -44,11 +46,11 @@ jobs:
       - save_cache:
           paths:
             - /srv/zulip-npm-cache
-          key: v1-node-base1
+          key: v1-node-base2
       - save_cache:
           paths:
             - /srv/zulip-venv-cache
-          key: v1-venv-base1
+          key: v1-venv-base2
       # TODO: in Travis we also cache ~/zulip-emoji-cache, ~/node, ~/misc
 
       # The moment of truth!
