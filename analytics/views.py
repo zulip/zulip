@@ -287,6 +287,8 @@ def get_realm_day_counts() -> Dict[str, Dict[str, str]]:
     return result
 
 def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
+    now = timezone_now()
+
     query = '''
         SELECT
             realm.string_id,
@@ -397,7 +399,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
 
     for row in rows:
         row['date_created_day'] = row['date_created'].strftime('%Y-%m-%d')
-        row['age_days'] = int((timezone_now() - row['date_created']).total_seconds()
+        row['age_days'] = int((now - row['date_created']).total_seconds()
                               / 86400)
         row['is_new'] = row['age_days'] < 12 * 7
 
@@ -455,7 +457,8 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
 
     content = loader.render_to_string(
         'analytics/realm_summary_table.html',
-        dict(rows=rows, num_active_sites=num_active_sites)
+        dict(rows=rows, num_active_sites=num_active_sites,
+             now=now.strftime('%Y-%m-%dT%H:%M:%SZ'))
     )
     return content
 
