@@ -2415,7 +2415,7 @@ nav ul li.active::after {
     content: "$";
     position: relative;
     vertical-align: top;
-    top: 3px;
+    top: 4px;
     left: -3px;
 
     font-size: 2rem;
@@ -2425,7 +2425,7 @@ nav ul li.active::after {
 
 .pricing-model .pricing-container .text-content .price {
     display: inline-block;
-    margin-right: 15px;
+    margin-right: 2px;
 
     font-size: 3.5em;
     font-weight: 600;
