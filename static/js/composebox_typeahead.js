@@ -287,7 +287,7 @@ exports.compose_content_begins_typeahead = function (query) {
     // already-completed object.
 
     // We will likely want to extend this list to be more i18n-friendly.
-    var terminal_symbols = ',.?!()[] ';
+    var terminal_symbols = ',.;?!()[] "\'\n\t';
     if (rest !== '' && terminal_symbols.indexOf(rest[0]) === -1) {
         return false;
     }
