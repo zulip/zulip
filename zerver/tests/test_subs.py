@@ -41,7 +41,7 @@ from zerver.lib.test_runner import (
 from zerver.models import (
     get_display_recipient, Message, Realm, Recipient, Stream, Subscription,
     DefaultStream, UserProfile, get_user_profile_by_id, active_user_ids,
-    get_default_stream_groups, flush_per_request_caches
+    get_default_stream_groups, flush_per_request_caches, DefaultStreamGroup
 )
 
 from zerver.lib.actions import (
@@ -817,6 +817,9 @@ class DefaultStreamGroupTest(ZulipTestCase):
             (stream, _) = create_stream_if_needed(realm, stream_name)
             streams.append(stream)
 
+        def get_streams(group: DefaultStreamGroup) -> List[Stream]:
+            return list(group.streams.all().order_by('name'))
+
         group_name = "group1"
         description = "This is group1"
         do_create_default_stream_group(realm, group_name, description, streams)
@@ -824,7 +827,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
         self.assert_length(default_stream_groups, 1)
         self.assertEqual(default_stream_groups[0].name, group_name)
         self.assertEqual(default_stream_groups[0].description, description)
-        self.assertEqual(list(default_stream_groups[0].streams.all()), streams)
+        self.assertEqual(get_streams(default_stream_groups[0]), streams)
 
         # Test adding streams to existing default stream group
         group = lookup_default_stream_groups(["group1"], realm)[0]
@@ -839,7 +842,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
         default_stream_groups = get_default_stream_groups(realm)
         self.assert_length(default_stream_groups, 1)
         self.assertEqual(default_stream_groups[0].name, group_name)
-        self.assertEqual(list(default_stream_groups[0].streams.all()), streams)
+        self.assertEqual(get_streams(default_stream_groups[0]), streams)
 
         # Test removing streams from existing default stream group
         do_remove_streams_from_default_stream_group(realm, group, new_streams)
@@ -847,7 +850,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
         default_stream_groups = get_default_stream_groups(realm)
         self.assert_length(default_stream_groups, 1)
         self.assertEqual(default_stream_groups[0].name, group_name)
-        self.assertEqual(list(default_stream_groups[0].streams.all()), remaining_streams)
+        self.assertEqual(get_streams(default_stream_groups[0]), remaining_streams)
 
         # Test changing default stream group description
         new_description = "group1 new description"
@@ -862,7 +865,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
         default_stream_groups = get_default_stream_groups(realm)
         self.assert_length(default_stream_groups, 1)
         self.assertEqual(default_stream_groups[0].name, new_group_name)
-        self.assertEqual(list(default_stream_groups[0].streams.all()), remaining_streams)
+        self.assertEqual(get_streams(default_stream_groups[0]), remaining_streams)
 
         # Test removing default stream group
         do_remove_default_stream_group(realm, group)
