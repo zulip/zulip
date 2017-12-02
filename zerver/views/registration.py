@@ -84,7 +84,8 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
     else:
         realm = get_realm(get_subdomain(request))
         if realm is None or realm != prereg_user.realm:
-            return render(request, 'confirmation/link_does_not_exist.html')
+            return render_confirmation_key_error(
+                request, ConfirmationKeyException(ConfirmationKeyException.DOES_NOT_EXIST))
 
     if realm and not email_allowed_for_realm(email, realm):
         return render(request, "zerver/closed_realm.html",
