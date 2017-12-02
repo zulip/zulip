@@ -1335,6 +1335,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('data', check_dict_only([
                 ('allow_message_editing', check_bool),
                 ('message_content_edit_limit_seconds', check_int),
+                ('allow_community_topic_editing', check_bool),
             ])),
         ])
         # Test every transition among the four possibilities {T,F} x {0, non-0}
@@ -1344,7 +1345,8 @@ class EventsRegisterTest(ZulipTestCase):
             events = self.do_test(
                 lambda: do_set_realm_message_editing(self.user_profile.realm,
                                                      allow_message_editing,
-                                                     message_content_edit_limit_seconds))
+                                                     message_content_edit_limit_seconds,
+                                                     False))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
