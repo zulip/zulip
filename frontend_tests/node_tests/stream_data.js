@@ -201,7 +201,12 @@ zrequire('stream_data');
     stream_data.update_subscribers_count(sub);
     assert.equal(sub.subscriber_count, 0);
 
-    // Defensive code will give warnings, which we ignore for the
+	// verify that checking subscription with bad email is a noop
+	global.blueslip.warn = function () {};
+	global.blueslip.error = function () {};
+	assert(!stream_data.user_is_subscribed('Rome', 'notbrutus@zulip.org'));
+	
+	// Defensive code will give warnings, which we ignore for the
     // tests, but the defensive code needs to not actually blow up.
     global.blueslip.warn = function () {};
 
@@ -233,6 +238,10 @@ zrequire('stream_data');
     ok = stream_data.add_subscriber('UNKNOWN', brutus.user_id);
     assert(!ok);
 
+	// Same as above but for removing subscriber
+	ok = stream_data.remove_subscriber('UNKNOWN', brutus.user_id);
+	assert(!ok);
+	
     // Verify that we don't crash and return false for a bad user id.
     global.blueslip.error = function () {};
     ok = stream_data.add_subscriber('Rome', 9999999);
