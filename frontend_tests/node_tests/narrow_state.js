@@ -136,6 +136,9 @@ function set_filter(operators) {
     var pm_test = narrow_state.set_compose_defaults();
     assert.equal(pm_test.private_message_recipient, 'foo@bar.com');
 
+    set_filter([['topic', 'duplicate'], ['topic', 'duplicate']]);
+    assert.deepEqual(narrow_state.set_compose_defaults(), {});
+
     stream_data.add_sub('ROME', {name: 'ROME', stream_id: 99});
     set_filter([['stream', 'rome']]);
 
