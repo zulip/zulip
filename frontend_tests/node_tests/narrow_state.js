@@ -3,6 +3,7 @@ zrequire('Filter', 'js/filter');
 zrequire('stream_data');
 zrequire('narrow_state');
 
+set_global('blueslip', {});
 set_global('page_params', {
 });
 
@@ -22,6 +23,15 @@ function set_filter(operators) {
     stream_data.add_sub('Test', test_stream);
 
     assert(!narrow_state.is_for_stream_id(test_stream.stream_id));
+
+    var bad_stream_id = 1000000;
+    var called = false;
+    global.blueslip.error = function (msg) {
+        assert.equal(msg, 'Bad stream id ' + bad_stream_id);
+        called = true;
+    };
+    assert(!narrow_state.is_for_stream_id(bad_stream_id));
+    assert(called);
 
     set_filter([
         ['stream', 'Test'],
