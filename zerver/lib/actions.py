@@ -1643,7 +1643,7 @@ def check_send_message(sender, client, message_type_name, message_to,
     message = check_message(sender, client, addressee,
                             message_content, realm, forged, forged_timestamp,
                             forwarder_user_profile, local_id, sender_queue_id)
-if (message_content == "welcome" or message_content == "Welcome"):
+if (message == "welcome" or message == "Welcome"):
         print("Welcome to Zulip :octopus:")
 
 def check_stream_name(stream_name: Text) -> None:
