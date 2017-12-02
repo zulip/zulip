@@ -20,6 +20,12 @@
 # (but much simpler, with a couple of packages from the distro), and
 # then borrows from the CircleCI Dockerfile.
 
+# To rebuild from this file:
+#   0. pick a new image name, like `gregprice/circleci:trusty-python-3.test`
+#   1. $ sudo docker build tools/circleci/images/ --tag $NAME
+#   2. $ sudo docker push $NAME
+#   3. update .circleci/config.yml to refer to the new name
+
 # TODO add xenial
 FROM buildpack-deps:trusty-scm
 
