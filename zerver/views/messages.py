@@ -1213,11 +1213,13 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     # you change this value also change those two parameters in message_edit.js.
     # 1. You sent it, OR:
     # 2. This is a topic-only edit for a (no topic) message, OR:
-    # 3. This is a topic-only edit and you are an admin.
+    # 3. This is a topic-only edit and you are an admin, OR:
+    # 4. This is a topic-only edit and your realm allows users to edit topics.
     if message.sender == user_profile:
         pass
     elif (content is None) and ((message.topic_name() == "(no topic)") or
-                                user_profile.is_realm_admin):
+                                user_profile.is_realm_admin or
+                                user_profile.realm.allow_community_topic_editing is True):
         pass
     else:
         raise JsonableError(_("You don't have permission to edit this message"))
