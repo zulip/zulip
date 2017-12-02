@@ -42,7 +42,7 @@ ENV LANG=C.UTF-8
 # and fine for an image that will be rebuilt rather than upgraded.
 
 # Docker core...
-RUN set -ex \
+RUN set -e \
   && export DOCKER_VERSION=$(curl --silent --fail --retry 3 https://download.docker.com/linux/static/stable/x86_64/ | grep -o -e 'docker-[.0-9]*-ce\.tgz' | sort -r | head -n 1) \
   && DOCKER_URL="https://download.docker.com/linux/static/stable/x86_64/${DOCKER_VERSION}" \
   && echo Docker URL: $DOCKER_URL \
@@ -52,7 +52,7 @@ RUN set -ex \
   && mv /tmp/docker/* /usr/bin \
   && rm -rf /tmp/docker /tmp/docker.tgz \
   && which docker \
-  && (docker version || true)
+  && (docker version 2>/dev/null || true)
 
 # ...docker-compose...
 RUN COMPOSE_URL="https://circle-downloads.s3.amazonaws.com/circleci-images/cache/linux-amd64/docker-compose-latest" \
