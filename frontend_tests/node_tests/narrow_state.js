@@ -105,6 +105,10 @@ function set_filter(operators) {
 
     assert.equal(result[2].operator, 'search');
     assert.equal(result[2].operand, 'yo');
+
+    narrow_state.reset_current_filter();
+    result = narrow_state.operators();
+    assert.equal(result.length, 0);
 }());
 
 (function test_muting_enabled() {
