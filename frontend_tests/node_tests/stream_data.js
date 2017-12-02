@@ -463,4 +463,8 @@ zrequire('stream_data');
 	assert(!stream_data.receives_desktop_notifications('India'));
 	global.blueslip.error = function () {};
 	assert(!stream_data.receives_desktop_notifications('Indiana'));
+	
+	assert(!stream_data.receives_audible_notifications('India'));
+	global.blueslip.error = function () {};
+	assert(!stream_data.receives_audible_notifications('Indiana'));
 }());
