@@ -444,3 +444,23 @@ zrequire('stream_data');
     stream_data.add_subscriber('India', 103);
     assert.equal(stream_data.get_subscriber_count('India'), 2);
 }());
+
+(function test_notifications() {
+	var india = {
+		stream_id: 102,
+		name: 'India',
+		subscribed: true,
+	};
+	var rome = {
+		stream_id: 33,
+		name: 'Rome',
+		subscribed: false,
+	};
+	stream_data.clear_subscriptions();
+	stream_data.add_sub('India', india);
+	stream_data.add_sub('Rome', rome);
+
+	assert(!stream_data.receives_desktop_notifications('India'));
+	global.blueslip.error = function () {};
+	assert(!stream_data.receives_desktop_notifications('Indiana'));
+}());
