@@ -128,21 +128,19 @@ function set_filter(operators) {
 (function test_set_compose_defaults() {
     set_filter([['stream', 'Foo'], ['topic', 'Bar']]);
 
-    var opts = {};
-    narrow_state.set_compose_defaults(opts);
-    assert.equal(opts.stream, 'Foo');
-    assert.equal(opts.subject, 'Bar');
+    var stream_and_subject = narrow_state.set_compose_defaults();
+    assert.equal(stream_and_subject.stream, 'Foo');
+    assert.equal(stream_and_subject.subject, 'Bar');
 
     set_filter([['pm-with', 'foo@bar.com']]);
-    narrow_state.set_compose_defaults(opts);
-    assert.equal(opts.private_message_recipient, 'foo@bar.com');
+    var pm_test = narrow_state.set_compose_defaults();
+    assert.equal(pm_test.private_message_recipient, 'foo@bar.com');
 
     stream_data.add_sub('ROME', {name: 'ROME', stream_id: 99});
     set_filter([['stream', 'rome']]);
 
-    opts = {};
-    narrow_state.set_compose_defaults(opts);
-    assert.equal(opts.stream, 'ROME');
+    var stream_test = narrow_state.set_compose_defaults();
+    assert.equal(stream_test.stream, 'ROME');
 }());
 
 (function test_update_email() {
