@@ -575,19 +575,25 @@ def do_set_realm_authentication_methods(realm: Realm,
     )
     send_event(event, active_user_ids(realm.id))
 
-
 def do_set_realm_message_editing(realm: Realm,
                                  allow_message_editing: bool,
-                                 message_content_edit_limit_seconds: int) -> None:
+                                 message_content_edit_limit_seconds: int,
+                                 allow_community_topic_editing: bool) -> None:
     realm.allow_message_editing = allow_message_editing
     realm.message_content_edit_limit_seconds = message_content_edit_limit_seconds
-    realm.save(update_fields=['allow_message_editing', 'message_content_edit_limit_seconds'])
+    realm.allow_community_topic_editing = allow_community_topic_editing
+    realm.save(update_fields=['allow_message_editing',
+                              'allow_community_topic_editing',
+                              'message_content_edit_limit_seconds',
+                              ]
+               )
     event = dict(
         type="realm",
         op="update_dict",
         property="default",
         data=dict(allow_message_editing=allow_message_editing,
-                  message_content_edit_limit_seconds=message_content_edit_limit_seconds),
+                  message_content_edit_limit_seconds=message_content_edit_limit_seconds,
+                  allow_community_topic_editing=allow_community_topic_editing),
     )
     send_event(event, active_user_ids(realm.id))
 
