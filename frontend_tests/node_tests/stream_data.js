@@ -238,6 +238,10 @@ zrequire('stream_data');
     ok = stream_data.add_subscriber('UNKNOWN', brutus.user_id);
     assert(!ok);
 
+	// Same as above but for removing subscriber
+	ok = stream_data.remove_subscriber('UNKNOWN', brutus.user_id);
+	assert(!ok);
+	
     // Verify that we don't crash and return false for a bad user id.
     global.blueslip.error = function () {};
     ok = stream_data.add_subscriber('Rome', 9999999);
