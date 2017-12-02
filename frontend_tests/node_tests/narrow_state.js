@@ -23,6 +23,9 @@ function set_filter(operators) {
 
     assert(!narrow_state.is_for_stream_id(test_stream.stream_id));
 
+	global.blueslip.error = function() {};
+	assert(!narrow_state.is_for_stream_id(1000000));
+	
     set_filter([
         ['stream', 'Test'],
         ['topic', 'Bar'],
