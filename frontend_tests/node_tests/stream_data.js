@@ -451,9 +451,13 @@ zrequire('stream_data');
         name: 'India',
         subscribed: true,
         desktop_notifications: true,
+        audible_notifications: true,
     };
     stream_data.clear_subscriptions();
     stream_data.add_sub('India', india);
     assert(stream_data.receives_desktop_notifications('India'));
     assert(!stream_data.receives_desktop_notifications('Indiana'));
+
+    assert(stream_data.receives_audible_notifications('India'));
+    assert(!stream_data.receives_audible_notifications('Indiana'));
 }());
