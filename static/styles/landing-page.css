@@ -1624,6 +1624,132 @@ nav ul li.active::after {
     color: #fff;
 }
 
+/* -- Markdown format -- */
+.portico-landing.page {
+    padding: 0;
+    color: hsl(0, 0%, 18.5%);
+    font-size: 18px;
+}
+
+.portico-landing.page .hero {
+    padding: 175px 50px 100px 50px;
+    background: #69b190;
+    color: #fff;
+    text-shadow: 1px 1px 1px #31855a;
+    text-align: center;
+}
+
+.portico-landing.page .hero {
+    padding: 175px 50px 100px 50px;
+    background: #69b190;
+    color: #fff;
+    text-shadow: 1px 1px 1px #31855a;
+    text-align: center;
+}
+
+.portico-landing.page .hero.small-hero {
+    padding: 150px 50px 75px 50px;
+}
+
+.portico-landing.page .hero h1 {
+    margin-bottom: 20px;
+    font-size: 2.5em;
+    font-weight: 300;
+}
+
+.portico-landing.page .hero p {
+    width: 70%;
+    max-width: 700px;
+    margin: 0 auto;
+    font-size: 1.2em;
+    opacity: 0.9;
+}
+
+.portico-landing.page .main {
+    margin-top: 2em;
+    margin-bottom: 2em;
+    max-width: 700px;
+}
+
+.portico-landing.page .main h1,
+.portico-landing.page .main h2,
+.portico-landing.page .main h3 {
+    font-weight: 600;
+}
+
+.portico-landing.page .main h1 {
+    font-size: 2em;
+    margin: 1.5em 0 0.5em 0;
+    padding-bottom: 0.25em;
+    border-bottom: 1px solid rgb(234, 236, 239);
+    width: 100%;
+}
+
+.portico-landing.page .main h2 {
+    font-size: 1.5em;
+    margin: 1.4em 0 0 0;
+}
+
+.portico-landing.page .main h3 {
+    font-size: 1.2em;
+    margin: 0.5em 0 0 0;
+}
+
+.portico-landing.page .main p {
+    padding-bottom: 1em;
+}
+
+.portico-landing.page .main strong,
+.portico-landing.page .main b {
+    font-weight: 600;
+}
+
+.portico-landing.page .photo-description {
+    margin-top: -18px;
+    font-size: 0.8em;
+    font-weight: normal;
+    color: #888;
+}
+
+.portico-landing.page .team h2 {
+    margin-top: 20px;
+}
+
+.portico-landing.page .bg-pycon {
+    text-shadow: none;
+    position: relative;
+
+    background-image: url(/static/images/landing-page/pycon.jpg);
+    background-size: cover;
+    background-position: center;
+}
+
+.portico-landing.page .bg-pycon.mit {
+    background-position: 0 85%;
+    background-image: url(/static/images/landing-page/mit-lobby-7.jpg);
+}
+
+.portico-landing.page .bg-pycon.drone {
+    background-image: url(/static/images/landing-page/pycon-drone.jpg);
+}
+
+.portico-landing.page .bg-pycon .bg-dimmer {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+
+    background-color: rgba(15, 24, 48, 0.7);
+
+    z-index: 0;
+}
+
+.portico-landing.page .bg-pycon .content {
+    position: relative;
+    z-index: 1;
+}
+
 /* -- apps page -- */
 .portico-landing.apps {
     padding-top: 0px;
@@ -1774,117 +1900,6 @@ nav ul li.active::after {
     font-weight: 600;
     font-family: "Source Sans Pro", sans-serif;
     margin-top: 10px;
-}
-
-/* -- /for/open-source/ -- */
-.portico-landing.page {
-    padding-top: 0px;
-    color: hsl(222, 20%, 40%);
-}
-
-.portico-landing.page .main {
-    max-width: 900px;
-}
-
-.portico-landing.page .hero {
-    padding: 200px 50px 100px 50px;
-
-
-    background: #69b190;
-    color: #fff;
-}
-
-.portico-landing.page .hero.small-hero {
-    padding: 120px 50px 30px 50px;
-}
-
-.portico-landing.page .hero h1 {
-    margin: 0px 0px 20px 0px;
-
-    font-size: 3.5em;
-    font-weight: 300;
-}
-
-.portico-landing.page .hero p {
-    width: 70%;
-    max-width: 700px;
-    margin: 0 auto;
-
-    font-size: 1.3em;
-    text-align: center;
-
-    opacity: 0.7;
-}
-
-.portico-landing.page .main .inner-content h2 {
-    margin-top: 30px;
-    margin-bottom: 10px;
-}
-
-.portico-landing.page .main li {
-    line-height: 1.6;
-    font-size: 1em;
-}
-
-.portico-landing.page .main p {
-    font-size: 1em;
-    margin: 0px 0px 20px;
-}
-
-.portico-landing.page .main h3 {
-    margin-top: 20px;
-}
-
-.portico-landing.page .main li strong {
-    font-weight: 600;
-    color: #333;
-}
-
-.portico-landing.page .photo-description {
-    position: relative;
-    top: -40px;
-    height: 0;
-
-    font-size: 0.8em;
-    font-weight: normal;
-    color: #888;
-}
-
-.portico-landing.page .team h2 {
-    margin-top: 20px;
-}
-
-.portico-landing.page .bg-pycon {
-    position: relative;
-
-    background-image: url(/static/images/landing-page/pycon.jpg);
-    background-size: cover;
-    background-position: center;
-}
-
-.portico-landing.page .bg-pycon.drone {
-    background-image: url(/static/images/landing-page/pycon-drone.jpg);
-}
-
-.portico-landing.page .bg-pycon.mit {
-    background-image: url(/static/images/landing-page/mit-lobby-7.jpg);
-}
-
-.portico-landing.page .bg-pycon .bg-dimmer {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-
-    background-color: rgba(15, 24, 48, 0.7);
-
-    z-index: 0;
-}
-
-.portico-landing.page .bg-pycon .content {
-    position: relative;
-    z-index: 1;
 }
 
 /* -- hello page styling -- */
@@ -2884,10 +2899,6 @@ nav ul li.active::after {
     .portico-landing.integrations .integration-lozenges {
         text-align: center;
     }
-
-    .portico-landing.page .hero p br {
-        display: none;
-    }
 }
 
 @media (max-width: 830px) {
@@ -2934,6 +2945,18 @@ nav ul li.active::after {
     }
 }
 
+/* 700px + 2em padding */
+@media (max-width: 736px) {
+    .portico-landing.page .main {
+        padding-left: 1em;
+        padding-right: 1em;
+    }
+
+    .portico-landing.page {
+        font-size: 17px;
+    }
+}
+
 @media (max-width: 768px) {
     nav {
         padding-left: 50px;
@@ -2952,29 +2975,6 @@ nav ul li.active::after {
     .portico-landing.integrations .main,
     .main {
         width: auto;
-    }
-
-    .portico-landing.page .main {
-        width: auto;
-        margin: 0px;
-    }
-
-    .portico-landing.page .hero {
-        padding-left: 20px;
-        padding-right: 20px;
-    }
-
-    .portico-landing.page .hero {
-        font-size: 0.6em;
-    }
-
-    .portico-landing.page .hero p {
-        font-size: 2em;
-        width: 100%;
-    }
-
-    .portico-landing.page .padded-content {
-        padding: 50px 20px;
     }
 
     #integration-instruction-block .integration-lozenge {

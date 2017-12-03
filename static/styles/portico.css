@@ -17,12 +17,6 @@ body {
     font-weight: normal;
 }
 
-.page h3.normal {
-    font-size: 1.2em;
-    margin-top: 20px;
-    margin-bottom: 5px;
-}
-
 .navbar {
     margin-bottom: 0px;
 }
@@ -861,34 +855,42 @@ a.bottom-signup-button {
     border-radius: 5px;
 }
 
+.team .bdfl .profile-name {
+    font-size: 1.2em;
+}
+
+.team .bdfl .profile-role {
+    font-size: 1.1em;
+}
+
 .team .bdfl .profile-information {
     flex: 1;
     /* Wrap when screen is small to prevent very short line */
     min-width: 300px;
-    font-size: 1.4em;
     margin: 10px 10px 0 10px;
 }
 
 .team .bdfl .profile-description {
     margin-top: 20px;
     font-weight: 400;
-    font-size: 0.8em;
     opacity: 0.8;
 }
 
 .team .core-team {
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
+    justify-content: center;
+    /* Allow core-team to span the full width of the page */
+    margin-left: calc(-100vw / 2 + 700px / 2 - 17px);
+    margin-right: calc(-100vw / 2 + 700px / 2 - 17px);
 }
 
 .team .core-team .profile {
-    flex: 1;
     min-width: 130px;
     text-align: center;
     align-content: center;
     margin-bottom: 20px;
-    margin: 10px;
+    margin: 20px;
 }
 
 .team .core-team .profile .profile-picture {
@@ -924,6 +926,7 @@ a.bottom-signup-button {
 
 .contributors {
     display: none;
+    font-size: 17px;
 }
 
 /* Activated .contributors */
@@ -1525,10 +1528,7 @@ input.new-organization-button {
 
 .markdown h1,
 .markdown h2,
-.markdown h3,
-.page h1,
-.page h2,
-.page h3 {
+.markdown h3 {
     font-weight: 700;
 }
 
@@ -1553,21 +1553,18 @@ input.new-organization-button {
     vertical-align: middle;
 }
 
-.markdown h1,
-.page .main h1 {
+.markdown h1 {
     border-bottom: 1px solid #eee;
     padding-bottom: 10px;
     margin-bottom: 15px;
 }
 
-.markdown h2,
-.page h2 {
+.markdown h2 {
     font-size: 1.4em;
     margin: 5px 0 0 0;
 }
 
-.markdown h3,
-.page h3 {
+.markdown h3 {
     font-size: 1.1em;
     opacity: 1;
     margin-bottom: 0px;
@@ -1829,6 +1826,19 @@ input.new-organization-button {
     .signup-section {
         display: inline-block;
         margin-top: 10px;
+    }
+}
+
+/* 700px + 2em padding */
+@media (max-width: 736px) {
+    .team .core-team {
+        justify-content: space-between;
+        margin-left: 1em;
+        margin-right: 1em;
+    }
+
+    .team .core-team .profile {
+        flex: 1;
     }
 }
 
