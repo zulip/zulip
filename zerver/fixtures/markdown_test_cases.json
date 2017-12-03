@@ -218,6 +218,24 @@
       "text_content": "1. A\n 2. B"
     },
     {
+      "name": "auto_renumbered_list",
+      "input": "1. A\n1. B\n 1. C\n1. D",
+      "expected_output": "<p>1. A<br>\n2. B<br>\n 3. C<br>\n4. D</p>",
+      "text_content": "1. A\n2. B\n 3. C\n4. D"
+    },
+    {
+      "name": "auto_renumbered_list_from",
+      "input": "3. A\n3. B\n3. C\n3. D",
+      "expected_output": "<p>3. A<br>\n4. B<br>\n5. C<br>\n6. D</p>",
+      "text_content": "3. A\n4. B\n5. C\n6. D"
+    },
+    {
+      "name": "not_auto_renumbered_list",
+      "input": "1. A\n3. B\n 2. C\n1. D",
+      "expected_output": "<p>1. A<br>\n3. B<br>\n 2. C<br>\n1. D</p>",
+      "text_content": "1. A\n3. B\n 2. C\n1. D"
+    },
+    {
       "name": "linkify_interference",
       "input": "link: xx, x xxxxx xx xxxx xx\n\n[xxxxx #xx](http://xxxxxxxxx:xxxx/xxx/xxxxxx%xxxxxx/xx/):**xxxxxxx**\n\nxxxxxxx xxxxx xxxx xxxxx:\n`xxxxxx`: xxxxxxx\n`xxxxxx`: xxxxx\n`xxxxxx`: xxxxx xxxxx",
       "expected_output": "<p>link: xx, x xxxxx xx xxxx xx</p>\n<p><a href=\"http://xxxxxxxxx:xxxx/xxx/xxxxxx%xxxxxx/xx/\" target=\"_blank\" title=\"http://xxxxxxxxx:xxxx/xxx/xxxxxx%xxxxxx/xx/\">xxxxx #xx</a>:<strong>xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxxxxxx<br>\n<code>xxxxxx</code>: xxxxx<br>\n<code>xxxxxx</code>: xxxxx xxxxx</p>",
