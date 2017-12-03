@@ -512,11 +512,6 @@ a:hover code {
     max-width: 250px;
 }
 
-.edit-profile {
-    font-weight: 300;
-    font-size: 12px;
-}
-
 .logout {
     white-space: nowrap;
 }
