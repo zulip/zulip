@@ -106,8 +106,32 @@ hr {
     display: none;
 }
 
+#id_messages_sent_by_client {
+    min-height: 100px;
+    width: 750px;
+    position: relative;
+}
+
+#id_messages_sent_by_message_type {
+    height: 300px;
+    width: 750px;
+    position: relative;
+}
+
+#id_messages_sent_over_time {
+    height: 400px;
+    width: 750px;
+    position: relative;
+}
+
 #id_messages_sent_over_time[last_value_is_partial='true'] .points path:last-of-type {
     opacity: 0.5;
+}
+
+#id_number_of_users {
+    height: 370px;
+    width: 750px;
+    position: relative;
 }
 
 #users_hover_info,
@@ -153,6 +177,28 @@ hr {
     font-weight: 400;
     text-align: center;
     color: #aaa;
+}
+
+@keyframes spinner {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.spinner:before {
+    content: '';
+    box-sizing: border-box;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 30px;
+    height: 30px;
+    margin-top: -15px;
+    margin-left: -15px;
+    border-radius: 50%;
+    border: 1px solid #ccc;
+    border-top-color: #07d;
+    animation: spinner .4s linear infinite;
 }
 
 #users_hover_info,
