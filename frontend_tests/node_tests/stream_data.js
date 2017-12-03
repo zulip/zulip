@@ -72,6 +72,11 @@ zrequire('stream_data');
     assert.equal(stream_data.maybe_get_stream_name(), undefined);
     assert.equal(stream_data.maybe_get_stream_name(social.stream_id), 'social');
     assert.equal(stream_data.maybe_get_stream_name(42), undefined);
+
+    stream_data.set_realm_default_streams([denmark]);
+    assert(stream_data.get_default_status('Denmark'));
+    assert(!stream_data.get_default_status('social'));
+    assert(!stream_data.get_default_status('UNKNOWN'));
 }());
 
 (function test_renames() {
