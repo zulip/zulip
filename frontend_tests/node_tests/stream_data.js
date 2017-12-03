@@ -201,6 +201,16 @@ zrequire('stream_data');
     stream_data.update_subscribers_count(sub);
     assert.equal(sub.subscriber_count, 0);
 
+    // verify that checking subscription with bad email is a noop
+    var bad_email = 'notbrutus@zulip.org';
+    global.blueslip.error = function (msg) {
+        assert.equal(msg, "Unknown email for get_user_id: " + bad_email);
+    };
+    global.blueslip.warn = function (msg) {
+        assert.equal(msg, "Bad email passed to user_is_subscribed: " + bad_email);
+    };
+    assert(!stream_data.user_is_subscribed('Rome', bad_email));
+
     // Defensive code will give warnings, which we ignore for the
     // tests, but the defensive code needs to not actually blow up.
     global.blueslip.warn = function () {};
