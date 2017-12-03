@@ -218,6 +218,12 @@ exports.process_escape_key = function (e) {
         }
 
         if (compose_state.composing()) {
+            // Check for errors in compose box; close errors if they exist
+            if ($("#compose-send-status").css('display') !== 'none') {
+                $("#compose-send-status").hide();
+                return true;
+            }
+
             // If the user hit the escape key, cancel the current compose
             compose_actions.cancel();
             return true;
