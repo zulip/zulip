@@ -57,9 +57,9 @@ class DocPageTest(ZulipTestCase):
         self._test('/api/installation-instructions', 'No download required!')
         self._test('/api/usage', 'steal away your hearts')
         self._test('/team/', 'industry veterans')
-        self._test('/history/', 'Cambridge, Massachusetts')
+        self._test('/history/', 'About Zulip')
         # Test the i18n version of one of these pages.
-        self._test('/en/history/', 'Cambridge, Massachusetts')
+        self._test('/en/history/', 'About Zulip')
         self._test('/apps/', 'Apps for every platform.')
         self._test('/features/', 'Beautiful messaging')
         self._test('/hello/', 'productive group chat', landing_missing_strings=["Login"])
