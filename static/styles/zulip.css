@@ -401,12 +401,6 @@ li,
     position: absolute !important;
 }
 
-/* Relative positioning */
-
-.position-relative {
-    position: relative;
-}
-
 /* Lighter strong */
 
 strong {
