@@ -238,6 +238,7 @@ function populate_messages_sent_over_time(data) {
 
     function draw_or_update_plot(rangeselector, traces, last_value_is_partial, initial_draw) {
         $('#daily_button, #weekly_button, #cumulative_button').removeClass("selected");
+        $('#id_messages_sent_over_time > div').removeClass("spinner");
         if (initial_draw) {
             traces.human.visible = true;
             traces.bot.visible = 'legendonly';
@@ -463,6 +464,7 @@ function populate_messages_sent_by_client(data) {
     }
 
     function draw_plot() {
+        $('#id_messages_sent_by_client > div').removeClass("spinner");
         var data_ = plot_data[user_button][time_button];
         layout.height = layout.margin.b + data_.trace.x.length * 30;
         layout.xaxis.range = [0, Math.max.apply(null, data_.trace.x) * 1.3];
@@ -598,6 +600,7 @@ function populate_messages_sent_by_message_type(data) {
     }
 
     function draw_plot() {
+        $('#id_messages_sent_by_message_type > div').removeClass("spinner");
         Plotly.newPlot('id_messages_sent_by_message_type',
                        [plot_data[user_button][time_button].trace],
                        layout,
@@ -692,6 +695,8 @@ function populate_number_of_users(data) {
         text: text,
         visible: true,
     };
+
+    $('#id_number_of_users > div').removeClass("spinner");
 
     Plotly.newPlot('id_number_of_users', [trace], layout, {displayModeBar: false});
 
