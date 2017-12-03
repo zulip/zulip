@@ -1084,6 +1084,68 @@ class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
                 inserts += 1
         return copy
 
+class AutoNumberOListPreprocessor(markdown.preprocessors.Preprocessor):
+    """ Finds a sequence of lines numbered by the same number"""
+    RE = re.compile(r'^([ ]*)(\d+)\.[ ]+(.*)')
+    TAB_LENGTH = 2
+
+    def run(self, lines):
+        # type: (List[Text]) -> List[Text]
+        new_lines = []  # type: List[Text]
+        current_list = []  # type: List[Match[Text]]
+        current_indent = 0
+
+        for line in lines:
+            m = self.RE.match(line)
+
+            # Remember if this line is a continuation of already started list
+            is_next_item = (m and current_list
+                            and current_indent == len(m.group(1)) // self.TAB_LENGTH)
+
+            if not is_next_item:
+                # There is no more items in the list we were processing
+                new_lines.extend(self.renumber(current_list))
+                current_list = []
+
+            if not m:
+                # Ordinary line
+                new_lines.append(line)
+            elif is_next_item:
+                # Another list item
+                current_list.append(m)
+            else:
+                # First list item
+                current_list = [m]
+                current_indent = len(m.group(1)) // self.TAB_LENGTH
+
+        new_lines.extend(self.renumber(current_list))
+
+        return new_lines
+
+    def renumber(self, mlist):
+        # type: (List[Match[Text]]) -> List[Text]
+        if not mlist:
+            return []
+
+        start_number = int(mlist[0].group(2))
+
+        # Change numbers only if every one is the same
+        change_numbers = True
+        for m in mlist:
+            if int(m.group(2)) != start_number:
+                change_numbers = False
+                break
+
+        lines = []  # type: List[Text]
+        counter = start_number
+
+        for m in mlist:
+            number = str(counter) if change_numbers else m.group(2)
+            lines.append('%s%s. %s' % (m.group(1), number, m.group(3)))
+            counter += 1
+
+        return lines
+
 # Based on markdown.inlinepatterns.LinkPattern
 class LinkPattern(markdown.inlinepatterns.Pattern):
     """ Return a link element from the given match. """
@@ -1401,6 +1463,10 @@ class Bugdown(markdown.Extension):
 
         md.preprocessors.add('hanging_ulists',
                              BugdownUListPreprocessor(md),
+                             "_begin")
+
+        md.preprocessors.add('auto_number_olist',
+                             AutoNumberOListPreprocessor(md),
                              "_begin")
 
         md.treeprocessors.add("inline_interesting_links", InlineInterestingLinkProcessor(md, self), "_end")
