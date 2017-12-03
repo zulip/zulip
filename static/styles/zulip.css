@@ -495,17 +495,6 @@ a:hover code {
     -moz-box-sizing: initial !important;
 }
 
-.sidebar-nav {
-    padding: 0px 10px 20px 0px;
-    margin-top: 1em;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    /* This is a little hacky, but for whatever reason, span2 in a row-fluid
-       doesn't consistently take on the right width when it's in an affix, so
-       we need to specify a max size. */
-    max-width: 250px;
-}
-
 .logout {
     white-space: nowrap;
 }
