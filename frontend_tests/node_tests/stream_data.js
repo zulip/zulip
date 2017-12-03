@@ -444,3 +444,16 @@ zrequire('stream_data');
     stream_data.add_subscriber('India', 103);
     assert.equal(stream_data.get_subscriber_count('India'), 2);
 }());
+
+(function test_notifications() {
+    var india = {
+        stream_id: 102,
+        name: 'India',
+        subscribed: true,
+        desktop_notifications: true,
+    };
+    stream_data.clear_subscriptions();
+    stream_data.add_sub('India', india);
+    assert(stream_data.receives_desktop_notifications('India'));
+    assert(!stream_data.receives_desktop_notifications('Indiana'));
+}());
