@@ -23,19 +23,17 @@
         <h1>{% trans %}Privacy policy{% endtrans %}</h1>
     </div>
     <div class="main">
-        <div class="padded-content">
-            <div class="inner-content">
-                {% if privacy_policy %}
-                    {{ render_markdown_path(privacy_policy) }}
-                {% else %}
-                    {% trans %}
-                    This installation of Zulip does not have a configured privacy policy.
-                    Contact this <a href="mailto:{{ support_email }}">server's administrator</a>
-                    if you have any questions.
-                    {% endtrans %}
-                {% endif %}
-            </div>
-        </div>
+        {% if privacy_policy %}
+            {{ render_markdown_path(privacy_policy) }}
+        {% else %}
+            {% trans %}
+            <p>
+                This installation of Zulip does not have a configured privacy policy.
+                Contact this <a href="mailto:{{ support_email }}">server's administrator</a>
+                if you have any questions.
+            </p>
+            {% endtrans %}
+        {% endif %}
     </div>
 </div>
 
