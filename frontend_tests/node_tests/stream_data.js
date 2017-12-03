@@ -211,6 +211,14 @@ zrequire('stream_data');
     };
     assert(!stream_data.user_is_subscribed('Rome', bad_email));
 
+    // Verify noop for bad stream when removing subscriber
+    var bad_stream = 'UNKNOWN';
+    global.blueslip.warn = function (msg) {
+        assert.equal(msg, "We got a remove_subscriber call for a non-existent stream " + bad_stream);
+    };
+    ok = stream_data.remove_subscriber(bad_stream, brutus.user_id);
+    assert(!ok);
+
     // Defensive code will give warnings, which we ignore for the
     // tests, but the defensive code needs to not actually blow up.
     global.blueslip.warn = function () {};
