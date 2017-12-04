@@ -31,7 +31,7 @@ exports.set_up_attachments = function () {
     var attachments = page_params.attachments;
     _.each(attachments, function (attachment) {
 
-        attachment.create_time_str = timerender.absolute_time(attachment.create_time);
+        attachment.create_time_str = timerender.relative_date(attachment.create_time);
         attachment.size_str = exports.bytes_to_size(attachment.size);
     });
 
