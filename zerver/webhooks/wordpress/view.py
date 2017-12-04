@@ -14,18 +14,16 @@ WP_LOGIN_TEMPLATE = 'User {name} logged in.'
 
 @api_key_only_webhook_view("Wordpress")
 @has_request_variables
-def api_wordpress_webhook(request, user_profile,
-                          stream=REQ(default="wordpress"),
-                          topic=REQ(default="WordPress Notification"),
-                          hook=REQ(default="WordPress Action"),
-                          post_title=REQ(default="New WordPress Post"),
-                          post_type=REQ(default="post"),
-                          post_url=REQ(default="WordPress Post URL"),
-                          display_name=REQ(default="New User Name"),
-                          user_email=REQ(default="New User Email"),
-                          user_login=REQ(default="Logged in User")):
-    # type: (HttpRequest, UserProfile, str, str, str, str, str, str, str, str, str) -> HttpResponse
-
+def api_wordpress_webhook(request: HttpRequest, user_profile: UserProfile,
+                          stream: str=REQ(default="wordpress"),
+                          topic: str=REQ(default="WordPress Notification"),
+                          hook: str=REQ(default="WordPress Action"),
+                          post_title: str=REQ(default="New WordPress Post"),
+                          post_type: str=REQ(default="post"),
+                          post_url: str=REQ(default="WordPress Post URL"),
+                          display_name: str=REQ(default="New User Name"),
+                          user_email: str=REQ(default="New User Email"),
+                          user_login: str=REQ(default="Logged in User")) -> HttpResponse:
     # remove trailing whitespace (issue for some test fixtures)
     hook = hook.rstrip()
 
