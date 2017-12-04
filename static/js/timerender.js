@@ -262,11 +262,13 @@ exports.relative_date = function (timestamp, today) {
          today = new Date();
     }
     var date = new Date(timestamp);
-    var date_diff = today.getDate() - date.getDate();
-    if (date_diff === 0) {
-        return "Today";
-    } else if (date_diff === 1) {
-        return "Yesterday";
+    if ((today.getMonth() === date.getMonth()) && (today.getFullYear() === date.getFullYear())) {
+        var date_diff = today.getDate() - date.getDate();
+        if (date_diff === 0) {
+            return "Today";
+        } else if (date_diff === 1) {
+            return "Yesterday";
+        }
     }
     var is_older_year = (today.getFullYear() - date.getFullYear()) > 0;
     var str = MONTHS[date.getMonth()] + " " + date.getDate();
