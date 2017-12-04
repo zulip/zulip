@@ -360,8 +360,7 @@ class GitlabHookTests(WebhookTestCase):
 
     @patch('zerver.webhooks.gitlab.view.check_send_stream_message')
     def test_push_event_message_filtered_by_branches_ignore(
-            self, check_send_stream_message_mock):
-        # type: (MagicMock) -> None
+            self, check_send_stream_message_mock: MagicMock) -> None:
         self.url = self.build_webhook_url(branches='master,development')
         payload = self.get_body('push')
         result = self.client_post(self.url, payload, HTTP_X_GITLAB_EVENT='Push Hook', content_type="application/json")
@@ -370,8 +369,7 @@ class GitlabHookTests(WebhookTestCase):
 
     @patch('zerver.webhooks.gitlab.view.check_send_stream_message')
     def test_push_commits_more_than_limit_message_filtered_by_branches_ignore(
-            self, check_send_stream_message_mock):
-        # type: (MagicMock) -> None
+            self, check_send_stream_message_mock: MagicMock) -> None:
         self.url = self.build_webhook_url(branches='master,development')
         payload = self.get_body('push_commits_more_than_limit')
         result = self.client_post(self.url, payload, HTTP_X_GITLAB_EVENT='Push Hook', content_type="application/json")
