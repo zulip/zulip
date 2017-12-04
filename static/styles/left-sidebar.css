@@ -415,6 +415,10 @@ li.expanded_private_message a {
     margin-bottom: 20px;
 }
 
+#global_filters i {
+    opacity: 0.5;
+}
+
 #topics_header {
     margin-right: 10px;
     color: hsl(0, 0%, 43%);
