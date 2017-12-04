@@ -356,6 +356,55 @@ input[type=checkbox].inline-block {
     padding-left: 0px       !important;
 }
 
+<<<<<<< 1212e22e308d7241330fb7215108cca6358c1dd2
+#download_attachment {
+    padding-left: 0px;
+    border-left: 0px;
+=======
+#attachments_list .attachment-messages .ind-message:hover {
+    border: 1px solid hsl(0, 0%, 53%);
+}
+
+#attachments_list .attachment-messages .ind-message:hover .message-id {
+    background-color: hsl(0, 0%, 53%);
+}
+
+#attachments_list .attachment-messages .ind-message {
+    color: hsl(0, 0%, 66%);
+    text-decoration: none;
+}
+
+#attachments_list .attachment-messages .message-id {
+    display: inline-block;
+    padding: 2px 4px 1px 2px;
+}
+
+#attachments_list .attachment-messages .message-date {
+    display: inline-block;
+    padding: 1px 4px 1px 2px;
+}
+
+#attachments-settings table th,
+#attachments-settings table td {
+    text-align: center;
+}
+
+#attachments-settings table td.file-name,
+#attachments-settings table td.date-uploaded {
+    text-align: left;
+}
+
+#attachments-settings table th.upload-size,
+#attachments-settings table td.upload-size {
+    width: 50px;
+}
+
+#attachments-settings table th.upload-actions,
+#attachments-settings table td.upload-actions {
+    width: 75px;
+>>>>>>> user settings: fix 'Uploaded files' UI
+}
+
 #download_attachment {
     padding-left: 0px;
     border-left: 0px;
