@@ -55,13 +55,11 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
 
 @human_users_only
 @has_request_variables
-def json_change_ui_settings(request, user_profile,
-                            autoscroll_forever=REQ(validator=check_bool,
-                                                   default=None),
-                            default_desktop_notifications=REQ(validator=check_bool,
-                                                              default=None)):
-    # type: (HttpRequest, UserProfile, Optional[bool], Optional[bool]) -> HttpResponse
-
+def json_change_ui_settings(
+        request: HttpRequest, user_profile: UserProfile,
+        autoscroll_forever: Optional[bool]=REQ(validator=check_bool, default=None),
+        default_desktop_notifications: Optional[bool]=REQ(validator=check_bool, default=None)
+) -> HttpResponse:
     result = {}
 
     if autoscroll_forever is not None and \
@@ -78,13 +76,12 @@ def json_change_ui_settings(request, user_profile,
 
 @human_users_only
 @has_request_variables
-def json_change_settings(request, user_profile,
-                         full_name=REQ(default=""),
-                         email=REQ(default=""),
-                         old_password=REQ(default=""),
-                         new_password=REQ(default=""),
-                         confirm_password=REQ(default="")):
-    # type: (HttpRequest, UserProfile, Text, Text, Text, Text, Text) -> HttpResponse
+def json_change_settings(request: HttpRequest, user_profile: UserProfile,
+                         full_name: Text=REQ(default=""),
+                         email: Text=REQ(default=""),
+                         old_password: Text=REQ(default=""),
+                         new_password: Text=REQ(default=""),
+                         confirm_password: Text=REQ(default="")) -> HttpResponse:
     if not (full_name or new_password or email):
         return json_error(_("No new data supplied"))
 
@@ -171,30 +168,20 @@ def update_display_settings_backend(
 
 @human_users_only
 @has_request_variables
-def json_change_notify_settings(request, user_profile,
-                                enable_stream_desktop_notifications=REQ(validator=check_bool,
-                                                                        default=None),
-                                enable_stream_email_notifications=REQ(validator=check_bool,
-                                                                      default=None),
-                                enable_stream_push_notifications=REQ(validator=check_bool,
-                                                                     default=None),
-                                enable_stream_sounds=REQ(validator=check_bool,
-                                                         default=None),
-                                enable_desktop_notifications=REQ(validator=check_bool,
-                                                                 default=None),
-                                enable_sounds=REQ(validator=check_bool,
-                                                  default=None),
-                                enable_offline_email_notifications=REQ(validator=check_bool,
-                                                                       default=None),
-                                enable_offline_push_notifications=REQ(validator=check_bool,
-                                                                      default=None),
-                                enable_online_push_notifications=REQ(validator=check_bool,
-                                                                     default=None),
-                                enable_digest_emails=REQ(validator=check_bool,
-                                                         default=None),
-                                pm_content_in_desktop_notifications=REQ(validator=check_bool,
-                                                                        default=None)):
-    # type: (HttpRequest, UserProfile, Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool]) -> HttpResponse
+def json_change_notify_settings(
+        request: HttpRequest, user_profile: UserProfile,
+        enable_stream_desktop_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
+        enable_stream_email_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
+        enable_stream_push_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
+        enable_stream_sounds: Optional[bool]=REQ(validator=check_bool, default=None),
+        enable_desktop_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
+        enable_sounds: Optional[bool]=REQ(validator=check_bool, default=None),
+        enable_offline_email_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
+        enable_offline_push_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
+        enable_online_push_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
+        enable_digest_emails: Optional[bool]=REQ(validator=check_bool, default=None),
+        pm_content_in_desktop_notifications: Optional[bool]=REQ(validator=check_bool, default=None)
+) -> HttpResponse:
     result = {}
 
     # Stream notification settings.
@@ -246,8 +233,7 @@ def regenerate_api_key(request: HttpRequest, user_profile: UserProfile) -> HttpR
 
 @human_users_only
 @has_request_variables
-def change_enter_sends(request, user_profile,
-                       enter_sends=REQ(validator=check_bool)):
-    # type: (HttpRequest, UserProfile, bool) -> HttpResponse
+def change_enter_sends(request: HttpRequest, user_profile: UserProfile,
+                       enter_sends: bool=REQ(validator=check_bool)) -> HttpResponse:
     do_change_enter_sends(user_profile, enter_sends)
     return json_success()
