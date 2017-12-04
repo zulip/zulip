@@ -110,8 +110,7 @@ exports.initialize = function () {
                     invitee_emails.val(invitee_emails_errored.join('\n'));
                 } else { // Invitations not sent -- keep all emails in the list
                     var current_emails = invitee_emails.val().split(/\n|,/);
-                    invitee_emails.val(util.move_array_elements_to_front(current_emails, invitee_emails_errored)
-                        .join('\n'));
+                    invitee_emails.val(util.move_array_elements_to_front(current_emails, invitee_emails_errored).join('\n'));
                 }
 
             }

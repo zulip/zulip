@@ -10,7 +10,7 @@ function zephyr_stream_name_match(message, operand) {
         base_stream_name = m[1];
     }
     var related_regexp = new RegExp(/^(un)*/.source + util.escape_regexp(base_stream_name)
-        + /(\.d)*$/.source, 'i');
+        +/(\.d)*$/.source, 'i');
     return related_regexp.test(message.stream);
 }
 
