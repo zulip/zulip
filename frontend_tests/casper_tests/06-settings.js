@@ -305,8 +305,7 @@ casper.thenClick('a[data-code="en"]');
  * Changing the language back to English so that subsequent tests pass.
  */
 casper.waitUntilVisible('#display-settings-status', function () {
-    casper.test.assertSelectorHasText('#display-settings-status',
-        'English ist die neue Standardsprache!  Du musst das Fenster neu laden um die Änderungen anzuwenden');
+    casper.test.assertSelectorHasText('#display-settings-status', 'English ist die neue Standardsprache!  Du musst das Fenster neu laden um die Änderungen anzuwenden');
 });
 
 casper.thenOpen("http://zulip.zulipdev.com:9981/");
