@@ -38,8 +38,13 @@ exports.set_up_attachments = function () {
 
     var attachments = page_params.attachments;
     _.each(attachments, function (attachment) {
+<<<<<<< ee4fc0ed44726ab233a08d1393614f0f70e6367f
         var time = new XDate(attachment.create_time);
         attachment.create_time_str = timerender.render_now(time).time_str;
+=======
+
+        attachment.create_time_str = timerender.relative_date(attachment.create_time);
+>>>>>>> user settings: change 'Date uploaded' display format
         attachment.size_str = exports.bytes_to_size(attachment.size);
     });
 

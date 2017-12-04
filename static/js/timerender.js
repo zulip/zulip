@@ -8,6 +8,9 @@ var set_to_start_of_day = function (time) {
     return time.setMilliseconds(0).setSeconds(0).setMinutes(0).setHours(0);
 };
 
+var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+              "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
 // Given an XDate object 'time', returns an object:
 // {
 //      time_str:        a string for the current human-formatted version
@@ -214,9 +217,6 @@ exports.get_full_time = function (timestamp) {
 // this is for rendering absolute time based off the preferences for twenty-four
 // hour time in the format of "%mmm %d, %h:%m %p".
 exports.absolute_time = (function () {
-    var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
     var fmt_time = function (date, H_24) {
         var payload = {
             hours: date.getHours(),
@@ -253,6 +253,29 @@ exports.absolute_time = (function () {
         return str;
     };
 }());
+
+// this is for rendering date relative to current time
+// and should display "Today" or "Yesterday" if timestamp date is
+// today's or yesterday's, if not display the format "%mmm %d".
+exports.relative_date = function (timestamp, today) {
+    if (typeof today === 'undefined') {
+         today = new Date();
+    }
+    var date = new Date(timestamp);
+    var date_diff = today.getDate() - date.getDate();
+    if (date_diff === 0) {
+        return "Today";
+    } else if (date_diff === 1) {
+        return "Yesterday";
+    }
+    var is_older_year = (today.getFullYear() - date.getFullYear()) > 0;
+    var str = MONTHS[date.getMonth()] + " " + date.getDate();
+    // include year if message date is from a previous year
+    if (is_older_year) {
+        str += ", " + date.getFullYear();
+    }
+    return str;
+};
 
 // XDate.toLocaleDateString and XDate.toLocaleTimeString are
 // expensive, so we delay running the following code until we need
