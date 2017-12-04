@@ -23,6 +23,8 @@
 const jsdom = require('jsdom');
 const _ = require('underscore');
 
+const mdiff = require('./mdiff.js');
+
 // Module-level global instance of MarkdownComparer, initialized when needed
 let _markdownComparerInstance = null;
 
@@ -155,25 +157,28 @@ class MarkdownComparer {
     }
 }
 
+function returnComparer() {
+    if (!_markdownComparerInstance) {
+        _markdownComparerInstance = new MarkdownComparer((actual, expected) => {
+            return [
+                "Actual and expected output do not match.  Showing diff",
+                mdiff.diff_strings(actual, expected),
+            ].join('\n');
+        });
+    }
+    return _markdownComparerInstance;
+}
+
 module.exports = {
     equal(expected, actual, message) {
-        if (!_markdownComparerInstance) {
-            _markdownComparerInstance = new MarkdownComparer();
-        }
-        _markdownComparerInstance.assertEqual(actual, expected, message);
+        returnComparer().assertEqual(actual, expected, message);
     },
 
     notEqual(expected, actual, message) {
-        if (!_markdownComparerInstance) {
-            _markdownComparerInstance = new MarkdownComparer();
-        }
-        _markdownComparerInstance.assertNotEqual(actual, expected, message);
+        returnComparer().assertNotEqual(actual, expected, message);
     },
 
     setFormatter(output_formatter) {
-        if (!_markdownComparerInstance) {
-            _markdownComparerInstance = new MarkdownComparer();
-        }
-        _markdownComparerInstance.setFormatter(output_formatter);
+        returnComparer().setFormatter(output_formatter);
     },
 };
