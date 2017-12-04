@@ -527,7 +527,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = 'email'
     MAX_NAME_LENGTH = 100
-    MIN_NAME_LENGTH = 3
+    MIN_NAME_LENGTH = 2
     API_KEY_LENGTH = 32
     NAME_INVALID_CHARS = ['*', '`', '>', '"', '@']
 
