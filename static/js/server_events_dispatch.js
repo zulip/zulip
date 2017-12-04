@@ -328,7 +328,8 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         if (event.setting_name === 'emojiset') {
             var sprite = new Image();
             sprite.onload = function () {
-                $("#emoji-spritesheet").attr('href', "/static/generated/emoji/" + page_params.emojiset + "_sprite.css");
+                $("#emoji-spritesheet").attr('href', "/static/generated/emoji/"
+                    + page_params.emojiset + "_sprite.css");
                 if ($("#display-settings-status").length) {
                     loading.destroy_indicator($("#emojiset_spinner"));
                     $("#emojiset_select").val(page_params.emojiset);

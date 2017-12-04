@@ -64,19 +64,22 @@ stream_data.add_sub('Frontend', frontend);
     // Test desktop notifications
     stream_events.update_property(1, 'desktop_notifications', true);
     assert.equal(frontend.desktop_notifications, true);
-    var checkbox = $(".subscription_settings[data-stream-id='1'] #sub_desktop_notifications_setting .sub_setting_control");
+    var checkbox = $(".subscription_settings[data-stream-id='1'] " +
+        "#sub_desktop_notifications_setting .sub_setting_control");
     assert.equal(checkbox.prop('checked'), true);
 
     // Tests audible notifications
     stream_events.update_property(1, 'audible_notifications', true);
     assert.equal(frontend.audible_notifications, true);
-    checkbox = $(".subscription_settings[data-stream-id='1'] #sub_audible_notifications_setting .sub_setting_control");
+    checkbox = $(".subscription_settings[data-stream-id='1'] " +
+        "#sub_audible_notifications_setting .sub_setting_control");
     assert.equal(checkbox.prop('checked'), true);
 
     // Tests push notifications
     stream_events.update_property(1, 'push_notifications', true);
     assert.equal(frontend.push_notifications, true);
-    checkbox = $(".subscription_settings[data-stream-id='1'] #sub_push_notifications_setting .sub_setting_control");
+    checkbox = $(".subscription_settings[data-stream-id='1'] " +
+        "#sub_push_notifications_setting .sub_setting_control");
     assert.equal(checkbox.prop('checked'), true);
 
     // Test name change

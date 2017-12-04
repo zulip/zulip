@@ -60,14 +60,16 @@ casper.then(function () {
 
 
     casper.waitUntilVisible('#admin_deactivated_users_table .user_row[data-email="cordelia@zulip.com"] .reactivate', function () {
-        casper.test.assertSelectorHasText('#admin_deactivated_users_table .user_row[data-email="cordelia@zulip.com"]', 'Reactivate');
+        casper.test.assertSelectorHasText('#admin_deactivated_users_table .user_row[data-email="cordelia@zulip.com"]',
+            'Reactivate');
         casper.click('#admin_deactivated_users_table .user_row[data-email="cordelia@zulip.com"] .reactivate');
     });
 });
 
 casper.then(function () {
     casper.waitUntilVisible('#admin_deactivated_users_table .user_row[data-email="cordelia@zulip.com"] button:not(.reactivate)', function () {
-        casper.test.assertSelectorHasText('#admin_deactivated_users_table .user_row[data-email="cordelia@zulip.com"]', 'Deactivate');
+        casper.test.assertSelectorHasText('#admin_deactivated_users_table .user_row[data-email="cordelia@zulip.com"]',
+            'Deactivate');
     });
 });
 

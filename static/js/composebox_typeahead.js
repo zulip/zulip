@@ -89,7 +89,8 @@ function handle_keydown(e) {
     var code = e.keyCode || e.which;
 
     if (code === 13 || (code === 9 && !e.shiftKey)) { // Enter key or tab key
-        if (e.target.id === "stream" || e.target.id === "subject" || e.target.id === "private_message_recipient") {
+        if (e.target.id === "stream" || e.target.id === "subject"
+            || e.target.id === "private_message_recipient") {
             // For enter, prevent the form from submitting
             // For tab, prevent the focus from changing again
             e.preventDefault();

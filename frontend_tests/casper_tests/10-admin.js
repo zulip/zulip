@@ -96,7 +96,8 @@ casper.then(function () {
         casper.test.assertSelectorHasText('#admin-realm-create-stream-by-admins-only-status',
                                           'Only administrators may now create new streams!');
         casper.test.assertEval(function () {
-            return document.querySelector('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]').checked;
+            return document.
+            querySelector('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]').checked;
         }, 'Prevent users from creating streams Setting activated');
     });
 });
@@ -123,9 +124,11 @@ casper.waitUntilVisible('#id_realm_create_stream_by_admins_only + span', functio
 
 casper.then(function () {
     casper.waitUntilVisible('#admin-realm-create-stream-by-admins-only-status', function () {
-        casper.test.assertSelectorHasText('#admin-realm-create-stream-by-admins-only-status', 'Any user may now create new streams!');
+        casper.test.assertSelectorHasText('#admin-realm-create-stream-by-admins-only-status',
+            'Any user may now create new streams!');
         casper.test.assertEval(function () {
-            return !(document.querySelector('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]').checked);
+            return !(document.
+            querySelector('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]').checked);
         }, 'Prevent users from creating streams Setting deactivated');
     });
 });
@@ -206,7 +209,8 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible('div#admin-filter-pattern-status', function () {
-        casper.test.assertSelectorHasText('div#admin-filter-pattern-status', 'Failed: Invalid filter pattern, you must use the following format OPTIONAL_PREFIX(?P<id>.+)');
+        casper.test.assertSelectorHasText('div#admin-filter-pattern-status',
+            'Failed: Invalid filter pattern, you must use the following format OPTIONAL_PREFIX(?P<id>.+)');
     });
 });
 
@@ -337,7 +341,8 @@ casper.then(function () {
     this.scrollToBottom();
     // Test setting was activated
     casper.waitUntilVisible('#admin-realm-authentication-methods-status', function () {
-        casper.test.assertSelectorHasText('#admin-realm-authentication-methods-status', 'Authentication methods saved!');
+        casper.test.assertSelectorHasText('#admin-realm-authentication-methods-status',
+            'Authentication methods saved!');
         casper.test.assertEval(function () {
             return !(document.querySelector(".method_row[data-method='Email'] input[type='checkbox']").checked);
         });
@@ -364,7 +369,8 @@ casper.then(function () {
     casper.click(".method_row[data-method='Email'] input[type='checkbox'] + span");
     submit_org_authentication_change();
     casper.waitUntilVisible('#admin-realm-authentication-methods-status', function () {
-        casper.test.assertSelectorHasText('#admin-realm-authentication-methods-status', 'Authentication methods saved!');
+        casper.test.assertSelectorHasText('#admin-realm-authentication-methods-status',
+            'Authentication methods saved!');
         casper.test.assertEval(function () {
             return document.querySelector(".method_row[data-method='Email'] input[type='checkbox']").checked;
         });

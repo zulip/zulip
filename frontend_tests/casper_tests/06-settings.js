@@ -75,7 +75,8 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible('#show_api_key_box', function () {
-        casper.test.assertMatch(casper.fetchText('#api_key_value'), /[a-zA-Z0-9]{32}/, "Looks like an API key");
+        casper.test.assertMatch(casper.fetchText('#api_key_value'), /[a-zA-Z0-9]{32}/,
+            "Looks like an API key");
 
         /*
         // Change it all back so the next test can still log in
@@ -304,7 +305,8 @@ casper.thenClick('a[data-code="en"]');
  * Changing the language back to English so that subsequent tests pass.
  */
 casper.waitUntilVisible('#display-settings-status', function () {
-    casper.test.assertSelectorHasText('#display-settings-status', 'English ist die neue Standardsprache!  Du musst das Fenster neu laden um die Änderungen anzuwenden');
+    casper.test.assertSelectorHasText('#display-settings-status',
+        'English ist die neue Standardsprache!  Du musst das Fenster neu laden um die Änderungen anzuwenden');
 });
 
 casper.thenOpen("http://zulip.zulipdev.com:9981/");

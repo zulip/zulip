@@ -112,7 +112,8 @@ stream_data.add_sub('social', social);
 // works properly before markdown is initialized.
 (function test_fenced_block_defaults() {
     var input = '\n```\nfenced code\n```\n\nand then after\n';
-    var expected = '\n\n<div class="codehilite"><pre><span></span>fenced code\n</pre></div>\n\n\n\nand then after\n\n';
+    var expected = '\n\n<div class="codehilite"><pre><span></span>' +
+        'fenced code\n</pre></div>\n\n\n\nand then after\n\n';
     var output = fenced_code.process_fenced_code(input);
     assert.equal(output, expected);
 }());
@@ -237,7 +238,8 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
         {input: 'This is a #**Denmark** stream link',
          expected: '<p>This is a <a class="stream" data-stream-id="1" href="http://zulip.zulipdev.com/#narrow/stream/Denmark">#Denmark</a> stream link</p>'},
         {input: 'This is #**Denmark** and #**social** stream links',
-         expected: '<p>This is <a class="stream" data-stream-id="1" href="http://zulip.zulipdev.com/#narrow/stream/Denmark">#Denmark</a> and <a class="stream" data-stream-id="2" href="http://zulip.zulipdev.com/#narrow/stream/social">#social</a> stream links</p>'},
+         expected: '<p>This is <a class="stream" data-stream-id="1" href="http://zulip.zulipdev.com/#narrow/stream/Denmark">#Denmark</a> and ' +
+         '<a class="stream" data-stream-id="2" href="http://zulip.zulipdev.com/#narrow/stream/social">#social</a> stream links</p>'},
         {input: 'And this is a #**wrong** stream link',
          expected: '<p>And this is a #**wrong** stream link</p>'},
         {input: 'mmm...:burrito:s',
@@ -252,17 +254,21 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
         // `contains_backend_only_syntax()`. Those which return True
         // are tested separately.
         {input: 'This is a realm filter #1234 with text after it',
-         expected: '<p>This is a realm filter <a href="https://trac.zulip.net/ticket/1234" target="_blank" title="https://trac.zulip.net/ticket/1234">#1234</a> with text after it</p>'},
+         expected: '<p>This is a realm filter <a href="https://trac.zulip.net/ticket/1234" target="_blank" ' +
+         'title="https://trac.zulip.net/ticket/1234">#1234</a> with text after it</p>'},
         {input: '#1234is not a realm filter.',
          expected: '<p>#1234is not a realm filter.</p>'},
         {input: 'A pattern written as #1234is not a realm filter.',
          expected: '<p>A pattern written as #1234is not a realm filter.</p>'},
         {input: 'This is a realm filter with ZGROUP_123:45 groups',
-         expected: '<p>This is a realm filter with <a href="https://zone_45.zulip.net/ticket/123" target="_blank" title="https://zone_45.zulip.net/ticket/123">ZGROUP_123:45</a> groups</p>'},
+         expected: '<p>This is a realm filter with <a href="https://zone_45.zulip.net/ticket/123" target="_blank" ' +
+         'title="https://zone_45.zulip.net/ticket/123">ZGROUP_123:45</a> groups</p>'},
         {input: 'This is an !avatar(cordelia@zulip.com) of Cordelia Lear',
-         expected: '<p>This is an <img alt="cordelia@zulip.com" class="message_body_gravatar" src="/avatar/cordelia@zulip.com?s=30" title="cordelia@zulip.com"> of Cordelia Lear</p>'},
+         expected: '<p>This is an <img alt="cordelia@zulip.com" class="message_body_gravatar" src="/avatar/cordelia@zulip.com?s=30" ' +
+         'title="cordelia@zulip.com"> of Cordelia Lear</p>'},
         {input: 'This is a !gravatar(cordelia@zulip.com) of Cordelia Lear',
-         expected: '<p>This is a <img alt="cordelia@zulip.com" class="message_body_gravatar" src="/avatar/cordelia@zulip.com?s=30" title="cordelia@zulip.com"> of Cordelia Lear</p>'},
+         expected: '<p>This is a <img alt="cordelia@zulip.com" class="message_body_gravatar" src="/avatar/cordelia@zulip.com?s=30" ' +
+         'title="cordelia@zulip.com"> of Cordelia Lear</p>'},
         {input: 'Test *italic*',
          expected: '<p>Test <em>italic</em></p>'},
         {input: 'T\n#**Denmark**',

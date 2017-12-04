@@ -57,8 +57,10 @@ $(function () {
                                "margin-right": (250 + sbWidth) + "px"});
     $("#compose-container").css("max-width", (1400 + sbWidth) + "px");
 
-    $("head").append("<style> @media (max-width: 975px) { .compose-content, .header-main .column-middle { margin-right: " + (7 + sbWidth) + "px !important; } } " +
-                     "@media (max-width: 775px) { .fixed-app .column-middle { margin-left: " + (7 + sbWidth) + "px !important; } } " +
+    $("head").append("<style> @media (max-width: 975px) { .compose-content, " +
+        ".header-main .column-middle { margin-right: " + (7 + sbWidth) + "px !important; } } " +
+                     "@media (max-width: 775px) { .fixed-app .column-middle { margin-left: "
+        + (7 + sbWidth) + "px !important; } } " +
                      "</style>");
    }
 

@@ -86,7 +86,8 @@ casper.then(function () {
 casper.then(function () {
     casper.waitForSelector('#settings_overlay_container.show', function () {
         casper.test.info('Organization page is active');
-        casper.test.assertUrlMatch(/^http:\/\/[^/]+\/#organization/, 'URL suggests we are on organization page');
+        casper.test.assertUrlMatch(/^http:\/\/[^/]+\/#organization/,
+            'URL suggests we are on organization page');
     });
 });
 
@@ -101,7 +102,8 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
-        casper.test.assertSelectorHasText('#admin-realm-message-editing-status', 'Users can no longer edit their past messages!');
+        casper.test.assertSelectorHasText('#admin-realm-message-editing-status',
+            'Users can no longer edit their past messages!');
         casper.test.assertEval(function () {
             return !(document.querySelector('input[type="checkbox"][id="id_realm_allow_message_editing"]').checked);
         }, 'Allow message editing Setting de-activated');
@@ -183,7 +185,8 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
-        casper.test.assertSelectorHasText('#admin-realm-message-editing-status', 'Users can now edit topics for all their messages, and the content of messages which are less than 10 minutes old.');
+        casper.test.assertSelectorHasText('#admin-realm-message-editing-status',
+            'Users can now edit topics for all their messages, and the content of messages which are less than 10 minutes old.');
         casper.test.assertEval(function () {
             return document.querySelector('input[type="checkbox"][id="id_realm_allow_message_editing"]').checked;
         }, 'Allow message editing Setting re-activated');
@@ -270,7 +273,8 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
-        casper.test.assertSelectorHasText('#admin-realm-message-editing-status', 'Users can now edit topics for all their messages, and the content of messages which are less than 4 minutes old.');
+        casper.test.assertSelectorHasText('#admin-realm-message-editing-status',
+            'Users can now edit topics for all their messages, and the content of messages which are less than 4 minutes old.');
         casper.test.assertEval(function () {
             return document.querySelector('input[type="checkbox"][id="id_realm_allow_message_editing"]').checked;
         }, 'Allow message editing Setting activated');
@@ -292,7 +296,8 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
-        casper.test.assertSelectorHasText('#admin-realm-message-editing-status', 'Users can now edit the content and topics of all their past messages!');
+        casper.test.assertSelectorHasText('#admin-realm-message-editing-status',
+            'Users can now edit the content and topics of all their past messages!');
         casper.test.assertEval(function () {
             return document.querySelector('input[type="checkbox"][id="id_realm_allow_message_editing"]').checked;
         }, 'Allow message editing Setting still activated');

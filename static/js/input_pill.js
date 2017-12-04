@@ -91,7 +91,8 @@ var input_pill = function ($parent) {
         // the jQuery element representation of the data.
         createPillElement: function (payload) {
             store.lastUpdated = new Date();
-            payload.$element = $("<div class='pill' data-id='" + payload.id + "' tabindex=0>" + payload.value + "<div class='exit'>&times;</div></div>");
+            payload.$element = $("<div class='pill' data-id='" + payload.id
+                + "' tabindex=0>" + payload.value + "<div class='exit'>&times;</div></div>");
             return payload.$element;
         },
 

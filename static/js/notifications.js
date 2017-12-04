@@ -346,7 +346,8 @@ function process_notification(notification) {
             delete notice_memory[key];
         };
         notification_object.show();
-    } else if (notification.webkit_notify === false && typeof Notification !== "undefined" && /mozilla/i.test(navigator.userAgent) === true) {
+    } else if (notification.webkit_notify === false && typeof Notification !== "undefined"
+        && /mozilla/i.test(navigator.userAgent) === true) {
         Notification.requestPermission(function (perm) {
             if (perm === 'granted') {
                 notification_object = new Notification(title, {

@@ -415,17 +415,20 @@ global.user_groups.add(backend);
         // corresponding parts in bold.
         options.query = 'oth';
         actual_value = options.highlighter(othello);
-        expected_value = '<strong>Othello, the Moor of Venice</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">othello@zulip.com</small>';
+        expected_value = '<strong>Othello, the Moor of Venice</strong>&nbsp;&nbsp;\n' +
+            '<small class="autocomplete_secondary">othello@zulip.com</small>';
         assert.equal(actual_value, expected_value);
 
         options.query = 'Lear';
         actual_value = options.highlighter(cordelia);
-        expected_value = '<strong>Cordelia Lear</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">cordelia@zulip.com</small>';
+        expected_value = '<strong>Cordelia Lear</strong>&nbsp;&nbsp;\n' +
+            '<small class="autocomplete_secondary">cordelia@zulip.com</small>';
         assert.equal(actual_value, expected_value);
 
         options.query = 'othello@zulip.com, co';
         actual_value = options.highlighter(cordelia);
-        expected_value = '<strong>Cordelia Lear</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">cordelia@zulip.com</small>';
+        expected_value = '<strong>Cordelia Lear</strong>&nbsp;&nbsp;\n' +
+            '<small class="autocomplete_secondary">cordelia@zulip.com</small>';
         assert.equal(actual_value, expected_value);
 
         // options.matcher()
@@ -537,12 +540,14 @@ global.user_groups.add(backend);
         // content_highlighter.
         fake_this = { completing: 'mention', token: 'othello' };
         actual_value = options.highlighter.call(fake_this, othello);
-        expected_value = '<strong>Othello, the Moor of Venice</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">othello@zulip.com</small>';
+        expected_value = '<strong>Othello, the Moor of Venice</strong>&nbsp;&nbsp;\n' +
+            '<small class="autocomplete_secondary">othello@zulip.com</small>';
         assert.equal(actual_value, expected_value);
 
         fake_this = { completing: 'mention', token: 'hamletcharacters' };
         actual_value = options.highlighter.call(fake_this, hamletcharacters);
-        expected_value = '<strong>hamletcharacters</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">Characters of Hamlet</small>';
+        expected_value = '<strong>hamletcharacters</strong>&nbsp;&nbsp;\n' +
+            '<small class="autocomplete_secondary">Characters of Hamlet</small>';
         assert.equal(actual_value, expected_value);
 
         // options.matcher()
