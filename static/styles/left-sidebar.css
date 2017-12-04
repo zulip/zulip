@@ -53,6 +53,10 @@
     font-weight: normal;
 }
 
+.left-sidebar li a:hover {
+    text-decoration: none;
+}
+
 #stream_filters li {
     padding: 1px 0px;
 }
@@ -145,14 +149,6 @@ li.hidden-filter {
 #global_filters .global-filter {
     position: relative;
     padding: 1px 10px;
-}
-
-#global_filters .global-filter a:hover {
-    text-decoration: none;
-}
-
-#global_filters .global-filter:hover .hover-underline {
-    text-decoration: underline;
 }
 
 .left-sidebar li {
