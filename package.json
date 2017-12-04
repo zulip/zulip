@@ -9,6 +9,7 @@
     "@types/webpack": "3.0.13",
     "blueimp-md5": "2.10.0",
     "clipboard": "1.5.16",
+    "difflib": "0.2.4",
     "emoji-datasource": "3.0.0",
     "emoji-datasource-apple": "3.0.0",
     "emoji-datasource-emojione": "3.0.0",
