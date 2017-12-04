@@ -22,6 +22,7 @@ from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 from zerver.lib.test_runner import slow
+from zerver.lib import mdiff
 from zerver.models import (
     realm_in_local_realm_filters_cache,
     flush_per_request_caches,
@@ -165,6 +166,12 @@ def bugdown_convert(text: Text) -> Text:
     return bugdown.convert(text, message_realm=get_realm('zulip'))
 
 class BugdownMiscTest(ZulipTestCase):
+    def test_diffs_work_as_expected(self) -> None:
+        str1 = "<p>The quick brown fox jumps over the lazy dog.  Animal stories are fun, yeah</p>"
+        str2 = "<p>The fast fox jumps over the lazy dogs and cats.  Animal stories are fun</p>"
+        expected_diff = "\u001b[34m-\u001b[0m <p>The \u001b[33mquick brown\u001b[0m fox jumps over the lazy dog.  Animal stories are fun\u001b[31m, yeah\u001b[0m</p>\n\u001b[34m+\u001b[0m <p>The \u001b[33mfast\u001b[0m fox jumps over the lazy dog\u001b[32ms and cats\u001b[0m.  Animal stories are fun</p>\n"
+        self.assertEqual(mdiff.diff_strings(str1, str2), expected_diff)
+
     def test_get_full_name_info(self) -> None:
         realm = get_realm('zulip')
 
@@ -207,6 +214,14 @@ class BugdownMiscTest(ZulipTestCase):
         self.assertEqual(user['email'], hamlet.email)
 
 class BugdownTest(ZulipTestCase):
+    def assertEqual(self, first: Any, second: Any, msg: Text = "") -> None:
+        if isinstance(first, Text) and isinstance(second, Text):
+            if first != second:
+                raise AssertionError("Actual and expected outputs do not match; showing diff.\n" +
+                                     mdiff.diff_strings(first, second) + msg)
+        else:
+            super().assertEqual(first, second)
+
     def load_bugdown_tests(self) -> Tuple[Dict[Text, Any], List[List[Text]]]:
         test_fixtures = {}
         data_file = open(os.path.join(os.path.dirname(__file__), '../fixtures/markdown_test_cases.json'), 'r')
