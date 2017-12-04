@@ -53,6 +53,10 @@
     font-weight: normal;
 }
 
+.left-sidebar li {
+    margin: 1px 0px;
+}
+
 .left-sidebar li a:hover {
     text-decoration: none;
 }
