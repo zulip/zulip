@@ -23,11 +23,16 @@
 const jsdom = require('jsdom');
 const _ = require('underscore');
 
+<<<<<<< 52aff4cade3119c91a7cf42cbeed3d173f36758a
 <<<<<<< 5969d4eb79f6dd82adbad3a42f387b79e3a234fb
 const mdiff = require('./mdiff.js');
 
 =======
 >>>>>>> node tests: Compare markdown using semantic equivalence.
+=======
+const mdiff = require('./mdiff.js');
+
+>>>>>>> node tests: Add nice diffs to js markdown tests.
 // Module-level global instance of MarkdownComparer, initialized when needed
 let _markdownComparerInstance = null;
 
@@ -160,7 +165,10 @@ class MarkdownComparer {
     }
 }
 
+<<<<<<< 52aff4cade3119c91a7cf42cbeed3d173f36758a
 <<<<<<< 5969d4eb79f6dd82adbad3a42f387b79e3a234fb
+=======
+>>>>>>> node tests: Add nice diffs to js markdown tests.
 function returnComparer() {
     if (!_markdownComparerInstance) {
         _markdownComparerInstance = new MarkdownComparer((actual, expected) => {
@@ -173,6 +181,7 @@ function returnComparer() {
     return _markdownComparerInstance;
 }
 
+<<<<<<< 52aff4cade3119c91a7cf42cbeed3d173f36758a
 module.exports = {
     equal(expected, actual, message) {
         returnComparer().assertEqual(actual, expected, message);
@@ -185,26 +194,26 @@ module.exports = {
     setFormatter(output_formatter) {
         returnComparer().setFormatter(output_formatter);
 =======
+=======
+>>>>>>> node tests: Add nice diffs to js markdown tests.
 module.exports = {
     equal(expected, actual, message) {
-        if (!_markdownComparerInstance) {
-            _markdownComparerInstance = new MarkdownComparer();
-        }
-        _markdownComparerInstance.assertEqual(actual, expected, message);
+        returnComparer().assertEqual(actual, expected, message);
     },
 
     notEqual(expected, actual, message) {
-        if (!_markdownComparerInstance) {
-            _markdownComparerInstance = new MarkdownComparer();
-        }
-        _markdownComparerInstance.assertNotEqual(actual, expected, message);
+        returnComparer().assertNotEqual(actual, expected, message);
     },
 
     setFormatter(output_formatter) {
+<<<<<<< 52aff4cade3119c91a7cf42cbeed3d173f36758a
         if (!_markdownComparerInstance) {
             _markdownComparerInstance = new MarkdownComparer();
         }
         _markdownComparerInstance.setFormatter(output_formatter);
 >>>>>>> node tests: Compare markdown using semantic equivalence.
+=======
+        returnComparer().setFormatter(output_formatter);
+>>>>>>> node tests: Add nice diffs to js markdown tests.
     },
 };
