@@ -25,10 +25,17 @@ exports.bytes_to_size = function (bytes, kb_with_1024_bytes) {
     if (bytes === 0) {
         return '0 B';
     }
+<<<<<<< 0d9d10853a726e617244793cc00969d220e16b26
     var i = parseInt(Math.floor(Math.log(bytes) / Math.log(kb_size)), 10);
     var size = Math.round(bytes / Math.pow(kb_size, i));
     if ((i > 0) && (size < 10)) {
         size = Math.round((bytes / Math.pow(kb_size, i)) * 10) / 10;
+=======
+    var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1000)), 10);
+    var size = Math.round(bytes / Math.pow(1000, i), 2);
+    if ((i > 0) && (size < 10)) {
+        size = '0' + size;
+>>>>>>> user settings: Change file size display format
     }
     return size + ' ' + sizes[i];
  };
