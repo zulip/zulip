@@ -441,6 +441,16 @@ input[type=checkbox].inline-block {
     padding: 1px 4px 1px 2px;
 }
 
+#attachments-settings table th,
+#attachments-settings table td {
+    text-align: center;
+}
+
+#attachments-settings table td.file-name,
+#attachments-settings table td.date-uploaded {
+    text-align: left;
+}
+
 #attachments-settings table th.upload-size,
 #attachments-settings table td.upload-size {
     width: 50px;
@@ -449,6 +459,11 @@ input[type=checkbox].inline-block {
 #attachments-settings table th.upload-actions,
 #attachments-settings table td.upload-actions {
     width: 75px;
+}
+
+#download_attachment {
+    padding-left: 0px;
+    border-left: 0px;
 }
 
 .grey-bg {
