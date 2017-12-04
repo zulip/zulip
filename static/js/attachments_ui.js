@@ -21,8 +21,12 @@ exports.bytes_to_size = function (bytes) {
     if (bytes === 0) {
         return '0 B';
     }
-    var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)), 10);
-    return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
+    var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1000)), 10);
+    var size = Math.round(bytes / Math.pow(1000, i), 2);
+    if ((i > 0) && (size < 10)) {
+        size = '0' + size;
+    }
+    return size + ' ' + sizes[i];
  };
 
 exports.set_up_attachments = function () {
