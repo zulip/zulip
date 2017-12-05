@@ -1726,6 +1726,7 @@ class AbstractScheduledJob(models.Model):
     scheduled_timestamp = models.DateTimeField(db_index=True)  # type: datetime.datetime
     # JSON representation of arguments to consumer
     data = models.TextField()  # type: Text
+    realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
 
     class Meta:
         abstract = True

@@ -4,7 +4,7 @@ from django.template import loader
 from django.utils.timezone import now as timezone_now
 from django.template.exceptions import TemplateDoesNotExist
 from zerver.models import UserProfile, ScheduledEmail, get_user_profile_by_id, \
-    EMAIL_TYPES
+    EMAIL_TYPES, Realm
 
 import datetime
 from email.utils import parseaddr, formataddr
@@ -98,9 +98,9 @@ def send_email(template_prefix, to_user_id=None, to_email=None, from_name=None,
 def send_email_from_dict(email_dict: Mapping[str, Any]) -> None:
     send_email(**dict(email_dict))
 
-def send_future_email(template_prefix, to_user_id=None, to_email=None, from_name=None,
+def send_future_email(template_prefix, realm, to_user_id=None, to_email=None, from_name=None,
                       from_address=None, context={}, delay=datetime.timedelta(0)):
-    # type: (str, Optional[int], Optional[Text], Optional[Text], Optional[Text], Dict[str, Any], datetime.timedelta) -> None
+    # type: (str, Realm, Optional[int], Optional[Text], Optional[Text], Optional[Text], Dict[str, Any], datetime.timedelta) -> None
     template_name = template_prefix.split('/')[-1]
     email_fields = {'template_prefix': template_prefix, 'to_user_id': to_user_id, 'to_email': to_email,
                     'from_name': from_name, 'from_address': from_address, 'context': context}
@@ -112,6 +112,9 @@ def send_future_email(template_prefix, to_user_id=None, to_email=None, from_name
 
     assert (to_user_id is None) ^ (to_email is None)
     if to_user_id is not None:
+        # The realm is redundant if we have a to_user_id; this assert just
+        # expresses that fact
+        assert(UserProfile.objects.filter(id=to_user_id, realm=realm).exists())
         to_field = {'user_id': to_user_id}  # type: Dict[str, Any]
     else:
         to_field = {'address': parseaddr(to_email)[1]}
@@ -119,5 +122,6 @@ def send_future_email(template_prefix, to_user_id=None, to_email=None, from_name
     ScheduledEmail.objects.create(
         type=EMAIL_TYPES[template_name],
         scheduled_timestamp=timezone_now() + delay,
+        realm=realm,
         data=ujson.dumps(email_fields),
         **to_field)

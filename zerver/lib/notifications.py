@@ -453,10 +453,10 @@ def enqueue_welcome_emails(user: UserProfile) -> None:
         'is_realm_admin': user.is_realm_admin,
     })
     send_future_email(
-        "zerver/emails/followup_day1", to_user_id=user.id, from_name=from_name,
+        "zerver/emails/followup_day1", user.realm, to_user_id=user.id, from_name=from_name,
         from_address=from_address, context=context)
     send_future_email(
-        "zerver/emails/followup_day2", to_user_id=user.id, from_name=from_name,
+        "zerver/emails/followup_day2", user.realm, to_user_id=user.id, from_name=from_name,
         from_address=from_address, context=context, delay=datetime.timedelta(days=1))
 
 def convert_html_to_markdown(html: Text) -> Text:
