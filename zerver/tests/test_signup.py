@@ -680,8 +680,8 @@ earl-test@zulip.com""", ["Denmark"]))
                                  [str(i) for i in range(get_realm("zulip").max_invites - 1)]),
                               "stream": ["Denmark"],
                               "custom_body": ''}),
-            "You do not have enough remaining invites; "
-            "try again with fewer emails, or contact zulip-admin@example.com. "
+            "You do not have enough remaining invites. "
+            "Please contact zulip-admin@example.com to have your limit raised. "
             "No invitations were sent.")
 
     def test_missing_or_invalid_params(self) -> None:

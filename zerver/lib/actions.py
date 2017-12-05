@@ -3935,8 +3935,8 @@ def check_invite_limit(user: UserProfile, num_invitees: int) -> None:
             type=Confirmation.INVITATION).count()
         if num_invitees + sent_invites > user.realm.max_invites:
             raise InvitationError(
-                _("You do not have enough remaining invites; "
-                  "try again with fewer emails, or contact %s. "
+                _("You do not have enough remaining invites. "
+                  "Please contact %s to have your limit raised. "
                   "No invitations were sent." % (settings.ZULIP_ADMINISTRATOR)),
                 [], sent_invitations=False)
 
@@ -4040,6 +4040,8 @@ def do_resend_user_invite_email(invite_id: int, realm_id: int) -> str:
 
     if (prereg_user.referred_by.realm_id != realm_id):
         raise JsonableError(_("Invalid invitation ID."))
+
+    check_invite_limit(prereg_user.referred_by, 1)
 
     prereg_user.invited_at = timezone_now()
     prereg_user.save()
