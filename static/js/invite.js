@@ -70,8 +70,7 @@ exports.initialize = function () {
         },
         success: function () {
             $('#submit-invitation').button('reset');
-            invite_status.text(i18n.t('User invited successfully.',
-                                      {count: (invitee_emails.val().match(/@/g) || []).length}))
+            invite_status.text(i18n.t('User(s) invited successfully.'))
                           .addClass('alert-success')
                           .show();
             invitee_emails.val('');
