@@ -74,12 +74,28 @@ def get_user_invites(request: HttpRequest, user_profile: UserProfile) -> HttpRes
 @has_request_variables
 def revoke_user_invite(request: HttpRequest, user_profile: UserProfile,
                        prereg_id: int) -> HttpResponse:
-    do_revoke_user_invite(prereg_id, user_profile.realm_id)
+    try:
+        prereg_user = PreregistrationUser.objects.get(id=prereg_id)
+    except PreregistrationUser.DoesNotExist:
+        raise JsonableError(_("Invalid invitation ID."))
+
+    if prereg_user.referred_by.realm != user_profile.realm:
+        raise JsonableError(_("Invalid invitation ID."))
+
+    do_revoke_user_invite(prereg_user)
     return json_success()
 
 @require_realm_admin
 @has_request_variables
 def resend_user_invite_email(request: HttpRequest, user_profile: UserProfile,
                              prereg_id: int) -> HttpResponse:
-    timestamp = do_resend_user_invite_email(prereg_id, user_profile.realm_id)
+    try:
+        prereg_user = PreregistrationUser.objects.get(id=prereg_id)
+    except PreregistrationUser.DoesNotExist:
+        raise JsonableError(_("Invalid invitation ID."))
+
+    if (prereg_user.referred_by.realm != user_profile.realm):
+        raise JsonableError(_("Invalid invitation ID."))
+
+    timestamp = do_resend_user_invite_email(prereg_user)
     return json_success({'timestamp': timestamp})

@@ -4011,15 +4011,7 @@ def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
 
     return invites
 
-def do_revoke_user_invite(invite_id: int, realm_id: int) -> None:
-    try:
-        prereg_user = PreregistrationUser.objects.get(id=invite_id)
-    except PreregistrationUser.DoesNotExist:
-        raise JsonableError(_("Invalid invitation ID."))
-
-    if prereg_user.referred_by.realm_id != realm_id:
-        raise JsonableError(_("Invalid invitation ID."))
-
+def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
     email = prereg_user.email
 
     # Delete both the confirmation objects and the prereg_user object.
@@ -4032,15 +4024,7 @@ def do_revoke_user_invite(invite_id: int, realm_id: int) -> None:
     prereg_user.delete()
     clear_scheduled_invitation_emails(email)
 
-def do_resend_user_invite_email(invite_id: int, realm_id: int) -> str:
-    try:
-        prereg_user = PreregistrationUser.objects.get(id=invite_id)
-    except PreregistrationUser.DoesNotExist:
-        raise JsonableError(_("Invalid invitation ID."))
-
-    if (prereg_user.referred_by.realm_id != realm_id):
-        raise JsonableError(_("Invalid invitation ID."))
-
+def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> str:
     check_invite_limit(prereg_user.referred_by, 1)
 
     prereg_user.invited_at = timezone_now()
