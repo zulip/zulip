@@ -133,7 +133,9 @@ var list_render = (function () {
 
                     if (opts.filter && opts.filter.element) {
                         var value = $(opts.filter.element).val().toLocaleLowerCase();
-                        meta.filter_list(value, opts.filter.callback);
+                        if (value.length > 0) {
+                            meta.filter_list(value, opts.filter.callback);
+                        }
                     }
 
                     prototype.clear();
