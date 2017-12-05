@@ -582,6 +582,10 @@ def do_deactivate_realm(realm: Realm) -> None:
     realm.deactivated = True
     realm.save(update_fields=["deactivated"])
 
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=realm, event_type='realm_deactivated', event_time=event_time)
+
     ScheduledEmail.objects.filter(realm=realm).delete()
     for user in active_humans_in_realm(realm):
         # Don't deactivate the users, but do delete their sessions so they get
@@ -592,6 +596,10 @@ def do_deactivate_realm(realm: Realm) -> None:
 def do_reactivate_realm(realm: Realm) -> None:
     realm.deactivated = False
     realm.save(update_fields=["deactivated"])
+
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=realm, event_type='realm_reactivated', event_time=event_time)
 
 def do_deactivate_user(user_profile: UserProfile,
                        acting_user: Optional[UserProfile]=None,
