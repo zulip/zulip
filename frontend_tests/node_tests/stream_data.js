@@ -461,3 +461,25 @@ zrequire('stream_data');
     assert(stream_data.receives_audible_notifications('India'));
     assert(!stream_data.receives_audible_notifications('Indiana'));
 }());
+
+(function test_in_home_view() {
+  var tony = {
+    stream_id: 999,
+    name: 'tony',
+    subscribed: true,
+    in_home_view: true,
+  };
+
+  var jazy = {
+    stream_id: 500,
+    name: 'jazy',
+    subscribed: false,
+    in_home_view: false,
+  };
+
+  stream_data.add_sub('tony', tony);
+  stream_data.add_sub('jazy', jazy);
+  assert(stream_data.name_in_home_view('tony'));
+  assert(!stream_data.name_in_home_view('jazy'));
+  assert(!stream_data.name_in_home_view('EEXISTS'));
+}());
