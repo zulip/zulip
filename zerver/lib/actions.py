@@ -3926,24 +3926,27 @@ class InvitationError(JsonableError):
         self.errors = errors  # type: List[Tuple[Text, str]]
         self.sent_invitations = sent_invitations  # type: bool
 
-def do_invite_users(user_profile: UserProfile,
-                    invitee_emails: SizedTextIterable,
-                    streams: Iterable[Stream],
-                    invite_as_admin: Optional[bool]=False,
-                    body: Optional[str]=None) -> None:
+def check_invite_limit(user: UserProfile, num_invitees: int) -> None:
     if settings.OPEN_REALM_CREATION:
         # Discourage using invitation emails as a vector for carrying spam
         sent_invites = Confirmation.objects.filter(
-            realm=user_profile.realm,
+            realm=user.realm,
             date_sent__gte=timezone_now() - datetime.timedelta(days=1),
             type=Confirmation.INVITATION).count()
-        if len(invitee_emails) + sent_invites > user_profile.realm.max_invites:
+        if num_invitees + sent_invites > user.realm.max_invites:
             raise InvitationError(
                 _("You do not have enough remaining invites; "
                   "try again with fewer emails, or contact %s. "
                   "No invitations were sent." % (settings.ZULIP_ADMINISTRATOR)),
                 [], sent_invitations=False)
 
+def do_invite_users(user_profile: UserProfile,
+                    invitee_emails: SizedTextIterable,
+                    streams: Iterable[Stream],
+                    invite_as_admin: Optional[bool]=False,
+                    body: Optional[str]=None) -> None:
+
+    check_invite_limit(user_profile, len(invitee_emails))
     validated_emails = []  # type: List[Text]
     errors = []  # type: List[Tuple[Text, str]]
     skipped = []  # type: List[Tuple[Text, str]]
