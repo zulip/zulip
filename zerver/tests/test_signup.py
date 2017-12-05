@@ -353,7 +353,7 @@ class LoginTest(ZulipTestCase):
         with queries_captured() as queries:
             self.register(self.nonreg_email('test'), "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assert_length(queries, 67)
+        self.assert_length(queries, 69)
         user_profile = self.nonreg_user('test')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
         self.assertFalse(user_profile.enable_stream_desktop_notifications)
@@ -831,7 +831,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         })
         with self.settings(EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'):
             send_future_email(
-                "zerver/emails/invitation_reminder", to_email=data["email"],
+                "zerver/emails/invitation_reminder", referrer.realm, to_email=data["email"],
                 from_address=FromAddress.NOREPLY, context=context)
         email_jobs_to_deliver = ScheduledEmail.objects.filter(
             scheduled_timestamp__lte=timezone_now())
@@ -1179,7 +1179,8 @@ class EmailUnsubscribeTests(ZulipTestCase):
         # Enqueue a fake digest email.
         context = {'name': '', 'realm_uri': '', 'unread_pms': [], 'hot_conversations': [],
                    'new_users': [], 'new_streams': {'plain': []}, 'unsubscribe_link': ''}
-        send_future_email('zerver/emails/digest', to_user_id=user_profile.id, context=context)
+        send_future_email('zerver/emails/digest', user_profile.realm,
+                          to_user_id=user_profile.id, context=context)
 
         self.assertEqual(1, ScheduledEmail.objects.filter(user=user_profile).count())
 
