@@ -137,7 +137,7 @@ exports.on_load_success = function (invites_data) {
                 }
             },
             success: function (data) {
-                resend_button.text(i18n.t("Resent!"));
+                resend_button.text(i18n.t("Sent!"));
                 resend_button.removeClass('resend btn-warning').addClass('sea-green');
                 meta.current_resend_invite_user_modal_row.find(".invited_at").text(data.timestamp);
             },
