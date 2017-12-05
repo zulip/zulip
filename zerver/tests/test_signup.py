@@ -971,7 +971,7 @@ class InvitationsTestCase(InviteUserBase):
         and delete any scheduled invitation reminder email.
         """
         self.login(self.example_email("iago"))
-        invitee = "ResendMe@zulip.com"
+        invitee = "resend_me@zulip.com"
 
         self.assert_json_success(self.invite(invitee, ['Denmark']))
         prereg_user = PreregistrationUser.objects.get(email=invitee)
@@ -982,19 +982,26 @@ class InvitationsTestCase(InviteUserBase):
         outbox.pop()
 
         # Verify that the scheduled email exists.
-        ScheduledEmail.objects.get(address__iexact=invitee,
-                                   type=ScheduledEmail.INVITATION_REMINDER)
+        scheduledemail_filter = ScheduledEmail.objects.filter(
+            address=invitee, type=ScheduledEmail.INVITATION_REMINDER)
+        self.assertEqual(scheduledemail_filter.count(), 1)
+        original_timestamp = scheduledemail_filter.values_list('scheduled_timestamp', flat=True)
+
+        # Resend invite
         result = self.client_post('/json/invites/' + str(prereg_user.id) + '/resend')
+        self.assertEqual(ScheduledEmail.objects.filter(
+            address=invitee, type=ScheduledEmail.INVITATION_REMINDER).count(), 1)
+
+        # Check that we have exactly one scheduled email, and that it is different
+        self.assertEqual(scheduledemail_filter.count(), 1)
+        self.assertNotEqual(original_timestamp,
+                            scheduledemail_filter.values_list('scheduled_timestamp', flat=True))
 
         self.assertEqual(result.status_code, 200)
         error_result = self.client_post('/json/invites/' + str(9999) + '/resend')
         self.assert_json_error(error_result, "Invalid invitation ID.")
 
         self.check_sent_emails([invitee], custom_from_name="Zulip")
-
-        self.assertRaises(ScheduledEmail.DoesNotExist,
-                          lambda: ScheduledEmail.objects.get(address__iexact=invitee,
-                                                             type=ScheduledEmail.INVITATION_REMINDER))
 
 class InviteeEmailsParserTests(TestCase):
     def setUp(self) -> None:

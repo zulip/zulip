@@ -4044,26 +4044,10 @@ def do_resend_user_invite_email(invite_id: int, realm_id: int) -> str:
     prereg_user.invited_at = timezone_now()
     prereg_user.save()
 
-    # sends a invitation reminder since 'custom_body' can not be resent
-    # imported here to avoid import cycle error
-    from zerver.context_processors import common_context
     clear_scheduled_invitation_emails(prereg_user.email)
-
-    link = create_confirmation_link(prereg_user,
-                                    prereg_user.referred_by.realm.host,
-                                    Confirmation.INVITATION)
-    context = common_context(prereg_user.referred_by)
-    context.update({
-        'activate_url': link,
-        'referrer_name': prereg_user.referred_by.full_name,
-        'referrer_email': prereg_user.referred_by.email,
-        'referrer_realm_name': prereg_user.referred_by.realm.name,
-    })
-    send_email(
-        "zerver/emails/invitation_reminder",
-        to_email=prereg_user.email,
-        from_address=FromAddress.NOREPLY,
-        context=context)
+    # We don't store the custom email body, so just set it to None
+    event = {"email": prereg_user.email, "referrer_id": prereg_user.referred_by.id, "email_body": None}
+    queue_json_publish("invites", event)
 
     return prereg_user.invited_at.strftime("%Y-%m-%d %H:%M:%S")
 
