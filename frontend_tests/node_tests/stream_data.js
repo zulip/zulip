@@ -483,3 +483,11 @@ zrequire('stream_data');
   assert(!stream_data.name_in_home_view('jazy'));
   assert(!stream_data.name_in_home_view('EEXISTS'));
 }());
+
+(function test_notifications_in_home_view() {
+    page_params.notifications_stream = 'tony';
+    assert(stream_data.notifications_in_home_view());
+
+    page_params.notifications_stream = 'jazy';
+    assert(!stream_data.notifications_in_home_view());
+}());
