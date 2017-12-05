@@ -482,7 +482,6 @@ exports.change_state = (function () {
         if (hash.arguments.length > 0) {
             // if in #streams/new form.
             if (hash.arguments[0] === "new") {
-                components.toggle.lookup("stream-filter-toggle").goto("all-streams");
                 exports.new_stream_clicked();
             } else if (hash.arguments[0] === "all") {
                 components.toggle.lookup("stream-filter-toggle").goto("all-streams");
