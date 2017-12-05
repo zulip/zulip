@@ -582,12 +582,12 @@ def do_deactivate_realm(realm: Realm) -> None:
     realm.deactivated = True
     realm.save(update_fields=["deactivated"])
 
+    ScheduledEmail.objects.filter(realm=realm).delete()
     for user in active_humans_in_realm(realm):
         # Don't deactivate the users, but do delete their sessions so they get
         # bumped to the login screen, where they'll get a realm deactivation
         # notice when they try to log in.
         delete_user_sessions(user)
-        clear_scheduled_emails(user.id)
 
 def do_reactivate_realm(realm: Realm) -> None:
     realm.deactivated = False
