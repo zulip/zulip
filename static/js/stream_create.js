@@ -138,12 +138,14 @@ function update_announce_stream_state() {
 }
 
 function get_principals() {
-    return _.map(
-        $("#stream_creation_form input:checkbox[name=user]:checked"),
-        function (elem) {
-            return $(elem).val();
-        }
-    );
+    var realm_people = exports.show_new_stream_modal.modified_user_list();
+
+    return realm_people
+        .filter(function (user) {
+            return user.__meta.checked;
+        }).map(function (user) {
+            return user.email;
+        });
 }
 
 function create_stream() {
@@ -203,53 +205,108 @@ exports.new_stream_clicked = function (stream_name) {
     window.location.hash = "#streams/new";
 };
 
-exports.show_new_stream_modal = function () {
-    $("#stream-creation").removeClass("hide");
-    $(".right .settings").hide();
-    $('#people_to_add').html(templates.render('new_stream_users', {
-        users: people.get_rest_of_realm(),
-        streams: stream_data.get_streams_for_settings_page(),
-    }));
+(function () {
+    // only once instance of the stream creation modal can really exist at
+    // once so it's okay to have this general instance here at the top.
+    var meta = {
+        user_list: null,
+    };
 
-    // Make the options default to the same each time:
-    // public, "announce stream" on.
-    $('#make-invite-only input:radio[value=public]').prop('checked', true);
+    exports.show_new_stream_modal = function () {
+        $("#stream-creation").removeClass("hide");
+        $(".right .settings").hide();
 
-    if (page_params.notifications_stream) {
-        $('#announce-new-stream').show();
-        $('#announce-new-stream input').prop('disabled', false);
-        $('#announce-new-stream input').prop('checked', true);
-    } else {
-        $('#announce-new-stream').hide();
-    }
+        $('#people_to_add').html(templates.render('new_stream_users', {
+            streams: stream_data.get_streams_for_settings_page(),
+        }));
 
-    stream_name_error.clear_errors();
+        meta.user_list = people.get_rest_of_realm();
 
-    $("#stream-checkboxes label.checkbox").on('change', function (e) {
-        var elem = $(this);
-        var stream_id = elem.attr('data-stream-id');
-        var checked = elem.find('input').prop('checked');
-        var subscriber_ids = stream_data.get_sub_by_id(stream_id).subscribers;
-
-        $('#user-checkboxes label.checkbox').each(function () {
-            var user_elem = $(this);
-            var user_id = user_elem.attr('data-user-id');
-
-            if (subscriber_ids.has(user_id)) {
-                user_elem.find('input').prop('checked', checked);
+        meta.user_list.forEach(function (user) {
+            if (!user.__meta) {
+                user.__meta = {};
             }
+
+            user.__meta.checked = false;
         });
 
-        update_announce_stream_state();
-        e.preventDefault();
-    });
-};
+        list_render($("#user-checkboxes"), meta.user_list, {
+            name: "stream-creation-user-list",
+            modifier: function (user) {
+                return templates.render('new_stream_users_table', {
+                    user: user,
+                    checked: user.__meta.checked,
+                });
+            },
+            filter: {
+                element: $(".add-user-list-filter"),
+                callback: function (item, value) {
+                    return (
+                        item.email.toLocaleLowerCase().indexOf(value) > -1 ||
+                        item.full_name.toLocaleLowerCase().indexOf(value) > -1
+                    );
+                },
+                onupdate: function () {
+                    // ui.update_scrollbar(dropdown_list_body);
+                },
+            },
+        }).init();
+
+        // Make the options default to the same each time:
+        // public, "announce stream" on.
+        $('#make-invite-only input:radio[value=public]').prop('checked', true);
+
+        if (page_params.notifications_stream) {
+            $('#announce-new-stream').show();
+            $('#announce-new-stream input').prop('disabled', false);
+            $('#announce-new-stream input').prop('checked', true);
+        } else {
+            $('#announce-new-stream').hide();
+        }
+
+        stream_name_error.clear_errors();
+
+        $("#stream-checkboxes label.checkbox").on('change', function (e) {
+            var elem = $(this);
+            var stream_id = elem.attr('data-stream-id');
+            var checked = elem.find('input').prop('checked');
+            var subscriber_ids = stream_data.get_sub_by_id(stream_id).subscribers;
+
+            $('#user-checkboxes label.checkbox').each(function () {
+                var user_elem = $(this);
+                var user_id = user_elem.attr('data-user-id');
+
+                if (subscriber_ids.has(user_id)) {
+                    user_elem.find('input').prop('checked', checked);
+                }
+            });
+
+            update_announce_stream_state();
+            e.preventDefault();
+        });
+    };
+
+    exports.show_new_stream_modal.check_all_users = function () {
+        meta.modified_user_list.forEach(function (user) { user.__meta.checked = true; });
+        list_render.get("stream-creation-user-list").clear().render();
+    };
+
+    exports.show_new_stream_modal.uncheck_all_users = function () {
+        meta.modified_user_list.forEach(function (user) { user.__meta.checked = false; });
+        list_render.get("stream-creation-user-list").clear().render();
+    };
+
+    exports.show_new_stream_modal.modified_user_list = function () {
+        return meta.user_list;
+    };
+}());
 
 $(function () {
     $('body').on('change', '#user-checkboxes input, #make-invite-only input', update_announce_stream_state);
 
     // 'Check all' and 'Uncheck all' visible users
     $(document).on('click', '.subs_set_all_users', function (e) {
+        exports.show_new_stream_modal.check_all_users();
         $('#user-checkboxes .checkbox').each(function (idx, li) {
             if  (li.style.display !== "none") {
                 $(li.firstElementChild).prop('checked', true);
@@ -260,6 +317,7 @@ $(function () {
     });
 
     $(document).on('click', '.subs_unset_all_users', function (e) {
+        exports.show_new_stream_modal.uncheck_all_users();
         $('#user-checkboxes .checkbox').each(function (idx, li) {
             if  (li.style.display !== "none") {
                 $(li.firstElementChild).prop('checked', false);
@@ -269,51 +327,21 @@ $(function () {
         update_announce_stream_state();
     });
 
+    $(document).on("change", "#user-checkboxes label.checkbox", function () {
+        var user_id = parseInt($(this).data("user-id"), 10);
+        var checked = this.querySelector("input").checked;
+        var user = _.find(exports.show_new_stream_modal.modified_user_list(), function (item) {
+            return item.user_id === user_id;
+        });
+
+        user.__meta.checked = checked;
+    });
+
     $(document).on('click', '#copy-from-stream-expand-collapse', function (e) {
         $('#stream-checkboxes').toggle();
         $("#copy-from-stream-expand-collapse .toggle").toggleClass('icon-vector-caret-right icon-vector-caret-down');
         e.preventDefault();
         update_announce_stream_state();
-    });
-
-    // Search People or Streams
-    $(document).on('input', '.add-user-list-filter', function (e) {
-        var user_list = $(".add-user-list-filter");
-        if (user_list === 0) {
-            return;
-        }
-        var search_term = user_list.expectOne().val().trim();
-        var search_terms = search_term.toLowerCase().split(",");
-
-        (function filter_user_checkboxes() {
-            var user_labels = $("#user-checkboxes label.add-user-label");
-
-            if (search_term === '') {
-                user_labels.css({display: 'block'});
-                return;
-            }
-
-            var users = people.get_rest_of_realm();
-            var filtered_users = people.filter_people_by_search_terms(users, search_terms);
-
-            // Be careful about modifying the follow code.  A naive implementation
-            // will work very poorly with a large user population (~1000 users).
-            //
-            // I tested using: `./manage.py populate_db --extra-users 3500`
-            //
-            // This would break the previous implementation, whereas the new
-            // implementation is merely sluggish.
-            user_labels.each(function () {
-                var elem = $(this);
-                var user_id = elem.attr('data-user-id');
-                var user_checked = filtered_users.has(user_id);
-                var display = user_checked ? "block" : "none";
-                elem.css({display: display});
-            });
-        }());
-
-        update_announce_stream_state();
-        e.preventDefault();
     });
 
     $(".subscriptions").on("submit", "#stream_creation_form", function (e) {

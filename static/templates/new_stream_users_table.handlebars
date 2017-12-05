@@ -1,0 +1,5 @@
+<label class="checkbox add-user-label" data-user-id="{{user.user_id}}" data-email="{{user.email}}">
+    <input type="checkbox" name="user" value="{{user.email}}" {{#if checked}}checked{{/if}} />
+    <span></span>
+    {{user.full_name}} ({{user.email}})
+</label>

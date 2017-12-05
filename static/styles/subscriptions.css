@@ -749,6 +749,15 @@ form#add_new_subscription {
     padding: 15px;
 }
 
+#stream-creation .stream-creation-body .progressive-table-wrapper {
+    max-height: 200px;
+    margin-top: 10px;
+}
+
+#stream-creation .stream-creation-body .progressive-table-wrapper tbody {
+    border-bottom: none;
+}
+
 .stream-row .settings-dropdown-trigger {
     float: right;
     margin-left: 10px;

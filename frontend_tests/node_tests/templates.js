@@ -904,10 +904,15 @@ function render(template_name, args) {
         ],
     };
 
-    var html = render('new_stream_users', args);
-    global.write_handlebars_output("new_stream_users", html);
+    var $html = $(render('new_stream_users', args));
+    var $table = $html.find("#user-checkboxes");
+    args.users.forEach(function (user) {
+        $table.append($(render('new_stream_users_table', { user: user })));
+    });
 
-    var label = $(html).find("label:first");
+    global.write_handlebars_output("new_stream_users", $html[0].outerHTML);
+
+    var label = $html.find("label:first");
     assert.equal(label.text().trim(), 'King Lear (lear@zulip.com)');
 }());
 
