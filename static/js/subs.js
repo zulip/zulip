@@ -694,6 +694,9 @@ $(function () {
     $("#subscriptions_table").on("click", ".create_stream_button", function (e) {
         e.preventDefault();
         exports.new_stream_clicked();
+        // this will change the hash which will attempt to retrigger the create
+        // stream code, so we prevent this once.
+        exports.change_state.prevent_once();
     });
 
     $(".subscriptions").on("click", "[data-dismiss]", function (e) {
