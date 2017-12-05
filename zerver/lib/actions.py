@@ -10,7 +10,8 @@ from django.utils.html import escape
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.core import validators
-from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
+from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat, \
+    RealmCount
 from zerver.lib.bugdown import (
     BugdownRenderingException,
     version as bugdown_version,
@@ -77,7 +78,7 @@ from zerver.lib.avatar import avatar_url
 from zerver.lib.stream_recipient import StreamRecipientMap
 
 from django.db import transaction, IntegrityError, connection
-from django.db.models import F, Q, Max
+from django.db.models import F, Q, Max, Sum
 from django.db.models.query import QuerySet
 from django.core.exceptions import ValidationError
 from django.core.mail import EmailMessage
@@ -3926,14 +3927,22 @@ class InvitationError(JsonableError):
         self.errors = errors  # type: List[Tuple[Text, str]]
         self.sent_invitations = sent_invitations  # type: bool
 
+def estimate_recent_invites(realm: Realm, *, days: int) -> int:
+    '''An upper bound on the number of invites sent in the last `days` days'''
+    recent_invites = RealmCount.objects.filter(
+        realm=realm,
+        property='invites_sent::day',
+        end_time__gte=timezone_now() - datetime.timedelta(days=days)
+    ).aggregate(Sum('value'))['value__sum']
+    if recent_invites is None:
+        return 0
+    return recent_invites
+
 def check_invite_limit(user: UserProfile, num_invitees: int) -> None:
+    # Discourage using invitation emails as a vector for carrying spam
     if settings.OPEN_REALM_CREATION:
-        # Discourage using invitation emails as a vector for carrying spam
-        sent_invites = Confirmation.objects.filter(
-            realm=user.realm,
-            date_sent__gte=timezone_now() - datetime.timedelta(days=1),
-            type=Confirmation.INVITATION).count()
-        if num_invitees + sent_invites > user.realm.max_invites:
+        recent_invites = estimate_recent_invites(user.realm, days=1)
+        if num_invitees + recent_invites > user.realm.max_invites:
             raise InvitationError(
                 _("You do not have enough remaining invites. "
                   "Please contact %s to have your limit raised. "
