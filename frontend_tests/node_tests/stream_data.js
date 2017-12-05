@@ -554,3 +554,48 @@ zrequire('marked', 'third/marked/lib/marked');
         "stream_bar"
     );
 }());
+
+(function test_create_sub() {
+    stream_data.clear_subscriptions();
+    var india = {
+        stream_id: 102,
+        name: 'India',
+        subscribed: true,
+    };
+
+    var canada = {
+        name: 'Canada',
+        subscribed: true,
+    };
+
+    var antarctica = {
+        stream_id: 103,
+        name: 'Antarctica',
+        subscribed: true,
+        color: '#76ce90',
+    };
+
+    global.stream_color.pick_color = function () {
+        return '#bd86e5';
+    };
+
+    var india_sub = stream_data.create_sub_from_server_data('India', india);
+    assert(india_sub);
+    assert.equal(india_sub.color, '#bd86e5');
+    var new_sub = stream_data.create_sub_from_server_data('India', india); // make sure sub doesn't get created twice
+    assert.equal(india_sub, new_sub);
+
+    var called = false;
+    global.blueslip.fatal = function (msg) {
+        assert.equal(msg, 'We cannot create a sub without a stream_id');
+        called = true;
+    };
+    var ok = stream_data.create_sub_from_server_data('Canada', canada);
+    assert.equal(ok, undefined);
+    assert(called);
+
+    var antarctica_sub = stream_data.create_sub_from_server_data('Antarctica', antarctica);
+    assert(antarctica_sub);
+    assert.equal(antarctica_sub.color, '#76ce90');
+}());
+
