@@ -3972,6 +3972,12 @@ def do_invite_users(user_profile: UserProfile,
         raise InvitationError(_("We weren't able to invite anyone."),
                               skipped, sent_invitations=False)
 
+    # We do this here rather than in the invite queue processor since this
+    # is used for rate limiting invitations, rather than keeping track of
+    # when exactly invitations were sent
+    do_increment_logging_stat(user_profile.realm, COUNT_STATS['invites_sent::day'],
+                              None, timezone_now(), increment=len(validated_emails))
+
     # Now that we are past all the possible errors, we actually create
     # the PreregistrationUser objects and trigger the email invitations.
     for email in validated_emails:
@@ -4029,6 +4035,9 @@ def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> str:
 
     prereg_user.invited_at = timezone_now()
     prereg_user.save()
+
+    do_increment_logging_stat(prereg_user.realm, COUNT_STATS['invites_sent::day'],
+                              None, prereg_user.invited_at)
 
     clear_scheduled_invitation_emails(prereg_user.email)
     # We don't store the custom email body, so just set it to None

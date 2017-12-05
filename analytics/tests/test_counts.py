@@ -19,11 +19,13 @@ from analytics.models import Anomaly, BaseCount, \
     FillState, InstallationCount, RealmCount, StreamCount, \
     UserCount, installation_epoch, last_successful_fill
 from zerver.lib.actions import do_activate_user, do_create_user, \
-    do_deactivate_user, do_reactivate_user, update_user_activity_interval
+    do_deactivate_user, do_reactivate_user, update_user_activity_interval, \
+    do_invite_users, do_revoke_user_invite, do_resend_user_invite_email, \
+    InvitationError
 from zerver.lib.timestamp import TimezoneNotUTCException, floor_to_day
 from zerver.models import Client, Huddle, Message, Realm, \
     RealmAuditLog, Recipient, Stream, UserActivityInterval, \
-    UserProfile, get_client, get_user
+    UserProfile, get_client, get_user, PreregistrationUser
 
 class AnalyticsTestCase(TestCase):
     MINUTE = timedelta(seconds = 60)
@@ -746,6 +748,45 @@ class TestLoggingCountStats(AnalyticsTestCase):
         do_reactivate_user(user)
         self.assertEqual(1, RealmCount.objects.filter(property=property, subgroup=False)
                          .aggregate(Sum('value'))['value__sum'])
+
+    def test_invites_sent(self) -> None:
+        property = 'invites_sent::day'
+
+        def assertInviteCountEquals(count: int) -> None:
+            self.assertEqual(count, RealmCount.objects.filter(property=property, subgroup=None)
+                             .aggregate(Sum('value'))['value__sum'])
+
+        user = self.create_user(email='first@domain.tld')
+        stream, _ = self.create_stream_with_recipient()
+        do_invite_users(user, ['user1@domain.tld', 'user2@domain.tld'], [stream])
+        assertInviteCountEquals(2)
+
+        # We currently send emails when re-inviting users that haven't
+        # turned into accounts, so count them towards the total
+        do_invite_users(user, ['user1@domain.tld', 'user2@domain.tld'], [stream])
+        assertInviteCountEquals(4)
+
+        # Test mix of good and malformed invite emails
+        try:
+            do_invite_users(user, ['user3@domain.tld', 'malformed'], [stream])
+        except InvitationError:
+            pass
+        assertInviteCountEquals(4)
+
+        # Test inviting existing users
+        try:
+            do_invite_users(user, ['first@domain.tld', 'user4@domain.tld'], [stream])
+        except InvitationError:
+            pass
+        assertInviteCountEquals(5)
+
+        # Revoking invite should not give you credit
+        do_revoke_user_invite(PreregistrationUser.objects.filter(realm=user.realm).first())
+        assertInviteCountEquals(5)
+
+        # Resending invite should cost you
+        do_resend_user_invite_email(PreregistrationUser.objects.first())
+        assertInviteCountEquals(6)
 
 class TestDeleteStats(AnalyticsTestCase):
     def test_do_drop_all_analytics_tables(self) -> None:
