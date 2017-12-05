@@ -244,12 +244,12 @@ class Realm(models.Model):
         # Remove the port. Mainly needed for development environment.
         return self.host.split(':')[0]
 
-    def get_notifications_stream(self) -> Optional['Realm']:
+    def get_notifications_stream(self) -> Optional['Stream']:
         if self.notifications_stream is not None and not self.notifications_stream.deactivated:
             return self.notifications_stream
         return None
 
-    def get_signup_notifications_stream(self) -> Optional['Realm']:
+    def get_signup_notifications_stream(self) -> Optional['Stream']:
         if self.signup_notifications_stream is not None and not self.signup_notifications_stream.deactivated:
             return self.signup_notifications_stream
         return None
