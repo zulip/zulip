@@ -35,6 +35,7 @@ IGNORED_PHRASES = [
     r"Pivotal",
     r"Play Store",
     r'REMOTE_USER',
+    r"reCAPTCHA",
     r'Slack',
     r"SSO",
     r'Terms of Service',

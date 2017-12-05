@@ -158,3 +158,6 @@ SOCIAL_AUTH_GITHUB_SECRET = "secret"
 # By default two factor authentication is disabled in tests.
 # Explicitly set this to True within tests that must have this on.
 TWO_FACTOR_AUTHENTICATION_ENABLED = False
+
+# Disable reCAPTCHA in tests.
+RECAPTCHA_SITEKEY = False

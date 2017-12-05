@@ -31,6 +31,8 @@ from zproject.backends import email_auth_enabled
 import logging
 import re
 import DNS
+import requests
+import ujson
 
 from typing import Any, Callable, List, Optional, Text, Dict
 
@@ -166,6 +168,11 @@ class RealmCreationForm(forms.Form):
     # This form determines whether users can create a new realm.
     email = forms.EmailField(validators=[email_not_system_bot,
                                          email_is_not_disposable])
+
+    def clean(self) -> Dict[str, Any]:
+        if settings.RECAPTCHA_SITEKEY:
+            validate_recaptcha(self.data.get('g-recaptcha-response'))
+        return super().clean()
 
 class LoggingSetPasswordForm(SetPasswordForm):
     def save(self, commit: bool=True) -> UserProfile:
@@ -312,3 +319,13 @@ class FindMyTeamForm(forms.Form):
             raise forms.ValidationError(_("Please enter at most 10 emails."))
 
         return emails
+
+def validate_recaptcha(response_token: str) -> None:
+    url = "https://www.google.com/recaptcha/api/siteverify"
+    data = {'secret': settings.RECAPTCHA_SECRET,
+            'response': response_token}
+    response = requests.post(url, data)
+    response_data = ujson.loads(response.content.decode())
+    if not response_data['success']:
+        raise ValidationError(_("reCAPTCHA validation failed."),
+                              code="invalid_recaptcha")

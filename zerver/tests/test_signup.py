@@ -14,7 +14,7 @@ from confirmation.models import Confirmation, create_confirmation_link, Multiuse
     generate_key, confirmation_url, get_object_from_key, ConfirmationKeyException
 from confirmation import settings as confirmation_settings
 
-from zerver.forms import HomepageForm, WRONG_SUBDOMAIN_ERROR
+from zerver.forms import HomepageForm, WRONG_SUBDOMAIN_ERROR, RealmCreationForm
 from zerver.lib.actions import do_change_password
 from zerver.views.auth import login_or_register_remote_user, \
     redirect_and_log_into_subdomain
@@ -1416,6 +1416,33 @@ class RealmCreationTest(ZulipTestCase):
         result = self.client_get("/json/realm/subdomain/hufflepuff")
         self.assert_in_success_response(["available"], result)
         self.assert_not_in_success_response(["unavailable"], result)
+
+    def test_realm_creation_form(self) -> None:
+        data = {'email': 'hamlet@zulip.com'}
+        form = RealmCreationForm(data)
+        form.full_clean()
+        self.assertEqual(len(form.errors), 0)
+
+        response = MagicMock()
+        response.content.decode.return_value = ujson.dumps({'success': False})
+        with self.settings(RECAPTCHA_SITEKEY=True), \
+                patch('requests.post', return_value=response):
+
+            # Submit a valid email and invalid recaptcha.
+            form = RealmCreationForm(data)
+            form.full_clean()
+            self.assertNotIn('email', form.errors)
+            self.assertIn('reCAPTCHA validation failed.', form.errors['__all__'])
+            self.assertEqual(len(form.errors['__all__']), 1)
+
+            # Submit an empty form. This should give error against both email
+            # and recaptcha.
+            form = RealmCreationForm({})
+            form.full_clean()
+            self.assertIn('This field is required.', form.errors['email'])
+            self.assertEqual(len(form.errors['email']), 1)
+            self.assertIn('reCAPTCHA validation failed.', form.errors['__all__'])
+            self.assertEqual(len(form.errors['__all__']), 1)
 
 class UserSignUpTest(ZulipTestCase):
 

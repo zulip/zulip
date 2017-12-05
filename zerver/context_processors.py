@@ -134,6 +134,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         'secrets_path': secrets_path,
         'settings_comments_path': settings_comments_path,
         'platform': platform,
+        'recaptcha_sitekey': settings.RECAPTCHA_SITEKEY,
     }
 
 

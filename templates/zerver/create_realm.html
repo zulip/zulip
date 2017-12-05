@@ -7,6 +7,13 @@
 <script type="text/javascript">
 $(function () {
     common.autofocus('#email');
+    {% if recaptcha_sitekey %}
+    // Ideally, we shouldn't need to do this, but for some reason, reCAPTCHA
+    // doesn't recognize the callback if we directly assign
+    // recaptcha.on_submit to 'data-callback'.
+    window.recaptcha_callback = recaptcha.on_submit;
+    recaptcha.init('send_confirm');
+    {% endif %}
 });
 </script>
 
@@ -20,6 +27,14 @@ $(function () {
             <form class="form-inline" id="send_confirm" name="email_form"
                 action="{{ current_url() }}" method="post">
                 {{ csrf_input }}
+                {% if recaptcha_sitekey %}
+                <div id='recaptcha' class="g-recaptcha"
+                    data-sitekey="{{ recaptcha_sitekey }}"
+                    data-callback="recaptcha_callback"
+                    data-size="invisible">
+                </div>
+                {% endif %}
+
                 <div class="input-box horizontal">
                     <div class="inline-block relative">
                         <input type="text" class="email required" placeholder="{{ _("Enter your email address") }}"
@@ -33,6 +48,11 @@ $(function () {
             <div class="alert alert-error"></div>
             {% if form.email.errors %}
                 {% for error in form.email.errors %}
+                <div class="alert alert-error">{{ error }}</div>
+                {% endfor %}
+            {% endif %}
+            {% if form.errors.__all__ %}
+                {% for error in form.errors.__all__ %}
                 <div class="alert alert-error">{{ error }}</div>
                 {% endfor %}
             {% endif %}

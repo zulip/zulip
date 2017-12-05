@@ -130,6 +130,9 @@ DEFAULT_SETTINGS = {
     # Google auth
     'GOOGLE_OAUTH2_CLIENT_ID': None,
 
+    # Google reCAPTCHA
+    'RECAPTCHA_SITEKEY': None,
+
     # LDAP auth
     'AUTH_LDAP_SERVER_URI': "",
     'LDAP_EMAIL_ATTR': None,
@@ -683,6 +686,9 @@ if LOCAL_UPLOADS_DIR is not None:
 ANDROID_GCM_API_KEY = get_secret("android_gcm_api_key")
 
 GOOGLE_OAUTH2_CLIENT_SECRET = get_secret('google_oauth2_client_secret')
+
+if 'RECAPTCHA_SECRET' not in vars():
+    RECAPTCHA_SECRET = get_secret('recaptcha_secret')
 
 DROPBOX_APP_KEY = get_secret("dropbox_app_key")
 

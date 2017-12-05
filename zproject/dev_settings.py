@@ -78,3 +78,8 @@ TWO_FACTOR_SMS_GATEWAY = 'two_factor.gateways.fake.Fake'
 
 # Make sendfile use django to serve files in development
 SENDFILE_BACKEND = 'sendfile.backends.development'
+
+# Test key and secret given by Google. Taken from here:
+# https://developers.google.com/recaptcha/docs/faq#id-like-to-run-automated-tests-with-recaptcha-v2-what-should-i-do  # noqa
+RECAPTCHA_SITEKEY = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'
+RECAPTCHA_SECRET  = '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe'
