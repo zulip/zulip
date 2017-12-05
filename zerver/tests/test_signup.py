@@ -23,7 +23,7 @@ from zerver.views.registration import confirmation_key, \
     send_registration_completion_email
 
 from zerver.models import (
-    get_realm, get_prereg_user_by_email, get_user, get_stream_recipient,
+    get_realm, get_user, get_stream_recipient,
     PreregistrationUser, Realm, RealmDomain, Recipient, Message,
     ScheduledEmail, UserProfile, UserMessage,
     Stream, Subscription, flush_per_request_caches
@@ -596,7 +596,7 @@ class InviteUserTest(InviteUserBase):
         self.assertTrue(find_key_by_email(invitee))
         self.check_sent_emails([invitee])
 
-        prereg_user = get_prereg_user_by_email(invitee)
+        prereg_user = PreregistrationUser.objects.get(email=invitee)
         stream_ids = [stream.id for stream in prereg_user.streams.all()]
         self.assertTrue(notifications_stream.id in stream_ids)
 
@@ -759,7 +759,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         # We only sent emails to the new users.
         self.check_sent_emails(new)
 
-        prereg_user = get_prereg_user_by_email('foo-test@zulip.com')
+        prereg_user = PreregistrationUser.objects.get(email='foo-test@zulip.com')
         self.assertEqual(prereg_user.email, 'foo-test@zulip.com')
 
     def test_invite_outside_domain_in_closed_realm(self) -> None:
@@ -844,7 +844,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.check_sent_emails([invitee_email])
 
         data = {"email": invitee_email, "referrer_email": current_user_email}
-        invitee = get_prereg_user_by_email(data["email"])
+        invitee = PreregistrationUser.objects.get(email=data["email"])
         referrer = self.example_user(referrer_user)
         link = create_confirmation_link(invitee, referrer.realm.host, Confirmation.INVITATION)
         context = common_context(referrer)

@@ -1455,11 +1455,6 @@ def get_owned_bot_dicts(user_profile: UserProfile,
              }
             for botdict in result]
 
-def get_prereg_user_by_email(email: Text) -> PreregistrationUser:
-    # A user can be invited many times, so only return the result of the latest
-    # invite.
-    return PreregistrationUser.objects.filter(email__iexact=email.strip()).latest("invited_at")
-
 def get_cross_realm_emails() -> Set[Text]:
     return set(settings.CROSS_REALM_BOT_EMAILS)
 

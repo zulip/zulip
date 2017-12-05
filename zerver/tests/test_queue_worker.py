@@ -222,9 +222,15 @@ class WorkerTest(ZulipTestCase):
     def test_invites_worker(self) -> None:
         fake_client = self.FakeClient()
         invitor = self.example_user('iago')
-        prereg_user = PreregistrationUser.objects.create(
+        prereg_alice = PreregistrationUser.objects.create(
+            email=self.nonreg_email('alice'), referred_by=invitor, realm=invitor.realm)
+        prereg_bob = PreregistrationUser.objects.create(
             email=self.nonreg_email('bob'), referred_by=invitor, realm=invitor.realm)
         data = [
+            dict(prereg_id=prereg_alice.id, referrer_id=invitor.id, email_body=None),
+            # Nonexistent prereg_id, as if the invitation was deleted
+            dict(prereg_id=-1, referrer_id=invitor.id, email_body=None),
+            # Form with `email` is from versions up to Zulip 1.7.1
             dict(email=self.nonreg_email('bob'), referrer_id=invitor.id, email_body=None),
         ]
         for element in data:
@@ -239,7 +245,7 @@ class WorkerTest(ZulipTestCase):
                      as send_mock, \
                  patch('logging.info'):
                 worker.start()
-                self.assertEqual(send_mock.call_count, len(data))
+                self.assertEqual(send_mock.call_count, 2)
 
     def test_UserActivityWorker(self) -> None:
         fake_client = self.FakeClient()

@@ -3983,7 +3983,7 @@ def do_invite_users(user_profile: UserProfile,
         stream_ids = [stream.id for stream in streams]
         prereg_user.streams.set(stream_ids)
 
-        event = {"email": prereg_user.email, "referrer_id": user_profile.id, "email_body": body}
+        event = {"prereg_id": prereg_user.id, "referrer_id": user_profile.id, "email_body": body}
         queue_json_publish("invites", event)
 
     if skipped:
@@ -4048,7 +4048,7 @@ def do_resend_user_invite_email(invite_id: int, realm_id: int) -> str:
 
     clear_scheduled_invitation_emails(prereg_user.email)
     # We don't store the custom email body, so just set it to None
-    event = {"email": prereg_user.email, "referrer_id": prereg_user.referred_by.id, "email_body": None}
+    event = {"prereg_id": prereg_user.id, "referrer_id": prereg_user.referred_by.id, "email_body": None}
     queue_json_publish("invites", event)
 
     return prereg_user.invited_at.strftime("%Y-%m-%d %H:%M:%S")

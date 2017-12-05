@@ -14,7 +14,7 @@ from django.db import connection
 from django.core.handlers.wsgi import WSGIRequest
 from django.core.handlers.base import BaseHandler
 from zerver.models import \
-    get_client, get_prereg_user_by_email, get_system_bot, ScheduledEmail, \
+    get_client, get_system_bot, ScheduledEmail, PreregistrationUser, \
     get_user_profile_by_id, Message, Realm, Service, UserMessage, UserProfile
 from zerver.lib.context_managers import lockfile
 from zerver.lib.error_notify import do_report_error
@@ -219,7 +219,18 @@ class SignupWorker(QueueProcessingWorker):
 class ConfirmationEmailWorker(QueueProcessingWorker):
     def consume(self, data):
         # type: (Mapping[str, Any]) -> None
-        invitee = get_prereg_user_by_email(data["email"])
+
+        if "email" in data:
+            # When upgrading from a version up through 1.7.1, there may be
+            # existing items in the queue with `email` instead of `prereg_id`.
+            invitee = PreregistrationUser.objects.filter(
+                email__iexact=data["email"].strip()).latest("invited_at")
+        else:
+            invitee = PreregistrationUser.objects.filter(id=data["prereg_id"]).first()
+            if invitee is None:
+                # The invitation could have been revoked
+                return
+
         referrer = get_user_profile_by_id(data["referrer_id"])
         body = data["email_body"]
         logging.info("Sending invitation for realm %s to %s" % (referrer.realm.string_id, invitee.email))
@@ -236,7 +247,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
         })
         send_future_email(
             "zerver/emails/invitation_reminder",
-            to_email=data["email"],
+            to_email=invitee.email,
             from_address=FromAddress.NOREPLY,
             context=context,
             delay=datetime.timedelta(days=2))
