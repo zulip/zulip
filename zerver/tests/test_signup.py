@@ -959,7 +959,7 @@ class InvitationsTestCase(InviteUserBase):
         result = self.client_delete('/json/invites/' + str(prereg_user.id))
         self.assertEqual(result.status_code, 200)
         error_result = self.client_delete('/json/invites/' + str(prereg_user.id))
-        self.assert_json_error(error_result, "Invalid invitation ID.")
+        self.assert_json_error(error_result, "No such invitation")
 
         self.assertRaises(ScheduledEmail.DoesNotExist,
                           lambda: ScheduledEmail.objects.get(address__iexact=invitee,
@@ -999,7 +999,7 @@ class InvitationsTestCase(InviteUserBase):
 
         self.assertEqual(result.status_code, 200)
         error_result = self.client_post('/json/invites/' + str(9999) + '/resend')
-        self.assert_json_error(error_result, "Invalid invitation ID.")
+        self.assert_json_error(error_result, "No such invitation")
 
         self.check_sent_emails([invitee], custom_from_name="Zulip")
 
@@ -1009,9 +1009,9 @@ class InvitationsTestCase(InviteUserBase):
             email='email', referred_by=invitor, realm=invitor.realm)
         self.login(self.example_email("iago"))
         error_result = self.client_post('/json/invites/' + str(prereg_user.id) + '/resend')
-        self.assert_json_error(error_result, "Invalid invitation ID.")
+        self.assert_json_error(error_result, "No such invitation")
         error_result = self.client_delete('/json/invites/' + str(prereg_user.id))
-        self.assert_json_error(error_result, "Invalid invitation ID.")
+        self.assert_json_error(error_result, "No such invitation")
 
 class InviteeEmailsParserTests(TestCase):
     def setUp(self) -> None:
