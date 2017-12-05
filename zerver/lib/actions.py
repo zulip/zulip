@@ -4017,6 +4017,17 @@ def do_invite_users(user_profile: UserProfile,
 
     check_invite_limit(user_profile, len(invitee_emails))
 
+    realm = user_profile.realm
+    if not realm.invite_required:
+        # Inhibit joining an open realm to send spam invitations.
+        min_age = datetime.timedelta(days=settings.INVITES_MIN_USER_AGE_DAYS)
+        if (user_profile.date_joined > timezone_now() - min_age
+                and not user_profile.is_realm_admin):
+            raise InvitationError(
+                _("Your account is too new to send invites for this organization. "
+                  "Ask an organization admin, or a more experienced user."),
+                [], sent_invitations=False)
+
     validated_emails = []  # type: List[Text]
     errors = []  # type: List[Tuple[Text, str]]
     skipped = []  # type: List[Tuple[Text, str]]

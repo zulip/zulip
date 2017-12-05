@@ -47,7 +47,9 @@ PHYSICAL_ADDRESS = "Zulip Headquarters, 123 Octo Stream, South Pacific Ocean"
 EXTRA_INSTALLED_APPS = ["zilencer", "analytics"]
 # Disable Camo in development
 CAMO_URI = ''
+
 OPEN_REALM_CREATION = True
+INVITES_MIN_USER_AGE_DAYS = 0
 
 EMBEDDED_BOTS_ENABLED = True
 

@@ -302,6 +302,11 @@ DEFAULT_SETTINGS.update({
     'MAX_ICON_FILE_SIZE': 5,
     'MAX_EMOJI_FILE_SIZE': 5,
 
+    # Limits to help prevent spam, in particular by sending invitations.
+    #
+    # A non-admin user who's joined an open realm this recently can't invite at all.
+    'INVITES_MIN_USER_AGE_DAYS': 3,
+
     # Controls for which links are published in portico footers/headers/etc.
     'EMAIL_DELIVERER_DISABLED': False,
     'REGISTER_LINK_DISABLED': None,
