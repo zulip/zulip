@@ -12,9 +12,10 @@ from zerver.models import UserProfile, UserMessage, RealmAuditLog, \
 
 logger = create_logger("zulip.soft_deactivation", settings.SOFT_DEACTIVATION_LOG_PATH, 'INFO')
 
-def filter_by_subscription_history(
-        user_profile, all_stream_messages, all_stream_subscription_logs):
-    # type: (UserProfile, DefaultDict[int, List[Message]], DefaultDict[int, List[RealmAuditLog]]) -> List[UserMessage]
+def filter_by_subscription_history(user_profile: UserProfile,
+                                   all_stream_messages: DefaultDict[int, List[Message]],
+                                   all_stream_subscription_logs: DefaultDict[int, List[RealmAuditLog]],
+                                   ) -> List[UserMessage]:
     user_messages_to_insert = []  # type: List[UserMessage]
 
     def store_user_message_to_insert(message: Message) -> None:
