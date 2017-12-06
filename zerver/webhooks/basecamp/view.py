@@ -24,9 +24,9 @@ TODO_TEMPLATE = "{user_name} {verb} the todo task [{title}]({url})"
 
 @api_key_only_webhook_view('Basecamp')
 @has_request_variables
-def api_basecamp_webhook(request, user_profile, payload=REQ(argument_type='body'),
-                         stream=REQ(default='basecamp')):
-    # type: (HttpRequest, UserProfile, Dict[str, Any], Text) -> HttpResponse
+def api_basecamp_webhook(request: HttpRequest, user_profile: UserProfile,
+                         payload: Dict[str, Any]=REQ(argument_type='body'),
+                         stream: Text=REQ(default='basecamp')) -> HttpResponse:
     event = get_event_type(payload)
 
     if event not in SUPPORT_EVENTS:
