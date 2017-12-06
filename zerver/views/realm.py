@@ -21,29 +21,31 @@ from zerver.models import Realm, UserProfile
 
 @require_realm_admin
 @has_request_variables
-def update_realm(request, user_profile, name=REQ(validator=check_string, default=None),
-                 description=REQ(validator=check_string, default=None),
-                 restricted_to_domain=REQ(validator=check_bool, default=None),
-                 invite_required=REQ(validator=check_bool, default=None),
-                 invite_by_admins_only=REQ(validator=check_bool, default=None),
-                 name_changes_disabled=REQ(validator=check_bool, default=None),
-                 email_changes_disabled=REQ(validator=check_bool, default=None),
-                 inline_image_preview=REQ(validator=check_bool, default=None),
-                 inline_url_embed_preview=REQ(validator=check_bool, default=None),
-                 create_stream_by_admins_only=REQ(validator=check_bool, default=None),
-                 add_emoji_by_admins_only=REQ(validator=check_bool, default=None),
-                 allow_message_deleting=REQ(validator=check_bool, default=None),
-                 allow_message_editing=REQ(validator=check_bool, default=None),
-                 mandatory_topics=REQ(validator=check_bool, default=None),
-                 message_content_edit_limit_seconds=REQ(converter=to_non_negative_int, default=None),
-                 allow_edit_history=REQ(validator=check_bool, default=None),
-                 default_language=REQ(validator=check_string, default=None),
-                 waiting_period_threshold=REQ(converter=to_non_negative_int, default=None),
-                 authentication_methods=REQ(validator=check_dict([]), default=None),
-                 notifications_stream_id=REQ(validator=check_int, default=None),
-                 signup_notifications_stream_id=REQ(validator=check_int, default=None),
-                 message_retention_days=REQ(converter=to_not_negative_int_or_none, default=None)):
-    # type: (HttpRequest, UserProfile, Optional[str], Optional[str], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[int], Optional[bool], Optional[str], Optional[int], Optional[Dict[Any,Any]], Optional[int], Optional[int], Optional[int]) -> HttpResponse
+def update_realm(
+        request: HttpRequest, user_profile: UserProfile,
+        name: Optional[str]=REQ(validator=check_string, default=None),
+        description: Optional[str]=REQ(validator=check_string, default=None),
+        restricted_to_domain: Optional[bool]=REQ(validator=check_bool, default=None),
+        invite_required: Optional[bool]=REQ(validator=check_bool, default=None),
+        invite_by_admins_only: Optional[bool]=REQ(validator=check_bool, default=None),
+        name_changes_disabled: Optional[bool]=REQ(validator=check_bool, default=None),
+        email_changes_disabled: Optional[bool]=REQ(validator=check_bool, default=None),
+        inline_image_preview: Optional[bool]=REQ(validator=check_bool, default=None),
+        inline_url_embed_preview: Optional[bool]=REQ(validator=check_bool, default=None),
+        create_stream_by_admins_only: Optional[bool]=REQ(validator=check_bool, default=None),
+        add_emoji_by_admins_only: Optional[bool]=REQ(validator=check_bool, default=None),
+        allow_message_deleting: Optional[bool]=REQ(validator=check_bool, default=None),
+        allow_message_editing: Optional[bool]=REQ(validator=check_bool, default=None),
+        mandatory_topics: Optional[bool]=REQ(validator=check_bool, default=None),
+        message_content_edit_limit_seconds: Optional[int]=REQ(converter=to_non_negative_int, default=None),
+        allow_edit_history: Optional[bool]=REQ(validator=check_bool, default=None),
+        default_language: Optional[str]=REQ(validator=check_string, default=None),
+        waiting_period_threshold: Optional[int]=REQ(converter=to_non_negative_int, default=None),
+        authentication_methods: Optional[Dict[Any, Any]]=REQ(validator=check_dict([]), default=None),
+        notifications_stream_id: Optional[int]=REQ(validator=check_int, default=None),
+        signup_notifications_stream_id: Optional[int]=REQ(validator=check_int, default=None),
+        message_retention_days: Optional[int]=REQ(converter=to_not_negative_int_or_none, default=None)
+) -> HttpResponse:
     realm = user_profile.realm
 
     # Additional validation/error checking beyond types go here, so
