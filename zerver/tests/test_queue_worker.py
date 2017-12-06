@@ -12,7 +12,7 @@ from typing import Any, Callable, Dict, List, Mapping, Tuple
 
 from zerver.lib.test_helpers import simulated_queue_client
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import get_client, UserActivity
+from zerver.models import get_client, UserActivity, PreregistrationUser
 from zerver.worker import queue_processors
 from zerver.worker.queue_processors import (
     get_active_worker_queues,
@@ -218,6 +218,28 @@ class WorkerTest(ZulipTestCase):
                 worker.start()
 
         self.assertEqual(data['failed_tries'], 4)
+
+    def test_invites_worker(self) -> None:
+        fake_client = self.FakeClient()
+        invitor = self.example_user('iago')
+        prereg_user = PreregistrationUser.objects.create(
+            email=self.nonreg_email('bob'), referred_by=invitor, realm=invitor.realm)
+        data = [
+            dict(email=self.nonreg_email('bob'), referrer_id=invitor.id, email_body=None),
+        ]
+        for element in data:
+            fake_client.queue.append(('invites', element))
+
+        with simulated_queue_client(lambda: fake_client):
+            worker = queue_processors.ConfirmationEmailWorker()
+            worker.setup()
+            with patch('zerver.worker.queue_processors.do_send_confirmation_email'), \
+                 patch('zerver.worker.queue_processors.create_confirmation_link'), \
+                 patch('zerver.worker.queue_processors.send_future_email') \
+                     as send_mock, \
+                 patch('logging.info'):
+                worker.start()
+                self.assertEqual(send_mock.call_count, len(data))
 
     def test_UserActivityWorker(self) -> None:
         fake_client = self.FakeClient()
