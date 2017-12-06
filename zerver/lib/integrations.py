@@ -443,28 +443,22 @@ BOT_INTEGRATIONS = [
     BotIntegration('xkcd', ['bots', 'misc'], display_name='xkcd'),
 ]  # type: List[BotIntegration]
 
-# Note: These are not actually displayed anywhere; we're keeping them
-# around so they can be migrated into the newer HUBOT_INTEGRATIONS
-HUBOT_INTEGRATIONS_LEGACY = {
-    'bonusly': HubotIntegration('bonusly', ['hr']),
-    'chartbeat': HubotIntegration('chartbeat', ['marketing']),
-    'darksky': HubotIntegration('darksky', ['misc'], display_name='Dark Sky',
-                                logo_alt='Dark Sky logo'),
-    'hangouts': HubotIntegration('google-hangouts', ['communication'], display_name="Hangouts"),
-    'instagram': HubotIntegration('instagram', ['misc'],
-                                  logo='static/images/integrations/logos/instagram.png'),
-    'mailchimp': HubotIntegration('mailchimp', ['communication', 'marketing'],
-                                  display_name='MailChimp', logo_alt='MailChimp logo'),
-    'translate': HubotIntegration('google-translate', ['misc'],
-                                  display_name="Translate", logo_alt='Google Translate logo'),
-    'youtube': HubotIntegration('youtube', ['misc'], display_name='YouTube',
-                                logo_alt='YouTube logo')
-}
-
-HUBOT_INTEGRATIONS = {
+HUBOT_INTEGRATIONS = [
     HubotIntegration('assembla', ['version-control', 'project-management'],
                      display_name='Assembla', logo_alt='Assembla'),
-}
+    HubotIntegration('bonusly', ['hr']),
+    HubotIntegration('chartbeat', ['marketing'], display_name='Chartbeat'),
+    HubotIntegration('darksky', ['misc'], display_name='Dark Sky',
+                     logo_alt='Dark Sky logo'),
+    HubotIntegration('google-hangouts', ['communication'], display_name='Google Hangouts',
+                     logo_alt='Google Hangouts logo'),
+    HubotIntegration('instagram', ['misc'], display_name='Instagram'),
+    HubotIntegration('mailchimp', ['communication', 'marketing'],
+                     display_name='MailChimp'),
+    HubotIntegration('google-translate', ['misc'],
+                     display_name="Google Translate", logo_alt='Google Translate logo'),
+    HubotIntegration('youtube', ['misc'], display_name='YouTube'),
+]  # type: List[HubotIntegration]
 
 for hubot_integration in HUBOT_INTEGRATIONS:
     INTEGRATIONS[hubot_integration.name] = hubot_integration
