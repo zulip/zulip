@@ -133,9 +133,15 @@ def walk_tree(root: Element,
     return results
 
 # height is not actually used
-def add_a(root, url, link, title=None, desc=None,
-          class_attr="message_inline_image", data_id=None):
-    # type: (Element, Text, Text, Optional[Text], Optional[Text], Text, Optional[Text]) -> None
+def add_a(
+        root: Element,
+        url: Text,
+        link: Text,
+        title: Optional[Text]=None,
+        desc: Optional[Text]=None,
+        class_attr: Text="message_inline_image",
+        data_id: Optional[Text]=None
+) -> None:
     title = title if title is not None else url_filename(link)
     title = title if title else ""
     desc = desc if desc is not None else ""
