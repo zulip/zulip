@@ -17,10 +17,10 @@ from zerver.models import PreregistrationUser, Stream, UserProfile
 import re
 
 @has_request_variables
-def invite_users_backend(request, user_profile,
-                         invitee_emails_raw=REQ("invitee_emails"),
-                         invite_as_admin=REQ(validator=check_bool, default=False)):
-    # type: (HttpRequest, UserProfile, str, Optional[bool]) -> HttpResponse
+def invite_users_backend(request: HttpRequest, user_profile: UserProfile,
+                         invitee_emails_raw: str=REQ("invitee_emails"),
+                         invite_as_admin: Optional[bool]=REQ(validator=check_bool, default=False),
+                         ) -> HttpResponse:
 
     if user_profile.realm.invite_by_admins_only and not user_profile.is_realm_admin:
         return json_error(_("Must be a realm administrator"))
