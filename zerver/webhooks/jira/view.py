@@ -222,10 +222,9 @@ def handle_deleted_issue_event(payload: Dict[str, Any]) -> Text:
 
 @api_key_only_webhook_view("JIRA")
 @has_request_variables
-def api_jira_webhook(request, user_profile,
-                     payload=REQ(argument_type='body'),
-                     stream=REQ(default='jira')):
-    # type: (HttpRequest, UserProfile, Dict[str, Any], Text) -> HttpResponse
+def api_jira_webhook(request: HttpRequest, user_profile: UserProfile,
+                     payload: Dict[str, Any]=REQ(argument_type='body'),
+                     stream: Text=REQ(default='jira')) -> HttpResponse:
 
     event = get_event_type(payload)
     if event == 'jira:issue_created':
