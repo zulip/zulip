@@ -11,10 +11,9 @@ from zerver.models import UserProfile
 
 @api_key_only_webhook_view('Zapier')
 @has_request_variables
-def api_zapier_webhook(request, user_profile,
-                       payload=REQ(argument_type='body'),
-                       stream=REQ(default='zapier')):
-    # type: (HttpRequest, UserProfile, Dict[str, Any], str) -> HttpResponse
+def api_zapier_webhook(request: HttpRequest, user_profile: UserProfile,
+                       payload: Dict[str, Any]=REQ(argument_type='body'),
+                       stream: str=REQ(default='zapier')) -> HttpResponse:
     subject = payload.get('subject')
     content = payload.get('content')
     if subject is None:
