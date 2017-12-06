@@ -204,7 +204,7 @@ class ZulipPasswordResetForm(PasswordResetForm):
             logging.info("Password reset attempted for %s even though password auth is disabled." % (email,))
             return
 
-        user = None
+        user = None  # type: Optional[UserProfile]
         try:
             user = get_user(email, realm)
         except UserProfile.DoesNotExist:
