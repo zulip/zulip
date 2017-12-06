@@ -86,6 +86,9 @@ class Integration:
     def is_enabled(self) -> bool:
         return True
 
+    def is_hidden(self) -> bool:
+        return False
+
     def get_logo_url(self) -> Optional[str]:
         logo_file_path_svg = str(pathlib.PurePath(
             settings.STATIC_ROOT,
@@ -201,12 +204,18 @@ class HubotIntegration(Integration):
             git_url = self.GIT_URL_TEMPLATE.format(name)
         self.hubot_docs_url = git_url
 
+        if logo is None:
+            logo = "static/images/integrations/logos/hubot.png"
+
         super().__init__(
             name, name, categories,
             logo=logo, display_name=display_name,
             doc = 'zerver/integrations/hubot_common.md',
             legacy=legacy
         )
+
+    def is_hidden(self) -> bool:
+        return True
 
 class GithubIntegration(WebhookIntegration):
     """
