@@ -208,14 +208,6 @@ def find_key_by_email(address: Text) -> Optional[Text]:
             return key_regex.search(message.body).groups()[0]
     return None  # nocoverage -- in theory a test might want this case, but none do
 
-def find_pattern_in_email(address: Text, pattern: Text) -> Optional[Text]:
-    from django.core.mail import outbox
-    key_regex = re.compile(pattern)
-    for message in reversed(outbox):
-        if address in message.to:
-            return key_regex.search(message.body).group(0)
-    return None  # nocoverage -- in theory a test might want this case, but none do
-
 def message_stream_count(user_profile: UserProfile) -> int:
     return UserMessage.objects. \
         select_related("message"). \

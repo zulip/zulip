@@ -1,9 +1,7 @@
 Hi there,
 
 {{ referrer.full_name }} ({{ referrer.email }}) wants you to join them on Zulip -- the team communication tool designed for productivity.
-{% if custom_body %}
-Message from {{ referrer.full_name }}: {{ custom_body }}
-{% endif %}
+
 To get started, visit the link below:
     <{{ activate_url }}>
 

@@ -2279,10 +2279,6 @@ button.topic_edit_cancel {
     max-height: 300px;
 }
 
-#invite-user #custom_invite_body {
-    margin-top: 10px;
-}
-
 #invite-user .overlay-content {
     position: relative;
     width: 500px;

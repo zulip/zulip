@@ -232,9 +232,8 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
                 return
 
         referrer = get_user_profile_by_id(data["referrer_id"])
-        body = data["email_body"]
         logging.info("Sending invitation for realm %s to %s" % (referrer.realm.string_id, invitee.email))
-        do_send_confirmation_email(invitee, referrer, body)
+        do_send_confirmation_email(invitee, referrer)
 
         # queue invitation reminder for two days from now.
         link = create_confirmation_link(invitee, referrer.realm.host, Confirmation.INVITATION)

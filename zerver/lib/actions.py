@@ -3856,8 +3856,7 @@ def get_cross_realm_dicts() -> List[Dict[str, Any]]:
             if user.realm.string_id == settings.SYSTEM_BOT_REALM]
 
 def do_send_confirmation_email(invitee: PreregistrationUser,
-                               referrer: UserProfile,
-                               body: Optional[str]) -> None:
+                               referrer: UserProfile) -> None:
     """
     Send the confirmation/welcome e-mail to an invited user.
 
@@ -3865,7 +3864,7 @@ def do_send_confirmation_email(invitee: PreregistrationUser,
     `referrer` is a UserProfile.
     """
     activation_url = create_confirmation_link(invitee, referrer.realm.host, Confirmation.INVITATION)
-    context = {'referrer': referrer, 'custom_body': body, 'activate_url': activation_url,
+    context = {'referrer': referrer, 'activate_url': activation_url,
                'referrer_realm_name': referrer.realm.name}
     from_name = u"%s (via Zulip)" % (referrer.full_name,)
     send_email('zerver/emails/invitation', to_email=invitee.email, from_name=from_name,
@@ -3950,8 +3949,7 @@ def check_invite_limit(user: UserProfile, num_invitees: int) -> None:
 def do_invite_users(user_profile: UserProfile,
                     invitee_emails: SizedTextIterable,
                     streams: Iterable[Stream],
-                    invite_as_admin: Optional[bool]=False,
-                    body: Optional[str]=None) -> None:
+                    invite_as_admin: Optional[bool]=False) -> None:
 
     check_invite_limit(user_profile, len(invitee_emails))
 
@@ -3996,7 +3994,7 @@ def do_invite_users(user_profile: UserProfile,
         stream_ids = [stream.id for stream in streams]
         prereg_user.streams.set(stream_ids)
 
-        event = {"prereg_id": prereg_user.id, "referrer_id": user_profile.id, "email_body": body}
+        event = {"prereg_id": prereg_user.id, "referrer_id": user_profile.id}
         queue_json_publish("invites", event)
 
     if skipped:
