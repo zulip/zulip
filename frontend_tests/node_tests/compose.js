@@ -7,8 +7,9 @@ set_global('page_params', {
 
 set_global('navigator', {});
 set_global('document', {
-    location: {
-    },
+    getElementById: function () { return $('#compose-textarea'); },
+    execCommand: function () { return false; },
+    location: {},
 });
 set_global('channel', {});
 set_global('templates', {});
@@ -254,6 +255,107 @@ people.add(bob);
     assert(!$("#compose-send-status").visible());
     assert.equal(compose_content, 'compose_all_everyone_stub');
     assert($("#compose-all-everyone").visible());
+}());
+
+(function test_markdown_shortcuts() {
+    blueslip.error = noop;
+    blueslip.log = noop;
+
+    var queryCommandEnabled = true;
+    var event = {
+        keyCode: 66,
+        target: {
+            id: 'compose-textarea',
+        },
+        stopPropagation: noop,
+        preventDefault: noop,
+    };
+    var input_text = "";
+    var range_start = 0;
+    var range_length = 0;
+    var compose_value = $("#compose_textarea").val();
+    var selected_word = "";
+
+    global.document.queryCommandEnabled = function () {
+        return queryCommandEnabled;
+    };
+    global.document.execCommand = function (cmd, bool, markdown) {
+        var compose_textarea = $("#compose-textarea");
+        var value = compose_textarea.val();
+        $("#compose-textarea").val(value.substring(0, compose_textarea.range().start)+
+            markdown+value.substring(compose_textarea.range().end, value.length));
+    };
+
+    $("#compose-textarea").range = function () {
+        return {
+            start: range_start,
+            end: range_start + range_length,
+            length: range_length,
+            range: noop,
+            text: $("#compose-textarea").val().substring(range_start, range_length+range_start),
+        };
+    };
+    $('#compose-textarea').caret = noop;
+
+    // Test bold: ctrl/cmd + b.
+    input_text = "Anything bold.";
+    $("#compose-textarea").val(input_text);
+    compose_value = $("#compose-textarea").val();
+    // Select "bold" word in compose box.
+    selected_word = "bold";
+    range_start = compose_value.search(selected_word);
+    range_length = selected_word.length;
+    event.keyCode = 66;
+    event.metaKey = false;
+    event.ctrlKey = true;
+    compose.handle_keydown(event);
+    assert.equal("Anything **bold**.", $('#compose-textarea').val());
+    // Test if no text is selected.
+    // Change cursor to first position.
+    range_start = 0;
+    range_length = 0;
+    compose.handle_keydown(event);
+    assert.equal("****Anything **bold**.", $('#compose-textarea').val());
+
+    // Test italic: ctrl/cmd + i.
+    input_text = "Anything italic";
+    $("#compose-textarea").val(input_text);
+    $("#compose-textarea").val(input_text);
+    compose_value = $("#compose-textarea").val();
+    // Select "italic" word in compose box.
+    selected_word = "italic";
+    range_start = compose_value.search(selected_word);
+    range_length = selected_word.length;
+    event.keyCode = undefined;
+    event.which = 73;
+    event.metaKey = true;
+    event.ctrlKey = false;
+    compose.handle_keydown(event);
+    assert.equal("Anything *italic*", $('#compose-textarea').val());
+    // Test if no text is selected.
+    range_length = 0;
+    // Change cursor to first position.
+    range_start = 0;
+    compose.handle_keydown(event);
+    assert.equal("**Anything *italic*", $('#compose-textarea').val());
+
+    // Test link insertion: ctrl/cmd + l.
+    input_text = "Any link.";
+    $("#compose-textarea").val(input_text);
+    compose_value = $("#compose-textarea").val();
+    // Select "link" word in compose box.
+    selected_word = "link";
+    range_start = compose_value.search(selected_word);
+    range_length = selected_word.length;
+    event.keyCode = 76;
+    event.which = undefined;
+    event.ctrlKey = true;
+    compose.handle_keydown(event);
+    assert.equal("Any [link](url).", $('#compose-textarea').val());
+    // Test if exec command is not enabled in browser.
+    queryCommandEnabled = false;
+    compose.handle_keydown(event);
+
 }());
 
 (function test_send_message_success() {
