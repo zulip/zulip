@@ -19,10 +19,9 @@ from typing import Any, Callable, Dict, Generator, Iterable, Optional
 
 
 class WebsocketClient:
-    def __init__(self, host_url, sockjs_url, sender_email, run_on_start, validate_ssl=True,
-                 **run_kwargs):
+    def __init__(self, host_url: str, sockjs_url: str, sender_email: str, run_on_start: Callable[..., None],
+                 validate_ssl: bool = True, **run_kwargs: Any) -> None:
         # NOTE: Callable should take a WebsocketClient & kwargs, but this is not standardised
-        # type: (str, str, str, Callable[..., None], bool, **Any) -> None
         self.validate_ssl = validate_ssl
         self.auth_email = sender_email
         self.user_profile = get_system_bot(sender_email)
@@ -36,7 +35,7 @@ class WebsocketClient:
         self.run_on_start = run_on_start
         self.run_kwargs = run_kwargs
         self.scheme_dict = {'http': 'ws', 'https': 'wss'}
-        self.ws = None  # type: Optional[WebSocketClientConnection]
+        self.ws: Optional[WebSocketClientConnection] = None
 
     def _login(self) -> Dict[str, str]:
 
