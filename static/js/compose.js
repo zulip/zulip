@@ -555,9 +555,66 @@ exports.validate = function () {
     return validate_stream_message();
 };
 
+exports.handle_keydown = function (event) {
+    var code = event.keyCode || event.which;
+    var textarea = $("#compose-textarea");
+    var range = textarea.range();
+    var bKey = 66;
+    var iKey = 73;
+    var lKey = 76;
+
+    if ((code === bKey || code === iKey || code === lKey) && (event.ctrlKey || event.metaKey)) {
+        function add_markdown(markdown) {
+            var textarea = $("#compose-textarea");
+            var range = textarea.range();
+            if (!document.execCommand('insertText', false, markdown)) {
+                textarea.range(range.start, range.end).range(markdown);
+            }
+            event.preventDefault();
+        }
+
+        if (code === bKey) {
+            // ctrl + b: Convert selected text to bold text
+            add_markdown("**" + range.text + "**");
+            if (!range.length) {
+                textarea.caret(textarea.caret() - 2);
+            }
+        }
+        if (code === iKey) {
+            // ctrl + i: Convert selected text to italic text
+            add_markdown("*" + range.text + "*");
+            if (!range.length) {
+                textarea.caret(textarea.caret() - 1);
+            }
+        }
+        if (code === lKey) {
+            // ctrl + l: Insert a link to selected text
+            add_markdown("[" + range.text + "](url)");
+            var position = textarea.caret();
+            var txt = document.getElementById("compose-textarea");
+
+            // Include selected text in between [] parantheses and insert '(url)'
+            // where "url" should be automatically selected.
+            // Position of cursor depends on whether browser supports exec
+            // command or not. So set cursor position accrodingly.
+            if (document.queryCommandEnabled('insertText')) {
+                txt.selectionStart = position - 4;
+                txt.selectionEnd = position - 1;
+            } else {
+                txt.selectionStart = position + range.length + 3;
+                txt.selectionEnd = position + range.length + 6;
+            }
+        }
+
+        compose_ui.autosize_textarea();
+        return;
+    }
+};
+
 exports.initialize = function () {
     $('#stream,#subject,#private_message_recipient').on('keyup', update_fade);
     $('#stream,#subject,#private_message_recipient').on('change', update_fade);
+    $('#compose-textarea').on('keydown', exports.handle_keydown);
 
     $("#compose form").on("submit", function (e) {
        e.preventDefault();
