@@ -85,6 +85,26 @@ exports.set_up = function () {
             },
         });
     });
+
+    $('#user-groups').on('click', '.delete', function () {
+        var group_id = $(this).parent().attr('id');
+        var user_group = user_groups.get_user_group_from_id(group_id);
+        var btn = $(this);
+
+        channel.del({
+            url: "/json/user_groups/" + group_id,
+            data: {
+                id: group_id,
+            },
+            success: function () {
+                user_groups.remove(user_group);
+                settings_user_groups.reload();
+            },
+            error: function () {
+                btn.text(i18n.t("Failed!"));
+            },
+        });
+    });
 };
 
 return exports;
