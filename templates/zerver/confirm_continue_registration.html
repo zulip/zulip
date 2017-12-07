@@ -38,16 +38,10 @@
                                     {{ _("Go back to login") }}
                                 </button>
                             </form>
-                            {# TODO: Ideally, this should use whatever auth #}
-                            {# method the user had used to get here, not just #}
-                            {# send an email. #}
+                            {# TODO: Ideally, this should allow users to register #}
+                            {# without going over to /register and re-authenticating. #}
                             <form class="form-inline" id="send_confirm" name="send_confirm"
-                                action="/register/" method="post">
-                                {{ csrf_input }}
-                                <input type="hidden"
-                                       id="email"
-                                       name="email"
-                                       value="{{ email }}" />
+                                action="/register/" method="get">
                                 <button class="outline">
                                     {{ _("Register instead") }}
                                 </button>
