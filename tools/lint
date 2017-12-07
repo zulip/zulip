@@ -159,7 +159,7 @@ def run():
 
     external_linter('add_class', ['tools/find-add-class'], ['js'])
     external_linter('css', ['tools/check-css'], ['css'])
-    external_linter('eslint', ['node', 'node_modules/.bin/eslint', '--quiet'], ['js'])
+    external_linter('eslint', ['node', 'node_modules/.bin/eslint', '--quiet', '--cache'], ['js'])
     external_linter('tslint', ['node', 'node_modules/.bin/tslint', '-c',
                                'static/ts/tslint.json'], ['ts'])
     external_linter('puppet', ['puppet', 'parser', 'validate'], ['pp'])
