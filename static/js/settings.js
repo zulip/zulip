@@ -85,6 +85,7 @@ function _setup_page() {
             "filter-settings": i18n.t("Filter settings"),
             "invites-list-admin": i18n.t("Invitations"),
             "user-groups-admin": i18n.t("User groups"),
+            "profile-field-settings": i18n.t("Profile field settings"),
         };
     }
 

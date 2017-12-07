@@ -1080,6 +1080,7 @@ JS_SPECS = {
             'js/settings_filters.js',
             'js/settings_invites.js',
             'js/settings_user_groups.js',
+            'js/settings_profile_fields.js',
             'js/settings.js',
             'js/admin_sections.js',
             'js/admin.js',
