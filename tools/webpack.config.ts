@@ -78,6 +78,12 @@ export default (env?: string) : Config => {
                         {loader: 'expose-loader', options: 'common'},
                     ],
                 },
+                {
+                    test: require.resolve('../static/js/portico/recaptcha.js'),
+                    use: [
+                        {loader: 'expose-loader', options: 'recaptcha'},
+                    ],
+                },
             ],
         },
         output: {
