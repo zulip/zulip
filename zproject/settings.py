@@ -309,6 +309,11 @@ DEFAULT_SETTINGS.update({
     # Default for a realm's `max_invites`; which applies per day,
     # and only applies if OPEN_REALM_CREATION is true.
     'INVITES_DEFAULT_REALM_DAILY_MAX': 100,
+    # Global rate-limit (list of pairs (days, max)) on invites from new realms.
+    # Only applies if OPEN_REALM_CREATION is true.
+    'INVITES_NEW_REALM_LIMIT_DAYS': [(1, 100)],
+    # Definition of a new realm for INVITES_NEW_REALM_LIMIT.
+    'INVITES_NEW_REALM_DAYS': 7,
 
     # Controls for which links are published in portico footers/headers/etc.
     'EMAIL_DELIVERER_DISABLED': False,

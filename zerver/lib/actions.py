@@ -4119,10 +4119,10 @@ class InvitationError(JsonableError):
         self.errors = errors  # type: List[Tuple[Text, str]]
         self.sent_invitations = sent_invitations  # type: bool
 
-def estimate_recent_invites(realm: Realm, *, days: int) -> int:
+def estimate_recent_invites(realms: Iterable[Realm], *, days: int) -> int:
     '''An upper bound on the number of invites sent in the last `days` days'''
     recent_invites = RealmCount.objects.filter(
-        realm=realm,
+        realm__in=realms,
         property='invites_sent::day',
         end_time__gte=timezone_now() - datetime.timedelta(days=days)
     ).aggregate(Sum('value'))['value__sum']
@@ -4131,15 +4131,27 @@ def estimate_recent_invites(realm: Realm, *, days: int) -> int:
     return recent_invites
 
 def check_invite_limit(user: UserProfile, num_invitees: int) -> None:
-    # Discourage using invitation emails as a vector for carrying spam
+    '''Discourage using invitation emails as a vector for carrying spam.'''
+    msg = _("You do not have enough remaining invites. "
+            "Please contact %s to have your limit raised. "
+            "No invitations were sent.") % (settings.ZULIP_ADMINISTRATOR,)
     if settings.OPEN_REALM_CREATION:
-        recent_invites = estimate_recent_invites(user.realm, days=1)
+        recent_invites = estimate_recent_invites([user.realm], days=1)
         if num_invitees + recent_invites > user.realm.max_invites:
-            raise InvitationError(
-                _("You do not have enough remaining invites. "
-                  "Please contact %s to have your limit raised. "
-                  "No invitations were sent." % (settings.ZULIP_ADMINISTRATOR)),
-                [], sent_invitations=False)
+            raise InvitationError(msg, [], sent_invitations=False)
+
+        default_max = settings.INVITES_DEFAULT_REALM_DAILY_MAX
+        newrealm_age = datetime.timedelta(days=settings.INVITES_NEW_REALM_DAYS)
+        if (user.realm.date_created > timezone_now() - newrealm_age
+                and user.realm.max_invites <= default_max):
+            new_realms = Realm.objects.filter(
+                date_created__gte=timezone_now() - newrealm_age,
+                _max_invites__lte=default_max,
+            ).all()
+            for days, count in settings.INVITES_NEW_REALM_LIMIT_DAYS:
+                recent_invites = estimate_recent_invites(new_realms, days=days)
+                if num_invitees + recent_invites > count:
+                    raise InvitationError(msg, [], sent_invitations=False)
 
 def do_invite_users(user_profile: UserProfile,
                     invitee_emails: SizedTextIterable,
