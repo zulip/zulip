@@ -224,8 +224,7 @@ class WorkerTest(ZulipTestCase):
         invitor = self.example_user('iago')
         prereg_alice = PreregistrationUser.objects.create(
             email=self.nonreg_email('alice'), referred_by=invitor, realm=invitor.realm)
-        prereg_bob = PreregistrationUser.objects.create(
-            email=self.nonreg_email('bob'), referred_by=invitor, realm=invitor.realm)
+        PreregistrationUser.objects.create(email=self.nonreg_email('bob'), referred_by=invitor, realm=invitor.realm)
         data = [
             dict(prereg_id=prereg_alice.id, referrer_id=invitor.id, email_body=None),
             # Nonexistent prereg_id, as if the invitation was deleted
@@ -240,11 +239,11 @@ class WorkerTest(ZulipTestCase):
             worker = queue_processors.ConfirmationEmailWorker()
             worker.setup()
             with patch('zerver.worker.queue_processors.do_send_confirmation_email'), \
-                 patch('zerver.worker.queue_processors.create_confirmation_link'), \
-                 patch('zerver.worker.queue_processors.send_future_email') \
-                     as send_mock, \
-                 patch('logging.info'):
-                worker.start()
+                patch('zerver.worker.queue_processors.create_confirmation_link'), \
+                patch('zerver.worker.queue_processors.send_future_email') \
+                as send_mock, \
+                patch('logging.info'):
+                    worker.start()
                 self.assertEqual(send_mock.call_count, 2)
 
     def test_UserActivityWorker(self) -> None:
