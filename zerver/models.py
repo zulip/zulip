@@ -1404,7 +1404,7 @@ def get_user(email: Text, realm: Realm) -> UserProfile:
     return UserProfile.objects.select_related().get(email__iexact=email.strip(), realm=realm)
 
 def get_user_including_cross_realm(email: Text, realm: Optional[Realm]=None) -> UserProfile:
-    if email in get_cross_realm_emails():
+    if is_cross_realm_bot_email(email):
         return get_system_bot(email)
     assert realm is not None
     return get_user(email, realm)
@@ -1454,9 +1454,6 @@ def get_owned_bot_dicts(user_profile: UserProfile,
              'avatar_url': avatar_url_from_dict(botdict),
              }
             for botdict in result]
-
-def get_cross_realm_emails() -> Set[Text]:
-    return set(settings.CROSS_REALM_BOT_EMAILS)
 
 def is_cross_realm_bot_email(email: Text) -> bool:
     return email.lower() in settings.CROSS_REALM_BOT_EMAILS
