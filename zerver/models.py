@@ -1458,6 +1458,9 @@ def get_owned_bot_dicts(user_profile: UserProfile,
 def get_cross_realm_emails() -> Set[Text]:
     return set(settings.CROSS_REALM_BOT_EMAILS)
 
+def is_cross_realm_bot_email(email: Text) -> bool:
+    return email.lower() in settings.CROSS_REALM_BOT_EMAILS
+
 # The Huddle class represents a group of individuals who have had a
 # Group Private Message conversation together.  The actual membership
 # of the Huddle is stored in the Subscription table just like with
