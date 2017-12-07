@@ -2697,3 +2697,49 @@ button.topic_edit_cancel {
     -webkit-user-select: none;
     -ms-user-select: none;
 }
+
+.my_email {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.my_email .tooltip_holder {
+    display: none;
+    position: absolute;
+    left: 50%;
+}
+
+.display-tooltip {
+    display: block !important;
+}
+
+.email_tooltip {
+    visibility: hidden;
+    opacity: 0;
+    position: relative;
+    padding: 5px 8px;
+    left: -50%;
+    top: 10px;
+    border-radius: 6px;
+    background-color: #4c4c4c;
+    color: #fff;
+    transition: visibility 0.2s ease-out, opacity 0.2s linear;
+}
+
+.email_tooltip::after {
+    content: "";
+    position: absolute;
+    top: -47%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 7px;
+    border-style: solid;
+    border-color: transparent;
+    border-bottom: #4c4c4c solid 7px;
+}
+
+.my_email:hover .email_tooltip {
+    visibility: visible;
+    opacity: 1;
+}
