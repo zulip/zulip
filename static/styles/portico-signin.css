@@ -931,3 +931,7 @@ button.login-google-button {
         min-height: calc(100vh - 560px);
     }
 }
+
+#loader {
+    display: none;
+}
