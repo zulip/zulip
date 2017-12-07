@@ -1,0 +1,63 @@
+#!/bin/bash
+
+EXTERNAL_HOST=`./scripts/get-django-setting EXTERNAL_HOST`
+ZULIP_ADMINISTRATOR=`./scripts/get-django-setting ZULIP_ADMINISTRATOR`
+zulip_org_id=`./scripts/get-django-setting ZULIP_ORG_ID`
+zulip_org_key=`./scripts/get-django-setting ZULIP_ORG_KEY`
+
+if [ "$EXTERNAL_HOST" != "zulipdev.com:9991" ]; then
+    echo "Please set EXTERNAL_HOST in /etc/zulip/settings.py."
+    exit
+fi
+
+if [ "$ZULIP_ADMINISTRATOR" != "zulip-admin@example.com" ]; then
+    echo "Please set ZULIP_ADMINISTRATOR in /etc/zulip/settings.py."
+    exit
+fi
+
+if [[  -z "$zulip_org_id" ]] ; then
+    echo  "Please run scripts/setup/generate_secrets.py first."
+    exit
+fi
+if [[ -z "$zulip_org_key"  ]]; then
+    echo  "Please run scripts/setup/generate_secrets.py first."
+    exit
+fi
+
+echo "This script will register your server with the Zulip push notification bouncer service."
+echo  " You can read more about the service at
+    http://zulip.readthedocs.io/en/latest/prod-mobile-push-notifications.html. "
+echo
+read -p 'Use of the bouncer is subject to the Zulip Terms of Service at https://zulipchat.com/terms/.
+Do you agree to those terms? [Y/n] ' RESPONSE_b
+RESPONSE="n"
+
+while [[ $RESPONSE =~ ^[nN]$ ]];
+do
+read -p 'Hostname (EXTERNAL_HOST): ' EXTERNAL_HOST
+read -p 'Contact email (ZULIP_ADMINISTRATOR): ' ZULIP_ADMINISTRATOR
+read -p 'Is the information above correct? We recommend using an email address
+like ops@ that will outlast changes in personnel. [Y/n] ' RESPONSE
+done
+
+echo
+read -p 'Would you like to sign up for the zulip-announce mailing list?
+Used for new releases, security advisories, updates to the
+terms of service, etc. (~1 email/mo.) [Y/n] ' RESPONSE_a
+
+echo "Registering server ..."
+
+ipinfo=$(curl -d "hostname=$EXTERNAL_HOST&contact_email=$ZULIP_ADMINISTRATOR&uuid=$zulip_org_id&api_key=$zulip_org_key" \
+-u outgoing-webhook@zulip.com:uccWrLyhkUmE9K8lswtM2wrtAvdLLAaG http://localhost:9991/api/v1/remotes/push/register_server)
+echo
+
+if [ "$ipinfo" == '{"result":"success","msg":""}' ]; then
+    echo "Server successfully registered."
+    echo
+    echo "See http://zulip.readthedocs.io/en/latest/prod-mobile-push-notifications.html"
+    echo "for instructions on how to enable and test mobile notifications on your server."
+elif [ "$ipinfo" == '{"result":"error","msg":"Internal server error"}' ]; then
+    echo "Server already registered. Please email support@zulipchat.com to update registration information."
+else
+    echo "Internal server error"
+fi

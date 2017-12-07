@@ -27,6 +27,20 @@ def validate_bouncer_token_request(entity: Union[UserProfile, RemoteZulipServer]
     validate_token(token, kind)
 
 @has_request_variables
+def remote_server_register_server(request, user):
+    print(request.POST)
+    remote_server, created = RemoteZulipServer.objects.get_or_create(
+        uuid=request.POST['uuid'],
+        api_key=request.POST['api_key'],
+        hostname=request.POST['hostname'],
+        contact_email=request.POST['contact_email'],
+        defaults={'last_updated': timezone.now()})
+    if created:
+        return json_success()
+    else:
+        return json_error()
+
+@has_request_variables
 def remote_server_register_push(request: HttpRequest, entity: Union[UserProfile, RemoteZulipServer],
                                 user_id: int=REQ(), token: bytes=REQ(),
                                 token_kind: int=REQ(validator=check_int),
@@ -52,11 +66,11 @@ def remote_server_register_push(request: HttpRequest, entity: Union[UserProfile,
 
     return json_success()
 
+
 @has_request_variables
-def remote_server_unregister_push(request: HttpRequest, entity: Union[UserProfile, RemoteZulipServer],
-                                  token: bytes=REQ(),
-                                  token_kind: int=REQ(validator=check_int),
-                                  ios_app_id: Optional[Text]=None) -> HttpResponse:
+def remote_server_unregister_push(request, entity, token=REQ(),
+                                  token_kind=REQ(validator=check_int), ios_app_id=None):
+    # type: (HttpRequest, Union[UserProfile, RemoteZulipServer], bytes, int, Optional[Text]) -> HttpResponse
     validate_bouncer_token_request(entity, token, token_kind)
     server = cast(RemoteZulipServer, entity)
     deleted = RemotePushDeviceToken.objects.filter(token=token,
