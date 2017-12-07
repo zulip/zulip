@@ -491,3 +491,18 @@ zrequire('stream_data');
     page_params.notifications_stream = 'jazy';
     assert(!stream_data.notifications_in_home_view());
 }());
+
+(function test_remove_default_stream() {
+    var remove_me = {
+        stream_id: 674,
+        name: 'remove_me',
+        subscribed: false,
+        in_home_view: false,
+    };
+
+    stream_data.add_sub('remove_me', remove_me);
+    stream_data.set_realm_default_streams([remove_me]);
+    stream_data.remove_default_stream(remove_me.stream_id);
+    assert(!stream_data.get_default_status('remove_me'));
+    assert.equal(page_params.realm_default_streams.length, 0);
+}());
