@@ -3947,16 +3947,14 @@ def do_invite_users(user_profile: UserProfile,
                     body: Optional[str]=None) -> None:
 
     check_invite_limit(user_profile, len(invitee_emails))
+
     validated_emails = []  # type: List[Text]
     errors = []  # type: List[Tuple[Text, str]]
     skipped = []  # type: List[Tuple[Text, str]]
-
     for email in invitee_emails:
         if email == '':
             continue
-
         email_error, email_skipped = validate_email(user_profile, email)
-
         if not (email_error or email_skipped):
             validated_emails.append(email)
         elif email_error:
@@ -3981,7 +3979,6 @@ def do_invite_users(user_profile: UserProfile,
         prereg_user = PreregistrationUser(email=email, referred_by=user_profile,
                                           invited_as_admin=invite_as_admin,
                                           realm=user_profile.realm)
-
         prereg_user.save()
         stream_ids = [stream.id for stream in streams]
         prereg_user.streams.set(stream_ids)
