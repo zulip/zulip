@@ -66,7 +66,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     UserActivityInterval, active_user_ids, get_active_streams, \
     realm_filters_for_realm, RealmFilter, \
     get_owned_bot_dicts, stream_name_in_use, \
-    get_old_unclaimed_attachments, get_cross_realm_emails, \
+    get_old_unclaimed_attachments, is_cross_realm_bot_email, \
     Reaction, EmailChangeStatus, CustomProfileField, \
     custom_profile_fields_for_realm, get_huddle_user_ids, \
     CustomProfileFieldValue, validate_attachment_request, get_system_bot, \
@@ -1531,8 +1531,7 @@ def validate_recipient_user_profiles(user_profiles: List[UserProfile],
     # We exempt cross-realm bots from the check that all the recipients
     # are in the same realm.
     realms = set()
-    exempt_emails = get_cross_realm_emails()
-    if sender.email not in exempt_emails:
+    if not is_cross_realm_bot_email(sender.email):
         realms.add(sender.realm_id)
 
     for user_profile in user_profiles:
@@ -1540,7 +1539,7 @@ def validate_recipient_user_profiles(user_profiles: List[UserProfile],
                 user_profile.realm.deactivated:
             raise ValidationError(_("'%s' is no longer using Zulip.") % (user_profile.email,))
         recipient_profile_ids.add(user_profile.id)
-        if user_profile.email not in exempt_emails:
+        if not is_cross_realm_bot_email(user_profile.email):
             realms.add(user_profile.realm_id)
 
     if len(realms) > 1:
@@ -1892,8 +1891,7 @@ def internal_send_message(realm, sender_email, recipient_type_name, recipients,
     system bot."""
 
     # Verify the user is in fact a system bot
-    assert(sender_email.lower() in settings.CROSS_REALM_BOT_EMAILS or
-           sender_email == settings.ERROR_BOT)
+    assert(is_cross_realm_bot_email(sender_email) or sender_email == settings.ERROR_BOT)
 
     sender = get_system_bot(sender_email)
     parsed_recipients = extract_recipients(recipients)
@@ -3843,7 +3841,7 @@ def get_status_dict(requesting_user_profile: UserProfile) -> Dict[Text, Dict[Tex
     return UserPresence.get_status_dict_by_realm(requesting_user_profile.realm_id)
 
 def get_cross_realm_dicts() -> List[Dict[str, Any]]:
-    users = bulk_get_users(list(get_cross_realm_emails()), None,
+    users = bulk_get_users(list(settings.CROSS_REALM_BOT_EMAILS), None,
                            base_query=UserProfile.objects.filter(
                                realm__string_id=settings.SYSTEM_BOT_REALM)).values()
     return [{'email': user.email,
@@ -3874,7 +3872,7 @@ def do_send_confirmation_email(invitee: PreregistrationUser,
                from_address=FromAddress.NOREPLY, context=context)
 
 def email_not_system_bot(email: Text) -> None:
-    if email.lower() in settings.CROSS_REALM_BOT_EMAILS:
+    if is_cross_realm_bot_email(email):
         raise ValidationError('%s is an email address reserved for system bots' % (email,))
 
 def validate_email_for_realm(target_realm: Realm, email: Text) -> None:
