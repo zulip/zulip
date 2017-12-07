@@ -647,6 +647,15 @@ earl-test@zulip.com""", ["Denmark"]))
         self.check_sent_emails(["bob-test@zulip.com", "carol-test@zulip.com",
                                 "dave-test@zulip.com", "earl-test@zulip.com"])
 
+    def test_max_invites_model(self) -> None:
+        realm = get_realm("zulip")
+        self.assertEqual(realm.max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
+        realm.max_invites = 3
+        realm.save()
+        self.assertEqual(get_realm("zulip").max_invites, 3)
+        realm.max_invites = settings.INVITES_DEFAULT_REALM_DAILY_MAX
+        realm.save()
+
     def test_invite_too_many_users(self) -> None:
         # Only a light test of this pathway; e.g. doesn't test that
         # the limit gets reset after 24 hours

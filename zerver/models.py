@@ -185,8 +185,7 @@ class Realm(models.Model):
     authentication_methods = BitField(flags=AUTHENTICATION_FLAGS,
                                       default=2**31 - 1)  # type: BitHandler
     waiting_period_threshold = models.PositiveIntegerField(default=0)  # type: int
-    DEFAULT_MAX_INVITES = 100
-    max_invites = models.IntegerField(default=DEFAULT_MAX_INVITES)  # type: int
+    _max_invites = models.IntegerField(null=True, db_column='max_invites')  # type: int
     message_visibility_limit = models.IntegerField(null=True)  # type: int
     # See upload_quota_bytes; don't interpret upload_quota_gb directly.
     upload_quota_gb = models.IntegerField(null=True)  # type: Optional[int]
@@ -284,6 +283,16 @@ class Realm(models.Model):
         if self.signup_notifications_stream is not None and not self.signup_notifications_stream.deactivated:
             return self.signup_notifications_stream
         return None
+
+    @property
+    def max_invites(self) -> int:
+        if self._max_invites is None:
+            return settings.INVITES_DEFAULT_REALM_DAILY_MAX
+        return self._max_invites
+
+    @max_invites.setter
+    def max_invites(self, value: int) -> None:
+        self._max_invites = value
 
     def upload_quota_bytes(self) -> Optional[int]:
         if self.upload_quota_gb is None:
