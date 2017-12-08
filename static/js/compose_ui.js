@@ -27,8 +27,15 @@ exports.smart_insert = function (textarea, syntax) {
         }
     }
 
-    textarea.caret(syntax);
     textarea.focus();
+
+    // We prefer to use insertText, which supports things like undo better
+    // for rich-text editing features like inserting links.  But we fall
+    // back to textarea.caret if the browser doesn't support insertText.
+    if (!document.execCommand("insertText", false, syntax)) {
+        textarea.caret(syntax);
+    }
+
     // This should just call exports.autosize_textarea, but it's a bit
     // annoying for the unit tests, so we don't do that.
     textarea.trigger("autosize.resize");

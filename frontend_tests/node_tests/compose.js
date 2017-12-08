@@ -1136,20 +1136,20 @@ function test_with_mock_socket(test_params) {
     }());
 
     (function test_video_link_compose_clicked() {
-        // Hackishly pretend caret is the same as val, since we don't
-        // have a cursor anyway.
-        $('#compose-textarea').caret = function (x) {
-            $('#compose-textarea').val(x);
+        var syntax_to_insert;
+
+        compose_ui.insert_syntax_and_focus = function (syntax) {
+            syntax_to_insert = syntax;
         };
 
         var handler = $("#compose").get_on_handler("click", "#video_link");
-        assert.equal($('#compose-textarea').val(), '');
+        $('#compose-textarea').val('');
 
         handler(event);
 
         // video link ids consist of 15 random digits
         var video_link_regex = /\[Click to join video call\]\(https:\/\/meet.jit.si\/\d{15}\)/;
-        assert(video_link_regex.test($('#compose-textarea').val()));
+        assert(video_link_regex.test(syntax_to_insert));
     }());
 
     (function test_markdown_preview_compose_clicked() {
