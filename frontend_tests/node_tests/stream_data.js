@@ -547,3 +547,10 @@ zrequire('marked', 'third/marked/lib/marked');
     stream_data.render_stream_description(sub);
     assert.deepStrictEqual(sub.rendered_description, "rendered desc");
 }());
+
+(function test_canonicalized_name() {
+    assert.deepStrictEqual(
+        stream_data.canonicalized_name('Stream_Bar'),
+        "stream_bar"
+    );
+}());
