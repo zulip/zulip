@@ -350,106 +350,10 @@ input[type=checkbox].inline-block {
     margin: -2px 0px 0px 0px;
 }
 
-#attachments_list .attachment-item {
-    border-bottom: 1px solid hsl(0, 0%, 93%);
-}
-
-#attachments_list .attachment-item .list-container {
-    position: relative;
-    padding: 10px;
-    width: 100%;
-}
-
 .remove-attachment {
     margin-right: 5px       !important;
     font-size: 1.1em        !important;
     padding-left: 0px       !important;
-}
-
-#attachments_list .attachment-item .list-container .file-icon {
-    display: inline-block;
-    vertical-align: top;
-    margin-right: 8px;
-    width: 40px;
-    height: 40px;
-
-    font-weight: 600;
-    color: hsl(0, 0%, 100%);
-
-    background: -webkit-linear-gradient(-45deg, hsl(168, 53%, 52%), hsl(168, 69%, 67%));
-    background: linear-gradient(-45deg, hsl(168, 53%, 52%), hsl(168, 69%, 67%));
-
-    box-sizing: border-box;
-    border-radius: 4px;
-}
-
-#attachments_list .attachment-item .list-container .file-icon .extension {
-    font-size: 1.1em;
-    text-align: center;
-    margin-top: 10px;
-}
-
-#attachments_list .attachment-item .list-container .file-icon .extension.small {
-    margin-top: 11px;
-    font-size: 0.8em;
-}
-
-#attachments_list .attachment-item .list-container .file-icon .extension.no-extension {
-    margin-top: 12px;
-}
-
-#attachments_list .attachment-item .list-container .information {
-    display: inline-block;
-    vertical-align: top;
-    margin-top: -4px;
-}
-
-#attachments_list .attachment-messages {
-    height: 25px;
-}
-
-#attachments_list .attachment-messages .ind-message {
-    display: inline-block;
-    border-radius: 4px;
-    overflow: hidden;
-
-    border: 1px solid hsl(0, 0%, 66%);
-
-    transition: all 0.2s ease;
-}
-
-#attachments_list .attachment-messages .ind-message > div {
-    display: inline-block;
-    vertical-align: top;
-}
-
-#attachments_list .attachment-messages .ind-message .message-id {
-    padding: 1px 4px 1px 4px;
-    background-color: hsl(0, 0%, 66%);
-    color: hsl(0, 0%, 100%);
-}
-
-#attachments_list .attachment-messages .ind-message:hover {
-    border: 1px solid hsl(0, 0%, 53%);
-}
-
-#attachments_list .attachment-messages .ind-message:hover .message-id {
-    background-color: hsl(0, 0%, 53%);
-}
-
-#attachments_list .attachment-messages .ind-message {
-    color: hsl(0, 0%, 66%);
-    text-decoration: none;
-}
-
-#attachments_list .attachment-messages .message-id {
-    display: inline-block;
-    padding: 2px 4px 1px 2px;
-}
-
-#attachments_list .attachment-messages .message-date {
-    display: inline-block;
-    padding: 1px 4px 1px 2px;
 }
 
 #download_attachment {
