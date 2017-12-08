@@ -88,7 +88,7 @@ if settings.PRODUCTION:
                                                             "staticfiles.json")
     orig_path = ManifestStaticFilesStorage.path
 
-    def path(self: Any, name: str) -> str:
+    def path(self: ManifestStaticFilesStorage, name: str) -> str:
         if name == ManifestStaticFilesStorage.manifest_name:
             return name
         return orig_path(self, name)
