@@ -350,10 +350,89 @@ input[type=checkbox].inline-block {
     margin: -2px 0px 0px 0px;
 }
 
+<<<<<<< 23062f5bf64cfbd7e9b78d72d465926b303b534f
+=======
+#attachments_list .attachment-item {
+    border-bottom: 1px solid hsl(0, 0%, 93%);
+}
+
+#attachments_list .attachment-item .list-container {
+    position: relative;
+    padding: 10px;
+    width: 100%;
+}
+
+>>>>>>> user settings: fix uploaded files UI
 .remove-attachment {
     margin-right: 5px       !important;
     font-size: 1.1em        !important;
     padding-left: 0px       !important;
+<<<<<<< 23062f5bf64cfbd7e9b78d72d465926b303b534f
+=======
+}
+
+#attachments_list .attachment-item .list-container .file-icon {
+    display: inline-block;
+    vertical-align: top;
+    margin-right: 8px;
+    width: 40px;
+    height: 40px;
+
+    font-weight: 600;
+    color: hsl(0, 0%, 100%);
+
+    background: -webkit-linear-gradient(-45deg, hsl(168, 53%, 52%), hsl(168, 69%, 67%));
+    background: linear-gradient(-45deg, hsl(168, 53%, 52%), hsl(168, 69%, 67%));
+
+    box-sizing: border-box;
+    border-radius: 4px;
+}
+
+#attachments_list .attachment-item .list-container .file-icon .extension {
+    font-size: 1.1em;
+    text-align: center;
+    margin-top: 10px;
+}
+
+#attachments_list .attachment-item .list-container .file-icon .extension.small {
+    margin-top: 11px;
+    font-size: 0.8em;
+}
+
+#attachments_list .attachment-item .list-container .file-icon .extension.no-extension {
+    margin-top: 12px;
+}
+
+#attachments_list .attachment-item .list-container .information {
+    display: inline-block;
+    vertical-align: top;
+    margin-top: -4px;
+}
+
+#attachments_list .attachment-messages {
+    height: 25px;
+}
+
+#attachments_list .attachment-messages .ind-message {
+    display: inline-block;
+    border-radius: 4px;
+    overflow: hidden;
+
+    border: 1px solid hsl(0, 0%, 66%);
+
+    transition: all 0.2s ease;
+}
+
+#attachments_list .attachment-messages .ind-message > div {
+    display: inline-block;
+    vertical-align: top;
+}
+
+#attachments_list .attachment-messages .ind-message .message-id {
+    padding: 1px 4px 1px 4px;
+    background-color: hsl(0, 0%, 66%);
+    color: hsl(0, 0%, 100%);
+>>>>>>> user settings: fix uploaded files UI
 }
 
 <<<<<<< 1212e22e308d7241330fb7215108cca6358c1dd2
@@ -384,6 +463,7 @@ input[type=checkbox].inline-block {
     padding: 1px 4px 1px 2px;
 }
 
+<<<<<<< 23062f5bf64cfbd7e9b78d72d465926b303b534f
 #attachments-settings table th,
 #attachments-settings table td {
     text-align: center;
@@ -405,6 +485,8 @@ input[type=checkbox].inline-block {
 >>>>>>> user settings: fix 'Uploaded files' UI
 }
 
+=======
+>>>>>>> user settings: fix uploaded files UI
 #download_attachment {
     padding-left: 0px;
     border-left: 0px;
