@@ -16,7 +16,10 @@ function delete_attachments(attachment) {
     });
 }
 
-exports.bytes_to_size = function (bytes, kb_with_1024_bytes=false) {
+exports.bytes_to_size = function (bytes, kb_with_1024_bytes) {
+    if (kb_with_1024_bytes === undefined) {
+        kb_with_1024_bytes = false;
+    }
     var kb_size = kb_with_1024_bytes ? 1024 : 1000;
     var sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
     if (bytes === 0) {
