@@ -91,9 +91,9 @@ def is_slow_query(time_delta: float, path: Text) -> bool:
         return time_delta >= 10
     return True
 
-def write_log_line(log_data, path, method, remote_ip, email, client_name,
-                   status_code=200, error_content=None, error_content_iter=None):
-    # type: (MutableMapping[str, Any], Text, str, str, Text, Text, int, Optional[AnyStr], Optional[Iterable[AnyStr]]) -> None
+def write_log_line(log_data: MutableMapping[str, Any], path: Text, method: str, remote_ip: str, email: Text,
+                   client_name: Text, status_code: int=200, error_content: Optional[AnyStr]=None,
+                   error_content_iter: Optional[Iterable[AnyStr]]=None) -> None:
     assert error_content is None or error_content_iter is None
     if error_content is not None:
         error_content_iter = (error_content,)
