@@ -1,11 +1,11 @@
 {{#with attachment}}
 <tr class="uploaded_file_row" id="{{name}}">
-    <td class="file-name">
+    <td>
         <a type="submit" href="/user_uploads/{{path_id}}" target="_blank" title="{{t 'View file' }}">
             {{ name }}
         </a>
     </td>
-    <td class="date-uploaded">{{ create_time_str }}</td>
+    <td>{{ create_time_str }}</td>
     <td>
         {{#if messages }}
         <div class="attachment-messages">
@@ -17,8 +17,8 @@
         </div>
         {{/if}}
     </td>
-    <td class="upload-size">{{ size_str }}</td>
-    <td class="upload-actions">
+    <td>{{ size_str }}</td>
+    <td>
         <span class="edit-attachment-buttons">
             <button type="submit"
                 class="button small no-style remove-attachment"
