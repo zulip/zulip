@@ -282,6 +282,11 @@ casper.then(function () {
     casper.click('#stream_filters [data-stream-name="Verona"] a');
 });
 
+expect_stream_subject();
+
+// Click again to now narrow to stream.
+casper.thenClick('#stream_filters [data-stream-name="Verona"] a');
+
 expect_stream();
 
 casper.then(check_narrow_title('Verona - Zulip Dev - Zulip'));
