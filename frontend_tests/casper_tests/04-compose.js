@@ -44,7 +44,7 @@ casper.then(function () {
         casper.test.assertVisible('#stream-message', 'Stream input box visible');
         common.check_form('#send_message_form', {stream: '', subject: ''}, "Stream empty on new compose");
         casper.click('body');
-        casper.page.sendEvent('keypress', "C");
+        casper.page.sendEvent('keypress', "x");
     });
 });
 

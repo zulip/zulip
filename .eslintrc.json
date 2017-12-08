@@ -162,7 +162,8 @@
         "hotspots": false,
         "compose_ui": false,
         "common": false,
-        "desktop_notifications_panel": false
+        "desktop_notifications_panel": false,
+        "shortcut_notification": false
     },
     "rules": {
         "array-callback-return": "error",

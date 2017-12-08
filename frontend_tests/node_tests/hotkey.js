@@ -148,7 +148,7 @@ function stubbing(func_name_to_stub, test_function) {
 
     // Unmapped keys should immediately return false, without
     // calling any functions outside of hotkey.js.
-    assert_unmapped('abefhlmoptxyz');
+    assert_unmapped('abefhlmoptyz');
     assert_unmapped('BEFHILNOQUWXYZ');
 
     // We have to skip some checks due to the way the code is
@@ -222,8 +222,9 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('A', 'narrow.stream_cycle_backward');
     assert_mapping('D', 'narrow.stream_cycle_forward');
 
+    assert_mapping('C', 'shortcut_deprecated');
     assert_mapping('c', 'compose_actions.start');
-    assert_mapping('C', 'compose_actions.start');
+    assert_mapping('x', 'compose_actions.start');
     assert_mapping('P', 'narrow.by');
     assert_mapping('g', 'gear_menu.open');
 
