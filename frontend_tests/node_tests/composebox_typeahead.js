@@ -922,7 +922,7 @@ global.user_groups.add(backend);
     assert_typeahead_equals(":test", "ing", false);
     assert_typeahead_equals("```test", "ing", false);
     assert_typeahead_equals("~~~test", "ing", false);
-    var terminal_symbols = ',.?!()[] ';
+    var terminal_symbols = ',.;?!()[] "\'\n\t';
     terminal_symbols.split().forEach(symbol => {
         assert_typeahead_equals("#test", symbol, stream_list);
         assert_typeahead_equals("@test", symbol, all_mentions);
