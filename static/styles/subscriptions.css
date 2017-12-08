@@ -989,7 +989,7 @@ form#add_new_subscription {
     #subscription_overlay .left,
     #subscription_overlay .right,
     #settings_page .left,
-    #settings_page .right {
+    #settings_page .content-wrapper.right {
         position: absolute;
         display: block;
         margin: 0;
@@ -1008,7 +1008,7 @@ form#add_new_subscription {
     }
 
     #subscription_overlay .right,
-    #settings_page .right {
+    #settings_page .content-wrapper.right {
         position: absolute;
         left: 101%;
 
@@ -1022,7 +1022,7 @@ form#add_new_subscription {
     }
 
     #subscription_overlay .right.show,
-    #settings_page .right.show {
+    #settings_page .content-wrapper.right.show {
         left: 0%;
     }
 
