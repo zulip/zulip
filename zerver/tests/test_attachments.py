@@ -23,7 +23,7 @@ class AttachmentsTests(ZulipTestCase):
         attachments = user_attachments(user_profile)
         self.assertEqual(result.json()['attachments'], attachments)
 
-    def test_remove_attachment_exception(self: Any) -> None:
+    def test_remove_attachment_exception(self) -> None:
         user_profile = self.example_user('cordelia')
         self.login(user_profile.email)
         with mock.patch('zerver.lib.attachments.delete_message_image', side_effect=Exception()):

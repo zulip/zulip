@@ -2269,7 +2269,7 @@ class UserSignUpTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
-    def test_registration_of_active_mirror_dummy_user(self: Any) -> None:
+    def test_registration_of_active_mirror_dummy_user(self) -> None:
         """
         Trying to activate an already-active mirror dummy user should
         raise an AssertionError.
