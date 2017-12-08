@@ -264,6 +264,10 @@ def build_custom_checkers(by_lang):
          'description': 'Missing space around "%"',
          'good_lines': ["'%s' % ('foo')", "'%s' % (foo)"],
          'bad_lines': ["'%s'%('foo')", "'%s'%(foo)"]},
+        {'pattern': 'self: Any',
+         'description': 'you can omit Any annotation for self',
+         'good_lines': ['def foo (self):'],
+         'bad_lines': ['def foo(self: Any):']},
         # This rule is constructed with + to avoid triggering on itself
         {'pattern': " =" + '[^ =>~"]',
          'description': 'Missing whitespace after "="',
