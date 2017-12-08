@@ -116,13 +116,13 @@ exports.set_up = function () {
                 data: form_data,
                 cache: false,
                 processData: false,
-                contentType: false
+                contentType: false,
             });
             $('#forgot_password').html('Reset Sent To Email');
             $(this).replaceWith($('<span>' + this.innerHTML + '</span>'));
         }
     });
-    
+
     $('#new_password').on('change keyup', function () {
         var field = $('#new_password');
         common.password_quality(field.val(), $('#pw_strength .bar'), field);
