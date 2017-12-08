@@ -1,5 +1,14 @@
 zrequire('compose_ui');
 
+set_global('document', {
+    execCommand: function () { return false; },
+});
+
+set_global('$', global.make_zjquery());
+set_global('blueslip', {});
+
+var noop = function () {};
+
 function make_textbox(s) {
     // Simulate a jQuery textbox for testing purposes.
     var widget = {};
@@ -44,6 +53,24 @@ function make_textbox(s) {
 
     return widget;
 }
+
+(function test_insert_syntax_and_focus() {
+    blueslip.error = noop;
+    blueslip.log = noop;
+    $('#compose-textarea').val("xyz ");
+    $('#compose-textarea').caret = function (syntax) {
+        if (syntax !== undefined) {
+            $('#compose-textarea').val($('#compose-textarea').val() + syntax);
+        } else {
+            return 4;
+        }
+    };
+    compose_ui.insert_syntax_and_focus(':octopus:');
+    assert.equal($('#compose-textarea').caret(), 4);
+    assert.equal($('#compose-textarea').val(), 'xyz :octopus:');
+    assert($("#compose-textarea").is_focused());
+
+}());
 
 (function test_smart_insert() {
     var textbox = make_textbox('abc ');
