@@ -15,6 +15,7 @@ zrequire('topic_data');
 zrequire('people');
 zrequire('stream_color');
 zrequire('stream_data');
+zrequire('marked', 'third/marked/lib/marked');
 
 (function test_basics() {
     var denmark = {
@@ -532,4 +533,17 @@ zrequire('stream_data');
     stream_data.remove_default_stream(remove_me.stream_id);
     assert(!stream_data.get_default_status('remove_me'));
     assert.equal(page_params.realm_default_streams.length, 0);
+}());
+
+(function test_render_stream_description() {
+    var desc = {
+        name: 'no_desc',
+        stream_id: 1002,
+        description: '<p>rendered desc</p>',
+    };
+
+    stream_data.add_sub('desc', desc);
+    var sub = stream_data.get_sub_by_name('desc');
+    stream_data.render_stream_description(sub);
+    assert.deepStrictEqual(sub.rendered_description, "rendered desc");
 }());
