@@ -16,14 +16,20 @@ function delete_attachments(attachment) {
     });
 }
 
+<<<<<<< 6c2e218a42f039680e417bec46b76ece11e44370
 <<<<<<< 23062f5bf64cfbd7e9b78d72d465926b303b534f
+=======
+>>>>>>> user settings: Clean settings.css and fix bug
 exports.bytes_to_size = function (bytes, kb_with_1024_bytes) {
     if (kb_with_1024_bytes === undefined) {
         kb_with_1024_bytes = false;
     }
+<<<<<<< 6c2e218a42f039680e417bec46b76ece11e44370
 =======
 exports.bytes_to_size = function (bytes, kb_with_1024_bytes=false) {
 >>>>>>> user settings: fix uploaded files UI
+=======
+>>>>>>> user settings: Clean settings.css and fix bug
     var kb_size = kb_with_1024_bytes ? 1024 : 1000;
     var sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
     if (bytes === 0) {

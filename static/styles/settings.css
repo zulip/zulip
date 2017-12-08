@@ -350,6 +350,7 @@ input[type=checkbox].inline-block {
     margin: -2px 0px 0px 0px;
 }
 
+<<<<<<< 6c2e218a42f039680e417bec46b76ece11e44370
 <<<<<<< 23062f5bf64cfbd7e9b78d72d465926b303b534f
 =======
 #attachments_list .attachment-item {
@@ -363,6 +364,8 @@ input[type=checkbox].inline-block {
 }
 
 >>>>>>> user settings: fix uploaded files UI
+=======
+>>>>>>> user settings: Clean settings.css and fix bug
 .remove-attachment {
     margin-right: 5px       !important;
     font-size: 1.1em        !important;
@@ -371,6 +374,7 @@ input[type=checkbox].inline-block {
 =======
 }
 
+<<<<<<< 6c2e218a42f039680e417bec46b76ece11e44370
 #attachments_list .attachment-item .list-container .file-icon {
     display: inline-block;
     vertical-align: top;
@@ -487,6 +491,8 @@ input[type=checkbox].inline-block {
 
 =======
 >>>>>>> user settings: fix uploaded files UI
+=======
+>>>>>>> user settings: Clean settings.css and fix bug
 #download_attachment {
     padding-left: 0px;
     border-left: 0px;
