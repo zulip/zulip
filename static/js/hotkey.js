@@ -537,11 +537,12 @@ exports.process_hotkey = function (e, hotkey) {
             compose_actions.cancel();
             // don't return, as we still want it to be picked up by the code below
         } else if (event_name === "page_up") {
-            $("#compose-textarea").caret(0);
+            $("#compose-textarea").caret(0).animate({ scrollTop: 0 }, "fast");
             return true;
         } else if (event_name === "page_down") {
             // so that it always goes to the end of the compose box.
-            $("#compose-textarea").caret(Infinity);
+            var height = $("#compose-textarea")[0].scrollHeight;
+            $("#compose-textarea").caret(Infinity).animate({ scrollTop: height }, "fast");
             return true;
         } else {
             // Let the browser handle the key normally.
