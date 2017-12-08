@@ -154,6 +154,18 @@ label {
     width: 20%;
 }
 
+#uploaded_files_table > tr > td:nth-of-type(4),
+#uploaded_files_table > tr > td:nth-of-type(5),
+.upload-size,
+.upload-actions {
+    width: 15%;
+}
+
+#uploaded_files_table > tr > td:nth-of-type(1),
+.upload-file-name {
+    width: 30%;
+}
+
 td .button {
     margin: 2px 0px;
     box-shadow: none;
@@ -348,11 +360,10 @@ input[type=checkbox].inline-block {
     width: 100%;
 }
 
-#attachments_list .attachment-item .list-container .remove-attachment {
-    margin-top: 10px;
-    margin-right: 5px;
-    font-size: 1.2em;
-    color: hsl(0, 56%, 73%);
+.remove-attachment {
+    margin-right: 5px       !important;
+    font-size: 1.1em        !important;
+    padding-left: 0px       !important;
 }
 
 #attachments_list .attachment-item .list-container .file-icon {
@@ -439,26 +450,6 @@ input[type=checkbox].inline-block {
 #attachments_list .attachment-messages .message-date {
     display: inline-block;
     padding: 1px 4px 1px 2px;
-}
-
-#attachments-settings table th,
-#attachments-settings table td {
-    text-align: center;
-}
-
-#attachments-settings table td.file-name,
-#attachments-settings table td.date-uploaded {
-    text-align: left;
-}
-
-#attachments-settings table th.upload-size,
-#attachments-settings table td.upload-size {
-    width: 50px;
-}
-
-#attachments-settings table th.upload-actions,
-#attachments-settings table td.upload-actions {
-    width: 75px;
 }
 
 #download_attachment {
