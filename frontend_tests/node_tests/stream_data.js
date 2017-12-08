@@ -466,6 +466,10 @@ zrequire('stream_data');
     people.add(george);
     stream_data.add_subscriber('India', 103);
     assert.equal(stream_data.get_subscriber_count('India'), 2);
+
+    var sub = stream_data.get_sub_by_name('India');
+    delete sub.subscribers;
+    assert.deepStrictEqual(stream_data.get_subscriber_count('India'), 0);
 }());
 
 (function test_notifications() {
