@@ -96,9 +96,13 @@
                             <label for="old_password" class="title">{{t "Old password" }}</label>
                             <input type="password" autocomplete="off" name="old_password" id="old_password" class="w-200 inline-block" value="" />
                             <div class="info">
-                                <a href="/accounts/password/reset/" class="sea-green" target="_blank">{{t "Forgotten it?" }}</a>
+                                <a class="sea-green" id="forgot_password">{{t "Forgotten it?" }}</a>
+                                <a class="sea-green reset_password_container" id="reset_password">{{t "Reset password" }}</a>
+                                <div class="loading_indicator_spinner"></div>
+                                <span id="reset_sent" class="reset_password_container">{{t "Check your email!" }}</span>
+                                <span id="reset_failed" class="reset_password_container">{{t "Reset failed to send" }}</span>
+                                <a class="sea-green reset_password_container" id="resend_link">{{t "Resend" }}</a>
                             </div>
-
                         </div>
                         <div class="field">
                             <label for="new_password" class="title">{{t "New password" }}</label>

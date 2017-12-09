@@ -28,10 +28,11 @@ casper.then(function () {
     casper.waitUntilVisible("#settings_content .account-settings-form", function () {
         casper.test.assertUrlMatch(/^http:\/\/[^/]+\/#settings/, 'URL suggests we are on settings page');
         casper.test.assertVisible('.account-settings-form', 'Settings page is active');
-
         casper.test.assertNotVisible("#pw_change_controls");
-
-        // casper.click(".change_password_button");
+        casper.click(".change_password_button");
+        casper.test.assertVisible('#forgot_password', 'Forgot password is visible');
+        casper.click("#forgot_password");
+        casper.test.assertVisible('#reset_password', 'Reset password is visible');
         casper.click('#api_key_button');
     });
 });
@@ -63,7 +64,6 @@ casper.then(function () {
     });
 });
 */
-
 casper.then(function () {
     casper.waitUntilVisible('#get_api_key_password', function () {
         casper.fill('form[action^="/json/fetch_api_key"]', {password:test_credentials.default_user.password});

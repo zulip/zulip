@@ -5,7 +5,10 @@ from django.core.validators import validate_email
 from django.contrib.auth import authenticate, get_backends
 from django.contrib.auth.views import login as django_login_page, \
     logout_then_login as django_logout_then_login
-from django.contrib.auth.views import password_reset as django_password_reset
+from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
+from django.contrib.auth.tokens import default_token_generator
+from django.shortcuts import resolve_url
+from django.template.response import TemplateResponse
 from django.urls import reverse
 from zerver.decorator import authenticated_json_post_view, require_post, \
     process_client, do_login, log_view_func
@@ -785,6 +788,61 @@ def api_fetch_google_client_id(request: HttpRequest) -> HttpResponse:
 @require_post
 def logout_then_login(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     return django_logout_then_login(request, kwargs)
+
+def django_password_reset(request, is_admin_site=False,
+                          template_name='registration/password_reset_form.html',
+                          email_template_name='registration/password_reset_email.html',
+                          subject_template_name='registration/password_reset_subject.txt',
+                          password_reset_form=PasswordResetForm,
+                          token_generator=default_token_generator,
+                          post_reset_redirect=None,
+                          from_email=None,
+                          current_app=None,
+                          extra_context=None,
+                          html_email_template_name=None):
+    if post_reset_redirect is None:
+        post_reset_redirect = reverse('password_reset_done')
+    else:
+        post_reset_redirect = resolve_url(post_reset_redirect)
+    if request.method == "POST":
+        form = password_reset_form(request.POST)
+        if form.is_valid():
+            opts = {
+                'use_https': request.is_secure(),
+                'token_generator': token_generator,
+                'from_email': from_email,
+                'email_template_name': email_template_name,
+                'subject_template_name': subject_template_name,
+                'request': request,
+                'html_email_template_name': html_email_template_name,
+            }
+            if is_admin_site:
+                warnings.warn(
+                    "The is_admin_site argument to "
+                    "django.contrib.auth.views.password_reset() is deprecated "
+                    "and will be removed in Django 1.10.",
+                    RemovedInDjango110Warning, 3
+                )
+                opts = dict(opts, domain_override=request.get_host())
+            form.save(**opts)
+            if request.is_ajax():
+                return json_success()
+            return HttpResponseRedirect(post_reset_redirect)
+        elif request.is_ajax:
+            return json_error(_("Invalid email address"))
+    else:
+        form = password_reset_form()
+    context = {
+        'form': form,
+        'title': _('Password reset'),
+    }
+    if extra_context is not None:
+        context.update(extra_context)
+
+    if current_app is not None:
+        request.current_app = current_app
+
+    return TemplateResponse(request, template_name, context)
 
 def password_reset(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     realm = get_realm(get_subdomain(request))

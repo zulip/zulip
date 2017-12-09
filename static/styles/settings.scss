@@ -56,11 +56,17 @@ label {
 .new-style .grid .warning {
     display: inline-block;
     vertical-align: top;
-
     width: 150px;
     padding: 5px 10px;
-
     text-align: left;
+}
+
+.new-style #account-settings .loading_indicator_spinner {
+    display: inline-block;
+    width: 32px;
+    height: 15px;
+    float: none;
+    margin-top: 0;
 }
 
 .new-style .warning #pw_strength {
@@ -1354,6 +1360,15 @@ input[type=checkbox].inline-block {
 #settings_page #change_email_modal .change_email_info,
 #settings_page #change_full_name_modal .change_full_name_info {
     margin: 10px;
+}
+
+#account-settings #change_password_modal .reset_password_container {
+    display: none;
+}
+
+#account-settings #change_password_modal #reset_sent,
+#account-settings #change_password_modal #reset_failed {
+    padding-right: 3px;
 }
 
 #deactivation_user_modal.fade.in {

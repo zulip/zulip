@@ -166,6 +166,8 @@ exports.set_up = function () {
         // Clear the password boxes so that passwords don't linger in the DOM
         // for an XSS attacker to find.
         $('#old_password, #new_password').val('');
+        $(".reset_password_container").hide();
+        $("#forgot_password").show();
         common.password_quality('', $('#pw_strength .bar'), $('#new_password'));
     }
 
@@ -252,6 +254,51 @@ exports.set_up = function () {
                 ui_report.error(i18n.t("Failed"), xhr, change_password_info);
             },
         });
+    });
+
+    function show_reset_email_loader() {
+        loading.make_indicator($(".loading_indicator_spinner"), {text: 'Sending...'});
+    }
+
+    function hide_reset_email_loader() {
+        loading.destroy_indicator($(".loading_indicator_spinner"));
+    }
+
+    function send_password_reset() {
+        var email = people.my_current_email();
+        var data = {};
+
+        data.email = email;
+        channel.post({
+            url: '/accounts/password/reset/',
+            data: data,
+            success: function () {
+                $('#reset_sent, #resend_link').show();
+            },
+            error: function () {
+                $('#reset_failed, #resend_link').show();
+            },
+            complete: function () {
+                hide_reset_email_loader();
+            },
+        });
+    }
+
+    $('#forgot_password').on('click', function () {
+        $('#forgot_password').hide();
+        $('#reset_password').show();
+    });
+
+    $('#reset_password').on('click', function () {
+        $('#reset_password').hide();
+        show_reset_email_loader();
+        send_password_reset();
+    });
+
+    $('#resend_link').on('click', function () {
+        $('#resend_link, #reset_sent, #reset_failed').hide();
+        show_reset_email_loader();
+        send_password_reset();
     });
 
     $('#new_password').on('change keyup', function () {
