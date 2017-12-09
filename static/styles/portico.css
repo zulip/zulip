@@ -149,7 +149,6 @@ body {
     font-weight: 400;
     margin-bottom: 5px;
     line-height: 105%;
-    cursor: pointer;
 }
 
 .help .sidebar h1 {
@@ -158,6 +157,11 @@ body {
 
 .help .sidebar h1:not(:first-of-type) {
     margin-top: 20px;
+}
+
+.help .sidebar.slide h1,
+.help .sidebar.slide h2 {
+    cursor: pointer;
 }
 
 .help .sidebar.slide h2::before {
