@@ -200,6 +200,7 @@ import "js/ui_init.js";
 import "js/emoji_picker.js";
 import "js/compose_ui.js";
 import "js/panels.js";
+import 'js/recent_topics.js';
 import 'js/settings_ui.js';
 import 'js/search_pill.js';
 import 'js/search_pill_widget.js';
