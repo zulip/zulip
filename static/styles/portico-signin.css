@@ -931,3 +931,13 @@ button.login-google-button {
         min-height: calc(100vh - 560px);
     }
 }
+
+.split-view .reg-org-header {
+    margin-top: 6px;
+    text-align: center;
+}
+
+.split-view .reg-org-header .reg-info-box {
+    width: auto;
+    vertical-align: middle;
+}

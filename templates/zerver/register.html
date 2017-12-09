@@ -26,6 +26,20 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
         <form method="post" class="form-horizontal white-box" id="registration" action="{{ url('zerver.views.registration.accounts_register') }}">
             {{ csrf_input }}
 
+            {% if realm_name %}
+            <div class="split-view" >
+                <div class="left-side">
+                    <div class="org-header reg-org-header">
+                        <img class="avatar" src="{{ realm_icon }}" alt="" />
+                        <div class="info-box reg-info-box">
+                            <div class="organization-name">{{ realm_name }}</div>
+                            <div class="organization-path">{{ realm_uri }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
             <section class="user-registration">
                 <div class="input-box no-validation">
                     <input type='hidden' name='key' value='{{ key }}' />
