@@ -2,23 +2,27 @@
 <div class="subscription_settings" data-stream-id="{{stream_id}}">
     <div class="inner-box">
         <div class="stream-header">
-            {{#if invite_only}}
-            <div class="large-icon lock" style="color: {{color}}">
-                <i class="icon-vector-lock"></i>
-            </div>
-            {{else}}
-            <div class="large-icon hash" style="color: {{color}}"></div>
-            {{/if}}
-            <div class="stream-name">
-                <span class="stream-name-editable editable-section">{{name}}</span>
-                {{#if is_admin}}
-                <span class="editable" data-make-editable=".stream-name-editable"></span>
-                <span class="checkmark" data-finish-editing=".stream-name-editable">✓</span>
+            <div class="stream-name-large-icon">
+                {{#if invite_only}}
+                <div class="large-icon lock" style="color: {{color}};">
+                    <i class="icon-vector-lock"></i>
+                </div>
+                {{else}}
+                <div class="large-icon hash" style="color: {{color}};"></div>
                 {{/if}}
+                <div class="stream-name">
+                    <span class="stream-name-editable editable-section">{{name}}</span>
+                    {{#if is_admin}}
+                    <span class="editable" data-make-editable=".stream-name-editable"></span>
+                    <span class="checkmark" data-finish-editing=".stream-name-editable">✓</span>
+                    {{/if}}
+                </div>
             </div>
-            <button class="button small rounded subscribe-button sub_unsub_button {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button" title="{{t 'Toggle subscription'}} (S)">
+            <div class="btn-subscribe-view_stream">
+                <a href="{{preview_url}}" class="button small rounded" id="preview-stream-button" role="button" title="{{t 'View stream'}} (V)">{{t "View stream"}}</a>
+                <button class="button small rounded subscribe-button sub_unsub_button {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button" title="{{t 'Toggle subscription'}} (S)">
                 {{#if subscribed }}{{#tr oneself }}Unsubscribe{{/tr}}{{else}}{{#tr oneself }}Subscribe{{/tr}}{{/if}}</button>
-            <a href="{{preview_url}}" class="button small rounded" id="preview-stream-button" role="button" title="{{t 'View stream'}} (V)">{{t "View stream"}}</a>
+            </div>
         </div>
         <div class="stream-description" data-no-description="{{t 'No description.' }}">
             <span class="stream-description-editable editable-section">{{{rendered_description}}}</span>
@@ -95,11 +99,15 @@
             <div class="sub_settings_title float-left">{{t "Stream membership" }}</div>
             <div class="subscriber_list_add float-right">
                 <form class="form-inline">
-                    <input type="text" class="search" placeholder="{{t 'Search subscribers' }}" />
-                    <input type="text" name="principal" placeholder="{{t 'Email address' }}" value="" class="input-block" autocomplete="off" tabindex="-1" />
-                    <button type="submit" name="add_subscriber" class="button add-subscriber-button small rounded" tabindex="-1 ">
-                        {{t 'Add' }}
-                    </button>
+                    <div class="wrap-search">
+                        <input type="text" class="search" placeholder="{{t 'Search subscribers' }}"/>
+                    </div>
+                    <div class="subscriber_list_add_principal">
+                        <button type="submit" name="add_subscriber" class="button add-subscriber-button small rounded" tabindex="-1 ">
+                            {{t 'Add' }}
+                        </button>
+                        <input type="text" name="principal" placeholder="{{t 'Email address' }}" value="" class="input-block principal" autocomplete="off" tabindex="-1" />
+                    </div>
                 </form>
             </div>
             <div class="clear-float"></div>
