@@ -4,13 +4,14 @@ var exports = {};
 
 exports.notify = function (hotkey) {
     var old_key = hotkey;
+    console.log(hotkey);
     var new_key = exports.get_new_key(old_key);
     exports.display_message(old_key, new_key);
 };
 
 exports.get_new_key = function (old_key) {
     var deprecated_keys = {
-        C: 'x'
+        C: 'x',
     };
     return deprecated_keys[old_key];
 };
