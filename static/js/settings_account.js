@@ -182,6 +182,62 @@ exports.set_up = function () {
                 ui_report.error(i18n.t("Failed"), xhr, change_password_info);
             },
         });
+
+    function show_reset_email_loader() {
+        var spinner_elem = $(".loading_indicator_spinner");
+        spinner_elem.html(templates.render("loader"));
+        spinner_elem.show();
+        $('.loading_indicator_message').show();
+    }
+
+    function hide_reset_email_loader() {
+        var spinner_elem = $(".loading_indicator_spinner");
+        spinner_elem.html(null);
+        spinner_elem.hide();
+        $('.loading_indicator_message').hide();
+    }
+
+    function send_password_reset() {
+        var email = people.my_current_email();
+        var form_data = new FormData();
+
+        form_data.append("email", email);
+        channel.post({
+            url: '/accounts/password/reset/',
+            data: form_data,
+            cache: false,
+            processData: false,
+            contentType: false,
+            success: function () {
+                hide_reset_email_loader();
+                $('#reset_sent').show();
+                $('#resend_link').show();
+            },
+            error: function () {
+                hide_reset_email_loader();
+                $('#reset_failed').show();
+                $('#resend_link').show();
+            },
+        });
+    }
+
+    $('#forgot_password').on('click', function () {
+        $('#forgot_password').hide();
+        $('#reset_password').show();
+    });
+
+    $('#reset_password').on('click', function () {
+        $('#reset_password').hide();
+        show_reset_email_loader();
+        send_password_reset();
+    });
+
+    $('#resend_link').on('click', function () {
+        $('#resend_link').hide();
+        $('#reset_sent').hide();
+        $('#reset_failed').hide();
+        show_reset_email_loader();
+        send_password_reset();
     });
 
     $('#new_password').on('change keyup', function () {
