@@ -104,23 +104,34 @@ exports.set_up = function () {
         }
     });
 
+    function send_pass_reset() {
+        var email = $('#email_value').text().trim();
+        var form_data = new FormData();
+
+        form_data.append("email", email);
+        channel.post({
+            url: '/accounts/password/reset/',
+            data: form_data,
+            cache: false,
+            processData: false,
+            contentType: false,
+        });
+    }
+
     $('#forgot_password').on('click', function () {
-        if ($('#forgot_password').html() === 'Forgotten it?') {
-            $('#forgot_password').html('Reset Password');
-        } else if ($('#forgot_password').html() === 'Reset Password') {
-            var email = $('#email_value').text().trim();
-            var form_data = new FormData();
-            form_data.append("email", email);
-            channel.post({
-                url: '/accounts/password/reset/',
-                data: form_data,
-                cache: false,
-                processData: false,
-                contentType: false,
-            });
-            $('#forgot_password').html('Reset Sent To Email');
-            $(this).replaceWith($('<span>' + this.innerHTML + '</span>'));
-        }
+        $('#forgot_password').hide();
+        $('#reset_password').show();
+    });
+
+    $('#reset_password').on('click', function () {
+        $('#reset_password').hide();
+        send_pass_reset();
+        $('#reset_sent').show();
+        $('#resend_link').show();
+    });
+
+    $('#resend_link').on('click', function () {
+        send_pass_reset();
     });
 
     $('#new_password').on('change keyup', function () {
