@@ -94,8 +94,13 @@
     margin-left: 1ex;
 }
 
-.left-sidebar li:hover {
-    background-color: hsla(0, 0%, 0%, 0.05);
+#global_filters li:hover,
+#stream_filters li:hover {
+    background-color: hsl(93, 19%, 88%);
+}
+
+#stream_filters li.active-sub-filter:hover {
+    background-color: hsl(120, 11%, 82%);
 }
 
 ul.filters {
@@ -115,7 +120,7 @@ ul.filters hr {
 li.active-filter,
 li.active-sub-filter {
     font-weight: 600 !important;
-    background: hsla(0, 0%, 0%, 0.05);
+    background: hsl(202, 56%, 91%);
     position: relative;
 }
 
@@ -182,7 +187,7 @@ li.hidden-filter {
     float: right;
     margin-top: 3px;
     line-height: 12px;
-    background: hsla(0, 0%, 0%, 0.25);
+    background: hsl(105, 2%, 50%);
     padding: 1px 4px;
     border-radius: 0px;
     color: hsl(0, 0%, 100%);
@@ -224,7 +229,7 @@ li.hidden-filter {
     line-height: 1em;
     top: 4px;
     padding: 1px 4px 1px 4px;
-    background: hsla(0, 0%, 0%, 0.25);
+    background: hsl(107, 5%, 66%);
     color: hsl(0, 0%, 100%);
     border-radius: 1px;
     font-size: 12px;
