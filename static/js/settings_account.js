@@ -104,6 +104,36 @@ exports.set_up = function () {
         }
     });
 
+    function send_pass_reset() {
+        var email = $('#email_value').text().trim();
+        var form_data = new FormData();
+
+        form_data.append("email", email);
+        channel.post({
+            url: '/accounts/password/reset/',
+            data: form_data,
+            cache: false,
+            processData: false,
+            contentType: false,
+        });
+    }
+
+    $('#forgot_password').on('click', function () {
+        $('#forgot_password').hide();
+        $('#reset_password').show();
+    });
+
+    $('#reset_password').on('click', function () {
+        $('#reset_password').hide();
+        send_pass_reset();
+        $('#reset_sent').show();
+        $('#resend_link').show();
+    });
+
+    $('#resend_link').on('click', function () {
+        send_pass_reset();
+    });
+
     $('#new_password').on('change keyup', function () {
         var field = $('#new_password');
         common.password_quality(field.val(), $('#pw_strength .bar'), field);
