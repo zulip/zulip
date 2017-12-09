@@ -107,7 +107,7 @@ class IntegrationTest(TestCase):
             self.assertTrue(os.path.isfile(os.path.join(DEPLOY_ROOT, integration.logo)))
 
     def test_api_url_view_subdomains_base(self) -> None:
-        context = dict()  # type: Dict[str, Any]
+        context: Dict[str, Any] = dict()
         add_api_uri_context(context, HostRequestMock())
         self.assertEqual(context["api_url_scheme_relative"], "testserver/api")
         self.assertEqual(context["api_url"], "http://testserver/api")
@@ -115,14 +115,14 @@ class IntegrationTest(TestCase):
 
     @override_settings(ROOT_DOMAIN_LANDING_PAGE=True)
     def test_api_url_view_subdomains_homepage_base(self) -> None:
-        context = dict()  # type: Dict[str, Any]
+        context: Dict[str, Any] = dict()
         add_api_uri_context(context, HostRequestMock())
         self.assertEqual(context["api_url_scheme_relative"], "yourZulipDomain.testserver/api")
         self.assertEqual(context["api_url"], "http://yourZulipDomain.testserver/api")
         self.assertFalse(context["html_settings_links"])
 
     def test_api_url_view_subdomains_full(self) -> None:
-        context = dict()  # type: Dict[str, Any]
+        context: Dict[str, Any] = dict()
         request = HostRequestMock(host="mysubdomain.testserver")
         add_api_uri_context(context, request)
         self.assertEqual(context["api_url_scheme_relative"], "mysubdomain.testserver/api")

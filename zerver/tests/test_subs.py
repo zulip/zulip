@@ -264,7 +264,7 @@ class StreamAdminTest(ZulipTestCase):
         self.subscribe(user_profile, 'private_stream')
         self.subscribe(self.example_user("cordelia"), 'private_stream')
 
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             stream_id = get_stream('private_stream', user_profile.realm).id
             result = self.client_patch('/json/streams/%d' % (stream_id,),
@@ -318,7 +318,7 @@ class StreamAdminTest(ZulipTestCase):
                                    {'new_name': ujson.dumps('sTREAm_name1')})
         self.assert_json_success(result)
 
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             stream_id = get_stream('stream_name1', user_profile.realm).id
             result = self.client_patch('/json/streams/%d' % (stream_id,),
@@ -409,7 +409,7 @@ class StreamAdminTest(ZulipTestCase):
         self.subscribe(user_profile, 'stream_name1')
         do_change_is_admin(user_profile, True)
 
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             stream_id = get_stream('stream_name1', realm).id
             result = self.client_patch('/json/streams/%d' % (stream_id,),
@@ -475,7 +475,7 @@ class StreamAdminTest(ZulipTestCase):
         realm = stream.realm
         stream_id = stream.id
 
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             result = self.client_delete('/json/streams/' + str(stream_id))
         self.assert_json_success(result)
@@ -739,11 +739,11 @@ class DefaultStreamTest(ZulipTestCase):
 
     def test_set_default_streams(self) -> None:
         realm = do_create_realm("testrealm", "Test Realm")
-        stream_dict = {
+        stream_dict: Dict[Text, Dict[Text, Any]] = {
             "apple": {"description": "A red fruit", "invite_only": False},
             "banana": {"description": "A yellow fruit", "invite_only": False},
             "Carrot Cake": {"description": "A delicious treat", "invite_only": False}
-        }  # type: Dict[Text, Dict[Text, Any]]
+        }
         expected_names = list(stream_dict.keys())
         expected_names.append("announce")
         expected_descriptions = [i["description"] for i in stream_dict.values()] + [""]
@@ -757,11 +757,11 @@ class DefaultStreamTest(ZulipTestCase):
         realm = do_create_realm("testrealm", "Test Realm")
         realm.notifications_stream = None
         realm.save(update_fields=["notifications_stream"])
-        stream_dict = {
+        stream_dict: Dict[Text, Dict[Text, Any]] = {
             "apple": {"description": "A red fruit", "invite_only": False},
             "banana": {"description": "A yellow fruit", "invite_only": False},
             "Carrot Cake": {"description": "A delicious treat", "invite_only": False}
-        }  # type: Dict[Text, Dict[Text, Any]]
+        }
         expected_names = list(stream_dict.keys())
         expected_descriptions = [i["description"] for i in stream_dict.values()]
         set_default_streams(realm, stream_dict)
@@ -1541,7 +1541,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertNotEqual(len(self.streams), 0)  # necessary for full test coverage
         add_streams = [u"Verona2", u"Denmark5"]
         self.assertNotEqual(len(add_streams), 0)  # necessary for full test coverage
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             self.helper_check_subs_before_and_after_add(self.streams + add_streams, {},
                                                         add_streams, self.streams, self.test_email,
@@ -1559,7 +1559,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertNotEqual(len(self.streams), 0)
         add_streams = [u"Verona2", u"Denmark5"]
         self.assertNotEqual(len(add_streams), 0)
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         other_params = {
             'announce': 'true',
         }
@@ -1782,7 +1782,7 @@ class SubscriptionAPITest(ZulipTestCase):
         user2 = self.example_user("iago")
         realm = get_realm("zulip")
         streams_to_sub = ['multi_user_stream']
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             with queries_captured() as queries:
                 self.common_subscribe_to_streams(
@@ -1879,7 +1879,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # Now subscribe Cordelia to the stream, capturing events
         user_profile = self.example_user('cordelia')
 
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             bulk_add_subscriptions([stream], [user_profile])
 
@@ -1918,7 +1918,7 @@ class SubscriptionAPITest(ZulipTestCase):
             dict(principals=ujson.dumps(orig_emails_to_subscribe)))
 
         new_emails_to_subscribe = [self.example_email("iago"), self.example_email("cordelia")]
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             self.common_subscribe_to_streams(
                 self.test_email,
@@ -1965,7 +1965,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.subscribe(user2, 'private_stream')
         self.subscribe(user3, 'private_stream')
 
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             bulk_remove_subscriptions(
                 users=[user1, user2],
@@ -2017,7 +2017,7 @@ class SubscriptionAPITest(ZulipTestCase):
         for stream_name in streams:
             self.make_stream(stream_name, realm=realm)
 
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             with queries_captured() as queries:
                 self.common_subscribe_to_streams(
@@ -2795,7 +2795,7 @@ class GetSubscribersTest(ZulipTestCase):
         result_dict = result.json()
         self.assertIn('subscribers', result_dict)
         self.assertIsInstance(result_dict['subscribers'], list)
-        subscribers = []  # type: List[Text]
+        subscribers: List[Text] = []
         for subscriber in result_dict['subscribers']:
             self.assertIsInstance(subscriber, str)
             subscribers.append(subscriber)

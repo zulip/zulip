@@ -22,9 +22,8 @@ def list_filters(request: HttpRequest, user_profile: UserProfile) -> HttpRespons
 
 @require_realm_admin
 @has_request_variables
-def create_filter(request, user_profile, pattern=REQ(),
-                  url_format_string=REQ()):
-    # type: (HttpRequest, UserProfile, Text, Text) -> HttpResponse
+def create_filter(request: HttpRequest, user_profile: UserProfile, pattern: Text = REQ(),
+                  url_format_string: Text = REQ()) -> HttpResponse:
     try:
         filter_id = do_add_realm_filter(
             realm=user_profile.realm,
