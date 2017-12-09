@@ -1,5 +1,9 @@
 zrequire('compose_ui');
 
+set_global('document', {
+    execCommand: function () { return false; },
+});
+
 function make_textbox(s) {
     // Simulate a jQuery textbox for testing purposes.
     var widget = {};
