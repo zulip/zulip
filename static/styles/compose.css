@@ -143,11 +143,6 @@ table.compose_table {
     border: none;
 }
 
-#enter-sends-label {
-    margin-bottom: 0px;
-    margin-top: 2px;
-}
-
 #send_message_form .message_content {
     margin-right: 0px;
 }
@@ -351,11 +346,6 @@ input.recipient_box {
     margin-right: 2px;
 }
 
-#send_controls .compose_checkbox_label input {
-    position: relative;
-    top: -3px;
-}
-
 #send_controls #compose-send-button {
     border-radius: 4px;
     padding-top: 3px;
@@ -421,8 +411,9 @@ input.recipient_box {
 }
 
 #enter_sends {
-    margin-top: 0px;
-    margin-right: 5px;
+    vertical-align: middle;
+    margin-top: -2px;
+    margin-right: 4px;
 }
 
 .inline-subscribe-error {
