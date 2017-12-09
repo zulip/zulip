@@ -306,8 +306,7 @@ class AuthBackendTest(ZulipTestCase):
                                             realm=get_realm('zephyr')))
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',))
-    def test_remote_user_backend_invalid_realm(self):
-        # type: () -> None
+    def test_remote_user_backend_invalid_realm(self) -> None:
         username = self.get_username()
         self.verify_backend(ZulipRemoteUserBackend(),
                             good_kwargs=dict(remote_user=username,
