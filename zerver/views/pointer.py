@@ -13,9 +13,8 @@ def get_pointer_backend(request: HttpRequest, user_profile: UserProfile) -> Http
     return json_success({'pointer': user_profile.pointer})
 
 @has_request_variables
-def update_pointer_backend(request, user_profile,
-                           pointer=REQ(converter=to_non_negative_int)):
-    # type: (HttpRequest, UserProfile, int) -> HttpResponse
+def update_pointer_backend(request: HttpRequest, user_profile: UserProfile,
+                           pointer: int=REQ(converter=to_non_negative_int)) -> HttpResponse:
     if pointer <= user_profile.pointer:
         return json_success()
 
