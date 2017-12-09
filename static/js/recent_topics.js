@@ -103,6 +103,27 @@ exports.get_relevant = function () {
     return map_topics(updated_topics);
 };
 
+exports._topics = topics;
+exports._print = function (all) {
+    var data;
+    if (all) {
+        data = exports.get();
+    } else {
+        data = exports.get_relevant();
+    }
+    data.each(function (elem, key) {
+        var sub = stream_data.get_sub_by_id(key.split(':')[0]);
+        var narrow = sub.name + " > " + key.split(':',2)[1];
+        var msg = message_store.get(elem.last_msg_id);
+        blueslip.log(narrow, {
+            key: key,
+            read: elem.read,
+            sender: msg.sender_email,
+            content: msg.content.substring(0,15),
+        });
+    });
+};
+
 return exports;
 
 }());
