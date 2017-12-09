@@ -56,11 +56,17 @@ label {
 .new-style .grid .warning {
     display: inline-block;
     vertical-align: top;
-
     width: 150px;
     padding: 5px 10px;
-
     text-align: left;
+}
+
+.new-style #account-settings .loading_indicator_spinner {
+    display: inline-block;
+    width: 32px;
+    height: 15px;
+    float: none;
+    margin-top: 0;
 }
 
 .new-style .warning #pw_strength {
