@@ -133,15 +133,41 @@ exports.open = function (image, options) {
 };
 
 exports.show_from_selected_message = function () {
-    var $message = $(".selected_message");
-    var $image = $message.find(".message_content img");
+    var $message_selected = $(".selected_message");
+    var $message = $message_selected;
+    var $image = $message.find(".message_inline_image img");
+    var $prev_traverse = false;
 
     while ($image.length === 0) {
-        $message = $message.prev();
-        if ($message.length === 0) {
-            break;
+        if ($message.prev().length === 0) {
+            $message = $message.parent().prev();
+            if ($message.length === 0) {
+                $prev_traverse = true;
+                $message = $message_selected;
+                break;
+            } else {
+                $message = $message.find(".last_message");
+                continue;
+            }
         }
-        $image = $message.find(".message_content img");
+        $message = $message.prev();
+        $image = $message.find(".message_inline_image img");
+    }
+
+    if ($prev_traverse) {
+        while ($image.length === 0) {
+            if ($message.next().length === 0) {
+                $message = $message.parent().next();
+                if ($message.length === 0) {
+                    break;
+                } else {
+                    $message = $message.children().first();
+                    continue;
+                }
+            }
+            $message = $message.next();
+            $image = $message.find(".message_inline_image img");
+        }
     }
 
     if ($image.length !== 0) {
