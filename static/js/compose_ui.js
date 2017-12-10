@@ -27,8 +27,15 @@ exports.smart_insert = function (textarea, syntax) {
         }
     }
 
-    textarea.caret(syntax);
     textarea.focus();
+    // execCommand is used to enable rich-text editing feature of browser like
+    // To insert text into compose box through events(inserting emoji, video link etc.)
+    // But this function is not cross-browser, so we will have to take if this returns
+    // false(which means function is not supported by particular browser)
+    if (!document.execCommand("insertText", false, syntax)) {
+        textarea.caret(syntax);
+    }
+
     // This should just call exports.autosize_textarea, but it's a bit
     // annoying for the unit tests, so we don't do that.
     textarea.trigger("autosize.resize");
