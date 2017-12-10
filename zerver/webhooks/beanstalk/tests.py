@@ -107,8 +107,7 @@ class BeanstalkHookTests(WebhookTestCase):
 
     @patch('zerver.webhooks.beanstalk.view.check_send_stream_message')
     def test_git_multiple_committers_filtered_by_branches_ignore(
-            self, check_send_stream_message_mock):
-        # type: (MagicMock) -> None
+            self, check_send_stream_message_mock: MagicMock) -> None:
         self.url = self.build_webhook_url(branches='changes,development')
         payload = self.get_body('git_multiple_committers')
         result = self.client_post(self.url, payload,
@@ -118,8 +117,7 @@ class BeanstalkHookTests(WebhookTestCase):
 
     @patch('zerver.webhooks.beanstalk.view.check_send_stream_message')
     def test_git_multiple_filtered_by_branches_ignore(
-            self, check_send_stream_message_mock):
-        # type: (MagicMock) -> None
+            self, check_send_stream_message_mock: MagicMock) -> None:
         self.url = self.build_webhook_url(branches='changes,development')
         payload = self.get_body('git_multiple')
         result = self.client_post(self.url, payload,
@@ -129,8 +127,7 @@ class BeanstalkHookTests(WebhookTestCase):
 
     @patch('zerver.webhooks.beanstalk.view.check_send_stream_message')
     def test_git_more_than_limit_filtered_by_branches_ignore(
-            self, check_send_stream_message_mock):
-        # type: (MagicMock) -> None
+            self, check_send_stream_message_mock: MagicMock) -> None:
         self.url = self.build_webhook_url(branches='changes,development')
         payload = self.get_body('git_morethanlimitcommits')
         result = self.client_post(self.url, payload,
