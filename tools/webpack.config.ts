@@ -1,6 +1,7 @@
 import { resolve } from 'path';
 import * as BundleTracker from 'webpack-bundle-tracker';
 import * as webpack from 'webpack';
+import * as SWPrecacheWebpackPlugin from 'sw-precache-webpack-plugin';
 
 const assets = require('./webpack.assets.json');
 
@@ -11,8 +12,18 @@ interface Config extends webpack.Configuration {
   }
 }
 
+const SW_PRECACHE_CONFIG = {
+  minify: true,
+  cacheId: 'zulip-sw',
+  filename: 'zulip-sw.js',
+  staticFileGlobs: ['*.js', '*.css'],
+  mergeStaticsConfig: true,
+  staticFileGlobsIgnorePatterns: [/.*\.html/, /.*\.map/],
+}; 
+
 export default (env?: string) : Config => {
     const production: boolean = env === "production";
+
     let config: Config = {
         context: resolve(__dirname, "../"),
         entry: assets,
@@ -125,5 +136,7 @@ export default (env?: string) : Config => {
             },
         };
     }
+    
+    config.plugins.push(new SWPrecacheWebpackPlugin(SW_PRECACHE_CONFIG));
     return config;
 };
