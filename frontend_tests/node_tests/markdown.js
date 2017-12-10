@@ -1,6 +1,7 @@
 /*global Dict */
 var path = zrequire('path', 'path');
 var fs = zrequire('fs', 'fs');
+
 zrequire('hash_util');
 zrequire('katex', 'node_modules/katex/dist/katex.min.js');
 zrequire('marked', 'third/marked/lib/marked');
@@ -172,18 +173,19 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
 
 (function test_marked_shared() {
     var tests = bugdown_data.regular_tests;
+
     tests.forEach(function (test) {
         var message = {raw_content: test.input};
         markdown.apply_markdown(message);
         var output = message.content;
 
         if (test.marked_expected_output) {
-            assert.notEqual(test.expected_output, output);
-            assert.equal(test.marked_expected_output, output);
+            global.bugdown_assert.notEqual(test.expected_output, output);
+            global.bugdown_assert.equal(test.marked_expected_output, output);
         } else if (test.backend_only_rendering) {
             assert.equal(markdown.contains_backend_only_syntax(test.input), true);
         } else {
-            assert.equal(test.expected_output, output);
+            global.bugdown_assert.equal(test.expected_output, output);
         }
     });
 }());
