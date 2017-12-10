@@ -2,7 +2,6 @@ var stream_data = (function () {
 
 var exports = {};
 
-
 // The stream_info variable maps stream names to stream properties objects
 // Call clear_subscriptions() to initialize it.
 var stream_info;
@@ -160,7 +159,7 @@ exports.get_subscriber_count = function (stream_name) {
 
 exports.render_stream_description = function (sub) {
     if (sub.description) {
-        sub.rendered_description = marked(sub.description).replace('<p>', '').replace('</p>', '');
+        sub.rendered_description = marked(sub.description).replace(/<p>|<\/p>/g, '');
     }
 };
 
