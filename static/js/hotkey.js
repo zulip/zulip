@@ -636,6 +636,7 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
         case 'shortcut_deprecated':
             shortcut_notification.notify(hotkey);
+            return true;
     }
 
     if (current_msg_list.empty()) {
