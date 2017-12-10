@@ -23,8 +23,11 @@
 const jsdom = require('jsdom');
 const _ = require('underscore');
 
+<<<<<<< 5969d4eb79f6dd82adbad3a42f387b79e3a234fb
 const mdiff = require('./mdiff.js');
 
+=======
+>>>>>>> node tests: Compare markdown using semantic equivalence.
 // Module-level global instance of MarkdownComparer, initialized when needed
 let _markdownComparerInstance = null;
 
@@ -157,6 +160,7 @@ class MarkdownComparer {
     }
 }
 
+<<<<<<< 5969d4eb79f6dd82adbad3a42f387b79e3a234fb
 function returnComparer() {
     if (!_markdownComparerInstance) {
         _markdownComparerInstance = new MarkdownComparer((actual, expected) => {
@@ -180,5 +184,27 @@ module.exports = {
 
     setFormatter(output_formatter) {
         returnComparer().setFormatter(output_formatter);
+=======
+module.exports = {
+    equal(expected, actual, message) {
+        if (!_markdownComparerInstance) {
+            _markdownComparerInstance = new MarkdownComparer();
+        }
+        _markdownComparerInstance.assertEqual(actual, expected, message);
+    },
+
+    notEqual(expected, actual, message) {
+        if (!_markdownComparerInstance) {
+            _markdownComparerInstance = new MarkdownComparer();
+        }
+        _markdownComparerInstance.assertNotEqual(actual, expected, message);
+    },
+
+    setFormatter(output_formatter) {
+        if (!_markdownComparerInstance) {
+            _markdownComparerInstance = new MarkdownComparer();
+        }
+        _markdownComparerInstance.setFormatter(output_formatter);
+>>>>>>> node tests: Compare markdown using semantic equivalence.
     },
 };
