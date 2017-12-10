@@ -434,9 +434,10 @@ class Runner(DiscoverRunner):
                             break
                     check_import_error(test_name)
 
-    def run_tests(self, test_labels, extra_tests=None,
-                  full_suite=False, **kwargs):
-        # type: (List[str], Optional[List[TestCase]], bool, **Any) -> Tuple[bool, List[str]]
+    def run_tests(self, test_labels: List[str],
+                  extra_tests: Optional[List[TestCase]]=None,
+                  full_suite: bool=False,
+                  **kwargs: Any) -> Tuple[bool, List[str]]:
         self.setup_test_environment()
         try:
             suite = self.build_suite(test_labels, extra_tests)
