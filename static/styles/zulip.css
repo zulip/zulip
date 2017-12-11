@@ -2046,13 +2046,20 @@ div.floating_recipient {
     display: inline !important;
 }
 
+/* Hack for inserting line break <br> after element */
+.message_inline_image span::after,
+.twitter-tweet span::after {
+    content: "\a";
+    white-space: pre;
+}
+
 .twitter-image,
 .message_inline_image {
     position: relative;
-    margin-bottom: 5px;
+    margin-top: 5px;
     margin-left: 5px;
     height: 100px;
-    display: block !important;
+    display: inline-block !important;
     border: none !important;
 }
 
@@ -2070,7 +2077,6 @@ div.floating_recipient {
     height: auto;
     max-height: 100%;
     float: left;
-    margin-right: 10px;
 }
 
 .message_inline_image_title {
