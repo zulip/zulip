@@ -3,6 +3,10 @@
   </div>
   <div id="compose-container">
     <div id="compose_controls" class="compose-content new-style">
+          <div id="nonexistent_stream_reply_error" class="alert-error">
+            <span class="compose-send-status-close">&times;</span>
+            <span id="compose-reply-error-msg"></span>
+          </div>
           <div id="compose_buttons">
             <span class="new_message_button">
               <a class="drafts-link no-style" href="#drafts" title="{{ _('Drafts') }} (d)">
@@ -27,6 +31,13 @@
               </button>
             </span>
             {% endif %}
+            <span class="new_message_button">
+              <button type="button" class="button small rounded compose_reply_button"
+                      id="left_bar_compose_reply_button_big"
+                      title="{{ _('Reply') }} (r)">
+                <span class="compose_reply_button_label">{{ _('Reply') }}</span>
+              </button>
+            </span>
           </div>
     </div>
     <div class="message_comp compose-content">

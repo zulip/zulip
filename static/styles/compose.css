@@ -41,6 +41,14 @@
     padding: 3px 10px;
 }
 
+#compose_buttons .compose_reply_button {
+    border-color: hsl(240, 100%, 80%);
+}
+
+#compose_buttons .compose_reply_button:hover {
+    border-color: hsl(240, 100%, 60%);
+}
+
 .compose_table .message_header_colorblock,
 .compose_table .message_header {
     box-shadow: none;
@@ -223,6 +231,13 @@ table.compose_table {
 
 /* Like .nav-tabs > li > a */
 #compose-send-status {
+    padding: 8px 14px 8px 14px;
+    margin-bottom: 8px;
+    line-height: 20px;
+    display: none;
+}
+
+#nonexistent_stream_reply_error {
     padding: 8px 14px 8px 14px;
     margin-bottom: 8px;
     line-height: 20px;
@@ -448,4 +463,10 @@ a#undo_markdown_preview {
 
 #markdown_preview_spinner {
     margin: auto;
+}
+
+@media (max-width: 700px) {
+    #compose_buttons .compose_reply_button {
+        display: none;
+    }
 }
