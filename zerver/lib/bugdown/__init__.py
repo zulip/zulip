@@ -1103,10 +1103,12 @@ class LinkPattern(markdown.inlinepatterns.Pattern):
         if href is None:
             return None
 
+        href = rewrite_if_relative_link(href)
+
         el = markdown.util.etree.Element('a')
         el.text = m.group(2)
         el.set('href', href)
-        fixup_link(el, target_blank = (href[:1] != '#'))
+        fixup_link(el, target_blank=(href[:1] != '#'))
         return el
 
 def prepare_realm_pattern(source: Text) -> Text:

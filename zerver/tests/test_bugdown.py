@@ -1115,6 +1115,17 @@ class BugdownTest(ZulipTestCase):
             '<p><a href="#narrow/stream/hello" title="#narrow/stream/hello">http://zulip.testserver/#narrow/stream/hello</a></p>'
         )
 
+    def test_md_relative_link(self) -> None:
+        realm = get_realm("zulip")
+        sender_user_profile = self.example_user('othello')
+        message = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = "[hello](http://zulip.testserver/#narrow/stream/hello)"
+
+        self.assertEqual(
+            bugdown.convert(msg, message_realm=realm, message=message),
+            '<p><a href="#narrow/stream/hello" title="#narrow/stream/hello">hello</a></p>'
+        )
+
 class BugdownApiTests(ZulipTestCase):
     def test_render_message_api(self) -> None:
         content = 'That is a **bold** statement'
