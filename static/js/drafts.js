@@ -86,6 +86,11 @@ exports.snapshot_message = function () {
     return message;
 };
 
+function draft_notify() {
+    $(".alert-draft").css("display", "inline-block");
+    $(".alert-draft").delay(1000).fadeOut(300);
+}
+
 exports.update_draft = function () {
     var draft = drafts.snapshot_message();
     var draft_id = $("#compose-textarea").data("draft-id");
@@ -93,6 +98,7 @@ exports.update_draft = function () {
     if (draft_id !== undefined) {
         if (draft !== undefined) {
             draft_model.editDraft(draft_id, draft);
+            draft_notify();
         } else {
             draft_model.deleteDraft(draft_id);
         }
@@ -100,6 +106,7 @@ exports.update_draft = function () {
         if (draft !== undefined) {
             var new_draft_id = draft_model.addDraft(draft);
             $("#compose-textarea").data("draft-id", new_draft_id);
+            draft_notify();
         }
     }
 };
