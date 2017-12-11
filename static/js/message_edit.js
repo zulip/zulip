@@ -96,7 +96,8 @@ exports.save = function (row, from_topic_edited_only) {
     if (topic_changed) {
         request.subject = new_topic;
         if (feature_flags.propagate_topic_edits) {
-            var selected_topic_propagation = row.find("select.message_edit_topic_propagate").val() || "change_later";
+            var selected_topic_propagation =
+                row.find("select.message_edit_topic_propagate").val() || "change_later";
             request.propagate_mode = selected_topic_propagation;
         }
         changed = true;
@@ -117,7 +118,8 @@ exports.save = function (row, from_topic_edited_only) {
         data: request,
         success: function () {
             if (msg_list === current_msg_list) {
-                row.find(".edit_error").text(i18n.t("Message successfully edited!")).removeClass("alert-error").addClass("alert-success").show();
+                row.find(".edit_error").text(i18n.t("Message successfully edited!"))
+                    .removeClass("alert-error").addClass("alert-success").show();
             }
         },
         error: function (xhr) {

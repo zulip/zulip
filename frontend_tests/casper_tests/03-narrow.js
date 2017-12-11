@@ -313,9 +313,12 @@ casper.then(function () {
 });
 
 casper.waitWhileSelector('.input-append.notdisplayed', function () {
-    casper.test.assertExists('#stream_filters [data-stream-name="Denmark"]', 'Original stream list contains Denmark');
-    casper.test.assertExists('#stream_filters [data-stream-name="Scotland"]', 'Original stream list contains Scotland');
-    casper.test.assertExists('#stream_filters [data-stream-name="Verona"]', 'Original stream list contains Verona');
+    casper.test.assertExists('#stream_filters [data-stream-name="Denmark"]',
+        'Original stream list contains Denmark');
+    casper.test.assertExists('#stream_filters [data-stream-name="Scotland"]',
+        'Original stream list contains Scotland');
+    casper.test.assertExists('#stream_filters [data-stream-name="Verona"]',
+        'Original stream list contains Verona');
 });
 
 // We search for the beginning of "Verona", not case sensitive
@@ -331,14 +334,17 @@ casper.then(function () {
 // There will be no race condition between these two waits because we
 // expect them to happen in parallel.
 casper.waitWhileVisible('#stream_filters [data-stream-name="Denmark"]', function () {
-    casper.test.assertDoesntExist('#stream_filters [data-stream-name="Denmark"]', 'Filtered stream list does not contain Denmark');
+    casper.test.assertDoesntExist('#stream_filters [data-stream-name="Denmark"]',
+        'Filtered stream list does not contain Denmark');
 });
 casper.waitWhileVisible('#stream_filters [data-stream-name="Scotland"]', function () {
-    casper.test.assertDoesntExist('#stream_filters [data-stream-name="Scotland"]', 'Filtered stream list does not contain Scotland');
+    casper.test.assertDoesntExist('#stream_filters [data-stream-name="Scotland"]',
+        'Filtered stream list does not contain Scotland');
 });
 
 casper.then(function () {
-    casper.test.assertExists('#stream_filters [data-stream-name="Verona"]', 'Filtered stream list does contain Verona');
+    casper.test.assertExists('#stream_filters [data-stream-name="Verona"]',
+        'Filtered stream list does contain Verona');
 });
 
 // Clearing the list should give us back all the streams in the list
@@ -354,20 +360,24 @@ casper.then(function () {
 // There will be no race condition between these waits because we
 // expect them to happen in parallel.
 casper.waitUntilVisible('#stream_filters [data-stream-name="Denmark"]', function () {
-    casper.test.assertExists('#stream_filters [data-stream-name="Denmark"]', 'Restored stream list contains Denmark');
+    casper.test.assertExists('#stream_filters [data-stream-name="Denmark"]',
+        'Restored stream list contains Denmark');
 });
 casper.waitUntilVisible('#stream_filters [data-stream-name="Scotland"]', function () {
-    casper.test.assertExists('#stream_filters [data-stream-name="Denmark"]', 'Restored stream list contains Scotland');
+    casper.test.assertExists('#stream_filters [data-stream-name="Denmark"]',
+        'Restored stream list contains Scotland');
 });
 casper.waitUntilVisible('#stream_filters [data-stream-name="Verona"]', function () {
-    casper.test.assertExists('#stream_filters [data-stream-name="Denmark"]', 'Restored stream list contains Verona');
+    casper.test.assertExists('#stream_filters [data-stream-name="Denmark"]',
+        'Restored stream list contains Verona');
 });
 
 
 casper.thenClick('#streams_header .sidebar-title');
 
 casper.waitForSelector('.input-append.notdisplayed', function () {
-    casper.test.assertExists('.input-append.notdisplayed', 'Stream filter box not visible after second click');
+    casper.test.assertExists('.input-append.notdisplayed',
+        'Stream filter box not visible after second click');
 });
 
 un_narrow();

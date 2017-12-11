@@ -1,7 +1,10 @@
 const ELECTRON_APP_VERSION = "1.5.0";
-const ELECTRON_APP_URL_LINUX = "https://github.com/zulip/zulip-electron/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-" + ELECTRON_APP_VERSION + "-x86_64.AppImage";
-const ELECTRON_APP_URL_MAC = "https://github.com/zulip/zulip-electron/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-" + ELECTRON_APP_VERSION + ".dmg";
-const ELECTRON_APP_URL_WINDOWS = "https://github.com/zulip/zulip-electron/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-Web-Setup-" + ELECTRON_APP_VERSION + ".exe";
+const ELECTRON_APP_URL_LINUX = "https://github.com/zulip/zulip-electron/releases/download/v"
+    + ELECTRON_APP_VERSION + "/Zulip-" + ELECTRON_APP_VERSION + "-x86_64.AppImage";
+const ELECTRON_APP_URL_MAC = "https://github.com/zulip/zulip-electron/releases/download/v"
+    + ELECTRON_APP_VERSION + "/Zulip-" + ELECTRON_APP_VERSION + ".dmg";
+const ELECTRON_APP_URL_WINDOWS = "https://github.com/zulip/zulip-electron/releases/download/v"
+    + ELECTRON_APP_VERSION + "/Zulip-Web-Setup-" + ELECTRON_APP_VERSION + ".exe";
 
 import render_tabs from './team.js';
 
@@ -46,7 +49,8 @@ var apps_events = function () {
         windows: {
             image: "/static/images/landing-page/microsoft.png",
             alt: "Windows",
-            description: "Zulip for Windows is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
+            description: "Zulip for Windows is even better than Zulip on the web, with a cleaner look, " +
+            "tray integration, native notifications, and support for multiple Zulip accounts.",
             link: ELECTRON_APP_URL_WINDOWS,
             show_instructions: true,
             install_guide: "/help/desktop-app-install-guide#installing-on-windows",
@@ -54,7 +58,8 @@ var apps_events = function () {
         mac: {
             image: "/static/images/landing-page/macbook.png",
             alt: "macOS",
-            description: "Zulip on macOS is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
+            description: "Zulip on macOS is even better than Zulip on the web, with a cleaner look, " +
+            "tray integration, native notifications, and support for multiple Zulip accounts.",
             link: ELECTRON_APP_URL_MAC,
             show_instructions: true,
             install_guide: "/help/desktop-app-install-guide#installing-on-macos",
@@ -74,7 +79,8 @@ var apps_events = function () {
         linux: {
             image: "/static/images/landing-page/ubuntu.png",
             alt: "Linux",
-            description: "Zulip on the Linux desktop is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
+            description: "Zulip on the Linux desktop is even better than Zulip on the web, with a cleaner look, " +
+            "tray integration, native notifications, and support for multiple Zulip accounts.",
             link: ELECTRON_APP_URL_LINUX,
             show_instructions: true,
             install_guide: "/help/desktop-app-install-guide#installing-on-linux",

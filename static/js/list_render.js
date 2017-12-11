@@ -238,7 +238,8 @@ var list_render = (function () {
                 var $nearestScrollingContainer = $container;
                 while ($nearestScrollingContainer.length) {
                     if ($nearestScrollingContainer.is("body, html")) {
-                        blueslip.warn("Please wrap progressive scrolling lists in an element with 'max-height' attribute. Error found in:\n" + blueslip.preview_node($container));
+                        blueslip.warn("Please wrap progressive scrolling lists in an element with 'max-height' attribute. " +
+                            "Error found in:\n" + blueslip.preview_node($container));
                         break;
                     }
 

@@ -9,19 +9,22 @@ function get_color() {
 }
 
 function update_stream_desktop_notifications(sub, value) {
-    var desktop_notifications_checkbox = $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #sub_desktop_notifications_setting .sub_setting_control");
+    var desktop_notifications_checkbox = $(".subscription_settings[data-stream-id='"
+        + sub.stream_id + "'] #sub_desktop_notifications_setting .sub_setting_control");
     desktop_notifications_checkbox.prop('checked', value);
     sub.desktop_notifications = value;
 }
 
 function update_stream_audible_notifications(sub, value) {
-    var audible_notifications_checkbox = $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #sub_audible_notifications_setting .sub_setting_control");
+    var audible_notifications_checkbox = $(".subscription_settings[data-stream-id='"
+        + sub.stream_id + "'] #sub_audible_notifications_setting .sub_setting_control");
     audible_notifications_checkbox.prop('checked', value);
     sub.audible_notifications = value;
 }
 
 function update_stream_push_notifications(sub, value) {
-    var push_notifications_checkbox = $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #sub_push_notifications_setting .sub_setting_control");
+    var push_notifications_checkbox = $(".subscription_settings[data-stream-id='"
+        + sub.stream_id + "'] #sub_push_notifications_setting .sub_setting_control");
     push_notifications_checkbox.prop('checked', value);
     sub.push_notifications = value;
 }

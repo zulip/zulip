@@ -274,9 +274,11 @@ function drafts_initialize_focus(event_name) {
 
     var draft_element;
     if (event_name === "up_arrow") {
-        draft_element = document.querySelectorAll('[data-draft-id="' + draft_id_arrow[draft_id_arrow.length-1] + '"]');
+        draft_element = document.querySelectorAll('[data-draft-id="'
+            + draft_id_arrow[draft_id_arrow.length-1] + '"]');
     } else if (event_name === "down_arrow") {
-        draft_element = document.querySelectorAll('[data-draft-id="' + draft_id_arrow[0] + '"]');
+        draft_element = document.querySelectorAll('[data-draft-id="'
+            + draft_id_arrow[0] + '"]');
     }
     var focus_element = draft_element[0].children[0];
     focus_element.focus();

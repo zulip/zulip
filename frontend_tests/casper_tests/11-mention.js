@@ -32,9 +32,11 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitForSelectorText(".compose-all-everyone-msg", "Are you sure you want to mention all", function () {
+    casper.waitForSelectorText(".compose-all-everyone-msg",
+        "Are you sure you want to mention all", function () {
         casper.test.info('Warning message appears when mentioning @all');
-        casper.test.assertSelectorHasText('.compose-all-everyone-msg', 'Are you sure you want to mention all');
+        casper.test.assertSelectorHasText('.compose-all-everyone-msg',
+            'Are you sure you want to mention all');
         casper.click('.compose-all-everyone-confirm');
     });
 

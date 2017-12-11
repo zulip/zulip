@@ -42,7 +42,8 @@ casper.then(function () {
 casper.then(function () {
     casper.waitUntilVisible('#compose', function () {
         casper.test.assertVisible('#stream-message', 'Stream input box visible');
-        common.check_form('#send_message_form', {stream: '', subject: ''}, "Stream empty on new compose");
+        common.check_form('#send_message_form', {stream: '', subject: ''},
+            "Stream empty on new compose");
         casper.click('body');
         casper.page.sendEvent('keypress', "C");
     });
@@ -73,7 +74,8 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible('#stream-message', function () {
-        common.check_form('#send_message_form', {stream: "Verona", subject: "Reply test"}, "Stream populated after reply by click");
+        common.check_form('#send_message_form', {stream: "Verona", subject: "Reply test"},
+            "Stream populated after reply by click");
         // Or recipient field
         casper.click('body');
         casper.clickLabel("And reply to this message");
@@ -82,7 +84,8 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible('#private_message_recipient', function () {
-        common.check_form('#send_message_form', {recipient: "cordelia@zulip.com"}, "Recipient populated after PM click");
+        common.check_form('#send_message_form', {recipient: "cordelia@zulip.com"},
+            "Recipient populated after PM click");
 
         common.keypress(27); //escape
         casper.page.sendEvent('keypress', 'k');
@@ -92,7 +95,8 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible('#stream-message', function () {
-        common.check_form('#send_message_form', {stream: "Verona", subject: "Reply test"}, "Stream populated after reply with `r`");
+        common.check_form('#send_message_form', {stream: "Verona", subject: "Reply test"},
+            "Stream populated after reply with `r`");
 
         // Test "closing" the compose box
         casper.click('body');
@@ -171,7 +175,8 @@ casper.then(function () {
 casper.then(function () {
     casper.waitWhileVisible("#markdown_preview", function () {
         casper.test.assertVisible('#undo_markdown_preview', 'Write button is visible');
-        casper.test.assertEquals(casper.getHTML('#preview_content'), "Nothing to preview", "Nothing to preview");
+        casper.test.assertEquals(casper.getHTML('#preview_content'), "Nothing to preview",
+            "Nothing to preview");
         casper.click("#undo_markdown_preview");
     });
 });
@@ -192,7 +197,9 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitForSelectorTextChange("#preview_content", function () {
-        casper.test.assertEquals(casper.getHTML('#preview_content'), "<p><strong>Markdown Preview</strong> &gt;&gt; Test for markdown preview</p>", "Check markdown is previewed properly");
+        casper.test.assertEquals(casper.getHTML('#preview_content'),
+            "<p><strong>Markdown Preview</strong> &gt;&gt; Test for markdown preview</p>",
+            "Check markdown is previewed properly");
     });
 });
 

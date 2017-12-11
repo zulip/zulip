@@ -99,12 +99,14 @@ people.add(bob);
 
     $('#stream').select(noop);
     assert(!compose.validate_stream_message_address_info('foobar'));
-    assert.equal($('#compose-error-msg').html(), "<p>The stream <b>foobar</b> does not exist.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
+    assert.equal($('#compose-error-msg').html(), "<p>The stream <b>foobar</b> does not exist." +
+        "</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
 
     sub.subscribed = false;
     stream_data.add_sub('social', sub);
     assert(!compose.validate_stream_message_address_info('social'));
-    assert.equal($('#compose-error-msg').html(), "<p>You're not subscribed to the stream <b>social</b>.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
+    assert.equal($('#compose-error-msg').html(), "<p>You're not subscribed to the stream <b>social</b>." +
+        "</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
 
     global.page_params.narrow_stream = false;
     channel.post = function (payload) {
@@ -123,14 +125,16 @@ people.add(bob);
         payload.success(payload.data);
     };
     assert(!compose.validate_stream_message_address_info('Frontend'));
-    assert.equal($('#compose-error-msg').html(), "<p>You're not subscribed to the stream <b>Frontend</b>.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
+    assert.equal($('#compose-error-msg').html(), "<p>You're not subscribed to the stream <b>Frontend</b>.</p>" +
+        "<p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
 
     channel.post = function (payload) {
         assert.equal(payload.data.stream, 'Frontend');
         payload.error({status: 404});
     };
     assert(!compose.validate_stream_message_address_info('Frontend'));
-    assert.equal($('#compose-error-msg').html(), "<p>The stream <b>Frontend</b> does not exist.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
+    assert.equal($('#compose-error-msg').html(), "<p>The stream <b>Frontend</b> does not exist.</p>" +
+        "<p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
 
     channel.post = function (payload) {
         assert.equal(payload.data.stream, 'social');

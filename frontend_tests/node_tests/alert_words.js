@@ -37,10 +37,12 @@ var alert_in_url_message = { sender_email: 'another@zulip.com', content: '<p>htt
 var question_word_message = { sender_email: 'another@zulip.com', content: '<p>still alertone? me</p>',
                             alerted: true };
 
-var alert_domain_message = { sender_email: 'another@zulip.com', content: '<p>now with link <a href="http://www.alerttwo.us/foo/bar" target="_blank" title="http://www.alerttwo.us/foo/bar">www.alerttwo.us/foo/bar</a></p>',
+var alert_domain_message = { sender_email: 'another@zulip.com', content: '<p>now with link ' +
+'<a href="http://www.alerttwo.us/foo/bar" target="_blank" title="http://www.alerttwo.us/foo/bar">www.alerttwo.us/foo/bar</a></p>',
                      alerted: true };
 // This test ensure we are not mucking up rendered HTML content.
-var message_with_emoji = { sender_email: 'another@zulip.com', content: '<p>I <img alt=":heart:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2764.png" title="heart"> emoji!</p>',
+var message_with_emoji = { sender_email: 'another@zulip.com', content: '<p>I <img alt=":heart:" ' +
+'class="emoji" src="/static/generated/emoji/images/emoji/unicode/2764.png" title="heart"> emoji!</p>',
                            alerted: true };
 
 (function test_notifications() {
@@ -70,7 +72,8 @@ var message_with_emoji = { sender_email: 'another@zulip.com', content: '<p>I <im
     assert.equal(caps_message.content, "<p>another <span class='alert-word'>ALERTtwo</span> message</p>");
 
     alert_words.process_message(multialert_message);
-    assert.equal(multialert_message.content, "<p>another alertthreemessage <span class='alert-word'>alertone</span> and then <span class='alert-word'>alerttwo</span></p>");
+    assert.equal(multialert_message.content, "<p>another alertthreemessage <span class='alert-word'>alertone</span> " +
+        "and then <span class='alert-word'>alerttwo</span></p>");
 
     alert_words.process_message(unsafe_word_message);
     assert.equal(unsafe_word_message.content, "<p>gotta <span class='alert-word'>al*rt.*s</span> all</p>");
@@ -82,8 +85,10 @@ var message_with_emoji = { sender_email: 'another@zulip.com', content: '<p>I <im
     assert.equal(question_word_message.content, "<p>still <span class='alert-word'>alertone</span>? me</p>");
 
     alert_words.process_message(alert_domain_message);
-    assert.equal(alert_domain_message.content, '<p>now with link <a href="http://www.alerttwo.us/foo/bar" target="_blank" title="http://www.alerttwo.us/foo/bar">www.<span class=\'alert-word\'>alerttwo</span>.us/foo/bar</a></p>');
+    assert.equal(alert_domain_message.content, '<p>now with link <a href="http://www.alerttwo.us/foo/bar" ' +
+        'target="_blank" title="http://www.alerttwo.us/foo/bar">www.<span class=\'alert-word\'>alerttwo</span>.us/foo/bar</a></p>');
 
     alert_words.process_message(message_with_emoji);
-    assert.equal(message_with_emoji.content, '<p>I <img alt=":heart:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2764.png" title="heart"> <span class=\'alert-word\'>emoji</span>!</p>');
+    assert.equal(message_with_emoji.content, '<p>I <img alt=":heart:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2764.png" ' +
+        'title="heart"> <span class=\'alert-word\'>emoji</span>!</p>');
 }());

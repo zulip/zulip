@@ -204,7 +204,8 @@ exports.hide_loading_more_messages_indicator = function () {
 exports.switchToFullWidth = function () {
     $("#full-width-style").remove();
     $('head').append('<style id="full-width-style" type="text/css">' +
-                         '#home .alert-bar, .recipient-bar-content, #compose-container, .app-main, .header-main { max-width: none; }' +
+                         '#home .alert-bar, .recipient-bar-content, #compose-container, ' +
+        '.app-main, .header-main { max-width: none; }' +
                      '</style>');
     return ("Switched to full width");
 };
