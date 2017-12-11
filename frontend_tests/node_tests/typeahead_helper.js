@@ -399,6 +399,32 @@ _.each(matches, function (person) {
     assert(rendered);
 }());
 
+(function test_clear_rendered_persons() {
+    var rendered = false;
+    global.templates.render = function (template_name, args) {
+        assert.equal(template_name, 'typeahead_list_item');
+        assert.equal(args.primary, matches[5].full_name);
+        assert.equal(args.secondary, matches[5].email);
+        rendered = true;
+        return 'typeahead-item-stub';
+    };
+    assert.equal(th.render_person(matches[5]), 'typeahead-item-stub');
+    assert(rendered);
+
+    // Bot once rendered won't be rendered again until clear_rendered_person
+    // function is called. clear_rendered_person is used to clear rendered
+    // data once bot name is modified.
+    rendered = false;
+    assert.equal(th.render_person(matches[5]), 'typeahead-item-stub');
+    assert.equal(rendered, false);
+
+    // Here rendered will be true as it is being rendered again.
+    th.clear_rendered_persons();
+    assert.equal(th.render_person(matches[5]), 'typeahead-item-stub');
+    assert(rendered);
+
+}());
+
 (function test_render_stream() {
     // Test render_stream with short description
     var rendered = false;

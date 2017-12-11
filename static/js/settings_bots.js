@@ -306,6 +306,7 @@ exports.set_up = function () {
                         edit_button.show();
                         show_row_again();
                         avatar_widget.clear();
+                        typeahead_helper.clear_rendered_persons();
 
                         bot_info.find('.name').text(full_name);
                         if (data.avatar_url) {
