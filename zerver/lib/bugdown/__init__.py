@@ -77,6 +77,17 @@ STREAM_LINK_REGEX = r"""
 class BugdownRenderingException(Exception):
     pass
 
+def rewrite_if_relative_link(link: str) -> str:
+    """ If the link points to a local destination we can just switch to that
+    instead of opening a new tab. """
+
+    if db_data:
+        local_link = re.match("^{}\/(#.+)$".format(re.escape(db_data['realm_uri'])), link)
+        if local_link:
+            return local_link.group(1)
+
+    return link
+
 def url_embed_preview_enabled_for_realm(message: Optional[Message]) -> bool:
     if message is not None:
         realm = message.get_realm()  # type: Optional[Realm]
@@ -1004,15 +1015,8 @@ def url_to_a(url: Text, text: Optional[Text]=None) -> Union[Element, Text]:
     if text is None:
         text = markdown.util.AtomicString(url)
 
-    target_blank = 'mailto:' not in href[:7]
-
-    if db_data:
-        # If the link points to a local destination we can just switch to that
-        # instead of opening a new tab.
-        local_link = re.match("^{}\/(#.+)$".format(re.escape(db_data['realm_uri'])), url)
-        if local_link:
-            href = local_link.group(1)
-            target_blank = False
+    href = rewrite_if_relative_link(href)
+    target_blank = href[:1] != '#' and 'mailto:' not in href[:7]
 
     a.set('href', href)
     a.text = text
