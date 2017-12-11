@@ -589,10 +589,6 @@ exports.keyboard_sub = function () {
     var row_data = get_row_data(active_data.row);
     if (row_data) {
         subs.sub_or_unsub(row_data.object);
-        if (row_data.object.subscribed && active_data.tab.text() === 'Subscribed') {
-            active_data.row.addClass('notdisplayed');
-            active_data.row.removeClass('active');
-        }
     }
 };
 
@@ -646,6 +642,14 @@ function ajaxSubscribe(stream) {
 
 function ajaxUnsubscribe(sub) {
     // TODO: use stream_id when backend supports it
+
+    var active_data = get_active_data();
+
+    // immediately hide row, reveal it again if unsubscribing failed
+    if (active_data.tab.text() === 'Subscribed') {
+        active_data.row.addClass("notdisplayed").removeClass("active");
+    }
+
     return channel.del({
         url: "/json/users/me/subscriptions",
         data: {subscriptions: JSON.stringify([sub.name]) },
@@ -656,6 +660,7 @@ function ajaxUnsubscribe(sub) {
         error: function (xhr) {
             ui_report.error(i18n.t("Error removing subscription"), xhr,
                             $("#subscriptions-status"), 'subscriptions-status');
+            active_data.row.removeClass("notdisplayed").addClass("active");
         },
     });
 }
