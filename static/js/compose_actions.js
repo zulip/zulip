@@ -258,6 +258,16 @@ exports.respond_to_message = function (opts) {
         if (!narrow_state.narrowed_by_pm_reply() &&
             !narrow_state.narrowed_by_stream_reply() &&
             !narrow_state.narrowed_by_topic_reply()) {
+            compose.nonexistent_stream_reply_error();
+            return;
+        }
+        var current_filter = narrow_state.get_current_filter();
+        var first_term = current_filter.operators()[0];
+        var first_operator = first_term.operator;
+        var first_operand = first_term.operand;
+
+        if ((first_operator === "stream") && !stream_data.is_subscribed(first_operand)) {
+            compose.nonexistent_stream_reply_error();
             return;
         }
 

@@ -424,6 +424,9 @@ $(function () {
     $('#compose-send-status .compose-send-status-close').click(
         function () { $('#compose-send-status').stop(true).fadeOut(500); }
     );
+    $('#nonexistent_stream_reply_error .compose-send-status-close').click(
+        function () { $('#nonexistent_stream_reply_error').stop(true).fadeOut(500); }
+    );
 
 
     $('.compose_stream_button').click(function () {
@@ -431,6 +434,9 @@ $(function () {
     });
     $('.compose_private_button').click(function () {
         compose_actions.start('private');
+    });
+    $('.compose_reply_button').click(function () {
+        compose_actions.respond_to_message({trigger: 'reply button'});
     });
 
     $('.empty_feed_compose_stream').click(function (e) {

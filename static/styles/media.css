@@ -217,7 +217,8 @@
     }
 
     .compose_stream_button,
-    .compose_private_button {
+    .compose_private_button,
+    .compose_reply_button {
         padding: 5px 10px 5px 10px;
     }
 
