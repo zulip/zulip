@@ -171,7 +171,10 @@ var input_pill = function ($parent) {
                 });
             }
 
+            /*
+            BROCK - what does line do?
             store.$input.find(".input");
+            */
 
             // this is an array to push all the errored values to, so it's drafts
             // of pills for the user to fix.
