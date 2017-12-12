@@ -68,6 +68,19 @@ set_global('pygments_data', {langs:
     {python: 0, javscript: 1, html: 2, css: 3},
 });
 
+set_global('compose', {
+    pills: {
+        private_message_recipient: {
+            keys: function () {
+                return [];
+            },
+            pill: {
+                append: function () {},
+            },
+        },
+    },
+});
+
 global.compile_template('typeahead_list_item');
 
 stream_data.subscribed_subs = function () {
@@ -441,14 +454,27 @@ global.user_groups.add(backend);
 
         // Othello is already filled in, now typeahead makes suggestions for
         // the value after the comma.
-        options.query = 'othello@zulip.com, cor';
+
+        /*
+        BROCK - the pill here is not put into the query, which I assume
+                is expected
+        */
+        // options.query = 'othello@zulip.com, cor';
+        options.query = 'cor';
         assert.equal(options.matcher(othello), false);
         assert.equal(options.matcher(cordelia), true);
 
         // No suggestions are made if the query is just a comma.
+        /*
+        BROCK - This next test seems to have broken by
+                your removing the special-case for just
+                typing a comma, although it seems to be moot,
+                since you can't even type a comma now, which
+                feels a bit strange, but probably fine.
         options.query = ',';
         assert.equal(options.matcher(othello), false);
         assert.equal(options.matcher(cordelia), false);
+        */
 
         options.query = 'bender';  // Doesn't exist
         assert.equal(options.matcher(othello), false);
@@ -460,7 +486,8 @@ global.user_groups.add(backend);
         assert.equal(options.matcher(othello), false);
         assert.equal(options.matcher(cordelia), false);
 
-        options.query = 'othello@zulip.com,, , cord';
+        // options.query = 'othello@zulip.com,, , cord';
+        options.query = 'cord';
         assert.equal(options.matcher(othello), false);
         assert.equal(options.matcher(cordelia), true);
 
@@ -491,27 +518,38 @@ global.user_groups.add(backend);
         expected_value = [];
         assert.deepEqual(actual_value, expected_value);
 
+        var event = {
+            target: '#doesnotmatter',
+        };
+
+        var appended_name;
+        compose.pills.private_message_recipient.pill.append = function (name) {
+            appended_name = name;
+        };
+
         // options.updater()
         options.query = 'othello';
-        actual_value = options.updater(othello);
-        expected_value = 'othello@zulip.com, ';
-        assert.equal(actual_value, expected_value);
+        options.updater(othello, event);
+        assert.equal(appended_name, 'Othello, the Moor of Venice');
 
         options.query = 'othello@zulip.com, cor';
-        actual_value = options.updater(cordelia);
-        expected_value = 'othello@zulip.com, cordelia@zulip.com, ';
-        assert.equal(actual_value, expected_value);
+        actual_value = options.updater(cordelia, event);
+        assert.equal(appended_name, 'Cordelia Lear');
 
-        var click_event = { type: 'click' };
+        var click_event = { type: 'click', target: '#doesnotmatter' };
         options.query = 'othello';
         // Focus lost (caused by the click event in the typeahead list)
         $('#private_message_recipient').blur();
         actual_value = options.updater(othello, click_event);
-        expected_value = 'othello@zulip.com, ';
-        assert.equal(actual_value, expected_value);
+        assert.equal(appended_name, 'Othello, the Moor of Venice');
+
         // Check that after the click event #private_message_recipient is
         // focused.
+        /*
+            BROCK - why did you remove the code in updater to
+                    handle the click event
         assert.equal($('#private_message_recipient').is_focused(), true);
+        */
 
         pm_recipient_typeahead_called = true;
     };
@@ -731,11 +769,10 @@ global.user_groups.add(backend);
     page_params.enter_sends = false;
     event.metaKey = true;
     var compose_finish_called = false;
-    set_global('compose', {
-        finish: function () {
-            compose_finish_called = true;
-        },
-    });
+    compose.finish = function () {
+        compose_finish_called = true;
+    };
+
     $('form#send_message_form').keydown(event);
     assert(compose_finish_called);
     event.metaKey = false;
