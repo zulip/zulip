@@ -468,15 +468,7 @@ exports.initialize = function () {
         var stream_id = $(e.target).parents('li').attr('data-stream-id');
         var sub = stream_data.get_sub_by_id(stream_id);
         popovers.hide_all();
-        var operators = [{operator: "stream", operand: sub.name}];
-        // If we are not in the stream already, narrow to most recent topic in stream.
-        if (!narrow_state.is_for_stream_id(stream_id)) {
-            var history = topic_data.get_recent_names(stream_id);
-            if (history.length > 0) {
-                operators.push({operator: "topic", operand: history[0]});
-            }
-        }
-        narrow.activate(operators, {select_first_unread: true, trigger: "sidebar"});
+        narrow.by('stream', sub.name, {select_first_unread: true, trigger: 'sidebar'});
 
         e.preventDefault();
         e.stopPropagation();
