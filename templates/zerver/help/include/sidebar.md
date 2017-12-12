@@ -39,7 +39,7 @@
 * [Enable pressing Enter to send](/help/enable-or-disable-pressing-enter-to-send)
 * [Verify a message was sent](/help/verify-that-your-message-has-been-successfully-sent)
 <!-- What to do if the server returns an error -->
-* [Status messages](/help/format-your-message-using-markdown#status-messages)
+* [Status messages](/help/status-messages)
 * [@-mention a user](/help/at-mention-a-team-member)
 * [Make an announcement](/help/make-an-announcement)
 * [Write in a different language](/help/send-a-message-in-a-different-language)
