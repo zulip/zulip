@@ -498,6 +498,10 @@ urls += [
     url(r'^json/', include(v1_api_and_json_patterns)),
 ]
 
+# This url serves the number of online users to be set on the README.md
+# community button
+urls += url(r'^badge/users', backends.get_number_online_users, 'users')
+
 # user_uploads -> zerver.views.upload.serve_file_backend
 #
 # This url is an exception to the url naming schemes for endpoints. It
