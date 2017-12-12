@@ -179,13 +179,13 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         mobile_event = queue_messages[0]['event']
 
         self.assertEqual(mobile_event['user_profile_id'], cordelia.id)
-        self.assertEqual(mobile_event['trigger'], 'mentioned')
+        self.assertEqual(mobile_event['mentioned'], True)
 
         self.assertEqual(queue_messages[1]['queue_name'], 'missedmessage_emails')
         email_event = queue_messages[1]['event']
 
         self.assertEqual(email_event['user_profile_id'], cordelia.id)
-        self.assertEqual(email_event['trigger'], 'mentioned')
+        self.assertEqual(email_event['mentioned'], True)
 
     def test_second_mention_is_ignored(self) -> None:
         message_id = self._login_and_send_original_stream_message(
