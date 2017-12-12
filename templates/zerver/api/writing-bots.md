@@ -206,7 +206,7 @@ None.
 
 #### Example implementation
 
- ```
+```
   def handle_message(self, message, bot_handler):
      original_content = message['content']
      original_sender = message['sender_email']
@@ -219,7 +219,7 @@ None.
          subject=message['sender_email'],
          content=new_content,
      ))
- ```
+```
 ### bot_handler.send_message
 
 *bot_handler.send_message(message)*
@@ -367,12 +367,12 @@ every call to `put` and `get`, respectively.
 
 ### Configuration file
 
- ```
+```
  [api]
  key=<api-key>
  email=<email>
  site=<dev-url>
- ```
+```
 
 * key - the API key you created for the bot; this is how Zulip knows
   the request is from an authorized user.
