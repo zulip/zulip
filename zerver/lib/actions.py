@@ -1977,8 +1977,8 @@ def validate_user_access_to_subscribers_helper(user_profile: Optional[UserProfil
                                                stream_dict: Mapping[str, Any],
                                                check_user_subscribed: Callable[[], bool]) -> None:
     """ Helper for validate_user_access_to_subscribers that doesn't require a full stream object
-    * check_user_subscribed is a function that when called with no
-      arguments, will report whether the user is subscribed to the stream
+
+    * check_user_subscribed reports whether the user is subscribed to the stream.
     """
     if user_profile is None:
         raise ValidationError("Missing user to validate access for")
@@ -1992,11 +1992,11 @@ def validate_user_access_to_subscribers_helper(user_profile: Optional[UserProfil
     if (stream_dict["invite_only"] and not check_user_subscribed()):
         raise JsonableError(_("Unable to retrieve subscribers for invite-only stream"))
 
-# sub_dict is a dictionary mapping stream_id => whether the user is subscribed to that stream
 def bulk_get_subscriber_user_ids(stream_dicts: Iterable[Mapping[str, Any]],
                                  user_profile: UserProfile,
                                  sub_dict: Mapping[int, bool],
                                  stream_recipient: StreamRecipientMap) -> Dict[int, List[int]]:
+    """sub_dict maps stream_id => whether the user is subscribed to that stream."""
     target_stream_dicts = []
     for stream_dict in stream_dicts:
         try:
@@ -2132,8 +2132,8 @@ def get_peer_user_ids_for_stream_change(stream: Stream,
                                         altered_user_ids: Iterable[int],
                                         subscribed_user_ids: Iterable[int]) -> Set[int]:
     '''
-    altered_user_ids is a list of user_ids that we are adding/removing
-    subscribed_user_ids is the list of already subscribed user_ids
+    altered_user_ids is the user_ids that we are adding/removing
+    subscribed_user_ids is the already-subscribed user_ids
 
     Based on stream policy, we notify the correct bystanders, while
     not notifying altered_users (who get subscribers via another event)
@@ -3859,9 +3859,6 @@ def do_send_confirmation_email(invitee: PreregistrationUser,
                                referrer: UserProfile) -> None:
     """
     Send the confirmation/welcome e-mail to an invited user.
-
-    `invitee` is a PreregistrationUser.
-    `referrer` is a UserProfile.
     """
     activation_url = create_confirmation_link(invitee, referrer.realm.host, Confirmation.INVITATION)
     context = {'referrer': referrer, 'activate_url': activation_url,
