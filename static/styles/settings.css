@@ -1360,3 +1360,8 @@ thead .actions {
 #payload_url_inputbox input[type=text] {
     width: 340px;
 }
+
+.invited-as-admin {
+    opacity: 0.5;
+    margin-left: 2px;
+}
