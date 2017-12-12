@@ -6,17 +6,11 @@ body.dark-mode {
 }
 
 body.dark-mode .app-main,
-body.dark-mode .header-main {
-    background-color: hsl(212, 28%, 18%);
-}
-
+body.dark-mode .header-main,
 body.dark-mode #tab_bar_underpadding,
 body.dark-mode .floating_recipient .message-header-wrapper,
 body.dark-mode .column-middle,
-body.dark-mode #compose {
-    background-color: hsl(212, 28%, 18%);
-}
-
+body.dark-mode #compose,
 body.dark-mode .column-left .left-sidebar,
 body.dark-mode .column-right .right-sidebar,
 body.dark-mode #subscription_overlay .right,
