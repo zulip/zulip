@@ -38,7 +38,7 @@ def remove_special_chars_from_username(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0125_realm_max_invites'),
+        ('zerver', '0126_prereg_remove_users_without_realm'),
     ]
 
     operations = [
