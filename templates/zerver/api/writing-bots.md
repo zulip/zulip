@@ -116,20 +116,32 @@ above as an orientation.
 ## Testing a bot's output
 
 If you just want to see how a bot reacts to a message, but don't want to set it up on a server,
-we have a little tool to help you out: `zulip-bot-output`
+we have a little tool to help you out: `zulip-terminal`
 
 * [Install all requirements](#installing-a-development-version-of-the-zulip-bots-package).
 
-* Run `zulip-bot-output <bot-name> --message "<your-message>"` to test one of the bots in
-  [`zulip_bots/bots`](https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots)
+* Run `zulip-terminal -b <path-to-bot.config> <bot-name>` to test one of the bots in
+  [`zulip_bots/bots`](https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots).
+  Here, the `-b` or `--bot-config-file` arguement is for optional third party config file (e.g. ~/giphy.conf)
 
-  * Example: `zulip-bot-output converter --message "12 meter yard"`
+  * Example: `zulip-terminal converter`
+
+    Enter your message: `"12 meter yard"`
 
     Response: `12.0 meter = 13.12336 yard`
 
-* Run `zulip-bot-output <path/to/bot.py> --message "<your-message>"` to specify the bot's path yourself.
+  * Example: `zulip-terminal -b /zulip_bots/zulip_bots/bots/followup/followup.conf followup`
 
-  * Example: `zulip-bot-output zulip_bots/zulip_bots/bots/converter/converter.py --message "12 meter yard"`
+    Enter your message: `"Task Completed"`
+
+    Response: ```stream: followup topic: foo_sender@zulip.com
+                    from foo_sender@zulip.com: Task Completed```
+
+* Run `zulip-terminal <path/to/bot.py>"` to specify the bot's path yourself.
+
+  * Example: `zulip-terminal zulip_bots/zulip_bots/bots/converter/converter.py`
+
+    Enter your message: `"12 meter yard"`
 
     Response: `12.0 meter = 13.12336 yard`
 
