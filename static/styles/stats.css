@@ -198,7 +198,7 @@ hr {
     border-radius: 50%;
     border: 1px solid #ccc;
     border-top-color: #07d;
-    animation: spinner .4s linear infinite;
+    animation: spinner 1s linear infinite;
 }
 
 #users_hover_info,
