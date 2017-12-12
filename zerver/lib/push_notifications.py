@@ -456,6 +456,7 @@ def get_apns_payload(message: Message) -> Dict[str, Any]:
                 'sender_id': message.sender.id,
                 'server': settings.EXTERNAL_HOST,
                 'realm_id': message.sender.realm.id,
+                'trigger': message.trigger,
             }
         }
     }  # type: Dict[str, Any]
@@ -486,6 +487,7 @@ def get_gcm_payload(user_profile: UserProfile, message: Message) -> Dict[str, An
         'sender_email': message.sender.email,
         'sender_full_name': message.sender.full_name,
         'sender_avatar_url': absolute_avatar_url(message.sender),
+        'trigger': message.trigger,
     }
 
     if message.is_stream_message():
