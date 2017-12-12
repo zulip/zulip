@@ -693,17 +693,24 @@ $(function () {
 
     $("#subscriptions_table").on("click", ".create_stream_button", function (e) {
         e.preventDefault();
+        $(".left").css("opacity","0.1");
         exports.new_stream_clicked();
     });
 
     $(".subscriptions").on("click", "[data-dismiss]", function (e) {
         e.preventDefault();
+        $(".left").css("opacity","");
         // we want to make sure that the click is not just a simulated
         // click; this fixes an issue where hitting "enter" would
         // trigger this code path due to bootstrap magic.
         if (e.clientY !== 0) {
             exports.show_subs_pane.nothing_selected();
         }
+    });
+
+    $("#subscriptions_table").on("click", ".subscriptions-header", function (e) {
+      e.preventDefault();
+      $(".left").css("opacity","");
     });
 
     $("body").on("mouseover", ".subscribed-button", function (e) {
