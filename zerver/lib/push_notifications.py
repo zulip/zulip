@@ -85,8 +85,10 @@ def modernize_apns_payload(data: Dict[str, Any]) -> Dict[str, Any]:
             },
         }
     else:
-        # The current format.  (`alert` may be a string, or a dict with
-        # `title` and `body`.)
+        # Something already compatible with the current format.
+        # `alert` may be a string, or a dict with `title` and `body`.
+        # In 1.7.0 and 1.7.1, before 0912b5ba8 pre-1.8.0, the only
+        # item in `custom.zulip` is `message_ids`.
         return data
 
 APNS_MAX_RETRIES = 3
