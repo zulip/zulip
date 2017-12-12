@@ -385,14 +385,15 @@ def get_alert_from_message(message: Message) -> Text:
     Determine what alert string to display based on the missed messages.
     """
     sender_str = message.sender.full_name
-    if message.recipient.type == Recipient.HUDDLE and message.trigger == 'private_message':
+    if message.trigger == 'group_message':
         return "New private group message from %s" % (sender_str,)
-    elif message.recipient.type == Recipient.PERSONAL and message.trigger == 'private_message':
+    elif message.trigger == 'group_mention':
+        return "New private group mention from %s" % (sender_str,)
+    elif message.trigger == 'private_message':
         return "New private message from %s" % (sender_str,)
-    elif message.is_stream_message() and message.trigger == 'mentioned':
+    elif message.trigger == 'stream_mention':
         return "New mention from %s" % (sender_str,)
-    elif (message.is_stream_message() and
-            (message.trigger == 'stream_push_notify' and message.stream_name)):
+    elif message.trigger == 'stream_message':
         return "New stream message from %s in %s" % (sender_str, message.stream_name,)
     else:
         return "New Zulip mentions and private messages from %s" % (sender_str,)
