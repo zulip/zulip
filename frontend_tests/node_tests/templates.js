@@ -229,6 +229,7 @@ function render(template_name, args) {
                 ref: 'iago@zulip.com',
                 invited: "2017-01-01 01:01:01",
                 id: invite_id,
+                invited_as_admin: true,
             },
         };
         html += render('admin_invites_list', args);
@@ -247,6 +248,9 @@ function render(template_name, args) {
 
     var span = $(html).find(".email:first");
     assert.equal(span.text(), "alice@zulip.com");
+
+    var icon = $(html).find(".icon-vector-bolt");
+    assert.equal(icon.attr('title'), "translated: Invited as administrator");
 
     global.write_handlebars_output("admin_invites_list", html);
 }());

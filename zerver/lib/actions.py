@@ -4022,7 +4022,8 @@ def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
         invites.append(dict(email=invitee.email,
                             ref=invitee.referred_by.email,
                             invited=invitee.invited_at.strftime("%Y-%m-%d %H:%M:%S"),
-                            id=invitee.id))
+                            id=invitee.id,
+                            invited_as_admin=invitee.invited_as_admin))
 
     return invites
 
