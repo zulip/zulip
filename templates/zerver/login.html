@@ -138,12 +138,24 @@ common.autofocus('#id_username');
                 </div>
                 {% endif %}
 
+                {% if not email_auth_enabled %}
+                <div class="or">or</div>
+                {% endif %}
+
                 <div class="actions">
                     {% if email_auth_enabled %}
-                    <a class="forgot-password" href="/accounts/password/reset/">Forgot your password?</a>
-                    {% endif %}
-                    {% if not register_link_disabled %}
-                    <a class="register-link float-right" href="/register/">Register</a>
+                        <a class="forgot-password" href="/accounts/password/reset/">Forgot your password?</a>
+                        {% if not register_link_disabled %}
+                        <a class="register-link float-right" href="/register/">Register</a>
+                        {% endif %}
+                    {% else %}
+                        {% if not register_link_disabled %}
+                        <div class="login-register">
+                            <a class="register-wrapper" href="/register">
+                                <button class="login-social-button full-width">Register with Email</button>
+                            </a>
+                        </div>
+                        {% endif %}
                     {% endif %}
                 </div>
                 {% endif %}

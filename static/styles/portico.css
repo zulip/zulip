@@ -1182,6 +1182,7 @@ input.new-organization-button {
 
 .login-google,
 .register-google,
+.login-register,
 .login-sso,
 .login-github {
     max-width: 100%;
