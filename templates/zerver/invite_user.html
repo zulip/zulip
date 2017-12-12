@@ -14,25 +14,25 @@
                     <div class="controls">
                         <textarea rows="2" id="invitee_emails" name="invitee_emails" placeholder="{{ _('One or more email addresses...') }}"></textarea>
                     </div>
+                    <div class="controls">
+                        <div class="new-style">
+                            <label class="checkbox">
+                                {% if is_admin %}
+                                <input type="checkbox">
+                                <span></span>
+                                <label class="inline-block"> Add as administrators </label>
+                                {% endif %}
+                            </label>
+                        </div>
+                    </div>
                     <label class="control-label" for="custom_invite_body">{{ _('Custom invitation message (if you want to add one)') }}</label>
                     <div class="controls">
                         <textarea rows="2" id="custom_invite_body" name="custom_body" placeholder="{{ _('Custom message') }}"></textarea>
                     </div>
-                    {% if is_admin %}
-                    <label class="control-label" id="invite_as_admin" for"invite_as_admin">{{ _('User(s) join as') }}</label>
-                    <div class="controls">
-                        <label class="radio">
-                            <input type="radio" name="invite_as_admin" value="false" checked/>{{ _('Regular users') }}
-                        </label>
-                        <label class="radio">
-                            <input type="radio" name="invite_as_admin" value="true"/>{{ _('Organization administrators') }}
-                        </label>
-                    </div>
-                    {% endif %}
                 </div>
                 <div class="alert" id="invite_status"></div>
                 {% if development_environment %}
-                <div class="alert" id="dev_env_msg"></div>
+                  <div class="alert" id="dev_env_msg"></div>
                 {% endif %}
                 <div class="control-group">
                     <label class="control-label" for="streams_to_add">{{ _('Streams they should join') }}</label>
