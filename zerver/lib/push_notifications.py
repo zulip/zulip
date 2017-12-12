@@ -439,7 +439,8 @@ def truncate_content(content: Text) -> Text:
 def get_apns_payload(message: Message) -> Dict[str, Any]:
     text_content = get_mobile_push_content(message.rendered_content)
     truncated_content = truncate_content(text_content)
-    return {
+
+    apns_data = {
         'alert': {
             'title': get_alert_from_message(message),
             'body': truncated_content,
@@ -449,9 +450,24 @@ def get_apns_payload(message: Message) -> Dict[str, Any]:
         'custom': {
             'zulip': {
                 'message_ids': [message.id],
+                'sender_email': message.sender.email,
+                'sender_id': message.sender.id,
+                'server': settings.EXTERNAL_HOST,
+                'realm_id': message.sender.realm.id,
             }
         }
-    }
+    }  # type: Dict[str, Any]
+
+    zulip_data = apns_data['custom']['zulip']
+    if message.recipient.type == Recipient.STREAM:
+        zulip_data.update({
+            'recipient_type': 'stream',
+            'stream': get_display_recipient(message.recipient),
+            'topic': message.subject,
+        })
+    elif message.recipient.type in (Recipient.HUDDLE, Recipient.PERSONAL):
+        zulip_data['recipient_type'] = 'private'
+    return apns_data
 
 def get_gcm_payload(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
     text_content = get_mobile_push_content(message.rendered_content)

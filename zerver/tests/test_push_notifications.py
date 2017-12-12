@@ -680,6 +680,39 @@ class TestGetAPNsPayload(PushNotificationTest):
             'custom': {
                 'zulip': {
                     'message_ids': [message.id],
+                    'recipient_type': 'private',
+                    'sender_email': 'hamlet@zulip.com',
+                    'sender_id': 4,
+                    'server': settings.EXTERNAL_HOST,
+                    'realm_id': message.sender.realm.id,
+                }
+            }
+        }
+        self.assertDictEqual(payload, expected)
+
+    def test_get_apns_payload_stream(self):
+        # type: () -> None
+        stream = Stream.objects.filter(name='Verona').get()
+        message = self.get_message(Recipient.STREAM, stream.id)
+        message.trigger = 'mentioned'
+        message.stream_name = 'Verona'
+        payload = apn.get_apns_payload(message)
+        expected = {
+            'alert': {
+                'title': "New mention from King Hamlet",
+                'body': message.content,
+            },
+            'badge': 0,
+            'custom': {
+                'zulip': {
+                    'message_ids': [message.id],
+                    'recipient_type': 'stream',
+                    'sender_email': 'hamlet@zulip.com',
+                    'sender_id': 4,
+                    "stream": apn.get_display_recipient(message.recipient),
+                    "topic": message.subject,
+                    'server': settings.EXTERNAL_HOST,
+                    'realm_id': message.sender.realm.id,
                 }
             }
         }
@@ -699,6 +732,11 @@ class TestGetAPNsPayload(PushNotificationTest):
             'custom': {
                 'zulip': {
                     'message_ids': [message.id],
+                    'recipient_type': 'private',
+                    'sender_email': self.example_email("hamlet"),
+                    'sender_id': 4,
+                    'server': settings.EXTERNAL_HOST,
+                    'realm_id': message.sender.realm.id,
                 }
             }
         }
