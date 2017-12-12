@@ -497,6 +497,22 @@ def get_gcm_payload(user_profile: UserProfile, message: Message) -> Dict[str, An
 
     return android_data
 
+def create_trigger_from_message(message):
+    # type: (Message) -> Text
+    """
+    return a trigger string by the message
+    """
+    if (message.recipient.type == Recipient.HUDDLE and message.mentioned):
+        return 'group_mention'
+    elif (message.recipient.type == Recipient.HUDDLE):
+        return 'group_message'
+    elif (message.recipient.type == Recipient.PERSONAL):
+        return 'private_message'
+    elif (message.recipient.type == Recipient.STREAM and message.mentioned):
+        return 'stream_mention'
+    else:
+        return 'stream_message'
+
 @statsd_increment("push_notifications")
 def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any]) -> None:
     """
@@ -526,8 +542,8 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
             logging.error("Could not find UserMessage with message_id %s and user_id %s" % (
                 missed_message['message_id'], user_profile_id))
             return
-
-    message.trigger = missed_message['trigger']
+    message.mentioned = missed_message['mentioned']
+    message.trigger = create_trigger_from_message(message)
     message.stream_name = missed_message.get('stream_name', None)
 
     apns_payload = get_apns_payload(message)
