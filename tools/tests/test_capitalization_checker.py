@@ -5,8 +5,7 @@ from tools.lib.capitalization import check_capitalization, is_capitalized, \
     get_safe_text
 
 class GetSafeTextTestCase(TestCase):
-    def test_get_safe_text(self):
-        # type: () -> None
+    def test_get_safe_text(self) -> None:
         string = ('Messages in __page_params.product_name__ go to a '
                   'stream and have a topic.')
         safe_text = get_safe_text(string)
@@ -71,8 +70,7 @@ class GetSafeTextTestCase(TestCase):
         self.assertEqual(safe_text, 'One two etc_ three. four')
 
 class IsCapitalizedTestCase(TestCase):
-    def test_process_text(self):
-        # type: () -> None
+    def test_process_text(self) -> None:
         string = "Zulip zulip. Zulip some text!"
         capitalized = is_capitalized(string)
         self.assertTrue(capitalized)
@@ -123,8 +121,7 @@ class IsCapitalizedTestCase(TestCase):
         self.assertTrue(capitalized)
 
 class CheckCapitalizationTestCase(TestCase):
-    def test_check_capitalization(self):
-        # type: () -> None
+    def test_check_capitalization(self) -> None:
         strings = ["Zulip Zulip. Zulip some text!",
                    "Zulip Zulip? Zulip some text!",
                    "Zulip Zulip! Zulip some text!",
