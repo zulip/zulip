@@ -9,15 +9,14 @@ expense) that it used to be.
 
 ## Manual install
 
-Zulip looks for SSL certificate files in `/etc/ssl/private/zulip.key`
-and `/etc/ssl/certs/zulip.combined-chain.crt`.  Because Zulip uses
-`nginx` as its web server, it [expects a chained certificate
-bundle](http://nginx.org/en/docs/http/configuring_https_servers.html).
+If you already have an SSL certificate, just install (or symlink) its
+files into place at the following paths:
+* `/etc/ssl/private/zulip.key` for the private key
+* `/etc/ssl/certs/zulip.combined-chain.crt` for the certificate.
+  Because Zulip uses nginx as its web server, this should be in the
+  format of a [chained certificate bundle][nginx-https].
 
-If you already have an SSL certificate, just install (or symlink) it
-into place at the above paths.
-
-If not, read on.
+[nginx-https]: http://nginx.org/en/docs/http/configuring_https_servers.html
 
 ## Using Certbot / Let's Encrypt
 
