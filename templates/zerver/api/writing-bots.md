@@ -56,10 +56,10 @@ class MyBotHandler(object):
     A docstring documenting this bot.
     '''
 
-    def usage(self) -> str:
+    def usage(self):
         return '''Your description of the bot'''
 
-    def handle_message(self, message, bot_handler) -> None:
+    def handle_message(self, message, bot_handler):
         # add your code here
 
 handler_class = MyBotHandler
@@ -176,7 +176,7 @@ is called to retrieve information about the bot.
 #### Example implementation
 
 ```
-def usage(self) -> str:
+def usage(self):
     return '''
         This plugin will allow users to flag messages
         as being follow-up items.  Users should preface
@@ -207,7 +207,7 @@ None.
 #### Example implementation
 
  ```
-  def handle_message(self, message, bot_handler) -> None:
+  def handle_message(self, message, bot_handler):
      original_content = message['content']
      original_sender = message['sender_email']
      new_content = original_content.replace('@followup',
@@ -408,7 +408,7 @@ refactor them.
     class TestHelloWorldBot(BotTestCase):
         bot_name = "helloworld"  # The bot's name (should be the name of the bot module to test).
 
-        def test_bot(self) -> None: # A test case (must start with `test`)
+        def test_bot(self): # A test case (must start with `test`)
             # Messages we want to test and the expected bot responses.
             message_response_pairs = [("", "beep boop"),
                                       ("foo", "beep boop"),
