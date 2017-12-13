@@ -46,7 +46,8 @@ USAGE = '''
 
         TODO: allow specific files to be searched.'''
 
-def check_our_files() -> None:
+def check_our_files():
+    # type: () -> None
 
     parser = argparse.ArgumentParser(description=USAGE,
                                      formatter_class=argparse.RawTextHelpFormatter)

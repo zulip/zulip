@@ -110,7 +110,8 @@ except OSError:
     print('Bad command: %s' % (command,))
     raise
 
-def check_line_coverage(line_coverage: Dict[Any, Any], line_mapping: Dict[Any, Any], log: bool=True) -> bool:
+def check_line_coverage(line_coverage, line_mapping, log=True):
+    # type: (Dict[Any, Any], Dict[Any, Any], bool) -> bool
     missing_lines = []
     for line in line_coverage:
         if line_coverage[line] == 0:

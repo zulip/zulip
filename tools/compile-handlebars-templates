@@ -19,30 +19,35 @@ from typing import Dict, List
 os.chdir(settings.DEPLOY_ROOT)
 STATIC_PATH = 'static/'
 
-def get_templates() -> List[str]:
+def get_templates():
+    # type: () -> List[str]
     return (glob.glob(os.path.join(STATIC_PATH, 'templates/*.handlebars')) +
             glob.glob(os.path.join(STATIC_PATH, 'templates/settings/*.handlebars')))
 
-def run() -> None:
+def run():
+    # type: () -> None
     subprocess.check_call(['node', 'node_modules/.bin/handlebars'] +
                           get_templates() +
                           ['--output', os.path.join(STATIC_PATH, 'templates/compiled.js'),
                            '--known', 'if,unless,each,with'])
 
 
-def add_error_stamp_file(file_path: str) -> None:
+def add_error_stamp_file(file_path):
+    # type: (str) -> None
     file_dir = os.path.dirname(file_path)
     if not os.path.exists(file_dir):
         os.makedirs(file_dir)
     open(file_path, 'a').close()
 
 
-def remove_error_stamp_file(file_path: str) -> None:
+def remove_error_stamp_file(file_path):
+    # type: (str) -> None
     if os.path.exists(file_path):
         os.remove(file_path)
 
 
-def run_forever() -> None:
+def run_forever():
+    # type: () -> None
     # Keep polling for file changes, similar to how Django does it in
     # django/utils/autoreload.py.  If any of our templates change, rebuild
     # compiled.js

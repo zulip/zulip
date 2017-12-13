@@ -17,7 +17,8 @@ import lister
 from typing import cast, Callable, Dict, Iterator, List
 
 
-def run_parallel(lint_functions: Dict[str, Callable[[], int]]) -> bool:
+def run_parallel(lint_functions):
+    # type: (Dict[str, Callable[[], int]]) -> bool
     pids = []
     for name, func in lint_functions.items():
         pid = os.fork()
@@ -37,7 +38,8 @@ def run_parallel(lint_functions: Dict[str, Callable[[], int]]) -> bool:
             failed = True
     return failed
 
-def run() -> None:
+def run():
+    # type: () -> None
     parser = argparse.ArgumentParser()
     parser.add_argument('--force', default=False,
                         action="store_true",
@@ -115,11 +117,13 @@ def run() -> None:
 
     lint_functions = {}  # type: Dict[str, Callable[[], int]]
 
-    def lint(func: Callable[[], int]) -> Callable[[], int]:
+    def lint(func):
+        # type: (Callable[[], int]) -> Callable[[], int]
         lint_functions[func.__name__] = func
         return func
 
-    def external_linter(name: str, command: List[str], target_langs: List[str]=[]) -> None:
+    def external_linter(name, command, target_langs=[]):
+        # type: (str, List[str], List[str]) -> None
         """Registers an external linter program to be run as part of the
         linter.  This program will be passed the subset of files being
         linted that have extensions in target_langs.  If there are no
@@ -129,7 +133,8 @@ def run() -> None:
         """
         color = next(colors)
 
-        def run_linter() -> int:
+        def run_linter():
+            # type: () -> int
             targets = []  # type: List[str]
             if len(target_langs) != 0:
                 targets = [target for lang in target_langs for target in by_lang[lang]]
@@ -167,22 +172,26 @@ def run() -> None:
     #     external_linter('commit_messages', ['tools/commit-message-lint'])
 
     @lint
-    def custom_py() -> int:
+    def custom_py():
+        # type: () -> int
         failed = check_custom_checks_py()
         return 1 if failed else 0
 
     @lint
-    def custom_nonpy() -> int:
+    def custom_nonpy():
+        # type: () -> int
         failed = check_custom_checks_nonpy()
         return 1 if failed else 0
 
     @lint
-    def pyflakes() -> int:
+    def pyflakes():
+        # type: () -> int
         failed = check_pyflakes(args, by_lang)
         return 1 if failed else 0
 
     @lint
-    def pep8() -> int:
+    def pep8():
+        # type: () -> int
         failed = check_pep8(by_lang['py'])
         return 1 if failed else 0
 

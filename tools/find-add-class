@@ -9,7 +9,8 @@ import sys
 from lib import sanity_check
 sanity_check.check_venv(__file__)
 
-def process_files() -> None:
+def process_files():
+    # type: () -> None
 
     description = '''
         Use this tool to find HTML classes that we use in our JS code.

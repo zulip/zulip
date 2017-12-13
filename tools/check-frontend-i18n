@@ -14,7 +14,8 @@ import subprocess
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from scripts.lib.zulip_tools import WARNING, FAIL, ENDC
 
-def find_handlebars(translatable_strings: List[Text]) -> List[Text]:
+def find_handlebars(translatable_strings):
+    # type: (List[Text]) -> List[Text]
     errored = []
     for string in translatable_strings:
         if '{{' in string:

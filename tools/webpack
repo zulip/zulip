@@ -18,13 +18,15 @@ os.chdir(settings.DEPLOY_ROOT)
 STATIC_PATH = 'static/'
 
 
-def run() -> None:
+def run():
+    # type: () -> None
     """Builds for production, writing the output to disk"""
     subprocess.check_call(['node', 'node_modules/.bin/webpack'] +
                           ['--config', 'tools/webpack.config.ts', '-p'] +
                           ['--env', 'production'])
 
-def run_watch(host: str, port: str, minify: bool) -> None:
+def run_watch(host, port, minify):
+    # type: (str, str, bool) -> None
     """watches and rebuilds on changes, serving files from memory via webpack-dev-server"""
     webpack_args = ['node', 'node_modules/.bin/webpack-dev-server']
     webpack_args += ['--config', 'tools/webpack.config.ts', '--watch-poll', '--port', port, "--host", host]
@@ -32,7 +34,8 @@ def run_watch(host: str, port: str, minify: bool) -> None:
         webpack_args.append('--optimize-minimize')
     subprocess.Popen(webpack_args)
 
-def run_test() -> None:
+def run_test():
+    # type: () -> None
     """Generates a stub asset stat file for django so backend test can render a page"""
     entries = {}
     with open('tools/webpack.assets.json') as json_data:

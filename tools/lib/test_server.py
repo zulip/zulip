@@ -6,7 +6,8 @@ import time
 
 from contextlib import contextmanager
 
-from typing import Any, Iterator, Optional
+if False:
+    from typing import (Any, Iterator, Optional)
 
 # Verify the Zulip venv is available.
 from tools.lib import sanity_check
@@ -21,14 +22,16 @@ if TOOLS_DIR not in sys.path:
 
 from zerver.lib.test_fixtures import is_template_database_current
 
-def set_up_django(external_host: str) -> None:
+def set_up_django(external_host):
+    # type: (str) -> None
     os.environ['EXTERNAL_HOST'] = external_host
     os.environ["TORNADO_SERVER"] = "http://127.0.0.1:9983"
     os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
     django.setup()
     os.environ['PYTHONUNBUFFERED'] = 'y'
 
-def assert_server_running(server: subprocess.Popen, log_file: Optional[str]) -> None:
+def assert_server_running(server, log_file):
+    # type: (subprocess.Popen, Optional[str]) -> None
     """Get the exit code of the server, or None if it is still running."""
     if server.poll() is not None:
         message = 'Server died unexpectedly!'
@@ -36,7 +39,8 @@ def assert_server_running(server: subprocess.Popen, log_file: Optional[str]) -> 
             message += '\nSee %s\n' % (log_file,)
         raise RuntimeError(message)
 
-def server_is_up(server: subprocess.Popen, log_file: Optional[str]) -> bool:
+def server_is_up(server, log_file):
+    # type: (subprocess.Popen, Optional[str]) -> bool
     assert_server_running(server, log_file)
     try:
         # We could get a 501 error if the reverse proxy is up but the Django app isn't.

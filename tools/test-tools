@@ -17,7 +17,8 @@ if __name__ == '__main__':
                         default=False, help='compute test coverage')
     args = parser.parse_args()
 
-    def dir_join(dir1: str, dir2: str) -> str:
+    def dir_join(dir1, dir2):
+        # type: (str, str) -> str
         return os.path.abspath(os.path.join(dir1, dir2))
 
     tools_dir = os.path.dirname(os.path.abspath(__file__))

@@ -171,7 +171,8 @@ for cmd in cmds:
     subprocess.Popen(cmd)
 
 
-def transform_url(protocol: str, path: str, query: str, target_port: int, target_host: str) -> str:
+def transform_url(protocol, path, query, target_port, target_host):
+    # type: (str, str, str, int, str) -> str
     # generate url with target host
     host = ":".join((target_host, str(target_port)))
     newpath = urlunparse((protocol, host, path, '', query, ''))
@@ -179,7 +180,8 @@ def transform_url(protocol: str, path: str, query: str, target_port: int, target
 
 
 @gen.engine
-def fetch_request(url: str, callback: Any, **kwargs: Any) -> Generator[Callable[..., Any], Any, None]:
+def fetch_request(url, callback, **kwargs):
+    # type: (str, Any, **Any) -> Generator[Callable[..., Any], Any, None]
     # use large timeouts to handle polling requests
     req = httpclient.HTTPRequest(url, connect_timeout=240.0, request_timeout=240.0, **kwargs)
     client = httpclient.AsyncHTTPClient()
@@ -194,16 +196,19 @@ class BaseWebsocketHandler(WebSocketHandler):
     # target server port
     target_port = None  # type: int
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, *args, **kwargs):
+        # type: (*Any, **Any) -> None
         super().__init__(*args, **kwargs)
         # define client for target websocket server
         self.client = None  # type: Any
 
-    def get(self, *args: Any, **kwargs: Any) -> Optional[Callable[..., Any]]:
+    def get(self, *args, **kwargs):
+        # type: (*Any, **Any) -> Optional[Callable[..., Any]]
         # use get method from WebsocketHandler
         return super().get(*args, **kwargs)
 
-    def open(self) -> None:
+    def open(self):
+        # type: () -> None
         # setup connection with target websocket server
         websocket_url = "ws://{host}:{port}{uri}".format(
             host=self.target_host,
@@ -215,11 +220,13 @@ class BaseWebsocketHandler(WebSocketHandler):
         websocket_connect(request, callback=self.open_callback,
                           on_message_callback=self.on_client_message)
 
-    def open_callback(self, future: Any) -> None:
+    def open_callback(self, future):
+        # type: (Any) -> None
         # callback on connect with target websocket server
         self.client = future.result()
 
-    def on_client_message(self, message: str) -> None:
+    def on_client_message(self, message):
+        # type: (str) -> None
         if not message:
             # if message empty -> target websocket server close connection
             return self.close()
@@ -227,18 +234,20 @@ class BaseWebsocketHandler(WebSocketHandler):
             # send message to client if connection exists
             self.write_message(message, False)
 
-    def on_message(self, message: str, binary: bool=False) -> Optional[Callable[..., Any]]:
+    def on_message(self, message, binary=False):
+        # type: (str, bool) -> Optional[Callable[..., Any]]
         if not self.client:
             # close websocket proxy connection if no connection with target websocket server
             return self.close()
         self.client.write_message(message, binary)
         return None
 
-    def check_origin(self, origin: str) -> bool:
+    def check_origin(self, origin):
+        # type: (str) -> bool
         return True
 
-    def _add_request_headers(self,
-                             exclude_lower_headers_list: Optional[List[str]]=None) -> httputil.HTTPHeaders:
+    def _add_request_headers(self, exclude_lower_headers_list=None):
+        # type: (Optional[List[str]]) -> httputil.HTTPHeaders
         exclude_lower_headers_list = exclude_lower_headers_list or []
         headers = httputil.HTTPHeaders()
         for header, v in self.request.headers.get_all():
@@ -249,30 +258,38 @@ class BaseWebsocketHandler(WebSocketHandler):
 
 class CombineHandler(BaseWebsocketHandler):
 
-    def get(self, *args: Any, **kwargs: Any) -> Optional[Callable[..., Any]]:
+    def get(self, *args, **kwargs):
+        # type: (*Any, **Any) -> Optional[Callable[..., Any]]
         if self.request.headers.get("Upgrade", "").lower() == 'websocket':
             return super().get(*args, **kwargs)
         return None
 
-    def head(self) -> None:
+    def head(self):
+        # type: () -> None
         pass
 
-    def post(self) -> None:
+    def post(self):
+        # type: () -> None
         pass
 
-    def put(self) -> None:
+    def put(self):
+        # type: () -> None
         pass
 
-    def patch(self) -> None:
+    def patch(self):
+        # type: () -> None
         pass
 
-    def options(self) -> None:
+    def options(self):
+        # type: () -> None
         pass
 
-    def delete(self) -> None:
+    def delete(self):
+        # type: () -> None
         pass
 
-    def handle_response(self, response: Any) -> None:
+    def handle_response(self, response):
+        # type: (Any) -> None
         if response.error and not isinstance(response.error, httpclient.HTTPError):
             self.set_status(500)
             self.write('Internal server error:\n' + str(response.error))
@@ -291,7 +308,8 @@ class CombineHandler(BaseWebsocketHandler):
         self.finish()
 
     @web.asynchronous
-    def prepare(self) -> None:
+    def prepare(self):
+        # type: () -> None
         if 'X-REAL-IP' not in self.request.headers:
             self.request.headers['X-REAL-IP'] = self.request.remote_ip
         if self.request.headers.get("Upgrade", "").lower() == 'websocket':
@@ -335,7 +353,8 @@ class TornadoHandler(CombineHandler):
 
 
 class Application(web.Application):
-    def __init__(self, enable_logging: bool=False) -> None:
+    def __init__(self, enable_logging=False):
+        # type: (bool) -> None
         handlers = [
             (r"/json/events.*", TornadoHandler),
             (r"/api/v1/events.*", TornadoHandler),
@@ -345,16 +364,19 @@ class Application(web.Application):
         ]
         super().__init__(handlers, enable_logging=enable_logging)
 
-    def log_request(self, handler: BaseWebsocketHandler) -> None:
+    def log_request(self, handler):
+        # type: (BaseWebsocketHandler) -> None
         if self.settings['enable_logging']:
             super().log_request(handler)
 
 
-def on_shutdown() -> None:
+def on_shutdown():
+    # type: () -> None
     IOLoop.instance().stop()
 
 
-def shutdown_handler(*args: Any, **kwargs: Any) -> None:
+def shutdown_handler(*args, **kwargs):
+    # type: (*Any, **Any) -> None
     io_loop = IOLoop.instance()
     if io_loop._callbacks:
         io_loop.call_later(1, shutdown_handler)

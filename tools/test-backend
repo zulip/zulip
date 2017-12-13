@@ -138,7 +138,8 @@ enforce_fully_covered = sorted(target_fully_covered - not_yet_fully_covered)
 
 FAILED_TEST_PATH = 'var/last_test_failure.json'
 
-def get_failed_tests() -> List[str]:
+def get_failed_tests():
+    # type: () -> List[str]
     try:
         with open(FAILED_TEST_PATH, 'r') as f:
             return ujson.load(f)
@@ -146,15 +147,18 @@ def get_failed_tests() -> List[str]:
         print("var/last_test_failure.json doesn't exist; running all tests.")
         return []
 
-def write_failed_tests(failed_tests: List[str]) -> None:
+def write_failed_tests(failed_tests):
+    # type: (List[str]) -> None
     if failed_tests:
         with open(FAILED_TEST_PATH, 'w') as f:
             ujson.dump(failed_tests, f)
 
-def block_internet() -> None:
+def block_internet():
+    # type: () -> None
     # We are blocking internet currently by assuming mostly any test would use
     # httplib2 to access internet.
-    def internet_guard(*args: Any, **kwargs: Any) -> None:
+    def internet_guard(*args, **kwargs):
+        # type: (*Any, **Any) -> None
         raise Exception("Outgoing network requests are not allowed in the Zulip tests. "
                         "More details and advice are available here:"
                         "https://zulip.readthedocs.io/en/latest/testing/testing.html#internet-access-inside-test-suites")
@@ -271,7 +275,8 @@ if __name__ == "__main__":
     for suite in args:
         args[args.index(suite)] = suite.rstrip('/').replace("/", ".")
 
-    def rewrite_arguments(search_key: str) -> None:
+    def rewrite_arguments(search_key):
+        # type: (str) -> None
         for root, dirs, files_names in os.walk(zerver_test_dir, topdown=False):
             for file_name in files_names:
                 # Check for files starting with alphanumeric characters and ending with '.py'

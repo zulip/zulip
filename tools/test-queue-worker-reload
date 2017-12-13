@@ -35,8 +35,10 @@ successful_worker_launches = [
     'launching queue worker thread user_activity'
 ]
 
-def check_worker_launch(logfile: IO[str]) -> Text:
-    def check(content: str) -> bool:
+def check_worker_launch(logfile):
+    # type: (IO[str]) -> Text
+    def check(content):
+        # type: (str) -> bool
         flag = True
         for entry in successful_worker_launches:
             flag = flag and entry in content
