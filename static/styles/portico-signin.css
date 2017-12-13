@@ -605,10 +605,18 @@ button.login-google-button {
     background-image: url(/static/images/landing-page/logos/google-icon.png);
 }
 
+.register-wrapper:before {
+    content: "\f0e0";
+    position: absolute;
+    font-family: "FontAwesome";
+    font-size: 1.5rem;
+    color: hsl(0, 0%, 20%);
+    transform: translateX(17px) translateY(5px);
+}
+
 .github-wrapper:before {
     content: "\f09b";
     position: absolute;
-
     font-family: "FontAwesome";
     font-size: 2rem;
     color: hsl(0, 0%, 20%);
