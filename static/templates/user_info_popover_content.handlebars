@@ -13,7 +13,12 @@
         </li>
 
         {{#if is_active }}
-        <li class='my_email'>{{user_email}}</li>
+        <li class='my_email'>
+            {{ user_email }}
+            <div class="tooltip_holder">
+                <span class="email_tooltip">{{ user_email }}</span>
+            </div>
+        </li>
         {{else}}
         <li class='my_email half-opacity italic'>{{#tr this}}(This user has been deactivated){{/tr}}</li>
         {{/if}}
