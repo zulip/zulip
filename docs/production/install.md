@@ -34,31 +34,45 @@ If you'd like to verify the download, we
 
 ## Step 2: Install Zulip
 
-Most users will want Zulip to automatically obtain an SSL certificate
-for their server using [Certbot](https://certbot.eff.org/).  In that
-case, you can run the installer as follows:
+To set up Zulip with the most common configuration, you can run the
+installer as follows:
 
 ```
 sudo -i  # If not already root
 ./zulip-server-*/scripts/setup/install --certbot \
-    --email=username@example.com --hostname=zulip.example.com
+    --email=YOUR_EMAIL --hostname=YOUR_HOSTNAME
 ```
 
 This will take a while to run, since it will install a large number of
-dependencies from the pypi and npm repositories.
+dependencies from the PyPI and NPM repositories.
 
-The Zulip install script is designed to be idempotent, so if it fails,
-you can just rerun it after correcting the issue that caused it to
-fail.  Also note that it automatically logs a transcript to
-`/var/log/zulip/install.log`; please include a copy of that file in
-any bug reports.
+#### Installer options
+
+* `--email=you@example.com`: The email address of the person or team
+  who should get support and error emails from this Zulip server.
+  This becomes `ZULIP_ADMINISTRATOR` ([docs][doc-settings]) in the
+  Zulip settings.
+
+* `--hostname=zulip.example.com`: The user-accessible domain name for
+  this Zulip server, i.e., what users will type in their web browser.
+  This becomes `EXTERNAL_HOST` ([docs][doc-settings]) in the Zulip
+  settings.
+
+* `--certbot`: With this option, the Zulip installer automatically
+  obtains an SSL certificate for the server [using Certbot][doc-certbot].
+  If you'd prefer to acquire an SSL certificate yourself in any other
+  way, it's easy to [provide it to Zulip][doc-ssl-manual].
+
+[doc-settings]: ../production/customize.html
+[doc-certbot]: ../production/ssl-certificates.html#certbot-recommended
+[doc-ssl-manual]: ../production/ssl-certificates.html#manual-install
 
 #### What the installer does
 
 The install script does several things:
-* Creates `zulip` user, which the various Zulip servers will run as,
+* Creates the `zulip` user, which the various Zulip servers will run as.
 * Creates `/home/zulip/deployments/`, which the Zulip code for this
-deployment (and future deployments when you upgrade) go into.  At the
+deployment (and future deployments when you upgrade) goes into.  At the
 very end of the install process, the script moves the Zulip code tree
 it's running from (which you unpacked from a tarball above) to a
 directory there, and makes `/home/zulip/deployments/current` as a
@@ -67,12 +81,16 @@ symbolic link to it.
 * Configures the various third-party services Zulip uses, including
 Postgres, RabbitMQ, Memcached and Redis.
 
-#### Providing your own SSL certificate
+#### Troubleshooting install failures
 
-If you'd like to use an SSL certificate that you obtained not using
-Certbot way (e.g. issued by your corporate certificate authority),
-[our ssl certificate documentation](ssl-certificates.html) covers what
-you need to do.
+The Zulip install script is designed to be idempotent.  This means
+that if it fails, then once you've corrected the cause of the failure,
+you can just rerun the script.
+
+The install script automatically logs a transcript to
+`/var/log/zulip/install.log`.  In case of failure, you might find the
+log handy for resolving the issue.  Please include a copy of this log
+file in any bug reports.
 
 ## Step 3: Configure outgoing email
 
