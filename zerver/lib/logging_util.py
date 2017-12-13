@@ -197,7 +197,6 @@ def create_logger(name: str,
     * "log_file" should be declared in zproject/settings.py in ZULIP_PATHS.
 
     """
-    logging.basicConfig(format=log_format)
     logger = logging.getLogger(name)
 
     if log_file:
