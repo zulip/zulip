@@ -88,6 +88,10 @@ ul.actions_popover i {
     padding: 0;
 }
 
+.message-info-popover {
+    width: 240px;
+}
+
 .user_popover .popover-title {
     padding: 0;
 }
