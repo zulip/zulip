@@ -24,7 +24,7 @@ from zerver.lib.send_email import EmailNotDeliveredException, send_email
 from zerver.models import ScheduledEmail
 
 ## Setup ##
-logger = create_logger(__name__, settings.EMAIL_DELIVERER_LOG_PATH, 'DEBUG')
+logger = create_logger(__name__, settings.EMAIL_DELIVERER_LOG_PATH)
 
 class Command(BaseCommand):
     help = """Deliver emails queued by various parts of Zulip

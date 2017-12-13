@@ -19,7 +19,7 @@ from zerver.context_processors import common_context
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.logging_util import create_logger
 
-logger = create_logger(__name__, settings.DIGEST_LOG_PATH, 'DEBUG')
+logger = create_logger(__name__, settings.DIGEST_LOG_PATH)
 
 VALID_DIGEST_DAY = 1  # Tuesdays
 DIGEST_CUTOFF = 5

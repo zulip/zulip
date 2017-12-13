@@ -1389,6 +1389,15 @@ LOGGING = {
         },
 
         # our own loggers, alphabetized
+        'zerver.lib.digest': {
+            'level': 'DEBUG',
+        },
+        'zerver.management.commands.deliver_email': {
+            'level': 'DEBUG',
+        },
+        'zerver.management.commands.enqueue_digest_emails': {
+            'level': 'DEBUG',
+        },
         'zulip.management': {
             'handlers': ['file', 'errors_file'],
             'propagate': False,
@@ -1401,6 +1410,7 @@ LOGGING = {
             'propagate': False,
         },
         'zulip.zerver.webhooks': {
+            'level': 'DEBUG',
             'handlers': ['file', 'errors_file'],
             'propagate': False,
         },

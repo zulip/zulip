@@ -187,7 +187,6 @@ class ZulipFormatter(logging.Formatter):
 
 def create_logger(name: str,
                   log_file: str,
-                  log_level: Optional[str]=None,
                   log_format: str="%(asctime)s%(levelname)-8s%(message)s") -> Logger:
     """Creates a named logger for use in logging content to a certain
     file.  A few notes:
@@ -200,9 +199,6 @@ def create_logger(name: str,
     """
     logging.basicConfig(format=log_format)
     logger = logging.getLogger(name)
-
-    if log_level is not None:
-        logger.setLevel(getattr(logging, log_level))
 
     if log_file:
         formatter = logging.Formatter(log_format)
