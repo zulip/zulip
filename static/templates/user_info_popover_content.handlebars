@@ -28,24 +28,37 @@
         {{/if}}
     </div>
     <hr />
-    {{#if is_active }}
+    {{#if is_active}}
+        {{#unless is_me}}
+        <li>
+            <a href="#" class="{{ private_message_class }}">
+                <i class="fa fa-envelope" aria-hidden="true"></i> {{#tr this}}Send private message{{/tr}} (R)
+            </a>
+        </li>
+        {{/unless}}
+    {{/if}}
+    {{#if is_me}}
     <li>
-        <a href="#" class="{{ private_message_class }}">
-            <i class="fa fa-envelope" aria-hidden="true"></i> {{#tr this}}Send private message{{/tr}} (R)
+        <a href="/#settings/your-account">
+            <i class="icon-vector-user" aria-hidden="true"></i> {{#tr this}}Edit profile{{/tr}}
         </a>
     </li>
     {{/if}}
+    {{#unless is_me}}
     <li>
         <a class="mention_user">
             <i class="fa fa-at" aria-hidden="true"></i> {{#tr this}}Reply mentioning user{{/tr}} (@)
         </a>
     </li>
+    {{/unless}}
     <hr />
+    {{#unless is_me}}
     <li>
         <a href="{{ pm_with_uri }}" class="narrow_to_private_messages">
             <i class="icon-vector-user"></i> {{#tr this}}View private messages{{/tr}}
         </a>
     </li>
+    {{/unless}}
     <li>
         <a href="{{ sent_by_uri }}" class="narrow_to_messages_sent">
             <i class="icon-vector-bullhorn"></i> {{#tr this}}View messages sent{{/tr}}
