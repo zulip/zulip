@@ -17,7 +17,7 @@ from zerver.lib.logging_util import create_logger
 
 ## Logging setup ##
 
-logger = create_logger('zulip.send_email', settings.EMAIL_LOG_PATH, 'INFO')
+logger = create_logger('zulip.send_email', settings.EMAIL_LOG_PATH)
 
 class FromAddress:
     SUPPORT = parseaddr(settings.ZULIP_ADMINISTRATOR)[1]

@@ -10,7 +10,7 @@ from typing import DefaultDict, List, Union, Any
 from zerver.models import UserProfile, UserMessage, RealmAuditLog, \
     Subscription, Message, Recipient, UserActivity, Realm
 
-logger = create_logger("zulip.soft_deactivation", settings.SOFT_DEACTIVATION_LOG_PATH, 'INFO')
+logger = create_logger("zulip.soft_deactivation", settings.SOFT_DEACTIVATION_LOG_PATH)
 
 def filter_by_subscription_history(user_profile: UserProfile,
                                    all_stream_messages: DefaultDict[int, List[Message]],

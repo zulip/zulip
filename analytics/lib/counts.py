@@ -19,7 +19,7 @@ from zerver.models import Message, Realm, RealmAuditLog, \
 
 ## Logging setup ##
 
-logger = create_logger('zulip.management', settings.ANALYTICS_LOG_PATH, 'INFO')
+logger = create_logger('zulip.management', settings.ANALYTICS_LOG_PATH)
 
 # You can't subtract timedelta.max from a datetime, so use this instead
 TIMEDELTA_MAX = timedelta(days=365*1000)
