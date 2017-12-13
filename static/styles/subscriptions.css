@@ -296,6 +296,10 @@ form#add_new_subscription {
     -webkit-overflow-scrolling: touch;
 }
 
+.subscriber_list_container .form_inline input {
+    vertical-align: top;
+}
+
 .subscriber-list {
     width: 100%;
     margin: auto;
@@ -798,6 +802,10 @@ form#add_new_subscription {
     margin-top: -5px;
 }
 
+#subscription_overlay .stream-header .button-group {
+    float: right;
+}
+
 #subscription_overlay .stream-header .subscribe-button.unsubscribed {
     color: hsl(156, 39%, 54%);
     border-color: hsl(156, 39%, 77%);
@@ -975,6 +983,28 @@ form#add_new_subscription {
     .search-container {
         text-align: center;
     }
+
+    .subscriber_list_settings input {
+        float: left;
+        margin: 0px 5px 0px 0px;
+        width: calc(50% - 45px);
+    }
+
+    #subscription_overlay .stream-header .button-group {
+        float: none;
+        display: block;
+        clear: both;
+        margin-top: 10px;
+    }
+
+    #subscription_overlay .stream-header .button-group > * {
+        float: none !important;
+        vertical-align: top;
+    }
+
+    #subscription_overlay .stream-header .subscribe-button {
+        margin-top: -7px;
+    }
 }
 
 @media (max-width: 700px) {
@@ -1038,6 +1068,15 @@ form#add_new_subscription {
         overflow: auto;
         height: calc(100% - 20px);
         -webkit-overflow-scrolling: touch;
+    }
+}
+
+@media (max-width: 367px) {
+    #subscription_overlay .subscription_settings .button-group {
+        margin-top: 10px;
+        float: none;
+        display: inline-block;
+        vertical-align: top;
     }
 }
 
