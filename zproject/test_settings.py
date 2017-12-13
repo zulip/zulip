@@ -117,7 +117,6 @@ if not CASPER_TESTS:
 
     def set_loglevel(logger_name, level) -> None:
         LOGGING['loggers'].setdefault(logger_name, {})['level'] = level
-        LOGGING['loggers'].setdefault(logger_name, {})['propagate'] = False
     set_loglevel('zulip.requests', 'CRITICAL')
     set_loglevel('zulip.management', 'CRITICAL')
     set_loglevel('django.request', 'ERROR')
