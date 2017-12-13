@@ -99,6 +99,7 @@ function show_user_info_popover(element, user, message) {
             sent_by_uri: narrow.by_sender_uri(user.email),
             narrowed: narrow_state.active(),
             private_message_class: "respond_personal_button",
+            is_me: people.is_current_user(user.email),
             is_active: people.is_active_user_for_popover(user.user_id),
             is_bot: people.get_person_from_user_id(user.user_id).is_bot,
         };
