@@ -83,7 +83,8 @@ body.dark-mode input[type="email"],
 body.dark-mode input[type="password"],
 body.dark-mode textarea,
 body.dark-mode .new-style .tab-switcher .ind-tab:not(.selected),
-body.dark-mode select {
+body.dark-mode select,
+body.dark-mode .pill-container {
     background-color: hsla(0, 0%, 0%, 0.2);
     border-color: hsla(0, 0%, 0%, 0.6);
     color: inherit;
