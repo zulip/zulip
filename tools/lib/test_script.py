@@ -5,12 +5,10 @@ from distutils.version import LooseVersion
 from version import PROVISION_VERSION
 from scripts.lib.zulip_tools import get_dev_uuid_var_path
 
-def get_major_version(v):
-    # type: (str) -> int
+def get_major_version(v: str) -> int:
     return int(v.split('.')[0])
 
-def get_version_file():
-    # type: () -> str
+def get_version_file() -> str:
     uuid_var_path = get_dev_uuid_var_path()
     return os.path.join(uuid_var_path, 'provision_version')
 
@@ -21,8 +19,7 @@ version %s, and we compare it to the version in source
 control (version.py), which is %s.
 '''
 
-def preamble(version):
-    # type: (str) -> str
+def preamble(version: str) -> str:
     text = PREAMBLE % (version, PROVISION_VERSION)
     text += '\n'
     return text
@@ -44,8 +41,7 @@ is likely to fail until you add dependencies by provisioning.
 Do this: `./tools/provision`
 '''
 
-def get_provisioning_status():
-    # type: () -> Tuple[bool, Optional[str]]
+def get_provisioning_status() -> Tuple[bool, Optional[str]]:
 
     version_file = get_version_file()
     if not os.path.exists(version_file):

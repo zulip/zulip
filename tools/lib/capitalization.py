@@ -127,8 +127,7 @@ DISALLOWED_REGEXES = [re.compile(regex) for regex in [
     # after a lower case character when the first character is in upper case.
 ]]
 
-def get_safe_phrase(phrase):
-    # type: (str) -> str
+def get_safe_phrase(phrase: str) -> str:
     """
     Safe phrase is in lower case and doesn't contain characters which can
     conflict with split boundaries. All conflicting characters are replaced
@@ -137,8 +136,7 @@ def get_safe_phrase(phrase):
     phrase = SPLIT_BOUNDARY_REGEX.sub('_', phrase)
     return phrase.lower()
 
-def replace_with_safe_phrase(matchobj):
-    # type: (Match[str]) -> str
+def replace_with_safe_phrase(matchobj: Match[str]) -> str:
     """
     The idea is to convert IGNORED_PHRASES into safe phrases, see
     `get_safe_phrase()` function. The only exception is when the
@@ -162,8 +160,7 @@ def replace_with_safe_phrase(matchobj):
 
     return safe_string
 
-def get_safe_text(text):
-    # type: (str) -> str
+def get_safe_text(text: str) -> str:
     """
     This returns text which is rendered by BeautifulSoup and is in the
     form that can be split easily and has all IGNORED_PHRASES processed.
@@ -175,8 +172,7 @@ def get_safe_text(text):
 
     return text
 
-def is_capitalized(safe_text):
-    # type: (str) -> bool
+def is_capitalized(safe_text: str) -> bool:
     sentences = SPLIT_BOUNDARY_REGEX.split(safe_text)
     sentences = [sentence.strip()
                  for sentence in sentences if sentence.strip()]
@@ -191,8 +187,7 @@ def is_capitalized(safe_text):
 
     return True
 
-def check_capitalization(strings):
-    # type: (List[str]) -> Tuple[List[str], List[str]]
+def check_capitalization(strings: List[str]) -> Tuple[List[str], List[str]]:
     errors = []
     ignored = []
     for text in strings:

@@ -82,8 +82,7 @@ imperative_forms = sorted([
 ])
 
 
-def head_binary_search(key, words):
-    # type: (Text, List[str]) -> str
+def head_binary_search(key: Text, words: List[str]) -> str:
     """ Find the imperative mood version of `word` by looking at the first
     3 characters. """
 
@@ -122,8 +121,7 @@ class ImperativeMood(LineRule):
     error_msg = ('The first word in commit title should be in imperative mood '
                  '("{word}" -> "{imperative}"): "{title}"')
 
-    def validate(self, line, commit):
-        # type: (Text, gitlint.commit) -> List[RuleViolation]
+    def validate(self, line: Text, commit: gitlint.commit) -> List[RuleViolation]:
         violations = []
 
         # Ignore the section tag (ie `<section tag>: <message body>.`)

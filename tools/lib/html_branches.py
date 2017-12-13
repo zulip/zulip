@@ -21,8 +21,7 @@ class HtmlTreeBranch:
     conceptually be something like "p div(#yo) span(.bar)".
     """
 
-    def __init__(self, tags, fn):
-        # type: (List['TagInfo'], Optional[str]) -> None
+    def __init__(self, tags: List['TagInfo'], fn: Optional[str]) -> None:
         self.tags = tags
         self.fn = fn
         self.line = tags[-1].token.line
@@ -32,8 +31,7 @@ class HtmlTreeBranch:
             for word in tag.words:
                 self.words.add(word)
 
-    def staircase_text(self):
-        # type: () -> str
+    def staircase_text(self) -> str:
         """
         produces representation of a node in staircase-like format:
 
@@ -49,8 +47,7 @@ class HtmlTreeBranch:
             indent += ' ' * 4
         return res
 
-    def text(self):
-        # type: () -> str
+    def text(self) -> str:
         """
         produces one-line representation of branch:
 
@@ -68,8 +65,7 @@ class Node:
 
 
 class TagInfo:
-    def __init__(self, tag, classes, ids, token):
-        # type: (str, List[str], List[str], Token) -> None
+    def __init__(self, tag: str, classes: List[str], ids: List[str], token: Token) -> None:
         self.tag = tag
         self.classes = classes
         self.ids = ids
@@ -79,8 +75,7 @@ class TagInfo:
             ['.' + s for s in classes] + \
             ['#' + s for s in ids]
 
-    def text(self):
-        # type: () -> str
+    def text(self) -> str:
         s = self.tag
         if self.classes:
             s += '.' + '.'.join(self.classes)
@@ -89,8 +84,7 @@ class TagInfo:
         return s
 
 
-def get_tag_info(token):
-    # type: (Token) -> TagInfo
+def get_tag_info(token: Token) -> TagInfo:
     s = token.s
     tag = token.tag
     classes = []  # type: List[str]
@@ -112,8 +106,7 @@ def get_tag_info(token):
     return TagInfo(tag=tag, classes=classes, ids=ids, token=token)
 
 
-def split_for_id_and_class(element):
-    # type: (str) -> List[str]
+def split_for_id_and_class(element: str) -> List[str]:
     # Here we split a given string which is expected to contain id or class
     # attributes from HTML tags. This also takes care of template variables
     # in string during splitting process. For eg. 'red black {{ a|b|c }}'
@@ -139,13 +132,11 @@ def split_for_id_and_class(element):
     return lst
 
 
-def html_branches(text, fn=None):
-    # type: (str, Optional[str]) -> List[HtmlTreeBranch]
+def html_branches(text: str, fn: Optional[str]=None) -> List[HtmlTreeBranch]:
     tree = html_tag_tree(text)
     branches = []  # type: List[HtmlTreeBranch]
 
-    def walk(node, tag_info_list=None):
-        # type: (Node, Optional[List[TagInfo]]) -> None
+    def walk(node: Node, tag_info_list: Optional[List[TagInfo]]=None) -> None:
         info = get_tag_info(node.token)
         if tag_info_list is None:
             tag_info_list = [info]
@@ -165,8 +156,7 @@ def html_branches(text, fn=None):
     return branches
 
 
-def html_tag_tree(text):
-    # type: (str) -> Node
+def html_tag_tree(text: str) -> Node:
     tokens = tokenize(text)
     top_level = Node(token=None, parent=None)
     stack = [top_level]
@@ -188,8 +178,7 @@ def html_tag_tree(text):
     return top_level
 
 
-def build_id_dict(templates):
-    # type: (List[str]) -> (Dict[str, List[str]])
+def build_id_dict(templates: List[str]) -> Dict[str, List[str]]:
     template_id_dict = defaultdict(list)  # type: (Dict[str, List[str]])
 
     for fn in templates:

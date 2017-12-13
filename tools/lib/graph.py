@@ -7,8 +7,7 @@ Edge = Tuple[str, str]
 EdgeSet = Set[Edge]
 
 class Graph:
-    def __init__(self, tuples):
-        # type: (EdgeSet) -> None
+    def __init__(self, tuples: EdgeSet) -> None:
         self.children = defaultdict(list)  # type: DefaultDict[str, List[str]]
         self.parents = defaultdict(list)  # type: DefaultDict[str, List[str]]
         self.nodes = set()  # type: Set[str]
@@ -19,30 +18,25 @@ class Graph:
             self.nodes.add(parent)
             self.nodes.add(child)
 
-    def copy(self):
-        # type: () -> 'Graph'
+    def copy(self) -> 'Graph':
         return Graph(self.edges())
 
-    def num_edges(self):
-        # type: () -> int
+    def num_edges(self) -> int:
         return len(self.edges())
 
-    def minus_edge(self, edge):
-        # type: (Edge) -> 'Graph'
+    def minus_edge(self, edge: Edge) -> 'Graph':
         edges = self.edges().copy()
         edges.remove(edge)
         return Graph(edges)
 
-    def edges(self):
-        # type: () -> EdgeSet
+    def edges(self) -> EdgeSet:
         s = set()
         for parent in self.nodes:
             for child in self.children[parent]:
                 s.add((parent, child))
         return s
 
-    def remove_exterior_nodes(self):
-        # type: () -> None
+    def remove_exterior_nodes(self) -> None:
         still_work_to_do = True
         while still_work_to_do:
             still_work_to_do = False  # for now
@@ -52,8 +46,7 @@ class Graph:
                     still_work_to_do = True
                     break
 
-    def is_exterior_node(self, node):
-        # type: (str) -> bool
+    def is_exterior_node(self, node: str) -> bool:
         parents = self.parents[node]
         children = self.children[node]
         if not parents:
@@ -67,16 +60,14 @@ class Graph:
         # effectively be collapsed into the parent, so don't add clutter.
         return parents[0] == children[0]
 
-    def remove(self, node):
-        # type: (str) -> None
+    def remove(self, node: str) -> None:
         for parent in self.parents[node]:
             self.children[parent].remove(node)
         for child in self.children[node]:
             self.parents[child].remove(node)
         self.nodes.remove(node)
 
-    def report(self):
-        # type: () -> None
+    def report(self) -> None:
         print('parents/children/module')
         tups = sorted([
             (len(self.parents[node]), len(self.children[node]), node)
@@ -84,14 +75,12 @@ class Graph:
         for tup in tups:
             print(tup)
 
-def best_edge_to_remove(orig_graph, is_exempt):
-    # type: (Graph, Callable[[Edge], bool]) -> Optional[Edge]
+def best_edge_to_remove(orig_graph: Graph, is_exempt: Callable[[Edge], bool]) -> Optional[Edge]:
     # expects an already reduced graph as input
 
     orig_edges = orig_graph.edges()
 
-    def get_choices():
-        # type: () -> Iterator[Tuple[int, Edge]]
+    def get_choices() -> Iterator[Tuple[int, Edge]]:
         for edge in orig_edges:
             if is_exempt(edge):
                 continue
@@ -108,8 +97,7 @@ def best_edge_to_remove(orig_graph, is_exempt):
         raise Exception('no edges work here')
     return best_edge
 
-def make_dot_file(graph):
-    # type: (Graph) -> str
+def make_dot_file(graph: Graph) -> str:
     buffer = 'digraph G {\n'
     for node in graph.nodes:
         buffer += node + ';\n'
@@ -118,8 +106,7 @@ def make_dot_file(graph):
     buffer += '}'
     return buffer
 
-def test():
-    # type: () -> None
+def test() -> None:
     graph = Graph(set([
         ('x', 'a'),
         ('a', 'b'),

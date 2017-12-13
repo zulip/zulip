@@ -8,8 +8,7 @@ from .template_parser import (
 )
 import subprocess
 
-def pretty_print_html(html, num_spaces=4):
-    # type: (str, int) -> str
+def pretty_print_html(html: str, num_spaces: int=4) -> str:
     # We use 1-based indexing for both rows and columns.
     tokens = tokenize(html)
     lines = html.split('\n')
@@ -176,8 +175,7 @@ def pretty_print_html(html, num_spaces=4):
     return '\n'.join(formatted_lines)
 
 
-def validate_indent_html(fn):
-    # type: (str) -> int
+def validate_indent_html(fn: str) -> int:
     file = open(fn)
     html = file.read()
     phtml = pretty_print_html(html)
