@@ -476,16 +476,16 @@ exports.register_click_handlers = function () {
 
         current_user_sidebar_user_id = user_id;
         current_user_sidebar_popover = target.data('popover');
+    });
 
-        $('.my_email').hover(function () {
-            var tooltip_holder = $(this).find('div');
+    $('body').on("mouseenter", ".my_email", function () {
+        var tooltip_holder = $(this).find('div');
 
-            if (this.offsetWidth < this.scrollWidth) {
-                tooltip_holder.addClass('display-tooltip');
-            } else {
-                tooltip_holder.removeClass('display-tooltip');
-            }
-        });
+        if (this.offsetWidth < this.scrollWidth) {
+            tooltip_holder.addClass('display-tooltip');
+        } else {
+            tooltip_holder.removeClass('display-tooltip');
+        }
     });
 
     $('body').on('click', '.respond_button', function (e) {
