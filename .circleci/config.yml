@@ -65,10 +65,16 @@ jobs:
       # TODO: add frontend suite; prod suite; and backend on Python 3.5
       # TODO: add parallelism; see https://circleci.com/docs/2.0/workflows/
       - run:
-          name: run tests
+          name: run backend
           command: |
             . /srv/zulip-py3-venv/bin/activate
             mispipe ./tools/travis/backend ts
+
+      - run:
+          name: run frontend
+          command: |
+            . /srv/zulip-py3-venv/bin/activate
+            mispipe ./tools/travis/frontend ts
 
       # - store_artifacts:  # TODO
       #     path: var/casper/
