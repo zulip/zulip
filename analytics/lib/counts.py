@@ -1,6 +1,7 @@
 import time
 from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta
+import logging
 from typing import Any, Callable, Dict, List, \
     Optional, Text, Tuple, Type, Union
 
@@ -11,7 +12,7 @@ from django.db.models import F
 from analytics.models import Anomaly, BaseCount, \
     FillState, InstallationCount, RealmCount, StreamCount, \
     UserCount, installation_epoch, last_successful_fill
-from zerver.lib.logging_util import create_logger
+from zerver.lib.logging_util import log_to_file
 from zerver.lib.timestamp import ceiling_to_day, \
     ceiling_to_hour, floor_to_hour, verify_UTC
 from zerver.models import Message, Realm, RealmAuditLog, \
@@ -19,7 +20,8 @@ from zerver.models import Message, Realm, RealmAuditLog, \
 
 ## Logging setup ##
 
-logger = create_logger('zulip.management', settings.ANALYTICS_LOG_PATH)
+logger = logging.getLogger('zulip.management')
+log_to_file(logger, settings.ANALYTICS_LOG_PATH)
 
 # You can't subtract timedelta.max from a datetime, so use this instead
 TIMEDELTA_MAX = timedelta(days=365*1000)

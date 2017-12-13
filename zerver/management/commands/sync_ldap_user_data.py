@@ -1,16 +1,18 @@
 
+import logging
 from typing import Any
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db.utils import IntegrityError
 
-from zerver.lib.logging_util import create_logger
+from zerver.lib.logging_util import log_to_file
 from zerver.models import UserProfile
 from zproject.backends import ZulipLDAPUserPopulator
 
 ## Setup ##
-logger = create_logger(__name__, settings.LDAP_SYNC_LOG_PATH)
+logger = logging.getLogger(__name__)
+log_to_file(logger, settings.LDAP_SYNC_LOG_PATH)
 
 # Run this on a cronjob to pick up on name changes.
 def sync_ldap_user_data() -> None:

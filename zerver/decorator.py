@@ -31,7 +31,7 @@ from io import BytesIO
 import urllib
 
 from typing import Union, Any, Callable, Sequence, Dict, Optional, TypeVar, Text, Tuple, cast
-from zerver.lib.logging_util import create_logger
+from zerver.lib.logging_util import log_to_file
 
 # This is a hack to ensure that RemoteZulipServer always exists even
 # if Zilencer isn't enabled.
@@ -45,8 +45,8 @@ else:
 ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
 ReturnT = TypeVar('ReturnT')
 
-## logger setup
-webhook_logger = create_logger("zulip.zerver.webhooks", settings.API_KEY_ONLY_WEBHOOK_LOG_PATH)
+webhook_logger = logging.getLogger("zulip.zerver.webhooks")
+log_to_file(webhook_logger, settings.API_KEY_ONLY_WEBHOOK_LOG_PATH)
 
 class _RespondAsynchronously:
     pass

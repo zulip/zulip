@@ -2,6 +2,7 @@ from typing import Any, Callable, Dict, Iterable, List, Set, Tuple, Text
 
 from collections import defaultdict
 import datetime
+import logging
 import pytz
 
 from django.db.models import Q, QuerySet
@@ -17,9 +18,10 @@ from zerver.models import UserProfile, UserMessage, Recipient, Stream, \
     Realm
 from zerver.context_processors import common_context
 from zerver.lib.queue import queue_json_publish
-from zerver.lib.logging_util import create_logger
+from zerver.lib.logging_util import log_to_file
 
-logger = create_logger(__name__, settings.DIGEST_LOG_PATH)
+logger = logging.getLogger(__name__)
+log_to_file(logger, settings.DIGEST_LOG_PATH)
 
 VALID_DIGEST_DAY = 1  # Tuesdays
 DIGEST_CUTOFF = 5

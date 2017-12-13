@@ -8,16 +8,18 @@ from zerver.models import UserProfile, ScheduledEmail, get_user_profile_by_id, \
 
 import datetime
 from email.utils import parseaddr, formataddr
+import logging
 import ujson
 
 import os
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Text
 
-from zerver.lib.logging_util import create_logger
+from zerver.lib.logging_util import log_to_file
 
 ## Logging setup ##
 
-logger = create_logger('zulip.send_email', settings.EMAIL_LOG_PATH)
+logger = logging.getLogger('zulip.send_email')
+log_to_file(logger, settings.EMAIL_LOG_PATH)
 
 class FromAddress:
     SUPPORT = parseaddr(settings.ZULIP_ADMINISTRATOR)[1]

@@ -185,24 +185,12 @@ class ZulipFormatter(logging.Formatter):
             setattr(record, 'zulip_decorated', True)
         return super().format(record)
 
-def create_logger(name: str,
-                  log_file: str,
-                  log_format: str="%(asctime)s%(levelname)-8s%(message)s") -> Logger:
-    """Creates a named logger for use in logging content to a certain
-    file.  A few notes:
-
-    * "name" is used in determining what gets logged to which files;
-    see "loggers" in zproject/settings.py for details.  Don't use `""`
-    -- that's the root logger.
-    * "log_file" should be declared in zproject/settings.py in ZULIP_PATHS.
-
-    """
-    logger = logging.getLogger(name)
-
-    if log_file:
-        formatter = logging.Formatter(log_format)
-        file_handler = logging.FileHandler(log_file)
-        file_handler.setFormatter(formatter)
-        logger.addHandler(file_handler)
-
-    return logger
+def log_to_file(logger: Logger,
+                filename: str,
+                log_format: str="%(asctime)s%(levelname)-8s%(message)s",
+                ) -> None:
+    """Note: `filename` should be declared in zproject/settings.py in ZULIP_PATHS."""
+    formatter = logging.Formatter(log_format)
+    handler = logging.FileHandler(filename)
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
