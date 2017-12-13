@@ -42,12 +42,14 @@ else if:
 ### At initial Zulip install
 
 To enable the Certbot automation when first installing Zulip, just
-pass the `--certbot` flag when running the install script.
+pass the `--certbot` flag when [running the install script][doc-install-script].
 
 The `--hostname` and `--email` options are required when using
 `--certbot`.  You'll need the hostname to be a real DNS name, and the
 Zulip server machine to be reachable by that name from the public
 Internet.
+
+[doc-install-script]: ../production/install.html#step-2-install-zulip
 
 ### After Zulip is already installed
 
