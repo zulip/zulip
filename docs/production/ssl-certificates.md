@@ -18,7 +18,7 @@ files into place at the following paths:
 
 [nginx-https]: http://nginx.org/en/docs/http/configuring_https_servers.html
 
-## Using Certbot / Let's Encrypt
+## Certbot (recommended)
 
 [Let's Encrypt](https://letsencrypt.org/) is a free, completely
 automated CA launched in 2016 to help make HTTPS routine for the
@@ -77,7 +77,7 @@ approximately once every 60 days), repeats the process of request,
 prove, get a fresh certificate.
 
 
-## Generating a self-signed certificate
+## Self-signed certificate
 
 If you aren't able to use Let's Encrypt, you can generate a
 self-signed ssl certificate.  We recommend getting a real certificate
