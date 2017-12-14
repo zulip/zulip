@@ -9,20 +9,17 @@ sanity_check.check_venv(__file__)
 
 from typing import Any, Dict, List
 
-def debug(obj):
-    # type: (Any) -> None
+def debug(obj: Any) -> None:
     print(json.dumps(obj, indent=4))
 
-def parse_file(fn):
-    # type: (str) -> Dict[str, Any]
+def parse_file(fn: str) -> Dict[str, Any]:
     text = open(fn).read()
     tags = re.findall('{+\s*(.*?)\s*}+', text)
     root = {}  # type: Dict[str, Any]
     context = root
     stack = []  # type: List[Dict[str, Any]]
 
-    def set_var(var, val):
-        # type: (str, Any) -> None
+    def set_var(var: str, val: Any) -> None:
         num_levels_up = len(re.findall('\.\.', var))
         if num_levels_up:
             var = var.split('/')[-1]
@@ -94,8 +91,7 @@ def parse_file(fn):
 
         set_var(tag, '')
 
-    def clean_this(obj):
-        # type: (Any) -> Any
+    def clean_this(obj: Any) -> Any:
         if isinstance(obj, list):
             return [clean_this(item) for item in obj]
         if isinstance(obj, dict):
