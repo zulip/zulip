@@ -154,11 +154,11 @@ class EventsEndpointTest(ZulipTestCase):
         # events_register code paths
         email = self.example_email("hamlet")
         with mock.patch('zerver.views.events_register.do_events_register', return_value={}):
-            result = self.client_post('/json/register', **self.api_auth(email))
+            result = self.api_post(email, '/json/register')
         self.assert_json_success(result)
 
         with mock.patch('zerver.lib.events.request_event_queue', return_value=None):
-            result = self.client_post('/json/register', **self.api_auth(email))
+            result = self.api_post(email, '/json/register')
         self.assert_json_error(result, "Could not allocate event queue")
 
         return_event_queue = '15:11'
@@ -167,13 +167,11 @@ class EventsEndpointTest(ZulipTestCase):
         # Test that call is made to deal with a returning soft deactivated user.
         with mock.patch('zerver.lib.events.maybe_catch_up_soft_deactivated_user') as fa:
             with stub_event_queue_user_events(return_event_queue, return_user_events):
-                result = self.client_post('/json/register', dict(event_types=ujson.dumps(['pointer'])),
-                                          **self.api_auth(email))
+                result = self.api_post(email, '/json/register', dict(event_types=ujson.dumps(['pointer'])))
                 self.assertEqual(fa.call_count, 1)
 
         with stub_event_queue_user_events(return_event_queue, return_user_events):
-            result = self.client_post('/json/register', dict(event_types=ujson.dumps(['pointer'])),
-                                      **self.api_auth(email))
+            result = self.api_post(email, '/json/register', dict(event_types=ujson.dumps(['pointer'])))
         self.assert_json_success(result)
         result_dict = result.json()
         self.assertEqual(result_dict['last_event_id'], -1)
@@ -188,8 +186,7 @@ class EventsEndpointTest(ZulipTestCase):
             }
         ]
         with stub_event_queue_user_events(return_event_queue, return_user_events):
-            result = self.client_post('/json/register', dict(event_types=ujson.dumps(['pointer'])),
-                                      **self.api_auth(email))
+            result = self.api_post(email, '/json/register', dict(event_types=ujson.dumps(['pointer'])))
 
         self.assert_json_success(result)
         result_dict = result.json()
@@ -200,10 +197,9 @@ class EventsEndpointTest(ZulipTestCase):
         # Now test with `fetch_event_types` not matching the event
         return_event_queue = '15:13'
         with stub_event_queue_user_events(return_event_queue, return_user_events):
-            result = self.client_post('/json/register',
-                                      dict(event_types=ujson.dumps(['pointer']),
-                                           fetch_event_types=ujson.dumps(['message'])),
-                                      **self.api_auth(email))
+            result = self.api_post(email, '/json/register',
+                                   dict(event_types=ujson.dumps(['pointer']),
+                                        fetch_event_types=ujson.dumps(['message'])))
         self.assert_json_success(result)
         result_dict = result.json()
         self.assertEqual(result_dict['last_event_id'], 6)
@@ -215,10 +211,9 @@ class EventsEndpointTest(ZulipTestCase):
 
         # Now test with `fetch_event_types` matching the event
         with stub_event_queue_user_events(return_event_queue, return_user_events):
-            result = self.client_post('/json/register',
-                                      dict(fetch_event_types=ujson.dumps(['pointer']),
-                                           event_types=ujson.dumps(['message'])),
-                                      **self.api_auth(email))
+            result = self.api_post(email, '/json/register',
+                                   dict(fetch_event_types=ujson.dumps(['pointer']),
+                                        event_types=ujson.dumps(['message'])))
         self.assert_json_success(result)
         result_dict = result.json()
         self.assertEqual(result_dict['last_event_id'], 6)
@@ -961,9 +956,8 @@ class EventsRegisterTest(ZulipTestCase):
                 ])),
             ])),
         ])
-        self.client_post("/api/v1/users/me/presence", {'status': 'idle'},
-                         HTTP_USER_AGENT="ZulipAndroid/1.0",
-                         **self.api_auth(self.user_profile.email))
+        self.api_post(self.user_profile.email, "/api/v1/users/me/presence", {'status': 'idle'},
+                      HTTP_USER_AGENT="ZulipAndroid/1.0")
         self.do_test(lambda: do_update_user_presence(
             self.user_profile, get_client("website"), timezone_now(), UserPresence.ACTIVE))
         events = self.do_test(lambda: do_update_user_presence(
