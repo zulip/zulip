@@ -12,12 +12,11 @@ from zerver.models import UserProfile
 
 @api_key_only_webhook_view('Transifex')
 @has_request_variables
-def api_transifex_webhook(request, user_profile,
-                          project=REQ(), resource=REQ(),
-                          language=REQ(), translated=REQ(default=None),
-                          reviewed=REQ(default=None),
-                          stream=REQ(default='transifex')):
-    # type: (HttpRequest, UserProfile, str, str, str, Optional[int], Optional[int], str) -> HttpResponse
+def api_transifex_webhook(request: HttpRequest, user_profile: UserProfile,
+                          project: str=REQ(), resource: str=REQ(),
+                          language: str=REQ(), translated: Optional[int]=REQ(default=None),
+                          reviewed: Optional[int]=REQ(default=None),
+                          stream: str=REQ(default='transifex')) -> HttpResponse:
     subject = "{} in {}".format(project, language)
     if translated:
         body = "Resource {} fully translated.".format(resource)
