@@ -42,7 +42,7 @@ from zerver.models import Client, Message, Realm, UserPresence, UserProfile, \
     get_user_profile_by_id, \
     get_realm_user_dicts, realm_filters_for_realm, get_user,\
     get_owned_bot_dicts, custom_profile_fields_for_realm, get_realm_domains, \
-    get_default_stream_groups
+    get_default_stream_groups, CustomProfileField
 from zproject.backends import email_auth_enabled, password_auth_enabled
 from version import ZULIP_VERSION
 
@@ -111,6 +111,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
     if want('custom_profile_fields'):
         fields = custom_profile_fields_for_realm(user_profile.realm.id)
         state['custom_profile_fields'] = [f.as_dict() for f in fields]
+        state['custom_profile_field_types'] = CustomProfileField.FIELD_TYPE_CHOICES
 
     if want('attachments'):
         state['attachments'] = user_attachments(user_profile)
