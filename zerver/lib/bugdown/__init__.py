@@ -1177,7 +1177,8 @@ class VerbosePattern(markdown.inlinepatterns.Pattern):
 class AutoLink(VerbosePattern):
     def handleMatch(self, match: Match[Text]) -> ElementStringNone:
         url = match.group('url')
-        return url_to_a(url)
+        youtube_title = (ujson.load(urllib.request.urlopen("https://noembed.com/embed?url=" + url))['title'])
+        return url_to_a(url, youtube_title)
 
 class UListProcessor(markdown.blockprocessors.UListProcessor):
     """ Process unordered list blocks.
