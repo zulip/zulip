@@ -20,12 +20,15 @@ exports.show_or_hide_menu_item = function () {
             .find("input:not(.search), button, select").attr("disabled", true);
         $(".organization-box [data-name='filter-settings']")
             .find("input, button, select").attr("disabled", true);
+        $(".organization-box [data-name='profile-field-settings']")
+            .find("input, button, select").attr("disabled", true);
         $(".control-label-disabled").css("color", "#333333");
     }
 };
 
 function _setup_page() {
     var options = {
+        custom_profile_field_types: page_params.custom_profile_field_types,
         realm_name: page_params.realm_name,
         realm_description: page_params.realm_description,
         realm_restricted_to_domain: page_params.realm_restricted_to_domain,

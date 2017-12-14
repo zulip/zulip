@@ -1,0 +1,38 @@
+{{#with profile_field}}
+<tr class="profile-field-row" data-profile-field-id="{{id}}">
+    <td>
+        <span class="profile_field_name">{{name}}</span>
+    </td>
+    <td>
+        <span class="profile_field_type">{{type}}</span>
+    </td>
+    {{#if ../can_modify}}
+    <td>
+        <button class="button rounded small delete btn-danger" title="{{t 'Delete' }}" data-profile-field-id="{{id}}">
+            <i class="icon-vector-trash"></i>
+        </button>
+        <button class="button rounded small btn-warning open-edit-form" title="{{t 'Edit' }}" data-profile-field-id="{{id}}">
+            <i class="icon-vector-pencil"></i>
+        </button>
+    </td>
+    {{/if}}
+</tr>
+<tr class="profile-field-form display-none" data-profile-field-id="{{id}}">
+    <td colspan="3">
+        <form class="form-horizontal name-setting">
+            <div class="input-group name_change_container">
+                <label for="name">{{t "Name" }}</label>
+                <input type="text" name="name" value="{{ name }}" />
+            </div>
+            <div class="input-group">
+                <button type="button" class="button rounded sea-green submit">
+                    {{t 'Save changes' }}
+                </button>
+                <button type="button" class="button rounded btn-danger reset">
+                    {{t 'Cancel' }}
+                </button>
+            </div>
+        </form>
+    </td>
+</tr>
+{{/with}}

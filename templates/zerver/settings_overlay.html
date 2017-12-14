@@ -96,6 +96,12 @@
                     <i class="icon icon-vector-font"></i>
                     <div class="text">{{ _('Filter settings') }}</div>
                 </li>
+                {% if development_environment %}
+                <li class="admin" tabindex="0" data-section="profile-field-settings">
+                    <i class="icon icon-vector-user"></i>
+                    <div class="text">{{ _('Custom profile fields') }}</div>
+                </li>
+                {% endif %}
                 {% if is_admin %}
                 <li class="admin" tabindex="0" data-section="invites-list-admin">
                     <i class="icon icon-vector-user"></i>
