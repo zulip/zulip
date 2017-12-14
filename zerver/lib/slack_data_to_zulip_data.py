@@ -9,6 +9,8 @@ import re
 
 from django.utils.timezone import now as timezone_now
 from typing import Any, Dict, List, Tuple
+from zerver.models import UserProfile, Realm, Stream, UserMessage, \
+    Subscription, Message, Recipient, DefaultStream
 # stubs
 ZerverFieldsT = Dict[str, Any]
 AddedUsersT = Dict[str, int]
@@ -17,6 +19,12 @@ AddedChannelsT = Dict[str, int]
 def rm_tree(path: str) -> None:
     if os.path.exists(path):
         shutil.rmtree(path)
+
+def get_model_id(model: Any) -> int:
+    if model.objects.all().last():
+        return model.objects.all().last().id + 1
+    else:
+        return 1
 
 def users_to_zerver_userprofile(slack_dir: str, realm_id: int, timestamp: Any,
                                 domain_name: str) -> Tuple[List[ZerverFieldsT], AddedUsersT]:
@@ -30,7 +38,7 @@ def users_to_zerver_userprofile(slack_dir: str, realm_id: int, timestamp: Any,
     users = json.load(open(slack_dir + '/users.json'))
     zerver_userprofile = []
     added_users = {}
-    user_id_count = 1
+    user_id_count = get_model_id(UserProfile)
     for user in users:
         slack_user_id = user['id']
         profile = user['profile']
@@ -155,8 +163,8 @@ def channels_to_zerver_stream(slack_dir: str, realm_id: int, added_users: AddedU
     zerver_recipient = []
     zerver_defaultstream = []
 
-    stream_id_count = 1
-    subscription_id_count = 1
+    stream_id_count = get_model_id(Stream)
+    subscription_id_count = get_model_id(Subscription)
 
     for channel in channels:
         # slack_channel_id = channel['id']
@@ -181,7 +189,7 @@ def channels_to_zerver_stream(slack_dir: str, realm_id: int, added_users: AddedU
             defaultstream = dict(
                 stream=stream_id_count,
                 realm=realm_id,
-                id=1)
+                id=get_model_id(DefaultStream))
             zerver_defaultstream.append(defaultstream)
 
         zerver_stream.append(stream)
@@ -243,7 +251,6 @@ def channels_to_zerver_stream(slack_dir: str, realm_id: int, added_users: AddedU
 
     for user in zerver_userprofile:
         zulip_user_id = user['id']
-
         # this maps the recipients and subscriptions
         # related to private messages
 
@@ -282,14 +289,18 @@ def do_convert_data(slack_zip_file: str, realm_name: str, output_dir: str) -> No
 
     # TODO: Hardcode this to 1, will implement later for zulipchat.com's case
     # where it has multiple realms
-    REALM_ID = 1
+    REALM_ID = get_model_id(Realm)
     NOW = float(timezone_now().timestamp())
 
     script_path = os.path.dirname(os.path.abspath(__file__)) + '/'
     fixtures_path = script_path + '../fixtures/'
     zerver_realm_skeleton = json.load(open(fixtures_path + 'zerver_realm_skeleton.json'))
     zerver_realm_skeleton[0]['id'] = REALM_ID
-    zerver_realm_skeleton[0]['string_id'] = 'zulip'  # subdomain / short_name of realm
+
+    if Realm.objects.filter(string_id = realm_name):
+        raise Exception('Realm with the name %s already exists. Enter a new name.'
+                        % (realm_name))
+    zerver_realm_skeleton[0]['string_id'] = realm_name  # subdomain / short_name of realm
     zerver_realm_skeleton[0]['name'] = realm_name
     zerver_realm_skeleton[0]['date_created'] = NOW
 
