@@ -346,6 +346,7 @@ class ZulipTestCase(TestCase):
 
         credentials = "%s:%s" % (identifier, api_key)
         return 'Basic ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
+<<<<<<< 35f82b9d0ab616bd98472ac844d61b50ab26df15
 
     def api_get(self, email: Text, *args: Any, **kwargs: Any) -> HttpResponse:
         kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(email)
@@ -366,25 +367,27 @@ class ZulipTestCase(TestCase):
     def api_delete(self, email: Text, *args: Any, **kwargs: Any) -> HttpResponse:
         kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(email)
         return self.client_delete(*args, **kwargs)
+=======
+>>>>>>> tests: Refactor the method for encoding credentials.
 
     def api_get(self, email: Text, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs.update(self.api_auth(email))
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(email)
         return self.client_get(*args, **kwargs)
 
     def api_post(self, identifier: Text, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs.update(self.api_auth(identifier, kwargs.get('realm', 'zulip')))
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(identifier, kwargs.get('realm', 'zulip'))
         return self.client_post(*args, **kwargs)
 
     def api_patch(self, email: Text, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs.update(self.api_auth(email))
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(email)
         return self.client_patch(*args, **kwargs)
 
     def api_put(self, email: Text, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs.update(self.api_auth(email))
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(email)
         return self.client_put(*args, **kwargs)
 
     def api_delete(self, email: Text, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs.update(self.api_auth(email))
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(email)
         return self.client_delete(*args, **kwargs)
 
     def get_streams(self, email: Text, realm: Realm) -> List[Text]:
@@ -640,11 +643,15 @@ class WebhookTestCase(ZulipTestCase):
         self.url = self.build_webhook_url()
 
     def api_stream_message(self, email: Text, *args: Any, **kwargs: Any) -> HttpResponse:
+<<<<<<< 35f82b9d0ab616bd98472ac844d61b50ab26df15
 <<<<<<< c4ba5519c60ed7a5c1a156f7c3bb9c9c670da6dd
         kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(email)
 =======
         kwargs.update(self.api_auth(email))
 >>>>>>> tests: Add auth methods that will replace passing credentials.
+=======
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(email)
+>>>>>>> tests: Refactor the method for encoding credentials.
         return self.send_and_test_stream_message(*args, **kwargs)
 
     def send_and_test_stream_message(self, fixture_name: Text, expected_subject: Optional[Text]=None,
