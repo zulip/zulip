@@ -163,6 +163,8 @@ msgstr ""
 msgid "You need an invitation to join this organization."
 msgstr ""
 
+#: templates/zerver/footer.html:41 templates/zerver/portico-header.html:34
+#: templates/zerver/register.html:163
 #: templates/zerver/accounts_home.html:65
 msgid "Sign up"
 msgstr "Зарегистрироваться"
@@ -342,7 +344,7 @@ msgid "Go back to login"
 msgstr ""
 
 #: templates/zerver/confirm_continue_registration.html:52
-msgid "Register instead"
+msgid "Sign up instead"
 msgstr ""
 
 #: templates/zerver/create_realm.html:18
@@ -462,11 +464,6 @@ msgstr ""
 msgid "Login"
 msgstr ""
 
-#: templates/zerver/footer.html:41 templates/zerver/portico-header.html:34
-#: templates/zerver/register.html:163
-msgid "Register"
-msgstr "Зарегистрироваться"
-
 #: templates/zerver/footer.html:43 templates/zerver/terms.html:21
 msgid "Terms of Service"
 msgstr "Условия использования"
@@ -504,7 +501,7 @@ msgid "Log in now!"
 msgstr "Войдите сейчас!"
 
 #: templates/zerver/hello.html:48 templates/zerver/hello.html:614
-msgid "Register now!"
+msgid "Sign up now!"
 msgstr "Зарегистрируйтесь сейчас!"
 
 #: templates/zerver/hello.html:517
