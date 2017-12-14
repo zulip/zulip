@@ -246,6 +246,8 @@
 }
 
 .emoji-popover-category-tabs {
+    /* Flex needed here to work around #7511 (90% zoom issues in firefox) */
+    display: flex;
     background-color: hsl(0, 0%, 93%);
     width: 100%;
     box-sizing: border-box;
@@ -260,6 +262,8 @@
     text-align: center;
     font-size: 16px;
     cursor: pointer;
+    /* Flex needed here to work around #7511 (90% zoom issues in firefox) */
+    flex-grow: 1;
 }
 
 .emoji-popover-category-tabs .emoji-popover-tab-item.active {
