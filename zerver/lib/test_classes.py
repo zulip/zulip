@@ -349,6 +349,26 @@ class ZulipTestCase(TestCase):
             'HTTP_AUTHORIZATION': 'Basic ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
         }
 
+    def api_get(self, email: Text, *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs.update(self.api_auth(email))
+        return self.client_get(*args, **kwargs)
+
+    def api_post(self, identifier: Text, *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs.update(self.api_auth(identifier, kwargs.get('realm', 'zulip')))
+        return self.client_post(*args, **kwargs)
+
+    def api_patch(self, email: Text, *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs.update(self.api_auth(email))
+        return self.client_patch(*args, **kwargs)
+
+    def api_put(self, email: Text, *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs.update(self.api_auth(email))
+        return self.client_put(*args, **kwargs)
+
+    def api_delete(self, email: Text, *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs.update(self.api_auth(email))
+        return self.client_delete(*args, **kwargs)
+
     def get_streams(self, email: Text, realm: Realm) -> List[Text]:
         """
         Helper function to get the stream names for a user
@@ -531,10 +551,8 @@ class ZulipTestCase(TestCase):
         post_data = {'subscriptions': ujson.dumps([{"name": stream} for stream in streams]),
                      'invite_only': ujson.dumps(invite_only)}
         post_data.update(extra_post_data)
-        kw = kwargs.copy()
-        kw.update(self.api_auth(email, realm=kwargs.get('subdomain', 'zulip')))
-        result = self.client_post("/api/v1/users/me/subscriptions", post_data,
-                                  **kw)
+        kwargs['realm'] = kwargs.get('subdomain', 'zulip')
+        result = self.api_post(email, "/api/v1/users/me/subscriptions", post_data, **kwargs)
         return result
 
     def check_user_subscribed_only_to_streams(self, user_name: Text,
@@ -602,6 +620,10 @@ class WebhookTestCase(ZulipTestCase):
 
     def setUp(self) -> None:
         self.url = self.build_webhook_url()
+
+    def api_stream_message(self, email: Text, *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs.update(self.api_auth(email))
+        return self.send_and_test_stream_message(*args, **kwargs)
 
     def send_and_test_stream_message(self, fixture_name: Text, expected_subject: Optional[Text]=None,
                                      expected_message: Optional[Text]=None,
