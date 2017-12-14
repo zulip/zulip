@@ -175,17 +175,16 @@ class LoggingSetPasswordForm(SetPasswordForm):
 
 class ZulipPasswordResetForm(PasswordResetForm):
     def save(self,
-             domain_override=None,  # type: Optional[bool]
-             subject_template_name='registration/password_reset_subject.txt',  # type: Text
-             email_template_name='registration/password_reset_email.html',  # type: Text
-             use_https=False,  # type: bool
-             token_generator=default_token_generator,  # type: PasswordResetTokenGenerator
-             from_email=None,  # type: Optional[Text]
-             request=None,  # type: HttpRequest
-             html_email_template_name=None,  # type: Optional[Text]
-             extra_email_context=None  # type: Optional[Dict[str, Any]]
-             ):
-        # type: (...) -> None
+             domain_override: Optional[bool]=None,
+             subject_template_name: Text='registration/password_reset_subject.txt',
+             email_template_name: Text='registration/password_reset_email.html',
+             use_https: bool=False,
+             token_generator: PasswordResetTokenGenerator=default_token_generator,
+             from_email: Optional[Text]=None,
+             request: HttpRequest=None,
+             html_email_template_name: Optional[Text]=None,
+             extra_email_context: Optional[Dict[str, Any]]=None
+             ) -> None:
         """
         If the email address has an account in the target realm,
         generates a one-use only link for resetting password and sends
