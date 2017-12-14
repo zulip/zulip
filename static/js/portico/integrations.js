@@ -118,9 +118,9 @@ var update_integrations = _.debounce(function () {
 
         if (!$integration.hasClass('integration-create-your-own')) {
             var display =
-                fuzzysearch(state.query, $integration.data('name').toLowerCase()) &&
-                ($integration.data('categories').indexOf(CATEGORIES[state.category]) !== -1 ||
-                 state.category === 'all');
+                (state.category === 'all' ||
+                 $integration.data('categories').indexOf(CATEGORIES[state.category]) !== -1) &&
+                fuzzysearch(state.query, $integration.data('name').toLowerCase());
 
             if (display) {
                 $integration.css('display', 'inline-block');
@@ -128,9 +128,9 @@ var update_integrations = _.debounce(function () {
                 $integration.css('display', 'none');
             }
         }
-
-        document.body.scrollTop = Math.min(window.scrollY, max_scrollY);
     });
+    // Do scrolling after the search.
+    document.body.scrollTop = Math.min(window.scrollY, max_scrollY);
 
     adjust_font_sizing();
 }, 50);

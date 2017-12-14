@@ -16,6 +16,11 @@ from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.subdomains import get_subdomain
 from zerver.models import Realm
 from zerver.templatetags.app_filters import render_markdown_path
+from zerver.lib.zapier_intergrations import ZAPIER_INTEGRATIONS
+
+# add Zapier integrations into the dict
+for zapier_integration in ZAPIER_INTEGRATIONS:
+    INTEGRATIONS[zapier_integration.name] = zapier_integration
 
 def add_api_uri_context(context: Dict[str, Any], request: HttpRequest) -> None:
     subdomain = get_subdomain(request)
