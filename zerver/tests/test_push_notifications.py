@@ -64,10 +64,10 @@ class BouncerTestCase(ZulipTestCase):
         # args[0] is method, args[1] is URL.
         local_url = args[1].replace(settings.PUSH_NOTIFICATION_BOUNCER_URL, "")
         if args[0] == "POST":
-            result = self.client_post(local_url,
-                                      kwargs['data'],
-                                      subdomain="",
-                                      **self.get_auth())
+            result = self.api_post(self.server_uuid,
+                                   local_url,
+                                   kwargs['data'],
+                                   subdomain="")
         else:
             raise AssertionError("Unsupported method for bounce_request")
         return result
@@ -81,10 +81,6 @@ class BouncerTestCase(ZulipTestCase):
                 'token': token,
                 'token_kind': token_kind}
 
-    def get_auth(self) -> Dict[str, Text]:
-        # Auth on this user
-        return self.api_auth(self.server_uuid)
-
 class PushBouncerNotificationTest(BouncerTestCase):
     DEFAULT_SUBDOMAIN = ""
 
@@ -93,11 +89,9 @@ class PushBouncerNotificationTest(BouncerTestCase):
         token_kind = PushDeviceToken.GCM
 
         endpoint = '/api/v1/remotes/push/unregister'
-        result = self.client_post(endpoint, {'token_kind': token_kind},
-                                  **self.get_auth())
+        result = self.api_post(self.server_uuid, endpoint, {'token_kind': token_kind})
         self.assert_json_error(result, "Missing 'token' argument")
-        result = self.client_post(endpoint, {'token': token},
-                                  **self.get_auth())
+        result = self.api_post(self.server_uuid, endpoint, {'token': token})
         self.assert_json_error(result, "Missing 'token_kind' argument")
 
         # We need the root ('') subdomain to be in use for this next
@@ -118,18 +112,13 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
         endpoint = '/api/v1/remotes/push/register'
 
-        result = self.client_post(endpoint, {'user_id': user_id, 'token_kind': token_kind},
-                                  **self.get_auth())
+        result = self.api_post(self.server_uuid, endpoint, {'user_id': user_id, 'token_kind': token_kind})
         self.assert_json_error(result, "Missing 'token' argument")
-        result = self.client_post(endpoint, {'user_id': user_id, 'token': token},
-                                  **self.get_auth())
+        result = self.api_post(self.server_uuid, endpoint, {'user_id': user_id, 'token': token})
         self.assert_json_error(result, "Missing 'token_kind' argument")
-        result = self.client_post(endpoint, {'token': token, 'token_kind': token_kind},
-                                  **self.get_auth())
+        result = self.api_post(self.server_uuid, endpoint, {'token': token, 'token_kind': token_kind})
         self.assert_json_error(result, "Missing 'user_id' argument")
-        result = self.client_post(endpoint, {'user_id': user_id, 'token': token,
-                                             'token_kind': 17},
-                                  **self.get_auth())
+        result = self.api_post(self.server_uuid, endpoint, {'user_id': user_id, 'token': token, 'token_kind': 17})
         self.assert_json_error(result, "Invalid token type")
 
         result = self.api_post(self.example_email("hamlet"), endpoint, {'user_id': user_id,
@@ -159,7 +148,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             payload = self.get_generic_payload(method)
 
             # Verify correct results are success
-            result = self.client_post(endpoint, payload, **self.get_auth())
+            result = self.api_post(self.server_uuid, endpoint, payload)
             self.assert_json_success(result)
 
             remote_tokens = RemotePushDeviceToken.objects.filter(token=payload['token'])
@@ -169,7 +158,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             # Try adding/removing tokens that are too big...
             broken_token = "x" * 5000  # too big
             payload['token'] = broken_token
-            result = self.client_post(endpoint, payload, **self.get_auth())
+            result = self.api_post(self.server_uuid, endpoint, payload)
             self.assert_json_error(result, 'Empty or invalid length token')
 
     def test_invalid_apns_token(self) -> None:
@@ -183,8 +172,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
                 'token': 'xyz uses non-hex characters',
                 'token_kind': PushDeviceToken.APNS,
             }
-            result = self.client_post(endpoint, payload,
-                                      **self.get_auth())
+            result = self.api_post(self.server_uuid, endpoint, payload)
             self.assert_json_error(result, 'Invalid APNS token')
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com')
@@ -305,10 +293,10 @@ class HandlePushNotificationTest(PushNotificationTest):
         # args[0] is method, args[1] is URL.
         local_url = args[1].replace(settings.PUSH_NOTIFICATION_BOUNCER_URL, "")
         if args[0] == "POST":
-            result = self.client_post(local_url,
-                                      kwargs['data'],
-                                      content_type="application/json",
-                                      **self.get_auth())
+            result = self.api_post(self.server_uuid,
+                                   local_url,
+                                   kwargs['data'],
+                                   content_type="application/json")
         else:
             raise AssertionError("Unsupported method for bounce_request")
         return result
