@@ -1182,7 +1182,9 @@ class AutoLink(VerbosePattern):
                      r'?([0-9A-Za-z_-]+)(?(1).+)?$'
         match = re.match(youtube_re, url)
         if match is not None:
-            youtube_title = (ujson.load(urllib.request.urlopen("https://noembed.com/embed?url=" + url))['title'])
+            request_url = "https://noembed.com/embed?url=" + url
+            response = ujson.load(urllib.request.urlopen(request_url))
+            youtube_title = response['title']
             return url_to_a(url, youtube_title)
         return url_to_a(url)
 
