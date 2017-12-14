@@ -247,6 +247,7 @@
 }
 
 .emoji-popover-category-tabs {
+    display: flex;
     background-color: hsl(0, 0%, 93%);
     width: 100%;
     box-sizing: border-box;
@@ -261,6 +262,7 @@
     text-align: center;
     font-size: 16px;
     cursor: pointer;
+    flex-grow: 1;
 }
 
 .emoji-popover-category-tabs .emoji-popover-tab-item.active {
