@@ -4077,6 +4077,9 @@ def do_invite_users(user_profile: UserProfile,
                                 "so we didn't send them an invitation. We did send "
                                 "invitations to everyone else!"),
                               skipped, sent_invitations=True)
+    event = dict(type="invites_changed")
+    admin_ids = [user.id for user in user_profile.realm.get_admin_users()]
+    send_event(event, admin_ids)
 
 def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
     days_to_activate = getattr(settings, 'ACCOUNT_ACTIVATION_DAYS', 7)
@@ -4118,6 +4121,9 @@ def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
                                 object_id=prereg_user.id).delete()
     prereg_user.delete()
     clear_scheduled_invitation_emails(email)
+    event = dict(type="invites_changed")
+    admin_ids = [user.id for user in prereg_user.realm.get_admin_users()]
+    send_event(event, admin_ids)
 
 def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> int:
     check_invite_limit(prereg_user.referred_by, 1)

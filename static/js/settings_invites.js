@@ -20,6 +20,11 @@ function populate_invites(invites_data) {
         return;
     }
     var invites_table = $("#admin_invites_table").expectOne();
+    var invites_list = list_render.get("admin_invites_list");
+
+    if (invites_list) {
+        list_render.delete("admin_invites_list");
+    }
 
     list_render(invites_table, invites_data.invites, {
         name: "admin_invites_list",
