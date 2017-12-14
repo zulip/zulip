@@ -614,11 +614,11 @@ class DeactivatedRealmTest(ZulipTestCase):
                                                      "to": self.example_email("othello")})
         self.assert_json_error_contains(result, "has been deactivated", status_code=400)
 
-        result = self.client_post("/api/v1/messages", {"type": "private",
-                                                       "content": "Test message",
-                                                       "client": "test suite",
-                                                       "to": self.example_email("othello")},
-                                  **self.api_auth(self.example_email("hamlet")))
+        result = self.api_post(self.example_email("hamlet"),
+                               "/api/v1/messages", {"type": "private",
+                                                    "content": "Test message",
+                                                    "client": "test suite",
+                                                    "to": self.example_email("othello")})
         self.assert_json_error_contains(result, "has been deactivated", status_code=401)
 
     def test_fetch_api_key_deactivated_realm(self) -> None:
@@ -731,11 +731,11 @@ class InactiveUserTest(ZulipTestCase):
                                                      "to": self.example_email("othello")})
         self.assert_json_error_contains(result, "Account not active", status_code=400)
 
-        result = self.client_post("/api/v1/messages", {"type": "private",
-                                                       "content": "Test message",
-                                                       "client": "test suite",
-                                                       "to": self.example_email("othello")},
-                                  **self.api_auth(self.example_email("hamlet")))
+        result = self.api_post(self.example_email("hamlet"),
+                               "/api/v1/messages", {"type": "private",
+                                                    "content": "Test message",
+                                                    "client": "test suite",
+                                                    "to": self.example_email("othello")})
         self.assert_json_error_contains(result, "Account not active", status_code=401)
 
     def test_fetch_api_key_deactivated_user(self) -> None:
@@ -832,16 +832,14 @@ class TestIncomingWebhookBot(ZulipTestCase):
         self.webhook_bot = get_user('webhook-bot@zulip.com', zulip_realm)
 
     def test_webhook_bot_permissions(self) -> None:
-        result = self.client_post("/api/v1/messages", {
-            "type": "private",
-            "content": "Test message",
-            "client": "test suite",
-            "to": self.example_email("othello")
-        }, **self.api_auth("webhook-bot@zulip.com"))
+        result = self.api_post("webhook-bot@zulip.com",
+                               "/api/v1/messages", {"type": "private",
+                                                    "content": "Test message",
+                                                    "client": "test suite",
+                                                    "to": self.example_email("othello")})
         self.assert_json_success(result)
         post_params = {"anchor": 1, "num_before": 1, "num_after": 1}
-        result = self.client_get("/api/v1/messages", dict(post_params),
-                                 **self.api_auth("webhook-bot@zulip.com"))
+        result = self.api_get("webhook-bot@zulip.com", "/api/v1/messages", dict(post_params))
         self.assert_json_error(result, 'This API is not available to incoming webhook bots.',
                                status_code=401)
 
@@ -985,7 +983,7 @@ class TestHumanUsersOnlyDecorator(ZulipTestCase):
             "/api/v1/report/unnarrow_times",
         ]
         for endpoint in post_endpoints:
-            result = self.client_post(endpoint, **self.api_auth('default-bot@zulip.com'))
+            result = self.api_post('default-bot@zulip.com', endpoint)
             self.assert_json_error(result, "This endpoint does not accept bot requests.")
 
         patch_endpoints = [
@@ -996,7 +994,7 @@ class TestHumanUsersOnlyDecorator(ZulipTestCase):
             "/api/v1/users/me/profile_data"
         ]
         for endpoint in patch_endpoints:
-            result = self.client_patch(endpoint, **self.api_auth('default-bot@zulip.com'))
+            result = self.api_patch('default-bot@zulip.com', endpoint)
             self.assert_json_error(result, "This endpoint does not accept bot requests.")
 
         delete_endpoints = [
@@ -1004,7 +1002,7 @@ class TestHumanUsersOnlyDecorator(ZulipTestCase):
             "/api/v1/users/me/android_gcm_reg_id",
         ]
         for endpoint in delete_endpoints:
-            result = self.client_delete(endpoint, **self.api_auth('default-bot@zulip.com'))
+            result = self.api_delete('default-bot@zulip.com', endpoint)
             self.assert_json_error(result, "This endpoint does not accept bot requests.")
 
 class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):

@@ -65,8 +65,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         fp.name = "zulip.txt"
 
         # Upload file via API
-        auth_headers = self.api_auth(self.example_email("hamlet"))
-        result = self.client_post('/api/v1/user_uploads', {'file': fp}, **auth_headers)
+        result = self.api_post(self.example_email("hamlet"), '/api/v1/user_uploads', {'file': fp})
         self.assertIn("uri", result.json())
         uri = result.json()['uri']
         base = '/user_uploads/'
@@ -74,7 +73,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # Download file via API
         self.logout()
-        response = self.client_get(uri, **auth_headers)
+        response = self.api_get(self.example_email("hamlet"), uri)
         data = b"".join(response.streaming_content)
         self.assertEqual(b"zulip!", data)
 
