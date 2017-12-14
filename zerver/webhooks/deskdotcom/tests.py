@@ -23,9 +23,8 @@ class DeskDotComHookTests(WebhookTestCase):
         expected_subject = u"static text notification"
         expected_message = u"This is a custom action."
 
-        self.send_and_test_stream_message('static_text', expected_subject, expected_message,
-                                          content_type="application/x-www-form-urlencoded",
-                                          **self.api_auth(self.TEST_USER_EMAIL))
+        self.api_stream_message(self.TEST_USER_EMAIL, 'static_text', expected_subject, expected_message,
+                                content_type="application/x-www-form-urlencoded")
 
     def test_case_updated_message(self) -> None:
         expected_subject = u"case updated notification"
@@ -33,9 +32,8 @@ class DeskDotComHookTests(WebhookTestCase):
                             u"Link: <a href='https://deskdotcomtest.desk.com/web/agent/case/2'>"
                             u"I have a question</a>")
 
-        self.send_and_test_stream_message('case_updated', expected_subject, expected_message,
-                                          content_type="application/x-www-form-urlencoded",
-                                          **self.api_auth(self.TEST_USER_EMAIL))
+        self.api_stream_message(self.TEST_USER_EMAIL, 'case_updated', expected_subject, expected_message,
+                                content_type="application/x-www-form-urlencoded")
 
     def test_unicode_text_italian(self) -> None:
 
@@ -44,9 +42,8 @@ class DeskDotComHookTests(WebhookTestCase):
                             u"Link: <a href='https://deskdotcomtest.desk.com/web/agent/case/2'>"
                             u"Il mio hovercraft è pieno di anguille.</a>")
 
-        self.send_and_test_stream_message('unicode_text_italian', expected_subject, expected_message,
-                                          content_type="application/x-www-form-urlencoded",
-                                          **self.api_auth(self.TEST_USER_EMAIL))
+        self.api_stream_message(self.TEST_USER_EMAIL, 'unicode_text_italian', expected_subject, expected_message,
+                                content_type="application/x-www-form-urlencoded")
 
     def test_unicode_text_japanese(self) -> None:
 
@@ -55,9 +52,8 @@ class DeskDotComHookTests(WebhookTestCase):
                             u"Link: <a href='https://deskdotcomtest.desk.com/web/agent/case/2'>"
                             u"私のホバークラフトは鰻でいっぱいです</a>")
 
-        self.send_and_test_stream_message('unicode_text_japanese', expected_subject, expected_message,
-                                          content_type="application/x-www-form-urlencoded",
-                                          **self.api_auth(self.TEST_USER_EMAIL))
+        self.api_stream_message(self.TEST_USER_EMAIL, 'unicode_text_japanese', expected_subject, expected_message,
+                                content_type="application/x-www-form-urlencoded")
 
     def get_body(self, fixture_name: Text) -> Text:
         return self.fixture_data("deskdotcom", fixture_name, file_type="txt")

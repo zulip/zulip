@@ -22,7 +22,8 @@ Test ticket description ☃.
 Type: **Incident**
 Priority: **High**
 Status: **Pending**"""
-        self.send_and_test_stream_message('ticket_created', expected_subject, expected_message, content_type="application/x-www-form-urlencoded", **self.api_auth(self.TEST_USER_EMAIL))
+        self.api_stream_message(self.TEST_USER_EMAIL, 'ticket_created', expected_subject, expected_message,
+                                content_type="application/x-www-form-urlencoded")
 
     def test_status_change(self) -> None:
         """
@@ -33,9 +34,8 @@ Status: **Pending**"""
         expected_message = """Requester Bob <requester-bob@example.com> updated [ticket #11](http://test1234zzz.freshdesk.com/helpdesk/tickets/11):
 
 Status: **Resolved** => **Waiting on Customer**"""
-        self.send_and_test_stream_message('status_changed', expected_subject, expected_message,
-                                          content_type="application/x-www-form-urlencoded",
-                                          **self.api_auth(self.TEST_USER_EMAIL))
+        self.api_stream_message(self.TEST_USER_EMAIL, 'status_changed', expected_subject, expected_message,
+                                content_type="application/x-www-form-urlencoded")
 
     def test_priority_change(self) -> None:
         """
@@ -46,9 +46,8 @@ Status: **Resolved** => **Waiting on Customer**"""
         expected_message = """Requester Bob <requester-bob@example.com> updated [ticket #11](http://test1234zzz.freshdesk.com/helpdesk/tickets/11):
 
 Priority: **High** => **Low**"""
-        self.send_and_test_stream_message('priority_changed', expected_subject, expected_message,
-                                          content_type="application/x-www-form-urlencoded",
-                                          **self.api_auth(self.TEST_USER_EMAIL))
+        self.api_stream_message(self.TEST_USER_EMAIL, 'priority_changed', expected_subject, expected_message,
+                                content_type="application/x-www-form-urlencoded")
 
     def note_change(self, fixture: Text, note_type: Text) -> None:
         """
@@ -57,9 +56,8 @@ Priority: **High** => **Low**"""
         """
         expected_subject = u"#11: Test ticket subject"
         expected_message = """Requester Bob <requester-bob@example.com> added a {} note to [ticket #11](http://test1234zzz.freshdesk.com/helpdesk/tickets/11).""".format(note_type)
-        self.send_and_test_stream_message(fixture, expected_subject, expected_message,
-                                          content_type="application/x-www-form-urlencoded",
-                                          **self.api_auth(self.TEST_USER_EMAIL))
+        self.api_stream_message(self.TEST_USER_EMAIL, fixture, expected_subject, expected_message,
+                                content_type="application/x-www-form-urlencoded")
 
     def test_private_note_change(self) -> None:
         self.note_change("private_note", "private")
@@ -75,9 +73,8 @@ Priority: **High** => **Low**"""
         """
         expected_subject = u"#12: Not enough ☃ guinea pigs"
         expected_message = u"Requester \u2603 Bob <requester-bob@example.com> created [ticket #12](http://test1234zzz.freshdesk.com/helpdesk/tickets/12):\n\n~~~ quote\nThere are too many cat pictures on the internet \u2603. We need more guinea pigs. Exhibit 1:\n\n  \n\n\n[guinea_pig.png](http://cdn.freshdesk.com/data/helpdesk/attachments/production/12744808/original/guinea_pig.png)\n~~~\n\nType: **Problem**\nPriority: **Urgent**\nStatus: **Open**"
-        self.send_and_test_stream_message("inline_images", expected_subject, expected_message,
-                                          content_type="application/x-www-form-urlencoded",
-                                          **self.api_auth(self.TEST_USER_EMAIL))
+        self.api_stream_message(self.TEST_USER_EMAIL, "inline_images", expected_subject, expected_message,
+                                content_type="application/x-www-form-urlencoded")
 
     def get_body(self, fixture_name: Text) -> Text:
         return self.fixture_data("freshdesk", fixture_name, file_type="json")
