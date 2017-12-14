@@ -16,8 +16,7 @@ class TypingNotificationOperatorTest(ZulipTestCase):
         """
         sender = self.example_email("hamlet")
         recipient = self.example_email("othello")
-        result = self.client_post('/api/v1/typing', {'to': recipient},
-                                  **self.api_auth(sender))
+        result = self.api_post(sender, '/api/v1/typing', {'to': recipient})
         self.assert_json_error(result, 'Missing \'op\' argument')
 
     def test_invalid_parameter(self) -> None:
@@ -26,8 +25,7 @@ class TypingNotificationOperatorTest(ZulipTestCase):
         """
         sender = self.example_email("hamlet")
         recipient = self.example_email("othello")
-        result = self.client_post('/api/v1/typing', {'to': recipient, 'op': 'foo'},
-                                  **self.api_auth(sender))
+        result = self.api_post(sender, '/api/v1/typing', {'to': recipient, 'op': 'foo'})
         self.assert_json_error(result, 'Invalid \'op\' value (should be start or stop)')
 
 class TypingNotificationRecipientsTest(ZulipTestCase):
@@ -36,8 +34,7 @@ class TypingNotificationRecipientsTest(ZulipTestCase):
         Sending typing notification without recipient fails
         """
         sender = self.example_email("hamlet")
-        result = self.client_post('/api/v1/typing', {'op': 'start'},
-                                  **self.api_auth(sender))
+        result = self.api_post(sender, '/api/v1/typing', {'op': 'start'})
         self.assert_json_error(result, 'Missing parameter: \'to\' (recipient)')
 
     def test_invalid_recipient(self) -> None:
@@ -46,8 +43,7 @@ class TypingNotificationRecipientsTest(ZulipTestCase):
         """
         sender = self.example_email("hamlet")
         invalid = 'invalid email'
-        result = self.client_post('/api/v1/typing', {'op': 'start', 'to': invalid},
-                                  **self.api_auth(sender))
+        result = self.api_post(sender, '/api/v1/typing', {'op': 'start', 'to': invalid})
         self.assert_json_error(result, 'Invalid email \'' + invalid + '\'')
 
     def test_single_recipient(self) -> None:
@@ -62,9 +58,8 @@ class TypingNotificationRecipientsTest(ZulipTestCase):
 
         events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
-            result = self.client_post('/api/v1/typing', {'to': recipient.email,
-                                                         'op': 'start'},
-                                      **self.api_auth(sender.email))
+            result = self.api_post(sender.email, '/api/v1/typing', {'to': recipient.email,
+                                                                    'op': 'start'})
         self.assert_json_success(result)
         self.assertEqual(len(events), 1)
 
@@ -91,9 +86,9 @@ class TypingNotificationRecipientsTest(ZulipTestCase):
         expected_recipient_ids = set([user.id for user in expected_recipients])
         events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
-            result = self.client_post('/api/v1/typing', {'to': ujson.dumps([user.email for user in recipient]),
-                                                         'op': 'start'},
-                                      **self.api_auth(sender.email))
+            result = self.api_post(sender.email, '/api/v1/typing',
+                                   {'to': ujson.dumps([user.email for user in recipient]),
+                                    'op': 'start'})
         self.assert_json_success(result)
         self.assertEqual(len(events), 1)
 
@@ -121,9 +116,8 @@ class TypingStartedNotificationTest(ZulipTestCase):
         expected_recipient_ids = set([user.id])
         events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
-            result = self.client_post('/api/v1/typing', {'to': email,
-                                                         'op': 'start'},
-                                      **self.api_auth(email))
+            result = self.api_post(email, '/api/v1/typing', {'to': email,
+                                                             'op': 'start'})
         self.assert_json_success(result)
         self.assertEqual(len(events), 1)
 
@@ -152,9 +146,8 @@ class TypingStartedNotificationTest(ZulipTestCase):
 
         events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
-            result = self.client_post('/api/v1/typing', {'to': recipient.email,
-                                                         'op': 'start'},
-                                      **self.api_auth(sender.email))
+            result = self.api_post(sender.email, '/api/v1/typing', {'to': recipient.email,
+                                                                    'op': 'start'})
         self.assert_json_success(result)
         self.assertEqual(len(events), 1)
 
@@ -183,9 +176,8 @@ class StoppedTypingNotificationTest(ZulipTestCase):
 
         events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
-            result = self.client_post('/api/v1/typing', {'to': email,
-                                                         'op': 'stop'},
-                                      **self.api_auth(email))
+            result = self.api_post(email, '/api/v1/typing', {'to': email,
+                                                             'op': 'stop'})
         self.assert_json_success(result)
         self.assertEqual(len(events), 1)
 
@@ -214,9 +206,8 @@ class StoppedTypingNotificationTest(ZulipTestCase):
 
         events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
-            result = self.client_post('/api/v1/typing', {'to': recipient.email,
-                                                         'op': 'stop'},
-                                      **self.api_auth(sender.email))
+            result = self.api_post(sender.email, '/api/v1/typing', {'to': recipient.email,
+                                                                    'op': 'stop'})
         self.assert_json_success(result)
         self.assertEqual(len(events), 1)
 

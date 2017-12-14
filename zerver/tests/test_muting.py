@@ -62,7 +62,7 @@ class MutedTopicsTests(ZulipTestCase):
 
         url = '/api/v1/users/me/subscriptions/muted_topics'
         data = {'stream': 'Verona', 'topic': 'Verona3', 'op': 'add'}
-        result = self.client_patch(url, data, **self.api_auth(email))
+        result = self.api_patch(email, url, data)
         self.assert_json_success(result)
 
         user = self.example_user('hamlet')
@@ -89,7 +89,7 @@ class MutedTopicsTests(ZulipTestCase):
 
         url = '/api/v1/users/me/subscriptions/muted_topics'
         data = {'stream': 'Verona', 'topic': 'vERONA3', 'op': 'remove'}
-        result = self.client_patch(url, data, **self.api_auth(email))
+        result = self.api_patch(email, url, data)
 
         self.assert_json_success(result)
         user = self.example_user('hamlet')
@@ -112,7 +112,7 @@ class MutedTopicsTests(ZulipTestCase):
 
         url = '/api/v1/users/me/subscriptions/muted_topics'
         data = {'stream': 'Verona', 'topic': 'Verona3', 'op': 'add'}
-        result = self.client_patch(url, data, **self.api_auth(email))
+        result = self.api_patch(email, url, data)
         self.assert_json_error(result, "Topic already muted")
 
     def test_muted_topic_remove_invalid(self) -> None:
@@ -122,9 +122,9 @@ class MutedTopicsTests(ZulipTestCase):
 
         url = '/api/v1/users/me/subscriptions/muted_topics'
         data = {'stream': 'BOGUS', 'topic': 'Verona3', 'op': 'remove'}
-        result = self.client_patch(url, data, **self.api_auth(email))
+        result = self.api_patch(email, url, data)
         self.assert_json_error(result, "Topic is not there in the muted_topics list")
 
         data = {'stream': 'Verona', 'topic': 'BOGUS', 'op': 'remove'}
-        result = self.client_patch(url, data, **self.api_auth(email))
+        result = self.api_patch(email, url, data)
         self.assert_json_error(result, "Topic is not there in the muted_topics list")

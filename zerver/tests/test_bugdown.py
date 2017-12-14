@@ -1118,10 +1118,10 @@ class BugdownTest(ZulipTestCase):
 class BugdownApiTests(ZulipTestCase):
     def test_render_message_api(self) -> None:
         content = 'That is a **bold** statement'
-        result = self.client_post(
+        result = self.api_post(
+            self.example_email("othello"),
             '/api/v1/messages/render',
-            dict(content=content),
-            **self.api_auth(self.example_email("othello"))
+            dict(content=content)
         )
         self.assert_json_success(result)
         self.assertEqual(result.json()['rendered'],
@@ -1130,10 +1130,10 @@ class BugdownApiTests(ZulipTestCase):
     def test_render_mention_stream_api(self) -> None:
         """Determines whether we're correctly passing the realm context"""
         content = 'This mentions #**Denmark** and @**King Hamlet**.'
-        result = self.client_post(
+        result = self.api_post(
+            self.example_email("othello"),
             '/api/v1/messages/render',
-            dict(content=content),
-            **self.api_auth(self.example_email("othello"))
+            dict(content=content)
         )
         self.assert_json_success(result)
         user_id = self.example_user('hamlet').id

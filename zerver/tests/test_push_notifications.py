@@ -106,8 +106,9 @@ class PushBouncerNotificationTest(BouncerTestCase):
         realm.string_id = ""
         realm.save()
 
-        result = self.client_post(endpoint, {'token': token, 'token_kind': token_kind},
-                                  **self.api_auth(self.example_email("hamlet"), realm=""))
+        result = self.api_post(self.example_email("hamlet"), endpoint, {'token': token,
+                                                                        'token_kind': token_kind},
+                               realm="")
         self.assert_json_error(result, "Must validate with valid Zulip server API key")
 
     def test_register_remote_push_user_paramas(self) -> None:
@@ -131,9 +132,9 @@ class PushBouncerNotificationTest(BouncerTestCase):
                                   **self.get_auth())
         self.assert_json_error(result, "Invalid token type")
 
-        result = self.client_post(endpoint, {'user_id': user_id, 'token_kind': token_kind,
-                                             'token': token},
-                                  **self.api_auth(self.example_email("hamlet")))
+        result = self.api_post(self.example_email("hamlet"), endpoint, {'user_id': user_id,
+                                                                        'token_kind': token_kind,
+                                                                        'token': token})
         self.assert_json_error(result, "Account is not associated with this subdomain",
                                status_code=401)
 
@@ -143,9 +144,9 @@ class PushBouncerNotificationTest(BouncerTestCase):
         realm.string_id = ""
         realm.save()
 
-        result = self.client_post(endpoint, {'user_id': user_id, 'token_kind': token_kind,
-                                             'token': token},
-                                  **self.api_auth(self.example_email("hamlet")))
+        result = self.api_post(self.example_email("hamlet"), endpoint, {'user_id': user_id,
+                                                                        'token_kind': token_kind,
+                                                                        'token': token})
         self.assert_json_error(result, "Must validate with valid Zulip server API key")
 
     def test_remote_push_user_endpoints(self) -> None:
