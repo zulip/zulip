@@ -53,9 +53,10 @@ class Integration:
     DEFAULT_LOGO_STATIC_PATH_PNG = 'static/images/integrations/logos/{name}.png'
     DEFAULT_LOGO_STATIC_PATH_SVG = 'static/images/integrations/logos/{name}.svg'
 
-    def __init__(self, name, client_name, categories, logo=None, secondary_line_text=None,
-                 display_name=None, doc=None, stream_name=None, legacy=False):
-        # type: (str, str, List[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[bool]) -> None
+    def __init__(self, name: str, client_name: str, categories: List[str],
+                 logo: Optional[str]=None, secondary_line_text: Optional[str]=None,
+                 display_name: Optional[str]=None, doc: Optional[str]=None,
+                 stream_name: Optional[str]=None, legacy: Optional[bool]=False) -> None:
         self.name = name
         self.client_name = client_name
         self.secondary_line_text = secondary_line_text
@@ -107,9 +108,9 @@ class BotIntegration(Integration):
     ZULIP_LOGO_STATIC_PATH_PNG = 'static/images/logo/zulip-icon-128x128.png'
     DEFAULT_DOC_PATH = '{name}/doc.md'
 
-    def __init__(self, name, categories, logo=None, secondary_line_text=None,
-                 display_name=None, doc=None):
-        # type: (str, List[str], Optional[str], Optional[str], Optional[str], Optional[str]) -> None
+    def __init__(self, name: str, categories: List[str], logo: Optional[str]=None,
+                 secondary_line_text: Optional[str]=None, display_name: Optional[str]=None,
+                 doc: Optional[str]=None) -> None:
         super().__init__(
             name,
             client_name=name,
@@ -146,9 +147,11 @@ class WebhookIntegration(Integration):
     DEFAULT_CLIENT_NAME = 'Zulip{name}Webhook'
     DEFAULT_DOC_PATH = '{name}/doc.{ext}'
 
-    def __init__(self, name, categories, client_name=None, logo=None, secondary_line_text=None,
-                 function=None, url=None, display_name=None, doc=None, stream_name=None, legacy=None):
-        # type: (str, List[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[bool]) -> None
+    def __init__(self, name: str, categories: List[str], client_name: Optional[str]=None,
+                 logo: Optional[str]=None, secondary_line_text: Optional[str]=None,
+                 function: Optional[str]=None, url: Optional[str]=None,
+                 display_name: Optional[str]=None, doc: Optional[str]=None,
+                 stream_name: Optional[str]=None, legacy: Optional[bool]=None) -> None:
         if client_name is None:
             client_name = self.DEFAULT_CLIENT_NAME.format(name=name.title())
         super().__init__(
@@ -210,9 +213,11 @@ class GithubIntegration(WebhookIntegration):
     We need this class to don't creating url object for git integrations.
     We want to have one generic url with dispatch function for github service and github webhook.
     """
-    def __init__(self, name, categories, client_name=None, logo=None, secondary_line_text=None,
-                 function=None, url=None, display_name=None, doc=None, stream_name=None, legacy=False):
-        # type: (str, List[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[bool]) -> None
+    def __init__(self, name: str, categories: List[str], client_name: Optional[str]=None,
+                 logo: Optional[str]=None, secondary_line_text: Optional[str]=None,
+                 function: Optional[str]=None, url: Optional[str]=None,
+                 display_name: Optional[str]=None, doc: Optional[str]=None,
+                 stream_name: Optional[str]=None, legacy: Optional[bool]=False) -> None:
         url = self.DEFAULT_URL.format(name='github')
 
         super().__init__(
