@@ -433,6 +433,14 @@ var event_fixtures = {
         type: 'delete_message',
         message_id: 1337,
     },
+
+    custom_profile_fields: {
+        type: 'custom_profile_fields',
+        fields: [
+            {id: 1, name: 'teams', type: 1},
+            {id: 2, name: 'hobbies', type: 1},
+        ],
+    },
 };
 
 function assert_same(actual, expected) {
@@ -450,6 +458,16 @@ with_overrides(function (override) {
     var event = event_fixtures.alert_words;
     dispatch(event);
     assert_same(global.alert_words.words, ['fire', 'lunch']);
+
+});
+
+with_overrides(function (override) {
+    // custom profile fields
+    var event = event_fixtures.custom_profile_fields;
+    override('settings_profile_fields.populate_profile_fields', noop);
+    override('settings_profile_fields.report_success', noop);
+    dispatch(event);
+    assert_same(global.page_params.custom_profile_fields, event.fields);
 
 });
 

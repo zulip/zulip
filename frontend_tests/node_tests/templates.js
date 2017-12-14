@@ -173,6 +173,55 @@ function render(template_name, args) {
     assert.equal(emoji_url.attr('src'), 'http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png');
 }());
 
+(function admin_profile_field_list() {
+
+    // When the logged in user is admin
+    var args = {
+        profile_field: {
+            name: "teams",
+            type: "Long Text",
+        },
+        can_modify: true,
+    };
+
+    var html = '';
+    html += '<tbody id="admin_profile_fields_table">';
+    html += render('admin_profile_field_list', args);
+    html += '</tbody>';
+
+    var field_name = $(html).find('tr.profile-field-row:first span.profile_field_name');
+    var field_type = $(html).find('tr.profile-field-row:first span.profile_field_type');
+    var td = $(html).find('tr.profile-field-row:first td');
+
+    assert.equal(field_name.text(), 'teams');
+    assert.equal(field_type.text(), 'Long Text');
+    assert.equal(td.length, 3);
+
+    // When the logged in user is not admin
+    args = {
+        profile_field: {
+            name: "teams",
+            type: "Long Text",
+        },
+        can_modify: false,
+    };
+
+    html = '';
+    html += '<tbody id="admin_profile_fields_table">';
+    html += render('admin_profile_field_list', args);
+    html += '</tbody>';
+
+    global.write_test_output('admin_profile_field_list', html);
+
+    field_name = $(html).find('tr.profile-field-row:first span.profile_field_name');
+    field_type = $(html).find('tr.profile-field-row:first span.profile_field_type');
+    td = $(html).find('tr.profile-field-row:first td');
+
+    assert.equal(field_name.text(), 'teams');
+    assert.equal(field_type.text(), 'Long Text');
+    assert.equal(td.length, 2);
+}());
+
 (function admin_filter_list() {
 
     // When the logged in user is admin
