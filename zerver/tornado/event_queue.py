@@ -18,7 +18,7 @@ import signal
 import tornado.autoreload
 import tornado.ioloop
 import random
-from zerver.models import UserProfile, Client
+from zerver.models import UserProfile, Client, Recipient
 from zerver.decorator import cachify
 from zerver.tornado.handlers import clear_handler_by_id, get_handler_by_id, \
     finish_handler, handler_stats_string
@@ -647,6 +647,10 @@ def missedmessage_hook(user_profile_id: int, client: ClientDescriptor, last_for_
         idle = True
 
         message_id = event['message']['id']
+
+        print('cseehere9911')
+        print(event)
+        recipient_type = event['message']['recipient_type']
         # Pass on the information on whether a push or email notification was already sent.
         already_notified = dict(
             push_notified = event.get("push_notified", False),
@@ -654,7 +658,7 @@ def missedmessage_hook(user_profile_id: int, client: ClientDescriptor, last_for_
         )
         maybe_enqueue_notifications(user_profile_id, message_id, private_message, mentioned,
                                     stream_push_notify, stream_name, always_push_notify, idle,
-                                    already_notified)
+                                    already_notified, recipient_type)
 
 def receiver_is_off_zulip(user_profile_id: int) -> bool:
     # If a user has no message-receiving event queues, they've got no open zulip
@@ -666,13 +670,14 @@ def receiver_is_off_zulip(user_profile_id: int) -> bool:
 
 def maybe_enqueue_notifications(user_profile_id, message_id, private_message,
                                 mentioned, stream_push_notify, stream_name,
-                                always_push_notify, idle, already_notified):
-    # type: (int, int, bool, bool, bool, Optional[str], bool, bool, Dict[str, bool]) -> Dict[str, bool]
+                                always_push_notify, idle, already_notified, recipient_type):
+    # type: (int, int, bool, bool, bool, Optional[str], bool, bool, Dict[str, bool], str) -> Dict[str, bool]
     """This function has a complete unit test suite in
     `test_enqueue_notifications` that should be expanded as we add
     more features here."""
     notified = dict()  # type: Dict[str, bool]
-
+    print('seehere123')
+    print(recipient_type)
     if (idle or always_push_notify) and (private_message or mentioned or stream_push_notify):
         notice = build_offline_notification(user_profile_id, message_id)
         notice['mentioned'] = mentioned
@@ -752,6 +757,7 @@ def process_message_event(event_template: Mapping[str, Any], users: Iterable[Map
     message_id = wide_dict['id']  # type: int
     message_type = wide_dict['type']  # type: str
     sending_client = wide_dict['client']  # type: Text
+    recipient_type = wide_dict['recipient_type'] # type: str
 
     @cachify
     def get_client_payload(apply_markdown: bool, client_gravatar: bool) -> Dict[str, Any]:
@@ -780,7 +786,7 @@ def process_message_event(event_template: Mapping[str, Any], users: Iterable[Map
             stream_name = event_template.get('stream_name')
             result = maybe_enqueue_notifications(user_profile_id, message_id, private_message,
                                                  mentioned, stream_push_notify, stream_name,
-                                                 always_push_notify, idle, {})
+                                                 always_push_notify, idle, {}, recipient_type)
             result['stream_push_notify'] = stream_push_notify
             extra_user_data[user_profile_id] = result
 
@@ -922,6 +928,7 @@ def maybe_enqueue_notifications_for_message_update(user_profile_id,
         always_push_notify=always_push_notify,
         idle=idle,
         already_notified={},
+        recipient_type = Recipient.STREAM
     )
 
 def process_notification(notice: Mapping[str, Any]) -> None:
