@@ -331,7 +331,7 @@ class ZulipTestCase(TestCase):
         else:
             raise AssertionError("Couldn't find a confirmation email.")
 
-    def api_auth(self, identifier: Text, realm: Text="zulip") -> Dict[str, Text]:
+    def encode_credentials(self, identifier: Text, realm: Text="zulip") -> Text:
         """
         identifier: Can be an email or a remote server uuid.
         """
@@ -345,28 +345,26 @@ class ZulipTestCase(TestCase):
             API_KEYS[identifier] = api_key
 
         credentials = "%s:%s" % (identifier, api_key)
-        return {
-            'HTTP_AUTHORIZATION': 'Basic ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
-        }
+        return 'Basic ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
 
     def api_get(self, email: Text, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs.update(self.api_auth(email))
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(email)
         return self.client_get(*args, **kwargs)
 
     def api_post(self, identifier: Text, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs.update(self.api_auth(identifier, kwargs.get('realm', 'zulip')))
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(identifier, kwargs.get('realm', 'zulip'))
         return self.client_post(*args, **kwargs)
 
     def api_patch(self, email: Text, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs.update(self.api_auth(email))
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(email)
         return self.client_patch(*args, **kwargs)
 
     def api_put(self, email: Text, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs.update(self.api_auth(email))
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(email)
         return self.client_put(*args, **kwargs)
 
     def api_delete(self, email: Text, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs.update(self.api_auth(email))
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(email)
         return self.client_delete(*args, **kwargs)
 
     def get_streams(self, email: Text, realm: Realm) -> List[Text]:
@@ -622,7 +620,7 @@ class WebhookTestCase(ZulipTestCase):
         self.url = self.build_webhook_url()
 
     def api_stream_message(self, email: Text, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs.update(self.api_auth(email))
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(email)
         return self.send_and_test_stream_message(*args, **kwargs)
 
     def send_and_test_stream_message(self, fixture_name: Text, expected_subject: Optional[Text]=None,
