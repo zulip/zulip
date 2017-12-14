@@ -34,9 +34,9 @@ class TranslationTestCase(ZulipTestCase):
         return response
 
     def test_accept_language_header(self) -> None:
-        languages = [('en', u'Register'),
+        languages = [('en', u'Sign up'),
                      ('de', u'Registrieren'),
-                     ('sr', u'Региструј се'),
+                     ('sr', u'Упишите се'),
                      ('zh-hans', u'注册'),
                      ]
 
@@ -46,9 +46,9 @@ class TranslationTestCase(ZulipTestCase):
             self.assert_in_response(word, response)
 
     def test_cookie(self) -> None:
-        languages = [('en', u'Register'),
+        languages = [('en', u'Sign up'),
                      ('de', u'Registrieren'),
-                     ('sr', u'Региструј се'),
+                     ('sr', u'Упишите се'),
                      ('zh-hans', u'注册'),
                      ]
 
@@ -61,9 +61,9 @@ class TranslationTestCase(ZulipTestCase):
             self.assert_in_response(word, response)
 
     def test_i18n_urls(self) -> None:
-        languages = [('en', u'Register'),
+        languages = [('en', u'Sign up'),
                      ('de', u'Registrieren'),
-                     ('sr', u'Региструј се'),
+                     ('sr', u'Упишите се'),
                      ('zh-hans', u'注册'),
                      ]
 

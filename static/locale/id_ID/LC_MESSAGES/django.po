@@ -161,6 +161,8 @@ msgstr "Mendaftar ke Zulip"
 msgid "You need an invitation to join this organization."
 msgstr "Anda memerlukan undangan untuk bergabung di organisasi ini."
 
+#: templates/zerver/footer.html:41 templates/zerver/portico-header.html:34
+#: templates/zerver/register.html:163
 #: templates/zerver/accounts_home.html:65
 msgid "Sign up"
 msgstr "Mendaftar"
@@ -340,7 +342,7 @@ msgid "Go back to login"
 msgstr "Kembali ke halaman masuk"
 
 #: templates/zerver/confirm_continue_registration.html:52
-msgid "Register instead"
+msgid "Sign up instead"
 msgstr "Buat akun"
 
 #: templates/zerver/create_realm.html:18
@@ -460,11 +462,6 @@ msgstr "Organisasi baru"
 msgid "Login"
 msgstr "Masuk"
 
-#: templates/zerver/footer.html:41 templates/zerver/portico-header.html:34
-#: templates/zerver/register.html:163
-msgid "Register"
-msgstr "Mendaftar"
-
 #: templates/zerver/footer.html:43 templates/zerver/terms.html:21
 msgid "Terms of Service"
 msgstr "Ketentuan Layanan"
@@ -502,7 +499,7 @@ msgid "Log in now!"
 msgstr "Masuk sekarang!"
 
 #: templates/zerver/hello.html:48 templates/zerver/hello.html:614
-msgid "Register now!"
+msgid "Sign up now!"
 msgstr "Mendaftar sekarang!"
 
 #: templates/zerver/hello.html:517
