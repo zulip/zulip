@@ -599,3 +599,39 @@ zrequire('marked', 'third/marked/lib/marked');
     assert.equal(antarctica_sub.color, '#76ce90');
 }());
 
+(function test_initialize_from_page_params() {
+    function initialize() {
+        page_params.subscriptions = [{
+            name: 'subscriptions',
+        }];
+
+        page_params.unsubscribed = [{
+            name: 'unsubscribed',
+        }];
+
+        page_params.never_subscribed = [{
+            name: 'never_subscribed',
+        }];
+    }
+
+    initialize();
+    page_params.realm_notifications_stream_id = -1;
+    stream_data.initialize_from_page_params();
+
+    assert(!page_params.subscriptions);
+    assert(!page_params.unsubscribed);
+    assert(!page_params.never_subscribed);
+    assert.equal(page_params.notifications_stream, "");
+
+    initialize();
+    var foo = {
+        name: 'foo',
+        stream_id: 89,
+    };
+
+    stream_data.add_sub('foo', foo);
+    page_params.realm_notifications_stream_id = 89;
+    stream_data.initialize_from_page_params();
+
+    assert.equal(page_params.notifications_stream, "foo");
+}());
