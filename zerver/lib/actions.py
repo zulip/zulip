@@ -326,6 +326,11 @@ def send_signup_message(sender: UserProfile, admin_realm_signup_notifications_st
         )
     )
 
+def notify_invites_changed(user_profile: UserProfile) -> None:
+    event = dict(type="invites_changed")
+    admin_ids = [user.id for user in user_profile.realm.get_admin_users()]
+    send_event(event, admin_ids)
+
 def notify_new_user(user_profile: UserProfile, internal: bool=False) -> None:
     if settings.NOTIFICATION_BOT is not None:
         send_signup_message(settings.NOTIFICATION_BOT, "signups", user_profile, internal)
@@ -413,6 +418,8 @@ def process_new_human_user(user_profile: UserProfile,
     if prereg_user is not None:
         PreregistrationUser.objects.filter(email__iexact=user_profile.email).exclude(
             id=prereg_user.id).update(status=0)
+        if prereg_user.realm is not None:
+            notify_invites_changed(prereg_user)
     else:
         PreregistrationUser.objects.filter(email__iexact=user_profile.email).update(status=0)
 
@@ -4428,6 +4435,7 @@ def do_invite_users(user_profile: UserProfile,
                                 "so we didn't send them an invitation. We did send "
                                 "invitations to everyone else!"),
                               skipped, sent_invitations=True)
+    notify_invites_changed(user_profile)
 
 def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
     days_to_activate = getattr(settings, 'ACCOUNT_ACTIVATION_DAYS', 7)
@@ -4469,6 +4477,7 @@ def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
                                 object_id=prereg_user.id).delete()
     prereg_user.delete()
     clear_scheduled_invitation_emails(email)
+    notify_invites_changed(prereg_user)
 
 def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> int:
     check_invite_limit(prereg_user.referred_by, 1)
