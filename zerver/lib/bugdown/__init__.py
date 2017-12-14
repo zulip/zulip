@@ -206,13 +206,31 @@ def add_embed(root: Element, link: Text, extracted_data: Dict[Text, Any]) -> Non
         a.set("target", "_blank")
         a.set("title", title)
         a.text = title
-
     description = extracted_data.get('description')
     if description:
         description_elm = markdown.util.etree.SubElement(data_container, "div")
         description_elm.set("class", "message_embed_description")
         description_elm.text = description
 
+def add_vimeo_preview(root: Element, link: Text, extracted_data: Dict[Text, Any], vm_id: Text) -> None:
+    container = markdown.util.etree.SubElement(root, "div")
+    container.set("class", "vimeo-video message_inline_image")
+
+    img_link = extracted_data.get('image')
+    if img_link:
+        parsed_img_link = urllib.parse.urlparse(img_link)
+        # Append domain where relative img_link url is given
+        if not parsed_img_link.netloc:
+            parsed_url = urllib.parse.urlparse(link)
+            domain = '{url.scheme}://{url.netloc}/'.format(url=parsed_url)
+            img_link = urllib.parse.urljoin(domain, img_link)
+        anchor = markdown.util.etree.SubElement(container, "a")
+        anchor.set("href", link)
+        anchor.set("target", "_blank")
+        anchor.set("data-id", vm_id)
+        anchor.set("title", link)
+        img = markdown.util.etree.SubElement(anchor, "img")
+        img.set("src", img_link)
 
 @cache_with_key(lambda tweet_id: tweet_id, cache_name="database", with_statsd_key="tweet_data")
 def fetch_tweet_data(tweet_id: Text) -> Optional[Dict[Text, Any]]:
@@ -280,13 +298,11 @@ def fetch_open_graph_image(url: Text) -> Optional[Dict[str, Any]]:
     # a closing tag if it has not been closed yet.
     last_closed = True
     head = []
-
     # TODO: What if response content is huge? Should we get headers first?
     try:
         content = requests.get(url, timeout=1).text
     except Exception:
         return None
-
     # Extract the head and meta tags
     # All meta tags are self closing, have no children or are closed
     # automatically.
@@ -480,6 +496,27 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
         if yt_id is not None:
             return "https://i.ytimg.com/vi/%s/default.jpg" % (yt_id,)
+        return None
+
+    def vimeo_id(self, url: Text) -> Optional[Text]:
+        if not image_preview_enabled_for_realm():
+            return None
+        #(http|https)?:\/\/(www\.)?vimeo.com\/(?:channels\/(?:\w+\/)?|groups\/([^\/]*)\/videos\/|)(\d+)(?:|\/\?)
+        # If it matches, match.group('id') is the video id.
+
+        vimeo_re = r'^((http|https)?:\/\/(www\.)?vimeo.com\/' + \
+                   r'(?:channels\/(?:\w+\/)?|groups\/' + \
+                   r'([^\/]*)\/videos\/|)(\d+)(?:|\/\?))$'
+        match = re.match(vimeo_re, url)
+        if match is None:
+            return None
+        return match.group(5)
+
+    def vimeo_image(self, url: Text) -> Optional[Text]:
+        vm_id = self.vimeo_id(url)
+
+        if vm_id is not None:
+            return "http://i.vimeocdn.com/video/%s.jpg" % (vm_id,)
         return None
 
     def twitter_text(self, text: Text,
@@ -744,8 +781,14 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             except NotFoundInCache:
                 current_message.links_for_preview.add(url)
                 continue
+            vimeo = self.vimeo_image(url)
             if extracted_data:
-                add_embed(root, url, extracted_data)
+                if vimeo is not None:
+                    vm_id = self.vimeo_id(url)
+                    add_vimeo_preview(root, url, extracted_data, vm_id)
+                    continue
+                else:
+                    add_embed(root, url, extracted_data)
 
 
 class Avatar(markdown.inlinepatterns.Pattern):
