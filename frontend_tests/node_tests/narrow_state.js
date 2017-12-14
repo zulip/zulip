@@ -195,6 +195,9 @@ function set_filter(operators) {
         ['pm-with', 'test@foo.com'],
     ]);
     assert.equal(narrow_state.topic(), undefined);
+
+    narrow_state.set_current_filter(undefined);
+    assert.equal(narrow_state.topic(), undefined);
 }());
 
 
