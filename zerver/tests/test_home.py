@@ -51,6 +51,7 @@ class HomeTest(ZulipTestCase):
             "bot_types",
             "can_create_streams",
             "cross_realm_bots",
+            "custom_profile_field_types",
             "custom_profile_fields",
             "debug_mode",
             "default_desktop_notifications",
