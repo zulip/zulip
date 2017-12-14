@@ -162,6 +162,55 @@ casper.then(function () {
     });
 });
 
+// Test custom profile fields
+casper.test.info("Testing custom profile fields");
+casper.thenClick("li[data-section='profile-field-settings']");
+casper.then(function () {
+    casper.waitUntilVisible('.admin-profile-field-form', function () {
+        casper.fill('form.admin-profile-field-form', {
+            name: 'Teams',
+            field_type: '3',
+        });
+        casper.click('form.admin-profile-field-form button.button');
+    });
+});
+
+casper.then(function () {
+    casper.waitUntilVisible('div#admin-profile-field-status', function () {
+        casper.test.assertSelectorHasText('div#admin-profile-field-status',
+                                          'Custom profile field added!');
+        casper.test.assertSelectorHasText('.profile-field-row span.profile_field_name', 'Teams');
+        casper.test.assertSelectorHasText('.profile-field-row span.profile_field_type', 'Short Text');
+        casper.click('.profile-field-row button.open-edit-form');
+    });
+});
+
+casper.then(function () {
+    casper.waitUntilVisible('tr.profile-field-form form', function () {
+        casper.fill('tr.profile-field-form form.name-setting', {
+            name: 'team',
+        });
+        casper.click('tr.profile-field-form button.submit');
+    });
+});
+
+casper.then(function () {
+    casper.waitUntilVisible('div#admin-profile-field-status', function () {
+        casper.test.assertSelectorHasText('div#admin-profile-field-status',
+                                          'Custom profile field updated!');
+        casper.test.assertSelectorHasText('.profile-field-row span.profile_field_name', 'team');
+        casper.test.assertSelectorHasText('.profile-field-row span.profile_field_type', 'Short Text');
+        casper.click('.profile-field-row button.delete');
+    });
+});
+
+casper.then(function () {
+    casper.waitUntilVisible('div#admin-profile-field-status', function () {
+        casper.test.assertSelectorHasText('div#admin-profile-field-status',
+                                          'Custom profile field deleted!');
+    });
+});
+
 // Test custom realm filters
 casper.then(function () {
     casper.click("li[data-section='filter-settings']");
