@@ -54,8 +54,7 @@ class PointerTest(ZulipTestCase):
         email = user.email
         self.assertEqual(user.pointer, -1)
         msg_id = self.send_stream_message(self.example_email("othello"), "Verona")
-        result = self.client_post("/api/v1/users/me/pointer", {"pointer": msg_id},
-                                  **self.api_auth(email))
+        result = self.api_post(email, "/api/v1/users/me/pointer", {"pointer": msg_id})
         self.assert_json_success(result)
         self.assertEqual(get_user(email, user.realm).pointer, msg_id)
 

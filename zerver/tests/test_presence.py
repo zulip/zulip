@@ -236,9 +236,8 @@ class SingleUserPresenceTests(ZulipTestCase):
         result = self.client_post("/json/users/me/presence", {'status': 'active'})
         result = self.client_post("/json/users/me/presence", {'status': 'active'},
                                   HTTP_USER_AGENT="ZulipDesktop/1.0")
-        result = self.client_post("/api/v1/users/me/presence", {'status': 'idle'},
-                                  HTTP_USER_AGENT="ZulipAndroid/1.0",
-                                  **self.api_auth(email))
+        result = self.api_post(email, "/api/v1/users/me/presence", {'status': 'idle'},
+                               HTTP_USER_AGENT="ZulipAndroid/1.0")
         self.assert_json_success(result)
 
         # Check some error conditions
@@ -287,13 +286,11 @@ class UserPresenceAggregationTests(ZulipTestCase):
         with mock.patch(timezone_util, return_value=validate_time - datetime.timedelta(seconds=5)):
             self.client_post("/json/users/me/presence", {'status': status})
         with mock.patch(timezone_util, return_value=validate_time - datetime.timedelta(seconds=2)):
-            self.client_post("/api/v1/users/me/presence", {'status': status},
-                             HTTP_USER_AGENT="ZulipAndroid/1.0",
-                             **self.api_auth(email))
+            self.api_post(email, "/api/v1/users/me/presence", {'status': status},
+                          HTTP_USER_AGENT="ZulipAndroid/1.0")
         with mock.patch(timezone_util, return_value=validate_time - datetime.timedelta(seconds=7)):
-            latest_result = self.client_post("/api/v1/users/me/presence", {'status': status},
-                                             HTTP_USER_AGENT="ZulipIOS/1.0",
-                                             **self.api_auth(email))
+            latest_result = self.api_post(email, "/api/v1/users/me/presence", {'status': status},
+                                          HTTP_USER_AGENT="ZulipIOS/1.0")
         latest_result_dict = latest_result.json()
         self.assertDictEqual(
             latest_result_dict['presences'][email]['aggregated'],
@@ -312,9 +309,8 @@ class UserPresenceAggregationTests(ZulipTestCase):
         self._send_presence_for_aggregated_tests(str(self.example_email("othello")), 'active', validate_time)
         with mock.patch('zerver.views.presence.timezone_now',
                         return_value=validate_time - datetime.timedelta(seconds=1)):
-            result = self.client_post("/api/v1/users/me/presence", {'status': 'active'},
-                                      HTTP_USER_AGENT="ZulipTestDev/1.0",
-                                      **self.api_auth(email))
+            result = self.api_post(email, "/api/v1/users/me/presence", {'status': 'active'},
+                                   HTTP_USER_AGENT="ZulipTestDev/1.0")
         result_dict = result.json()
         self.assertDictEqual(
             result_dict['presences'][email]['aggregated'],
@@ -355,9 +351,8 @@ class UserPresenceAggregationTests(ZulipTestCase):
         validate_time = timezone_now()
         with mock.patch('zerver.views.presence.timezone_now',
                         return_value=validate_time - datetime.timedelta(seconds=3)):
-            self.client_post("/api/v1/users/me/presence", {'status': 'active'},
-                             HTTP_USER_AGENT="ZulipTestDev/1.0",
-                             **self.api_auth(email))
+            self.api_post(email, "/api/v1/users/me/presence", {'status': 'active'},
+                          HTTP_USER_AGENT="ZulipTestDev/1.0")
         result_dict = self._send_presence_for_aggregated_tests(str(email), 'idle', validate_time)
         self.assertDictEqual(
             result_dict['presence']['aggregated'],
