@@ -361,11 +361,34 @@ form#add_new_subscription {
 }
 
 .subscriber_list_add .search {
+    width: 100%;
     float: left;
+}
+
+.subscriber_list_add .principal {
+    margin-right: 0px;
+    margin-left: 0px;
+    float: right;
+    width: 60%;
+}
+
+.subscriber_list_add .wrap-search {
+    float: left;
+    width: 36%;
+    margin-right: 3%;
 }
 
 .subscriber_list_add .form-inline {
     margin-bottom: 0px;
+}
+
+.subscriber_list_add .subscriber_list_add_principal {
+    float: right;
+    width: 60%;
+}
+
+.subscriber_list_add .subscriber_list_add_principal .add-subscriber-button {
+    float: right;
 }
 
 .remove-subscriber-form {
@@ -784,17 +807,25 @@ form#add_new_subscription {
 
 #subscription_overlay .stream-header {
     margin-bottom: 20px;
+    width: 100%;
 }
 
 #subscription_overlay .stream-header .stream-name {
+    max-width: 100%;
     display: inline-block;
     font-size: 1.5em;
     font-weight: 600;
     margin-left: -3px;
 }
 
+#subscription_overlay .stream-header .stream-name-large-icon {
+    min-width: 65%;
+    max-width: 100%;
+    margin-bottom: 10px;
+    display: inline-block;
+}
+
 #subscription_overlay .stream-header .subscribe-button {
-    float: right;
     margin-top: -5px;
 }
 
@@ -807,7 +838,15 @@ form#add_new_subscription {
     background-color: hsla(156, 39%, 54%, 0.2);
 }
 
+#subscription_overlay .stream-header .btn-subscribe-view_stream {
+    margin-top: 0px;
+    margin-right: 0px;
+    width: 185px;
+    display: inline-block;
+}
+
 #subscription_overlay .stream-header .large-icon {
+    float: left;
     display: inline-block;
     vertical-align: top;
     margin-right: 5px;
@@ -817,15 +856,26 @@ form#add_new_subscription {
 #subscription_overlay .stream-description {
     font-size: 0.9em;
     margin-bottom: 5px;
+    margin-top: -15px;
 }
 
 #preview-stream-button {
-    float: right;
+    float: left;
     margin-top: -5px;
     margin-right: 5px;
     text-decoration: none;
     line-height: 16px;
     vertical-align: middle;
+}
+
+#subscription_overlay .stream-header .stream-name-editable {
+    position: relative;
+    display: inline-block;
+    min-width: 10px;
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .editable-section {
