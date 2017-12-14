@@ -53,19 +53,28 @@ function display_image(payload, options) {
     $(".image-actions .open, .image-actions .download").attr("href", payload.source);
 }
 
-function display_youtube_video(payload) {
+function display_video(payload) {
     render_lightbox_list_images(payload.preview);
 
     $("#lightbox_overlay .image-preview, .image-description, .download, .lightbox-canvas-trigger").hide();
 
+    var source;
+    if (payload.type === "youtube-video") {
+        source = "https://www.youtube.com/embed/" + payload.source;
+    } else if (payload.type === "vimeo-video") {
+        source = "https://player.vimeo.com/video/" + payload.source;
+    }
+
     var iframe = $("<iframe></iframe>", {
-        src: "https://www.youtube.com/embed/" + payload.source,
+        src: source,
         frameborder: 0,
         allowfullscreen: true,
     });
 
     $("#lightbox_overlay .player-container").html(iframe).show();
-    $(".image-actions .open").attr("href", "https://youtu.be/" + payload.source);
+
+    var url = (payload.type === "youtube-video" ? "https://youtu.be/" : "https://vimeo.com/") + payload.source;
+    $(".image-actions .open").attr("href", url);
 }
 
 // the image param is optional, but required on the first preview of an image.
@@ -84,6 +93,7 @@ exports.open = function (image, options) {
     // if wrapped in the .youtube-video class, it will be length = 1, and therefore
     // cast to true.
     var is_youtube_video = !!$image.closest(".youtube-video").length;
+    var is_vimeo_video = !!$image.closest(".vimeo-video").length;
 
     var payload;
     // if the asset_map already contains the metadata required to display the
@@ -94,20 +104,32 @@ exports.open = function (image, options) {
     } else {
         var $parent = $image.parent();
         var $message = $parent.closest("[zid]");
+        var $type;
+        var $source;
+        if (is_youtube_video) {
+            $type = "youtube-video";
+            $source = $parent.attr("data-id");
+        } else if (is_vimeo_video) {
+            $type = "vimeo-video";
+            $source = $parent.attr("data-id");
+        } else {
+            $type = "image";
+            $source = $image.attr("src");
+        }
 
         payload = {
             user: message_store.get($message.attr("zid")).sender_full_name,
             title: $image.parent().attr("title"),
-            type: is_youtube_video ? "youtube-video" : "image",
+            type: $type,
             preview: $image.attr("src"),
-            source: is_youtube_video ? $parent.attr("data-id") : $image.attr("src"),
+            source: $source,
         };
 
         asset_map[payload.preview] = payload;
     }
 
-    if (payload.type === "youtube-video") {
-        display_youtube_video(payload);
+    if (payload.type.match("-video")) {
+        display_video(payload);
     } else if (payload.type === "image") {
         display_image(payload, options);
     }
