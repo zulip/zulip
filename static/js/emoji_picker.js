@@ -68,17 +68,18 @@ function get_emoji_id(section, index) {
     if (search_is_active) {
         type = "emoji_search_result";
     }
-    var emoji_id = [type, section, index].join("_");
+    var emoji_id = [type, section, index].join(",");
     return emoji_id;
 }
 
 function get_emoji_coordinates(emoji_id) {
-    // Emoji id is of the following form: <emoji_type>_<section_number>_<index>
-    // <emoji_type> itself contains two underscores. See `get_emoji_id()`.
-    var emoji_info = emoji_id.split("_");
+    // Emoji id is of the following form:
+    //    <emoji_type>_<section_number>_<index>.
+    // See `get_emoji_id()`.
+    var emoji_info = emoji_id.split(",");
     return {
-        section: parseInt(emoji_info[3], 10),
-        index: parseInt(emoji_info[4], 10),
+        section: parseInt(emoji_info[1], 10),
+        index: parseInt(emoji_info[2], 10),
     };
 }
 
