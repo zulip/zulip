@@ -438,6 +438,15 @@ zrequire('marked', 'third/marked/lib/marked');
     assert(!stream_data.is_subscribed('Canada'));
     assert(!stream_data.get_sub('Canada'));
     assert(!stream_data.get_sub_by_id(canada.stream_id));
+
+    var warned = false;
+    blueslip.warn = function (msg) {
+        warned = true;
+        assert.equal(msg, 'Failed to delete stream does_not_exist');
+    };
+    stream_data.delete_sub('does_not_exist');
+    assert(warned);
+    blueslip.warn = function () {};
 }());
 
 (function test_get_subscriber_count() {
