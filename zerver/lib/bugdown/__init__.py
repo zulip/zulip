@@ -1177,8 +1177,14 @@ class VerbosePattern(markdown.inlinepatterns.Pattern):
 class AutoLink(VerbosePattern):
     def handleMatch(self, match: Match[Text]) -> ElementStringNone:
         url = match.group('url')
-        youtube_title = (ujson.load(urllib.request.urlopen("https://noembed.com/embed?url=" + url))['title'])
-        return url_to_a(url, youtube_title)
+        youtube_re = r'^((?:https?://)?(?:youtu\.be/|(?:\w+\.)?youtube(?:-nocookie)?\.com/)' + \
+                     r'(?:(?:(?:v|embed)/)|(?:(?:watch(?:_popup)?(?:\.php)?)?(?:\?|#!?)(?:.+&)?v=)))' + \
+                     r'?([0-9A-Za-z_-]+)(?(1).+)?$'
+        match = re.match(youtube_re, url)
+        if match is not None:
+            youtube_title = (ujson.load(urllib.request.urlopen("https://noembed.com/embed?url=" + url))['title'])
+            return url_to_a(url, youtube_title)
+        return url_to_a(url)
 
 class UListProcessor(markdown.blockprocessors.UListProcessor):
     """ Process unordered list blocks.
