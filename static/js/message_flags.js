@@ -13,8 +13,6 @@ function send_flag_update(message, flag, op) {
     });
 }
 
-var batched_updaters = {};
-
 function batched_updater(flag, op, immediate) {
     var queue = [];
     var on_success;
@@ -85,25 +83,12 @@ function batched_updater(flag, op, immediate) {
 
 exports.send_read = batched_updater('read', 'add');
 
-function send_flag(messages, flag_name, set_flag) {
-    var op = set_flag ? 'add' : 'remove';
-    var flag_key = flag_name + '_' + op;
-    var updater;
+exports.save_collapsed = function (message) {
+    send_flag_update(message, 'collapsed', true);
+};
 
-    if (batched_updaters.hasOwnProperty(flag_key)) {
-        updater = batched_updaters[flag_key];
-    } else {
-        updater = batched_updater(flag_name, op, true);
-        batched_updaters[flag_key] = updater;
-    }
-
-    _.each(messages, function (message) {
-        updater(message);
-    });
-}
-
-exports.send_collapsed = function send_collapse(messages, value) {
-    send_flag(messages, "collapsed", value);
+exports.save_uncollapsed = function (message) {
+    send_flag_update(message, 'collapsed', true);
 };
 
 exports.toggle_starred = function (message) {
