@@ -1039,7 +1039,13 @@ class AutoLink(VerbosePattern):
         match = re.match(youtube_re, url)
         if match is not None:
             request_url = "https://noembed.com/embed?url=" + url
-            response = ujson.load(urllib.request.urlopen(request_url))
+            request_url = sanitize_url(request_url)
+            try:
+                response = ujson.load(urllib.request.urlopen(request_url))
+            except Exception:
+                # If there is a network error, preview url instead of youtube video
+                logging.warning(traceback.format_exc())
+                return url_to_a(url)
             youtube_title = response['title']
             return url_to_a(url, youtube_title)
         return url_to_a(url)
