@@ -13,6 +13,8 @@
                             <i class="fa fa-pencil"></i>
                         </button>
                     </a>
+                    <i class="icon-vector-question-sign change_email_tooltip" {{#unless page_params.realm_email_changes_disabled}}style="display:none" {{/unless}} data-toggle="tooltip"
+                    title="{{t 'Changing email addresses has been disabled by your Zulip organization administrators. Contact an administrator for help.' }}"></i>
                 </div>
 
                 <i class="icon-vector-question-sign settings-info-icon change_email_tooltip" {{#unless page_params.realm_email_changes_disabled}}style="display:none" {{/unless}} data-toggle="tooltip"
