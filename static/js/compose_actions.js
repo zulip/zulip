@@ -305,10 +305,21 @@ exports.respond_to_message = function (opts) {
 };
 
 exports.reply_with_mention = function (opts) {
-    exports.respond_to_message(opts);
+    if (!compose_state.composing()) {
+        exports.respond_to_message(opts);
+    }
     var message = current_msg_list.selected_message();
     var mention = '@**' + message.sender_full_name + '**';
-    $('#compose-textarea').val(mention + ' ');
+    compose_ui.insert_syntax_and_focus(mention);
+};
+
+exports.reply_mentioning_user = function (user_id, trigger) {
+    if (!compose_state.composing()) {
+        exports.respond_to_message({trigger: trigger});
+    }
+    var name = people.get_person_from_user_id(user_id).full_name;
+    var mention = '@**' + name + '** ';
+    compose_ui.insert_syntax_and_focus(mention);
 };
 
 exports.on_topic_narrow = function () {

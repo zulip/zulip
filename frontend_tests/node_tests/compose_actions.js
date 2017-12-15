@@ -181,6 +181,12 @@ function assert_hidden(sel) {
 }());
 
 (function test_reply_with_mention() {
+    var syntax_to_insert;
+
+    compose_ui.insert_syntax_and_focus = function (syntax) {
+        syntax_to_insert = syntax;
+    };
+
     var msg = {
         type: 'stream',
         stream: 'devel',
@@ -195,7 +201,7 @@ function assert_hidden(sel) {
 
     reply_with_mention(opts);
     assert.equal($('#stream').val(), 'devel');
-    assert.equal($('#compose-textarea').val(), '@**Bob Roberts** ');
+    assert.equal(syntax_to_insert, '@**Bob Roberts**');
     assert(compose_state.has_message_content());
 }());
 
