@@ -109,6 +109,10 @@ label {
     box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
 }
 
+#change_email_modal {
+    width: 460px;
+}
+
 .admin-realm-description {
     height: 16em;
     width: 36em;
