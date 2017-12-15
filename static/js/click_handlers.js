@@ -432,6 +432,9 @@ $(function () {
     $('.compose_private_button').click(function () {
         compose_actions.start('private');
     });
+    $('.reply_button').click(function () {
+        compose_actions.respond_to_message({trigger: 'reply button'});
+    });
 
     $('.empty_feed_compose_stream').click(function (e) {
         compose_actions.start('stream', {trigger: 'empty feed message'});

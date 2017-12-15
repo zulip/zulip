@@ -41,6 +41,14 @@
     padding: 3px 10px;
 }
 
+#compose_buttons .reply_button {
+    border-color: hsl(240, 100%, 80%);
+}
+
+#compose_buttons .reply_button:hover {
+    border-color: hsl(240, 100%, 60%);
+}
+
 .compose_table .message_header_colorblock,
 .compose_table .message_header {
     box-shadow: none;
