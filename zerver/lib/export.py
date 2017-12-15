@@ -17,13 +17,15 @@ import subprocess
 import tempfile
 from zerver.lib.avatar_hash import user_avatar_hash, user_avatar_path_from_ids
 from zerver.lib.create_user import random_api_key
+from zerver.lib.bulk_create import bulk_create_users
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserMessage, Subscription, Message, RealmEmoji, RealmFilter, \
     RealmDomain, Recipient, DefaultStream, get_user_profile_by_id, \
     UserPresence, UserActivity, UserActivityInterval, \
-    get_display_recipient, Attachment, get_system_bot
+    get_display_recipient, Attachment, get_system_bot, email_to_username
 from zerver.lib.parallel import run_parallel
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, \
+    Iterable, Text
 
 # Custom mypy types follow:
 Record = Dict[str, Any]
@@ -1388,7 +1390,7 @@ def import_uploads(import_dir: Path, processing_avatars: bool=False) -> None:
 # Because the Python object => JSON conversion process is not fully
 # faithful, we have to use a set of fixers (e.g. on DateTime objects
 # and Foreign Keys) to do the import correctly.
-def do_import_realm(import_dir: Path) -> None:
+def do_import_realm(import_dir: Path) -> Any:
     logging.info("Importing realm dump %s" % (import_dir,))
     if not os.path.exists(import_dir):
         raise Exception("Missing import directory!")
@@ -1495,6 +1497,26 @@ def do_import_realm(import_dir: Path) -> None:
         data = ujson.load(f)
 
     import_attachments(data)
+    return realm
+
+# create_users and do_import_system_bots differ from their equivalent in
+# zerver/management/commands/initialize_voyager_db.py because here we check if the bots
+# don't already exist and only then create a user for these bots.
+def do_import_system_bots(realm: Any) -> None:
+    internal_bots = [(bot['name'], bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,))
+                     for bot in settings.INTERNAL_BOTS]
+    create_users(realm, internal_bots, bot_type=UserProfile.DEFAULT_BOT)
+    names = [(settings.FEEDBACK_BOT_NAME, settings.FEEDBACK_BOT)]
+    create_users(realm, names, bot_type=UserProfile.DEFAULT_BOT)
+    print("Finished importing system bots.")
+
+def create_users(realm: Realm, name_list: Iterable[Tuple[Text, Text]], bot_type: int=None) -> None:
+    user_set = set()
+    for full_name, email in name_list:
+        short_name = email_to_username(email)
+        if not UserProfile.objects.filter(email=email):
+            user_set.add((email, full_name, short_name, True))
+    bulk_create_users(realm, user_set, bot_type)
 
 def import_message_data(import_dir: Path) -> None:
     dump_file_id = 1
