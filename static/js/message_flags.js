@@ -13,7 +13,7 @@ function send_flag_update(message, flag, op) {
     });
 }
 
-function batched_updater(flag, op, immediate) {
+exports.send_read = (function () {
     var queue = [];
     var on_success;
     var start;
@@ -39,17 +39,13 @@ function batched_updater(flag, op, immediate) {
             url:      '/json/messages/flags',
             idempotent: true,
             data:     {messages: JSON.stringify(real_msg_ids),
-                       op:       op,
-                       flag:     flag},
+                       op:       'add',
+                       flag:     'read'},
             success:  on_success,
         });
     }
 
-    if (immediate) {
-        start = server_request;
-    } else {
-        start = _.debounce(server_request, 1000);
-    }
+    start = _.debounce(server_request, 1000);
 
     on_success = function on_success(data) {
         if (data ===  undefined || data.messages === undefined) {
@@ -69,19 +65,13 @@ function batched_updater(flag, op, immediate) {
         if (message.flags === undefined) {
             message.flags = [];
         }
-        if (op === 'add')  {
-            message.flags.push(flag);
-        } else {
-            message.flags = _.without(message.flags, flag);
-        }
+        message.flags.push('read');
         queue.push(message);
         start();
     }
 
     return add;
-}
-
-exports.send_read = batched_updater('read', 'add');
+}());
 
 exports.save_collapsed = function (message) {
     send_flag_update(message, 'collapsed', true);
