@@ -11,6 +11,7 @@ exports.default_emoji_aliases = {};
 var default_emojis = [];
 
 var zulip_emoji = {
+    id: 'zulip',
     emoji_name: 'zulip',
     emoji_url: '/static/generated/emoji/images/emoji/unicode/zulip.png',
     is_realm_emoji: true,
@@ -39,7 +40,8 @@ exports.update_emojis = function update_emojis(realm_emojis) {
     // Copy the default emoji list and add realm-specific emoji to it
     exports.emojis = default_emojis.slice(0);
     _.each(realm_emojis, function (data, name) {
-        exports.all_realm_emojis[name] = {emoji_name: name,
+        exports.all_realm_emojis[name] = {id: data.id,
+                                          emoji_name: name,
                                           emoji_url: data.source_url,
                                           deactivated: data.deactivated};
         if (data.deactivated !== true) {
@@ -48,7 +50,9 @@ exports.update_emojis = function update_emojis(realm_emojis) {
             exports.emojis.push({emoji_name: name,
                                  emoji_url: data.source_url,
                                  is_realm_emoji: true});
-            exports.active_realm_emojis[name] = {emoji_name: name, emoji_url: data.source_url};
+            exports.active_realm_emojis[name] = {id: data.id,
+                                                 emoji_name: name,
+                                                 emoji_url: data.source_url};
         }
     });
     // Add the Zulip emoji to the realm emojis list

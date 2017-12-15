@@ -119,7 +119,7 @@ exports.toggle_emoji_reaction = function (message_id, emoji_name) {
         } else {
             reaction_info.reaction_type = 'realm_emoji';
         }
-        reaction_info.emoji_code = emoji_name;
+        reaction_info.emoji_code = emoji.active_realm_emojis[emoji_name].id;
     } else if (emoji_codes.name_to_codepoint.hasOwnProperty(emoji_name)) {
         reaction_info.reaction_type = 'unicode_emoji';
         reaction_info.emoji_code = emoji_codes.name_to_codepoint[emoji_name];
@@ -270,7 +270,7 @@ exports.view.insert_new_reaction = function (opts) {
 
     if (opts.reaction_type !== 'unicode_emoji') {
         context.is_realm_emoji = true;
-        context.url = emoji.all_realm_emojis[emoji_code].emoji_url;
+        context.url = emoji.all_realm_emojis[emoji_name].emoji_url;
     }
 
     context.count = 1;

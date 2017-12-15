@@ -49,7 +49,7 @@ def emoji_name_to_emoji_code(realm: Realm, emoji_name: Text) -> Tuple[Text, Text
     realm_emojis = realm.get_emoji()
     realm_emoji = realm_emojis.get(emoji_name)
     if realm_emoji is not None and not realm_emoji['deactivated']:
-        return emoji_name, Reaction.REALM_EMOJI
+        return str(realm_emojis[emoji_name]['id']), Reaction.REALM_EMOJI
     if emoji_name == 'zulip':
         return emoji_name, Reaction.ZULIP_EXTRA_EMOJI
     if emoji_name in name_to_codepoint:
@@ -65,13 +65,13 @@ def check_emoji_request(realm: Realm, emoji_name: str, emoji_code: str,
     # code is valid for new reactions, or not.
     if emoji_type == "realm_emoji":
         realm_emojis = realm.get_emoji()
-        realm_emoji = realm_emojis.get(emoji_code)
+        realm_emoji = realm_emojis.get(emoji_name)
         if realm_emoji is None:
             raise JsonableError(_("Invalid custom emoji."))
+        if realm_emoji["id"] != emoji_code:
+            raise JsonableError(_("Invalid custom emoji id."))
         if realm_emoji["deactivated"]:
             raise JsonableError(_("This custom emoji has been deactivated."))
-        if emoji_name != emoji_code:
-            raise JsonableError(_("Invalid emoji name."))
     elif emoji_type == "zulip_extra_emoji":
         if emoji_code not in ["zulip"]:
             raise JsonableError(_("Invalid emoji code."))
