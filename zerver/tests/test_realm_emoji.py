@@ -61,9 +61,10 @@ class RealmEmojiTest(ZulipTestCase):
             content["emoji"]['my_emoji']['author']['email'], email)
 
         realm_emoji = RealmEmoji.objects.get(name='my_emoji')
+        file_name = realm_emoji.name + '.png'
         self.assertEqual(
             str(realm_emoji),
-            '<RealmEmoji(zulip): my_emoji my_emoji.png>'
+            '<RealmEmoji(zulip): %s my_emoji False %s>' % (realm_emoji.id, file_name)
         )
 
     def test_upload_exception(self) -> None:

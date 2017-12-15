@@ -399,7 +399,11 @@ class RealmEmoji(models.Model):
         unique_together = ("realm", "name")
 
     def __str__(self) -> Text:
-        return "<RealmEmoji(%s): %s %s>" % (self.realm.string_id, self.name, self.file_name)
+        return "<RealmEmoji(%s): %s %s %s %s>" % (self.realm.string_id,
+                                                  self.id,
+                                                  self.name,
+                                                  self.deactivated,
+                                                  self.file_name)
 
 def get_realm_emoji_uncached(realm: Realm) -> Dict[Text, Dict[str, Any]]:
     d = {}
