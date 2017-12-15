@@ -137,7 +137,7 @@ class SocialAuthMixin(ZulipAuthMixin):
         """
         This function is called once the authentication workflow is complete.
         We override this function to:
-            1. Inject `return_data` and `realm_subdomain` kwargs. These will be
+            1. Inject `return_data` and `realm` kwargs. These will be
                used by `authenticate()` functions of backends to make the
                decision.
             2. Call the proper authentication function to get the user in
