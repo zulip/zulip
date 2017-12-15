@@ -5,11 +5,6 @@ zrequire('people');
 zrequire('reactions');
 
 set_global('emoji', {
-    emojis_name_to_css_class: {
-        frown: 'frown-css',
-        octopus: 'octopus-css',
-        smile: 'smile-css',
-    },
     emojis_by_name: {
         alien: '1f47d',
         smile: '1f604',

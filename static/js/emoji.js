@@ -6,7 +6,6 @@ exports.emojis = [];
 exports.all_realm_emojis = {};
 exports.active_realm_emojis = {};
 exports.emojis_by_name = {};
-exports.emojis_name_to_css_class = {};
 exports.default_emoji_aliases = {};
 
 var default_emojis = [];
@@ -46,10 +45,7 @@ exports.update_emojis = function update_emojis(realm_emojis) {
     exports.active_realm_emojis.zulip = zulip_emoji;
 
     exports.emojis_by_name = {};
-    exports.emojis_name_to_css_class = {};
     _.each(default_emojis, function (emoji) {
-        var css_class = emoji_codes.name_to_codepoint[emoji.emoji_name];
-        exports.emojis_name_to_css_class[emoji.emoji_name] = css_class;
         exports.emojis_by_name[emoji.emoji_name] = emoji.emoji_url;
     });
 };
