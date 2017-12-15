@@ -411,7 +411,8 @@ def get_realm_emoji_uncached(realm: Realm) -> Dict[Text, Dict[str, Any]]:
                 'id': row.author.id,
                 'email': row.author.email,
                 'full_name': row.author.full_name}
-        d[row.name] = dict(source_url=get_emoji_url(row.file_name, row.realm_id),
+        d[row.name] = dict(id=str(row.id),
+                           source_url=get_emoji_url(row.file_name, row.realm_id),
                            deactivated=row.deactivated,
                            author=author)
     return d
