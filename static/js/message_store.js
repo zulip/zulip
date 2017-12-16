@@ -90,7 +90,10 @@ exports.insert_recent_private_message = (function () {
     };
 }());
 
-exports.set_message_booleans = function (message, flags) {
+exports.set_message_booleans = function (message) {
+    message.flags = message.flags || [];
+    var flags = message.flags;
+
     function convert_flag(flag_name) {
         return flags.indexOf(flag_name) >= 0;
     }
@@ -118,9 +121,7 @@ exports.add_message_metadata = function (message) {
 
     message.sent_by_me = people.is_current_user(message.sender_email);
 
-    message.flags = message.flags || [];
-
-    exports.set_message_booleans(message, message.flags);
+    exports.set_message_booleans(message);
 
     people.extract_people_from_message(message);
     people.maybe_incr_recipient_count(message);

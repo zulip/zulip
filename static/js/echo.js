@@ -231,7 +231,7 @@ exports.process_from_server = function process_from_server(messages) {
 
         // Update our flags based on what the server gave us.
         client_message.flags = message.flags;
-        message_store.set_message_booleans(client_message, client_message.flags);
+        message_store.set_message_booleans(client_message);
 
         // We don't try to highlight alert words locally, so we have to
         // do it now.  (Note that we will indeed highlight alert words in

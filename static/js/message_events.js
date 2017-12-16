@@ -126,7 +126,7 @@ exports.update_messages = function update_messages(events) {
         msgs_to_rerender.push(msg);
 
         msg.flags = event.flags;
-        message_store.set_message_booleans(msg, event.flags);
+        message_store.set_message_booleans(msg);
 
         condense.un_cache_message_content_height(msg.id);
 
