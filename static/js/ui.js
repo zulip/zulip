@@ -75,23 +75,12 @@ exports.find_message = function (message_id) {
     return message;
 };
 
-exports.update_starred = function (message_id, starred) {
-    // Update the message object pointed to by the various message
-    // lists.
-    var message = exports.find_message(message_id);
-
-    // If it isn't cached in the browser, no need to do anything
-    if (message === undefined) {
-        return;
-    }
-
-    unread_ops.mark_message_as_read(message);
-
-    message.starred = starred;
+exports.update_starred = function (message) {
+    var starred = message.starred;
 
     // Avoid a full re-render, but update the star in each message
     // table in which it is visible.
-    update_message_in_all_views(message_id, function update_row(row) {
+    update_message_in_all_views(message.id, function update_row(row) {
         var elt = row.find(".star");
         if (starred) {
             elt.addClass("icon-vector-star").removeClass("icon-vector-star-empty").removeClass("empty-star");
