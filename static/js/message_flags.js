@@ -62,10 +62,6 @@ exports.send_read = (function () {
     };
 
     function add(message) {
-        if (message.flags === undefined) {
-            message.flags = [];
-        }
-        message.flags.push('read');
         queue.push(message);
         start();
     }
