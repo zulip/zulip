@@ -10,7 +10,7 @@ import re
 import time
 import random
 
-from typing import Any, Dict, List, Optional, SupportsInt, Text, Union, Type
+from typing import Any, Dict, List, Optional, SupportsInt, Text, Tuple, Type, Union
 
 from apns2.client import APNsClient
 from apns2.payload import Payload as APNsPayload
@@ -429,14 +429,14 @@ def get_mobile_push_content(rendered_content: Text) -> Text:
         plain_text = process(elem)
         return plain_text
 
-def truncate_content(content: Text) -> Text:
+def truncate_content(content: Text) -> Tuple[Text, bool]:
     # We use unicode character 'HORIZONTAL ELLIPSIS' (U+2026) instead
     # of three dots as this saves two extra characters for textual
     # content. This function will need to be updated to handle unicode
     # combining characters and tags when we start supporting themself.
     if len(content) <= 200:
-        return content
-    return content[:200] + "…"
+        return content, False
+    return content[:200] + "…", True
 
 def get_common_payload(message: Message) -> Dict[str, Any]:
     data = {}  # type: Dict[str, Any]
@@ -459,18 +459,16 @@ def get_common_payload(message: Message) -> Dict[str, Any]:
     return data
 
 def get_apns_payload(message: Message) -> Dict[str, Any]:
-    text_content = get_mobile_push_content(message.rendered_content)
-    truncated_content = truncate_content(text_content)
-
     zulip_data = get_common_payload(message)
     zulip_data.update({
         'message_ids': [message.id],
     })
 
+    content, _ = truncate_content(get_mobile_push_content(message.rendered_content))
     apns_data = {
         'alert': {
             'title': get_alert_from_message(message),
-            'body': truncated_content,
+            'body': content,
         },
         'badge': 0,  # TODO: set badge count in a better way
         'custom': {'zulip': zulip_data},
@@ -478,18 +476,16 @@ def get_apns_payload(message: Message) -> Dict[str, Any]:
     return apns_data
 
 def get_gcm_payload(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
-    text_content = get_mobile_push_content(message.rendered_content)
-    truncated_content = truncate_content(text_content)
-
     data = get_common_payload(message)
+    content, truncated = truncate_content(get_mobile_push_content(message.rendered_content))
     data.update({
         'user': user_profile.email,
         'event': 'message',
         'alert': get_alert_from_message(message),
         'zulip_message_id': message.id,  # message_id is reserved for CCS
         'time': datetime_to_timestamp(message.pub_date),
-        'content': truncated_content,
-        'content_truncated': len(text_content) > 200,
+        'content': content,
+        'content_truncated': truncated,
         'sender_full_name': message.sender.full_name,
         'sender_avatar_url': absolute_avatar_url(message.sender),
     })
