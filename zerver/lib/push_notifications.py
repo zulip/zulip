@@ -440,13 +440,22 @@ def truncate_content(content: Text) -> Text:
 
 def get_common_payload(message: Message) -> Dict[str, Any]:
     data = {}  # type: Dict[str, Any]
+
+    # These will let the app support logging into multiple realms and servers.
+    data['server'] = settings.EXTERNAL_HOST
+    data['realm_id'] = message.sender.realm.id
+
+    # `sender_id` is preferred, but some existing versions use `sender_email`.
+    data['sender_id'] = message.sender.id
     data['sender_email'] = message.sender.email
+
     if message.is_stream_message():
         data['recipient_type'] = "stream"
         data['stream'] = get_display_recipient(message.recipient)
         data['topic'] = message.subject
     else:
         data['recipient_type'] = "private"
+
     return data
 
 def get_apns_payload(message: Message) -> Dict[str, Any]:
@@ -456,9 +465,6 @@ def get_apns_payload(message: Message) -> Dict[str, Any]:
     zulip_data = get_common_payload(message)
     zulip_data.update({
         'message_ids': [message.id],
-        'sender_id': message.sender.id,
-        'server': settings.EXTERNAL_HOST,
-        'realm_id': message.sender.realm.id,
     })
 
     apns_data = {
