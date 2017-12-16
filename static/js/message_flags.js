@@ -1,6 +1,18 @@
 var message_flags = (function () {
 var exports = {};
 
+function send_flag_update(message, flag, op) {
+    channel.post({
+        url: '/json/messages/flags',
+        idempotent: true,
+        data: {
+            messages: JSON.stringify([message.id]),
+            flag: flag,
+            op: op,
+        },
+    });
+}
+
 var batched_updaters = {};
 
 function batched_updater(flag, op, immediate) {
@@ -94,15 +106,24 @@ exports.send_collapsed = function send_collapse(messages, value) {
     send_flag(messages, "collapsed", value);
 };
 
-exports.send_starred = function send_starred(messages, value) {
-    send_flag(messages, "starred", value);
-};
-
 exports.toggle_starred = function (message) {
-    if (message.flags.indexOf("starred") === -1) {
-        exports.send_starred([message], true);
+    if (message.locally_echoed) {
+        // This is defensive code for when you hit the "*" key
+        // before we get a server ack.  It's rare that somebody
+        // can star this quickly, and we don't have a good way
+        // to tell the server which message was starred.
+        return;
+    }
+
+    message.starred = !message.starred;
+
+    unread_ops.mark_message_as_read(message);
+    ui.update_starred(message);
+
+    if (message.starred) {
+        send_flag_update(message, 'starred', 'add');
     } else {
-        exports.send_starred([message], false);
+        send_flag_update(message, 'starred', 'remove');
     }
 };
 
