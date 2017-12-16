@@ -335,6 +335,10 @@ html {
     transition: border 0.3s ease;
 }
 
+.new-style .input-box input[type=email] {
+    margin-bottom: 10px;
+}
+
 .new-style .input-box label {
     position: absolute;
     top: 0px;
