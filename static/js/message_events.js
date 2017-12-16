@@ -55,7 +55,6 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
 
 
 exports.insert_new_messages = function insert_new_messages(messages, locally_echoed) {
-    _.each(messages, message_store.set_message_booleans);
     messages = _.map(messages, message_store.add_message_metadata);
 
     unread.process_loaded_messages(messages);
