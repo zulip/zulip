@@ -2,6 +2,8 @@
 
 Use semi-formal Polish for translation, some specifics:
 
+*we: my
+
 * Informal "you" (*ty*) instead of more formal approaches (e.g. plural
   "you" (*wy*), using any formal titles like *Państwo*, *Pan/Pani*).
 
@@ -81,3 +83,43 @@ Zulip friendly and usable.
 **view**: widok
 
 **starred message**: oznaczona wiadomość
+
+**message**: wiadomość
+
+**stream**: kanał
+
+**public stream**: kanał publiczny
+
+**bot**: bot
+
+**Integration**: integracja
+
+**Notification**: Powiadomienie
+
+**alert word**: ostrzeżenie
+
+**narrow to**: zwięź do
+
+**mute**: wycisz
+
+**unmute**: wyłącz wyciszenie
+
+**deactivate**: dezaktywować
+
+**reactivate**: reaktywować
+
+**search**: znajdź
+
+**pin**: przypnij
+
+**invalid**: niepoprawny/a
+
+**i want**: chcę
+
+**user**: użytkownik
+
+**person**: osoba
+
+**people**: ludzie
+
+
