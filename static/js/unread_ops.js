@@ -2,7 +2,7 @@ var unread_ops = (function () {
 
 var exports = {};
 
-exports.mark_all_as_read = function mark_all_as_read(cont) {
+exports.mark_all_as_read = function (cont) {
     unread.declare_bankruptcy();
     unread_ui.update_unread_counts();
 
@@ -57,7 +57,7 @@ exports.process_read_messages_event = function (message_ids) {
 
 
 // Takes a list of messages and marks them as read
-exports.mark_messages_as_read = function mark_messages_as_read(messages, options) {
+exports.mark_messages_as_read = function (messages, options) {
     options = options || {};
 
     messages = unread.get_unread_messages(messages);
@@ -78,13 +78,13 @@ exports.mark_messages_as_read = function mark_messages_as_read(messages, options
     unread_ui.update_unread_counts();
 };
 
-exports.mark_message_as_read = function mark_message_as_read(message, options) {
+exports.mark_message_as_read = function (message, options) {
     exports.mark_messages_as_read([message], options);
 };
 
 // If we ever materially change the algorithm for this function, we
 // may need to update notifications.received_messages as well.
-exports.process_visible = function process_visible() {
+exports.process_visible = function () {
     if (! notifications.window_has_focus()) {
         return;
     }
@@ -98,11 +98,11 @@ exports.process_visible = function process_visible() {
     }
 };
 
-exports.mark_current_list_as_read = function mark_current_list_as_read(options) {
+exports.mark_current_list_as_read = function (options) {
     exports.mark_messages_as_read(current_msg_list.all_messages(), options);
 };
 
-exports.mark_stream_as_read = function mark_stream_as_read(stream_id, cont) {
+exports.mark_stream_as_read = function (stream_id, cont) {
     channel.post({
         url:      '/json/mark_stream_as_read',
         idempotent: true,
@@ -110,7 +110,7 @@ exports.mark_stream_as_read = function mark_stream_as_read(stream_id, cont) {
         success:  cont});
 };
 
-exports.mark_topic_as_read = function mark_topic_as_read(stream_id, topic, cont) {
+exports.mark_topic_as_read = function (stream_id, topic, cont) {
     channel.post({
     url:      '/json/mark_topic_as_read',
     idempotent: true,
