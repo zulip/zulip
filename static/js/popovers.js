@@ -174,12 +174,18 @@ exports.toggle_actions_popover = function (element, id) {
         }) && page_params.realm_allow_edit_history;
         var should_display_delete_option = page_params.is_admin ||
             (message.sent_by_me && page_params.realm_allow_message_deleting);
+
+        var should_display_collapse = !message.locally_echoed && !message.collapsed;
+        var should_display_uncollapse = !message.locally_echoed && message.collapsed;
+
         var args = {
             message: message,
             use_edit_icon: use_edit_icon,
             editability_menu_item: editability_menu_item,
             can_mute_topic: can_mute_topic,
             can_unmute_topic: can_unmute_topic,
+            should_display_collapse: should_display_collapse,
+            should_display_uncollapse: should_display_uncollapse,
             should_display_add_reaction_option: message.sent_by_me,
             should_display_edit_history_option: should_display_edit_history_option,
             conversation_time_uri: narrow.by_conversation_and_time_uri(message, true),
