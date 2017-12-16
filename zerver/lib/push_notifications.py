@@ -438,44 +438,45 @@ def truncate_content(content: Text) -> Text:
         return content
     return content[:200] + "…"
 
+def get_common_payload(message: Message) -> Dict[str, Any]:
+    data = {}  # type: Dict[str, Any]
+    data['sender_email'] = message.sender.email
+    if message.is_stream_message():
+        data['recipient_type'] = "stream"
+        data['stream'] = get_display_recipient(message.recipient)
+        data['topic'] = message.subject
+    else:
+        data['recipient_type'] = "private"
+    return data
+
 def get_apns_payload(message: Message) -> Dict[str, Any]:
     text_content = get_mobile_push_content(message.rendered_content)
     truncated_content = truncate_content(text_content)
+
+    zulip_data = get_common_payload(message)
+    zulip_data.update({
+        'message_ids': [message.id],
+        'sender_id': message.sender.id,
+        'server': settings.EXTERNAL_HOST,
+        'realm_id': message.sender.realm.id,
+    })
 
     apns_data = {
         'alert': {
             'title': get_alert_from_message(message),
             'body': truncated_content,
         },
-        # TODO: set badge count in a better way
-        'badge': 0,
-        'custom': {
-            'zulip': {
-                'message_ids': [message.id],
-                'sender_email': message.sender.email,
-                'sender_id': message.sender.id,
-                'server': settings.EXTERNAL_HOST,
-                'realm_id': message.sender.realm.id,
-            }
-        }
-    }  # type: Dict[str, Any]
-
-    zulip_data = apns_data['custom']['zulip']
-    if message.recipient.type == Recipient.STREAM:
-        zulip_data.update({
-            'recipient_type': 'stream',
-            'stream': get_display_recipient(message.recipient),
-            'topic': message.subject,
-        })
-    elif message.recipient.type in (Recipient.HUDDLE, Recipient.PERSONAL):
-        zulip_data['recipient_type'] = 'private'
+        'badge': 0,  # TODO: set badge count in a better way
+        'custom': {'zulip': zulip_data},
+    }
     return apns_data
 
 def get_gcm_payload(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
     text_content = get_mobile_push_content(message.rendered_content)
     truncated_content = truncate_content(text_content)
 
-    android_data = {
+    data = get_common_payload(message)
+    data.update({
         'user': user_profile.email,
         'event': 'message',
         'alert': get_alert_from_message(message),
@@ -483,19 +484,10 @@ def get_gcm_payload(user_profile: UserProfile, message: Message) -> Dict[str, An
         'time': datetime_to_timestamp(message.pub_date),
         'content': truncated_content,
         'content_truncated': len(text_content) > 200,
-        'sender_email': message.sender.email,
         'sender_full_name': message.sender.full_name,
         'sender_avatar_url': absolute_avatar_url(message.sender),
-    }
-
-    if message.is_stream_message():
-        android_data['recipient_type'] = "stream"
-        android_data['stream'] = get_display_recipient(message.recipient)
-        android_data['topic'] = message.subject
-    elif message.recipient.type in (Recipient.HUDDLE, Recipient.PERSONAL):
-        android_data['recipient_type'] = "private"
-
-    return android_data
+    })
+    return data
 
 @statsd_increment("push_notifications")
 def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any]) -> None:
