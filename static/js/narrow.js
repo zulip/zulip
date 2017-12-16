@@ -248,7 +248,13 @@ exports.activate = function (raw_operators, opts) {
     $('#search_query').val(Filter.unparse(operators));
     search.update_button_visibility();
 
-    compose_actions.on_narrow();
+    // If the trigger was due to compose_hotkey we
+    // keep the compose box in its previous state,
+    if (opts.trigger === "compose_hotkey") {
+        compose_actions.on_compose_narrow();
+    } else {
+        compose_actions.on_narrow();
+    }
 
     var current_filter = narrow_state.get_current_filter();
 
@@ -263,6 +269,67 @@ exports.activate = function (raw_operators, opts) {
         msg_list.initial_free_time = new Date();
         maybe_report_narrow_time(msg_list);
     }, 0);
+};
+
+exports.to_compose_target = function () {
+    if (compose_state.get_message_type() === 'stream' && compose_state.stream_name() !== '') {
+        var stream = compose_state.stream_name();
+        var topic = compose_state.subject();
+        exports.by_stream_topic_name(stream, topic);
+        return true;
+    }
+    if (compose_state.get_message_type() === 'private') {
+        exports.by_recipient_name(compose_state.recipient());
+        return true;
+    }
+    return false;
+};
+
+exports.by_stream_topic_name = function (stream, topic) {
+    var stream_id = stream_data.get_stream_id(stream);
+
+    // If stream is incorrect, we dont do anything.
+    if (stream_id === undefined) {
+        return;
+    }
+
+    var topics = topic_data.get_recent_names(stream_id);
+
+    var opts = {
+        select_first_unread: true,
+        trigger: 'compose_hotkey',
+    };
+    // Narrow to stream only, if topic fails the check below.
+    var raw_operators = [
+        {operator: 'stream', operand: stream},
+    ];
+
+    // If topic is not null and exists in the stream,
+    // We narrow to topic, else stream.
+    if (topic !== '' && _.indexOf(topics, topic) >= 0) {
+        raw_operators.push({operator: 'topic', operand: topic});
+    }
+
+    exports.activate(raw_operators, opts);
+};
+
+exports.by_recipient_name = function (recipient) {
+    var private_recipients = util.extract_pm_recipients(recipient);
+    var invalid_recipients = _.reject(private_recipients, people.is_valid_email_for_compose);
+
+    var opts = {
+        select_first_unread: true,
+        trigger: 'compose_hotkey',
+    };
+
+    // If recipient contains invalid recipients or recipient is empty,
+    // narrow to all PMs.
+    if (invalid_recipients.length !== 0 || recipient === '') {
+        exports.by('is', 'private', opts);
+        return;
+    }
+    // For the well formed recipient, we narrow to that PM.
+    exports.by('pm-with', util.normalize_recipients(recipient), opts);
 };
 
 exports.stream_topic = function () {
