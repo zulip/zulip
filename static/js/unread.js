@@ -329,8 +329,7 @@ exports.message_unread = function (message) {
     if (message === undefined) {
         return false;
     }
-    return message.flags === undefined ||
-           message.flags.indexOf('read') === -1;
+    return message.unread;
 };
 
 exports.get_unread_message_ids = function (message_ids) {
@@ -365,8 +364,7 @@ exports.update_unread_topics = function (msg, event) {
 
 exports.process_loaded_messages = function (messages) {
     _.each(messages, function (message) {
-        var unread = exports.message_unread(message);
-        if (!unread) {
+        if (!message.unread) {
             return;
         }
 
@@ -398,6 +396,11 @@ exports.mark_as_read = function (message_id) {
     exports.unread_topic_counter.del(message_id);
     exports.unread_mentions_counter.del(message_id);
     unread_messages.del(message_id);
+
+    var message = message_store.get(message_id);
+    if (message) {
+        message.unread = false;
+    }
 };
 
 exports.declare_bankruptcy = function () {
@@ -444,25 +447,6 @@ exports.topic_has_any_unread = function (stream_id, topic) {
 
 exports.num_unread_for_person = function (user_ids_string) {
     return exports.unread_pm_counter.num_unread(user_ids_string);
-};
-
-exports.set_read_flag = function (message) {
-    /*
-        Our data structures allow us to know if a message_id is unread/read,
-        but we also need to set message.unread for our rendering code.
-
-        We also have code that uses message.flags, so we maintain that data
-        as well. The server sends us flags (e.g. ['read', 'starred']), so
-        our code on the "edges" needs that representation.
-
-        It is kind of painful to have three different representations, but
-        we fortunately only set read/unread in a few places in our code.
-    */
-    message.flags = message.flags || [];
-    if (!_.contains(message.flags, 'read')) {
-        message.flags.push('read');
-    }
-    message.unread = false;
 };
 
 exports.load_server_counts = function () {

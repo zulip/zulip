@@ -89,7 +89,6 @@ function insert_local_message(message_request, local_id) {
 
     // Locally delivered messages cannot be unread (since we sent them), nor
     // can they alert the user.
-    message.flags = ['read']; // we may add more flags later
     message.unread = false;
 
     message.raw_content = message.content;
