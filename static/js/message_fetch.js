@@ -23,6 +23,7 @@ function process_result(messages, opts) {
         narrow.show_empty_narrow_message();
     }
 
+    _.each(messages, message_store.set_message_booleans);
     messages = _.map(messages, message_store.add_message_metadata);
 
     // If we're loading more messages into the home view, save them to

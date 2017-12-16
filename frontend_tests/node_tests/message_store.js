@@ -84,6 +84,7 @@ global.people.initialize_current_user(me.user_id);
         is_me_message: false,
         id: 2067,
     };
+    message_store.set_message_booleans(message);
     message_store.add_message_metadata(message);
 
     assert.equal(message.is_private, true);
@@ -128,6 +129,7 @@ global.people.initialize_current_user(me.user_id);
         });
         global.with_stub(function (stub) {
             set_global('composebox_typeahead', {add_topic: stub.f});
+            message_store.set_message_booleans(message);
             message_store.add_message_metadata(message);
             var typeahead_added = stub.get_args('stream', 'subject');
             assert.deepEqual(typeahead_added.stream, [me, cindy]);
