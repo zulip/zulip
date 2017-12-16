@@ -76,9 +76,16 @@ var zero_counts = {
         subject: 'lunCH',
     };
 
-    assert(!unread.id_flagged_as_unread(15));
+    assert.deepEqual(unread.get_unread_message_ids([15, 16]), []);
+    assert.deepEqual(unread.get_unread_messages([message, other_message]), []);
+
     unread.process_loaded_messages([message, other_message]);
-    assert(unread.id_flagged_as_unread(15));
+
+    assert.deepEqual(unread.get_unread_message_ids([15, 16]), [15, 16]);
+    assert.deepEqual(
+        unread.get_unread_messages([message, other_message]),
+        [message, other_message]
+    );
 
     count = unread.num_unread_for_topic(stream_id, 'Lunch');
     assert.equal(count, 2);

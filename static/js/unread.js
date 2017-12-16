@@ -333,8 +333,14 @@ exports.message_unread = function (message) {
            message.flags.indexOf('read') === -1;
 };
 
-exports.id_flagged_as_unread = function (message_id) {
-    return unread_messages.has(message_id);
+exports.get_unread_message_ids = function (message_ids) {
+    return _.filter(message_ids, unread_messages.has);
+};
+
+exports.get_unread_messages = function (message) {
+    return _.filter(message, function (message) {
+        return unread_messages.has(message.id);
+    });
 };
 
 exports.update_unread_topics = function (msg, event) {

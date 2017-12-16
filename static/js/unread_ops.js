@@ -38,14 +38,13 @@ exports.process_read_messages_event = function (message_ids) {
         loaded locally).
     */
     var options = {from: 'server'};
-    var processed = false;
+
+    message_ids = unread.get_unread_message_ids(message_ids);
+    if (message_ids.length === 0) {
+        return;
+    }
 
     _.each(message_ids, function (message_id) {
-        if (!unread.id_flagged_as_unread(message_id)) {
-            // Don't do anything if the message is already read.
-            return;
-        }
-
         if (current_msg_list === message_list.narrowed) {
             // I'm not sure this entirely makes sense for all server
             // notifications.
@@ -53,7 +52,6 @@ exports.process_read_messages_event = function (message_ids) {
         }
 
         unread.mark_as_read(message_id);
-        processed = true;
 
         var message = message_store.get(message_id);
 
@@ -62,22 +60,20 @@ exports.process_read_messages_event = function (message_ids) {
         }
     });
 
-    if (processed) {
-        unread_ui.update_unread_counts();
-    }
+    unread_ui.update_unread_counts();
 };
 
 
 // Takes a list of messages and marks them as read
 exports.mark_messages_as_read = function mark_messages_as_read(messages, options) {
     options = options || {};
-    var processed = false;
+
+    messages = unread.get_unread_messages(messages);
+    if (messages.length === 0) {
+        return;
+    }
 
     _.each(messages, function (message) {
-        if (!unread.id_flagged_as_unread(message.id)) {
-            // Don't do anything if the message is already read.
-            return;
-        }
         if (current_msg_list === message_list.narrowed) {
             unread.messages_read_in_narrow = true;
         }
@@ -85,13 +81,9 @@ exports.mark_messages_as_read = function mark_messages_as_read(messages, options
         message_flags.send_read(message);
         unread.mark_as_read(message.id);
         process_newly_read_message(message, options);
-
-        processed = true;
     });
 
-    if (processed) {
-        unread_ui.update_unread_counts();
-    }
+    unread_ui.update_unread_counts();
 };
 
 exports.mark_message_as_read = function mark_message_as_read(message, options) {
