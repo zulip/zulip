@@ -68,7 +68,7 @@ class DocPageTest(ZulipTestCase):
         self._test('/for/companies/', 'in a company')
         self._test('/for/working-groups-and-communities/', 'standards bodies')
         self._test('/for/mystery-hunt/', 'four SIPB alums')
-        self._test('/plans/', 'Commercial support')
+        self._test('/plans/', 'Community support')
         self._test('/devlogin/', 'Normal users', landing_page=False)
         self._test('/devtools/', 'Useful development URLs')
         self._test('/errors/404/', 'Page not found')
