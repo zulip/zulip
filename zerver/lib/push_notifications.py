@@ -458,13 +458,35 @@ def get_common_payload(message: Message) -> Dict[str, Any]:
 
     return data
 
+def get_common_payload(message: Message) -> Dict[str, Any]:
+    data = {}  # type: Dict[str, Any]
+    data['sender_email'] = message.sender.email
+    if message.is_stream_message():
+        data['recipient_type'] = "stream"
+        data['stream'] = get_display_recipient(message.recipient)
+        data['topic'] = message.subject
+    else:
+        data['recipient_type'] = "private"
+    return data
+
 def get_apns_payload(message: Message) -> Dict[str, Any]:
     zulip_data = get_common_payload(message)
     zulip_data.update({
         'message_ids': [message.id],
     })
 
+<<<<<<< 8476ebf5e2a3741989ccd6033649bc5adbc5ccca
     content, _ = truncate_content(get_mobile_push_content(message.rendered_content))
+=======
+    zulip_data = get_common_payload(message)
+    zulip_data.update({
+        'message_ids': [message.id],
+        'sender_id': message.sender.id,
+        'server': settings.EXTERNAL_HOST,
+        'realm_id': message.sender.realm.id,
+    })
+
+>>>>>>> push notifs: Factor out common payload fields for APNs and GCM.
     apns_data = {
         'alert': {
             'title': get_alert_from_message(message),
@@ -476,16 +498,28 @@ def get_apns_payload(message: Message) -> Dict[str, Any]:
     return apns_data
 
 def get_gcm_payload(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
+<<<<<<< 8476ebf5e2a3741989ccd6033649bc5adbc5ccca
     data = get_common_payload(message)
     content, truncated = truncate_content(get_mobile_push_content(message.rendered_content))
+=======
+    text_content = get_mobile_push_content(message.rendered_content)
+    truncated_content = truncate_content(text_content)
+
+    data = get_common_payload(message)
+>>>>>>> push notifs: Factor out common payload fields for APNs and GCM.
     data.update({
         'user': user_profile.email,
         'event': 'message',
         'alert': get_alert_from_message(message),
         'zulip_message_id': message.id,  # message_id is reserved for CCS
         'time': datetime_to_timestamp(message.pub_date),
+<<<<<<< 8476ebf5e2a3741989ccd6033649bc5adbc5ccca
         'content': content,
         'content_truncated': truncated,
+=======
+        'content': truncated_content,
+        'content_truncated': len(text_content) > 200,
+>>>>>>> push notifs: Factor out common payload fields for APNs and GCM.
         'sender_full_name': message.sender.full_name,
         'sender_avatar_url': absolute_avatar_url(message.sender),
     })
