@@ -50,6 +50,7 @@ var keydown_unshift_mappings = {
 var keydown_cmd_or_ctrl_mappings = {
     75: {name: 'search_with_k', message_view_only: false}, // 'K'
     219: {name: 'escape', message_view_only: false}, // '['
+    220: {name: 'narrow_compose', message_view_only: false}, // '\'
 };
 
 var keydown_either_mappings = {
@@ -493,6 +494,11 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
         }
         return false;
+    }
+
+    if (event_name === "narrow_compose" && compose_state.composing()) {
+        narrow.to_compose_target();
+        return true;
     }
 
     if ((event_name === 'up_arrow' || event_name === 'down_arrow') && overlays.streams_open()) {

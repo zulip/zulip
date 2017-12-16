@@ -400,6 +400,15 @@ exports.quote_and_reply = function (opts) {
     });
 };
 
+exports.on_compose_narrow = function () {
+    if (compose_state.composing()) {
+        compose_fade.update_message_list();
+        return;
+    }
+
+    exports.cancel();
+};
+
 exports.on_narrow = function (opts) {
     // We use force_close when jumping between PM narrows with the "p" key,
     // so that we don't have an open compose box that makes it difficult
