@@ -669,7 +669,7 @@ exports.process_hotkey = function (e, hotkey) {
     // Shortcuts that operate on a message
     switch (event_name) {
         case 'message_actions':
-            return popovers.open_message_menu();
+            return popovers.open_message_menu(msg);
         case 'star_message':
             return message_flags.toggle_starred(msg);
         case 'narrow_by_recipient':

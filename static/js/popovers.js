@@ -232,8 +232,15 @@ function focus_first_action_popover_item() {
     items.eq(0).expectOne().focus();
 }
 
-exports.open_message_menu = function () {
-    var id = current_msg_list.selected_id();
+exports.open_message_menu = function (message) {
+    if (message.locally_echoed) {
+        // Don't open the popup for locally echoed messages for now.
+        // It creates bugs with things like keyboard handlers when
+        // we get the server response.
+        return true;
+    }
+
+    var id = message.id;
     popovers.toggle_actions_popover($(".selected_message .actions_hover")[0], id);
     if (current_actions_popover_elem) {
         focus_first_action_popover_item();
