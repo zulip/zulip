@@ -437,6 +437,7 @@ def truncate_content(content: Text) -> Tuple[Text, bool]:
     if len(content) <= 200:
         return content, False
     return content[:200] + "…", True
+<<<<<<< 2ddfad8928a8613a6825f2de30235ca4e9665a1f
 
 def get_common_payload(message: Message) -> Dict[str, Any]:
     data = {}  # type: Dict[str, Any]
@@ -457,6 +458,8 @@ def get_common_payload(message: Message) -> Dict[str, Any]:
         data['recipient_type'] = "private"
 
     return data
+=======
+>>>>>>> push notifs: Simplify content-truncation code slightly.
 
 def get_common_payload(message: Message) -> Dict[str, Any]:
     data = {}  # type: Dict[str, Any]
@@ -479,6 +482,7 @@ def get_common_payload(message: Message) -> Dict[str, Any]:
     return data
 
 def get_apns_payload(message: Message) -> Dict[str, Any]:
+<<<<<<< 2ddfad8928a8613a6825f2de30235ca4e9665a1f
     zulip_data = get_common_payload(message)
     zulip_data.update({
         'message_ids': [message.id],
@@ -487,12 +491,18 @@ def get_apns_payload(message: Message) -> Dict[str, Any]:
 <<<<<<< 8476ebf5e2a3741989ccd6033649bc5adbc5ccca
     content, _ = truncate_content(get_mobile_push_content(message.rendered_content))
 =======
+=======
+>>>>>>> push notifs: Simplify content-truncation code slightly.
     zulip_data = get_common_payload(message)
     zulip_data.update({
         'message_ids': [message.id],
     })
 
+<<<<<<< 2ddfad8928a8613a6825f2de30235ca4e9665a1f
 >>>>>>> push notifs: Factor out common payload fields for APNs and GCM.
+=======
+    content, _ = truncate_content(get_mobile_push_content(message.rendered_content))
+>>>>>>> push notifs: Simplify content-truncation code slightly.
     apns_data = {
         'alert': {
             'title': get_alert_from_message(message),
@@ -504,6 +514,7 @@ def get_apns_payload(message: Message) -> Dict[str, Any]:
     return apns_data
 
 def get_gcm_payload(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
+<<<<<<< 2ddfad8928a8613a6825f2de30235ca4e9665a1f
 <<<<<<< 8476ebf5e2a3741989ccd6033649bc5adbc5ccca
     data = get_common_payload(message)
     content, truncated = truncate_content(get_mobile_push_content(message.rendered_content))
@@ -513,12 +524,17 @@ def get_gcm_payload(user_profile: UserProfile, message: Message) -> Dict[str, An
 
     data = get_common_payload(message)
 >>>>>>> push notifs: Factor out common payload fields for APNs and GCM.
+=======
+    data = get_common_payload(message)
+    content, truncated = truncate_content(get_mobile_push_content(message.rendered_content))
+>>>>>>> push notifs: Simplify content-truncation code slightly.
     data.update({
         'user': user_profile.email,
         'event': 'message',
         'alert': get_alert_from_message(message),
         'zulip_message_id': message.id,  # message_id is reserved for CCS
         'time': datetime_to_timestamp(message.pub_date),
+<<<<<<< 2ddfad8928a8613a6825f2de30235ca4e9665a1f
 <<<<<<< 8476ebf5e2a3741989ccd6033649bc5adbc5ccca
         'content': content,
         'content_truncated': truncated,
@@ -526,6 +542,10 @@ def get_gcm_payload(user_profile: UserProfile, message: Message) -> Dict[str, An
         'content': truncated_content,
         'content_truncated': len(text_content) > 200,
 >>>>>>> push notifs: Factor out common payload fields for APNs and GCM.
+=======
+        'content': content,
+        'content_truncated': truncated,
+>>>>>>> push notifs: Simplify content-truncation code slightly.
         'sender_full_name': message.sender.full_name,
         'sender_avatar_url': absolute_avatar_url(message.sender),
     })
