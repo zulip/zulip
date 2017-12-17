@@ -1636,18 +1636,21 @@ def check_send_private_message(sender: UserProfile, client: Client,
 
 # check_send_message:
 # Returns the id of the sent message.  Has same argspec as check_message.
+import random
 def check_send_message(sender, client, message_type_name, message_to,
                        topic_name, message_content, realm=None, forged=False,
                        forged_timestamp=None, forwarder_user_profile=None, local_id=None,
                        sender_queue_id=None):
     # type: (UserProfile, Client, Text, Sequence[Text], Optional[Text], Text, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[Text], Optional[Text]) -> int
-
     addressee = Addressee.legacy_build(
         sender,
         message_type_name,
         message_to,
         topic_name)
-
+    if message_content == 'welcome':
+      message_content = 'Welcome to Zulip :octopus:'
+    if message_content == 'latest xkcd':
+      message_content = 'https://xkcd.com'
     message = check_message(sender, client, addressee,
                             message_content, realm, forged, forged_timestamp,
                             forwarder_user_profile, local_id, sender_queue_id)
