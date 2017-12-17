@@ -26,6 +26,9 @@ set_global('overlays', {
 
 var noop = () => {};
 
+set_global('compose_state', {
+});
+
 // jQuery stuff should go away if we make an initialize() method.
 set_global('document', 'document-stub');
 set_global('$', global.make_zjquery());
@@ -100,6 +103,8 @@ run_test('mappings', () => {
 
     assert.equal(map_down(219, false, true).name, 'escape'); // ctrl + [
     assert.equal(map_down(75, false, true).name, 'search_with_k'); // ctrl + k
+
+    assert.equal(map_down(220, false, true).name, 'narrow_compose');
 
     // More negative tests.
     assert.equal(map_down(47), undefined);
@@ -321,13 +326,15 @@ run_test('motion_keys', () => {
         spacebar: 32,
         up_arrow: 38,
         '+': 187,
+        narrow_compose: 220,
     };
 
-    function process(name, shiftKey, ctrlKey) {
+    function process(name, shiftKey, ctrlKey, metaKey) {
         var e = {
             which: codes[name],
             shiftKey: shiftKey,
             ctrlKey: ctrlKey,
+            metaKey: metaKey,
         };
 
         try {
@@ -341,13 +348,13 @@ run_test('motion_keys', () => {
         }
     }
 
-    function assert_unmapped(name) {
-        assert.equal(process(name), false);
+    function assert_unmapped(name, shiftKey, ctrlKey, metaKey) {
+        assert.equal(process(name, shiftKey, ctrlKey, metaKey), false);
     }
 
-    function assert_mapping(key_name, func_name, shiftKey, ctrlKey) {
+    function assert_mapping(key_name, func_name, shiftKey, ctrlKey, metaKey) {
         stubbing(func_name, function () {
-            assert(process(key_name, shiftKey, ctrlKey));
+            assert(process(key_name, shiftKey, ctrlKey, metaKey));
         });
     }
 
@@ -418,4 +425,10 @@ run_test('motion_keys', () => {
     assert_mapping('down_arrow', 'drafts.drafts_handle_events');
     overlays.is_active = return_false;
     overlays.drafts_open = return_false;
+
+    hotkey.processing_text = return_true;
+    compose_state.composing = return_true;
+    assert_mapping('narrow_compose', 'narrow.to_compose_target', false, true, false);
+    compose_state.composing = return_false;
+    hotkey.processing_text = return_false;
 });
