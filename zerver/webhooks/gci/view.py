@@ -58,6 +58,15 @@ def get_approve_event_body(payload: Dict[Text, Any]) -> Text:
         task_url=build_instance_url(payload['task_instance']),
     )
 
+def get_approve_pending_pc_event_body(payload: Dict[Text, Any]) -> Text:
+    template = "{} (pending parental consent).".format(GCI_MESSAGE_TEMPLATE.rstrip('.'))
+    return template.format(
+        actor=payload['author'],
+        action='approved',
+        task_name=payload['task_definition_name'],
+        task_url=build_instance_url(payload['task_instance']),
+    )
+
 def get_needswork_event_body(payload: Dict[Text, Any]) -> Text:
     template = "{} for more work.".format(GCI_MESSAGE_TEMPLATE.rstrip('.'))
     return template.format(
@@ -85,6 +94,7 @@ def api_gci_webhook(request: HttpRequest, user_profile: UserProfile, stream: Tex
 EVENTS_FUNCTION_MAPPER = {
     'abandon': get_abandon_event_body,
     'approve': get_approve_event_body,
+    'approve-pending-pc': get_approve_pending_pc_event_body,
     'claim': get_claim_event_body,
     'comment': get_comment_event_body,
     'needswork': get_needswork_event_body,
