@@ -565,7 +565,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
             self.assert_in_response('action="/accounts/register/"', result)
             data = {"from_confirmation": "1",
                     "full_name": name,
-                    "key": confirmation_key}
+                    "prereg_user_id": confirmation.content_object.id}
             result = self.client_post('/accounts/register/', data)
             self.assert_in_response("You're almost there", result)
             # Verify that the user is asked for name but not password
@@ -575,7 +575,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
             result = self.client_post(
                 '/accounts/register/',
                 {'full_name': name,
-                 'key': confirmation_key,
+                 'prereg_user_id': confirmation.content_object.id,
                  'terms': True})
 
         self.assertEqual(result.status_code, 302)
@@ -861,7 +861,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.assert_in_response('action="/accounts/register/"', result)
         data = {"from_confirmation": "1",
                 "full_name": data['name'],
-                "key": confirmation_key}
+                "prereg_user_id": confirmation.content_object.id}
         result = self.client_post('/accounts/register/', data, subdomain="zulip")
         self.assert_in_response("You're almost there", result)
 
@@ -911,7 +911,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.assert_in_response('action="/accounts/register/"', result)
         data2 = {"from_confirmation": "1",
                  "full_name": data['name'],
-                 "key": confirmation_key}
+                 "prereg_user_id": confirmation.content_object.id}
         result = self.client_post('/accounts/register/', data2, subdomain="zulip")
         self.assert_in_response("You're almost there", result)
 
@@ -923,7 +923,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         result = self.client_post(
             '/accounts/register/',
             {'full_name': 'New User Name',
-             'key': confirmation_key,
+             'prereg_user_id': confirmation.content_object.id,
              'terms': True})
         self.assertEqual(result.status_code, 302)
         self.assertEqual(sorted(self.get_streams('new@zulip.com', realm)), stream_names)
@@ -1006,7 +1006,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.assert_in_response('action="/accounts/register/"', result)
         data = {"from_confirmation": "1",
                 "full_name": name,
-                "key": confirmation_key}
+                "prereg_user_id": confirmation.content_object.id}
         result = self.client_post('/accounts/register/', data)
         self.assert_in_response("You're almost there", result)
 
@@ -1018,7 +1018,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         result = self.client_post(
             '/accounts/register/',
             {'full_name': name,
-             'key': confirmation_key,
+             'prereg_user_id': confirmation.content_object.id,
              'terms': True})
 
         self.assertEqual(result.status_code, 302)
@@ -2050,12 +2050,14 @@ class TestMaybeSendToRegistration(ZulipTestCase):
                 self.assertEqual(result.status_code, 302)
                 confirmation = Confirmation.objects.all().first()
                 confirmation_key = confirmation.confirmation_key
+                prereg_user = confirmation.content_object
+                prereg_user_id = str(prereg_user.id)
                 self.assertIn('do_confirm/' + confirmation_key, result.url)
                 self.assertEqual(PreregistrationUser.objects.all().count(), 1)
 
         result = self.client_get(result.url)
         self.assert_in_response('action="/accounts/register/"', result)
-        self.assert_in_response('value="{0}" name="key"'.format(confirmation_key), result)
+        self.assert_in_response('value="'+prereg_user_id+'" name="prereg_user_id"'.format(prereg_user_id), result)
 
     def test_sso_only_when_preregistration_user_exists(self) -> None:
         rf = RequestFactory()
