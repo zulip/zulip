@@ -1,0 +1,1 @@
+This is the submission directory for the [translations task](https://github.com/zulip/zulip-gci/blob/master/tasks/2017/translations.md) of Google Code In.
