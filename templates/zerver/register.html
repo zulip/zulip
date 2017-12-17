@@ -28,7 +28,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
 
             <section class="user-registration">
                 <div class="input-box no-validation">
-                    <input type='hidden' name='key' value='{{ key }}' />
+                    <input type='hidden' name='prereg_user_id' value='{{ prereg_user_id }}' />
                     <input type='hidden' name='timezone' id='timezone'/>
                     <input id="id_email" type='text' disabled="true" placeholder="{{ email }}" required />
                     <label for="id_email" class="inline-block label-title">{{ _('Email') }}</label>

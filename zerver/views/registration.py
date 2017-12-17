@@ -14,7 +14,7 @@ from django.core import validators
 from zerver.context_processors import get_realm_from_request
 from zerver.models import UserProfile, Realm, Stream, MultiuseInvite, \
     name_changes_disabled, email_to_username, email_allowed_for_realm, \
-    get_realm, get_user, get_default_stream_groups
+    get_realm, get_user, get_default_stream_groups, PreregistrationUser
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
@@ -55,7 +55,7 @@ def check_prereg_key_and_redirect(request: HttpRequest, confirmation_key: str) -
         return render_confirmation_key_error(
             request, ConfirmationKeyException(ConfirmationKeyException.DOES_NOT_EXIST))
     try:
-        get_object_from_key(confirmation_key, confirmation.type)
+        prereg_user = get_object_from_key(confirmation_key, confirmation.type)
     except ConfirmationKeyException as exception:
         return render_confirmation_key_error(request, exception)
 
@@ -64,14 +64,12 @@ def check_prereg_key_and_redirect(request: HttpRequest, confirmation_key: str) -
     # user can enter their information on a cleaner URL.
     return render(request, 'confirmation/confirm_preregistrationuser.html',
                   context={
-                      'key': confirmation_key,
+                      'prereg_user_id': prereg_user.id,
                       'full_name': request.GET.get("full_name", None)})
 
 @require_post
 def accounts_register(request: HttpRequest) -> HttpResponse:
-    key = request.POST['key']
-    confirmation = Confirmation.objects.get(confirmation_key=key)
-    prereg_user = confirmation.content_object
+    prereg_user = PreregistrationUser.objects.get(id=request.POST['prereg_user_id'])
     email = prereg_user.email
     realm_creation = prereg_user.realm_creation
     password_required = prereg_user.password_required
@@ -268,7 +266,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         'zerver/register.html',
         context={'form': form,
                  'email': email,
-                 'key': key,
+                 'prereg_user_id': prereg_user.id,
                  'full_name': request.session.get('authenticated_full_name', None),
                  'lock_name': name_validated and name_changes_disabled(realm),
                  # password_auth_enabled is normally set via our context processor,
