@@ -38,6 +38,12 @@ class GoogleCodeInTests(WebhookTestCase):
         self.send_and_test_stream_message('task_approved_by_mentor',
                                           expected_subject, expected_message)
 
+    def test_approve_pending_pc_event_message(self) -> None:
+        expected_subject = u'student-yqqtag'
+        expected_message = u'**eeshangarg** approved the task [Sails unspread it stopped at kearney](https://codein.withgoogle.com/dashboard/task-instances/6296903092273152/) (pending parental consent).'
+        self.send_and_test_stream_message('task_approved_by_mentor_pending_parental_consent',
+                                          expected_subject, expected_message)
+
     def test_needswork_event_message(self) -> None:
         expected_subject = u'student-yqqtag'
         expected_message = u'**eeshangarg** submitted the task [Sails unspread it stopped at kearney](https://codein.withgoogle.com/dashboard/task-instances/5136918324969472/) for more work.'
