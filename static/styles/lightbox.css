@@ -88,7 +88,8 @@
 
     min-width: 75px;
 
-    margin: 0px 5px;
+    margin: 0px;
+    margin-right: 5px;
     padding: 0px 5px;
 
     border-radius: 4px;
@@ -127,12 +128,10 @@
 
 #lightbox_overlay .image-actions .lightbox-canvas-trigger .status {
     margin-top: -7px;
-    font-size: 1.1em;
 }
 
 #lightbox_overlay .image-actions a {
-    margin-bottom: 0px;
-    margin-top: 0px;
+    margin: 0px 5px;
 }
 
 #lightbox_overlay .image-actions .icon {
@@ -172,7 +171,7 @@
 
     font-weight: 400;
     line-height: normal;
-    max-width: calc(100% - 210px);
+    max-width: calc(100% - 110px);
 
     /* Required for text-overflow */
     white-space: nowrap;
@@ -293,18 +292,20 @@
 
 @media only screen and (min-device-width : 320px) and (max-device-width : 736px) {
     #lightbox_overlay .image-actions {
-        display: none !important;
+        float: left;
+        margin-top: 0;
     }
 
     #lightbox_overlay .image-description {
-        width: calc(100% - 100px);
+        max-width: calc(100% - 100px);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        margin-bottom: 5px;
     }
 
     #lightbox_overlay .image-description .title {
-        max-width: calc(100% - 60px);
+        max-width: calc(100% - 70px);
     }
 
     #lightbox_overlay .center .image-list {
@@ -316,5 +317,8 @@
         width: 100%;
         height: calc((100vw) * 9 / 16);
         margin: auto;
+    }
+    #lightbox_overlay .image-preview {
+        height: calc(100% - 101px - 95px);
     }
 }
