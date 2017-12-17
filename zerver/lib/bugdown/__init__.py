@@ -1192,6 +1192,7 @@ class AutoLink(VerbosePattern):
                 # If there is a network error, preview url instead of youtube video
                 logging.warning(traceback.format_exc())
                 return url_to_a(url)
+        return url_to_a(url)
 
 class UListProcessor(markdown.blockprocessors.UListProcessor):
     """ Process unordered list blocks.
