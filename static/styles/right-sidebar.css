@@ -85,7 +85,7 @@
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#ec7e18',GradientType=0 ); /* IE6-9 */
 }
 
-.user_offline .user-status-indicator {
+.user-status-indicator {
     background-color: none;
     border-color: hsl(0, 0%, 50%);
 }
