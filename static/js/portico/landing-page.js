@@ -131,7 +131,7 @@ var apps_events = function () {
 
         $(".info .platform").text(version_info.alt);
         $(".info .description").text(version_info.description);
-        $(".info .link").attr("href", version_info.link);
+        $(".info .link").attr("action", version_info.link);
         $(".image img").attr("src", version_info.image);
         $download_instructions.find("a").attr("href", version_info.install_guide);
 

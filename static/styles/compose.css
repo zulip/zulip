@@ -14,6 +14,9 @@
 #compose_controls .drafts-link {
     float: left;
 }
+#draft_a {
+    padding-top: 3px;
+}
 
 .new_message_button {
     padding-top: 1.1em;
