@@ -12,10 +12,9 @@ from zerver.models import UserProfile
 
 @api_key_only_webhook_view('OpsGenie')
 @has_request_variables
-def api_opsgenie_webhook(request, user_profile,
-                         payload=REQ(argument_type='body'),
-                         stream=REQ(default='opsgenie')):
-    # type: (HttpRequest, UserProfile, Dict[str, Any], Text) -> HttpResponse
+def api_opsgenie_webhook(request: HttpRequest, user_profile: UserProfile,
+                         payload: Dict[str, Any]=REQ(argument_type='body'),
+                         stream: Text=REQ(default='opsgenie')) -> HttpResponse:
 
     # construct the body of the message
     info = {"additional_info": '',
