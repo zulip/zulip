@@ -199,7 +199,7 @@ var input_pill = function ($parent) {
         }()),
 
         // returns all human-readable values.
-        values: function () {
+        values: (function () {
             var values = [];
             return function () {
                 if (store.lastUpdated >= store.lastCreated.values) {
@@ -211,7 +211,7 @@ var input_pill = function ($parent) {
 
                 return values;
             };
-        },
+        }()),
     };
 
     (function events() {
