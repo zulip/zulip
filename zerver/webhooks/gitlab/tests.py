@@ -227,6 +227,17 @@ class GitlabHookTests(WebhookTestCase):
             HTTP_X_GITLAB_EVENT="Merge Request Hook"
         )
 
+    def test_merge_request_approved_event_message(self) -> None:
+        expected_subject = u"my-awesome-project / MR #1 Update the README with author ..."
+        expected_message = u"Eeshan Garg approved [MR #1](https://gitlab.com/eeshangarg/my-awesome-project/merge_requests/1)"
+
+        self.send_and_test_stream_message(
+            'merge_request_approved',
+            expected_subject,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Merge Request Hook"
+        )
+
     def test_merge_request_updated_event_message(self) -> None:
         expected_subject = u"my-awesome-project / MR #3 New Merge Request"
         expected_message = u"Tomasz Kolek updated [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3)(assigned to Tomasz Kolek)\nfrom `tomek` to `master`\n\n~~~ quote\nupdated desc\n~~~"
