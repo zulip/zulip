@@ -61,11 +61,10 @@ def format_pull_request_event(payload: Dict[str, Any]) -> Text:
 
 @api_key_only_webhook_view('Gogs')
 @has_request_variables
-def api_gogs_webhook(request, user_profile,
-                     payload=REQ(argument_type='body'),
-                     stream=REQ(default='commits'),
-                     branches=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, Dict[str, Any], Text, Optional[Text]) -> HttpResponse
+def api_gogs_webhook(request: HttpRequest, user_profile: UserProfile,
+                     payload: Dict[str, Any]=REQ(argument_type='body'),
+                     stream: Text=REQ(default='commits'),
+                     branches: Optional[Text]=REQ(default=None)) -> HttpResponse:
 
     repo = payload['repository']['name']
     event = request.META['HTTP_X_GOGS_EVENT']
