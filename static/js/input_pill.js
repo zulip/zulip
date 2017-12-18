@@ -135,7 +135,12 @@ var input_pill = function ($parent) {
             if (typeof idx === "number") {
                 store.pills[idx].$element.remove();
                 store.lastUpdated = new Date();
-                return store.pills.splice(idx, 1);
+                var pill = store.pills.splice(idx, 1);
+                if (typeof store.removePillFunction === "function") {
+                    store.removePillFunction(pill);
+                }
+
+                return pill;
             }
         },
 
@@ -147,6 +152,9 @@ var input_pill = function ($parent) {
 
             if (pill) {
                 pill.$element.remove();
+                if (typeof store.removePillFunction === "function") {
+                    store.removePillFunction(pill);
+                }
             }
         },
 
@@ -317,6 +325,10 @@ var input_pill = function ($parent) {
 
         onPillCreate: function (callback) {
             store.getKeyFunction = callback;
+        },
+
+        onPillRemove: function (callback) {
+            store.removePillFunction = callback;
         },
 
         validate: function (callback) {
