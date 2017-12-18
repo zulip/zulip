@@ -39,14 +39,13 @@ def avatar_url_from_dict(userdict: Dict[str, Any], medium: bool=False) -> Text:
     url += '&version=%d' % (userdict['avatar_version'],)
     return url
 
-def get_avatar_field(user_id,
-                     realm_id,
-                     email,
-                     avatar_source,
-                     avatar_version,
-                     medium,
-                     client_gravatar):
-    # type: (int, int, Text, Text, int, bool, bool) -> Optional[Text]
+def get_avatar_field(user_id: int,
+                     realm_id: int,
+                     email: Text,
+                     avatar_source: Text,
+                     avatar_version: int,
+                     medium: bool,
+                     client_gravatar: bool) -> Optional[Text]:
     '''
     Most of the parameters to this function map to fields
     by the same name in UserProfile (avatar_source, realm_id,
