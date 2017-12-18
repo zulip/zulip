@@ -33,10 +33,10 @@ def message_creator(action: str, application: Dict[str, Any]) -> str:
 
 @api_key_only_webhook_view('Greenhouse')
 @has_request_variables
-def api_greenhouse_webhook(request, user_profile,
-                           payload=REQ(argument_type='body'),
-                           stream=REQ(default='greenhouse'), topic=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, Dict[str, Any], str, str) -> HttpResponse
+def api_greenhouse_webhook(request: HttpRequest, user_profile: UserProfile,
+                           payload: Dict[str, Any]=REQ(argument_type='body'),
+                           stream: str=REQ(default='greenhouse'),
+                           topic: str=REQ(default=None)) -> HttpResponse:
     if payload['action'] == 'update_candidate':
         candidate = payload['payload']['candidate']
     else:
