@@ -201,6 +201,11 @@ set_global('current_msg_list', {
     var message_id = 1001; // see above for setup
     var emoji_name = 'smile'; // should be a current reaction
 
+    var orig_remove_reaction = reactions.remove_reaction;
+    var orig_add_reaction = reactions.add_reaction;
+    reactions.remove_reaction = function () {};
+    reactions.add_reaction = function () {};
+
     global.with_stub(function (stub) {
         global.channel.del = stub.f;
         reactions.toggle_emoji_reaction(message_id, emoji_name);
@@ -267,6 +272,8 @@ set_global('current_msg_list', {
     reactions.toggle_emoji_reaction(message_id, emoji_name);
     assert.equal(error_msg, 'Bad emoji name: ' + emoji_name);
     global.blueslip.warn = orig_func;
+    reactions.add_reaction = orig_add_reaction;
+    reactions.remove_reaction = orig_remove_reaction;
 }());
 
 (function test_set_reaction_count() {
@@ -335,9 +342,15 @@ set_global('current_msg_list', {
     };
 
     reactions.add_reaction(alice_event);
-
     assert(template_called);
     assert(insert_called);
+
+    // Running add_reaction again should not result in any changes
+    template_called = false;
+    insert_called = false;
+    reactions.add_reaction(alice_event);
+    assert(!template_called);
+    assert(!insert_called);
 
     // Now, have Bob react to the same emoji (update).
 
@@ -399,6 +412,11 @@ set_global('current_msg_list', {
 
     reactions.remove_reaction(alice_event);
     assert(removed);
+
+    // Running remove_reaction again should not result in any changes
+    removed = false;
+    reactions.remove_reaction(alice_event);
+    assert(!removed);
 
     current_emojis = reactions.get_emojis_used_by_user_for_message_id(1001);
     assert.deepEqual(current_emojis, ['smile', 'inactive_realm_emoji']);
