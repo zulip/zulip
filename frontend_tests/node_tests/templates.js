@@ -507,6 +507,18 @@ function render(template_name, args) {
     assert.equal(error_msg, "translated: Are you sure you want to mention all 101 people in this stream?");
 }());
 
+(function compose_announce() {
+    var args = {
+        count: '101',
+    };
+    var html = render('compose_announce', args);
+    global.write_handlebars_output("compose_announce", html);
+    var button = $(html).find("button:first");
+    assert.equal(button.text(), "translated: Yes, send");
+    var error_msg = $(html).find('span.compose-announce-msg').text().trim();
+    assert.equal(error_msg, "translated:         This stream is reserved for announcements.\n        \n        Are you sure you want to message all 101 people in this stream?");
+}());
+
 (function compose_notification() {
     var args = {
         note: "You sent a message to a muted topic.",

@@ -215,6 +215,7 @@ table.compose_table {
 }
 
 .compose-all-everyone-controls,
+.compose-announce-controls,
 .compose_invite_user_controls,
 .compose_private_stream_alert_controls {
     float: right;
