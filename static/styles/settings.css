@@ -827,6 +827,11 @@ input[type=checkbox].inline-block {
     font-weight: initial;
 }
 
+#user-groups .save-changes {
+    display: none;
+    opacity: 0;
+}
+
 /* -- new settings overlay -- */
 #settings_page {
     height: 95vh;
