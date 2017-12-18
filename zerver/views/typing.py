@@ -9,8 +9,10 @@ from zerver.lib.response import json_success
 from zerver.models import UserProfile
 
 @has_request_variables
-def send_notification_backend(request, user_profile, operator=REQ('op'),
-                              notification_to = REQ('to', converter=extract_recipients, default=[])):
-    # type: (HttpRequest, UserProfile, Text, List[Text]) -> HttpResponse
+def send_notification_backend(
+        request: HttpRequest, user_profile: UserProfile,
+        operator: Text=REQ('op'),
+        notification_to: List[Text]=REQ('to', converter=extract_recipients, default=[]),
+) -> HttpResponse:
     check_send_typing_notification(user_profile, notification_to, operator)
     return json_success()
