@@ -133,11 +133,6 @@ li.active-sub-filter {
     opacity: 1;
 }
 
-li.hidden-filter {
-    visibility: hidden;
-    display: none;
-}
-
 #left-sidebar .filter-icon {
     display: inline-block;
     width: 18px;
