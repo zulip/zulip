@@ -424,9 +424,6 @@ $(function () {
     $('#compose-send-status .compose-send-status-close').click(
         function () { $('#compose-send-status').stop(true).fadeOut(500); }
     );
-    $('#nonexistent_stream_reply_error .compose-send-status-close').click(
-        function () { $('#nonexistent_stream_reply_error').stop(true).fadeOut(500); }
-    );
 
 
     $('.compose_stream_button').click(function () {

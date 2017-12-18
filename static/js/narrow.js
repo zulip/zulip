@@ -176,6 +176,12 @@ exports.activate = function (raw_operators, opts) {
 
     function maybe_select_closest() {
         if (! message_list.narrowed.empty()) {
+            $(".compose_reply_button").css("border-color", "hsl(240, 100%, 80%)");
+            $("button.compose_reply_button").hover(function (e) {
+                $(this).css("border-color", e.type === "mouseenter"?"hsl(240, 100%, 60%)":"hsl(240, 100%, 80%)");
+            });
+            $(".compose_reply_button").attr('disabled', false);
+
             if (opts.select_first_unread) {
                 then_select_id = message_list.narrowed.first_unread_message_id();
             }
@@ -199,6 +205,12 @@ exports.activate = function (raw_operators, opts) {
                 message_viewport.set_message_offset(then_select_offset);
             }
             unread_ops.process_visible();
+        } else {
+            $(".compose_reply_button").css("border-color", "hsl(0, 0%, 80%)");
+            $("button.compose_reply_button").hover(function () {
+                $(this).css("border-color", "hsl(0, 0%, 80%)");
+            });
+            $(".compose_reply_button").attr('disabled', true);
         }
     }
 
@@ -412,6 +424,13 @@ exports.deactivate = function () {
     if (narrow_state.get_current_filter() === undefined) {
         return;
     }
+
+    $(".compose_reply_button").css("border-color", "hsl(240, 100%, 80%)");
+    $("button.compose_reply_button").hover(function (e) {
+        $(this).css("border-color", e.type === "mouseenter"?"hsl(240, 100%, 60%)":"hsl(240, 100%, 80%)");
+    });
+    $(".compose_reply_button").attr('disabled', false);
+
     unnarrow_times = {start_time: new Date()};
     blueslip.debug("Unnarrowed");
 
