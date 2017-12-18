@@ -9,10 +9,8 @@
           </div>
           <div id="compose_buttons">
             <span class="new_message_button">
-              <a class="drafts-link no-style" href="#drafts" title="{{ _('Drafts') }} (d)">
-                <button type="button" class="button small rounded compose_drafts_button">
-                  <span>{{ _('Drafts') }}</span>
-                </button>
+              <a class="drafts-link no-style" id="draft_a" role="button" href="#drafts" title="{{ _('Drafts') }} (d)" method="get">
+                <span class="button small rounded compose_drafts_button">{{ _('Drafts') }}</span>
               </a>
             </span>
             <span class="new_message_button">
