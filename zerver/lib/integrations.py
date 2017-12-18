@@ -284,6 +284,7 @@ WEBHOOK_INTEGRATIONS = [
         display_name='Desk.com',
         stream_name='desk'
     ),
+    WebhookIntegration('dropbox', ['productivity'], display_name='Dropbox'),
     WebhookIntegration('freshdesk', ['customer-support']),
     GithubIntegration(
         'github',
