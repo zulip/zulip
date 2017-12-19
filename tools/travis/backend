@@ -6,7 +6,7 @@ echo "Test suite is running under $(python --version)."
 set -e
 set -x
 
-./tools/lint --backend
+./tools/lint --backend ${CIRCLECI:+--no-gitlint}
 ./tools/test-tools
 ./tools/test-backend --coverage
 
