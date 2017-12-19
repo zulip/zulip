@@ -143,6 +143,8 @@ exports.restore_draft = function (draft_id) {
 
     overlays.close_overlay("drafts");
     compose_fade.clear_compose();
+    compose.clear_preview_area();
+
     if (draft.type === "stream" && draft.stream === "") {
         draft_copy.subject = "";
     }

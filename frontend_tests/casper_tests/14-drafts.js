@@ -71,6 +71,16 @@ casper.then(function () {
 });
 
 casper.then(function () {
+    casper.test.info('Opening Markdown Preview');
+    casper.waitUntilVisible('#left_bar_compose_stream_button_big', function () {
+        casper.click('#left_bar_compose_stream_button_big');
+    });
+    casper.waitUntilVisible('#markdown_preview', function () {
+        casper.click('#markdown_preview');
+    });
+});
+
+casper.then(function () {
     casper.waitUntilVisible('.drafts-link', function () {
         casper.click('.drafts-link');
     });
@@ -95,6 +105,7 @@ casper.then(function () {
     casper.click("#drafts_table .message_row:not(.private-message) .restore-draft");
     waitWhileDraftsVisible(function () {
         casper.test.assertVisible('#stream-message', 'Stream Message Box Restored');
+        casper.test.assertNotVisible('#preview_message_area', 'Preview Was Hidden');
         common.check_form('form#send_message_form', {
             stream: 'all',
             subject: 'tests',
