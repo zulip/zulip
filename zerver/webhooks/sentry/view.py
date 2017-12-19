@@ -11,10 +11,9 @@ from zerver.models import UserProfile
 
 @api_key_only_webhook_view('Sentry')
 @has_request_variables
-def api_sentry_webhook(request, user_profile,
-                       payload=REQ(argument_type='body'),
-                       stream=REQ(default='sentry')):
-    # type: (HttpRequest, UserProfile, Dict[str, Any], str) -> HttpResponse
+def api_sentry_webhook(request: HttpRequest, user_profile: UserProfile,
+                       payload: Dict[str, Any] = REQ(argument_type='body'),
+                       stream: str = REQ(default='sentry')) -> HttpResponse:
     subject = "{}".format(payload.get('project_name'))
     body = "New {} [issue]({}): {}.".format(payload['level'].upper(),
                                             payload.get('url'),
