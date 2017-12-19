@@ -196,6 +196,35 @@ exports.set_up = function () {
             save_changes.fadeOut();
         }
     });
+
+    $('#user-groups').on('click', '.save-group-changes', function () {
+        var group_id = $(this).parents('.user-group').attr('id');
+        var group_data = user_groups.get_user_group_from_id(group_id);
+
+        var description = $(this).siblings('.description').text().trim();
+        var name = $(this).siblings('.name').text().trim();
+        var btn = $(this);
+
+        channel.patch({
+            url: "/json/user_groups/" + group_id,
+            data: {
+                name: name,
+                description: description,
+            },
+            success: function () {
+                user_groups.remove(group_data);
+                group_data.description = description;
+                group_data.name = name;
+                user_groups.add(group_data);
+                btn.text(i18n.t("Saved!")).delay(200).fadeOut(function () {
+                    $(this).html('<i class="fa fa-check" aria-hidden="true"></i>');
+                });
+            },
+            error: function () {
+                btn.text(i18n.t("Failed!"));
+            },
+        });
+    });
 };
 
 return exports;
