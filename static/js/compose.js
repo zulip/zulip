@@ -489,10 +489,21 @@ function validate_stream_message() {
         }
     }
 
-    if (!exports.validate_stream_message_address_info(stream_name) ||
-        !validate_stream_message_mentions(stream_name) ||
-        !validate_stream_message_announce(stream_name)) {
-        return false;
+    // If both `@all` is mentioned and it's in `#announce`, just validate
+    // for `@all`. Users shouldn't have to hit "yes" more than once.
+    if (util.is_all_or_everyone_mentioned(compose_state.message_content()) &&
+        stream_name === "announce") {
+        if (!exports.validate_stream_message_address_info(stream_name) ||
+            !validate_stream_message_mentions(stream_name)) {
+            return false;
+        }
+    // If either criteria isn't met, just do the normal validation.
+    } else {
+      if (!exports.validate_stream_message_address_info(stream_name) ||
+          !validate_stream_message_mentions(stream_name) ||
+          !validate_stream_message_announce(stream_name)) {
+          return false;
+      }
     }
 
     return true;
