@@ -234,7 +234,7 @@ class Realm(models.Model):
     def get_admin_users(self) -> Sequence['UserProfile']:
         # TODO: Change return type to QuerySet[UserProfile]
         return UserProfile.objects.filter(realm=self, is_realm_admin=True,
-                                          is_active=True).select_related()
+                                          is_active=True)
 
     def get_active_users(self) -> Sequence['UserProfile']:
         # TODO: Change return type to QuerySet[UserProfile]
