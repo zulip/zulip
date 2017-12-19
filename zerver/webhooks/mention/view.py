@@ -13,11 +13,10 @@ from zerver.models import UserProfile
 
 @api_key_only_webhook_view('Mention')
 @has_request_variables
-def api_mention_webhook(request, user_profile,
-                        payload=REQ(argument_type='body'),
-                        stream=REQ(default='mention'),
-                        topic=REQ(default='news')):
-    # type: (HttpRequest, UserProfile, Dict[str, Iterable[Dict[str, Any]]], Text, Optional[Text]) -> HttpResponse
+def api_mention_webhook(request: HttpRequest, user_profile: UserProfile,
+                        payload: Dict[str, Iterable[Dict[str, Any]]] = REQ(argument_type='body'),
+                        stream: Text = REQ(default='mention'),
+                        topic: Optional[Text] = REQ(default='news')) -> HttpResponse:
     title = payload["title"]
     source_url = payload["url"]
     description = payload["description"]
