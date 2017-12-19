@@ -47,9 +47,9 @@ exports.populate_user_groups = function () {
         });
 
         function update_save_state(draft_group) {
-            var original_group = data.members;
+            var original_group = user_groups.get_user_group_from_id(data.id).members;
             var same_groups = _.isEqual(_.sortBy(draft_group), _.sortBy(original_group));
-            var save_changes = pill_container.siblings('.save-changes');
+            var save_changes = pill_container.siblings('.save-member-changes');
             var save_hidden = save_changes.css('display') === 'none';
 
             if ((!draft_group.length || same_groups) && !save_hidden) {
@@ -75,6 +75,38 @@ exports.populate_user_groups = function () {
 
         pills.onPillRemove(function () {
             update_save_state(pills.keys());
+        });
+
+        $('#user-groups #' + data.id).on('click', '.save-member-changes', function () {
+            var draft_group = pills.keys();
+            var group_data = user_groups.get_user_group_from_id(data.id);
+            var original_group = group_data.members;
+            var added = _.difference(draft_group, original_group);
+            var removed = _.difference(original_group, draft_group);
+            var btn = $(this);
+
+            channel.post({
+                url: "/json/user_groups/" + data.id + '/members',
+                data: {
+                    add: JSON.stringify(added),
+                    delete: JSON.stringify(removed),
+                },
+                success: function () {
+                    original_group = _.reject(original_group, function (e) {
+                        return removed.includes(e);
+                    });
+                    original_group = original_group.concat(added);
+                    group_data.members = original_group;
+                    user_groups.remove(group_data);
+                    user_groups.add(group_data);
+                    btn.text(i18n.t("Saved!")).delay(200).fadeOut(function () {
+                        $(this).html('<i class="fa fa-check" aria-hidden="true"></i>');
+                    });
+                },
+                error: function () {
+                    btn.text(i18n.t("Failed!"));
+                },
+            });
         });
     });
 };
