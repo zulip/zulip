@@ -93,9 +93,10 @@ def always_want(msg_type: str) -> bool:
 # all event types.  Whenever you add new code to this function, you
 # should also add corresponding events for changes in the data
 # structures and new code to apply_events (and add a test in EventsRegisterTest).
-def fetch_initial_state_data(user_profile, event_types, queue_id, client_gravatar,
-                             include_subscribers=True):
-    # type: (UserProfile, Optional[Iterable[str]], str, bool, bool) -> Dict[str, Any]
+def fetch_initial_state_data(user_profile: UserProfile,
+                             event_types: Optional[Iterable[str]],
+                             queue_id: str, client_gravatar: bool,
+                             include_subscribers: bool = True) -> Dict[str, Any]:
     state = {'queue_id': queue_id}  # type: Dict[str, Any]
 
     if event_types is None:
@@ -269,9 +270,10 @@ def remove_message_id_from_unread_mgs(state: Dict[str, Dict[str, Any]],
     raw_unread['unmuted_stream_msgs'].discard(message_id)
     raw_unread['mentions'].discard(message_id)
 
-def apply_events(state, events, user_profile, client_gravatar, include_subscribers=True,
-                 fetch_event_types=None):
-    # type: (Dict[str, Any], Iterable[Dict[str, Any]], UserProfile, bool, bool, Optional[Iterable[str]]) -> None
+def apply_events(state: Dict[str, Any], events: Iterable[Dict[str, Any]],
+                 user_profile: UserProfile, client_gravatar: bool,
+                 include_subscribers: bool = True,
+                 fetch_event_types: Optional[Iterable[str]] = None) -> None:
     for event in events:
         if fetch_event_types is not None and event['type'] not in fetch_event_types:
             # TODO: continuing here is not, most precisely, correct.
@@ -582,11 +584,15 @@ def apply_event(state: Dict[str, Any],
     else:
         raise AssertionError("Unexpected event type %s" % (event['type'],))
 
-def do_events_register(user_profile, user_client, apply_markdown=True, client_gravatar=False,
-                       event_types=None, queue_lifespan_secs=0, all_public_streams=False,
-                       include_subscribers=True, narrow=[], fetch_event_types=None):
-    # type: (UserProfile, Client, bool, bool, Optional[Iterable[str]], int, bool, bool, Iterable[Sequence[Text]], Optional[Iterable[str]]) -> Dict[str, Any]
-
+def do_events_register(user_profile: UserProfile, user_client: Client,
+                       apply_markdown: bool = True,
+                       client_gravatar: bool = False,
+                       event_types: Optional[Iterable[str]] = None,
+                       queue_lifespan_secs: int = 0,
+                       all_public_streams: bool = False,
+                       include_subscribers: bool = True,
+                       narrow: Iterable[Sequence[Text]] = [],
+                       fetch_event_types: Optional[Iterable[str]] = None) -> Dict[str, Any]:
     # Technically we don't need to check this here because
     # build_narrow_filter will check it, but it's nicer from an error
     # handling perspective to do it before contacting Tornado
