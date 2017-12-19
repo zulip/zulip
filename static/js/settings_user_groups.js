@@ -59,6 +59,39 @@ exports.populate_user_groups = function () {
             }
         }
 
+        var input = pill_container.children('.input');
+
+        input.typeahead({
+            items: 5,
+            fixed: true,
+            dropup: true,
+            source: people.get_realm_persons,
+            highlighter: function (item) {
+                return typeahead_helper.render_person(item);
+            },
+            matcher: function (item) {
+                if (pills.keys().includes(item.user_id)) {
+                    return false;
+                }
+
+                var person = people.get_person_from_user_id(item.user_id);
+                var query = this.query.toLowerCase();
+
+                return (person.email.toLowerCase().indexOf(query) !== -1
+                        || person.full_name.toLowerCase().indexOf(query) !== -1);
+            },
+            sorter: function (matches) {
+                return typeahead_helper.sort_recipientbox_typeahead(
+                    this.query, matches, "");
+            },
+            updater: function (user) {
+                pills.pill.append(user.full_name, user.user_id);
+                input.text('');
+                update_save_state(pills.keys());
+            },
+            stopAdvance: true,
+        });
+
         pills.onPillCreate(function (value, reject) {
             var person = people.get_by_email(value);
             var draft_group = pills.keys();
