@@ -827,7 +827,7 @@ input[type=checkbox].inline-block {
     font-weight: initial;
 }
 
-#user-groups .save-changes {
+#user-groups .save-member-changes {
     display: none;
     opacity: 0;
 }
