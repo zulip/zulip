@@ -18,10 +18,7 @@ body.dark-mode #settings_page .right {
     background-color: hsl(212, 28%, 18%);
 }
 
-body.dark-mode .column-left .left-sidebar {
-    border-right-color: hsla(0, 0%, 0%, 0.2);
-}
-
+body.dark-mode .column-left .left-sidebar,
 body.dark-mode .column-right .right-sidebar {
     border-left-color: hsla(0, 0%, 0%, 0.2);
 }
@@ -164,14 +161,8 @@ body.dark-mode .popover.bottom .arrow {
     border-bottom-color: hsl(235, 18%, 7%);
 }
 
-body.dark-mode .popover.right .arrow {
-    border-right-color: hsl(235, 18%, 7%);
-}
-
-body.dark-mode .popover.left .arrow {
-    border-left-color: hsl(235, 18%, 7%);
-}
-
+body.dark-mode .popover.right .arrow,
+body.dark-mode .popover.left .arrow,
 body.dark-mode .popover.top .arrow {
     border-top-color: hsl(235, 18%, 7%);
 }
@@ -240,10 +231,7 @@ body.dark-mode table td {
     border-color: hsla(0, 0%, 0%, 0.2);
 }
 
-body.dark-mode .draft-row .draft-info-box {
-    border-top: none;
-}
-
+body.dark-mode .draft-row .draft-info-box,
 body.dark-mode .private-message .messagebox,
 body.dark-mode .message_header_private_message .message-header-contents {
     box-shadow: none;
