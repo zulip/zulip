@@ -150,7 +150,7 @@ exports.set_up = function () {
     });
 
     $('#user-groups').on('click', '.delete', function () {
-        var group_id = $(this).parent().attr('id');
+        var group_id = $(this).parents('.user-group').attr('id');
         var user_group = user_groups.get_user_group_from_id(group_id);
         var btn = $(this);
 
@@ -167,6 +167,34 @@ exports.set_up = function () {
                 btn.text(i18n.t("Failed!"));
             },
         });
+    });
+
+    $('#user-groups').on('keypress', '.user-group h4 > span', function (e) {
+        if (e.which === 13) {
+            e.preventDefault();
+        }
+    });
+
+    $('#user-groups').on('input', '.user-group h4 > span', function () {
+        var element = this.className;
+        var current_text = $(this).text();
+        var sibling_element = $(this).siblings('span').first().attr('class');
+        var sibling_text = $(this).siblings('span').first().text();
+        var group_id = $(this).parents('.user-group').attr('id');
+        var user_group = user_groups.get_user_group_from_id(group_id);
+        var saved_text = user_group[element];
+        var saved_sibling_text = user_group[sibling_element];
+
+        var has_changes = saved_text !== current_text || saved_sibling_text !== sibling_text;
+        var save_changes = $(this).siblings('.save-group-changes');
+        var save_hidden = save_changes.css('display') === 'none';
+        var has_content = current_text.trim() !== '' && sibling_text.trim() !== '';
+
+        if (has_changes && save_hidden && has_content) {
+            save_changes.css({display: 'inline', opacity: '0'}).fadeTo(400, 1);
+        } else if ((!has_changes || !has_content) && !save_hidden) {
+            save_changes.fadeOut();
+        }
     });
 };
 

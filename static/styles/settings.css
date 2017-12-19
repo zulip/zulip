@@ -823,10 +823,30 @@ input[type=checkbox].inline-block {
     margin-right: 5px;
 }
 
-#user-groups .user-group h4 > span {
-    font-weight: initial;
+#user-groups .user-group h4 {
+    font-weight: normal;
 }
 
+#user-groups .user-group h4 > .name {
+    font-weight: bold;
+}
+
+#user-groups .user-group h4 > span[contenteditable="true"] {
+    padding: 2px 4px;
+    border: 1px solid hsl(0, 0%, 86%);
+    border-radius: 4px;
+}
+
+#user-groups .user-group h4 > span[contenteditable="true"]:focus {
+    outline: none;
+    box-shadow: 0 0 3px 2px hsl(0, 0%, 86%);
+}
+
+#user-groups .user-group h4 > .button {
+    vertical-align: 1px;
+}
+
+#user-groups .save-group-changes,
 #user-groups .save-member-changes {
     display: none;
     opacity: 0;
