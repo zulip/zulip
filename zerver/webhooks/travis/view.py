@@ -23,16 +23,15 @@ MESSAGE_TEMPLATE = (
 
 @api_key_only_webhook_view('Travis')
 @has_request_variables
-def api_travis_webhook(request, user_profile,
-                       stream=REQ(default='travis'),
-                       topic=REQ(default=None),
-                       ignore_pull_requests=REQ(validator=check_bool, default=True),
-                       message=REQ('payload', validator=check_dict([
+def api_travis_webhook(request: HttpRequest, user_profile: UserProfile,
+                       stream: str = REQ(default='travis'),
+                       topic: str = REQ(default=None),
+                       ignore_pull_requests: bool = REQ(validator=check_bool, default=True),
+                       message: Dict[str, str]=REQ('payload', validator=check_dict([
                            ('author_name', check_string),
                            ('status_message', check_string),
                            ('compare_url', check_string),
-                       ]))):
-    # type: (HttpRequest, UserProfile, str, str, bool, Dict[str, str]) -> HttpResponse
+                       ]))) -> HttpResponse:
 
     message_status = message['status_message']
     if ignore_pull_requests and message['type'] == 'pull_request':
