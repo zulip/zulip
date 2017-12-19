@@ -1131,7 +1131,3 @@ ZAPIER_INTEGRATIONS = [
     ZapierIntegration("xmatters-zapier", display_name="xMatters-Zapier", logo_alt="xMatters logo"),
     ZapierIntegration("zipform-plus-zapier", display_name="zipForm Plus-Zapier", logo_alt="zipForm Plus logo"),
 ]   # type: List[ZapierIntegration]
-
-# add Zapier integrations into the dict
-for zapier_integration in ZAPIER_INTEGRATIONS:
-    INTEGRATIONS[zapier_integration.name] = zapier_integration
