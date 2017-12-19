@@ -1,12 +1,19 @@
 {{#with user_group}}
 <div class="user-group" id="{{id}}">
-    <h4>{{name}}<span> — {{description}}</span></h4>
+    <h4>
+        <span class="name" contenteditable="true">{{name}}</span>
+        —
+        <span class="description" contenteditable="true">{{description}}</span>
+        <button class="button rounded small save-group-changes sea-green">
+            <i class="fa fa-check" aria-hidden="true"></i>
+        </button>
+        <button class="button rounded small delete btn-danger">
+            <i class="fa fa-trash-o" aria-hidden="true"></i>
+        </button>
+    </h4>
     <div class="pill-container" data-group-pills="{{name}}">
         <div class="input" contenteditable="true"></div>
     </div>
-    <button class="button rounded small delete btn-danger">
-        <i class="icon-vector-trash" aria-hidden="true"></i>
-    </button>
     <button class="button rounded small save-member-changes sea-green">
         <i class="fa fa-check" aria-hidden="true"></i>
     </button>

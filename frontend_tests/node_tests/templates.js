@@ -301,7 +301,7 @@ function render(template_name, args) {
 
     var group_id = $(html).find('.user-group:first').prop('id');
     var group_name = $(html).find('.user-group:first .pill-container').attr('data-group-pills');
-    var group_description = $(html).find('.user-group:first h4').text();
+    var group_description = $(html).find('.user-group:first h4').text().trim().replace(/\s+/g, ' ');
 
     assert.equal(group_id, '9');
     assert.equal(group_name, 'uranohoshi');
