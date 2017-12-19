@@ -4025,7 +4025,7 @@ def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
     for invitee in prereg_users:
         invites.append(dict(email=invitee.email,
                             ref=invitee.referred_by.email,
-                            invited=invitee.invited_at.strftime("%Y-%m-%d %H:%M:%S"),
+                            invited=datetime_to_timestamp(invitee.invited_at),
                             id=invitee.id,
                             invited_as_admin=invitee.invited_as_admin))
 
@@ -4044,7 +4044,7 @@ def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
     prereg_user.delete()
     clear_scheduled_invitation_emails(email)
 
-def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> str:
+def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> int:
     check_invite_limit(prereg_user.referred_by, 1)
 
     prereg_user.invited_at = timezone_now()
@@ -4058,7 +4058,7 @@ def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> str:
     event = {"prereg_id": prereg_user.id, "referrer_id": prereg_user.referred_by.id, "email_body": None}
     queue_json_publish("invites", event)
 
-    return prereg_user.invited_at.strftime("%Y-%m-%d %H:%M:%S")
+    return datetime_to_timestamp(prereg_user.invited_at)
 
 def notify_realm_emoji(realm: Realm) -> None:
     event = dict(type="realm_emoji", op="update",
