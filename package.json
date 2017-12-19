@@ -9,7 +9,6 @@
     "@types/webpack": "3.0.13",
     "blueimp-md5": "2.10.0",
     "clipboard": "1.5.16",
-    "difflib": "0.2.4",
     "emoji-datasource": "3.0.0",
     "emoji-datasource-apple": "3.0.0",
     "emoji-datasource-emojione": "3.0.0",
@@ -48,6 +47,7 @@
   "devDependencies": {
     "casperjs": "casperjs/casperjs",
     "cssstyle": "0.2.29",
+    "difflib": "0.2.4",
     "eslint": "3.9.1",
     "htmlparser2": "3.8.3",
     "istanbul": "0.4.5",
