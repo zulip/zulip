@@ -259,7 +259,7 @@ def main(options):
     # Import tools/setup_venv.py instead of running it so that we get an
     # activated virtualenv for the rest of the provisioning process.
     from tools.setup import setup_venvs
-    setup_venvs.main(is_travis)
+    setup_venvs.main()
 
     setup_shell_profile('~/.bash_profile')
     setup_shell_profile('~/.zprofile')
