@@ -1298,6 +1298,10 @@ div.focused_table {
     position: relative;
 }
 
+.message_row {
+    overflow: hidden;
+}
+
 .message_content:empty {
     display: none;
 }
