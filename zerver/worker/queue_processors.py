@@ -59,6 +59,7 @@ from io import StringIO
 import re
 import importlib
 
+logger = logging.getLogger(__name__)
 
 class WorkerDeclarationException(Exception):
     pass
@@ -232,7 +233,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
                 return
 
         referrer = get_user_profile_by_id(data["referrer_id"])
-        logging.info("Sending invitation for realm %s to %s" % (referrer.realm.string_id, invitee.email))
+        logger.info("Sending invitation for realm %s to %s" % (referrer.realm.string_id, invitee.email))
         do_send_confirmation_email(invitee, referrer)
 
         # queue invitation reminder for two days from now.
