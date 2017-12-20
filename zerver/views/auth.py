@@ -534,6 +534,15 @@ def add_dev_login_context(realm: Realm, context: Dict[str, Any]) -> None:
     context['guest_users'] = [u for u in users if u.is_guest]
     context['direct_users'] = [u for u in users if not (u.is_realm_admin or u.is_guest)]
 
+def update_login_page_context(request: HttpRequest, context: Dict[str, Any]) -> None:
+    for key in ('email', 'subdomain', 'already_registered'):
+        try:
+            context[key] = request.GET[key]
+        except KeyError:
+            pass
+
+    context['wrong_subdomain_error'] = WRONG_SUBDOMAIN_ERROR
+
 def login_page(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     if request.user.is_authenticated:
         return HttpResponseRedirect(request.user.realm.uri)
@@ -569,23 +578,7 @@ def login_page(request: HttpRequest, **kwargs: Any) -> HttpResponse:
         assert len(e.args) > 1
         return redirect_to_misconfigured_ldap_notice(e.args[1])
 
-    try:
-        template_response.context_data['email'] = request.GET['email']
-    except KeyError:
-        pass
-
-    try:
-        already_registered = request.GET['already_registered']
-        template_response.context_data['already_registered'] = already_registered
-    except KeyError:
-        pass
-
-    try:
-        template_response.context_data['subdomain'] = request.GET['subdomain']
-        template_response.context_data['wrong_subdomain_error'] = WRONG_SUBDOMAIN_ERROR
-    except KeyError:
-        pass
-
+    update_login_page_context(request, template_response.context_data)
     return template_response
 
 @csrf_exempt
