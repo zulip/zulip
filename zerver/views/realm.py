@@ -2,7 +2,7 @@
 from typing import Any, Dict, Optional, List, Text
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
-
+from django.conf import settings
 from zerver.decorator import require_realm_admin, to_non_negative_int, to_not_negative_int_or_none
 from zerver.lib.actions import (
     do_set_realm_message_editing,
@@ -59,6 +59,8 @@ def update_realm(
         return json_error(_("Realm name is too long."))
     if authentication_methods is not None and True not in list(authentication_methods.values()):
         return json_error(_("At least one authentication method must be enabled."))
+    if signup_notifications_stream_id is not None and settings.NEW_USER_BOT is None:
+        return json_error(_("NEW_USER_BOT must configured first."))
 
     # The user of `locals()` here is a bit of a code smell, but it's
     # restricted to the elements present in realm.property_types.

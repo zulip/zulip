@@ -581,6 +581,11 @@ function test_change_allow_subdomains(change_allow_subdomains) {
         assert.equal(stream_id, 75);
         return { name: 'some_stream' };
     };
+    page_params.new_user_bot_configured = false;
+    settings_org.render_signup_notifications_stream_ui(75);
+    assert.equal(elem.text(), 'translated: Disabled');
+    assert(elem.hasClass('text-warning'));
+    page_params.new_user_bot_configured = true;
     settings_org.render_signup_notifications_stream_ui(75);
     assert.equal(elem.text(), '#some_stream');
     assert(!elem.hasClass('text-warning'));

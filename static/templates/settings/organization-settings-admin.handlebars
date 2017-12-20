@@ -171,7 +171,7 @@
                 {{t "New user notifications:" }}
                 <span class="dropup actual-dropdown-menu" id="id_realm_signup_notifications_stream"
                     name="realm_signup_notifications_stream" aria-labelledby="realm_signup_notifications_stream_label">
-                    <button class="button small rounded dropdown-toggle" data-toggle="dropdown">
+                    <button class="button small rounded dropdown-toggle" data-toggle="dropdown" {{#unless new_user_bot_configured }} disabled="disabled" {{/unless}}>
                         <span id="realm_signup_notifications_stream_name"></span>
                         <i class="fa fa-pencil"></i>
                     </button>
@@ -184,8 +184,13 @@
                 </span>
             </label>
             {{#if is_admin }}
-            <a class="signup-notifications-stream-disable">{{t "[Disable]" }}</a>
+                {{#if new_user_bot_configured }}
+                <a class="signup-notifications-stream-disable">{{t "[Disable]" }}</a>
+                {{/if}}
             {{/if}}
+            <i class="icon-vector-question-sign signup_notification_stream_tooltip" data-toggle="tooltip"
+                {{#if new_user_bot_configured}}style="display:none" {{/if}}
+                title="{{t 'You must configured new user bot before setting a stream.' }}"/>
         </div>
 
     </form>

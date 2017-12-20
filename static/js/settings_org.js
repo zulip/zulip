@@ -170,7 +170,7 @@ exports.render_signup_notifications_stream_ui = function (stream_id) {
 
     var name = stream_data.maybe_get_stream_name(stream_id);
 
-    if (!name) {
+    if (!name || !page_params.new_user_bot_configured) {
         elem.text(i18n.t("Disabled"));
         elem.addClass("text-warning");
         return;

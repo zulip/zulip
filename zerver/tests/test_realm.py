@@ -216,6 +216,10 @@ class RealmTest(ZulipTestCase):
 
         new_signup_notifications_stream_id = 4
         req = dict(signup_notifications_stream_id = ujson.dumps(new_signup_notifications_stream_id))
+        with self.settings(NEW_USER_BOT=None):
+            result = self.client_patch("/json/realm", req)
+            self.assert_json_error(result, 'NEW_USER_BOT must configured first.')
+
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
         realm = get_realm('zulip')
