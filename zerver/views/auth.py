@@ -578,6 +578,11 @@ def login_page(request: HttpRequest, **kwargs: Any) -> HttpResponse:
         assert len(e.args) > 1
         return redirect_to_misconfigured_ldap_notice(e.args[1])
 
+    if isinstance(template_response, HttpResponseRedirect):
+        # We return immediately; redirect responses don't have a
+        # `.context_data` to update with update_login_page_context.
+        return template_response
+
     update_login_page_context(request, template_response.context_data)
     return template_response
 
