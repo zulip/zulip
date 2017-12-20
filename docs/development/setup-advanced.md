@@ -388,8 +388,6 @@ First, you need to install Docker in your development machine
 following the [instructions][docker-install].  Some other interesting
 links for somebody new in Docker are:
 
-* [Get Started](https://docs.docker.com/engine/installation/linux/)
-* [Understand the architecture](https://docs.docker.com/engine/understanding-docker/)
 * [Docker run reference](https://docs.docker.com/engine/reference/run/)
 * [Dockerfile reference](https://docs.docker.com/engine/reference/builder/)
 
