@@ -374,7 +374,7 @@ def add_subscriptions_backend(
                     recipient_user=email_to_user_profile[email],
                     content=msg))
 
-    if announce and len(created_streams) > 0:
+    if announce and len(created_streams) > 0 and settings.NOTIFICATION_BOT is not None:
         notifications_stream = user_profile.realm.get_notifications_stream()
         if notifications_stream is not None:
             if len(created_streams) > 1:
