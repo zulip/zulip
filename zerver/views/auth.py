@@ -1,4 +1,5 @@
 
+from django.forms import Form
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
@@ -25,7 +26,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.context_processors import zulip_default_context, get_realm_from_request
 from zerver.forms import HomepageForm, OurAuthenticationForm, \
-    WRONG_SUBDOMAIN_ERROR, ZulipPasswordResetForm
+    WRONG_SUBDOMAIN_ERROR, ZulipPasswordResetForm, AuthenticationTokenForm
 from zerver.lib.mobile_auth_otp import is_valid_otp, otp_encrypt_api_key
 from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.request import REQ, has_request_variables, JsonableError
@@ -48,6 +49,11 @@ import logging
 import requests
 import time
 import ujson
+
+from two_factor.forms import BackupTokenForm
+from two_factor.views import LoginView as BaseTwoFactorLoginView
+
+ExtraContext = Optional[Dict[str, Any]]
 
 def get_safe_redirect_to(url: str, redirect_host: str) -> str:
     is_url_safe = is_safe_url(url=url, host=redirect_host)
@@ -543,6 +549,46 @@ def update_login_page_context(request: HttpRequest, context: Dict[str, Any]) -> 
             pass
 
     context['wrong_subdomain_error'] = WRONG_SUBDOMAIN_ERROR
+
+class TwoFactorLoginView(BaseTwoFactorLoginView):
+    extra_context = None  # type: ExtraContext
+    form_list = (
+        ('auth', OurAuthenticationForm),
+        ('token', AuthenticationTokenForm),
+        ('backup', BackupTokenForm),
+    )
+
+    def __init__(self, extra_context: ExtraContext=None,
+                 *args: Any, **kwargs: Any) -> None:
+        self.extra_context = extra_context
+        super().__init__(*args, **kwargs)
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super(TwoFactorLoginView, self).get_context_data(**kwargs)
+        if self.extra_context is not None:
+            context.update(self.extra_context)
+        update_login_page_context(self.request, context)
+
+        realm = get_realm_from_request(self.request)
+        redirect_to = realm.uri if realm else '/'
+        context['next'] = self.request.GET.get('next', redirect_to)
+        return context
+
+    def done(self, form_list: List[Form], **kwargs: Any) -> HttpResponse:
+        """
+        Login the user and redirect to the desired page.
+
+        We need to override this function so that we can redirect to
+        realm.uri instead of '/'.
+        """
+        old_redirect_url = settings.LOGIN_REDIRECT_URL
+        try:
+            # TODO: Get django-two-factor to support this being an option.
+            settings.LOGIN_REDIRECT_URL = self.get_user().realm.uri
+            redirect_response = super().done(form_list, **kwargs)
+        finally:
+            settings.LOGIN_REDIRECT_URL = old_redirect_url
+        return redirect_response
 
 def login_page(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     if request.user.is_authenticated:

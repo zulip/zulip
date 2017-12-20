@@ -33,6 +33,8 @@ import re
 import DNS
 
 from typing import Any, Callable, List, Optional, Dict
+from two_factor.forms import AuthenticationTokenForm as TwoFactorAuthenticationTokenForm
+from two_factor.utils import totp_digits
 
 MIT_VALIDATION_ERROR = u'That user does not exist at MIT or is a ' + \
                        u'<a href="https://ist.mit.edu/email-lists">mailing list</a>. ' + \
@@ -295,6 +297,16 @@ class OurAuthenticationForm(AuthenticationForm):
         happy with this form.
         """
         return field_name
+
+class AuthenticationTokenForm(TwoFactorAuthenticationTokenForm):
+    """
+    We add this form to update the widget of otp_token. The default
+    widget is an input element whose type is a number, which doesn't
+    stylistically match our theme.
+    """
+    otp_token = forms.IntegerField(label=_("Token"), min_value=1,
+                                   max_value=int('9' * totp_digits()),
+                                   widget=forms.TextInput)
 
 class MultiEmailField(forms.Field):
     def to_python(self, emails: str) -> List[str]:
