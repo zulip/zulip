@@ -167,6 +167,14 @@ body.dark-mode .popover.top .arrow {
     border-top-color: hsl(235, 18%, 7%);
 }
 
+body.dark-mode ul.filters li:hover .arrow {
+    color: hsl(236, 33%, 80%);
+}
+
+body.dark-mode ul.filters li .arrow:hover {
+    color: hsl(0, 0%, 100%);
+}
+
 body.dark-mode li.active-filter,
 body.dark-mode li.active-sub-filter {
     background-color: hsla(199, 33%, 46%, 0.2);
