@@ -14,7 +14,7 @@ from zerver.lib.exceptions import JsonableError, ErrorCode
 
 from django.http import HttpRequest, HttpResponse
 
-from typing import Any
+from typing import Any, Callable
 
 class RequestVariableMissingError(JsonableError):
     code = ErrorCode.REQUEST_VARIABLE_MISSING
@@ -48,9 +48,9 @@ class REQ:
         pass
     NotSpecified = _NotSpecified()
 
-    def __init__(self, whence=None, converter=None, default=NotSpecified,
-                 validator=None, argument_type=None):
-        # type: (str, Callable[Any, Any], Any, Callable[Any, Any], str) -> None
+    def __init__(self, whence: str=None, converter: Callable[[Any], Any]=None,
+                 default: Any=NotSpecified, validator: Callable[[Any], Any]=None,
+                 argument_type: str=None) -> None:
         """whence: the name of the request variable that should be used
         for this parameter.  Defaults to a request variable of the
         same name as the parameter.
