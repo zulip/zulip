@@ -173,6 +173,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
     # These end up in a global JavaScript Object named 'page_params'.
     page_params = dict(
         # Server settings.
+        new_user_bot_configured = settings.NEW_USER_BOT is not None,
         development_environment = settings.DEVELOPMENT,
         debug_mode            = settings.DEBUG,
         test_suite            = settings.TEST_SUITE,
