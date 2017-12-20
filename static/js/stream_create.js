@@ -33,11 +33,6 @@ var stream_name_error = (function () {
         $("#stream_name_error").show();
     };
 
-    self.report_invalid_chars = function () {
-        $("#stream_name_error").text(i18n.t("Stream names cannot contain #, *, `, or @."));
-        $("#stream_name_error").show();
-    };
-
     self.select = function () {
         $("#create_stream_name").focus().select();
     };
@@ -67,13 +62,6 @@ var stream_name_error = (function () {
 
         if (stream_data.get_sub(stream_name)) {
             self.report_already_exists();
-            self.select();
-            return false;
-        }
-
-        // Keep characters in sync with Stream.NAME_INVALID_CHARS
-        if (/[#*`@]/.test(stream_name)) {
-            self.report_invalid_chars();
             self.select();
             return false;
         }

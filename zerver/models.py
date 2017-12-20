@@ -862,8 +862,6 @@ def generate_email_token_for_stream() -> str:
 
 class Stream(models.Model):
     MAX_NAME_LENGTH = 60
-    # Keep in sync with stream_create.js
-    NAME_INVALID_CHARS = ['*', '@', '`', '#']
     name = models.CharField(max_length=MAX_NAME_LENGTH, db_index=True)  # type: Text
     realm = models.ForeignKey(Realm, db_index=True, on_delete=CASCADE)  # type: Realm
     invite_only = models.NullBooleanField(default=False)  # type: Optional[bool]

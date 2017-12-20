@@ -1369,18 +1369,6 @@ class SubscriptionRestApiTest(ZulipTestCase):
         self.assert_json_error(result,
                                "Stream name too long (limit: 60 characters).")
 
-    def test_stream_name_has_invalid_characters(self) -> None:
-        email = self.example_email('hamlet')
-        self.login(email)
-
-        stream_name = "a*"
-        request = {
-            'delete': ujson.dumps([stream_name])
-        }
-        result = self.api_patch(email, "/api/v1/users/me/subscriptions", request)
-        self.assert_json_error(result,
-                               "Invalid characters in stream name (disallowed characters: *, @, `, #).")
-
     def test_stream_name_contains_null(self) -> None:
         email = self.example_email('hamlet')
         self.login(email)
