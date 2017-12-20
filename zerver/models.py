@@ -174,6 +174,8 @@ class Realm(models.Model):
     DEFAULT_MAX_INVITES = 100
     max_invites = models.IntegerField(default=DEFAULT_MAX_INVITES)  # type: int
     message_visibility_limit = models.IntegerField(null=True)  # type: int
+    # See upload_quota_bytes; don't interpret upload_quota_gb directly.
+    upload_quota_gb = models.IntegerField(null=True)  # type: int
 
     # Define the types of the various automatically managed properties
     property_types = dict(
@@ -256,6 +258,13 @@ class Realm(models.Model):
         if self.signup_notifications_stream is not None and not self.signup_notifications_stream.deactivated:
             return self.signup_notifications_stream
         return None
+
+    def upload_quota_bytes(self) -> Optional[int]:
+        if self.upload_quota_gb is None:
+            return None
+        # We describe the quota to users in "GB" or "gigabytes", but actually apply
+        # it as gibibytes (GiB) to be a bit more generous in case of confusion.
+        return self.upload_quota_gb << 30
 
     @property
     def subdomain(self) -> Text:
