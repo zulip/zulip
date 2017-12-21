@@ -1733,7 +1733,7 @@ input.new-organization-button {
         position: fixed;
         top: 70px;
         left: 9px;
-        fill: hsl(222, 33%, 33%);
+        fill: hsl(0, 0%, 100%);
         z-index: 2;
 
 
