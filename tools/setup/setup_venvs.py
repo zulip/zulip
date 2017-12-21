@@ -13,6 +13,7 @@ from scripts.lib.zulip_tools import run, subprocess_text_output
 VENV_PATH = "/srv/zulip-py3-venv"
 
 DEV_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "dev.txt")
+is_travis = 'TRAVIS' in os.environ
 
 def main() -> None:
     # Get the correct Python interpreter. If we don't do this and use

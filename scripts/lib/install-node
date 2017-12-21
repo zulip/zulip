@@ -23,6 +23,14 @@ fi
 if [ "$current_node_version" != "v$node_version" ]; then
     export NVM_DIR=/usr/local/nvm
     if ! [ -e "$NVM_DIR/nvm.sh" ]; then
+        # CircleCI forces GitHub urls to use ssh instead of
+        # https by creating a .gitconfig file which which breaks
+        # the git clone in the nvm install script.
+        gitconfigfile=/home/circleci/.gitconfig
+        if [ -f "$gitconfigfile" ] ; then
+            ls -l $gitconfigfile && head -v $gitconfigfile || true
+            rm -f $gitconfigfile
+        fi
         wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.32.0/install.sh | bash
     fi
 

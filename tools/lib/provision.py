@@ -308,6 +308,7 @@ def main(options):
         run(["sudo", "pg_createcluster", "-e", "utf8", "--start", POSTGRES_VERSION, "main"])
         run(["sudo", "service", "redis-server", "restart"])
         run(["sudo", "service", "memcached", "restart"])
+        run(["sudo", "service", "postgresql", "restart"])
     if not options.is_production_travis:
         # The following block is skipped for the production Travis
         # suite, because that suite doesn't make use of these elements
