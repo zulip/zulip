@@ -65,12 +65,13 @@ exports.mark_messages_as_read = function (messages, options) {
         return;
     }
 
+    message_flags.send_read(messages);
+
     _.each(messages, function (message) {
         if (current_msg_list === message_list.narrowed) {
             unread.messages_read_in_narrow = true;
         }
 
-        message_flags.send_read(message);
         unread.mark_as_read(message.id);
         process_newly_read_message(message, options);
     });
