@@ -165,12 +165,6 @@
       "text_content": "int x = 3\n* 4;\n"
     },
     {
-      "name": "malformed_fence",
-      "input": "~~~~~~~~xxxxxxxxx:  xxxxxxxxxxxx xxxxx x xxxxxxxx~~~~~~",
-      "expected_output": "<p>~~~~~~~~xxxxxxxxx:  xxxxxxxxxxxx xxxxx x xxxxxxxx~~~~~~</p>",
-      "text_content": "~~~~~~~~xxxxxxxxx:  xxxxxxxxxxxx xxxxx x xxxxxxxx~~~~~~"
-    },
-    {
       "name": "strikthrough_basic",
       "input": "I like ~~software~~ hardware",
       "expected_output": "<p>I like <del>software</del> hardware</p>",
@@ -183,10 +177,11 @@
       "text_content": "I like software love hardware"
     },
     {
-      "name": "strikthrough_multiword",
+      "name": "strikthrough_multiword_spaces",
       "input": "I ~~ like software ~~ love hardware",
-      "expected_output": "<p>I <del> like software </del> love hardware</p>",
-      "text_content": "I  like software  love hardware"
+      "expected_output": "<p>I <del>like software</del> love hardware</p>",
+      "marked_expected_output": "<p>I <del> like software </del> love hardware</p>",
+      "text_content": "I like software love hardware"
     },
     {
       "name": "underscore_disabled",
