@@ -205,7 +205,7 @@ sudo apt-get install build-essential git ruby lxc redir
 #### Windows 10
 
 1. Install [Git for Windows][git-bash], which installs *Git BASH*.
-2. Install [VirtualBox][vbox-dl] (version >= 5.1.6).
+2. Install [VirtualBox][vbox-dl] (version >= 5.1.6 but < 5.2).
 3. Install [Vagrant][vagrant-dl-win] (version 1.8.4-1.8.6, do not use 1.8.7).
 
 (Note: While *Git BASH* is recommended, you may also use [Cygwin][cygwin-dl].
