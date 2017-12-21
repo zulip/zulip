@@ -1295,6 +1295,7 @@ div.focused_table {
     font-size: 14px;
     margin-left: 46px;
     display: block;
+    overflow: hidden;
     position: relative;
 }
 
