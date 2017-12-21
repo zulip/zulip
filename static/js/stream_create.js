@@ -258,8 +258,35 @@ exports.show_new_stream_modal = function () {
     });
 };
 
+function update_people_to_add_list() {
+    var user_checkboxes_div = document.getElementById("user-checkboxes");
+    var people_to_add_list = $('#user-checkboxes');
+
+    // Current user should pinned to top of list, regardless of the value of
+    // checkbox is checked or unchecked.
+    var all_users = people.get_rest_of_realm();
+
+    // Document fragements are used to append elements into DOM tree.
+    // They are not part of main DOM tree.
+    var checked_users = document.createDocumentFragment();
+    var unchecked_users = document.createDocumentFragment();
+    var user_label;
+    var i;
+
+    for (i = 0; i < all_users.length; i += 1) {
+        user_label = user_checkboxes_div.querySelector('[data-email="' + all_users[i].email + '"]');
+        if (user_label.getElementsByTagName("input")[0].checked) {
+            checked_users.appendChild(user_label);
+        } else {
+            unchecked_users.appendChild(user_label);
+        }
+    }
+    people_to_add_list.append(checked_users).append(unchecked_users);
+}
+
 $(function () {
     $('body').on('change', '#user-checkboxes input, #make-invite-only input', update_announce_stream_state);
+    $('body').on('change', '#user-checkboxes input', update_people_to_add_list);
 
     // 'Check all' and 'Uncheck all' visible users
     $(document).on('click', '.subs_set_all_users', function (e) {
