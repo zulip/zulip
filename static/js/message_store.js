@@ -91,8 +91,7 @@ exports.insert_recent_private_message = (function () {
 }());
 
 exports.set_message_booleans = function (message) {
-    message.flags = message.flags || [];
-    var flags = message.flags;
+    var flags = message.flags || [];
 
     function convert_flag(flag_name) {
         return flags.indexOf(flag_name) >= 0;
@@ -105,6 +104,12 @@ exports.set_message_booleans = function (message) {
     message.mentioned_me_directly =  convert_flag('mentioned');
     message.collapsed = convert_flag('collapsed');
     message.alerted = convert_flag('has_alert_word');
+
+    // Once we have set boolean flags here, the `flags` attribute is
+    // just a distraction, so we delete it.  (All the downstream code
+    // uses booleans.)
+    delete message.flags;
+
 };
 
 exports.init_booleans = function (message) {

@@ -138,7 +138,7 @@ global.people.initialize_current_user(me.user_id);
 
         assert.deepEqual(message.stream, [me, cindy]);
         assert.equal(message.reply_to, 'me@example.com');
-        assert.deepEqual(message.flags, []);
+        assert.deepEqual(message.flags, undefined);
         assert.equal(message.alerted, false);
     });
 
