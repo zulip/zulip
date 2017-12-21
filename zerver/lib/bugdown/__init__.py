@@ -1461,7 +1461,7 @@ class Bugdown(markdown.Extension):
         nested_paren_chunk = nested_paren_chunk % (inner_paren_contents,)
         tlds = '|'.join(list_of_tlds())
         link_regex = r"""
-            (?<![^\s'"\(,:<])    # Start after whitespace or specified chars
+            (?<![^\s\W\w'"\(,:<])    # Start after whitespace or specified chars
                                  # (Double-negative lookbehind to allow start-of-string)
             (?P<url>             # Main group
                 (?:(?:           # Domain part

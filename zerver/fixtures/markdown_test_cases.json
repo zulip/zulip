@@ -454,9 +454,14 @@
       "expected_output": "<p>&lt;scr&lt;script&gt;&lt;/script&gt;ipt type=\"text/javascript\"&gt;alert(\"foo\");&lt;/&lt;script&gt;&lt;/script&gt;script&lt;del&gt;&lt;/del&gt;&gt;</p>"
     },
     {
+      "name": "prepended_by_multibyte_characters",
+      "input": "日本語https://example.com",
+      "expected_output": "<p>日本語<a href=\"https://example.com\" target=\"_blank\" title=\"https://example.com\">https://example.com</a></p>"
+    },
+    {
       "name": "safe_html_unclosed_tag",
       "input": "<script src=http://xx.com/xss.js<b>",
-      "expected_output": "<p>&lt;script src=http://xx.com/xss.js&lt;b&gt;</p>",
+      "expected_output": "<p>&lt;script src=<a href=\"http://xx.com/xss.js&lt;b\" target=\"_blank\" title=\"http://xx.com/xss.js&lt;b\">http://xx.com/xss.js&lt;b</a>&gt;</p>",
       "marked_expected_output": "<p>&lt;script src=http://xx.com/xss.js&lt;b&gt;\n\n</p>"
     },
     {
@@ -801,12 +806,12 @@
     ],
     [
       "javascript://foo.com",
-      "<p>javascript://foo.com</p>",
+      "<p>javascript://<a href=\"http://foo.com\" target=\"_blank\" title=\"http://foo.com\">foo.com</a></p>",
       ""
     ],
     [
       "foobarscript://foo.com",
-      "<p>foobarscript://foo.com</p>",
+      "<p>foobarscript://<a href=\"http://foo.com\" target=\"_blank\" title=\"http://foo.com\">foo.com</a></p>",
       ""
     ],
     [
@@ -821,7 +826,7 @@
     ],
     [
       "[foo](javascript://foo.com)",
-      "<p>[foo](javascript://foo.com)</p>",
+      "<p>[foo](javascript://<a href=\"http://foo.com\" target=\"_blank\" title=\"http://foo.com\">foo.com</a>)</p>",
       ""
     ],
     [
@@ -831,12 +836,12 @@
     ],
     [
       "itms://itunes.com/apps/appname",
-      "<p>itms://itunes.com/apps/appname</p>",
+      "<p>itms://<a href=\"http://itunes.com/apps/appname\" target=\"_blank\" title=\"http://itunes.com/apps/appname\">itunes.com/apps/appname</a></p>",
       ""
     ],
     [
       "[foo](itms://itunes.com/apps/appname)",
-      "<p>[foo](itms://itunes.com/apps/appname)</p>",
+      "<p>[foo](itms://<a href=\"http://itunes.com/apps/appname\" target=\"_blank\" title=\"http://itunes.com/apps/appname\">itunes.com/apps/appname</a>)</p>",
       ""
     ],
     [
@@ -866,7 +871,7 @@
     ],
     [
       "a@b.com/foo",
-      "<p>a@b.com/foo</p>",
+      "<p>a@<a href=\"http://b.com/foo\" target=\"_blank\" title=\"http://b.com/foo\">b.com/foo</a></p>",
       ""
     ],
     [
@@ -958,6 +963,21 @@
       "quora http://generate.quora.net/render?width=700&from=-4hours&until=now&height=400&bgcolor=black&lineMode=connected&title=arb%20hint%20status&target=alias(ans.hintland.hand.arb.enhint_rate%2C%22enhint%20rate%22)&target=alias(ans.hintland.hand.arb.unhint_rate%2C%22unhint%20rate%22)&target=alias(ans.hintland.hand.arb.size%2C%22hint%20size%22)&target=alias(scale(ans.vagabond.dingarb_cube_count%2C10000)%2C%22cube%20count%20x%2010K%22)&target=alias(scale(hnumbers.time.ding.gegevens.query.count%2C10)%2C%22ding%20gegevens%20query%20count%20x%2010%22)&fgcolor=white&uniq=0.44046106841415167",
       "<p>quora %s</p>",
       "http://generate.quora.net/render?width=700&amp;from=-4hours&amp;until=now&amp;height=400&amp;bgcolor=black&amp;lineMode=connected&amp;title=arb%20hint%20status&amp;target=alias(ans.hintland.hand.arb.enhint_rate%2C%22enhint%20rate%22)&amp;target=alias(ans.hintland.hand.arb.unhint_rate%2C%22unhint%20rate%22)&amp;target=alias(ans.hintland.hand.arb.size%2C%22hint%20size%22)&amp;target=alias(scale(ans.vagabond.dingarb_cube_count%2C10000)%2C%22cube%20count%20x%2010K%22)&amp;target=alias(scale(hnumbers.time.ding.gegevens.query.count%2C10)%2C%22ding%20gegevens%20query%20count%20x%2010%22)&amp;fgcolor=white&amp;uniq=0.44046106841415167"
+    ],
+    [
+      "ahttps://example.com",
+      "<p>a<a href=\"https://example.com\" target=\"_blank\" title=\"https://example.com\">https://example.com</a></p>",
+      ""
+    ],
+    [
+      "ad;https://example.com",
+      "<p>ad;<a href=\"https://example.com\" target=\"_blank\" title=\"https://example.com\">https://example.com</a></p>",
+      ""
+    ],
+    [
+      "ad/https://example.com",
+      "<p>ad/<a href=\"https://example.com\" target=\"_blank\" title=\"https://example.com\">https://example.com</a></p>",
+      ""
     ]
   ]
 }
