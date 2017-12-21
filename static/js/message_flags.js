@@ -45,7 +45,7 @@ exports.send_read = (function () {
         });
     }
 
-    start = _.debounce(server_request, 1000);
+    start = _.throttle(server_request, 1000);
 
     on_success = function on_success(data) {
         if (data ===  undefined || data.messages === undefined) {
@@ -61,8 +61,8 @@ exports.send_read = (function () {
         }
     };
 
-    function add(message) {
-        queue.push(message);
+    function add(messages) {
+        queue = queue.concat(messages);
         start();
     }
 
