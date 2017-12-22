@@ -81,7 +81,7 @@ def email_on_new_login(sender: Any, user: UserProfile, request: Any, **kwargs: A
 
         context = common_context(user)
         context['device_info'] = device_info
-        context['user'] = user
+        context['user_email'] = user.email
 
         email_dict = {
             'template_prefix': 'zerver/emails/notify_new_login',
