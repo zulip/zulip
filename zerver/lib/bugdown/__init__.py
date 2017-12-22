@@ -1389,7 +1389,7 @@ class Bugdown(markdown.Extension):
         # Custom strikethrough syntax: ~~foo~~
         md.inlinePatterns.add('del',
                               markdown.inlinepatterns.SimpleTagPattern(
-                                  r'(?<!~)(\~\~)([^~{0}\n]+?)\2(?!~)', 'del'), '>strong')
+                                  r'(?<!~)(\~\~)([^~\n]+?)(\~\~)(?!~)', 'del'), '>strong')
 
         # Text inside ** must start and end with a word character
         # it need for things like "const char *x = (char *)y"
