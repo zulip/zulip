@@ -42,7 +42,22 @@ function call(args, idempotent) {
                                 args: args},
                                ex.stack);
             }
-        }
+        }else if(xhr.status >= 400){
+			try {		
+				var jsonResponse = JSON.parse(xhr.responseText);
+			} catch (ex) {
+                blueslip.error('Unexpected '+ xhr.status +' response from server',
+                               {xhr: xhr.responseText,
+                                args: args},
+                               ex.stack);
+            }
+			if (jsonResponse.result === 'error') {
+				blueslip.error(jsonResponse.msg,
+							   {xhr: xhr.responseText,
+								args: args},
+							   undefined);
+			}				
+		}
         return orig_error(xhr, error_type, xhn);
     };
     var orig_success = args.success;
