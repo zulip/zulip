@@ -159,18 +159,26 @@ MessageListView.prototype = {
 
     add_subscription_marker: function MessageListView__add_subscription_marker(
                                 group, last_msg_container, first_msg_container) {
-        if (last_msg_container !== undefined &&
-            first_msg_container.msg.historical !== last_msg_container.msg.historical) {
+        if (last_msg_container === undefined) {
+            return;
+        }
+
+        var last_subscribed = !last_msg_container.msg.historical;
+        var first_subscribed = !first_msg_container.msg.historical;
+        var stream = first_msg_container.msg.stream;
+
+        if (!last_subscribed && first_subscribed) {
             group.bookend_top = true;
-            if (first_msg_container.msg.historical) {
-                group.unsubscribed = first_msg_container.msg.stream;
-                group.bookend_content =
-                    this.list.unsubscribed_bookend_content(first_msg_container.msg.stream);
-            } else {
-                group.subscribed = first_msg_container.msg.stream;
-                group.bookend_content =
-                    this.list.subscribed_bookend_content(first_msg_container.msg.stream);
-            }
+            group.subscribed = stream;
+            group.bookend_content = this.list.subscribed_bookend_content(stream);
+            return;
+        }
+
+        if (last_subscribed && !first_subscribed) {
+            group.bookend_top = true;
+            group.unsubscribed = stream;
+            group.bookend_content = this.list.unsubscribed_bookend_content(stream);
+            return;
         }
     },
 
