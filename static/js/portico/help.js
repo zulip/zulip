@@ -65,6 +65,14 @@ function render_code_sections() {
 
     $(".sidebar a").click(function (e) {
         var path = $(this).attr("href");
+        var path_dir = path.split('/')[1];
+        var current_dir = window.location.pathname.split('/')[1];
+
+        // Do not block redirecting to external URLs
+        if (path_dir !== current_dir) {
+            return;
+        }
+
         var container = $(".markdown")[0];
 
         if (loading.name === path) {
