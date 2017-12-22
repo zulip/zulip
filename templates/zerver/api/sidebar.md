@@ -2,7 +2,11 @@
 
 * [Installation instructions](/api/installation-instructions)
 * [API keys](/api/api-keys)
-* [Usage](/api/usage)
+
+#### Messages
+
+* [Stream message](/api/stream-message)
+* [Private message](/api/private-message)
 
 ## Integrations
 
