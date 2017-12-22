@@ -1,6 +1,27 @@
 # Private message
 
-Send a private message to a user.
+Send a private message to a user or multiple users.
+
+`POST {{ api_url }}/v1/messages`
+
+## Arguments
+
+| Argument        | Example              | Required  | Description                    |
+| --------------- | -------------------- | --------- | -----------------------------  |
+| `type`          | `private`            | Required  | The type of message to be      |
+|                 |                      |           | sent. `private` for a private  |
+|                 |                      |           | message and `stream` for a     |
+|                 |                      |           | [stream message][1].           |
+|                 |                      |           |                                |
+| `to`            | `wdaher@example.com` | Required  | A JSON-encoded list containing |
+|                 |                      |           | the usernames of the           |
+|                 |                      |           | recipients.                    |
+|                 |                      |           |                                |
+| `content`       | `Hello`              | Required  | The content of the message.    |
+|                 |                      |           | Maximum message size of        |
+|                 |                      |           | 10000 bytes.                   |
+
+[1]: /api/stream-message
 
 ## Usage examples
 <div class="code-section" markdown="1">
@@ -42,14 +63,6 @@ client.send_message({
     "content": "I come not, friends, to steal away your hearts."
 })
 
-# Print each message the user receives
-# This is a blocking call that will run forever
-client.call_on_each_message(lambda msg: sys.stdout.write(str(msg) + "\n"))
-
-# Print every event relevant to the user
-# This is a blocking call that will run forever
-# This will never be reached unless you comment out the previous line
-client.call_on_each_event(lambda msg: sys.stdout.write(str(msg) + "\n"))
 ```
 </div>
 
@@ -64,7 +77,7 @@ zulip-send hamlet@example.com \
 
 You can omit the `user` and `api-key` arguments if you have a `~/.zuliprc` file.
 
-See also the [full API endpoint documentation.](/api/endpoints).
+See also the [full API endpoint documentation](/api/endpoints).
 </div>
 
 <div data-language="javascript" markdown="1">
@@ -87,21 +100,47 @@ client.messages.send({
   content: 'I come not, friends, to steal away your hearts.'
 });
 
-// Register queue to receive messages for user
-client.queues.register({
-  event_types: ['message']
-}).then((res) => {
-  // Retrieve events from a queue
-  // Blocking until there is an event (or the request times out)
-  client.events.retrieve({
-    queue_id: res.queue_id,
-    last_event_id: -1,
-    dont_block: false
-  }).then(console.log);
-});
 ```
 </div>
 
 </div>
 
 </div>
+
+## Response
+
+#### Return values
+
+* `id`: The ID of the newly created message
+
+#### Example response
+
+A typical successful JSON response may look like:
+
+```
+{
+    'msg':'',
+    'id':134,
+    'result':'success'
+}
+```
+
+A typical failed JSON response for when the recipient's email
+address is invalid:
+
+```
+{
+    'code':'BAD_REQUEST',
+    'msg':"Invalid email 'hamlet@example.com'",
+    'result':'error'
+}
+```
+
+A typical failed JSON response for when the API key is invalid:
+
+```
+{
+    'msg':'Invalid API key',
+    'result':'error'
+}
+```
