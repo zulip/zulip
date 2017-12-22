@@ -115,15 +115,7 @@ client.messages.send({
 
 #### Example response
 
-A typical successful JSON response may look like:
-
-```
-{
-    'msg':'',
-    'id':134,
-    'result':'success'
-}
-```
+{!successful-api-send-message-json-response.md!}
 
 A typical failed JSON response for when the recipient's email
 address is invalid:
