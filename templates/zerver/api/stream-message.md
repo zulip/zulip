@@ -2,6 +2,32 @@
 
 Send a message to a stream.
 
+`POST {{ api_url }}/v1/messages`
+
+## Arguments
+
+| Argument        | Example           | Required  | Description                 |
+| --------------- | ----------------- | --------- | --------------------------- |
+| `type`          | `stream`          | Required  | The type of message to be   |
+|                 |                   |           | sent. `stream` for a stream |
+|                 |                   |           | message and `private` for a |
+|                 |                   |           | [private message][1].       |
+|                 |                   |           |                             |
+| `to`            | `Denmark`         | Required  | A string identifying the    |
+|                 |                   |           | stream.                     |
+|                 |                   |           |                             |
+| `subject`       | `Castle`          | Optional  | The topic of the message.   |
+|                 |                   |           | Only required if `type` is  |
+|                 |                   |           | `stream`. Defaults to       |
+|                 |                   |           | `None`. Maximum length of   |
+|                 |                   |           | 60 characters.              |
+|                 |                   |           |                             |
+| `content`       | `Hello`           | Required  | The content of the message. |
+|                 |                   |           | Maximum message size of     |
+|                 |                   |           | 10000 bytes.                |
+
+[1]: /api/private-message
+
 ## Usage examples
 <div class="code-section" markdown="1">
 <ul class="nav">
@@ -45,14 +71,6 @@ client.send_message({
     "content": "Something is rotten in the state of Denmark."
 })
 
-# Print each message the user receives
-# This is a blocking call that will run forever
-client.call_on_each_message(lambda msg: sys.stdout.write(str(msg) + "\n"))
-
-# Print every event relevant to the user
-# This is a blocking call that will run forever
-# This will never be reached unless you comment out the previous line
-client.call_on_each_event(lambda msg: sys.stdout.write(str(msg) + "\n"))
 ```
 </div>
 
@@ -78,7 +96,7 @@ zulip-send --stream Denmark --subject Castle \
 
 You can omit the `user` and `api-key` arguments if you have a `~/.zuliprc` file.
 
-See also the [full API endpoint documentation.](/api/endpoints).
+See also the [full API endpoint documentation](/api/endpoints).
 </div>
 
 <div data-language="javascript" markdown="1">
@@ -102,21 +120,46 @@ client.messages.send({
   content: 'Something is rotten in the state of Denmark.'
 });
 
-// Register queue to receive messages for user
-client.queues.register({
-  event_types: ['message']
-}).then((res) => {
-  // Retrieve events from a queue
-  // Blocking until there is an event (or the request times out)
-  client.events.retrieve({
-    queue_id: res.queue_id,
-    last_event_id: -1,
-    dont_block: false
-  }).then(console.log);
-});
 ```
 </div>
 
 </div>
 
 </div>
+
+## Response
+
+#### Return values
+
+* `id`: The ID of the newly created message
+
+#### Example response
+
+A typical successful JSON response may look like:
+
+```
+{
+    'msg':'',
+    'id':134,
+    'result':'success'
+}
+```
+
+A typical failed JSON response for when the target stream does not exist:
+
+```
+{
+    'code':'BAD_REQUEST',
+    'msg':"Stream 'Denmarkk' does not exist",
+    'result':'error'
+}
+```
+
+A typical failed JSON response for when the API key is invalid:
+
+```
+{
+    'msg':'Invalid API key',
+    'result':'error'
+}
+```
