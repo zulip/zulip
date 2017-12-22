@@ -1281,8 +1281,8 @@ LOGGING = {
     'handlers': {
         'zulip_admins': {
             'level': 'ERROR',
-            'class': 'zerver.logging_handlers.AdminZulipHandler',
-            # For testing the handler delete the next line
+            'class': 'zerver.logging_handlers.AdminNotifyHandler',
+            # For manual testing of this handler, delete the `filters` line.
             'filters': ['ZulipLimiter', 'require_debug_false', 'require_really_deployed'],
             'formatter': 'default'
         },
