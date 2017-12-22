@@ -47,7 +47,21 @@ function get_message(message_id) {
     return message;
 }
 
-function send_reaction_ajax(message_id, reaction_info) {
+function create_reaction(message_id, reaction_info) {
+    return {
+        message_id: message_id,
+        user: {
+            user_id: page_params.user_id,
+            id: page_params.user_id,
+        },
+        local_id: exports.get_local_reaction_id(reaction_info),
+        reaction_type: reaction_info.reaction_type,
+        emoji_name: reaction_info.emoji_name,
+        emoji_code: reaction_info.emoji_code,
+    };
+}
+
+function update_ui_and_send_reaction_ajax(message_id, reaction_info) {
     var message = get_message(message_id);
     var has_reacted = exports.current_user_has_reacted_to_emoji(
         message,
@@ -55,6 +69,13 @@ function send_reaction_ajax(message_id, reaction_info) {
         reaction_info.reaction_type
     );
     var operation = has_reacted ? 'remove' : 'add';
+    var reaction = create_reaction(message_id, reaction_info);
+
+    if (operation === "add") {
+        exports.add_reaction(reaction);
+    } else {
+        exports.remove_reaction(reaction);
+    }
 
     var args = {
         url: '/json/messages/' + message_id + '/reactions',
@@ -107,7 +128,7 @@ exports.toggle_emoji_reaction = function (message_id, emoji_name) {
         return;
     }
 
-    send_reaction_ajax(message_id, reaction_info);
+    update_ui_and_send_reaction_ajax(message_id, reaction_info);
 
     // The next line isn't always necessary, but it is harmless/quick
     // when no popovers are there.
@@ -117,7 +138,7 @@ exports.toggle_emoji_reaction = function (message_id, emoji_name) {
 exports.process_reaction_click = function (message_id, local_id) {
     var reaction_info = exports.get_reaction_info(local_id);
 
-    send_reaction_ajax(message_id, reaction_info);
+    update_ui_and_send_reaction_ajax(message_id, reaction_info);
 };
 
 function full_name(user_id) {
@@ -173,6 +194,13 @@ exports.add_reaction = function (event) {
         // If we don't have the message in cache, do nothing; if we
         // ever fetch it from the server, it'll come with the
         // latest reactions attached
+        return;
+    }
+
+    var reacted = exports.current_user_has_reacted_to_emoji(message,
+                                                            event.emoji_code,
+                                                            event.reaction_type);
+    if (reacted && (event.user.user_id === page_params.user_id)) {
         return;
     }
 
@@ -277,6 +305,13 @@ exports.remove_reaction = function (event) {
         // If we don't have the message in cache, do nothing; if we
         // ever fetch it from the server, it'll come with the
         // latest reactions attached
+        return;
+    }
+
+    var not_reacted = !exports.current_user_has_reacted_to_emoji(message,
+                                                                 emoji_code,
+                                                                 reaction_type);
+    if (not_reacted && (event.user.user_id === page_params.user_id)) {
         return;
     }
 
