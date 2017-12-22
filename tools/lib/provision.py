@@ -215,6 +215,12 @@ def main(options):
     # hash the apt dependencies
     sha_sum = hashlib.sha1()
 
+    # if using docker compose, no need for memcached, rabbitmq, redis
+    if options.is_docker_compose:
+        COMPOSE_IGNORE_PACKAGES = ['memcached', 'rabbitmq-redis-server', ]
+        APT_DEPENDENCIES[codename] = [package for package in UBUNTU_COMMON_APT_DEPENDENCIES
+                                      if package not in COMPOSE_IGNORE_PACKAGES]
+
     for apt_depedency in APT_DEPENDENCIES[codename]:
         sha_sum.update(apt_depedency.encode('utf8'))
     # hash the content of setup-apt-repo
@@ -272,6 +278,8 @@ def main(options):
     setup_shell_profile('~/.bash_profile')
     setup_shell_profile('~/.zprofile')
 
+    if options.is_docker_compose:
+        run(["sudo", "mkdir", "-p", TSEARCH_STOPWORDS_PATH])
     run(["sudo", "cp", REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH])
 
     # create log directory `zulip/var/log`
@@ -314,6 +322,9 @@ def main(options):
         run(["sudo", "pg_createcluster", "-e", "utf8", "--start", POSTGRES_VERSION, "main"])
         run(["sudo", "service", "redis-server", "restart"])
         run(["sudo", "service", "memcached", "restart"])
+    elif options.is_docker_compose:
+        run(["sudo", "pg_dropcluster", "--stop", POSTGRES_VERSION, "main"])
+        run(["sudo", "pg_createcluster", "-e", "utf8", "--start", POSTGRES_VERSION, "main"])
     if not options.is_production_travis:
         # The following block is skipped for the production Travis
         # suite, because that suite doesn't make use of these elements
@@ -408,6 +419,11 @@ if __name__ == "__main__":
                         dest='is_docker',
                         default=False,
                         help="Provision for Docker.")
+
+    parser.add_argument('--docker-compose', action='store_true',
+                        dest='is_docker_compose',
+                        default=False,
+                        help="Provision for Docker Compose.")
 
     options = parser.parse_args()
     sys.exit(main(options))

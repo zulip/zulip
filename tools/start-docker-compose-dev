@@ -1,0 +1,18 @@
+#!/bin/bash
+set -ex
+export LANG="en_US.UTF-8"
+export LC_COLLATE="en_US.UTF-8"
+export LC_CTYPE="en_US.UTF-8"
+export LC_MESSAGES="en_US.UTF-8"
+export LC_MONETARY="en_US.UTF-8"
+export LC_NUMERIC="en_US.UTF-8"
+export LC_TIME="en_US.UTF-8"
+export LC_ALL="en_US.UTF-8"
+
+export DOCKER_COMPOSE=true
+export RABBITMQ_HOST="rabbitmq"
+export REDIS_HOST="redis"
+export MEMCACHED_LOCATION='memcached:11211'
+/srv/zulip/tools/provision --docker-compose
+source /srv/zulip-py3-venv/bin/activate
+/srv/zulip/tools/run-dev.py --interface=''

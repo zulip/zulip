@@ -3,4 +3,7 @@ set -e
 
 # Flush memcached
 echo "Flushing memcached..."
-echo 'flush_all' | nc -w 1 localhost 11211
+if ! echo 'flush_all' | nc -w 1 localhost 11211; then
+    echo "This env is started by docker-compose."
+    echo 'flush_all' | nc -w 1 memcached 11211;
+fi

@@ -1548,7 +1548,12 @@ def get_huddle_backend(huddle_hash: Text, id_list: List[int]) -> Huddle:
         return huddle
 
 def clear_database() -> None:  # nocoverage # Only used in populate_db
-    pylibmc.Client(['127.0.0.1']).flush_all()
+    location = '127.0.0.1'
+    import os
+    if hasattr(settings, "DOCKER_COMPOSE") and settings.DOCKER_COMPOSE:
+        # This env is started by docker-compose
+        location = 'memcached'
+    pylibmc.Client([location]).flush_all()
     model = None  # type: Any
     for model in [Message, Stream, UserProfile, Recipient,
                   Realm, Subscription, Huddle, UserMessage, Client,

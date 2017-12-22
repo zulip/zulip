@@ -1,4 +1,4 @@
-FROM ubuntu:trusty
+FROM quay.io/sameersbn/ubuntu:14.04.20180124
 
 EXPOSE 9991
 

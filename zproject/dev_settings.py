@@ -87,3 +87,13 @@ SENDFILE_BACKEND = 'sendfile.backends.development'
 
 # Set this True to send all hotspots in development
 ALWAYS_SEND_ALL_HOTSPOTS = False  # type: bool
+
+# For docker-compose
+if os.getenv('DOCKER_COMPOSE'):
+    DOCKER_COMPOSE = os.getenv('DOCKER_COMPOSE')
+if os.getenv('RABBITMQ_HOST'):
+    RABBITMQ_HOST = os.getenv('RABBITMQ_HOST')
+if os.getenv('REDIS_HOST'):
+    REDIS_HOST = os.getenv('REDIS_HOST')
+if os.getenv('MEMCACHED_LOCATION'):
+    MEMCACHED_LOCATION = os.getenv('MEMCACHED_LOCATION')
