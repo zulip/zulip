@@ -150,6 +150,7 @@ exports.toggle_actions_popover = function (element, id) {
         var editability = message_edit.get_editability(message);
         var use_edit_icon;
         var editability_menu_item;
+        var show_edit_option = !message.backend_edit_in_flight;
         if (editability === message_edit.editability_types.FULL) {
             use_edit_icon = true;
             editability_menu_item = i18n.t("Edit");
@@ -177,6 +178,7 @@ exports.toggle_actions_popover = function (element, id) {
         var args = {
             message: message,
             use_edit_icon: use_edit_icon,
+            show_edit_option: show_edit_option,
             editability_menu_item: editability_menu_item,
             can_mute_topic: can_mute_topic,
             can_unmute_topic: can_unmute_topic,
