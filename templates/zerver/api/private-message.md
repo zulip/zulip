@@ -1,4 +1,8 @@
-# Usage examples
+# Private message
+
+Send a private message to a user.
+
+## Usage examples
 <div class="code-section" markdown="1">
 <ul class="nav">
 <li data-language="curl">curl</li>
@@ -9,18 +13,7 @@
 <div class="blocks">
 
 <div data-language="curl" markdown="1">
-#### Stream message
 
-```
-curl {{ api_url }}/v1/messages \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
-    -d "type=stream" \
-    -d "to=Denmark" \
-    -d "subject=Castle" \
-    -d "content=Something is rotten in the state of Denmark."
-```
-
-#### Private message
 ```
 curl {{ api_url }}/v1/messages \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
@@ -42,13 +35,6 @@ client = zulip.Client(email="othello-bot@example.com",
                       api_key="a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5",
                       site="{{ api_url }}")
 
-# Send a stream message
-client.send_message({
-    "type": "stream",
-    "to": "Denmark",
-    "subject": "Castle",
-    "content": "Something is rotten in the state of Denmark."
-})
 # Send a private message
 client.send_message({
     "type": "private",
@@ -71,28 +57,8 @@ client.call_on_each_event(lambda msg: sys.stdout.write(str(msg) + "\n"))
 (available after you `pip install zulip`) to easily send Zulips from
 the command-line, providing the message content via STDIN.
 
-#### Stream message
-
-```bash
-zulip-send --stream Denmark --subject Castle \
-    --user othello-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5
-```
-
-#### Private message
-
 ```bash
 zulip-send hamlet@example.com \
-    --user othello-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5
-```
-
-#### Passing in the message on the command-line
-
-If you'd like, you can also provide the message on the command-line with the `-m` flag, as follows:
-
-
-```bash
-zulip-send --stream Denmark --subject Castle \
-    -m "Something is rotten in the state of Denmark." \
     --user othello-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5
 ```
 
@@ -113,14 +79,6 @@ const config = {
 };
 
 const client = zulip(config);
-
-// Send a message
-client.messages.send({
-  to: 'Denmark',
-  type: 'stream',
-  subject: 'Castle',
-  content: 'Something is rotten in the state of Denmark.'
-});
 
 // Send a private message
 client.messages.send({
