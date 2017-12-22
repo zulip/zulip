@@ -88,7 +88,7 @@ class AdminNotifyHandler(logging.Handler):
         logging.Handler.__init__(self)
 
     def emit(self, record: logging.LogRecord) -> None:
-        report = {}
+        report = {}  # type: Dict[str, Any]
 
         try:
             report['node'] = platform.node()
