@@ -59,6 +59,7 @@ from io import StringIO
 import re
 import importlib
 
+logger = logging.getLogger(__name__)
 
 class WorkerDeclarationException(Exception):
     pass
@@ -232,7 +233,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
                 return
 
         referrer = get_user_profile_by_id(data["referrer_id"])
-        logging.info("Sending invitation for realm %s to %s" % (referrer.realm.string_id, invitee.email))
+        logger.info("Sending invitation for realm %s to %s" % (referrer.realm.string_id, invitee.email))
         do_send_confirmation_email(invitee, referrer)
 
         # queue invitation reminder for two days from now.
@@ -246,6 +247,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
         })
         send_future_email(
             "zerver/emails/invitation_reminder",
+            referrer.realm,
             to_email=invitee.email,
             from_address=FromAddress.NOREPLY,
             context=context,
@@ -296,8 +298,8 @@ class MissedMessageWorker(LoopQueueProcessingWorker):
         for user_profile_id, events in by_recipient.items():
             handle_missedmessage_emails(user_profile_id, events)
 
-@assign_queue('missedmessage_email_senders')
-class MissedMessageSendingWorker(QueueProcessingWorker):
+@assign_queue('email_senders')
+class EmailSendingWorker(QueueProcessingWorker):
     @retry_send_email_failures
     def consume(self, data):
         # type: (Dict[str, Any]) -> None
@@ -306,6 +308,19 @@ class MissedMessageSendingWorker(QueueProcessingWorker):
         except EmailNotDeliveredException:
             # TODO: Do something smarter here ..
             pass
+
+@assign_queue('missedmessage_email_senders')
+class MissedMessageSendingWorker(EmailSendingWorker):
+    """
+    Note: Class decorators are not inherited.
+
+    The `missedmessage_email_senders` queue was used up through 1.7.1, so we
+    keep consuming from it in case we've just upgraded from an old version.
+    After the 1.8 release, we can delete it and tell admins to upgrade to 1.8
+    first.
+    """
+    # TODO: zulip-1.8: Delete code related to missedmessage_email_senders queue.
+    pass
 
 @assign_queue('missedmessage_mobile_notifications')
 class PushNotificationsWorker(QueueProcessingWorker):

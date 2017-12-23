@@ -366,7 +366,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
         'from_address': from_address,
         'reply_to_email': formataddr((reply_to_name, reply_to_address)),
         'context': context}
-    queue_json_publish("missedmessage_email_senders", email_dict)
+    queue_json_publish("email_senders", email_dict)
 
     user_profile.last_reminder = timezone_now()
     user_profile.save(update_fields=['last_reminder'])
@@ -453,10 +453,10 @@ def enqueue_welcome_emails(user: UserProfile) -> None:
         'is_realm_admin': user.is_realm_admin,
     })
     send_future_email(
-        "zerver/emails/followup_day1", to_user_id=user.id, from_name=from_name,
+        "zerver/emails/followup_day1", user.realm, to_user_id=user.id, from_name=from_name,
         from_address=from_address, context=context)
     send_future_email(
-        "zerver/emails/followup_day2", to_user_id=user.id, from_name=from_name,
+        "zerver/emails/followup_day2", user.realm, to_user_id=user.id, from_name=from_name,
         from_address=from_address, context=context, delay=datetime.timedelta(days=1))
 
 def convert_html_to_markdown(html: Text) -> Text:

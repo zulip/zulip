@@ -77,6 +77,17 @@ STREAM_LINK_REGEX = r"""
 class BugdownRenderingException(Exception):
     pass
 
+def rewrite_if_relative_link(link: str) -> str:
+    """ If the link points to a local destination we can just switch to that
+    instead of opening a new tab. """
+
+    if db_data:
+        if link.startswith(db_data['realm_uri']):
+            # +1 to skip the `/` before the hash link.
+            return link[len(db_data['realm_uri']) + 1:]
+
+    return link
+
 def url_embed_preview_enabled_for_realm(message: Optional[Message]) -> bool:
     if message is not None:
         realm = message.get_realm()  # type: Optional[Realm]
@@ -1004,15 +1015,8 @@ def url_to_a(url: Text, text: Optional[Text]=None) -> Union[Element, Text]:
     if text is None:
         text = markdown.util.AtomicString(url)
 
-    target_blank = 'mailto:' not in href[:7]
-
-    if db_data:
-        # If the link points to a local destination we can just switch to that
-        # instead of opening a new tab.
-        local_link = re.match("^{}\/(#.+)$".format(re.escape(db_data['realm_uri'])), url)
-        if local_link:
-            href = local_link.group(1)
-            target_blank = False
+    href = rewrite_if_relative_link(href)
+    target_blank = href[:1] != '#' and 'mailto:' not in href[:7]
 
     a.set('href', href)
     a.text = text
@@ -1179,10 +1183,12 @@ class LinkPattern(markdown.inlinepatterns.Pattern):
         if href is None:
             return None
 
+        href = rewrite_if_relative_link(href)
+
         el = markdown.util.etree.Element('a')
         el.text = m.group(2)
         el.set('href', href)
-        fixup_link(el, target_blank = (href[:1] != '#'))
+        fixup_link(el, target_blank=(href[:1] != '#'))
         return el
 
 def prepare_realm_pattern(source: Text) -> Text:
@@ -1606,7 +1612,7 @@ db_data = None  # type: Optional[Dict[Text, Any]]
 
 def log_bugdown_error(msg: str) -> None:
     """We use this unusual logging approach to log the bugdown error, in
-    order to prevent AdminZulipHandler from sending the santized
+    order to prevent AdminNotifyHandler from sending the santized
     original markdown formatting into another Zulip message, which
     could cause an infinite exception loop."""
     logging.getLogger('').error(msg)

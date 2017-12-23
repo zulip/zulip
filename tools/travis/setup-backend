@@ -10,11 +10,3 @@ if ! tools/provision; then
     echo "\`provision\`: Something went wrong with the provisioning, might be a network issue, Retrying to provision..."
     tools/provision
 fi
-
-# Create nagios state so that we can test-run the Nagios checks
-# against the run-dev.py server, as a form of end-to-end test
-# (tools/).
-#
-# TODO: Is this actually required?  We don't seem to use it.
-sudo mkdir -p /var/lib/nagios_state
-sudo chown travis /var/lib/nagios_state

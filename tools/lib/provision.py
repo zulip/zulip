@@ -42,9 +42,11 @@ COVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'coverage')
 LINECOVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'linecoverage-report')
 NODE_TEST_COVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'node-coverage')
 
+is_travis = 'TRAVIS' in os.environ
+is_circleci = 'CIRCLECI' in os.environ
+
 # TODO: De-duplicate this with emoji_dump.py
 EMOJI_CACHE_PATH = "/srv/zulip-emoji-cache"
-is_travis = 'TRAVIS' in os.environ
 if is_travis:
     # In Travis CI, we don't have root access
     EMOJI_CACHE_PATH = "/home/travis/zulip-emoji-cache"
@@ -259,7 +261,7 @@ def main(options):
     # Import tools/setup_venv.py instead of running it so that we get an
     # activated virtualenv for the rest of the provisioning process.
     from tools.setup import setup_venvs
-    setup_venvs.main(is_travis)
+    setup_venvs.main()
 
     setup_shell_profile('~/.bash_profile')
     setup_shell_profile('~/.zprofile')
@@ -295,10 +297,11 @@ def main(options):
     run(["scripts/setup/generate_secrets.py", "--development"])
     run(["tools/update-authors-json", "--use-fixture"])
     run(["tools/inline-email-css"])
-    if is_travis and not options.is_production_travis:
+    if is_circleci or (is_travis and not options.is_production_travis):
         run(["sudo", "service", "rabbitmq-server", "restart"])
         run(["sudo", "service", "redis-server", "restart"])
         run(["sudo", "service", "memcached", "restart"])
+        run(["sudo", "service", "postgresql", "restart"])
     elif options.is_docker:
         run(["sudo", "service", "rabbitmq-server", "restart"])
         run(["sudo", "pg_dropcluster", "--stop", POSTGRES_VERSION, "main"])

@@ -48,6 +48,7 @@
   "devDependencies": {
     "casperjs": "casperjs/casperjs",
     "cssstyle": "0.2.29",
+    "difflib": "0.2.4",
     "eslint": "3.9.1",
     "htmlparser2": "3.8.3",
     "istanbul": "0.4.5",

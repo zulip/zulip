@@ -40,8 +40,19 @@ RUN apt-get update \
     netcat unzip zip jq \
     python3-pip \
   && ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime \
-  && { locale-gen C.UTF-8 || true; }
-ENV LANG=C.UTF-8
+  && { locale-gen en_US.UTF-8 || true; } \
+  && echo "LC_ALL=en_US.UTF-8" | sudo tee -a /etc/default/locale
+
+# Set the locale, together with the locale-related steps above.
+# It's not entirely clear why, but alternatives that don't work include
+#  * using `C.UTF-8` instead of `en_US.UTF-8`, here and above
+#    (causes mysterious failures in zerver.tests.test_narrow)
+#  * skipping the /etc/default/locale step above (ditto)
+#  * skipping this ENV instruction (causes provision to fail,
+#    because Python tries to use the `ascii` codec)
+# Details in https://github.com/zulip/zulip/pull/7762#issuecomment-353197289
+# and particularly https://circleci.com/gh/hackerkid/zulip/80 .
+ENV LC_ALL en_US.UTF-8
 
 # Install Docker.  This logic comes from Circle's Dockerfile; it's probably
 # faster than the upstream-recommended approach of using their apt repo,

@@ -12,11 +12,11 @@ from zerver.models import UserProfile, get_user
 
 @api_key_only_webhook_view('Yo')
 @has_request_variables
-def api_yo_app_webhook(request, user_profile, email=REQ(default=""),
-                       username=REQ(default='Yo Bot'), topic=REQ(default=None),
-                       user_ip=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, str, str, Optional[str], Optional[str]) -> HttpResponse
-
+def api_yo_app_webhook(request: HttpRequest, user_profile: UserProfile,
+                       email: str = REQ(default=""),
+                       username: str = REQ(default='Yo Bot'),
+                       topic: Optional[str] = REQ(default=None),
+                       user_ip: Optional[str] = REQ(default=None)) -> HttpResponse:
     body = ('Yo from %s') % (username,)
     receiving_user = get_user(email, user_profile.realm)
     check_send_private_message(user_profile, request.client, receiving_user, body)

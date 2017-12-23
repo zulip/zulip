@@ -92,8 +92,10 @@ function clear_box() {
 
     // TODO: Better encapsulate at-mention warnings.
     compose.clear_all_everyone_warnings();
+    compose.clear_announce_warnings();
     compose.clear_private_stream_alert();
     compose.reset_user_acknowledged_all_everyone_flag();
+    compose.reset_user_acknowledged_announce_flag();
 
     exports.clear_textarea();
     $("#compose-textarea").removeData("draft-id");

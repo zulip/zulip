@@ -32,6 +32,14 @@
     opacity: 1;
 }
 
+.alert-draft {
+    font-size: 14px;
+    color: hsl(170, 47%, 54%);
+    padding: 3px 12px;
+    font-weight: 400;
+    display: none;
+}
+
 #compose_buttons {
     text-align: right;
 }
@@ -215,6 +223,7 @@ table.compose_table {
 }
 
 .compose-all-everyone-controls,
+.compose-announce-controls,
 .compose_invite_user_controls,
 .compose_private_stream_alert_controls {
     float: right;

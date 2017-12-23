@@ -11,8 +11,10 @@ var exports = {};
    true: user clicked YES */
 
 var user_acknowledged_all_everyone;
+var user_acknowledged_announce;
 
 exports.all_everyone_warn_threshold = 15;
+exports.announce_warn_threshold = 60;
 
 exports.uploads_domain = document.location.protocol + '//' + document.location.host;
 exports.uploads_path = '/user_uploads';
@@ -45,6 +47,26 @@ exports.clear_all_everyone_warnings = function () {
     $("#compose-send-status").hide();
 };
 
+function show_announce_warnings() {
+    var stream_count = stream_data.get_subscriber_count(compose_state.stream_name()) || 0;
+
+    var announce_template = templates.render("compose_announce", {count: stream_count});
+    var error_area_announce = $("#compose-announce");
+
+    if (!error_area_announce.is(':visible')) {
+        error_area_announce.append(announce_template);
+    }
+
+    error_area_announce.show();
+    user_acknowledged_announce = false;
+}
+
+exports.clear_announce_warnings = function () {
+    $("#compose-announce").hide();
+    $("#compose-announce").empty();
+    $("#compose-send-status").hide();
+};
+
 exports.clear_invites = function () {
     $("#compose_invite_users").hide();
     $("#compose_invite_users").empty();
@@ -57,6 +79,10 @@ exports.clear_private_stream_alert = function () {
 
 exports.reset_user_acknowledged_all_everyone_flag = function () {
     user_acknowledged_all_everyone = undefined;
+};
+
+exports.reset_user_acknowledged_announce_flag = function () {
+    user_acknowledged_announce = undefined;
 };
 
 exports.clear_preview_area = function () {
@@ -397,6 +423,29 @@ function validate_stream_message_mentions(stream_name) {
     return true;
 }
 
+function validate_stream_message_announce(stream_name) {
+    var stream_count = stream_data.get_subscriber_count(stream_name) || 0;
+
+    if (stream_name === "announce" &&
+        stream_count > compose.announce_warn_threshold) {
+        if (user_acknowledged_announce === undefined ||
+            user_acknowledged_announce === false) {
+            // user has not seen a warning message yet if undefined
+            show_announce_warnings();
+
+            $("#compose-send-button").prop('disabled', false);
+            $("#sending-indicator").hide();
+            return false;
+        }
+    } else {
+        exports.clear_announce_warnings();
+    }
+    // at this point, the user has acknowledged the warning
+    user_acknowledged_announce = undefined;
+
+    return true;
+}
+
 exports.validate_stream_message_address_info = function (stream_name) {
     if (stream_data.is_subscribed(stream_name)) {
         return true;
@@ -440,9 +489,21 @@ function validate_stream_message() {
         }
     }
 
-    if (!exports.validate_stream_message_address_info(stream_name) ||
-        !validate_stream_message_mentions(stream_name)) {
-        return false;
+    // If both `@all` is mentioned and it's in `#announce`, just validate
+    // for `@all`. Users shouldn't have to hit "yes" more than once.
+    if (util.is_all_or_everyone_mentioned(compose_state.message_content()) &&
+        stream_name === "announce") {
+        if (!exports.validate_stream_message_address_info(stream_name) ||
+            !validate_stream_message_mentions(stream_name)) {
+            return false;
+        }
+    // If either criteria isn't met, just do the normal validation.
+    } else {
+      if (!exports.validate_stream_message_address_info(stream_name) ||
+          !validate_stream_message_mentions(stream_name) ||
+          !validate_stream_message_announce(stream_name)) {
+          return false;
+      }
     }
 
     return true;
@@ -576,6 +637,15 @@ exports.initialize = function () {
         $(event.target).parents('.compose-all-everyone').remove();
         user_acknowledged_all_everyone = true;
         exports.clear_all_everyone_warnings();
+        compose.finish();
+    });
+
+    $("#compose-announce").on('click', '.compose-announce-confirm', function (event) {
+        event.preventDefault();
+
+        $(event.target).parents('.compose-announce').remove();
+        user_acknowledged_announce = true;
+        exports.clear_announce_warnings();
         compose.finish();
     });
 

@@ -43,7 +43,7 @@ class Addressee:
     def __init__(self, msg_type: str,
                  user_profiles: Optional[Sequence[UserProfile]]=None,
                  stream_name: Optional[Text]=None,
-                 topic: Text=None) -> None:
+                 topic: Optional[Text]=None) -> None:
         assert(msg_type in ['stream', 'private'])
         self._msg_type = msg_type
         self._user_profiles = user_profiles
@@ -65,10 +65,12 @@ class Addressee:
 
     def stream_name(self) -> Text:
         assert(self.is_stream())
+        assert(self._stream_name is not None)
         return self._stream_name
 
     def topic(self) -> Text:
         assert(self.is_stream())
+        assert(self._topic is not None)
         return self._topic
 
     @staticmethod

@@ -2598,7 +2598,7 @@ nav ul li.active::after {
 }
 
 @media (max-width: 1390px) {
-    .portico-landing.plans .pricing-container .block .use-our-servers {
+    .portico-landing.plans .pricing-container .block .zulip-cloud {
         color: inherit;
     }
 }

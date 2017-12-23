@@ -248,6 +248,7 @@ EVENT_FUNCTION_MAPPER = {
     'Note Hook MergeRequest': get_commented_merge_request_event_body,
     'Note Hook Issue': get_commented_issue_event_body,
     'Note Hook Snippet': get_commented_snippet_event_body,
+    'Merge Request Hook approved': partial(get_merge_request_event_body, action='approved'),
     'Merge Request Hook open': partial(get_merge_request_open_or_updated_body, action='created'),
     'Merge Request Hook update': get_merge_request_updated_event_body,
     'Merge Request Hook merge': partial(get_merge_request_event_body, action='merged'),

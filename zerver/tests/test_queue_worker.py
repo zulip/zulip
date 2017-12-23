@@ -17,6 +17,7 @@ from zerver.worker import queue_processors
 from zerver.worker.queue_processors import (
     get_active_worker_queues,
     QueueProcessingWorker,
+    EmailSendingWorker,
     LoopQueueProcessingWorker,
     MissedMessageWorker,
 )
@@ -171,7 +172,7 @@ class WorkerTest(ZulipTestCase):
         fake_client = self.FakeClient()
 
         data = {'test': 'test', 'id': 'test_missed'}
-        fake_client.queue.append(('missedmessage_email_senders', data))
+        fake_client.queue.append(('email_senders', data))
 
         def fake_publish(queue_name: str,
                          event: Dict[str, Any],
@@ -179,7 +180,7 @@ class WorkerTest(ZulipTestCase):
             fake_client.queue.append((queue_name, event))
 
         with simulated_queue_client(lambda: fake_client):
-            worker = queue_processors.MissedMessageSendingWorker()
+            worker = queue_processors.EmailSendingWorker()
             worker.setup()
             with patch('zerver.worker.queue_processors.send_email_from_dict',
                        side_effect=smtplib.SMTPServerDisconnected), \
@@ -332,6 +333,7 @@ class WorkerTest(ZulipTestCase):
 
     def test_get_active_worker_queues(self) -> None:
         worker_queue_count = (len(QueueProcessingWorker.__subclasses__()) +
+                              len(EmailSendingWorker.__subclasses__()) +
                               len(LoopQueueProcessingWorker.__subclasses__()) - 1)
         self.assertEqual(worker_queue_count, len(get_active_worker_queues()))
         self.assertEqual(1, len(get_active_worker_queues(queue_type='test')))

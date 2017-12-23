@@ -234,7 +234,7 @@ class Realm(models.Model):
     def get_admin_users(self) -> Sequence['UserProfile']:
         # TODO: Change return type to QuerySet[UserProfile]
         return UserProfile.objects.filter(realm=self, is_realm_admin=True,
-                                          is_active=True).select_related()
+                                          is_active=True)
 
     def get_active_users(self) -> Sequence['UserProfile']:
         # TODO: Change return type to QuerySet[UserProfile]
@@ -244,12 +244,12 @@ class Realm(models.Model):
         # Remove the port. Mainly needed for development environment.
         return self.host.split(':')[0]
 
-    def get_notifications_stream(self) -> Optional['Realm']:
+    def get_notifications_stream(self) -> Optional['Stream']:
         if self.notifications_stream is not None and not self.notifications_stream.deactivated:
             return self.notifications_stream
         return None
 
-    def get_signup_notifications_stream(self) -> Optional['Realm']:
+    def get_signup_notifications_stream(self) -> Optional['Stream']:
         if self.signup_notifications_stream is not None and not self.signup_notifications_stream.deactivated:
             return self.signup_notifications_stream
         return None
@@ -1726,6 +1726,7 @@ class AbstractScheduledJob(models.Model):
     scheduled_timestamp = models.DateTimeField(db_index=True)  # type: datetime.datetime
     # JSON representation of arguments to consumer
     data = models.TextField()  # type: Text
+    realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
 
     class Meta:
         abstract = True
