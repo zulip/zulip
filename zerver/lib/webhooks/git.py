@@ -49,9 +49,11 @@ TAG_WITH_URL_TEMPLATE = u"[{tag_name}]({tag_url})"
 TAG_WITHOUT_URL_TEMPLATE = u"{tag_name}"
 
 
-def get_push_commits_event_message(user_name, compare_url, branch_name,
-                                   commits_data, is_truncated=False, deleted=False):
-    # type: (Text, Optional[Text], Text, List[Dict[str, Any]], Optional[bool], Optional[bool]) -> Text
+def get_push_commits_event_message(user_name: Text, compare_url: Optional[Text],
+                                   branch_name: Optional[Text],
+                                   commits_data: List[Dict[str, Any]],
+                                   is_truncated: Optional[bool] = False,
+                                   deleted: Optional[bool] = False) -> Text:
     if not commits_data and deleted:
         return PUSH_DELETE_BRANCH_MESSAGE_TEMPLATE.format(
             user_name=user_name,
@@ -119,12 +121,10 @@ def get_remove_branch_event_message(user_name: Text, branch_name: Text) -> Text:
         branch_name=branch_name,
     )
 
-def get_pull_request_event_message(
-        user_name, action, url, number=None,
-        target_branch=None, base_branch=None,
-        message=None, assignee=None, type='PR'
-):
-    # type: (Text, Text, Text, Optional[int], Optional[Text], Optional[Text], Optional[Text], Optional[Text], Optional[Text]) -> Text
+def get_pull_request_event_message(user_name: Text, action: Text, url: Text, number: Optional[int] = None,
+                                   target_branch: Optional[Text] = None, base_branch: Optional[Text] = None,
+                                   message: Optional[Text] = None, assignee: Optional[Text] = None,
+                                   type: Optional[Text] = 'PR') -> Text:
     main_message = PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE.format(
         user_name=user_name,
         action=action,

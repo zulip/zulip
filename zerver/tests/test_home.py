@@ -390,8 +390,7 @@ class HomeTest(ZulipTestCase):
         user.save()
         return user
 
-    def test_signup_notifications_stream(self):
-        # type: () -> None
+    def test_signup_notifications_stream(self) -> None:
         email = self.example_email("hamlet")
         realm = get_realm('zulip')
         realm.signup_notifications_stream = get_stream('Denmark', realm)
