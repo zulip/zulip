@@ -2,7 +2,9 @@
 
 Use semi-formal Polish for translation, some specifics:
 
-*we: my
+* In polish websites it's more common to use just "search" ("szukaj") than, "search for people".  
+
+* When want to say "we", you would use "my" but, if want to say something is "our" you would use "nasze".
 
 * Informal "you" (*ty*) instead of more formal approaches (e.g. plural
   "you" (*wy*), using any formal titles like *Państwo*, *Pan/Pani*).
@@ -66,7 +68,7 @@ Zulip friendly and usable.
 
 **PM**: PM, translation could be confusing
 
-**private stream**: prywatny kanał
+**private stream**: prywatny kanał example: Join private stream - Dołącz do prywatnego kanału
 
 **realm**: domena
 
@@ -76,17 +78,15 @@ Zulip friendly and usable.
   (za)subskrybować kanał (verb), perfective form depending on the
   context
 
-**topic**: wątek
+**topic**: wątek example:Add new topic - Dodaj nowy wątek
 
 **unsubscribing from a stream**: odsubskrybowanie kanału (noun) and odsubskrybować kanał (verb)
 
 **view**: widok
 
-**starred message**: oznaczona wiadomość
+**starred message**: oznaczona wiadomość (noun) and oznacz wiadomość (verb)
 
-**message**: wiadomość
-
-**stream**: kanał
+**message**: wiadomość example:You have got new message - Masz nową wiadomość
 
 **public stream**: kanał publiczny
 
@@ -94,7 +94,7 @@ Zulip friendly and usable.
 
 **Integration**: integracja
 
-**Notification**: Powiadomienie
+**Notification**: Powiadomienie example: Turn on notification - Włącz powiadomienia
 
 **alert word**: ostrzeżenie
 
@@ -108,18 +108,16 @@ Zulip friendly and usable.
 
 **reactivate**: reaktywować
 
-**search**: znajdź
+**search**: znajdź 
 
-**pin**: przypnij
+**pin**: przypnij or oznacz
 
-**invalid**: niepoprawny/a
+**invalid**: niepoprawny/a example:Command is invalid - Komenda jest niepoprawna
 
-**i want**: chcę
+**i want**: chcę example: I want to change password. - Chcę zmienić hasło
 
-**user**: użytkownik
+**user**: użytkownik example:Add new user - Dodaj nowego użytkownika
 
 **person**: osoba
 
 **people**: ludzie
-
-
