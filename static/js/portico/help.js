@@ -29,12 +29,44 @@ function highlight_current_article() {
     article.addClass('highlighted');
 }
 
+function adjust_mac_shortcuts() {
+    var keys_map = new Map([
+        ['Backspace', 'Delete'],
+        ['Enter', 'Return'],
+        ['Home', 'Fn + ⇽'],
+        ['End', 'Fn + ⇾'],
+        ['PgUp', 'Fn + ↑'],
+        ['PgDn', 'Fn + ↓'],
+    ]);
+
+    $(".markdown .content code").each(function () {
+        var text = $(this).text();
+
+        if (!keys_map.has(text)) {
+            return;
+        }
+
+        var key_string = keys_map.get(text);
+        var keys = key_string.match(/[^\s\+]+/g);
+
+        _.each(keys, function (key) {
+            key_string = key_string.replace(key, '<code>' + key + '</code>');
+        });
+
+        $(this).replaceWith(key_string);
+    });
+}
+
 function render_code_sections() {
     $(".code-section").each(function () {
         registerCodeSection($(this));
     });
 
     highlight_current_article();
+
+    if (/Mac/i.test(navigator.userAgent)) {
+        adjust_mac_shortcuts();
+    }
 }
 
 (function () {

@@ -55,4 +55,4 @@ Once you've figured out the basics, you'll probably want to:
   interest.
 - Master Zulip's [keyboard shortcuts](/help/keyboard-shortcuts). Anything
   you can do with the mouse, you can do even faster from the keyboard. Start
-  with `n`, `↓`, `c`, and `Enter` (`Return`), and use `?` for help.
+  with `n`, `↓`, `c`, and `Enter`, and use `?` for help.
