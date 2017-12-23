@@ -2577,7 +2577,7 @@ def do_change_password(user_profile: UserProfile, password: Text, commit: bool=T
                                  event_time=event_time)
 
 def do_change_full_name(user_profile: UserProfile, full_name: Text,
-                        acting_user: UserProfile) -> None:
+                        acting_user: Optional[UserProfile]) -> None:
     old_name = user_profile.full_name
     user_profile.full_name = full_name
     user_profile.save(update_fields=["full_name"])
