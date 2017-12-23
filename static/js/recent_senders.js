@@ -2,8 +2,9 @@ var recent_senders = (function () {
 
 var exports = {};
 
-var topic_senders = new Dict(); // key is stream-id, value is Dict
-var stream_senders = new Dict(); // key is stream-id, value is Dict
+var topic_senders = new Dict();     // key is stream-id, value is Dict
+var stream_senders = new Dict();    // key is stream-id, value is Dict
+var overall_senders = new Dict();   // key is message-sender's id
 
 exports.process_message_for_senders = function (message) {
     var stream_id = message.stream_id.toString();
@@ -29,6 +30,12 @@ exports.process_message_for_senders = function (message) {
     }
 
     stream_senders.set(stream_id, sender_timestamps);
+
+    // Process overall most recent sender
+    old_timestamp = overall_senders.get(message.sender_id);
+    if (old_timestamp === undefined || old_timestamp < message.timestamp) {
+        overall_senders.set(message.sender_id, message.timestamp);
+    }
 };
 
 exports.compare_by_recency = function (user_a, user_b, stream_id, topic) {
@@ -55,6 +62,16 @@ exports.compare_by_recency = function (user_a, user_b, stream_id, topic) {
     if (stream_dict !== undefined) {
         b_timestamp = stream_dict.get(user_b.user_id) || Number.NEGATIVE_INFINITY;
         a_timestamp = stream_dict.get(user_a.user_id) || Number.NEGATIVE_INFINITY;
+
+        if (a_timestamp !== b_timestamp) {
+            return b_timestamp - a_timestamp;
+        }
+    }
+
+    // Check overall recency as tiebreaker
+    if (overall_senders !== undefined) {
+        b_timestamp = overall_senders.get(user_b.user_id) || Number.NEGATIVE_INFINITY;
+        a_timestamp = overall_senders.get(user_a.user_id) || Number.NEGATIVE_INFINITY;
 
         if (a_timestamp !== b_timestamp) {
             return b_timestamp - a_timestamp;
