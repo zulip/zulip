@@ -13,11 +13,10 @@ from zerver.lib.validator import check_dict, check_string
 
 @internal_notify_view(False)
 @has_request_variables
-def email_mirror_message(request, data=REQ(validator=check_dict([
-        ('recipient', check_string),
-        ('msg_text', check_string),
-]))):
-    # type: (HttpRequest, Dict[str, str]) -> HttpResponse
+def email_mirror_message(request: HttpRequest,
+                         data: Dict[str, str]=REQ(validator=check_dict([
+                             ('recipient', check_string),
+                             ('msg_text', check_string)]))) -> HttpResponse:
     result = mirror_email_message(ujson.loads(request.POST['data']))
     if result["status"] == "error":
         return json_error(result['msg'])
