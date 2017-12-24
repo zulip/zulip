@@ -1089,7 +1089,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
             stream_topic = StreamTopicTarget(
                 stream_id=stream_id,
                 topic_name=message['message'].topic_name()
-            )
+            )  # type: Optional[StreamTopicTarget]
         else:
             stream_topic = None
 
@@ -3566,7 +3566,7 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
             stream_topic = StreamTopicTarget(
                 stream_id=stream_id,
                 topic_name=new_topic_name,
-            )
+            )  # type: Optional[StreamTopicTarget]
         else:
             stream_topic = None
 
