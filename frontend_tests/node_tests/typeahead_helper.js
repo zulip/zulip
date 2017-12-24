@@ -223,8 +223,8 @@ _.each(matches, function (person) {
     assert.deepEqual(get_typeahead_result("h", "Linux", "Linux Topic"), [
         'zman@test.net',
         'b_user_3@zulip.net',
-        'a_user@zulip.org',
         'b_bot@example.com',
+        'a_user@zulip.org',
         'a_bot@zulip.com',
         'b_user_1@zulip.net',
         'b_user_2@zulip.net',
