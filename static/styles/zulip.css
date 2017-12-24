@@ -2359,8 +2359,8 @@ button.topic_edit_cancel {
 
 /* FIXME: Combine this rule with the one in portico.css somehow? */
 #pw_strength {
-    width: 220px;
-    height: 25px;
+    width: 100%;
+    height: 10px;
     margin-bottom: 0px;
 }
 

@@ -73,3 +73,31 @@ a.no-underline:hover {
 .ps:hover.ps--in-scrolling.ps--y > .ps__scrollbar-y-rail > .ps__scrollbar-y {
     background-color: #606060;
 }
+
+/* -- flex forms -- */
+.flex-row * {
+    box-sizing: border-box;
+}
+
+.flex-row input[type=text],
+.flex-row input[type=password] {
+    height: auto;
+    width: 100%;
+}
+
+.flex-row {
+    display: flex;
+}
+
+.flex-row.normal {
+    width: 500px;
+}
+
+.flex-row .field {
+    margin: 10px 10px;
+    width: 100%;
+}
+
+.flex-row .field + .field {
+    margin-left: 10px;
+}
