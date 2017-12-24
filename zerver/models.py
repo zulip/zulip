@@ -233,7 +233,7 @@ class Realm(models.Model):
         return "<Realm: %s %s>" % (self.string_id, self.id)
 
     @cache_with_key(get_realm_emoji_cache_key, timeout=3600*24*7)
-    def get_emoji(self) -> Dict[Text, Optional[Dict[str, Iterable[Text]]]]:
+    def get_emoji(self) -> Dict[Text, Dict[str, Iterable[Text]]]:
         return get_realm_emoji_uncached(self)
 
     def get_admin_users(self) -> Sequence['UserProfile']:
