@@ -16,7 +16,7 @@ from zerver.models import UserProfile
 def api_mention_webhook(request: HttpRequest, user_profile: UserProfile,
                         payload: Dict[str, Iterable[Dict[str, Any]]] = REQ(argument_type='body'),
                         stream: Text = REQ(default='mention'),
-                        topic: Optional[Text] = REQ(default='news')) -> HttpResponse:
+                        topic: Text = REQ(default='news')) -> HttpResponse:
     title = payload["title"]
     source_url = payload["url"]
     description = payload["description"]
