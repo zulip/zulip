@@ -17,10 +17,24 @@ function registerCodeSection($codeSection) {
     $li.eq(0).click();
 }
 
+function highlight_current_article() {
+    $('.help .sidebar a').removeClass('highlighted');
+    var path = window.location.href.match(/\/(help|api)\/.+/);
+
+    if (!path) {
+        return;
+    }
+
+    var article = $('.help .sidebar a[href="' + path[0] + '"]');
+    article.addClass('highlighted');
+}
+
 function render_code_sections() {
     $(".code-section").each(function () {
         registerCodeSection($(this));
     });
+
+    highlight_current_article();
 }
 
 (function () {
@@ -52,7 +66,6 @@ function render_code_sections() {
     $(".sidebar a").click(function (e) {
         var path = $(this).attr("href");
         var container = $(".markdown")[0];
-
 
         if (loading.name === path) {
             return;
