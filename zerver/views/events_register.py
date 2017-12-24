@@ -28,10 +28,12 @@ def events_register_backend(
         request: HttpRequest, user_profile: UserProfile,
         apply_markdown: bool=REQ(default=False, validator=check_bool),
         client_gravatar: bool=REQ(default=False, validator=check_bool),
-        all_public_streams: Optional[bool]=REQ(default=None, validator=check_bool),
+        all_public_streams: Optional[bool]=REQ(default=None, validator=check_bool, type=bool),
         include_subscribers: bool=REQ(default=False, validator=check_bool),
-        event_types: Optional[Iterable[str]]=REQ(validator=check_list(check_string), default=None),
-        fetch_event_types: Optional[Iterable[str]]=REQ(validator=check_list(check_string), default=None),
+        event_types: Optional[Iterable[str]]=REQ(validator=check_list(check_string),
+                                                 default=None, type=Iterable[str]),
+        fetch_event_types: Optional[Iterable[str]]=REQ(validator=check_list(check_string),
+                                                       default=None, type=Iterable[str]),
         narrow: NarrowT=REQ(validator=check_list(check_list(check_string, length=2)), default=[]),
         queue_lifespan_secs: int=REQ(converter=int, default=0)
 ) -> HttpResponse:

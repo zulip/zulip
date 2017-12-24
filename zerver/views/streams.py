@@ -90,9 +90,10 @@ def create_default_stream_group(request: HttpRequest, user_profile: UserProfile,
 @require_realm_admin
 @has_request_variables
 def update_default_stream_group_info(request: HttpRequest, user_profile: UserProfile, group_id: int,
-                                     new_group_name: Text=REQ(validator=check_string, default=None),
-                                     new_description: Text=REQ(validator=check_string,
-                                                               default=None)) -> None:
+                                     new_group_name: Optional[Text]=REQ(validator=check_string,
+                                                                        default=None, type=str),
+                                     new_description: Optional[Text]=REQ(validator=check_string,
+                                                                         default=None, type=str)) -> None:
     if not new_group_name and not new_description:
         return json_error(_('You must pass "new_description" or "new_group_name".'))
 
@@ -144,9 +145,9 @@ def remove_default_stream(request, user_profile, stream_name=REQ()):
 def update_stream_backend(
         request: HttpRequest, user_profile: UserProfile,
         stream_id: int,
-        description: Optional[Text]=REQ(validator=check_string, default=None),
-        is_private: Optional[bool]=REQ(validator=check_bool, default=None),
-        new_name: Optional[Text]=REQ(validator=check_string, default=None),
+        description: Optional[Text]=REQ(validator=check_string, default=None, type=str),
+        is_private: Optional[bool]=REQ(validator=check_bool, default=None, type=bool),
+        new_name: Optional[Text]=REQ(validator=check_string, default=None, type=str),
 ) -> HttpResponse:
     (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
 
@@ -212,7 +213,8 @@ def compose_views(request, user_profile, method_kwarg_pairs):
 def remove_subscriptions_backend(
         request: HttpRequest, user_profile: UserProfile,
         streams_raw: Iterable[Text]=REQ("subscriptions", validator=check_list(check_string)),
-        principals: Optional[Iterable[Text]]=REQ(validator=check_list(check_string), default=None),
+        principals: Optional[Iterable[Text]]=REQ(validator=check_list(check_string),
+                                                 default=None, type=Iterable[str]),
 ) -> HttpResponse:
 
     removing_someone_else = principals and \

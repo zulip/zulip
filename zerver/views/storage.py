@@ -25,7 +25,8 @@ def update_storage(request, user_profile, storage=REQ(validator=check_dict([])))
     return json_success()
 
 @has_request_variables
-def get_storage(request, user_profile, keys=REQ(validator=check_list(check_string), default=None)):
+def get_storage(request, user_profile,
+                keys=REQ(validator=check_list(check_string), default=None, type=List[str])):
     # type: (HttpRequest, UserProfile, Optional[List[str]]) -> HttpResponse
     keys = keys or get_keys_in_bot_storage(user_profile)
     try:
@@ -35,7 +36,8 @@ def get_storage(request, user_profile, keys=REQ(validator=check_list(check_strin
     return json_success({'storage': storage})
 
 @has_request_variables
-def remove_storage(request, user_profile, keys=REQ(validator=check_list(check_string), default=None)):
+def remove_storage(request, user_profile,
+                   keys=REQ(validator=check_list(check_string), default=None, type=List[str])):
     # type: (HttpRequest, UserProfile, Optional[List[str]]) -> HttpResponse
     keys = keys or get_keys_in_bot_storage(user_profile)
     try:

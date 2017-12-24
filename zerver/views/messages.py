@@ -950,15 +950,15 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
                          message_type_name: Text=REQ('type'),
                          message_to: List[Text]=REQ('to', converter=extract_recipients, default=[]),
                          forged: bool=REQ(default=False),
-                         topic_name: Optional[Text]= REQ('subject',
-                                                         converter=lambda x: x.strip(), default=None),
+                         topic_name: Optional[Text]=REQ('subject', converter=lambda x: x.strip(),
+                                                        default=None),
                          message_content: Text=REQ('content'),
-                         realm_str: Optional[Text]=REQ('realm_str', default=None),
-                         local_id: Optional[Text]=REQ(default=None),
-                         queue_id: Optional[Text]=REQ(default=None),
+                         realm_str: Optional[Text]=REQ('realm_str', default=None, type=str),
+                         local_id: Optional[Text]=REQ(default=None, type=str),
+                         queue_id: Optional[Text]=REQ(default=None, type=str),
                          delivery_type: Optional[Text]=REQ('delivery_type', default='send_now'),
-                         defer_until: Optional[Text]=REQ('deliver_at', default=None),
-                         tz_guess: Optional[Text]=REQ('tz_guess', default=None)) -> HttpResponse:
+                         defer_until: Optional[Text]=REQ('deliver_at', default=None, type=str),
+                         tz_guess: Optional[Text]=REQ('tz_guess', default=None, type=str)) -> HttpResponse:
     client = request.client
     is_super_user = request.user.is_api_super_user
     if forged and not is_super_user:
@@ -1078,9 +1078,9 @@ def get_message_edit_history(request: HttpRequest, user_profile: UserProfile,
 @has_request_variables
 def update_message_backend(request: HttpRequest, user_profile: UserMessage,
                            message_id: int=REQ(converter=to_non_negative_int),
-                           subject: Optional[Text]=REQ(default=None),
+                           subject: Optional[Text]=REQ(default=None, type=str),
                            propagate_mode: Optional[str]=REQ(default="change_one"),
-                           content: Optional[Text]=REQ(default=None)) -> HttpResponse:
+                           content: Optional[Text]=REQ(default=None, type=str)) -> HttpResponse:
     if not user_profile.realm.allow_message_editing:
         return json_error(_("Your organization has turned off message editing"))
 

@@ -91,7 +91,8 @@ def report_unnarrow_times(request: HttpRequest, user_profile: UserProfile,
 def report_error(request: HttpRequest, user_profile: UserProfile, message: Text=REQ(),
                  stacktrace: Text=REQ(), ui_message: bool=REQ(validator=check_bool),
                  user_agent: Text=REQ(), href: Text=REQ(), log: Text=REQ(),
-                 more_info: Optional[Dict[str, Any]]=REQ(validator=check_dict([]), default=None)
+                 more_info: Optional[Dict[str, Any]]=REQ(validator=check_dict([]),
+                                                         default=None, type=Dict[str, Any])
                  ) -> HttpResponse:
     """Accepts an error report and stores in a queue for processing.  The
     actual error reports are later handled by do_report_error (below)"""

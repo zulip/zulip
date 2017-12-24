@@ -88,9 +88,11 @@ def reactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
     return json_success()
 
 @has_request_variables
-def update_user_backend(request: HttpRequest, user_profile: UserProfile, email: Text,
-                        full_name: Optional[Text]=REQ(default="", validator=check_string),
-                        is_admin: Optional[bool]=REQ(default=None, validator=check_bool)) -> HttpResponse:
+def update_user_backend(
+        request: HttpRequest, user_profile: UserProfile, email: Text,
+        full_name: Optional[Text]=REQ(default="", validator=check_string),
+        is_admin: Optional[bool]=REQ(default=None, validator=check_bool, type=bool)
+) -> HttpResponse:
     try:
         target = get_user(email, user_profile.realm)
     except UserProfile.DoesNotExist:
@@ -154,13 +156,13 @@ def get_stream_name(stream: Optional[Stream]) -> Optional[Text]:
 @has_request_variables
 def patch_bot_backend(
         request: HttpRequest, user_profile: UserProfile, email: Text,
-        full_name: Optional[Text]=REQ(default=None),
-        bot_owner: Optional[Text]=REQ(default=None),
-        service_payload_url: Optional[Text]=REQ(validator=check_url, default=None),
+        full_name: Optional[Text]=REQ(default=None, type=str),
+        bot_owner: Optional[Text]=REQ(default=None, type=str),
+        service_payload_url: Optional[Text]=REQ(validator=check_url, default=None, type=str),
         service_interface: Optional[int]=REQ(validator=check_int, default=1),
-        default_sending_stream: Optional[Text]=REQ(default=None),
-        default_events_register_stream: Optional[Text]=REQ(default=None),
-        default_all_public_streams: Optional[bool]=REQ(default=None, validator=check_bool)
+        default_sending_stream: Optional[Text]=REQ(default=None, type=str),
+        default_events_register_stream: Optional[Text]=REQ(default=None, type=str),
+        default_all_public_streams: Optional[bool]=REQ(default=None, validator=check_bool, type=bool)
 ) -> HttpResponse:
     try:
         bot = get_user(email, user_profile.realm)
@@ -262,14 +264,14 @@ def add_bot_backend(
         full_name_raw: Text=REQ("full_name"), short_name_raw: Text=REQ("short_name"),
         bot_type: int=REQ(validator=check_int, default=UserProfile.DEFAULT_BOT),
         payload_url: Optional[Text]=REQ(validator=check_url, default=""),
-        service_name: Optional[Text]=REQ(default=None),
+        service_name: Optional[Text]=REQ(default=None, type=str),
         config_data: Dict[Text, Text]=REQ(default={},
                                           validator=check_dict(value_validator=check_string)),
         interface_type: int=REQ(validator=check_int, default=Service.GENERIC),
-        default_sending_stream_name: Optional[Text]=REQ('default_sending_stream', default=None),
+        default_sending_stream_name: Optional[Text]=REQ('default_sending_stream', default=None, type=str),
         default_events_register_stream_name: Optional[Text]=REQ('default_events_register_stream',
-                                                                default=None),
-        default_all_public_streams: Optional[bool]=REQ(validator=check_bool, default=None)
+                                                                default=None, type=str),
+        default_all_public_streams: Optional[bool]=REQ(validator=check_bool, default=None, type=bool)
 ) -> HttpResponse:
     short_name = check_short_name(short_name_raw)
     service_name = service_name or short_name
