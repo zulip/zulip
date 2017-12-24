@@ -13,11 +13,10 @@ BODY_TEMPLATE = '[{website_name}]({website_url}) has {user_num} visitors online.
 
 @api_key_only_webhook_view('GoSquared')
 @has_request_variables
-def api_gosquared_webhook(request, user_profile,
-                          payload=REQ(argument_type='body'),
-                          stream=REQ(default='gosquared'),
-                          topic=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, Dict[str, Dict[str, Any]], Text, Text) -> HttpResponse
+def api_gosquared_webhook(request: HttpRequest, user_profile: UserProfile,
+                          payload: Dict[str, Dict[str, Any]]=REQ(argument_type='body'),
+                          stream: Text=REQ(default='gosquared'),
+                          topic: Text=REQ(default=None)) -> HttpResponse:
     domain_name = payload['siteDetails']['domain']
     user_num = payload['concurrents']
     user_acc = payload['siteDetails']['acct']
