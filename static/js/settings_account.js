@@ -85,9 +85,10 @@ exports.set_up = function () {
 
     clear_password_change();
 
-    $('#pw_change_link').on('click', function (e) {
+    $('#change_password').on('click', function (e) {
         e.preventDefault();
-        $('#pw_change_link').hide();
+        e.stopPropagation();
+        overlays.open_modal('change_password_modal');
         $('#pw_change_controls').show();
         if (page_params.realm_password_auth_enabled !== false) {
             // zxcvbn.js is pretty big, and is only needed on password
@@ -104,6 +105,57 @@ exports.set_up = function () {
         }
     });
 
+    $('#change_password_button').on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var change_password_info = $('#change_password_modal').find(".change_password_info").expectOne();
+
+        var data = {
+            old_password: $('#old_password').val(),
+            new_password: $('#new_password').val(),
+            confirm_password: $('#confirm_password').val(),
+        };
+
+        channel.patch({
+            url: "/json/settings",
+            data: data,
+            beforeSubmit: function () {
+                if (page_params.realm_password_auth_enabled !== false) {
+                    // FIXME: Check that the two password fields match
+                    // FIXME: Use the same jQuery validation plugin as the signup form?
+                    var field = $('#new_password');
+                    var new_pw = $('#new_password').val();
+                    if (new_pw !== '') {
+                        var password_ok = common.password_quality(new_pw, undefined, field);
+                        if (password_ok === undefined) {
+                            // zxcvbn.js didn't load, for whatever reason.
+                            settings_change_error(
+                                'An internal error occurred; try reloading the page. ' +
+                                'Sorry for the trouble!');
+                            return false;
+                        } else if (!password_ok) {
+                            settings_change_error(i18n.t('New password is too weak'));
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            },
+            success: function () {
+                settings_change_success(i18n.t("Updated settings!"));
+                overlays.close_modal('change_password_modal');
+            },
+            complete: function () {
+                // Whether successful or not, clear the password boxes.
+                // TODO: Clear these earlier, while the request is still pending.
+                clear_password_change();
+            },
+            error: function (xhr) {
+                ui_report.error(i18n.t("Failed"), xhr, change_password_info);
+            },
+        });
+    });
+
     $('#new_password').on('change keyup', function () {
         var field = $('#new_password');
         common.password_quality(field.val(), $('#pw_strength .bar'), field);
@@ -111,38 +163,11 @@ exports.set_up = function () {
 
     $("form.your-account-settings").ajaxForm({
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
-        beforeSubmit: function () {
-            if (page_params.realm_password_auth_enabled !== false) {
-                // FIXME: Check that the two password fields match
-                // FIXME: Use the same jQuery validation plugin as the signup form?
-                var field = $('#new_password');
-                var new_pw = $('#new_password').val();
-                if (new_pw !== '') {
-                    var password_ok = common.password_quality(new_pw, undefined, field);
-                    if (password_ok === undefined) {
-                        // zxcvbn.js didn't load, for whatever reason.
-                        settings_change_error(
-                            'An internal error occurred; try reloading the page. ' +
-                            'Sorry for the trouble!');
-                        return false;
-                    } else if (!password_ok) {
-                        settings_change_error(i18n.t('New password is too weak'));
-                        return false;
-                    }
-                }
-            }
-            return true;
-        },
         success: function () {
             settings_change_success(i18n.t("Updated settings!"));
         },
         error: function (xhr) {
             settings_change_error(i18n.t("Error changing settings"), xhr);
-        },
-        complete: function () {
-            // Whether successful or not, clear the password boxes.
-            // TODO: Clear these earlier, while the request is still pending.
-            clear_password_change();
         },
     });
 
