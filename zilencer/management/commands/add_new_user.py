@@ -22,10 +22,11 @@ and will otherwise fall back to the zulip realm."""
         if realm is None:
             print('Warning: Using default zulip realm, which has an unusual configuration.\n'
                   'Try running `python manage.py add_new_realm`, and then running this again.')
-            realm = Realm.objects.get(string_id='zulip')
+            valid_realm = Realm.objects.get(string_id='zulip')
             domain = 'zulip.com'
         else:
+            valid_realm = realm
             domain = realm.string_id + '.zulip.com'
 
         name = '%02d-user' % (UserProfile.objects.filter(email__contains='user@').count(),)
-        do_create_user('%s@%s' % (name, domain), 'password', realm, name, name)
+        do_create_user('%s@%s' % (name, domain), 'password', valid_realm, name, name)
