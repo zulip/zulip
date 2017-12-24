@@ -94,12 +94,11 @@ def _check_hash(target_hash_file: str, status_dir: str) -> bool:
     return source_hash_content == target_hash_content
 
 def is_template_database_current(
-        database_name='zulip_test_template',
-        migration_status=None,
-        settings='zproject.test_settings',
-        status_dir=None,
-        check_files=None):
-    # type: (str, str, str, str, Optional[List[str]]) -> bool
+        database_name: str='zulip_test_template',
+        migration_status: str=None,
+        settings: str='zproject.test_settings',
+        status_dir: str=None,
+        check_files: Optional[List[str]]=None) -> bool:
     # Using str type for check_files because re.split doesn't accept unicode
     if check_files is None:
         check_files = [
