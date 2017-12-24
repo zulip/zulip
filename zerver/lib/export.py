@@ -862,7 +862,7 @@ def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
         bucket_list = bucket.list(prefix="%s/" % (realm.id,))
 
     if settings.EMAIL_GATEWAY_BOT is not None:
-        email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT)
+        email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT)  # type: Optional[UserProfile]
     else:
         email_gateway_bot = None
 
