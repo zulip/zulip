@@ -15,15 +15,17 @@ from zerver.models import UserProfile
 @has_request_variables
 def api_appfollow_webhook(request: HttpRequest, user_profile: UserProfile,
                           stream: Text=REQ(default="appfollow"),
-                          topic: Optional[Text]=REQ(default=None),
+                          topic: Optional[Text]=REQ(default=None, type=str),
                           payload: Dict[str, Any]=REQ(argument_type="body")) -> HttpResponse:
     message = payload["text"]
     app_name = re.search('\A(.+)', message).group(0)
     if topic is None:
-        topic = app_name
+        msg_topic = app_name
+    else:
+        msg_topic = topic
 
     check_send_stream_message(sender=user_profile, client=request.client, stream_name=stream,
-                              topic=topic, body=convert_markdown(message))
+                              topic=msg_topic, body=convert_markdown(message))
     return json_success()
 
 def convert_markdown(text: Text) -> Text:

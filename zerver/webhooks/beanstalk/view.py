@@ -42,7 +42,7 @@ def beanstalk_decoder(view_func: ViewFuncT) -> ViewFuncT:
 @has_request_variables
 def api_beanstalk_webhook(request: HttpRequest, user_profile: UserProfile,
                           payload: Dict[str, Any]=REQ(validator=check_dict([])),
-                          branches: Optional[Text]=REQ(default=None)) -> HttpResponse:
+                          branches: Optional[Text]=REQ(default=None, type=str)) -> HttpResponse:
     # Beanstalk supports both SVN and git repositories
     # We distinguish between the two by checking for a
     # 'uri' key that is only present for git repos

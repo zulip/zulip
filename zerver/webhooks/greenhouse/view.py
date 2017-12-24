@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import ujson
 from django.http import HttpRequest, HttpResponse
@@ -36,7 +36,7 @@ def message_creator(action: str, application: Dict[str, Any]) -> str:
 def api_greenhouse_webhook(request: HttpRequest, user_profile: UserProfile,
                            payload: Dict[str, Any]=REQ(argument_type='body'),
                            stream: str=REQ(default='greenhouse'),
-                           topic: str=REQ(default=None)) -> HttpResponse:
+                           topic: Optional[str]=REQ(default=None, type=str)) -> HttpResponse:
     if payload['action'] == 'update_candidate':
         candidate = payload['payload']['candidate']
     else:

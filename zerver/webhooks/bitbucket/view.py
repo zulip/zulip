@@ -16,7 +16,7 @@ from zerver.models import UserProfile, get_client
 def api_bitbucket_webhook(request: HttpRequest, user_profile: UserProfile,
                           payload: Mapping[Text, Any]=REQ(validator=check_dict([])),
                           stream: Text=REQ(default='commits'),
-                          branches: Optional[Text]=REQ(default=None)) -> HttpResponse:
+                          branches: Optional[Text]=REQ(default=None, type=str)) -> HttpResponse:
     repository = payload['repository']
 
     commits = [

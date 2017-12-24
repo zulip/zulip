@@ -145,7 +145,8 @@ class LibratoWebhookHandler(LibratoWebhookParser):
 @has_request_variables
 def api_librato_webhook(request: HttpRequest, user_profile: UserProfile,
                         payload: Dict[str, Any]=REQ(converter=ujson.loads, default={}),
-                        stream: Text=REQ(default='librato'), topic: Text=REQ(default=None)) -> HttpResponse:
+                        stream: Text=REQ(default='librato'),
+                        topic: Optional[Text]=REQ(default=None, type=str)) -> HttpResponse:
     try:
         attachments = ujson.loads(request.body).get('attachments', [])
     except ValueError:

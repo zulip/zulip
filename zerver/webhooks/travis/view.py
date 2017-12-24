@@ -1,6 +1,6 @@
 # Webhooks for external integrations.
 
-from typing import Dict
+from typing import Dict, Optional
 
 import ujson
 from django.http import HttpRequest, HttpResponse
@@ -25,7 +25,7 @@ MESSAGE_TEMPLATE = (
 @has_request_variables
 def api_travis_webhook(request: HttpRequest, user_profile: UserProfile,
                        stream: str = REQ(default='travis'),
-                       topic: str = REQ(default=None),
+                       topic: Optional[str] = REQ(default=None, type=str),
                        ignore_pull_requests: bool = REQ(validator=check_bool, default=True),
                        message: Dict[str, str]=REQ('payload', validator=check_dict([
                            ('author_name', check_string),
@@ -52,5 +52,10 @@ def api_travis_webhook(request: HttpRequest, user_profile: UserProfile,
         message['build_url']
     )
 
-    check_send_stream_message(user_profile, request.client, stream, topic, body)
+    if topic is None:
+        msg_topic = "Builds"  # FIXME: Should None be allowed? Is there a better default?
+    else:
+        msg_topic = topic
+
+    check_send_stream_message(user_profile, request.client, stream, msg_topic, body)
     return json_success()

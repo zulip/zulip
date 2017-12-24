@@ -369,7 +369,8 @@ EVENT_FUNCTION_MAPPER = {
 @has_request_variables
 def api_github_webhook(
         request: HttpResponse, user_profile: UserProfile, payload: Dict[str, Any]=REQ(argument_type='body'),
-        stream: Text=REQ(default='github'), branches: Text=REQ(default=None)) -> HttpResponse:
+        stream: Text=REQ(default='github'),
+        branches: Optional[Text]=REQ(default=None, type=str)) -> HttpResponse:
     event = get_event(request, payload, branches)
     if event is not None:
         subject = get_subject_based_on_type(payload, event)
@@ -377,7 +378,7 @@ def api_github_webhook(
         check_send_stream_message(user_profile, request.client, stream, subject, body)
     return json_success()
 
-def get_event(request: HttpRequest, payload: Dict[str, Any], branches: Text) -> Optional[str]:
+def get_event(request: HttpRequest, payload: Dict[str, Any], branches: Optional[Text]) -> Optional[str]:
     event = request.META['HTTP_X_GITHUB_EVENT']
     if event == 'pull_request':
         action = payload['action']
