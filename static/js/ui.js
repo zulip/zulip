@@ -120,6 +120,22 @@ exports.show_failed_message_success = function (message_id) {
     });
 };
 
+function adjust_mac_shortcuts() {
+    var keys_map = new Map([
+        ['Backspace', 'Delete'],
+        ['Enter', 'Return'],
+        ['Home', 'Fn + Left'],
+        ['End', 'Fn + Right'],
+        ['PgUp', 'Fn + Up'],
+        ['PgDn', 'Fn + Down'],
+    ]);
+
+    keys_map.forEach(function (v, k) {
+        var hotkeys_table = $('.hotkeys_table');
+        hotkeys_table.html(hotkeys_table.html().replace(k, v));
+    });
+}
+
 function _setup_info_overlay() {
     var info_overlay_toggle = components.toggle({
         name: "info-overlay-toggle",
@@ -138,6 +154,10 @@ function _setup_info_overlay() {
 
     $(".informational-overlays .overlay-tabs")
         .append($(info_overlay_toggle).addClass("large"));
+
+    if (/Mac/i.test(navigator.userAgent)) {
+        adjust_mac_shortcuts();
+    }
 }
 
 exports.show_info_overlay = function (target) {
