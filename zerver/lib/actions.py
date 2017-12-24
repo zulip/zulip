@@ -840,12 +840,6 @@ def get_recipient_info(recipient: Recipient,
                        sender_id: int,
                        stream_topic: Optional[StreamTopicTarget],
                        possibly_mentioned_user_ids: Optional[Set[int]]=None) -> RecipientInfoResult:
-    if recipient.type == Recipient.STREAM:
-        # Anybody calling us w/r/t a stream message needs to supply
-        # stream_topic.  We may eventually want to have different versions
-        # of this function for different message types.
-        assert(stream_topic is not None)
-
     stream_push_user_ids = set()  # type: Set[int]
 
     if recipient.type == Recipient.PERSONAL:
@@ -855,6 +849,11 @@ def get_recipient_info(recipient: Recipient,
         assert(len(message_to_user_ids) in [1, 2])
 
     elif recipient.type == Recipient.STREAM:
+        # Anybody calling us w/r/t a stream message needs to supply
+        # stream_topic.  We may eventually want to have different versions
+        # of this function for different message types.
+        assert(stream_topic is not None)
+
         subscription_rows = stream_topic.get_active_subscriptions().values(
             'user_profile_id',
             'push_notifications',
