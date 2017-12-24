@@ -13,10 +13,10 @@ from zerver.models import MAX_SUBJECT_LENGTH, UserProfile
 
 @api_key_only_webhook_view('Splunk')
 @has_request_variables
-def api_splunk_webhook(request, user_profile,
-                       payload=REQ(argument_type='body'), stream=REQ(default='splunk'),
-                       topic=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, Dict[str, Any], Text, Optional[Text]) -> HttpResponse
+def api_splunk_webhook(request: HttpRequest, user_profile: UserProfile,
+                       payload: Dict[str, Any]=REQ(argument_type='body'),
+                       stream: Text=REQ(default='splunk'),
+                       topic: Optional[Text]=REQ(default=None)) -> HttpResponse:
 
     # use default values if expected data is not provided
     search_name = payload.get('search_name', 'Missing search_name')
