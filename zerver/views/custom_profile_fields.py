@@ -25,9 +25,9 @@ def list_realm_custom_profile_fields(request: HttpRequest, user_profile: UserPro
 
 @require_realm_admin
 @has_request_variables
-def create_realm_custom_profile_field(request, user_profile, name=REQ(),
-                                      field_type=REQ(validator=check_int)):
-    # type: (HttpRequest, UserProfile, Text, int) -> HttpResponse
+def create_realm_custom_profile_field(request: HttpRequest,
+                                      user_profile: UserProfile, name: Text=REQ(),
+                                      field_type: int=REQ(validator=check_int)) -> HttpResponse:
     if not name.strip():
         return json_error(_("Name cannot be blank."))
 
