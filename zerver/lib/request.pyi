@@ -23,6 +23,7 @@ class _NotSpecified: ...
 NotSpecified = _NotSpecified()
 
 def REQ(whence: Optional[str] = None,
+        *,
         converter: Optional[Callable[[str], ResultT]] = None,
         default: Union[_NotSpecified, ResultT] = NotSpecified,
         validator: Optional[Validator] = None,

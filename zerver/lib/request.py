@@ -48,7 +48,7 @@ class REQ:
         pass
     NotSpecified = _NotSpecified()
 
-    def __init__(self, whence: str=None, converter: Callable[[Any], Any]=None,
+    def __init__(self, whence: str=None, *, converter: Callable[[Any], Any]=None,
                  default: Any=NotSpecified, validator: Callable[[Any], Any]=None,
                  argument_type: str=None) -> None:
         """whence: the name of the request variable that should be used
