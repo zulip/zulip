@@ -16,10 +16,9 @@ from zerver.models import UserProfile, get_client
 # from the "data" param and post it, which this does.
 @authenticated_rest_api_view(is_webhook=True)
 @has_request_variables
-def api_deskdotcom_webhook(request, user_profile, data=REQ(),
-                           topic=REQ(default="Desk.com notification"),
-                           stream=REQ(default="desk.com")):
-    # type: (HttpRequest, UserProfile, Text, Text, Text) -> HttpResponse
+def api_deskdotcom_webhook(request: HttpRequest, user_profile: UserProfile, data: Text=REQ(),
+                           topic: Text=REQ(default="Desk.com notification"),
+                           stream: Text=REQ(default="desk.com")) -> HttpResponse:
     check_send_stream_message(user_profile, get_client("ZulipDeskWebhook"),
                               stream, topic, data)
     return json_success()
