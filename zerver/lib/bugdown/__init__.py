@@ -1,6 +1,7 @@
 # Zulip's main markdown implementation.  See docs/subsystems/markdown.md for
 # detailed documentation on our markdown syntax.
-from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Text, Tuple, TypeVar, Union
+from typing import (Any, Callable, Dict, Iterable, List, NamedTuple,
+                    Optional, Set, Text, Tuple, TypeVar, Union)
 from mypy_extensions import TypedDict
 from typing.re import Match
 
@@ -143,6 +144,47 @@ def walk_tree(root: Element,
 
     return results
 
+ElementFamily = NamedTuple('ElementFamily', [
+    ('grandparent', Optional[Element]),
+    ('parent', Element),
+    ('child', Element)
+])
+
+ResultWithFamily = NamedTuple('ResultWithFamily', [
+    ('family', ElementFamily),
+    ('result', Any)
+])
+
+def walk_tree_with_family(root: Element,
+                          processor: Callable[[Element], Optional[_T]]
+                          ) -> List[ResultWithFamily]:
+    results = []
+
+    queue = deque([{'parent': None, 'value': root}])
+    while queue:
+        currElementPair = queue.popleft()
+        for child in currElementPair['value'].getchildren():
+            if child.getchildren():
+                queue.append({'parent': currElementPair, 'value': child})  # type: ignore  # Lack of Deque support in typing module for Python 3.4.3
+            result = processor(child)
+            if result is not None:
+                if currElementPair['parent']:
+                    grandparent = currElementPair['parent']['value']
+                else:
+                    grandparent = None
+                family = ElementFamily(
+                    grandparent=grandparent,
+                    parent=currElementPair['value'],
+                    child=child
+                )
+
+                results.append(ResultWithFamily(
+                    family=family,
+                    result=result
+                ))
+
+    return results
+
 # height is not actually used
 def add_a(
         root: Element,
@@ -151,13 +193,19 @@ def add_a(
         title: Optional[Text]=None,
         desc: Optional[Text]=None,
         class_attr: Text="message_inline_image",
-        data_id: Optional[Text]=None
+        data_id: Optional[Text]=None,
+        insertion_index: Optional[int]=None
 ) -> None:
     title = title if title is not None else url_filename(link)
     title = title if title else ""
     desc = desc if desc is not None else ""
 
-    div = markdown.util.etree.SubElement(root, "div")
+    if insertion_index is not None:
+        div = markdown.util.etree.Element("div")
+        root.insert(insertion_index, div)
+    else:
+        div = markdown.util.etree.SubElement(root, "div")
+
     div.set("class", class_attr)
     a = markdown.util.etree.SubElement(div, "a")
     a.set("href", link)
@@ -174,7 +222,6 @@ def add_a(
         title_div.text = title
         desc_div = markdown.util.etree.SubElement(summary_div, "desc")
         desc_div.set("class", "message_inline_image_desc")
-
 
 def add_embed(root: Element, link: Text, extracted_data: Dict[Text, Any]) -> None:
     container = markdown.util.etree.SubElement(root, "div")
@@ -665,27 +712,79 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return (e.get("href"), e.get("href"))
         return None
 
-    def is_only_element(self, root: Element, url: str) -> bool:
-        # Check if the url is the only content of the message.
+    def handle_image_inlining(self, root: Element, found_url: ResultWithFamily) -> None:
+        grandparent = found_url.family.grandparent
+        parent = found_url.family.parent
+        ahref_element = found_url.family.child
+        (url, text) = found_url.result
+        actual_url = self.get_actual_image_url(url)
 
-        if not len(root) == 1:
-            return False
+        # url != text usually implies a named link, which we opt not to remove
+        url_eq_text = (url == text)
 
-        # Generate a <p><a>url</a></p> element
-        expected_elem = markdown.util.etree.Element('p')
-        expected_elem.append(url_to_a(url))
-        expected_html = markdown.util.etree.tostring(expected_elem)
+        if parent.tag == 'li':
+            add_a(parent, self.get_actual_image_url(url), url, title=text)
+            if not parent.text and not ahref_element.tail and url_eq_text:
+                parent.remove(ahref_element)
 
-        actual_html = markdown.util.etree.tostring(root[0])
+        elif parent.tag == 'p':
+            parent_index = None
+            for index, uncle in enumerate(grandparent.getchildren()):
+                if uncle is parent:
+                    parent_index = index
+                    break
 
-        if not actual_html.strip() == expected_html.strip():
-            return False
+            if parent_index is not None:
+                ins_index = self.find_proper_insertion_index(grandparent, parent, parent_index)
+                add_a(grandparent, actual_url, url, title=text, insertion_index=ins_index)
 
-        return True
+            else:
+                # We're not inserting after parent, since parent not found.
+                # Append to end of list of grandparent's children as normal
+                add_a(grandparent, actual_url, url, title=text)
+
+            # If link is alone in a paragraph, delete paragraph containing it
+            if (len(parent.getchildren()) == 1 and
+                    (not parent.text or parent.text == "\n") and
+                    not ahref_element.tail and
+                    url_eq_text):
+                grandparent.remove(parent)
+
+        else:
+            # If none of the above criteria match, fall back to old behavior
+            add_a(root, actual_url, url, title=text)
+
+    def find_proper_insertion_index(self, grandparent: Element, parent: Element,
+                                    parent_index_in_grandparent: int) -> int:
+        # If there are several inline images from same paragraph, ensure that
+        # they are in correct (and not opposite) order by inserting after last
+        # inline image from paragraph 'parent'
+
+        uncles = grandparent.getchildren()
+        parent_links = [ele.attrib['href'] for ele in parent.iter(tag="a")]
+        insertion_index = parent_index_in_grandparent
+
+        while True:
+            insertion_index += 1
+            if insertion_index >= len(uncles):
+                return insertion_index
+
+            uncle = uncles[insertion_index]
+            inline_image_classes = ['message_inline_image', 'message_inline_ref']
+            if (
+                uncle.tag != 'div' or
+                'class' not in uncle.keys() or
+                uncle.attrib['class'] not in inline_image_classes
+            ):
+                return insertion_index
+
+            uncle_link = list(uncle.iter(tag="a"))[0].attrib['href']
+            if uncle_link not in parent_links:
+                return insertion_index
 
     def run(self, root: Element) -> None:
         # Get all URLs from the blob
-        found_urls = walk_tree(root, self.get_url_data)
+        found_urls = walk_tree_with_family(root, self.get_url_data)
 
         # If there are more than 5 URLs in the message, don't do inline previews
         if len(found_urls) == 0 or len(found_urls) > 5:
@@ -693,7 +792,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
         rendered_tweet_count = 0
 
-        for (url, text) in found_urls:
+        for found_url in found_urls:
+            (url, text) = found_url.result
             dropbox_image = self.dropbox_image(url)
 
             if dropbox_image is not None:
@@ -708,10 +808,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                       class_attr=class_attr)
                 continue
             if self.is_image(url):
-                if len(found_urls) == 1 and self.is_only_element(root, url):
-                    # If the complete message is the image link, remove the link
-                    root.remove(root[0])
-                add_a(root, self.get_actual_image_url(url), url, title=text)
+                self.handle_image_inlining(root, found_url)
                 continue
             if get_tweet_id(url) is not None:
                 if rendered_tweet_count >= self.TWITTER_MAX_TO_PREVIEW:
