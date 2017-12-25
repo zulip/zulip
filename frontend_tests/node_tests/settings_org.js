@@ -140,18 +140,10 @@ function test_realms_domain_modal(add_realm_domain) {
     assert(posted);
 
     success_callback();
-    assert(!info.hasClass('text-error'));
-    assert(info.hasClass('text-success'));
-    assert.equal(info.text(), 'translated: Added successfully!');
+    assert.equal(info.val(), 'translated: Added successfully!');
 
-    var xhr = {
-        responseText: '{"msg": "no can do"}',
-    };
-
-    error_callback(xhr);
-    assert(info.hasClass('text-error'));
-    assert(!info.hasClass('text-success'));
-    assert.equal(info.text(), 'no can do');
+    error_callback({});
+    assert.equal(info.val(), 'translated: Failed');
 }
 
 function test_submit_profile_form(submit_form) {
@@ -449,23 +441,17 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     change_allow_subdomains.apply('<elem html>', [ev]);
 
     success_callback();
-    assert.equal(info.text(),
+    assert.equal(info.val(),
                  'translated: Update successful: Subdomains allowed for example.com');
-    assert(info.hasClass('text-success'));
 
-    var xhr = {
-        responseText: '{"msg": "no can do"}',
-    };
-
-    error_callback(xhr);
-    assert(info.hasClass('text-error'));
-    assert.equal(info.text(), 'no can do');
+    error_callback({});
+    assert.equal(info.val(), 'translated: Failed');
 
     allow = false;
     elem_obj.prop('checked', allow);
     change_allow_subdomains.apply('<elem html>', [ev]);
     success_callback();
-    assert.equal(info.text(),
+    assert.equal(info.val(),
                  'translated: Update successful: Subdomains no longer allowed for example.com');
 }
 
