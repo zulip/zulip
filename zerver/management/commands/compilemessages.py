@@ -8,12 +8,22 @@ import polib
 import ujson
 from django.conf import settings
 from django.conf.locale import LANG_INFO
+from django.core.management.base import CommandParser
 from django.core.management.commands import compilemessages
 from django.utils.translation.trans_real import to_language
 
 from zerver.lib.i18n import with_language
 
 class Command(compilemessages.Command):
+
+    def add_arguments(self, parser: CommandParser) -> None:
+        super().add_arguments(parser)
+
+        parser.add_argument(
+            '--strict', '-s',
+            action='store_true',
+            default=False,
+            help='Stop execution in case of errors.')
 
     def handle(self, *args: Any, **options: Any) -> None:
         if settings.PRODUCTION:
@@ -24,6 +34,7 @@ class Command(compilemessages.Command):
             settings.STATIC_ROOT = os.path.join(settings.DEPLOY_ROOT, "static")
             settings.LOCALE_PATHS = (os.path.join(settings.DEPLOY_ROOT, 'static/locale'),)
         super().handle(*args, **options)
+        self.strict = options['strict']
         self.extract_language_options()
         self.create_language_name_map()
 
@@ -145,5 +156,18 @@ class Command(compilemessages.Command):
                 total += 1
                 if value == '':
                     not_translated += 1
+
+        # mobile stats
+        with open(os.path.join(locale_path, 'mobile_info.json')) as mob:
+            mobile_info = ujson.load(mob)
+        try:
+            info = mobile_info[locale]
+        except KeyError:
+            if self.strict:
+                raise
+            info = {'total': 0, 'not_translated': 0}
+
+        total += info['total']
+        not_translated += info['not_translated']
 
         return (total - not_translated) * 100 // total
