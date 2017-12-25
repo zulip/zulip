@@ -1660,9 +1660,8 @@ class UserPresence(models.Model):
         return user_statuses
 
     @staticmethod
-    def to_presence_dict(client_name, status, dt, push_enabled=False,
-                         has_push_devices=False):
-        # type: (Text, int, datetime.datetime, bool, bool) -> Dict[str, Any]
+    def to_presence_dict(client_name: Text, status: int, dt: datetime.datetime, push_enabled: bool=False,
+                         has_push_devices: bool=False) -> Dict[str, Any]:
         presence_val = UserPresence.status_to_string(status)
 
         timestamp = datetime_to_timestamp(dt)
