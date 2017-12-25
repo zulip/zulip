@@ -65,8 +65,7 @@ class BitbucketHookTests(WebhookTestCase):
 
     @patch('zerver.webhooks.bitbucket.view.check_send_stream_message')
     def test_bitbucket_push_commits_above_limit_filtered_by_branches_ignore(
-            self, check_send_stream_message_mock):
-        # type: (MagicMock) -> None
+            self, check_send_stream_message_mock: MagicMock) -> None:
         fixture_name = 'push_commits_above_limit'
         payload = self.get_body(fixture_name)
         self.url = self.build_webhook_url(payload=payload,
