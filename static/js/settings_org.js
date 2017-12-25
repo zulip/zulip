@@ -617,14 +617,10 @@ function _set_up() {
         channel.del({
             url: url,
             success: function () {
-                realm_domains_info.removeClass("text-error");
-                realm_domains_info.addClass("text-success");
-                realm_domains_info.text(i18n.t("Deleted successfully!"));
+                ui_report.success(i18n.t("Deleted successfully!"), realm_domains_info);
             },
             error: function (xhr) {
-                realm_domains_info.removeClass("text-success");
-                realm_domains_info.addClass("text-error");
-                realm_domains_info.text(JSON.parse(xhr.responseText).msg);
+                ui_report.error(i18n.t("Failed"), xhr, realm_domains_info);
             },
         });
     });
@@ -646,14 +642,10 @@ function _set_up() {
                 $("#add-realm-domain-widget .new-realm-domain").val("");
                 $("#add-realm-domain-widget .new-realm-domain-allow-subdomains").prop("checked", false);
                 $("#id_realm_restricted_to_domain").prop("disabled", false);
-                realm_domains_info.removeClass("text-error");
-                realm_domains_info.addClass("text-success");
-                realm_domains_info.text(i18n.t("Added successfully!"));
+                ui_report.success(i18n.t("Added successfully!"), realm_domains_info);
             },
             error: function (xhr) {
-                realm_domains_info.removeClass("text-success");
-                realm_domains_info.addClass("text-error");
-                realm_domains_info.text(JSON.parse(xhr.responseText).msg);
+                ui_report.error(i18n.t("Failed"), xhr, realm_domains_info);
             },
         });
     });
@@ -672,20 +664,16 @@ function _set_up() {
             url: url,
             data: data,
             success: function () {
-                realm_domains_info.removeClass("text-error");
-                realm_domains_info.addClass("text-success");
                 if (allow_subdomains) {
-                    realm_domains_info.text(i18n.t("Update successful: Subdomains allowed for __domain__",
-                                             {domain: domain}));
+                    ui_report.success(i18n.t("Update successful: Subdomains allowed for __domain__",
+                                             {domain: domain}), realm_domains_info);
                 } else {
-                    realm_domains_info.text(i18n.t("Update successful: Subdomains no longer allowed for __domain__",
-                                             {domain: domain}));
+                    ui_report.success(i18n.t("Update successful: Subdomains no longer allowed for __domain__",
+                                             {domain: domain}), realm_domains_info);
                 }
             },
             error: function (xhr) {
-                realm_domains_info.removeClass("text-success");
-                realm_domains_info.addClass("text-error");
-                realm_domains_info.text(JSON.parse(xhr.responseText).msg);
+                ui_report.error(i18n.t("Failed"), xhr, realm_domains_info);
             },
         });
     });
