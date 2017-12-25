@@ -265,6 +265,13 @@
       "text_content": "Google logo today: https:\/\/www.google.com\/images\/srpr\/logo4w.png\nKinda boring\n"
     },
     {
+      "name": "blockquote_inline_image",
+      "input": ">Google logo today:\n>https://www.google.com/images/srpr/logo4w.png\n>Kinda boring",
+      "expected_output": "<blockquote>\n<p>Google logo today:<br>\n<a href=\"https://www.google.com/images/srpr/logo4w.png\" target=\"_blank\" title=\"https://www.google.com/images/srpr/logo4w.png\">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boring</p>\n<div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\" target=\"_blank\" title=\"https://www.google.com/images/srpr/logo4w.png\"><img src=\"https://www.google.com/images/srpr/logo4w.png\"></a></div></blockquote>",
+      "backend_only_rendering": true,
+      "text_content": "\nGoogle logo today:\nhttps:\/\/www.google.com\/images\/srpr\/logo4w.png\nKinda boring\n"
+    },
+    {
       "name": "two_inline_images",
       "input": "Google logo today: https://www.google.com/images/srpr/logo4w.png\nKinda boringGoogle logo today: https://www.google.com/images/srpr/logo4w.png\nKinda boring",
       "expected_output": "<p>Google logo today: <a href=\"https://www.google.com/images/srpr/logo4w.png\" target=\"_blank\" title=\"https://www.google.com/images/srpr/logo4w.png\">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boringGoogle logo today: <a href=\"https://www.google.com/images/srpr/logo4w.png\" target=\"_blank\" title=\"https://www.google.com/images/srpr/logo4w.png\">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boring</p>\n<div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\" target=\"_blank\" title=\"https://www.google.com/images/srpr/logo4w.png\"><img src=\"https://www.google.com/images/srpr/logo4w.png\"></a></div><div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\" target=\"_blank\" title=\"https://www.google.com/images/srpr/logo4w.png\"><img src=\"https://www.google.com/images/srpr/logo4w.png\"></a></div>",
@@ -272,10 +279,24 @@
       "text_content": "Google logo today: https:\/\/www.google.com\/images\/srpr\/logo4w.png\nKinda boringGoogle logo today: https:\/\/www.google.com\/images\/srpr\/logo4w.png\nKinda boring\n"
     },
     {
+      "name": "bulleted_list_inlining",
+      "input": "* Google?\n* Google. https://www.google.com/images/srpr/logo4w.png\n* Google!",
+      "expected_output": "<ul>\n<li>Google?</li>\n<li>Google. <a href=\"https://www.google.com/images/srpr/logo4w.png\" target=\"_blank\" title=\"https://www.google.com/images/srpr/logo4w.png\">https://www.google.com/images/srpr/logo4w.png</a><div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\" target=\"_blank\" title=\"https://www.google.com/images/srpr/logo4w.png\"><img src=\"https://www.google.com/images/srpr/logo4w.png\"></a></div></li>\n<li>Google!</li>\n</ul>",
+      "backend_only_rendering": true,
+      "text_content": "\nGoogle?\nGoogle. https://www.google.com/images/srpr/logo4w.png\nGoogle!\n"
+    },
+    {
       "name": "only_inline_image",
       "input": "https://www.google.com/images/srpr/logo4w.png",
       "expected_output": "<div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\" target=\"_blank\" title=\"https://www.google.com/images/srpr/logo4w.png\"><img src=\"https://www.google.com/images/srpr/logo4w.png\"></a></div>",
       "backend_only_rendering": true
+    },
+    {
+      "name": "only_named_inline_image",
+      "input": "[Google Link](https://www.google.com/images/srpr/logo4w.png)",
+      "expected_output": "<p><a href=\"https://www.google.com/images/srpr/logo4w.png\" target=\"_blank\" title=\"https://www.google.com/images/srpr/logo4w.png\">Google Link</a></p>\n<div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\" target=\"_blank\" title=\"Google Link\"><img src=\"https://www.google.com/images/srpr/logo4w.png\"></a></div>",
+      "backend_only_rendering": true,
+      "text_content": "Google Link\n"
     },
     {
       "name": "only_non_image_link",

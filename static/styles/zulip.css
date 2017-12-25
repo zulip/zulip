@@ -2029,6 +2029,10 @@ div.floating_recipient {
     margin-right: 10px;
 }
 
+li .message_inline_image img {
+    float: none;
+}
+
 .message_inline_image_title {
     font-weight: bold;
 }
