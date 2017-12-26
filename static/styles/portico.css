@@ -182,6 +182,22 @@ body {
     opacity: 0.5;
 }
 
+.help .sidebar h1.home-link {
+    font-size: 1em;
+}
+
+.help .sidebar h1.home-link a::before {
+    display: inline-block;
+    font: normal normal normal 14px/1 FontAwesome;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    content: "\f0d9";
+    margin-right: 10px;
+}
+
 .help .sidebar ul {
     margin: 5px 0px 10px 12px;
 }
