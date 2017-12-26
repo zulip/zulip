@@ -97,6 +97,7 @@
 ## Tools & customization
 * [Bots and integrations](/help/add-a-bot-or-integration)
 * [Enable high contrast mode](/help/enable-high-contrast-mode)
+* [Enable night mode](/help/enable-night-mode)
 * [Display the buddy list on narrow screens](/help/move-the-users-list-to-the-left-sidebar)
 * [View organization statistics](/help/analytics)
 
