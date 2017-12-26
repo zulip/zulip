@@ -19,6 +19,8 @@ largest and fastest growing open source group chat project.
 
 ## Getting started
 
+Testing.
+
 Click on the appropriate link below. If nothing seems to apply,
 join us on the
 [Zulip community server](https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html)
