@@ -29,6 +29,10 @@ exports.message = function (response, status_box, cls, type) {
     }
 
     status_box.addClass("show");
+    // Show alert message for maximum 7 seconds and minimum 3 seconds.
+    setTimeout(function () {
+        status_box.hide();
+    }, Math.min(7000, Math.max(3000, response.length * 50)));
 };
 
 function escape(html) {
