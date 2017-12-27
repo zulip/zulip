@@ -9,12 +9,11 @@ from django.urls import reverse
 
 from zerver.decorator import has_request_variables, \
     zulip_login_required, REQ, human_users_only
-from zerver.lib.actions import do_change_password, \
-    do_change_enter_sends, do_change_notification_settings, \
-    do_change_default_desktop_notifications, do_change_autoscroll_forever, \
-    do_regenerate_api_key, do_change_avatar_fields, do_set_user_display_setting, \
-    validate_email, do_change_user_email, do_start_email_change_process, \
-    check_change_full_name
+from zerver.lib.actions import do_change_password, do_change_notification_settings, \
+    do_change_enter_sends, do_change_default_desktop_notifications, \
+    do_regenerate_api_key, do_change_avatar_fields, \
+    do_set_user_display_setting, validate_email, do_change_user_email, \
+    do_start_email_change_process, check_change_full_name
 from zerver.lib.avatar import avatar_url
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.i18n import get_available_language_codes
@@ -57,15 +56,9 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
 @has_request_variables
 def json_change_ui_settings(
         request: HttpRequest, user_profile: UserProfile,
-        autoscroll_forever: Optional[bool]=REQ(validator=check_bool, default=None),
         default_desktop_notifications: Optional[bool]=REQ(validator=check_bool, default=None)
 ) -> HttpResponse:
     result = {}
-
-    if autoscroll_forever is not None and \
-            user_profile.autoscroll_forever != autoscroll_forever:
-        do_change_autoscroll_forever(user_profile, autoscroll_forever)
-        result['autoscroll_forever'] = autoscroll_forever
 
     if default_desktop_notifications is not None and \
             user_profile.default_desktop_notifications != default_desktop_notifications:

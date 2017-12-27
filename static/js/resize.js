@@ -203,9 +203,7 @@ exports.watch_manual_resize = function (element) {
 };
 
 exports.resize_bottom_whitespace = function (h) {
-    if (page_params.autoscroll_forever) {
-        $("#bottom_whitespace").height($("#compose-container")[0].offsetHeight);
-    } else if (h !== undefined) {
+    if (h !== undefined) {
         $("#bottom_whitespace").height(h.bottom_whitespace_height);
     }
 };
