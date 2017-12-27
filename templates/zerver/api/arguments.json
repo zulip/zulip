@@ -1,0 +1,48 @@
+{
+    "private-message.md":[
+        {
+            "argument":"type",
+            "description":"The type of message to be sent. `private` for a private message and `stream` for a [stream message](/api/stream-message).",
+            "required":"Required",
+            "example":"private"
+        },
+        {
+            "argument":"to",
+            "description":"A JSON-encoded list containing the usernames of the recipients.",
+            "required":"Required",
+            "example":"wdaher@example.com"
+        },
+        {
+            "argument":"content",
+            "description":"The content of the message. Maximum message size of 10000 bytes.",
+            "required":"Required",
+            "example":"Hello"
+        }
+    ],
+    "stream-message.md":[
+        {
+            "argument":"type",
+            "description":"The type of message to be sent. `stream` for a stream message and `private` for a [private message](/api/private-message).",
+            "required":"Required",
+            "example":"stream"
+        },
+        {
+            "argument":"to",
+            "description":"A string identifying the stream.",
+            "required":"Required",
+            "example":"Denmark"
+        },
+        {
+            "argument":"subject",
+            "description":"The topic of the message. Only required if `type` is `stream`. Defaults to `None`. Maximum length of 60 characters.",
+            "required":"Optional",
+            "example":"Castle"
+        },
+        {
+            "argument":"content",
+            "description":"The content of the message. Maximum message size of 10000 bytes.",
+            "required":"Required",
+            "example":"Hello"
+        }
+    ]
+}
