@@ -576,7 +576,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     # UI vars
     enter_sends = models.NullBooleanField(default=False)  # type: Optional[bool]
-    autoscroll_forever = models.BooleanField(default=False)  # type: bool
     left_side_userlist = models.BooleanField(default=False)  # type: bool
     emoji_alt_code = models.BooleanField(default=False)  # type: bool
 
