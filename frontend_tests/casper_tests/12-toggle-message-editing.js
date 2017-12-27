@@ -1,5 +1,22 @@
 var common = require('../casper_lib/common.js').common;
 
+
+function submit_checked() {
+    casper.then(function () {
+        casper.waitUntilVisible('input:checked[type="checkbox"][id="id_realm_allow_message_editing"] + span', function () {
+            casper.click('form.org-settings-form button.button');
+        });
+    });
+}
+
+function submit_unchecked() {
+    casper.then(function () {
+        casper.waitUntilVisible('input:not(:checked)[type="checkbox"][id="id_realm_allow_message_editing"] + span', function () {
+            casper.click('form.org-settings-form button.button');
+        });
+    });
+}
+
 common.start_and_log_in();
 
 // For clarity these should be different than what 08-edit uses, until
@@ -95,9 +112,10 @@ casper.then(function () {
     // deactivate "allow message editing"
     casper.waitUntilVisible('input[type="checkbox"][id="id_realm_allow_message_editing"] + span', function () {
         casper.click('input[type="checkbox"][id="id_realm_allow_message_editing"] + span');
-        casper.click('form.org-settings-form button.button');
     });
 });
+
+submit_unchecked();
 
 casper.then(function () {
     casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
@@ -175,11 +193,7 @@ casper.then(function () {
     });
 });
 
-casper.then(function () {
-    casper.waitUntilVisible('input:checked[type="checkbox"][id="id_realm_allow_message_editing"] + span', function () {
-        casper.click('form.org-settings-form button.button');
-    });
-});
+submit_checked();
 
 casper.then(function () {
     casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
@@ -244,9 +258,10 @@ casper.then(function () {
             $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val('4');
         });
         casper.click('input[type="checkbox"][id="id_realm_allow_message_editing"] + span');
-        casper.click('form.org-settings-form button.button');
     });
 });
+
+submit_unchecked();
 
 casper.then(function () {
     casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
