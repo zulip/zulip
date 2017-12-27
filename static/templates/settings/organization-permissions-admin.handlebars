@@ -19,9 +19,7 @@
                            {{#if realm_restricted_to_domain}}checked="checked"{{/if}} />
                     <span></span>
                 </label>
-                <label for="id_realm_restricted_to_domain" id="realm_restricted_to_domains_label" class="inline-block"
-                    title="{{#tr this}}If checked, only users with an e-mail address ending in these domains will be able to join the organization.{{/tr}}">
-                </label>
+                <label for="id_realm_restricted_to_domain" id="realm_restricted_to_domains_label" class="inline-block" />
                 {{#if is_admin }}
                 <a data-toggle="modal" href="#realm_domains_modal">{{t "[Configure]" }}</a>
                 {{/if}}
@@ -33,8 +31,7 @@
                            {{#if realm_invite_required}}checked="checked"{{/if}} />
                     <span></span>
                 </label>
-                <label for="id_realm_invite_required" id="realm_invite_required_label" class="inline-block"
-                    title="{{t 'If checked, users must be invited in order to join your organization.' }}">
+                <label for="id_realm_invite_required" id="realm_invite_required_label" class="inline-block">
                     {{t "Users need an invitation to join" }}
                 </label>
             </div>
@@ -46,8 +43,7 @@
                            {{#if realm_invite_by_admins_only}}checked="checked"{{/if}} />
                     <span></span>
                 </label>
-                <label for="id_realm_invite_by_admins_only" id="id_realm_invite_by_admins_only_label" class="inline-block"
-                    title="{{t 'If checked, only administrators may invite new users.' }}">
+                <label for="id_realm_invite_by_admins_only" id="id_realm_invite_by_admins_only_label" class="inline-block">
                     {{t "Only admins can invite new users" }}
                 </label>
             </div>
@@ -61,8 +57,7 @@
                            {{#if realm_name_changes_disabled}}checked="checked"{{/if}} />
                     <span></span>
                 </label>
-                <label for="id_realm_name_changes_disabled" id="id_realm_name_changes_disabled_label" class="inline-block"
-                    title="{{t 'If checked, users will be unable to change their name.' }}">
+                <label for="id_realm_name_changes_disabled" id="id_realm_name_changes_disabled_label" class="inline-block">
                     {{t "Prevent users from changing their name" }}
                 </label>
             </div>
@@ -73,8 +68,7 @@
                            {{#if realm_email_changes_disabled}}checked="checked"{{/if}} />
                     <span></span>
                 </label>
-                <label for="id_realm_email_changes_disabled" id="id_realm_email_changes_disabled_label" class="inline-block"
-                    title="{{t 'If checked, users will be unable to change their email address.' }}">
+                <label for="id_realm_email_changes_disabled" id="id_realm_email_changes_disabled_label" class="inline-block">
                     {{t "Prevent users from changing their email address" }}
                 </label>
             </div>
@@ -88,8 +82,7 @@
                            {{#if realm_create_stream_by_admins_only}}checked="checked"{{/if}} />
                     <span></span>
                 </label>
-                <label for="id_realm_create_stream_by_admins_only" id="id_realm_create_stream_by_admins_only_label" class="inline-block"
-                    title="{{t 'If checked, only administrators may create new streams.' }}">
+                <label for="id_realm_create_stream_by_admins_only" id="id_realm_create_stream_by_admins_only_label" class="inline-block">
                     {{t "Prevent users from creating streams" }}
                 </label>
             </div>
@@ -109,8 +102,7 @@
                            {{#if realm_add_emoji_by_admins_only}}checked="checked"{{/if}} />
                     <span></span>
                 </label>
-                <label for="id_realm_add_emoji_by_admins_only" id="id_realm_add_emoji_by_admins_only_label" class="inline-block"
-                    title="{{t 'If checked, only administrators may add new emoji.'}}">
+                <label for="id_realm_add_emoji_by_admins_only" id="id_realm_add_emoji_by_admins_only_label" class="inline-block">
                     {{t "Prevent users from adding custom emoji" }}
                 </label>
             </div>
