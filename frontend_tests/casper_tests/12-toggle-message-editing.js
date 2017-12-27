@@ -95,10 +95,8 @@ casper.then(function () {
 // });
 
 // go to admin page
-casper.then(function () {
-    casper.click('#settings-dropdown');
-    casper.click('a[href^="#organization"]');
-});
+common.then_click('#settings-dropdown');
+common.then_click('a[href^="#organization"]');
 
 casper.then(function () {
     casper.waitForSelector('#settings_overlay_container.show', function () {
@@ -107,13 +105,10 @@ casper.then(function () {
     });
 });
 
-casper.then(function () {
-    casper.click("li[data-section='organization-settings']");
-    // deactivate "allow message editing"
-    casper.waitUntilVisible('input[type="checkbox"][id="id_realm_allow_message_editing"] + span', function () {
-        casper.click('input[type="checkbox"][id="id_realm_allow_message_editing"] + span');
-    });
-});
+common.then_click("li[data-section='organization-settings']");
+
+// deactivate "allow message editing"
+common.then_click('input[type="checkbox"][id="id_realm_allow_message_editing"] + span');
 
 submit_unchecked();
 
@@ -176,23 +171,10 @@ casper.then(function () {
 });
 
 // go back to admin page, and reactivate "allow message editing"
-casper.then(function () {
-    casper.click('#settings-dropdown');
-    casper.click('a[href^="#organization"]');
-});
-
-casper.then(function () {
-    casper.waitUntilVisible("li[data-section='organization-settings']", function () {
-        casper.click("li[data-section='organization-settings']");
-    });
-});
-
-casper.then(function () {
-    casper.waitUntilVisible('input[type="checkbox"][id="id_realm_allow_message_editing"] + span', function () {
-        casper.click('input[type="checkbox"][id="id_realm_allow_message_editing"] + span');
-    });
-});
-
+common.then_click('#settings-dropdown');
+common.then_click('a[href^="#organization"]');
+common.then_click("li[data-section='organization-settings']");
+common.then_click('input[type="checkbox"][id="id_realm_allow_message_editing"] + span');
 submit_checked();
 
 casper.then(function () {
@@ -257,10 +239,10 @@ casper.then(function () {
         casper.evaluate(function () {
             $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val('4');
         });
-        casper.click('input[type="checkbox"][id="id_realm_allow_message_editing"] + span');
     });
 });
 
+common.then_click('input[type="checkbox"][id="id_realm_allow_message_editing"] + span');
 submit_unchecked();
 
 casper.then(function () {
@@ -275,13 +257,7 @@ casper.then(function () {
     });
 });
 
-casper.then(function () {
-    // allow message editing again, and check that the old edit limit is still there
-    casper.waitUntilVisible('input[type="checkbox"][id="id_realm_allow_message_editing"] + span', function () {
-        casper.click('input[type="checkbox"][id="id_realm_allow_message_editing"] + span');
-    });
-});
-
+common.then_click('input[type="checkbox"][id="id_realm_allow_message_editing"] + span');
 submit_checked();
 
 casper.then(function () {
