@@ -185,7 +185,16 @@ exports.setup_page = function (callback) {
 
     function format_drafts(data) {
         var drafts = {};
+        var data_array = [];
         _.each(data, function (draft, id) {
+            data_array.push([id, data[id]]);
+        });
+        var data_sorted = data_array.sort(function (draft_a,draft_b) {
+            return draft_a[1].updatedAt-draft_b[1].updatedAt;
+        });
+        _.each(data_sorted, function (data_element) {
+            var draft = data_element[1];
+            var id = data_element[0];
             var formatted;
             var time = new XDate(draft.updatedAt);
             var time_stamp = timerender.render_now(time).time_str;
