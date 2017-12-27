@@ -279,9 +279,10 @@ casper.then(function () {
     // allow message editing again, and check that the old edit limit is still there
     casper.waitUntilVisible('input[type="checkbox"][id="id_realm_allow_message_editing"] + span', function () {
         casper.click('input[type="checkbox"][id="id_realm_allow_message_editing"] + span');
-        casper.click('form.org-settings-form button.button');
     });
 });
+
+submit_checked();
 
 casper.then(function () {
     casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
