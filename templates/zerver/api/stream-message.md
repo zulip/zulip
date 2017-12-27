@@ -6,27 +6,7 @@ Send a message to a stream.
 
 ## Arguments
 
-| Argument        | Example           | Required  | Description                 |
-| --------------- | ----------------- | --------- | --------------------------- |
-| `type`          | `stream`          | Required  | The type of message to be   |
-|                 |                   |           | sent. `stream` for a stream |
-|                 |                   |           | message and `private` for a |
-|                 |                   |           | [private message][1].       |
-|                 |                   |           |                             |
-| `to`            | `Denmark`         | Required  | A string identifying the    |
-|                 |                   |           | stream.                     |
-|                 |                   |           |                             |
-| `subject`       | `Castle`          | Optional  | The topic of the message.   |
-|                 |                   |           | Only required if `type` is  |
-|                 |                   |           | `stream`. Defaults to       |
-|                 |                   |           | `None`. Maximum length of   |
-|                 |                   |           | 60 characters.              |
-|                 |                   |           |                             |
-| `content`       | `Hello`           | Required  | The content of the message. |
-|                 |                   |           | Maximum message size of     |
-|                 |                   |           | 10000 bytes.                |
-
-[1]: /api/private-message
+{generate_api_arguments_table|arguments.json|stream-message.md}
 
 ## Usage examples
 <div class="code-section" markdown="1">

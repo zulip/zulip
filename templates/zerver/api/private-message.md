@@ -6,22 +6,7 @@ Send a private message to a user or multiple users.
 
 ## Arguments
 
-| Argument        | Example              | Required  | Description                    |
-| --------------- | -------------------- | --------- | -----------------------------  |
-| `type`          | `private`            | Required  | The type of message to be      |
-|                 |                      |           | sent. `private` for a private  |
-|                 |                      |           | message and `stream` for a     |
-|                 |                      |           | [stream message][1].           |
-|                 |                      |           |                                |
-| `to`            | `wdaher@example.com` | Required  | A JSON-encoded list containing |
-|                 |                      |           | the usernames of the           |
-|                 |                      |           | recipients.                    |
-|                 |                      |           |                                |
-| `content`       | `Hello`              | Required  | The content of the message.    |
-|                 |                      |           | Maximum message size of        |
-|                 |                      |           | 10000 bytes.                   |
-
-[1]: /api/stream-message
+{generate_api_arguments_table|arguments.json|private-message.md}
 
 ## Usage examples
 <div class="code-section" markdown="1">
