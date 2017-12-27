@@ -38,10 +38,10 @@ class Command(ZulipBaseCommand):
 
         self.send(users)
 
-    def send(self, users, subject_template_name='', email_template_name='',
-             use_https=True, token_generator=default_token_generator,
-             from_email=None, html_email_template_name=None):
-        # type: (List[UserProfile], str, str, bool, PasswordResetTokenGenerator, Optional[Text], Optional[str]) -> None
+    def send(self, users: List[UserProfile], subject_template_name: str='',
+             email_template_name: str='', use_https: bool=True,
+             token_generator: PasswordResetTokenGenerator=default_token_generator,
+             from_email: Optional[Text]=None, html_email_template_name: Optional[str]=None) -> None:
         """Sends one-use only links for resetting password to target users
 
         """

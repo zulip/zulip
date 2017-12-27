@@ -160,20 +160,13 @@ $(function () {
         });
     }
 
-    function toggle_star(message_id) {
-        // Update the message object pointed to by the various message
-        // lists.
-        var message = ui.find_message(message_id);
-
-        unread_ops.mark_message_as_read(message);
-        ui.update_starred(message.id, message.starred !== true);
-        message_flags.send_starred([message], message.starred);
-    }
-
     $("#main_div").on("click", ".star", function (e) {
         e.stopPropagation();
         popovers.hide_all();
-        toggle_star(rows.id($(this).closest(".message_row")));
+
+        var message_id = rows.id($(this).closest(".message_row"));
+        var message = message_store.get(message_id);
+        message_flags.toggle_starred(message);
     });
 
     $("#main_div").on("click", ".message_reaction", function (e) {

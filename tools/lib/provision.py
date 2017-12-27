@@ -212,7 +212,7 @@ def main(options):
     for apt_depedency in APT_DEPENDENCIES[codename]:
         sha_sum.update(apt_depedency.encode('utf8'))
     # hash the content of setup-apt-repo
-    sha_sum.update(open('scripts/lib/setup-apt-repo').read().encode('utf8'))
+    sha_sum.update(open('scripts/lib/setup-apt-repo', 'rb').read())
 
     new_apt_dependencies_hash = sha_sum.hexdigest()
     last_apt_dependencies_hash = None
@@ -319,7 +319,6 @@ def main(options):
         import django
         django.setup()
 
-        from zerver.lib.str_utils import force_bytes
         from zerver.lib.test_fixtures import is_template_database_current
 
         try:
@@ -359,8 +358,8 @@ def main(options):
         paths += glob.glob('static/locale/*/translations.json')
 
         for path in paths:
-            with open(path, 'r') as file_to_hash:
-                sha1sum.update(force_bytes(file_to_hash.read()))
+            with open(path, 'rb') as file_to_hash:
+                sha1sum.update(file_to_hash.read())
 
         compilemessages_hash_path = os.path.join(UUID_VAR_PATH, "last_compilemessages_hash")
         new_compilemessages_hash = sha1sum.hexdigest()

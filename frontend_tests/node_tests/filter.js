@@ -254,8 +254,8 @@ function make_sub(name, stream_id) {
     assert(!predicate({starred: false}));
 
     predicate = get_predicate([['is', 'unread']]);
-    assert(predicate({flags: ''}));
-    assert(!predicate({flags: 'read'}));
+    assert(predicate({unread: true}));
+    assert(!predicate({unread: false}));
 
     predicate = get_predicate([['is', 'alerted']]);
     assert(predicate({alerted: true}));

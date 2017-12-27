@@ -6,6 +6,7 @@ set_global('window', {
 });
 global.stub_out_jquery();
 
+zrequire('message_store');
 zrequire('server_events_dispatch');
 zrequire('server_events');
 

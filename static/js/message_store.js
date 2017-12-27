@@ -90,7 +90,9 @@ exports.insert_recent_private_message = (function () {
     };
 }());
 
-exports.set_message_booleans = function (message, flags) {
+exports.set_message_booleans = function (message) {
+    var flags = message.flags || [];
+
     function convert_flag(flag_name) {
         return flags.indexOf(flag_name) >= 0;
     }
@@ -101,6 +103,39 @@ exports.set_message_booleans = function (message, flags) {
     message.mentioned = convert_flag('mentioned') || convert_flag('wildcard_mentioned');
     message.mentioned_me_directly =  convert_flag('mentioned');
     message.collapsed = convert_flag('collapsed');
+    message.alerted = convert_flag('has_alert_word');
+
+    // Once we have set boolean flags here, the `flags` attribute is
+    // just a distraction, so we delete it.  (All the downstream code
+    // uses booleans.)
+    delete message.flags;
+
+};
+
+exports.init_booleans = function (message) {
+    // This initializes booleans for the local-echo path where
+    // we don't have flags from the server yet.  (We want to
+    // explicitly set flags to false to be consistent with other
+    // codepaths.)
+    message.unread = false;
+    message.historical = false;
+    message.starred = false;
+    message.mentioned = false;
+    message.mentioned_me_directly = false;
+    message.collapsed = false;
+    message.alerted = false;
+};
+
+exports.update_booleans = function (message, flags) {
+    // When we get server flags for local echo or message edits,
+    // we are vulnerable to race conditions, so only update flags
+    // that are driven by message content.
+    function convert_flag(flag_name) {
+        return flags.indexOf(flag_name) >= 0;
+    }
+
+    message.mentioned = convert_flag('mentioned') || convert_flag('wildcard_mentioned');
+    message.mentioned_me_directly =  convert_flag('mentioned');
     message.alerted = convert_flag('has_alert_word');
 };
 
@@ -117,10 +152,6 @@ exports.add_message_metadata = function (message) {
     }
 
     message.sent_by_me = people.is_current_user(message.sender_email);
-
-    message.flags = message.flags || [];
-
-    exports.set_message_booleans(message, message.flags);
 
     people.extract_people_from_message(message);
     people.maybe_incr_recipient_count(message);

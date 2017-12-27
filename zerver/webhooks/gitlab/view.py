@@ -262,11 +262,10 @@ EVENT_FUNCTION_MAPPER = {
 
 @api_key_only_webhook_view("Gitlab")
 @has_request_variables
-def api_gitlab_webhook(request, user_profile,
-                       stream=REQ(default='gitlab'),
-                       payload=REQ(argument_type='body'),
-                       branches=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, Text, Dict[str, Any], Optional[Text]) -> HttpResponse
+def api_gitlab_webhook(request: HttpRequest, user_profile: UserProfile,
+                       stream: Text=REQ(default='gitlab'),
+                       payload: Dict[str, Any]=REQ(argument_type='body'),
+                       branches: Optional[Text]=REQ(default=None)) -> HttpResponse:
     event = get_event(request, payload, branches)
     if event is not None:
         body = get_body_based_on_event(event)(payload)

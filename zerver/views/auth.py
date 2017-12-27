@@ -45,9 +45,8 @@ import requests
 import time
 import ujson
 
-def create_preregistration_user(email, request, realm_creation=False,
-                                password_required=True):
-    # type: (Text, HttpRequest, bool, bool) -> HttpResponse
+def create_preregistration_user(email: Text, request: HttpRequest, realm_creation: bool=False,
+                                password_required: bool=True) -> HttpResponse:
     realm = None
     if not realm_creation:
         realm = get_realm(get_subdomain(request))
@@ -116,11 +115,10 @@ def redirect_to_subdomain_login_url() -> HttpResponseRedirect:
 def redirect_to_config_error(error_type: str) -> HttpResponseRedirect:
     return HttpResponseRedirect("/config-error/%s" % (error_type,))
 
-def login_or_register_remote_user(request, remote_username, user_profile, full_name='',
-                                  invalid_subdomain=False, mobile_flow_otp=None,
-                                  is_signup=False):
-    # type: (HttpRequest, Optional[Text], Optional[UserProfile], Text, bool, Optional[str], bool) -> HttpResponse
-
+def login_or_register_remote_user(request: HttpRequest, remote_username: Optional[Text],
+                                  user_profile: Optional[UserProfile], full_name: Text='',
+                                  invalid_subdomain: bool=False, mobile_flow_otp: Optional[str]=None,
+                                  is_signup: bool=False) -> HttpResponse:
     if user_profile is None or user_profile.is_mirror_dummy:
         # Since execution has reached here, we have verified the user
         # controls an email address (remote_username) but there's no
@@ -458,9 +456,8 @@ def log_into_subdomain(request: HttpRequest, token: Text) -> HttpResponse:
                                          full_name, invalid_subdomain=invalid_subdomain,
                                          is_signup=is_signup)
 
-def redirect_and_log_into_subdomain(realm, full_name, email_address,
-                                    is_signup=False):
-    # type: (Realm, Text, Text, bool) -> HttpResponse
+def redirect_and_log_into_subdomain(realm: Realm, full_name: Text, email_address: Text,
+                                    is_signup: bool=False) -> HttpResponse:
     data = {'name': full_name, 'email': email_address, 'subdomain': realm.subdomain,
             'is_signup': is_signup}
     token = signing.dumps(data, salt=_subdomain_token_salt)

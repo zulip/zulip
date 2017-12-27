@@ -57,10 +57,17 @@ MAX_QUEUE_TIMEOUT_SECS = 7 * 24 * 60 * 60
 HEARTBEAT_MIN_FREQ_SECS = 45
 
 class ClientDescriptor:
-    def __init__(self, user_profile_id, user_profile_email, realm_id, event_queue,
-                 event_types, client_type_name, apply_markdown=True, client_gravatar=True,
-                 all_public_streams=False, lifespan_secs=0, narrow=[]):
-        # type: (int, Text, int, 'EventQueue', Optional[Sequence[str]], Text, bool, bool, bool, int, Iterable[Sequence[Text]]) -> None
+    def __init__(self,
+                 user_profile_id: int,
+                 user_profile_email: Text,
+                 realm_id: int, event_queue: 'EventQueue',
+                 event_types: Optional[Sequence[str]],
+                 client_type_name: Text,
+                 apply_markdown: bool=True,
+                 client_gravatar: bool=True,
+                 all_public_streams: bool=False,
+                 lifespan_secs: int=0,
+                 narrow: Iterable[Sequence[str]]=[]) -> None:
         # These objects are serialized on shutdown and restored on restart.
         # If fields are added or semantics are changed, temporary code must be
         # added to load_event_queues() to update the restored objects.
@@ -664,10 +671,10 @@ def receiver_is_off_zulip(user_profile_id: int) -> bool:
     off_zulip = len(message_event_queues) == 0
     return off_zulip
 
-def maybe_enqueue_notifications(user_profile_id, message_id, private_message,
-                                mentioned, stream_push_notify, stream_name,
-                                always_push_notify, idle, already_notified):
-    # type: (int, int, bool, bool, bool, Optional[str], bool, bool, Dict[str, bool]) -> Dict[str, bool]
+def maybe_enqueue_notifications(user_profile_id: int, message_id: int, private_message: bool,
+                                mentioned: bool, stream_push_notify: bool, stream_name: Optional[str],
+                                always_push_notify: bool, idle: bool,
+                                already_notified: Dict[str, bool]) -> Dict[str, bool]:
     """This function has a complete unit test suite in
     `test_enqueue_notifications` that should be expanded as we add
     more features here."""
@@ -879,15 +886,14 @@ def process_message_update_event(event_template: Mapping[str, Any],
             if client.accepts_event(user_event):
                 client.add_event(user_event)
 
-def maybe_enqueue_notifications_for_message_update(user_profile_id,
-                                                   message_id,
-                                                   stream_name,
-                                                   prior_mention_user_ids,
-                                                   mention_user_ids,
-                                                   presence_idle_user_ids,
-                                                   stream_push_user_ids,
-                                                   push_notify_user_ids):
-    # type: (UserProfile, int, Text, Set[int], Set[int], Set[int], Set[int], Set[int]) -> None
+def maybe_enqueue_notifications_for_message_update(user_profile_id: UserProfile,
+                                                   message_id: int,
+                                                   stream_name: str,
+                                                   prior_mention_user_ids: Set[int],
+                                                   mention_user_ids: Set[int],
+                                                   presence_idle_user_ids: Set[int],
+                                                   stream_push_user_ids: Set[int],
+                                                   push_notify_user_ids: Set[int]) -> None:
     private_message = (stream_name is None)
 
     if private_message:

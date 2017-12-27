@@ -11,6 +11,7 @@ set_global('feature_flags', {
 set_global('narrow_state', {});
 set_global('current_msg_list', {});
 set_global('home_msg_list', {});
+set_global('message_store', {});
 
 var me = {
     email: 'me@example.com',
@@ -67,6 +68,7 @@ var zero_counts = {
         type: 'stream',
         stream_id: stream_id,
         subject: 'luNch',
+        unread: true,
     };
 
     var other_message = {
@@ -74,11 +76,19 @@ var zero_counts = {
         type: 'stream',
         stream_id: stream_id,
         subject: 'lunCH',
+        unread: true,
     };
 
-    assert(!unread.id_flagged_as_unread(15));
+    assert.deepEqual(unread.get_unread_message_ids([15, 16]), []);
+    assert.deepEqual(unread.get_unread_messages([message, other_message]), []);
+
     unread.process_loaded_messages([message, other_message]);
-    assert(unread.id_flagged_as_unread(15));
+
+    assert.deepEqual(unread.get_unread_message_ids([15, 16]), [15, 16]);
+    assert.deepEqual(
+        unread.get_unread_messages([message, other_message]),
+        [message, other_message]
+    );
 
     count = unread.num_unread_for_topic(stream_id, 'Lunch');
     assert.equal(count, 2);
@@ -130,15 +140,27 @@ var zero_counts = {
         type: 'stream',
         stream_id: stream_id,
         subject: 'sticky',
+        unread: true,
+    };
+
+    var message_dict = new Dict();
+    message_dict.set(message.id, message);
+    message_dict.set(other_message.id, other_message);
+    message_dict.set(sticky_message.id, sticky_message);
+
+    message_store.get = function (msg_id) {
+        return message_dict.get(msg_id);
     };
 
     unread.process_loaded_messages([sticky_message]);
     count = unread.num_unread_for_topic(stream_id, 'sticky');
     assert.equal(count, 1);
+    assert(sticky_message.unread);
 
     unread.mark_as_read(sticky_message.id);
     count = unread.num_unread_for_topic(stream_id, 'sticky');
     assert.equal(count, 0);
+    assert(!sticky_message.unread);
 
     unread.update_unread_topics(sticky_message, {subject: 'sticky'});
     count = unread.num_unread_for_topic(stream_id, 'sticky');
@@ -186,6 +208,7 @@ stream_data.get_stream_id = function () {
         type: 'stream',
         stream_id: stream_id,
         subject: 'test_muting',
+        unread: true,
     };
 
     unread.process_loaded_messages([message]);
@@ -216,6 +239,7 @@ stream_data.get_stream_id = function () {
         type: 'stream',
         stream_id: stream_id,
         subject: 'lunch',
+        unread: true,
     };
 
     var num_msgs = 500;
@@ -262,6 +286,7 @@ stream_data.get_stream_id = function () {
         type: 'stream',
         stream_id: stream_id,
         subject: 'lunch',
+        unread: true,
     };
 
     home_msg_list.get = function (msg_id) {
@@ -333,6 +358,7 @@ stream_data.get_stream_id = function () {
             {user_id: anybody.user_id},
             {id: me.user_id},
         ],
+        unread: true,
     };
 
     unread.process_loaded_messages([message]);
@@ -368,6 +394,7 @@ stream_data.get_stream_id = function () {
         id: 15,
         display_recipient: [{id: alice.user_id}],
         type: 'private',
+        unread: true,
     };
 
     var read_message = {
@@ -397,6 +424,7 @@ stream_data.get_stream_id = function () {
         stream_id: 999,
         subject: 'lunch',
         mentioned: true,
+        unread:true,
     };
 
     unread.process_loaded_messages([message]);
@@ -426,22 +454,10 @@ stream_data.get_stream_id = function () {
 }());
 
 (function test_message_unread() {
-    var message = {flags: ['starred'], unread: true};
-    assert(unread.message_unread(message));
-
-    unread.set_read_flag(message);
-    assert(!unread.message_unread(message));
-    assert(!message.unread);
-
-    // idempotency
-    unread.set_read_flag(message);
-    assert(!unread.message_unread(message));
-    assert.deepEqual(message.flags, ['starred', 'read']);
-
     // Test some code that might be overly defensive, for line coverage sake.
     assert(!unread.message_unread(undefined));
-    assert(unread.message_unread({flags: []}));
-    assert(!unread.message_unread({flags: ['read']}));
+    assert(unread.message_unread({unread: true}));
+    assert(!unread.message_unread({unread: false}));
 }());
 
 (function test_server_counts() {

@@ -1,5 +1,6 @@
 set_global("page_params", {
     realm_uri: "https://chat.example.com",
+    realm_embedded_bots: ["converter", "xkcd"],
 });
 
 set_global("avatar", {});
@@ -54,8 +55,16 @@ zrequire('settings_bots');
 function test_create_bot_type_input_box_toggle(f) {
     var create_payload_url = $('#create_payload_url');
     var payload_url_inputbox = $('#payload_url_inputbox');
+    var EMBEDDED_BOT_TYPE = '4';
     var OUTGOING_WEBHOOK_BOT_TYPE = '3';
     var GENERIC_BOT_TYPE = '1';
+
+    $('#create_bot_type :selected').val(EMBEDDED_BOT_TYPE);
+    f.apply();
+    assert(!create_payload_url.hasClass('required'));
+    assert(!payload_url_inputbox.visible());
+    assert($('#select_service_name').hasClass('required'));
+    assert($('#service_name_list').visible());
 
     $('#create_bot_type :selected').val(OUTGOING_WEBHOOK_BOT_TYPE);
     f.apply();
@@ -83,9 +92,15 @@ function test_create_bot_type_input_box_toggle(f) {
         }
     };
 
+    var embedded_bots_added = 0;
+    $('#select_service_name').append = function () {
+        embedded_bots_added += 1;
+    };
+
     avatar.build_bot_create_widget = function () {};
     avatar.build_bot_edit_widget = function () {};
 
     settings_bots.set_up();
+    assert(embedded_bots_added === page_params.realm_embedded_bots.length);
 }());
 

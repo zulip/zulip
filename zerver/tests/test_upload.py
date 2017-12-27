@@ -7,6 +7,7 @@ from zerver.lib.avatar import (
     avatar_url,
     get_avatar_field,
 )
+from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.bugdown import url_filename
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.test_classes import ZulipTestCase, UploadSerializeMixin
@@ -19,7 +20,7 @@ from zerver.lib.test_helpers import (
 from zerver.lib.test_runner import slow
 from zerver.lib.upload import sanitize_name, S3UploadBackend, \
     upload_message_image, delete_message_image, LocalUploadBackend, \
-    ZulipUploadBackend
+    ZulipUploadBackend, MEDIUM_AVATAR_SIZE, resize_avatar
 import zerver.lib.upload
 from zerver.models import Attachment, get_user, \
     get_old_unclaimed_attachments, Message, UserProfile, Stream, Realm, \
@@ -983,6 +984,36 @@ class S3Test(ZulipTestCase):
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
         self.send_stream_message(self.example_email("hamlet"), "Denmark", body, "test")
         self.assertIn('title="zulip.txt"', self.get_last_message().rendered_content)
+
+    @use_s3_backend
+    def test_upload_avatar_image(self) -> None:
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        bucket = conn.create_bucket(settings.S3_AVATAR_BUCKET)
+
+        user_profile = self.example_user('hamlet')
+        path_id = user_avatar_path(user_profile)
+        original_image_path_id = path_id + ".original"
+        medium_path_id = path_id + "-medium.png"
+
+        with get_test_image_file('img.png') as image_file:
+            zerver.lib.upload.upload_backend.upload_avatar_image(image_file, user_profile, user_profile)
+        test_image_data = open(get_test_image_file('img.png').name, 'rb').read()
+        test_medium_image_data = resize_avatar(test_image_data, MEDIUM_AVATAR_SIZE)
+
+        original_image_key = bucket.get_key(original_image_path_id)
+        self.assertEqual(original_image_key.key, original_image_path_id)
+        image_data = original_image_key.get_contents_as_string()
+        self.assertEqual(image_data, test_image_data)
+
+        medium_image_key = bucket.get_key(medium_path_id)
+        self.assertEqual(medium_image_key.key, medium_path_id)
+        medium_image_data = medium_image_key.get_contents_as_string()
+        self.assertEqual(medium_image_data, test_medium_image_data)
+        bucket.delete_key(medium_image_key)
+
+        zerver.lib.upload.upload_backend.ensure_medium_avatar_image(user_profile)
+        medium_image_key = bucket.get_key(medium_path_id)
+        self.assertEqual(medium_image_key.key, medium_path_id)
 
 class UploadTitleTests(TestCase):
     def test_upload_titles(self) -> None:

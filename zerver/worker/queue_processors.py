@@ -43,6 +43,7 @@ from zerver.context_processors import common_context
 from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_service_handler
 from zerver.models import get_bot_services
 from zulip import Client
+from zulip_bots.lib import extract_query_without_mention
 from zerver.lib.bot_lib import EmbeddedBotHandler, get_bot_handler
 
 import os
@@ -530,6 +531,13 @@ class EmbeddedBotWorker(QueueProcessingWorker):
                 logging.error("Error: User %s has bot with invalid embedded bot service %s" % (
                     user_profile_id, service.name))
                 continue
+            if event['trigger'] == 'mention':
+                message['content'] = extract_query_without_mention(
+                    message=message,
+                    client=self.get_bot_api_client(user_profile),
+                )
+                if message['content'] is None:
+                    return
             bot_handler.handle_message(
                 message=message,
                 bot_handler=self.get_bot_api_client(user_profile)

@@ -21,7 +21,6 @@ from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import get_cache_backend
 from zerver.lib.initial_password import initial_password
 from zerver.lib.db import TimeTrackingCursor
-from zerver.lib.str_utils import force_text
 from zerver.lib import cache
 from zerver.tornado import event_queue
 from zerver.tornado.handlers import allocate_handler_id

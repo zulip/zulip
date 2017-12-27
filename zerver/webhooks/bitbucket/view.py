@@ -13,9 +13,10 @@ from zerver.models import UserProfile, get_client
 
 @authenticated_rest_api_view(is_webhook=True)
 @has_request_variables
-def api_bitbucket_webhook(request, user_profile, payload=REQ(validator=check_dict([])),
-                          stream=REQ(default='commits'), branches=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, Mapping[Text, Any], Text, Optional[Text]) -> HttpResponse
+def api_bitbucket_webhook(request: HttpRequest, user_profile: UserProfile,
+                          payload: Mapping[Text, Any]=REQ(validator=check_dict([])),
+                          stream: Text=REQ(default='commits'),
+                          branches: Optional[Text]=REQ(default=None)) -> HttpResponse:
     repository = payload['repository']
 
     commits = [

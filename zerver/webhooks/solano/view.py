@@ -13,11 +13,10 @@ from zerver.models import Client, UserProfile
 
 @api_key_only_webhook_view('SolanoLabs')
 @has_request_variables
-def api_solano_webhook(request, user_profile,
-                       stream=REQ(default='solano labs'),
-                       topic=REQ(default='build update'),
-                       payload=REQ(argument_type='body')):
-    # type: (HttpRequest, UserProfile, str, str, Dict[str, Any]) -> HttpResponse
+def api_solano_webhook(request: HttpRequest, user_profile: UserProfile,
+                       stream: str=REQ(default='solano labs'),
+                       topic: str=REQ(default='build update'),
+                       payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
     event = payload.get('event')
     if event == 'test':
         return handle_test_event(user_profile, request.client, stream, topic)

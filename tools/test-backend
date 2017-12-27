@@ -90,6 +90,7 @@ not_yet_fully_covered = {
     'zerver/lib/profile.py',
     'zerver/lib/queue.py',
     'zerver/lib/rate_limiter.py',
+    'zerver/lib/slack_data_to_zulip_data.py',
     'zerver/lib/sqlalchemy_utils.py',
     'zerver/lib/str_utils.py',
     'zerver/lib/stream_recipient.py',

@@ -42,16 +42,8 @@ exports.contains_backend_only_syntax = function (content) {
     return markedup !== undefined || false_filter_match !== undefined;
 };
 
-function push_uniquely(lst, elem) {
-    if (!_.contains(lst, elem)) {
-        lst.push(elem);
-    }
-}
-
 exports.apply_markdown = function (message) {
-    if (message.flags === undefined) {
-        message.flags = [];
-    }
+    message_store.init_booleans(message);
 
     // Our python-markdown processor appends two \n\n to input
     var options = {
@@ -59,13 +51,14 @@ exports.apply_markdown = function (message) {
             var person = people.get_by_name(name);
             if (person !== undefined) {
                 if (people.is_my_user_id(person.user_id)) {
-                    push_uniquely(message.flags, 'mentioned');
+                    message.mentioned = true;
+                    message.mentioned_me_directly = true;
                 }
                 return '<span class="user-mention" data-user-id="' + person.user_id + '">' +
                        '@' + person.full_name +
                        '</span>';
             } else if (name === 'all' || name === 'everyone') {
-                push_uniquely(message.flags, 'mentioned');
+                message.mentioned = true;
                 return '<span class="user-mention" data-user-id="*">' +
                        '@' + name +
                        '</span>';
@@ -76,7 +69,7 @@ exports.apply_markdown = function (message) {
             var group = user_groups.get_user_group_from_name(name);
             if (group !== undefined) {
                 if (user_groups.is_member_of(group.id, people.my_current_user_id())) {
-                    push_uniquely(message.flags, 'mentioned');
+                    message.mentioned = true;
                 }
                 return '<span class="user-group-mention" data-user-group-id="' + group.id + '">' +
                        '@' + group.name +
