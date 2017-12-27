@@ -55,7 +55,6 @@ i18n.init({
             enable_offline_push_notifications: false,
             enable_online_push_notifications: false,
             enable_digest_emails: false,
-            autoscroll_forever: false,
             default_desktop_notifications: false,
         },
     };

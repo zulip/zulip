@@ -495,10 +495,7 @@ exports.received_messages = function (messages) {
         if (!message_is_notifiable(message)) {
             return;
         }
-        // checking for unread flags here is basically proxy for
-        // "is Zulip currently in focus". In the case of auto-scroll forever,
-        // we don't care
-        if (!unread.message_unread(message) && !page_params.autoscroll_forever) {
+        if (!unread.message_unread(message)) {
             return;
         }
 

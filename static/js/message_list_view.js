@@ -475,8 +475,6 @@ MessageListView.prototype = {
         var list = this.list; // for convenience
         var table_name = this.table_name;
         var table = rows.get_table(table_name);
-        // we we record if last_message_was_selected before updating the table
-        var last_message_was_selected = rows.id(rows.last_visible()) === list.selected_id();
         var orig_scrolltop_offset;
         var message_containers;
 
@@ -654,13 +652,12 @@ MessageListView.prototype = {
         }
 
         if (list === current_msg_list && messages_are_new) {
-            self._maybe_autoscroll(new_dom_elements, last_message_was_selected);
+            self._maybe_autoscroll(new_dom_elements);
         }
     },
 
 
-    _maybe_autoscroll: function MessageListView__maybe_autoscroll(rendered_elems,
-                                                                  last_message_was_selected) {
+    _maybe_autoscroll: function MessageListView__maybe_autoscroll(rendered_elems) {
         // If we are near the bottom of our feed (the bottom is visible) and can
         // scroll up without moving the pointer out of the viewport, do so, by
         // up to the amount taken up by the new message.
@@ -686,14 +683,6 @@ MessageListView.prototype = {
             }
         }, this);
 
-        // autoscroll_forever: if we're on the last message, keep us on the last message
-        if (last_message_was_selected && page_params.autoscroll_forever) {
-            this.list.select_id(this.list.last().id, {from_rendering: true});
-            navigate.scroll_to_selected();
-            this.list.reselect_selected_id();
-            return;
-        }
-
         var selected_row = this.selected_row();
         var last_visible = rows.last_visible();
 
@@ -705,16 +694,6 @@ MessageListView.prototype = {
         var selected_row_offset = selected_row.offset().top;
         var info = message_viewport.message_viewport_info();
         var available_space_for_scroll = selected_row_offset - info.visible_top;
-
-        var rows_offset = rows.last_visible().offset().top - this.list.selected_row().offset().top;
-
-        // autoscroll_forever: if we've sent a message, move pointer at least that far.
-        if (page_params.autoscroll_forever && id_of_last_message_sent_by_us > -1 &&
-            rows_offset < (message_viewport.height())) {
-            this.list.select_id(id_of_last_message_sent_by_us, {from_rendering: true});
-            navigate.scroll_to_selected();
-            return;
-        }
 
         // Don't scroll if we can't move the pointer up.
         if (available_space_for_scroll <= 0) {
