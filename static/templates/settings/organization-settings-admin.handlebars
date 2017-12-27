@@ -19,16 +19,14 @@
                            {{#if realm_allow_message_editing}}checked="checked"{{/if}} />
                     <span></span>
                 </label>
-                <label for="id_realm_allow_message_editing" class="inline-block"
-                    title="{{t 'If checked, users can edit the content and topics of their old messages.' }}">
+                <label for="id_realm_allow_message_editing" class="inline-block">
                     {{t "Users can edit their messages" }}
                 </label>
             </div>
 
             <div class="input-group disableable {{#unless realm_allow_message_editing}}control-label-disabled{{/unless}}">
                 <label for="id_realm_message_content_edit_limit_minutes"
-                    id="id_realm_message_content_edit_limit_minutes_label"
-                    title="{{t 'If non-zero, users can edit their message for this many minutes after it is sent. If zero, users can edit all their past messages.' }}">
+                    id="id_realm_message_content_edit_limit_minutes_label">
                     {{t 'Message edit limit in minutes (0 for no limit)' }}
                 </label>
                 <input type="text" id="id_realm_message_content_edit_limit_minutes"
@@ -44,10 +42,11 @@
                            {{#if realm_allow_message_deleting}}checked="checked"{{/if}} />
                     <span></span>
                 </label>
-                <label for="id_realm_allow_message_deleting" id="id_realm_allow_message_deleting_label" class="inline-block"
-                    title="{{t 'If checked, users can delete their messages.  By default, only administrators can delete messages.' }}">
+                <label for="id_realm_allow_message_deleting" id="id_realm_allow_message_deleting_label" class="inline-block">
                     {{t "Users can delete their messages" }}
                 </label>
+                <i class="icon-vector-info-sign settings-info-icon realm_allow_message_deleting_tooltip" data-toggle="tooltip"
+                title="{{t 'Administrators can always delete any message.' }}"/>
             </div>
 
             <div class="input-group">
@@ -56,8 +55,7 @@
                            {{#if realm_allow_edit_history}}checked="checked"{{/if}} />
                     <span></span>
                 </label>
-                <label for="id_realm_allow_edit_history" id="id_realm_allow_edit_history_label" class="inline-block"
-                    title="{{t 'If checked, users will be able view message edit history.'}}">
+                <label for="id_realm_allow_edit_history" id="id_realm_allow_edit_history_label" class="inline-block">
                     {{t "Enable message edit history" }}
                 </label>
             </div>
@@ -68,8 +66,7 @@
             {{#if false}}
             <div class="input-group">
                 <label for="realm_message_retention_days"
-                    id="id_realm_message_retention_days_label"
-                    title="{{t 'Messages older than the configured number of days will be automatically deleted' }}">
+                    id="id_realm_message_retention_days_label">
                     {{t 'Messages retention period in days (blank means messages are retained forever)' }}
                 </label>
                 <input type="text" id="id_realm_message_retention_days"
@@ -85,8 +82,7 @@
                            {{#if realm_mandatory_topics}}checked="checked"{{/if}} />
                     <span></span>
                 </label>
-                <label for="id_realm_mandatory_topics" id="id_realm_mandatory_topics_label" class="inline-block"
-                    title="{{t 'If checked, topics are required.'}}">
+                <label for="id_realm_mandatory_topics" id="id_realm_mandatory_topics_label" class="inline-block">
                     {{t "Require topics in stream messages" }}
                 </label>
             </div>
@@ -98,8 +94,7 @@
                            {{#if realm_inline_image_preview}}checked="checked"{{/if}} />
                     <span></span>
                 </label>
-                <label for="id_realm_inline_image_preview" id="id_realm_inline_image_preview_label" class="inline-block"
-                    title="{{t 'If checked, image previews will be shown.' }}">
+                <label for="id_realm_inline_image_preview" id="id_realm_inline_image_preview_label" class="inline-block">
                     {{t "Show previews of uploaded and linked images" }}
                 </label>
             </div>
@@ -112,8 +107,7 @@
                            {{#if realm_inline_url_embed_preview}}checked="checked"{{/if}} />
                     <span></span>
                 </label>
-                <label for="id_realm_inline_url_embed_preview" id="id_realm_inline_url_embed_preview_label" class="inline-block"
-                    title="{{t 'If checked, previews of linked websites will be shown.' }}">
+                <label for="id_realm_inline_url_embed_preview" id="id_realm_inline_url_embed_preview_label" class="inline-block">
                     {{t "Show previews of linked websites" }}
                 </label>
             </div>
