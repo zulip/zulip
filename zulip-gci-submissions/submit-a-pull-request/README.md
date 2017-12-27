@@ -1,0 +1,1 @@
+This is the submission directory for the [submit-a-pull-request task](https://github.com/zulip/zulip-gci/blob/master/tasks/2017/submit-a-pull-request.md) of Google Code In.
