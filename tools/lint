@@ -23,6 +23,7 @@ def run_parallel(lint_functions):
     for name, func in lint_functions.items():
         pid = os.fork()
         if pid == 0:
+            print('DEBUG: Forked', name)
             logging.info("start " + name)
             result = func()
             logging.info("finish " + name)
@@ -34,6 +35,7 @@ def run_parallel(lint_functions):
 
     for pid in pids:
         (_, status) = os.waitpid(pid, 0)
+        print('DEBUG: pid {} joined'.format(pid))
         if status != 0:
             failed = True
     return failed
