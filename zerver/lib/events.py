@@ -247,7 +247,6 @@ def fetch_initial_state_data(user_profile: UserProfile,
         for prop in UserProfile.property_types:
             state[prop] = getattr(user_profile, prop)
         state['emojiset_choices'] = user_profile.emojiset_choices()
-        state['autoscroll_forever'] = user_profile.autoscroll_forever
 
     if want('update_global_notifications'):
         for notification in UserProfile.notification_setting_types:

@@ -2882,16 +2882,6 @@ def do_change_notification_settings(user_profile: UserProfile, name: str, value:
         log_event(event)
     send_event(event, [user_profile.id])
 
-def do_change_autoscroll_forever(user_profile: UserProfile, autoscroll_forever: bool,
-                                 log: bool=True) -> None:
-    user_profile.autoscroll_forever = autoscroll_forever
-    user_profile.save(update_fields=["autoscroll_forever"])
-
-    if log:
-        log_event({'type': 'autoscroll_forever',
-                   'user': user_profile.email,
-                   'autoscroll_forever': autoscroll_forever})
-
 def do_change_enter_sends(user_profile: UserProfile, enter_sends: bool) -> None:
     user_profile.enter_sends = enter_sends
     user_profile.save(update_fields=["enter_sends"])

@@ -8,7 +8,7 @@ exports.set_up = function () {
     $("#ui-settings .change-setting").change(function (e) {
         e.preventDefault();
         var labs_updates = {};
-        _.each(["autoscroll_forever", "default_desktop_notifications"],
+        _.each(["default_desktop_notifications"],
             function (setting) {
                 labs_updates[setting] = $("#" + setting).is(":checked");
             });
@@ -16,15 +16,9 @@ exports.set_up = function () {
             channel.patch({
                 url: '/json/settings/ui',
                 data: labs_updates,
-                success: function (resp, statusText, xhr) {
+                success: function () {
                     var message = i18n.t("Updated settings!  You will need to reload for these changes to take effect.", page_params);
-                    var result = JSON.parse(xhr.responseText);
                     var ui_settings_status = $('#ui-settings-status').expectOne();
-
-                    if (result.autoscroll_forever !== undefined) {
-                        page_params.autoscroll_forever = result.autoscroll_forever;
-                        resize.resize_page_components();
-                    }
 
                     ui_report.success(message, ui_settings_status);
                 },
