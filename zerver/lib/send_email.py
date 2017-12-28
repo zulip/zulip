@@ -15,6 +15,7 @@ import os
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Text
 
 from zerver.lib.logging_util import log_to_file
+from email.header import Header
 
 ## Logging setup ##
 
@@ -35,7 +36,7 @@ def build_email(template_prefix: str, to_user_id: Optional[int]=None,
         to_user = get_user_profile_by_id(to_user_id)
         # Change to formataddr((to_user.full_name, to_user.email)) once
         # https://github.com/zulip/zulip/issues/4676 is resolved
-        to_email = to_user.email
+        to_email = formataddr((str(Header(to_user.full_name, 'utf-8')), to_user.email))
 
     if context is None:
         context = {}
