@@ -78,9 +78,6 @@ def random_name(bytes: int=60) -> Text:
 class BadImageError(JsonableError):
     code = ErrorCode.BAD_IMAGE
 
-class ExceededQuotaError(JsonableError):
-    code = ErrorCode.QUOTA_EXCEEDED
-
 def resize_avatar(image_data: bytes, size: int=DEFAULT_AVATAR_SIZE) -> bytes:
     try:
         im = Image.open(io.BytesIO(image_data))
