@@ -149,6 +149,7 @@ class Realm(models.Model):
     name_changes_disabled = models.BooleanField(default=False)  # type: bool
     email_changes_disabled = models.BooleanField(default=False)  # type: bool
     description = models.TextField(null=True)  # type: Optional[Text]
+    listening_bots_str = models.TextField(null=True)  # type: Optional[Text]
 
     allow_message_deleting = models.BooleanField(default=False)  # type: bool
     allow_message_editing = models.BooleanField(default=True)  # type: bool
@@ -186,6 +187,7 @@ class Realm(models.Model):
         invite_by_admins_only=bool,
         inline_image_preview=bool,
         inline_url_embed_preview=bool,
+        listening_bots_str=Text,
         mandatory_topics=bool,
         message_retention_days=(int, type(None)),
         name=Text,
