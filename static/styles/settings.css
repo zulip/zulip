@@ -171,6 +171,11 @@ td .button {
     box-shadow: none;
 }
 
+.settings-info-icon {
+    padding-left: 3px;
+    opacity: 0.9;
+}
+
 .settings-section {
     display: none;
 
