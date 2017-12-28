@@ -194,6 +194,15 @@ def setup_shell_profile(shell_profile):
 
 def install_apt_deps():
     # type: () -> None
+
+    # Workaround for installing redis on Ubuntu Xenial.
+    # See https://bugs.launchpad.net/ubuntu/+source/redis/+bug/1663911
+    # for tracking the stage of this bug
+    if codename == 'xenial':
+        run(["sudo", "mkdir", "/etc/systemd/system/redis-server.service.d/"])
+        run(["sudo", "echo", "'[Service]\nPrivateDevices=no'", ">",
+             "/etc/systemd/system/redis-server.service.d/redis.override.conf"])
+
     # setup-apt-repo does an `apt-get update`
     run(["sudo", "./scripts/lib/setup-apt-repo"])
     run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + APT_DEPENDENCIES[codename])
