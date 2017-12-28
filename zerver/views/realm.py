@@ -36,6 +36,7 @@ def update_realm(
         add_emoji_by_admins_only: Optional[bool]=REQ(validator=check_bool, default=None),
         allow_message_deleting: Optional[bool]=REQ(validator=check_bool, default=None),
         allow_message_editing: Optional[bool]=REQ(validator=check_bool, default=None),
+        listening_bots_str: Optional[str]=REQ(validator=check_string, default=None),
         mandatory_topics: Optional[bool]=REQ(validator=check_bool, default=None),
         message_content_edit_limit_seconds: Optional[int]=REQ(converter=to_non_negative_int, default=None),
         allow_edit_history: Optional[bool]=REQ(validator=check_bool, default=None),

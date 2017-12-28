@@ -3175,6 +3175,21 @@ def do_update_user_presence(user_profile: UserProfile,
         # realms are pretty small.
         send_presence_changed(user_profile, presence)
 
+def do_mark_bot_listening(realm: Realm, bot_name: str, is_listening: bool) -> None:
+    orig_listening_bots_str = realm.listening_bots_str
+    if orig_listening_bots_str:
+        listening_bots = orig_listening_bots_str.split(',')
+    else:
+        listening_bots = []
+
+    if is_listening and bot_name not in listening_bots:
+        listening_bots.append(bot_name)
+    elif not is_listening and bot_name in listening_bots:
+        listening_bots.remove(bot_name)
+
+    listening_bots_str = ','.join(listening_bots)
+    do_set_realm_property(realm, 'listening_bots_str', listening_bots_str)
+
 def update_user_activity_interval(user_profile: UserProfile, log_time: datetime.datetime) -> None:
     event = {'user_profile_id': user_profile.id,
              'time': datetime_to_timestamp(log_time)}
