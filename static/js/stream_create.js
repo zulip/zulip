@@ -366,7 +366,8 @@ $(function () {
     $("body").on("mouseover", "#announce-stream-docs", function (e) {
         var announce_stream_docs = $("#announce-stream-docs");
         announce_stream_docs.popover({placement: "right",
-                                      content: templates.render('announce_stream_docs'),
+                                      content: templates.render('announce_stream_docs', {
+                                        notifications_stream: page_params.notifications_stream}),
                                       trigger: "manual"});
         announce_stream_docs.popover('show');
         announce_stream_docs.data('popover').tip().css('z-index', 2000);
