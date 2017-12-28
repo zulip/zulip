@@ -10,6 +10,7 @@ from zerver.lib.actions import (
     do_set_realm_notifications_stream,
     do_set_realm_signup_notifications_stream,
     do_set_realm_property,
+    do_mark_bot_listening,
 )
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.request import has_request_variables, REQ, JsonableError
@@ -122,3 +123,13 @@ def update_realm(
             data['signup_notifications_stream_id'] = signup_notifications_stream_id
 
     return json_success(data)
+
+@has_request_variables
+def mark_bot_listening(request: HttpRequest, user_profile: UserProfile,
+                       bot_name: Optional[str] = REQ(default=None),
+                       is_listening: Optional[str] = REQ(default=None),
+                       ) -> HttpResponse:
+    # `is_listening` is converted to a JSONified string by `do_api_query` in
+    # `python-zulip-api`, so has to be checked against a string.
+    do_mark_bot_listening(user_profile.realm, bot_name, is_listening == 'true')
+    return json_success()
