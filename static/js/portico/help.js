@@ -19,7 +19,7 @@ function registerCodeSection($codeSection) {
 
 function highlight_current_article() {
     $('.help .sidebar a').removeClass('highlighted');
-    var path = window.location.href.match(/\/(help|api)\/.+/);
+    var path = window.location.href.match(/\/(help|api)\/.*/);
 
     if (!path) {
         return;
