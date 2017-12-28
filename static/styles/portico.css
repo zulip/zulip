@@ -145,21 +145,25 @@ body {
 
 .help .sidebar h1,
 .help .sidebar h2 {
-    font-size: 1.2em;
     font-weight: 400;
-    margin-bottom: 5px;
-    line-height: 105%;
 }
 
 .help .sidebar h1 {
     font-size: 1.25em;
+    line-height: 1.5;
+    margin-bottom: 0px;
 }
 
 .help .sidebar h1:not(:first-of-type) {
     margin-top: 20px;
 }
 
-.help .sidebar.slide h1,
+.help .sidebar h2 {
+    font-size: 1.2em;
+    line-height: 1.05;
+    margin-bottom: 5px;
+}
+
 .help .sidebar.slide h2 {
     cursor: pointer;
 }
@@ -205,7 +209,7 @@ body {
     display: block;
 }
 
-.help .sidebar li a.highlighted {
+.help .sidebar a.highlighted {
     background-color: hsl(152, 40%, 42%);
 
     /* Extend highlight to entire width of sidebar, not just link area */
