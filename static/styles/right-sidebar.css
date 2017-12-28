@@ -13,6 +13,7 @@
 }
 
 #user_presences,
+#listening_bot_presences,
 #group-pms {
     position: relative;
     list-style-position: inside; /* Draw the bullets inside our box */
@@ -25,6 +26,7 @@
     overflow-y: auto;
 }
 
+#listening_bot_presences li,
 #user_presences li {
     overflow: hidden;
     white-space: nowrap;
@@ -37,6 +39,7 @@
 }
 
 #user_presences li,
+#listening_bot_presences li,
 #group-pms li {
     list-style-type: none;
 
@@ -54,6 +57,7 @@
 }
 
 .user-status-indicator,
+.bot-status-indicator,
 .group-pm-status-indicator {
     display: block;
     width: 8px;
@@ -66,7 +70,10 @@
     top: 5px;
 }
 
+/* A bot in `listening_bots` is always active, so it should always use the
+   active status icon. */
 .user_active .user-status-indicator,
+#listening_bot_presences .bot-status-indicator,
 .group-pm-status-indicator {
     background-color: hsl(106, 74%, 44%);
     border-color: hsl(106, 74%, 44%);
@@ -223,4 +230,8 @@
 .user-list-filter,
 .add-user-list-filter {
     width: 80%;
+}
+
+.bot-name {
+    text-transform: capitalize;
 }

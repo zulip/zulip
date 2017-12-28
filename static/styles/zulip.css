@@ -1126,6 +1126,7 @@ td.pointer {
 }
 
 .message_sender i.zulip-icon.bot,
+#listening_bot_presences i.zulip-icon.bot,
 .popover_info i.zulip-icon.bot {
     color: hsl(180, 5%, 74%);
     vertical-align: top;
@@ -1136,6 +1137,7 @@ td.pointer {
     font-size: 12px;
 }
 
+#listening_bot_presences i.zulip-icon.bot,
 .popover_info i.zulip-icon.bot {
     margin-top: 3px;
 }
