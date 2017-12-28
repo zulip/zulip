@@ -82,7 +82,7 @@ See also the [full API endpoint documentation](/api/endpoints).
 <div data-language="javascript" markdown="1">
 More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
 ```js
-const zulip = require('zulip');
+const zulip = require('zulip-js');
 
 const config = {
   username: 'othello-bot@example.com',
