@@ -1,0 +1,93 @@
+{
+   "meta":{
+      "unsubscribe":"http://zulip.statuspage.io/?unsubscribe=vg38vmgl07y3",
+      "documentation":"http://doers.statuspage.io/customer-notifications/webhooks/",
+      "generated_at":"2017-12-28T10:44:05.707Z"
+   },
+   "page":{
+      "id":"s1t817q23lxb",
+      "status_indicator":"none",
+      "status_description":"All Systems Operational"
+   },
+   "incident":{
+      "name":"Zulip Statuspage Integration",
+      "status":"investigating",
+      "created_at":"2017-12-28T10:44:05.415Z",
+      "updated_at":"2017-12-28T10:44:05.519Z",
+      "monitoring_at":null,
+      "resolved_at":null,
+      "impact":"none",
+      "shortlink":"http://stspg.io/0ff07c441",
+      "postmortem_ignored":false,
+      "postmortem_body":null,
+      "postmortem_body_last_updated_at":null,
+      "postmortem_published_at":null,
+      "postmortem_notified_subscribers":false,
+      "postmortem_notified_twitter":false,
+      "backfilled":false,
+      "scheduled_for":null,
+      "scheduled_until":null,
+      "scheduled_remind_prior":false,
+      "scheduled_reminded_at":null,
+      "impact_override":null,
+      "scheduled_auto_in_progress":false,
+      "scheduled_auto_completed":false,
+      "id":"kmclpydzyv8q",
+      "page_id":"s1t817q23lxb",
+      "incident_updates":[
+         {
+            "status":"investigating",
+            "body":"Investigation of Integration of StatusPage.io into Zulip",
+            "created_at":"2017-12-28T10:44:05.455Z",
+            "wants_twitter_update":false,
+            "twitter_updated_at":null,
+            "updated_at":"2017-12-28T10:44:05.455Z",
+            "display_at":"2017-12-28T10:44:05.455Z",
+            "affected_components":[
+               {
+                  "code":"h5h281dpzr56",
+                  "name":"API (example)",
+                  "old_status":"operational",
+                  "new_status":"operational"
+               },
+               {
+                  "code":"cc6ctlm4ll06",
+                  "name":"Management Portal (example)",
+                  "old_status":"operational",
+                  "new_status":"operational"
+               }
+            ],
+            "custom_tweet":null,
+            "deliver_notifications":true,
+            "id":"hfpqnxmxm5kl",
+            "incident_id":"kmclpydzyv8q"
+         }
+      ],
+      "components":[
+         {
+            "status":"operational",
+            "name":"API (example)",
+            "created_at":"2017-12-28T10:18:12.283Z",
+            "updated_at":"2017-12-28T10:18:12.283Z",
+            "position":1,
+            "description":null,
+            "showcase":true,
+            "id":"h5h281dpzr56",
+            "page_id":"s1t817q23lxb",
+            "group_id":null
+         },
+         {
+            "status":"operational",
+            "name":"Management Portal (example)",
+            "created_at":"2017-12-28T10:18:12.309Z",
+            "updated_at":"2017-12-28T10:18:12.309Z",
+            "position":2,
+            "description":null,
+            "showcase":true,
+            "id":"cc6ctlm4ll06",
+            "page_id":"s1t817q23lxb",
+            "group_id":null
+         }
+      ]
+   }
+}
