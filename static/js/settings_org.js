@@ -6,6 +6,9 @@ var meta = {
     loaded: false,
 };
 
+// Realm.DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS
+var DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS = 600;
+
 exports.reset = function () {
     meta.loaded = false;
 };
@@ -162,6 +165,38 @@ exports.render_notifications_stream_ui = function (stream_id) {
     elem.removeClass('text-warning');
 };
 
+function convert_to_settings_format(seconds) {
+    var settings_time_object = {
+        value : 0,
+        unit : "",
+    };
+    if (seconds % (60*60*24) === 0) {
+        settings_time_object.value = Math.ceil(seconds / (60*60*24));
+        settings_time_object.unit = "days";
+    } else if (seconds % (60*60) === 0) {
+        settings_time_object.value = Math.ceil(seconds / (60*60));
+        settings_time_object.unit = "hours";
+    } else {
+        settings_time_object.value = Math.ceil(seconds / (60));
+        settings_time_object.unit = "minutes";
+    }
+    return settings_time_object;
+}
+
+exports.update_message_edit_time_limit_settings = function (settings_time_object) {
+    $('#id_realm_message_content_edit_limit').val(settings_time_object.value);
+    $('#edit_limit_unit_select').val(settings_time_object.unit);
+    settings_time_object.unit = settings_time_object.unit.charAt(0).toUpperCase() +
+                                    settings_time_object.unit.slice(1);
+    if (settings_time_object.value) {
+        $("#content_edit_limit_button").html
+            (i18n.t("__value__ __unit__",settings_time_object));
+    } else {
+        $("#content_edit_limit_button").html
+            (i18n.t("No limit"));
+    }
+};
+
 exports.populate_notifications_stream_dropdown = function (stream_list) {
     var dropdown_list_body = $("#id_realm_notifications_stream .dropdown-list-body").expectOne();
     var search_input = $("#id_realm_notifications_stream .dropdown-search > input[type=text]");
@@ -258,6 +293,12 @@ function _set_up() {
 
     // Populate authentication methods table
     exports.populate_auth_methods(page_params.realm_authentication_methods);
+
+    // Populate message content edit limit settings(i.e. content_edit_limit_button and modal) as we
+    // determine the appropriate value of time & its unit (i.e. minute, hour or day) here
+    exports.update_message_edit_time_limit_settings(
+        convert_to_settings_format(page_params.realm_message_content_edit_limit_seconds)
+    );
 
     // create property_types object
     var property_types = {
@@ -410,15 +451,57 @@ function _set_up() {
 
     $("#id_realm_allow_message_editing").change(function () {
         if (this.checked) {
-            $("#id_realm_message_content_edit_limit_minutes").prop("disabled", false);
-            $("#id_realm_message_content_edit_limit_minutes_label").parent().removeClass("control-label-disabled");
+            $("#id_realm_message_content_edit_limit").prop("disabled", false);
+            $("#change_content_edit_button_label").parent().removeClass("control-label-disabled");
+            $('#change_content_edit_limit').prop("disabled", false);
         } else {
-            $("#id_realm_message_content_edit_limit_minutes").attr("disabled", true);
-            $("#id_realm_message_content_edit_limit_minutes_label").parent().addClass("control-label-disabled");
+            $("#id_realm_message_content_edit_limit").attr("disabled", true);
+            $("#change_content_edit_button_label").parent().addClass("control-label-disabled");
+            $('#change_content_edit_limit').attr("disabled", true);
         }
     });
 
+    $('#set_no_edit_limit').on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if ($("#id_realm_allow_message_editing").prop("checked")) {
+            // Here we are filling value of input zero and then submitting form
+            // as unit doesn't matters
+            $("#id_realm_message_content_edit_limit").val("0");
+            exports.save_organization_settings(e);
+        }
+    });
+
+    $('#change_content_edit_limit').on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (page_params.realm_message_content_edit_limit_seconds === 0) {
+            exports.update_message_edit_time_limit_settings(
+                convert_to_settings_format(DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS)
+            );
+        }
+        overlays.open_modal('message_edit_limit_modal');
+        $("#id_realm_message_content_edit_limit").focus();
+    });
+
+    $('#change_message_edit_limit_button').on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        exports.save_organization_settings(e);
+    });
+
+    $('#close_message_edit_modal').on('click', function () {
+        exports.update_message_edit_time_limit_settings(
+            convert_to_settings_format(page_params.realm_message_content_edit_limit_seconds)
+        );
+    });
+
     exports.save_organization_settings = function () {
+        var modal_open = false;
+        if (overlays.is_modal_open()) {
+            modal_open = true;
+            overlays.close_modal('message_edit_limit_modal');
+        }
         _.each(property_types.settings, function (v, k) {
             property_type_status_element(k).hide();
         });
@@ -429,28 +512,39 @@ function _set_up() {
         // grab the first alert available and use it for the status.
         var status = $("#admin-realm-notifications-stream-status");
 
-        var compose_textarea_edit_limit_minutes = $("#id_realm_message_content_edit_limit_minutes").val();
-        var new_allow_message_editing = $("#id_realm_allow_message_editing").prop("checked");
+        var allow_message_editing = $("#id_realm_allow_message_editing").prop("checked");
+        var new_message_edit_limit_unit = $('#edit_limit_unit_select').val();
+        var new_message_content_edit_limit = $("#id_realm_message_content_edit_limit").val();
+        var new_message_content_edit_limit_value =
+            parseInt(new_message_content_edit_limit, 10);
 
-        // If allow_message_editing is unchecked, message_content_edit_limit_minutes
-        // is irrelevant.  Hence if allow_message_editing is unchecked, and
-        // message_content_edit_limit_minutes is poorly formed, we set the latter to
-        // a default value to prevent the server from returning an error.
-        if (!new_allow_message_editing) {
-            if ((parseInt(compose_textarea_edit_limit_minutes, 10).toString() !==
-                 compose_textarea_edit_limit_minutes) ||
-                compose_textarea_edit_limit_minutes < 0) {
-            // Realm.DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS / 60
-            compose_textarea_edit_limit_minutes = 10;
-            }
+        if (new_message_content_edit_limit_value < 0 ||
+            (new_message_content_edit_limit_value === 0 && modal_open) ||
+                new_message_content_edit_limit_value.toString() !==
+                    new_message_content_edit_limit.toString()) {
+            ui_report.message(i18n.t("Failed: Must be a positive number"), message_editing_status, 'alert-error');
+            exports.update_message_edit_time_limit_settings(
+                convert_to_settings_format(page_params.realm_message_content_edit_limit_seconds)
+            );
+            return;
+        }
+
+        var new_message_content_edit_limit_seconds;
+        if (new_message_edit_limit_unit === "days") {
+            new_message_content_edit_limit_seconds =
+                new_message_content_edit_limit_value*(60*60*24);
+        } else if (new_message_edit_limit_unit === "hours") {
+            new_message_content_edit_limit_seconds = new_message_content_edit_limit_value*(60*60);
+        } else {
+            new_message_content_edit_limit_seconds = new_message_content_edit_limit_value*60;
         }
 
         var url = "/json/realm";
         var data = {};
         data = populate_data_for_request({
-            allow_message_editing: JSON.stringify(new_allow_message_editing),
+            allow_message_editing: JSON.stringify(allow_message_editing),
             message_content_edit_limit_seconds:
-                JSON.stringify(parseInt(compose_textarea_edit_limit_minutes, 10) * 60),
+                JSON.stringify(new_message_content_edit_limit_seconds),
         }, 'settings');
 
         channel.patch({
@@ -460,25 +554,15 @@ function _set_up() {
             success: function (response_data) {
                 $alerts.hide();
                 if (response_data.allow_message_editing !== undefined) {
-                    // We expect message_content_edit_limit_seconds was sent in the
-                    // response as well
-                    var data_message_content_edit_limit_minutes =
-                        Math.ceil(response_data.message_content_edit_limit_seconds / 60);
+                    exports.update_message_edit_time_limit_settings(
+                        convert_to_settings_format(response_data.message_content_edit_limit_seconds)
+                    );
                     if (response_data.allow_message_editing) {
-                        if (response_data.message_content_edit_limit_seconds > 0) {
-                            ui_report.success(
-                                i18n.t("Users can now edit topics for all their messages, and the content of messages which are less than __num_minutes__ minutes old.",
-                                       {num_minutes : data_message_content_edit_limit_minutes}),
-                                message_editing_status);
-                        } else {
-                            ui_report.success(i18n.t("Users can now edit the content and topics of all their past messages!"), message_editing_status);
-                        }
+                            ui_report.success(i18n.t("Setting updated!"),
+                            message_editing_status);
                     } else {
                         ui_report.success(i18n.t("Users can no longer edit their past messages!"), message_editing_status);
                     }
-                    // message_content_edit_limit_seconds could have been changed earlier
-                    // in this function, so update the field just in case
-                    $("#id_realm_message_content_edit_limit_minutes").val(data_message_content_edit_limit_minutes);
                 }
 
                 process_response_data(response_data, 'settings');

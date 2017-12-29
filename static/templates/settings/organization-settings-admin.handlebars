@@ -25,15 +25,22 @@
             </div>
 
             <div class="input-group disableable {{#unless realm_allow_message_editing}}control-label-disabled{{/unless}}">
-                <label for="id_realm_message_content_edit_limit_minutes"
-                    id="id_realm_message_content_edit_limit_minutes_label">
-                    {{t 'Message edit limit in minutes (0 for no limit)' }}
+                <label for="change_content_edit_limit"
+                    id="change_content_edit_button_label">
+                    {{t 'Message edit limit:' }}
                 </label>
-                <input type="text" id="id_realm_message_content_edit_limit_minutes"
-                       name="realm_message_content_edit_limit_minutes"
-                       class="admin-realm-message-content-edit-limit-minutes"
-                       value="{{ realm_message_content_edit_limit_minutes }}"
-                  {{#unless realm_allow_message_editing}}disabled="disabled"{{/unless}} />
+                <a id="content_edit_limit">
+                    <button type="button" class="button rounded small inline-block"
+                        id="change_content_edit_limit"
+                        {{#unless realm_allow_message_editing}}disabled="disabled"{{/unless}} >
+                        <span id="content_edit_limit_button"></span>
+                        <i class="fa fa-pencil"></i>
+                    </button>
+                    {{#if is_admin }}
+                    <a id="set_no_edit_limit">{{t "[No limit]" }}</a>
+                    {{/if}}
+                </a>
+                {{ partial "message_edit_limit_modal"}}
             </div>
 
             <div class="input-group">
