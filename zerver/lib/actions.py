@@ -222,9 +222,9 @@ def get_topic_history_for_stream(user_profile: UserProfile,
 
     return history
 
-def send_signup_message(sender, admin_realm_signup_notifications_stream, user_profile,
-                        internal=False, realm=None):
-    # type: (UserProfile, Text, UserProfile, bool, Optional[Realm]) -> None
+def send_signup_message(sender: UserProfile, admin_realm_signup_notifications_stream: Text,
+                        user_profile: UserProfile, internal: bool=False,
+                        realm: Optional[Realm]=None) -> None:
     if internal:
         # When this is done using manage.py vs. the web interface
         internal_blurb = " **INTERNAL SIGNUP** "
@@ -311,9 +311,10 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
 # * Notifies other users in realm and Zulip about the signup
 # * Deactivates PreregistrationUser objects
 # * subscribe the user to newsletter if newsletter_data is specified
-def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None,
-                           default_stream_groups=[]):
-    # type: (UserProfile, Optional[PreregistrationUser], Optional[Dict[str, str]], List[DefaultStreamGroup]) -> None
+def process_new_human_user(user_profile: UserProfile,
+                           prereg_user: Optional[PreregistrationUser]=None,
+                           newsletter_data: Optional[Dict[str, str]]=None,
+                           default_stream_groups: List[DefaultStreamGroup]=[]) -> None:
     mit_beta_user = user_profile.realm.is_zephyr_mirror_realm
     if prereg_user is not None:
         streams = prereg_user.streams.all()
@@ -425,13 +426,16 @@ def notify_created_bot(user_profile: UserProfile) -> None:
     event = dict(type="realm_bot", op="add", bot=bot)
     send_event(event, bot_owner_user_ids(user_profile))
 
-def do_create_user(email, password, realm, full_name, short_name,
-                   is_realm_admin=False, bot_type=None, bot_owner=None, tos_version=None,
-                   timezone=u"", avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
-                   default_sending_stream=None, default_events_register_stream=None,
-                   default_all_public_streams=None, prereg_user=None,
-                   newsletter_data=None, default_stream_groups=[]):
-    # type: (Text, Optional[Text], Realm, Text, Text, bool, Optional[int], Optional[UserProfile], Optional[Text], Text, Text, Optional[Stream], Optional[Stream], bool, Optional[PreregistrationUser], Optional[Dict[str, str]], List[DefaultStreamGroup]) -> UserProfile
+def do_create_user(email: Text, password: Optional[Text], realm: Realm, full_name: Text,
+                   short_name: Text, is_realm_admin: bool=False, bot_type: Optional[int]=None,
+                   bot_owner: Optional[UserProfile]=None, tos_version: Optional[Text]=None,
+                   timezone: Text=u"", avatar_source: Text=UserProfile.AVATAR_FROM_GRAVATAR,
+                   default_sending_stream: Optional[Stream]=None,
+                   default_events_register_stream: Optional[Stream]=None,
+                   default_all_public_streams: bool=None,
+                   prereg_user: Optional[PreregistrationUser]=None,
+                   newsletter_data: Optional[Dict[str, str]]=None,
+                   default_stream_groups: List[DefaultStreamGroup]=[]) -> UserProfile:
 
     user_profile = create_user(email=email, password=password, realm=realm,
                                full_name=full_name, short_name=short_name,
@@ -963,9 +967,9 @@ def get_recipient_info(recipient: Recipient,
     )  # type: RecipientInfoResult
     return info
 
-def get_service_bot_events(sender, service_bot_tuples, mentioned_user_ids,
-                           active_user_ids, recipient_type):
-    # type: (UserProfile, List[Tuple[int, int]], Set[int], Set[int], int) -> Dict[str, List[Dict[str, Any]]]
+def get_service_bot_events(sender: UserProfile, service_bot_tuples: List[Tuple[int, int]],
+                           mentioned_user_ids: Set[int], active_user_ids: Set[int],
+                           recipient_type: int) -> Dict[str, List[Dict[str, Any]]]:
 
     event_dict = defaultdict(list)  # type: Dict[str, List[Dict[str, Any]]]
 
@@ -1555,9 +1559,9 @@ def validate_recipient_user_profiles(user_profiles: List[UserProfile],
 
     return recipient_profile_ids
 
-def recipient_for_emails(emails, not_forged_mirror_message,
-                         forwarder_user_profile, sender):
-    # type: (Iterable[Text], bool, Optional[UserProfile], UserProfile) -> Recipient
+def recipient_for_emails(emails: Iterable[Text], not_forged_mirror_message: bool,
+                         forwarder_user_profile: Optional[UserProfile],
+                         sender: UserProfile) -> Recipient:
 
     user_profiles = user_profiles_from_unvalidated_emails(emails, sender.realm)
 
@@ -1568,9 +1572,9 @@ def recipient_for_emails(emails, not_forged_mirror_message,
         sender=sender
     )
 
-def recipient_for_user_profiles(user_profiles, not_forged_mirror_message,
-                                forwarder_user_profile, sender):
-    # type: (List[UserProfile], bool, Optional[UserProfile], UserProfile) -> Recipient
+def recipient_for_user_profiles(user_profiles: List[UserProfile], not_forged_mirror_message: bool,
+                                forwarder_user_profile: Optional[UserProfile],
+                                sender: UserProfile) -> Recipient:
 
     recipient_profile_ids = validate_recipient_user_profiles(user_profiles, sender)
 
@@ -1636,11 +1640,13 @@ def check_send_private_message(sender: UserProfile, client: Client,
 
 # check_send_message:
 # Returns the id of the sent message.  Has same argspec as check_message.
-def check_send_message(sender, client, message_type_name, message_to,
-                       topic_name, message_content, realm=None, forged=False,
-                       forged_timestamp=None, forwarder_user_profile=None, local_id=None,
-                       sender_queue_id=None):
-    # type: (UserProfile, Client, Text, Sequence[Text], Optional[Text], Text, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[Text], Optional[Text]) -> int
+def check_send_message(sender: UserProfile, client: Client, message_type_name: Text,
+                       message_to: Sequence[Text], topic_name: Optional[Text],
+                       message_content: Text, realm: Optional[Realm]=None,
+                       forged: bool=False, forged_timestamp: Optional[float]=None,
+                       forwarder_user_profile: Optional[UserProfile]=None,
+                       local_id: Optional[Text]=None,
+                       sender_queue_id: Optional[Text]=None) -> int:
 
     addressee = Addressee.legacy_build(
         sender,
@@ -1728,11 +1734,12 @@ def send_pm_if_empty_stream(sender: UserProfile,
 
 # check_message:
 # Returns message ready for sending with do_send_message on success or the error message (string) on error.
-def check_message(sender, client, addressee,
-                  message_content_raw, realm=None, forged=False,
-                  forged_timestamp=None, forwarder_user_profile=None, local_id=None,
-                  sender_queue_id=None):
-    # type: (UserProfile, Client, Addressee, Text, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[Text], Optional[Text]) -> Dict[str, Any]
+def check_message(sender: UserProfile, client: Client, addressee: Addressee,
+                  message_content_raw: Text, realm: Optional[Realm]=None, forged: bool=False,
+                  forged_timestamp: Optional[float]=None,
+                  forwarder_user_profile: Optional[UserProfile]=None,
+                  local_id: Optional[Text]=None,
+                  sender_queue_id: Optional[Text]=None) -> Dict[str, Any]:
     stream = None
 
     message_content = message_content_raw.rstrip()
@@ -1895,9 +1902,9 @@ def internal_prep_private_message(realm: Realm,
         content=content,
     )
 
-def internal_send_message(realm, sender_email, recipient_type_name, recipients,
-                          topic_name, content, email_gateway=False):
-    # type: (Realm, Text, str, Text, Text, Text, Optional[bool]) -> None
+def internal_send_message(realm: Realm, sender_email: Text, recipient_type_name: str,
+                          recipients: Text, topic_name: Text, content: Text,
+                          email_gateway: Optional[bool]=False) -> None:
     """internal_send_message should only be used where `sender_email` is a
     system bot."""
 
@@ -2492,9 +2499,9 @@ def log_subscription_property_change(user_email: Text, stream_name: Text, proper
              'value': value}
     log_event(event)
 
-def do_change_subscription_property(user_profile, sub, stream,
-                                    property_name, value):
-    # type: (UserProfile, Subscription, Stream, Text, Any) -> None
+def do_change_subscription_property(user_profile: UserProfile, sub: Subscription,
+                                    stream: Stream, property_name: Text, value: Any
+                                    ) -> None:
     setattr(sub, property_name, value)
     sub.save(update_fields=[property_name])
     log_subscription_property_change(user_profile.email, stream.name,
@@ -2509,9 +2516,8 @@ def do_change_subscription_property(user_profile, sub, stream,
                  name=stream.name)
     send_event(event, [user_profile.id])
 
-def do_change_password(user_profile, password, commit=True,
-                       hashed_password=False):
-    # type: (UserProfile, Text, bool, bool) -> None
+def do_change_password(user_profile: UserProfile, password: Text, commit: bool=True,
+                       hashed_password: bool=False) -> None:
     if hashed_password:
         # This is a hashed password, not the password itself.
         user_profile.set_password(password)
@@ -2813,9 +2819,9 @@ def do_change_stream_description(stream: Stream, new_description: Text) -> None:
     )
     send_event(event, can_access_stream_user_ids(stream))
 
-def do_create_realm(string_id, name, restricted_to_domain=None,
-                    invite_required=None, org_type=None):
-    # type: (Text, Text, Optional[bool], Optional[bool], Optional[int]) -> Realm
+def do_create_realm(string_id: Text, name: Text, restricted_to_domain: Optional[bool]=None,
+                    invite_required: Optional[bool]=None, org_type: Optional[int]=None
+                    ) -> Realm:
     existing_realm = get_realm(string_id)
     if existing_realm is not None:
         raise AssertionError("Realm %s already exists!" % (string_id,))
@@ -3180,9 +3186,8 @@ def update_user_activity_interval(user_profile: UserProfile, log_time: datetime.
              'time': datetime_to_timestamp(log_time)}
     queue_json_publish("user_activity_interval", event)
 
-def update_user_presence(user_profile, client, log_time, status,
-                         new_user_input):
-    # type: (UserProfile, Client, datetime.datetime, int, bool) -> None
+def update_user_presence(user_profile: UserProfile, client: Client, log_time: datetime.datetime,
+                         status: int, new_user_input: bool) -> None:
     event = {'user_profile_id': user_profile.id,
              'status': status,
              'time': datetime_to_timestamp(log_time),
@@ -3451,10 +3456,10 @@ def do_update_embedded_data(user_profile: UserProfile,
 
 # We use transaction.atomic to support select_for_update in the attachment codepath.
 @transaction.atomic
-def do_update_message(user_profile, message, topic_name, propagate_mode,
-                      content, rendered_content,
-                      prior_mention_user_ids, mention_user_ids):
-    # type: (UserProfile, Message, Optional[Text], str, Optional[Text], Optional[Text], Set[int], Set[int]) -> int
+def do_update_message(user_profile: UserProfile, message: Message, topic_name: Optional[Text],
+                      propagate_mode: str, content: Optional[Text],
+                      rendered_content: Optional[Text], prior_mention_user_ids: Set[int],
+                      mention_user_ids: Set[int]) -> int:
     event = {'type': 'update_message',
              # TODO: We probably want to remove the 'sender' field
              # after confirming it isn't used by any consumers.
@@ -4184,9 +4189,9 @@ def get_occupied_streams(realm: Realm) -> QuerySet:
 
     return Stream.objects.filter(id__in=stream_ids, realm=realm, deactivated=False)
 
-def do_get_streams(user_profile, include_public=True, include_subscribed=True,
-                   include_all_active=False, include_default=False):
-    # type: (UserProfile, bool, bool, bool, bool) -> List[Dict[str, Any]]
+def do_get_streams(user_profile: UserProfile, include_public: bool=True,
+                   include_subscribed: bool=True, include_all_active: bool=False,
+                   include_default: bool=False) -> List[Dict[str, Any]]:
     if include_all_active and not user_profile.is_api_super_user:
         raise JsonableError(_("User not authorized for this query"))
 
