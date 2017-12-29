@@ -126,6 +126,30 @@ exports.set_up = function () {
         });
     });
 
+    $("#emoji_conversion").change(function () {
+        var emoji_conversion = this.checked;
+        var data = {};
+        data.emoji_conversion = JSON.stringify(emoji_conversion);
+        var context = {};
+        if (data.emoji_conversion === "true") {
+            context.enabled_or_disabled = i18n.t('Enabled');
+        } else {
+            context.enabled_or_disabled = i18n.t('Disabled');
+        }
+
+        channel.patch({
+            url: '/json/settings/display',
+            data: data,
+            success: function () {
+                ui_report.success(i18n.t("__enabled_or_disabled__: Automatic emoji conversion", context),
+                                  $('#display-settings-status').expectOne());
+            },
+            error: function (xhr) {
+                ui_report.error(i18n.t("Error updating automatic emoji conversion setting"), xhr, $('#display-settings-status').expectOne());
+            },
+        });
+    });
+
     $("#twenty_four_hour_time").change(function () {
         var data = {};
         var setting_value = $("#twenty_four_hour_time").is(":checked");
@@ -213,6 +237,7 @@ exports.report_emojiset_change = function () {
 function _update_page() {
     $("#twenty_four_hour_time").prop('checked', page_params.twenty_four_hour_time);
     $("#left_side_userlist").prop('checked', page_params.left_side_userlist);
+    $("#emoji_conversion").prop('checked', page_params.emoji_conversion);
     $("#default_language_name").text(page_params.default_language_name);
 }
 

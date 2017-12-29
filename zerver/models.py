@@ -577,6 +577,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # UI vars
     enter_sends = models.NullBooleanField(default=False)  # type: Optional[bool]
     left_side_userlist = models.BooleanField(default=False)  # type: bool
+    emoji_conversion = models.BooleanField(default=False)  # type: bool
 
     # display settings
     twenty_four_hour_time = models.BooleanField(default=False)  # type: bool
@@ -643,6 +644,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # Define the types of the various automatically managed properties
     property_types = dict(
         default_language=Text,
+        emoji_conversion=bool,
         emojiset=Text,
         left_side_userlist=bool,
         timezone=Text,
