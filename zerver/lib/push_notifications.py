@@ -522,14 +522,14 @@ def get_gcm_payload(user_profile: UserProfile, message: Message) -> Dict[str, An
     data = get_common_payload(message)
     content, truncated = truncate_content(get_mobile_push_content(message.rendered_content))
 
-        'content': truncated_content,
-        'content_truncated': len(text_content) > 200,
+    'content': truncated_content,
+    'content_truncated': len(text_content) > 200,
 
-        'content': content,
-        'content_truncated': truncated,
+    'content': content,
+    'content_truncated': truncated,
 
-        'sender_full_name': message.sender.full_name,
-        'sender_avatar_url': absolute_avatar_url(message.sender),
+    'sender_full_name': message.sender.full_name,
+    'sender_avatar_url': absolute_avatar_url(message.sender),
     })
     return data
 
