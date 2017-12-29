@@ -22,17 +22,19 @@ def _default_narrow(user_profile: UserProfile,
         narrow = [['stream', default_stream.name]]
     return narrow
 
+NarrowT = Iterable[Sequence[Text]]
 @has_request_variables
-def events_register_backend(request, user_profile,
-                            apply_markdown=REQ(default=False, validator=check_bool),
-                            client_gravatar=REQ(default=False, validator=check_bool),
-                            all_public_streams=REQ(default=None, validator=check_bool),
-                            include_subscribers=REQ(default=False, validator=check_bool),
-                            event_types=REQ(validator=check_list(check_string), default=None),
-                            fetch_event_types=REQ(validator=check_list(check_string), default=None),
-                            narrow=REQ(validator=check_list(check_list(check_string, length=2)), default=[]),
-                            queue_lifespan_secs=REQ(converter=int, default=0)):
-    # type: (HttpRequest, UserProfile, bool, bool, Optional[bool], bool, Optional[Iterable[str]], Optional[Iterable[str]], Iterable[Sequence[Text]], int) -> HttpResponse
+def events_register_backend(
+        request: HttpRequest, user_profile: UserProfile,
+        apply_markdown: bool=REQ(default=False, validator=check_bool),
+        client_gravatar: bool=REQ(default=False, validator=check_bool),
+        all_public_streams: Optional[bool]=REQ(default=None, validator=check_bool),
+        include_subscribers: bool=REQ(default=False, validator=check_bool),
+        event_types: Optional[Iterable[str]]=REQ(validator=check_list(check_string), default=None),
+        fetch_event_types: Optional[Iterable[str]]=REQ(validator=check_list(check_string), default=None),
+        narrow: NarrowT=REQ(validator=check_list(check_list(check_string, length=2)), default=[]),
+        queue_lifespan_secs: int=REQ(converter=int, default=0)
+) -> HttpResponse:
     all_public_streams = _default_all_public_streams(user_profile, all_public_streams)
     narrow = _default_narrow(user_profile, narrow)
 
