@@ -131,8 +131,8 @@ function update_announce_stream_state() {
         return;
     }
 
-    // If the stream is invite only, or everyone's added, disable
-    // the "Announce stream" option. Otherwise enable it.
+    // If the stream is invite only, disable the "Announce stream" option.
+    // Otherwise enable it.
     var announce_stream_checkbox = $('#announce-new-stream input');
     var disable_it = false;
     var is_invite_only = $('input:radio[name=privacy]:checked').val() === 'invite-only';
@@ -140,9 +140,6 @@ function update_announce_stream_state() {
     if (is_invite_only) {
         disable_it = true;
         announce_stream_checkbox.prop('checked', false);
-    } else {
-        disable_it = $('#user-checkboxes input').length
-                    === $('#user-checkboxes input:checked').length;
     }
 
     announce_stream_checkbox.prop('disabled', disable_it);
