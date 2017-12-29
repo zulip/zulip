@@ -132,12 +132,15 @@ function update_announce_stream_state() {
     // If the stream is invite only, disable the "Announce stream" option.
     // Otherwise enable it.
     var announce_stream_checkbox = $('#announce-new-stream input');
+    var announce_stream_label = $('#announce-new-stream');
     var disable_it = false;
     var is_invite_only = $('input:radio[name=privacy]:checked').val() === 'invite-only';
+    announce_stream_label.removeClass("control-label-disabled");
 
     if (is_invite_only) {
         disable_it = true;
         announce_stream_checkbox.prop('checked', false);
+        announce_stream_label.addClass("control-label-disabled");
     }
 
     announce_stream_checkbox.prop('disabled', disable_it);
