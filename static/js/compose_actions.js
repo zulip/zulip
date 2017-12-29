@@ -92,8 +92,10 @@ function clear_box() {
 
     // TODO: Better encapsulate at-mention warnings.
     compose.clear_all_everyone_warnings();
+    compose.clear_announce_warnings();
     compose.clear_private_stream_alert();
     compose.reset_user_acknowledged_all_everyone_flag();
+    compose.reset_user_acknowledged_announce_flag();
 
     exports.clear_textarea();
     $("#compose-textarea").removeData("draft-id");
@@ -164,7 +166,8 @@ function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
     };
 
     // Set default parameters based on the current narrowed view.
-    narrow_state.set_compose_defaults(default_opts);
+    var compose_opts = narrow_state.set_compose_defaults();
+    default_opts = _.extend(default_opts, compose_opts);
     opts = _.extend(default_opts, opts);
     return opts;
 }
@@ -257,6 +260,16 @@ exports.respond_to_message = function (opts) {
         if (!narrow_state.narrowed_by_pm_reply() &&
             !narrow_state.narrowed_by_stream_reply() &&
             !narrow_state.narrowed_by_topic_reply()) {
+            compose.nonexistent_stream_reply_error();
+            return;
+        }
+        var current_filter = narrow_state.get_current_filter();
+        var first_term = current_filter.operators()[0];
+        var first_operator = first_term.operator;
+        var first_operand = first_term.operand;
+
+        if ((first_operator === "stream") && !stream_data.is_subscribed(first_operand)) {
+            compose.nonexistent_stream_reply_error();
             return;
         }
 

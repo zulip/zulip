@@ -90,8 +90,7 @@ class TrelloHookTests(WebhookTestCase):
 
     @patch('zerver.webhooks.trello.view.check_send_stream_message')
     def test_trello_webhook_when_card_is_moved_within_single_list_ignore(
-            self, check_send_stream_message_mock):
-        # type: (MagicMock) -> None
+            self, check_send_stream_message_mock: MagicMock) -> None:
         payload = self.get_body('moving_card_within_single_list')
         result = self.client_post(self.url, payload, content_type="application/json")
         self.assertFalse(check_send_stream_message_mock.called)
@@ -99,8 +98,7 @@ class TrelloHookTests(WebhookTestCase):
 
     @patch('zerver.webhooks.trello.view.check_send_stream_message')
     def test_trello_webhook_when_board_background_is_changed_ignore(
-            self, check_send_stream_message_mock):
-        # type: (MagicMock) -> None
+            self, check_send_stream_message_mock: MagicMock) -> None:
         payload = self.get_body('change_board_background_image')
         result = self.client_post(self.url, payload, content_type="application/json")
         self.assertFalse(check_send_stream_message_mock.called)

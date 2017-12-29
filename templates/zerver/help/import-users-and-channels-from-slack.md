@@ -5,34 +5,17 @@
 !!! warn ""
     **Note:** Please ensure that you have admin rights before importing users and channels from Slack.
 
-1. Generate a Slack API token using Slack's [test token generator](https://api.slack.com/docs/oauth-test-tokens)
-   to import all of the necessary data.
-
-{!go-to-the.md!} [Your Account](/#settings/your-account)
-{!settings.md!}
-
-3. Click on the **Show/change your API key** button.
-
-4. Upon clicking the **Show/change your API key** button,
-   you will be asked to confirm your identity by entering
-   your password in the **Current password** field.
-
-5. Click the **Get API Key** button and copy the generated API Key.
-
-6. Fill all of the settings in `api/integrations/slack/zulip_slack_config.py`:
-
-    * `SLACK_TOKEN` - the token from point number 1.
-
-    * `ZULIP_USER` - the e-mail of the user (the user that API key was generated for).
-
-    * `ZULIP_KEY` - the API key from point number 4.
-
-    * `ZULIP_SITE` - the Zulip API server URI.
-
-7. Install the `slacker` dependency using the command `pip install slacker`
-
-8. Finally, run the script in your local Zulip directory using the command
-`python api/integrations/slack/zulip_slack.py`
+1. Export your team's data and message history by visiting the **Export Data**
+   page, https://my.slack.com/services/export. You will receive a zip file
+   `slack_data.zip`. Currently we only support standard export. See
+   https://get.slack.help/hc/en-us/articles/201658943-Export-data-and-message-history
+   for more detail on this step.
+2. Convert the zip file `slack_data.zip` to Zulip export format using the
+   command `./manage.py convert_slack_data <slack_zip_file> <organization_name> --output <output_dir>`.
+3. Import the converted data. If you are importing into an existing database,
+   run the command `./manage.py import --import-into-nonempty <output_dit>`,
+   otherwise, if you are importing into a new Zulip instance, run the command
+   `./manage.py import --destory-rebuild-database <output_dir>`.
 
 ## Importing users from a different organization
 

@@ -16,13 +16,21 @@ function delete_attachments(attachment) {
     });
 }
 
-exports.bytes_to_size = function (bytes) {
+exports.bytes_to_size = function (bytes, kb_with_1024_bytes) {
+    if (kb_with_1024_bytes === undefined) {
+        kb_with_1024_bytes = false;
+    }
+    var kb_size = kb_with_1024_bytes ? 1024 : 1000;
     var sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
     if (bytes === 0) {
         return '0 B';
     }
-    var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)), 10);
-    return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
+    var i = parseInt(Math.floor(Math.log(bytes) / Math.log(kb_size)), 10);
+    var size = Math.round(bytes / Math.pow(kb_size, i));
+    if ((i > 0) && (size < 10)) {
+        size = Math.round((bytes / Math.pow(kb_size, i)) * 10) / 10;
+    }
+    return size + ' ' + sizes[i];
  };
 
 exports.set_up_attachments = function () {
@@ -30,8 +38,8 @@ exports.set_up_attachments = function () {
 
     var attachments = page_params.attachments;
     _.each(attachments, function (attachment) {
-
-        attachment.create_time_str = timerender.absolute_time(attachment.create_time);
+        var time = new XDate(attachment.create_time);
+        attachment.create_time_str = timerender.render_now(time).time_str;
         attachment.size_str = exports.bytes_to_size(attachment.size);
     });
 

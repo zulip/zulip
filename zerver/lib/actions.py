@@ -10,7 +10,8 @@ from django.utils.html import escape
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.core import validators
-from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
+from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat, \
+    RealmCount
 from zerver.lib.bugdown import (
     BugdownRenderingException,
     version as bugdown_version,
@@ -65,7 +66,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     UserActivityInterval, active_user_ids, get_active_streams, \
     realm_filters_for_realm, RealmFilter, \
     get_owned_bot_dicts, stream_name_in_use, \
-    get_old_unclaimed_attachments, get_cross_realm_emails, \
+    get_old_unclaimed_attachments, is_cross_realm_bot_email, \
     Reaction, EmailChangeStatus, CustomProfileField, \
     custom_profile_fields_for_realm, get_huddle_user_ids, \
     CustomProfileFieldValue, validate_attachment_request, get_system_bot, \
@@ -77,7 +78,7 @@ from zerver.lib.avatar import avatar_url
 from zerver.lib.stream_recipient import StreamRecipientMap
 
 from django.db import transaction, IntegrityError, connection
-from django.db.models import F, Q, Max
+from django.db.models import F, Q, Max, Sum
 from django.db.models.query import QuerySet
 from django.core.exceptions import ValidationError
 from django.core.mail import EmailMessage
@@ -581,16 +582,24 @@ def do_deactivate_realm(realm: Realm) -> None:
     realm.deactivated = True
     realm.save(update_fields=["deactivated"])
 
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=realm, event_type='realm_deactivated', event_time=event_time)
+
+    ScheduledEmail.objects.filter(realm=realm).delete()
     for user in active_humans_in_realm(realm):
         # Don't deactivate the users, but do delete their sessions so they get
         # bumped to the login screen, where they'll get a realm deactivation
         # notice when they try to log in.
         delete_user_sessions(user)
-        clear_scheduled_emails(user.id)
 
 def do_reactivate_realm(realm: Realm) -> None:
     realm.deactivated = False
     realm.save(update_fields=["deactivated"])
+
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=realm, event_type='realm_reactivated', event_time=event_time)
 
 def do_deactivate_user(user_profile: UserProfile,
                        acting_user: Optional[UserProfile]=None,
@@ -1530,8 +1539,7 @@ def validate_recipient_user_profiles(user_profiles: List[UserProfile],
     # We exempt cross-realm bots from the check that all the recipients
     # are in the same realm.
     realms = set()
-    exempt_emails = get_cross_realm_emails()
-    if sender.email not in exempt_emails:
+    if not is_cross_realm_bot_email(sender.email):
         realms.add(sender.realm_id)
 
     for user_profile in user_profiles:
@@ -1539,7 +1547,7 @@ def validate_recipient_user_profiles(user_profiles: List[UserProfile],
                 user_profile.realm.deactivated:
             raise ValidationError(_("'%s' is no longer using Zulip.") % (user_profile.email,))
         recipient_profile_ids.add(user_profile.id)
-        if user_profile.email not in exempt_emails:
+        if not is_cross_realm_bot_email(user_profile.email):
             realms.add(user_profile.realm_id)
 
     if len(realms) > 1:
@@ -1650,6 +1658,9 @@ def check_stream_name(stream_name: Text) -> None:
         raise JsonableError(_("Invalid stream name '%s'" % (stream_name)))
     if len(stream_name) > Stream.MAX_NAME_LENGTH:
         raise JsonableError(_("Stream name too long (limit: %s characters)" % (Stream.MAX_NAME_LENGTH)))
+    if set(stream_name).intersection(Stream.NAME_INVALID_CHARS):
+        raise JsonableError(_("Invalid characters in stream name (disallowed characters: %s)."
+                            % ((', ').join(Stream.NAME_INVALID_CHARS))))
     for i in stream_name:
         if ord(i) == 0:
             raise JsonableError(_("Stream name '%s' contains NULL (0x00) characters." % (stream_name)))
@@ -1891,8 +1902,7 @@ def internal_send_message(realm, sender_email, recipient_type_name, recipients,
     system bot."""
 
     # Verify the user is in fact a system bot
-    assert(sender_email.lower() in settings.CROSS_REALM_BOT_EMAILS or
-           sender_email == settings.ERROR_BOT)
+    assert(is_cross_realm_bot_email(sender_email) or sender_email == settings.ERROR_BOT)
 
     sender = get_system_bot(sender_email)
     parsed_recipients = extract_recipients(recipients)
@@ -1978,8 +1988,8 @@ def validate_user_access_to_subscribers_helper(user_profile: Optional[UserProfil
                                                stream_dict: Mapping[str, Any],
                                                check_user_subscribed: Callable[[], bool]) -> None:
     """ Helper for validate_user_access_to_subscribers that doesn't require a full stream object
-    * check_user_subscribed is a function that when called with no
-      arguments, will report whether the user is subscribed to the stream
+
+    * check_user_subscribed reports whether the user is subscribed to the stream.
     """
     if user_profile is None:
         raise ValidationError("Missing user to validate access for")
@@ -1993,11 +2003,11 @@ def validate_user_access_to_subscribers_helper(user_profile: Optional[UserProfil
     if (stream_dict["invite_only"] and not check_user_subscribed()):
         raise JsonableError(_("Unable to retrieve subscribers for invite-only stream"))
 
-# sub_dict is a dictionary mapping stream_id => whether the user is subscribed to that stream
 def bulk_get_subscriber_user_ids(stream_dicts: Iterable[Mapping[str, Any]],
                                  user_profile: UserProfile,
                                  sub_dict: Mapping[int, bool],
                                  stream_recipient: StreamRecipientMap) -> Dict[int, List[int]]:
+    """sub_dict maps stream_id => whether the user is subscribed to that stream."""
     target_stream_dicts = []
     for stream_dict in stream_dicts:
         try:
@@ -2133,8 +2143,8 @@ def get_peer_user_ids_for_stream_change(stream: Stream,
                                         altered_user_ids: Iterable[int],
                                         subscribed_user_ids: Iterable[int]) -> Set[int]:
     '''
-    altered_user_ids is a list of user_ids that we are adding/removing
-    subscribed_user_ids is the list of already subscribed user_ids
+    altered_user_ids is the user_ids that we are adding/removing
+    subscribed_user_ids is the already-subscribed user_ids
 
     Based on stream policy, we notify the correct bystanders, while
     not notifying altered_users (who get subscribers via another event)
@@ -3842,7 +3852,7 @@ def get_status_dict(requesting_user_profile: UserProfile) -> Dict[Text, Dict[Tex
     return UserPresence.get_status_dict_by_realm(requesting_user_profile.realm_id)
 
 def get_cross_realm_dicts() -> List[Dict[str, Any]]:
-    users = bulk_get_users(list(get_cross_realm_emails()), None,
+    users = bulk_get_users(list(settings.CROSS_REALM_BOT_EMAILS), None,
                            base_query=UserProfile.objects.filter(
                                realm__string_id=settings.SYSTEM_BOT_REALM)).values()
     return [{'email': user.email,
@@ -3857,23 +3867,19 @@ def get_cross_realm_dicts() -> List[Dict[str, Any]]:
             if user.realm.string_id == settings.SYSTEM_BOT_REALM]
 
 def do_send_confirmation_email(invitee: PreregistrationUser,
-                               referrer: UserProfile,
-                               body: Optional[str]) -> None:
+                               referrer: UserProfile) -> None:
     """
     Send the confirmation/welcome e-mail to an invited user.
-
-    `invitee` is a PreregistrationUser.
-    `referrer` is a UserProfile.
     """
     activation_url = create_confirmation_link(invitee, referrer.realm.host, Confirmation.INVITATION)
-    context = {'referrer': referrer, 'custom_body': body, 'activate_url': activation_url,
+    context = {'referrer': referrer, 'activate_url': activation_url,
                'referrer_realm_name': referrer.realm.name}
     from_name = u"%s (via Zulip)" % (referrer.full_name,)
     send_email('zerver/emails/invitation', to_email=invitee.email, from_name=from_name,
                from_address=FromAddress.NOREPLY, context=context)
 
 def email_not_system_bot(email: Text) -> None:
-    if email.lower() in settings.CROSS_REALM_BOT_EMAILS:
+    if is_cross_realm_bot_email(email):
         raise ValidationError('%s is an email address reserved for system bots' % (email,))
 
 def validate_email_for_realm(target_realm: Realm, email: Text) -> None:
@@ -3926,34 +3932,42 @@ class InvitationError(JsonableError):
         self.errors = errors  # type: List[Tuple[Text, str]]
         self.sent_invitations = sent_invitations  # type: bool
 
+def estimate_recent_invites(realm: Realm, *, days: int) -> int:
+    '''An upper bound on the number of invites sent in the last `days` days'''
+    recent_invites = RealmCount.objects.filter(
+        realm=realm,
+        property='invites_sent::day',
+        end_time__gte=timezone_now() - datetime.timedelta(days=days)
+    ).aggregate(Sum('value'))['value__sum']
+    if recent_invites is None:
+        return 0
+    return recent_invites
+
+def check_invite_limit(user: UserProfile, num_invitees: int) -> None:
+    # Discourage using invitation emails as a vector for carrying spam
+    if settings.OPEN_REALM_CREATION:
+        recent_invites = estimate_recent_invites(user.realm, days=1)
+        if num_invitees + recent_invites > user.realm.max_invites:
+            raise InvitationError(
+                _("You do not have enough remaining invites. "
+                  "Please contact %s to have your limit raised. "
+                  "No invitations were sent." % (settings.ZULIP_ADMINISTRATOR)),
+                [], sent_invitations=False)
+
 def do_invite_users(user_profile: UserProfile,
                     invitee_emails: SizedTextIterable,
                     streams: Iterable[Stream],
-                    invite_as_admin: Optional[bool]=False,
-                    body: Optional[str]=None) -> None:
-    if settings.OPEN_REALM_CREATION:
-        # Discourage using invitation emails as a vector for carrying spam
-        sent_invites = Confirmation.objects.filter(
-            realm=user_profile.realm,
-            date_sent__gte=timezone_now() - datetime.timedelta(days=1),
-            type=Confirmation.INVITATION).count()
-        if len(invitee_emails) + sent_invites > user_profile.realm.max_invites:
-            raise InvitationError(
-                _("You do not have enough remaining invites; "
-                  "try again with fewer emails, or contact %s. "
-                  "No invitations were sent." % (settings.ZULIP_ADMINISTRATOR)),
-                [], sent_invitations=False)
+                    invite_as_admin: Optional[bool]=False) -> None:
+
+    check_invite_limit(user_profile, len(invitee_emails))
 
     validated_emails = []  # type: List[Text]
     errors = []  # type: List[Tuple[Text, str]]
     skipped = []  # type: List[Tuple[Text, str]]
-
     for email in invitee_emails:
         if email == '':
             continue
-
         email_error, email_skipped = validate_email(user_profile, email)
-
         if not (email_error or email_skipped):
             validated_emails.append(email)
         elif email_error:
@@ -3971,6 +3985,12 @@ def do_invite_users(user_profile: UserProfile,
         raise InvitationError(_("We weren't able to invite anyone."),
                               skipped, sent_invitations=False)
 
+    # We do this here rather than in the invite queue processor since this
+    # is used for rate limiting invitations, rather than keeping track of
+    # when exactly invitations were sent
+    do_increment_logging_stat(user_profile.realm, COUNT_STATS['invites_sent::day'],
+                              None, timezone_now(), increment=len(validated_emails))
+
     # Now that we are past all the possible errors, we actually create
     # the PreregistrationUser objects and trigger the email invitations.
     for email in validated_emails:
@@ -3978,12 +3998,11 @@ def do_invite_users(user_profile: UserProfile,
         prereg_user = PreregistrationUser(email=email, referred_by=user_profile,
                                           invited_as_admin=invite_as_admin,
                                           realm=user_profile.realm)
-
         prereg_user.save()
         stream_ids = [stream.id for stream in streams]
         prereg_user.streams.set(stream_ids)
 
-        event = {"email": prereg_user.email, "referrer_id": user_profile.id, "email_body": body}
+        event = {"prereg_id": prereg_user.id, "referrer_id": user_profile.id}
         queue_json_publish("invites", event)
 
     if skipped:
@@ -4006,20 +4025,13 @@ def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
     for invitee in prereg_users:
         invites.append(dict(email=invitee.email,
                             ref=invitee.referred_by.email,
-                            invited=invitee.invited_at.strftime("%Y-%m-%d %H:%M:%S"),
-                            id=invitee.id))
+                            invited=datetime_to_timestamp(invitee.invited_at),
+                            id=invitee.id,
+                            invited_as_admin=invitee.invited_as_admin))
 
     return invites
 
-def do_revoke_user_invite(invite_id: int, realm_id: int) -> None:
-    try:
-        prereg_user = PreregistrationUser.objects.get(id=invite_id)
-    except PreregistrationUser.DoesNotExist:
-        raise JsonableError(_("Invalid invitation ID."))
-
-    if prereg_user.referred_by.realm_id != realm_id:
-        raise JsonableError(_("Invalid invitation ID."))
-
+def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
     email = prereg_user.email
 
     # Delete both the confirmation objects and the prereg_user object.
@@ -4032,40 +4044,21 @@ def do_revoke_user_invite(invite_id: int, realm_id: int) -> None:
     prereg_user.delete()
     clear_scheduled_invitation_emails(email)
 
-def do_resend_user_invite_email(invite_id: int, realm_id: int) -> str:
-    try:
-        prereg_user = PreregistrationUser.objects.get(id=invite_id)
-    except PreregistrationUser.DoesNotExist:
-        raise JsonableError(_("Invalid invitation ID."))
-
-    if (prereg_user.referred_by.realm_id != realm_id):
-        raise JsonableError(_("Invalid invitation ID."))
+def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> int:
+    check_invite_limit(prereg_user.referred_by, 1)
 
     prereg_user.invited_at = timezone_now()
     prereg_user.save()
 
-    # sends a invitation reminder since 'custom_body' can not be resent
-    # imported here to avoid import cycle error
-    from zerver.context_processors import common_context
+    do_increment_logging_stat(prereg_user.realm, COUNT_STATS['invites_sent::day'],
+                              None, prereg_user.invited_at)
+
     clear_scheduled_invitation_emails(prereg_user.email)
+    # We don't store the custom email body, so just set it to None
+    event = {"prereg_id": prereg_user.id, "referrer_id": prereg_user.referred_by.id, "email_body": None}
+    queue_json_publish("invites", event)
 
-    link = create_confirmation_link(prereg_user,
-                                    prereg_user.referred_by.realm.host,
-                                    Confirmation.INVITATION)
-    context = common_context(prereg_user.referred_by)
-    context.update({
-        'activate_url': link,
-        'referrer_name': prereg_user.referred_by.full_name,
-        'referrer_email': prereg_user.referred_by.email,
-        'referrer_realm_name': prereg_user.referred_by.realm.name,
-    })
-    send_email(
-        "zerver/emails/invitation_reminder",
-        to_email=prereg_user.email,
-        from_address=FromAddress.NOREPLY,
-        context=context)
-
-    return prereg_user.invited_at.strftime("%Y-%m-%d %H:%M:%S")
+    return datetime_to_timestamp(prereg_user.invited_at)
 
 def notify_realm_emoji(realm: Realm) -> None:
     event = dict(type="realm_emoji", op="update",

@@ -10,7 +10,6 @@ from zerver.decorator import authenticated_rest_api_view
 from zerver.lib.actions import check_send_stream_message
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.str_utils import force_bytes, force_str
 from zerver.lib.validator import check_dict
 from zerver.models import UserProfile, get_client
 from zerver.webhooks.github.view import build_message_from_gitlog
@@ -26,10 +25,10 @@ def beanstalk_decoder(view_func: ViewFuncT) -> ViewFuncT:
         try:
             auth_type, encoded_value = request.META['HTTP_AUTHORIZATION'].split()  # type: str, str
             if auth_type.lower() == "basic":
-                email, api_key = base64.b64decode(force_bytes(encoded_value)).decode('utf-8').split(":")
+                email, api_key = base64.b64decode(encoded_value).decode('utf-8').split(":")
                 email = email.replace('%40', '@')
                 credentials = u"%s:%s" % (email, api_key)
-                encoded_credentials = force_str(base64.b64encode(credentials.encode('utf-8')))
+                encoded_credentials = base64.b64encode(credentials.encode('utf-8')).decode('utf8')  # type: str
                 request.META['HTTP_AUTHORIZATION'] = "Basic " + encoded_credentials
         except Exception:
             pass
@@ -41,10 +40,9 @@ def beanstalk_decoder(view_func: ViewFuncT) -> ViewFuncT:
 @beanstalk_decoder
 @authenticated_rest_api_view(is_webhook=True)
 @has_request_variables
-def api_beanstalk_webhook(request, user_profile,
-                          payload=REQ(validator=check_dict([])),
-                          branches=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, Dict[str, Any], Optional[Text]) -> HttpResponse
+def api_beanstalk_webhook(request: HttpRequest, user_profile: UserProfile,
+                          payload: Dict[str, Any]=REQ(validator=check_dict([])),
+                          branches: Optional[Text]=REQ(default=None)) -> HttpResponse:
     # Beanstalk supports both SVN and git repositories
     # We distinguish between the two by checking for a
     # 'uri' key that is only present for git repos

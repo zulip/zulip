@@ -48,9 +48,17 @@
 
 #stream_filters {
     overflow: visible;
-    margin: 2px 0px 2px 0px;
+    margin: 2px 0px 22px 0px;
     padding: 0;
     font-weight: normal;
+}
+
+.left-sidebar li {
+    margin: 1px 0px;
+}
+
+.left-sidebar li a:hover {
+    text-decoration: none;
 }
 
 #stream_filters li {
@@ -145,14 +153,6 @@ li.hidden-filter {
 #global_filters .global-filter {
     position: relative;
     padding: 1px 10px;
-}
-
-#global_filters .global-filter a:hover {
-    text-decoration: none;
-}
-
-#global_filters .global-filter:hover .hover-underline {
-    text-decoration: underline;
 }
 
 .left-sidebar li {
@@ -418,6 +418,10 @@ li.expanded_private_message a {
 
 #global_filters {
     margin-bottom: 20px;
+}
+
+#global_filters i {
+    opacity: 0.5;
 }
 
 #topics_header {

@@ -20,10 +20,21 @@
       "text_content": "Hamlet once said\ndef func():\n    x = 1\n\n    y = 2\n\n    z = 3\n\n\n\nAnd all was good."
     },
     {
+      "name": "test",
+      "input": "it's lunch time",
+      "expected_output": "<p>it's lunch time</p>"
+    },
+    {
       "name": "codeblock_trailing_whitespace",
       "input": "Hamlet once said\n~~~~\ndef func():\n    x = 1\n\n    y = 2\t\t\n\n    z = 3       \n~~~~\nAnd all was good.",
       "expected_output": "<p>Hamlet once said</p>\n<div class=\"codehilite\"><pre><span></span>def func():\n    x = 1\n\n    y = 2\n\n    z = 3\n</pre></div>\n\n\n<p>And all was good.</p>",
       "text_content": "Hamlet once said\ndef func():\n    x = 1\n\n    y = 2\n\n    z = 3\n\n\n\nAnd all was good."
+    },
+    {
+      "name": "inline_code_spaces",
+      "input": "` outer ` ```    space    ```",
+      "expected_output": "<p><code> outer </code> <code>    space    </code></p>",
+      "text_content": " outer      space    "
     },
     {
       "name": "codeblock_backticks",
@@ -87,14 +98,13 @@
       "name": "dangerous_block",
       "input": "xxxxxx xxxxx xxxxxxxx xxxx. x xxxx xxxxxxxxxx:\n\n```\"xxxx xxxx\\xxxxx\\xxxxxx\"```\n\nxxx xxxx xxxxx:```xx.xxxxxxx(x'^xxxx$', xx.xxxxxxxxx)```\n\nxxxxxxx'x xxxx xxxxxxxxxx ```'xxxx'```, xxxxx xxxxxxxxx xxxxx ^ xxx $ xxxxxx xxxxx xxxxxxxxxxxx xxx xxxx xx x xxxx xx xxxx xx xxx xxxxx xxxxxx?",
       "expected_output": "<p>xxxxxx xxxxx xxxxxxxx xxxx. x xxxx xxxxxxxxxx:</p>\n<p><code>\"xxxx xxxx\\xxxxx\\xxxxxx\"</code></p>\n<p>xxx xxxx xxxxx:<code>xx.xxxxxxx(x'^xxxx$', xx.xxxxxxxxx)</code></p>\n<p>xxxxxxx'x xxxx xxxxxxxxxx <code>'xxxx'</code>, xxxxx xxxxxxxxx xxxxx ^ xxx $ xxxxxx xxxxx xxxxxxxxxxxx xxx xxxx xx x xxxx xx xxxx xx xxx xxxxx xxxxxx?</p>",
-      "marked_expected_output": "<p>xxxxxx xxxxx xxxxxxxx xxxx. x xxxx xxxxxxxxxx:</p>\n<p><code>&quot;xxxx xxxx\\xxxxx\\xxxxxx&quot;</code></p>\n<p>xxx xxxx xxxxx:<code>xx.xxxxxxx(x&#39;^xxxx$&#39;, xx.xxxxxxxxx)</code></p>\n<p>xxxxxxx&#39;x xxxx xxxxxxxxxx <code>&#39;xxxx&#39;</code>, xxxxx xxxxxxxxx xxxxx ^ xxx $ xxxxxx xxxxx xxxxxxxxxxxx xxx xxxx xx x xxxx xx xxxx xx xxx xxxxx xxxxxx?</p>",
       "text_content": "xxxxxx xxxxx xxxxxxxx xxxx. x xxxx xxxxxxxxxx:\n\"xxxx xxxx\\xxxxx\\xxxxxx\"\nxxx xxxx xxxxx:xx.xxxxxxx(x'^xxxx$', xx.xxxxxxxxx)\nxxxxxxx'x xxxx xxxxxxxxxx 'xxxx', xxxxx xxxxxxxxx xxxxx ^ xxx $ xxxxxx xxxxx xxxxxxxxxxxx xxx xxxx xx x xxxx xx xxxx xx xxx xxxxx xxxxxx?"
     },
     {
       "name": "dangerous_block",
       "input": "``` one ```\n\n``` two ```\n\n~~~~\nx = 1",
-      "expected_output": "<p><code>one</code></p>\n<p><code>two</code></p>\n<div class=\"codehilite\"><pre><span></span>x = 1\n</pre></div>",
-      "text_content": "one\ntwo\nx = 1\n"
+      "expected_output": "<p><code> one </code></p>\n<p><code> two </code></p>\n<div class=\"codehilite\"><pre><span></span>x = 1\n</pre></div>",
+      "text_content": " one \n two \nx = 1\n"
     },
     {
       "name": "four_space_code_block",
@@ -179,6 +189,12 @@
       "text_content": "I  like software  love hardware"
     },
     {
+      "name": "strikthrough_link",
+      "input": "~~test http://xx.xx link~~",
+      "expected_output": "<p><del>test <a href=\"http://xx.xx\" target=\"_blank\" title=\"http://xx.xx\">http://xx.xx</a> link</del></p>",
+      "text_content": "test http://xx.xx link"
+    },
+    {
       "name": "underscore_disabled",
       "input": "_foo_",
       "expected_output": "<p>_foo_</p>"
@@ -216,6 +232,24 @@
       "input": "1. A\n 2. B",
       "expected_output": "<p>1. A<br>\n 2. B</p>",
       "text_content": "1. A\n 2. B"
+    },
+    {
+      "name": "auto_renumbered_list",
+      "input": "1. A\n1. B\n 1. C\n1. D",
+      "expected_output": "<p>1. A<br>\n2. B<br>\n 3. C<br>\n4. D</p>",
+      "text_content": "1. A\n2. B\n 3. C\n4. D"
+    },
+    {
+      "name": "auto_renumbered_list_from",
+      "input": "3. A\n3. B\n3. C\n3. D",
+      "expected_output": "<p>3. A<br>\n4. B<br>\n5. C<br>\n6. D</p>",
+      "text_content": "3. A\n4. B\n5. C\n6. D"
+    },
+    {
+      "name": "not_auto_renumbered_list",
+      "input": "1. A\n3. B\n 2. C\n1. D",
+      "expected_output": "<p>1. A<br>\n3. B<br>\n 2. C<br>\n1. D</p>",
+      "text_content": "1. A\n3. B\n 2. C\n1. D"
     },
     {
       "name": "linkify_interference",
@@ -423,8 +457,7 @@
     {
       "name": "safe_html_messed_up_complexly_nested_script_tags",
       "input": "<scr<script></script>ipt type=\"text/javascript\">alert(\"foo\");</<script></script>script<del></del>>",
-      "expected_output": "<p>&lt;scr&lt;script&gt;&lt;/script&gt;ipt type=\"text/javascript\"&gt;alert(\"foo\");&lt;/&lt;script&gt;&lt;/script&gt;script&lt;del&gt;&lt;/del&gt;&gt;</p>",
-      "marked_expected_output": "<p>&lt;scr&lt;script&gt;&lt;/script&gt;ipt type=&quot;text/javascript&quot;&gt;alert(&quot;foo&quot;);&lt;/&lt;script&gt;&lt;/script&gt;script&lt;del&gt;&lt;/del&gt;&gt;</p>"
+      "expected_output": "<p>&lt;scr&lt;script&gt;&lt;/script&gt;ipt type=\"text/javascript\"&gt;alert(\"foo\");&lt;/&lt;script&gt;&lt;/script&gt;script&lt;del&gt;&lt;/del&gt;&gt;</p>"
     },
     {
       "name": "safe_html_unclosed_tag",
@@ -503,14 +536,12 @@
     {
       "name": "tex_inline",
       "input": "$$1 \\oplus 0 = 1$$",
-      "expected_output": "<p><span class=\"katex\"><span class=\"katex-mathml\"><math><semantics><mrow><mn>1</mn><mo>⊕</mo><mn>0</mn><mo>=</mo><mn>1</mn></mrow><annotation encoding=\"application/x-tex\">1 \\oplus 0 = 1</annotation></semantics></math></span><span aria-hidden=\"true\" class=\"katex-html\"><span class=\"strut\" style=\"height:0.64444em;\"></span><span class=\"strut bottom\" style=\"height:0.72777em;vertical-align:-0.08333em;\"></span><span class=\"base\"><span class=\"mord mathrm\">1</span><span class=\"mbin\">⊕</span><span class=\"mord mathrm\">0</span><span class=\"mrel\">=</span><span class=\"mord mathrm\">1</span></span></span></span></p>",
-      "marked_expected_output": "<p><span class=\"katex\"><span class=\"katex-mathml\"><math><semantics><mrow><mn>1</mn><mo>⊕</mo><mn>0</mn><mo>=</mo><mn>1</mn></mrow><annotation encoding=\"application/x-tex\">1 \\oplus 0 = 1</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"strut\" style=\"height:0.64444em;\"></span><span class=\"strut bottom\" style=\"height:0.72777em;vertical-align:-0.08333em;\"></span><span class=\"base\"><span class=\"mord mathrm\">1</span><span class=\"mbin\">⊕</span><span class=\"mord mathrm\">0</span><span class=\"mrel\">=</span><span class=\"mord mathrm\">1</span></span></span></span></p>"
+      "expected_output": "<p><span class=\"katex\"><span class=\"katex-mathml\"><math><semantics><mrow><mn>1</mn><mo>⊕</mo><mn>0</mn><mo>=</mo><mn>1</mn></mrow><annotation encoding=\"application/x-tex\">1 \\oplus 0 = 1</annotation></semantics></math></span><span aria-hidden=\"true\" class=\"katex-html\"><span class=\"strut\" style=\"height:0.64444em;\"></span><span class=\"strut bottom\" style=\"height:0.72777em;vertical-align:-0.08333em;\"></span><span class=\"base\"><span class=\"mord mathrm\">1</span><span class=\"mbin\">⊕</span><span class=\"mord mathrm\">0</span><span class=\"mrel\">=</span><span class=\"mord mathrm\">1</span></span></span></span></p>"
     },
     {
       "name": "tex_complex",
       "input": "$$\\Phi_E = \\oint E \\cdot dA$$",
-      "expected_output": "<p><span class=\"katex\"><span class=\"katex-mathml\"><math><semantics><mrow><msub><mi mathvariant=\"normal\">Φ</mi><mi>E</mi></msub><mo>=</mo><mo>∮</mo><mi>E</mi><mo>⋅</mo><mi>d</mi><mi>A</mi></mrow><annotation encoding=\"application/x-tex\">\\Phi_E = \\oint E \\cdot dA</annotation></semantics></math></span><span aria-hidden=\"true\" class=\"katex-html\"><span class=\"strut\" style=\"height:0.805em;\"></span><span class=\"strut bottom\" style=\"height:1.11112em;vertical-align:-0.30612em;\"></span><span class=\"base\"><span class=\"mord\"><span class=\"mord mathrm\">Φ</span><span class=\"msupsub\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.32833099999999993em;\"><span style=\"top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mathit mtight\" style=\"margin-right:0.05764em;\">E</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.15em;\"></span></span></span></span></span><span class=\"mrel\">=</span><span class=\"mop op-symbol small-op\" style=\"margin-right:0.19445em;position:relative;top:-0.0005599999999999772em;\">∮</span><span class=\"mord mathit\" style=\"margin-right:0.05764em;\">E</span><span class=\"mbin\">⋅</span><span class=\"mord mathit\">d</span><span class=\"mord mathit\">A</span></span></span></span></p>",
-      "marked_expected_output": "<p><span class=\"katex\"><span class=\"katex-mathml\"><math><semantics><mrow><msub><mi mathvariant=\"normal\">Φ</mi><mi>E</mi></msub><mo>=</mo><mo>∮</mo><mi>E</mi><mo>⋅</mo><mi>d</mi><mi>A</mi></mrow><annotation encoding=\"application/x-tex\">\\Phi_E = \\oint E \\cdot dA</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"strut\" style=\"height:0.805em;\"></span><span class=\"strut bottom\" style=\"height:1.11112em;vertical-align:-0.30612em;\"></span><span class=\"base\"><span class=\"mord\"><span class=\"mord mathrm\">Φ</span><span class=\"msupsub\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.32833099999999993em;\"><span style=\"top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mathit mtight\" style=\"margin-right:0.05764em;\">E</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.15em;\"></span></span></span></span></span><span class=\"mrel\">=</span><span class=\"mop op-symbol small-op\" style=\"margin-right:0.19445em;position:relative;top:-0.0005599999999999772em;\">∮</span><span class=\"mord mathit\" style=\"margin-right:0.05764em;\">E</span><span class=\"mbin\">⋅</span><span class=\"mord mathit\">d</span><span class=\"mord mathit\">A</span></span></span></span></p>"
+      "expected_output": "<p><span class=\"katex\"><span class=\"katex-mathml\"><math><semantics><mrow><msub><mi mathvariant=\"normal\">Φ</mi><mi>E</mi></msub><mo>=</mo><mo>∮</mo><mi>E</mi><mo>⋅</mo><mi>d</mi><mi>A</mi></mrow><annotation encoding=\"application/x-tex\">\\Phi_E = \\oint E \\cdot dA</annotation></semantics></math></span><span aria-hidden=\"true\" class=\"katex-html\"><span class=\"strut\" style=\"height:0.805em;\"></span><span class=\"strut bottom\" style=\"height:1.11112em;vertical-align:-0.30612em;\"></span><span class=\"base\"><span class=\"mord\"><span class=\"mord mathrm\">Φ</span><span class=\"msupsub\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.32833099999999993em;\"><span style=\"top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mathit mtight\" style=\"margin-right:0.05764em;\">E</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.15em;\"></span></span></span></span></span><span class=\"mrel\">=</span><span class=\"mop op-symbol small-op\" style=\"margin-right:0.19445em;position:relative;top:-0.0005599999999999772em;\">∮</span><span class=\"mord mathit\" style=\"margin-right:0.05764em;\">E</span><span class=\"mbin\">⋅</span><span class=\"mord mathit\">d</span><span class=\"mord mathit\">A</span></span></span></span></p>"
     },
     {
       "name": "tex_escaped",
@@ -538,14 +569,12 @@
     {
       "name": "tex_money",
       "input": "Tickets are $5 to $20 for youth, $10-$30 for adults, so we are hoping to bring in $500 from the event ($$x \\approx 500\\$$$)",
-      "expected_output": "<p>Tickets are $5 to $20 for youth, $10-$30 for adults, so we are hoping to bring in $500 from the event (<span class=\"katex\"><span class=\"katex-mathml\"><math><semantics><mrow><mi>x</mi><mo>≈</mo><mn>5</mn><mn>0</mn><mn>0</mn><mi mathvariant=\"normal\">$</mi></mrow><annotation encoding=\"application/x-tex\">x \\approx 500\\$</annotation></semantics></math></span><span aria-hidden=\"true\" class=\"katex-html\"><span class=\"strut\" style=\"height:0.75em;\"></span><span class=\"strut bottom\" style=\"height:0.80556em;vertical-align:-0.05556em;\"></span><span class=\"base\"><span class=\"mord mathit\">x</span><span class=\"mrel\">≈</span><span class=\"mord mathrm\">5</span><span class=\"mord mathrm\">0</span><span class=\"mord mathrm\">0</span><span class=\"mord mathrm\">$</span></span></span></span>)</p>",
-      "marked_expected_output": "<p>Tickets are $5 to $20 for youth, $10-$30 for adults, so we are hoping to bring in $500 from the event (<span class=\"katex\"><span class=\"katex-mathml\"><math><semantics><mrow><mi>x</mi><mo>≈</mo><mn>5</mn><mn>0</mn><mn>0</mn><mi mathvariant=\"normal\">$</mi></mrow><annotation encoding=\"application/x-tex\">x \\approx 500\\$</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"strut\" style=\"height:0.75em;\"></span><span class=\"strut bottom\" style=\"height:0.80556em;vertical-align:-0.05556em;\"></span><span class=\"base\"><span class=\"mord mathit\">x</span><span class=\"mrel\">≈</span><span class=\"mord mathrm\">5</span><span class=\"mord mathrm\">0</span><span class=\"mord mathrm\">0</span><span class=\"mord mathrm\">$</span></span></span></span>)</p>"
+      "expected_output": "<p>Tickets are $5 to $20 for youth, $10-$30 for adults, so we are hoping to bring in $500 from the event (<span class=\"katex\"><span class=\"katex-mathml\"><math><semantics><mrow><mi>x</mi><mo>≈</mo><mn>5</mn><mn>0</mn><mn>0</mn><mi mathvariant=\"normal\">$</mi></mrow><annotation encoding=\"application/x-tex\">x \\approx 500\\$</annotation></semantics></math></span><span aria-hidden=\"true\" class=\"katex-html\"><span class=\"strut\" style=\"height:0.75em;\"></span><span class=\"strut bottom\" style=\"height:0.80556em;vertical-align:-0.05556em;\"></span><span class=\"base\"><span class=\"mord mathit\">x</span><span class=\"mrel\">≈</span><span class=\"mord mathrm\">5</span><span class=\"mord mathrm\">0</span><span class=\"mord mathrm\">0</span><span class=\"mord mathrm\">$</span></span></span></span>)</p>"
     },
     {
       "name": "tex_inline_permissive_spacing",
       "input": "$$    x =  7   $$",
-      "expected_output": "<p><span class=\"katex\"><span class=\"katex-mathml\"><math><semantics><mrow><mi>x</mi><mo>=</mo><mn>7</mn></mrow><annotation encoding=\"application/x-tex\">    x =  7   </annotation></semantics></math></span><span aria-hidden=\"true\" class=\"katex-html\"><span class=\"strut\" style=\"height:0.64444em;\"></span><span class=\"strut bottom\" style=\"height:0.64444em;vertical-align:0em;\"></span><span class=\"base\"><span class=\"mord mathit\">x</span><span class=\"mrel\">=</span><span class=\"mord mathrm\">7</span></span></span></span></p>",
-      "marked_expected_output": "<p><span class=\"katex\"><span class=\"katex-mathml\"><math><semantics><mrow><mi>x</mi><mo>=</mo><mn>7</mn></mrow><annotation encoding=\"application/x-tex\">    x =  7   </annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"strut\" style=\"height:0.64444em;\"></span><span class=\"strut bottom\" style=\"height:0.64444em;vertical-align:0em;\"></span><span class=\"base\"><span class=\"mord mathit\">x</span><span class=\"mrel\">=</span><span class=\"mord mathrm\">7</span></span></span></span></p>"
+      "expected_output": "<p><span class=\"katex\"><span class=\"katex-mathml\"><math><semantics><mrow><mi>x</mi><mo>=</mo><mn>7</mn></mrow><annotation encoding=\"application/x-tex\">    x =  7   </annotation></semantics></math></span><span aria-hidden=\"true\" class=\"katex-html\"><span class=\"strut\" style=\"height:0.64444em;\"></span><span class=\"strut bottom\" style=\"height:0.64444em;vertical-align:0em;\"></span><span class=\"base\"><span class=\"mord mathit\">x</span><span class=\"mrel\">=</span><span class=\"mord mathrm\">7</span></span></span></span></p>"
     },
     {
       "name": "tex_inline_prohibited_newline",

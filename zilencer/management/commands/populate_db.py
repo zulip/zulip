@@ -511,8 +511,7 @@ def create_user_presences(user_profiles: Iterable[UserProfile]) -> None:
             timestamp=date,
             status=status)
 
-def create_user_groups():
-    # type: () -> None
+def create_user_groups() -> None:
     zulip = get_realm('zulip')
     members = [get_user('cordelia@zulip.com', zulip),
                get_user('hamlet@zulip.com', zulip)]

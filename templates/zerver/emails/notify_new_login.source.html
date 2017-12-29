@@ -10,7 +10,7 @@
 <p><b>Login details:</b></p>
 <blockquote>
     <p>Server: <a href="{{ realm_uri }}" target="_blank">{{ realm_uri }}</a></p>
-    <p>Account: <a href="mailto:{{ user.email }}" target="_blank">{{ user.email }}</a></p>
+    <p>Account: <a href="mailto:{{ user_email }}" target="_blank">{{ user_email }}</a></p>
     <p>Time: {{ device_info.login_time }}</p>
     <p>Device: {{ device_info.device_browser if device_info.device_browser else 'An unknown browser' }} on {{ device_info.device_os if device_info.device_os else 'an unknown operating system' }}.</p>
     <p>IP Address: {{ device_info.device_ip }}</p>

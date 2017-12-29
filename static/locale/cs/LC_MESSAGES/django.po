@@ -162,6 +162,8 @@ msgstr "Přihlásit se do Zulipu"
 msgid "You need an invitation to join this organization."
 msgstr "Potřebujete pozvání, abyste se mohl připojit k této organizaci."
 
+#: templates/zerver/footer.html:41 templates/zerver/portico-header.html:34
+#: templates/zerver/register.html:163
 #: templates/zerver/accounts_home.html:65
 msgid "Sign up"
 msgstr "Přihlásit se"
@@ -341,7 +343,7 @@ msgid "Go back to login"
 msgstr "Jít zpět pro přihlášení se"
 
 #: templates/zerver/confirm_continue_registration.html:52
-msgid "Register instead"
+msgid "Sign up instead"
 msgstr "Zaregistrovat se místo toho"
 
 #: templates/zerver/create_realm.html:18
@@ -461,11 +463,6 @@ msgstr "Nová organizace"
 msgid "Login"
 msgstr "Přihlášení"
 
-#: templates/zerver/footer.html:41 templates/zerver/portico-header.html:34
-#: templates/zerver/register.html:163
-msgid "Register"
-msgstr "Zaregistrovat se"
-
 #: templates/zerver/footer.html:43 templates/zerver/terms.html:21
 msgid "Terms of Service"
 msgstr "Podmínky užití služby"
@@ -503,7 +500,7 @@ msgid "Log in now!"
 msgstr "Přihlašte se nyní!"
 
 #: templates/zerver/hello.html:48 templates/zerver/hello.html:614
-msgid "Register now!"
+msgid "Sign up now!"
 msgstr "Zaregistrujte se nyní!"
 
 #: templates/zerver/hello.html:517

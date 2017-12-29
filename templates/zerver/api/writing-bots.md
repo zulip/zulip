@@ -116,22 +116,32 @@ above as an orientation.
 ## Testing a bot's output
 
 If you just want to see how a bot reacts to a message, but don't want to set it up on a server,
-we have a little tool to help you out: `zulip-bot-output`
+we have a little tool to help you out: `zulip-terminal`
 
 * [Install all requirements](#installing-a-development-version-of-the-zulip-bots-package).
 
-* Run `zulip-bot-output <bot-name> --message "<your-message>"` to test one of the bots in
-  [`zulip_bots/bots`](https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots)
+* Run `zulip-terminal -b <path-to-bot.config> <bot-name>` to test one of the bots in
+  [`zulip_bots/bots`](https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots).
+  Here, the `-b` or `--bot-config-file` arguement is for optional third party config file (e.g. ~/giphy.conf)
 
-  * Example: `zulip-bot-output converter --message "12 meter yard"`
+  * Example: `zulip-terminal converter`
+    ```
+    Enter your message: "12 meter yard"
+    Response: 12.0 meter = 13.12336 yard
+    ```
+  * Example: `zulip-terminal -b ~/followup.conf followup`
+    ```
+    Enter your message: "Task Completed"
+    Response: stream: followup topic: foo_sender@zulip.com
+              from foo_sender@zulip.com: Task Completed
+    ```
 
-    Response: `12.0 meter = 13.12336 yard`
-
-* Run `zulip-bot-output <path/to/bot.py> --message "<your-message>"` to specify the bot's path yourself.
-
-  * Example: `zulip-bot-output zulip_bots/zulip_bots/bots/converter/converter.py --message "12 meter yard"`
-
-    Response: `12.0 meter = 13.12336 yard`
+* Run `zulip-terminal <path/to/bot.py>"` to specify the bot's path yourself.
+  * Example: `zulip-terminal zulip_bots/zulip_bots/bots/converter/converter.py`
+    ```
+    Enter your message: "12 meter yard"
+    Response: 12.0 meter = 13.12336 yard
+    ```
 
 ## Bot API
 
@@ -196,7 +206,7 @@ None.
 
 #### Example implementation
 
- ```
+```
   def handle_message(self, message, bot_handler):
      original_content = message['content']
      original_sender = message['sender_email']
@@ -209,7 +219,7 @@ None.
          subject=message['sender_email'],
          content=new_content,
      ))
- ```
+```
 ### bot_handler.send_message
 
 *bot_handler.send_message(message)*
@@ -357,12 +367,12 @@ every call to `put` and `get`, respectively.
 
 ### Configuration file
 
- ```
+```
  [api]
  key=<api-key>
  email=<email>
  site=<dev-url>
- ```
+```
 
 * key - the API key you created for the bot; this is how Zulip knows
   the request is from an authorized user.
@@ -389,28 +399,30 @@ refactor them.
 
  Let's have a look at a simple test suite for the [`helloworld`](
  https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots/helloworld)
- bot (the actual test is written slightly more compact).
+ bot.
 
-    from __future__ import absolute_import
+    from zulip_bots.test_lib import StubBotTestCase
 
-    from zulip_bots.test_lib import BotTestCase  # The test system library
+    class TestHelpBot(StubBotTestCase):
+        bot_name = "helloworld"  # type: str
 
-    class TestHelloWorldBot(BotTestCase):
-        bot_name = "helloworld"  # The bot's name (should be the name of the bot module to test).
+        def test_bot(self) -> None:
+            dialog = [
+                ('', 'beep boop'),
+                ('help', 'beep boop'),
+                ('foo', 'beep boop'),
+            ]
 
-        def test_bot(self): # A test case (must start with `test`)
-            # Messages we want to test and the expected bot responses.
-            message_response_pairs = [("", "beep boop"),
-                                      ("foo", "beep boop"),
-                                      ("Hi, my name is abc", "beep boop")]
-            self.check_expected_responses(message_response_pairs)  # Test the bot with our message_response_pair list.
+            self.verify_dialog(dialog)
 
-The `helloworld` bot replies with "beep boop" to every message @-mentioning it.
-Note that our helper method `check_expected_responses` adds the @-mention for us - the only
-thing we need to do is to specify the rest of the message and the expected response. In this
-case, we want to assert that the bot always replies with "beep boop". To do so, we specify
-several test messages ("", "foo", "Hi, my name is abc") and assert that the response is always
-correct, which for this simple bot, means always sending a reply with the content "beep boop".
+The `helloworld` bot replies with "beep boop" to every message @-mentioning it.  We
+want our test to verify that the bot **actually** does that.
+
+Note that our helper method `verify_dialog` simulates the conversation for us, and
+we just need to set up a list of tuples with expected results.
+
+The best way to learn about bot tests is to read all the existing tests in the
+`bots` subdirectories.
 
 ### Testing your test
 
@@ -419,8 +431,6 @@ Once you have written a test suite, you want to verify that everything works as 
 * To test a bot in [Zulip's bot directory](
   https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots):
   `tools/test-bots <botname>`
-
-* To run any test: `python -m unittest -v <package.bot_test>`
 
 * To run all bot tests: `tools/test-bots`
 
@@ -431,30 +441,20 @@ configuration files or interact with third-party APIs.
 *The code for the bot testing library can be found [here](
  https://github.com/zulip/python-zulip-api/blob/master/zulip_bots/zulip_bots/test_lib.py).*
 
-#### Asserting individual messages
-
-    self.assert_bot_response(
-        message = {'content': 'foo'},
-        response = {'content': 'bar'},
-        expected_method='send_reply'
-    )
-
-Use `assert_bot_response()` to test individual messages. Specify additional message
-settings, such as the stream or subject, in the `message` and `response` dicts.
 
 #### Testing bots with config files
 
 Some bots, such as [Giphy](
 https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots/giphy),
-support or require user configuration options to control how the bot works. To test such
-a bot, you can use the following helper method:
+support or require user configuration options to control how the bot works.
 
-    with self.mock_config_info({'entry': 'value'}):
-        # self.assert_bot_response(...)
+To test such a bot, you can use the following pattern:
 
-`mock_config_info()` mocks a bot's config file. All config files are specified in the
-.ini format, with one default section. The dict passed to `mock_config_info()` specifies
-the keys and values of that section.
+    with self.mock_config_info(dict(api_key=12345)):
+        # self.verify_reply(...)
+
+`mock_config_info()` replaces the actual step of reading configuration from the file
+system and gives your test "dummy data" instead.
 
 #### Testing bots with internet access
 
@@ -475,17 +475,6 @@ https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots
 
 *Tip: You can use [requestb.in](http://requestb.in) or a similar tool to capture payloads from the
 service your bot is interacting with.*
-
-#### Testing bots that specify `initialize()`
-
-Some bots, such as [Giphy](
-https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots/giphy),
-implement an `initialize()` method, which is executed on the startup of the bot. To test
-such a bot, you can call its `initialize()` method with the following helper method:
-
-    self.initialize_bot()
-
-Calling `initialize_bot()` invokes the `initialize()` method specified by the bot.
 
 #### Examples
 

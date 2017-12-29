@@ -21,7 +21,6 @@ from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import get_cache_backend
 from zerver.lib.initial_password import initial_password
 from zerver.lib.db import TimeTrackingCursor
-from zerver.lib.str_utils import force_text
 from zerver.lib import cache
 from zerver.tornado import event_queue
 from zerver.tornado.handlers import allocate_handler_id
@@ -47,6 +46,9 @@ from zerver.models import (
 )
 
 from zerver.lib.request import JsonableError
+
+if False:
+    from zerver.lib.test_case import ZulipTestCase
 
 import collections
 import base64
@@ -205,14 +207,6 @@ def find_key_by_email(address: Text) -> Optional[Text]:
             return key_regex.search(message.body).groups()[0]
     return None  # nocoverage -- in theory a test might want this case, but none do
 
-def find_pattern_in_email(address: Text, pattern: Text) -> Optional[Text]:
-    from django.core.mail import outbox
-    key_regex = re.compile(pattern)
-    for message in reversed(outbox):
-        if address in message.to:
-            return key_regex.search(message.body).group(0)
-    return None  # nocoverage -- in theory a test might want this case, but none do
-
 def message_stream_count(user_profile: UserProfile) -> int:
     return UserMessage.objects. \
         select_related("message"). \
@@ -299,7 +293,7 @@ def instrument_url(f: UrlFuncT) -> UrlFuncT:
     if not INSTRUMENTING:  # nocoverage -- option is always enabled; should we remove?
         return f
     else:
-        def wrapper(self: Any, url: Text, info: Dict[str, Any]={},
+        def wrapper(self: 'ZulipTestCase', url: Text, info: Dict[str, Any]={},
                     **kwargs: Any) -> HttpResponse:
             start = time.time()
             result = f(self, url, info, **kwargs)

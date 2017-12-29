@@ -33,6 +33,11 @@ var stream_name_error = (function () {
         $("#stream_name_error").show();
     };
 
+    self.report_invalid_chars = function () {
+        $("#stream_name_error").text(i18n.t("Stream names cannot contain #, *, `, or @."));
+        $("#stream_name_error").show();
+    };
+
     self.select = function () {
         $("#create_stream_name").focus().select();
     };
@@ -62,6 +67,13 @@ var stream_name_error = (function () {
 
         if (stream_data.get_sub(stream_name)) {
             self.report_already_exists();
+            self.select();
+            return false;
+        }
+
+        // Keep characters in sync with Stream.NAME_INVALID_CHARS
+        if (/[#*`@]/.test(stream_name)) {
+            self.report_invalid_chars();
             self.select();
             return false;
         }
@@ -152,9 +164,6 @@ function create_stream() {
     var is_invite_only = $('#stream_creation_form input[name=privacy]:checked').val() === "invite-only";
     var principals = get_principals();
 
-    // You are always subscribed to streams you create.
-    principals.push(people.my_current_email());
-
     created_stream = stream_name;
 
     var announce = (!!page_params.notifications_stream &&
@@ -206,8 +215,12 @@ exports.new_stream_clicked = function (stream_name) {
 exports.show_new_stream_modal = function () {
     $("#stream-creation").removeClass("hide");
     $(".right .settings").hide();
+
+    var all_users = people.get_rest_of_realm();
+    // Add current user on top of list
+    all_users.unshift(people.get_person_from_user_id(page_params.user_id));
     $('#people_to_add').html(templates.render('new_stream_users', {
-        users: people.get_rest_of_realm(),
+        users: all_users,
         streams: stream_data.get_streams_for_settings_page(),
     }));
 

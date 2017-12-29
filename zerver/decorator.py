@@ -31,7 +31,7 @@ from io import BytesIO
 import urllib
 
 from typing import Union, Any, Callable, Sequence, Dict, Optional, TypeVar, Text, Tuple, cast
-from zerver.lib.logging_util import create_logger
+from zerver.lib.logging_util import log_to_file
 
 # This is a hack to ensure that RemoteZulipServer always exists even
 # if Zilencer isn't enabled.
@@ -45,9 +45,8 @@ else:
 ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
 ReturnT = TypeVar('ReturnT')
 
-## logger setup
-webhook_logger = create_logger(
-    "zulip.zerver.webhooks", settings.API_KEY_ONLY_WEBHOOK_LOG_PATH, 'DEBUG')
+webhook_logger = logging.getLogger("zulip.zerver.webhooks")
+log_to_file(webhook_logger, settings.API_KEY_ONLY_WEBHOOK_LOG_PATH)
 
 class _RespondAsynchronously:
     pass
@@ -163,9 +162,11 @@ def get_client_name(request: HttpRequest, is_browser_view: bool) -> Text:
         else:
             return "Unspecified"
 
-def process_client(request, user_profile, *, is_browser_view=False, client_name=None,
-                   remote_server_request=False, query=None):
-    # type: (HttpRequest, UserProfile, bool, Optional[Text], bool, Optional[Text]) -> None
+def process_client(request: HttpRequest, user_profile: UserProfile,
+                   *, is_browser_view: bool=False,
+                   client_name: Optional[Text]=None,
+                   remote_server_request: bool=False,
+                   query: Optional[Text]=None) -> None:
     if client_name is None:
         client_name = get_client_name(request, is_browser_view)
 
@@ -189,9 +190,9 @@ class InvalidZulipServerKeyError(JsonableError):
     def msg_format() -> Text:
         return "Zulip server auth failure: key does not match role {role}"
 
-def validate_api_key(request, role, api_key, is_webhook=False,
-                     client_name=None):
-    # type: (HttpRequest, Optional[Text], Text, bool, Optional[Text]) -> Union[UserProfile, RemoteZulipServer]
+def validate_api_key(request: HttpRequest, role: Optional[Text],
+                     api_key: Text, is_webhook: bool=False,
+                     client_name: Optional[Text]=None) -> Union[UserProfile, RemoteZulipServer]:
     # Remove whitespace to protect users from trivial errors.
     api_key = api_key.strip()
     if role is not None:
@@ -268,9 +269,8 @@ def api_key_only_webhook_view(client_name: Text) -> WrappedViewFuncT:
         @csrf_exempt
         @has_request_variables
         @wraps(view_func)
-        def _wrapped_func_arguments(request, api_key=REQ(),
-                                    *args, **kwargs):
-            # type: (HttpRequest, Text, *Any, **Any) -> HttpResponse
+        def _wrapped_func_arguments(request: HttpRequest, api_key: Text=REQ(),
+                                    *args: Any, **kwargs: Any) -> HttpResponse:
             user_profile = validate_api_key(request, None, api_key, is_webhook=True,
                                             client_name="Zulip{}Webhook".format(client_name))
 
@@ -309,9 +309,8 @@ body:
     return _wrapped_view_func
 
 # From Django 1.8, modified to leave off ?next=/
-def redirect_to_login(next, login_url=None,
-                      redirect_field_name=REDIRECT_FIELD_NAME):
-    # type: (Text, Optional[Text], Text) -> HttpResponseRedirect
+def redirect_to_login(next: Text, login_url: Optional[Text]=None,
+                      redirect_field_name: Text=REDIRECT_FIELD_NAME) -> HttpResponseRedirect:
     """
     Redirects the user to the login page, passing the given 'next' page
     """
@@ -396,10 +395,12 @@ def human_users_only(view_func: ViewFuncT) -> ViewFuncT:
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
 # Based on Django 1.8's @login_required
-def zulip_login_required(function=None,
-                         redirect_field_name=REDIRECT_FIELD_NAME,
-                         login_url=settings.HOME_NOT_LOGGED_IN):
-    # type: (Optional[Callable[..., HttpResponse]], Text, Text) -> Union[Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]], Callable[..., HttpResponse]]
+def zulip_login_required(
+        function: Optional[Callable[..., HttpResponse]]=None,
+        redirect_field_name: Text=REDIRECT_FIELD_NAME,
+        login_url: Text=settings.HOME_NOT_LOGGED_IN,
+) -> Union[Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]],
+           Callable[..., HttpResponse]]:
     actual_decorator = user_passes_test(
         logged_in_and_active,
         login_url=login_url,
@@ -430,10 +431,10 @@ def authenticated_api_view(is_webhook: bool=False) -> WrappedViewFuncT:
         @require_post
         @has_request_variables
         @wraps(view_func)
-        def _wrapped_func_arguments(request, email=REQ(), api_key=REQ(default=None),
-                                    api_key_legacy=REQ('api-key', default=None),
-                                    *args, **kwargs):
-            # type: (HttpRequest, Text, Optional[Text], Optional[Text], *Any, **Any) -> HttpResponse
+        def _wrapped_func_arguments(request: HttpRequest, email: Text=REQ(),
+                                    api_key: Optional[Text]=REQ(default=None),
+                                    api_key_legacy: Optional[Text]=REQ('api-key', default=None),
+                                    *args: Any, **kwargs: Any) -> HttpResponse:
             if api_key is None:
                 api_key = api_key_legacy
             if api_key is None:
@@ -530,17 +531,15 @@ def authenticated_json_post_view(view_func: ViewFuncT) -> ViewFuncT:
     @require_post
     @has_request_variables
     @wraps(view_func)
-    def _wrapped_view_func(request,
-                           *args, **kwargs):
-        # type: (HttpRequest, *Any, **Any) -> HttpResponse
+    def _wrapped_view_func(request: HttpRequest,
+                           *args: Any, **kwargs: Any) -> HttpResponse:
         return authenticate_log_and_execute_json(request, view_func, *args, **kwargs)
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
 def authenticated_json_view(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
-    def _wrapped_view_func(request,
-                           *args, **kwargs):
-        # type: (HttpRequest, *Any, **Any) -> HttpResponse
+    def _wrapped_view_func(request: HttpRequest,
+                           *args: Any, **kwargs: Any) -> HttpResponse:
         return authenticate_log_and_execute_json(request, view_func, *args, **kwargs)
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
@@ -612,8 +611,8 @@ def to_utc_datetime(timestamp: Text) -> datetime.datetime:
     return timestamp_to_datetime(float(timestamp))
 
 WrapperT = Callable[[Callable[..., ReturnT]], Callable[..., ReturnT]]
-def statsd_increment(counter, val=1):
-    # type: (Text, int) -> Callable[[Callable[..., ReturnT]], Callable[..., ReturnT]]
+def statsd_increment(counter: Text, val: int=1,
+                     ) -> Callable[[Callable[..., ReturnT]], Callable[..., ReturnT]]:
     """Increments a statsd counter on completion of the
     decorated function.
 

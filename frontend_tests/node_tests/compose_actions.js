@@ -94,9 +94,11 @@ function assert_hidden(sel) {
     compose_actions.clear_textarea = noop;
 
     // Start stream message
-    global.narrow_state.set_compose_defaults = function (opts) {
+    global.narrow_state.set_compose_defaults = function () {
+        var opts = {};
         opts.stream = 'stream1';
         opts.subject = 'topic1';
+        return opts;
     };
 
     var opts = {};
@@ -111,8 +113,10 @@ function assert_hidden(sel) {
     assert(compose_state.composing());
 
     // Start PM
-    global.narrow_state.set_compose_defaults = function (opts) {
+    global.narrow_state.set_compose_defaults = function () {
+        var opts = {};
         opts.private_message_recipient = 'foo@example.com';
+        return opts;
     };
 
     opts = {

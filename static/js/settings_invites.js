@@ -24,6 +24,7 @@ function populate_invites(invites_data) {
     list_render(invites_table, invites_data.invites, {
         name: "admin_invites_list",
         modifier: function (item) {
+            item.invited = timerender.absolute_time(item.invited * 1000);
             return templates.render("admin_invites_list", { invite: item });
         },
         filter: {
@@ -137,8 +138,9 @@ exports.on_load_success = function (invites_data) {
                 }
             },
             success: function (data) {
-                resend_button.text(i18n.t("Resent!"));
+                resend_button.text(i18n.t("Sent!"));
                 resend_button.removeClass('resend btn-warning').addClass('sea-green');
+                data.timestamp = timerender.absolute_time(data.timestamp * 1000);
                 meta.current_resend_invite_user_modal_row.find(".invited_at").text(data.timestamp);
             },
         });

@@ -227,6 +227,17 @@ class GitlabHookTests(WebhookTestCase):
             HTTP_X_GITLAB_EVENT="Merge Request Hook"
         )
 
+    def test_merge_request_approved_event_message(self) -> None:
+        expected_subject = u"my-awesome-project / MR #1 Update the README with author ..."
+        expected_message = u"Eeshan Garg approved [MR #1](https://gitlab.com/eeshangarg/my-awesome-project/merge_requests/1)"
+
+        self.send_and_test_stream_message(
+            'merge_request_approved',
+            expected_subject,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Merge Request Hook"
+        )
+
     def test_merge_request_updated_event_message(self) -> None:
         expected_subject = u"my-awesome-project / MR #3 New Merge Request"
         expected_message = u"Tomasz Kolek updated [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3)(assigned to Tomasz Kolek)\nfrom `tomek` to `master`\n\n~~~ quote\nupdated desc\n~~~"
@@ -360,8 +371,7 @@ class GitlabHookTests(WebhookTestCase):
 
     @patch('zerver.webhooks.gitlab.view.check_send_stream_message')
     def test_push_event_message_filtered_by_branches_ignore(
-            self, check_send_stream_message_mock):
-        # type: (MagicMock) -> None
+            self, check_send_stream_message_mock: MagicMock) -> None:
         self.url = self.build_webhook_url(branches='master,development')
         payload = self.get_body('push')
         result = self.client_post(self.url, payload, HTTP_X_GITLAB_EVENT='Push Hook', content_type="application/json")
@@ -370,8 +380,7 @@ class GitlabHookTests(WebhookTestCase):
 
     @patch('zerver.webhooks.gitlab.view.check_send_stream_message')
     def test_push_commits_more_than_limit_message_filtered_by_branches_ignore(
-            self, check_send_stream_message_mock):
-        # type: (MagicMock) -> None
+            self, check_send_stream_message_mock: MagicMock) -> None:
         self.url = self.build_webhook_url(branches='master,development')
         payload = self.get_body('push_commits_more_than_limit')
         result = self.client_post(self.url, payload, HTTP_X_GITLAB_EVENT='Push Hook', content_type="application/json")

@@ -160,20 +160,13 @@ $(function () {
         });
     }
 
-    function toggle_star(message_id) {
-        // Update the message object pointed to by the various message
-        // lists.
-        var message = ui.find_message(message_id);
-
-        unread_ops.mark_message_as_read(message);
-        ui.update_starred(message.id, message.starred !== true);
-        message_flags.send_starred([message], message.starred);
-    }
-
     $("#main_div").on("click", ".star", function (e) {
         e.stopPropagation();
         popovers.hide_all();
-        toggle_star(rows.id($(this).closest(".message_row")));
+
+        var message_id = rows.id($(this).closest(".message_row"));
+        var message = message_store.get(message_id);
+        message_flags.toggle_starred(message);
     });
 
     $("#main_div").on("click", ".message_reaction", function (e) {
@@ -424,6 +417,9 @@ $(function () {
     $('#compose-send-status .compose-send-status-close').click(
         function () { $('#compose-send-status').stop(true).fadeOut(500); }
     );
+    $('#nonexistent_stream_reply_error .compose-send-status-close').click(
+        function () { $('#nonexistent_stream_reply_error').stop(true).fadeOut(500); }
+    );
 
 
     $('.compose_stream_button').click(function () {
@@ -431,6 +427,9 @@ $(function () {
     });
     $('.compose_private_button').click(function () {
         compose_actions.start('private');
+    });
+    $('.compose_reply_button').click(function () {
+        compose_actions.respond_to_message({trigger: 'reply button'});
     });
 
     $('.empty_feed_compose_stream').click(function (e) {

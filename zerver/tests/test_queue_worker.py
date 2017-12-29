@@ -12,11 +12,12 @@ from typing import Any, Callable, Dict, List, Mapping, Tuple
 
 from zerver.lib.test_helpers import simulated_queue_client
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import get_client, UserActivity
+from zerver.models import get_client, UserActivity, PreregistrationUser
 from zerver.worker import queue_processors
 from zerver.worker.queue_processors import (
     get_active_worker_queues,
     QueueProcessingWorker,
+    EmailSendingWorker,
     LoopQueueProcessingWorker,
     MissedMessageWorker,
 )
@@ -171,7 +172,7 @@ class WorkerTest(ZulipTestCase):
         fake_client = self.FakeClient()
 
         data = {'test': 'test', 'id': 'test_missed'}
-        fake_client.queue.append(('missedmessage_email_senders', data))
+        fake_client.queue.append(('email_senders', data))
 
         def fake_publish(queue_name: str,
                          event: Dict[str, Any],
@@ -179,7 +180,7 @@ class WorkerTest(ZulipTestCase):
             fake_client.queue.append((queue_name, event))
 
         with simulated_queue_client(lambda: fake_client):
-            worker = queue_processors.MissedMessageSendingWorker()
+            worker = queue_processors.EmailSendingWorker()
             worker.setup()
             with patch('zerver.worker.queue_processors.send_email_from_dict',
                        side_effect=smtplib.SMTPServerDisconnected), \
@@ -218,6 +219,34 @@ class WorkerTest(ZulipTestCase):
                 worker.start()
 
         self.assertEqual(data['failed_tries'], 4)
+
+    def test_invites_worker(self) -> None:
+        fake_client = self.FakeClient()
+        invitor = self.example_user('iago')
+        prereg_alice = PreregistrationUser.objects.create(
+            email=self.nonreg_email('alice'), referred_by=invitor, realm=invitor.realm)
+        PreregistrationUser.objects.create(
+            email=self.nonreg_email('bob'), referred_by=invitor, realm=invitor.realm)
+        data = [
+            dict(prereg_id=prereg_alice.id, referrer_id=invitor.id, email_body=None),
+            # Nonexistent prereg_id, as if the invitation was deleted
+            dict(prereg_id=-1, referrer_id=invitor.id, email_body=None),
+            # Form with `email` is from versions up to Zulip 1.7.1
+            dict(email=self.nonreg_email('bob'), referrer_id=invitor.id, email_body=None),
+        ]
+        for element in data:
+            fake_client.queue.append(('invites', element))
+
+        with simulated_queue_client(lambda: fake_client):
+            worker = queue_processors.ConfirmationEmailWorker()
+            worker.setup()
+            with patch('zerver.worker.queue_processors.do_send_confirmation_email'), \
+                    patch('zerver.worker.queue_processors.create_confirmation_link'), \
+                    patch('zerver.worker.queue_processors.send_future_email') \
+                    as send_mock, \
+                    patch('logging.info'):
+                worker.start()
+                self.assertEqual(send_mock.call_count, 2)
 
     def test_UserActivityWorker(self) -> None:
         fake_client = self.FakeClient()
@@ -304,6 +333,7 @@ class WorkerTest(ZulipTestCase):
 
     def test_get_active_worker_queues(self) -> None:
         worker_queue_count = (len(QueueProcessingWorker.__subclasses__()) +
+                              len(EmailSendingWorker.__subclasses__()) +
                               len(LoopQueueProcessingWorker.__subclasses__()) - 1)
         self.assertEqual(worker_queue_count, len(get_active_worker_queues()))
         self.assertEqual(1, len(get_active_worker_queues(queue_type='test')))

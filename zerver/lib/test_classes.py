@@ -331,7 +331,7 @@ class ZulipTestCase(TestCase):
         else:
             raise AssertionError("Couldn't find a confirmation email.")
 
-    def api_auth(self, identifier: Text, realm: Text="zulip") -> Dict[str, Text]:
+    def encode_credentials(self, identifier: Text, realm: Text="zulip") -> Text:
         """
         identifier: Can be an email or a remote server uuid.
         """
@@ -345,9 +345,27 @@ class ZulipTestCase(TestCase):
             API_KEYS[identifier] = api_key
 
         credentials = "%s:%s" % (identifier, api_key)
-        return {
-            'HTTP_AUTHORIZATION': 'Basic ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
-        }
+        return 'Basic ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
+
+    def api_get(self, email: Text, *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(email)
+        return self.client_get(*args, **kwargs)
+
+    def api_post(self, identifier: Text, *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(identifier, kwargs.get('realm', 'zulip'))
+        return self.client_post(*args, **kwargs)
+
+    def api_patch(self, email: Text, *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(email)
+        return self.client_patch(*args, **kwargs)
+
+    def api_put(self, email: Text, *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(email)
+        return self.client_put(*args, **kwargs)
+
+    def api_delete(self, email: Text, *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(email)
+        return self.client_delete(*args, **kwargs)
 
     def get_streams(self, email: Text, realm: Realm) -> List[Text]:
         """
@@ -359,9 +377,8 @@ class ZulipTestCase(TestCase):
         )
         return [cast(Text, get_display_recipient(sub.recipient)) for sub in subs]
 
-    def send_personal_message(self, from_email, to_email, content="test content",
-                              sender_realm="zulip"):
-        # type: (Text, Text, Text, Text) -> int
+    def send_personal_message(self, from_email: Text, to_email: Text, content: Text="test content",
+                              sender_realm: Text="zulip") -> int:
         sender = get_user(from_email, get_realm(sender_realm))
 
         recipient_list = [to_email]
@@ -372,9 +389,8 @@ class ZulipTestCase(TestCase):
             content
         )
 
-    def send_huddle_message(self, from_email, to_emails, content="test content",
-                            sender_realm="zulip"):
-        # type: (Text, List[Text], Text, Text) -> int
+    def send_huddle_message(self, from_email: Text, to_emails: List[Text], content: Text="test content",
+                            sender_realm: Text="zulip") -> int:
         sender = get_user(from_email, get_realm(sender_realm))
 
         assert(len(to_emails) >= 2)
@@ -386,9 +402,8 @@ class ZulipTestCase(TestCase):
             content
         )
 
-    def send_stream_message(self, sender_email, stream_name, content="test content",
-                            topic_name="test", sender_realm="zulip"):
-        # type: (Text, Text, Text, Text, Text) -> int
+    def send_stream_message(self, sender_email: Text, stream_name: Text, content: Text="test content",
+                            topic_name: Text="test", sender_realm: Text="zulip") -> int:
         sender = get_user(sender_email, get_realm(sender_realm))
 
         (sending_client, _) = Client.objects.get_or_create(name="test suite")
@@ -401,9 +416,8 @@ class ZulipTestCase(TestCase):
             body=content,
         )
 
-    def get_messages(self, anchor=1, num_before=100, num_after=100,
-                     use_first_unread_anchor=False):
-        # type: (int, int, int, bool) -> List[Dict[str, Any]]
+    def get_messages(self, anchor: int=1, num_before: int=100, num_after: int=100,
+                     use_first_unread_anchor: bool=False) -> List[Dict[str, Any]]:
         post_params = {"anchor": anchor, "num_before": num_before,
                        "num_after": num_after,
                        "use_first_unread_anchor": ujson.dumps(use_first_unread_anchor)}
@@ -529,16 +543,14 @@ class ZulipTestCase(TestCase):
         bulk_remove_subscriptions([user_profile], [stream])
 
     # Subscribe to a stream by making an API request
-    def common_subscribe_to_streams(self, email, streams, extra_post_data={}, invite_only=False,
-                                    **kwargs):
-        # type: (Text, Iterable[Text], Dict[str, Any], bool, **Any) -> HttpResponse
+    def common_subscribe_to_streams(self, email: Text, streams: Iterable[Text],
+                                    extra_post_data: Dict[str, Any]={}, invite_only: bool=False,
+                                    **kwargs: Any) -> HttpResponse:
         post_data = {'subscriptions': ujson.dumps([{"name": stream} for stream in streams]),
                      'invite_only': ujson.dumps(invite_only)}
         post_data.update(extra_post_data)
-        kw = kwargs.copy()
-        kw.update(self.api_auth(email, realm=kwargs.get('subdomain', 'zulip')))
-        result = self.client_post("/api/v1/users/me/subscriptions", post_data,
-                                  **kw)
+        kwargs['realm'] = kwargs.get('subdomain', 'zulip')
+        result = self.api_post(email, "/api/v1/users/me/subscriptions", post_data, **kwargs)
         return result
 
     def check_user_subscribed_only_to_streams(self, user_name: Text,
@@ -607,9 +619,13 @@ class WebhookTestCase(ZulipTestCase):
     def setUp(self) -> None:
         self.url = self.build_webhook_url()
 
-    def send_and_test_stream_message(self, fixture_name, expected_subject=None,
-                                     expected_message=None, content_type="application/json", **kwargs):
-        # type: (Text, Optional[Text], Optional[Text], Optional[Text], **Any) -> Message
+    def api_stream_message(self, email: Text, *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(email)
+        return self.send_and_test_stream_message(*args, **kwargs)
+
+    def send_and_test_stream_message(self, fixture_name: Text, expected_subject: Optional[Text]=None,
+                                     expected_message: Optional[Text]=None,
+                                     content_type: Optional[Text]="application/json", **kwargs: Any) -> Message:
         payload = self.get_body(fixture_name)
         if content_type is not None:
             kwargs['content_type'] = content_type
@@ -620,9 +636,9 @@ class WebhookTestCase(ZulipTestCase):
 
         return msg
 
-    def send_and_test_private_message(self, fixture_name, expected_subject=None,
-                                      expected_message=None, content_type="application/json", **kwargs):
-        # type: (Text, Text, Text, str, **Any) -> Message
+    def send_and_test_private_message(self, fixture_name: Text, expected_subject: Text=None,
+                                      expected_message: Text=None, content_type: str="application/json",
+                                      **kwargs: Any)-> Message:
         payload = self.get_body(fixture_name)
         if content_type is not None:
             kwargs['content_type'] = content_type

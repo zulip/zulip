@@ -14,7 +14,7 @@ from django.db import connection
 from django.core.handlers.wsgi import WSGIRequest
 from django.core.handlers.base import BaseHandler
 from zerver.models import \
-    get_client, get_prereg_user_by_email, get_system_bot, ScheduledEmail, \
+    get_client, get_system_bot, ScheduledEmail, PreregistrationUser, \
     get_user_profile_by_id, Message, Realm, Service, UserMessage, UserProfile
 from zerver.lib.context_managers import lockfile
 from zerver.lib.error_notify import do_report_error
@@ -43,6 +43,7 @@ from zerver.context_processors import common_context
 from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_service_handler
 from zerver.models import get_bot_services
 from zulip import Client
+from zulip_bots.lib import extract_query_without_mention
 from zerver.lib.bot_lib import EmbeddedBotHandler, get_bot_handler
 
 import os
@@ -59,6 +60,7 @@ from io import StringIO
 import re
 import importlib
 
+logger = logging.getLogger(__name__)
 
 class WorkerDeclarationException(Exception):
     pass
@@ -219,11 +221,21 @@ class SignupWorker(QueueProcessingWorker):
 class ConfirmationEmailWorker(QueueProcessingWorker):
     def consume(self, data):
         # type: (Mapping[str, Any]) -> None
-        invitee = get_prereg_user_by_email(data["email"])
+
+        if "email" in data:
+            # When upgrading from a version up through 1.7.1, there may be
+            # existing items in the queue with `email` instead of `prereg_id`.
+            invitee = PreregistrationUser.objects.filter(
+                email__iexact=data["email"].strip()).latest("invited_at")
+        else:
+            invitee = PreregistrationUser.objects.filter(id=data["prereg_id"]).first()
+            if invitee is None:
+                # The invitation could have been revoked
+                return
+
         referrer = get_user_profile_by_id(data["referrer_id"])
-        body = data["email_body"]
-        logging.info("Sending invitation for realm %s to %s" % (referrer.realm.string_id, invitee.email))
-        do_send_confirmation_email(invitee, referrer, body)
+        logger.info("Sending invitation for realm %s to %s" % (referrer.realm.string_id, invitee.email))
+        do_send_confirmation_email(invitee, referrer)
 
         # queue invitation reminder for two days from now.
         link = create_confirmation_link(invitee, referrer.realm.host, Confirmation.INVITATION)
@@ -236,7 +248,8 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
         })
         send_future_email(
             "zerver/emails/invitation_reminder",
-            to_email=data["email"],
+            referrer.realm,
+            to_email=invitee.email,
             from_address=FromAddress.NOREPLY,
             context=context,
             delay=datetime.timedelta(days=2))
@@ -286,8 +299,8 @@ class MissedMessageWorker(LoopQueueProcessingWorker):
         for user_profile_id, events in by_recipient.items():
             handle_missedmessage_emails(user_profile_id, events)
 
-@assign_queue('missedmessage_email_senders')
-class MissedMessageSendingWorker(QueueProcessingWorker):
+@assign_queue('email_senders')
+class EmailSendingWorker(QueueProcessingWorker):
     @retry_send_email_failures
     def consume(self, data):
         # type: (Dict[str, Any]) -> None
@@ -296,6 +309,19 @@ class MissedMessageSendingWorker(QueueProcessingWorker):
         except EmailNotDeliveredException:
             # TODO: Do something smarter here ..
             pass
+
+@assign_queue('missedmessage_email_senders')
+class MissedMessageSendingWorker(EmailSendingWorker):
+    """
+    Note: Class decorators are not inherited.
+
+    The `missedmessage_email_senders` queue was used up through 1.7.1, so we
+    keep consuming from it in case we've just upgraded from an old version.
+    After the 1.8 release, we can delete it and tell admins to upgrade to 1.8
+    first.
+    """
+    # TODO: zulip-1.8: Delete code related to missedmessage_email_senders queue.
+    pass
 
 @assign_queue('missedmessage_mobile_notifications')
 class PushNotificationsWorker(QueueProcessingWorker):
@@ -505,6 +531,13 @@ class EmbeddedBotWorker(QueueProcessingWorker):
                 logging.error("Error: User %s has bot with invalid embedded bot service %s" % (
                     user_profile_id, service.name))
                 continue
+            if event['trigger'] == 'mention':
+                message['content'] = extract_query_without_mention(
+                    message=message,
+                    client=self.get_bot_api_client(user_profile),
+                )
+                if message['content'] is None:
+                    return
             bot_handler.handle_message(
                 message=message,
                 bot_handler=self.get_bot_api_client(user_profile)

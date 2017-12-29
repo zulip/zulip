@@ -69,7 +69,7 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
 
     # New user invite and reminder emails
     result = client.post("/json/invites",
-                         {"invitee_emails": unregistered_email_2, "stream": ["Denmark"], "custom_body": ""},
+                         {"invitee_emails": unregistered_email_2, "stream": ["Denmark"]},
                          **host_kwargs)
     assert result.status_code == 200
 

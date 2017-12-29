@@ -666,24 +666,22 @@ class StreamMessagesTest(ZulipTestCase):
         email = user_profile.email
 
         do_change_is_admin(user_profile, True, 'api_super_user')
-        result = self.client_post("/api/v1/messages", {"type": "stream",
-                                                       "to": "Verona",
-                                                       "sender": self.example_email("cordelia"),
-                                                       "client": "test suite",
-                                                       "subject": "announcement",
-                                                       "content": "Everyone knows Iago rules",
-                                                       "forged": "true"},
-                                  **self.api_auth(email))
+        result = self.api_post(email, "/api/v1/messages", {"type": "stream",
+                                                           "to": "Verona",
+                                                           "sender": self.example_email("cordelia"),
+                                                           "client": "test suite",
+                                                           "subject": "announcement",
+                                                           "content": "Everyone knows Iago rules",
+                                                           "forged": "true"})
         self.assert_json_success(result)
         do_change_is_admin(user_profile, False, 'api_super_user')
-        result = self.client_post("/api/v1/messages", {"type": "stream",
-                                                       "to": "Verona",
-                                                       "sender": self.example_email("cordelia"),
-                                                       "client": "test suite",
-                                                       "subject": "announcement",
-                                                       "content": "Everyone knows Iago rules",
-                                                       "forged": "true"},
-                                  **self.api_auth(email))
+        result = self.api_post(email, "/api/v1/messages", {"type": "stream",
+                                                           "to": "Verona",
+                                                           "sender": self.example_email("cordelia"),
+                                                           "client": "test suite",
+                                                           "subject": "announcement",
+                                                           "content": "Everyone knows Iago rules",
+                                                           "forged": "true"})
         self.assert_json_error(result, "User not authorized for this query")
 
     def test_message_to_stream(self) -> None:
@@ -914,12 +912,11 @@ class MessagePOSTTest(ZulipTestCase):
         Same as above, but for the API view
         """
         email = self.example_email("hamlet")
-        result = self.client_post("/api/v1/messages", {"type": "stream",
-                                                       "to": "Verona",
-                                                       "client": "test suite",
-                                                       "content": "Test message",
-                                                       "subject": "Test subject"},
-                                  **self.api_auth(email))
+        result = self.api_post(email, "/api/v1/messages", {"type": "stream",
+                                                           "to": "Verona",
+                                                           "client": "test suite",
+                                                           "content": "Test message",
+                                                           "subject": "Test subject"})
         self.assert_json_success(result)
 
     def test_api_message_with_default_to(self) -> None:
@@ -931,11 +928,10 @@ class MessagePOSTTest(ZulipTestCase):
         email = user_profile.email
         user_profile.default_sending_stream_id = get_stream('Verona', user_profile.realm).id
         user_profile.save()
-        result = self.client_post("/api/v1/messages", {"type": "stream",
-                                                       "client": "test suite",
-                                                       "content": "Test message no to",
-                                                       "subject": "Test subject"},
-                                  **self.api_auth(email))
+        result = self.api_post(email, "/api/v1/messages", {"type": "stream",
+                                                           "client": "test suite",
+                                                           "content": "Test message no to",
+                                                           "subject": "Test subject"})
         self.assert_json_success(result)
 
         sent_message = self.get_last_message()
@@ -1266,26 +1262,14 @@ class MessagePOSTTest(ZulipTestCase):
         user.is_api_super_user = True
         user.save()
         user = get_user(email, get_realm('zulip'))
-        self.subscribe(user, "#IRCland")
-        result = self.client_post("/api/v1/messages",
-                                  {"type": "stream",
-                                   "forged": "true",
-                                   "sender": "irc-user@irc.zulip.com",
-                                   "content": "Test message",
-                                   "client": "irc_mirror",
-                                   "subject": "from irc",
-                                   "to": "IRCLand"},
-                                  **self.api_auth(email))
-        self.assert_json_error(result, "IRC stream names must start with #")
-        result = self.client_post("/api/v1/messages",
-                                  {"type": "stream",
-                                   "forged": "true",
-                                   "sender": "irc-user@irc.zulip.com",
-                                   "content": "Test message",
-                                   "client": "irc_mirror",
-                                   "subject": "from irc",
-                                   "to": "#IRCLand"},
-                                  **self.api_auth(email))
+        self.subscribe(user, "IRCland")
+        result = self.api_post(email, "/api/v1/messages", {"type": "stream",
+                                                           "forged": "true",
+                                                           "sender": "irc-user@irc.zulip.com",
+                                                           "content": "Test message",
+                                                           "client": "irc_mirror",
+                                                           "subject": "from irc",
+                                                           "to": "IRCLand"})
         self.assert_json_success(result)
 
 class EditMessageTest(ZulipTestCase):

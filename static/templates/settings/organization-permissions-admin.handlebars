@@ -22,7 +22,7 @@
                     title="{{#tr this}}If checked, only users with an e-mail address ending in these domains will be able to join the organization.{{/tr}}">
                 </label>
                 {{#if is_admin }}
-                <a data-toggle="modal" href="#realm_domains_modal">{{t "[Add or Change]" }}</a>
+                <a data-toggle="modal" href="#realm_domains_modal">{{t "[Configure]" }}</a>
                 {{/if}}
             </div>
 
@@ -34,7 +34,7 @@
                 </label>
                 <label for="id_realm_invite_required" id="realm_invite_required_label" class="inline-block"
                     title="{{t 'If checked, users must be invited in order to join your organization.' }}">
-                    {{t "Users cannot join without an invitation" }}
+                    {{t "Users need an invitation to join" }}
                 </label>
             </div>
 

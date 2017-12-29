@@ -5,7 +5,9 @@ source tools/travis/activate-venv
 set -e
 set -x
 
-./tools/lint --frontend
+# ./tools/lint --frontend
+# TEMP: turn off git lint
+./tools/lint --frontend --no-gitlint
 
 # Run the node tests first, since they're fast and deterministic
 ./tools/test-js-with-node --coverage

@@ -117,7 +117,6 @@ if not CASPER_TESTS:
 
     def set_loglevel(logger_name, level) -> None:
         LOGGING['loggers'].setdefault(logger_name, {})['level'] = level
-        LOGGING['loggers'].setdefault(logger_name, {})['propagate'] = False
     set_loglevel('zulip.requests', 'CRITICAL')
     set_loglevel('zulip.management', 'CRITICAL')
     set_loglevel('django.request', 'ERROR')
@@ -125,6 +124,7 @@ if not CASPER_TESTS:
     set_loglevel('zulip.send_email', 'ERROR')
     set_loglevel('zerver.lib.digest', 'ERROR')
     set_loglevel('zerver.lib.email_mirror', 'ERROR')
+    set_loglevel('zerver.worker.queue_processors', 'WARNING')
 
 # Enable file:/// hyperlink support by default in tests
 ENABLE_FILE_LINKS = True
@@ -135,6 +135,7 @@ LOCAL_UPLOADS_DIR = 'var/test_uploads'
 S3_KEY = 'test-key'
 S3_SECRET_KEY = 'test-secret-key'
 S3_AUTH_UPLOADS_BUCKET = 'test-authed-bucket'
+S3_AVATAR_BUCKET = 'test-avatar-bucket'
 
 # Test Custom TOS template rendering
 TERMS_OF_SERVICE = 'corporate/terms.md'

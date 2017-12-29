@@ -54,6 +54,9 @@ module.prototype.hot = {
     accept: noop,
 };
 
+// Set up bugdown comparison helper
+global.bugdown_assert = require('./bugdown_assert.js');
+
 output.start_writing();
 
 files.forEach(function (file) {

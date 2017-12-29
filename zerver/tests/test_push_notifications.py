@@ -64,10 +64,10 @@ class BouncerTestCase(ZulipTestCase):
         # args[0] is method, args[1] is URL.
         local_url = args[1].replace(settings.PUSH_NOTIFICATION_BOUNCER_URL, "")
         if args[0] == "POST":
-            result = self.client_post(local_url,
-                                      kwargs['data'],
-                                      subdomain="",
-                                      **self.get_auth())
+            result = self.api_post(self.server_uuid,
+                                   local_url,
+                                   kwargs['data'],
+                                   subdomain="")
         else:
             raise AssertionError("Unsupported method for bounce_request")
         return result
@@ -81,10 +81,6 @@ class BouncerTestCase(ZulipTestCase):
                 'token': token,
                 'token_kind': token_kind}
 
-    def get_auth(self) -> Dict[str, Text]:
-        # Auth on this user
-        return self.api_auth(self.server_uuid)
-
 class PushBouncerNotificationTest(BouncerTestCase):
     DEFAULT_SUBDOMAIN = ""
 
@@ -93,11 +89,9 @@ class PushBouncerNotificationTest(BouncerTestCase):
         token_kind = PushDeviceToken.GCM
 
         endpoint = '/api/v1/remotes/push/unregister'
-        result = self.client_post(endpoint, {'token_kind': token_kind},
-                                  **self.get_auth())
+        result = self.api_post(self.server_uuid, endpoint, {'token_kind': token_kind})
         self.assert_json_error(result, "Missing 'token' argument")
-        result = self.client_post(endpoint, {'token': token},
-                                  **self.get_auth())
+        result = self.api_post(self.server_uuid, endpoint, {'token': token})
         self.assert_json_error(result, "Missing 'token_kind' argument")
 
         # We need the root ('') subdomain to be in use for this next
@@ -106,8 +100,9 @@ class PushBouncerNotificationTest(BouncerTestCase):
         realm.string_id = ""
         realm.save()
 
-        result = self.client_post(endpoint, {'token': token, 'token_kind': token_kind},
-                                  **self.api_auth(self.example_email("hamlet"), realm=""))
+        result = self.api_post(self.example_email("hamlet"), endpoint, {'token': token,
+                                                                        'token_kind': token_kind},
+                               realm="")
         self.assert_json_error(result, "Must validate with valid Zulip server API key")
 
     def test_register_remote_push_user_paramas(self) -> None:
@@ -117,23 +112,18 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
         endpoint = '/api/v1/remotes/push/register'
 
-        result = self.client_post(endpoint, {'user_id': user_id, 'token_kind': token_kind},
-                                  **self.get_auth())
+        result = self.api_post(self.server_uuid, endpoint, {'user_id': user_id, 'token_kind': token_kind})
         self.assert_json_error(result, "Missing 'token' argument")
-        result = self.client_post(endpoint, {'user_id': user_id, 'token': token},
-                                  **self.get_auth())
+        result = self.api_post(self.server_uuid, endpoint, {'user_id': user_id, 'token': token})
         self.assert_json_error(result, "Missing 'token_kind' argument")
-        result = self.client_post(endpoint, {'token': token, 'token_kind': token_kind},
-                                  **self.get_auth())
+        result = self.api_post(self.server_uuid, endpoint, {'token': token, 'token_kind': token_kind})
         self.assert_json_error(result, "Missing 'user_id' argument")
-        result = self.client_post(endpoint, {'user_id': user_id, 'token': token,
-                                             'token_kind': 17},
-                                  **self.get_auth())
+        result = self.api_post(self.server_uuid, endpoint, {'user_id': user_id, 'token': token, 'token_kind': 17})
         self.assert_json_error(result, "Invalid token type")
 
-        result = self.client_post(endpoint, {'user_id': user_id, 'token_kind': token_kind,
-                                             'token': token},
-                                  **self.api_auth(self.example_email("hamlet")))
+        result = self.api_post(self.example_email("hamlet"), endpoint, {'user_id': user_id,
+                                                                        'token_kind': token_kind,
+                                                                        'token': token})
         self.assert_json_error(result, "Account is not associated with this subdomain",
                                status_code=401)
 
@@ -143,9 +133,9 @@ class PushBouncerNotificationTest(BouncerTestCase):
         realm.string_id = ""
         realm.save()
 
-        result = self.client_post(endpoint, {'user_id': user_id, 'token_kind': token_kind,
-                                             'token': token},
-                                  **self.api_auth(self.example_email("hamlet")))
+        result = self.api_post(self.example_email("hamlet"), endpoint, {'user_id': user_id,
+                                                                        'token_kind': token_kind,
+                                                                        'token': token})
         self.assert_json_error(result, "Must validate with valid Zulip server API key")
 
     def test_remote_push_user_endpoints(self) -> None:
@@ -158,7 +148,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             payload = self.get_generic_payload(method)
 
             # Verify correct results are success
-            result = self.client_post(endpoint, payload, **self.get_auth())
+            result = self.api_post(self.server_uuid, endpoint, payload)
             self.assert_json_success(result)
 
             remote_tokens = RemotePushDeviceToken.objects.filter(token=payload['token'])
@@ -168,7 +158,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             # Try adding/removing tokens that are too big...
             broken_token = "x" * 5000  # too big
             payload['token'] = broken_token
-            result = self.client_post(endpoint, payload, **self.get_auth())
+            result = self.api_post(self.server_uuid, endpoint, payload)
             self.assert_json_error(result, 'Empty or invalid length token')
 
     def test_invalid_apns_token(self) -> None:
@@ -182,8 +172,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
                 'token': 'xyz uses non-hex characters',
                 'token_kind': PushDeviceToken.APNS,
             }
-            result = self.client_post(endpoint, payload,
-                                      **self.get_auth())
+            result = self.api_post(self.server_uuid, endpoint, payload)
             self.assert_json_error(result, 'Invalid APNS token')
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com')
@@ -304,10 +293,10 @@ class HandlePushNotificationTest(PushNotificationTest):
         # args[0] is method, args[1] is URL.
         local_url = args[1].replace(settings.PUSH_NOTIFICATION_BOUNCER_URL, "")
         if args[0] == "POST":
-            result = self.client_post(local_url,
-                                      kwargs['data'],
-                                      content_type="application/json",
-                                      **self.get_auth())
+            result = self.api_post(self.server_uuid,
+                                   local_url,
+                                   kwargs['data'],
+                                   content_type="application/json")
         else:
             raise AssertionError("Unsupported method for bounce_request")
         return result
@@ -680,6 +669,39 @@ class TestGetAPNsPayload(PushNotificationTest):
             'custom': {
                 'zulip': {
                     'message_ids': [message.id],
+                    'recipient_type': 'private',
+                    'sender_email': 'hamlet@zulip.com',
+                    'sender_id': 4,
+                    'server': settings.EXTERNAL_HOST,
+                    'realm_id': message.sender.realm.id,
+                }
+            }
+        }
+        self.assertDictEqual(payload, expected)
+
+    def test_get_apns_payload_stream(self):
+        # type: () -> None
+        stream = Stream.objects.filter(name='Verona').get()
+        message = self.get_message(Recipient.STREAM, stream.id)
+        message.trigger = 'mentioned'
+        message.stream_name = 'Verona'
+        payload = apn.get_apns_payload(message)
+        expected = {
+            'alert': {
+                'title': "New mention from King Hamlet",
+                'body': message.content,
+            },
+            'badge': 0,
+            'custom': {
+                'zulip': {
+                    'message_ids': [message.id],
+                    'recipient_type': 'stream',
+                    'sender_email': 'hamlet@zulip.com',
+                    'sender_id': 4,
+                    "stream": apn.get_display_recipient(message.recipient),
+                    "topic": message.subject,
+                    'server': settings.EXTERNAL_HOST,
+                    'realm_id': message.sender.realm.id,
                 }
             }
         }
@@ -699,6 +721,11 @@ class TestGetAPNsPayload(PushNotificationTest):
             'custom': {
                 'zulip': {
                     'message_ids': [message.id],
+                    'recipient_type': 'private',
+                    'sender_email': self.example_email("hamlet"),
+                    'sender_id': 4,
+                    'server': settings.EXTERNAL_HOST,
+                    'realm_id': message.sender.realm.id,
                 }
             }
         }
@@ -723,6 +750,9 @@ class TestGetGCMPayload(PushNotificationTest):
             "time": apn.datetime_to_timestamp(message.pub_date),
             "content": 'a' * 200 + '…',
             "content_truncated": True,
+            "server": settings.EXTERNAL_HOST,
+            "realm_id": self.example_user("hamlet").realm.id,
+            "sender_id": self.example_user("hamlet").id,
             "sender_email": self.example_email("hamlet"),
             "sender_full_name": "King Hamlet",
             "sender_avatar_url": apn.absolute_avatar_url(message.sender),
@@ -745,6 +775,9 @@ class TestGetGCMPayload(PushNotificationTest):
             "time": apn.datetime_to_timestamp(message.pub_date),
             "content": message.content,
             "content_truncated": False,
+            "server": settings.EXTERNAL_HOST,
+            "realm_id": self.example_user("hamlet").realm.id,
+            "sender_id": self.example_user("hamlet").id,
             "sender_email": self.example_email("hamlet"),
             "sender_full_name": "King Hamlet",
             "sender_avatar_url": apn.absolute_avatar_url(message.sender),
@@ -766,6 +799,9 @@ class TestGetGCMPayload(PushNotificationTest):
             "time": apn.datetime_to_timestamp(message.pub_date),
             "content": message.content,
             "content_truncated": False,
+            "server": settings.EXTERNAL_HOST,
+            "realm_id": self.example_user("hamlet").realm.id,
+            "sender_id": self.example_user("hamlet").id,
             "sender_email": self.example_email("hamlet"),
             "sender_full_name": "King Hamlet",
             "sender_avatar_url": apn.absolute_avatar_url(message.sender),
@@ -790,6 +826,9 @@ class TestGetGCMPayload(PushNotificationTest):
             "time": apn.datetime_to_timestamp(message.pub_date),
             "content": "***REDACTED***",
             "content_truncated": False,
+            "server": settings.EXTERNAL_HOST,
+            "realm_id": self.example_user("hamlet").realm.id,
+            "sender_id": self.example_user("hamlet").id,
             "sender_email": self.example_email("hamlet"),
             "sender_full_name": "King Hamlet",
             "sender_avatar_url": apn.absolute_avatar_url(message.sender),

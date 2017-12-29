@@ -73,7 +73,8 @@ function collect_single(operators) {
 // This logic is here and not in the 'compose' module because
 // it will get more complicated as we add things to the narrow
 // operator language.
-exports.set_compose_defaults = function (opts) {
+exports.set_compose_defaults = function () {
+    var opts = {};
     var single = collect_single(exports.operators());
 
     // Set the stream, subject, and/or PM recipient if they are
@@ -90,6 +91,7 @@ exports.set_compose_defaults = function (opts) {
     if (single.has('pm-with')) {
         opts.private_message_recipient = single.get('pm-with');
     }
+    return opts;
 };
 
 exports.stream = function () {

@@ -11,7 +11,8 @@ from typing import Any, Dict, List, Mapping
 
 from zerver.lib.actions import do_change_stream_invite_only
 from zerver.models import get_realm, get_stream, \
-    Realm, Stream, UserProfile, get_user, get_bot_services, Service
+    Realm, Stream, UserProfile, get_user, get_bot_services, Service, \
+    is_cross_realm_bot_email
 from zerver.lib.test_classes import ZulipTestCase, UploadSerializeMixin
 from zerver.lib.test_helpers import (
     avatar_disk_path,
@@ -988,3 +989,12 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         bot_info.update(extras)
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, 'Invalid embedded bot name.')
+
+    def test_is_cross_realm_bot_email(self) -> None:
+        self.assertTrue(is_cross_realm_bot_email("notification-bot@zulip.com"))
+        self.assertTrue(is_cross_realm_bot_email("notification-BOT@zulip.com"))
+        self.assertFalse(is_cross_realm_bot_email("random-bot@zulip.com"))
+
+        with self.settings(CROSS_REALM_BOT_EMAILS={"random-bot@zulip.com"}):
+            self.assertTrue(is_cross_realm_bot_email("random-bot@zulip.com"))
+            self.assertFalse(is_cross_realm_bot_email("notification-bot@zulip.com"))

@@ -53,9 +53,10 @@ class Integration:
     DEFAULT_LOGO_STATIC_PATH_PNG = 'static/images/integrations/logos/{name}.png'
     DEFAULT_LOGO_STATIC_PATH_SVG = 'static/images/integrations/logos/{name}.svg'
 
-    def __init__(self, name, client_name, categories, logo=None, secondary_line_text=None,
-                 display_name=None, doc=None, stream_name=None, legacy=False):
-        # type: (str, str, List[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[bool]) -> None
+    def __init__(self, name: str, client_name: str, categories: List[str],
+                 logo: Optional[str]=None, secondary_line_text: Optional[str]=None,
+                 display_name: Optional[str]=None, doc: Optional[str]=None,
+                 stream_name: Optional[str]=None, legacy: Optional[bool]=False) -> None:
         self.name = name
         self.client_name = client_name
         self.secondary_line_text = secondary_line_text
@@ -107,9 +108,9 @@ class BotIntegration(Integration):
     ZULIP_LOGO_STATIC_PATH_PNG = 'static/images/logo/zulip-icon-128x128.png'
     DEFAULT_DOC_PATH = '{name}/doc.md'
 
-    def __init__(self, name, categories, logo=None, secondary_line_text=None,
-                 display_name=None, doc=None):
-        # type: (str, List[str], Optional[str], Optional[str], Optional[str], Optional[str]) -> None
+    def __init__(self, name: str, categories: List[str], logo: Optional[str]=None,
+                 secondary_line_text: Optional[str]=None, display_name: Optional[str]=None,
+                 doc: Optional[str]=None) -> None:
         super().__init__(
             name,
             client_name=name,
@@ -146,9 +147,11 @@ class WebhookIntegration(Integration):
     DEFAULT_CLIENT_NAME = 'Zulip{name}Webhook'
     DEFAULT_DOC_PATH = '{name}/doc.{ext}'
 
-    def __init__(self, name, categories, client_name=None, logo=None, secondary_line_text=None,
-                 function=None, url=None, display_name=None, doc=None, stream_name=None, legacy=None):
-        # type: (str, List[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[bool]) -> None
+    def __init__(self, name: str, categories: List[str], client_name: Optional[str]=None,
+                 logo: Optional[str]=None, secondary_line_text: Optional[str]=None,
+                 function: Optional[str]=None, url: Optional[str]=None,
+                 display_name: Optional[str]=None, doc: Optional[str]=None,
+                 stream_name: Optional[str]=None, legacy: Optional[bool]=None) -> None:
         if client_name is None:
             client_name = self.DEFAULT_CLIENT_NAME.format(name=name.title())
         super().__init__(
@@ -210,9 +213,11 @@ class GithubIntegration(WebhookIntegration):
     We need this class to don't creating url object for git integrations.
     We want to have one generic url with dispatch function for github service and github webhook.
     """
-    def __init__(self, name, categories, client_name=None, logo=None, secondary_line_text=None,
-                 function=None, url=None, display_name=None, doc=None, stream_name=None, legacy=False):
-        # type: (str, List[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[bool]) -> None
+    def __init__(self, name: str, categories: List[str], client_name: Optional[str]=None,
+                 logo: Optional[str]=None, secondary_line_text: Optional[str]=None,
+                 function: Optional[str]=None, url: Optional[str]=None,
+                 display_name: Optional[str]=None, doc: Optional[str]=None,
+                 stream_name: Optional[str]=None, legacy: Optional[bool]=False) -> None:
         url = self.DEFAULT_URL.format(name='github')
 
         super().__init__(
@@ -284,6 +289,7 @@ WEBHOOK_INTEGRATIONS = [
         display_name='Desk.com',
         stream_name='desk'
     ),
+    WebhookIntegration('dropbox', ['productivity'], display_name='Dropbox'),
     WebhookIntegration('freshdesk', ['customer-support']),
     GithubIntegration(
         'github',
@@ -443,28 +449,22 @@ BOT_INTEGRATIONS = [
     BotIntegration('xkcd', ['bots', 'misc'], display_name='xkcd'),
 ]  # type: List[BotIntegration]
 
-# Note: These are not actually displayed anywhere; we're keeping them
-# around so they can be migrated into the newer HUBOT_INTEGRATIONS
-HUBOT_INTEGRATIONS_LEGACY = {
-    'bonusly': HubotIntegration('bonusly', ['hr']),
-    'chartbeat': HubotIntegration('chartbeat', ['marketing']),
-    'darksky': HubotIntegration('darksky', ['misc'], display_name='Dark Sky',
-                                logo_alt='Dark Sky logo'),
-    'hangouts': HubotIntegration('google-hangouts', ['communication'], display_name="Hangouts"),
-    'instagram': HubotIntegration('instagram', ['misc'],
-                                  logo='static/images/integrations/logos/instagram.png'),
-    'mailchimp': HubotIntegration('mailchimp', ['communication', 'marketing'],
-                                  display_name='MailChimp', logo_alt='MailChimp logo'),
-    'translate': HubotIntegration('google-translate', ['misc'],
-                                  display_name="Translate", logo_alt='Google Translate logo'),
-    'youtube': HubotIntegration('youtube', ['misc'], display_name='YouTube',
-                                logo_alt='YouTube logo')
-}
-
-HUBOT_INTEGRATIONS = {
+HUBOT_INTEGRATIONS = [
     HubotIntegration('assembla', ['version-control', 'project-management'],
                      display_name='Assembla', logo_alt='Assembla'),
-}
+    HubotIntegration('bonusly', ['hr']),
+    HubotIntegration('chartbeat', ['marketing'], display_name='Chartbeat'),
+    HubotIntegration('darksky', ['misc'], display_name='Dark Sky',
+                     logo_alt='Dark Sky logo'),
+    HubotIntegration('google-hangouts', ['communication'], display_name='Google Hangouts',
+                     logo_alt='Google Hangouts logo'),
+    HubotIntegration('instagram', ['misc'], display_name='Instagram'),
+    HubotIntegration('mailchimp', ['communication', 'marketing'],
+                     display_name='MailChimp'),
+    HubotIntegration('google-translate', ['misc'],
+                     display_name="Google Translate", logo_alt='Google Translate logo'),
+    HubotIntegration('youtube', ['misc'], display_name='YouTube'),
+]  # type: List[HubotIntegration]
 
 for hubot_integration in HUBOT_INTEGRATIONS:
     INTEGRATIONS[hubot_integration.name] = hubot_integration

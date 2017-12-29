@@ -10,7 +10,7 @@ import re
 import time
 import random
 
-from typing import Any, Dict, List, Optional, SupportsInt, Text, Union, Type
+from typing import Any, Dict, List, Optional, SupportsInt, Text, Tuple, Type, Union
 
 from apns2.client import APNsClient
 from apns2.payload import Payload as APNsPayload
@@ -85,8 +85,10 @@ def modernize_apns_payload(data: Dict[str, Any]) -> Dict[str, Any]:
             },
         }
     else:
-        # The current format.  (`alert` may be a string, or a dict with
-        # `title` and `body`.)
+        # Something already compatible with the current format.
+        # `alert` may be a string, or a dict with `title` and `body`.
+        # In 1.7.0 and 1.7.1, before 0912b5ba8 pre-1.8.0, the only
+        # item in `custom.zulip` is `message_ids`.
         return data
 
 APNS_MAX_RETRIES = 3
@@ -427,57 +429,67 @@ def get_mobile_push_content(rendered_content: Text) -> Text:
         plain_text = process(elem)
         return plain_text
 
-def truncate_content(content: Text) -> Text:
+def truncate_content(content: Text) -> Tuple[Text, bool]:
     # We use unicode character 'HORIZONTAL ELLIPSIS' (U+2026) instead
     # of three dots as this saves two extra characters for textual
     # content. This function will need to be updated to handle unicode
     # combining characters and tags when we start supporting themself.
     if len(content) <= 200:
-        return content
-    return content[:200] + "…"
+        return content, False
+    return content[:200] + "…", True
+
+def get_common_payload(message: Message) -> Dict[str, Any]:
+    data = {}  # type: Dict[str, Any]
+
+    # These will let the app support logging into multiple realms and servers.
+    data['server'] = settings.EXTERNAL_HOST
+    data['realm_id'] = message.sender.realm.id
+
+    # `sender_id` is preferred, but some existing versions use `sender_email`.
+    data['sender_id'] = message.sender.id
+    data['sender_email'] = message.sender.email
+
+    if message.is_stream_message():
+        data['recipient_type'] = "stream"
+        data['stream'] = get_display_recipient(message.recipient)
+        data['topic'] = message.subject
+    else:
+        data['recipient_type'] = "private"
+
+    return data
 
 def get_apns_payload(message: Message) -> Dict[str, Any]:
-    text_content = get_mobile_push_content(message.rendered_content)
-    truncated_content = truncate_content(text_content)
-    return {
+    zulip_data = get_common_payload(message)
+    zulip_data.update({
+        'message_ids': [message.id],
+    })
+
+    content, _ = truncate_content(get_mobile_push_content(message.rendered_content))
+    apns_data = {
         'alert': {
             'title': get_alert_from_message(message),
-            'body': truncated_content,
+            'body': content,
         },
-        # TODO: set badge count in a better way
-        'badge': 0,
-        'custom': {
-            'zulip': {
-                'message_ids': [message.id],
-            }
-        }
+        'badge': 0,  # TODO: set badge count in a better way
+        'custom': {'zulip': zulip_data},
     }
+    return apns_data
 
 def get_gcm_payload(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
-    text_content = get_mobile_push_content(message.rendered_content)
-    truncated_content = truncate_content(text_content)
-
-    android_data = {
+    data = get_common_payload(message)
+    content, truncated = truncate_content(get_mobile_push_content(message.rendered_content))
+    data.update({
         'user': user_profile.email,
         'event': 'message',
         'alert': get_alert_from_message(message),
         'zulip_message_id': message.id,  # message_id is reserved for CCS
         'time': datetime_to_timestamp(message.pub_date),
-        'content': truncated_content,
-        'content_truncated': len(text_content) > 200,
-        'sender_email': message.sender.email,
+        'content': content,
+        'content_truncated': truncated,
         'sender_full_name': message.sender.full_name,
         'sender_avatar_url': absolute_avatar_url(message.sender),
-    }
-
-    if message.is_stream_message():
-        android_data['recipient_type'] = "stream"
-        android_data['stream'] = get_display_recipient(message.recipient)
-        android_data['topic'] = message.subject
-    elif message.recipient.type in (Recipient.HUDDLE, Recipient.PERSONAL):
-        android_data['recipient_type'] = "private"
-
-    return android_data
+    })
+    return data
 
 @statsd_increment("push_notifications")
 def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any]) -> None:

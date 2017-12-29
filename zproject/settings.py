@@ -1281,8 +1281,8 @@ LOGGING = {
     'handlers': {
         'zulip_admins': {
             'level': 'ERROR',
-            'class': 'zerver.logging_handlers.AdminZulipHandler',
-            # For testing the handler delete the next line
+            'class': 'zerver.logging_handlers.AdminNotifyHandler',
+            # For manual testing of this handler, delete the `filters` line.
             'filters': ['ZulipLimiter', 'require_debug_false', 'require_really_deployed'],
             'formatter': 'default'
         },
@@ -1389,6 +1389,15 @@ LOGGING = {
         },
 
         # our own loggers, alphabetized
+        'zerver.lib.digest': {
+            'level': 'DEBUG',
+        },
+        'zerver.management.commands.deliver_email': {
+            'level': 'DEBUG',
+        },
+        'zerver.management.commands.enqueue_digest_emails': {
+            'level': 'DEBUG',
+        },
         'zulip.management': {
             'handlers': ['file', 'errors_file'],
             'propagate': False,
@@ -1401,6 +1410,7 @@ LOGGING = {
             'propagate': False,
         },
         'zulip.zerver.webhooks': {
+            'level': 'DEBUG',
             'handlers': ['file', 'errors_file'],
             'propagate': False,
         },

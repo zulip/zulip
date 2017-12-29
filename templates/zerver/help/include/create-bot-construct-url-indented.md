@@ -5,13 +5,12 @@
 
     ![](/static/images/help/bot_types.png)
 
-    The API keys for "Incoming webhook" bots are limited to only
-    sending messages via webhooks. Thus, this bot type lessens
-    the security risks associated with exposing the bot's API
-    key to third-party services.
+    The API key for an incoming webhook bot cannot be used to read messages out
+    of Zulip. Thus, using an incoming webhook bot lowers the security risk of
+    exposing the bot's API key to a third-party service.
 
     Construct the URL for the {{ integration_display_name }}
-    bot using the bot API key and stream name:
+    bot using the bot's API key and the desired stream name:
 
     {!webhook-url.md!}
 

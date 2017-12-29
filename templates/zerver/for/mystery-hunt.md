@@ -6,7 +6,7 @@ chat tool for mystery hunt teams.
 In Slack, IRC, and nearly every other team chat application, users subscribe
 to chat rooms ("channels"), and get all the messages sent to each channel in
 a chronological dump. The model is largely designed to support real-time
-conversation, where it's easy to participate if you're on-line, but not easy
+conversation, where it's easy to participate if you're online, but not easy
 to come back a few hours later and reply to a conversation that started
 while you were gone.
 
@@ -36,8 +36,8 @@ self-hosted installation.
 
 **Can I integrate Zulip with my current puzzlehunting software?**
 
-Yup. Zulip has a well thought out API, and it's easy to write bots that send
-things into or out of Zulip.
+Yup. Zulip has a well thought out [API](https://zulipchat.com/api/), and
+it's easy to write bots that send things into or out of Zulip.
 
 **Where can I test it out?**
 

@@ -55,7 +55,6 @@ import sys
 from io import StringIO
 from django.conf import settings
 
-from zerver.lib.str_utils import force_str
 from typing import Any, Callable, Dict, Mapping, Union, Text
 
 class TestEmailMirrorLibrary(ZulipTestCase):
@@ -471,7 +470,7 @@ class TestScriptMTA(ZulipTestCase):
         os.write(write_pipe, mail.encode())
         os.close(write_pipe)
         subprocess.check_call(
-            [script, '-r', force_str(stream_to_address), '-s', settings.SHARED_SECRET, '-t'],
+            [script, '-r', stream_to_address, '-s', settings.SHARED_SECRET, '-t'],
             stdin=read_pipe)
 
     def test_error_no_recipient(self) -> None:

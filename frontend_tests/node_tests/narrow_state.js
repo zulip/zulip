@@ -3,6 +3,7 @@ zrequire('Filter', 'js/filter');
 zrequire('stream_data');
 zrequire('narrow_state');
 
+set_global('blueslip', {});
 set_global('page_params', {
 });
 
@@ -22,6 +23,15 @@ function set_filter(operators) {
     stream_data.add_sub('Test', test_stream);
 
     assert(!narrow_state.is_for_stream_id(test_stream.stream_id));
+
+    var bad_stream_id = 1000000;
+    var called = false;
+    global.blueslip.error = function (msg) {
+        assert.equal(msg, 'Bad stream id ' + bad_stream_id);
+        called = true;
+    };
+    assert(!narrow_state.is_for_stream_id(bad_stream_id));
+    assert(called);
 
     set_filter([
         ['stream', 'Test'],
@@ -105,6 +115,10 @@ function set_filter(operators) {
 
     assert.equal(result[2].operator, 'search');
     assert.equal(result[2].operand, 'yo');
+
+    narrow_state.reset_current_filter();
+    result = narrow_state.operators();
+    assert.equal(result.length, 0);
 }());
 
 (function test_muting_enabled() {
@@ -128,21 +142,22 @@ function set_filter(operators) {
 (function test_set_compose_defaults() {
     set_filter([['stream', 'Foo'], ['topic', 'Bar']]);
 
-    var opts = {};
-    narrow_state.set_compose_defaults(opts);
-    assert.equal(opts.stream, 'Foo');
-    assert.equal(opts.subject, 'Bar');
+    var stream_and_subject = narrow_state.set_compose_defaults();
+    assert.equal(stream_and_subject.stream, 'Foo');
+    assert.equal(stream_and_subject.subject, 'Bar');
 
     set_filter([['pm-with', 'foo@bar.com']]);
-    narrow_state.set_compose_defaults(opts);
-    assert.equal(opts.private_message_recipient, 'foo@bar.com');
+    var pm_test = narrow_state.set_compose_defaults();
+    assert.equal(pm_test.private_message_recipient, 'foo@bar.com');
+
+    set_filter([['topic', 'duplicate'], ['topic', 'duplicate']]);
+    assert.deepEqual(narrow_state.set_compose_defaults(), {});
 
     stream_data.add_sub('ROME', {name: 'ROME', stream_id: 99});
     set_filter([['stream', 'rome']]);
 
-    opts = {};
-    narrow_state.set_compose_defaults(opts);
-    assert.equal(opts.stream, 'ROME');
+    var stream_test = narrow_state.set_compose_defaults();
+    assert.equal(stream_test.stream, 'ROME');
 }());
 
 (function test_update_email() {
@@ -179,6 +194,9 @@ function set_filter(operators) {
         ['sender', 'test@foo.com'],
         ['pm-with', 'test@foo.com'],
     ]);
+    assert.equal(narrow_state.topic(), undefined);
+
+    narrow_state.set_current_filter(undefined);
     assert.equal(narrow_state.topic(), undefined);
 }());
 

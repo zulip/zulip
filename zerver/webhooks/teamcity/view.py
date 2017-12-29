@@ -37,9 +37,9 @@ def get_teamcity_property_value(property_list: List[Dict[str, str]], name: str) 
 
 @api_key_only_webhook_view('Teamcity')
 @has_request_variables
-def api_teamcity_webhook(request, user_profile, payload=REQ(argument_type='body'),
-                         stream=REQ(default='teamcity')):
-    # type: (HttpRequest, UserProfile, Dict[str, Any], str) -> HttpResponse
+def api_teamcity_webhook(request: HttpRequest, user_profile: UserProfile,
+                         payload: Dict[str, Any]=REQ(argument_type='body'),
+                         stream: str=REQ(default='teamcity')) -> HttpResponse:
     message = payload['build']
 
     build_name = message['buildFullName']

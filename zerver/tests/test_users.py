@@ -374,7 +374,8 @@ class ActivateTest(ZulipTestCase):
 
     def test_clear_scheduled_jobs(self) -> None:
         user = self.example_user('hamlet')
-        send_future_email('zerver/emails/followup_day1', to_user_id=user.id, delay=datetime.timedelta(hours=1))
+        send_future_email('zerver/emails/followup_day1', user.realm,
+                          to_user_id=user.id, delay=datetime.timedelta(hours=1))
         self.assertEqual(ScheduledEmail.objects.count(), 1)
         do_deactivate_user(user)
         self.assertEqual(ScheduledEmail.objects.count(), 0)
@@ -525,7 +526,7 @@ class GetProfileTest(ZulipTestCase):
         user_profile = self.example_user(user_id)
         self.send_stream_message(user_profile.email, "Verona", "hello")
 
-        result = self.client_get("/api/v1/users/me", **self.api_auth(user_profile.email))
+        result = self.api_get(user_profile.email, "/api/v1/users/me")
 
         max_id = most_recent_message(user_profile).id
 
@@ -607,7 +608,7 @@ class GetProfileTest(ZulipTestCase):
 
     def test_get_all_profiles_avatar_urls(self) -> None:
         user_profile = self.example_user('hamlet')
-        result = self.client_get("/api/v1/users", **self.api_auth(self.example_email("hamlet")))
+        result = self.api_get(self.example_email("hamlet"), "/api/v1/users")
         self.assert_json_success(result)
 
         for user in result.json()['members']:

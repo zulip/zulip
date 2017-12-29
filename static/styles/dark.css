@@ -1,26 +1,35 @@
 body.dark-mode {
-    background-color: #212d3b;
-    color: #dddeee;
+    background-color: hsl(212, 28%, 18%);
+    color: hsl(236, 33%, 90%);
 
     -webkit-font-smoothing: antialiased;
 }
 
 body.dark-mode .app-main,
-body.dark-mode .header-main {
-    background-color: #212d3b;
-}
-
+body.dark-mode .header-main,
 body.dark-mode #tab_bar_underpadding,
 body.dark-mode .floating_recipient .message-header-wrapper,
 body.dark-mode .column-middle,
-body.dark-mode #compose {
-    background-color: #212d3b;
+body.dark-mode #compose,
+body.dark-mode .column-left .left-sidebar,
+body.dark-mode .column-right .right-sidebar,
+body.dark-mode #subscription_overlay .right,
+body.dark-mode #settings_page .right {
+    background-color: hsl(212, 28%, 18%);
+}
+
+body.dark-mode .column-left .left-sidebar {
+    border-right-color: hsla(0, 0%, 0%, 0.2);
+}
+
+body.dark-mode .column-right .right-sidebar {
+    border-left-color: hsla(0, 0%, 0%, 0.2);
 }
 
 body.dark-mode .dark .message_label_clickable.stream_label,
 body.dark-mode .dark .stream_label,
 body.dark-mode .stream_label {
-    color: #212d3b;
+    color: hsl(212, 28%, 18%);
 }
 
 body.dark-mode .new-style label.checkbox input[type=checkbox] ~ span {
@@ -28,7 +37,7 @@ body.dark-mode .new-style label.checkbox input[type=checkbox] ~ span {
 }
 
 body.dark-mode .modal-bg {
-    background: #212d3b;
+    background: hsl(212, 28%, 18%);
 }
 
 .streams_popover .sp-container {
@@ -52,8 +61,8 @@ body.dark-mode .message_reactions:hover .message_reaction + .reaction_button {
 /* do not turn the .message_header .stream_label text dark on hover because they're
 on a dark background, and don't change the dark labels dark either. */
 body.dark-mode .message_header:not(.dark_background) a.stream_label:not(.dark_background):hover,
-body.dark-mode #tab_list li.active.stream:not(.dark_background) {
-    color: #212d3b !important;
+body.dark-mode #tab_list li.stream:not(.dark_background) {
+    color: hsl(212, 28%, 18%) !important;
 }
 
 /* these are converting grey things to "new grey" */
@@ -146,7 +155,7 @@ body.dark-mode .popover {
 body.dark-mode .dropdown .dropdown-menu li.divider,
 body.dark-mode .popover hr,
 body.dark-mode hr {
-    color: #212d3b;
+    color: hsl(212, 28%, 18%);
     opacity: 0.2;
 }
 
@@ -199,13 +208,14 @@ body.dark-mode .nav > li > a:hover,
 body.dark-mode .subscriptions-header,
 body.dark-mode .grey-box,
 body.dark-mode .stream-email,
-body.dark-mode #settings_page .content-wrapper .settings-header,
+body.dark-mode #settings_page .settings-header,
 body.dark-mode #settings_page .sidebar li.active,
 body.dark-mode #settings_page .sidebar .tab-container,
 body.dark-mode .table-striped tbody tr:nth-child(odd) td,
 body.dark-mode .table-striped tbody tr:nth-child(odd) th,
 body.dark-mode .modal-footer,
-body.dark-mode #invite-user .modal-header {
+body.dark-mode #invite-user .modal-header,
+body.dark-mode #bankruptcy .modal-header {
     border-color: hsla(0, 0%, 0%, 0.2);
     background-color: hsla(0, 0%, 0%, 0.2);
 }
@@ -244,10 +254,6 @@ body.dark-mode .draft-row .message_header_private_message .message_label_clickab
     color: inherit;
 }
 
-body.dark-mode .dark_background a:hover {
-    background: hsl(0, 0%, 27%);
-}
-
 body.dark-mode .nav-list > li > a,
 body.dark-mode .nav-list .nav-header {
     text-shadow: none;
@@ -273,7 +279,12 @@ body.dark-mode .user-mention-me {
     box-shadow: 0px 0px 0px 1px hsla(330, 40%, 20%, 1);
 }
 
-body.dark-mode .alert-box .alert {
+body.dark-mode .alert {
+    text-shadow: none;
+}
+
+body.dark-mode .alert-box .alert,
+body.dark-mode .alert.alert-error {
     background: hsl(318, 12%, 21%);
     color: inherit;
 
@@ -285,13 +296,13 @@ body.dark-mode .alert-box .alert.alert-error::before {
 }
 
 body.dark-mode .top-messages-logo svg path {
-    fill: #222d3b;
-    stroke: #222d3b;
+    fill: hsl(214, 27%, 18%);
+    stroke: hsl(214, 27%, 18%);
 }
 
 body.dark-mode .top-messages-logo svg circle {
-    fill: #fff;
-    stroke: #fff;
+    fill: hsl(0, 0%, 100%);
+    stroke: hsl(0, 0%, 100%);
 }
 
 body.dark-mode #unmute_muted_topic_notification,
@@ -327,4 +338,8 @@ body.dark-mode .date_row span:after {
 body.dark-mode .star:not(.empty-star),
 body.dark-mode .empty-star:hover {
     color: hsla(126, 66%, 72%, 0.75);
+}
+
+body.dark-mode #out-of-view-notification {
+    border: 1px solid 1px solid hsl(144, 45%, 62%);
 }

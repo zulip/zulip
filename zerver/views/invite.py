@@ -17,11 +17,10 @@ from zerver.models import PreregistrationUser, Stream, UserProfile
 import re
 
 @has_request_variables
-def invite_users_backend(request, user_profile,
-                         invitee_emails_raw=REQ("invitee_emails"),
-                         invite_as_admin=REQ(validator=check_bool, default=False),
-                         body=REQ("custom_body", default=None)):
-    # type: (HttpRequest, UserProfile, str, Optional[bool], Optional[str]) -> HttpResponse
+def invite_users_backend(request: HttpRequest, user_profile: UserProfile,
+                         invitee_emails_raw: str=REQ("invitee_emails"),
+                         invite_as_admin: Optional[bool]=REQ(validator=check_bool, default=False),
+                         ) -> HttpResponse:
 
     if user_profile.realm.invite_by_admins_only and not user_profile.is_realm_admin:
         return json_error(_("Must be a realm administrator"))
@@ -29,8 +28,6 @@ def invite_users_backend(request, user_profile,
         return json_error(_("Must be a realm administrator"))
     if not invitee_emails_raw:
         return json_error(_("You must specify at least one email address."))
-    if body == '':
-        body = None
 
     invitee_emails = get_invitee_emails_set(invitee_emails_raw)
 
@@ -52,7 +49,7 @@ def invite_users_backend(request, user_profile,
             return json_error(_("Stream does not exist: %s. No invites were sent.") % (stream_name,))
         streams.append(stream)
 
-    do_invite_users(user_profile, invitee_emails, streams, invite_as_admin, body)
+    do_invite_users(user_profile, invitee_emails, streams, invite_as_admin)
     return json_success()
 
 def get_invitee_emails_set(invitee_emails_raw: str) -> Set[str]:
@@ -74,12 +71,28 @@ def get_user_invites(request: HttpRequest, user_profile: UserProfile) -> HttpRes
 @has_request_variables
 def revoke_user_invite(request: HttpRequest, user_profile: UserProfile,
                        prereg_id: int) -> HttpResponse:
-    do_revoke_user_invite(prereg_id, user_profile.realm_id)
+    try:
+        prereg_user = PreregistrationUser.objects.get(id=prereg_id)
+    except PreregistrationUser.DoesNotExist:
+        raise JsonableError(_("No such invitation"))
+
+    if prereg_user.referred_by.realm != user_profile.realm:
+        raise JsonableError(_("No such invitation"))
+
+    do_revoke_user_invite(prereg_user)
     return json_success()
 
 @require_realm_admin
 @has_request_variables
 def resend_user_invite_email(request: HttpRequest, user_profile: UserProfile,
                              prereg_id: int) -> HttpResponse:
-    timestamp = do_resend_user_invite_email(prereg_id, user_profile.realm_id)
+    try:
+        prereg_user = PreregistrationUser.objects.get(id=prereg_id)
+    except PreregistrationUser.DoesNotExist:
+        raise JsonableError(_("No such invitation"))
+
+    if (prereg_user.referred_by.realm != user_profile.realm):
+        raise JsonableError(_("No such invitation"))
+
+    timestamp = do_resend_user_invite_email(prereg_user)
     return json_success({'timestamp': timestamp})

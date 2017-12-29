@@ -3,6 +3,10 @@
   </div>
   <div id="compose-container">
     <div id="compose_controls" class="compose-content new-style">
+          <div id="nonexistent_stream_reply_error" class="alert-error">
+            <span class="compose-send-status-close">&times;</span>
+            <span id="compose-reply-error-msg"></span>
+          </div>
           <div id="compose_buttons">
             <span class="new_message_button">
               <a class="drafts-link no-style" href="#drafts" title="{{ _('Drafts') }} (d)">
@@ -10,6 +14,7 @@
                   <span>{{ _('Drafts') }}</span>
                 </button>
               </a>
+              <span class="alert-draft pull-left">{{ _('Saved as draft') }}</span>
             </span>
             <span class="new_message_button">
               <button type="button" class="button small rounded compose_stream_button"
@@ -27,6 +32,13 @@
               </button>
             </span>
             {% endif %}
+            <span class="new_message_button">
+              <button type="button" class="button small rounded compose_reply_button"
+                      id="left_bar_compose_reply_button_big"
+                      title="{{ _('Reply') }} (r)">
+                <span class="compose_reply_button_label">{{ _('Reply') }}</span>
+              </button>
+            </span>
           </div>
     </div>
     <div class="message_comp compose-content">
@@ -36,6 +48,7 @@
       </div>
       <div  id="compose_invite_users" class="alert home-error-bar"></div>
       <div  id="compose-all-everyone" class="alert home-error-bar"></div>
+      <div  id="compose-announce" class="alert home-error-bar"></div>
       <div  id="compose_private_stream_alert" class="alert home-error-bar"></div>
       <div  id="out-of-view-notification" class="notification-alert"></div>
      <div class="composition-area">
@@ -105,8 +118,9 @@
                   <a class="drafts-link" href="#drafts" title="{{ _('Drafts') }} (d)">{{ _('Drafts') }}</a>
                   <span id="sending-indicator">{{ _('Sending...') }}</span>
                   <div id="send_controls" class="new-style">
-                    <input type="checkbox" id="enter_sends" name="enter_sends" value="enter_sends" />
-                    <label id="enter-sends-label" class="compose_checkbox_label" for="enter_sends">{{ _('Press Enter to send') }}&nbsp;</label>
+                    <label id="enter-sends-label" class="compose_checkbox_label">
+                        <input type="checkbox" id="enter_sends" />{{ _('Press Enter to send') }}
+                    </label>
                     <button type="submit" id="compose-send-button" class="button small send_message" tabindex="150" title="{{ _('Send') }} (Ctrl + Enter)">{{ _('Send') }}</button>
                   </div>
                 </div>

@@ -11,9 +11,10 @@ from zerver.models import UserProfile
 
 @api_key_only_webhook_view("Heroku")
 @has_request_variables
-def api_heroku_webhook(request, user_profile, stream=REQ(default="heroku"),
-                       head=REQ(), app=REQ(), user=REQ(), url=REQ(), git_log=REQ()):
-    # type: (HttpRequest, UserProfile, Text, Text, Text, Text, Text, Text) -> HttpResponse
+def api_heroku_webhook(request: HttpRequest, user_profile: UserProfile,
+                       stream: Text=REQ(default="heroku"), head: Text=REQ(),
+                       app: Text=REQ(), user: Text=REQ(),
+                       url: Text=REQ(), git_log: Text=REQ()) -> HttpResponse:
     template = "{} deployed version {} of [{}]({})\n> {}"
     content = template.format(user, head, app, url, git_log)
 

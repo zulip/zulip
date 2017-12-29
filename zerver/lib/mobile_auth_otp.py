@@ -9,7 +9,6 @@
 # have it here as part of testing the overall library.
 
 import binascii
-from zerver.lib.str_utils import force_str
 from zerver.models import UserProfile
 
 def xor_hex_strings(bytes_a: str, bytes_b: str) -> str:
@@ -25,11 +24,11 @@ def ascii_to_hex(input_string: str) -> str:
 
 def hex_to_ascii(input_string: str) -> str:
     """Given a hex array, decode it back to a string"""
-    return force_str(binascii.unhexlify(input_string))
+    return binascii.unhexlify(input_string).decode('utf8')
 
 def otp_encrypt_api_key(user_profile: UserProfile, otp: str) -> str:
     assert len(otp) == UserProfile.API_KEY_LENGTH * 2
-    hex_encoded_api_key = ascii_to_hex(force_str(user_profile.api_key))
+    hex_encoded_api_key = ascii_to_hex(user_profile.api_key)
     assert len(hex_encoded_api_key) == UserProfile.API_KEY_LENGTH * 2
     return xor_hex_strings(hex_encoded_api_key, otp)
 

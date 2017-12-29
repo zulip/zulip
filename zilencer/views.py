@@ -27,9 +27,10 @@ def validate_bouncer_token_request(entity: Union[UserProfile, RemoteZulipServer]
     validate_token(token, kind)
 
 @has_request_variables
-def remote_server_register_push(request, entity, user_id=REQ(),
-                                token=REQ(), token_kind=REQ(validator=check_int), ios_app_id=None):
-    # type: (HttpRequest, Union[UserProfile, RemoteZulipServer], int, bytes, int, Optional[Text]) -> HttpResponse
+def remote_server_register_push(request: HttpRequest, entity: Union[UserProfile, RemoteZulipServer],
+                                user_id: int=REQ(), token: bytes=REQ(),
+                                token_kind: int=REQ(validator=check_int),
+                                ios_app_id: Optional[Text]=None) -> HttpResponse:
     validate_bouncer_token_request(entity, token, token_kind)
     server = cast(RemoteZulipServer, entity)
 
@@ -52,9 +53,10 @@ def remote_server_register_push(request, entity, user_id=REQ(),
     return json_success()
 
 @has_request_variables
-def remote_server_unregister_push(request, entity, token=REQ(),
-                                  token_kind=REQ(validator=check_int), ios_app_id=None):
-    # type: (HttpRequest, Union[UserProfile, RemoteZulipServer], bytes, int, Optional[Text]) -> HttpResponse
+def remote_server_unregister_push(request: HttpRequest, entity: Union[UserProfile, RemoteZulipServer],
+                                  token: bytes=REQ(),
+                                  token_kind: int=REQ(validator=check_int),
+                                  ios_app_id: Optional[Text]=None) -> HttpResponse:
     validate_bouncer_token_request(entity, token, token_kind)
     server = cast(RemoteZulipServer, entity)
     deleted = RemotePushDeviceToken.objects.filter(token=token,
@@ -66,11 +68,8 @@ def remote_server_unregister_push(request, entity, token=REQ(),
     return json_success()
 
 @has_request_variables
-def remote_server_notify_push(request,  # type: HttpRequest
-                              entity,  # type: Union[UserProfile, RemoteZulipServer]
-                              payload=REQ(argument_type='body')  # type: Dict[str, Any]
-                              ):
-    # type: (...) -> HttpResponse
+def remote_server_notify_push(request: HttpRequest, entity: Union[UserProfile, RemoteZulipServer],
+                              payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
     validate_entity(entity)
     server = cast(RemoteZulipServer, entity)
 

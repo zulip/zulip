@@ -248,6 +248,7 @@ EVENT_FUNCTION_MAPPER = {
     'Note Hook MergeRequest': get_commented_merge_request_event_body,
     'Note Hook Issue': get_commented_issue_event_body,
     'Note Hook Snippet': get_commented_snippet_event_body,
+    'Merge Request Hook approved': partial(get_merge_request_event_body, action='approved'),
     'Merge Request Hook open': partial(get_merge_request_open_or_updated_body, action='created'),
     'Merge Request Hook update': get_merge_request_updated_event_body,
     'Merge Request Hook merge': partial(get_merge_request_event_body, action='merged'),
@@ -261,11 +262,10 @@ EVENT_FUNCTION_MAPPER = {
 
 @api_key_only_webhook_view("Gitlab")
 @has_request_variables
-def api_gitlab_webhook(request, user_profile,
-                       stream=REQ(default='gitlab'),
-                       payload=REQ(argument_type='body'),
-                       branches=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, Text, Dict[str, Any], Optional[Text]) -> HttpResponse
+def api_gitlab_webhook(request: HttpRequest, user_profile: UserProfile,
+                       stream: Text=REQ(default='gitlab'),
+                       payload: Dict[str, Any]=REQ(argument_type='body'),
+                       branches: Optional[Text]=REQ(default=None)) -> HttpResponse:
     event = get_event(request, payload, branches)
     if event is not None:
         body = get_body_based_on_event(event)(payload)

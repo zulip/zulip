@@ -44,9 +44,10 @@ class UnknownTriggerType(Exception):
 
 @api_key_only_webhook_view('Bitbucket2')
 @has_request_variables
-def api_bitbucket2_webhook(request, user_profile, payload=REQ(argument_type='body'),
-                           stream=REQ(default='bitbucket'), branches=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, Dict[str, Any], str, Optional[Text]) -> HttpResponse
+def api_bitbucket2_webhook(request: HttpRequest, user_profile: UserProfile,
+                           payload: Dict[str, Any]=REQ(argument_type='body'),
+                           stream: str=REQ(default='bitbucket'),
+                           branches: Optional[Text]=REQ(default=None)) -> HttpResponse:
     type = get_type(request, payload)
     if type != 'push':
         subject = get_subject_based_on_type(payload, type)

@@ -19,15 +19,15 @@ def clean_alert_words(alert_words: List[Text]) -> List[Text]:
     return [w for w in alert_words if w != ""]
 
 @has_request_variables
-def add_alert_words(request, user_profile,
-                    alert_words=REQ(validator=check_list(check_string), default=[])):
-    # type: (HttpRequest, UserProfile, List[Text]) -> HttpResponse
+def add_alert_words(request: HttpRequest, user_profile: UserProfile,
+                    alert_words: List[Text]=REQ(validator=check_list(check_string), default=[])
+                    ) -> HttpResponse:
     do_add_alert_words(user_profile, clean_alert_words(alert_words))
     return json_success()
 
 @has_request_variables
-def remove_alert_words(request, user_profile,
-                       alert_words=REQ(validator=check_list(check_string), default=[])):
-    # type: (HttpRequest, UserProfile, List[Text]) -> HttpResponse
+def remove_alert_words(request: HttpRequest, user_profile: UserProfile,
+                       alert_words: List[Text]=REQ(validator=check_list(check_string), default=[])
+                       ) -> HttpResponse:
     do_remove_alert_words(user_profile, alert_words)
     return json_success()

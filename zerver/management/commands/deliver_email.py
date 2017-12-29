@@ -9,7 +9,7 @@ condition.  (Alternatively, you can set `EMAIL_DELIVERER_DISABLED=True`
 on all but one machine to make the command have no effect.)
 """
 
-
+import logging
 import time
 from typing import Any
 
@@ -19,12 +19,13 @@ from django.utils.timezone import now as timezone_now
 from ujson import loads
 
 from zerver.lib.context_managers import lockfile
-from zerver.lib.logging_util import create_logger
+from zerver.lib.logging_util import log_to_file
 from zerver.lib.send_email import EmailNotDeliveredException, send_email
 from zerver.models import ScheduledEmail
 
 ## Setup ##
-logger = create_logger(__name__, settings.EMAIL_DELIVERER_LOG_PATH, 'DEBUG')
+logger = logging.getLogger(__name__)
+log_to_file(logger, settings.EMAIL_DELIVERER_LOG_PATH)
 
 class Command(BaseCommand):
     help = """Deliver emails queued by various parts of Zulip

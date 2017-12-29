@@ -160,6 +160,8 @@ msgstr "註冊 Zulip"
 msgid "You need an invitation to join this organization."
 msgstr "您需要邀請才能加入這個組織"
 
+#: templates/zerver/footer.html:41 templates/zerver/portico-header.html:34
+#: templates/zerver/register.html:163
 #: templates/zerver/accounts_home.html:65
 msgid "Sign up"
 msgstr "註冊"
@@ -339,7 +341,7 @@ msgid "Go back to login"
 msgstr "回到登入"
 
 #: templates/zerver/confirm_continue_registration.html:52
-msgid "Register instead"
+msgid "Sign up instead"
 msgstr "註冊新帳戶"
 
 #: templates/zerver/create_realm.html:18
@@ -459,11 +461,6 @@ msgstr "新的組織"
 msgid "Login"
 msgstr "登入"
 
-#: templates/zerver/footer.html:41 templates/zerver/portico-header.html:34
-#: templates/zerver/register.html:163
-msgid "Register"
-msgstr "註冊"
-
 #: templates/zerver/footer.html:43 templates/zerver/terms.html:21
 msgid "Terms of Service"
 msgstr "服務條款"
@@ -501,7 +498,7 @@ msgid "Log in now!"
 msgstr "現在登入！"
 
 #: templates/zerver/hello.html:48 templates/zerver/hello.html:614
-msgid "Register now!"
+msgid "Sign up now!"
 msgstr "立即註冊！"
 
 #: templates/zerver/hello.html:517

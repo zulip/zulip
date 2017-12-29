@@ -105,9 +105,9 @@ def format_freshdesk_ticket_creation_message(ticket: TicketDict) -> str:
 
 @authenticated_rest_api_view(is_webhook=True)
 @has_request_variables
-def api_freshdesk_webhook(request, user_profile, payload=REQ(argument_type='body'),
-                          stream=REQ(default='freshdesk')):
-    # type: (HttpRequest, UserProfile, Dict[str, Any], Text) -> HttpResponse
+def api_freshdesk_webhook(request: HttpRequest, user_profile: UserProfile,
+                          payload: Dict[str, Any]=REQ(argument_type='body'),
+                          stream: Text=REQ(default='freshdesk')) -> HttpResponse:
     ticket_data = payload["freshdesk_webhook"]
 
     required_keys = [

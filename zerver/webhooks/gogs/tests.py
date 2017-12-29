@@ -92,8 +92,7 @@ from `feature` to `master`"""
 
     @patch('zerver.webhooks.gogs.view.check_send_stream_message')
     def test_push_commits_more_than_limits_filtered_by_branches_ignore(
-            self, check_send_stream_message_mock):
-        # type: (MagicMock) -> None
+            self, check_send_stream_message_mock: MagicMock) -> None:
         self.url = self.build_webhook_url(branches='changes,development')
         payload = self.get_body('push_commits_more_than_limits')
         result = self.client_post(self.url, payload, HTTP_X_GOGS_EVENT='push',
@@ -103,8 +102,7 @@ from `feature` to `master`"""
 
     @patch('zerver.webhooks.gogs.view.check_send_stream_message')
     def test_push_multiple_committers_filtered_by_branches_ignore(
-            self, check_send_stream_message_mock):
-        # type: (MagicMock) -> None
+            self, check_send_stream_message_mock: MagicMock) -> None:
         self.url = self.build_webhook_url(branches='changes,development')
         payload = self.get_body('push_commits_multiple_committers')
         result = self.client_post(self.url, payload, HTTP_X_GOGS_EVENT='push',

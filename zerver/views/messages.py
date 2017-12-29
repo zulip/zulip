@@ -555,15 +555,15 @@ def exclude_muting_conditions(user_profile: UserProfile,
     return conditions
 
 @has_request_variables
-def get_messages_backend(request, user_profile,
-                         anchor = REQ(converter=int),
-                         num_before = REQ(converter=to_non_negative_int),
-                         num_after = REQ(converter=to_non_negative_int),
-                         narrow = REQ('narrow', converter=narrow_parameter, default=None),
-                         use_first_unread_anchor = REQ(validator=check_bool, default=False),
-                         client_gravatar = REQ(validator=check_bool, default=False),
-                         apply_markdown = REQ(validator=check_bool, default=True)):
-    # type: (HttpRequest, UserProfile, int, int, int, Optional[List[Dict[str, Any]]], bool, bool, bool) -> HttpResponse
+def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
+                         anchor: int=REQ(converter=int),
+                         num_before: int=REQ(converter=to_non_negative_int),
+                         num_after: int=REQ(converter=to_non_negative_int),
+                         narrow: Optional[List[Dict[str, Any]]]=REQ('narrow', converter=narrow_parameter,
+                                                                    default=None),
+                         use_first_unread_anchor: bool=REQ(validator=check_bool, default=False),
+                         client_gravatar: bool=REQ(validator=check_bool, default=False),
+                         apply_markdown: bool=REQ(validator=check_bool, default=True)) -> HttpResponse:
     include_history = ok_to_include_history(narrow, user_profile.realm)
 
     if include_history and not use_first_unread_anchor:
@@ -755,10 +755,9 @@ def get_messages_backend(request, user_profile,
     return json_success(ret)
 
 @has_request_variables
-def update_message_flags(request, user_profile,
-                         messages=REQ(validator=check_list(check_int)),
-                         operation=REQ('op'), flag=REQ()):
-    # type: (HttpRequest, UserProfile, List[int], Text, Text) -> HttpResponse
+def update_message_flags(request: HttpRequest, user_profile: UserProfile,
+                         messages: List[int]=REQ(validator=check_list(check_int)),
+                         operation: Text=REQ('op'), flag: Text=REQ()) -> HttpResponse:
 
     count = do_update_message_flags(user_profile, operation, flag, messages)
 
@@ -781,10 +780,9 @@ def mark_all_as_read(request: HttpRequest, user_profile: UserProfile) -> HttpRes
                          'msg': ''})
 
 @has_request_variables
-def mark_stream_as_read(request,
-                        user_profile,
-                        stream_id=REQ(validator=check_int)):
-    # type: (HttpRequest, UserProfile, int) -> HttpResponse
+def mark_stream_as_read(request: HttpRequest,
+                        user_profile: UserProfile,
+                        stream_id: int=REQ(validator=check_int)) -> HttpResponse:
     stream, recipient, sub = access_stream_by_id(user_profile, stream_id)
     count = do_mark_stream_messages_as_read(user_profile, stream)
 
@@ -795,11 +793,10 @@ def mark_stream_as_read(request,
                          'msg': ''})
 
 @has_request_variables
-def mark_topic_as_read(request,
-                       user_profile,
-                       stream_id=REQ(validator=check_int),
-                       topic_name=REQ()):
-    # type: (HttpRequest, UserProfile, int, Text) -> HttpResponse
+def mark_topic_as_read(request: HttpRequest,
+                       user_profile: UserProfile,
+                       stream_id: int=REQ(validator=check_int),
+                       topic_name: Text=REQ()) -> HttpResponse:
     stream, recipient, sub = access_stream_by_id(user_profile, stream_id)
 
     if topic_name:
@@ -906,16 +903,15 @@ def same_realm_jabber_user(user_profile: UserProfile, email: Text) -> bool:
 # send_message_backend should either check the API key or check that
 # the user is logged in.
 @has_request_variables
-def send_message_backend(request, user_profile,
-                         message_type_name = REQ('type'),
-                         message_to = REQ('to', converter=extract_recipients, default=[]),
-                         forged = REQ(default=False),
-                         topic_name = REQ('subject', lambda x: x.strip(), None),
-                         message_content = REQ('content'),
-                         realm_str = REQ('realm_str', default=None),
-                         local_id = REQ(default=None),
-                         queue_id = REQ(default=None)):
-    # type: (HttpRequest, UserProfile, Text, List[Text], bool, Optional[Text], Text, Optional[Text], Optional[Text], Optional[Text]) -> HttpResponse
+def send_message_backend(request: HttpRequest, user_profile: UserProfile,
+                         message_type_name: Text=REQ('type'),
+                         message_to: List[Text]=REQ('to', converter=extract_recipients, default=[]),
+                         forged: bool=REQ(default=False),
+                         topic_name: Optional[Text]=REQ('subject', lambda x: x.strip(), None),
+                         message_content: Text=REQ('content'),
+                         realm_str: Optional[Text]=REQ('realm_str', default=None),
+                         local_id: Optional[Text]=REQ(default=None),
+                         queue_id: Optional[Text]=REQ(default=None)) -> HttpResponse:
     client = request.client
     is_super_user = request.user.is_api_super_user
     if forged and not is_super_user:
@@ -940,9 +936,7 @@ def send_message_backend(request, user_profile,
         #
         # For stream messages, the message must be (1) being forwarded
         # by an API superuser for your realm and (2) being sent to a
-        # mirrored stream (any stream for the Zephyr and Jabber
-        # mirrors, but only streams with names starting with a "#" for
-        # IRC mirrors)
+        # mirrored stream.
         #
         # The security checks are split between the below code
         # (especially create_mirrored_message_users which checks the
@@ -958,9 +952,6 @@ def send_message_backend(request, user_profile,
             return json_error(_("Invalid mirrored message"))
         if client.name == "zephyr_mirror" and not user_profile.realm.is_zephyr_mirror_realm:
             return json_error(_("Invalid mirrored realm"))
-        if (client.name == "irc_mirror" and message_type_name != "private" and
-                not message_to[0].startswith("#")):
-            return json_error(_("IRC stream names must start with #"))
         sender = mirror_sender
     else:
         sender = user_profile
@@ -1014,9 +1005,8 @@ def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Me
     ))
 
 @has_request_variables
-def get_message_edit_history(request, user_profile,
-                             message_id=REQ(converter=to_non_negative_int)):
-    # type: (HttpRequest, UserProfile, int) -> HttpResponse
+def get_message_edit_history(request: HttpRequest, user_profile: UserProfile,
+                             message_id: int=REQ(converter=to_non_negative_int)) -> HttpResponse:
     if not user_profile.realm.allow_edit_history:
         return json_error(_("Message edit history is disabled in this organization"))
     message, ignored_user_message = access_message(user_profile, message_id)
@@ -1029,12 +1019,11 @@ def get_message_edit_history(request, user_profile,
     return json_success({"message_history": reversed(message_edit_history)})
 
 @has_request_variables
-def update_message_backend(request, user_profile,
-                           message_id=REQ(converter=to_non_negative_int),
-                           subject=REQ(default=None),
-                           propagate_mode=REQ(default="change_one"),
-                           content=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, int, Optional[Text], Optional[str], Optional[Text]) -> HttpResponse
+def update_message_backend(request: HttpRequest, user_profile: UserMessage,
+                           message_id: int=REQ(converter=to_non_negative_int),
+                           subject: Optional[Text]=REQ(default=None),
+                           propagate_mode: Optional[str]=REQ(default="change_one"),
+                           content: Optional[Text]=REQ(default=None)) -> HttpResponse:
     if not user_profile.realm.allow_message_editing:
         return json_error(_("Your organization has turned off message editing"))
 
@@ -1127,9 +1116,8 @@ def delete_message_backend(request: HttpRequest, user_profile: UserProfile,
     return json_success()
 
 @has_request_variables
-def json_fetch_raw_message(request, user_profile,
-                           message_id=REQ(converter=to_non_negative_int)):
-    # type: (HttpRequest, UserProfile, int) -> HttpResponse
+def json_fetch_raw_message(request: HttpRequest, user_profile: UserProfile,
+                           message_id: int=REQ(converter=to_non_negative_int)) -> HttpResponse:
     (message, user_message) = access_message(user_profile, message_id)
     return json_success({"raw_content": message.content})
 
@@ -1145,10 +1133,10 @@ def render_message_backend(request: HttpRequest, user_profile: UserProfile,
     return json_success({"rendered": rendered_content})
 
 @has_request_variables
-def messages_in_narrow_backend(request, user_profile,
-                               msg_ids = REQ(validator=check_list(check_int)),
-                               narrow = REQ(converter=narrow_parameter)):
-    # type: (HttpRequest, UserProfile, List[int], Optional[List[Dict[str, Any]]]) -> HttpResponse
+def messages_in_narrow_backend(request: HttpRequest, user_profile: UserProfile,
+                               msg_ids: List[int]=REQ(validator=check_list(check_int)),
+                               narrow: Optional[List[Dict[str, Any]]]=REQ(converter=narrow_parameter)
+                               ) -> HttpResponse:
 
     # This query is limited to messages the user has access to because they
     # actually received them, as reflected in `zerver_usermessage`.

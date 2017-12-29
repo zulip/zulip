@@ -14,10 +14,9 @@ from zerver.models import UserProfile, get_client
 
 @api_key_only_webhook_view('Semaphore')
 @has_request_variables
-def api_semaphore_webhook(request, user_profile,
-                          payload=REQ(argument_type='body'),
-                          stream=REQ(default='builds')):
-    # type: (HttpRequest, UserProfile, Dict[str, Any], str) -> HttpResponse
+def api_semaphore_webhook(request: HttpRequest, user_profile: UserProfile,
+                          payload: Dict[str, Any]=REQ(argument_type='body'),
+                          stream: str=REQ(default='builds')) -> HttpResponse:
 
     # semaphore only gives the last commit, even if there were multiple commits
     # since the last build

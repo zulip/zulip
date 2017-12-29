@@ -234,7 +234,7 @@ class Realm(models.Model):
     def get_admin_users(self) -> Sequence['UserProfile']:
         # TODO: Change return type to QuerySet[UserProfile]
         return UserProfile.objects.filter(realm=self, is_realm_admin=True,
-                                          is_active=True).select_related()
+                                          is_active=True)
 
     def get_active_users(self) -> Sequence['UserProfile']:
         # TODO: Change return type to QuerySet[UserProfile]
@@ -244,12 +244,12 @@ class Realm(models.Model):
         # Remove the port. Mainly needed for development environment.
         return self.host.split(':')[0]
 
-    def get_notifications_stream(self) -> Optional['Realm']:
+    def get_notifications_stream(self) -> Optional['Stream']:
         if self.notifications_stream is not None and not self.notifications_stream.deactivated:
             return self.notifications_stream
         return None
 
-    def get_signup_notifications_stream(self) -> Optional['Realm']:
+    def get_signup_notifications_stream(self) -> Optional['Stream']:
         if self.signup_notifications_stream is not None and not self.signup_notifications_stream.deactivated:
             return self.signup_notifications_stream
         return None
@@ -431,7 +431,7 @@ class RealmFilter(models.Model):
         return "<RealmFilter(%s): %s %s>" % (self.realm.string_id, self.pattern, self.url_format_string)
 
 def get_realm_filters_cache_key(realm_id: int) -> Text:
-    return u'all_realm_filters:%s' % (realm_id,)
+    return u'%s:all_realm_filters:%s' % (cache.KEY_PREFIX, realm_id,)
 
 # We have a per-process cache to avoid doing 1000 remote cache queries during page load
 per_request_realm_filters_cache = {}  # type: Dict[int, List[Tuple[Text, Text, int]]]
@@ -527,9 +527,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = 'email'
     MAX_NAME_LENGTH = 100
-    MIN_NAME_LENGTH = 3
+    MIN_NAME_LENGTH = 2
     API_KEY_LENGTH = 32
-    NAME_INVALID_CHARS = ['*', '`', '>', '"', '@']
+    NAME_INVALID_CHARS = ['*', '`', '>', '"', '@', '#']
 
     # Our custom site-specific fields
     full_name = models.CharField(max_length=MAX_NAME_LENGTH)  # type: Text
@@ -851,6 +851,8 @@ def generate_email_token_for_stream() -> str:
 
 class Stream(models.Model):
     MAX_NAME_LENGTH = 60
+    # Keep in sync with stream_create.js
+    NAME_INVALID_CHARS = ['*', '@', '`', '#']
     name = models.CharField(max_length=MAX_NAME_LENGTH, db_index=True)  # type: Text
     realm = models.ForeignKey(Realm, db_index=True, on_delete=CASCADE)  # type: Realm
     invite_only = models.NullBooleanField(default=False)  # type: Optional[bool]
@@ -1404,7 +1406,7 @@ def get_user(email: Text, realm: Realm) -> UserProfile:
     return UserProfile.objects.select_related().get(email__iexact=email.strip(), realm=realm)
 
 def get_user_including_cross_realm(email: Text, realm: Optional[Realm]=None) -> UserProfile:
-    if email in get_cross_realm_emails():
+    if is_cross_realm_bot_email(email):
         return get_system_bot(email)
     assert realm is not None
     return get_user(email, realm)
@@ -1455,13 +1457,8 @@ def get_owned_bot_dicts(user_profile: UserProfile,
              }
             for botdict in result]
 
-def get_prereg_user_by_email(email: Text) -> PreregistrationUser:
-    # A user can be invited many times, so only return the result of the latest
-    # invite.
-    return PreregistrationUser.objects.filter(email__iexact=email.strip()).latest("invited_at")
-
-def get_cross_realm_emails() -> Set[Text]:
-    return set(settings.CROSS_REALM_BOT_EMAILS)
+def is_cross_realm_bot_email(email: Text) -> bool:
+    return email.lower() in settings.CROSS_REALM_BOT_EMAILS
 
 # The Huddle class represents a group of individuals who have had a
 # Group Private Message conversation together.  The actual membership
@@ -1729,6 +1726,7 @@ class AbstractScheduledJob(models.Model):
     scheduled_timestamp = models.DateTimeField(db_index=True)  # type: datetime.datetime
     # JSON representation of arguments to consumer
     data = models.TextField()  # type: Text
+    realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
 
     class Meta:
         abstract = True

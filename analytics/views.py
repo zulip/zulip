@@ -265,11 +265,13 @@ def get_realm_day_counts() -> Dict[str, Dict[str, str]]:
     result = {}
     for string_id in counts:
         raw_cnts = [counts[string_id].get(age, 0) for age in range(8)]
-        min_cnt = min(raw_cnts)
-        max_cnt = max(raw_cnts)
+        min_cnt = min(raw_cnts[1:])
+        max_cnt = max(raw_cnts[1:])
 
-        def format_count(cnt: int) -> str:
-            if cnt == min_cnt:
+        def format_count(cnt: int, style: Optional[str]=None) -> str:
+            if style is not None:
+                good_bad = style
+            elif cnt == min_cnt:
                 good_bad = 'bad'
             elif cnt == max_cnt:
                 good_bad = 'good'
@@ -278,12 +280,15 @@ def get_realm_day_counts() -> Dict[str, Dict[str, str]]:
 
             return '<td class="number %s">%s</td>' % (good_bad, cnt)
 
-        cnts = ''.join(map(format_count, raw_cnts))
+        cnts = (format_count(raw_cnts[0], 'neutral')
+                + ''.join(map(format_count, raw_cnts[1:])))
         result[string_id] = dict(cnts=cnts)
 
     return result
 
 def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
+    now = timezone_now()
+
     query = '''
         SELECT
             realm.string_id,
@@ -394,7 +399,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
 
     for row in rows:
         row['date_created_day'] = row['date_created'].strftime('%Y-%m-%d')
-        row['age_days'] = int((timezone_now() - row['date_created']).total_seconds()
+        row['age_days'] = int((now - row['date_created']).total_seconds()
                               / 86400)
         row['is_new'] = row['age_days'] < 12 * 7
 
@@ -442,6 +447,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
 
     rows.append(dict(
         string_id='Total',
+        date_created_day='',
         dau_count=total_dau_count,
         user_profile_count=total_user_profile_count,
         bot_count=total_bot_count,
@@ -451,7 +457,8 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
 
     content = loader.render_to_string(
         'analytics/realm_summary_table.html',
-        dict(rows=rows, num_active_sites=num_active_sites)
+        dict(rows=rows, num_active_sites=num_active_sites,
+             now=now.strftime('%Y-%m-%dT%H:%M:%SZ'))
     )
     return content
 

@@ -1,6 +1,7 @@
 # See https://zulip.readthedocs.io/en/latest/testing/travis.html for
 # high-level documentation on our Travis CI setup.
 dist: trusty
+group: deprecated-2017Q4
 install:
   # Disable sometimes-broken sources.list in Travis base images
   - sudo rm -vf /etc/apt/sources.list.d/*

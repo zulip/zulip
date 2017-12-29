@@ -174,12 +174,18 @@ exports.toggle_actions_popover = function (element, id) {
         }) && page_params.realm_allow_edit_history;
         var should_display_delete_option = page_params.is_admin ||
             (message.sent_by_me && page_params.realm_allow_message_deleting);
+
+        var should_display_collapse = !message.locally_echoed && !message.collapsed;
+        var should_display_uncollapse = !message.locally_echoed && message.collapsed;
+
         var args = {
             message: message,
             use_edit_icon: use_edit_icon,
             editability_menu_item: editability_menu_item,
             can_mute_topic: can_mute_topic,
             can_unmute_topic: can_unmute_topic,
+            should_display_collapse: should_display_collapse,
+            should_display_uncollapse: should_display_uncollapse,
             should_display_add_reaction_option: message.sent_by_me,
             should_display_edit_history_option: should_display_edit_history_option,
             conversation_time_uri: narrow.by_conversation_and_time_uri(message, true),
@@ -226,8 +232,15 @@ function focus_first_action_popover_item() {
     items.eq(0).expectOne().focus();
 }
 
-exports.open_message_menu = function () {
-    var id = current_msg_list.selected_id();
+exports.open_message_menu = function (message) {
+    if (message.locally_echoed) {
+        // Don't open the popup for locally echoed messages for now.
+        // It creates bugs with things like keyboard handlers when
+        // we get the server response.
+        return true;
+    }
+
+    var id = message.id;
     popovers.toggle_actions_popover($(".selected_message .actions_hover")[0], id);
     if (current_actions_popover_elem) {
         focus_first_action_popover_item();
@@ -476,7 +489,16 @@ exports.register_click_handlers = function () {
 
         current_user_sidebar_user_id = user_id;
         current_user_sidebar_popover = target.data('popover');
+    });
 
+    $('body').on("mouseenter", ".my_email", function () {
+        var tooltip_holder = $(this).find('div');
+
+        if (this.offsetWidth < this.scrollWidth) {
+            tooltip_holder.addClass('display-tooltip');
+        } else {
+            tooltip_holder.removeClass('display-tooltip');
+        }
     });
 
     $('body').on('click', '.respond_button', function (e) {

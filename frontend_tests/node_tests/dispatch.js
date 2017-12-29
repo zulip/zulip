@@ -130,6 +130,9 @@ var event_fixtures = {
         op: 'add',
         message_id: 128,
         emoji_name: 'anguished_pig',
+        user: {
+            id: "1",
+        },
     },
 
     reaction__remove: {
@@ -137,6 +140,9 @@ var event_fixtures = {
         op: 'remove',
         message_id: 256,
         emoji_name: 'angery',
+        user: {
+            id: "1",
+        },
     },
 
     // Please keep this next section un-nested, as we want this to partly

@@ -77,6 +77,17 @@ STREAM_LINK_REGEX = r"""
 class BugdownRenderingException(Exception):
     pass
 
+def rewrite_if_relative_link(link: str) -> str:
+    """ If the link points to a local destination we can just switch to that
+    instead of opening a new tab. """
+
+    if db_data:
+        if link.startswith(db_data['realm_uri']):
+            # +1 to skip the `/` before the hash link.
+            return link[len(db_data['realm_uri']) + 1:]
+
+    return link
+
 def url_embed_preview_enabled_for_realm(message: Optional[Message]) -> bool:
     if message is not None:
         realm = message.get_realm()  # type: Optional[Realm]
@@ -133,9 +144,15 @@ def walk_tree(root: Element,
     return results
 
 # height is not actually used
-def add_a(root, url, link, title=None, desc=None,
-          class_attr="message_inline_image", data_id=None):
-    # type: (Element, Text, Text, Optional[Text], Optional[Text], Text, Optional[Text]) -> None
+def add_a(
+        root: Element,
+        url: Text,
+        link: Text,
+        title: Optional[Text]=None,
+        desc: Optional[Text]=None,
+        class_attr: Text="message_inline_image",
+        data_id: Optional[Text]=None
+) -> None:
     title = title if title is not None else url_filename(link)
     title = title if title else ""
     desc = desc if desc is not None else ""
@@ -348,6 +365,24 @@ class InlineHttpsProcessor(markdown.treeprocessors.Treeprocessor):
                 # Don't rewrite images on our own site (e.g. emoji).
                 continue
             img.set("src", get_camo_url(url))
+
+class BacktickPattern(markdown.inlinepatterns.Pattern):
+    """ Return a `<code>` element containing the matching text. """
+    def __init__(self, pattern):
+        # type: (Text) -> None
+        markdown.inlinepatterns.Pattern.__init__(self, pattern)
+        self.ESCAPED_BSLASH = '%s%s%s' % (markdown.util.STX, ord('\\'), markdown.util.ETX)
+        self.tag = 'code'
+
+    def handleMatch(self, m):
+        # type: (Match[Text]) -> Union[Text, Element]
+        if m.group(4):
+            el = markdown.util.etree.Element(self.tag)
+            # Modified to not strip whitespace
+            el.text = markdown.util.AtomicString(m.group(4))
+            return el
+        else:
+            return m.group(2).replace('\\\\', self.ESCAPED_BSLASH)
 
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     TWITTER_MAX_IMAGE_HEIGHT = 400
@@ -980,15 +1015,8 @@ def url_to_a(url: Text, text: Optional[Text]=None) -> Union[Element, Text]:
     if text is None:
         text = markdown.util.AtomicString(url)
 
-    target_blank = 'mailto:' not in href[:7]
-
-    if db_data:
-        # If the link points to a local destination we can just switch to that
-        # instead of opening a new tab.
-        local_link = re.match("^{}\/(#.+)$".format(re.escape(db_data['realm_uri'])), url)
-        if local_link:
-            href = local_link.group(1)
-            target_blank = False
+    href = rewrite_if_relative_link(href)
+    target_blank = href[:1] != '#' and 'mailto:' not in href[:7]
 
     a.set('href', href)
     a.text = text
@@ -1078,6 +1106,68 @@ class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
                 inserts += 1
         return copy
 
+class AutoNumberOListPreprocessor(markdown.preprocessors.Preprocessor):
+    """ Finds a sequence of lines numbered by the same number"""
+    RE = re.compile(r'^([ ]*)(\d+)\.[ ]+(.*)')
+    TAB_LENGTH = 2
+
+    def run(self, lines):
+        # type: (List[Text]) -> List[Text]
+        new_lines = []  # type: List[Text]
+        current_list = []  # type: List[Match[Text]]
+        current_indent = 0
+
+        for line in lines:
+            m = self.RE.match(line)
+
+            # Remember if this line is a continuation of already started list
+            is_next_item = (m and current_list
+                            and current_indent == len(m.group(1)) // self.TAB_LENGTH)
+
+            if not is_next_item:
+                # There is no more items in the list we were processing
+                new_lines.extend(self.renumber(current_list))
+                current_list = []
+
+            if not m:
+                # Ordinary line
+                new_lines.append(line)
+            elif is_next_item:
+                # Another list item
+                current_list.append(m)
+            else:
+                # First list item
+                current_list = [m]
+                current_indent = len(m.group(1)) // self.TAB_LENGTH
+
+        new_lines.extend(self.renumber(current_list))
+
+        return new_lines
+
+    def renumber(self, mlist):
+        # type: (List[Match[Text]]) -> List[Text]
+        if not mlist:
+            return []
+
+        start_number = int(mlist[0].group(2))
+
+        # Change numbers only if every one is the same
+        change_numbers = True
+        for m in mlist:
+            if int(m.group(2)) != start_number:
+                change_numbers = False
+                break
+
+        lines = []  # type: List[Text]
+        counter = start_number
+
+        for m in mlist:
+            number = str(counter) if change_numbers else m.group(2)
+            lines.append('%s%s. %s' % (m.group(1), number, m.group(3)))
+            counter += 1
+
+        return lines
+
 # Based on markdown.inlinepatterns.LinkPattern
 class LinkPattern(markdown.inlinepatterns.Pattern):
     """ Return a link element from the given match. """
@@ -1093,10 +1183,12 @@ class LinkPattern(markdown.inlinepatterns.Pattern):
         if href is None:
             return None
 
+        href = rewrite_if_relative_link(href)
+
         el = markdown.util.etree.Element('a')
         el.text = m.group(2)
         el.set('href', href)
-        fixup_link(el, target_blank = (href[:1] != '#'))
+        fixup_link(el, target_blank=(href[:1] != '#'))
         return el
 
 def prepare_realm_pattern(source: Text) -> Text:
@@ -1278,7 +1370,7 @@ class Bugdown(markdown.Extension):
         for k in ('image_link', 'image_reference', 'automail',
                   'autolink', 'link', 'reference', 'short_reference',
                   'escape', 'strong_em', 'emphasis', 'emphasis2',
-                  'linebreak', 'strong'):
+                  'linebreak', 'strong', 'backtick'):
             del md.inlinePatterns[k]
         try:
             # linebreak2 was removed upstream in version 3.2.1, so
@@ -1289,6 +1381,12 @@ class Bugdown(markdown.Extension):
 
         md.preprocessors.add("custom_text_notifications", AlertWordsNotificationProcessor(md), "_end")
 
+        # Inline code block without whitespace stripping
+        md.inlinePatterns.add(
+            "backtick",
+            BacktickPattern(r'(?:(?<!\\)((?:\\{2})+)(?=`+)|(?<!\\)(`+)(.+?)(?<!`)\3(?!`))'),
+            "_begin")
+
         # Custom bold syntax: **foo** but not __foo__
         md.inlinePatterns.add('strong',
                               markdown.inlinepatterns.SimpleTagPattern(r'(\*\*)([^\n]+?)\2', 'strong'),
@@ -1297,7 +1395,7 @@ class Bugdown(markdown.Extension):
         # Custom strikethrough syntax: ~~foo~~
         md.inlinePatterns.add('del',
                               markdown.inlinepatterns.SimpleTagPattern(
-                                  r'(?<!~)(\~\~)([^~{0}\n]+?)\2(?!~)', 'del'), '>strong')
+                                  r'(?<!~)(\~\~)([^~\n]+?)(\~\~)(?!~)', 'del'), '>strong')
 
         # Text inside ** must start and end with a word character
         # it need for things like "const char *x = (char *)y"
@@ -1395,6 +1493,10 @@ class Bugdown(markdown.Extension):
 
         md.preprocessors.add('hanging_ulists',
                              BugdownUListPreprocessor(md),
+                             "_begin")
+
+        md.preprocessors.add('auto_number_olist',
+                             AutoNumberOListPreprocessor(md),
                              "_begin")
 
         md.treeprocessors.add("inline_interesting_links", InlineInterestingLinkProcessor(md, self), "_end")
@@ -1510,7 +1612,7 @@ db_data = None  # type: Optional[Dict[Text, Any]]
 
 def log_bugdown_error(msg: str) -> None:
     """We use this unusual logging approach to log the bugdown error, in
-    order to prevent AdminZulipHandler from sending the santized
+    order to prevent AdminNotifyHandler from sending the santized
     original markdown formatting into another Zulip message, which
     could cause an infinite exception loop."""
     logging.getLogger('').error(msg)

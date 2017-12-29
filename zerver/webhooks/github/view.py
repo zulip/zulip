@@ -10,7 +10,6 @@ from zerver.decorator import authenticated_api_view, \
     flexible_boolean, to_non_negative_int
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.str_utils import force_str
 from zerver.lib.validator import check_dict
 from zerver.lib.webhooks.git import SUBJECT_WITH_BRANCH_TEMPLATE, \
     SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE, \
@@ -189,7 +188,7 @@ def api_github_v2(user_profile, event, payload, branches, default_stream,
         )
 
     else:
-        raise UnknownEventType(force_str(u'Event %s is unknown and cannot be handled' % (event,)))
+        raise UnknownEventType(u'Event %s is unknown and cannot be handled' % (event,))
 
     return target_stream, subject, content
 

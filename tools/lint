@@ -159,7 +159,7 @@ def run():
 
     external_linter('add_class', ['tools/find-add-class'], ['js'])
     external_linter('css', ['tools/check-css'], ['css'])
-    external_linter('eslint', ['node', 'node_modules/.bin/eslint', '--quiet'], ['js'])
+    external_linter('eslint', ['node', 'node_modules/.bin/eslint', '--quiet', '--cache'], ['js'])
     external_linter('tslint', ['node', 'node_modules/.bin/tslint', '-c',
                                'static/ts/tslint.json'], ['ts'])
     external_linter('puppet', ['puppet', 'parser', 'validate'], ['pp'])
@@ -167,9 +167,9 @@ def run():
     external_linter('urls', ['tools/check-urls'], ['py'])
     external_linter('swagger', ['node', 'tools/check-swagger'], ['yaml'])
 
-    # gitlint disabled until we can stabilize it more
-    # if not args.no_gitlint:
-    #     external_linter('commit_messages', ['tools/commit-message-lint'])
+    # Disabled check for imperative mood until it is stabilized
+    if not args.no_gitlint:
+        external_linter('commit_messages', ['tools/commit-message-lint'])
 
     @lint
     def custom_py():

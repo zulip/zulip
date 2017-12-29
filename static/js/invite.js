@@ -70,8 +70,7 @@ exports.initialize = function () {
         },
         success: function () {
             $('#submit-invitation').button('reset');
-            invite_status.text(i18n.t('User invited successfully.',
-                                      {count: (invitee_emails.val().match(/@/g) || []).length}))
+            invite_status.text(i18n.t('User(s) invited successfully.'))
                           .addClass('alert-success')
                           .show();
             invitee_emails.val('');
@@ -108,9 +107,6 @@ exports.initialize = function () {
 
                 if (arr.sent_invitations) {
                     invitee_emails.val(invitee_emails_errored.join('\n'));
-                } else { // Invitations not sent -- keep all emails in the list
-                    var current_emails = invitee_emails.val().split(/\n|,/);
-                    invitee_emails.val(util.move_array_elements_to_front(current_emails, invitee_emails_errored).join('\n'));
                 }
 
             }

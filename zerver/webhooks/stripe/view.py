@@ -14,10 +14,10 @@ from zerver.models import UserProfile
 
 @api_key_only_webhook_view('Stripe')
 @has_request_variables
-def api_stripe_webhook(request, user_profile,
-                       payload=REQ(argument_type='body'), stream=REQ(default='test'),
-                       topic=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, Dict[str, Any], Text, Optional[Text]) -> HttpResponse
+def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
+                       payload: Dict[str, Any]=REQ(argument_type='body'),
+                       stream: Text=REQ(default='test'),
+                       topic: Optional[Text]=REQ(default=None)) -> HttpResponse:
     body = None
     event_type = payload["type"]
     data_object = payload["data"]["object"]

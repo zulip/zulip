@@ -3,6 +3,10 @@
     font-size: 0.89rem;
 }
 
+.right-sidebar a:hover {
+    text-decoration: none;
+}
+
 #group-pms li:hover,
 #user_presences li:hover {
     background-color: hsl(93, 19%, 88%);
@@ -37,6 +41,7 @@
     list-style-type: none;
 
     border-radius: 4px;
+    margin: 1px 0px;
 }
 
 #user_presences .arrow {

@@ -83,21 +83,19 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         realm = None
     else:
         realm = get_realm(get_subdomain(request))
-        if prereg_user.realm is None:
-            return render(request, 'confirmation/link_expired.html')
-        if prereg_user.realm != realm:
-            return render(request, 'confirmation/link_does_not_exist.html')
+        if realm is None or realm != prereg_user.realm:
+            return render_confirmation_key_error(
+                request, ConfirmationKeyException(ConfirmationKeyException.DOES_NOT_EXIST))
 
-    if realm and not email_allowed_for_realm(email, realm):
-        return render(request, "zerver/closed_realm.html",
-                      context={"closed_domain_name": realm.name})
+        if not email_allowed_for_realm(email, realm):
+            return render(request, "zerver/closed_realm.html",
+                          context={"closed_domain_name": realm.name})
 
-    if realm and realm.deactivated:
-        # The user is trying to register for a deactivated realm. Advise them to
-        # contact support.
-        return redirect_to_deactivation_notice()
+        if realm.deactivated:
+            # The user is trying to register for a deactivated realm. Advise them to
+            # contact support.
+            return redirect_to_deactivation_notice()
 
-    if not realm_creation:
         try:
             validate_email_for_realm(realm, email)
         except ValidationError:  # nocoverage # We need to add a test for this.
@@ -246,7 +244,6 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             bulk_add_subscriptions([realm.signup_notifications_stream], [user_profile])
             send_initial_realm_messages(realm)
 
-        if realm_creation:
             # Because for realm creation, registration happens on the
             # root domain, we need to log them into the subdomain for
             # their new realm.

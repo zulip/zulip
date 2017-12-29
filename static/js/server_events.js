@@ -95,6 +95,7 @@ function get_events_success(events) {
         messages = _.sortBy(messages, 'id');
         try {
             messages = echo.process_from_server(messages);
+            _.each(messages, message_store.set_message_booleans);
             message_events.insert_new_messages(messages);
         } catch (ex2) {
             blueslip.error('Failed to insert new messages\n' +

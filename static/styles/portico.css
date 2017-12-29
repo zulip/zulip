@@ -122,7 +122,7 @@ body {
     box-shadow: 0px -20px 50px rgba(0, 0, 0, 0.04);
     overflow: auto;
 
-    color: hsl(222, 33%, 33%);
+    color: hsl(0, 0%, 27%);
 }
 
 .help .sidebar {
@@ -137,17 +137,34 @@ body {
     border-right: 1px solid hsl(219, 10%, 97%);
     overflow: auto;
 
-    background: hsl(219, 10%, 97%);
+    background-color: hsl(153, 32%, 55%);
+    color: hsl(0, 0%, 100%);
 
     -webkit-overflow-scrolling: touch;
 }
 
 .help .sidebar h1,
 .help .sidebar h2 {
-    font-size: 1.2em;
     font-weight: 400;
+}
+
+.help .sidebar h1 {
+    font-size: 1.25em;
+    line-height: 1.5;
     margin-bottom: 0px;
-    line-height: 100%;
+}
+
+.help .sidebar h1:not(:first-of-type) {
+    margin-top: 20px;
+}
+
+.help .sidebar h2 {
+    font-size: 1.2em;
+    line-height: 1.05;
+    margin-bottom: 5px;
+}
+
+.help .sidebar.slide h2 {
     cursor: pointer;
 }
 
@@ -165,34 +182,8 @@ body {
     opacity: 0.5;
 }
 
-.help .sidebar h2.no-arrow::before {
-    content: "";
-}
-
-.help .sidebar.slide h2.no-arrow {
-    margin-left: 12px;
-}
-
-.help .sidebar:not(.slide) h2 {
-    margin-left: 0px;
-}
-
-.help .sidebar h2.no-arrow a {
-    color: inherit;
-}
-
-.help .sidebar h3 {
-    font-size: 1em;
-    font-weight: 400;
-    text-transform: uppercase;
-    color: #badcd6;
-
-    line-height: 1;
-    margin: 10px 0 5px 10px;
-}
-
 .help .sidebar ul {
-    margin: 10px 0px 10px 12px;
+    margin: 5px 0px 10px 12px;
 }
 
 .help .sidebar.slide ul {
@@ -216,6 +207,15 @@ body {
 .help .sidebar h1 a {
     color: inherit;
     display: block;
+}
+
+.help .sidebar a.highlighted {
+    background-color: hsl(152, 40%, 42%);
+
+    /* Extend highlight to entire width of sidebar, not just link area */
+    width: calc(100% + 20px);
+    margin-left: -40px;
+    padding-left: 40px;
 }
 
 .app.help .hamburger {
@@ -1560,6 +1560,14 @@ input.new-organization-button {
     margin-bottom: 15px;
 }
 
+.markdown h1#using-zulip,
+.markdown h1#zulip-administration {
+    font-size: 1.75em;
+    padding: 10px 0;
+    margin-bottom: 0px;
+    line-height: 100%;
+}
+
 .markdown h2,
 .why-page h2 {
     font-size: 1.4em;
@@ -1738,7 +1746,7 @@ input.new-organization-button {
         position: fixed;
         top: 70px;
         left: 9px;
-        fill: hsl(222, 33%, 33%);
+        fill: hsl(0, 0%, 100%);
         z-index: 2;
 
 

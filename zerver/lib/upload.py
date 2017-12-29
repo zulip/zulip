@@ -11,14 +11,13 @@ import unicodedata
 
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.exceptions import JsonableError, ErrorCode
-from zerver.lib.str_utils import force_str, NonBinaryStr
+from zerver.lib.str_utils import NonBinaryStr
 
 from boto.s3.bucket import Bucket
 from boto.s3.key import Key
 from boto.s3.connection import S3Connection
 from mimetypes import guess_type, guess_extension
 
-from zerver.lib.str_utils import force_bytes, force_str
 from zerver.models import get_user_profile_by_id, RealmEmoji
 from zerver.models import Attachment
 from zerver.models import Realm, RealmEmoji, UserProfile, Message
@@ -356,9 +355,9 @@ class S3UploadBackend(ZulipUploadBackend):
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
         bucket = get_bucket(conn, bucket_name)
         key = bucket.get_key(file_path)
-        image_data = force_bytes(key.get_contents_as_string())
+        image_data = key.get_contents_as_string()
 
-        resized_medium = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
+        resized_medium = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)  # type: ignore # image_data is `bytes`, boto subs are wrong
         upload_image_to_s3(
             bucket_name,
             s3_file_name + "-medium.png",

@@ -21,9 +21,9 @@ VERIFICATION_EVENT = 'verification'
 
 @api_key_only_webhook_view('Crashlytics')
 @has_request_variables
-def api_crashlytics_webhook(request, user_profile, payload=REQ(argument_type='body'),
-                            stream=REQ(default='crashlytics')):
-    # type: (HttpRequest, UserProfile, Dict[str, Any], Text) -> HttpResponse
+def api_crashlytics_webhook(request: HttpRequest, user_profile: UserProfile,
+                            payload: Dict[str, Any]=REQ(argument_type='body'),
+                            stream: Text=REQ(default='crashlytics')) -> HttpResponse:
     event = payload['event']
     if event == VERIFICATION_EVENT:
         subject = CRASHLYTICS_SETUP_SUBJECT_TEMPLATE

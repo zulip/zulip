@@ -89,7 +89,6 @@ function insert_local_message(message_request, local_id) {
 
     // Locally delivered messages cannot be unread (since we sent them), nor
     // can they alert the user.
-    message.flags = ['read']; // we may add more flags later
     message.unread = false;
 
     message.raw_content = message.content;
@@ -230,9 +229,7 @@ exports.process_from_server = function process_from_server(messages) {
             sent_messages.mark_disparity(message.local_id);
         }
 
-        // Update our flags based on what the server gave us.
-        client_message.flags = message.flags;
-        message_store.set_message_booleans(client_message, client_message.flags);
+        message_store.update_booleans(client_message, message.flags);
 
         // We don't try to highlight alert words locally, so we have to
         // do it now.  (Note that we will indeed highlight alert words in

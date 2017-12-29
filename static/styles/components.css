@@ -5,6 +5,7 @@
     padding: 0px;
     display: inline-block;
     vertical-align: top;
+    cursor: pointer;
 }
 
 .new-style label.checkbox input[type=checkbox] {
@@ -64,4 +65,12 @@ a.no-underline:hover {
 
 .italic {
     font-style: italic;
+}
+
+.ps:hover.ps--in-scrolling.ps--x > .ps__scrollbar-x-rail > .ps__scrollbar-x {
+    background-color: #606060;
+}
+
+.ps:hover.ps--in-scrolling.ps--y > .ps__scrollbar-y-rail > .ps__scrollbar-y {
+    background-color: #606060;
 }

@@ -1,6 +1,7 @@
 /*global Dict */
 var path = zrequire('path', 'path');
 var fs = zrequire('fs', 'fs');
+
 zrequire('hash_util');
 zrequire('katex', 'node_modules/katex/dist/katex.min.js');
 zrequire('marked', 'third/marked/lib/marked');
@@ -11,6 +12,7 @@ zrequire('people');
 zrequire('user_groups');
 zrequire('emoji_codes', 'generated/emoji/emoji_codes');
 zrequire('emoji');
+zrequire('message_store');
 zrequire('markdown');
 
 set_global('window', {
@@ -172,18 +174,19 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
 
 (function test_marked_shared() {
     var tests = bugdown_data.regular_tests;
+
     tests.forEach(function (test) {
         var message = {raw_content: test.input};
         markdown.apply_markdown(message);
         var output = message.content;
 
         if (test.marked_expected_output) {
-            assert.notEqual(test.expected_output, output);
-            assert.equal(test.marked_expected_output, output);
+            global.bugdown_assert.notEqual(test.expected_output, output);
+            global.bugdown_assert.equal(test.marked_expected_output, output);
         } else if (test.backend_only_rendering) {
             assert.equal(markdown.contains_backend_only_syntax(test.input), true);
         } else {
-            assert.equal(test.expected_output, output);
+            global.bugdown_assert.equal(test.expected_output, output);
         }
     });
 }());
@@ -191,15 +194,18 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
 (function test_message_flags() {
     var message = {raw_content: '@**Leo**'};
     markdown.apply_markdown(message);
-    assert(!_.contains(message.flags, 'mentioned'));
+    assert(!message.mentioned);
+    assert(!message.mentioned_me_directly);
 
     message = {raw_content: '@**Cordelia Lear**'};
     markdown.apply_markdown(message);
-    assert(_.contains(message.flags, 'mentioned'));
+    assert(message.mentioned);
+    assert(message.mentioned_me_directly);
 
     message = {raw_content: '@**all**'};
     markdown.apply_markdown(message);
-    assert(_.contains(message.flags, 'mentioned'));
+    assert(message.mentioned);
+    assert(!message.mentioned_me_directly);
 }());
 
 (function test_marked() {
@@ -340,44 +346,38 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
 (function test_message_flags() {
     var input = "/me is testing this";
     var message = {subject: "No links here", raw_content: input};
-    message.flags = ['read'];
     markdown.apply_markdown(message);
 
     assert.equal(message.is_me_message, true);
-    assert.equal(message.flags.length, 1);
-    assert(message.flags.indexOf('read') !== -1);
+    assert(!message.unread);
 
     input = "testing this @**all** @**Cordelia Lear**";
     message = {subject: "No links here", raw_content: input};
     markdown.apply_markdown(message);
 
     assert.equal(message.is_me_message, false);
-    assert.equal(message.flags.length, 1);
-    assert(message.flags.indexOf('mentioned') !== -1);
+    assert.equal(message.mentioned, true);
+    assert.equal(message.mentioned_me_directly, true);
 
     input = "test @all";
     message = {subject: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    assert.equal(message.flags.length, 1);
-    assert(message.flags.indexOf('mentioned') !== -1);
+    assert.equal(message.mentioned, true);
 
     input = "test @any";
     message = {subject: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    assert.equal(message.flags.length, 0);
-    assert(message.flags.indexOf('mentioned') === -1);
+    assert.equal(message.mentioned, false);
 
     input = "test @*hamletcharacters*";
     message = {subject: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    assert.equal(message.flags.length, 1);
-    assert(message.flags.indexOf('mentioned') !== -1);
+    assert.equal(message.mentioned, true);
 
     input = "test @*backend*";
     message = {subject: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    assert.equal(message.flags.length, 0);
-    assert(message.flags.indexOf('mentioned') === -1);
+    assert.equal(message.mentioned, false);
 }());
 
 (function test_backend_only_realm_filters() {

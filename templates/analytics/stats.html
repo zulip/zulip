@@ -27,7 +27,9 @@
             <button class="button" type="button" id='cumulative_button'>{{ _("Cumulative") }} </button>
           </div>
         </div>
-        <div id="id_messages_sent_over_time"></div>
+        <div id="id_messages_sent_over_time">
+          <div class="spinner"></div>
+        </div>
         <div id="hoverinfo">
             <span id="hover_date"></span>
             <span id="hover_me">{{ _("Me") }}:</span>
@@ -42,7 +44,9 @@
       <div class="chart-container pie-chart">
         <div id="pie_messages_sent_by_client">
           <h1>{{ _("Messages sent by client") }}</h1>
-          <div id="id_messages_sent_by_client" class="number-stat"></div>
+          <div id="id_messages_sent_by_client" class="number-stat">
+            <div class="spinner"></div>
+          </div>
           <div class="buttons">
             <button class="button" type="button" data-user="user">{{ _("Me") }}</button>
             <button class="button selected" type="button" data-user="realm">{{ _("Everyone") }}</button>
@@ -59,7 +63,9 @@
       <div class="chart-container pie-chart">
         <div id="pie_messages_sent_by_type">
           <h1>{{ _("Messages sent by recipient type") }}</h1>
-          <div id="id_messages_sent_by_message_type"></div>
+          <div id="id_messages_sent_by_message_type">
+            <div class="spinner"></div>
+          </div>
           <div id="pie_messages_sent_by_type_total" class="number-stat"></div>
           <div class="buttons">
             <button class="button" type="button" data-user="user">{{ _("Me") }}</button>
@@ -74,7 +80,9 @@
 
       <div class="chart-container">
         <h1>{{ _("Active users") }}</h1>
-        <div id="id_number_of_users"></div>
+        <div id="id_number_of_users">
+          <div class="spinner"></div>
+        </div>
         <div id="users_hover_info" class="number-stat">
           <span id="users_hover_date"></span>
           <b id="users_hover_humans">{{ _("Users") }}: </b>

@@ -27,11 +27,11 @@ $(function () {
         errorPlacement: function (error, element) {
             // NB: this is called at most once, when the error element
             // is created.
-            element.next('.help-inline.text-error').remove();
+            element.next('.help-inline.alert.alert-error').remove();
             if (element.next().is('label[for="' + element.attr('id') + '"]')) {
-                error.insertAfter(element.next()).addClass('help-inline text-error');
+                error.insertAfter(element.next()).addClass('help-inline alert alert-error');
             } else {
-                error.insertAfter(element).addClass('help-inline text-error');
+                error.insertAfter(element).addClass('help-inline alert alert-error');
             }
         },
         highlight:   highlight('error'),

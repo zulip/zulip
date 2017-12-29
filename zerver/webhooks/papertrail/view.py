@@ -12,11 +12,10 @@ from zerver.models import UserProfile
 
 @api_key_only_webhook_view('Papertrail')
 @has_request_variables
-def api_papertrail_webhook(request, user_profile,
-                           payload=REQ(argument_type='body'),
-                           stream=REQ(default='papertrail'),
-                           topic=REQ(default='logs')):
-    # type: (HttpRequest, UserProfile, Dict[str, Any], Text, Text) -> HttpResponse
+def api_papertrail_webhook(request: HttpRequest, user_profile: UserProfile,
+                           payload: Dict[str, Any]=REQ(argument_type='body'),
+                           stream: Text=REQ(default='papertrail'),
+                           topic: Text=REQ(default='logs')) -> HttpResponse:
 
     # construct the message of the message
     message_template = '**"{}"** search found **{}** matches - {}\n```'

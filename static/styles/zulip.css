@@ -401,12 +401,6 @@ li,
     position: absolute !important;
 }
 
-/* Relative positioning */
-
-.position-relative {
-    position: relative;
-}
-
 /* Lighter strong */
 
 strong {
@@ -499,22 +493,6 @@ a:hover code {
     box-sizing: initial !important;
     -webkit-box-sizing: initial !important;
     -moz-box-sizing: initial !important;
-}
-
-.sidebar-nav {
-    padding: 0px 10px 20px 0px;
-    margin-top: 1em;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    /* This is a little hacky, but for whatever reason, span2 in a row-fluid
-       doesn't consistently take on the right width when it's in an affix, so
-       we need to specify a max size. */
-    max-width: 250px;
-}
-
-.edit-profile {
-    font-weight: 300;
-    font-size: 12px;
 }
 
 .logout {
@@ -1002,24 +980,6 @@ td.pointer {
     }
 }
 
-.messagebox-bottom {
-    height: 3px;
-    background-color: hsl(0, 0%, 100%);
-    border-radius: 0px 0px 3px 0px;
-    /* box-shadow: 0px 2px 2px -1px hsl(0, 0%, 80%); */
-    border: 1px solid hsl(166, 26%, 80%);
-    border-top: none;
-    border-left: none;
-}
-
-.messagebox-bottom-colorblock {
-    border-radius: 0px 0px 0px 3px;
-    /* box-shadow: 0px 2px 2px -1px hsl(0, 0%, 80%); */
-    border: 1px solid hsl(166, 26%, 80%);
-    border-top: none;
-    border-right: none;
-}
-
 .floating_recipient .message_header_private_message {
     border-bottom: 0px;
     border-left: 0px;
@@ -1277,10 +1237,6 @@ a.dark_background:hover,
 
 .include-sender .message_top_line {
     margin-top: 6px;
-}
-
-.message-right {
-    float: right;
 }
 
 .small {
@@ -1747,6 +1703,10 @@ blockquote p {
 .nav .dropdown-menu a,
 .typeahead.dropdown-menu a {
     color: inherit;
+}
+
+.typeahead.dropdown-menu .active {
+    color: #fff;
 }
 
 .nav .dropdown-menu:after {
@@ -2275,10 +2235,6 @@ button.topic_edit_cancel {
     max-height: 300px;
 }
 
-#invite-user #custom_invite_body {
-    margin-top: 10px;
-}
-
 #invite-user .overlay-content {
     position: relative;
     width: 500px;
@@ -2584,10 +2540,6 @@ button.topic_edit_cancel {
     margin-top: 41px;
 }
 
-.message-pane {
-    padding-left: 0.3em;
-}
-
 .screen {
     position: absolute;
     left: 0;
@@ -2696,4 +2648,50 @@ button.topic_edit_cancel {
     -webkit-user-drag: none;
     -webkit-user-select: none;
     -ms-user-select: none;
+}
+
+.my_email {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.my_email .tooltip_holder {
+    display: none;
+    position: absolute;
+    left: 50%;
+}
+
+.display-tooltip {
+    display: block !important;
+}
+
+.email_tooltip {
+    visibility: hidden;
+    opacity: 0;
+    position: relative;
+    padding: 5px 8px;
+    left: -50%;
+    top: 10px;
+    border-radius: 6px;
+    background-color: #4c4c4c;
+    color: #fff;
+    transition: visibility 0.2s ease-out, opacity 0.2s linear;
+}
+
+.email_tooltip::after {
+    content: "";
+    position: absolute;
+    top: -47%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 7px;
+    border-style: solid;
+    border-color: transparent;
+    border-bottom: #4c4c4c solid 7px;
+}
+
+.my_email:hover .email_tooltip {
+    visibility: visible;
+    opacity: 1;
 }

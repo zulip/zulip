@@ -6,7 +6,9 @@ echo "Test suite is running under $(python --version)."
 set -e
 set -x
 
-./tools/lint --backend
+#./tools/lint --backend ${CIRCLECI:+--no-gitlint}
+# TEMP: turn off git lint
+./tools/lint --backend --no-gitlint
 ./tools/test-tools
 ./tools/test-backend --coverage
 
@@ -24,6 +26,7 @@ set -x
 #./tools/test-run-dev  # Disabled in CI because flaky.
 #./tools/test-queue-worker-reload  # Disabled in CI because flaky.
 
+./tools/test-slack-importer
 # NB: Everything here should be in `tools/test-all`.  If there's a
 # reason not to run it there, it should be there as a comment
 # explaining why.

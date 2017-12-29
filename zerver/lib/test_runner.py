@@ -240,7 +240,7 @@ def run_subsuite(args: SubsuiteArgs) -> Tuple[int, Any]:
 
 # Monkey-patch database creation to fix unnecessary sleep(1)
 from django.db.backends.postgresql.creation import DatabaseCreation
-def _replacement_destroy_test_db(self: Any,
+def _replacement_destroy_test_db(self: DatabaseCreation,
                                  test_database_name: str,
                                  verbosity: Any) -> None:
     """Replacement for Django's _destroy_test_db that removes the
