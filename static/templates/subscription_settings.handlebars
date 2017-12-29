@@ -94,7 +94,10 @@
 
         {{#render_subscribers}}
         <div class="subscriber_list_settings">
-            <div class="sub_settings_title float-left">{{t "Stream membership" }}</div>
+            <div class="sub_settings_title float-left">
+                {{t "Stream membership" }}
+                <div class="stream_subscription_info small"></div>
+            </div>
             <div class="subscriber_list_add float-right">
                 <form class="form-inline">
                     <input type="text" class="search" placeholder="{{t 'Search subscribers' }}" />
@@ -109,8 +112,6 @@
         <div class="subscriber-list-box">
             <div class="subscriber_list_container">
                 <div class="subscriber_list_loading_indicator"></div>
-                <div class="alert alert-error hide"></div>
-                <div class="alert alert-warning hide"></div>
                 <table class="subscriber-list"></table>
             </div>
         </div>
