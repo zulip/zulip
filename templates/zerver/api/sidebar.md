@@ -8,6 +8,10 @@
 * [Stream message](/api/stream-message)
 * [Private message](/api/private-message)
 
+#### Streams
+
+* [Get all streams](/api/get-all-streams)
+
 ## Integrations
 
 * [Overview](/api/integration-guide)
