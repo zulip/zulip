@@ -11,6 +11,7 @@ from django.utils.timezone import now as timezone_now
 from typing import Any, Dict, List, Tuple
 from zerver.models import UserProfile, Realm, Stream, UserMessage, \
     Subscription, Message, Recipient, DefaultStream
+
 # stubs
 ZerverFieldsT = Dict[str, Any]
 AddedUsersT = Dict[str, int]
@@ -277,6 +278,111 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
     print('######### IMPORTING STREAMS FINISHED #########\n')
     return zerver_defaultstream, zerver_stream, added_channels, zerver_subscription, zerver_recipient
 
+def channel_message_to_zerver_message(constants: List[Any], channel: str,
+                                      added_users: AddedUsersT, added_channels: AddedChannelsT,
+                                      zerver_userprofile: List[ZerverFieldsT],
+                                      zerver_subscription: List[ZerverFieldsT],
+                                      ids: List[int]) -> Tuple[List[ZerverFieldsT],
+                                                               List[ZerverFieldsT]]:
+    """
+    Returns:
+    1. zerver_message, which is a list of the messages
+    2. zerver_usermessage, which is a list of the usermessages
+    """
+    slack_data_dir, REALM_ID = constants
+    message_id, usermessage_id = ids
+    json_names = os.listdir(slack_data_dir + '/' + channel)
+    users = json.load(open(slack_data_dir + '/users.json'))
+    zerver_message = []
+    zerver_usermessage = []
+
+    slack_usermention_regex = r"(<@)([a-zA-Z0-9]+)(\|)?([a-zA-Z0-9]+)?(>)"
+
+    # TODO mapping italics, bold, strikethrough etc
+    # Markdown mapping
+    def convert_to_zulip_markdown(text: str) -> Tuple[str, List[int], bool]:
+        tokens = text.split(' ')
+        mentioned_users_id = []
+        has_link = False
+
+        for iterator in range(len(tokens)):
+            # Check user mentions and change mention format from
+            # '<@slack_id|short_name>' to '@**full_name**'
+            if (re.compile(slack_usermention_regex).match(tokens[iterator])):
+                tokens[iterator], user_id = get_user_mentions(tokens[iterator])
+                mentioned_users_id.append(user_id)
+
+            # Check link
+            if ('http://' in tokens[iterator] or 'https://' in tokens[iterator]):
+                tokens[iterator] = tokens[iterator].replace('<', '').replace('>', '')
+                has_link = True
+        token = ' '.join(tokens)
+        return token, mentioned_users_id, has_link
+
+    def get_user_mentions(token: str) -> Tuple[str, int]:
+        slack_usermention_match = re.search(slack_usermention_regex, token)
+        short_name = slack_usermention_match.group(4)
+        slack_id = slack_usermention_match.group(2)
+        for user in users:
+            if (user['id'] == slack_id and user['name'] == short_name and short_name) or \
+               (user['id'] == slack_id and short_name is None):
+                full_name = get_user_full_name(user)
+                user_id = added_users[slack_id]
+                mention = "@**" + full_name + "** "
+        token = re.sub(slack_usermention_regex, mention, token)
+        return mention, user_id
+
+    for json_name in json_names:
+        messages = json.load(open(slack_data_dir + '/%s/%s' % (channel, json_name)))
+        for message in messages:
+            has_attachment = False
+            content, mentioned_users_id, has_link = convert_to_zulip_markdown(message['text'])
+            rendered_content = None
+            if 'subtype' in message.keys():
+                subtype = message['subtype']
+                if subtype in ["channel_join", "channel_leave", "channel_name"]:
+                    continue
+            try:
+                user = message.get('user', message['file']['user'])
+            except KeyError:
+                user = message['user']
+
+            # construct message
+            zulip_message = dict(
+                sending_client=1,
+                rendered_content_version=1,  # This is Zulip-specific
+                has_image=message.get('has_image', False),
+                subject=channel,  # This is Zulip-specific
+                pub_date=float(message['ts']),
+                id=message_id,
+                has_attachment=has_attachment,  # attachment will be posted in the subsequent message;
+                                                # this is how Slack does it, i.e. less like email
+                edit_history=None,
+                sender=added_users[user],  # map slack id to zulip id
+                content=content,
+                rendered_content=rendered_content,  # slack doesn't cache this
+                recipient=added_channels[channel],
+                last_edit_time=None,
+                has_link=has_link)
+            zerver_message.append(zulip_message)
+
+            # construct usermessages
+            for subscription in zerver_subscription:
+                if subscription['recipient'] == zulip_message['recipient']:
+                    flags_mask = 1  # For read
+                    if subscription['user_profile'] in mentioned_users_id:
+                        flags_mask = 9  # For read and mentioned
+
+                    usermessage = dict(
+                        user_profile=subscription['user_profile'],
+                        id=usermessage_id,
+                        flags_mask=flags_mask,
+                        message=zulip_message['id'])
+                    usermessage_id += 1
+                    zerver_usermessage.append(usermessage)
+            message_id += 1
+    return zerver_message, zerver_usermessage
+
 def do_convert_data(slack_zip_file: str, realm_name: str, output_dir: str) -> None:
     slack_data_dir = slack_zip_file.replace('.zip', '')
     zip_file_dir = os.path.dirname(slack_data_dir)
@@ -335,6 +441,7 @@ def do_convert_data(slack_zip_file: str, realm_name: str, output_dir: str) -> No
     realm['zerver_stream'] = channels_to_zerver_stream_fields[1]
     realm['zerver_subscription'] = channels_to_zerver_stream_fields[3]
     realm['zerver_recipient'] = channels_to_zerver_stream_fields[4]
+    added_channels = channels_to_zerver_stream_fields[2]
     # IO realm.json
     realm_file = output_dir + '/realm.json'
     json.dump(realm, open(realm_file, 'w'))
@@ -344,6 +451,21 @@ def do_convert_data(slack_zip_file: str, realm_name: str, output_dir: str) -> No
     zerver_message = []  # type: List[ZerverFieldsT]
     zerver_usermessage = []  # type: List[ZerverFieldsT]
     zerver_attachment = []  # type: List[ZerverFieldsT]
+
+    constants = [slack_data_dir, REALM_ID]
+    print('######### IMPORTING MESSAGES STARTED #########\n')
+    for channel in added_channels.keys():
+        message_id = len(zerver_message) + 1  # For the id of the messages
+        usermessage_id = len(zerver_usermessage) + 1
+        id_list = [message_id, usermessage_id]
+        zm, zum = channel_message_to_zerver_message(constants, channel,
+                                                    added_users, added_channels,
+                                                    zerver_userprofile,
+                                                    realm['zerver_subscription'],
+                                                    id_list)
+        zerver_message += zm
+        zerver_usermessage += zum
+    print('######### IMPORTING MESSAGES FINISHED #########\n')
 
     message_json['zerver_message'] = zerver_message
     message_json['zerver_usermessage'] = zerver_usermessage
