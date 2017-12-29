@@ -18,20 +18,19 @@ from zerver.models import UserProfile, UserGroup, UserGroupMembership
 from zerver.views.streams import compose_views, FuncKwargPair
 
 @has_request_variables
-def add_user_group(request, user_profile,
-                   name=REQ(),
-                   members=REQ(validator=check_list(check_int), default=[]),
-                   description=REQ()):
-    # type: (HttpRequest, UserProfile, Text, List[int], Text) -> HttpResponse
+def add_user_group(request: HttpRequest, user_profile: UserProfile,
+                   name: Text=REQ(),
+                   members: List[int]=REQ(validator=check_list(check_int), default=[]),
+                   description: Text=REQ()) -> HttpResponse:
     user_profiles = user_ids_to_users(members, user_profile.realm)
     check_add_user_group(user_profile.realm, name, user_profiles, description)
     return json_success()
 
 @has_request_variables
-def edit_user_group(request, user_profile,
-                    user_group_id=REQ(validator=check_int),
-                    name=REQ(default=""), description=REQ(default="")):
-    # type: (HttpRequest, UserProfile, int, Text, Text) -> HttpResponse
+def edit_user_group(request: HttpRequest, user_profile: UserProfile,
+                    user_group_id: int=REQ(validator=check_int),
+                    name: Text=REQ(default=""), description: Text=REQ(default="")
+                    ) -> HttpResponse:
     if not (name or description):
         return json_error(_("No new data supplied"))
 
@@ -55,11 +54,11 @@ def delete_user_group(request: HttpRequest, user_profile: UserProfile,
     return json_success()
 
 @has_request_variables
-def update_user_group_backend(request, user_profile,
-                              user_group_id=REQ(validator=check_int),
-                              delete=REQ(validator=check_list(check_int), default=[]),
-                              add=REQ(validator=check_list(check_int), default=[])):
-    # type: (HttpRequest, UserProfile, int, List[int], List[int]) -> HttpResponse
+def update_user_group_backend(request: HttpRequest, user_profile: UserProfile,
+                              user_group_id: int=REQ(validator=check_int),
+                              delete: List[int]=REQ(validator=check_list(check_int), default=[]),
+                              add: List[int]=REQ(validator=check_list(check_int), default=[])
+                              ) -> HttpResponse:
     if not add and not delete:
         return json_error(_('Nothing to do. Specify at least one of "add" or "delete".'))
 
