@@ -16,19 +16,43 @@ function delete_attachments(attachment) {
     });
 }
 
+<<<<<<< 6c2e218a42f039680e417bec46b76ece11e44370
+<<<<<<< 23062f5bf64cfbd7e9b78d72d465926b303b534f
+=======
+>>>>>>> user settings: Clean settings.css and fix bug
 exports.bytes_to_size = function (bytes, kb_with_1024_bytes) {
     if (kb_with_1024_bytes === undefined) {
         kb_with_1024_bytes = false;
     }
+<<<<<<< 6c2e218a42f039680e417bec46b76ece11e44370
+=======
+exports.bytes_to_size = function (bytes, kb_with_1024_bytes=false) {
+>>>>>>> user settings: fix uploaded files UI
+=======
+>>>>>>> user settings: Clean settings.css and fix bug
     var kb_size = kb_with_1024_bytes ? 1024 : 1000;
     var sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
     if (bytes === 0) {
         return '0 B';
     }
+<<<<<<< 23062f5bf64cfbd7e9b78d72d465926b303b534f
+<<<<<<< 0d9d10853a726e617244793cc00969d220e16b26
     var i = parseInt(Math.floor(Math.log(bytes) / Math.log(kb_size)), 10);
     var size = Math.round(bytes / Math.pow(kb_size, i));
     if ((i > 0) && (size < 10)) {
         size = Math.round((bytes / Math.pow(kb_size, i)) * 10) / 10;
+=======
+    var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1000)), 10);
+    var size = Math.round(bytes / Math.pow(1000, i), 2);
+    if ((i > 0) && (size < 10)) {
+        size = '0' + size;
+>>>>>>> user settings: Change file size display format
+=======
+    var i = parseInt(Math.floor(Math.log(bytes) / Math.log(kb_size)), 10);
+    var size = Math.round(bytes / Math.pow(kb_size, i));
+    if ((i > 0) && (size < 10)) {
+        size = Math.round((bytes / Math.pow(kb_size, i)) * 10) / 10;
+>>>>>>> user settings: fix uploaded files UI
     }
     return size + ' ' + sizes[i];
  };
@@ -38,8 +62,18 @@ exports.set_up_attachments = function () {
 
     var attachments = page_params.attachments;
     _.each(attachments, function (attachment) {
+<<<<<<< 23062f5bf64cfbd7e9b78d72d465926b303b534f
+<<<<<<< ee4fc0ed44726ab233a08d1393614f0f70e6367f
         var time = new XDate(attachment.create_time);
         attachment.create_time_str = timerender.render_now(time).time_str;
+=======
+
+        attachment.create_time_str = timerender.relative_date(attachment.create_time);
+>>>>>>> user settings: change 'Date uploaded' display format
+=======
+        var time = new XDate(attachment.create_time);
+        attachment.create_time_str = timerender.render_now(time).time_str;
+>>>>>>> user settings: fix uploaded files UI
         attachment.size_str = exports.bytes_to_size(attachment.size);
     });
 
