@@ -120,6 +120,8 @@ activity.update_huddles = function () {};
 
 global.compile_template('user_presence_row');
 global.compile_template('user_presence_rows');
+global.compile_template('listening_bot_presence_row');
+global.compile_template('listening_bot_presence_rows');
 global.compile_template('group_pms');
 
 var presence_info = {};
@@ -272,6 +274,7 @@ presence.presence_info[me.user_id] = { status: activity.ACTIVE };
 activity.set_user_list_filter();
 
 (function test_presence_list_full_update() {
+    page_params.realm_listening_bots = ['helloworld', 'jira'];
     var users = activity.build_user_sidebar();
     assert.deepEqual(users, [{
             name: 'Fred Flintstone',

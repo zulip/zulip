@@ -49,6 +49,7 @@ from zerver.lib.actions import (
     do_deactivate_stream,
     do_deactivate_user,
     do_delete_message,
+    do_mark_bot_listening,
     do_mark_hotspot_as_read,
     do_mute_topic,
     do_reactivate_user,
@@ -965,6 +966,17 @@ class EventsRegisterTest(ZulipTestCase):
         error = schema_checker_android('events[0]', events[0])
         self.assert_on_error(error)
 
+    def test_listening_bots(self) -> None:
+        schema_checker = self.check_events_dict([
+            ('type', equals('realm')),
+            ('op', equals('update')),
+            ('property', equals('listening_bots_str')),
+            ('value', equals('helloworld')),
+        ])
+        events = self.do_test(lambda: do_mark_bot_listening(self.user_profile.realm, 'helloworld', True))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
     def test_pointer_events(self) -> None:
         schema_checker = self.check_events_dict([
             ('type', equals('pointer')),
@@ -1213,6 +1225,7 @@ class EventsRegisterTest(ZulipTestCase):
             message_retention_days=[10, 20],
             name=[u'Zulip', u'New Name'],
             waiting_period_threshold=[10, 20],
+            listening_bots_str = [u'', u'helloworld', u'helloworld,chess', u'jira', u''],
         )  # type: Dict[str, Any]
 
         vals = test_values.get(name)
