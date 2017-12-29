@@ -64,11 +64,10 @@ def report_send_times(request: HttpRequest, user_profile: UserProfile,
 
 @human_users_only
 @has_request_variables
-def report_narrow_times(request, user_profile,
-                        initial_core=REQ(converter=to_non_negative_int),
-                        initial_free=REQ(converter=to_non_negative_int),
-                        network=REQ(converter=to_non_negative_int)):
-    # type: (HttpRequest, UserProfile, int, int, int) -> HttpResponse
+def report_narrow_times(request: HttpRequest, user_profile: UserProfile,
+                        initial_core: int=REQ(converter=to_non_negative_int),
+                        initial_free: int=REQ(converter=to_non_negative_int),
+                        network: int=REQ(converter=to_non_negative_int)) -> HttpResponse:
     request._log_data["extra"] = "[%sms/%sms/%sms]" % (initial_core, initial_free, network)
     base_key = statsd_key(user_profile.realm.string_id, clean_periods=True)
     statsd.timing("narrow.initial_core.%s" % (base_key,), initial_core)
@@ -78,10 +77,9 @@ def report_narrow_times(request, user_profile,
 
 @human_users_only
 @has_request_variables
-def report_unnarrow_times(request, user_profile,
-                          initial_core=REQ(converter=to_non_negative_int),
-                          initial_free=REQ(converter=to_non_negative_int)):
-    # type: (HttpRequest, UserProfile, int, int) -> HttpResponse
+def report_unnarrow_times(request: HttpRequest, user_profile: UserProfile,
+                          initial_core: int=REQ(converter=to_non_negative_int),
+                          initial_free: int=REQ(converter=to_non_negative_int)) -> HttpResponse:
     request._log_data["extra"] = "[%sms/%sms]" % (initial_core, initial_free)
     base_key = statsd_key(user_profile.realm.string_id, clean_periods=True)
     statsd.timing("unnarrow.initial_core.%s" % (base_key,), initial_core)
@@ -90,11 +88,11 @@ def report_unnarrow_times(request, user_profile,
 
 @human_users_only
 @has_request_variables
-def report_error(request, user_profile, message=REQ(), stacktrace=REQ(),
-                 ui_message=REQ(validator=check_bool), user_agent=REQ(),
-                 href=REQ(), log=REQ(),
-                 more_info=REQ(validator=check_dict([]), default=None)):
-    # type: (HttpRequest, UserProfile, Text, Text, bool, Text, Text, Text, Optional[Dict[str, Any]]) -> HttpResponse
+def report_error(request: HttpRequest, user_profile: UserProfile, message: Text=REQ(),
+                 stacktrace: Text=REQ(), ui_message: bool=REQ(validator=check_bool),
+                 user_agent: Text=REQ(), href: Text=REQ(), log: Text=REQ(),
+                 more_info: Optional[Dict[str, Any]]=REQ(validator=check_dict([]), default=None)
+                 ) -> HttpResponse:
     """Accepts an error report and stores in a queue for processing.  The
     actual error reports are later handled by do_report_error (below)"""
     if not settings.BROWSER_ERROR_REPORTING:
