@@ -318,7 +318,7 @@ casper.then(function () {
 });
 
 function submit_org_settings_change() {
-    casper.click('form.org-settings-form button.button');
+    casper.click('form.org-settings-form button.button.save-message-org-settings');
 }
 
 casper.then(function () {

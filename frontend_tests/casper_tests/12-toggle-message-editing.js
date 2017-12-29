@@ -168,7 +168,7 @@ submit_checked();
 
 casper.then(function () {
     casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
-        casper.test.assertSelectorHasText('#admin-realm-message-editing-status', 'Users can now edit topics for all their messages, and the content of messages which are less than 10 minutes old.');
+        casper.test.assertSelectorHasText('#admin-realm-message-editing-status', 'Setting updated!');
         casper.test.assertEval(function () {
             return document.querySelector('input[type="checkbox"][id="id_realm_allow_message_editing"]').checked;
         }, 'Allow message editing Setting re-activated');
@@ -195,7 +195,7 @@ casper.then(function () {
 casper.then(function () {
     casper.waitUntilVisible('input[type="checkbox"][id="id_realm_allow_message_editing"] + span', function () {
         casper.evaluate(function () {
-            $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val('4');
+            $('input[type="text"][id="id_realm_message_content_edit_limit"]').val('4');
         });
     });
 });
@@ -210,7 +210,7 @@ casper.then(function () {
             return !(document.querySelector('input[type="checkbox"][id="id_realm_allow_message_editing"]').checked);
         }, 'Allow message editing Setting de-activated');
         casper.test.assertEval(function () {
-            return $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val() === '4';
+            return $('input[type="text"][id="id_realm_message_content_edit_limit"]').val() === '4';
         }, 'Message content edit limit now 4');
     });
 });
@@ -223,12 +223,12 @@ submit_checked();
 
 casper.then(function () {
     casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
-        casper.test.assertSelectorHasText('#admin-realm-message-editing-status', 'Users can now edit topics for all their messages, and the content of messages which are less than 4 minutes old.');
+        casper.test.assertSelectorHasText('#admin-realm-message-editing-status', 'Setting updated!');
         casper.test.assertEval(function () {
             return document.querySelector('input[type="checkbox"][id="id_realm_allow_message_editing"]').checked;
         }, 'Allow message editing Setting activated');
         casper.test.assertEval(function () {
-            return $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val() === '4';
+            return $('input[type="text"][id="id_realm_message_content_edit_limit"]').val() === '4';
         }, 'Message content edit limit still 4');
     });
 });
@@ -240,7 +240,7 @@ casper.then(function () {
     // allow arbitrary message editing
     casper.waitUntilVisible('input[type="checkbox"][id="id_realm_allow_message_editing"] + span', function () {
         casper.evaluate(function () {
-            $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val('0');
+            $('input[type="text"][id="id_realm_message_content_edit_limit"]').val('0');
         });
     });
 });
@@ -248,12 +248,12 @@ submit_checked();
 
 casper.then(function () {
     casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
-        casper.test.assertSelectorHasText('#admin-realm-message-editing-status', 'Users can now edit the content and topics of all their past messages!');
+        casper.test.assertSelectorHasText('#admin-realm-message-editing-status', 'Setting updated!');
         casper.test.assertEval(function () {
             return document.querySelector('input[type="checkbox"][id="id_realm_allow_message_editing"]').checked;
         }, 'Allow message editing Setting still activated');
         casper.test.assertEval(function () {
-            return $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val() === '0';
+            return $('input[type="text"][id="id_realm_message_content_edit_limit"]').val() === '0';
         }, 'Message content edit limit is 0');
     });
 });
@@ -265,7 +265,7 @@ casper.then(function () {
     // disallow message editing, with illegal edit limit value. should be fixed by admin.js
     casper.waitUntilVisible('input[type="checkbox"][id="id_realm_allow_message_editing"] + span', function () {
         casper.evaluate(function () {
-            $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val('moo');
+            $('input[type="text"][id="id_realm_message_content_edit_limit"]').val('moo');
         });
     });
 });
@@ -274,12 +274,13 @@ submit_unchecked();
 
 casper.then(function () {
     casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
-        casper.test.assertSelectorHasText('#admin-realm-message-editing-status', 'Users can no longer edit their past messages!');
+        casper.test.assertSelectorHasText('#admin-realm-message-editing-status', 'Failed: Must be a positive number');
         casper.test.assertEval(function () {
             return !(document.querySelector('input[type="checkbox"][id="id_realm_allow_message_editing"]').checked);
         }, 'Allow message editing Setting de-activated');
         casper.test.assertEval(function () {
-            return $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val() === '10';
+            // if illegal edit limit value is submitted the value of edit limit is same as before
+            return $('input[type="text"][id="id_realm_message_content_edit_limit"]').val() === '0';
         }, 'Message content edit limit has been reset to its default');
     });
 });
