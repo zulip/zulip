@@ -151,9 +151,6 @@ function show_subscription_settings(sub_row) {
     var stream_id = sub_row.data("stream-id");
     var sub = stream_data.get_sub_by_id(stream_id);
     var sub_settings = settings_for_sub(sub);
-    var alerts = sub_settings
-        .find('.subscriber_list_container')
-        .find('.alert-warning, .alert-error');
 
     var colorpicker = sub_settings.find('.colorpicker');
     var color = stream_data.get_color(sub.name);
@@ -164,7 +161,6 @@ function show_subscription_settings(sub_row) {
     }
     // fetch subscriber list from memory.
     var list = get_subscriber_list(sub_settings);
-    alerts.addClass("hide");
     list.empty();
 
     var emails = get_email_of_subscribers(sub.subscribers);
@@ -472,16 +468,13 @@ $(function () {
 
         var text_box = settings_row.find('input[name="principal"]');
         var principal = $.trim(text_box.val());
-        // TODO: clean up this error handling
-        var error_elem = settings_row.find('.subscriber_list_container .alert-error');
-        var warning_elem = settings_row.find('.subscriber_list_container .alert-warning');
+        var stream_subscription_info_elem = $('.stream_subscription_info').expectOne();
 
         function invite_success(data) {
             text_box.val('');
 
             if (data.subscribed.hasOwnProperty(principal)) {
-                error_elem.addClass("hide");
-                warning_elem.addClass("hide");
+                stream_subscription_info_elem.text(i18n.t("Subscribed successfully!"));
                 if (people.is_current_user(principal)) {
                     // mark_subscribed adds the user to the member list
                     // TODO: We should really let the event system
@@ -490,14 +483,16 @@ $(function () {
                     stream_events.mark_subscribed(sub);
                 }
             } else {
-                error_elem.addClass("hide");
-                warning_elem.removeClass("hide").text(i18n.t("User already subscribed"));
+                stream_subscription_info_elem.text(i18n.t("User already subscribed"));
             }
+            stream_subscription_info_elem.addClass("text-success")
+                                         .removeClass("text-error");
         }
 
         function invite_failure() {
-            warning_elem.addClass("hide");
-            error_elem.removeClass("hide").text(i18n.t("Could not add user to this stream"));
+            stream_subscription_info_elem.text(i18n.t("Could not add user to this stream"))
+                                         .addClass("text-error")
+                                         .removeClass("text-success");
         }
 
         exports.invite_user_to_stream(principal, sub, invite_success, invite_failure);
@@ -515,17 +510,13 @@ $(function () {
             blueslip.error('.subscriber_list_remove form submit fails');
             return;
         }
-
-        var error_elem = settings_row.find('.subscriber_list_container .alert-error');
-        var warning_elem = settings_row.find('.subscriber_list_container .alert-warning');
+        var stream_subscription_info_elem = $('.stream_subscription_info').expectOne();
 
         function removal_success(data) {
             if (data.removed.length > 0) {
-                error_elem.addClass("hide");
-                warning_elem.addClass("hide");
-
                 // Remove the user from the subscriber list.
                 list_entry.remove();
+                stream_subscription_info_elem.text(i18n.t("Unsubscribed successfully!"));
 
                 if (people.is_current_user(principal)) {
                     // If you're unsubscribing yourself, mark whole
@@ -536,14 +527,16 @@ $(function () {
                     stream_events.mark_unsubscribed(sub);
                 }
             } else {
-                error_elem.addClass("hide");
-                warning_elem.removeClass("hide").text(i18n.t("User is already not subscribed"));
+                stream_subscription_info_elem.text(i18n.t("User is already not subscribed"));
             }
+            stream_subscription_info_elem.addClass('text-success')
+                                         .removeClass('text-error');
         }
 
         function removal_failure() {
-            warning_elem.addClass("hide");
-            error_elem.removeClass("hide").text(i18n.t("Error removing user from this stream"));
+            stream_subscription_info_elem.text(i18n.t("Error removing user from this stream"))
+                                         .addClass("text-error")
+                                         .removeClass("text-success");
         }
 
         exports.remove_user_from_stream(principal, sub, removal_success,
