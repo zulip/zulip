@@ -5,6 +5,10 @@ from typing import Optional
 # See https://zulip.readthedocs.io/en/latest/subsystems/settings.html for
 # detailed technical documentation on the Zulip settings system.
 #
+# After making changes, be seure to restart the server. See
+# https://zulip.readthedocs.io/en/latest/production/customize.html for more
+# information.
+
 ### MANDATORY SETTINGS
 #
 # These settings MUST be set in production. In a development environment,
