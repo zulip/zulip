@@ -158,18 +158,17 @@ exports.rerender_subscribers_count = function (sub) {
 function add_email_hint(row, email_address_hint_content) {
     // Add a popover explaining stream e-mail addresses on hover.
     var hint_id = "#email-address-hint-" + row.stream_id;
-    var email_address_hint = $(hint_id);
-    email_address_hint.popover({placement: "bottom",
+
+    $("body").on("mouseover", hint_id, function (e) {
+        $(hint_id).popover({placement: "bottom",
                 title: "Email integration",
                 content: email_address_hint_content,
                 trigger: "manual"});
-
-    $("body").on("mouseover", hint_id, function (e) {
-        email_address_hint.popover('show');
+        $(hint_id).popover('show');
         e.stopPropagation();
     });
     $("body").on("mouseout", hint_id, function (e) {
-        email_address_hint.popover('hide');
+        $(hint_id).popover('hide');
         e.stopPropagation();
     });
 }
