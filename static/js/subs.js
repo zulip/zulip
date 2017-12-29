@@ -160,7 +160,7 @@ function add_email_hint(row, email_address_hint_content) {
     var hint_id = "#email-address-hint-" + row.stream_id;
 
     $("body").on("mouseover", hint_id, function (e) {
-        $(hint_id).popover({placement: "bottom",
+        $(hint_id).popover({placement: "right",
                 title: "Email integration",
                 content: email_address_hint_content,
                 trigger: "manual"});
