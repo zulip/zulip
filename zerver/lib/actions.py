@@ -110,6 +110,7 @@ from zerver.lib.upload import attachment_url_re, attachment_url_to_path_id, \
     claim_attachment, delete_message_image
 from zerver.lib.str_utils import NonBinaryStr, force_str
 from zerver.tornado.event_queue import request_event_queue, send_event
+from zerver.lib.emoji_conversions import convert_emoji
 
 import DNS
 import ujson
@@ -1654,6 +1655,9 @@ def check_send_message(sender: UserProfile, client: Client, message_type_name: T
         message_to,
         topic_name)
 
+    if sender.emoji_conversion is True:
+        message_content = convert_emoji(message_content)
+
     message = check_message(sender, client, addressee,
                             message_content, realm, forged, forged_timestamp,
                             forwarder_user_profile, local_id, sender_queue_id)
@@ -1747,6 +1751,9 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
         raise JsonableError(_("Message must not be empty"))
     if '\x00' in message_content:
         raise JsonableError(_("Message must not contain null bytes"))
+
+    if sender.emoji_conversion is True:
+        message_content = convert_emoji(message_content)
 
     message_content = truncate_body(message_content)
 
@@ -2887,6 +2894,16 @@ def do_change_notification_settings(user_profile: UserProfile, name: str, value:
     if log:
         log_event(event)
     send_event(event, [user_profile.id])
+
+def do_change_emoji_conversion(user_profile: UserProfile, emoji_conversion: bool,
+                               log: bool=True) -> None:
+    user_profile.emoji_conversion = emoji_conversion
+    user_profile.save(update_fields=["emoji_conversion"])
+
+    if log:
+        log_event({'type': 'emoji_conversion',
+                   'user': user_profile.email,
+                   'emoji_conversion': emoji_conversion})
 
 def do_change_enter_sends(user_profile: UserProfile, enter_sends: bool) -> None:
     user_profile.enter_sends = enter_sends

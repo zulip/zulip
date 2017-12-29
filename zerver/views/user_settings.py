@@ -13,7 +13,8 @@ from zerver.lib.actions import do_change_password, do_change_notification_settin
     do_change_enter_sends, do_change_default_desktop_notifications, \
     do_regenerate_api_key, do_change_avatar_fields, \
     do_set_user_display_setting, validate_email, do_change_user_email, \
-    do_start_email_change_process, check_change_full_name
+    do_start_email_change_process, check_change_full_name, \
+    do_change_emoji_conversion
 from zerver.lib.avatar import avatar_url
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.i18n import get_available_language_codes
@@ -56,7 +57,8 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
 @has_request_variables
 def json_change_ui_settings(
         request: HttpRequest, user_profile: UserProfile,
-        default_desktop_notifications: Optional[bool]=REQ(validator=check_bool, default=None)
+        default_desktop_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
+        emoji_conversion: Optional[bool]=REQ(validator=check_bool, default=None)
 ) -> HttpResponse:
     result = {}
 
@@ -64,6 +66,11 @@ def json_change_ui_settings(
             user_profile.default_desktop_notifications != default_desktop_notifications:
         do_change_default_desktop_notifications(user_profile, default_desktop_notifications)
         result['default_desktop_notifications'] = default_desktop_notifications
+
+    if emoji_conversion is not None and \
+            user_profile.emoji_conversion != emoji_conversion:
+        do_change_emoji_conversion(user_profile, emoji_conversion)
+        result['emoji_conversion'] = emoji_conversion
 
     return json_success(result)
 
@@ -134,6 +141,7 @@ def update_display_settings_backend(
         night_mode: Optional[bool]=REQ(validator=check_bool, default=None),
         default_language: Optional[bool]=REQ(validator=check_string, default=None),
         left_side_userlist: Optional[bool]=REQ(validator=check_bool, default=None),
+        emoji_conversion: Optional[bool]=REQ(validator=check_bool, default=None),
         emojiset: Optional[str]=REQ(validator=check_string, default=None),
         timezone: Optional[str]=REQ(validator=check_string, default=None)) -> HttpResponse:
 

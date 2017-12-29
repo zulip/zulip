@@ -10,7 +10,8 @@
                "./static/third/bootstrap/js/bootstrap.js",
                "./static/js/common.js",
                "./node_modules/moment/min/moment.min.js",
-               "./node_modules/moment-timezone/builds/moment-timezone-with-data.min.js"
+               "./node_modules/moment-timezone/builds/moment-timezone-with-data.min.js",
+               "./static/js/emoji_conversions.js"
               ],
     "help": [
             "./node_modules/perfect-scrollbar/dist/js/perfect-scrollbar.jquery.js",

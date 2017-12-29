@@ -125,6 +125,8 @@ function create_message_object() {
 
     var content = make_uploads_relative(compose_state.message_content());
 
+    content = emoji_conversions.convert_emoji(content);
+
     // Changes here must also be kept in sync with echo.try_deliver_locally
     var message = {
         type: compose_state.get_message_type(),

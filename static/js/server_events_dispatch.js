@@ -278,6 +278,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
     case 'update_display_settings':
         var user_display_settings = [
             'default_language',
+            'emoji_conversion',
             'emojiset',
             'high_contrast_mode',
             'night_mode',
@@ -308,6 +309,13 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 }
                 $("body").fadeIn(300);
             }, 300);
+        }
+        if (event.setting_name === 'emoji_conversion') {
+            // Rerender the whole message list UI
+            home_msg_list.rerender();
+            if (current_msg_list === message_list.narrowed) {
+                message_list.narrowed.rerender();
+            }
         }
         if (event.setting_name === 'left_side_userlist') {
             // TODO: Make this change the view immediately rather

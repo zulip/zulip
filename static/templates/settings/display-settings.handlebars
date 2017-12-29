@@ -50,6 +50,17 @@
                 </label>
                 <label for="left_side_userlist" class="inline-block">{{t "User list on left sidebar in narrow windows" }}</label>
             </div>
+
+            <div class="input-group">
+                <label class="checkbox">
+                    <input type="checkbox" name="emoji_conversion" id="emoji_conversion"
+                    {{#if page_params.emoji_conversion}}
+                      checked="checked"
+                    {{/if}} />
+                    <span></span>
+                </label>
+                <label for="emoji_conversion" class="inline-block">{{t 'Automatically convert emoticons to emoji (displays <img alt=":heart:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2764.png" title=":heart:"/> when &#60;3 is typed)' }}</label>
+            </div>
         </div>
 
         <h3 class="light">{{t "Time settings" }}</h3>
