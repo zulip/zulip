@@ -47,9 +47,9 @@ You can create three types of bots:
       https://github.com/zulip/zulip/tree/master/zerver/webhooks).
 
 * **Outgoing webhook:** Bots of this type are the same as a **Generic bot**,
-  except **Outgoing webhooks** bots have an extra field for the base URL of the
+  except **Outgoing webhooks** bots have an extra field for the Endpoint URL of the
   third-party service being requested. **Outgoing webhook** bots send POST requests
-  to this base URL.
+  to this Endpoint URL.
   Choose this type if you want to:
     * make Zulip post messages to a URL.
     * deploy Zulip's [botserver](https://github.com/zulip/python-zulip-api/tree/master/zulip_botserver).
