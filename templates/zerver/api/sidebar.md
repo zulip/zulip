@@ -15,6 +15,10 @@
 * [Get stream ID](/api/get-stream-id)
 * [Get subscribed streams](/api/get-subscribed-streams)
 
+#### Users
+
+* [Get all users](/api/get-all-users)
+
 ## Integrations
 
 * [Overview](/api/integration-guide)
