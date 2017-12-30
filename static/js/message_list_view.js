@@ -439,7 +439,7 @@ MessageListView.prototype = {
                     var text = $(this).attr("title");
                     return ":" + text + ":";
                 });
-             }
+            }
 
             var id = rows.id(row);
             message_edit.maybe_show_edit(row, id);
