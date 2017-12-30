@@ -8,7 +8,7 @@
                     <label class="inline-block title">{{t "Email" }}</label>
                     <a id="change_email" {{#unless page_params.realm_email_changes_disabled}}href="#change_email"{{/unless}}>
                         <button type="button" class="button small rounded inline-block" id='email_value'
-                            {{#if page_params.realm_email_changes_disabled}} disabled="true" {{/if}}>
+                            {{#if page_params.realm_email_changes_disabled}} disabled="disabled" {{/if}}>
                             {{page_params.email}}
                             <i class="fa fa-pencil"></i>
                         </button>
