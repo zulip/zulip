@@ -7,6 +7,7 @@
 
 * [Stream message](/api/stream-message)
 * [Private message](/api/private-message)
+* [Render message](/api/render-message)
 
 #### Streams
 

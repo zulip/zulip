@@ -78,5 +78,13 @@
             "required":"Required",
             "example":"Denmark"
         }
+    ],
+    "render-message.md":[
+        {
+            "argument":"content",
+            "description":"The content of the message.",
+            "required":"Required",
+            "example":"**foo**"
+        }
     ]
 }
