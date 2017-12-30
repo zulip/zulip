@@ -51,7 +51,7 @@ exports.send_read = (function () {
         if (data ===  undefined || data.messages === undefined) {
             return;
         }
-
+        recent_topics.process_messages(queue);
         queue = _.filter(queue, function (message) {
             return data.messages.indexOf(message.id) === -1;
         });

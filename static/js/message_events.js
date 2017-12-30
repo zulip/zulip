@@ -98,6 +98,7 @@ exports.insert_new_messages = function insert_new_messages(messages, locally_ech
     notifications.received_messages(messages);
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
+    recent_topics.process_messages(messages);
 };
 
 exports.maybe_advance_to_recently_sent_message = function (messages) {
