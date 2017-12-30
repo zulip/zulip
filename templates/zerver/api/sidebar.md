@@ -12,6 +12,7 @@
 
 * [Get all streams](/api/get-all-streams)
 * [Get stream ID](/api/get-stream-id)
+* [Get subscribed streams](/api/get-subscribed-streams)
 
 ## Integrations
 
