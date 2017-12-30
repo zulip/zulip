@@ -1,10 +1,12 @@
-# Restrict editing of old messages and topics
+# Restrict editing and deleting of old messages and topics
 
 {!admin-only.md!}
 
 You can easily change the time limit that your organization's users have to
-change their messages after sending them. Alternatively, you can choose to
-disable message editing for your organization users.
+change or delete their messages after sending them. Alternatively, you can
+choose to disable message editing or deleting for your organization users.
+
+## Restrict editing messages
 
 {!go-to-the.md!} [Organization settings](/#organization/organization-settings)
 {!admin.md!}
@@ -31,3 +33,32 @@ underneath it.
             their messages whenever they want.
 
 {!save-changes.md!} organization settings.
+
+## Restrict deleting messages
+
+{!go-to-the.md!} [Organization settings](/#organization/organization-settings)
+{!admin.md!}
+
+4. Under the **Message editing** section, find the **Users can delete their messages**
+checkbox and **Message delete limit in minutes (0 for no limit)** input field
+underneath it.
+
+    By default, user message deleting is enabled for 10 minutes after sending.
+
+    * **Users can delete their messages** - Uncheck this option if you wish to
+    disable message deleting. Upon doing so, the **Message delete limit in minutes (0 for no limit)**
+    input field will be grayed out.
+
+    * **Message delete limit in minutes (0 for no limit)** - If you enable message
+    deleting in your organization, you can restrict the time that organization
+    users have to delete their messages. Simply input the time limit in minutes
+    that you would like to set; for example, if you want to set a message delete
+    time limit of 5 minutes, enter **5** in the field.
+
+        !!! tip ""
+            If you would like to disable the message deleting time limit for your
+            organization, enter **0** in the field. This enables users to delete
+            their messages whenever they want.
+
+{!save-changes.md!} organization settings.
+

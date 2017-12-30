@@ -21,7 +21,7 @@ the **Save** button to save the changes you made to your message.
     edit history, assuming that feature has not been
     [disabled by an organization administrator](/help/disable-message-edit-history).
 
-## Message editing time limit
+### Message editing time limit
 
 Depending on your organization settings, Zulip may be configured with a time
 limit within which you may edit a message (e.g. 10 minutes). As soon as that
@@ -44,9 +44,13 @@ can be the least confusing option for other users.
 
 ### Delete a message completely
 
-For cases where someone accidentally shared secret information
-publicly (e.g.  you posted an employee's salary), one can completely
-delete a message from Zulip by following the instructions below.
+Your organization settings may be configured with a time limit within which
+you may delete a message completely. Administrators can delete messages sent
+by anyone, while other users may delete their own messages only.
+
+For cases where someone accidentally shared secret
+information publicly (e.g.  you posted an employee's salary), one can
+completely delete a message from Zulip by following the instructions below.
 
 It's important to understand that anyone who received the message
 before you deleted it could have made a copy of its content. So if you
@@ -54,7 +58,6 @@ accidentally shared secret information that you can change, like a
 password, you may want to change that password regardless of whether
 you also delete the message.
 
-{!admin-only.md!}
 {!message-actions.md!}
 {!down-chevron.md!}
 
