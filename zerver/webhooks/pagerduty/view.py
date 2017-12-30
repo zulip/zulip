@@ -114,9 +114,10 @@ def send_formated_pagerduty(user_profile: UserProfile,
 
 @api_key_only_webhook_view('PagerDuty')
 @has_request_variables
-def api_pagerduty_webhook(request, user_profile, payload=REQ(argument_type='body'),
-                          stream=REQ(default='pagerduty'), topic=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, Dict[str, Iterable[Dict[str, Any]]], Text, Optional[Text]) -> HttpResponse
+def api_pagerduty_webhook(request: HttpRequest, user_profile: UserProfile,
+                          payload: Dict[str, Iterable[Dict[str, Any]]]=REQ(argument_type='body'),
+                          stream: Text=REQ(default='pagerduty'),
+                          topic: Optional[Text]=REQ(default=None)) -> HttpResponse:
     for message in payload['messages']:
         message_type = message['type']
 

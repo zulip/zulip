@@ -40,11 +40,10 @@ def ready_payload(signatories: List[Dict[str, Any]],
 
 @api_key_only_webhook_view('HelloSign')
 @has_request_variables
-def api_hellosign_webhook(request, user_profile,
-                          payload=REQ(argument_type='body'),
-                          stream=REQ(default='hellosign'),
-                          topic=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, Dict[str, Dict[str, Any]], str, str) -> HttpResponse
+def api_hellosign_webhook(request: HttpRequest, user_profile: UserProfile,
+                          payload: Dict[str, Dict[str, Any]]=REQ(argument_type='body'),
+                          stream: str=REQ(default='hellosign'),
+                          topic: str=REQ(default=None)) -> HttpResponse:
     model_payload = ready_payload(payload['signature_request']['signatures'], payload)
     body = format_body(payload['signature_request']['signatures'], model_payload)
     topic = topic or model_payload['contract_title']

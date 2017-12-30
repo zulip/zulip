@@ -6,8 +6,7 @@ import time
 
 from contextlib import contextmanager
 
-if False:
-    from typing import (Any, Iterator, Optional)
+from typing import (Any, Iterator, Optional)
 
 # Verify the Zulip venv is available.
 from tools.lib import sanity_check
@@ -49,9 +48,9 @@ def server_is_up(server, log_file):
         return False
 
 @contextmanager
-def test_server_running(force=False, external_host='testserver',
-                        log_file=None, dots=False, use_db=True):
-    # type: (bool, str, str, bool, bool) -> Iterator[None]
+def test_server_running(force: bool=False, external_host: str='testserver',
+                        log_file: str=None, dots: bool=False, use_db: bool=True
+                        ) -> Iterator[None]:
     log = sys.stdout
     if log_file:
         if os.path.exists(log_file) and os.path.getsize(log_file) < 100000:

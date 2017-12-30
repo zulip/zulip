@@ -58,10 +58,9 @@ def get_body_for_down_event(event: Dict[str, Any]) -> str:
 
 @api_key_only_webhook_view('Updown')
 @has_request_variables
-def api_updown_webhook(request, user_profile,
-                       payload=REQ(argument_type='body'),
-                       stream=REQ(default='updown')):
-    # type: (HttpRequest, UserProfile, List[Dict[str, Any]], str) -> HttpResponse
+def api_updown_webhook(request: HttpRequest, user_profile: UserProfile,
+                       payload: List[Dict[str, Any]]=REQ(argument_type='body'),
+                       stream: str=REQ(default='updown')) -> HttpResponse:
     for event in payload:
         send_message_for_event(event, user_profile, request.client, stream)
     return json_success()
