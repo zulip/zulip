@@ -549,10 +549,11 @@ def extract_json_response(resp: requests.Response) -> Dict[str, Any]:
     else:
         return resp.json  # type: ignore # mypy trusts the stub, not the runtime type checking of this fn
 
-def request_event_queue(user_profile, user_client, apply_markdown, client_gravatar,
-                        queue_lifespan_secs, event_types=None, all_public_streams=False,
-                        narrow=[]):
-    # type: (UserProfile, Client, bool, bool, int, Optional[Iterable[str]], bool, Iterable[Sequence[Text]]) -> Optional[str]
+def request_event_queue(user_profile: UserProfile, user_client: Client, apply_markdown: bool,
+                        client_gravatar: bool, queue_lifespan_secs: int,
+                        event_types: Optional[Iterable[str]]=None,
+                        all_public_streams: bool=False,
+                        narrow: Iterable[Sequence[Text]]=[]) -> Optional[str]:
     if settings.TORNADO_SERVER:
         req = {'dont_block': 'true',
                'apply_markdown': ujson.dumps(apply_markdown),
