@@ -123,7 +123,7 @@ pip install zulip_botserver
     If omitted, `hostname` defaults to `127.0.0.1` and `port` to `5002`.
 
 4.  Now set up the outgoing webhook service which will interact with
-    the server: Create an **Outgoing webhook** bot with its base url
+    the server: Create an **Outgoing webhook** bot with its Endpoint URL
     of the form:
 
     ```

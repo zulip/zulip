@@ -15,7 +15,7 @@ class Command(ZulipBaseCommand):
         parser.add_argument('service_name', metavar='<service_name>', type=str,
                             help='name of Service object to create')
         parser.add_argument('base_url', metavar='<base_url>', type=str,
-                            help='base url of outgoing webhook')
+                            help='Endpoint URL of outgoing webhook')
         # TODO: Add token and interface as arguments once OutgoingWebhookWorker
         # uses these fields on the Service object.
 
@@ -35,7 +35,7 @@ class Command(ZulipBaseCommand):
             exit(1)
 
         if not base_url:
-            print('Base URL of outgoing webhook must be provided')
+            print('Endpoint URL of outgoing webhook must be provided')
             exit(1)
 
         # TODO: Normalize email?
