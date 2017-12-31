@@ -66,6 +66,20 @@
     float: none;
 }
 
+.stream_description {
+    margin-top: -5px;
+    font-size: 15px;
+    text-align: center;
+    color: black;
+    vertical-align: middle;
+    line-height: 30px;
+    display: block;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    padding-left: 15px;
+}
+
 ul.sender_info_popover i {
     display: inline-block;
     width: 14px;

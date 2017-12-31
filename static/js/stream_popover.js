@@ -84,10 +84,16 @@ function build_stream_popover(e) {
     exports.show_streamlist_sidebar();
 
     var stream_id = $(elt).parents('li').attr('data-stream-id');
+    var stream = stream_data.get_sub_by_id(stream_id);
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext("2d");
+    ctx.font = "14px 'Source Sans Pro'";
+    var width = ctx.measureText("Compose a message to the stream " + stream.name).width;
+    width += "px";
 
     var content = templates.render(
         'stream_sidebar_actions',
-        {stream: stream_data.get_sub_by_id(stream_id)}
+        {stream: stream}
     );
 
     $(elt).popover({
@@ -97,6 +103,7 @@ function build_stream_popover(e) {
     });
 
     $(elt).popover("show");
+    $(".stream_description").css("max-width", width);
     var popover = $('.streams_popover[data-stream-id=' + stream_id + ']');
 
     update_spectrum(popover, function (colorpicker) {
