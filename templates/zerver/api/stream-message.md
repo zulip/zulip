@@ -1,4 +1,14 @@
-# Usage examples
+# Stream message
+
+Send a message to a stream.
+
+`POST {{ api_url }}/v1/messages`
+
+## Arguments
+
+{generate_api_arguments_table|arguments.json|stream-message.md}
+
+## Usage examples
 <div class="code-section" markdown="1">
 <ul class="nav">
 <li data-language="curl">curl</li>
@@ -9,7 +19,6 @@
 <div class="blocks">
 
 <div data-language="curl" markdown="1">
-#### Stream message
 
 ```
 curl {{ api_url }}/v1/messages \
@@ -20,14 +29,6 @@ curl {{ api_url }}/v1/messages \
     -d "content=Something is rotten in the state of Denmark."
 ```
 
-#### Private message
-```
-curl {{ api_url }}/v1/messages \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
-    -d "type=private" \
-    -d "to=hamlet@example.com" \
-    -d "content=I come not, friends, to steal away your hearts."
-```
 </div>
 
 <div data-language="python" markdown="1">
@@ -49,21 +50,7 @@ client.send_message({
     "subject": "Castle",
     "content": "Something is rotten in the state of Denmark."
 })
-# Send a private message
-client.send_message({
-    "type": "private",
-    "to": "hamlet@example.com",
-    "content": "I come not, friends, to steal away your hearts."
-})
 
-# Print each message the user receives
-# This is a blocking call that will run forever
-client.call_on_each_message(lambda msg: sys.stdout.write(str(msg) + "\n"))
-
-# Print every event relevant to the user
-# This is a blocking call that will run forever
-# This will never be reached unless you comment out the previous line
-client.call_on_each_event(lambda msg: sys.stdout.write(str(msg) + "\n"))
 ```
 </div>
 
@@ -71,17 +58,8 @@ client.call_on_each_event(lambda msg: sys.stdout.write(str(msg) + "\n"))
 (available after you `pip install zulip`) to easily send Zulips from
 the command-line, providing the message content via STDIN.
 
-#### Stream message
-
 ```bash
 zulip-send --stream Denmark --subject Castle \
-    --user othello-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5
-```
-
-#### Private message
-
-```bash
-zulip-send hamlet@example.com \
     --user othello-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5
 ```
 
@@ -98,13 +76,13 @@ zulip-send --stream Denmark --subject Castle \
 
 You can omit the `user` and `api-key` arguments if you have a `~/.zuliprc` file.
 
-See also the [full API endpoint documentation.](/api/endpoints).
+See also the [full API endpoint documentation](/api/endpoints).
 </div>
 
 <div data-language="javascript" markdown="1">
 More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
 ```js
-const zulip = require('zulip');
+const zulip = require('zulip-js');
 
 const config = {
   username: 'othello-bot@example.com',
@@ -122,28 +100,31 @@ client.messages.send({
   content: 'Something is rotten in the state of Denmark.'
 });
 
-// Send a private message
-client.messages.send({
-  to: 'hamlet@example.com',
-  type: 'private',
-  content: 'I come not, friends, to steal away your hearts.'
-});
-
-// Register queue to receive messages for user
-client.queues.register({
-  event_types: ['message']
-}).then((res) => {
-  // Retrieve events from a queue
-  // Blocking until there is an event (or the request times out)
-  client.events.retrieve({
-    queue_id: res.queue_id,
-    last_event_id: -1,
-    dont_block: false
-  }).then(console.log);
-});
 ```
 </div>
 
 </div>
 
 </div>
+
+## Response
+
+#### Return values
+
+* `id`: The ID of the newly created message
+
+#### Example response
+
+{!successful-api-send-message-json-response.md!}
+
+A typical failed JSON response for when the target stream does not exist:
+
+```
+{
+    'code':'BAD_REQUEST',
+    'msg':"Stream 'Denmarkk' does not exist",
+    'result':'error'
+}
+```
+
+{!invalid-api-key-json-response.md!}

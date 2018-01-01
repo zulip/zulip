@@ -49,10 +49,11 @@ def get_presence_backend(request: HttpRequest, user_profile: UserProfile,
 
 @human_users_only
 @has_request_variables
-def update_active_status_backend(request, user_profile, status=REQ(),
-                                 ping_only=REQ(validator=check_bool, default=False),
-                                 new_user_input=REQ(validator=check_bool, default=False)):
-    # type: (HttpRequest, UserProfile, str, bool, bool) -> HttpResponse
+def update_active_status_backend(request: HttpRequest, user_profile: UserProfile,
+                                 status: str=REQ(),
+                                 ping_only: bool=REQ(validator=check_bool, default=False),
+                                 new_user_input: bool=REQ(validator=check_bool, default=False)
+                                 ) -> HttpResponse:
     status_val = UserPresence.status_from_string(status)
     if status_val is None:
         raise JsonableError(_("Invalid status: %s") % (status,))

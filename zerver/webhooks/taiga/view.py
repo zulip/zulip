@@ -32,9 +32,10 @@ from zerver.models import UserProfile
 
 @api_key_only_webhook_view('Taiga')
 @has_request_variables
-def api_taiga_webhook(request, user_profile, message=REQ(argument_type='body'),
-                      stream=REQ(default='taiga'), topic=REQ(default='General')):
-    # type: (HttpRequest, UserProfile, Dict[str, Any], Text, Text) -> HttpResponse
+def api_taiga_webhook(request: HttpRequest, user_profile: UserProfile,
+                      message: Dict[str, Any]=REQ(argument_type='body'),
+                      stream: Text=REQ(default='taiga'),
+                      topic: Text=REQ(default='General')) -> HttpResponse:
     parsed_events = parse_message(message)
 
     content_lines = []

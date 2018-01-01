@@ -1,0 +1,98 @@
+{
+    "private-message.md":[
+        {
+            "argument":"type",
+            "description":"The type of message to be sent. `private` for a private message and `stream` for a [stream message](/api/stream-message).",
+            "required":"Required",
+            "example":"private"
+        },
+        {
+            "argument":"to",
+            "description":"A JSON-encoded list containing the usernames of the recipients.",
+            "required":"Required",
+            "example":"wdaher@example.com"
+        },
+        {
+            "argument":"content",
+            "description":"The content of the message. Maximum message size of 10000 bytes.",
+            "required":"Required",
+            "example":"Hello"
+        }
+    ],
+    "stream-message.md":[
+        {
+            "argument":"type",
+            "description":"The type of message to be sent. `stream` for a stream message and `private` for a [private message](/api/private-message).",
+            "required":"Required",
+            "example":"stream"
+        },
+        {
+            "argument":"to",
+            "description":"A string identifying the stream.",
+            "required":"Required",
+            "example":"Denmark"
+        },
+        {
+            "argument":"subject",
+            "description":"The topic of the message. Only required if `type` is `stream`. Defaults to `None`. Maximum length of 60 characters.",
+            "required":"Optional",
+            "example":"Castle"
+        },
+        {
+            "argument":"content",
+            "description":"The content of the message. Maximum message size of 10000 bytes.",
+            "required":"Required",
+            "example":"Hello"
+        }
+    ],
+    "get-all-streams.md":[
+        {
+            "argument":"include_public",
+            "description":"Include all public streams. Default is `True`.",
+            "required":"Optional",
+            "example":"`True` or `False`"
+        },
+        {
+            "argument":"include_subscribed",
+            "description":"Include all streams that the user is subscribed to. Default is `True`.",
+            "required":"Optional",
+            "example":"`True` or `False`"
+        },
+        {
+            "argument":"include_all_active",
+            "description":"Include all active streams. The user must have administrative privileges to use this parameter. Default is `False`.",
+            "required":"Optional",
+            "example":"`True` or `False`"
+        },
+        {
+            "argument":"include_default",
+            "description":"Include all default streams for the user's realm. Default is `False`.",
+            "required":"Optional",
+            "example":"`True` or `False`"
+        }
+    ],
+    "get-stream-id.md":[
+        {
+            "argument":"stream",
+            "description":"The name of the stream to retrieve the ID for.",
+            "required":"Required",
+            "example":"Denmark"
+        }
+    ],
+    "render-message.md":[
+        {
+            "argument":"content",
+            "description":"The content of the message.",
+            "required":"Required",
+            "example":"**foo**"
+        }
+    ],
+    "get-all-users.md":[
+        {
+            "argument":"client_gravatar",
+            "description":"The `client_gravatar` field is set to `True` if clients can compute their own gravatars. Default is `False`.",
+            "required":"Optional",
+            "example":"`True` or `False`"
+        }
+    ]
+}

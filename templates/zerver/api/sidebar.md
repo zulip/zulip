@@ -2,7 +2,22 @@
 
 * [Installation instructions](/api/installation-instructions)
 * [API keys](/api/api-keys)
-* [Usage](/api/usage)
+
+#### Messages
+
+* [Stream message](/api/stream-message)
+* [Private message](/api/private-message)
+* [Render message](/api/render-message)
+
+#### Streams
+
+* [Get all streams](/api/get-all-streams)
+* [Get stream ID](/api/get-stream-id)
+* [Get subscribed streams](/api/get-subscribed-streams)
+
+#### Users
+
+* [Get all users](/api/get-all-users)
 
 ## Integrations
 

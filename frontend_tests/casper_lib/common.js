@@ -109,6 +109,14 @@ exports.start_and_log_in = function (credentials, viewport) {
     });
 };
 
+exports.then_click = function (selector) {
+    casper.then(function () {
+        casper.waitUntilVisible(selector, function () {
+            casper.click(selector);
+        });
+    });
+};
+
 exports.then_log_out = function () {
     var menu_selector = '#settings-dropdown';
     var logout_selector = 'a[href="#logout"]';

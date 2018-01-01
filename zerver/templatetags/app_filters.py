@@ -13,6 +13,7 @@ from django.utils.lru_cache import lru_cache
 from django.utils.safestring import mark_safe
 
 import zerver.lib.bugdown.fenced_code
+import zerver.lib.bugdown.api_arguments_table_generator
 
 register = Library()
 
@@ -83,6 +84,8 @@ def render_markdown_path(markdown_file_path, context=None):
                 guess_lang=False
             ),
             zerver.lib.bugdown.fenced_code.makeExtension(),
+            zerver.lib.bugdown.api_arguments_table_generator.makeExtension(
+                base_path='templates/zerver/api/'),
         ]
     if md_macro_extension is None:
         md_macro_extension = markdown_include.include.makeExtension(

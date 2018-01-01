@@ -145,21 +145,25 @@ body {
 
 .help .sidebar h1,
 .help .sidebar h2 {
-    font-size: 1.2em;
     font-weight: 400;
-    margin-bottom: 5px;
-    line-height: 105%;
 }
 
 .help .sidebar h1 {
     font-size: 1.25em;
+    line-height: 1.5;
+    margin-bottom: 0px;
 }
 
 .help .sidebar h1:not(:first-of-type) {
     margin-top: 20px;
 }
 
-.help .sidebar.slide h1,
+.help .sidebar h2 {
+    font-size: 1.2em;
+    line-height: 1.05;
+    margin-bottom: 5px;
+}
+
 .help .sidebar.slide h2 {
     cursor: pointer;
 }
@@ -176,6 +180,22 @@ body {
     margin-right: 5px;
 
     opacity: 0.5;
+}
+
+.help .sidebar h1.home-link {
+    font-size: 1em;
+}
+
+.help .sidebar h1.home-link a::before {
+    display: inline-block;
+    font: normal normal normal 14px/1 FontAwesome;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    content: "\f0d9";
+    margin-right: 10px;
 }
 
 .help .sidebar ul {
@@ -203,6 +223,15 @@ body {
 .help .sidebar h1 a {
     color: inherit;
     display: block;
+}
+
+.help .sidebar a.highlighted {
+    background-color: hsl(152, 40%, 42%);
+
+    /* Extend highlight to entire width of sidebar, not just link area */
+    width: calc(100% + 20px);
+    margin-left: -40px;
+    padding-left: 40px;
 }
 
 .app.help .hamburger {
@@ -1733,7 +1762,7 @@ input.new-organization-button {
         position: fixed;
         top: 70px;
         left: 9px;
-        fill: hsl(222, 33%, 33%);
+        fill: hsl(0, 0%, 100%);
         z-index: 2;
 
 

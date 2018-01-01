@@ -28,9 +28,10 @@ def validate_token(token_str: bytes, kind: int) -> None:
 
 @human_users_only
 @has_request_variables
-def add_apns_device_token(request, user_profile, token=REQ(),
-                          appid=REQ(default=settings.ZULIP_IOS_APP_ID)):
-    # type: (HttpRequest, UserProfile, bytes, str) -> HttpResponse
+def add_apns_device_token(request: HttpRequest, user_profile: UserProfile,
+                          token: bytes=REQ(),
+                          appid: str=REQ(default=settings.ZULIP_IOS_APP_ID)
+                          ) -> HttpResponse:
     validate_token(token, PushDeviceToken.APNS)
     add_push_device_token(user_profile, token, PushDeviceToken.APNS, ios_app_id=appid)
     return json_success()

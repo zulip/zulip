@@ -33,8 +33,7 @@ You need:
   your bot.
 * A computer where you're running the bot from.
 
-**Note: Please be considerate when testing experimental bots on
-  public servers such as chat.zulip.org.**
+**Note: Please be considerate when testing experimental bots on public servers such as chat.zulip.org.**
 
 1. Run `pip install zulip_bots` to install the package.
 
@@ -71,10 +70,8 @@ You need:
       the `usage` function returns, followed by logging output similar
       to this:
 
-      ```
-      INFO:root:starting message handling...
-      INFO:requests.packages.urllib3.connectionpool:Starting new HTTP connection (1): localhost
-      ```
+            INFO:root:starting message handling...
+            INFO:requests.packages.urllib3.connectionpool:Starting new HTTP connection (1): localhost
 
     * Congrats! Your bot is running.
 
@@ -167,13 +164,14 @@ running it manually.
       * Download the [sample config file][supervisord-config-file]
         and store it in `/etc/supervisor/conf.d/zulip-botserver.conf`.
       * Copy the following section into your existing supervisord config file.
-        ```
-        [program:zulip-bot-server]
-        command=zulip-bot-server --config-file=<path/to/your/flaskbotrc> --hostname <address> --port <port>
-        startsecs=3
-        stdout_logfile=/var/log/zulip-botserver.log ; all output of your botserver will be logged here
-        redirect_stderr=true
-        ```
+
+            [program:zulip-bot-server]
+            command=zulip-bot-server --config-file=<path/to/your/flaskbotrc>
+            --hostname <address> --port <port>
+            startsecs=3
+            stdout_logfile=/var/log/zulip-botserver.log ; all output of your botserver will be logged here
+            redirect_stderr=true
+
     * Edit the `<>` sections according to your preferences.
 
 [supervisord-config-file]: https://raw.githubusercontent.com/zulip/python-zulip-api/master/zulip_botserver/zulip-botserver-supervisord.conf

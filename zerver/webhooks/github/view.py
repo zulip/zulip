@@ -124,9 +124,9 @@ def api_github_v1(user_profile: UserProfile,
                          stream, commit_stream, issue_stream, **kwargs)
 
 
-def api_github_v2(user_profile, event, payload, branches, default_stream,
-                  commit_stream, issue_stream, topic_focus = None):
-    # type: (UserProfile, Text, Mapping[Text, Any], Text, Text, Text, Text, Optional[Text]) -> Tuple[Text, Text, Text]
+def api_github_v2(user_profile: UserProfile, event: Text, payload: Mapping[Text, Any],
+                  branches: Text, default_stream: Text, commit_stream: Text,
+                  issue_stream: Text, topic_focus: Optional[Text]=None) -> Tuple[Text, Text, Text]:
     """
     processes github payload with version 2 field specification
     `payload` comes in unmodified from github
@@ -194,19 +194,18 @@ def api_github_v2(user_profile, event, payload, branches, default_stream,
 
 @authenticated_api_view(is_webhook=True)
 @has_request_variables
-def api_github_landing(request, user_profile, event=REQ(),
-                       payload=REQ(validator=check_dict([])),
-                       branches=REQ(default=''),
-                       stream=REQ(default=''),
-                       version=REQ(converter=to_non_negative_int, default=1),
-                       commit_stream=REQ(default=''),
-                       issue_stream=REQ(default=''),
-                       exclude_pull_requests=REQ(converter=flexible_boolean, default=False),
-                       exclude_issues=REQ(converter=flexible_boolean, default=False),
-                       exclude_commits=REQ(converter=flexible_boolean, default=False),
-                       emphasize_branch_in_topic=REQ(converter=flexible_boolean, default=False),
-                       ):
-    # type: (HttpRequest, UserProfile, Text, Mapping[Text, Any], Text, Text, int, Text, Text, bool, bool, bool, bool) -> HttpResponse
+def api_github_landing(request: HttpRequest, user_profile: UserProfile, event: Text=REQ(),
+                       payload: Mapping[Text, Any]=REQ(validator=check_dict([])),
+                       branches: Text=REQ(default=''),
+                       stream: Text=REQ(default=''),
+                       version: int=REQ(converter=to_non_negative_int, default=1),
+                       commit_stream: Text=REQ(default=''),
+                       issue_stream: Text=REQ(default=''),
+                       exclude_pull_requests: bool=REQ(converter=flexible_boolean, default=False),
+                       exclude_issues: bool=REQ(converter=flexible_boolean, default=False),
+                       exclude_commits: bool=REQ(converter=flexible_boolean, default=False),
+                       emphasize_branch_in_topic: bool=REQ(converter=flexible_boolean, default=False),
+                       ) -> HttpResponse:
 
     repository = payload['repository']
 
@@ -280,9 +279,11 @@ def api_github_landing(request, user_profile, event=REQ(),
                                 forged=False, topic_name=subject,
                                 message_content=content)
 
-def build_message_from_gitlog(user_profile, name, ref, commits, before, after,
-                              url, pusher, forced=None, created=None, deleted=False):
-    # type: (UserProfile, Text, Text, List[Dict[str, str]], Text, Text, Text, Text, Optional[Text], Optional[Text], Optional[bool]) -> Tuple[Text, Text]
+def build_message_from_gitlog(user_profile: UserProfile, name: Text, ref: Text,
+                              commits: List[Dict[str, str]], before: Text, after: Text,
+                              url: Text, pusher: Text, forced: Optional[Text]=None,
+                              created: Optional[Text]=None, deleted: Optional[bool]=False
+                              ) -> Tuple[Text, Text]:
     short_ref = re.sub(r'^refs/heads/', '', ref)
     subject = SUBJECT_WITH_BRANCH_TEMPLATE.format(repo=name, branch=short_ref)
 

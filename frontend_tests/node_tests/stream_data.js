@@ -438,6 +438,15 @@ zrequire('marked', 'third/marked/lib/marked');
     assert(!stream_data.is_subscribed('Canada'));
     assert(!stream_data.get_sub('Canada'));
     assert(!stream_data.get_sub_by_id(canada.stream_id));
+
+    var warned = false;
+    blueslip.warn = function (msg) {
+        warned = true;
+        assert.equal(msg, 'Failed to delete stream does_not_exist');
+    };
+    stream_data.delete_sub('does_not_exist');
+    assert(warned);
+    blueslip.warn = function () {};
 }());
 
 (function test_get_subscriber_count() {
@@ -664,4 +673,33 @@ zrequire('marked', 'third/marked/lib/marked');
 
     new_members.subscribed = false;
     assert.equal(stream_data.get_newbie_stream(), undefined);
+}());
+
+(function test_invite_streams() {
+    // add default stream
+    var orie = {
+        stream_id: 320,
+        name: 'Orie',
+        subscribed: true,
+    };
+
+    // clear all the data form stream_data, and people
+    stream_data.clear_subscriptions();
+    people.init();
+
+    stream_data.add_sub('Orie', orie);
+    stream_data.set_realm_default_streams([orie]);
+
+    var expected_list = ['Orie'];
+    assert.deepEqual(stream_data.invite_streams(), expected_list);
+
+    var inviter = {
+        stream_id: 25,
+        name: 'Inviter',
+        subscribed: true,
+    };
+    stream_data.add_sub('Inviter', inviter);
+
+    expected_list.push('Inviter');
+    assert.deepEqual(stream_data.invite_streams(), expected_list);
 }());

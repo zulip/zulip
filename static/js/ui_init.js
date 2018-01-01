@@ -42,9 +42,9 @@ function message_hover(message_row) {
     // But the message edit hover icon is determined by whether the message is still editable
     if ((message_edit.get_editability(message) === message_edit.editability_types.FULL) &&
         !message.status_message) {
-        message_row.find(".edit_content").html('<i class="icon-vector-pencil edit_content_button"></i>');
+        message_row.find(".edit_content").html('<i class="fa fa-pencil edit_content_button" aria-hidden="true" title="Edit"></i>');
     } else {
-        message_row.find(".edit_content").html('<i class="icon-vector-file-text-alt edit_content_button" data-msgid="' + id + '"></i>');
+        message_row.find(".edit_content").html('<i class="fa fa-file-text-o edit_content_button" aria-hidden="true" title="View source" data-msgid="' + id + '"></i>');
     }
 }
 

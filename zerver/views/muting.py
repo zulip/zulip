@@ -35,9 +35,8 @@ def unmute_topic(user_profile: UserProfile, stream_name: str,
     return json_success()
 
 @has_request_variables
-def update_muted_topic(request, user_profile, stream=REQ(),
-                       topic=REQ(), op=REQ()):
-    # type: (HttpRequest, UserProfile, str, str, str) -> HttpResponse
+def update_muted_topic(request: HttpRequest, user_profile: UserProfile, stream: str=REQ(),
+                       topic: str=REQ(), op: str=REQ()) -> HttpResponse:
 
     if op == 'add':
         return mute_topic(user_profile, stream, topic)
