@@ -62,14 +62,6 @@ def test_nagios(nagios_logfile):
     return False
 
 
-def close_and_get_content(file_handle):
-    # type: (IO[str]) -> str
-    file_handle.seek(0)
-    content = file_handle.read()
-    file_handle.close()
-    return content
-
-
 if __name__ == '__main__':
     print("Testing development server start!")
 
