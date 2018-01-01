@@ -1,9 +1,9 @@
-# Import users and channels from Slack
+# Import data from Slack
 
-{!follow-steps.md!} import users and channels from Slack to Zulip.
+{!follow-steps.md!} import users, channels, and messages from Slack to Zulip.
 
 !!! warn ""
-    **Note:** Please ensure that you have admin rights before importing users and channels from Slack.
+    **Note:** Please ensure that you have admin rights before importing data from Slack.
 
 1. Export your team's data and message history by visiting the **Export Data**
    page, https://my.slack.com/services/export. You will receive a zip file
