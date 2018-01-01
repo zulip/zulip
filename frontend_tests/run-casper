@@ -93,23 +93,58 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
     if options.remote_debug:
         remote_debug = "--remote-debugger-port=7777 --remote-debugger-autorun=yes"
 
+    total_tests_passed = 0
+    total_tests_failed = 0
+    testing_total_time = 0.0
     with test_server_running(options.force, external_host, log_file=LOG_FILE, dots=True):
         ret = 1
+        # constants defining the location of variables in the last line of output
+        time_elapsed_index = 5
+        tests_passed_index = 6
+        tests_failed_index = 8
+
         for test_file in test_files:
             cmd = "node_modules/.bin/casperjs %s test %s" % (remote_debug, test_file)
             print("\n\nRunning %s" % (cmd,))
-            ret = subprocess.call(cmd, shell=True)
+            p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+
+            # Read in Casper test output line by line to obtain output on time elapsed
+            # and number of tests passed on the last line
+            stdout = []
+            while True:
+                line = p.stdout.readline().decode('utf-8')
+                sys.stdout.write(line)
+                stdout.append(line)
+                if p.poll() is not None:
+                    break
+
+            ret = p.returncode
             if ret != 0:
                 break
-    if ret != 0:
-        print("""
+
+            # Only retrieves the line with the test Suite summary
+            summary_line = stdout[-2]
+            summary_line = summary_line.split()
+
+            # Remove the "s," that accompanies every printed time value from casper
+            testing_total_time += float(summary_line[time_elapsed_index][0:-2])
+
+            total_tests_passed += int(summary_line[tests_passed_index])
+            total_tests_failed += int(summary_line[tests_failed_index])
+
+        if ret != 0:
+            print("""
 Oops, the frontend tests failed. Tips for debugging:
  * Check the frontend test server logs at %s
  * Check the screenshots of failed tests at var/casper/casper-failure*.png
  * Try remote debugging the test web browser as described in docs/testing/testing-with-casper.md
-""" % (LOG_FILE,), file=sys.stderr)
+ """ % (LOG_FILE,), file=sys.stderr)
 
-        sys.exit(ret)
+            sys.exit(ret)
+
+    print("""\nPASSED %s test cases, FAILED %s test cases in %s seconds"""
+          % (total_tests_passed, total_tests_failed, round(testing_total_time, 3)))
+
 
 external_host = "zulipdev.com:9981"
 run_tests(options.tests, external_host)
