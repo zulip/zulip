@@ -55,7 +55,7 @@ from zerver.lib.user_groups import create_user_group, access_user_group_by_id
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
     RealmDomain, \
     Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, \
-    UserHotspot, \
+    UserHotspot, ScheduledMessage, \
     Client, DefaultStream, DefaultStreamGroup, UserPresence, PushDeviceToken, \
     ScheduledEmail, MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_personal_recipient, get_huddle, \
@@ -1020,6 +1020,26 @@ def get_service_bot_events(sender: UserProfile, service_bot_tuples: List[Tuple[i
 
     return event_dict
 
+def do_schedule_messages(messages: Sequence[Optional[MutableMapping[str, Any]]]) -> List[int]:
+    scheduled_messages = []  # type: List[ScheduledMessage]
+
+    for message in messages:
+        scheduled_message = ScheduledMessage()
+        scheduled_message.sender = message['message'].sender
+        scheduled_message.recipient = message['message'].recipient
+        scheduled_message.subject = message['message'].subject
+        scheduled_message.content = message['message'].content
+        scheduled_message.sending_client = message['message'].sending_client
+        scheduled_message.stream = message['stream']
+        scheduled_message.realm = message['realm']
+        scheduled_message.scheduled_timestamp = message['deliver_at']
+
+        scheduled_messages.append(scheduled_message)
+
+    ScheduledMessage.objects.bulk_create(scheduled_messages)
+    return [scheduled_message.id for scheduled_message in scheduled_messages]
+
+
 def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, Any]]],
                      email_gateway: Optional[bool]=False) -> List[int]:
     # Filter out messages which didn't pass internal_prep_message properly
@@ -1658,6 +1678,25 @@ def check_send_message(sender: UserProfile, client: Client, message_type_name: T
                             message_content, realm, forged, forged_timestamp,
                             forwarder_user_profile, local_id, sender_queue_id)
     return do_send_messages([message])[0]
+
+def check_schedule_message(sender: UserProfile, client: Client,
+                           message_type_name: Text, message_to: Sequence[Text],
+                           topic_name: Optional[Text], message_content: Text,
+                           deliver_at: datetime.datetime,
+                           realm: Optional[Realm]=None,
+                           forwarder_user_profile: Optional[UserProfile]=None
+                           ) -> int:
+    addressee = Addressee.legacy_build(
+        sender,
+        message_type_name,
+        message_to,
+        topic_name)
+
+    message = check_message(sender, client, addressee,
+                            message_content, realm=realm,
+                            forwarder_user_profile=forwarder_user_profile)
+    message['deliver_at'] = deliver_at
+    return do_schedule_messages([message])[0]
 
 def check_stream_name(stream_name: Text) -> None:
     if stream_name.strip() == "":
