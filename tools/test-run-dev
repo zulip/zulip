@@ -69,29 +69,31 @@ if __name__ == '__main__':
     print("Testing development server start!")
 
     logfile = open('/tmp/run-dev-output', 'w+')
-    nagios_logfile = open('/tmp/test-nagios-output', 'w+')
+    # nagios_logfile = open('/tmp/test-nagios-output', 'w+')
 
     args = ["{}/run-dev.py".format(TOOLS_DIR)]
     run_dev = subprocess.Popen(args, stdout=logfile, stderr=logfile)
 
     try:
         failure = start_server(logfile)
-        failure = failure or not test_nagios(nagios_logfile)
+        # We have moved API to a separate repo. `test_nagios` and
+        # `check_send_receive_time` need to be updated.
+        # failure = failure or not test_nagios(nagios_logfile)
     finally:
         log = close_and_get_content(logfile)
-        nagios_log = close_and_get_content(nagios_logfile)
+        # nagios_log = close_and_get_content(nagios_logfile)
 
     run_dev.send_signal(signal.SIGINT)
     run_dev.wait()
 
-    if not failure and 'Traceback' in log + ' ' + nagios_log:
+    if not failure and 'Traceback' in log:  # + ' ' + nagios_log:
         failure = True
 
     if failure:
         print("Development server is not working properly:")
         print(log)
-        print("check_send_receive_time output:")
-        print(nagios_log)
+        # print("check_send_receive_time output:")
+        # print(nagios_log)
         sys.exit(1)
     else:
         print("Development server is working properly.")
