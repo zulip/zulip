@@ -1754,6 +1754,23 @@ class ScheduledEmail(AbstractScheduledJob):
         return "<ScheduledEmail: %s %s %s>" % (self.type, self.user or self.address,
                                                self.scheduled_timestamp)
 
+class ScheduledMessage(models.Model):
+    sender = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
+    recipient = models.ForeignKey(Recipient, on_delete=CASCADE)  # type: Recipient
+    subject = models.CharField(max_length=MAX_SUBJECT_LENGTH)  # type: Text
+    content = models.TextField()  # type: Text
+    sending_client = models.ForeignKey(Client, on_delete=CASCADE)  # type: Client
+    stream = models.ForeignKey(Stream, null=True, on_delete=CASCADE)  # type: Stream
+    realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
+    scheduled_timestamp = models.DateTimeField(db_index=True)  # type: datetime.datetime
+    delivered = models.BooleanField(default=False)  # type: bool
+
+    def __str__(self) -> Text:
+        display_recipient = get_display_recipient(self.recipient)
+        return "<ScheduledMessage: %s %s %s %s>" % (display_recipient,
+                                                    self.subject, self.sender,
+                                                    self.scheduled_timestamp)
+
 EMAIL_TYPES = {
     'followup_day1': ScheduledEmail.WELCOME,
     'followup_day2': ScheduledEmail.WELCOME,
