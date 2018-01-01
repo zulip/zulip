@@ -6,6 +6,7 @@ import sys
 import time
 import signal
 import subprocess
+from typing import Tuple
 
 # check for the venv
 from lib import sanity_check
@@ -16,19 +17,23 @@ from typing import IO
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-def start_server(logfile):
-    # type: (IO[str]) -> bool
+def start_server(logfile_name: str) -> Tuple[bool, str]:
     failure = True
     key = "Quit the server with CTRL-C."
-    for i in range(200):
-        time.sleep(0.5)
-        print("Polling run-dev...")
-        logfile.seek(0)
-        if key in logfile.read():
-            failure = False
-            break
+    datalog = []
+    with open(logfile_name, 'rb', buffering=0) as logfile:
+        for i in range(200):
+            time.sleep(0.5)
+            print("{}. Polling run-dev...".format(i))
+            new_data = logfile.read().decode()
+            if new_data:
+                datalog.append(new_data)
 
-    return failure
+            if key in ''.join(datalog):
+                failure = False
+                break
+
+    return failure, ''.join(datalog)
 
 
 def test_nagios(nagios_logfile):
@@ -68,19 +73,20 @@ def close_and_get_content(file_handle):
 if __name__ == '__main__':
     print("Testing development server start!")
 
-    logfile = open('/tmp/run-dev-output', 'w+')
+    logfile_name = '/tmp/run-dev-output'
+    logfile = open(logfile_name, 'wb', buffering=0)
     # nagios_logfile = open('/tmp/test-nagios-output', 'w+')
 
     args = ["{}/run-dev.py".format(TOOLS_DIR)]
     run_dev = subprocess.Popen(args, stdout=logfile, stderr=logfile)
 
     try:
-        failure = start_server(logfile)
+        failure, log = start_server(logfile_name)
         # We have moved API to a separate repo. `test_nagios` and
         # `check_send_receive_time` need to be updated.
         # failure = failure or not test_nagios(nagios_logfile)
     finally:
-        log = close_and_get_content(logfile)
+        logfile.close()
         # nagios_log = close_and_get_content(nagios_logfile)
 
     run_dev.send_signal(signal.SIGINT)
