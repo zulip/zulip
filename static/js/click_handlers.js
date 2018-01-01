@@ -722,7 +722,7 @@ $(function () {
         }
 
         // Dismiss popovers if the user has clicked outside them
-        if ($('.popover-inner, .emoji-info-popover').has(e.target).length === 0) {
+        if ($('.popover-inner, .emoji-info-popover, .app-main [class^="column-"].expanded').has(e.target).length === 0) {
             popovers.hide_all();
         }
 
