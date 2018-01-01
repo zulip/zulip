@@ -118,7 +118,7 @@
 * [Change your organization avatar](/help/change-your-organizations-avatar)
 * [Update your organization's settings](/help/change-your-organization-settings)
 * [Link to your Zulip from the web](/help/join-zulip-chat-badge)
-* [Import users and channels from Slack](/help/import-users-and-channels-from-slack)
+* [Import data from Slack](/help/import-data-from-slack)
 * [Restrict new users by email domain](/help/restrict-user-email-addresses-to-certain-domains)
 * [Allow joining without an invitation](/help/allow-anyone-to-join-without-an-invitation)
 * [Manage who can send invitations](/help/only-allow-admins-to-invite-new-users)
