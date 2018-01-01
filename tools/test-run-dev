@@ -70,7 +70,8 @@ if __name__ == '__main__':
     # nagios_logfile = open('/tmp/test-nagios-output', 'w+')
 
     args = ["{}/run-dev.py".format(TOOLS_DIR)]
-    run_dev = subprocess.Popen(args, stdout=logfile, stderr=logfile)
+    STDOUT = subprocess.STDOUT
+    run_dev = subprocess.Popen(args, stdout=logfile, stderr=STDOUT)
 
     try:
         failure, log = start_server(logfile_name)
