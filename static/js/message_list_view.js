@@ -433,8 +433,8 @@ MessageListView.prototype = {
             }
 
             // Display emoji (including realm emoji) as text if
-            // page_params.emoji_alt_code is set
-            if (page_params.emoji_alt_code) {
+            // page_params.emojiset is 'text'.
+            if (page_params.emojiset === 'text') {
                 row.find(".emoji").replaceWith(function () {
                     var text = $(this).attr("title");
                     return ":" + text + ":";

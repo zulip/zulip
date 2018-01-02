@@ -166,7 +166,7 @@ set_global('current_msg_list', {
          count: 1,
          user_ids: [7],
          title: 'Cali reacted with :frown:',
-         emoji_alt_code: undefined,
+         emoji_alt_code: false,
          class: 'message_reaction',
       },
       {
@@ -177,7 +177,7 @@ set_global('current_msg_list', {
          count: 1,
          user_ids: [5],
          title: 'You (click to remove) reacted with :inactive_realm_emoji:',
-         emoji_alt_code: undefined,
+         emoji_alt_code: false,
          is_realm_emoji: true,
          url: 'TBD',
          class: 'message_reaction reacted',
@@ -190,7 +190,7 @@ set_global('current_msg_list', {
          count: 2,
          user_ids: [5, 6],
          title: 'You (click to remove) and Bob van Roberts reacted with :smile:',
-         emoji_alt_code: undefined,
+         emoji_alt_code: false,
          class: 'message_reaction reacted',
       },
    ];
