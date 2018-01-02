@@ -763,7 +763,7 @@ exports.initialize = function () {
             preview_html = rendered_content;
         }
         $("#preview_content").html(preview_html);
-        if (page_params.emoji_alt_code) {
+        if (page_params.emojiset === "text") {
             $("#preview_content").find(".emoji").replaceWith(function () {
                 var text = $(this).attr("title");
                 return ":" + text + ":";
