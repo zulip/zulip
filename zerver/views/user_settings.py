@@ -134,7 +134,6 @@ def update_display_settings_backend(
         night_mode: Optional[bool]=REQ(validator=check_bool, default=None),
         default_language: Optional[bool]=REQ(validator=check_string, default=None),
         left_side_userlist: Optional[bool]=REQ(validator=check_bool, default=None),
-        emoji_alt_code: Optional[bool]=REQ(validator=check_bool, default=None),
         emojiset: Optional[str]=REQ(validator=check_string, default=None),
         timezone: Optional[str]=REQ(validator=check_string, default=None)) -> HttpResponse:
 
