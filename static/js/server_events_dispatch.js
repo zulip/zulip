@@ -318,27 +318,8 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             // than requiring a reload or page resize.
         }
         if (event.setting_name === 'emojiset') {
-            if (page_params.emojiset === 'text') {
-                // destroy the spinner and display success message
-                if ($("#display-settings-status").length) {
-                    loading.destroy_indicator($("#emojiset_spinner"));
-                    $("#emojiset_select").val(page_params.emojiset);
-                    ui_report.success(i18n.t("Emojiset changed successfully!!"),
-                                      $('#display-settings-status').expectOne());
-                }
-            } else {
-                var sprite = new Image();
-                sprite.onload = function () {
-                    $("#emoji-spritesheet").attr('href', "/static/generated/emoji/" + page_params.emojiset + "_sprite.css");
-                    if ($("#display-settings-status").length) {
-                        loading.destroy_indicator($("#emojiset_spinner"));
-                        $("#emojiset_select").val(page_params.emojiset);
-                        ui_report.success(i18n.t("Emojiset changed successfully!!"),
-                                          $('#display-settings-status').expectOne());
-                    }
-                };
-                sprite.src = "/static/generated/emoji/sheet_" + page_params.emojiset + "_32.png";
-            }
+            settings_display.report_emojiset_change();
+
             // Rerender the whole message list UI
             home_msg_list.rerender();
             if (current_msg_list === message_list.narrowed) {
