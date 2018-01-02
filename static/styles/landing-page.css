@@ -3136,6 +3136,7 @@ nav ul li.active::after {
 
     nav .content {
         display: inline-block;
+        z-index: 11;
     }
 
     nav .hamburger {
