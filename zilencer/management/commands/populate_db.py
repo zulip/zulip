@@ -62,6 +62,12 @@ class Command(BaseCommand):
                             default=0,
                             help='The number of extra bots to create')
 
+        parser.add_argument('--extra-streams',
+                            dest='extra_streams',
+                            type=int,
+                            default=0,
+                            help='The number of extra streams to create')
+
         parser.add_argument('--huddles',
                             dest='num_huddles',
                             type=int,
@@ -338,6 +344,20 @@ class Command(BaseCommand):
                     "errors": {"description": "For errors", "invite_only": False},
                     "sales": {"description": "For sales discussion", "invite_only": False}
                 }  # type: Dict[Text, Dict[Text, Any]]
+
+                for i in range(options['extra_streams']):
+                    # Since a stream with name "Extra Stream 3" could show up
+                    # after "Extra Stream 29", pad the numbers with 0s.
+                    maximum_digits = len(str(options['extra_streams'] - 1))
+                    number_str = str(i).zfill(maximum_digits)
+
+                    extra_stream_name = 'Extra Stream ' + number_str
+
+                    zulip_stream_dict[extra_stream_name] = {
+                        "description": "Auto-generated extra stream.",
+                        "invite_only": False,
+                    }
+
                 bulk_create_streams(zulip_realm, zulip_stream_dict)
                 # Now that we've created the notifications stream, configure it properly.
                 zulip_realm.notifications_stream = get_stream("announce", zulip_realm)
