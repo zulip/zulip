@@ -113,39 +113,10 @@ def run_test(test: TestCase, result: TestResult) -> bool:
     flush_caches_for_testing()
 
     if not hasattr(test, "_pre_setup"):
-        # test_name is likely of the form unittest.loader.ModuleImportFailure.zerver.tests.test_upload
-        import_failure_prefix = 'unittest.loader.ModuleImportFailure.'
-        if test_name.startswith(import_failure_prefix):
-            actual_test_name = test_name[len(import_failure_prefix):]
-            error_msg = ("\nActual test to be run is %s, but import failed.\n"
-                         "Importing test module directly to generate clearer "
-                         "traceback:\n") % (actual_test_name,)
-            result.addInfo(test, error_msg)
-
-            try:
-                command = [sys.executable, "-c", "import %s" % (actual_test_name,)]
-                msg = "Import test command: `%s`" % (' '.join(command),)
-                result.addInfo(test, msg)
-                subprocess.check_call(command)
-            except subprocess.CalledProcessError:
-                msg = ("If that traceback is confusing, try doing the "
-                       "import inside `./manage.py shell`")
-                result.addInfo(test, msg)
-                result.addError(test, sys.exc_info())
-                return True
-
-            msg = ("Import unexpectedly succeeded! Something is wrong. Try "
-                   "running `import %s` inside `./manage.py shell`.\n"
-                   "If that works, you may have introduced an import "
-                   "cycle.") % (actual_test_name,)
-            import_error = (Exception, Exception(msg), None)  # type: Tuple[Any, Any, Any]
-            result.addError(test, import_error)
-            return True
-        else:
-            msg = "Test doesn't have _pre_setup; something is wrong."
-            error_pre_setup = (Exception, Exception(msg), None)  # type: Tuple[Any, Any, Any]
-            result.addError(test, error_pre_setup)
-            return True
+        msg = "Test doesn't have _pre_setup; something is wrong."
+        error_pre_setup = (Exception, Exception(msg), None)  # type: Tuple[Any, Any, Any]
+        result.addError(test, error_pre_setup)
+        return True
     test._pre_setup()
 
     start_time = time.time()
@@ -462,7 +433,29 @@ class Runner(DiscoverRunner):
         # run a single test and getting an SA connection causes data from
         # a Django connection to be rolled back mid-test.
         get_sqlalchemy_connection()
-        result = self.run_suite(suite)
+        try:
+            result = self.run_suite(suite)
+        except ImportError as test_name:
+            print()
+            print("Actual test to be run is %s, but import failed." % (test_name,))
+            print("Importing test module directly to generate clearer traceback.")
+            try:
+                command = [sys.executable, "-c", "import %s" % test_name]
+                print("Import test command: `%s`." % (' '.join(command),))
+                print()
+                subprocess.check_call(command)
+            except subprocess.CalledProcessError:
+                print()
+                print("If that traceback is confusing, try doing the import "
+                      "inside `./manage.py shell`.")
+            else:
+                print()
+                print("Import unexpectedly succeeded! Something is wrong.")
+                print("Try running `import %s` inside `./manage.py shell`."
+                      % (test_name,))
+                print("If that works, you may have introduced an import cycle.")
+            finally:
+                sys.exit(1)
         self.teardown_test_environment()
         failed = self.suite_result(suite, result)
         if not failed:
@@ -486,7 +479,15 @@ def serialize_suite(suite: TestSuite) -> Tuple[Type[TestSuite], List[str]]:
 def deserialize_suite(args: Tuple[Type[TestSuite], List[str]]) -> TestSuite:
     suite_class, test_names = args
     suite = suite_class()
-    tests = TestLoader().loadTestsFromNames(test_names)
+    try:
+        tests = TestLoader().loadTestsFromNames(test_names)
+    except AttributeError:
+        import_failure_prefix = 'unittest.loader.ModuleImportFailure.'
+        for test_name in test_names:
+            if test_name.startswith(import_failure_prefix):
+                actual_test_name = test_name[len(import_failure_prefix):]
+                raise ImportError(actual_test_name)
+        raise
     for test in get_tests_from_suite(tests):
         suite.addTest(test)
     return suite
