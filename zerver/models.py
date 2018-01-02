@@ -37,7 +37,7 @@ from django.utils.encoding import force_text
 
 from bitfield import BitField
 from bitfield.types import BitHandler
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from datetime import timedelta
 import pylibmc
 import re
@@ -577,7 +577,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # UI vars
     enter_sends = models.NullBooleanField(default=False)  # type: Optional[bool]
     left_side_userlist = models.BooleanField(default=False)  # type: bool
-    emoji_alt_code = models.BooleanField(default=False)  # type: bool
 
     # display settings
     twenty_four_hour_time = models.BooleanField(default=False)  # type: bool
@@ -633,16 +632,17 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     EMOJIONE_EMOJISET   = u'emojione'
     GOOGLE_EMOJISET     = u'google'
     TWITTER_EMOJISET    = u'twitter'
-    EMOJISET_CHOICES    = ((APPLE_EMOJISET, "Apple"),
-                           (EMOJIONE_EMOJISET, "Emoji One"),
-                           (GOOGLE_EMOJISET, "Google"),
-                           (TWITTER_EMOJISET, "Twitter"))
+    TEXT_EMOJISET       = u'text'
+    EMOJISET_CHOICES    = ((GOOGLE_EMOJISET, "Google"),
+                           (APPLE_EMOJISET, "Apple"),
+                           (TWITTER_EMOJISET, "Twitter"),
+                           (EMOJIONE_EMOJISET, "EmojiOne"),
+                           (TEXT_EMOJISET, "Plain text"))
     emojiset = models.CharField(default=GOOGLE_EMOJISET, choices=EMOJISET_CHOICES, max_length=20)  # type: Text
 
     # Define the types of the various automatically managed properties
     property_types = dict(
         default_language=Text,
-        emoji_alt_code=bool,
         emojiset=Text,
         left_side_userlist=bool,
         timezone=Text,
@@ -718,7 +718,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     @staticmethod
     def emojiset_choices() -> Dict[Text, Text]:
-        return {emojiset[0]: force_text(emojiset[1]) for emojiset in UserProfile.EMOJISET_CHOICES}
+        return OrderedDict((emojiset[0], emojiset[1]) for emojiset in UserProfile.EMOJISET_CHOICES)
 
     @staticmethod
     def emails_from_ids(user_ids: Sequence[int]) -> Dict[int, Text]:
