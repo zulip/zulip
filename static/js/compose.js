@@ -512,7 +512,7 @@ function validate_stream_message() {
 // The function checks whether the recipients are users of the realm or cross realm users (bots
 // for now)
 function validate_private_message() {
-    if (compose_state.recipient() === "") {
+    if (compose_state.recipient().length === 0) {
         compose_error(i18n.t("Please specify at least one recipient"), $("#private_message_recipient"));
         return false;
     } else if (page_params.realm_is_zephyr_mirror_realm) {
@@ -553,6 +553,29 @@ exports.validate = function () {
         return validate_private_message();
     }
     return validate_stream_message();
+};
+
+exports.initialize_pills = function () {
+    var realm_people = people.get_all_persons();
+
+    exports.pills.private_message_recipient.validate(function (value, key, reject) {
+        if (exports.pills.private_message_recipient.keys().indexOf(key) > -1) {
+            reject();
+        }
+    });
+
+    exports.pills.private_message_recipient.onPillCreate(function (value, reject) {
+        var match = _.find(realm_people, function (person) {
+            return person.email === value;
+        });
+
+        if (!match) {
+            reject();
+            return;
+        }
+
+        return { key: match.user_id, value: match.full_name };
+    });
 };
 
 exports.initialize = function () {
@@ -859,6 +882,12 @@ exports.initialize = function () {
             compose_actions.start("stream", {});
         }
     }
+
+    exports.initialize_pills();
+};
+
+exports.pills = {
+    private_message_recipient: null,
 };
 
 return exports;

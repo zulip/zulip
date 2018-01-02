@@ -131,7 +131,11 @@ exports.robust_uri_decode = function (str) {
 };
 
 exports.rtrim = function (str) {
-    return str.replace(/\s+$/, '');
+    if (typeof str === "string") {
+        return str.replace(/\s+$/, '');
+    }
+
+    return str;
 };
 
 // If we can, use a locale-aware sorter.  However, if the browser
