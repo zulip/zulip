@@ -94,6 +94,19 @@ body.dark-mode select option {
     color: hsl(236, 33%, 90%);
 }
 
+body.dark-mode .pm_recipient .pill-container .pill {
+    color: inherit;
+    border: 1px solid hsla(0, 0%, 0%, 0.50);
+    background: hsla(0, 0%, 0%, 0.25);
+    font-weight: 600;
+}
+
+body.dark-mode .pm_recipient .pill-container .pill:focus {
+    color: #fff;
+    border: 1px solid hsla(176, 78%, 28%, 0.6);
+    background: hsla(176, 49%, 42%, 0.4);
+}
+
 body.dark-mode .new-style .button.no-style {
     background-color: transparent;
 }

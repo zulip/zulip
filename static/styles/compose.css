@@ -79,24 +79,22 @@
 }
 
 .compose_table .pm_recipient {
-    position: relative;
-    margin-right: 30px;
-    height: 30px;
+    margin-right: 20px;
+    display: flex;
 }
 
 .compose_table #private-message .you_text {
-    position: absolute;
-    height: 30px;
-    line-height: 30px;
-    padding-top: 0px;
-    padding-bottom: 0px;
-    width: 4em;
+    width: 65px;
     background: hsl(0, 0%, 27%);
     color: hsl(0, 0%, 100%);
+    display: flex;
+    align-content: center;
+    vertical-align: center;
 }
 
-.compose_table #private-message .right_part {
-    padding-right: 4em;
+.compose_table #private-message .you_text span {
+    display: flex;
+    align-items: center;
 }
 
 .compose_table #compose-lock-icon {
