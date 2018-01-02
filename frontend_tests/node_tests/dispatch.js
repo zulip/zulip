@@ -390,12 +390,6 @@ var event_fixtures = {
         setting: true,
     },
 
-    update_display_settings__emoji_alt_code: {
-        type: 'update_display_settings',
-        setting_name: 'emoji_alt_code',
-        setting: true,
-    },
-
     update_display_settings__twenty_four_hour_time: {
         type: 'update_display_settings',
         setting_name: 'twenty_four_hour_time',
@@ -804,11 +798,6 @@ with_overrides(function (override) {
     page_params.twenty_four_hour_time = false;
     dispatch(event);
     assert_same(page_params.twenty_four_hour_time, true);
-
-    event = event_fixtures.update_display_settings__emoji_alt_code;
-    page_params.emoji_alt_code = false;
-    dispatch(event);
-    assert_same(page_params.emoji_alt_code, true);
 
 });
 
