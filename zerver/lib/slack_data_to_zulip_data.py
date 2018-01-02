@@ -287,8 +287,6 @@ def do_convert_data(slack_zip_file: str, realm_name: str, output_dir: str) -> No
     # TODO fetch realm config from zulip config
     DOMAIN_NAME = "zulipchat.com"
 
-    # TODO: Hardcode this to 1, will implement later for zulipchat.com's case
-    # where it has multiple realms
     REALM_ID = get_model_id(Realm)
     NOW = float(timezone_now().timestamp())
 
