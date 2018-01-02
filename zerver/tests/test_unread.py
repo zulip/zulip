@@ -169,6 +169,35 @@ class PointerTest(ZulipTestCase):
             anchor=0, num_before=0, num_after=1, use_first_unread_anchor=True)
         self.assertEqual(messages[0]['id'], new_message_id)
 
+    def test_visible_messages_use_first_unread_anchor(self) -> None:
+        self.login(self.example_email("hamlet"))
+        self.assertEqual(self.example_user('hamlet').pointer, -1)
+
+        result = self.client_post("/json/mark_all_as_read")
+        self.assert_json_success(result)
+
+        new_message_id = self.send_stream_message(self.example_email("othello"), "Verona",
+                                                  "test")
+
+        messages = self.get_messages(
+            anchor=0, num_before=0, num_after=1, use_first_unread_anchor=True)
+        self.assertEqual(messages[0]['id'], new_message_id)
+
+        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=new_message_id):
+            messages = self.get_messages(
+                anchor=0, num_before=0, num_after=1, use_first_unread_anchor=True)
+        self.assertEqual(messages[0]['id'], new_message_id)
+
+        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=new_message_id + 1):
+            messages = self.get_messages(
+                anchor=0, num_before=0, num_after=1, use_first_unread_anchor=True)
+        self.assert_length(messages, 0)
+
+        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=new_message_id - 1):
+            messages = self.get_messages(
+                anchor=0, num_before=0, num_after=1, use_first_unread_anchor=True)
+        self.assert_length(messages, 1)
+
 class UnreadCountTests(ZulipTestCase):
     def setUp(self) -> None:
         self.unread_msg_ids = [
