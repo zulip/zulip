@@ -186,6 +186,30 @@ exports.set_up = function () {
     });
 };
 
+exports.report_emojiset_change = function () {
+    function emoji_success() {
+        if ($("#display-settings-status").length) {
+            loading.destroy_indicator($("#emojiset_spinner"));
+            $("#emojiset_select").val(page_params.emojiset);
+            ui_report.success(i18n.t("Emojiset changed successfully!!"),
+                              $('#display-settings-status').expectOne());
+        }
+    }
+
+    if (page_params.emojiset === 'text') {
+        emoji_success();
+        return;
+    }
+
+    var sprite = new Image();
+    sprite.onload = function () {
+        var sprite_css_href = "/static/generated/emoji/" + page_params.emojiset + "_sprite.css";
+        $("#emoji-spritesheet").attr('href', sprite_css_href);
+        emoji_success();
+    };
+    sprite.src = "/static/generated/emoji/sheet_" + page_params.emojiset + "_32.png";
+};
+
 function _update_page() {
     $("#twenty_four_hour_time").prop('checked', page_params.twenty_four_hour_time);
     $("#left_side_userlist").prop('checked', page_params.left_side_userlist);
