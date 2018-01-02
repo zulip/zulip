@@ -126,30 +126,6 @@ exports.set_up = function () {
         });
     });
 
-    $("#emoji_alt_code").change(function () {
-        var emoji_alt_code = this.checked;
-        var data = {};
-        data.emoji_alt_code = JSON.stringify(emoji_alt_code);
-        var context = {};
-        if (data.emoji_alt_code === "true") {
-            context.text_or_images = i18n.t('text');
-        } else {
-            context.text_or_images = i18n.t('images');
-        }
-
-        channel.patch({
-            url: '/json/settings/display',
-            data: data,
-            success: function () {
-                ui_report.success(i18n.t("Emoji reactions will appear as __text_or_images__!", context),
-                                  $('#display-settings-status').expectOne());
-            },
-            error: function (xhr) {
-                ui_report.error(i18n.t("Error updating emoji appearance setting"), xhr, $('#display-settings-status').expectOne());
-            },
-        });
-    });
-
     $("#twenty_four_hour_time").change(function () {
         var data = {};
         var setting_value = $("#twenty_four_hour_time").is(":checked");
@@ -213,7 +189,6 @@ exports.set_up = function () {
 function _update_page() {
     $("#twenty_four_hour_time").prop('checked', page_params.twenty_four_hour_time);
     $("#left_side_userlist").prop('checked', page_params.left_side_userlist);
-    $("#emoji_alt_code").prop('checked', page_params.emoji_alt_code);
     $("#default_language_name").text(page_params.default_language_name);
 }
 

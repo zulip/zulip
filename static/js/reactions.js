@@ -275,8 +275,8 @@ exports.view.insert_new_reaction = function (opts) {
 
     context.count = 1;
     context.title = new_title;
-    context.emoji_alt_code = page_params.emoji_alt_code;
     context.local_id = exports.get_local_reaction_id(opts);
+    context.emoji_alt_code = (page_params.emojiset === 'text');
 
     if (opts.user_id === page_params.user_id) {
         context.class = "message_reaction reacted";
@@ -406,7 +406,7 @@ exports.get_message_reactions = function (message) {
         reaction.emoji_code = reaction.emoji_code;
         reaction.count = reaction.user_ids.length;
         reaction.title = generate_title(reaction.emoji_name, reaction.user_ids);
-        reaction.emoji_alt_code = page_params.emoji_alt_code;
+        reaction.emoji_alt_code = (page_params.emojiset === 'text');
 
         if (reaction.reaction_type !== 'unicode_emoji') {
             reaction.is_realm_emoji = true;
