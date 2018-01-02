@@ -86,6 +86,14 @@ def get_extend_event_body(payload: Dict[Text, Any]) -> Text:
         task_url=build_instance_url(payload['task_instance']),
     )
 
+def get_unassign_event_body(payload: Dict[Text, Any]) -> Text:
+    return GCI_MESSAGE_TEMPLATE.format(
+        actor=payload['author'],
+        action='unassigned **{student}** from'.format(student=payload['task_claimed_by']),
+        task_name=payload['task_definition_name'],
+        task_url=build_instance_url(payload['task_instance']),
+    )
+
 @api_key_only_webhook_view("Google-Code-In")
 @has_request_variables
 def api_gci_webhook(request: HttpRequest, user_profile: UserProfile, stream: Text=REQ(default='gci'),
@@ -110,6 +118,7 @@ EVENTS_FUNCTION_MAPPER = {
     'extend': get_extend_event_body,
     'needswork': get_needswork_event_body,
     'submit': get_submit_event_body,
+    'unassign': get_unassign_event_body,
 }
 
 def get_event(payload: Dict[Text, Any]) -> Optional[Text]:
