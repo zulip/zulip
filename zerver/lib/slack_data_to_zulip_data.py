@@ -348,7 +348,7 @@ def do_convert_data(slack_zip_file: str, realm_name: str, output_dir: str) -> No
     message_json['zerver_message'] = zerver_message
     message_json['zerver_usermessage'] = zerver_usermessage
     # IO message.json
-    message_file = output_dir + '/message-000001.json'
+    message_file = output_dir + '/messages-000001.json'
     json.dump(message_json, open(message_file, 'w'))
 
     # IO avatar records
