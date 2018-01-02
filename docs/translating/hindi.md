@@ -48,46 +48,22 @@ easier than "समाज".
 यहां "Realm" "समाज (Community)" के रूप में अस्थाई रूप से अनुवादित है । एक अंय विकल्प है "समाज
 (Communities) ", जो Google + से उधार लिया जाता है । हाल ही में "समूह (Team)"
 अनुवाद के लिए ध्यान में रखा जा रहा है, क्योंकि यह अधिक उचित लगता है और कई वाक्य बहुत बेहतर 
-अनुवाद किए जा सकते है और "समाज" से आसान हैc।
+अनुवाद किए जा सकते है और "समाज" से आसान है।
 
-Realm直译为“领域”、“王国”，取直译显然不合适。Zulip中关于“Realm”的解释
-为“组织”或者“机构”（Organization）；另外，“Realm”还与“域”（domain）有
-所联系；例如，“设置页”中可以对“Realm”设置限制，仅允许有相同邮件域名的
-用户登录。因此这里选择译为“社区”，可能更接近本义。可选的翻译还有“社群”
-（Google+的习惯）。最近发现，“Realm”译为“团队”似乎更合适。尝试在
-Transifex中将“社区”替换为“团队”后，发现不少地方比以前通顺了许多。
+* Topic - **विषय**
 
-* Stream - **频道**
-
-There were several other optional translations, e.g. "群组(Group)", "
-主题(Subject)", and "栏目(Column)". The "频道(Channel)" is in use now,
-which is inspired by the chat "Channel" in the game Ingress. Since
-"Stream" can be "Created/Deleted" or "Subscribed/Unsubscribed",
-"Stream" can also initiate a "Topic" discussion, the meanings of "频道
-(Channel) are closer to "Stream" than others. Another translation is "
-讨论组", which is a term of QQ, in which it is a temporary chat
-group. However, "讨论组" has one more Chinese character than "频道
-(Channel)".
-
-曾经使用的翻译有“群组”、“主题”、“版块”，还有“栏目”。现在选择的“频道”灵
-感来源于Ingress游戏中的聊天“Channel”。因为“Stream”可以“新建/删除
-（Create/Delete）”、也可以“订阅/退订（Subscribe/Unsubscribe）”，
-“Stream”内部还可以发起“话题（Topic）讨论。“Stream”还有一个备选方案，就
-是“讨论组”，字多一个，稍微有点啰嗦。主要参考自以前QQ的“讨论组”，在QQ中
-是一种临时的群组。
-
-* Topic - **话题**
-
-* Invite-Only/Public Stream - **私有/公开频道**
+* Invite-Only/Public Stream - **केवल आमंत्रण/सार्वजनिक स्ट्रीम**
 
 "Invite-Only Stream" requires users must be invited explicitly to
 subscribe, which assures a high privacy. Other users can not perceive
 the presence of such streams. Since literal translation is hard to
-read, it is translated sense to sense as "私有频道(Private Stream)"。
+read, it is translated sense to sense as "निजी स्ट्रीम(Private Stream)".
 
-“Invite-Only Stream”是需要频道内部用户邀请才能订阅的频道；“Invite-Only
-Stream”具有非常好的私密性，用户在没有订阅时是不能感知这类频道的存在的。
-直译读起来有点拗口，因此选择译为“私有频道”。
+"Invite-Only Stream" की आवश्यकता है उपयोगकर्ताओं को स्पष्ट रूप से सदस्यता लेने के लिए आमंत्रित 
+किया जाना चाहिए जो एक उच्च गोपनीयता का आश्वासन दे। अंय उपभोक्ता ऐसी धाराओं की मौजूदगी को अनुभव 
+नहीं कर सकते है। चूंकि शाब्दिक अनुवाद पड़ने के लिए कठिन है  यह अर्थ के रूप में "निजी स्ट्रीम 
+(Private Stream)" भावना को अनुवादित है"
+
 
 * Bot - **机器人**
 
