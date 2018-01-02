@@ -15,6 +15,7 @@ from zerver.models import (
 )
 from zerver.lib.message import (
     MessageDict,
+    get_first_visible_message_id,
 )
 from zerver.lib.narrow import (
     build_narrow_filter,
@@ -420,8 +421,29 @@ class GetOldMessagesTest(ZulipTestCase):
                           "avatar_url", "recipient_id", "sender_full_name",
                           "sender_short_name", "timestamp", "reactions"):
                 self.assertIn(field, message)
-
         return result
+
+    def message_visibility_test(self, narrow: List[Dict[str, str]],
+                                message_ids: List[int], pivot_index: int) -> None:
+        post_params = dict(narrow=ujson.dumps(narrow), num_before=len(message_ids),
+                           num_after=0, anchor=LARGER_THAN_MAX_MESSAGE_ID)
+        payload = self.client_get("/json/messages", dict(post_params))
+        self.assert_json_success(payload)
+        result = ujson.loads(payload.content)
+
+        self.assertEqual(len(result["messages"]), len(message_ids))
+        for message in result["messages"]:
+            assert(message["id"] in message_ids)
+
+        post_params.update({"num_before": len(message_ids[pivot_index:])})
+        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=message_ids[pivot_index]):
+            payload = self.client_get("/json/messages", dict(post_params))
+        self.assert_json_success(payload)
+        result = ujson.loads(payload.content)
+
+        self.assertEqual(len(result["messages"]), len(message_ids[pivot_index:]))
+        for message in result["messages"]:
+            assert(message["id"] in message_ids)
 
     def get_query_ids(self) -> Dict[Text, int]:
         hamlet_user = self.example_user('hamlet')
@@ -548,6 +570,18 @@ class GetOldMessagesTest(ZulipTestCase):
             for message in result["messages"]:
                 self.assertEqual(dr_emails(message['display_recipient']), emails)
 
+    def test_get_visible_messages_with_narrow_pm_with(self) -> None:
+        me = self.example_email('hamlet')
+        self.login(me)
+        self.subscribe(self.example_user("hamlet"), 'Scotland')
+
+        message_ids = []
+        for i in range(5):
+            message_ids.append(self.send_personal_message(me, self.example_email("iago")))
+
+        narrow = [dict(operator='pm-with', operand=self.example_email("iago"))]
+        self.message_visibility_test(narrow, message_ids, 2)
+
     def test_get_messages_with_narrow_group_pm_with(self) -> None:
         """
         A request for old messages with a narrow by group-pm-with only returns
@@ -610,6 +644,43 @@ class GetOldMessagesTest(ZulipTestCase):
         for message in result["messages"]:
             self.assertIn(message["id"], matching_message_ids)
             self.assertNotIn(message["id"], non_matching_message_ids)
+
+    def test_get_visible_messages_with_narrow_group_pm_with(self) -> None:
+        me = self.example_email('hamlet')
+        self.login(me)
+
+        message_ids = []
+        message_ids.append(
+            self.send_huddle_message(
+                me,
+                [
+                    self.example_email("iago"),
+                    self.example_email("cordelia"),
+                    self.example_email("othello"),
+                ],
+            ),
+        )
+        message_ids.append(
+            self.send_huddle_message(
+                me,
+                [
+                    self.example_email("cordelia"),
+                    self.example_email("othello"),
+                ],
+            ),
+        )
+        message_ids.append(
+            self.send_huddle_message(
+                me,
+                [
+                    self.example_email("cordelia"),
+                    self.example_email("iago"),
+                ],
+            ),
+        )
+
+        narrow = [dict(operator='group-pm-with', operand=self.example_email("cordelia"))]
+        self.message_visibility_test(narrow, message_ids, 1)
 
     def test_include_history(self) -> None:
         hamlet = self.example_user('hamlet')
@@ -674,6 +745,17 @@ class GetOldMessagesTest(ZulipTestCase):
         for message in result["messages"]:
             self.assertEqual(message["type"], "stream")
             self.assertEqual(message["recipient_id"], stream_id)
+
+    def test_get_visible_messages_with_narrow_stream(self) -> None:
+        self.login(self.example_email('hamlet'))
+        self.subscribe(self.example_user("hamlet"), 'Scotland')
+
+        message_ids = []
+        for i in range(5):
+            message_ids.append(self.send_stream_message(self.example_email("iago"), "Scotland"))
+
+        narrow = [dict(operator='stream', operand="Scotland")]
+        self.message_visibility_test(narrow, message_ids, 2)
 
     def test_get_messages_with_narrow_stream_mit_unicode_regex(self) -> None:
         """
@@ -982,6 +1064,26 @@ class GetOldMessagesTest(ZulipTestCase):
                          '<p>こんに <span class="highlight">ちは</span> 。 <span class="highlight">今日は</span> いい 天気ですね。</p>')
 
     @override_settings(USING_PGROONGA=False)
+    def test_get_visible_messages_with_search(self) -> None:
+        self.login(self.example_email('hamlet'))
+        self.subscribe(self.example_user("hamlet"), 'Scotland')
+
+        messages_to_search = [
+            ("Gryffindor", "Hogwart's house which values courage, bravery, nerve, and chivalry"),
+            ("Hufflepuff", "Hogwart's house which values hard work, patience, justice, and loyalty."),
+            ("Ravenclaw", "Hogwart's house which values intelligence, creativity, learning, and wit"),
+            ("Slytherin", "Hogwart's house which  values ambition, cunning, leadership, and resourcefulness"),
+        ]
+
+        message_ids = []
+        for topic, content in messages_to_search:
+            message_ids.append(self.send_stream_message(self.example_email("iago"), "Scotland",
+                                                        topic_name=topic, content=content))
+        self._update_tsvector_index()
+        narrow = [dict(operator='search', operand="Hogwart's")]
+        self.message_visibility_test(narrow, message_ids, 2)
+
+    @override_settings(USING_PGROONGA=False)
     def test_get_messages_with_search_not_subscribed(self) -> None:
         """Verify support for searching a stream you're not subscribed to"""
         self.subscribe(self.example_user("hamlet"), "newstream")
@@ -1170,6 +1272,75 @@ class GetOldMessagesTest(ZulipTestCase):
                                                   num_after=0))
         self.assertEqual(len(result['messages']), 0)
 
+    def test_get_visible_messages_with_anchor(self) -> None:
+        def messages_matches_ids(messages: List[Dict[str, Any]], message_ids: List[int]) -> None:
+            self.assertEqual(len(messages), len(message_ids))
+            for message in messages:
+                assert(message["id"] in message_ids)
+
+        self.login(self.example_email("hamlet"))
+
+        message_ids = []
+        for i in range(10):
+            message_ids.append(self.send_stream_message(self.example_email("cordelia"), "Verona"))
+
+        messages = self.get_messages(anchor=message_ids[9], num_before=9, num_after=0)
+        messages_matches_ids(messages, message_ids)
+
+        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=message_ids[5]):
+            messages = self.get_messages(anchor=message_ids[9], num_before=9, num_after=0)
+        messages_matches_ids(messages, message_ids[5:])
+
+        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=message_ids[2]):
+            messages = self.get_messages(anchor=message_ids[6], num_before=9, num_after=0)
+        messages_matches_ids(messages, message_ids[2:7])
+
+        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=message_ids[9] + 1):
+            messages = self.get_messages(anchor=message_ids[9], num_before=9, num_after=0)
+            self.assert_length(messages, 0)
+
+        messages = self.get_messages(anchor=message_ids[5], num_before=0, num_after=5)
+        messages_matches_ids(messages, message_ids[5:])
+
+        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=message_ids[7]):
+            messages = self.get_messages(anchor=message_ids[5], num_before=0, num_after=5)
+        messages_matches_ids(messages, message_ids[7:])
+
+        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=message_ids[2]):
+            messages = self.get_messages(anchor=message_ids[0], num_before=0, num_after=5)
+        messages_matches_ids(messages, message_ids[2:8])
+
+        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=message_ids[9] + 1):
+            messages = self.get_messages(anchor=message_ids[0], num_before=0, num_after=5)
+            self.assert_length(messages, 0)
+
+        messages = self.get_messages(anchor=message_ids[5], num_before=5, num_after=4)
+        messages_matches_ids(messages, message_ids)
+
+        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=message_ids[5]):
+            messages = self.get_messages(anchor=message_ids[5], num_before=5, num_after=4)
+        messages_matches_ids(messages, message_ids[5:])
+
+        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=message_ids[5]):
+            messages = self.get_messages(anchor=message_ids[5], num_before=5, num_after=4)
+        messages_matches_ids(messages, message_ids[5:])
+
+        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=message_ids[5]):
+            messages = self.get_messages(anchor=message_ids[2], num_before=10, num_after=10)
+        messages_matches_ids(messages, message_ids[5:])
+
+        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=message_ids[9] + 1):
+            messages = self.get_messages(anchor=message_ids[5], num_before=5, num_after=4)
+            self.assert_length(messages, 0)
+
+        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=message_ids[5]):
+            messages = self.get_messages(anchor=message_ids[5], num_before=0, num_after=0)
+        messages_matches_ids(messages, message_ids[5:6])
+
+        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=message_ids[5]):
+            messages = self.get_messages(anchor=message_ids[2], num_before=0, num_after=0)
+            self.assert_length(messages, 0)
+
     def test_missing_params(self) -> None:
         """
         anchor, num_before, and num_after are all required
@@ -1343,9 +1514,61 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertNotIn('AND message_id = %s' % (LARGER_THAN_MAX_MESSAGE_ID,), sql)
         self.assertIn('ORDER BY message_id ASC', sql)
 
-        cond = 'WHERE user_profile_id = %d AND message_id >= %d' % (user_profile.id, last_message_id_to_hamlet)
+        cond = 'WHERE user_profile_id = %d AND message_id >= %d AND message_id >= %d' % (
+            user_profile.id, get_first_visible_message_id(user_profile.realm), last_message_id_to_hamlet,
+        )
         self.assertIn(cond, sql)
-        cond = 'WHERE user_profile_id = %d AND message_id <= %d' % (user_profile.id, last_message_id_to_hamlet - 1)
+        cond = 'WHERE user_profile_id = %d AND message_id >= %d AND message_id <= %d' % (
+            user_profile.id, get_first_visible_message_id(user_profile.realm), last_message_id_to_hamlet - 1,
+        )
+        self.assertIn(cond, sql)
+
+    def test_visible_messages_use_first_unread_anchor_with_some_unread_messages(self) -> None:
+        user_profile = self.example_user('hamlet')
+
+        # Have Othello send messages to Hamlet that he hasn't read.
+        self.subscribe(self.example_user("hamlet"), 'Scotland')
+
+        first_unread_message_id = self.send_stream_message(self.example_email("othello"), "Scotland")
+        self.send_stream_message(self.example_email("othello"), "Scotland")
+        self.send_stream_message(self.example_email("othello"), "Scotland")
+        self.send_personal_message(
+            self.example_email("othello"),
+            self.example_email("hamlet"),
+        )
+
+        # Add a few messages that help us test that our query doesn't
+        # look at messages that are irrelevant to Hamlet.
+        self.send_personal_message(self.example_email("othello"), self.example_email("cordelia"))
+        self.send_personal_message(self.example_email("othello"), self.example_email("iago"))
+
+        query_params = dict(
+            use_first_unread_anchor='true',
+            anchor=0,
+            num_before=10,
+            num_after=10,
+            narrow='[]'
+        )
+        request = POSTRequestMock(query_params, user_profile)
+
+        first_visible_message_id = first_unread_message_id + 2
+        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=first_visible_message_id):
+            with queries_captured() as all_queries:
+                get_messages_backend(request, user_profile)
+
+        queries = [q for q in all_queries if '/* get_messages */' in q['sql']]
+        self.assertEqual(len(queries), 1)
+        sql = queries[0]['sql']
+        self.assertNotIn('AND message_id = %s' % (LARGER_THAN_MAX_MESSAGE_ID,), sql)
+        self.assertIn('ORDER BY message_id ASC', sql)
+
+        cond = 'WHERE user_profile_id = %d AND message_id >= %d AND message_id <= %d' % (
+            user_profile.id, first_visible_message_id, first_unread_message_id + 1
+        )
+        self.assertIn(cond, sql)
+        cond = 'WHERE user_profile_id = %d AND message_id >= %d AND message_id >= %d' % (
+            user_profile.id, first_visible_message_id, first_visible_message_id
+        )
         self.assertIn(cond, sql)
 
     def test_use_first_unread_anchor_with_no_unread_messages(self) -> None:
@@ -1368,8 +1591,16 @@ class GetOldMessagesTest(ZulipTestCase):
         queries = [q for q in all_queries if '/* get_messages */' in q['sql']]
         self.assertEqual(len(queries), 1)
         self.assertIn('AND message_id <= %d' % (LARGER_THAN_MAX_MESSAGE_ID - 1,), queries[0]['sql'])
+        self.assertIn('AND message_id >= %d' % (get_first_visible_message_id(user_profile.realm),), queries[0]['sql'])
         # There should not be an after_query in this case, since it'd be useless
         self.assertNotIn('AND message_id >= %d' % (LARGER_THAN_MAX_MESSAGE_ID,), queries[0]['sql'])
+
+        first_visible_message_id = 5
+        with mock.patch("zerver.views.messages.get_first_visible_message_id", return_value=first_visible_message_id):
+            with queries_captured() as all_queries:
+                get_messages_backend(request, user_profile)
+            queries = [q for q in all_queries if '/* get_messages */' in q['sql']]
+            self.assertIn('AND message_id >= %d' % (first_visible_message_id,), queries[0]['sql'])
 
     def test_use_first_unread_anchor_with_muted_topics(self) -> None:
         """
@@ -1501,65 +1732,65 @@ class GetOldMessagesTest(ZulipTestCase):
     def test_get_messages_queries(self) -> None:
         query_ids = self.get_query_ids()
 
-        sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = {hamlet_id} AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 11) AS anon_1 ORDER BY message_id ASC'
+        sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = {hamlet_id} AND message_id >= 0 AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 11) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10}, sql)
 
-        sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = {hamlet_id} AND message_id <= 100 ORDER BY message_id DESC \n LIMIT 11) AS anon_1 ORDER BY message_id ASC'
+        sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = {hamlet_id} AND message_id >= 0 AND message_id <= 100 ORDER BY message_id DESC \n LIMIT 11) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 100, 'num_before': 10, 'num_after': 0}, sql)
 
-        sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM ((SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = {hamlet_id} AND message_id <= 99 ORDER BY message_id DESC \n LIMIT 10) UNION ALL (SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = {hamlet_id} AND message_id >= 100 ORDER BY message_id ASC \n LIMIT 11)) AS anon_1 ORDER BY message_id ASC'
+        sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM ((SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = {hamlet_id} AND message_id >= 0 AND message_id <= 99 ORDER BY message_id DESC \n LIMIT 10) UNION ALL (SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = {hamlet_id} AND message_id >= 0 AND message_id >= 100 ORDER BY message_id ASC \n LIMIT 11)) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 100, 'num_before': 10, 'num_after': 10}, sql)
 
     def test_get_messages_with_narrow_queries(self) -> None:
         query_ids = self.get_query_ids()
 
-        sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (sender_id = {othello_id} AND recipient_id = {hamlet_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_recipient}) AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
+        sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND message_id >= 0 AND (sender_id = {othello_id} AND recipient_id = {hamlet_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_recipient}) AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
                                               'narrow': '[["pm-with", "%s"]]' % (self.example_email("othello"),)},
                                              sql)
 
-        sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (flags & 2) != 0 AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
+        sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND message_id >= 0 AND (flags & 2) != 0 AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
                                               'narrow': '[["is", "starred"]]'},
                                              sql)
 
-        sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND sender_id = {othello_id} AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
+        sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND message_id >= 0 AND sender_id = {othello_id} AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
                                               'narrow': '[["sender", "%s"]]' % (self.example_email("othello"),)},
                                              sql)
 
-        sql_template = 'SELECT anon_1.message_id \nFROM (SELECT id AS message_id \nFROM zerver_message \nWHERE recipient_id = {scotland_recipient} AND zerver_message.id >= 0 ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
+        sql_template = 'SELECT anon_1.message_id \nFROM (SELECT id AS message_id \nFROM zerver_message \nWHERE zerver_message.id >= 0 AND recipient_id = {scotland_recipient} AND zerver_message.id >= 0 ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
                                               'narrow': '[["stream", "Scotland"]]'},
                                              sql)
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND upper(subject) = upper('blah') AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND message_id >= 0 AND upper(subject) = upper('blah') AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
                                               'narrow': '[["topic", "blah"]]'},
                                              sql)
 
-        sql_template = "SELECT anon_1.message_id \nFROM (SELECT id AS message_id \nFROM zerver_message \nWHERE recipient_id = {scotland_recipient} AND upper(subject) = upper('blah') AND zerver_message.id >= 0 ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql_template = "SELECT anon_1.message_id \nFROM (SELECT id AS message_id \nFROM zerver_message \nWHERE zerver_message.id >= 0 AND recipient_id = {scotland_recipient} AND upper(subject) = upper('blah') AND zerver_message.id >= 0 ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
                                               'narrow': '[["stream", "Scotland"], ["topic", "blah"]]'},
                                              sql)
 
         # Narrow to pms with yourself
-        sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND sender_id = {hamlet_id} AND recipient_id = {hamlet_recipient} AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
+        sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND message_id >= 0 AND sender_id = {hamlet_id} AND recipient_id = {hamlet_recipient} AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
                                               'narrow': '[["pm-with", "%s"]]' % (self.example_email("hamlet"),)},
                                              sql)
 
-        sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND recipient_id = {scotland_recipient} AND (flags & 2) != 0 AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
+        sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND message_id >= 0 AND recipient_id = {scotland_recipient} AND (flags & 2) != 0 AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
                                               'narrow': '[["stream", "Scotland"], ["is", "starred"]]'},
@@ -1569,19 +1800,19 @@ class GetOldMessagesTest(ZulipTestCase):
     def test_get_messages_with_search_queries(self) -> None:
         query_ids = self.get_query_ids()
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.subject_matches \nFROM (SELECT message_id, flags, subject, rendered_content, ts_match_locs_array('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', 'jumping')) AS content_matches, ts_match_locs_array('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', 'jumping')) AS subject_matches \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', 'jumping')) AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"  # type: Text
+        sql_template = "SELECT anon_1.message_id, anon_1.flags, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.subject_matches \nFROM (SELECT message_id, flags, subject, rendered_content, ts_match_locs_array('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', 'jumping')) AS content_matches, ts_match_locs_array('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', 'jumping')) AS subject_matches \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND message_id >= 0 AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', 'jumping')) AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"  # type: Text
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
                                               'narrow': '[["search", "jumping"]]'},
                                              sql)
 
-        sql_template = "SELECT anon_1.message_id, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.subject_matches \nFROM (SELECT id AS message_id, subject, rendered_content, ts_match_locs_array('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', 'jumping')) AS content_matches, ts_match_locs_array('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', 'jumping')) AS subject_matches \nFROM zerver_message \nWHERE recipient_id = {scotland_recipient} AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', 'jumping')) AND zerver_message.id >= 0 ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql_template = "SELECT anon_1.message_id, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.subject_matches \nFROM (SELECT id AS message_id, subject, rendered_content, ts_match_locs_array('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', 'jumping')) AS content_matches, ts_match_locs_array('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', 'jumping')) AS subject_matches \nFROM zerver_message \nWHERE zerver_message.id >= 0 AND recipient_id = {scotland_recipient} AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', 'jumping')) AND zerver_message.id >= 0 ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
                                               'narrow': '[["stream", "Scotland"], ["search", "jumping"]]'},
                                              sql)
 
-        sql_template = 'SELECT anon_1.message_id, anon_1.flags, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.subject_matches \nFROM (SELECT message_id, flags, subject, rendered_content, ts_match_locs_array(\'zulip.english_us_search\', rendered_content, plainto_tsquery(\'zulip.english_us_search\', \'"jumping" quickly\')) AS content_matches, ts_match_locs_array(\'zulip.english_us_search\', escape_html(subject), plainto_tsquery(\'zulip.english_us_search\', \'"jumping" quickly\')) AS subject_matches \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (content ILIKE \'%jumping%\' OR subject ILIKE \'%jumping%\') AND (search_tsvector @@ plainto_tsquery(\'zulip.english_us_search\', \'"jumping" quickly\')) AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
+        sql_template = 'SELECT anon_1.message_id, anon_1.flags, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.subject_matches \nFROM (SELECT message_id, flags, subject, rendered_content, ts_match_locs_array(\'zulip.english_us_search\', rendered_content, plainto_tsquery(\'zulip.english_us_search\', \'"jumping" quickly\')) AS content_matches, ts_match_locs_array(\'zulip.english_us_search\', escape_html(subject), plainto_tsquery(\'zulip.english_us_search\', \'"jumping" quickly\')) AS subject_matches \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND message_id >= 0 AND (content ILIKE \'%jumping%\' OR subject ILIKE \'%jumping%\') AND (search_tsvector @@ plainto_tsquery(\'zulip.english_us_search\', \'"jumping" quickly\')) AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
                                               'narrow': '[["search", "\\"jumping\\" quickly"]]'},
