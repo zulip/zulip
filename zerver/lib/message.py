@@ -845,3 +845,8 @@ def apply_unread_message_event(user_profile: UserProfile,
 
     if 'mentioned' in flags:
         state['mentions'].add(message_id)
+
+# This function will be used when we restrict search history for certain realms,
+# but now it just allows all realms to see all messages.
+def get_first_visible_message_id(realm: Realm) -> int:
+    return 0
