@@ -38,6 +38,10 @@ var input_pill = function ($parent) {
             input_elem.innerText = "";
         },
 
+        clear_text: function () {
+            store.$input.text("");
+        },
+
         // create the object that will represent the data associated with a pill.
         // each can have a value and an optional key value.
         // the value is a human readable value that is shown, whereas the key
@@ -409,6 +413,7 @@ var input_pill = function ($parent) {
         },
 
         clear: funcs.removeAllPills.bind(funcs),
+        clear_text: funcs.clear_text,
     };
 
     return prototype;

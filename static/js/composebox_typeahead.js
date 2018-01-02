@@ -626,7 +626,7 @@ exports.initialize = function () {
         },
         updater: function (item, event) {
             pm_pill().pill.append(item.full_name, item.user_id);
-            $(event.target).text("");
+            pm_pill().clear_text();
         },
         stopAdvance: true, // Do not advance to the next field on a tab or enter
     });
