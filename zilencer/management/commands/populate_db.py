@@ -345,10 +345,14 @@ class Command(BaseCommand):
                     "sales": {"description": "For sales discussion", "invite_only": False}
                 }  # type: Dict[Text, Dict[Text, Any]]
 
+                # Calculate the maximum number of digits in any extra stream's
+                # number, since a stream with name "Extra Stream 3" could show
+                # up after "Extra Stream 29". (Used later to pad numbers with
+                # 0s).
+                maximum_digits = len(str(options['extra_streams'] - 1))
+
                 for i in range(options['extra_streams']):
-                    # Since a stream with name "Extra Stream 3" could show up
-                    # after "Extra Stream 29", pad the numbers with 0s.
-                    maximum_digits = len(str(options['extra_streams'] - 1))
+                    # Pad the number with 0s based on `maximum_digits`.
                     number_str = str(i).zfill(maximum_digits)
 
                     extra_stream_name = 'Extra Stream ' + number_str
