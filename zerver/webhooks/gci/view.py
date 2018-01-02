@@ -76,6 +76,16 @@ def get_needswork_event_body(payload: Dict[Text, Any]) -> Text:
         task_url=build_instance_url(payload['task_instance']),
     )
 
+def get_extend_event_body(payload: Dict[Text, Any]) -> Text:
+    template = "{} by {days} day(s).".format(GCI_MESSAGE_TEMPLATE.rstrip('.'),
+                                             days=payload['extension_days'])
+    return template.format(
+        actor=payload['author'],
+        action='extended the deadline for',
+        task_name=payload['task_definition_name'],
+        task_url=build_instance_url(payload['task_instance']),
+    )
+
 @api_key_only_webhook_view("Google-Code-In")
 @has_request_variables
 def api_gci_webhook(request: HttpRequest, user_profile: UserProfile, stream: Text=REQ(default='gci'),
@@ -97,6 +107,7 @@ EVENTS_FUNCTION_MAPPER = {
     'approve-pending-pc': get_approve_pending_pc_event_body,
     'claim': get_claim_event_body,
     'comment': get_comment_event_body,
+    'extend': get_extend_event_body,
     'needswork': get_needswork_event_body,
     'submit': get_submit_event_body,
 }
