@@ -24,6 +24,7 @@ from zerver.lib.message import (
     access_message,
     messages_for_ids,
     render_markdown,
+    get_first_visible_message_id,
 )
 from zerver.lib.response import json_success, json_error
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
@@ -591,6 +592,9 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
                             literal_column("zerver_message.id")))
         inner_msg_id_col = column("message_id")
 
+    first_visible_message_id = get_first_visible_message_id(user_profile.realm)
+    query = query.where(inner_msg_id_col >= first_visible_message_id)
+
     num_extra_messages = 1
     is_search = False
 
@@ -1138,6 +1142,8 @@ def messages_in_narrow_backend(request: HttpRequest, user_profile: UserProfile,
                                narrow: Optional[List[Dict[str, Any]]]=REQ(converter=narrow_parameter)
                                ) -> HttpResponse:
 
+    first_visible_message_id = get_first_visible_message_id(user_profile.realm)
+    msg_ids = [message_id for message_id in msg_ids if message_id >= first_visible_message_id]
     # This query is limited to messages the user has access to because they
     # actually received them, as reflected in `zerver_usermessage`.
     query = select([column("message_id"), column("subject"), column("rendered_content")],
