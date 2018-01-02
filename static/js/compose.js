@@ -743,12 +743,19 @@ exports.initialize_pills = function () {
             return person.email === value;
         });
 
-        if (!match) {
+        // if there is no match, reject, but only if the realm is also not a
+        // zephyr mirror realm. This is because a user on that realm can send
+        // a mesasge to an email address outside of the existing realm.
+        if (!match && !page_params.realm_is_zephyr_mirror_realm) {
             reject();
             return;
         }
 
-        return { key: match.user_id, value: match.full_name };
+        if (match) {
+            return { key: match.user_id, value: match.full_name };
+        } else {
+            return { key: value, value: value };
+        }
     });
 };
 
