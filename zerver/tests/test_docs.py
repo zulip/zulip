@@ -62,6 +62,7 @@ class DocPageTest(ZulipTestCase):
         self._test('/api/get-stream-id', 'The name of the stream to retrieve the ID for.')
         self._test('/api/get-subscribed-streams', 'Get all streams that the user is subscribed to.')
         self._test('/api/get-all-users', 'client_gravatar')
+        self._test('/api/register-queue', 'apply_markdown')
         self._test('/team/', 'industry veterans')
         self._test('/history/', 'Cambridge, Massachusetts')
         # Test the i18n version of one of these pages.
