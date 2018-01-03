@@ -35,7 +35,7 @@
 * [Share and upload files](/help/upload-and-share-files)
 * [Manage your uploaded files](/help/manage-your-uploaded-files)
 <!-- Automatically link to an external issue tracker (improve wording) -->
-<!-- Add a link preview -->
+* [Add a link preview](/help/add-a-link-preview)
 * [Enable pressing Enter to send](/help/enable-or-disable-pressing-enter-to-send)
 * [Verify a message was sent](/help/verify-that-your-message-has-been-successfully-sent)
 <!-- What to do if the server returns an error -->
