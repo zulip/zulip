@@ -166,6 +166,10 @@ exports.render_stream_description = function (sub) {
 
 exports.update_calculated_fields = function (sub) {
     sub.is_admin = page_params.is_admin;
+    // Admin can change stream name/description either stream is public or
+    // stream is private and admin is subscribed to private stream.
+    sub.can_change_name_description = page_params.is_admin &&
+                                     (!sub.invite_only || (sub.invite_only && sub.subscribed));
     sub.can_make_public = page_params.is_admin && sub.invite_only && sub.subscribed;
     sub.can_make_private = page_params.is_admin && !sub.invite_only;
     sub.preview_url = narrow.by_stream_uri(sub.name);
