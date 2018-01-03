@@ -39,7 +39,6 @@ curl {{ api_url }}/v1/register \
 #!/usr/bin/env python
 
 import zulip
-import sys
 
 # Download ~/zuliprc-dev from your dev server
 client = zulip.Client(config_file="~/zuliprc-dev")
