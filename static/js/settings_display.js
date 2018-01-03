@@ -191,7 +191,7 @@ exports.report_emojiset_change = function () {
         if ($("#display-settings-status").length) {
             loading.destroy_indicator($("#emojiset_spinner"));
             $("#emojiset_select").val(page_params.emojiset);
-            ui_report.success(i18n.t("Emojiset changed successfully!!"),
+            ui_report.success(i18n.t("Emojiset changed successfully!"),
                               $('#display-settings-status').expectOne());
         }
     }
