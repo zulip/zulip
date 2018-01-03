@@ -19,6 +19,9 @@
 
 * [Get all users](/api/get-all-users)
 
+#### Events
+* [Register a queue](/api/register-queue)
+
 ## Integrations
 
 * [Overview](/api/integration-guide)
