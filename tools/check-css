@@ -14,9 +14,13 @@ def validate(fn):
     text = open(fn).read()
     section_list = parse(text)
     if text != section_list.text():
-        print('%s seems to be broken:' % (fn,))
+        sys.stderr.write('''
+FAIL: {} is being rejected by our finicky linter)
+(you can manually apply the diff to fix)\n\n'''.format(fn,))
+        sys.stderr.flush()
+
         open('/var/tmp/pretty_css.txt', 'w').write(section_list.text())
-        subprocess.call(['diff', fn, '/var/tmp/pretty_css.txt'], stderr=subprocess.STDOUT)
+        subprocess.call(['diff', '-u', fn, '/var/tmp/pretty_css.txt'], stderr=subprocess.STDOUT)
         sys.exit(1)
 
 def check_our_files(filenames):
