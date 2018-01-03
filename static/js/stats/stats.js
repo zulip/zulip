@@ -60,15 +60,18 @@ function update_last_full_update(end_times) {
     $('#id_last_full_update').closest('.last-update').show();
 }
 
-$(function () {
-    $('span[data-toggle="tooltip"]').tooltip({
+$(function tooltips() {
+    $('span[class="new_tooltip"]').tooltip({
         animation: false,
         placement: 'top',
         html: true,
         trigger: 'manual',
     });
+    $('#active_user').hover(function () {
+        $('span[data-toggle="active_user_tooltip"]').tooltip('toggle');
+    });
     $('#id_last_update_question_sign').hover(function () {
-        $('span[data-toggle="tooltip"]').tooltip('toggle');
+        $('span[data-toggle="last_update_tooltip"]').tooltip('toggle');
     });
 });
 
