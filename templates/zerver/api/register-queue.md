@@ -4,9 +4,9 @@ Register a queue to receive new messages.
 
 (This endpoint is used internally by the API, and it is
 documented here for advanced users that want to customize
-how they register for Zulip events.  The queue_id returned
+how they register for Zulip events.  The `queue_id` returned
 from this endpoint can be used in a subsequent call to the
-"events" endpoint.)
+["events" endpoint](/api/get-events-from-queue).)
 
 `POST {{ api_url }}/v1/register`
 
