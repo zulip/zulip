@@ -21,6 +21,7 @@
 
 #### Events
 * [Register a queue](/api/register-queue)
+* [Get events from queue](/api/get-events-from-queue)
 
 ## Integrations
 
