@@ -78,26 +78,6 @@
     text-align: left;
 }
 
-#subscriptions-status {
-    position: fixed;
-    z-index: 999;
-    display: block;
-    left: 300px;
-    right: 300px;
-    margin: 0px auto;
-    opacity: 0.9 !important;
-    top: 55px;
-    max-width: 800px;
-}
-
-#close-subscriptions-status {
-    position: absolute;
-    top: 8px;
-    cursor: pointer;
-    font-size: 17px;
-    right: 8px;
-}
-
 .subscription_header {
     min-height: 47px;
 }

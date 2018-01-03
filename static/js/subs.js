@@ -633,13 +633,13 @@ function ajaxSubscribe(stream) {
                 // Display the canonical stream capitalization.
                 true_stream_name = res.already_subscribed[people.my_current_email()][0];
                 ui_report.success(i18n.t("Already subscribed to __stream__", {stream: true_stream_name}),
-                                  $("#subscriptions-status"), 'subscriptions-status');
+                                  $(".stream_change_property_info"));
             }
             // The rest of the work is done via the subscribe event we will get
         },
         error: function (xhr) {
             ui_report.error(i18n.t("Error adding subscription"), xhr,
-                            $("#subscriptions-status"), 'subscriptions-status');
+                            $(".stream_change_property_info"));
         },
     });
 }
@@ -650,12 +650,12 @@ function ajaxUnsubscribe(sub) {
         url: "/json/users/me/subscriptions",
         data: {subscriptions: JSON.stringify([sub.name]) },
         success: function () {
-            $("#subscriptions-status").hide();
+            $(".stream_change_property_info").hide();
             // The rest of the work is done via the unsubscribe event we will get
         },
         error: function (xhr) {
             ui_report.error(i18n.t("Error removing subscription"), xhr,
-                            $("#subscriptions-status"), 'subscriptions-status');
+                            $(".stream_change_property_info"));
         },
     });
 }
@@ -710,10 +710,6 @@ $(function () {
         $(e.target).addClass("btn-danger").text(i18n.t("Unsubscribe"));
     }).on("mouseout", ".subscribed-button", function (e) {
         $(e.target).removeClass("btn-danger").text(i18n.t("Subscribed"));
-    });
-
-    $(".subscriptions").on("click", "#close-subscriptions-status", function () {
-        $("#subscriptions-status").hide();
     });
 
     $("#subscriptions_table").on("click", ".email-address", function () {
