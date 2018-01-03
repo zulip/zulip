@@ -12,7 +12,7 @@
             {{/if}}
             <div class="stream-name">
                 <span class="stream-name-editable editable-section">{{name}}</span>
-                {{#if is_admin}}
+                {{#if can_change_name_description}}
                 <span class="editable" data-make-editable=".stream-name-editable"></span>
                 <span class="checkmark" data-finish-editing=".stream-name-editable">✓</span>
                 {{/if}}
@@ -25,7 +25,7 @@
         </div>
         <div class="stream-description" data-no-description="{{t 'No description.' }}">
             <span class="stream-description-editable editable-section">{{{rendered_description}}}</span>
-            {{#if is_admin}}
+            {{#if can_change_name_description}}
             <span class="editable" data-make-editable=".stream-description-editable"></span>
             <span class="checkmark" data-finish-editing=".stream-description-editable">✓</span>
             {{/if}}
