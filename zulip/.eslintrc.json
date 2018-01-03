@@ -162,8 +162,7 @@
         "hotspots": false,
         "compose_ui": false,
         "common": false,
-        "desktop_notifications_panel": false,
-        "emoji_conversions": false
+        "desktop_notifications_panel": false
     },
     "rules": {
         "array-callback-return": "error",

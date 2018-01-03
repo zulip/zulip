@@ -121,6 +121,7 @@ class ChangeSettingsTest(ZulipTestCase):
                                               notification_setting)
 
     def test_ui_settings(self) -> None:
+        self.check_for_toggle_param_patch("/json/settings/ui", "emoji_conversion")
         self.check_for_toggle_param_patch("/json/settings/ui", "default_desktop_notifications")
 
     def test_toggling_boolean_user_display_settings(self) -> None:

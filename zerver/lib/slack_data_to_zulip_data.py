@@ -121,6 +121,7 @@ def users_to_zerver_userprofile(slack_dir: str, realm_id: int, timestamp: Any,
             is_active=not user['deleted'],
             onboarding_steps="[]",
             emojiset="google",
+            emoji_conversion=False,
             realm=realm_id,
             quota=1073741824,
             # invites_used=0,  # TODO
