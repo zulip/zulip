@@ -1,9 +1,9 @@
 {{#with user_group}}
 <div class="user-group" id="{{id}}">
     <h4>
-        <span class="name" contenteditable="true">{{name}}</span>
+        <span class="name" data-placeholder="{{t 'Name' }}" contenteditable="true" spellcheck="false">{{name}}</span>
         —
-        <span class="description" contenteditable="true">{{description}}</span>
+        <span class="description" data-placeholder="{{t 'Description' }}" contenteditable="true">{{description}}</span>
         <button class="button rounded small save-group-changes sea-green">
             <i class="fa fa-check" aria-hidden="true"></i>
         </button>
@@ -11,11 +11,14 @@
             <i class="fa fa-trash-o" aria-hidden="true"></i>
         </button>
     </h4>
-    <div class="pill-container" data-group-pills="{{name}}">
-        <div class="input" contenteditable="true"></div>
-    </div>
-    <button class="button rounded small save-member-changes sea-green">
-        <i class="fa fa-check" aria-hidden="true"></i>
-    </button>
+    <p>
+        {{t 'Subscribers' }}
+        <div class="pill-container" data-group-pills="{{name}}">
+            <div class="input" contenteditable="true" data-placeholder="{{t 'Add member...' }}"></div>
+        </div>
+        <button class="button rounded small save-member-changes sea-green">
+            <i class="fa fa-check" aria-hidden="true"></i>
+        </button>
+    </p>
 </div>
 {{/with}}

@@ -823,23 +823,47 @@ input[type=checkbox].inline-block {
     margin-right: 5px;
 }
 
+#user-groups .user-group {
+    margin-bottom: 20px;
+    background-color: hsl(0, 0%, 100%);
+    padding: 10px;
+    border-radius: 5px;
+}
+
 #user-groups .user-group h4 {
     font-weight: normal;
+    margin: 0px;
+}
+
+#user-groups .user-group p {
+    font-weight: bold;
+    line-height: 2;
+    margin: 0px;
 }
 
 #user-groups .user-group h4 > .name {
     font-weight: bold;
 }
 
-#user-groups .user-group h4 > span[contenteditable="true"] {
-    padding: 2px 4px;
-    border: 1px solid hsl(0, 0%, 86%);
-    border-radius: 4px;
+#user-groups .user-group span[contenteditable] {
+    display: inline-block;
 }
 
-#user-groups .user-group h4 > span[contenteditable="true"]:focus {
+#user-groups .user-group span[contenteditable]:empty::before {
+    opacity: 0.5;
+    display: inline-block;
+    content: attr(data-placeholder);
+}
+
+#user-groups .user-group span[contenteditable]:focus,
+#user-groups .user-group span[contenteditable]:hover {
+    border-bottom: 1px solid hsl(0, 0%, 80%);
     outline: none;
-    box-shadow: 0 0 3px 2px hsl(0, 0%, 86%);
+}
+
+#user-groups .user-group .pill-container .input[contenteditable]:empty::after {
+    content: attr(data-placeholder);
+    opacity: 0.5;
 }
 
 #user-groups .user-group h4 > .button {
