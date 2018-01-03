@@ -71,7 +71,7 @@ function update_last_full_update(end_times) {
     $('#id_last_full_update').closest('.last-update').show();
 }
 
-$(function () {
+$(function tooltips() {
     $('span[data-toggle="tooltip"]').tooltip({
         animation: false,
         placement: 'top',
@@ -79,8 +79,9 @@ $(function () {
         trigger: 'manual',
     });
     $('#id_last_update_question_sign').hover(function () {
-        $('span[data-toggle="tooltip"]').tooltip('toggle');
+        $('span.last_update_tooltip').tooltip('toggle');
     });
+    // Add configuration for any additional tooltips here.
 });
 
 function populate_messages_sent_over_time(data) {
