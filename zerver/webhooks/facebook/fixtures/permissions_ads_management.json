@@ -1,0 +1,13 @@
+{
+   "entry":[
+      {
+         "time":1514912190,
+         "id":"0",
+         "changed_fields":[
+            "ads_management"
+         ],
+         "uid":"0"
+      }
+   ],
+   "object":"permissions"
+}
