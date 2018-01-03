@@ -173,6 +173,7 @@ class Realm(models.Model):
     waiting_period_threshold = models.PositiveIntegerField(default=0)  # type: int
     DEFAULT_MAX_INVITES = 100
     max_invites = models.IntegerField(default=DEFAULT_MAX_INVITES)  # type: int
+    message_visibility_limit = models.IntegerField(null=True)  # type: int
 
     # Define the types of the various automatically managed properties
     property_types = dict(
