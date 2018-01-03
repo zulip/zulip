@@ -59,7 +59,7 @@ zulip-send hamlet@example.com \
 
 You can omit the `user` and `api-key` arguments if you have a `~/.zuliprc` file.
 
-See also the [full API endpoint documentation](/api/endpoints).
+See also the [full API endpoint documentation](/api).
 </div>
 
 <div data-language="javascript" markdown="1">
