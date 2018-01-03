@@ -6,8 +6,8 @@ var exports = {};
    response- response that we want to display
    status_box- element being used to display the response
    cls- class that we want to add/remove to/from the status_box
-   type- used to define more complex logic for special cases (currently being
-         used only for subscriptions-status) */
+   type- used to define more complex logic for special cases
+*/
 
 exports.message = function (response, status_box, cls, type) {
     if (cls === undefined) {
@@ -20,13 +20,8 @@ exports.message = function (response, status_box, cls, type) {
 
     // Note we use html() below, since we can rely on our callers escaping HTML
     // via i18n.t when interpolating data.
-    if (type === 'subscriptions-status') {
-        status_box.removeClass(common.status_classes).addClass(cls).children('#response')
+    status_box.removeClass(common.status_classes).addClass(cls)
               .html(response).stop(true).fadeTo(0, 1);
-    } else {
-        status_box.removeClass(common.status_classes).addClass(cls)
-              .html(response).stop(true).fadeTo(0, 1);
-    }
 
     status_box.addClass("show");
 };

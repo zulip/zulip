@@ -83,11 +83,6 @@
     .column-middle {
         margin-right: 7px;
     }
-
-    #subscriptions-status {
-        left: 300px;
-        right: 50px;
-    }
 }
 
 @media (max-width: 775px) {
@@ -182,10 +177,6 @@
 
     .navbar-search {
         margin-right: 81px;
-    }
-
-    #subscriptions-status {
-        left: 35px;
     }
 }
 

@@ -310,7 +310,7 @@ function change_stream_privacy(e) {
     var stream_id = $(e.target).data("stream-id");
     var sub = stream_data.get_sub_by_id(stream_id);
 
-    $("#subscriptions-status").hide();
+    $(".stream_change_property_info").hide();
     var data = {
         stream_name: sub.name,
         // toggle the privacy setting
@@ -369,8 +369,7 @@ exports.change_stream_name = function (e) {
     var stream_id = $(e.target).closest(".subscription_settings").attr("data-stream-id");
     var new_name_box = sub_settings.find('.stream-name-editable');
     var new_name = $.trim(new_name_box.text());
-
-    $("#subscriptions-status").hide();
+    $(".stream_change_property_info").hide();
 
     channel.patch({
         // Stream names might contain unsafe characters so we must encode it first.
@@ -378,12 +377,10 @@ exports.change_stream_name = function (e) {
         data: {new_name: JSON.stringify(new_name)},
         success: function () {
             new_name_box.val('');
-            ui_report.success(i18n.t("The stream has been renamed!"), $("#subscriptions-status "),
-                              'subscriptions-status');
+            ui_report.success(i18n.t("The stream has been renamed!"), $(".stream_change_property_info"));
         },
         error: function (xhr) {
-            ui_report.error(i18n.t("Error renaming stream"), xhr,
-                            $("#subscriptions-status"), 'subscriptions-status');
+            ui_report.error(i18n.t("Error renaming stream"), xhr, $(".stream_change_property_info"));
         },
     });
 };
@@ -400,8 +397,7 @@ exports.change_stream_description = function (e) {
 
     var stream_id = sub.stream_id;
     var description = sub_settings.find('.stream-description-editable').text().trim();
-
-    $('#subscriptions-status').hide();
+    $(".stream_change_property_info").hide();
 
     channel.patch({
         // Stream names might contain unsafe characters so we must encode it first.
@@ -412,11 +408,11 @@ exports.change_stream_description = function (e) {
         success: function () {
             // The event from the server will update the rest of the UI
             ui_report.success(i18n.t("The stream description has been updated!"),
-                             $("#subscriptions-status"), 'subscriptions-status');
+                             $(".stream_change_property_info"));
         },
         error: function (xhr) {
             ui_report.error(i18n.t("Error updating the stream description"), xhr,
-                            $("#subscriptions-status"), 'subscriptions-status');
+                            $(".stream_change_property_info"));
         },
     });
 };

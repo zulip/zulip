@@ -99,9 +99,9 @@ function ajaxSubscribeForCreation(stream_name, description, principals, invite_o
                announce: JSON.stringify(announce),
         },
         success: function () {
+            $(".stream_change_property_info").hide();
             $("#create_stream_name").val("");
             $("#create_stream_description").val("");
-            $("#subscriptions-status").hide();
             loading.destroy_indicator($('#stream_creating_indicator'));
             // The rest of the work is done via the subscribe event we will get
         },
@@ -114,9 +114,7 @@ function ajaxSubscribeForCreation(stream_name, description, principals, invite_o
                 stream_name_error.select();
             }
 
-            // TODO: This next line does nothing.  See #4647.
-            ui_report.error(i18n.t("Error creating stream"), xhr,
-                            $("#subscriptions-status"), 'subscriptions-status');
+            ui_report.error(i18n.t("Error creating stream"), xhr, $(".stream_change_property_info"));
             loading.destroy_indicator($('#stream_creating_indicator'));
         },
     });
