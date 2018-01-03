@@ -152,33 +152,3 @@ def integration_doc(request: HttpRequest, integration_name: str=REQ(default=None
     doc_html_str = render_markdown_path(integration.doc, context)
 
     return HttpResponse(doc_html_str)
-
-def api_endpoint_docs(request: HttpRequest) -> HttpResponse:
-    context = {}  # type: Dict[str, Any]
-    add_api_uri_context(context, request)
-
-    raw_calls = open('templates/zerver/api_content.json', 'r').read()
-    calls = ujson.loads(raw_calls)
-    langs = set()
-    for call in calls:
-        call["endpoint"] = "%s/v1/%s" % (
-            context["api_url"],
-            call["endpoint"])
-        call["example_request"]["curl"] = call["example_request"]["curl"].replace(
-            "https://api.zulip.com",
-            context["api_url"])
-        response = call['example_response']
-        if '\n' not in response:
-            # For 1-line responses, pretty-print them
-            extended_response = response.replace(", ", ",\n ")
-        else:
-            extended_response = response
-        call['rendered_response'] = bugdown.convert("~~~ .py\n" + extended_response + "\n~~~\n")
-        for example_type in ('request', 'response'):
-            for lang in call.get('example_' + example_type, []):
-                langs.add(lang)
-    return render(
-        request,
-        'zerver/api_endpoints.html',
-        context={'content': calls, 'langs': langs},
-    )

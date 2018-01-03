@@ -447,9 +447,6 @@ i18n_urls = [
         name='zerver.views.registration.accounts_home_from_multiuse_invite'),
 
     # API and integrations documentation
-
-    url(r'^api/endpoints/$', zerver.views.integrations.api_endpoint_docs,
-        name='zerver.views.integrations.api_endpoint_docs'),
     url(r'^integrations/doc-html/(?P<integration_name>[^/]*)$',
         zerver.views.integrations.integration_doc,
         name="zerver.views.integrations.integration_doc"),
