@@ -33,10 +33,8 @@ curl {{ api_url }}/v1/messages/render \
 import zulip
 import sys
 
-# Keyword arguments 'email' and 'api_key' are not required if you are using ~/.zuliprc
-client = zulip.Client(email="othello-bot@example.com",
-                      api_key="a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5",
-                      site="{{ api_url }}")
+# Download ~/zuliprc-dev from your dev server
+client = zulip.Client(config_file="~/zuliprc-dev")
 
 # Render a message
 print(client.render_message({"content": "**foo**"}))
