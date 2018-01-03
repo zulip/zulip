@@ -65,70 +65,77 @@ read, it is translated sense to sense as "निजी स्ट्रीम(Pri
 (Private Stream)" भावना को अनुवादित है"
 
 
-* Bot - **机器人**
+* Bot - **रोबोट**
 
-* Integration - **应用整合**
+* Integration - **एकीकरण**
 
-"Integration" is literally translated as "集成" or "整合". It means
+"Integration" is literally translated as "एकीकरण" or "एकता". It means
 integrating Zulip production with other applications and services. For
-integrity in Chinese expression, it is translated as "应用整合
+integrity in Hindi expression, it is translated as "आवेदन एकीकरण
 (Application Integration)".
 
-“Integration”原意为“集成”与“整合”，这里表示将其它的应用或者服务与Zulip
-实现整合。为表达意思完整，补充翻译为“应用整合”。
+"Integration" वस्तुतः "एकीकरण" या "एकता" के रूप में अनुवादित है । इसका मतलब है
+अंय अनुप्रयोगों और सेवाओं के साथ Zulip उत्पादन में घालमेल । हिंदी अभिव्यक्ति में निष्ठा के लिए, 
+यह "आवेदन एकीकरण(Application Integration)" के रूप में अनुवाद किया है ।
 
-* Notification - **通知**
+* Notification - **अधिसूचना**
 
-* Alert Word - **提示词**
+* Alert Word - **सतर्क शब्द**
 
-## Phrases(习惯用语)
 
-* Subscribe/Unsubscribe - **订阅/退订**
+## Phrases(वाक्यांशों)
 
-The perfect tense subscribed/unsubscribed is translated as "已订阅/已
-退订". Sometimes "Join" is used to express the same meanings as
-"Subscribe", also be translated as "订阅(Subscribe)".
+* Subscribe/Unsubscribe - **सदस्यता लेना/सदस्यता समाप्त**
 
-完成时态译为“已订阅（Subscribed）”和“已退订（Unsubscribed）”。有时，
-“Join”也会用来表达与“Subscribe”相同的意思，也一并翻译为“订阅”。
+The perfect tense subscribed/unsubscribed is translated as "सदस्यता लिया/
+रद्द कर दी गई". Sometimes "Join" is used to express the same meanings as
+"Subscribe", also be translated as "जुड़ना(Subscribe)".
 
-* Narrow to ... - **筛选**
+subscribed/unsubscribed का संपूर्ण काल "सदस्यता लिया/ रद्द कर दी गई " के रूप में अनुवादित है| 
+कई बार "Join" के रूप में एक ही अर्थ व्यक्त करने के लिए प्रयोग किया जाता है
+"सदस्यता लें", के रूप में भी अनुवाद किया जा "जुड़ना (Subscribe)"
 
-"Narrow to" is translated as "筛选(Filter by)" for now, based on two considerations:
+* Narrow to ... - **फ़िल्टर**
 
-1. In Chinese, the word "筛选(Filter)" means a way to select according
+"Narrow to" is translated as "फ़िल्टर(Filter by)" for now, based on two considerations:
+
+1. In Hindi, the word "फ़िल्टर(Filter)" means a way to select according
    to the specific conditions. "Narrow to ..." means "to narrow the
    scope of ...". The two words share the common meanings.
 
-2. "筛选" is a common computer phrase and has been well
-   accepted by public, e.g. the "Filter(筛选)" feature in Microsoft
+2. "फ़िल्टर" is a common computer phrase and has been well
+   accepted by public, e.g. the "Filter(फ़िल्टर)" feature in Microsoft
    Excel.
 
 In addition, in the searching context "Narrow to ..." is not
-translated as "筛选(Filter)" but as "搜索(Search)" because of
+translated as "फ़िल्टर(Filter)" but as "खोज(Search)" because of
 readability considerations.
 
-这里暂且翻译为“筛选”。主要有两点考虑：
+* Narrow to ...* * फ़िल्टर * *
 
-1. 在汉语中，“筛选”表示按照指定条件进行挑选的方式。“Narrow to ...”的含
-   义为“使...缩小范围”，两者有一定共通性。
+"Narrow to ..." के रूप में "फ़िल्टर (Filter by)", दो बातों के आधार पर अनुवाद किया है:
 
-2. “筛选”也是比较大众化的计算机用语，易于为大家所接受。例如Microsoft
-   Excel中的“筛选”功能。
+1. हिंदी में, शब्द "फ़िल्टर (Filter)" का अर्थ है एक तरह से चयन के अनुसार
+विशिष्ट स्थितियों के लिए । "Narrow to ..." का अर्थ है "संकीर्ण करने के लिए
+गुंजाइश है... "। दो शब्द साझा अर्थ है ।
 
-另外，在搜索功能的语境中，“Narrow to ...”没有翻译为“筛选”，而翻译为“搜
-索”，这是出于可读性的考虑。
+2. "फ़िल्टर" एक आम कंप्यूटर वाक्यांश है और जो सार्वजनिक रूप से स्वीकार किया गया है, जैसे 
+Microsoft Excel में "फ़िल्टर (Filter)" सुविधा |
 
-* Mute/Unmute - **开启/关闭免打扰**
+इसके अलावा, खोज के संदर्भ में "संकीर्ण करने के लिए..." "फ़िल्टर (Filter)" के रूप में अनुवादित 
+नहीं है लेकिन "खोज (Search)" है ।
 
-"Mute" is mostly translated as "静音(Silent)", which is common in TV
-set.  Such a translation is not appropriate for Zulip. "开启/关闭免打
-扰(Turn off/on Notification)" is a sense to sense translation, which
+* Mute/Unmute - **शांत/अशांत**
+
+"Mute" is mostly translated as "मौन(Silent)", which is common in TV
+set.  Such a translation is not appropriate for Zulip. "सूचना चालू / बंद करें
+(Turn off/on Notification)" is a sense to sense translation, which
 is also borrowed from the WeChat.
 
-“Mute”常见的中文翻译为“静音”，在电视设备中常见，用在Zulip中并不太合适。
-这里取意译，与大家常用的微信（WeChat）中“消息免打扰”用语习惯一致。
-
+"Mute" ज्यादातर "मौन (मूक)" के रूप में अनुवाद जाता है , जो टीवी सेट में आम है| ऐसे अनुवाद 
+Zulip के लिए उचित नहीं है । "सूचना चालू/ बंद करें (Turn off/on Notification) "
+भावना अनुवाद करने के लिए एक भावना है, जो WeChat से भी उधार लिया जाता है ।
+ 
 * Deactivate/Reactivate - **禁用/启用(帐户)，关闭/激活(社区)**
 
 When applied to a user account, translated as "禁用/启用
