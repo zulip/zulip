@@ -1,0 +1,17 @@
+{
+  "event":"error_activity",
+  "eventType":"CommentAdded",
+  "error":{
+    "url":"https://app.raygun.com/error-url",
+    "description":"Anita left a comment on error Script Error, 'Ignoring these errors'",
+    "activityDate":"1970-01-28T01:49:36Z",
+    "message":"Script Error",
+    "comment":"Ignoring these errors",
+    "user":"Anita Peacock"
+  },
+  "application":{
+    "name":"application name",
+    "url":"http://app.raygun.io/application-url"
+  }
+}
+
