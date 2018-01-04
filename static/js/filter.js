@@ -52,7 +52,17 @@ function message_matches_search_term(message, operator, operand) {
         } else if (operand === 'starred') {
             return message.starred;
         } else if (operand === 'mentioned') {
-            return message.mentioned;
+            if (message.mentioned) {
+                var stream = stream_data.get_sub_by_id(message.stream_id);
+                if (message.mentioned_me_directly) {
+                    return true;
+                } else if (muting.is_topic_muted(message.stream, message.subject)) {
+                    return false;
+                } else if (stream.in_home_view) {
+                    return true;
+                }
+            }
+            return false;
         } else if (operand === 'alerted') {
             return message.alerted;
         } else if (operand === 'unread') {
