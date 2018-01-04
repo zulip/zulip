@@ -39,6 +39,10 @@ set_global('sent_messages', {
     start_tracking_message: noop,
     report_server_ack: noop,
 });
+set_global('notifications', {
+    notify_above_composebox: noop,
+    clear_compose_notifications: noop,
+});
 
 // Setting these up so that we can test that links to uploads within messages are
 // automatically converted to server relative links.
