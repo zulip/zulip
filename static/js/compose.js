@@ -325,6 +325,67 @@ exports.send_message = function send_message(request) {
     }
 };
 
+function is_scheduled_message(message_content) {
+    return /^\/remind/.test(message_content);
+}
+
+function patch_request_for_scheduling(request) {
+    var new_request = request;
+    var raw_message = request.content.split('\n');
+    var command_line = raw_message[0];
+    var message = raw_message.slice(1).join('\n');
+    var deliver_at = command_line.slice(8);
+
+    if (message.trim() === '' || deliver_at.trim() === '' || command_line.slice(7,8) !== ' ') {
+        $("#compose-textarea").attr('disabled', false);
+        if (command_line.slice(7,8) !== ' ') {
+            compose_error(i18n.t('Invalid slash command. Check if you are missing a space after the command.'), $('#compose-textarea'));
+        } else if (deliver_at.trim() === '') {
+            compose_error(i18n.t('Please specify time for your reminder.'), $('#compose-textarea'));
+        } else {
+            compose_error(i18n.t('Your reminder note is empty!'), $('#compose-textarea'));
+        }
+        return;
+    }
+
+    new_request.content = message;
+    new_request.deliver_at = deliver_at;
+    new_request.tz_guess = moment.tz.guess();
+    return new_request;
+}
+
+exports.schedule_message = function schedule_message(request) {
+    if (request === undefined) {
+        request = create_message_object();
+    }
+
+    if (request.type === "private") {
+        request.to = JSON.stringify(request.to);
+    } else {
+        request.to = JSON.stringify([request.to]);
+    }
+    function success(data) {
+        notifications.notify_above_composebox('Scheduled your Message to be delivered at: ' + data.deliver_at);
+        $("#compose-textarea").attr('disabled', false);
+        clear_compose_box();
+    }
+
+    function error(response) {
+        $("#compose-textarea").attr('disabled', false);
+        compose_error(response, $('#compose-textarea'));
+    }
+
+    request = patch_request_for_scheduling(request);
+
+    if (request === undefined) {
+       return;
+    }
+
+    $("#compose-textarea").attr('disabled', true);
+    exports.transmit_message(request, success, error);
+
+};
+
 exports.enter_with_preview_open = function () {
     exports.clear_preview_area();
     if (page_params.enter_sends) {
@@ -339,11 +400,18 @@ exports.enter_with_preview_open = function () {
 exports.finish = function () {
     exports.clear_invites();
     exports.clear_private_stream_alert();
+    notifications.clear_compose_notifications();
 
     if (! compose.validate()) {
         return false;
     }
-    exports.send_message();
+
+    var message_content = compose_state.message_content();
+    if (is_scheduled_message(message_content)) {
+        exports.schedule_message();
+    } else {
+        exports.send_message();
+    }
     exports.clear_preview_area();
     // TODO: Do we want to fire the event even if the send failed due
     // to a server-side error?
@@ -545,9 +613,14 @@ function validate_private_message() {
 
 exports.validate = function () {
     $("#compose-send-button").attr('disabled', 'disabled').blur();
-    show_sending_indicator();
+    var message_content = compose_state.message_content();
+    if (is_scheduled_message(message_content)) {
+        show_sending_indicator('Scheduling...');
+    } else {
+        show_sending_indicator();
+    }
 
-    if (/^\s*$/.test(compose_state.message_content())) {
+    if (/^\s*$/.test(message_content)) {
         compose_error(i18n.t("You have nothing to send!"), $("#compose-textarea"));
         return false;
     }
