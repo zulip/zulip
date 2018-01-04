@@ -472,6 +472,8 @@ exports.initialize = function () {
 
         e.preventDefault();
         e.stopPropagation();
+        exports.toggle_filter_displayed(e);
+
     });
 
 };
