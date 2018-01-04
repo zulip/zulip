@@ -83,6 +83,18 @@ exports.generate_flaskbotrc_content = function (email, api_key) {
 };
 
 exports.set_up = function () {
+    var bot_type_info = {
+        1 : 'Generic Bot',
+        2 : 'Incoming Hooks can only send messages',
+        3 : 'Outgoing Hook',
+        4 : 'Embedded Bot',
+    };
+    var selected_bot_type = $('#create_bot_type :selected').val();
+    $('#bot_type_info').html(
+        bot_type_info.hasOwnProperty(selected_bot_type) ?
+        bot_type_info[selected_bot_type] : ""
+    );
+
     $('#payload_url_inputbox').hide();
     $('#create_payload_url').val('');
     $('#service_name_list').hide();
@@ -191,6 +203,10 @@ exports.set_up = function () {
 
     $("#create_bot_type").on("change", function () {
         var bot_type = $('#create_bot_type :selected').val();
+        $('#bot_type_info').html(
+            bot_type_info.hasOwnProperty(bot_type) ?
+            bot_type_info[bot_type] : ""
+        );
         // For "generic bot" or "incoming webhook" both these fields need not be displayed.
         $('#service_name_list').hide();
         $('#select_service_name').removeClass('required');

@@ -420,6 +420,15 @@ input[type=checkbox].inline-block {
     }
 }
 
+#bot_type_info {
+    padding-left: 5px !important;
+    font-style: italic;
+}
+
+#create_bot_form select {
+    margin-top: 5px;
+}
+
 #organization .settings-section .settings-section-icon,
 #settings .settings-section .settings-section-icon {
     margin-right: 8px;
