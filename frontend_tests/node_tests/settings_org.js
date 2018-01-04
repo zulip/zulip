@@ -542,16 +542,14 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     assert.equal($('#full_name').attr('disabled'), 'disabled');
     assert(name_toggled);
 
-    var email_toggled;
-    $('#change_email').toggle = function () {
-        email_toggled = true;
-    };
     var email_tooltip_toggled;
     $('.change_email_tooltip').toggle = function () {
         email_tooltip_toggled = true;
     };
+
+    $('#change_email .button').attr('disabled', false);
     settings_org.toggle_email_change_display();
-    assert(email_toggled);
+    assert.equal($("#change_email .button").attr('disabled'), 'disabled');
     assert(email_tooltip_toggled);
 
     page_params.realm_description = 'realm description';
