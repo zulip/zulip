@@ -55,11 +55,13 @@ from zerver.models import (
     Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment,
     RealmAuditLog, RealmDomain, get_realm, UserPresence, Subscription,
     get_stream, get_stream_recipient, get_system_bot, get_user, Reaction,
-    flush_per_request_caches
+    flush_per_request_caches, ScheduledMessage
 )
 
 
 from zerver.lib.upload import create_attachment
+from zerver.lib.timestamp import convert_to_UTC
+from zerver.lib.timezone import get_timezone
 
 from zerver.views.messages import create_mirrored_message_users
 
@@ -1271,6 +1273,101 @@ class MessagePOSTTest(ZulipTestCase):
                                                            "subject": "from irc",
                                                            "to": "IRCLand"})
         self.assert_json_success(result)
+
+class ScheduledMessageTest(ZulipTestCase):
+
+    def last_scheduled_message(self) -> ScheduledMessage:
+        return ScheduledMessage.objects.all().order_by('-id')[0]
+
+    def do_schedule_message(self, msg_type: str, to: str, msg: str,
+                            defer_until: str, tz_guess: str='',
+                            realm_str: str='zulip') -> HttpResponse:
+        self.login(self.example_email("hamlet"))
+
+        subject = ''
+        if msg_type == 'stream':
+            subject = 'Test subject'
+
+        result = self.client_post("/json/messages",
+                                  {"type": msg_type,
+                                   "to": to,
+                                   "client": "test suite",
+                                   "content": msg,
+                                   "subject": subject,
+                                   "realm_str": realm_str,
+                                   "deliver_at": defer_until,
+                                   "tz_guess": tz_guess})
+        return result
+
+    def test_schedule_message(self) -> None:
+        content = "Test message"
+        defer_until = timezone_now().replace(tzinfo=None) + datetime.timedelta(days=1)
+        defer_until_str = str(defer_until)
+
+        # Scheduling a message to a stream you are subscribed is successful.
+        result = self.do_schedule_message('stream', 'Verona',
+                                          content + ' 1', defer_until_str)
+        message = self.last_scheduled_message()
+        self.assert_json_success(result)
+        self.assertEqual(message.content, 'Test message 1')
+        self.assertEqual(message.scheduled_timestamp, convert_to_UTC(defer_until))
+
+        # Scheduling a private message is successful.
+        result = self.do_schedule_message('private', self.example_email("othello"),
+                                          content + ' 2', defer_until_str)
+        message = self.last_scheduled_message()
+        self.assert_json_success(result)
+        self.assertEqual(message.content, 'Test message 2')
+        self.assertEqual(message.scheduled_timestamp, convert_to_UTC(defer_until))
+
+        # Scheduling a message while guessing timezone.
+        tz_guess = 'Asia/Kolkata'
+        result = self.do_schedule_message('stream', 'Verona', content + ' 3',
+                                          defer_until_str, tz_guess=tz_guess)
+        message = self.last_scheduled_message()
+        self.assert_json_success(result)
+        self.assertEqual(message.content, 'Test message 3')
+        local_tz = get_timezone(tz_guess)
+        # Since mypy is not able to recognize localize and normalize as attributes of tzinfo we use ignore.
+        utz_defer_until = local_tz.normalize(local_tz.localize(defer_until))  # type: ignore # Reason in comment on previous line.
+        self.assertEqual(message.scheduled_timestamp,
+                         convert_to_UTC(utz_defer_until))
+
+        # Test with users timezone setting as set to some timezone rather than
+        # empty. This will help interpret timestamp in users local timezone.
+        user = self.example_user("hamlet")
+        user.timezone = 'US/Pacific'
+        user.save(update_fields=['timezone'])
+        result = self.do_schedule_message('stream', 'Verona',
+                                          content + ' 4', defer_until_str)
+        message = self.last_scheduled_message()
+        self.assert_json_success(result)
+        self.assertEqual(message.content, 'Test message 4')
+        local_tz = get_timezone(user.timezone)
+        # Since mypy is not able to recognize localize and normalize as attributes of tzinfo we use ignore.
+        utz_defer_until = local_tz.normalize(local_tz.localize(defer_until))  # type: ignore # Reason in comment on previous line.
+        self.assertEqual(message.scheduled_timestamp,
+                         convert_to_UTC(utz_defer_until))
+
+    def test_scheduling_in_past(self) -> None:
+        # Scheduling a message in past should fail.
+        content = "Test message"
+        defer_until = timezone_now()
+        defer_until_str = str(defer_until)
+
+        result = self.do_schedule_message('stream', 'Verona',
+                                          content + ' 1', defer_until_str)
+        self.assert_json_error(result, 'Invalid timestamp for scheduling message. Choose a time in future.')
+
+    def test_invalid_timestamp(self) -> None:
+        # Scheduling a message from which timestamp couldn't be parsed
+        # successfully should fail.
+        content = "Test message"
+        defer_until = 'Missed the timestamp'
+
+        result = self.do_schedule_message('stream', 'Verona',
+                                          content + ' 1', defer_until)
+        self.assert_json_error(result, 'Invalid timestamp for scheduling message.')
 
 class EditMessageTest(ZulipTestCase):
     def check_message(self, msg_id: int, subject: Optional[Text]=None,
