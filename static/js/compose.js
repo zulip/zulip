@@ -47,6 +47,14 @@ exports.clear_all_everyone_warnings = function () {
     $("#compose-send-status").hide();
 };
 
+function show_sending_indicator(whats_happening) {
+    if (whats_happening === undefined) {
+        whats_happening = 'Sending...';
+    }
+    $("#sending-indicator").html(i18n.t(whats_happening));
+    $("#sending-indicator").show();
+}
+
 function show_announce_warnings() {
     var stream_count = stream_data.get_subscriber_count(compose_state.stream_name()) || 0;
 
@@ -537,7 +545,7 @@ function validate_private_message() {
 
 exports.validate = function () {
     $("#compose-send-button").attr('disabled', 'disabled').blur();
-    $("#sending-indicator").show();
+    show_sending_indicator();
 
     if (/^\s*$/.test(compose_state.message_content())) {
         compose_error(i18n.t("You have nothing to send!"), $("#compose-textarea"));
