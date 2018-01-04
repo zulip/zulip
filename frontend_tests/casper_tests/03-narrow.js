@@ -307,7 +307,7 @@ casper.then(function () {
     casper.click('#streams_header .sidebar-title');
 });
 
-casper.waitWhileSelector('.input-append.notdisplayed', function () {
+casper.waitWhileSelector('#streams_list .input-append.notdisplayed', function () {
     casper.test.assertExists('#stream_filters [data-stream-name="Denmark"]', 'Original stream list contains Denmark');
     casper.test.assertExists('#stream_filters [data-stream-name="Scotland"]', 'Original stream list contains Scotland');
     casper.test.assertExists('#stream_filters [data-stream-name="Verona"]', 'Original stream list contains Verona');

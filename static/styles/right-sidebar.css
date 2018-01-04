@@ -213,6 +213,18 @@
     border-top: none;
 }
 
+#userlist-header {
+    cursor: pointer;
+}
+
+#user_filter_icon {
+    float: right;
+    font-size: 13px;
+    opacity: 0.50;
+    margin-top: 3px;
+    margin-right: 10px;
+}
+
 #feedback_section {
     text-align: left;
     padding-bottom: 15px;

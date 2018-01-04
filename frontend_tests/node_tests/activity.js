@@ -573,26 +573,24 @@ $('.user-list-filter').is = function (sel) {
     }
 };
 
+$('.user-list-filter').parent = function () {
+    return $('#user-list .input-append');
+};
+
 (function test_clear_search() {
     $('.user-list-filter').val('somevalue');
-    $('#clear_search_people_button').prop('disabled', false);
-    $('.user-list-filter').focus();
     activity.clear_search();
     assert.equal($('.user-list-filter').val(), '');
-    assert.equal($('.user-list-filter').is_focused(), false);
-    assert.equal($('#clear_search_people_button').attr('disabled'), 'disabled');
+    activity.clear_search();
+    assert($('#user-list .input-append').hasClass('notdisplayed'));
 }());
 
-(function test_blur_search() {
+(function test_escape_search() {
     $('.user-list-filter').val('somevalue');
-    $('.user-list-filter').focus();
-    $('#clear_search_people_button').attr('disabled', 'disabled');
-    activity.blur_search();
-    assert.equal($('.user-list-filter').is_focused(), false);
-    assert.equal($('#clear_search_people_button').prop('disabled'), false);
-    $('.user-list-filter').val('');
-    activity.blur_search();
-    assert.equal($('#clear_search_people_button').attr('disabled'), 'disabled');
+    activity.escape_search();
+    assert.equal($('.user-list-filter').val(), '');
+    activity.escape_search();
+    assert($('#user-list .input-append').hasClass('notdisplayed'));
 }());
 
 (function test_initiate_search() {
@@ -613,19 +611,15 @@ $('.user-list-filter').is = function (sel) {
     assert.equal($('.user-list-filter').is_focused(), true);
 }());
 
-(function test_escape_search() {
-    $('.user-list-filter').val('');
-    activity.escape_search();
-    assert.equal($('.user-list-filter').is_focused(), false);
-    $('.user-list-filter').val('foobar');
-    $('#clear_search_people_button').prop('disabled', false);
-    activity.escape_search();
-    assert.equal($('.user-list-filter').val(), '');
-    assert.equal($('#clear_search_people_button').attr('disabled'), 'disabled');
-    $('.user-list-filter').focus();
-    $('.user-list-filter').val('foobar');
-    activity.escape_search();
-    assert.equal($('#clear_search_people_button').prop('disabled'), false);
+(function test_toggle_filter_display() {
+    activity.toggle_filter_displayed();
+    assert($('#user-list .input-append').hasClass('notdisplayed'));
+    $('.user-list-filter').closest = function (selector) {
+        assert.equal(selector, ".app-main [class^='column-']");
+        return $.create('sidebar').addClass('column-right');
+    };
+    activity.toggle_filter_displayed();
+    assert.equal($('#user-list .input-append').hasClass('notdisplayed'), false);
 }());
 
 (function test_searching() {
