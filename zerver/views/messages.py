@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.db import connection
 from django.http import HttpRequest, HttpResponse
 from typing import Dict, List, Set, Text, Any, Callable, Iterable, \
-    Optional, Tuple, Union
+    Optional, Tuple, Union, Sequence
 from zerver.lib.exceptions import JsonableError, ErrorCode
 from zerver.lib.html_diff import highlight_html_differences
 from zerver.decorator import has_request_variables, \
@@ -18,7 +18,8 @@ from zerver.lib.actions import recipient_for_emails, do_update_message_flags, \
     compute_mit_user_fullname, compute_irc_user_fullname, compute_jabber_user_fullname, \
     create_mirror_user_if_needed, check_send_message, do_update_message, \
     extract_recipients, truncate_body, render_incoming_message, do_delete_message, \
-    do_mark_all_as_read, do_mark_stream_messages_as_read, get_user_info_for_message_updates
+    do_mark_all_as_read, do_mark_stream_messages_as_read, \
+    get_user_info_for_message_updates, check_schedule_message
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.message import (
     access_message,
@@ -29,12 +30,13 @@ from zerver.lib.message import (
 from zerver.lib.response import json_success, json_error
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import access_stream_by_id, is_public_stream_by_name
-from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.timestamp import datetime_to_timestamp, convert_to_UTC
+from zerver.lib.timezone import get_timezone
 from zerver.lib.topic_mutes import exclude_topic_mutes
 from zerver.lib.utils import statsd
 from zerver.lib.validator import \
     check_list, check_int, check_dict, check_string, check_bool
-from zerver.models import Message, UserProfile, Stream, Subscription, \
+from zerver.models import Message, UserProfile, Stream, Subscription, Client,\
     Realm, RealmDomain, Recipient, UserMessage, bulk_get_recipients, get_personal_recipient, \
     get_stream, email_to_domain, get_realm, get_active_streams, \
     get_user_including_cross_realm, get_stream_recipient
@@ -43,6 +45,7 @@ from sqlalchemy import func
 from sqlalchemy.sql import select, join, column, literal_column, literal, and_, \
     or_, not_, union_all, alias, Selectable, Select, ColumnElement, table
 
+from dateutil.parser import parse as dateparser
 import re
 import ujson
 import datetime
@@ -902,6 +905,40 @@ def same_realm_jabber_user(user_profile: UserProfile, email: Text) -> bool:
     # these realms.
     return RealmDomain.objects.filter(realm=user_profile.realm, domain=domain).exists()
 
+def handle_deferred_message(sender: UserProfile, client: Client,
+                            message_type_name: Text, message_to: Sequence[Text],
+                            topic_name: Optional[Text],
+                            message_content: Text,
+                            defer_until: Text, tz_guess: Text,
+                            forwarder_user_profile: UserProfile,
+                            realm: Optional[Realm]) -> HttpResponse:
+    deliver_at = None
+    local_tz = 'UTC'
+    if tz_guess:
+        local_tz = tz_guess
+    elif sender.timezone:
+        local_tz = sender.timezone
+    try:
+        deliver_at = dateparser(defer_until)
+    except ValueError:
+        return json_error(_("Invalid timestamp for scheduling message."))
+
+    deliver_at_usertz = deliver_at
+    if deliver_at_usertz.tzinfo is None:
+        user_tz = get_timezone(local_tz)
+        # Since mypy is not able to recognize localize and normalize as attributes of tzinfo we use ignore.
+        deliver_at_usertz = user_tz.normalize(user_tz.localize(deliver_at))  # type: ignore # Reason in comment on previous line.
+    deliver_at = convert_to_UTC(deliver_at_usertz)
+
+    if deliver_at <= timezone_now():
+        return json_error(_("Invalid timestamp for scheduling message. Choose a time in future."))
+
+    check_schedule_message(sender, client, message_type_name, message_to,
+                           topic_name, message_content,
+                           deliver_at, realm=realm,
+                           forwarder_user_profile=forwarder_user_profile)
+    return json_success({"deliver_at": str(deliver_at_usertz)})
+
 # We do not @require_login for send_message_backend, since it is used
 # both from the API and the web service.  Code calling
 # send_message_backend should either check the API key or check that
@@ -915,7 +952,9 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
                          message_content: Text=REQ('content'),
                          realm_str: Optional[Text]=REQ('realm_str', default=None),
                          local_id: Optional[Text]=REQ(default=None),
-                         queue_id: Optional[Text]=REQ(default=None)) -> HttpResponse:
+                         queue_id: Optional[Text]=REQ(default=None),
+                         defer_until: Optional[Text]=REQ('deliver_at', default=None),
+                         tz_guess: Optional[Text]=REQ('tz_guess', default=None)) -> HttpResponse:
     client = request.client
     is_super_user = request.user.is_api_super_user
     if forged and not is_super_user:
@@ -959,6 +998,13 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
         sender = mirror_sender
     else:
         sender = user_profile
+
+    if defer_until:
+        return handle_deferred_message(sender, client, message_type_name,
+                                       message_to, topic_name, message_content,
+                                       defer_until, tz_guess,
+                                       forwarder_user_profile=user_profile,
+                                       realm=realm)
 
     ret = check_send_message(sender, client, message_type_name, message_to,
                              topic_name, message_content, forged=forged,
