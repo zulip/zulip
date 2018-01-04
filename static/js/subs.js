@@ -246,6 +246,12 @@ exports.update_settings_for_unsubscribed = function (sub) {
         stream_edit.rerender_subscribers_list(sub);
     }
 
+    // If user unsubscribed from private stream then user can not subscribe to
+    // stream without invitation. So hide subscribe button.
+    stream_data.update_calculated_fields(sub);
+    if (!sub.should_display_subscription_button) {
+        settings_button.hide();
+    }
     row_for_stream_id(subs.stream_id).attr("data-temp-view", true);
 };
 
