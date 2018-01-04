@@ -361,10 +361,6 @@ ul.topic-list {
     font-weight: normal;
 }
 
-#streams_header a {
-    text-decoration: none;
-}
-
 ul.expanded_private_messages {
     list-style-type: none;
     font-weight: 300;
@@ -444,6 +440,7 @@ li.expanded_private_message a {
 #streams_header {
     margin-right: 0px;
     padding-left: 10px;
+    cursor: pointer;
 }
 
 #stream_filters .inactive_stream {

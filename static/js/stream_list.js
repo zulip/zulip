@@ -511,7 +511,6 @@ exports.clear_search = function () {
 exports.initiate_search = function () {
     var filter = $('.stream-list-filter').expectOne();
     filter.parent().removeClass('notdisplayed');
-    $('#clear_search_stream_button').prop('disabled', false);
     if (!$(".app-main .column-left").hasClass("expanded")) {
         popovers.hide_all();
         stream_popover.show_streamlist_sidebar();
