@@ -13,6 +13,7 @@ from zerver.lib.cache import (
     generic_bulk_cached_fetch,
     to_dict_cache_key,
     to_dict_cache_key_id,
+    realm_last_visible_message_id_cache_key,
 )
 from zerver.lib.request import JsonableError
 from zerver.lib.stream_subscription import (
@@ -846,7 +847,18 @@ def apply_unread_message_event(user_profile: UserProfile,
     if 'mentioned' in flags:
         state['mentions'].add(message_id)
 
-# This function will be used when we restrict search history for certain realms,
-# but now it just allows all realms to see all messages.
+# 4 hours is probably frequent enough to encourage upgrade
+# and largely mitigates the cache-miss problem. We also
+# don't need to restrict messages to exactly
+# message_visibility_limit. The query is also reasonably fast
+# so cache misses can be managed without cron job.
+@cache_with_key(realm_last_visible_message_id_cache_key, timeout=3600*4)
 def get_first_visible_message_id(realm: Realm) -> int:
-    return 0
+    if realm.message_visibility_limit is None:
+        return 0
+
+    try:
+        return Message.objects.filter(sender__realm=realm).values('id').\
+            order_by('-id')[realm.message_visibility_limit - 1]["id"]
+    except IndexError:
+        return 0
