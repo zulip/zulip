@@ -376,6 +376,7 @@ exports.change_stream_name = function (e) {
             ui_report.success(i18n.t("The stream has been renamed!"), $(".stream_change_property_info"));
         },
         error: function (xhr) {
+            new_name_box.text(stream_data.maybe_get_stream_name(stream_id));
             ui_report.error(i18n.t("Error renaming stream"), xhr, $(".stream_change_property_info"));
         },
     });
