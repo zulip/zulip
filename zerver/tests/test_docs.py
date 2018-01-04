@@ -64,6 +64,7 @@ class DocPageTest(ZulipTestCase):
         self._test('/api/register-queue', 'apply_markdown')
         self._test('/api/get-events-from-queue', 'dont_block')
         self._test('/api/delete-queue', 'Delete a previously registered queue')
+        self._test('/api/update-message', 'propagate_mode')
         self._test('/team/', 'industry veterans')
         self._test('/history/', 'Cambridge, Massachusetts')
         # Test the i18n version of one of these pages.
