@@ -473,6 +473,8 @@ exports.initialize = function () {
     exports.set_user_list_filter_handlers();
 
     $('#clear_search_people_button').on('click', exports.clear_search);
+    $('#user_filter_icon, #userlist-title').click(exports.toggle_filter_displayed);
+
     // Let the server know we're here, but pass "false" for
     // want_redraw, since we just got all this info in page_params.
     focus_ping(false);
@@ -512,31 +514,41 @@ exports.searching = function () {
     return $('.user-list-filter').expectOne().is(':focus');
 };
 
-function update_clear_search_button() {
-    var focused = $('.user-list-filter').is(':focus');
-
-    // Show button iff the search input is focused, or has non-empty contents
-    if (focused || $('.user-list-filter').val()) {
-        $('#clear_search_people_button').prop('disabled', false);
-    } else {
-        $('#clear_search_people_button').attr('disabled', 'disabled');
+exports.clear_search = function () {
+    var filter = $('.user-list-filter').expectOne();
+    if (filter.val() === '') {
+        exports.clear_and_hide_search();
+        return;
     }
-}
+    filter.val('');
+    filter.blur();
+    update_users_for_search();
+};
 
 exports.escape_search = function () {
     var filter = $('.user-list-filter').expectOne();
     if (filter.val() === '') {
-        filter.blur();
+        exports.clear_and_hide_search();
         return;
     }
     filter.val('');
-    update_clear_search_button();
     update_users_for_search();
+};
+
+exports.clear_and_hide_search = function () {
+    var filter = $('.user-list-filter').expectOne();
+    if (filter.val() !== '') {
+        filter.val('');
+        update_users_for_search();
+    }
+    filter.blur();
+    $('#user-list .input-append').addClass('notdisplayed');
 };
 
 exports.initiate_search = function () {
     var filter = $('.user-list-filter').expectOne();
     var column = $('.user-list-filter').closest(".app-main [class^='column-']");
+    $('#user-list .input-append').removeClass('notdisplayed');
     if (!column.hasClass("expanded")) {
         popovers.hide_all();
         if (column.hasClass('column-left')) {
@@ -548,16 +560,12 @@ exports.initiate_search = function () {
     filter.focus();
 };
 
-exports.blur_search = function () {
-    $('.user-list-filter').blur();
-    update_clear_search_button();
-};
-
-exports.clear_search = function () {
-    $('.user-list-filter').val('');
-    $('.user-list-filter').blur();
-    update_clear_search_button();
-    update_users_for_search();
+exports.toggle_filter_displayed = function () {
+    if ($('#user-list .input-append').hasClass('notdisplayed')) {
+        exports.initiate_search();
+    } else {
+        exports.clear_and_hide_search();
+    }
 };
 
 function maybe_select_person(e) {
@@ -580,13 +588,8 @@ function maybe_select_person(e) {
                 private_message_recipient: email});
         }
         // Clear the user filter
-        exports.escape_search();
+        exports.clear_and_hide_search();
     }
-}
-
-function focus_user_filter(e) {
-    e.stopPropagation();
-    update_clear_search_button();
 }
 
 exports.get_filtered_and_sorted_user_ids = function () {
@@ -612,10 +615,11 @@ exports.set_user_list_filter = function () {
 
 exports.set_user_list_filter_handlers = function () {
     meta.$user_list_filter.expectOne()
-        .on('click', focus_user_filter)
+        .on('click', function (e) {
+            e.stopPropagation();
+        })
         .on('input', update_users_for_search)
-        .on('keydown', maybe_select_person)
-        .on('blur', update_clear_search_button);
+        .on('keydown', maybe_select_person);
 };
 
 exports.get_filter_text = function () {
