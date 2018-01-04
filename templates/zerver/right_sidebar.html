@@ -9,11 +9,12 @@
         {% endif %}
         <div id="user-list">
             <div id="userlist-header">
-                <h4 class='sidebar-title' id='userlist-title'>{{ _('USERS') }}</h4>
+                <h4 class='sidebar-title' id='userlist-title' data-toggle="tooltip" title="{{ _('Filter users') }}">{{ _('USERS') }}</h4>
+                <i id="user_filter_icon" class='fa fa-search' aria-label="{{ _('Filter users') }}" data-toggle="tooltip" title="{{ _('Filter users') }} (w)"></i>
             </div>
-            <div class="input-append">
-                <input class="user-list-filter" type="text" placeholder="{{ _('Search people') }}" aria-label="{{ _('Search people') }}" title="{{ _('Search people') }} (w)"/>
-                <button type="button" class="btn clear_search_button" id="clear_search_people_button" disabled="disabled">
+            <div class="input-append notdisplayed">
+                <input class="user-list-filter" type="text" placeholder="{{ _('Search people') }}" />
+                <button type="button" class="btn clear_search_button" id="clear_search_people_button">
                     <i class="icon-vector-remove"></i>
                 </button>
             </div>

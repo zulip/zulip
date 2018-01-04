@@ -211,6 +211,12 @@ $(function () {
     $('#streams_header i[data-toggle="tooltip"]').tooltip({ placement: 'left',
                                        animation: false });
 
+    $('#userlist-header #userlist-title').tooltip({ placement: 'right',
+                                       animation: false });
+
+    $('#userlist-header #user_filter_icon').tooltip({ placement: 'left',
+                                       animation: false });
+
     $('.message_failed i[data-toggle="tooltip"]').tooltip();
 
     $('.copy_message[data-toggle="tooltip"]').tooltip();

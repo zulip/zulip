@@ -322,7 +322,7 @@ $(function () {
     $('#user_presences').expectOne().on('click', '.selectable_sidebar_block', function (e) {
         var user_id = $(e.target).parents('li').attr('data-user-id');
         var email = people.get_person_from_user_id(user_id).email;
-        activity.escape_search();
+        activity.clear_and_hide_search();
         narrow.by('pm-with', email, {select_first_unread: true, trigger: 'sidebar'});
         // The preventDefault is necessary so that clicking the
         // link doesn't jump us to the top of the page.
