@@ -61,7 +61,11 @@ exports.toggle_email_change_display = function () {
         return;
     }
 
-    $("#change_email").toggle();
+    if ($('#change_email .button').attr('disabled')) {
+        $('#change_email .button').prop('disabled', false);
+    } else {
+        $('#change_email .button').attr('disabled', 'disabled');
+    }
     $(".change_email_tooltip").toggle();
 };
 
