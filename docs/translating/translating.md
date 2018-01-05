@@ -30,7 +30,6 @@ languages (e.g. what word to translate words like "home" to):
 * [Chinese](chinese.html)
 * [French](french.html)
 * [German](german.html)
-* [Hindi](hindi.html)
 * [Polish](polish.html)
 * [Russian](russian.html)
 * [Spanish](spanish.html)
