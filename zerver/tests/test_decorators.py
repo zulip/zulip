@@ -1065,8 +1065,10 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
         do_reactivate_realm(user_profile.realm)
 
     def _do_test(self, user_email: Text) -> HttpResponse:
-        data = {"password": initial_password(user_email)}
-        return self.client_post(r'/json/fetch_api_key', data)
+        stream_name = "stream name"
+        self.common_subscribe_to_streams(user_email, [stream_name])
+        data = {"password": initial_password(user_email), "stream": stream_name}
+        return self.client_post(r'/json/subscriptions/exists', data)
 
     def _login(self, user_email: Text, user_realm: Realm, password: str=None) -> None:
         if password:
@@ -1100,7 +1102,7 @@ class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
 
     def _do_test(self, user_email: str) -> HttpResponse:
         data = {"password": initial_password(user_email)}
-        return self.client_post(r'/json/fetch_api_key', data)
+        return self.client_post(r'/accounts/webathena_kerberos_login/', data)
 
 class TestZulipLoginRequiredDecorator(ZulipTestCase):
     def test_zulip_login_required_if_subdomain_is_invalid(self) -> None:
