@@ -731,7 +731,6 @@ def api_get_server_settings(request: HttpRequest) -> HttpResponse:
             result[settings_item] = context[settings_item]
     return json_success(result)
 
-@authenticated_json_post_view
 @has_request_variables
 def json_fetch_api_key(request: HttpRequest, user_profile: UserProfile,
                        password: str=REQ(default='')) -> HttpResponse:

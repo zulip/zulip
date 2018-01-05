@@ -16,6 +16,4 @@ legacy_urls = [
     # any more to find out about subscriptions, since they are already
     # pushed to us via the event system.
     url(r'^json/subscriptions/exists$', zerver.views.streams.json_stream_exists),
-
-    url(r'^json/fetch_api_key$', zerver.views.auth.json_fetch_api_key),
 ]
