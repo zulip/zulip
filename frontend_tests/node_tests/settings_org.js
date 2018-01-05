@@ -243,7 +243,8 @@ function test_submit_permissions_form(submit_form) {
     };
 
     $('#id_realm_add_emoji_by_admins_only').prop('checked', true);
-    $('#id_realm_waiting_period_threshold').val('55');
+    $("#id_realm_create_stream_permission").val("by_admin_user_with_custom_time").change();
+    $("#id_realm_waiting_period_threshold").val("55");
 
     var patched;
     var success_callback;
@@ -254,6 +255,7 @@ function test_submit_permissions_form(submit_form) {
 
         var data = req.data;
         assert.equal(data.add_emoji_by_admins_only, 'true');
+        assert.equal(data.create_stream_by_admins_only, false);
         assert.equal(data.waiting_period_threshold, '55');
 
         success_callback = req.success;
@@ -266,15 +268,14 @@ function test_submit_permissions_form(submit_form) {
     var response_data = {
         waiting_period_threshold: 55,
         add_emoji_by_admins_only: true,
+        create_stream_by_admins_only: false,
     };
     success_callback(response_data);
 
     assert.equal($('#admin-realm-add-emoji-by-admins-only-status').val(),
                  'translated: Only administrators may now add new emoji!');
-
-     assert.equal($('#admin-realm-waiting-period-threshold-status').val(),
-                  'translated: Waiting period threshold changed!');
-
+    assert.equal($('#admin-realm-create-stream-by-admins-only-status').val(),
+                  'translated: Stream creation permission changed!');
 
     // TODO: change the code to have a better place to report status.
     var status_elem = $('#admin-realm-restricted-to-domain-status');
@@ -467,6 +468,7 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     var verify_realm_domains = simulate_realm_domains_table();
     simulate_auth_methods();
 
+    $('#id_realm_create_stream_permission').change = set_callback('realm_create_stream_permission');
     $('#id_realm_invite_required').change = set_callback('change_invite_required');
     $('#id_realm_allow_message_editing').change = set_callback('change_message_editing');
     $('#submit-add-realm-domain').click = set_callback('add_realm_domain');
@@ -507,6 +509,8 @@ function test_change_allow_subdomains(change_allow_subdomains) {
         upload_realm_icon = f;
     };
 
+    var parent_elem = $.create('waiting-period-parent-stub');
+    $('#id_realm_waiting_period_threshold').set_parent(parent_elem);
     // TEST set_up() here, but this mostly just allows us to
     // get access to the click handlers.
     settings_org.set_up();

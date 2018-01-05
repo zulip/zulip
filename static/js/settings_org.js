@@ -10,6 +10,21 @@ exports.reset = function () {
     meta.loaded = false;
 };
 
+exports.set_create_stream_permission_dropdwon = function () {
+    var menu = "id_realm_create_stream_permission";
+    $("#id_realm_waiting_period_threshold").parent().hide();
+    if (page_params.realm_create_stream_by_admins_only) {
+        $("#" + menu + " option[value=by_admins_only]").attr("selected", "selected");
+    } else if (page_params.realm_waiting_period_threshold === 0) {
+        $("#" + menu + " option[value=by_anyone]").attr("selected", "selected");
+    } else if (page_params.realm_waiting_period_threshold === 3) {
+        $("#" + menu + " option[value=by_admin_user_with_three_days_old]").attr("selected", "selected");
+    } else {
+        $("#" + menu + " option[value=by_admin_user_with_custom_time]").attr("selected", "selected");
+        $("#id_realm_waiting_period_threshold").parent().show();
+    }
+};
+
 exports.populate_realm_domains = function (realm_domains) {
     if (!meta.loaded) {
         return;
@@ -306,19 +321,10 @@ function _set_up() {
                 checked_msg: i18n.t("Users cannot change their email!"),
                 unchecked_msg: i18n.t("Users may now change their email!"),
             },
-            create_stream_by_admins_only: {
-                type: 'bool',
-                checked_msg: i18n.t("Only administrators may now create new streams!"),
-                unchecked_msg: i18n.t("Any user may now create new streams!"),
-            },
             add_emoji_by_admins_only: {
                 type: 'bool',
                 checked_msg: i18n.t("Only administrators may now add new emoji!"),
                 unchecked_msg: i18n.t("Any user may now add new emoji!"),
-            },
-            waiting_period_threshold: {
-                type: 'integer',
-                msg: i18n.t("Waiting period threshold changed!"),
             },
             create_generic_bot_by_admins_only: {
                 type: 'bool',
@@ -360,6 +366,7 @@ function _set_up() {
             var msg;
             var field_info = property_types[category][key];
             var setting_type = field_info.type;
+
             if (setting_type === 'bool') {
                 if (value) {
                     msg = field_info.checked_msg;
@@ -378,6 +385,8 @@ function _set_up() {
             }
         });
     }
+
+    exports.set_create_stream_permission_dropdwon();
 
     $("#id_realm_invite_required").change(function () {
         if (this.checked) {
@@ -499,12 +508,23 @@ function _set_up() {
         exports.save_organization_settings(e);
     });
 
+    $("#id_realm_create_stream_permission").change(function () {
+        var create_stream_permission = this.value;
+        var node = $("#id_realm_waiting_period_threshold").parent();
+        if (create_stream_permission === 'by_admin_user_with_custom_time') {
+            node.show();
+        } else {
+            node.hide();
+        }
+    });
+
     $(".organization").on("submit", "form.org-permissions-form", function (e) {
         var $alerts = $(".settings-section.show .alert").hide();
         // grab the first alert available and use it for the status.
         var status = $("#admin-realm-restricted-to-domain-status");
 
-        var waiting_period_threshold_status = $("#admin-realm-waiting-period-threshold-status").expectOne();
+        var create_stream_permission = $("#id_realm_create_stream_permission").val();
+        var create_stream_permission_status = $("#admin-realm-create-stream-by-admins-only-status").expectOne();
         status.hide();
 
         e.preventDefault();
@@ -522,16 +542,28 @@ function _set_up() {
             message_retention_days: new_message_retention_days !== "" ? JSON.stringify(parseInt(new_message_retention_days, 10)) : null,
         }, 'permissions');
 
+        if (create_stream_permission === "by_admins_only") {
+            data.create_stream_by_admins_only = true;
+        } else if (create_stream_permission === "by_admin_user_with_three_days_old") {
+            data.create_stream_by_admins_only = false;
+            data.waiting_period_threshold = 3;
+        } else if (create_stream_permission === "by_admin_user_with_custom_time") {
+            data.create_stream_by_admins_only = false;
+            data.waiting_period_threshold = $("#id_realm_waiting_period_threshold").val();
+        } else if (create_stream_permission === "by_anyone") {
+            data.create_stream_by_admins_only = false;
+            data.waiting_period_threshold = 0;
+        }
 
         channel.patch({
             url: "/json/realm",
             data: data,
             success: function (response_data) {
                 $alerts.hide();
-                if (response_data.waiting_period_threshold !== undefined) {
-                    if (response_data.waiting_period_threshold >= 0) {
-                        ui_report.success(i18n.t("Waiting period threshold changed!"), waiting_period_threshold_status);
-                    }
+
+                if (response_data.create_stream_by_admins_only !== undefined ||
+                    response_data.waiting_period_threshold !== undefined) {
+                    ui_report.success(i18n.t("Stream creation permission changed!"), create_stream_permission_status);
                 }
 
                 process_response_data(response_data, 'permissions');
