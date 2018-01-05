@@ -70,6 +70,16 @@ if __name__ == '__main__':
         logfile.close()
         sys.exit(1)
 
+    # The autoreload code of Django works by looping over the files associated
+    # with all the loaded modules. This loop is run after every 1 second. If
+    # the file is found for the first time by the loop, it is assumed that the
+    # file is new and is not modified between the time it is loaded and is
+    # checked by the loop. This assumption is the source of a race condition.
+
+    # We can either implement a more sensitive version of the loop or we can
+    # just allow enough time to the Django loop to touch every file at least
+    # once.
+    time.sleep(1.1)
     # Removing all data from the server log file.
     logfile.truncate(0)
     logfile.seek(0)
