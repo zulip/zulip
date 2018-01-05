@@ -86,18 +86,38 @@ function submit_permissions_change() {
 
 // Test setting limiting stream creation to administrators
 casper.then(function () {
-    casper.click('#id_realm_create_stream_by_admins_only + span');
-    submit_permissions_change();
+    casper.test.info("Test setting limiting stream creation to administrators");
+    casper.waitUntilVisible("#id_realm_create_stream_permission", function () {
+        casper.evaluate(function () {
+            $("#id_realm_create_stream_permission").val("by_admins_only").change();
+        });
+        submit_permissions_change();
+    });
 });
 
 casper.then(function () {
     // Test setting was activated
     casper.waitUntilVisible('#admin-realm-create-stream-by-admins-only-status', function () {
         casper.test.assertSelectorHasText('#admin-realm-create-stream-by-admins-only-status',
-                                          'Only administrators may now create new streams!');
-        casper.test.assertEval(function () {
-            return document.querySelector('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]').checked;
-        }, 'Prevent users from creating streams Setting activated');
+                                          'Stream creation permission changed!');
+    });
+});
+
+casper.then(function () {
+    casper.waitUntilVisible("#id_realm_create_stream_permission", function () {
+        casper.evaluate(function () {
+            $("#id_realm_create_stream_permission").val("by_admin_user_with_custom_time").change();
+            $("#id_realm_waiting_period_threshold").val('6');
+        });
+        submit_permissions_change();
+    });
+});
+
+casper.then(function () {
+    // Test setting was activated
+    casper.waitUntilVisible('#admin-realm-create-stream-by-admins-only-status', function () {
+        casper.test.assertSelectorHasText('#admin-realm-create-stream-by-admins-only-status',
+            'Stream creation permission changed!');
     });
 });
 
@@ -109,24 +129,25 @@ casper.then(function () {
     casper.click('a[href^="#organization"]');
 });
 
-casper.waitUntilVisible('#id_realm_create_stream_by_admins_only + span', function () {
+casper.waitUntilVisible('#id_realm_create_stream_permission', function () {
     // Test Setting was saved
     casper.test.assertEval(function () {
-        return document.querySelector('#id_realm_create_stream_by_admins_only').checked;
-    }, 'Prevent users from creating streams Setting saved');
+        return $('input[type="text"][id="id_realm_waiting_period_threshold"]').val() === '6';
+    }, 'Waiting period threshold set to 6 days');
+
 
     // Deactivate setting
 
-    casper.click('#id_realm_create_stream_by_admins_only + span');
+    casper.evaluate(function () {
+        $("#id_realm_create_stream_permission").val("by_admins_only").change();
+    });
     submit_permissions_change();
 });
 
 casper.then(function () {
     casper.waitUntilVisible('#admin-realm-create-stream-by-admins-only-status', function () {
-        casper.test.assertSelectorHasText('#admin-realm-create-stream-by-admins-only-status', 'Any user may now create new streams!');
-        casper.test.assertEval(function () {
-            return !(document.querySelector('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]').checked);
-        }, 'Prevent users from creating streams Setting deactivated');
+        casper.test.assertSelectorHasText('#admin-realm-create-stream-by-admins-only-status',
+                                          'Stream creation permission changed!');
     });
 });
 

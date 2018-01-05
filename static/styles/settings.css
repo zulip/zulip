@@ -1098,6 +1098,15 @@ input[type=checkbox].inline-block {
     top: calc(50% - 120px);
 }
 
+#id_realm_create_stream_permission {
+    width: 100%;
+}
+
+.create-stream-dropdown {
+    margin-right: 10px;
+    margin-bottom: 5px;
+}
+
 #deactivate_self_modal {
     box-shadow: 0px 0px 75px hsla(0, 0%, 0%, 0.5);
     outline: 10000px solid hsla(0, 0%, 0%, 0.3);
