@@ -61,12 +61,19 @@ jobs:
           key: v1-venv-base2
       # TODO: in Travis we also cache ~/zulip-emoji-cache, ~/node, ~/misc
 
-      # The moment of truth!
+      # The moment of truth!  Run the tests.
+
       - run:
-          name: run tests
+          name: run backend tests
           command: |
             . /srv/zulip-py3-venv/bin/activate
             mispipe ./tools/travis/backend ts
+
+      - run:
+          name: run frontend tests
+          command: |
+            . /srv/zulip-py3-venv/bin/activate
+            mispipe ./tools/travis/frontend ts
 
       # - store_artifacts:  # TODO
       #     path: var/casper/
