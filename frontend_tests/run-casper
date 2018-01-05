@@ -62,8 +62,6 @@ if not options.force:
 
 os.chdir(ZULIP_PATH)
 
-subprocess.check_call('tools/setup/generate-test-credentials')
-
 subprocess.check_call(['mkdir', '-p', 'var/casper'])
 
 subprocess.check_call(['rm', '-f'] + glob.glob('var/casper/casper-failure*.png'))
@@ -94,6 +92,10 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
         remote_debug = "--remote-debugger-port=7777 --remote-debugger-autorun=yes"
 
     with test_server_running(options.force, external_host, log_file=LOG_FILE, dots=True):
+        # Important: do this next call inside the `with` block, when Django
+        #            will be pointing at the test database.
+        subprocess.check_call('tools/setup/generate-test-credentials')
+
         ret = 1
         for test_file in test_files:
             cmd = "node_modules/.bin/casperjs %s test %s" % (remote_debug, test_file)
