@@ -9,7 +9,7 @@ from unittest.result import TestResult
 
 from django.conf import settings
 from django.db import connections, ProgrammingError
-from django.urls.resolvers import RegexURLPattern
+from django.urls.resolvers import URLPattern
 from django.test import TestCase
 from django.test import runner as django_runner
 from django.test.runner import DiscoverRunner
@@ -283,7 +283,7 @@ def init_worker(counter: Synchronized) -> None:
     settings.LOCAL_UPLOADS_DIR = '{}_{}'.format(settings.LOCAL_UPLOADS_DIR,
                                                 _worker_id)
 
-    def is_upload_avatar_url(url: RegexURLPattern) -> bool:
+    def is_upload_avatar_url(url: URLPattern) -> bool:
         if url.regex.pattern == r'^user_avatars/(?P<path>.*)$':
             return True
         return False

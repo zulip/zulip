@@ -4,7 +4,7 @@ import pathlib
 from typing import Dict, List, Optional, TypeVar, Any, Text
 from django.conf import settings
 from django.conf.urls import url
-from django.urls.resolvers import LocaleRegexProvider
+from django.urls.resolvers import RegexPattern
 from django.utils.module_loading import import_string
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
@@ -183,7 +183,7 @@ class WebhookIntegration(Integration):
         self.doc = doc
 
     @property
-    def url_object(self) -> LocaleRegexProvider:
+    def url_object(self) -> RegexPattern:
         return url(self.url, self.function)
 
 class HubotIntegration(Integration):

@@ -5,7 +5,7 @@ from typing import (
 )
 
 from django.core import signing
-from django.urls.resolvers import LocaleRegexURLResolver
+from django.urls import URLResolver
 from django.conf import settings
 from django.test import TestCase, override_settings
 from django.test.client import (
@@ -344,7 +344,7 @@ def write_instrumentation_reports(full_suite: bool) -> None:
 
         def find_pattern(pattern: Any, prefixes: List[str]) -> None:
 
-            if isinstance(pattern, type(LocaleRegexURLResolver)):
+            if isinstance(pattern, type(URLResolver)):
                 return  # nocoverage -- shouldn't actually happen
 
             if hasattr(pattern, 'url_patterns'):
