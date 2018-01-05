@@ -33,13 +33,13 @@ Zulip friendly and usable.
   "प्रवाह" is very confusing and not the correct metaphor for Hindi
   speaking people. The correct term would be "धारा".
 * Topic - **विषय**
-* Private/invite-only stream - **निजी / केवल-आमंत्रण धारा**: 
+* Private/invite-only stream - **निजी / केवल-आमंत्रण धारा**
 * Public stream - **सार्वजनिक धारा**
 * Bot - **बॉट**
 * Integration - **एकीकरण**
 * Notification - **अधिसूचना**
 * Alert word - **सतर्क शब्द**: this is only *alert*. Nonetheless, adding *word* may
-  make the term confusing (something like *danger!* could be a "चेतावनी के शब्द" as well). 
+  make the term confusing (something like *danger!* could be a "चेतावनी के शब्द" as well).
   Google Alerts uses "सतर्क शब्द" in its Hindi translation.
 * View - **राय**
 * Filter - **छानना**: as used with narrowing (see below).
