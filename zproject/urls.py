@@ -517,6 +517,12 @@ for incoming_webhook in WEBHOOK_INTEGRATIONS:
 
 urls.append(url(r'^api/v1/external/github', github_dispatcher.api_github_webhook_dispatch))
 
+# Desktop-specific authentication URLs
+urls += [
+    url(r'^json/fetch_api_key$', rest_dispatch,
+        {'POST': 'zerver.views.auth.json_fetch_api_key'}),
+]
+
 # Mobile-specific authentication URLs
 urls += [
     # This json format view used by the mobile apps lists which
