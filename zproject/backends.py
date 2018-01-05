@@ -207,7 +207,6 @@ class SocialAuthMixin(ZulipAuthMixin):
 
         inactive_user = return_data.get('inactive_user')
         inactive_realm = return_data.get('inactive_realm')
-        invalid_subdomain = return_data.get('invalid_subdomain')
         invalid_email = return_data.get('invalid_email')
 
         if inactive_user or inactive_realm:
@@ -240,9 +239,8 @@ class SocialAuthMixin(ZulipAuthMixin):
             subdomain = Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
         if (subdomain == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
                 or mobile_flow_otp is not None):
-            return login_or_register_remote_user(request, email_address,
-                                                 user_profile, full_name,
-                                                 invalid_subdomain=bool(invalid_subdomain),
+            return login_or_register_remote_user(request=request, remote_username=email_address,
+                                                 user_profile=user_profile, full_name=full_name,
                                                  mobile_flow_otp=mobile_flow_otp,
                                                  is_signup=is_signup)
         realm = get_realm(subdomain)

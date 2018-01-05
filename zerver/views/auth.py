@@ -115,7 +115,7 @@ def redirect_to_subdomain_login_url() -> HttpResponseRedirect:
 def redirect_to_config_error(error_type: str) -> HttpResponseRedirect:
     return HttpResponseRedirect("/config-error/%s" % (error_type,))
 
-def login_or_register_remote_user(request: HttpRequest, remote_username: Optional[Text],
+def login_or_register_remote_user(*, request: HttpRequest, remote_username: Optional[Text],
                                   user_profile: Optional[UserProfile], full_name: Text='',
                                   invalid_subdomain: bool=False, mobile_flow_otp: Optional[str]=None,
                                   is_signup: bool=False) -> HttpResponse:
@@ -193,7 +193,8 @@ def remote_user_sso(request: HttpRequest) -> HttpResponse:
     # Since RemoteUserBackend will return None if Realm is None, we
     # don't need to check whether `get_realm` returned None.
     user_profile = authenticate(remote_user=remote_user, realm=realm)
-    return login_or_register_remote_user(request, remote_user, user_profile)
+    return login_or_register_remote_user(request=request, remote_username=remote_user,
+                                         user_profile=user_profile)
 
 @csrf_exempt
 @log_view_func
@@ -238,7 +239,8 @@ def remote_user_jwt(request: HttpRequest) -> HttpResponse:
     except UserProfile.DoesNotExist:
         user_profile = None
 
-    return login_or_register_remote_user(request, email, user_profile, remote_user)
+    return login_or_register_remote_user(request=request, remote_username=email,
+                                         user_profile=user_profile, full_name=remote_user)
 
 def google_oauth2_csrf(request: HttpRequest, value: str) -> str:
     # In Django 1.10, get_token returns a salted token which changes
@@ -391,9 +393,8 @@ def finish_google_oauth2(request: HttpRequest) -> HttpResponse:
     if mobile_flow_otp is not None:
         # When request was not initiated from subdomain.
         user_profile, return_data = authenticate_remote_user(realm, email_address)
-        invalid_subdomain = bool(return_data.get('invalid_subdomain'))
-        return login_or_register_remote_user(request, email_address, user_profile,
-                                             full_name, invalid_subdomain,
+        return login_or_register_remote_user(request=request, remote_username=email_address,
+                                             user_profile=user_profile, full_name=full_name,
                                              mobile_flow_otp=mobile_flow_otp,
                                              is_signup=is_signup)
 
@@ -451,9 +452,8 @@ def log_into_subdomain(request: HttpRequest, token: Text) -> HttpResponse:
         # meantime.
         realm = get_realm(subdomain)
         user_profile, return_data = authenticate_remote_user(realm, email_address)
-    invalid_subdomain = bool(return_data.get('invalid_subdomain'))
-    return login_or_register_remote_user(request, email_address, user_profile,
-                                         full_name, invalid_subdomain=invalid_subdomain,
+    return login_or_register_remote_user(request=request, remote_username=email_address,
+                                         user_profile=user_profile, full_name=full_name,
                                          is_signup=is_signup)
 
 def redirect_and_log_into_subdomain(realm: Realm, full_name: Text, email_address: Text,
