@@ -19,6 +19,7 @@
 #### Users
 
 * [Get all users](/api/get-all-users)
+* [Get profile](/api/get-profile)
 
 #### Events
 * [Register a queue](/api/register-queue)
