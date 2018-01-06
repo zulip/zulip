@@ -153,9 +153,23 @@
                     {{t "Digest emails when I'm away" }}
                 </label>
             </div>
-            {{!-- If you add another control group here, make sure to change
-            $("#other_notifications").hide(); in settings.js to
-            $("#digest_container").hide();
+
+            <div class="input-group" id="realm_name_in_notifications_container">
+                <label class="checkbox">
+                    <input type="checkbox" name="realm_name_in_notifications" id="realm_name_in_notifications"
+                           {{#if page_params.realm_name_in_notifications}}
+                           checked="checked"
+                           {{/if}} />
+                    <span></span>
+                </label>
+                <label for="realm_name_in_notifications" class="inline-block">
+                    {{t "Include organization name in subject of missed message emails" }}
+                </label>
+            </div>
+
+            {{!-- If we end up removing the last control group, make sure to change
+            $("#digest_container").hide(); in settings_notifications.js to
+            $("#other_notifications").hide();
             --}}
         </div>
     </form>

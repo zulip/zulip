@@ -1006,6 +1006,7 @@ function render(template_name, args) {
         enable_offline_push_notifications: true, enable_online_push_notifications: true,
         enable_digest_emails: true,
         default_desktop_notifications: true,
+        realm_name_in_notifications: true,
     };
     var page_params = $.extend(page_param_checkbox_options, {
         full_name: "Alyssa P. Hacker", password_auth_enabled: true,
@@ -1018,7 +1019,8 @@ function render(template_name, args) {
                         "enable_sounds", "enable_offline_push_notifications",
                         "enable_online_push_notifications",
                         "enable_digest_emails",
-                        "default_desktop_notifications"];
+                        "default_desktop_notifications",
+                        "realm_name_in_notifications"];
 
     // Render with all booleans set to true.
     var html = render('settings_tab', {page_params: page_params});

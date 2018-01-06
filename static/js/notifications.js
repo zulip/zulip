@@ -678,6 +678,8 @@ exports.handle_global_notification_updates = function (notification_name, settin
         page_params.enable_digest_emails = setting;
     } else if (notification_name === "pm_content_in_desktop_notifications") {
         page_params.pm_content_in_desktop_notifications = setting;
+    } else if (notification_name === "realm_name_in_notifications") {
+        page_params.realm_name_in_notifications = setting;
     }
 };
 

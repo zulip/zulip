@@ -135,6 +135,7 @@ class HomeTest(ZulipTestCase):
             "realm_message_retention_days",
             "realm_name",
             "realm_name_changes_disabled",
+            "realm_name_in_notifications",
             "realm_non_active_users",
             "realm_notifications_stream_id",
             "realm_password_auth_enabled",
