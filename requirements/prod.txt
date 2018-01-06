@@ -10,8 +10,8 @@
 git+https://github.com/zulip/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#egg=talon==1.2.10.zulip1
 git+https://github.com/zulip/ultrajson@70ac02bec#egg=ujson==1.35+git
 git+https://github.com/zulip/virtualenv-clone.git@44e831da39ffb6b9bb5c7d103d98babccdca0456#egg=virtualenv-clone==0.2.6.zulip1
-git+https://github.com/zulip/python-zulip-api.git@0.3.9#egg=zulip==0.3.9_git&subdirectory=zulip
-git+https://github.com/zulip/python-zulip-api.git@0.3.9#egg=zulip_bots==0.3.9+git&subdirectory=zulip_bots
+git+https://github.com/zulip/python-zulip-api.git@0.4.0#egg=zulip==0.4.0_git&subdirectory=zulip
+git+https://github.com/zulip/python-zulip-api.git@0.4.0#egg=zulip_bots==0.4.0+git&subdirectory=zulip_bots
 apns2==0.3.0
 argon2-cffi==16.3.0
 asn1crypto==0.23.0        # via cryptography
