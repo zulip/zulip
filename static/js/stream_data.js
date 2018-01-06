@@ -175,6 +175,7 @@ exports.update_calculated_fields = function (sub) {
     sub.should_display_subscription_button = !sub.invite_only || sub.subscribed;
     sub.can_make_public = page_params.is_admin && sub.invite_only && sub.subscribed;
     sub.can_make_private = page_params.is_admin && !sub.invite_only;
+    sub.can_change_subscription_type = sub.can_make_public || sub.can_make_private;
     sub.can_add_subscribers = !sub.invite_only || (sub.invite_only && sub.subscribed);
     sub.preview_url = narrow.by_stream_uri(sub.name);
     exports.render_stream_description(sub);
