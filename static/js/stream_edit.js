@@ -325,6 +325,12 @@ function change_stream_privacy(e) {
 
             redraw_privacy_related_stuff(sub_row, sub);
             $("#stream_privacy_modal").remove();
+
+            // For auto update, without rendering whole template
+            stream_data.update_calculated_fields(sub);
+            if (!sub.can_change_subscription_type) {
+                $(".change-stream-privacy").hide();
+            }
         },
         error: function () {
             $("#change-stream-privacy-button").text(i18n.t("Try again"));
