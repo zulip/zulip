@@ -1,0 +1,77 @@
+{
+    "type": "notification_event",
+    "app_id": "vsahmbmw",
+    "data": {
+        "type": "notification_event_data",
+        "item": {
+            "type": "user_tag",
+            "user": {
+                "type": "user",
+                "id": "5a364a4a4716ab4dc29e87ba",
+                "user_id": "5",
+                "anonymous": false,
+                "email": "john.doe@gmail.com",
+                "phone": 9876543211,
+                "name": "John Doe",
+                "pseudonym": null,
+                "avatar": {
+                    "type": "avatar",
+                    "image_url": null
+                },
+                "app_id": "vsahmbmw",
+                "companies": {
+                    "type": "company.list",
+                    "companies": []
+                },
+                "location_data": {},
+                "last_request_at": null,
+                "last_seen_ip": null,
+                "created_at": "2017-12-17T10:43:22.000Z",
+                "remote_created_at": null,
+                "signed_up_at": null,
+                "updated_at": "2017-12-17T10:43:22.496Z",
+                "session_count": 0,
+                "social_profiles": {
+                    "type": "social_profile.list",
+                    "social_profiles": []
+                },
+                "unsubscribed_from_emails": false,
+                "marked_email_as_spam": false,
+                "has_hard_bounced": false,
+                "user_agent_data": null,
+                "tags": {
+                    "type": "tag.list",
+                    "tags": [
+                        {
+                            "type": "tag",
+                            "id": "1449318"
+                        }
+                    ]
+                },
+                "segments": {
+                    "type": "segment.list",
+                    "segments": []
+                },
+                "custom_attributes": {}
+            },
+            "tag": {
+                "type": "tag",
+                "id": "1449318",
+                "name": "CSV Import - 2017-12-17 10:42:59 UTC"
+            },
+            "created_at": 1513507402,
+            "admin": {
+                "type": "admin"
+            }
+        }
+    },
+    "links": {},
+    "id": "notif_1a6fd8a0-e317-11e7-b721-d77135370663",
+    "topic": "user.tag.created",
+    "delivery_status": "pending",
+    "delivery_attempts": 1,
+    "delivered_at": 0,
+    "first_sent_at": 1513507402,
+    "created_at": 1513507402,
+    "self": null
+}
