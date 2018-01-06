@@ -146,7 +146,7 @@
 
         <div id="other_notifications">
 
-            <h3 class="light">{{t "Other notifications I want:" }}</h3>
+            <h3 class="light">{{t "Other notification settings:" }}</h3>
 
             <div class="side-padded-container">
                 <div class="input-group no-margin" id="digest_container">
@@ -158,13 +158,26 @@
                         <span></span>
                     </label>
                     <label for="enable_digest_emails" class="inline-block">
-                        {{t "Digest emails when I'm away" }}
+                        {{t "Send digest emails when I'm away" }}
+                    </label>
+                </div>
+
+                <div class="input-group" id="realm_name_in_notifications_container">
+                    <label class="checkbox">
+                        <input type="checkbox" name="realm_name_in_notifications" id="realm_name_in_notifications"
+                               {{#if page_params.realm_name_in_notifications}}
+                               checked="checked"
+                               {{/if}} />
+                        <span></span>
+                    </label>
+                    <label for="realm_name_in_notifications" class="inline-block">
+                        {{t "Include organization name in subject of missed message emails" }}
                     </label>
                 </div>
             </div>
             {{!-- If you add another control group here, make sure to change
-            $("#other_notifications").hide(); in settings.js to
-            $("#digest_container").hide();
+            $("#digest_container").hide(); in settings_notifications.js to
+            $("#realm_name_in_notifications_container").hide();
             --}}
         </div>
     </form>
