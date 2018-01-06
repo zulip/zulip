@@ -47,6 +47,8 @@ CATEGORIES = {
     'productivity': _('Productivity'),
     'version-control': _('Version control'),
     'bots': _('Interactive bots'),
+    'zapier-integration': _('Zapier Integrations'),
+    'ifttt-integration': _('IFTTT Integrations'),
 }  # type: Dict[str, str]
 
 class Integration:
@@ -481,8 +483,6 @@ HUBOT_INTEGRATIONS = [
     HubotIntegration('chartbeat', ['marketing'], display_name='Chartbeat'),
     HubotIntegration('darksky', ['misc'], display_name='Dark Sky',
                      logo_alt='Dark Sky logo'),
-    HubotIntegration('google-hangouts', ['communication'], display_name='Google Hangouts',
-                     logo_alt='Google Hangouts logo'),
     HubotIntegration('instagram', ['misc'], display_name='Instagram'),
     HubotIntegration('mailchimp', ['communication', 'marketing'],
                      display_name='MailChimp'),

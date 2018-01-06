@@ -14,7 +14,7 @@ class IFTTTIntegration(Integration):
             logo = "static/images/integrations/logos/ifttt.svg"
 
         if categories is None:
-            categories = ['meta-integration']
+            categories = ['ifttt-integration']
 
         super().__init__(
             name, name, categories,

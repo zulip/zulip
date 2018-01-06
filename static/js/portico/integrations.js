@@ -1,4 +1,3 @@
-import fuzzysearch from 'fuzzysearch';
 import blueslip from './../blueslip';
 
 import { path_parts } from './landing-page';
@@ -101,8 +100,8 @@ function update_categories() {
 }
 
 var update_integrations = _.debounce(function () {
-    var max_scrollY = window.scrollY;
-
+    var other_search_result = [];
+    var beginswith = false;
     var integrations = $('.integration-lozenges').children().toArray();
     integrations.forEach(function (integration) {
         var $integration = $(integration).find('.integration-lozenge');
@@ -117,20 +116,28 @@ var update_integrations = _.debounce(function () {
         }
 
         if (!$integration.hasClass('integration-create-your-own')) {
-            var display =
-                (state.category === 'all' ||
-                 $integration.data('categories').indexOf(CATEGORIES[state.category]) !== -1) &&
-                fuzzysearch(state.query, $integration.data('name').toLowerCase());
+            if (state.category === 'all' ||
+                 $integration.data('categories').indexOf(CATEGORIES[state.category]) !== -1) {
 
-            if (display) {
-                $integration.css('display', 'inline-block');
+                var index = $integration.data('name').toLowerCase().indexOf(state.query);
+                if (!index) {
+                    beginswith = true;
+                    $integration.css('display', 'inline-block');
+                } else if (!beginswith && index > 0) {
+                    other_search_result.push($integration);
+                } else {
+                    $integration.css('display', 'none');
+                }
             } else {
                 $integration.css('display', 'none');
             }
         }
     });
-    // Do scrolling after the search.
-    document.body.scrollTop = Math.min(window.scrollY, max_scrollY);
+    if (!beginswith) {
+        other_search_result.forEach(function ($integration) {
+            $integration.css('display', 'inline-block');
+        });
+    }
 
     adjust_font_sizing();
 }, 50);

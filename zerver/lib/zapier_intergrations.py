@@ -14,7 +14,7 @@ class ZapierIntegration(Integration):
             logo = "static/images/integrations/logos/zapier.svg"
 
         if categories is None:
-            categories = ['meta-integration']
+            categories = ['zapier-integration']
 
         super().__init__(
             name, name, categories,
