@@ -1904,7 +1904,7 @@ class BotStorageData(models.Model):
     class Meta:
         unique_together = ("bot_profile", "key")
 
-class BotUserConfigData(models.Model):
+class BotConfigData(models.Model):
     bot_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
     key = models.TextField(db_index=True)  # type: Text
     value = models.TextField()  # type: Text
