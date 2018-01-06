@@ -32,15 +32,15 @@
             <span class="checkmark" data-finish-editing=".stream-description-editable">✓</span>
             {{/if}}
         </div>
-        <div class="regular_subscription_settings collapse {{#subscribed}}in{{/subscribed}}">
-            <div class="subscription-type">
-                <div class="subscription-type-text">
-                    {{partial "subscription_type"}}
-                </div>
-                {{#if is_admin}}
-                <a class="change-stream-privacy" data-is-private="{{#if can_make_public }}true{{else}}false{{/if}}">[{{t "Change" }}]</a>
-                {{/if}}
+        <div class="subscription-type">
+            <div class="subscription-type-text">
+                {{partial "subscription_type"}}
             </div>
+            {{#if can_change_subscription_type}}
+            <a class="change-stream-privacy" data-is-private="{{#if can_make_public }}true{{else}}false{{/if}}">[{{t "Change" }}]</a>
+            {{/if}}
+        </div>
+        <div class="regular_subscription_settings collapse {{#subscribed}}in{{/subscribed}}">
             <div class="subscription-config">
                 <ul class="grey-box">
                     <li>
