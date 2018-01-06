@@ -270,7 +270,9 @@ exports.create_sidebar_row = function (sub) {
 exports.redraw_stream_privacy = function (sub) {
     var li = exports.get_stream_li(sub.stream_id);
     if (!li) {
-        blueslip.error('passed in bad stream: ' + sub.name);
+        // We don't want to raise error here, if we can't find stream in subscription
+        // stream list. Cause we allow org admin to update stream privacy
+        // even if they don't subscribe to public stream.
         return;
     }
 
