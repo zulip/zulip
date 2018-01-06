@@ -206,6 +206,37 @@
             "required":"Optional",
             "example":"change_all"
         }
-
+    ],
+    "add-subscriptions.md":[
+        {
+            "argument":"subscriptions",
+            "description":"A list of dictionaries, where each dictionary contains key/value pairs specifying a particular stream to subscribe to. **Note**: This argument is called `streams` and not `subscriptions` in our Python API.",
+            "required":"Required",
+            "example":"[{'name': 'Verona'}]"
+        },
+        {
+            "argument":"invite_only",
+            "description":"A boolean specifying whether the streams specified in `subscriptions` are invite-only or not. Default is `False`.",
+            "required":"Optional",
+            "example":"`True` or `False`"
+        },
+        {
+            "argument":"announce",
+            "description":"If `announce` is `True` and one of the streams specified in `subscriptions` has to be created (i.e. doesn't exist to begin with), an announcement will be made notifying that a new stream was created.",
+            "required":"Optional",
+            "example":"`True` or `False`"
+        },
+        {
+            "argument":"principals",
+            "description":"A list of email addresses of the users that will be subscribed to the streams specified in the `subscriptions` argument. Default is `[]`. If not provided, then the requesting user/bot is subscribed.",
+            "required":"Optional",
+            "example":"['ZOE@zulip.com']"
+        },
+        {
+            "argument":"authorization_errors_fatal",
+            "description":"A boolean specifying whether authorization errors (such as when the requesting user is not authorized to access a private stream) should be considered fatal or not. Default is `True`, in which case an authorization error is reported as such. When set to `False`, the returned JSON payload indicates that there was an authorization error, but the response is still considered a successful one.",
+            "required":"Optional",
+            "example":"`True` or `False`"
+        }
     ]
 }
