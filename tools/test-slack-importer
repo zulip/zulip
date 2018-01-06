@@ -1,8 +1,14 @@
 #!/usr/bin/env bash
 
 set -ev
+export DJANGO_SETTINGS_MODULE="zproject.slack_importer_test_settings"
 
-wget https://github.com/houstondatavis/slack-export/archive/master.zip
-mv master.zip slack-export-master.zip
-./manage.py convert_slack_data $PWD/slack-export-master.zip "realm_name" --output zulip_data
-./manage.py import --destroy-rebuild-database $PWD/zulip_data
+psql -h localhost postgres zulip_test <<EOF
+DROP DATABASE IF EXISTS zulip_slack_importer_test;
+CREATE DATABASE zulip_slack_importer_test TEMPLATE zulip_test_template;
+EOF
+
+./manage.py migrate --noinput
+wget https://github.com/houstondatavis/slack-export/archive/master.zip -O /tmp/slack-export-master.zip
+./manage.py convert_slack_data /tmp/slack-export-master.zip "slack_importer_test_realm" --output /tmp/slack_importer_test_data
+./manage.py import --destroy-rebuild-database /tmp/slack_importer_test_data
