@@ -26,7 +26,7 @@ def get_model_id(model: Any) -> int:
     else:
         return 1
 
-def users_to_zerver_userprofile(slack_dir: str, realm_id: int, timestamp: Any,
+def users_to_zerver_userprofile(slack_data_dir: str, realm_id: int, timestamp: Any,
                                 domain_name: str) -> Tuple[List[ZerverFieldsT], AddedUsersT]:
     """
     Returns:
@@ -35,7 +35,7 @@ def users_to_zerver_userprofile(slack_dir: str, realm_id: int, timestamp: Any,
        user id
     """
     print('######### IMPORTING USERS STARTED #########\n')
-    users = json.load(open(slack_dir + '/users.json'))
+    users = json.load(open(slack_data_dir + '/users.json'))
     zerver_userprofile = []
     added_users = {}
     user_id_count = get_model_id(UserProfile)
@@ -138,7 +138,7 @@ def users_to_zerver_userprofile(slack_dir: str, realm_id: int, timestamp: Any,
     print('######### IMPORTING USERS FINISHED #########\n')
     return zerver_userprofile, added_users
 
-def channels_to_zerver_stream(slack_dir: str, realm_id: int, added_users: AddedUsersT,
+def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: AddedUsersT,
                               zerver_userprofile: List[ZerverFieldsT]) -> Tuple[List[ZerverFieldsT],
                                                                                 List[ZerverFieldsT],
                                                                                 AddedChannelsT,
@@ -153,7 +153,7 @@ def channels_to_zerver_stream(slack_dir: str, realm_id: int, added_users: AddedU
     5. zerver_recipient, which is a list of the recipients
     """
     print('######### IMPORTING CHANNELS STARTED #########\n')
-    channels = json.load(open(slack_dir + '/channels.json'))
+    channels = json.load(open(slack_data_dir + '/channels.json'))
     added_channels = {}
 
     zerver_stream = []
@@ -277,10 +277,11 @@ def channels_to_zerver_stream(slack_dir: str, realm_id: int, added_users: AddedU
     return zerver_defaultstream, zerver_stream, added_channels, zerver_subscription, zerver_recipient
 
 def do_convert_data(slack_zip_file: str, realm_name: str, output_dir: str) -> None:
-    slack_dir = slack_zip_file.replace('.zip', '')
-    subprocess.check_call(['unzip', slack_zip_file])
+    slack_data_dir = slack_zip_file.replace('.zip', '')
+    zip_file_dir = os.path.dirname(slack_data_dir)
+    subprocess.check_call(['unzip', slack_zip_file, '-d', zip_file_dir])
     # with zipfile.ZipFile(slack_zip_file, 'r') as zip_ref:
-    #     zip_ref.extractall(slack_dir)
+    #     zip_ref.extractall(slack_data_dir)
 
     # TODO fetch realm config from zulip config
     DOMAIN_NAME = "zulipchat.com"
@@ -319,13 +320,13 @@ def do_convert_data(slack_zip_file: str, realm_name: str, output_dir: str) -> No
                  zerver_realmfilter=[],
                  zerver_realmemoji=[])
 
-    zerver_userprofile, added_users = users_to_zerver_userprofile(slack_dir,
+    zerver_userprofile, added_users = users_to_zerver_userprofile(slack_data_dir,
                                                                   REALM_ID,
                                                                   int(NOW),
                                                                   DOMAIN_NAME)
     realm['zerver_userprofile'] = zerver_userprofile
 
-    channels_to_zerver_stream_fields = channels_to_zerver_stream(slack_dir,
+    channels_to_zerver_stream_fields = channels_to_zerver_stream(slack_data_dir,
                                                                  REALM_ID,
                                                                  added_users,
                                                                  zerver_userprofile)
@@ -367,7 +368,7 @@ def do_convert_data(slack_zip_file: str, realm_name: str, output_dir: str) -> No
     json.dump(attachment, open(attachment_file, 'w'))
 
     # remove slack dir
-    rm_tree(slack_dir)
+    rm_tree(slack_data_dir)
     subprocess.check_call(["tar", "-czf", output_dir + '.tar.gz', output_dir, '-P'])
 
     print('######### DATA CONVERSION FINISHED #########\n')
