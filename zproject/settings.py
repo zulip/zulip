@@ -1203,6 +1203,8 @@ ZULIP_PATHS = [
     ("API_KEY_ONLY_WEBHOOK_LOG_PATH", "/var/log/zulip/webhooks_errors.log"),
     ("SOFT_DEACTIVATION_LOG_PATH", "/var/log/zulip/soft_deactivation.log"),
     ("TRACEMALLOC_DUMP_DIR", "/var/log/zulip/tracemalloc"),
+    ("SCHEDULED_MESSAGE_DELIVERER_LOG_PATH",
+     "/var/log/zulip/scheduled_message_deliverer.log"),
 ]
 
 # The Event log basically logs most significant database changes,
@@ -1397,6 +1399,9 @@ LOGGING = {
             'level': 'DEBUG',
         },
         'zerver.management.commands.enqueue_digest_emails': {
+            'level': 'DEBUG',
+        },
+        'zerver.management.commands.deliver_scheduled_messages': {
             'level': 'DEBUG',
         },
         'zulip.management': {

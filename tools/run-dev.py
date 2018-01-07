@@ -151,7 +151,8 @@ cmds = [['./tools/compile-handlebars-templates', 'forever'],
         manage_args + ['127.0.0.1:%d' % (tornado_port,)],
         ['./tools/run-dev-queue-processors'] + manage_args,
         ['env', 'PGHOST=127.0.0.1',  # Force password authentication using .pgpass
-         './puppet/zulip/files/postgresql/process_fts_updates']]
+         './puppet/zulip/files/postgresql/process_fts_updates'],
+        ['./manage.py', 'deliver_scheduled_messages']]
 if options.test:
     # Webpack doesn't support 2 copies running on the same system, so
     # in order to support running the Casper tests while a Zulip
