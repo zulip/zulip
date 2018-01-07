@@ -1005,11 +1005,13 @@ input[type=checkbox].inline-block {
 
     pointer-events: none;
     transition: all 0.3s ease;
+    visibility: hidden;
 }
 
 #settings_page .form-sidebar.show {
     pointer-events: auto;
     transform: translateX(0px);
+    visibility: visible;
 }
 
 #settings_page .form-sidebar input[type=text] {
