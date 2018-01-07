@@ -280,7 +280,7 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
 def do_convert_data(slack_zip_file: str, realm_name: str, output_dir: str) -> None:
     slack_data_dir = slack_zip_file.replace('.zip', '')
     zip_file_dir = os.path.dirname(slack_data_dir)
-    subprocess.check_call(['unzip', slack_zip_file, '-d', zip_file_dir])
+    subprocess.check_call(['unzip', '-q', slack_zip_file, '-d', zip_file_dir])
     # with zipfile.ZipFile(slack_zip_file, 'r') as zip_ref:
     #     zip_ref.extractall(slack_data_dir)
 
