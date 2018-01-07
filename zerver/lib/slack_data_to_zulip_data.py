@@ -26,6 +26,15 @@ def get_model_id(model: Any) -> int:
     else:
         return 1
 
+def get_user_full_name(user: ZerverFieldsT) -> str:
+    if user['deleted'] is False:
+        if user['real_name'] == '':
+            return user['name']
+        else:
+            return user['real_name']
+    else:
+        return user['name']
+
 def users_to_zerver_userprofile(slack_data_dir: str, realm_id: int, timestamp: Any,
                                 domain_name: str) -> Tuple[List[ZerverFieldsT], AddedUsersT]:
     """
@@ -64,14 +73,6 @@ def users_to_zerver_userprofile(slack_data_dir: str, realm_id: int, timestamp: A
         if timezone is None or '/' not in timezone:
             timezone = _default_timezone
 
-        if user['deleted'] is False:
-            if user['real_name'] == '':
-                full_name = user['name']
-            else:
-                full_name = user['real_name']
-        else:
-            full_name = user['name']
-
         # userprofile's quota is hardcoded as per
         # https://github.com/zulip/zulip/blob/e1498988d9094961e6f9988fb308b3e7310a8e74/zerver/migrations/0059_userprofile_quota.py#L18
         userprofile = dict(
@@ -98,7 +99,7 @@ def users_to_zerver_userprofile(slack_data_dir: str, realm_id: int, timestamp: A
             last_login=timestamp,
             tos_version=None,
             default_all_public_streams=False,
-            full_name=full_name,
+            full_name=get_user_full_name(user),
             twenty_four_hour_time=False,
             groups=[],  # This is Zulip-specific
             enable_online_push_notifications=False,
