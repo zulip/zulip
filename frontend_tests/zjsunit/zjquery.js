@@ -290,7 +290,8 @@ exports.make_zjquery = function () {
             (selector === 'html') ||
             (selector.location) ||
             (selector.indexOf('#') >= 0) ||
-            (selector.indexOf('.') >= 0);
+            (selector.indexOf('.') >= 0) ||
+            (selector.indexOf('[') >= 0 && selector.indexOf(']') >= selector.indexOf('['));
 
         assert(valid_selector,
                'Invalid selector: ' + selector +
