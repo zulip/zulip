@@ -6,6 +6,11 @@ from zerver.models import BotConfigData, UserProfile
 
 from typing import Text, Dict, Optional
 
+import os
+
+import configparser
+import importlib
+
 class ConfigError(Exception):
     pass
 
@@ -41,3 +46,16 @@ def set_bot_config(bot_profile: UserProfile, key: Text, value: Text) -> None:
     if not created:
         obj.value = value
         obj.save()
+
+def load_bot_config_template(bot: str) -> Dict[str, str]:
+    bot_module_name = 'zulip_bots.bots.{}'.format(bot)
+    bot_module = importlib.import_module(bot_module_name)
+    bot_module_path = os.path.dirname(bot_module.__file__)
+    config_path = os.path.join(bot_module_path, '{}.conf'.format(bot))
+    if os.path.isfile(config_path):
+        config = configparser.ConfigParser()
+        with open(config_path) as conf:
+            config.readfp(conf)  # type: ignore # readfp->read_file in python 3, so not in stubs
+        return dict(config.items(bot))
+    else:
+        return dict()
