@@ -13,7 +13,7 @@ from zerver.lib.actions import (
 )
 from zerver.lib.bot_lib import StateHandler, EmbeddedBotHandler
 from zerver.lib.bot_storage import StateError
-from zerver.lib.bot_config import set_bot_config, ConfigError
+from zerver.lib.bot_config import set_bot_config, ConfigError, load_bot_config_template
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
     get_realm,
@@ -308,6 +308,17 @@ class TestServiceBotConfigHandler(ZulipTestCase):
                                  "Cannot store configuration. Request would require 116 characters. "
                                  "The current configuration size limit is 100 characters.",
                                  lambda: set_bot_config(self.bot_profile, "yet another key", 'x'))
+
+    def test_load_bot_config_template(self) -> None:
+        bot_config = load_bot_config_template('giphy')
+        self.assertTrue(isinstance(bot_config, dict))
+        self.assertEqual(len(bot_config), 1)
+
+    def test_load_bot_config_template_for_bot_without_config_data(self) -> None:
+        bot_config = load_bot_config_template('converter')
+        self.assertTrue(isinstance(bot_config, dict))
+        self.assertEqual(len(bot_config), 0)
+
 
 class TestServiceBotEventTriggers(ZulipTestCase):
 
