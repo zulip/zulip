@@ -11,7 +11,7 @@ from zerver.lib.actions import internal_send_private_message, \
 from zerver.models import UserProfile, get_user
 from zerver.lib.bot_storage import get_bot_storage, set_bot_storage, \
     is_key_in_bot_storage, get_bot_storage_size, remove_bot_storage
-from zerver.lib.bot_config import get_bot_config
+from zerver.lib.bot_config import get_bot_config, ConfigError
 from zerver.lib.integrations import EMBEDDED_BOTS
 
 import configparser
@@ -105,5 +105,11 @@ class EmbeddedBotHandler:
                 sender_email=message['sender_email'],
             ))
 
-    def get_config_info(self) -> Dict[Text, Text]:
-        return get_bot_config(self.user_profile)
+    # The bot_name argument exists only to comply with ExternalBotHandler.get_config_info().
+    def get_config_info(self, bot_name: str, optional: bool=False) -> Dict[Text, Text]:
+        try:
+            return get_bot_config(self.user_profile)
+        except ConfigError:
+            if optional:
+                return dict()
+            raise
