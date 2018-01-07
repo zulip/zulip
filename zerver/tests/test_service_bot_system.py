@@ -279,6 +279,9 @@ class TestServiceBotConfigHandler(ZulipTestCase):
         self.bot_handler = EmbeddedBotHandler(self.bot_profile)
 
     def test_basic_storage_and_retrieval(self) -> None:
+        with self.assertRaises(ConfigError):
+            self.bot_handler.get_config_info('foo')
+
         config_dict = {"entry 1": "value 1", "entry 2": "value 2"}
         for key, value in config_dict.items():
             set_bot_config(self.bot_profile, key, value)

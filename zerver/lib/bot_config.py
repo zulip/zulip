@@ -11,6 +11,8 @@ class ConfigError(Exception):
 
 def get_bot_config(bot_profile: UserProfile) -> Dict[Text, Text]:
     entries = BotConfigData.objects.filter(bot_profile=bot_profile)
+    if not entries:
+        raise ConfigError("No config data available.")
     return {entry.key: entry.value for entry in entries}
 
 def get_bot_config_size(bot_profile: UserProfile, key: Optional[Text]=None) -> int:
