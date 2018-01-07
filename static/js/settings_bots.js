@@ -86,13 +86,22 @@ exports.set_up = function () {
     $('#payload_url_inputbox').hide();
     $('#create_payload_url').val('');
     $('#service_name_list').hide();
-    page_params.realm_embedded_bots.forEach(function (bot_name) {
+    $('#config_inputbox').hide();
+    page_params.realm_embedded_bots.forEach(function (bot) {
         $('#select_service_name').append($('<option>', {
-            value: bot_name,
-            text: bot_name,
+            value: bot.name,
+            text: bot.name,
         }));
+        _.each(bot.config, function (key) {
+            var rendered_config_item = templates.render('embedded_bot_config_item',
+                {botname: bot.name, key: key, value: bot.config[key]});
+            $('#config_inputbox').append(rendered_config_item);
+        });
     });
-    $('#select_service_name').val('converter'); // TODO: Use 'select a bot'.
+    var selected_embedded_bot = 'converter';
+    $('#select_service_name').val(selected_embedded_bot); // TODO: Use 'select a bot'.
+    $('#config_inputbox').children().hide();
+    $("[name*='"+selected_embedded_bot+"']").show();
 
     $('#download_flaskbotrc').click(function () {
         var OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
@@ -153,6 +162,11 @@ exports.set_up = function () {
                 formData.append('interface_type', interface_type);
             } else if (bot_type === EMBEDDED_BOT_TYPE) {
                 formData.append('service_name', service_name);
+                var config_data = {};
+                $("[name*='"+service_name+"'] input").each(function () {
+                    config_data[$(this).attr('name')] = $(this).val();
+                });
+                formData.append('config_data', JSON.stringify(config_data));
             }
             jQuery.each($('#bot_avatar_file_input')[0].files, function (i, file) {
                 formData.append('file-'+i, file);
@@ -170,6 +184,10 @@ exports.set_up = function () {
                     $('#create_bot_short_name').val('');
                     $('#create_payload_url').val('');
                     $('#payload_url_inputbox').hide();
+                    $('#config_inputbox').hide();
+                    $("[name*='"+service_name+"'] input").each(function () {
+                        $(this).val('');
+                    });
                     $('#create_bot_type').val(GENERIC_BOT_TYPE);
                     $('#select_service_name').val('converter'); // TODO: Later we can change this to hello bot or similar
                     $('#service_name_list').hide();
@@ -194,6 +212,7 @@ exports.set_up = function () {
         // For "generic bot" or "incoming webhook" both these fields need not be displayed.
         $('#service_name_list').hide();
         $('#select_service_name').removeClass('required');
+        $('#config_inputbox').hide();
 
         $('#payload_url_inputbox').hide();
         $('#create_payload_url').removeClass('required');
@@ -204,7 +223,15 @@ exports.set_up = function () {
         } else if (bot_type === EMBEDDED_BOT_TYPE) {
             $('#service_name_list').show();
             $('#select_service_name').addClass('required');
+            $("#select_service_name").trigger('change');
+            $('#config_inputbox').show();
         }
+    });
+
+    $("#select_service_name").on("change", function () {
+        $('#config_inputbox').children().hide();
+        var selected_bot = $('#select_service_name :selected').val();
+        $("[name*='"+selected_bot+"']").show();
     });
 
     $("#active_bots_list").on("click", "button.delete_bot", function (e) {
