@@ -282,16 +282,18 @@ class TestServiceBotConfigHandler(ZulipTestCase):
         with self.assertRaises(ConfigError):
             self.bot_handler.get_config_info('foo')
 
+        self.assertEqual(self.bot_handler.get_config_info('foo', optional=True), dict())
+
         config_dict = {"entry 1": "value 1", "entry 2": "value 2"}
         for key, value in config_dict.items():
             set_bot_config(self.bot_profile, key, value)
-        self.assertEqual(self.bot_handler.get_config_info(), config_dict)
+        self.assertEqual(self.bot_handler.get_config_info('foo'), config_dict)
 
         config_update = {"entry 2": "new value", "entry 3": "value 3"}
         for key, value in config_update.items():
             set_bot_config(self.bot_profile, key, value)
         config_dict.update(config_update)
-        self.assertEqual(self.bot_handler.get_config_info(), config_dict)
+        self.assertEqual(self.bot_handler.get_config_info('foo'), config_dict)
 
     @override_settings(BOT_CONFIG_SIZE_LIMIT=100)
     def test_config_entry_limit(self) -> None:
