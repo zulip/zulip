@@ -17,13 +17,14 @@ from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
     do_create_user, do_deactivate_user, do_reactivate_user, do_regenerate_api_key, \
     check_change_full_name
 from zerver.lib.avatar import avatar_url, get_gravatar_url, get_avatar_field
+from zerver.lib.bot_config import set_bot_config
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.upload import upload_avatar_image
-from zerver.lib.validator import check_bool, check_string, check_int, check_url
+from zerver.lib.validator import check_bool, check_string, check_int, check_url, check_dict
 from zerver.lib.users import check_valid_bot_type, \
     check_full_name, check_short_name, check_valid_interface_type
 from zerver.lib.utils import generate_random_token
@@ -246,6 +247,8 @@ def add_bot_backend(
         bot_type: int=REQ(validator=check_int, default=UserProfile.DEFAULT_BOT),
         payload_url: Optional[Text]=REQ(validator=check_url, default=""),
         service_name: Optional[Text]=REQ(default=None),
+        config_data: Optional[Dict[Text, Text]]=REQ(default=None,
+                                                    validator=check_dict(value_validator=check_string)),
         interface_type: int=REQ(validator=check_int, default=Service.GENERIC),
         default_sending_stream_name: Optional[Text]=REQ('default_sending_stream', default=None),
         default_events_register_stream_name: Optional[Text]=REQ('default_events_register_stream',
@@ -312,6 +315,10 @@ def add_bot_backend(
                     base_url=payload_url,
                     interface=interface_type,
                     token=random_api_key())
+
+    if bot_type == UserProfile.EMBEDDED_BOT:
+        for key, value in config_data.items():
+            set_bot_config(bot_profile, key, value)
 
     json_result = dict(
         api_key=bot_profile.api_key,

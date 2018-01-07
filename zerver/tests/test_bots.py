@@ -10,6 +10,7 @@ from mock import patch
 from typing import Any, Dict, List, Mapping
 
 from zerver.lib.actions import do_change_stream_invite_only
+from zerver.lib.bot_config import get_bot_config
 from zerver.models import get_realm, get_stream, \
     Realm, Stream, UserProfile, get_user, get_bot_services, Service, \
     is_cross_realm_bot_email
@@ -994,11 +995,13 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login(self.example_email('hamlet'))
 
         # Test to create embedded bot with correct service_name
+        bot_config_info = {'key': 'value'}
         bot_info = {
             'full_name': 'Embedded test bot',
             'short_name': 'embeddedservicebot',
             'bot_type': UserProfile.EMBEDDED_BOT,
-            'service_name': 'converter',
+            'service_name': 'followup',
+            'config_data': ujson.dumps(bot_config_info),
         }
         bot_info.update(extras)
         with self.settings(EMBEDDED_BOTS_ENABLED=False):
@@ -1013,9 +1016,10 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         bot = get_user(bot_email, bot_realm)
         services = get_bot_services(bot.id)
         service = services[0]
-
+        bot_config = get_bot_config(bot)
+        self.assertEqual(bot_config, bot_config_info)
         self.assertEqual(len(services), 1)
-        self.assertEqual(service.name, "converter")
+        self.assertEqual(service.name, "followup")
         self.assertEqual(service.user_profile, bot)
 
         # Test to create embedded bot with incorrect service_name
@@ -1028,6 +1032,19 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         bot_info.update(extras)
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, 'Invalid embedded bot name.')
+
+        # Test to create embedded bot with an invalid config value
+        malformatted_bot_config_info = {'foo': ['bar', 'baz']}
+        bot_info = {
+            'full_name': 'Embedded test bot',
+            'short_name': 'embeddedservicebot2',
+            'bot_type': UserProfile.EMBEDDED_BOT,
+            'service_name': 'followup',
+            'config_data': ujson.dumps(malformatted_bot_config_info)
+        }
+        bot_info.update(extras)
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_error(result, 'config_data contains a value that is not a string')
 
     def test_is_cross_realm_bot_email(self) -> None:
         self.assertTrue(is_cross_realm_bot_email("notification-bot@zulip.com"))
