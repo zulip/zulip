@@ -16,6 +16,7 @@ session_engine = import_module(settings.SESSION_ENGINE)
 from zerver.lib.alert_words import user_alert_words
 from zerver.lib.attachments import user_attachments
 from zerver.lib.avatar import avatar_url, get_avatar_field
+from zerver.lib.bot_config import load_bot_config_template
 from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.message import (
@@ -218,7 +219,11 @@ def fetch_initial_state_data(user_profile: UserProfile,
     # This does not yet have an apply_event counterpart, since currently,
     # new entries for EMBEDDED_BOTS can only be added directly in the codebase.
     if want('realm_embedded_bots'):
-        state['realm_embedded_bots'] = list(bot.name for bot in EMBEDDED_BOTS)
+        realm_embedded_bots = []
+        for bot in EMBEDDED_BOTS:
+            realm_embedded_bots.append({'name': bot.name,
+                                        'config': load_bot_config_template(bot.name)})
+        state['realm_embedded_bots'] = realm_embedded_bots
 
     if want('subscription'):
         subscriptions, unsubscribed, never_subscribed = gather_subscriptions_helper(

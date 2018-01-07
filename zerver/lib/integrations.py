@@ -256,6 +256,8 @@ EMBEDDED_BOTS = [
     EmbeddedBotIntegration('encrypt', []),
     EmbeddedBotIntegration('helloworld', []),
     EmbeddedBotIntegration('virtual_fs', []),
+    EmbeddedBotIntegration('giphy', []),
+    EmbeddedBotIntegration('followup', []),
 ]  # type: List[EmbeddedBotIntegration]
 
 WEBHOOK_INTEGRATIONS = [
