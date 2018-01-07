@@ -517,6 +517,19 @@ class ValidatorTestCase(TestCase):
         error = check_dict(keys)('x', x)
         self.assertEqual(error, 'x["city"] is not a string')
 
+        x = {
+            'names': ['alice', 'bob'],
+            'city': 'Boston'
+        }
+        error = check_dict(value_validator=check_string)('x', x)
+        self.assertEqual(error, 'x contains a value that is not a string')
+
+        x = {
+            'city': 'Boston'
+        }
+        error = check_dict(value_validator=check_string)('x', x)
+        self.assertEqual(error, None)
+
         # test dict_only
         x = {
             'names': ['alice', 'bob'],
