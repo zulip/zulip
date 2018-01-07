@@ -171,7 +171,7 @@ exports.set_up = function () {
                     $('#create_payload_url').val('');
                     $('#payload_url_inputbox').hide();
                     $('#create_bot_type').val(GENERIC_BOT_TYPE);
-                    $('#select_service_name').val('xkcd'); // TODO: Later we can change this to hello bot or similar
+                    $('#select_service_name').val('converter'); // TODO: Later we can change this to hello bot or similar
                     $('#service_name_list').hide();
                     $('#create_bot_button').show();
                     $('#create_interface_type').val(GENERIC_INTERFACE);
