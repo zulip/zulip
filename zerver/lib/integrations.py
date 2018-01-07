@@ -312,6 +312,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('gogs', ['version-control']),
     WebhookIntegration('gosquared', ['marketing'], display_name='GoSquared'),
     WebhookIntegration('greenhouse', ['hr'], display_name='Greenhouse'),
+    WebhookIntegration('groove', ['customer-support'], display_name='Groove'),
     WebhookIntegration('hellosign', ['productivity', 'hr'], display_name='HelloSign'),
     WebhookIntegration('helloworld', ['misc'], display_name='Hello World'),
     WebhookIntegration('heroku', ['deployment'], display_name='Heroku'),
