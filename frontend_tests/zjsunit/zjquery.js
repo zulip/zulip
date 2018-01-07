@@ -223,8 +223,8 @@ exports.make_zjquery = function () {
                 return text;
             },
             trigger: function (ev) {
-                var funcs = on_functions.get(ev.name) || [];
-
+                var ev_name = typeof ev === 'string' ? ev : ev.name;
+                var funcs = on_functions.get(ev_name) || [];
                 // The following assertion is temporary.  It can be
                 // legitimate for code to trigger multiple handlers.
                 // But up until now, we haven't needed this, and if
