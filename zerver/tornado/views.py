@@ -49,7 +49,9 @@ def get_events_backend(request: HttpRequest, user_profile: UserProfile, handler:
                        lifespan_secs: int=REQ(default=0, converter=int)
                        ) -> Union[HttpResponse, _RespondAsynchronously]:
     if user_client is None:
-        user_client = request.client
+        valid_user_client = request.client
+    else:
+        valid_user_client = user_client
 
     events_query = dict(
         user_profile_id = user_profile.id,
@@ -57,7 +59,7 @@ def get_events_backend(request: HttpRequest, user_profile: UserProfile, handler:
         queue_id = queue_id,
         last_event_id = last_event_id,
         event_types = event_types,
-        client_type_name = user_client.name,
+        client_type_name = valid_user_client.name,
         all_public_streams = all_public_streams,
         lifespan_secs = lifespan_secs,
         narrow = narrow,
@@ -70,7 +72,7 @@ def get_events_backend(request: HttpRequest, user_profile: UserProfile, handler:
             realm_id = user_profile.realm_id,
             user_profile_email = user_profile.email,
             event_types = event_types,
-            client_type_name = user_client.name,
+            client_type_name = valid_user_client.name,
             apply_markdown = apply_markdown,
             client_gravatar = client_gravatar,
             all_public_streams = all_public_streams,
