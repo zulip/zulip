@@ -280,13 +280,15 @@ p.n-margin {
 }
 
 .app-main .column-left .left-sidebar {
-    width: 242px;
-    padding-left: 0px;
+    width: 210px;
+    padding: 10px;
+    margin-left: 10px;
 }
 
 .app-main .column-right .right-sidebar {
-    padding-left: 10px;
-    width: 240px;
+    padding: 10px;
+    width: 210px;
+    margin-left: 10px;
 }
 
 .app-main .column-middle {
