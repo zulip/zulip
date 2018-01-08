@@ -265,6 +265,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('appfollow', ['customer-support'], display_name='AppFollow'),
     WebhookIntegration('beanstalk', ['version-control']),
     WebhookIntegration('basecamp', ['project-management']),
+    WebhookIntegration('beeminder', ['misc'], display_name='Beeminder'),
     WebhookIntegration(
         'bitbucket2',
         ['version-control'],
