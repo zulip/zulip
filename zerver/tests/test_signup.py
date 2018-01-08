@@ -1026,7 +1026,7 @@ class MultiuseInviteTest(ZulipTestCase):
         invite.save()
 
         if streams is not None:
-            invite.streams = streams
+            invite.streams.set(streams)
             invite.save()
 
         if date_sent is None:

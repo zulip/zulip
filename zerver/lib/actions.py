@@ -3041,7 +3041,7 @@ def do_create_default_stream_group(realm: Realm, group_name: Text,
         raise JsonableError(_("Default stream group '%(group_name)s' already exists")
                             % {'group_name': group_name})
 
-    group.streams = streams
+    group.streams.set(streams)
     group.save()
     notify_default_stream_groups(realm)
 

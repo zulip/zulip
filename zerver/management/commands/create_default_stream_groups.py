@@ -57,7 +57,7 @@ Create default stream groups which the users can choose during sign up.
         except DefaultStreamGroup.DoesNotExist:
             default_stream_group = DefaultStreamGroup.objects.create(
                 name=options["name"], realm=realm, description=options["description"])
-        default_stream_group.streams = streams
+        default_stream_group.streams.set(streams)
         default_stream_group.save()
 
         default_stream_groups = DefaultStreamGroup.objects.all()
