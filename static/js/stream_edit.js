@@ -484,14 +484,14 @@ $(function () {
                     stream_events.mark_subscribed(sub);
                 }
             } else {
-                stream_subscription_info_elem.text(i18n.t("User already subscribed"));
+                stream_subscription_info_elem.text(i18n.t("User already subscribed."));
             }
             stream_subscription_info_elem.addClass("text-success")
                                          .removeClass("text-error");
         }
 
         function invite_failure() {
-            stream_subscription_info_elem.text(i18n.t("Could not add user to this stream"))
+            stream_subscription_info_elem.text(i18n.t("Could not add user to this stream."))
                                          .addClass("text-error")
                                          .removeClass("text-success");
         }
@@ -528,14 +528,14 @@ $(function () {
                     stream_events.mark_unsubscribed(sub);
                 }
             } else {
-                stream_subscription_info_elem.text(i18n.t("User is already not subscribed"));
+                stream_subscription_info_elem.text(i18n.t("User is already not subscribed."));
             }
             stream_subscription_info_elem.addClass('text-success')
                                          .removeClass('text-error');
         }
 
         function removal_failure() {
-            stream_subscription_info_elem.text(i18n.t("Error removing user from this stream"))
+            stream_subscription_info_elem.text(i18n.t("Error removing user from this stream."))
                                          .addClass("text-error")
                                          .removeClass("text-success");
         }
