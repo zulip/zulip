@@ -284,7 +284,7 @@ def init_worker(counter: Synchronized) -> None:
                                                 _worker_id)
 
     def is_upload_avatar_url(url: URLPattern) -> bool:
-        if url.regex.pattern == r'^user_avatars/(?P<path>.*)$':
+        if url.pattern == r'^user_avatars/(?P<path>.*)$':
             return True
         return False
 
