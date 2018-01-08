@@ -80,7 +80,7 @@ def check_stream_name_available(realm: Realm, name: Text) -> None:
     check_stream_name(name)
     try:
         get_stream(name, realm)
-        raise JsonableError(_("Stream name '%s' is already taken") % (name,))
+        raise JsonableError(_("Stream name '%s' is already taken.") % (name,))
     except Stream.DoesNotExist:
         pass
 

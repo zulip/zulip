@@ -308,10 +308,10 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_json_error(result, "Stream already has that name!")
         result = self.client_patch('/json/streams/%d' % (stream.id,),
                                    {'new_name': ujson.dumps('Denmark')})
-        self.assert_json_error(result, "Stream name 'Denmark' is already taken")
+        self.assert_json_error(result, "Stream name 'Denmark' is already taken.")
         result = self.client_patch('/json/streams/%d' % (stream.id,),
                                    {'new_name': ujson.dumps('denmark ')})
-        self.assert_json_error(result, "Stream name 'denmark' is already taken")
+        self.assert_json_error(result, "Stream name 'denmark' is already taken.")
 
         # Do a rename that is case-only--this should succeed.
         result = self.client_patch('/json/streams/%d' % (stream.id,),
@@ -1338,7 +1338,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
         }
         result = self.api_patch(email, "/api/v1/users/me/subscriptions", request)
         self.assert_json_error(result,
-                               "Stream name too long (limit: 60 characters)")
+                               "Stream name too long (limit: 60 characters).")
 
     def test_stream_name_has_invalid_characters(self) -> None:
         email = self.example_email('hamlet')
@@ -1651,7 +1651,7 @@ class SubscriptionAPITest(ZulipTestCase):
         long_stream_name = "a" * 61
         result = self.common_subscribe_to_streams(self.test_email, [long_stream_name])
         self.assert_json_error(result,
-                               "Stream name too long (limit: 60 characters)")
+                               "Stream name too long (limit: 60 characters).")
 
     def test_subscriptions_add_stream_with_null(self) -> None:
         """
