@@ -229,7 +229,7 @@ def destroy_test_databases(database_id: Optional[int]=None) -> None:
     for alias in connections:
         connection = connections[alias]
         try:
-            connection.creation.destroy_test_db(number=database_id)
+            connection.creation.destroy_test_db(suffix=str(database_id))
         except ProgrammingError:
             # DB doesn't exist. No need to do anything.
             pass
@@ -238,7 +238,7 @@ def create_test_databases(database_id: int) -> None:
     for alias in connections:
         connection = connections[alias]
         connection.creation.clone_test_db(
-            number=database_id,
+            suffix=str(database_id),
             keepdb=True,
         )
 
