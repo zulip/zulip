@@ -21,7 +21,9 @@
 <div class="header">
 <nav class="header-main rightside-userlist" id="top_navbar">
   <div class="column-left">
-      <a class="brand no-style" href="#">
+      <a class="brand no-style" href="#"
+         title="{{ _('Zulip version ') + (zulip_version[:-4] if zulip_version.endswith('+git') else zulip_version) }}"
+      >
           <img src="/static/images/logo/zulip-icon-128x128.png" class="nav-logo no-drag" alt=""/>
           <div class="company-name">
               zulip
