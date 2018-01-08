@@ -117,7 +117,13 @@
         <div class="subscriber-list-box">
             <div class="subscriber_list_container">
                 <div class="subscriber_list_loading_indicator"></div>
+                {{#if can_add_subscribers}}
                 <table class="subscriber-list"></table>
+                {{else}}
+                <div class="hide-subscriber-list">
+                    {{t "You can not access private stream subscribers, which you aren't subscribed." }}
+                </div>
+                {{/if}}
             </div>
         </div>
         {{/render_subscribers}}

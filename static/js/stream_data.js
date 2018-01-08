@@ -176,6 +176,8 @@ exports.update_calculated_fields = function (sub) {
     sub.can_make_public = page_params.is_admin && sub.invite_only && sub.subscribed;
     sub.can_make_private = page_params.is_admin && !sub.invite_only;
     sub.can_change_subscription_type = sub.can_make_public || sub.can_make_private;
+    // User can access subscribers as well as add other users to stream
+    // if sub.can_add_subscribers is true.
     sub.can_add_subscribers = !sub.invite_only || (sub.invite_only && sub.subscribed);
     sub.preview_url = narrow.by_stream_uri(sub.name);
     exports.render_stream_description(sub);

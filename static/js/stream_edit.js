@@ -165,6 +165,12 @@ function show_subscription_settings(sub_row) {
 
     var emails = get_email_of_subscribers(sub.subscribers);
 
+    // If user can not access subscribers no need for search widget.
+    if (!sub.can_add_subscribers) {
+        $("[data-stream-id='" + stream_id + "'] .search").hide();
+    } else {
+        $("[data-stream-id='" + stream_id + "'] .search").show();
+    }
     list_render(list, emails.sort(), {
         name: "stream_subscribers/" + stream_id,
         modifier: function (item) {
