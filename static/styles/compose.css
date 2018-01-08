@@ -175,7 +175,7 @@ table.compose_table {
     z-index: 2;
     width: 100%;
 
-    background: #fff;
+    background: hsl(220, 12%, 95%);
 }
 
 #compose-container {
@@ -194,6 +194,8 @@ table.compose_table {
 
     border-left: 1px solid hsl(0, 0%, 93%);
     border-right: 1px solid hsl(0, 0%, 93%);
+
+    background-color: #fff;
 }
 
 #compose_close {
