@@ -21,6 +21,7 @@
 
 * [Get all users](/api/get-all-users)
 * [Get profile](/api/get-profile)
+* [Create a user](/api/create-user)
 
 #### Events
 * [Register a queue](/api/register-queue)

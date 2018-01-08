@@ -67,6 +67,7 @@ class DocPageTest(ZulipTestCase):
         self._test('/api/update-message', 'propagate_mode')
         self._test('/api/get-profile', 'takes no arguments')
         self._test('/api/add-subscriptions', 'authorization_errors_fatal')
+        self._test('/api/create-user', 'zuliprc-admin')
         self._test('/team/', 'industry veterans')
         self._test('/history/', 'Cambridge, Massachusetts')
         # Test the i18n version of one of these pages.
