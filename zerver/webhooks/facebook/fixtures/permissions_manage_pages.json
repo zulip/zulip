@@ -1,13 +1,22 @@
 {
-   "entry":[
-      {
-         "time":1514912232,
-         "id":"0",
-         "changed_fields":[
-            "manage_pages"
-         ],
-         "uid":"0"
-      }
-   ],
-   "object":"permissions"
+    "entry": [
+        {
+            "changes": [
+                {
+                    "field": "manage_pages",
+                    "value": {
+                        "target_ids": [
+                            "123123123123123",
+                            "321321321321321"
+                        ],
+                        "verb": "granted"
+                    }
+                }
+            ],
+            "id": "0",
+            "time": 1515254831,
+            "uid": "0"
+        }
+    ],
+    "object": "permissions"
 }
