@@ -731,12 +731,14 @@ td.pointer {
 }
 
 .message_list .recipient_row {
-    border-bottom: 1px solid hsl(0, 0%, 88%);
+    border-bottom: 1px solid hsl(220, 12%, 90%);
     margin-bottom: 10px;
+
+    background-color: #fff;
 }
 
 .floating_recipient .recipient_row {
-    border-top: 1px solid hsl(0, 0%, 88%);
+    border-top: 1px solid hsl(220, 12%, 90%);
 }
 
 .stream_label {
@@ -745,10 +747,12 @@ td.pointer {
     font-weight: normal;
     height: 17px;
     line-height: 17px;
-    background-color: hsl(0, 0%, 88%);
+    background-color: hsl(220, 12%, 90%);
     border-width: 0px;
     position: relative;
     text-decoration: none;
+
+    border-top-left-radius: 3px;
 }
 
 .stream_label .invite-stream-icon {
@@ -1012,11 +1016,13 @@ td.pointer {
 .private-message .messagebox,
 .message_header_private_message .message-header-contents {
     background-color: hsla(192, 19%, 75%, 0.2);
-    box-shadow: inset 1px 1px 0px hsl(0, 0%, 88%);
+    box-shadow: inset 1px 1px 0px hsl(220, 12%, 90%);
 }
 
 .message-header-contents {
-    border-right: 1px solid hsl(0, 0%, 88%);
+    border-right: 1px solid hsl(220, 12%, 90%);
+    border-top-right-radius: 3px;
+    border-top-left-radius: 3px;
 }
 
 .mention .messagebox {
@@ -1084,11 +1090,11 @@ td.pointer {
 }
 
 .selected_message .messagebox-content {
-    box-shadow: inset 0px 0px 0px 2px hsl(215, 47%, 50%),
-                     -1px -1px 0px 0px hsl(215, 47%, 50%),
-                      1px 1px 0px 0px hsl(215, 47%, 50%),
-                     -1px 1px 0px 0px hsl(215, 47%, 50%),
-                      1px -1px 0px 0px hsl(215, 47%, 50%);
+    box-shadow: inset 0px 0px 0px 2px hsl(170, 47%, 74%),
+                     -1px -1px 0px 0px hsl(170, 47%, 74%),
+                      1px 1px 0px 0px hsl(170, 47%, 74%),
+                     -1px 1px 0px 0px hsl(170, 47%, 74%),
+                      1px -1px 0px 0px hsl(170, 47%, 74%);
 }
 
 .message_sender {
@@ -1280,8 +1286,6 @@ div.message_table {
 
 .message_row {
     position: relative;
-    border-left: 1px solid hsla(0, 0%, 0%, 0.10);
-    border-right: 1px solid hsla(0, 0%, 0%, 0.10);
 }
 
 .message_row.selected_message {
@@ -1919,7 +1923,7 @@ div.floating_recipient {
 }
 
 .message-header-contents {
-    background: hsl(0, 0%, 88%);
+    background: hsl(220, 12%, 90%);
 }
 
 .recipient_row.sticky {
