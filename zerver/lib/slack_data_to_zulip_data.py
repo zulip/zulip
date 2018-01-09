@@ -11,6 +11,7 @@ from django.utils.timezone import now as timezone_now
 from typing import Any, Dict, List, Tuple
 from zerver.models import UserProfile, Realm, Stream, UserMessage, \
     Subscription, Message, Recipient, DefaultStream
+from zerver.forms import check_subdomain_available
 
 # stubs
 ZerverFieldsT = Dict[str, Any]
@@ -440,7 +441,8 @@ def channel_message_to_zerver_message(constants: List[Any], channel: str,
             message_id += 1
     return zerver_message, zerver_usermessage
 
-def do_convert_data(slack_zip_file: str, realm_name: str, output_dir: str) -> None:
+def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str) -> None:
+    check_subdomain_available(realm_subdomain)
     slack_data_dir = slack_zip_file.replace('.zip', '')
     zip_file_dir = os.path.dirname(slack_data_dir)
     subprocess.check_call(['unzip', '-q', slack_zip_file, '-d', zip_file_dir])
@@ -458,11 +460,8 @@ def do_convert_data(slack_zip_file: str, realm_name: str, output_dir: str) -> No
     zerver_realm_skeleton = json.load(open(fixtures_path + 'zerver_realm_skeleton.json'))
     zerver_realm_skeleton[0]['id'] = REALM_ID
 
-    if Realm.objects.filter(string_id = realm_name):
-        raise Exception('Realm with the name %s already exists. Enter a new name.'
-                        % (realm_name))
-    zerver_realm_skeleton[0]['string_id'] = realm_name  # subdomain / short_name of realm
-    zerver_realm_skeleton[0]['name'] = realm_name
+    zerver_realm_skeleton[0]['string_id'] = realm_subdomain  # subdomain / short_name of realm
+    zerver_realm_skeleton[0]['name'] = realm_subdomain
     zerver_realm_skeleton[0]['date_created'] = NOW
 
     realm = dict(zerver_client=[{"name": "populate_db", "id": 1},
