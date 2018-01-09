@@ -116,7 +116,7 @@ body {
 .app.help {
     position: fixed;
     width: 100vw;
-    height: calc(100vh - 64px);
+    height: calc(100vh - 59px);
     left: 0px;
 
     box-shadow: 0px -20px 50px rgba(0, 0, 0, 0.04);
@@ -131,7 +131,7 @@ body {
     position: fixed;
     z-index: 1;
     /* 100vh - navbar - paddingTop - paddingBottom - bottomNav */
-    height: calc(100vh - 64px - 10px - 10px);
+    height: calc(100vh - 59px - 10px - 10px);
     padding: 10px 20px 10px 20px;
 
     border-right: 1px solid hsl(219, 10%, 97%);
@@ -600,7 +600,7 @@ input.text-error {
 /* -- end new footer -- */
 
 .header {
-    padding: 20px 0 15px;
+    padding: 15px 0;
 }
 
 .header-main .logo {
@@ -1492,7 +1492,7 @@ input.new-organization-button {
     width: calc(100vw - 340px - 30px);
     padding: 0px 30px 0px 30px;
 
-    height: calc(100vh - 64px);
+    height: calc(100vh - 59px);
     font-weight: 400;
     font-size: 1rem;
     line-height: 1.5;
@@ -1748,7 +1748,7 @@ input.new-organization-button {
 @media (max-width: 1000px) {
     .app.help .markdown {
         width: calc(100vw - 50px);
-        height: calc(100vh - 64px);
+        height: calc(100vh - 59px);
         left: 50px;
         padding: 0px;
     }
