@@ -62,8 +62,6 @@ jobs:
       # TODO: in Travis we also cache ~/zulip-emoji-cache, ~/node, ~/misc
 
       # The moment of truth!
-      # TODO: add frontend suite; prod suite; and backend on Python 3.5
-      # TODO: add parallelism; see https://circleci.com/docs/2.0/workflows/
       - run:
           name: run tests
           command: |
