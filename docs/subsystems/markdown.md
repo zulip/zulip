@@ -6,7 +6,7 @@ within the client, not original Markdown.
 
 Zulip has two implementations of Bugdown.  The backend implementation
 at `zerver/lib/bugdown/` is based on
-[Python-Markdown](https://pythonhosted.org/Markdown/) and is used to
+[Python-Markdown](https://pypi.python.org/pypi/Markdown) and is used to
 authoritatively render messages to HTML (and implements
 slow/expensive/complex features like querying the Twitter API to
 render tweets nicely).  The frontend implementation is in JavaScript,
@@ -77,7 +77,7 @@ it in before you can see the frontend's rendering.
 
 First, you will likely find these third-party resources helpful:
 
-* **[Python-Markdown Extensions API](https://pythonhosted.org/Markdown/extensions/api.html)**
+* **[Python-Markdown Extensions API](https://pypi.python.org/pypi/Markdown)**
   is used by Zulip to make the above listed changes to markdown syntax.
 * **[Python's XML ElementTree](https://docs.python.org/3/library/xml.etree.elementtree.html)**
   is the part of the Python standard library used by Python Markdown
