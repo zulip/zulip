@@ -3,7 +3,7 @@ set -e
 
 color_message () {
     local color_code="$1" message="$2"
-    echo -e "\e[${color_code}m${message}\e[0m"
+    echo -e "\e[${color_code}m${message}\e[0m" >&2
 }
 
 case $1 in
