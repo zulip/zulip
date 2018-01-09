@@ -264,13 +264,15 @@ EVENT_FUNCTION_MAPPER = {
 @has_request_variables
 def api_gitlab_webhook(request: HttpRequest, user_profile: UserProfile,
                        stream: Text=REQ(default='gitlab'),
+                       topic: Text=REQ(default=None),
                        payload: Dict[str, Any]=REQ(argument_type='body'),
                        branches: Optional[Text]=REQ(default=None)) -> HttpResponse:
     event = get_event(request, payload, branches)
     if event is not None:
         body = get_body_based_on_event(event)(payload)
-        subject = get_subject_based_on_event(event, payload)
-        check_send_stream_message(user_profile, request.client, stream, subject, body)
+        if topic is None:
+            topic = get_subject_based_on_event(event, payload)
+        check_send_stream_message(user_profile, request.client, stream, topic, body)
     return json_success()
 
 def get_body_based_on_event(event: str) -> Any:
