@@ -177,7 +177,7 @@
         {
             "argument":"queue_id",
             "description":"The ID of a queue that you registered via `POST /api/v1/register`(see [Register a queue](/api/register-queue) and [Get events from queue](/api/get-events-from-queue)).",
-            "required":"Optional",
+            "required":"Required",
             "example":"1375801870:2942"
         }
     ],
