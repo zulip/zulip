@@ -15,6 +15,9 @@ case $1 in
     -L|--loglevel)
         loglevel="$1 $2"
         ;;
+    --skip-check-links)
+        skip_check_links=1
+        ;;
 esac
 
 cd "$(dirname "$0")"/../docs
@@ -25,6 +28,11 @@ rm -rf _build
 # Otherwise, sphinx would generate a large number of links we don't need to test.
 # The crawler would take a very long time to finish and TravisCI would fail as a result.
 sphinx-build -j8 -b html -d _build/doctrees -D html_theme_options.collapse_navigation=True . _build/html
+
+if [ -n "$skip_check_links" ]; then
+    color_message 94 "Skipped testing links in documentation."
+    exit 0
+fi
 
 color_message 94 "Testing links in documentation..."
 
