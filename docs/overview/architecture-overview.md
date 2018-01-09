@@ -193,7 +193,7 @@ configuration is in `puppet/zulip/files/memcached.conf`.
 
 Redis is used for a few very short-term data stores, such as in the
 basis of `zerver/lib/rate_limiter.py`, a per-user rate limiting scheme
-[example](http://blog.domaintools.com/2013/04/rate-limiting-with-redis/)),
+[example](https://web.archive.org/web/20171026000123/https://blog.domaintools.com/2013/04/rate-limiting-with-redis/)),
 and the [email-to-Zulip
 integration](https://zulipchat.com/integrations/doc/email).
 
