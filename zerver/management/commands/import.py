@@ -51,6 +51,11 @@ import a database dump from one or more JSON files."""
     def do_destroy_and_rebuild_database(self, db_name: str) -> None:
         call_command('flush', verbosity=0, interactive=False)
         subprocess.check_call([os.path.join(settings.DEPLOY_ROOT, "scripts/setup/flush-memcached")])
+        subprocess.check_call(['supervisorctl', 'stop', 'all'])
+        subprocess.check_call([os.path.join(settings.DEPLOY_ROOT,
+                               "scripts/setup/postgres-init-db")])
+        subprocess.check_call(['sudo', os.path.join(settings.DEPLOY_ROOT,
+                               "scripts/setup/initialize-database")])
 
     def handle(self, *args: Any, **options: Any) -> None:
         models_to_import = [Realm, Stream, UserProfile, Recipient, Subscription,
