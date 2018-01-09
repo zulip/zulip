@@ -731,7 +731,6 @@ input.text-error {
     border: 1px solid rgba(0,0,0,0.2);
     border-radius: 4px;
     font-weight: 400;
-    padding: 4px;
     cursor: pointer;
 }
 
