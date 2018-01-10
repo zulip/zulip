@@ -552,4 +552,3 @@ def do_convert_data(slack_zip_file: str, realm_name: str, output_dir: str) -> No
     print('######### DATA CONVERSION FINISHED #########\n')
     print("Zulip data dump created at %s" % (output_dir))
     print("Import Command: ./manage.py import --destroy-rebuild-database %s\n" % (output_dir))
-    sys.exit(0)
