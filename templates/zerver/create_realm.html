@@ -31,6 +31,7 @@ $(function () {
                 </div>
             </form>
             <div class="alert alert-error"></div>
+            <p class="inline-block relative">{{ _(' Or <a href="/web_import">import from Slack workspace</a>') }}</p>
             {% if form.email.errors %}
                 {% for error in form.email.errors %}
                 <div class="alert alert-error">{{ error }}</div>

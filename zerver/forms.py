@@ -6,7 +6,7 @@ from django.contrib.auth.forms import SetPasswordForm, AuthenticationForm, \
     PasswordResetForm
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
-from django.core.validators import validate_email
+from django.core.validators import validate_email, FileExtensionValidator
 from django.db.models.query import QuerySet
 from django.utils.translation import ugettext as _
 from django.contrib.auth.tokens import default_token_generator
@@ -114,6 +114,25 @@ class RegistrationForm(forms.Form):
 
         check_subdomain_available(subdomain)
         return subdomain
+
+class ImportDataForm(forms.Form):
+    email = forms.EmailField(required=True)
+    full_name = forms.CharField(max_length=UserProfile.MAX_NAME_LENGTH,
+                                required=True)
+    zulip_data_file = forms.FileField(required=True,
+                                      validators=[FileExtensionValidator(allowed_extensions=['zip'])])
+    realm_subdomain = forms.CharField(max_length=Realm.MAX_REALM_SUBDOMAIN_LENGTH, required=True)
+
+    def clean_realm_subdomain(self) -> str:
+        subdomain = self.cleaned_data['realm_subdomain']
+        check_subdomain_available(subdomain)
+        return subdomain
+
+    def clean_full_name(self) -> Text:
+        try:
+            return check_full_name(self.cleaned_data['full_name'])
+        except JsonableError as e:
+            raise ValidationError(e.msg)
 
 class ToSForm(forms.Form):
     terms = forms.BooleanField(required=True)
