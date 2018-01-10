@@ -354,23 +354,23 @@ class ParallelTestSuite(django_runner.ParallelTestSuite):
         self.subsuites = SubSuiteList(self.subsuites)  # type: ignore # Type of self.subsuites changes.
 
 def print_error_message(test_name: Text) -> None:
+    command = [sys.executable, "-c", "import %s" % test_name]
     print()
-    print("  Actual test to be run is %s, but import failed." % (test_name,))
-    print("  Importing test module directly to generate clearer traceback.")
+    print("Actual test to be run is %s, but import failed." % (test_name,))
+    print("Importing test module directly to generate clearer traceback:")
+    print("  {command}".format(command=' '.join(command)))
+    print()
     try:
-        command = [sys.executable, "-c", "import %s" % test_name]
-        print("  Import test command: `%s`." % (' '.join(command),))
-        print()
         subprocess.check_call(command)
     except subprocess.CalledProcessError:
         print()
-        print("  If that traceback is confusing, try doing the import "
+        print("If that traceback is confusing, try doing the import "
               "inside `./manage.py shell`.")
     else:
         print()
-        print("  Import unexpectedly succeeded! Something is wrong.")
-        print("  Try running `import %s` inside `./manage.py shell`." % (test_name,))
-        print("  If that works, you may have introduced an import cycle.")
+        print("Import unexpectedly succeeded! Something is wrong.")
+        print("Try running `import %s` inside `./manage.py shell`." % (test_name,))
+        print("If that works, you may have introduced an import cycle.")
     print()
 
 class Runner(DiscoverRunner):
@@ -434,7 +434,7 @@ class Runner(DiscoverRunner):
             traceback.print_exc()
             print()
             print("  This is often caused by a test module/class/function that doesn't exist or ")
-            print("  import properly. You can usually debug in a `manage.py shell` via e.g. ")
+            print("  import properly. You can usually debug in a `./manage.py shell` via e.g. ")
             print("    import zerver.tests.test_messages")
             print("    from zerver.tests.test_messages import StreamMessagesTest")
             print("    StreamMessagesTest.test_message_to_stream")
