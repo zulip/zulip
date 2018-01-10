@@ -16,6 +16,7 @@ from zerver.lib.test_classes import (
 from zerver.lib.test_runner import slow
 from zerver.context_processors import common_context
 
+from version import ZULIP_VERSION
 
 class get_form_value:
     def __init__(self, value: Any) -> None:
@@ -195,6 +196,7 @@ class TemplateTestCase(ZulipTestCase):
                          "login_time": "9:33am NewYork, NewYork",
                          },
             api_uri_context={},
+            zulip_version=ZULIP_VERSION,
         )
 
         context.update(kwargs)
