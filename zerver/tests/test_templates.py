@@ -195,6 +195,7 @@ class TemplateTestCase(ZulipTestCase):
                          "login_time": "9:33am NewYork, NewYork",
                          },
             api_uri_context={},
+            zulip_version='1.7.1+git',
         )
 
         context.update(kwargs)
