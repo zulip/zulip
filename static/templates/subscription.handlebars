@@ -11,7 +11,11 @@
         <div class="top-bar">
             <div class="stream-name">{{name}}</div>
             <div class="subscriber-count">
+                {{#if can_add_subscribers}}
                 <span class="subscriber-count-text">{{subscriber_count}}</span>
+                {{else}}
+                <i class="subscriber-count-lock icon-vector-lock"></i>
+                {{/if}}
                 <i class="icon-vector-user"></i>
             </div>
         </div>
