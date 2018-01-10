@@ -704,7 +704,8 @@ form#add_new_subscription {
     margin-left: 10px;
 }
 
-.stream-row .sub-info-box .top-bar .subscriber-count-text {
+.stream-row .sub-info-box .top-bar .subscriber-count-text,
+.stream-row .sub-info-box .top-bar .subscriber-count-lock {
     margin-right: 5px;
 }
 
