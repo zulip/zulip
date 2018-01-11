@@ -1107,6 +1107,11 @@ input[type=checkbox].inline-block {
     top: calc(50% - 120px);
 }
 
+.modal.fade.in {
+    top: 50%;
+    transform: translateY(-50%);
+}
+
 #id_realm_create_stream_permission {
     width: 100%;
 }
