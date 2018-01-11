@@ -477,14 +477,19 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     var submit_permissions_form;
     var submit_profile_form;
     $('.organization').on = function (action, selector, f) {
-        assert.equal(action, 'submit');
-        if (selector === 'form.org-settings-form') {
+        if (selector === 'button.save-message-org-settings') {
+            assert.equal(action, 'click');
             submit_settings_form = f;
         }
+        if (selector === 'button.save-language-org-settings') {
+            assert.equal(action, 'click');
+        }
         if (selector === 'form.org-permissions-form') {
+            assert.equal(action, 'submit');
             submit_permissions_form = f;
         }
         if (selector === 'form.org-profile-form') {
+            assert.equal(action, 'submit');
             submit_profile_form = f;
         }
     };
