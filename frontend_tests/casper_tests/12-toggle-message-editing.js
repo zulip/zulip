@@ -78,22 +78,6 @@ casper.then(function () {
     });
 });
 
-// Commented out due to Issue #1243
-// // edit the same message, but don't hit save this time
-// casper.then(function () {
-//     casper.evaluate(function () {
-//         var msg = $('#zhome .message_row:last');
-//         msg.find('.info').click();
-//         $('.popover_edit_message').click();
-//     });
-// });
-// casper.waitUntilVisible(".message_edit_content", function () {
-//     casper.evaluate(function () {
-//         var msg = $('#zhome .message_row:last');
-//         msg.find('.message_edit_content').val("test RE-edited");
-//     });
-// });
-
 // go to admin page
 common.then_click('#settings-dropdown');
 common.then_click('a[href^="#organization"]');
@@ -125,25 +109,6 @@ casper.then(function () {
 casper.then(function () {
     casper.click('.settings-header .exit');
 });
-
-// Commented out due to Issue #1243
-// // try to save the half-finished edit
-// casper.waitUntilVisible('.message_table', function () {
-//     casper.then(function () {
-//         casper.evaluate(function () {
-//             var msg = $('#zhome .message_row:last');
-//             msg.find('.message_edit_save').click();
-//         });
-//     });
-// });
-
-// // make sure we get the right error message, and that the message hasn't actually changed
-// casper.waitUntilVisible("div.edit_error", function () {
-//     casper.test.assertSelectorHasText(
-//         'div.edit_error',
-//         'Error saving edit: Your organization has turned off message editing.');
-//     casper.test.assertSelectorHasText(".last_message .message_content", "test edited");
-// });
 
 // Check that edit link has changed to "View source" in the popover menu
 // TODO: also check that the edit icon no longer appears next to the message
@@ -186,40 +151,6 @@ casper.then(function () {
     });
 });
 
-// Commented out due to Issue #1243
-// go back home
-// casper.then(function () {
-//     casper.click('.settings-header .exit');
-// });
-
-// // save our edit
-// casper.waitUntilVisible('.message_table', function () {
-//     casper.then(function () {
-//         casper.evaluate(function () {
-//             var msg = $('#zhome .message_row:last');
-//             msg.find('.message_edit_save').click();
-//         });
-//     });
-// });
-
-// // check that edit went through
-// casper.waitWhileVisible("textarea.message_edit_content", function () {
-//     casper.test.assertSelectorHasText(".last_message .message_content", "test RE-edited");
-// });
-
-// check that the edit link reappears in popover menu
-// TODO check for edit icon next to message on hover
-// casper.then(function () {
-//     casper.evaluate(function () {
-//         var msg = $('#zhome .message_row:last');
-//         msg.find('.info').click();
-//     });
-//     casper.test.assertExists('.popover_edit_message');
-//     casper.evaluate(function () {
-//         var msg = $('#zhome .message_row:last');
-//         msg.find('.info').click();
-//     });
-// });
 
 // go to admin page
 casper.then(function () {
