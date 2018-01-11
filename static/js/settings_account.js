@@ -113,7 +113,6 @@ exports.set_up = function () {
         var data = {
             old_password: $('#old_password').val(),
             new_password: $('#new_password').val(),
-            confirm_password: $('#confirm_password').val(),
         };
 
         channel.patch({
