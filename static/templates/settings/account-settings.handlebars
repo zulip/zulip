@@ -57,35 +57,25 @@
                         <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
                         <h3 id="change_password_modal_label">{{t "Change password" }}</h3>
                     </div>
-                    <div class="modal-body">
-                        <div id="pw_change_controls">
-                            <div class="input-group inline-block">
-                                <label for="old_password" class="inline-block title">{{t "Old password" }}</label>
-                                <input type="password" autocomplete="off" name="old_password" id="old_password" class="w-200 inline-block" value="" />
-                                <div class="warning">
-                                    <a href="/accounts/password/reset/" class="sea-green" target="_blank">{{t "Forgotten it?" }}</a>
-                                </div>
+                    <div class="flex-row normal">
+                        <div class="field">
+                            <label for="old_password" class="title">{{t "Old password" }}</label>
+                            <input type="password" autocomplete="off" name="old_password" id="old_password" class="w-200 inline-block" value="" />
+                            <div class="info">
+                                <a href="/accounts/password/reset/" class="sea-green" target="_blank">{{t "Forgotten it?" }}</a>
                             </div>
-
-                            <div class="input-group inline-block">
-                                <label for="new_password" class="inline-block title">{{t "New password" }}</label>
-                                <input type="password" autocomplete="off" name="new_password" id="new_password" class="w-200 inline-block" value=""
-                                 data-min-length="{{ page_params.password_min_length }}" data-min-guesses="{{ page_params.password_min_guesses }}" />
-                                <div class="warning">
-                                    <div class="progress inline-block" id="pw_strength">
-                                        <div class="bar bar-danger fade" style="width: 10%;"></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="input-group">
-                                <label class="inline-block title" for="confirm_password title">{{t "Confirm password" }}</label>
-                                <input type="password" autocomplete="off" name="confirm_password" id="confirm_password" class="w-200 inline-block" value="" />
+                        </div>
+                        <div class="field">
+                            <label for="new_password" class="title">{{t "New password" }}</label>
+                            <input type="password" autocomplete="off" name="new_password" id="new_password" class="w-200 inline-block" value=""
+                             data-min-length="{{ page_params.password_min_length }}" data-min-guesses="{{ page_params.password_min_guesses }}" />
+                            <div class="progress inline-block" id="pw_strength">
+                                <div class="bar bar-danger fade" style="width: 10%;"></div>
                             </div>
                         </div>
                     </div>
+                    <div class="alert change_password_info"></div>
                     <div class="modal-footer">
-                        <div class="alert change_password_info"></div>
                         <button class="button white rounded" data-dismiss="modal">{{t "Cancel" }}</button>
                         <button id='change_password_button' class="button rounded sea-green" data-dismiss="modal">{{t "Change" }}</button>
                     </div>
