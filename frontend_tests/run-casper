@@ -66,8 +66,6 @@ subprocess.check_call(['mkdir', '-p', 'var/casper'])
 
 subprocess.check_call(['rm', '-f'] + glob.glob('var/casper/casper-failure*.png'))
 
-LOG_FILE = 'var/casper/server.log'
-
 def run_tests(files: Iterable[str], external_host: str) -> None:
     test_dir = os.path.join(ZULIP_PATH, 'frontend_tests/casper_tests')
     test_files = []
@@ -91,25 +89,25 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
     if options.remote_debug:
         remote_debug = "--remote-debugger-port=7777 --remote-debugger-autorun=yes"
 
-    with test_server_running(options.force, external_host, log_file=LOG_FILE, dots=True):
+    with test_server_running(options.force, external_host):
         # Important: do this next call inside the `with` block, when Django
         #            will be pointing at the test database.
         subprocess.check_call('tools/setup/generate-test-credentials')
 
         ret = 1
         for test_file in test_files:
+            test_name = os.path.basename(test_file)
             cmd = "node_modules/.bin/casperjs %s test %s" % (remote_debug, test_file)
-            print("\n\nRunning %s" % (cmd,))
+            print("\n\n===================== %s\nRunning %s\n\n" % (test_name, cmd))
             ret = subprocess.call(cmd, shell=True)
             if ret != 0:
                 break
     if ret != 0:
         print("""
 Oops, the frontend tests failed. Tips for debugging:
- * Check the frontend test server logs at %s
  * Check the screenshots of failed tests at var/casper/casper-failure*.png
  * Try remote debugging the test web browser as described in docs/testing/testing-with-casper.md
-""" % (LOG_FILE,), file=sys.stderr)
+""", file=sys.stderr)
 
         sys.exit(ret)
 
