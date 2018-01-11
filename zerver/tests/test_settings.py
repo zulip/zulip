@@ -150,7 +150,7 @@ class ChangeSettingsTest(ZulipTestCase):
         self.login(self.example_email("hamlet"))
         result = self.client_patch("/json/settings",
                                    dict(old_password='ignored',))
-        self.assert_json_error(result, "No new data supplied")
+        self.assert_json_error(result, "Please fill out all fields.")
 
     def do_test_change_user_display_setting(self, setting_name: str) -> None:
 

@@ -75,7 +75,7 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
                          old_password: Text=REQ(default=""),
                          new_password: Text=REQ(default="")) -> HttpResponse:
     if not (full_name or new_password or email):
-        return json_error(_("No new data supplied"))
+        return json_error(_("Please fill out all fields."))
 
     if new_password != "":
         if not authenticate(username=user_profile.email, password=old_password,
