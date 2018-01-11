@@ -76,13 +76,15 @@ def test_server_running(force: bool=False, external_host: str='testserver',
 
     try:
         # Wait for the server to start up.
-        sys.stdout.write('Waiting for test server')
+        sys.stdout.write('\nWaiting for test server (may take a while)')
+        if not dots:
+            sys.stdout.write('\n\n')
         while not server_is_up(server, log_file):
             if dots:
                 sys.stdout.write('.')
                 sys.stdout.flush()
             time.sleep(0.1)
-        sys.stdout.write('\n')
+        sys.stdout.write('\n\n--- SERVER IS UP! ---\n\n')
 
         # DO OUR ACTUAL TESTING HERE!!!
         yield
