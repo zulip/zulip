@@ -77,7 +77,12 @@ Copyright: 2003-2006 Thom May
            2018 Kandra Labs, Inc., and contributors
 License: BSD-3-Clause
 
-Files: static/audio/zulip.*
+Files: static/audio/notification_sounds/ding.*
+Copyright: 2017 InspectorJ
+License: CC-BY-3.0
+Comment: From https://freesound.org/s/411089/.
+
+Files: static/audio/notification_sounds/zulip.*
 Copyright: 2011 Vidsyn
 License: CC-0-1.0
 

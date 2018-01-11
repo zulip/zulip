@@ -1672,6 +1672,10 @@ class EventsRegisterTest(ZulipTestCase):
     @slow("Actually runs several full-stack fetching tests")
     def test_change_notification_settings(self) -> None:
         for notification_setting, v in self.user_profile.notification_setting_types.items():
+            if notification_setting == "notification_sound":
+                # notification_sound is tested in its own test
+                continue
+
             schema_checker = self.check_events_dict([
                 ('type', equals('update_global_notifications')),
                 ('notification_name', equals(notification_setting)),
@@ -1679,11 +1683,26 @@ class EventsRegisterTest(ZulipTestCase):
                 ('setting', check_bool),
             ])
             do_change_notification_settings(self.user_profile, notification_setting, False)
+
             for setting_value in [True, False]:
                 events = self.do_test(lambda: do_change_notification_settings(
                     self.user_profile, notification_setting, setting_value, log=False))
                 error = schema_checker('events[0]', events[0])
                 self.assert_on_error(error)
+
+    def test_change_notification_sound(self) -> None:
+        notification_setting = "notification_sound"
+        schema_checker = self.check_events_dict([
+            ('type', equals('update_global_notifications')),
+            ('notification_name', equals(notification_setting)),
+            ('user', check_string),
+            ('setting', equals("ding")),
+        ])
+
+        events = self.do_test(lambda: do_change_notification_settings(
+            self.user_profile, notification_setting, 'ding', log=False))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
 
     def test_realm_emoji_events(self) -> None:
         schema_checker = self.check_events_dict([

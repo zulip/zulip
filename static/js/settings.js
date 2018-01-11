@@ -126,6 +126,7 @@ exports.build_page = function () {
     var rendered_settings_tab = templates.render('settings_tab', {
         full_name: people.my_full_name(),
         page_params: page_params,
+        enable_sound_select: page_params.enable_sounds || page_params.enable_stream_sounds,
         zuliprc: 'zuliprc',
         botserverrc: 'botserverrc',
         timezones: moment.tz.names(),
