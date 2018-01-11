@@ -399,10 +399,7 @@ function _set_up() {
         }
     });
 
-    $(".organization").on("submit", "form.org-settings-form", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-
+    exports.save_organization_settings = function () {
         _.each(property_types.settings, function (v, k) {
             property_type_status_element(k).hide();
         });
@@ -482,6 +479,24 @@ function _set_up() {
                 ui_report.error(i18n.t("Failed"), xhr, status);
             },
         });
+    };
+
+    // For historical reasons, the save_organization_settings() function handles
+    // saving data for two different sections of the "Organization settings" panel.
+    // TODO: Make two separate click handlers, so that we only save changes that
+    //       make sense for the individual buttons.
+    $(".organization").on("click", "button.save-message-org-settings", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        exports.save_organization_settings(e);
+    });
+
+    $(".organization").on("click", "button.save-language-org-settings", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        exports.save_organization_settings(e);
     });
 
     $(".organization").on("submit", "form.org-permissions-form", function (e) {
