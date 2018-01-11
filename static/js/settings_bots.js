@@ -92,9 +92,9 @@ exports.set_up = function () {
             value: bot.name,
             text: bot.name,
         }));
-        _.each(bot.config, function (key) {
+        _.each(bot.config, function (value, key) {
             var rendered_config_item = templates.render('embedded_bot_config_item',
-                {botname: bot.name, key: key, value: bot.config[key]});
+                {botname: bot.name, key: key, value: value});
             $('#config_inputbox').append(rendered_config_item);
         });
     });
