@@ -92,6 +92,11 @@ exports.initialize_casper = function () {
     casper.evaluate(function () {
         window.localStorage.clear();
     });
+
+    // This captures console messages from the app.
+    casper.on('remote.message', function (msg) {
+        casper.echo("app console: " + msg);
+    });
 };
 
 exports.then_log_in = function (credentials) {
@@ -165,15 +170,6 @@ exports.select_item_via_typeahead = function (field_selector, str, item) {
             });
             tah.select();
         }, {field_selector:field_selector, str: str, item: item});
-    });
-};
-
-exports.enable_page_console = function () {
-    // Call this (after casper.start) to enable printing page-context
-    // console.log (plus some CasperJS-specific messages) to the
-    // terminal.
-    casper.on('remote.message', function (msg) {
-        casper.echo(msg);
     });
 };
 
