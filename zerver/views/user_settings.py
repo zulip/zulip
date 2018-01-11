@@ -73,14 +73,11 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
                          full_name: Text=REQ(default=""),
                          email: Text=REQ(default=""),
                          old_password: Text=REQ(default=""),
-                         new_password: Text=REQ(default=""),
-                         confirm_password: Text=REQ(default="")) -> HttpResponse:
+                         new_password: Text=REQ(default="")) -> HttpResponse:
     if not (full_name or new_password or email):
         return json_error(_("No new data supplied"))
 
-    if new_password != "" or confirm_password != "":
-        if new_password != confirm_password:
-            return json_error(_("New password must match confirmation password!"))
+    if new_password != "":
         if not authenticate(username=user_profile.email, password=old_password,
                             realm=user_profile.realm):
             return json_error(_("Wrong password!"))

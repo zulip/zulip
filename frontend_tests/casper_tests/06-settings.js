@@ -42,7 +42,6 @@ casper.then(function () {
         casper.waitForResource("zxcvbn.js", function () {
             casper.test.assertVisible("#old_password");
             casper.test.assertVisible("#new_password");
-            casper.test.assertVisible("#confirm_password");
 
             casper.test.assertEqual(casper.getFormValues(form_sel).full_name, "Iago");
 
@@ -50,7 +49,6 @@ casper.then(function () {
                 full_name: "IagoNew",
                 old_password: test_credentials.default_user.password,
                 new_password: "qwertyuiop",
-                confirm_password: "qwertyuiop",
             });
             casper.test.assertNotVisible("#account-settings-status");
             casper.click('button[name="change_settings"]');
@@ -83,7 +81,6 @@ casper.then(function () {
             full_name: "Iago",
             old_password: "qwertyuiop",
             new_password: test_credentials.default_user.password,
-            confirm_password: test_credentials.default_user.password,
         });
         casper.click('button[name="change_settings"]');
         */
