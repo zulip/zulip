@@ -129,6 +129,17 @@ label {
     padding: 0px 20px;
 }
 
+#notification_sound,
+#play_notification_sound {
+    display: inline;
+    margin-right: 8px;
+    margin-bottom: 0px;
+}
+
+.attributions_title {
+    margin-top: 24px;
+}
+
 .table.table-condensed.table-striped {
     margin: 0px;
 }

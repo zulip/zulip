@@ -64,6 +64,14 @@ exports.get_notifications = function () {
     return notice_memory;
 };
 
+function get_audio_file_path(audio_element, audio_file_without_extension) {
+    if (audio_element.canPlayType('audio/ogg; codecs="vorbis"')) {
+        return audio_file_without_extension + ".ogg";
+    }
+
+    return audio_file_without_extension + ".mp3";
+}
+
 exports.initialize = function () {
     $(window).focus(function () {
         window_has_focus = true;
@@ -86,20 +94,36 @@ exports.initialize = function () {
         supports_sound = false;
     } else {
         supports_sound = true;
+
         $("#notifications-area").append(audio);
+        audio.append($("<source>").attr("loop", "yes"));
+        var source = $("#notifications-area audio source");
+
         if (audio[0].canPlayType('audio/ogg; codecs="vorbis"')) {
-            audio.append(
-                $("<source>").attr("type", "audio/ogg")
-                    .attr("loop", "yes")
-                    .attr("src", "/static/audio/zulip.ogg"));
+            source.attr("type", "audio/ogg");
         } else {
-            audio.append(
-                $("<source>").attr("type", "audio/mpeg")
-                    .attr("loop", "yes")
-                    .attr("src", "/static/audio/zulip.mp3"));
+            source.attr("type", "audio/mpeg");
         }
+
+        var audio_file_without_extension
+            = "/static/audio/notification_sounds/" + page_params.notification_sound;
+        source.attr("src", get_audio_file_path(audio[0], audio_file_without_extension));
     }
 };
+
+function update_notification_sound_source() {
+    // Simplified version of the source creation in `exports.initialize`, for
+    // updating the source instead of creating it for the first time.
+    var audio = $("#notifications-area audio");
+    var source = $("#notifications-area audio source");
+    var audio_file_without_extension
+        = "/static/audio/notification_sounds/" + page_params.notification_sound;
+    source.attr("src", get_audio_file_path(audio[0], audio_file_without_extension));
+
+    // Load it so that it is ready to be played; without this the old sound
+    // is played.
+    $("#notifications-area").find("audio")[0].load();
+}
 
 exports.permission_state = function () {
     if (window.Notification === undefined) {
@@ -632,6 +656,11 @@ exports.handle_global_notification_updates = function (notification_name, settin
     // particular stream should receive notifications.
     if (settings_notifications.notification_settings.indexOf(notification_name) !== -1) {
         page_params[notification_name] = setting;
+    }
+
+    if (notification_name === "notification_sound") {
+        // Change the sound source with the new page `notification_sound`.
+        update_notification_sound_source();
     }
 };
 

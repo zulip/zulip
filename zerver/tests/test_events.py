@@ -116,7 +116,7 @@ from zerver.lib.topic_mutes import (
 )
 from zerver.lib.validator import (
     check_bool, check_dict, check_dict_only, check_float, check_int, check_list, check_string,
-    equals, check_none_or, Validator, check_url
+    check_bool_or_string, equals, check_none_or, Validator, check_url
 )
 from zerver.lib.upload import upload_backend, attachment_url_to_path_id
 from zerver.lib.users import get_api_key
@@ -1651,12 +1651,24 @@ class EventsRegisterTest(ZulipTestCase):
                 ('type', equals('update_global_notifications')),
                 ('notification_name', equals(notification_setting)),
                 ('user', check_string),
-                ('setting', check_bool),
+                ('setting', check_bool_or_string),
             ])
-            do_change_notification_settings(self.user_profile, notification_setting, False)
-            for setting_value in [True, False]:
+
+            default_value = False  # type: Union[bool, str]
+
+            if notification_setting is 'notification_sound':
+                default_value = 'zulip'
+
+            do_change_notification_settings(self.user_profile, notification_setting, default_value)
+            if notification_setting is not 'notification_sound':
+                for setting_value in [True, False]:
+                    events = self.do_test(lambda: do_change_notification_settings(
+                        self.user_profile, notification_setting, setting_value, log=False))
+                    error = schema_checker('events[0]', events[0])
+                    self.assert_on_error(error)
+            else:
                 events = self.do_test(lambda: do_change_notification_settings(
-                    self.user_profile, notification_setting, setting_value, log=False))
+                    self.user_profile, notification_setting, 'boing', log=False))
                 error = schema_checker('events[0]', events[0])
                 self.assert_on_error(error)
 
@@ -3073,6 +3085,7 @@ class FetchQueriesTest(ZulipTestCase):
             update_display_settings=0,
             update_global_notifications=0,
             update_message_flags=5,
+            available_notification_sounds=0,
             zulip_version=0,
         )
 

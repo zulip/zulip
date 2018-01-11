@@ -131,8 +131,11 @@ class ChangeSettingsTest(ZulipTestCase):
     # This is basically a don't-explode test.
     def test_notify_settings(self) -> None:
         for notification_setting in UserProfile.notification_setting_types:
-            self.check_for_toggle_param_patch("/json/settings/notifications",
-                                              notification_setting)
+            # `notification_sound` is a string not a boolean, so this test
+            # doesn't work for it.
+            if notification_setting is not 'notification_sound':
+                self.check_for_toggle_param_patch("/json/settings/notifications",
+                                                  notification_setting)
 
     def test_toggling_boolean_user_display_settings(self) -> None:
         """Test updating each boolean setting in UserProfile property_types"""

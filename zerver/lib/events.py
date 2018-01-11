@@ -39,6 +39,7 @@ from zerver.lib.actions import (
     get_status_dict, streams_to_dicts_sorted,
     default_stream_groups_to_dicts_sorted,
     get_owned_bot_dicts,
+    get_available_notification_sounds,
 )
 from zerver.lib.user_groups import user_groups_in_realm_serialized
 from zerver.tornado.event_queue import request_event_queue, get_user_events
@@ -282,6 +283,9 @@ def fetch_initial_state_data(user_profile: UserProfile,
     if want('update_global_notifications'):
         for notification in UserProfile.notification_setting_types:
             state[notification] = getattr(user_profile, notification)
+
+    if want('available_notification_sounds'):
+        state['available_notification_sounds'] = get_available_notification_sounds()
 
     if want('zulip_version'):
         state['zulip_version'] = ZULIP_VERSION

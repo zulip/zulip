@@ -102,6 +102,11 @@ def check_bool(var_name: str, val: object) -> Optional[str]:
         return _('%s is not a boolean') % (var_name,)
     return None
 
+def check_bool_or_string(var_name: str, val: object) -> Optional[str]:
+    if not isinstance(val, bool) and not isinstance(val, str):
+        return _('%s is not a boolean or a string') % (var_name,)
+    return None
+
 def check_none_or(sub_validator: Validator) -> Validator:
     def f(var_name: str, val: object) -> Optional[str]:
         if val is None:
