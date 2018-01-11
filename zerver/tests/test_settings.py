@@ -131,8 +131,39 @@ class ChangeSettingsTest(ZulipTestCase):
     # This is basically a don't-explode test.
     def test_notify_settings(self) -> None:
         for notification_setting in UserProfile.notification_setting_types:
-            self.check_for_toggle_param_patch("/json/settings/notifications",
-                                              notification_setting)
+            # `notification_sound` is a string not a boolean, so this test
+            # doesn't work for it.
+            #
+            # TODO: Make this work more like do_test_realm_update_api
+            if notification_setting is not 'notification_sound':
+                self.check_for_toggle_param_patch("/json/settings/notifications",
+                                                  notification_setting)
+
+    def test_change_notification_sound(self) -> None:
+        pattern = "/json/settings/notifications"
+        param = "notification_sound"
+        user_profile = self.example_user('hamlet')
+        self.login(user_profile.email)
+
+        json_result = self.client_patch(pattern,
+                                        {param: ujson.dumps("invalid")})
+        self.assert_json_error(json_result, "Invalid notification sound 'invalid'")
+
+        json_result = self.client_patch(pattern,
+                                        {param: ujson.dumps("ding")})
+        self.assert_json_success(json_result)
+
+        # refetch user_profile object to correctly handle caching
+        user_profile = self.example_user('hamlet')
+        self.assertEqual(getattr(user_profile, param), "ding")
+
+        json_result = self.client_patch(pattern,
+                                        {param: ujson.dumps('zulip')})
+
+        self.assert_json_success(json_result)
+        # refetch user_profile object to correctly handle caching
+        user_profile = self.example_user('hamlet')
+        self.assertEqual(getattr(user_profile, param), 'zulip')
 
     def test_toggling_boolean_user_display_settings(self) -> None:
         """Test updating each boolean setting in UserProfile property_types"""

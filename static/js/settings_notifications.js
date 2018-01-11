@@ -19,6 +19,7 @@ var pm_mention_notification_settings = [
 ];
 
 var other_notification_settings = [
+    "notification_sound",
     "enable_digest_emails",
     "enable_login_emails",
     "realm_name_in_notifications",
@@ -66,7 +67,16 @@ exports.set_up = function () {
 
     _.each(other_notification_settings, function (setting) {
         $("#" + setting).change(function () {
-            change_notification_setting(setting, $(this).prop('checked'),
+            var value;
+
+            if (setting === "notification_sound") {
+                // `notification_sound` is not a boolean.
+                value = $(this).val();
+            } else {
+                value = $(this).prop('checked');
+            }
+
+            change_notification_setting(setting, value,
                                         "#other-notify-settings-status");
         });
     });
@@ -81,6 +91,23 @@ exports.set_up = function () {
                     stream_setting.notifications, setting_data);
             });
         });
+    });
+
+    $("#play_notification_sound").click(function () {
+        $("#notifications-area").find("audio")[0].play();
+    });
+
+    var notification_sound_dropdown = $("#notification_sound");
+    notification_sound_dropdown.val(page_params.notification_sound);
+
+    $("#enable_sounds, #enable_stream_sounds").change(function () {
+        if ($("#enable_stream_sounds").prop("checked") || $("#enable_sounds").prop("checked")) {
+            notification_sound_dropdown.prop("disabled", false);
+            notification_sound_dropdown.parent().removeClass("control-label-disabled");
+        } else {
+            notification_sound_dropdown.prop("disabled", true);
+            notification_sound_dropdown.parent().addClass("control-label-disabled");
+        }
     });
 
     $("#enable_desktop_notifications").change(function () {

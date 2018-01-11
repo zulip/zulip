@@ -12,7 +12,8 @@ from zerver.decorator import has_request_variables, \
 from zerver.lib.actions import do_change_password, do_change_notification_settings, \
     do_change_enter_sends, do_regenerate_api_key, do_change_avatar_fields, \
     do_set_user_display_setting, validate_email, do_change_user_delivery_email, \
-    do_start_email_change_process, check_change_full_name, do_change_user_delivery_email
+    do_start_email_change_process, check_change_full_name, do_change_user_delivery_email, \
+    get_available_notification_sounds
 from zerver.lib.avatar import avatar_url
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.i18n import get_available_language_codes
@@ -155,6 +156,7 @@ def json_change_notify_settings(
         enable_stream_email_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
         enable_stream_push_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
         enable_stream_sounds: Optional[bool]=REQ(validator=check_bool, default=None),
+        notification_sound: Optional[str]=REQ(validator=check_string, default=None),
         enable_desktop_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
         enable_sounds: Optional[bool]=REQ(validator=check_bool, default=None),
         enable_offline_email_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
@@ -169,6 +171,10 @@ def json_change_notify_settings(
     result = {}
 
     # Stream notification settings.
+
+    if (notification_sound is not None and
+            notification_sound not in get_available_notification_sounds()):
+        raise JsonableError(_("Invalid notification sound '%s'") % (notification_sound,))
 
     req_vars = {k: v for k, v in list(locals().items()) if k in user_profile.notification_setting_types}
 

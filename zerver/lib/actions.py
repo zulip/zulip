@@ -2715,6 +2715,17 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
             [(sub.user_profile, stream) for (sub, stream) in subs_to_activate],
             already_subscribed)
 
+def get_available_notification_sounds() -> List[str]:
+    notification_sounds_path = os.path.join(settings.STATIC_ROOT, 'audio/notification_sounds')
+    available_notification_sounds = []
+
+    for file_name in os.listdir(notification_sounds_path):
+        root, ext = os.path.splitext(file_name)
+        if ext == '.ogg':
+            available_notification_sounds.append(root)
+
+    return available_notification_sounds
+
 def notify_subscriptions_removed(user_profile: UserProfile, streams: Iterable[Stream],
                                  no_log: bool=False) -> None:
     if not no_log:
@@ -3311,7 +3322,7 @@ def do_create_realm(string_id: str, name: str,
                               "signups", realm.display_subdomain, signup_message)
     return realm
 
-def do_change_notification_settings(user_profile: UserProfile, name: str, value: bool,
+def do_change_notification_settings(user_profile: UserProfile, name: str, value: Union[bool, str],
                                     log: bool=True) -> None:
     """Takes in a UserProfile object, the name of a global notification
     preference to update, and the value to update to
