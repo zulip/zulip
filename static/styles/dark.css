@@ -279,6 +279,10 @@ body.dark-mode .user-mention-me {
     box-shadow: 0px 0px 0px 1px hsla(330, 40%, 20%, 1);
 }
 
+body.dark-mode .alert-word {
+    background-color: hsl(179, 27%, 35%);
+}
+
 body.dark-mode .alert {
     text-shadow: none;
 }
