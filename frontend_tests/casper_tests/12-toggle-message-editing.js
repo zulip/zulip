@@ -6,10 +6,19 @@ function heading(heading_str) {
     });
 }
 
+function submit() {
+    // Casper 1.1.4 has a strange bug related to dispatching functions
+    // twice.  We call save_organization_settings() to try to minimize
+    // the moving parts involved in troubleshooting.
+    casper.evaluate(function () {
+        settings_org.save_organization_settings();
+    });
+}
+
 function submit_checked() {
     casper.then(function () {
         casper.waitUntilVisible('input:checked[type="checkbox"][id="id_realm_allow_message_editing"] + span', function () {
-            casper.click('form.org-settings-form button.button');
+            submit();
         });
     });
 }
@@ -17,7 +26,7 @@ function submit_checked() {
 function submit_unchecked() {
     casper.then(function () {
         casper.waitUntilVisible('input:not(:checked)[type="checkbox"][id="id_realm_allow_message_editing"] + span', function () {
-            casper.click('form.org-settings-form button.button');
+            submit();
         });
     });
 }
