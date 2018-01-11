@@ -1115,6 +1115,32 @@ class GoogleLoginTest(GoogleOAuthTest):
         self.assertEqual(m.call_args_list[0][0][0],
                          'Google oauth2 CSRF error')
 
+class JSONFetchAPIKeyTest(ZulipTestCase):
+    def setUp(self) -> None:
+        self.user_profile = self.example_user('hamlet')
+        self.email = self.user_profile.email
+
+    def test_success(self) -> None:
+        self.login(self.email)
+        result = self.client_post("/json/fetch_api_key",
+                                  dict(user_profile=self.user_profile,
+                                       password=initial_password(self.email)))
+        self.assert_json_success(result)
+
+    def test_not_loggedin(self) -> None:
+        result = self.client_post("/json/fetch_api_key",
+                                  dict(user_profile=self.user_profile,
+                                       password=initial_password(self.email)))
+        self.assert_json_error(result,
+                               "Not logged in: API authentication or user session required", 401)
+
+    def test_wrong_password(self) -> None:
+        self.login(self.email)
+        result = self.client_post("/json/fetch_api_key",
+                                  dict(user_profile=self.user_profile,
+                                       password="wrong"))
+        self.assert_json_error(result, "Your username or password is incorrect.", 400)
+
 class FetchAPIKeyTest(ZulipTestCase):
     def setUp(self) -> None:
         self.user_profile = self.example_user('hamlet')
