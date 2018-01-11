@@ -16,6 +16,7 @@
 * [Get stream ID](/api/get-stream-id)
 * [Get subscribed streams](/api/get-subscribed-streams)
 * [Add subscriptions](/api/add-subscriptions)
+* [Remove subscriptions](/api/remove-subscriptions)
 
 #### Users
 
