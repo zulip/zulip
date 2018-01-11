@@ -12,6 +12,8 @@ from typing import Any, Dict, List, Tuple
 from zerver.models import UserProfile, Realm, Stream, UserMessage, \
     Subscription, Message, Recipient, DefaultStream
 from zerver.forms import check_subdomain_available
+from zerver.lib.slack_message_conversion import convert_to_zulip_markdown, \
+    get_user_full_name
 
 # stubs
 ZerverFieldsT = Dict[str, Any]
@@ -27,15 +29,6 @@ def get_model_id(model: Any) -> int:
         return model.objects.all().last().id + 1
     else:
         return 1
-
-def get_user_full_name(user: ZerverFieldsT) -> str:
-    if user['deleted'] is False:
-        if user['real_name'] == '':
-            return user['name']
-        else:
-            return user['real_name']
-    else:
-        return user['name']
 
 def users_to_zerver_userprofile(slack_data_dir: str, realm_id: int, timestamp: Any,
                                 domain_name: str) -> Tuple[List[ZerverFieldsT], AddedUsersT]:
@@ -297,104 +290,13 @@ def channel_message_to_zerver_message(constants: List[Any], channel: str,
     zerver_message = []
     zerver_usermessage = []
 
-    # Slack link can be in the format <http://www.foo.com|www.foo.com> and <http://foo.com/>
-    LINK_REGEX = r"""
-                  ^<(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?
-                  [a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?
-                  (\/.*)?(\|)?(?:\|([^>]+))?>$
-                  """
-    SLACK_USERMENTION_REGEX = r"""
-                               (<@)                  # Start with <@
-                                   ([a-zA-Z0-9]+)    # Here we have the Slack id
-                               (\|)?                 # We not always have a Vertical line in mention
-                                   ([a-zA-Z0-9]+)?   # If Vertical line is present, this is short name
-                               (>)                   # ends with >
-                               """
-    # Slack doesn't have mid-word message-formatting like Zulip.
-    # Hence, ~stri~ke doesn't format the word in slack, but ~~stri~~ke
-    # formats the word in Zulip
-    SLACK_STRIKETHROUGH_REGEX = r"""
-                                 (^|[ -(]|[+-/]|[:-?]|\{|\[|\||\^)     # Start after specified characters
-                                 (\~)                                  # followed by an asterisk
-                                     ([ -)+-}—]*)([!-}]+)              # any character except asterisk
-                                 (\~)                                  # followed by an asterisk
-                                 ($|[ -']|[+-/]|[:-?]|\}|\)|\]|\||\^)  # ends with specified characters
-                                 """
-    SLACK_ITALIC_REGEX = r"""
-                          (^|[ -(]|[+-/]|[:-?]|\{|\[|\||\^)
-                          (\_)
-                              ([ -~—]*)([!-}]+)                  # any character
-                          (\_)
-                          ($|[ -']|[+-/]|[:-?]|\}|\)|\]|\||\^)
-                          """
-    SLACK_BOLD_REGEX = r"""
-                        (^|[ -(]|[+-/]|[:-?]|\{|\[|\||\^)
-                        (\*)
-                            ([ -~—]*)([!-}]+)                   # any character
-                        (\*)
-                        ($|[ -']|[+-/]|[:-?]|\}|\)|\]|\||\^)
-                        """
-
-    # Markdown mapping
-    def convert_to_zulip_markdown(text: str) -> Tuple[str, List[int], bool]:
-        mentioned_users_id = []
-        has_link = False
-
-        text = convert_markdown_syntax(text, SLACK_STRIKETHROUGH_REGEX, "~~")
-        text = convert_markdown_syntax(text, SLACK_ITALIC_REGEX, "*")
-        text = convert_markdown_syntax(text, SLACK_BOLD_REGEX, "**")
-
-        # Map Slack's mention all: '<!everyone>' to '@**all** '
-        # No regex for this as it can be present anywhere in the sentence
-        text = text.replace('<!everyone>', '@**all**')
-        tokens = text.split(' ')
-        for iterator in range(len(tokens)):
-            # Check user mentions and change mention format from
-            # '<@slack_id|short_name>' to '@**full_name**'
-            if (re.compile(SLACK_USERMENTION_REGEX, re.VERBOSE).match(tokens[iterator])):
-                tokens[iterator], user_id = get_user_mentions(tokens[iterator])
-                mentioned_users_id.append(user_id)
-
-            # Check link
-            if (re.compile(LINK_REGEX, re.VERBOSE).match(tokens[iterator])):
-                tokens[iterator] = tokens[iterator].replace('<', '').replace('>', '')
-                has_link = True
-
-        token = ' '.join(tokens)
-        return token, mentioned_users_id, has_link
-
-    def get_user_mentions(token: str) -> Tuple[str, int]:
-        slack_usermention_match = re.search(SLACK_USERMENTION_REGEX, token, re.VERBOSE)
-        short_name = slack_usermention_match.group(4)
-        slack_id = slack_usermention_match.group(2)
-        for user in users:
-            if (user['id'] == slack_id and user['name'] == short_name and short_name) or \
-               (user['id'] == slack_id and short_name is None):
-                full_name = get_user_full_name(user)
-                user_id = added_users[slack_id]
-                mention = "@**" + full_name + "** "
-        token = re.sub(SLACK_USERMENTION_REGEX, mention, token, flags=re.VERBOSE)
-        return token, user_id
-
-    # Map italic, bold and strikethrough markdown
-    def convert_markdown_syntax(text: str, regex: str, zulip_keyword: str) -> str:
-        """
-        Returns:
-        1. For strikethrough formatting: This maps Slack's '~strike~' to Zulip's '~~strike~~'
-        2. For bold formatting: This maps Slack's '*bold*' to Zulip's '**bold**'
-        3. For italic formatting: This maps Slack's '_italic_' to Zulip's '*italic*'
-        """
-        for match in re.finditer(regex, text, re.VERBOSE):
-            converted_token = (match.group(1) + zulip_keyword + match.group(3)
-                               + match.group(4) + zulip_keyword + match.group(6))
-            text = re.sub(regex, converted_token, text, flags=re.VERBOSE)
-        return text
-
     for json_name in json_names:
         messages = json.load(open(slack_data_dir + '/%s/%s' % (channel, json_name)))
         for message in messages:
             has_attachment = False
-            content, mentioned_users_id, has_link = convert_to_zulip_markdown(message['text'])
+            content, mentioned_users_id, has_link = convert_to_zulip_markdown(message['text'],
+                                                                              users,
+                                                                              added_users)
             rendered_content = None
             if 'subtype' in message.keys():
                 subtype = message['subtype']
