@@ -2525,7 +2525,7 @@ button.topic_edit_cancel {
 }
 
 .alert-word {
-    background-color: hsl(112, 88%, 87%);
+    background-color: hsla(102, 85%, 57%, 0.5);
 }
 
 #organization h1,
