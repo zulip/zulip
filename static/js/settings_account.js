@@ -80,7 +80,7 @@ exports.set_up = function () {
     function clear_password_change() {
         // Clear the password boxes so that passwords don't linger in the DOM
         // for an XSS attacker to find.
-        $('#old_password, #new_password, #confirm_password').val('');
+        $('#old_password, #new_password').val('');
     }
 
     clear_password_change();
