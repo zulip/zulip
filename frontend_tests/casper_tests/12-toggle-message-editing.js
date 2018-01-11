@@ -1,5 +1,10 @@
 var common = require('../casper_lib/common.js').common;
 
+function heading(heading_str) {
+    casper.then(function () {
+        casper.test.info(heading_str);
+    });
+}
 
 function submit_checked() {
     casper.then(function () {
@@ -89,6 +94,9 @@ casper.then(function () {
     });
 });
 
+// DEACTIVATE
+
+heading("DEACTIVATE");
 common.then_click("li[data-section='organization-settings']");
 
 // deactivate "allow message editing"
@@ -110,6 +118,9 @@ casper.then(function () {
     casper.click('.settings-header .exit');
 });
 
+// VIEW SOURCE
+
+heading("VIEW SOURCE");
 // Check that edit link has changed to "View source" in the popover menu
 // TODO: also check that the edit icon no longer appears next to the message
 casper.then(function () {
@@ -135,6 +146,10 @@ casper.then(function () {
     });
 });
 
+// REACTIVATE
+
+heading("REACTIVATE");
+
 // go back to admin page, and reactivate "allow message editing"
 common.then_click('#settings-dropdown');
 common.then_click('a[href^="#organization"]');
@@ -151,6 +166,9 @@ casper.then(function () {
     });
 });
 
+// DEACTIVATE
+
+heading("DEACTIVATE");
 
 // go to admin page
 casper.then(function () {
@@ -188,6 +206,9 @@ casper.then(function () {
     });
 });
 
+// REACTIVATE
+heading("REACTIVATE");
+
 common.then_click('input[type="checkbox"][id="id_realm_allow_message_editing"] + span');
 submit_checked();
 
@@ -202,6 +223,9 @@ casper.then(function () {
         }, 'Message content edit limit still 4');
     });
 });
+
+// SET LIMIT TO 0
+heading("NO LIMIT");
 
 casper.then(function () {
     // allow arbitrary message editing
@@ -224,6 +248,9 @@ casper.then(function () {
         }, 'Message content edit limit is 0');
     });
 });
+
+// ILLEGAL LIMIT
+heading("ILLEGAL LIMIT");
 
 casper.then(function () {
     // disallow message editing, with illegal edit limit value. should be fixed by admin.js
