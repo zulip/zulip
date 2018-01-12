@@ -233,9 +233,9 @@ casper.then(function () {
         casper.evaluate(function () {
             $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val('0');
         });
-        casper.click('form.org-settings-form button.button');
     });
 });
+submit_checked();
 
 casper.then(function () {
     casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
@@ -258,10 +258,10 @@ casper.then(function () {
         casper.evaluate(function () {
             $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val('moo');
         });
-        casper.click('input[type="checkbox"][id="id_realm_allow_message_editing"] + span');
-        casper.click('form.org-settings-form button.button');
     });
 });
+common.then_click('input[type="checkbox"][id="id_realm_allow_message_editing"] + span');
+submit_unchecked();
 
 casper.then(function () {
     casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
