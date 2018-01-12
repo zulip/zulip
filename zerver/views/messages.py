@@ -908,7 +908,7 @@ def same_realm_jabber_user(user_profile: UserProfile, email: Text) -> bool:
 def handle_deferred_message(sender: UserProfile, client: Client,
                             message_type_name: Text, message_to: Sequence[Text],
                             topic_name: Optional[Text],
-                            message_content: Text,
+                            message_content: Text, delivery_type: Text,
                             defer_until: Text, tz_guess: Text,
                             forwarder_user_profile: UserProfile,
                             realm: Optional[Realm]) -> HttpResponse:
@@ -934,7 +934,7 @@ def handle_deferred_message(sender: UserProfile, client: Client,
         return json_error(_("Invalid timestamp for scheduling message. Choose a time in future."))
 
     check_schedule_message(sender, client, message_type_name, message_to,
-                           topic_name, message_content,
+                           topic_name, message_content, delivery_type,
                            deliver_at, realm=realm,
                            forwarder_user_profile=forwarder_user_profile)
     return json_success({"deliver_at": str(deliver_at_usertz)})
@@ -953,6 +953,7 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
                          realm_str: Optional[Text]=REQ('realm_str', default=None),
                          local_id: Optional[Text]=REQ(default=None),
                          queue_id: Optional[Text]=REQ(default=None),
+                         delivery_type: Optional[Text]=REQ('delivery_type', default='send_now'),
                          defer_until: Optional[Text]=REQ('deliver_at', default=None),
                          tz_guess: Optional[Text]=REQ('tz_guess', default=None)) -> HttpResponse:
     client = request.client
@@ -999,10 +1000,13 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
     else:
         sender = user_profile
 
-    if defer_until:
+    if (delivery_type == 'send_later' or delivery_type == 'remind') and defer_until is None:
+        return json_error(_("Missing deliver_at in a request for delayed message delivery"))
+
+    if delivery_type == 'send_later' or delivery_type == 'remind' and defer_until:
         return handle_deferred_message(sender, client, message_type_name,
                                        message_to, topic_name, message_content,
-                                       defer_until, tz_guess,
+                                       delivery_type, defer_until, tz_guess,
                                        forwarder_user_profile=user_profile,
                                        realm=realm)
 

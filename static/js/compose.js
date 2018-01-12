@@ -350,6 +350,7 @@ function patch_request_for_scheduling(request) {
 
     new_request.content = message;
     new_request.deliver_at = deliver_at;
+    new_request.delivery_type = 'send_later';
     new_request.tz_guess = moment.tz.guess();
     return new_request;
 }
