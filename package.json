@@ -15,6 +15,7 @@
     "emoji-datasource-google": "3.0.0",
     "emoji-datasource-twitter": "3.0.0",
     "expose-loader": "0.7.3",
+    "flatpickr": "4.2.3",
     "fuzzysearch": "1.0.3",
     "handlebars": "4.0.10",
     "i18next": "3.4.4",
