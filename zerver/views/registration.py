@@ -27,7 +27,7 @@ from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from zerver.decorator import require_post, has_request_variables, \
     JsonableError, REQ, do_login
 from zerver.lib.onboarding import setup_initial_streams, \
-    send_initial_realm_messages
+    send_initial_realm_messages, setup_realm_internal_bots
 from zerver.lib.response import json_success
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.timezone import get_all_timezones
@@ -176,6 +176,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             realm_name = form.cleaned_data['realm_name']
             realm = do_create_realm(string_id, realm_name)
             setup_initial_streams(realm)
+            setup_realm_internal_bots(realm)
         assert(realm is not None)
 
         full_name = form.cleaned_data['full_name']

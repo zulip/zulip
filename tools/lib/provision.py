@@ -374,6 +374,8 @@ def main(options):
         else:
             print("No need to run `manage.py compilemessages`.")
 
+        run(["./manage.py", "create_realm_internal_bots"])  # Creates realm internal bots if required.
+
     run(["scripts/lib/clean-unused-caches"])
 
     version_file = os.path.join(UUID_VAR_PATH, 'provision_version')
