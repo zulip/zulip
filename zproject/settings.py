@@ -698,6 +698,10 @@ INTERNAL_BOTS = [{'var_name': 'NOTIFICATION_BOT',
                   'email_template': 'welcome-bot@%s',
                   'name': 'Welcome Bot'}]
 
+REALM_INTERNAL_BOTS = [{'var_name': 'REMINDER_BOT',
+                        'email_template': 'reminder-bot@%s',
+                        'name': 'Reminder Bot'}]
+
 if PRODUCTION:
     INTERNAL_BOTS += [
         {'var_name': 'NAGIOS_STAGING_SEND_BOT',
@@ -711,7 +715,7 @@ if PRODUCTION:
 INTERNAL_BOT_DOMAIN = "zulip.com"
 
 # Set the realm-specific bot names
-for bot in INTERNAL_BOTS:
+for bot in INTERNAL_BOTS + REALM_INTERNAL_BOTS:
     if vars().get(bot['var_name']) is None:
         bot_email = bot['email_template'] % (INTERNAL_BOT_DOMAIN,)
         vars()[bot['var_name']] = bot_email

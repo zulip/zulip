@@ -88,6 +88,7 @@ from confirmation.models import Confirmation, create_confirmation_link
 from confirmation import settings as confirmation_settings
 from six import unichr
 
+from zerver.lib.bulk_create import bulk_create_users
 from zerver.lib.create_user import random_api_key
 from zerver.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
 from zerver.lib.queue import queue_json_publish
@@ -425,6 +426,13 @@ def notify_created_bot(user_profile: UserProfile) -> None:
 
     event = dict(type="realm_bot", op="add", bot=bot)
     send_event(event, bot_owner_user_ids(user_profile))
+
+def create_users(realm: Realm, name_list: Iterable[Tuple[Text, Text]], bot_type: int=None) -> None:
+    user_set = set()
+    for full_name, email in name_list:
+        short_name = email_to_username(email)
+        user_set.add((email, full_name, short_name, True))
+    bulk_create_users(realm, user_set, bot_type)
 
 def do_create_user(email: Text, password: Optional[Text], realm: Realm, full_name: Text,
                    short_name: Text, is_realm_admin: bool=False, bot_type: Optional[int]=None,
