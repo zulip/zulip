@@ -1765,6 +1765,17 @@ class ScheduledMessage(models.Model):
     scheduled_timestamp = models.DateTimeField(db_index=True)  # type: datetime.datetime
     delivered = models.BooleanField(default=False)  # type: bool
 
+    SEND_LATER = 1
+    REMIND = 2
+
+    DELIVERY_TYPES = (
+        (SEND_LATER, 'send_later'),
+        (REMIND, 'remind'),
+    )
+
+    delivery_type = models.PositiveSmallIntegerField(choices=DELIVERY_TYPES,
+                                                     default=SEND_LATER)  # type: int
+
     def __str__(self) -> Text:
         display_recipient = get_display_recipient(self.recipient)
         return "<ScheduledMessage: %s %s %s %s>" % (display_recipient,
