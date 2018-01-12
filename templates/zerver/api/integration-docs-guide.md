@@ -71,8 +71,9 @@ Here are a few common macros used to document Zulip's integrations:
 * **Contents:**
   See [source][1].
 
-    **Note:** `{{ integration_display_name }}` is replaced by
-    [Integration.display_name][2] and `{{ recommended_stream_name }}`
+    **Note:** `{` `{ integration_display_name }` `}` is replaced by
+    [Integration.display_name][2] and  
+    `{` `{ recommended_stream_name }` `}`
     is replaced by [Integration.stream_name][3].
 
 * **Example usage:**
