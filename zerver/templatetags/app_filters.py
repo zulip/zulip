@@ -9,7 +9,6 @@ import markdown.extensions.toc
 import markdown_include.include
 from django.conf import settings
 from django.template import Library, engines, loader
-from django.utils.lru_cache import lru_cache
 from django.utils.safestring import mark_safe
 
 import zerver.lib.bugdown.fenced_code
