@@ -325,8 +325,24 @@ exports.send_message = function send_message(request) {
     }
 };
 
-function is_scheduled_message(message_content) {
-    return /^\/remind/.test(message_content);
+exports.deferred_message_types = {
+    scheduled: {
+        delivery_type: 'send_later',
+        test: /^\/schedule/,
+        slash_command: '/schedule',
+    },
+    reminders: {
+        delivery_type: 'remind',
+        test: /^\/remind/,
+        slash_command: '/remind',
+    },
+};
+
+function is_deferred_delivery(message_content) {
+    var reminders_test = exports.deferred_message_types.reminders.test;
+    var scheduled_test = exports.deferred_message_types.scheduled.test;
+    return (reminders_test.test(message_content) ||
+            scheduled_test.test(message_content));
 }
 
 function patch_request_for_scheduling(request) {
@@ -334,11 +350,19 @@ function patch_request_for_scheduling(request) {
     var raw_message = request.content.split('\n');
     var command_line = raw_message[0];
     var message = raw_message.slice(1).join('\n');
-    var deliver_at = command_line.slice(8);
 
-    if (message.trim() === '' || deliver_at.trim() === '' || command_line.slice(7,8) !== ' ') {
+    var deferred_message_type = _.filter(exports.deferred_message_types, function (props) {
+        return command_line.match(props.test) !== null;
+    })[0];
+    var command = command_line.match(deferred_message_type.test)[0];
+
+    var deliver_at = command_line.slice(command.length + 1);
+
+    if (message.trim() === '' || deliver_at.trim() === '' ||
+        command_line.slice(command.length, command.length + 1) !== ' ') {
+
         $("#compose-textarea").attr('disabled', false);
-        if (command_line.slice(7,8) !== ' ') {
+        if (command_line.slice(command.length, command.length + 1) !== ' ') {
             compose_error(i18n.t('Invalid slash command. Check if you are missing a space after the command.'), $('#compose-textarea'));
         } else if (deliver_at.trim() === '') {
             compose_error(i18n.t('Please specify time for your reminder.'), $('#compose-textarea'));
@@ -350,7 +374,7 @@ function patch_request_for_scheduling(request) {
 
     new_request.content = message;
     new_request.deliver_at = deliver_at;
-    new_request.delivery_type = 'send_later';
+    new_request.delivery_type = deferred_message_type.delivery_type;
     new_request.tz_guess = moment.tz.guess();
     return new_request;
 }
@@ -408,7 +432,7 @@ exports.finish = function () {
     }
 
     var message_content = compose_state.message_content();
-    if (is_scheduled_message(message_content)) {
+    if (is_deferred_delivery(message_content)) {
         exports.schedule_message();
     } else {
         exports.send_message();
@@ -615,7 +639,7 @@ function validate_private_message() {
 exports.validate = function () {
     $("#compose-send-button").attr('disabled', 'disabled').blur();
     var message_content = compose_state.message_content();
-    if (is_scheduled_message(message_content)) {
+    if (is_deferred_delivery(message_content)) {
         show_sending_indicator('Scheduling...');
     } else {
         show_sending_indicator();
