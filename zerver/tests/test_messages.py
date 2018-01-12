@@ -1280,7 +1280,8 @@ class ScheduledMessageTest(ZulipTestCase):
         return ScheduledMessage.objects.all().order_by('-id')[0]
 
     def do_schedule_message(self, msg_type: str, to: str, msg: str,
-                            defer_until: str, tz_guess: str='',
+                            defer_until: str='', tz_guess: str='',
+                            delivery_type: str='send_later',
                             realm_str: str='zulip') -> HttpResponse:
         self.login(self.example_email("hamlet"))
 
@@ -1288,15 +1289,18 @@ class ScheduledMessageTest(ZulipTestCase):
         if msg_type == 'stream':
             subject = 'Test subject'
 
-        result = self.client_post("/json/messages",
-                                  {"type": msg_type,
-                                   "to": to,
-                                   "client": "test suite",
-                                   "content": msg,
-                                   "subject": subject,
-                                   "realm_str": realm_str,
-                                   "deliver_at": defer_until,
-                                   "tz_guess": tz_guess})
+        payload = {"type": msg_type,
+                   "to": to,
+                   "client": "test suite",
+                   "content": msg,
+                   "subject": subject,
+                   "realm_str": realm_str,
+                   "delivery_type": delivery_type,
+                   "tz_guess": tz_guess}
+        if defer_until:
+            payload["deliver_at"] = defer_until
+
+        result = self.client_post("/json/messages", payload)
         return result
 
     def test_schedule_message(self) -> None:
@@ -1311,27 +1315,44 @@ class ScheduledMessageTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(message.content, 'Test message 1')
         self.assertEqual(message.scheduled_timestamp, convert_to_UTC(defer_until))
+        self.assertEqual(message.delivery_type, ScheduledMessage.SEND_LATER)
+        # Scheduling a message for reminders.
+        result = self.do_schedule_message('stream', 'Verona',
+                                          content + ' 2', defer_until_str,
+                                          delivery_type='remind')
+        message = self.last_scheduled_message()
+        self.assert_json_success(result)
+        self.assertEqual(message.delivery_type, ScheduledMessage.REMIND)
 
         # Scheduling a private message is successful.
         result = self.do_schedule_message('private', self.example_email("othello"),
-                                          content + ' 2', defer_until_str)
-        message = self.last_scheduled_message()
-        self.assert_json_success(result)
-        self.assertEqual(message.content, 'Test message 2')
-        self.assertEqual(message.scheduled_timestamp, convert_to_UTC(defer_until))
-
-        # Scheduling a message while guessing timezone.
-        tz_guess = 'Asia/Kolkata'
-        result = self.do_schedule_message('stream', 'Verona', content + ' 3',
-                                          defer_until_str, tz_guess=tz_guess)
+                                          content + ' 3', defer_until_str)
         message = self.last_scheduled_message()
         self.assert_json_success(result)
         self.assertEqual(message.content, 'Test message 3')
+        self.assertEqual(message.scheduled_timestamp, convert_to_UTC(defer_until))
+        self.assertEqual(message.delivery_type, ScheduledMessage.SEND_LATER)
+
+        result = self.do_schedule_message('private', self.example_email("othello"),
+                                          content + ' 4', defer_until_str,
+                                          delivery_type='remind')
+        message = self.last_scheduled_message()
+        self.assert_json_success(result)
+        self.assertEqual(message.delivery_type, ScheduledMessage.REMIND)
+
+        # Scheduling a message while guessing timezone.
+        tz_guess = 'Asia/Kolkata'
+        result = self.do_schedule_message('stream', 'Verona', content + ' 5',
+                                          defer_until_str, tz_guess=tz_guess)
+        message = self.last_scheduled_message()
+        self.assert_json_success(result)
+        self.assertEqual(message.content, 'Test message 5')
         local_tz = get_timezone(tz_guess)
         # Since mypy is not able to recognize localize and normalize as attributes of tzinfo we use ignore.
         utz_defer_until = local_tz.normalize(local_tz.localize(defer_until))  # type: ignore # Reason in comment on previous line.
         self.assertEqual(message.scheduled_timestamp,
                          convert_to_UTC(utz_defer_until))
+        self.assertEqual(message.delivery_type, ScheduledMessage.SEND_LATER)
 
         # Test with users timezone setting as set to some timezone rather than
         # empty. This will help interpret timestamp in users local timezone.
@@ -1339,15 +1360,16 @@ class ScheduledMessageTest(ZulipTestCase):
         user.timezone = 'US/Pacific'
         user.save(update_fields=['timezone'])
         result = self.do_schedule_message('stream', 'Verona',
-                                          content + ' 4', defer_until_str)
+                                          content + ' 6', defer_until_str)
         message = self.last_scheduled_message()
         self.assert_json_success(result)
-        self.assertEqual(message.content, 'Test message 4')
+        self.assertEqual(message.content, 'Test message 6')
         local_tz = get_timezone(user.timezone)
         # Since mypy is not able to recognize localize and normalize as attributes of tzinfo we use ignore.
         utz_defer_until = local_tz.normalize(local_tz.localize(defer_until))  # type: ignore # Reason in comment on previous line.
         self.assertEqual(message.scheduled_timestamp,
                          convert_to_UTC(utz_defer_until))
+        self.assertEqual(message.delivery_type, ScheduledMessage.SEND_LATER)
 
     def test_scheduling_in_past(self) -> None:
         # Scheduling a message in past should fail.
@@ -1368,6 +1390,13 @@ class ScheduledMessageTest(ZulipTestCase):
         result = self.do_schedule_message('stream', 'Verona',
                                           content + ' 1', defer_until)
         self.assert_json_error(result, 'Invalid timestamp for scheduling message.')
+
+    def test_missing_deliver_at(self) -> None:
+        content = "Test message"
+
+        result = self.do_schedule_message('stream', 'Verona',
+                                          content + ' 1')
+        self.assert_json_error(result, 'Missing deliver_at in a request for delayed message delivery')
 
 class EditMessageTest(ZulipTestCase):
     def check_message(self, msg_id: int, subject: Optional[Text]=None,

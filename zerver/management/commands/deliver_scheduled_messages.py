@@ -10,7 +10,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.lib.context_managers import lockfile
 from zerver.lib.logging_util import log_to_file
-from zerver.models import ScheduledMessage, Message
+from zerver.models import ScheduledMessage, Message, get_user
 from zerver.lib.actions import do_send_messages
 from zerver.lib.addressee import Addressee
 
@@ -27,12 +27,20 @@ Usage: ./manage.py deliver_scheduled_messages
 
     def construct_message(self, scheduled_message: ScheduledMessage) -> Dict[str, Any]:
         message = Message()
-        message.sender = scheduled_message.sender
+        original_sender = scheduled_message.sender
         message.content = scheduled_message.content
         message.recipient = scheduled_message.recipient
         message.subject = scheduled_message.subject
         message.pub_date = timezone_now()
         message.sending_client = scheduled_message.sending_client
+
+        delivery_type = scheduled_message.delivery_type
+        if delivery_type == ScheduledMessage.SEND_LATER:
+            message.sender = original_sender
+        elif delivery_type == ScheduledMessage.REMIND:
+            message.sender = get_user(settings.REMINDER_BOT, original_sender.realm)
+            whos_reminding = ('%s asked me to do a reminder about:\n' % (original_sender.full_name))
+            message.content = whos_reminding + message.content
 
         return {'message': message, 'stream': scheduled_message.stream,
                 'realm': scheduled_message.realm}

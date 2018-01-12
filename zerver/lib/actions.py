@@ -1041,6 +1041,10 @@ def do_schedule_messages(messages: Sequence[Optional[MutableMapping[str, Any]]])
         scheduled_message.stream = message['stream']
         scheduled_message.realm = message['realm']
         scheduled_message.scheduled_timestamp = message['deliver_at']
+        if message['delivery_type'] == 'send_later':
+            scheduled_message.delivery_type = ScheduledMessage.SEND_LATER
+        elif message['delivery_type'] == 'remind':
+            scheduled_message.delivery_type = ScheduledMessage.REMIND
 
         scheduled_messages.append(scheduled_message)
 
@@ -1690,7 +1694,7 @@ def check_send_message(sender: UserProfile, client: Client, message_type_name: T
 def check_schedule_message(sender: UserProfile, client: Client,
                            message_type_name: Text, message_to: Sequence[Text],
                            topic_name: Optional[Text], message_content: Text,
-                           deliver_at: datetime.datetime,
+                           delivery_type: Text, deliver_at: datetime.datetime,
                            realm: Optional[Realm]=None,
                            forwarder_user_profile: Optional[UserProfile]=None
                            ) -> int:
@@ -1704,6 +1708,7 @@ def check_schedule_message(sender: UserProfile, client: Client,
                             message_content, realm=realm,
                             forwarder_user_profile=forwarder_user_profile)
     message['deliver_at'] = deliver_at
+    message['delivery_type'] = delivery_type
     return do_schedule_messages([message])[0]
 
 def check_stream_name(stream_name: Text) -> None:
