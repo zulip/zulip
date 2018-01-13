@@ -47,17 +47,14 @@ More examples and documentation can be found [here](https://github.com/zulip/zul
 ```js
 const zulip = require('zulip-js');
 
+// Download zuliprc-dev from your dev server
 const config = {
-  username: 'othello-bot@example.com',
-  apiKey: 'a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5',
-  realm: '{{ api_url }}'
+    zuliprc: 'zuliprc-dev',
 };
 
-const client = zulip(config);
-
-// Get all streams that the user is subscribed to
-client.streams.subscriptions.retrieve().then(res => {
-  console.log(res);
+zulip(config).then((client) => {
+    // Get all streams that the user is subscribed to
+    client.streams.subscriptions.retrieve().then(console.log);
 });
 
 ```
