@@ -5,7 +5,9 @@ from django.conf.urls import include, url
 import zilencer.views
 from zerver.lib.rest import rest_dispatch
 
-i18n_urlpatterns = []  # type: Any
+i18n_urlpatterns = [
+    url(r'^billing/$', zilencer.views.add_payment_method),
+]  # type: Any
 
 # Zilencer views following the REST API style
 v1_api_and_json_patterns = [

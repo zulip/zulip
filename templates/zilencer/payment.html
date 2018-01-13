@@ -1,0 +1,96 @@
+{% extends "zerver/portico.html" %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% stylesheet 'portico' %}
+{% stylesheet 'landing-page' %}
+{{ render_bundle('landing-page') }}
+
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/gradients.html' %}
+{% include 'zerver/landing_nav.html' %}
+
+<div class="portico-landing">
+    <div class="main">
+        {% if error_message %}
+        <div class="alert alert-danger">
+            {{ error_message }}
+        </div>
+        {% else %}
+        <div class="pricing-model">
+            <div class="padded-content">
+                <div class="pricing-container">
+                    <div class="block">
+                        <div class="plan-title zulip-cloud">
+                            Zulip Cloud subscription for {{ realm_name }}
+                        </div>
+                        {% if payment_method_added %}
+                        <div class="alert alert-info">
+                            The card has been saved successfully.
+                        </div>
+                        {% endif %}
+                        {% if num_cards %}
+                        <div class="alert alert-info">
+                            {% if num_cards > 1 %}
+                            You have {{ num_cards }} saved cards.
+                            {% else %}
+                            You have one saved card.
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        <div class="price-box" tabindex="-1">
+                            <div class="text-content">
+                                <h2>Premium</h2>
+                                <div class="description">
+                                    Make Zulip your home
+                                </div>
+                                <hr />
+                                <ul class="feature-list">
+                                    <li>Full search history</li>
+                                    <li>File storage up to 10 GB per user</li>
+                                    <li>Full access to enterprise features like Google and GitHub OAuth</li>
+                                    <li>Priority commercial support</li>
+                                    <li>Funds the Zulip open source project</li>
+                                </ul>
+                            </div>
+                            <div class="bottom">
+                                <div class="text-content">
+                                    <div class="">
+                                        <div class="price">8</div>
+                                        <div class="details">
+                                            per active user, per month
+                                            <br />
+                                            "$80/year billed annually"
+                                        </div>
+                                    </div>
+                                    <form method="post">
+                                        {{ csrf_input }}
+                                        <script src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+                                            data-key="{{ publishable_key }}"
+                                            data-image="/static/images/logo/zulip-icon-128x128.png"
+                                            data-name="Zulip"
+                                            data-description="Zulip Cloud Premium"
+                                            data-panel-label="Save card"
+                                            {% if num_cards %}
+                                            data-label="Add another card"
+                                            {% else %}
+                                            data-label="Add card"
+                                            {% endif %}
+                                            data-email="{{ email }}"
+                                            data-locale="auto">
+                                        </script>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
