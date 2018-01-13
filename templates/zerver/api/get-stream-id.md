@@ -16,6 +16,7 @@ Get the unique ID of a given stream.
 <ul class="nav">
 <li data-language="curl">curl</li>
 <li data-language="python">Python</li>
+<li data-language="javascript">JavaScript</li>
 </ul>
 <div class="blocks">
 
@@ -39,6 +40,23 @@ client = zulip.Client(config_file="~/zuliprc-dev")
 
 # Get the ID of a given stream
 print(client.get_stream_id("Denmark"))
+```
+</div>
+
+<div data-language="javascript" markdown="1">
+More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
+```js
+const zulip = require('zulip-js');
+
+// Download zuliprc-dev from your dev server
+const config = {
+    zuliprc: 'zuliprc-dev',
+};
+
+zulip(config).then((client) => {
+    // Get the ID of a given stream
+    client.streams.getStreamId('Denmark').then(console.log);
+});
 ```
 </div>
 
