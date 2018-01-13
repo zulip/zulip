@@ -527,6 +527,7 @@ def build_custom_checkers(by_lang):
          'bad_lines': ['<button aria-label="foo"></button>']},
         {'pattern': 'script src="http',
          'description': "Don't directly load dependencies from CDNs.  See docs/subsystems/front-end-build-process.md",
+         'exclude': set(["templates/zilencer/payment.html"]),
          'good_lines': ["{{ render_bundle('landing-page') }}"],
          'bad_lines': ['<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>']},
         {'pattern': "title='[^{]",
