@@ -13,6 +13,7 @@ Subscribe one or more users to one or more streams.
 <ul class="nav">
 <li data-language="curl">curl</li>
 <li data-language="python">Python</li>
+<li data-language="javascript">JavaScript</li>
 </ul>
 <div class="blocks">
 
@@ -66,6 +67,40 @@ print(client.add_subscriptions(
 
 ```
 
+</div>
+
+<div data-language="javascript" markdown="1">
+More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
+```js
+const zulip = require('zulip-js');
+
+// Download zuliprc-dev from your dev server
+const config = {
+    zuliprc: 'zuliprc-dev',
+};
+
+zulip(config).then((client) => {
+    // Subscribe to the streams "Verona" and "Denmark"
+    const meParams = {
+        subscriptions: JSON.stringify([
+            {'name': 'Verona'},
+            {'name': 'Denmark'}
+        ]),
+    };
+    client.users.me.subscriptions.add(meParams).then(console.log);
+
+    // To subscribe another user to a stream, you may pass in
+    // the `principals` argument, like so:
+    const anotherUserParams = {
+        subscriptions: JSON.stringify([
+            {'name': 'Verona'},
+            {'name': 'Denmark'}
+        ]),
+        principals: JSON.stringify(['ZOE@zulip.org']),
+    };
+    client.users.me.subscriptions.add(anotherUserParams).then(console.log);
+});
+```
 </div>
 
 </div>
