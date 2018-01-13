@@ -608,8 +608,6 @@ input[type=checkbox].inline-block {
     max-height: 220px;
     margin: 5px;
 
-    background-color: hsl(0, 0%, 100%);
-    border: 1px solid hsl(0, 0%, 86%);
     border-radius: 4px;
     box-sizing: border-box;
 
@@ -828,7 +826,6 @@ input[type=checkbox].inline-block {
 
 #user-groups .user-group {
     margin-bottom: 20px;
-    background-color: hsl(0, 0%, 100%);
     padding: 10px;
     border-radius: 5px;
 }
@@ -1033,8 +1030,8 @@ input[type=checkbox].inline-block {
 }
 
 #settings_page .form-sidebar .title {
-    background-color: hsl(0, 0%, 98%);
     padding: 10px 20px;
+    background-color: hsl(0, 0%, 98%);
     border-bottom: 1px solid hsl(0, 0%, 86%);
 }
 

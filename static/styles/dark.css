@@ -14,11 +14,13 @@ body.dark-mode #compose,
 body.dark-mode .column-left .left-sidebar,
 body.dark-mode .column-right .right-sidebar,
 body.dark-mode #subscription_overlay .right,
+body.dark-mode #settings_page .form-sidebar,
 body.dark-mode #settings_page .right {
     background-color: hsl(212, 28%, 18%);
 }
 
 body.dark-mode .column-left .left-sidebar,
+body.dark-mode #settings_page .form-sidebar,
 body.dark-mode .column-right .right-sidebar {
     border-left-color: hsla(0, 0%, 0%, 0.2);
 }
@@ -206,8 +208,10 @@ body.dark-mode .drafts-header,
 body.dark-mode .nav > li > a:hover,
 body.dark-mode .subscriptions-header,
 body.dark-mode .grey-box,
+body.dark-mode .white-box,
 body.dark-mode .stream-email,
 body.dark-mode #settings_page .settings-header,
+body.dark-mode #settings_page .form-sidebar .title,
 body.dark-mode #settings_page .sidebar li.active,
 body.dark-mode #settings_page .sidebar .tab-container,
 body.dark-mode .table-striped tbody tr:nth-child(odd) td,
