@@ -13,6 +13,7 @@ Unsubscribe yourself or other users from one or more streams.
 <ul class="nav">
 <li data-language="curl">curl</li>
 <li data-language="python">Python</li>
+<li data-language="javascript">JavaScript</li>
 </ul>
 <div class="blocks">
 
@@ -59,6 +60,33 @@ print(client.remove_subscriptions(
 ))
 ```
 
+</div>
+
+<div data-language="javascript" markdown="1">
+More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
+```js
+const zulip = require('zulip-js');
+
+// Download zuliprc-dev from your dev server
+const config = {
+    zuliprc: 'zuliprc-dev',
+};
+
+zulip(config).then((client) => {
+    // Unsubscribe from the stream "Denmark"
+    const meParams = {
+        subscriptions: JSON.stringify(['Denmark']),
+    };
+    client.users.me.subscriptions.remove(meParams).then(console.log);
+
+    // Unsubscribe Zoe from the stream "Denmark"
+    const zoeParams = {
+        subscriptions: JSON.stringify(['Denmark']),
+        principals: JSON.stringify(['ZOE@zulip.org']),
+    };
+    client.users.me.subscriptions.remove(zoeParams).then(console.log);
+});
+```
 </div>
 
 </div>
