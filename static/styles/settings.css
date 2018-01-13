@@ -370,13 +370,10 @@ input[type=checkbox].inline-block {
     border-left: 0px;
 }
 
-.grey-bg {
-    background: hsl(0, 0%, 89%);
+.alert-word-information-box {
+    position: relative;
     padding: 10px;
     margin: 20px auto;
-    box-shadow: 0px 0px 2px hsla(0, 0%, 0%, 0.5);
-    position: relative;
-    font-size: 14px;
 }
 
 .green-bg {
@@ -482,12 +479,14 @@ input[type=checkbox].inline-block {
 }
 
 .add-new-emoji-box,
-.add-new-user-group-box {
+.add-new-user-group-box,
+.add-new-alert-word-box {
     margin-bottom: 20px;
 }
 
 .add-new-emoji-box .new-emoji-form,
-.add-new-user-group-box .new-user-group-form {
+.add-new-user-group-box .new-user-group-form,
+.add-new-alert-word-box .new-alert-word-form {
     margin: 10px 0px;
 }
 
