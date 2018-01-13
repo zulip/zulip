@@ -15,6 +15,7 @@ Create a new user in a realm.
 <ul class="nav">
 <li data-language="curl">curl</li>
 <li data-language="python">Python</li>
+<li data-language="javascript">JavaScript</li>
 </ul>
 <div class="blocks">
 
@@ -51,6 +52,29 @@ print(client.create_user({
 }))
 ```
 
+</div>
+
+<div data-language="javascript" markdown="1">
+More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
+```js
+const zulip = require('zulip-js');
+
+// You need a zuliprc-admin with administrator credentials
+const config = {
+    zuliprc: 'zuliprc-admin',
+};
+
+zulip(config).then((client) => {
+    // Create a user
+    const params = {
+        email: 'newbie@zulip.com',
+        password: 'temp',
+        full_name: 'New User',
+        short_name: 'newbie'
+    };
+    client.users.create(params).then(console.log);
+});
+```
 </div>
 
 </div>
