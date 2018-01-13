@@ -97,7 +97,7 @@ qrcode==4.0.4             # via django-two-factor-auth
 redis==2.10.6
 regex==2017.11.9
 requests-oauthlib==0.8.0
-requests==2.18.4          # via premailer, pyoembed, python-gcm, python-twitter, requests-oauthlib, social-auth-core, twilio
+requests==2.18.4          # via premailer, pyoembed, python-gcm, python-twitter, requests-oauthlib, social-auth-core, stripe, twilio
 rsa==3.4.2
 simplegeneric==0.8.1      # via ipython
 six==1.11.0
@@ -108,6 +108,7 @@ sockjs-tornado==1.0.3
 sourcemap==0.2.1
 sqlalchemy==1.1.14
 statsd==3.2.1             # via django-statsd-mozilla
+stripe==1.77.0
 tornado==4.5.2
 traitlets==4.3.2          # via ipython
 twilio==6.9.0
