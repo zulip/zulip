@@ -24,6 +24,7 @@ You only have permission to edit a message if:
 <ul class="nav">
 <li data-language="curl">curl</li>
 <li data-language="python">Python</li>
+<li data-language="javascript">JavaScript</li>
 </ul>
 <div class="blocks">
 
@@ -51,6 +52,28 @@ print(client.update_message({
     "content": "New content"
 }))
 
+```
+</div>
+
+<div data-language="javascript" markdown="1">
+More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
+```js
+const zulip = require('zulip-js');
+
+// Download zuliprc-dev from your dev server
+const config = {
+    zuliprc: 'zuliprc-dev',
+};
+
+zulip(config).then((client) => {
+    // Update a message
+    const params = {
+        message_id: 131,
+        content: 'New Content',
+    }
+
+    client.messages.update(params).then(console.log);
+});
 ```
 </div>
 
