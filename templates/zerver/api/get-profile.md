@@ -14,6 +14,7 @@ This endpoint takes no arguments.
 <ul class="nav">
 <li data-language="curl">curl</li>
 <li data-language="python">Python</li>
+<li data-language="javascript">JavaScript</li>
 </ul>
 <div class="blocks">
 
@@ -41,6 +42,24 @@ client = zulip.Client(config_file="~/zuliprc-dev")
 print(client.get_profile())
 ```
 
+</div>
+
+<div data-language="javascript" markdown="1">
+More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
+```js
+const zulip = require('zulip-js');
+
+// Download zuliprc-dev from your dev server
+const config = {
+    zuliprc: 'zuliprc-dev',
+};
+
+zulip(config).then((client) => {
+    // Get the profile of the user/bot that requests this endpoint,
+    // which is `client` in this case:
+    client.users.me.getProfile().then(console.log);
+});
+```
 </div>
 
 </div>
