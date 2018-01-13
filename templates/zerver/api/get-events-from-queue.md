@@ -79,27 +79,27 @@ More examples and documentation can be found [here](https://github.com/zulip/zul
 ```js
 const zulip = require('zulip-js');
 
+// Download zuliprc-dev from your dev server
 const config = {
-  username: 'othello-bot@example.com',
-  apiKey: 'a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5',
-  realm: '{{ api_url }}'
+    zuliprc: 'zuliprc-dev',
 };
 
-const client = zulip(config);
-
-// Register queue to receive messages for user
-client.queues.register({
-  event_types: ['message']
-}).then((res) => {
-  // Retrieve events from a queue
-  // Blocking until there is an event (or the request times out)
-  client.events.retrieve({
-    queue_id: res.queue_id,
-    last_event_id: -1,
-    dont_block: false
-  }).then(console.log);
+zulip(config).then((client) => {
+    // Register queue to receive messages for user
+    const queueParams = {
+        event_types: ['message']
+    };
+    client.queues.register(queueParams).then((res) => {
+        // Retrieve events from a queue
+        // Blocking until there is an event (or the request times out)
+        const eventParams = {
+            queue_id: res.queue_id,
+            last_event_id: -1,
+            dont_block: false,
+        };
+        client.events.retrieve(eventParams).then(console.log);
+    });
 });
-
 ```
 </div>
 
