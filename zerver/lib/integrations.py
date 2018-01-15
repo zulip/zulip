@@ -330,6 +330,13 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('librato', ['monitoring']),
     WebhookIntegration('mention', ['marketing'], display_name='Mention'),
     WebhookIntegration('newrelic', ['monitoring'], display_name='New Relic'),
+    WebhookIntegration(
+        'opbeat',
+        ['monitoring'],
+        display_name='Opbeat',
+        stream_name='opbeat',
+        function='zerver.webhooks.opbeat.view.api_opbeat_webhook'
+    ),
     WebhookIntegration('opsgenie', ['meta-integration', 'monitoring'], display_name='OpsGenie'),
     WebhookIntegration('pagerduty', ['monitoring']),
     WebhookIntegration('papertrail', ['monitoring']),
