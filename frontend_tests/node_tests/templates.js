@@ -975,6 +975,28 @@ function render(template_name, args) {
     assert.equal(button_area.find(".no_propagate_notifications").text().trim(), 'translated: No');
 }());
 
+(function reminder_popover_content() {
+    var args = {
+        message: {
+            is_stream: true,
+            id: "420",
+            stream: "devel",
+            subject: "testing",
+            sender_full_name: "Iago",
+        },
+        can_edit_message: true,
+        can_mute_topic: true,
+        narrowed: true,
+    };
+
+    var html = '<div style="height: 250px">';
+    html += render('remind_me_popover_content', args);
+    html += "</div>";
+    var link = $(html).find("a.remind.custom");
+    assert.equal(link.text().trim(), 'translated: Select date and time');
+    global.write_handlebars_output("remind_me_popover_content", html);
+}());
+
 (function settings_tab() {
     var page_param_checkbox_options = {
         enable_stream_desktop_notifications: true,
