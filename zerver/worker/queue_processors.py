@@ -2,8 +2,6 @@
 from typing import Any, Callable, Dict, List, Mapping, Optional, cast
 
 import signal
-import sys
-import os
 from functools import wraps
 
 import smtplib
@@ -55,7 +53,6 @@ import time
 import datetime
 import logging
 import requests
-import ujson
 from io import StringIO
 import re
 import importlib
