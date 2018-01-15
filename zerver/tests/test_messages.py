@@ -16,6 +16,14 @@ from zerver.lib.actions import (
     get_active_presence_idle_user_ids,
     get_user_info_for_message_updates,
     internal_send_private_message,
+    check_message,
+    check_send_stream_message,
+    do_deactivate_user,
+    do_set_realm_property,
+    extract_recipients,
+    do_create_user,
+    get_client,
+    do_add_alert_words,
 )
 
 from zerver.lib.message import (
@@ -50,16 +58,6 @@ from zerver.models import (
     flush_per_request_caches
 )
 
-from zerver.lib.actions import (
-    check_message,
-    check_send_stream_message,
-    do_deactivate_user,
-    do_set_realm_property,
-    extract_recipients,
-    do_create_user,
-    get_client,
-    do_add_alert_words,
-)
 
 from zerver.lib.upload import create_attachment
 
