@@ -108,5 +108,18 @@ class GrooveHookTests(WebhookTestCase):
                                   X_GROOVE_EVENT='ticket_state_changed')
         self.assert_json_success(result)
 
+    def test_groove_header_missing(self) -> None:
+        self.subscribe(self.test_user, self.STREAM_NAME)
+        result = self.client_post(self.url, self.get_body('ticket_state_changed'),
+                                  content_type="application/x-www-form-urlencoded")
+        self.assert_json_error(result, 'Missing event header')
+
+    def test_groove_malformed_payload(self) -> None:
+        self.subscribe(self.test_user, self.STREAM_NAME)
+        result = self.client_post(self.url, self.get_body('malformed_payload'),
+                                  content_type="application/x-www-form-urlencoded",
+                                  X_GROOVE_EVENT='ticket_started')
+        self.assert_json_error(result, 'Missing required data')
+
     def get_body(self, fixture_name: Text) -> Text:
         return self.fixture_data("groove", fixture_name, file_type="json")
