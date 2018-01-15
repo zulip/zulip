@@ -2,6 +2,9 @@
 from typing import Any, Dict, Optional, Text
 
 from django.http import HttpRequest, HttpResponse
+from django.utils.translation import ugettext as _
+
+import logging
 
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.actions import check_send_stream_message
@@ -78,13 +81,20 @@ def api_groove_webhook(request: HttpRequest, user_profile: UserProfile,
                        payload: Dict[str, Any]=REQ(argument_type='body'),
                        stream: Text=REQ(default='groove'),
                        topic: Optional[Text]=REQ(default='notifications')) -> HttpResponse:
-    # The event identifier is stored in the X_GROOVE_EVENT header.
-    event = request.META['X_GROOVE_EVENT']
-
+    try:
+        # The event identifier is stored in the X_GROOVE_EVENT header.
+        event = request.META['X_GROOVE_EVENT']
+    except KeyError:
+        logging.error('No header with the Groove payload')
+        return json_error(_('Missing event header'))
     # We listen to several events that are used for notifications.
     # Other events are ignored.
     if event in EVENTS_FUNCTION_MAPPER:
-        body = EVENTS_FUNCTION_MAPPER[event](payload)
+        try:
+            body = EVENTS_FUNCTION_MAPPER[event](payload)
+        except KeyError as e:
+            logging.error('Required key not found : ' + e.args[0])
+            return json_error(_('Missing required data'))
         if body is not None:
             check_send_stream_message(user_profile, request.client, stream, topic, body)
 
