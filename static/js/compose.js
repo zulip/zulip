@@ -379,7 +379,7 @@ function patch_request_for_scheduling(request) {
     return new_request;
 }
 
-exports.schedule_message = function schedule_message(request) {
+exports.schedule_message = function schedule_message(request, success, error) {
     if (request === undefined) {
         request = create_message_object();
     }
@@ -389,15 +389,27 @@ exports.schedule_message = function schedule_message(request) {
     } else {
         request.to = JSON.stringify([request.to]);
     }
-    function success(data) {
-        notifications.notify_above_composebox('Scheduled your Message to be delivered at: ' + data.deliver_at);
-        $("#compose-textarea").attr('disabled', false);
-        clear_compose_box();
-    }
 
-    function error(response) {
-        $("#compose-textarea").attr('disabled', false);
-        compose_error(response, $('#compose-textarea'));
+    /* success and error callbacks are kind of a package deal here. When scheduling
+    a message either by means of slash command or from message feed, if we need to do
+    something special on success then we will also need to know if our request errored
+    and do something appropriate. Therefore we just check if success callback is not
+    defined and just assume request to be coming from compose box. This is correct
+    because we won't ever actually have success operate in different context than error. */
+    if (success === undefined) {
+        success = function (data) {
+            notifications.notify_above_composebox('Scheduled your Message to be delivered at: ' + data.deliver_at);
+            $("#compose-textarea").attr('disabled', false);
+            clear_compose_box();
+        };
+        error = function (response) {
+            $("#compose-textarea").attr('disabled', false);
+            compose_error(response, $('#compose-textarea'));
+        };
+        /* We are adding a disable on compose under this block since it actually
+        has its place with the branch of code which does stuff when slash command
+        is incoming from compose_box */
+        $("#compose-textarea").attr('disabled', true);
     }
 
     request = patch_request_for_scheduling(request);
@@ -406,9 +418,7 @@ exports.schedule_message = function schedule_message(request) {
        return;
     }
 
-    $("#compose-textarea").attr('disabled', true);
     exports.transmit_message(request, success, error);
-
 };
 
 exports.enter_with_preview_open = function () {
