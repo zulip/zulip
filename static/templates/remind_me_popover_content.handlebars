@@ -1,0 +1,44 @@
+{{! Contents of the "remind me about this actions" popup }}
+<ul class="nav nav-list remind_me_popover">
+    <li>
+        <a href="#" class="remind_icon" data-message-id="{{message.id}}">
+            <i class="fa fa-bell" aria-hidden="true"></i>
+        </a>
+    </li>
+    <li>
+        <a href="#" class="remind in_20m" data-message-id="{{message.id}}">
+            {{t "In 20 minutes" }}
+        </a>
+    </li>
+
+    <li>
+        <a href="#" class="remind in_1h" data-message-id="{{message.id}}">
+            {{t "In 1 hour" }}
+        </a>
+    </li>
+
+    <li>
+        <a href="#" class="remind in_3h" data-message-id="{{message.id}}">
+            {{t "In 3 hour" }}
+        </a>
+    </li>
+
+    <li>
+        <a href="#" class="remind tomo" data-message-id="{{message.id}}">
+            {{t "Tomorrow" }}
+        </a>
+    </li>
+
+    <li>
+        <a href="#" class="remind nxtw" data-message-id="{{message.id}}">
+            {{t "Next week" }}
+        </a>
+    </li>
+
+    <li>
+        <a href="#" class='remind custom' data-message-id="{{message.id}}">
+            {{t "Select date and time" }}
+        </a>
+    </li>
+
+</ul>

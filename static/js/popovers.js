@@ -3,6 +3,7 @@ var popovers = (function () {
 var exports = {};
 
 var current_actions_popover_elem;
+var current_flatpickr_instance;
 var current_message_info_popover_elem;
 var userlist_placement = "right";
 
@@ -206,6 +207,58 @@ exports.toggle_actions_popover = function (element, id) {
     }
 };
 
+function do_set_reminder(msgid, timestamp) {
+    var message = current_msg_list.get(msgid);
+    var link_to_msg = narrow.by_conversation_and_time_uri(message, true);
+    var command = compose.deferred_message_types.reminders.slash_command;
+    var reminder_timestamp = timestamp;
+    var custom_msg = '[this message](' + link_to_msg + ') at ' + reminder_timestamp;
+    var reminder_msg_content = command + ' ' + reminder_timestamp + '\n' + custom_msg;
+    var reminder_message = {
+        type: "private",
+        content: reminder_msg_content,
+        sender_id: page_params.user_id,
+        stream: '',
+        subject: '',
+    };
+    var recipient = page_params.email;
+    var emails = util.extract_pm_recipients(recipient);
+    reminder_message.to = emails;
+    reminder_message.reply_to = recipient;
+    reminder_message.private_message_recipient = recipient;
+    reminder_message.to_user_ids = people.email_list_to_user_ids_string(emails);
+    compose.schedule_message(reminder_message);
+}
+
+exports.render_actions_remind_popover = function (element, id) {
+    popovers.hide_all();
+    $(element).closest('.message_row').toggleClass('has_popover has_actions_popover');
+    current_msg_list.select_id(id);
+    var elt = $(element);
+    if (elt.data('popover') === undefined) {
+        var message = current_msg_list.get(id);
+        var args = {
+            message: message,
+        };
+        var ypos = elt.offset().top;
+        elt.popover({
+            // Popover height with 7 items in it is ~190 px
+            placement: ((message_viewport.height() - ypos) < 220) ? 'top' : 'bottom',
+            title:     "",
+            content:   templates.render('remind_me_popover_content', args),
+            trigger:   "manual",
+        });
+        elt.popover("show");
+        current_flatpickr_instance = $('.remind.custom[data-message-id="'+message.id+'"]').flatpickr({
+            enableTime: true,
+            clickOpens: false,
+            minDate: 'today',
+            plugins: [new confirmDatePlugin({})], // eslint-disable-line new-cap, no-undef
+        });
+        current_actions_popover_elem = elt;
+    }
+};
+
 function get_action_menu_menu_items() {
     if (!current_actions_popover_elem) {
         blueslip.error('Trying to get menu items when action popover is closed.');
@@ -278,6 +331,10 @@ exports.hide_actions_popover = function () {
         $('.has_popover').removeClass('has_popover has_actions_popover');
         current_actions_popover_elem.popover("destroy");
         current_actions_popover_elem = undefined;
+    }
+    if (current_flatpickr_instance !== undefined) {
+        current_flatpickr_instance.destroy();
+        current_flatpickr_instance = undefined;
     }
 };
 
@@ -522,6 +579,34 @@ exports.register_click_handlers = function () {
         e.stopPropagation();
         e.preventDefault();
     });
+
+    $('body').on('click', '.reminder_button', function (e) {
+        var msgid = $(e.currentTarget).data('message-id');
+        popovers.render_actions_remind_popover($(".selected_message .actions_hover")[0], msgid);
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $('body').on('click', '.remind.custom', function (e) {
+        $(e.currentTarget)[0]._flatpickr.toggle();
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $('body').on('click', '.flatpickr-calendar', function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $('body').on('click', '.flatpickr-confirm', function (e) {
+        var id = $(".remind.custom").data('message-id');
+        var datestr = $(".remind.custom")[0].value;
+        do_set_reminder(id, datestr);
+        popovers.hide_all();
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
     $('body').on('click', '.respond_personal_button', function (e) {
         var user_id = $(e.target).parents('ul').attr('data-user-id');
         var email = people.get_person_from_user_id(user_id).email;

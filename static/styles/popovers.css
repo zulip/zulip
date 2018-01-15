@@ -80,6 +80,10 @@ ul.actions_popover i {
     margin-right: 3px;
 }
 
+ul.remind_me_popover .remind_icon {
+    text-align: center;
+}
+
 .user_popover {
     width: 240px;
     top: 100px!important;
