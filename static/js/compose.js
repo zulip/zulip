@@ -935,6 +935,7 @@ exports.initialize = function () {
         } else {
             preview_html = rendered_content;
         }
+
         $("#preview_content").html(preview_html);
         if (page_params.emojiset === "text") {
             $("#preview_content").find(".emoji").replaceWith(function () {

@@ -4,6 +4,7 @@ from django.test import TestCase, override_settings
 
 from zerver.lib import bugdown
 from zerver.lib.actions import (
+    do_set_user_display_setting,
     do_remove_realm_emoji,
     do_set_alert_words,
     get_realm,
@@ -616,6 +617,16 @@ class BugdownTest(ZulipTestCase):
         msg = u'\u2615\u2615'  # ☕☕
         converted = bugdown_convert(msg)
         self.assertEqual(converted, u'<p><span class="emoji emoji-2615" title="coffee">:coffee:</span><span class="emoji emoji-2615" title="coffee">:coffee:</span></p>')
+
+    def test_no_translate_emoticons_if_off(self) -> None:
+        user_profile = self.example_user('othello')
+        do_set_user_display_setting(user_profile, 'translate_emoticons', False)
+        msg = Message(sender=user_profile, sending_client=get_client("test"))
+
+        content = u':)'
+        expected = u':)'
+        converted = render_markdown(msg, content)
+        self.assertEqual(converted, expected)
 
     def test_same_markup(self) -> None:
         msg = u'\u2615'  # ☕

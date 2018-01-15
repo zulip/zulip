@@ -14,6 +14,30 @@ from zerver.models import Reaction, Realm, RealmEmoji, UserProfile
 NAME_TO_CODEPOINT_PATH = os.path.join(settings.STATIC_ROOT, "generated", "emoji", "name_to_codepoint.json")
 CODEPOINT_TO_NAME_PATH = os.path.join(settings.STATIC_ROOT, "generated", "emoji", "codepoint_to_name.json")
 
+# Emoticons and which emoji they should become. Duplicate emoji are allowed.
+# Changes here should be mimicked in `static/js/emoji.js`.
+EMOTICON_CONVERSIONS = {
+    ':)': ':smiley:',
+    '(:': ':smiley:',
+    ':(': ':slightly_frowning_face:',
+    '<3': ':heart:',
+    ':|': ':expressionless:',
+    ':/': ':confused:',
+}
+
+possible_emoticons = EMOTICON_CONVERSIONS.keys()
+possible_emoticon_regexes = map(re.escape, possible_emoticons)
+emoticon_regex = '(?P<emoticon>(' + ')|('.join(possible_emoticon_regexes) + '))'
+
+# Translates emoticons to their colon syntax, e.g. `:smiley:`.
+def translate_emoticons(text: Text) -> Text:
+    translated = text
+
+    for emoticon in EMOTICON_CONVERSIONS:
+        translated = re.sub(re.escape(emoticon), EMOTICON_CONVERSIONS[emoticon], translated)
+
+    return translated
+
 with open(NAME_TO_CODEPOINT_PATH) as fp:
     name_to_codepoint = ujson.load(fp)
 

@@ -155,6 +155,7 @@ class HomeTest(ZulipTestCase):
             "subscriptions",
             "test_suite",
             "timezone",
+            "translate_emoticons",
             "twenty_four_hour_time",
             "unread_msgs",
             "unsubscribed",
