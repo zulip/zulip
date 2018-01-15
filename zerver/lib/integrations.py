@@ -366,7 +366,8 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('zapier', ['meta-integration']),
     WebhookIntegration('zendesk', ['customer-support']),
     WebhookIntegration('gci', ['misc'], display_name='Google Code-in',
-                       stream_name='gci')
+                       stream_name='gci'),
+    WebhookIntegration('runscope', ['monitoring']),
 ]  # type: List[WebhookIntegration]
 
 INTEGRATIONS = {
