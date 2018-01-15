@@ -63,7 +63,6 @@ import urllib
 from zerver.lib.str_utils import NonBinaryStr
 from moto import mock_s3_deprecated
 
-from contextlib import contextmanager
 import fakeldap
 import ldap
 
