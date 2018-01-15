@@ -71,6 +71,7 @@ def run_production() -> None:
         'desktop': 'https://api.github.com/repos/zulip/zulip-electron/stats/contributors',
         'mobile': 'https://api.github.com/repos/zulip/zulip-mobile/stats/contributors',
         'python-zulip-api': 'https://api.github.com/repos/zulip/python-zulip-api/stats/contributors',
+        'zulip-js': 'https://api.github.com/repos/zulip/zulip-js/stats/contributors',
         'zulipbot': 'https://api.github.com/repos/zulip/zulipbot/stats/contributors',
     }
 
