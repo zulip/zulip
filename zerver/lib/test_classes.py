@@ -55,8 +55,6 @@ import re
 import ujson
 import urllib
 
-from contextlib import contextmanager
-
 API_KEYS = {}  # type: Dict[Text, Text]
 
 def flush_caches_for_testing() -> None:
