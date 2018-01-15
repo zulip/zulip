@@ -413,6 +413,12 @@ var event_fixtures = {
         setting: true,
     },
 
+    update_display_settings__translate_emoticons: {
+        type: 'update_display_settings',
+        setting_name: 'translate_emoticons',
+        setting: true,
+    },
+
     update_global_notifications: {
         type: 'update_global_notifications',
         notification_name: 'enable_stream_sounds',
@@ -813,6 +819,10 @@ with_overrides(function (override) {
     dispatch(event);
     assert_same(page_params.twenty_four_hour_time, true);
 
+    event = event_fixtures.update_display_settings__translate_emoticons;
+    page_params.translate_emoticons = false;
+    dispatch(event);
+    assert_same(page_params.translate_emoticons, true);
 });
 
 with_overrides(function (override) {

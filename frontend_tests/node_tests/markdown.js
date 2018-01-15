@@ -41,6 +41,7 @@ set_global('page_params', {
             "https://zone_%(zone)s.zulip.net/ticket/%(id)s",
         ],
     ],
+    translate_emoticons: false,
 });
 
 set_global('blueslip', {error: function () {}});
@@ -304,6 +305,17 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
 
         assert.equal(expected, output);
     });
+
+    // Here to arrange 100% test coverage for the new emoticons code
+    // path.  TODO: Have a better way to test this setting in both
+    // states, once we implement the local echo feature properly.
+    // Probably a good technique would be to support toggling the
+    // page_params setting inside the `test_cases.forEach` loop above.
+    page_params.translate_emoticons = true;
+    var message = {raw_content: ":)"};
+    markdown.apply_markdown(message);
+    assert.equal('<p><span class="emoji emoji-1f603" title="smiley">:smiley:</span></p>', message.content);
+    page_params.translate_emoticons = false;
 }());
 
 (function test_subject_links() {

@@ -32,6 +32,7 @@ from markdown.extensions import codehilite
 from zerver.lib.bugdown import fenced_code
 from zerver.lib.bugdown.fenced_code import FENCE_RE
 from zerver.lib.camo import get_camo_url
+from zerver.lib.emoji import translate_emoticons, emoticon_regex
 from zerver.lib.mention import possible_mentions, \
     possible_user_group_mentions, extract_user_group
 from zerver.lib.notifications import encode_stream
@@ -998,6 +999,19 @@ def unicode_emoji_to_codepoint(unicode_emoji: Text) -> Text:
         codepoint = '0' + codepoint
     return codepoint
 
+class EmoticonTranslation(markdown.inlinepatterns.Pattern):
+    """ Translates emoticons like `:)` into emoji like `:smile:`. """
+    def handleMatch(self, match: Match[Text]) -> Optional[Element]:
+        # If there is `db_data` and it is false, then don't do translating.
+        # If there is no `db_data`, such as during tests, translate.
+        if db_data is not None and not db_data['translate_emoticons']:
+            return None
+
+        emoticon = match.group('emoticon')
+        translated = translate_emoticons(emoticon)
+        name = translated[1:-1]
+        return make_emoji(name_to_codepoint[name], translated)
+
 class UnicodeEmoji(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match: Match[Text]) -> Optional[Element]:
         orig_syntax = match.group('syntax')
@@ -1578,6 +1592,7 @@ class Bugdown(markdown.Extension):
             Tex(r'\B(?<!\$)\$\$(?P<body>[^\n_$](\\\$|[^$\n])*)\$\$(?!\$)\B'),
             '>backtick')
         md.inlinePatterns.add('emoji', Emoji(EMOJI_REGEX), '_end')
+        md.inlinePatterns.add('translate_emoticons', EmoticonTranslation(emoticon_regex), '>emoji')
         md.inlinePatterns.add('unicodeemoji', UnicodeEmoji(unicode_emoji_regex), '_end')
         md.inlinePatterns.add('link', AtomicLinkPattern(markdown.inlinepatterns.LINK_RE, md), '>avatar')
 
@@ -1956,6 +1971,7 @@ def do_convert(content: Text,
             'realm_uri': message_realm.uri,
             'sent_by_bot': sent_by_bot,
             'stream_names': stream_name_info,
+            'translate_emoticons': message.sender.translate_emoticons,
         }
 
     try:
