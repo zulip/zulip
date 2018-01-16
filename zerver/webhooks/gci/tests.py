@@ -61,3 +61,9 @@ class GoogleCodeInTests(WebhookTestCase):
         expected_message = u'**eeshangarg** unassigned **student-yqqtag** from the task [Sails unspread it stopped at kearney](https://codein.withgoogle.com/dashboard/task-instances/6296903092273152/).'
         self.send_and_test_stream_message('student_unassigned_by_mentor',
                                           expected_subject, expected_message)
+
+    def test_outoftime_event_message(self) -> None:
+        expected_subject = u'student-yqqtag'
+        expected_message = u'The deadline for the task [Sails unspread it stopped at kearney](https://codein.withgoogle.com/dashboard/task-instances/6694926301528064/) has passed.'
+        self.send_and_test_stream_message('task_deadline_has_passed',
+                                          expected_subject, expected_message)

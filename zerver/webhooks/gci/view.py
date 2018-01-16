@@ -94,6 +94,12 @@ def get_unassign_event_body(payload: Dict[Text, Any]) -> Text:
         task_url=build_instance_url(payload['task_instance']),
     )
 
+def get_outoftime_event_body(payload: Dict[Text, Any]) -> Text:
+    return u'The deadline for the task [{task_name}]({task_url}) has passed.'.format(
+        task_name=payload['task_definition_name'],
+        task_url=build_instance_url(payload['task_instance']),
+    )
+
 @api_key_only_webhook_view("Google-Code-In")
 @has_request_variables
 def api_gci_webhook(request: HttpRequest, user_profile: UserProfile, stream: Text=REQ(default='gci'),
@@ -117,6 +123,7 @@ EVENTS_FUNCTION_MAPPER = {
     'comment': get_comment_event_body,
     'extend': get_extend_event_body,
     'needswork': get_needswork_event_body,
+    'outoftime': get_outoftime_event_body,
     'submit': get_submit_event_body,
     'unassign': get_unassign_event_body,
 }
