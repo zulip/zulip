@@ -14,7 +14,9 @@ set_global('$', function (f) {
 set_global('document', null);
 
 var page_params = {
-    realm_bots: [{email: 'bot0@zulip.com', full_name: 'Bot 0'}],
+    realm_bots: [{email: 'bot0@zulip.com', full_name: 'Bot 0'},
+                 {email: 'outgoingwebhook@zulip.com', full_name: "Outgoing webhook",
+                  services: [{base_url: "http://foo.com", interface: 1}]}],
     is_admin: false,
 };
 set_global('page_params', page_params);
@@ -30,12 +32,14 @@ global.people.initialize_current_user(42);
 bot_data.initialize();
 // Our startup logic should have added Bot 0 from page_params.
 assert.equal(bot_data.get('bot0@zulip.com').full_name, 'Bot 0');
+assert.equal(bot_data.get('outgoingwebhook@zulip.com').full_name, 'Outgoing webhook');
 
 (function () {
     var test_bot = {
         email: 'bot1@zulip.com',
         avatar_url: '',
         full_name: 'Bot 1',
+        services: [{base_url: "http://bar.com", interface: 1}],
         extra: 'Not in data',
     };
 
@@ -43,20 +47,29 @@ assert.equal(bot_data.get('bot0@zulip.com').full_name, 'Bot 0');
         bot_data.add(test_bot);
 
         var bot = bot_data.get('bot1@zulip.com');
+        var services = bot_data.get_services('bot1@zulip.com');
         assert.equal('Bot 1', bot.full_name);
+        assert.equal('http://bar.com', services[0].base_url);
+        assert.equal(1, services[0].interface);
         assert.equal(undefined, bot.extra);
     }());
 
     (function test_update() {
         var bot;
+        var services;
 
         bot_data.add(test_bot);
 
         bot = bot_data.get('bot1@zulip.com');
         assert.equal('Bot 1', bot.full_name);
-        bot_data.update('bot1@zulip.com', {full_name: 'New Bot 1'});
+        bot_data.update('bot1@zulip.com', {full_name: 'New Bot 1',
+                                           services: [{interface: 2,
+                                                       base_url: 'http://baz.com'}]});
         bot = bot_data.get('bot1@zulip.com');
+        services = bot_data.get_services('bot1@zulip.com');
         assert.equal('New Bot 1', bot.full_name);
+        assert.equal(2, services[0].interface);
+        assert.equal('http://baz.com', services[0].base_url);
     }());
 
     (function test_remove() {

@@ -5,6 +5,8 @@ var bot_data = (function () {
     var bot_fields = ['api_key', 'avatar_url', 'default_all_public_streams',
                       'default_events_register_stream', 'default_sending_stream',
                       'email', 'full_name', 'is_active', 'owner', 'bot_type'];
+    var services = {};
+    var services_fields = ['base_url', 'interface'];
 
     var send_change_event = _.debounce(function () {
         $(document).trigger('zulip.bot_data_changed');
@@ -24,6 +26,11 @@ var bot_data = (function () {
         var clean_bot = _.pick(bot, bot_fields);
         bots[bot.email] = clean_bot;
         set_can_admin(clean_bot);
+        var clean_services = _.map(bot.services, function (service) {
+            return _.pick(service, services_fields);
+        });
+        services[bot.email] = clean_services;
+
         send_change_event();
     };
 
@@ -36,6 +43,12 @@ var bot_data = (function () {
         var bot = bots[email];
         _.extend(bot, _.pick(bot_update, bot_fields));
         set_can_admin(bot);
+
+        // We currently only support one service per bot.
+        var service = services[email][0];
+        if (typeof bot_update.services !== 'undefined' && bot_update.services.length > 0) {
+            _.extend(service, _.pick(bot_update.services[0], services_fields));
+        }
         send_change_event();
     };
 
@@ -53,6 +66,10 @@ var bot_data = (function () {
 
     exports.get = function bot_data__get(email) {
         return bots[email];
+    };
+
+    exports.get_services = function bot_data__get_services(email) {
+        return services[email];
     };
 
     exports.initialize = function () {
