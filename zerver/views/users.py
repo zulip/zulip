@@ -15,7 +15,7 @@ from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
     do_change_is_admin, do_change_default_all_public_streams, \
     do_change_default_events_register_stream, do_change_default_sending_stream, \
     do_create_user, do_deactivate_user, do_reactivate_user, do_regenerate_api_key, \
-    check_change_full_name
+    check_change_full_name, notify_created_bot
 from zerver.lib.avatar import avatar_url, get_gravatar_url, get_avatar_field
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.exceptions import JsonableError
@@ -319,6 +319,8 @@ def add_bot_backend(
     if bot_type == UserProfile.EMBEDDED_BOT:
         for key, value in config_data.items():
             set_bot_config(bot_profile, key, value)
+
+    notify_created_bot(bot_profile)
 
     json_result = dict(
         api_key=bot_profile.api_key,
