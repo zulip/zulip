@@ -1381,6 +1381,7 @@ class Subscription(models.Model):
     recipient = models.ForeignKey(Recipient, on_delete=CASCADE)  # type: Recipient
     active = models.BooleanField(default=True)  # type: bool
     in_home_view = models.NullBooleanField(default=True)  # type: Optional[bool]
+    is_admin = models.BooleanField(default=False)  # type: bool
 
     DEFAULT_STREAM_COLOR = u"#c2c2c2"
     color = models.CharField(max_length=10, default=DEFAULT_STREAM_COLOR)  # type: Text
