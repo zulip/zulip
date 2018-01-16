@@ -242,8 +242,9 @@ $(function () {
     $("body").on("click", ".copy_message", function (e) {
         var row = $(this).closest(".message_row");
         message_edit.end(row);
-        row.find(".alert-copied").css("display", "block");
-        row.find(".alert-copied").delay(1000).fadeOut(300);
+        row.find(".alert-msg").text(i18n.t("Copied!"));
+        row.find(".alert-msg").css("display", "block");
+        row.find(".alert-msg").delay(1000).fadeOut(300);
         e.preventDefault();
         e.stopPropagation();
     });

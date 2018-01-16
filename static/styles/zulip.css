@@ -649,7 +649,7 @@ td.pointer {
 /* The way this overrides the menus with a background-color and a high
    z-index is kinda hacky, and requires some annoying color-matching,
    but it works. */
-.alert-copied {
+.alert-msg {
     position: absolute;
     right: -110px;
     font-size: 14px;
@@ -662,11 +662,11 @@ td.pointer {
     display: none;
 }
 
-.private-message .alert-copied {
+.private-message .alert-msg {
     background-color: hsl(192, 19%, 95%);
 }
 
-.include-sender .alert-copied {
+.include-sender .alert-msg {
     top: -3px;
 }
 

@@ -227,7 +227,24 @@ function do_set_reminder(msgid, timestamp) {
     reminder_message.reply_to = recipient;
     reminder_message.private_message_recipient = recipient;
     reminder_message.to_user_ids = people.email_list_to_user_ids_string(emails);
-    compose.schedule_message(reminder_message);
+
+    var row = $("[zid='" + msgid + "']");
+
+    function success() {
+        row.find(".alert-msg")
+            .text(i18n.t("Reminder set!"))
+            .css("display", "block")
+            .delay(1000).fadeOut(300);
+    }
+
+    function error() {
+        row.find(".alert-msg")
+            .text(i18n.t("Setting reminder failed!"))
+            .css("display", "block")
+            .delay(1000).fadeOut(300);
+    }
+
+    compose.schedule_message(reminder_message, success, error);
 }
 
 exports.render_actions_remind_popover = function (element, id) {
@@ -688,7 +705,8 @@ exports.register_click_handlers = function () {
         popovers.hide_actions_popover();
         var id = $(this).attr("data-message-id");
         var row = $("[zid='" + id + "']");
-        row.find(".alert-copied")
+        row.find(".alert-msg")
+            .text(i18n.t("Copied!"))
             .css("display", "block")
             .delay(1000).fadeOut(300);
 

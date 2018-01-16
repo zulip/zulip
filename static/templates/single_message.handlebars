@@ -33,7 +33,7 @@
                             {{/if}}
                         {{/include_sender}}
                     </span>
-                    <span class="alert-copied pull-right">{{t 'Copied!' }}</span>
+                    <span class="alert-msg pull-right"></span>
                     <span class="message_time{{#if msg.locally_echoed}} notvisible{{/if}}{{#if status_message}} status-time{{/if}}">{{timestr}}</span>
                     {{#if_and last_edit_timestr include_sender}}
                         {{#unless status_message}}
