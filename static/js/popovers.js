@@ -610,18 +610,47 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
+    function reminder_click_handler(datestr, e) {
+        var id = $(".remind.custom").data('message-id');
+        do_set_reminder(id, datestr);
+        popovers.hide_all();
+        e.stopPropagation();
+        e.preventDefault();
+    }
+
+    $('body').on('click', '.remind.in_20m', function (e) {
+        var datestr = moment().add(20, 'm').format();
+        reminder_click_handler(datestr, e);
+    });
+
+    $('body').on('click', '.remind.in_1h', function (e) {
+        var datestr = moment().add(1, 'h').format();
+        reminder_click_handler(datestr, e);
+    });
+
+    $('body').on('click', '.remind.in_3h', function (e) {
+        var datestr = moment().add(3, 'h').format();
+        reminder_click_handler(datestr, e);
+    });
+
+    $('body').on('click', '.remind.tomo', function (e) {
+        var datestr = moment().add(1, 'd').hour(9).minute(0).seconds(0).format();
+        reminder_click_handler(datestr, e);
+    });
+
+    $('body').on('click', '.remind.nxtw', function (e) {
+        var datestr = moment().add(1, 'w').day('monday').hour(9).minute(0).seconds(0).format();
+        reminder_click_handler(datestr, e);
+    });
+
     $('body').on('click', '.flatpickr-calendar', function (e) {
         e.stopPropagation();
         e.preventDefault();
     });
 
     $('body').on('click', '.flatpickr-confirm', function (e) {
-        var id = $(".remind.custom").data('message-id');
         var datestr = $(".remind.custom")[0].value;
-        do_set_reminder(id, datestr);
-        popovers.hide_all();
-        e.stopPropagation();
-        e.preventDefault();
+        reminder_click_handler(datestr, e);
     });
 
     $('body').on('click', '.respond_personal_button', function (e) {
