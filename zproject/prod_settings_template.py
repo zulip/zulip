@@ -287,7 +287,7 @@ ENABLE_GRAVATAR = True
 # by sending an email.  This is useful for receiving notifications
 # from third-party services that only send outgoing notifications via
 # email.  Once this integration is configured, each stream will have
-# an email address documented on the stream settings page an emails
+# an email address documented on the stream settings page and emails
 # sent to that address will be delivered into the stream.
 #
 # There are two ways to configure email mirroring in Zulip:
