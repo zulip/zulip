@@ -1460,6 +1460,7 @@ def get_owned_bot_dicts(user_profile: UserProfile,
              'default_all_public_streams': botdict['default_all_public_streams'],
              'owner': botdict['bot_owner__email'],
              'avatar_url': avatar_url_from_dict(botdict),
+             'services': get_service_dicts_for_bots(botdict['id']),
              }
             for botdict in result]
 
@@ -1908,6 +1909,14 @@ def get_realm_outgoing_webhook_services_name(realm: Realm) -> List[Any]:
 
 def get_bot_services(user_profile_id: str) -> List[Service]:
     return list(Service.objects.filter(user_profile__id=user_profile_id))
+
+def get_service_dicts_for_bots(user_profile_id: str) -> List[Dict[str, Any]]:
+    services = get_bot_services(user_profile_id)
+    service_dicts = [{'base_url': service.base_url,
+                      'interface': service.interface,
+                      }
+                     for service in services]
+    return service_dicts
 
 def get_service_profile(user_profile_id: str, service_name: str) -> Service:
     return Service.objects.get(user_profile__id=user_profile_id, name=service_name)
