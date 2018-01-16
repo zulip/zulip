@@ -6,6 +6,7 @@ set_global('upload_widget', {});
 
 zrequire('emoji_codes', 'generated/emoji/emoji_codes');
 zrequire('emoji');
+zrequire('markdown');
 
 (function test_build_emoji_upload_widget() {
     var build_widget_stub = false;
@@ -73,4 +74,18 @@ zrequire('emoji');
     });
     emoji.get_canonical_name('non_existent');
     assert(errored);
+}());
+
+(function test_translate_emoticons_to_names() {
+  global.emoji_codes = {
+      codepoint_to_name: {
+          '1f603': 'smiley',
+      },
+  };
+
+  var test_text = 'Testing :)';
+  var expected = 'Testing :smiley:';
+  var result = emoji.translate_emoticons_to_names(test_text);
+
+  assert.equal(expected, result);
 }());

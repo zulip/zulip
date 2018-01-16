@@ -287,6 +287,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             'left_side_userlist',
             'timezone',
             'twenty_four_hour_time',
+            'translate_emoticons',
         ];
         if (_.contains(user_display_settings, event.setting_name)) {
             page_params[event.setting_name] = event.setting;
