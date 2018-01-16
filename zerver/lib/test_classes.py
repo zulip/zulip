@@ -543,9 +543,11 @@ class ZulipTestCase(TestCase):
     # Subscribe to a stream by making an API request
     def common_subscribe_to_streams(self, email: Text, streams: Iterable[Text],
                                     extra_post_data: Dict[str, Any]={}, invite_only: bool=False,
+                                    stream_admins: List[int]=[],
                                     **kwargs: Any) -> HttpResponse:
         post_data = {'subscriptions': ujson.dumps([{"name": stream} for stream in streams]),
-                     'invite_only': ujson.dumps(invite_only)}
+                     'invite_only': ujson.dumps(invite_only),
+                     'stream_admin_ids': ujson.dumps(stream_admins)}
         post_data.update(extra_post_data)
         kwargs['realm'] = kwargs.get('subdomain', 'zulip')
         result = self.api_post(email, "/api/v1/users/me/subscriptions", post_data, **kwargs)
