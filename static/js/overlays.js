@@ -16,6 +16,10 @@ exports.is_active = function () {
     return !!open_overlay_name;
 };
 
+exports.is_modal_open = function () {
+    return $(".modal").hasClass("in");
+};
+
 exports.info_overlay_open = function () {
     return open_overlay_name === 'informationalOverlays';
 };
@@ -32,14 +36,28 @@ exports.lightbox_open = function () {
     return open_overlay_name === 'lightbox';
 };
 
+exports.drafts_open = function () {
+    return open_overlay_name === 'drafts';
+};
+
+exports.active_modal = function () {
+    if (!exports.is_modal_open()) {
+        blueslip.error("Programming error — Called active_modal when there is no modal open");
+        return;
+    }
+    return $(".modal.in").attr("id");
+};
+
 exports.open_overlay = function (opts) {
+    popovers.hide_all();
+
     if (!opts.name || !opts.overlay || !opts.on_close) {
         blueslip.error('Programming error in open_overlay');
         return;
     }
 
     if (active_overlay || open_overlay_name || close_handler) {
-        blueslip.error('Programming error--trying to open ' + opts.name +
+        blueslip.error('Programming error — trying to open ' + opts.name +
             ' before closing ' + open_overlay_name);
         return;
     }
@@ -69,9 +87,26 @@ exports.open_overlay = function (opts) {
     };
 };
 
+exports.open_modal = function (name) {
+    if (name === undefined) {
+        blueslip.error('Undefined name was passed into open_modal');
+        return;
+    }
+
+    if (exports.is_modal_open()) {
+        blueslip.error('open_modal() was called while ' + exports.active_modal() +
+            ' modal was open.');
+        return;
+    }
+
+    blueslip.debug('open modal: ' + name);
+
+    $("#" + name).modal("show").attr("aria-hidden", false);
+};
+
 exports.close_overlay = function (name) {
     if (name !== open_overlay_name) {
-        blueslip.error("Trying to close " + name + " when " + open_overlay_name + " is open." );
+        blueslip.error("Trying to close " + name + " when " + open_overlay_name + " is open.");
         return;
     }
 
@@ -90,7 +125,7 @@ exports.close_overlay = function (name) {
     $('.header').attr("aria-hidden", "false");
 
     if (!close_handler) {
-        blueslip.error("Overlay close handler for " + name + " not properly setup." );
+        blueslip.error("Overlay close handler for " + name + " not properly setup.");
         return;
     }
 
@@ -104,6 +139,37 @@ exports.close_active = function () {
     }
 
     exports.close_overlay(open_overlay_name);
+};
+
+exports.close_modal = function (name) {
+    if (name === undefined) {
+        blueslip.error('Undefined name was passed into close_modal');
+        return;
+    }
+
+    if (!exports.is_modal_open()) {
+        blueslip.warn('close_active_modal() called without checking is_modal_open()');
+        return;
+    }
+
+    if (exports.active_modal() !== name) {
+        blueslip.error("Trying to close " + name +
+            " modal when " + exports.active_modal() + " is open.");
+        return;
+    }
+
+    blueslip.debug('close modal: ' + name);
+
+    $("#" + name).modal("hide").attr("aria-hidden", true);
+};
+
+exports.close_active_modal = function () {
+    if (!exports.is_modal_open()) {
+        blueslip.warn('close_active_modal() called without checking is_modal_open()');
+        return;
+    }
+
+    $(".modal.in").modal("hide").attr("aria-hidden", true);
 };
 
 exports.close_for_hash_change = function () {

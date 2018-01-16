@@ -1,8 +1,9 @@
-add_dependencies({
-    people: 'js/people.js',
-});
+var patched_underscore = _.clone(_);
+patched_underscore.debounce = function (f) { return f; };
+global.patch_builtin('_', patched_underscore);
 
-var _ = global._;
+zrequire('people');
+zrequire('bot_data');
 
 set_global('$', function (f) {
     if (f) {
@@ -25,13 +26,6 @@ global.people.add({
 });
 
 global.people.initialize_current_user(42);
-
-var patched_underscore = _.clone(_);
-patched_underscore.debounce = function (f) { return f; };
-global.patch_builtin('_', patched_underscore);
-
-
-var bot_data = require('js/bot_data.js');
 
 bot_data.initialize();
 // Our startup logic should have added Bot 0 from page_params.

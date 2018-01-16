@@ -16,7 +16,6 @@ if (_.isEmpty(files)) {
 var namespace = require('./namespace.js');
 global.set_global = namespace.set_global;
 global.patch_builtin = namespace.patch_builtin;
-global.add_dependencies = namespace.add_dependencies;
 global.zrequire = namespace.zrequire;
 global.stub_out_jquery = namespace.stub_out_jquery;
 global.with_overrides = namespace.with_overrides;
@@ -54,6 +53,9 @@ module = require('module');
 module.prototype.hot = {
     accept: noop,
 };
+
+// Set up bugdown comparison helper
+global.bugdown_assert = require('./bugdown_assert.js');
 
 output.start_writing();
 

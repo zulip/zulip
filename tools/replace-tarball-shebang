@@ -1,8 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from __future__ import print_function
 
-import six
+import io
 import sys
 import tarfile
 
@@ -18,7 +17,8 @@ old_shebang_bytes = old_shebang.encode()
 new_shebang_bytes = new_shebang.encode()
 
 with tarfile.open(fileobj=stdin, mode='r|*') as in_tar, \
-        tarfile.open(fileobj=stdout, mode='w', format=tarfile.PAX_FORMAT, pax_headers=in_tar.pax_headers) as out_tar:
+        tarfile.open(fileobj=stdout, mode='w',
+                     format=tarfile.PAX_FORMAT, pax_headers=in_tar.pax_headers) as out_tar:
     for info in in_tar:
         if info.isfile():
             file = in_tar.extractfile(info)
@@ -29,6 +29,6 @@ with tarfile.open(fileobj=stdin, mode='r|*') as in_tar, \
                 assert info.size == len(data)
                 data = new_shebang_bytes + data[len(old_shebang_bytes):]
                 info.size = len(data)
-            out_tar.addfile(info, six.BytesIO(data))
+            out_tar.addfile(info, io.BytesIO(data))
         else:
             out_tar.addfile(info)

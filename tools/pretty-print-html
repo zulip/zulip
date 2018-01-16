@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-from __future__ import absolute_import
-from __future__ import print_function
+#!/usr/bin/env python3
 from typing import List
 from lib.pretty_print import pretty_print_html
 import sys

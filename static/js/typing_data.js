@@ -1,6 +1,8 @@
 var typing_data = (function () {
 var exports = {};
 
+// See docs/subsystems/typing-indicators.md for details on typing indicators.
+
 var typist_dct = new Dict();
 var inbound_timer_dict = new Dict();
 

@@ -1,15 +1,12 @@
-from __future__ import absolute_import
-from __future__ import print_function
 
-from argparse import RawTextHelpFormatter
+import sys
+from argparse import ArgumentParser, RawTextHelpFormatter
 from typing import Any
 
-from argparse import ArgumentParser
-from django.core.management.base import BaseCommand, CommandParser
+from django.core.management.base import CommandParser
+
 from zerver.lib.actions import check_add_realm_emoji, do_remove_realm_emoji
 from zerver.lib.management import ZulipBaseCommand
-import sys
-import six
 
 class Command(ZulipBaseCommand):
     help = """Manage emoji for the specified realm
@@ -21,14 +18,12 @@ Example: ./manage.py realm_emoji --realm=zulip.com --op=show
 """
 
     # Fix support for multi-line usage
-    def create_parser(self, *args, **kwargs):
-        # type: (*Any, **Any) -> CommandParser
-        parser = super(Command, self).create_parser(*args, **kwargs)
+    def create_parser(self, *args: Any, **kwargs: Any) -> CommandParser:
+        parser = super().create_parser(*args, **kwargs)
         parser.formatter_class = RawTextHelpFormatter
         return parser
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--op',
                             dest='op',
                             type=str,
@@ -40,11 +35,11 @@ Example: ./manage.py realm_emoji --realm=zulip.com --op=show
                             help="URL of image to display for the emoji")
         self.add_realm_args(parser, True)
 
-    def handle(self, *args, **options):
-        # type: (*Any, **str) -> None
+    def handle(self, *args: Any, **options: str) -> None:
         realm = self.get_realm(options)
+        assert realm is not None  # Should be ensured by parser
         if options["op"] == "show":
-            for name, url in six.iteritems(realm.get_emoji()):
+            for name, url in realm.get_emoji().items():
                 print(name, url)
             sys.exit(0)
 

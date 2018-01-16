@@ -1,11 +1,8 @@
 set_global('$', global.make_zjquery());
 set_global('i18n', global.stub_i18n);
 
-add_dependencies({
-    stream_data: 'js/stream_data',
-});
-
-var settings_org = require('js/settings_org.js');
+zrequire('stream_data');
+zrequire('settings_org');
 
 var noop = function () {};
 
@@ -38,6 +35,7 @@ set_global('templates', {
     settings_org.reset();
     settings_org.populate_realm_domains();
     settings_org.reset_realm_default_language();
+    settings_org.toggle_allow_message_editing_pencil();
     settings_org.toggle_name_change_display();
     settings_org.toggle_email_change_display();
     settings_org.update_realm_description();
@@ -142,21 +140,13 @@ function test_realms_domain_modal(add_realm_domain) {
     assert(posted);
 
     success_callback();
-    assert(!info.hasClass('text-error'));
-    assert(info.hasClass('text-success'));
-    assert.equal(info.text(), 'translated: Added successfully!');
+    assert.equal(info.val(), 'translated: Added successfully!');
 
-    var xhr = {
-        responseText: '{"msg": "no can do"}',
-    };
-
-    error_callback(xhr);
-    assert(info.hasClass('text-error'));
-    assert(!info.hasClass('text-success'));
-    assert.equal(info.text(), 'no can do');
+    error_callback({});
+    assert.equal(info.val(), 'translated: Failed');
 }
 
-function test_submit_settings_form(submit_form) {
+function test_submit_profile_form(submit_form) {
     var ev = {
         preventDefault: noop,
         stopPropagation: noop,
@@ -164,12 +154,9 @@ function test_submit_settings_form(submit_form) {
 
     $('#id_realm_name').val('Acme');
     $('#id_realm_description').val('makes widgets');
-    $('#id_realm_default_language').val('fr');
-    $('#id_realm_waiting_period_threshold').val('55');
 
     var patched;
     var success_callback;
-    var error_callback;
 
     channel.patch = function (req) {
         patched = true;
@@ -179,74 +166,53 @@ function test_submit_settings_form(submit_form) {
 
         assert.equal(data.name, '"Acme"');
         assert.equal(data.description, '"makes widgets"');
-        assert.equal(data.default_language, '"fr"');
-        assert.equal(data.waiting_period_threshold, '55');
 
         success_callback = req.success;
-        error_callback = req.error;
     };
 
     submit_form(ev);
     assert(patched);
 
     var response_data = {
-        waiting_period_threshold: 55,
         name: 'Acme',
     };
     success_callback(response_data);
 
     assert.equal($('#admin-realm-name-status').val(),
                  'translated: Name changed!');
-
-    assert.equal($('#admin-realm-waiting-period-threshold-status').val(),
-                 'translated: Waiting period threshold changed!');
-
-    // TODO: change the code to have a better place to report status.
-    var status_elem = $('#admin-realm-name-status');
-
-    success_callback({});
-    assert.equal(status_elem.val(),
-                 'translated: No changes to save!');
-
-    error_callback({});
-    assert.equal(status_elem.val(),
-                 'translated: Failed');
 }
 
-function test_submit_permissions_form(submit_form) {
+function test_submit_settings_form(submit_form) {
     var ev = {
         preventDefault: noop,
         stopPropagation: noop,
     };
 
-    $('#id_realm_add_emoji_by_admins_only').prop('checked', true);
+    $('#id_realm_default_language').val('fr');
 
     var patched;
     var success_callback;
-    var error_callback;
+
     channel.patch = function (req) {
         patched = true;
         assert.equal(req.url, '/json/realm');
 
         var data = req.data;
-        assert.equal(data.add_emoji_by_admins_only, 'true');
+
+        assert.equal(data.default_language, '"fr"');
 
         success_callback = req.success;
-        error_callback = req.error;
     };
 
     submit_form(ev);
     assert(patched);
 
     var response_data = {
-        add_emoji_by_admins_only: true,
         allow_message_editing: true,
         message_content_edit_limit_seconds: 210,
     };
-    success_callback(response_data);
 
-    assert.equal($('#admin-realm-add-emoji-by-admins-only-status').val(),
-                 'translated: Only administrators may now add new emoji!');
+    success_callback(response_data);
 
     var editing_status = $('#admin-realm-message-editing-status').val();
     assert(editing_status.indexOf('content of messages which are less than') > 0);
@@ -267,7 +233,48 @@ function test_submit_permissions_form(submit_form) {
     success_callback(response_data);
 
     assert.equal($('#admin-realm-message-editing-status').val(),
-                 'translated: Users can no longer edit their past messages!');
+          'translated: Users can no longer edit their past messages!');
+}
+
+function test_submit_permissions_form(submit_form) {
+    var ev = {
+        preventDefault: noop,
+        stopPropagation: noop,
+    };
+
+    $('#id_realm_add_emoji_by_admins_only').prop('checked', true);
+    $('#id_realm_waiting_period_threshold').val('55');
+
+    var patched;
+    var success_callback;
+    var error_callback;
+    channel.patch = function (req) {
+        patched = true;
+        assert.equal(req.url, '/json/realm');
+
+        var data = req.data;
+        assert.equal(data.add_emoji_by_admins_only, 'true');
+        assert.equal(data.waiting_period_threshold, '55');
+
+        success_callback = req.success;
+        error_callback = req.error;
+    };
+
+    submit_form(ev);
+    assert(patched);
+
+    var response_data = {
+        waiting_period_threshold: 55,
+        add_emoji_by_admins_only: true,
+    };
+    success_callback(response_data);
+
+    assert.equal($('#admin-realm-add-emoji-by-admins-only-status').val(),
+                 'translated: Only administrators may now add new emoji!');
+
+     assert.equal($('#admin-realm-waiting-period-threshold-status').val(),
+                  'translated: Waiting period threshold changed!');
+
 
     // TODO: change the code to have a better place to report status.
     var status_elem = $('#admin-realm-restricted-to-domain-status');
@@ -372,6 +379,31 @@ function test_disable_notifications_stream(disable_notifications_stream) {
                  'translated: Failed to change notifications stream!');
 }
 
+function test_disable_signup_notifications_stream(disable_signup_notifications_stream) {
+    var success_callback;
+    var error_callback;
+    channel.patch = function (req) {
+        assert.equal(req.url, '/json/realm');
+        assert.equal(req.data.signup_notifications_stream_id, '-1');
+        success_callback = req.success;
+        error_callback = req.error;
+    };
+
+    disable_signup_notifications_stream();
+
+    var response_data = {
+        signup_notifications_stream_id: -1,
+    };
+
+    success_callback(response_data);
+    assert.equal($('#admin-realm-signup-notifications-stream-status').val(),
+                 'translated: Signup notifications stream disabled!');
+
+    error_callback({});
+    assert.equal($('#admin-realm-signup-notifications-stream-status').val(),
+                 'translated: Failed to change signup notifications stream!');
+}
+
 function test_change_allow_subdomains(change_allow_subdomains) {
     var ev = {
         stopPropagation: noop,
@@ -409,23 +441,17 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     change_allow_subdomains.apply('<elem html>', [ev]);
 
     success_callback();
-    assert.equal(info.text(),
+    assert.equal(info.val(),
                  'translated: Update successful: Subdomains allowed for example.com');
-    assert(info.hasClass('text-success'));
 
-    var xhr = {
-        responseText: '{"msg": "no can do"}',
-    };
-
-    error_callback(xhr);
-    assert(info.hasClass('text-error'));
-    assert.equal(info.text(), 'no can do');
+    error_callback({});
+    assert.equal(info.val(), 'translated: Failed');
 
     allow = false;
     elem_obj.prop('checked', allow);
     change_allow_subdomains.apply('<elem html>', [ev]);
     success_callback();
-    assert.equal(info.text(),
+    assert.equal(info.val(),
                  'translated: Update successful: Subdomains no longer allowed for example.com');
 }
 
@@ -445,16 +471,26 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     $('#id_realm_allow_message_editing').change = set_callback('change_message_editing');
     $('#submit-add-realm-domain').click = set_callback('add_realm_domain');
     $('.notifications-stream-disable').click = set_callback('disable_notifications_stream');
+    $('.signup-notifications-stream-disable').click = set_callback('disable_signup_notifications_stream');
 
     var submit_settings_form;
     var submit_permissions_form;
+    var submit_profile_form;
     $('.organization').on = function (action, selector, f) {
-        assert.equal(action, 'submit');
-        if (selector === 'form.org-settings-form') {
+        if (selector === 'button.save-message-org-settings') {
+            assert.equal(action, 'click');
             submit_settings_form = f;
         }
+        if (selector === 'button.save-language-org-settings') {
+            assert.equal(action, 'click');
+        }
         if (selector === 'form.org-permissions-form') {
+            assert.equal(action, 'submit');
             submit_permissions_form = f;
+        }
+        if (selector === 'form.org-profile-form') {
+            assert.equal(action, 'submit');
+            submit_profile_form = f;
         }
     };
 
@@ -479,12 +515,14 @@ function test_change_allow_subdomains(change_allow_subdomains) {
 
     test_realms_domain_modal(callbacks.add_realm_domain);
 
+    test_submit_profile_form(submit_profile_form);
     test_submit_settings_form(submit_settings_form);
     test_submit_permissions_form(submit_permissions_form);
     test_upload_realm_icon(upload_realm_icon);
     test_change_invite_required(callbacks.change_invite_required);
     test_change_message_editing(callbacks.change_message_editing);
     test_disable_notifications_stream(callbacks.disable_notifications_stream);
+    test_disable_signup_notifications_stream(callbacks.disable_signup_notifications_stream);
     test_change_allow_subdomains(change_allow_subdomains);
 }());
 
@@ -509,16 +547,14 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     assert.equal($('#full_name').attr('disabled'), 'disabled');
     assert(name_toggled);
 
-    var email_toggled;
-    $('#change_email').toggle = function () {
-        email_toggled = true;
-    };
     var email_tooltip_toggled;
     $('.change_email_tooltip').toggle = function () {
         email_tooltip_toggled = true;
     };
+
+    $('#change_email .button').attr('disabled', false);
     settings_org.toggle_email_change_display();
-    assert(email_toggled);
+    assert.equal($("#change_email .button").attr('disabled'), 'disabled');
     assert(email_tooltip_toggled);
 
     page_params.realm_description = 'realm description';
@@ -542,4 +578,19 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     settings_org.render_notifications_stream_ui();
     assert.equal(elem.text(), 'translated: Disabled');
     assert(elem.hasClass('text-warning'));
+
+    elem = $('#realm_signup_notifications_stream_name');
+    stream_data.get_sub_by_id = function (stream_id) {
+        assert.equal(stream_id, 75);
+        return { name: 'some_stream' };
+    };
+    settings_org.render_signup_notifications_stream_ui(75);
+    assert.equal(elem.text(), '#some_stream');
+    assert(!elem.hasClass('text-warning'));
+
+    stream_data.get_sub_by_id = noop;
+    settings_org.render_signup_notifications_stream_ui();
+    assert.equal(elem.text(), 'translated: Disabled');
+    assert(elem.hasClass('text-warning'));
+
 }());

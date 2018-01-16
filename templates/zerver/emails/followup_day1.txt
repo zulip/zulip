@@ -14,14 +14,12 @@ threading, we recommend starting with the desktop or browser experience, and
 using mobile for notifications on the go.
 
 If you have any feedback, or want to see how we use Zulip for managing the
-Zulip project itself, swing by https://chat.zulip.org and say hi!
+Zulip project itself, swing by https://chat.zulip.org and say hi! {% if is_realm_admin %}If this is
+your first Zulip organization, we also recommend checking out
+{{ organization_setup_advice_link }}.{% endif %}
 
 Cheers,
 Team Zulip
 
 PS: Check us out on Twitter (@zulip) or star us on GitHub
 (https://github.com/zulip/zulip)!
-
-Unsubscribe from welcome emails (but there's only one more and aren't you a
-little curious?):
-{{ unsubscribe_link }}

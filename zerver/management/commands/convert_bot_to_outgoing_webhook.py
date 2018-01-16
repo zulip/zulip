@@ -1,9 +1,6 @@
-from __future__ import absolute_import
-from __future__ import print_function
-
-from typing import Any
 
 from argparse import ArgumentParser
+from typing import Any
 
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import Service, UserProfile
@@ -11,20 +8,18 @@ from zerver.models import Service, UserProfile
 class Command(ZulipBaseCommand):
     help = """Given an existing bot, converts it into an outgoing webhook bot."""
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         self.add_realm_args(parser)
         parser.add_argument('bot_email', metavar='<bot_email>', type=str,
                             help='email of bot')
         parser.add_argument('service_name', metavar='<service_name>', type=str,
                             help='name of Service object to create')
         parser.add_argument('base_url', metavar='<base_url>', type=str,
-                            help='base url of outgoing webhook')
+                            help='Endpoint URL of outgoing webhook')
         # TODO: Add token and interface as arguments once OutgoingWebhookWorker
         # uses these fields on the Service object.
 
-    def handle(self, *args, **options):
-        # type: (*Any, **str) -> None
+    def handle(self, *args: Any, **options: str) -> None:
 
         bot_email = options['bot_email']
         service_name = options['service_name']
@@ -40,7 +35,7 @@ class Command(ZulipBaseCommand):
             exit(1)
 
         if not base_url:
-            print('Base URL of outgoing webhook must be provided')
+            print('Endpoint URL of outgoing webhook must be provided')
             exit(1)
 
         # TODO: Normalize email?

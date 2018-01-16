@@ -8,19 +8,7 @@
         <div class="side-padded-container">
             <div class="input-group">
                 <label class="checkbox">
-                    <input type="checkbox" class="inline-block" name="autoscroll_forever" id="autoscroll_forever"
-                           {{#if page_params.autoscroll_forever}}
-                           checked="checked"
-                         {{/if}} />
-                    <span></span>
-                </label>
-                <label for="autoscroll_forever" class="inline-block">
-                    {{t "Always auto-scroll to new messages" }}
-                </label>
-            </div>
-            <div class="input-group">
-                <label class="checkbox">
-                    <input type="checkbox" class="inline-block" name="default_desktop_notifications" id="default_desktop_notifications"
+                    <input type="checkbox" class="inline-block change-setting" name="default_desktop_notifications" id="default_desktop_notifications"
                            {{#if page_params.default_desktop_notifications}}
                            checked="checked"
                         {{/if}} />
@@ -29,12 +17,6 @@
                 <label for="default_desktop_notifications" class="inline-block">
                     {{t "Enable desktop notifications for new streams" }}
                 </label>
-            </div>
-        </div>
-
-        <div class="input-group no-border">
-            <div class="ui-submission">
-                <input type="submit" name="change_settings" value="{{t 'Save changes' }}" class="button rounded sea-green" />
             </div>
         </div>
     </form>

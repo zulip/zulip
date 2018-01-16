@@ -1874,6 +1874,9 @@
         height: this.$element[0].offsetHeight
       })
 
+      // Zulip patch: Workaround for iOS safari problems
+      pos.top = this.$element.offset().top;
+
       var top_pos = pos.top + pos.height
       if (this.dropup) {
         top_pos = pos.top - this.$menu.outerHeight()
@@ -1898,7 +1901,7 @@
   , lookup: function (event) {
       var items
 
-      this.query = this.$element.val()
+      this.query = this.$element.is("[contenteditable]") ? this.$element.text() :  this.$element.val();
 
       if (!this.options.helpOnEmptyStrings) {
         if (!this.query || this.query.length < this.options.minLength) {

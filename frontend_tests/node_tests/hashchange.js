@@ -1,10 +1,6 @@
-add_dependencies({
-    hash_util: 'js/hash_util.js',
-    people: 'js/people.js',
-});
-
-var hashchange = require('js/hashchange.js');
-
+zrequire('people');
+zrequire('hash_util');
+zrequire('hashchange');
 
 (function test_operators_round_trip() {
     var operators;

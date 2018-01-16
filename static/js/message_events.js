@@ -31,6 +31,7 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
                 }
             });
 
+            _.each(new_messages, message_store.set_message_booleans);
             new_messages = _.map(new_messages, message_store.add_message_metadata);
             message_util.add_messages(
                 new_messages,
@@ -125,7 +126,7 @@ exports.update_messages = function update_messages(events) {
         }
         msgs_to_rerender.push(msg);
 
-        message_store.set_message_booleans(msg, event.flags);
+        message_store.update_booleans(msg, event.flags);
 
         condense.un_cache_message_content_height(msg.id);
 
@@ -197,7 +198,6 @@ exports.update_messages = function update_messages(events) {
 
                 msg.subject = event.subject;
                 msg.subject_links = event.subject_links;
-                message_store.set_topic_edit_properties(msg);
 
                 // Add the recent topics entry for the new topics; must
                 // be called after we update msg.subject

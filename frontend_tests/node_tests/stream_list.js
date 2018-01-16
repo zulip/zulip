@@ -30,6 +30,7 @@ set_global('topic_list', {});
         stream_id: 100,
         color: 'blue',
         subscribed: true,
+        pin_to_top: true,
     };
     global.stream_data.add_sub('devel', devel);
 
@@ -96,9 +97,9 @@ set_global('topic_list', {});
     stream_list.build_stream_list();
 
     var expected_elems = [
-        split,
-        devel_sidebar,
-        social_sidebar,
+        devel_sidebar,          //pinned
+        split,                  //separator
+        social_sidebar,         //not pinned
     ];
 
     assert.deepEqual(appended_elems, expected_elems);
@@ -143,25 +144,23 @@ set_global('topic_list', {});
     row.remove();
     assert(removed);
 }());
+function add_row(sub) {
+    global.stream_data.add_sub(sub.name, sub);
+    var row = {
+        update_whether_active: function () {},
+        get_li: function () {
+            var html = '<' + sub.name + ' sidebar row html>';
+            var obj = $(html);
 
+            obj.length = 1;  // bypass blueslip error
+
+            return obj;
+        },
+    };
+    stream_list.stream_sidebar.set_row(sub.stream_id, row);
+}
 function initialize_stream_data() {
     stream_data.clear_subscriptions();
-
-    function add_row(sub) {
-        global.stream_data.add_sub(sub.name, sub);
-        var row = {
-            update_whether_active: function () {},
-            get_li: function () {
-                var html = '<' + sub.name + ' sidebar row html>';
-                var obj = $(html);
-
-                obj.length = 1;  // bypass blueslip error
-
-                return obj;
-            },
-        };
-        stream_list.stream_sidebar.set_row(sub.stream_id, row);
-    }
 
     // pinned streams
     var develSub = {
@@ -231,17 +230,12 @@ function initialize_stream_data() {
         topic: noop,
     });
 
-    var pm_expanded;
-
-    set_global('pm_list', {
-        close: noop,
-        expand: function () { pm_expanded = true; },
-    });
-
     topic_list.set_click_handlers = noop;
-    topic_list.is_zoomed = return_false;
+    topic_list.close = noop;
     topic_list.remove_expanded_topics = noop;
     topic_list.rebuild = noop;
+    topic_list.active_stream_id = noop;
+    stream_list.show_all_streams = noop;
     stream_list.scroll_element_into_container = noop;
 
     var scrollbar_updated = false;
@@ -253,17 +247,12 @@ function initialize_stream_data() {
 
     stream_list.initialize();
 
-    function activate_filter(filter) {
-        var handler = $(document).get_on_handler('narrow_activated.zulip');
-        handler({filter: filter});
-    }
-
     var filter;
 
     filter = new Filter([
         {operator: 'stream', operand: 'devel'},
     ]);
-    activate_filter(filter);
+    stream_list.handle_narrow_activated(filter);
     assert($('<devel sidebar row html>').hasClass('active-filter'));
     assert(scrollbar_updated);  // Make sure we are updating perfectScrollbar.
 
@@ -272,34 +261,15 @@ function initialize_stream_data() {
         {operator: 'stream', operand: 'cars'},
         {operator: 'topic', operand: 'sedans'},
     ]);
-    activate_filter(filter);
+    stream_list.handle_narrow_activated(filter);
     assert(!$("ul.filters li").hasClass('active-filter'));
     assert(!$('<cars sidebar row html>').hasClass('active-filter')); // false because of topic
     assert(scrollbar_updated);  // Make sure we are updating perfectScrollbar.
 
-    assert(!pm_expanded);
-    filter = new Filter([
-        {operator: 'is', operand: 'private'},
-    ]);
-    activate_filter(filter);
-    assert(pm_expanded);
-
-    filter = new Filter([
-        {operator: 'is', operand: 'mentioned'},
-    ]);
-    activate_filter(filter);
-    assert(stream_list.get_global_filter_li('mentioned').hasClass('active-filter'));
-
-    filter = new Filter([
-        {operator: 'in', operand: 'home'},
-    ]);
-    activate_filter(filter);
-    assert(stream_list.get_global_filter_li('home').hasClass('active-filter'));
-
     filter = new Filter([
         {operator: 'stream', operand: 'cars'},
     ]);
-    activate_filter(filter);
+    stream_list.handle_narrow_activated(filter);
     assert(!$("ul.filters li").hasClass('active-filter'));
     assert($('<cars sidebar row html>').hasClass('active-filter'));
 }());
@@ -359,6 +329,114 @@ function initialize_stream_data() {
     assert(!stream_list.stream_sidebar.has_row_for(stream_id));
 }());
 
+(function test_separators_only_pinned_and_dormant() {
+
+    // Test only pinned and dormant streams
+
+    stream_data.clear_subscriptions();
+
+    // Get coverage on early-exit.
+    stream_list.build_stream_list();
+
+    // pinned streams
+    var develSub = {
+        name: 'devel',
+        stream_id: 1000,
+        color: 'blue',
+        pin_to_top: true,
+        subscribed: true,
+    };
+    add_row(develSub);
+
+    var RomeSub = {
+        name: 'Rome',
+        stream_id: 2000,
+        color: 'blue',
+        pin_to_top: true,
+        subscribed: true,
+    };
+    add_row(RomeSub);
+    // dorment stream
+    var DenmarkSub = {
+        name: 'Denmark',
+        stream_id: 3000,
+        color: 'blue',
+        pin_to_top: false,
+        subscribed: true,
+    };
+    add_row(DenmarkSub);
+
+    global.stream_data.is_active = function (sub) {
+        return sub.name !== 'Denmark';
+    };
+
+    var appended_elems;
+    $('#stream_filters').append = function (elems) {
+        appended_elems = elems;
+    };
+
+    stream_list.build_stream_list();
+
+    var split = '<hr class="stream-split">';
+    var expected_elems = [
+        // pinned
+        $('<devel sidebar row html>'),
+        $('<Rome sidebar row html>'),
+        split,
+        // dormant
+        $('<Denmark sidebar row html>'),
+    ];
+
+    assert.deepEqual(appended_elems, expected_elems);
+
+}());
+
+(function test_separators_only_pinned() {
+
+    // Test only pinned streams
+
+    stream_data.clear_subscriptions();
+
+    // Get coverage on early-exit.
+    stream_list.build_stream_list();
+
+    // pinned streams
+    var develSub = {
+        name: 'devel',
+        stream_id: 1000,
+        color: 'blue',
+        pin_to_top: true,
+        subscribed: true,
+    };
+    add_row(develSub);
+
+    var RomeSub = {
+        name: 'Rome',
+        stream_id: 2000,
+        color: 'blue',
+        pin_to_top: true,
+        subscribed: true,
+    };
+    add_row(RomeSub);
+
+
+    var appended_elems;
+    $('#stream_filters').append = function (elems) {
+        appended_elems = elems;
+    };
+
+    stream_list.build_stream_list();
+
+    var expected_elems = [
+        // pinned
+        $('<devel sidebar row html>'),
+        $('<Rome sidebar row html>'),
+        // no separator at the end as no stream follows
+    ];
+
+    assert.deepEqual(appended_elems, expected_elems);
+
+}());
 (function test_update_count_in_dom() {
     function make_elem(elem, count_selector, value_selector) {
         var count = $(count_selector);
@@ -380,20 +458,6 @@ function initialize_stream_data() {
     stream_li.addClass('stream-with-count');
     assert(stream_li.hasClass('stream-with-count'));
 
-    make_elem(
-        $("#global_filters li[data-name='mentioned']"),
-        '<mentioned-count>',
-        '<mentioned-value>'
-    );
-
-    make_elem(
-        $("#global_filters li[data-name='home']"),
-        '<home-count>',
-        '<home-value>'
-    );
-
-    unread_ui.set_count_toggle_button = noop;
-
     var stream_count = new Dict();
     var stream_id = 11;
 
@@ -407,16 +471,11 @@ function initialize_stream_data() {
     var counts = {
         stream_count: stream_count,
         topic_count: new Dict(),
-        mentioned_message_count: 222,
-        home_unread_messages: 333,
     };
 
     stream_list.update_dom_with_unread_counts(counts);
     assert.equal($('<stream li>').text(), 'never-been-set');
     assert(!stream_li.hasClass('stream-with-count'));
-
-    assert.equal($('<mentioned-value>').text(), '222');
-    assert.equal($('<home-value>').text(), '333');
 
     stream_count.set(stream_id, 99);
 
@@ -471,4 +530,58 @@ function initialize_stream_data() {
 
     assert.equal(html_dict.get(1000), '<div>stub-html-devel');
     assert.equal(html_dict.get(5000), '<div>stub-html-Denmark');
+}());
+
+(function test_scroll_delta() {
+    // If we are entirely on-screen, don't scroll
+    assert.equal(0, stream_list.scroll_delta({
+        elem_top: 1,
+        elem_bottom: 9,
+        container_height: 10,
+    }));
+
+    assert.equal(0, stream_list.scroll_delta({
+        elem_top: -5,
+        elem_bottom: 15,
+        container_height: 10,
+    }));
+
+    // The top is offscreen.
+    assert.equal(-3, stream_list.scroll_delta({
+        elem_top: -3,
+        elem_bottom: 5,
+        container_height: 10,
+    }));
+
+    assert.equal(-3, stream_list.scroll_delta({
+        elem_top: -3,
+        elem_bottom: -1,
+        container_height: 10,
+    }));
+
+    assert.equal(-11, stream_list.scroll_delta({
+        elem_top: -150,
+        elem_bottom: -1,
+        container_height: 10,
+    }));
+
+    // The bottom is offscreen.
+    assert.equal(3, stream_list.scroll_delta({
+        elem_top: 7,
+        elem_bottom: 13,
+        container_height: 10,
+    }));
+
+    assert.equal(3, stream_list.scroll_delta({
+        elem_top: 11,
+        elem_bottom: 13,
+        container_height: 10,
+    }));
+
+    assert.equal(11, stream_list.scroll_delta({
+        elem_top: 11,
+        elem_bottom: 99,
+        container_height: 10,
+    }));
+
 }());

@@ -1,5 +1,6 @@
 var noop = function () {};
 var return_false = function () { return false; };
+var return_true = function () { return true; };
 
 set_global('document', {
     location: {
@@ -13,20 +14,14 @@ set_global('page_params', {
 set_global('$', function () {
 });
 
-add_dependencies({
-    compose: 'js/compose',
-});
-
 set_global('$', global.make_zjquery());
 
-add_dependencies({
-    compose_state: 'js/compose_state',
-    people: 'js/people',
-    util: 'js/util',
-    compose_ui: 'js/compose_ui',
-});
-
-var compose_actions = require('js/compose_actions.js');
+zrequire('people');
+zrequire('compose_ui');
+zrequire('compose');
+zrequire('util');
+zrequire('compose_state');
+zrequire('compose_actions');
 
 var start = compose_actions.start;
 var cancel = compose_actions.cancel;
@@ -99,9 +94,11 @@ function assert_hidden(sel) {
     compose_actions.clear_textarea = noop;
 
     // Start stream message
-    global.narrow_state.set_compose_defaults = function (opts) {
+    global.narrow_state.set_compose_defaults = function () {
+        var opts = {};
         opts.stream = 'stream1';
         opts.subject = 'topic1';
+        return opts;
     };
 
     var opts = {};
@@ -116,22 +113,24 @@ function assert_hidden(sel) {
     assert(compose_state.composing());
 
     // Start PM
-    global.narrow_state.set_compose_defaults = function (opts) {
+    global.narrow_state.set_compose_defaults = function () {
+        var opts = {};
         opts.private_message_recipient = 'foo@example.com';
+        return opts;
     };
 
     opts = {
         content: 'hello',
     };
 
-    $('#new_message_content').trigger = noop;
+    $('#compose-textarea').trigger = noop;
     start('private', opts);
 
     assert_hidden('#stream-message');
     assert_visible('#private-message');
 
     assert.equal($('#private_message_recipient').val(), 'foo@example.com');
-    assert.equal($('#new_message_content').val(), 'hello');
+    assert.equal($('#compose-textarea').val(), 'hello');
     assert.equal(compose_state.get_message_type(), 'private');
     assert(compose_state.composing());
 
@@ -196,22 +195,43 @@ function assert_hidden(sel) {
 
     reply_with_mention(opts);
     assert.equal($('#stream').val(), 'devel');
-    assert.equal($('#new_message_content').val(), '@**Bob Roberts** ');
+    assert.equal($('#compose-textarea').val(), '@**Bob Roberts** ');
     assert(compose_state.has_message_content());
 }());
 
 (function test_get_focus_area() {
     assert.equal(get_focus_area('private', {}), 'private_message_recipient');
     assert.equal(get_focus_area('private', {
-        private_message_recipient: 'bob@example.com'}), 'new_message_content');
+        private_message_recipient: 'bob@example.com'}), 'compose-textarea');
     assert.equal(get_focus_area('stream', {}), 'stream');
     assert.equal(get_focus_area('stream', {stream: 'fun'}),
                  'subject');
     assert.equal(get_focus_area('stream', {stream: 'fun',
                                            subject: 'more'}),
-                 'new_message_content');
+                 'compose-textarea');
     assert.equal(get_focus_area('stream', {stream: 'fun',
                                            subject: 'more',
                                            trigger: 'new topic button'}),
                  'subject');
+}());
+
+(function test_focus_in_empty_compose() {
+    $('#compose-textarea').is = function (attr) {
+        assert.equal(attr, ':focus');
+        return $('#compose-textarea').is_focused;
+    };
+
+    compose_state.composing = return_true;
+    $('#compose-textarea').val('');
+    $('#compose-textarea').focus();
+    assert(compose_state.focus_in_empty_compose());
+
+    compose_state.composing = return_false;
+    assert(!compose_state.focus_in_empty_compose());
+
+    $('#compose-textarea').val('foo');
+    assert(!compose_state.focus_in_empty_compose());
+
+    $('#compose-textarea').blur();
+    assert(!compose_state.focus_in_empty_compose());
 }());

@@ -1,13 +1,10 @@
-from __future__ import print_function
 
 import os
-import sys
-from os.path import dirname, abspath
 import subprocess
 from scripts.lib.zulip_tools import run, ENDC, WARNING
 from scripts.lib.hash_reqs import expand_reqs
 
-ZULIP_PATH = dirname(dirname(dirname(abspath(__file__))))
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 VENV_CACHE_PATH = "/srv/zulip-venv-cache"
 
 if 'TRAVIS' in os.environ:
@@ -38,6 +35,14 @@ VENV_DEPENDENCIES = [
     "libxml2-dev",          # Used for installing talon
     "libxslt1-dev",         # Used for installing talon
     "libpq-dev",            # Needed by psycopg2
+]
+
+THUMBOR_VENV_DEPENDENCIES = [
+    "libcurl4-openssl-dev",
+    "libjpeg-dev",
+    "libjasper-dev",
+    "libpng-dev",
+    "gifsicle",
 ]
 
 def install_venv_deps(requirements_file):
@@ -172,7 +177,7 @@ def get_logfile_name(venv_path):
 def create_log_entry(target_log, parent, copied_packages, new_packages):
     # type: (str, str, Set[str], Set[str]) -> None
 
-    venv_path = dirname(target_log)
+    venv_path = os.path.dirname(target_log)
     with open(target_log, 'a') as writer:
         writer.write("{}\n".format(venv_path))
         if copied_packages:

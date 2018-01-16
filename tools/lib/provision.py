@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-from __future__ import print_function
+#!/usr/bin/env python3
 import os
 import sys
 import logging
@@ -11,13 +10,12 @@ import hashlib
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
-PY2 = sys.version_info[0] == 2
-
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 sys.path.append(ZULIP_PATH)
-from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING
-from scripts.lib.setup_venv import setup_virtualenv, VENV_DEPENDENCIES
+from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING, \
+    get_dev_uuid_var_path
+from scripts.lib.setup_venv import VENV_DEPENDENCIES
 from scripts.lib.node_cache import setup_node_modules, NODE_MODULES_CACHE_PATH
 
 from version import PROVISION_VERSION
@@ -29,11 +27,13 @@ SUPPORTED_PLATFORMS = {
     "Ubuntu": [
         "trusty",
         "xenial",
+        # Platforms that are blocked on on tsearch_extras
+        # "stretch",
+        # "zesty",
     ],
 }
 
-PY2_VENV_PATH = "/srv/zulip-venv"
-PY3_VENV_PATH = "/srv/zulip-py3-venv"
+VENV_PATH = "/srv/zulip-py3-venv"
 VAR_DIR_PATH = os.path.join(ZULIP_PATH, 'var')
 LOG_DIR_PATH = os.path.join(VAR_DIR_PATH, 'log')
 UPLOAD_DIR_PATH = os.path.join(VAR_DIR_PATH, 'uploads')
@@ -42,16 +42,14 @@ COVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'coverage')
 LINECOVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'linecoverage-report')
 NODE_TEST_COVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'node-coverage')
 
+is_travis = 'TRAVIS' in os.environ
+is_circleci = 'CIRCLECI' in os.environ
+
 # TODO: De-duplicate this with emoji_dump.py
 EMOJI_CACHE_PATH = "/srv/zulip-emoji-cache"
-if 'TRAVIS' in os.environ:
+if is_travis:
     # In Travis CI, we don't have root access
     EMOJI_CACHE_PATH = "/home/travis/zulip-emoji-cache"
-
-if PY2:
-    VENV_PATH = PY2_VENV_PATH
-else:
-    VENV_PATH = PY3_VENV_PATH
 
 if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):
     print("Error: No Zulip git repository present!")
@@ -72,7 +70,8 @@ if ram_gb < 1.5:
     sys.exit(1)
 
 try:
-    run(["mkdir", "-p", VAR_DIR_PATH])
+    UUID_VAR_PATH = get_dev_uuid_var_path(create_if_missing=True)
+    run(["mkdir", "-p", UUID_VAR_PATH])
     if os.path.exists(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink')):
         os.remove(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink'))
     os.symlink(
@@ -83,7 +82,7 @@ try:
 except OSError as err:
     print("Error: Unable to create symlinks. Make sure you have permission to create symbolic links.")
     print("See this page for more information:")
-    print("  http://zulip.readthedocs.io/en/latest/dev-env-first-time-contributors.html#os-symlink-error")
+    print("  https://zulip.readthedocs.io/en/latest/development/setup-vagrant.html#os-symlink-error")
     sys.exit(1)
 
 if platform.architecture()[0] == '64bit':
@@ -91,7 +90,8 @@ if platform.architecture()[0] == '64bit':
 elif platform.architecture()[0] == '32bit':
     arch = "i386"
 else:
-    logging.critical("Only x86 is supported; ping zulip-devel@googlegroups.com if you want another architecture.")
+    logging.critical("Only x86 is supported;"
+                     "ping zulip-devel@googlegroups.com if you want another architecture.")
     sys.exit(1)
 
 # Ideally we wouldn't need to install a dependency here, before we
@@ -107,6 +107,7 @@ POSTGRES_VERSION_MAP = {
     "stretch": "9.6",
     "trusty": "9.3",
     "xenial": "9.5",
+    "zesty": "9.6",
 }
 POSTGRES_VERSION = POSTGRES_VERSION_MAP[codename]
 
@@ -126,6 +127,7 @@ UBUNTU_COMMON_APT_DEPENDENCIES = [
     "gettext",              # Used by makemessages i18n
     "curl",                 # Used for fetching PhantomJS as wget occasionally fails on redirects
     "netcat",               # Used for flushing memcached
+    "moreutils",            # Used for sponge command
 ] + VENV_DEPENDENCIES
 
 APT_DEPENDENCIES = {
@@ -148,6 +150,11 @@ APT_DEPENDENCIES = {
         "postgresql-9.5",
         "postgresql-9.5-tsearch-extras",
         "postgresql-9.5-pgroonga",
+    ],
+    "zesty": UBUNTU_COMMON_APT_DEPENDENCIES + [
+        "postgresql-9.6",
+        "postgresql-9.6-pgroonga",
+        "virtualenv",
     ],
 }
 
@@ -172,8 +179,10 @@ def setup_shell_profile(shell_profile):
     def write_command(command):
         # type: (str) -> None
         if os.path.exists(shell_profile_path):
-            with open(shell_profile_path, 'a+') as shell_profile_file:
-                if command not in shell_profile_file.read():
+            with open(shell_profile_path, 'r') as shell_profile_file:
+                lines = [line.strip() for line in shell_profile_file.readlines()]
+            if command not in lines:
+                with open(shell_profile_path, 'a+') as shell_profile_file:
                     shell_profile_file.writelines(command + '\n')
         else:
             with open(shell_profile_path, 'w') as shell_profile_file:
@@ -203,17 +212,17 @@ def main(options):
     for apt_depedency in APT_DEPENDENCIES[codename]:
         sha_sum.update(apt_depedency.encode('utf8'))
     # hash the content of setup-apt-repo
-    sha_sum.update(open('scripts/lib/setup-apt-repo').read().encode('utf8'))
+    sha_sum.update(open('scripts/lib/setup-apt-repo', 'rb').read())
 
     new_apt_dependencies_hash = sha_sum.hexdigest()
     last_apt_dependencies_hash = None
-
+    apt_hash_file_path = os.path.join(UUID_VAR_PATH, "apt_dependencies_hash")
     try:
-        hash_file = open('var/apt_dependenices_hash', 'r+')
+        hash_file = open(apt_hash_file_path, 'r+')
         last_apt_dependencies_hash = hash_file.read()
     except IOError:
-        run(['touch', 'var/apt_dependenices_hash'])
-        hash_file = open('var/apt_dependenices_hash', 'r+')
+        run(['touch', apt_hash_file_path])
+        hash_file = open(apt_hash_file_path, 'r+')
 
     if (new_apt_dependencies_hash != last_apt_dependencies_hash):
         try:
@@ -221,10 +230,16 @@ def main(options):
         except subprocess.CalledProcessError:
             # Might be a failure due to network connection issues. Retrying...
             print(WARNING + "`apt-get -y install` failed while installing dependencies; retrying..." + ENDC)
+            # Since a common failure mode is for the caching in
+            # `setup-apt-repo` to optimize the fast code path to skip
+            # running `apt-get update` when the target apt repository
+            # is out of date, we run it explicitly here so that we
+            # recover automatically.
+            run(['sudo', 'apt-get', 'update'])
             install_apt_deps()
         hash_file.write(new_apt_dependencies_hash)
     else:
-        print("No need to apt operations.")
+        print("No changes to apt dependencies, so skipping apt operations.")
 
     # Here we install node.
     run(["sudo", "scripts/lib/install-node"])
@@ -236,8 +251,7 @@ def main(options):
         # issue with the symlinks being improperly owned by root.
         if os.path.islink("node_modules"):
             run(["sudo", "rm", "-f", "node_modules"])
-        if not os.path.isdir(NODE_MODULES_CACHE_PATH):
-            run(["sudo", "mkdir", NODE_MODULES_CACHE_PATH])
+        run(["sudo", "mkdir", "-p", NODE_MODULES_CACHE_PATH])
         run(["sudo", "chown", "%s:%s" % (user_id, user_id), NODE_MODULES_CACHE_PATH])
         setup_node_modules(prefer_offline=True)
     except subprocess.CalledProcessError:
@@ -247,12 +261,9 @@ def main(options):
     # Import tools/setup_venv.py instead of running it so that we get an
     # activated virtualenv for the rest of the provisioning process.
     from tools.setup import setup_venvs
-    setup_venvs.main(options.is_travis)
+    setup_venvs.main()
 
-    # Put Python2 virtualenv activation in .bash_profile.
     setup_shell_profile('~/.bash_profile')
-
-    # Put Python2 virtualenv activation in .zprofile (for Zsh users).
     setup_shell_profile('~/.zprofile')
 
     run(["sudo", "cp", REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH])
@@ -278,13 +289,19 @@ def main(options):
     run(["sudo", "chown", "%s:%s" % (user_id, user_id), EMOJI_CACHE_PATH])
     run(["tools/setup/emoji/build_emoji"])
 
-    run(["tools/setup/build_pygments_data.py"])
+    # copy over static files from the zulip_bots package
+    run(["tools/setup/generate_zulip_bots_static_files"])
+
+    run(["tools/generate-custom-icon-webfont"])
+    run(["tools/setup/build_pygments_data"])
     run(["scripts/setup/generate_secrets.py", "--development"])
     run(["tools/update-authors-json", "--use-fixture"])
-    if options.is_travis and not options.is_production_travis:
+    run(["tools/inline-email-css"])
+    if is_circleci or (is_travis and not options.is_production_travis):
         run(["sudo", "service", "rabbitmq-server", "restart"])
         run(["sudo", "service", "redis-server", "restart"])
         run(["sudo", "service", "memcached", "restart"])
+        run(["sudo", "service", "postgresql", "restart"])
     elif options.is_docker:
         run(["sudo", "service", "rabbitmq-server", "restart"])
         run(["sudo", "pg_dropcluster", "--stop", POSTGRES_VERSION, "main"])
@@ -302,7 +319,6 @@ def main(options):
         import django
         django.setup()
 
-        from zerver.lib.str_utils import force_bytes
         from zerver.lib.test_fixtures import is_template_database_current
 
         try:
@@ -317,8 +333,9 @@ def main(options):
         else:
             print("RabbitMQ is already configured.")
 
+        migration_status_path = os.path.join(UUID_VAR_PATH, "migration_status_dev")
         if options.is_force or not is_template_database_current(
-                migration_status="var/migration_status_dev",
+                migration_status=migration_status_path,
                 settings="zproject.settings",
                 database_name="zulip",
         ):
@@ -341,22 +358,25 @@ def main(options):
         paths += glob.glob('static/locale/*/translations.json')
 
         for path in paths:
-            with open(path, 'r') as file_to_hash:
-                sha1sum.update(force_bytes(file_to_hash.read()))
+            with open(path, 'rb') as file_to_hash:
+                sha1sum.update(file_to_hash.read())
 
+        compilemessages_hash_path = os.path.join(UUID_VAR_PATH, "last_compilemessages_hash")
         new_compilemessages_hash = sha1sum.hexdigest()
-        run(['touch', 'var/last_compilemessages_hash'])
-        with open('var/last_compilemessages_hash', 'r') as hash_file:
+        run(['touch', compilemessages_hash_path])
+        with open(compilemessages_hash_path, 'r') as hash_file:
             last_compilemessages_hash = hash_file.read()
 
         if options.is_force or (new_compilemessages_hash != last_compilemessages_hash):
-            with open('var/last_compilemessages_hash', 'w') as hash_file:
+            with open(compilemessages_hash_path, 'w') as hash_file:
                 hash_file.write(new_compilemessages_hash)
             run(["./manage.py", "compilemessages"])
         else:
             print("No need to run `manage.py compilemessages`.")
 
-    version_file = os.path.join(ZULIP_PATH, 'var/provision_version')
+    run(["scripts/lib/clean-unused-caches"])
+
+    version_file = os.path.join(UUID_VAR_PATH, 'provision_version')
     print('writing to %s\n' % (version_file,))
     open(version_file, 'w').write(PROVISION_VERSION + '\n')
 
@@ -371,14 +391,10 @@ if __name__ == "__main__":
                         default=False,
                         help="Ignore all provisioning optimizations.")
 
-    parser.add_argument('--travis', action='store_true', dest='is_travis',
-                        default=False,
-                        help="Provision for Travis but without production settings.")
-
     parser.add_argument('--production-travis', action='store_true',
                         dest='is_production_travis',
                         default=False,
-                        help="Provision for Travis but with production settings.")
+                        help="Provision for Travis with production settings.")
 
     parser.add_argument('--docker', action='store_true',
                         dest='is_docker',

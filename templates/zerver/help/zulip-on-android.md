@@ -2,7 +2,7 @@
 
 Zulip has an Android application, compatible with Android versions 3.2 and
 higher. The app can be downloaded from the
-[Google Play Store](https://play.google.com/store/apps/details?id=com.zulip.android).
+[Google Play Store](https://play.google.com/store/apps/details?id=com.zulipmobile).
 
 ## Initial setup
 ### Connecting to a server

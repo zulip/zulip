@@ -1,23 +1,19 @@
-from __future__ import absolute_import
 
 import re
-import os.path
+import os
 import sourcemap
-from six.moves import map
 
 from typing import Dict, List, Text
 
 
-class SourceMap(object):
+class SourceMap:
     '''Map (line, column) pairs from generated to source file.'''
 
-    def __init__(self, sourcemap_dirs):
-        # type: (List[Text]) -> None
+    def __init__(self, sourcemap_dirs: List[Text]) -> None:
         self._dirs = sourcemap_dirs
         self._indices = {}  # type: Dict[Text, sourcemap.SourceMapDecoder]
 
-    def _index_for(self, minified_src):
-        # type: (Text) -> sourcemap.SourceMapDecoder
+    def _index_for(self, minified_src: Text) -> sourcemap.SourceMapDecoder:
         '''Return the source map index for minified_src, loading it if not
            already loaded.'''
         if minified_src not in self._indices:
@@ -30,8 +26,7 @@ class SourceMap(object):
 
         return self._indices[minified_src]
 
-    def annotate_stacktrace(self, stacktrace):
-        # type: (Text) -> Text
+    def annotate_stacktrace(self, stacktrace: Text) -> Text:
         out = ''  # type: Text
         for ln in stacktrace.splitlines():
             out += ln + '\n'

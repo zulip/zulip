@@ -4,10 +4,6 @@ set -x
 
 "$(dirname "$0")/../scripts/setup/terminate-psql-sessions" zulip zulip zulip_base
 
-function migration_status {
-    ./manage.py get_migration_status --settings=zproject.settings > $1
-}
-
 psql -h localhost postgres zulip <<EOF
 DROP DATABASE IF EXISTS zulip;
 CREATE DATABASE zulip TEMPLATE zulip_base;
@@ -15,8 +11,9 @@ EOF
 
 sh "$(dirname "$0")/../scripts/setup/flush-memcached"
 
+./manage.py purge_queue --all
 ./manage.py migrate --noinput
-migration_status "var/migration_status_dev"
+./manage.py get_migration_status --settings=zproject.settings --output="migration_status_dev"
 ./manage.py createcachetable third_party_api_results
 ./manage.py populate_db -n100 --threads=1
 # Ensure that the local user's API key is synced from ~/.zuliprc

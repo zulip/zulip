@@ -1,8 +1,0 @@
-#!/bin/bash
-set -x
-
-sudo apt-get install moreutils || (
-    echo "Error trying to install moreutils; retrying after apt update"
-    sudo apt-get update
-    sudo apt-get install moreutils
-)

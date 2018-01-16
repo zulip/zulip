@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 Forward messages sent to the configured email gateway to Zulip.
@@ -37,47 +37,44 @@ Also you can use optional keys to configure the script and change default values
 
 -t                  Disable sending request to the Zulip server. Default value: False.
 """
-from __future__ import absolute_import
-from __future__ import print_function
 
 import os
 import ssl
 import sys
 
-from optparse import OptionParser
+import argparse
 
 import posix
 import json
 
-from six.moves.urllib.parse import urljoin, urlencode
-from six.moves.urllib.request import Request, urlopen
-from six.moves.urllib.error import HTTPError
-from six.moves.configparser import RawConfigParser
-from six import text_type
+from urllib.parse import urljoin, urlencode
+from urllib.request import Request, urlopen
+from urllib.error import HTTPError
+from configparser import RawConfigParser
 
 
-parser = OptionParser()
+parser = argparse.ArgumentParser()
 
-parser.add_option('-r', '--recipient', dest="recipient", type='string', default='',
-                  help="Original recipient.")
+parser.add_argument('-r', '--recipient', dest="recipient", type=str, default='',
+                    help="Original recipient.")
 
-parser.add_option('-s', '--shared-secret', dest="shared_secret", type='string', default='',
-                  help="Secret access key.")
+parser.add_argument('-s', '--shared-secret', dest="shared_secret", type=str, default='',
+                    help="Secret access key.")
 
-parser.add_option('-d', '--dst-host', dest="host", type='string', default='https://127.0.0.1',
-                  help="Destination server address for uploading email from email mirror. "
-                       "Address must contain a HTTP protocol.")
+parser.add_argument('-d', '--dst-host', dest="host", type=str, default='https://127.0.0.1',
+                    help="Destination server address for uploading email from email mirror. "
+                         "Address must contain a HTTP protocol.")
 
-parser.add_option('-u', '--dst-url', dest="url", type='string', default='/email_mirror_message',
-                  help="Destination relative url for uploading email from email mirror.")
+parser.add_argument('-u', '--dst-url', dest="url", type=str, default='/email_mirror_message',
+                    help="Destination relative url for uploading email from email mirror.")
 
-parser.add_option('-n', '--not-verify-ssl', dest="verify_ssl", action='store_false', default=True,
-                  help="Disable ssl certificate verifying for self-signed certificates")
+parser.add_argument('-n', '--not-verify-ssl', dest="verify_ssl", action='store_false', default=True,
+                    help="Disable ssl certificate verifying for self-signed certificates")
 
-parser.add_option('-t', '--test', dest="test", action='store_true', default=False,
-                  help="Test mode.")
+parser.add_argument('-t', '--test', dest="test", action='store_true', default=False,
+                    help="Test mode.")
 
-(options, args) = parser.parse_args(args=None, values=None)
+options = parser.parse_args()
 
 MAX_ALLOWED_PAYLOAD = 25 * 1024 * 1024
 
@@ -95,7 +92,7 @@ def process_response_error(e):
 
 
 def send_email_mirror(rcpt_to, shared_secret, host, url, test, verify_ssl):
-    # type: (text_type, text_type, text_type, text_type, bool, bool) -> None
+    # type: (str, str, str, str, bool, bool) -> None
     if not rcpt_to:
         print("5.1.1 Bad destination mailbox address: No missed message email address.")
         exit(posix.EX_NOUSER)  # type: ignore # There are no stubs for posix in python 3
@@ -133,7 +130,7 @@ def send_email_mirror(rcpt_to, shared_secret, host, url, test, verify_ssl):
             "secret": shared_secret}
     req = Request(url=urljoin(host, url), data=urlencode(data).encode('utf8'))
     try:
-        urlopen(req, **request_context)  # type: ignore # six.moves.urllib.request
+        urlopen(req, **request_context)  # type: ignore # urllib.request
     except HTTPError as err:
         process_response_error(err)
 

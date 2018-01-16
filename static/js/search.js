@@ -45,7 +45,7 @@ exports.initialize = function () {
     // just represents the key of the hash, so it's redundant.)
     var search_object = {};
 
-    $( "#search_query" ).typeahead({
+    $("#search_query").typeahead({
         source: function (query) {
             var suggestions = search_suggestion.get_suggestions(query);
             // Update our global search_object hash

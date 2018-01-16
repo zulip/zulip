@@ -11,7 +11,8 @@ domains.
 {!admin.md!}
 
 2. Restricting user email addresses to certain domains can be enabled or disabled
- with the **Users restricted to (allowed domains)** checkbox shown below:
+ with the **Users restricted to (allowed domains)** checkbox in the
+ **Joining the organization** section.
 
     !!! tip ""
         The allowed domains will be listed after the **Users restricted to**

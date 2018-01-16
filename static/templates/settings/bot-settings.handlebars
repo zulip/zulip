@@ -1,11 +1,11 @@
 <div id="bot-settings" class="settings-section" data-name="your-bots">
     <div class="bot-settings-form">
         <div class="tip">
-            {{#tr this}}Looking for our <a href="/integrations" target="_blank">Integrations</a> or <a href="__server_uri__/api" target="_blank">API</a> documentation?{{/tr}}
+            {{#tr this}}Looking for our <a href="/integrations" target="_blank">Integrations</a> or <a href="/api" target="_blank">API</a> documentation?{{/tr}}
         </div>
 
         <div>
-            <span>{{ t 'Download config of all active outgoing webhook bots in Zulip Botserver format.' }}</span>
+            <span>{{t 'Download config of all active outgoing webhook bots in Zulip Botserver format.' }}</span>
             <a type="submit" download="{{flaskbotrc}}" id= "download_flaskbotrc" class="btn" title="{{t 'Download flaskbotrc' }}">
                 <i class="icon-vector-download-alt sea-green"></i>
             </a>
@@ -31,13 +31,15 @@
                     <div class="input-group">
                         <label for="bot_type">
                             {{t "Bot type" }}
-                            <i class="icon-vector-question-sign bot_type_tooltip" data-toggle="tooltip"
+                            <i class="icon-vector-question-sign settings-info-icon bot_type_tooltip" data-toggle="tooltip"
                              title='{{t "Incoming webhooks can only send messages." }}'></i>
                         </label>
                         <select name="bot_type" id="create_bot_type">
-                            <option value="1">{{t "Generic bot" }}</option>
-                            <option value="2">{{t "Incoming webhook" }}</option>
-                            <option value="3">{{t "Outgoing webhook" }}</option>
+                            {{#each page_params.bot_types}}
+                                {{#if this.allowed}}
+                                <option value="{{this.type_id}}">{{this.name}}</option>
+                                {{/if}}
+                            {{/each}}
                         </select>
                     </div>
                     <div class="input-group">
@@ -57,7 +59,7 @@
                     </div>
                     <div id="payload_url_inputbox">
                         <div class="input-group">
-                            <label for="create_payload_url">{{t "Base URL" }}</label>
+                            <label for="create_payload_url">{{t "Endpoint URL" }}</label>
                             <input type="text" name="payload_url" id="create_payload_url"
                                 maxlength=100 placeholder="https://hostname.example.com/bots/followup" value="" />
                             <div><label for="create_payload_url" generated="true" class="text-error"></label></div>
@@ -70,6 +72,13 @@
                             </select>
                             <div><label for="create_interface_type" generated="true" class="text-error"></label></div>
                         </div>
+                    </div>
+                    <div class="input-group" id="service_name_list">
+                        <label for="select_service_name">{{t "Bot"}}</label>
+                        <select name="service_name" id="select_service_name">
+                        </select>
+                    </div>
+                    <div id="config_inputbox">
                     </div>
                     <div class="input-group">
                         <div id="bot_avatar_file"></div>

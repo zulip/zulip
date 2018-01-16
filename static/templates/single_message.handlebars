@@ -6,7 +6,7 @@
         <div class="messagebox-border">
             <div class="messagebox-content">
                 <div class="message_top_line">
-                    <span class="message_sender{{^status_message}} sender_info_hover{{/status_message}}">
+                    <span class="message_sender{{^status_message}} sender_info_hover{{/status_message}} no-select">
                         {{#include_sender}}
                             {{! See ../js/notifications.js for another user of avatar_url. }}
                             <div class="u-{{msg/sender_id}} inline_profile_picture{{#status_message}} sender_info_hover{{/status_message}}">
@@ -14,9 +14,9 @@
                             </div>
                             {{#if status_message}}
                                 <span class="sender-status">
-                                    <span class="sender_name-in-status sender_info_hover">{{msg/sender_full_name}}</span>
+                                    <span class="sender_name-in-status auto-select sender_info_hover">{{msg/sender_full_name}}</span>
                                     {{#if sender_is_bot}}
-                                    <img class="bot-icon" title="{{t 'Bot' }}" src="/static/images/bot.svg" />
+                                    <i class="zulip-icon bot" aria-hidden="true"></i>
                                     {{/if}}
                                     <span class="status-message">
                                         {{{ status_message }}}
@@ -26,9 +26,9 @@
                                     {{/if_and}}
                                 </span>
                             {{else}}
-                                <span class="sender_name">{{msg/sender_full_name}}</span>
+                                <span class="sender_name auto-select">{{msg/sender_full_name}}</span>
                                 {{#if sender_is_bot}}
-                                <img class="bot-icon" title="{{t 'Bot' }}" src="/static/images/bot.svg" />
+                                <i class="zulip-icon bot" aria-hidden="true"></i>
                                 {{/if}}
                             {{/if}}
                         {{/include_sender}}
@@ -40,23 +40,31 @@
                         <div class="message_edit_notice" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">{{t "EDITED" }}</div>
                         {{/unless}}
                     {{/if_and}}
-                    <div class="message_controls{{#status_message}} sender-status-controls{{/status_message}}">
+                    <div class="message_controls{{#status_message}} sender-status-controls{{/status_message}} no-select">
                         {{#if msg/sent_by_me}}
                         <div class="edit_content"></div>
                         {{else}}
-                        <div class="reactions_hover">
-                            <i class="icon-vector-smile reaction_button" title="{{#tr this}}Add emoji reaction{{/tr}}"></i>
+                        <div class="reaction_button">
+                            <i class="icon-vector-smile" title="{{#tr this}}Add emoji reaction{{/tr}} (:)"></i>
                         </div>
                         {{/if}}
+
+                        {{#unless msg/locally_echoed}}
                         <div class="info actions_hover">
-                            <i class="icon-vector-chevron-down" title="{{#tr this}}Message actions{{/tr}}"></i>
+                            <i class="icon-vector-chevron-down" title="{{#tr this}}Message actions{{/tr}} (i)"></i>
                         </div>
+                        {{/unless}}
+
                         <div class="message_failed {{#unless msg.failed_request}}notvisible{{/unless}}">
                             <i class="icon-vector-refresh refresh-failed-message" data-toggle="tooltip" title="{{t 'Retry' }}"></i>
                             <i class="icon-vector-remove-sign remove-failed-message" data-toggle="tooltip" title="{{t 'Cancel' }}"></i>
                         </div>
-                        <div class="star {{#if msg/starred}}icon-vector-star{{else}}icon-vector-star-empty{{/if}} {{#if msg/starred}}{{else}}empty-star{{/if}}" title="{{#tr this.msg}}__starred_status__ this message{{/tr}}">
+
+                        {{#unless msg/locally_echoed}}
+                        <div class="star {{#if msg/starred}}icon-vector-star{{else}}icon-vector-star-empty{{/if}} {{#if msg/starred}}{{else}}empty-star{{/if}}" title="{{#tr this.msg}}__starred_status__ this message{{/tr}} (*)">
                         </div>
+                        {{/unless}}
+
                     </div>
                 </div>
                 <div class="message_content">{{#unless status_message}}{{#if use_match_properties}}{{{msg/match_content}}}{{else}}{{{msg/content}}}{{/if}}{{/unless}}</div>

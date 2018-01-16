@@ -27,12 +27,7 @@ exports.zrequire = function (name, fn) {
     var obj = require(fn);
     requires.push(fn);
     set_global(name, obj);
-};
-
-exports.add_dependencies = function (dct) {
-    _.each(dct, function (fn, name) {
-        exports.zrequire(name, fn);
-    });
+    return obj;
 };
 
 exports.restore = function () {

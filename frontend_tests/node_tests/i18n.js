@@ -1,10 +1,7 @@
-add_dependencies({
-    Handlebars: 'handlebars',
-    templates: 'js/templates',
-    i18n: 'i18next',
-});
+zrequire('Handlebars', 'handlebars');
+zrequire('templates');
+zrequire('i18n', 'i18next');
 
-var i18n = global.i18n;
 i18n.init({
     nsSeparator: false,
     keySeparator: false,
@@ -50,6 +47,7 @@ i18n.init({
             left_side_userlist: false,
             twenty_four_hour_time: false,
             enable_stream_desktop_notifications: false,
+            enable_stream_push_notifications: false,
             enable_stream_sounds: false,
             enable_desktop_notifications: false,
             enable_sounds: false,
@@ -57,7 +55,6 @@ i18n.init({
             enable_offline_push_notifications: false,
             enable_online_push_notifications: false,
             enable_digest_emails: false,
-            autoscroll_forever: false,
             default_desktop_notifications: false,
         },
     };

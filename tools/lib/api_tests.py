@@ -1,8 +1,6 @@
-from __future__ import print_function
 
 if False:
-    from typing import Any
-    from api.zulip import Client
+    from zulip import Client
 
 def add_subscriptions(client):
     # type: (Client) -> None

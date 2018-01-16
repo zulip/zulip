@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
@@ -10,14 +9,12 @@ from zerver.lib.request import has_request_variables, JsonableError, REQ
 from zerver.lib.response import json_success
 from zerver.models import UserProfile, UserMessage
 
-def get_pointer_backend(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
+def get_pointer_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     return json_success({'pointer': user_profile.pointer})
 
 @has_request_variables
-def update_pointer_backend(request, user_profile,
-                           pointer=REQ(converter=to_non_negative_int)):
-    # type: (HttpRequest, UserProfile, int) -> HttpResponse
+def update_pointer_backend(request: HttpRequest, user_profile: UserProfile,
+                           pointer: int=REQ(converter=to_non_negative_int)) -> HttpResponse:
     if pointer <= user_profile.pointer:
         return json_success()
 

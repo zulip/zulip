@@ -8,31 +8,33 @@
                     <label class="inline-block title">{{t "Email" }}</label>
                     <a id="change_email" {{#unless page_params.realm_email_changes_disabled}}href="#change_email"{{/unless}}>
                         <button type="button" class="button small rounded inline-block" id='email_value'
-                            {{#if page_params.realm_email_changes_disabled}} disabled="true" {{/if}}>
+                            {{#if page_params.realm_email_changes_disabled}} disabled="disabled" {{/if}}>
                             {{page_params.email}}
                             <i class="fa fa-pencil"></i>
                         </button>
                     </a>
+                    <i class="icon-vector-question-sign change_email_tooltip" {{#unless page_params.realm_email_changes_disabled}}style="display:none" {{/unless}} data-toggle="tooltip"
+                    title="{{t 'Changing email addresses has been disabled by your Zulip organization administrators. Contact an administrator for help.' }}"></i>
                 </div>
 
-                <i class="icon-vector-question-sign change_email_tooltip" {{#unless page_params.realm_email_changes_disabled}}style="display:none" {{/unless}} data-toggle="tooltip"
+                <i class="icon-vector-question-sign settings-info-icon change_email_tooltip" {{#unless page_params.realm_email_changes_disabled}}style="display:none" {{/unless}} data-toggle="tooltip"
                 title="{{t 'Changing email addresses has been disabled by your Zulip organization administrators. Contact an administrator for help.' }}"></i>
 
                 <div id="change_email_modal" class="modal hide" tabindex="-1" role="dialog"
                     aria-labelledby="change_email_modal_label" aria-hidden="true">
                     <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">×</span></button>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
                         <h3 id="change_email_modal_label">{{t "Change email" }}</h3>
                     </div>
                     <div class="modal-body">
                         <div class="input-group email_change_container">
-                            <label for="email">{{t "Email" }}</label>
-                            <input type="text" name="email" value="{{ page_params.email }}" autocomplete="off" />
+                            <label for="email">{{t "New email" }}</label>
+                            <input type="text" name="email" value="{{ page_params.email }}" autocomplete="off" spellcheck="false" autofocus="autofocus"/>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button id='change_email_button' class="button rounded sea-green" data-dismiss="modal">{{t "Change" }}</button>
-                        <button class="button white rounded" data-dismiss="modal">{{t "Close" }}</button>
+                        <button class="button white rounded" data-dismiss="modal">{{t "Cancel" }}</button>
                     </div>
                 </div>
             </form>
@@ -45,14 +47,14 @@
                         <div class="input-group" id="name_change_container">
                             <label for="full_name" class="inline-block title">{{t "Full name" }}</label>
                             <input type="text" name="full_name" id="full_name" class="w-200 inline-block" value="{{ page_params.full_name }}" {{#if page_params.realm_name_changes_disabled}}disabled="disabled" {{/if}}/>
-                            <i class="icon-vector-question-sign change_name_tooltip" data-toggle="tooltip"
+                            <i class="icon-vector-question-sign settings-info-icon change_name_tooltip" data-toggle="tooltip"
                             {{#unless page_params.realm_name_changes_disabled}}style="display:none" {{/unless}}
                             title="{{t 'Changing your name has been disabled by your Zulip organization administrators. Contact an administrator for help.' }}"/>
                             <div class="warning"></div>
                         </div>
 
                         <!-- password start -->
-                        {{#if page_params.realm_password_auth_enabled}}
+                        {{#if page_params.realm_email_auth_enabled}}
                         <div class="input-group" id="pw_change_link">
                             <label for="change_password_button" class="inline-block title">{{t "Password" }}</label>
                             <button class="change_password_button button rounded inline-block input-size" data-dismiss="modal">{{t "Change password" }}</button>
@@ -70,7 +72,7 @@
                             <div class="input-group">
                                 <label for="new_password" class="inline-block title">{{t "New password" }}</label>
                                 <input type="password" autocomplete="off" name="new_password" id="new_password" class="w-200 inline-block" value=""
-                                 data-min-length="{{ page_params.password_min_length }}" data-min-quality="{{ page_params.password_min_quality }}" />
+                                 data-min-length="{{ page_params.password_min_length }}" data-min-guesses="{{ page_params.password_min_guesses }}" />
                                 <div class="warning">
                                     <div class="progress inline-block" id="pw_strength">
                                         <div class="bar bar-danger fade" style="width: 10%;"></div>
@@ -124,7 +126,7 @@
 
         <div id="deactivate_self_modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="deactivation_self_modal_label" aria-hidden="true">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">×</span></button>
+                <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
                 <h3 id="deactivation_self_modal_label">{{t "Deactivate your account" }} </h3>
             </div>
             <div class="modal-body">
@@ -158,7 +160,7 @@
         </div>
         <div id="get_api_key_box">
             <p>{{t "Please re-enter your password to confirm your identity." }}
-              <a href="/accounts/password/reset/" target="_blank">{{t "Forgotten it?" }}</a></p>
+              <a href="/accounts/password/reset/" target="_blank">{{t "Never had one? Forgotten it?" }}</a></p>
             <form action="/json/fetch_api_key" method="post" class="form-horizontal">
                 <div class="control-group">
                     <label for="password" class="control-label">{{t "Current password" }}</label>

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 Nagios plugin to check that Zephyr mirror forwarding is running.
@@ -9,7 +9,6 @@ run out of cron.
 
 See puppet/zulip_ops/files/cron.d/zephyr-mirror for the crontab details.
 """
-from __future__ import print_function
 if False:
     from typing import Dict
 

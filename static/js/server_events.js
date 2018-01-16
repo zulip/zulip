@@ -89,8 +89,13 @@ function get_events_success(events) {
     });
 
     if (messages.length !== 0) {
+        // Sort by ID, so that if we get multiple messages back from
+        // the server out-of-order, we'll still end up with our
+        // message lists in order.
+        messages = _.sortBy(messages, 'id');
         try {
             messages = echo.process_from_server(messages);
+            _.each(messages, message_store.set_message_booleans);
             message_events.insert_new_messages(messages);
         } catch (ex2) {
             blueslip.error('Failed to insert new messages\n' +
@@ -150,6 +155,9 @@ function get_events(options) {
     if (get_events_timeout !== undefined) {
         clearTimeout(get_events_timeout);
     }
+
+    get_events_params.client_gravatar = true;
+
     get_events_timeout = undefined;
     get_events_xhr = channel.get({
         url:      '/json/events',
@@ -266,6 +274,7 @@ exports.cleanup_event_queue = function cleanup_event_queue() {
     if (page_params.event_queue_expired === true) {
         return;
     }
+    blueslip.log("Cleaning up our event queue");
     // Set expired because in a reload we may be called twice.
     page_params.event_queue_expired = true;
     channel.del({

@@ -8,8 +8,17 @@ import localstorage from './localstorage';
 
 window.i18n = i18next;
 
+function loadPath(languages) {
+    var language = languages[0];
+    if (language.indexOf('-') >= 0) {
+        language = language.replace('-', '_');  // Change zh-Hans to zh_Hans.
+    }
+
+    return '/static/locale/' + language + '/translations.json';
+}
+
 var backendOptions = {
-    loadPath: '/static/locale/__lng__/translations.json',
+    loadPath: loadPath,
 };
 var callbacks = [];
 var initialized = false;
@@ -39,6 +48,7 @@ i18next.use(XHR)
         detection: detectionOptions,
         cache: cacheOptions,
         fallbackLng: 'en',
+        returnEmptyString: false,  // Empty string is not a valid translation.
     }, function () {
         var i;
         initialized = true;
@@ -71,7 +81,7 @@ $(function () {
     var current_generation_key = 'i18next:' + page_params.server_generation;
     // remove cached translations of older versions.
     translations.forEach(function (translation_key) {
-        if (!translation_key.indexOf(current_generation_key) === 0) {
+        if (translation_key.indexOf(current_generation_key) !== 0) {
             localStorage.removeItem(translation_key);
         }
     });

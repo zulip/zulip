@@ -26,8 +26,8 @@ function update_count_in_dom(count_span, value_span, count) {
     }
 }
 
-function set_count(type, name, count) {
-    var count_span = get_filter_li(type, name).find('.count');
+function set_count(count) {
+    var count_span = get_filter_li().find('.count');
     var value_span = count_span.find('.value');
     update_count_in_dom(count_span, value_span, count);
 }
@@ -194,7 +194,7 @@ exports.expand = function (op_pm) {
 };
 
 exports.update_dom_with_unread_counts = function (counts) {
-    set_count("global", "private", counts.private_message_count);
+    set_count(counts.private_message_count);
     counts.pm_count.each(function (count, user_ids_string) {
         // TODO: just use user_ids_string in our markup
         set_pm_conversation_count(user_ids_string, count);

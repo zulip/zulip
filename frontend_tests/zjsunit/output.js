@@ -10,7 +10,7 @@ function mkdir_p(path) {
     try {
         fs.mkdirSync(path);
     } catch (e) {
-        if ( e.code !== 'EEXIST' ) {
+        if (e.code !== 'EEXIST') {
             throw e;
         }
     }
@@ -39,6 +39,7 @@ function stylesheets() {
     data += '<link href="../../static/styles/fonts.css" rel="stylesheet">\n';
     data += '<link href="../../static/styles/portico.css" rel="stylesheet">\n';
     data += '<link href="../../static/third/thirdparty-fonts.css" rel="stylesheet">\n';
+    data += '<link href="../../static/generated/icons/style.css" rel="stylesheet">\n';
     data += '<link href="../../static/styles/zulip.css" rel="stylesheet">\n';
     data += '<link href="../../static/styles/settings.css" rel="stylesheet">\n';
     data += '<link href="../../static/styles/left-sidebar.css" rel="stylesheet">\n';

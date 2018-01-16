@@ -1,4 +1,16 @@
-var ct = require('js/composebox_typeahead.js');
+zrequire('compose_state');
+zrequire('ui_util');
+zrequire('pm_conversations');
+zrequire('util');
+zrequire('Handlebars', 'handlebars');
+zrequire('templates');
+zrequire('typeahead_helper');
+zrequire('people');
+zrequire('user_groups');
+zrequire('stream_data');
+zrequire('composebox_typeahead');
+
+var ct = composebox_typeahead;
 
 var emoji_stadium = {
     emoji_name: 'stadium',
@@ -24,9 +36,13 @@ var emoji_see_no_evil = {
     emoji_name: 'see_no_evil',
     emoji_url: 'TBD',
 };
+var emoji_thumbs_up = {
+    emoji_name: '+1',
+    emoji_url: 'TBD',
+};
 
-var emoji_list = [ emoji_tada, emoji_moneybag, emoji_stadium, emoji_japanese_post_office,
-                   emoji_panda_face, emoji_see_no_evil ];
+var emoji_list = [emoji_tada, emoji_moneybag, emoji_stadium, emoji_japanese_post_office,
+                  emoji_panda_face, emoji_see_no_evil, emoji_thumbs_up];
 var stream_list = ['Denmark', 'Sweden', 'The Netherlands'];
 var sweden_stream = {
     name: 'Sweden',
@@ -44,22 +60,12 @@ set_global('$', global.make_zjquery());
 set_global('page_params', {});
 set_global('channel', {});
 
-set_global('emoji', {emojis: emoji_list});
+set_global('emoji', {
+    active_realm_emojis: {},
+    emojis: emoji_list,
+});
 set_global('pygments_data', {langs:
     {python: 0, javscript: 1, html: 2, css: 3},
-});
-
-add_dependencies({
-    Handlebars: 'handlebars',
-    compose_state: 'js/compose_state.js',
-    people: 'js/people.js',
-    stream_data: 'js/stream_data',
-    templates: 'js/templates',
-    pm_conversations: 'js/pm_conversations.js',
-    recent_senders: 'js/recent_senders.js',
-    typeahead_helper: 'js/typeahead_helper.js',
-    ui_util: 'js/ui_util.js',
-    util: 'js/util.js',
 });
 
 global.compile_template('typeahead_list_item');
@@ -91,6 +97,23 @@ var deactivated_user = {
 global.people.add_in_realm(othello);
 global.people.add_in_realm(cordelia);
 global.people.add(deactivated_user);
+
+var hamletcharacters = {
+    name: "hamletcharacters",
+    id: 1,
+    description: "Characters of Hamlet",
+    members: [],
+};
+
+var backend = {
+    name: "Backend",
+    id: 2,
+    description: "Backend team",
+    members: [],
+};
+
+global.user_groups.add(hamletcharacters);
+global.user_groups.add(backend);
 
 (function test_add_topic() {
     ct.add_topic('Denmark', 'civil fears');
@@ -179,6 +202,38 @@ global.people.add(deactivated_user);
     expected_value = '@**Othello, the Moor of Venice** ';
     assert.equal(actual_value, expected_value);
 
+    fake_this.query = '@**oth';
+    fake_this.token = 'oth';
+    actual_value = ct.content_typeahead_selected.call(fake_this, othello);
+    expected_value = '@**Othello, the Moor of Venice** ';
+    assert.equal(actual_value, expected_value);
+
+    fake_this.query = '@*oth';
+    fake_this.token = 'oth';
+    actual_value = ct.content_typeahead_selected.call(fake_this, othello);
+    expected_value = '@**Othello, the Moor of Venice** ';
+    assert.equal(actual_value, expected_value);
+
+    // user group mention
+    var document_stub_group_trigger_called = false;
+    $('document-stub').trigger = function (event, params) {
+        assert.equal(event, 'usermention_completed.zulip');
+        assert.deepEqual(params, { user_group: backend });
+        document_stub_group_trigger_called = true;
+    };
+
+    fake_this.query = '@back';
+    fake_this.token = 'back';
+    actual_value = ct.content_typeahead_selected.call(fake_this, backend);
+    expected_value = '@*Backend* ';
+    assert.equal(actual_value, expected_value);
+
+    fake_this.query = '@*back';
+    fake_this.token = 'back';
+    actual_value = ct.content_typeahead_selected.call(fake_this, backend);
+    expected_value = '@*Backend* ';
+    assert.equal(actual_value, expected_value);
+
     // stream
     fake_this.completing = 'stream';
     var document_stub_trigger2_called = false;
@@ -189,6 +244,12 @@ global.people.add(deactivated_user);
     };
 
     fake_this.query = '#swed';
+    fake_this.token = 'swed';
+    actual_value = ct.content_typeahead_selected.call(fake_this, sweden_stream);
+    expected_value = '#**Sweden** ';
+    assert.equal(actual_value, expected_value);
+
+    fake_this.query = '#**swed';
     fake_this.token = 'swed';
     actual_value = ct.content_typeahead_selected.call(fake_this, sweden_stream);
     expected_value = '#**Sweden** ';
@@ -231,6 +292,7 @@ global.people.add(deactivated_user);
     assert(autosize_called);
     assert(set_timeout_called);
     assert(document_stub_trigger1_called);
+    assert(document_stub_group_trigger_called);
     assert(document_stub_trigger2_called);
 }());
 
@@ -282,7 +344,7 @@ global.people.add(deactivated_user);
         ct.add_topic('Sweden', 'more ice');
         ct.add_topic('Sweden', 'even more ice');
         ct.add_topic('Sweden', '<&>');
-        var topics = [ '<&>', 'even more ice', 'furniture', 'ice', 'kronor', 'more ice' ];
+        var topics = ['<&>', 'even more ice', 'furniture', 'ice', 'kronor', 'more ice'];
         $('#stream').val('Sweden');
         var actual_value = options.source();
         // Topics should be sorted alphabetically, not by addition order.
@@ -312,22 +374,22 @@ global.people.add(deactivated_user);
         // it is a result of the topics already being sorted after adding
         // them with ct.add_topic().
         options.query = 'furniture';
-        actual_value = options.sorter([ 'furniture' ]);
-        expected_value = [ 'furniture' ];
+        actual_value = options.sorter(['furniture']);
+        expected_value = ['furniture'];
         assert.deepEqual(actual_value, expected_value);
 
         // A literal match at the beginning of an element puts it at the top.
         options.query = 'ice';
-        actual_value = options.sorter([ 'even more ice', 'ice', 'more ice' ]);
-        expected_value = [ 'ice', 'even more ice', 'more ice' ];
+        actual_value = options.sorter(['even more ice', 'ice', 'more ice']);
+        expected_value = ['ice', 'even more ice', 'more ice'];
         assert.deepEqual(actual_value, expected_value);
 
         // The sorter should return the query as the first element if there
         // isn't a topic with such name.
         // This only happens if typeahead is providing other suggestions.
         options.query = 'e';  // Letter present in "furniture" and "ice"
-        actual_value = options.sorter([ 'furniture', 'ice' ]);
-        expected_value = [ 'e', 'furniture', 'ice' ];
+        actual_value = options.sorter(['furniture', 'ice']);
+        expected_value = ['e', 'furniture', 'ice'];
         assert.deepEqual(actual_value, expected_value);
 
         // Don't make any suggestions if this query doesn't match any
@@ -342,15 +404,11 @@ global.people.add(deactivated_user);
 
     var pm_recipient_typeahead_called = false;
     $('#private_message_recipient').typeahead = function (options) {
-        // options.source()
-        //
         // This should match the users added at the beginning of this test file.
         var actual_value = options.source();
-        var expected_value = [ othello, cordelia, deactivated_user ];
+        var expected_value = [othello, cordelia];
         assert.deepEqual(actual_value, expected_value);
 
-        // options.highlighter()
-        //
         // Even though the items passed to .highlighter() are the full
         // objects of the users matching the query, it only returns the
         // HTML string with the "User_name <email>" format, with the
@@ -374,44 +432,37 @@ global.people.add(deactivated_user);
         options.query = 'el';  // Matches both "othELlo" and "cordELia"
         assert.equal(options.matcher(othello), true);
         assert.equal(options.matcher(cordelia), true);
-        assert.equal(options.matcher(deactivated_user), false);
 
         // Othello is already filled in, now typeahead makes suggestions for
         // the value after the comma.
         options.query = 'othello@zulip.com, cor';
         assert.equal(options.matcher(othello), false);
         assert.equal(options.matcher(cordelia), true);
-        assert.equal(options.matcher(deactivated_user), false);
 
         // No suggestions are made if the query is just a comma.
         options.query = ',';
         assert.equal(options.matcher(othello), false);
         assert.equal(options.matcher(cordelia), false);
-        assert.equal(options.matcher(deactivated_user), false);
 
         options.query = 'bender';  // Doesn't exist
         assert.equal(options.matcher(othello), false);
         assert.equal(options.matcher(cordelia), false);
-        assert.equal(options.matcher(deactivated_user), false);
 
         // Don't make suggestions if the last name only has whitespaces
         // (we're between typing names).
         options.query = 'othello@zulip.com,     ';
         assert.equal(options.matcher(othello), false);
         assert.equal(options.matcher(cordelia), false);
-        assert.equal(options.matcher(deactivated_user), false);
 
         options.query = 'othello@zulip.com,, , cord';
         assert.equal(options.matcher(othello), false);
         assert.equal(options.matcher(cordelia), true);
-        assert.equal(options.matcher(deactivated_user), false);
 
         // If the user is already in the list, typeahead doesn't include it
         // again.
         options.query = 'cordelia@zulip.com, cord';
         assert.equal(options.matcher(othello), false);
         assert.equal(options.matcher(cordelia), false);
-        assert.equal(options.matcher(deactivated_user), false);
 
         // options.sorter()
         //
@@ -419,14 +470,14 @@ global.people.add(deactivated_user);
         // beginning first, and then the rest of them in REVERSE order of
         // the input.
         options.query = 'othello';
-        actual_value = options.sorter([ othello ]);
-        expected_value = [ othello ];
+        actual_value = options.sorter([othello]);
+        expected_value = [othello];
         assert.deepEqual(actual_value, expected_value);
 
         // A literal match at the beginning of an element puts it at the top.
         options.query = 'co';  // Matches everything ("x@zulip.COm")
-        actual_value = options.sorter([ othello, deactivated_user, cordelia ]);
-        expected_value = [ cordelia, deactivated_user, othello ];
+        actual_value = options.sorter([othello, deactivated_user, cordelia]);
+        expected_value = [cordelia, deactivated_user, othello];
         assert.deepEqual(actual_value, expected_value);
 
         options.query = 'non-existing-user';
@@ -459,8 +510,8 @@ global.people.add(deactivated_user);
         pm_recipient_typeahead_called = true;
     };
 
-    var new_message_content_typeahead_called = false;
-    $('#new_message_content').typeahead = function (options) {
+    var compose_textarea_typeahead_called = false;
+    $('#compose-textarea').typeahead = function (options) {
         // options.source()
         //
         // For now we only test that compose_contents_begins_typeahead has been
@@ -470,7 +521,10 @@ global.people.add(deactivated_user);
             $element: {},
         };
         var caret_called = false;
-        fake_this.$element.caret = function () { caret_called = true; };
+        fake_this.$element.caret = function () {
+            caret_called = true;
+            return 7;
+        };
         fake_this.options = options;
         var actual_value = options.source.call(fake_this, 'test #s');
         var expected_value = stream_list;
@@ -486,6 +540,11 @@ global.people.add(deactivated_user);
         expected_value = '<strong>Othello, the Moor of Venice</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">othello@zulip.com</small>';
         assert.equal(actual_value, expected_value);
 
+        fake_this = { completing: 'mention', token: 'hamletcharacters' };
+        actual_value = options.highlighter.call(fake_this, hamletcharacters);
+        expected_value = '<strong>hamletcharacters</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">Characters of Hamlet</small>';
+        assert.equal(actual_value, expected_value);
+
         // options.matcher()
         fake_this = { completing: 'emoji', token: 'ta' };
         assert.equal(options.matcher.call(fake_this, emoji_tada), true);
@@ -494,6 +553,10 @@ global.people.add(deactivated_user);
         fake_this = { completing: 'mention', token: 'Cord' };
         assert.equal(options.matcher.call(fake_this, cordelia), true);
         assert.equal(options.matcher.call(fake_this, othello), false);
+
+        fake_this = { completing: 'mention', token: 'hamletchar' };
+        assert.equal(options.matcher.call(fake_this, hamletcharacters), true);
+        assert.equal(options.matcher.call(fake_this, backend), false);
 
         fake_this = { completing: 'stream', token: 'swed' };
         assert.equal(options.matcher.call(fake_this, sweden_stream), true);
@@ -508,37 +571,42 @@ global.people.add(deactivated_user);
 
         // options.sorter()
         fake_this = { completing: 'emoji', token: 'ta' };
-        actual_value = options.sorter.call(fake_this, [ emoji_stadium, emoji_tada ]);
-        expected_value = [ emoji_tada, emoji_stadium ];
+        actual_value = options.sorter.call(fake_this, [emoji_stadium, emoji_tada]);
+        expected_value = [emoji_tada, emoji_stadium];
         assert.deepEqual(actual_value, expected_value);
 
         fake_this = { completing: 'mention', token: 'co' };
-        actual_value = options.sorter.call(fake_this, [ othello, cordelia ]);
-        expected_value = [ cordelia, othello ];
+        actual_value = options.sorter.call(fake_this, [othello, cordelia]);
+        expected_value = [cordelia, othello];
+        assert.deepEqual(actual_value, expected_value);
+
+        fake_this = { completing: 'mention', token: 'ham' };
+        actual_value = options.sorter.call(fake_this, [backend, hamletcharacters]);
+        expected_value = [hamletcharacters, backend];
         assert.deepEqual(actual_value, expected_value);
 
         fake_this = { completing: 'stream', token: 'de' };
-        actual_value = options.sorter.call(fake_this, [ sweden_stream, denmark_stream ]);
-        expected_value = [ denmark_stream, sweden_stream ];
+        actual_value = options.sorter.call(fake_this, [sweden_stream, denmark_stream]);
+        expected_value = [denmark_stream, sweden_stream];
         assert.deepEqual(actual_value, expected_value);
 
         // Matches in the descriptions affect the order as well.
         // Testing "co" for "cold", in both streams' description. It's at the
         // beginning of Sweden's description, so that one should go first.
         fake_this = { completing: 'stream', token: 'co' };
-        actual_value = options.sorter.call(fake_this, [ denmark_stream, sweden_stream ]);
-        expected_value = [ sweden_stream, denmark_stream ];
+        actual_value = options.sorter.call(fake_this, [denmark_stream, sweden_stream]);
+        expected_value = [sweden_stream, denmark_stream];
         assert.deepEqual(actual_value, expected_value);
 
         fake_this = { completing: 'syntax', token: 'ap' };
-        actual_value = options.sorter.call(fake_this, [ 'abap', 'applescript' ]);
-        expected_value = [ 'applescript', 'abap' ];
+        actual_value = options.sorter.call(fake_this, ['abap', 'applescript']);
+        expected_value = ['applescript', 'abap'];
         assert.deepEqual(actual_value, expected_value);
 
         fake_this = { completing: 'non-existing-completion' };
         assert.equal(options.sorter.call(fake_this), undefined);
 
-        new_message_content_typeahead_called = true;
+        compose_textarea_typeahead_called = true;
     };
 
     var pm_recipient_blur_called = false;
@@ -587,7 +655,7 @@ global.people.add(deactivated_user);
     $('#subject').data = stub_typeahead_hidden;
     $('#stream').data = stub_typeahead_hidden;
     $('#private_message_recipient').data = stub_typeahead_hidden;
-    $('#new_message_content').data = stub_typeahead_hidden;
+    $('#compose-textarea').data = stub_typeahead_hidden;
     $('form#send_message_form').keydown(event);
 
     event.keyCode = undefined;
@@ -595,15 +663,29 @@ global.people.add(deactivated_user);
     event.shiftKey = false;
     event.target.id = 'subject';
     $('form#send_message_form').keydown(event);
-    event.target.id = 'new_message_content';
+    event.target.id = 'compose-textarea';
     $('form#send_message_form').keydown(event);
     event.target.id = 'some_non_existing_id';
     $('form#send_message_form').keydown(event);
 
+
+    // Setup jquery functions used in compose_textarea enter
+    // handler.
+    var range_length = 0;
+    $('#compose-textarea').range = function () {
+        return {
+            length: range_length,
+            range: noop,
+            start: 0,
+            end: 0 + range_length,
+        };
+    };
+    $('#compose-textarea').caret = noop;
+
     event.keyCode = 13;
     event.target.id = 'subject';
     $('form#send_message_form').keydown(event);
-    event.target.id = 'new_message_content';
+    event.target.id = 'compose-textarea';
     page_params.enter_sends = false;
     event.metaKey = true;
     var compose_finish_called = false;
@@ -621,6 +703,12 @@ global.people.add(deactivated_user);
     event.ctrlKey = false;
     event.altKey = true;
     $('form#send_message_form').keydown(event);
+
+    // Cover case where there's a least one character there.
+    range_length = 2;
+    $('form#send_message_form').keydown(event);
+
+    event.altKey = false;
     event.metaKey = true;
     $('form#send_message_form').keydown(event);
     event.target.id = 'private_message_recipient';
@@ -691,19 +779,29 @@ global.people.add(deactivated_user);
     assert(pm_recipient_typeahead_called);
     assert(pm_recipient_blur_called);
     assert(channel_post_called);
-    assert(new_message_content_typeahead_called);
+    assert(compose_textarea_typeahead_called);
     assert(focus_handler_called);
     assert(stream_one_called);
 }());
 
 (function test_begins_typeahead() {
-    // Stub out split_at_cursor that uses $(':focus')
-    ct.split_at_cursor = function (word) { return [word, '']; };
 
     var begin_typehead_this = {options: {completions: {
         emoji: true, mention: true, stream: true, syntax: true}}};
 
-    function assert_typeahead_equals(input, reference) {
+    function assert_typeahead_equals(input, rest, reference) {
+        // Usage:
+        // assert_typeahead_equals('#some', reference); => '#some|'
+        // assert_typeahead_equals('#some', 'thing', reference) => '#some|thing'
+        // In the above examples, '|' serves as the cursor.
+        if (reference === undefined) {
+            reference = rest;
+            rest = '';
+        }
+        // Stub out split_at_cursor that uses $(':focus')
+        ct.split_at_cursor = function () {
+            return [input, rest];
+        };
         var returned = ct.compose_content_begins_typeahead.call(
             begin_typehead_this, input
         );
@@ -726,6 +824,7 @@ global.people.add(deactivated_user);
     ];
 
     var people_with_all = global.people.get_realm_persons().concat(all_items);
+    var all_mentions = people_with_all.concat(global.user_groups.get_realm_user_groups());
     var lang_list = Object.keys(pygments_data.langs);
 
     assert_typeahead_equals("test", false);
@@ -736,37 +835,46 @@ global.people.add(deactivated_user);
     assert_typeahead_equals("test *", false);
 
     // Make sure that the last token is the one we read.
-    assert_typeahead_equals("~~~ @zulip", people_with_all);
+    assert_typeahead_equals("~~~ @zulip", all_mentions);
     assert_typeahead_equals("@zulip :ta", emoji_list);
     assert_typeahead_equals(":tada: #foo", stream_list);
     assert_typeahead_equals("#foo\n~~~py", lang_list);
 
     assert_typeahead_equals("@", false);
     assert_typeahead_equals(" @", false);
-    assert_typeahead_equals("test @**o", false);
+    assert_typeahead_equals("test @**o", all_mentions);
+    assert_typeahead_equals("test @*o", all_mentions);
+    assert_typeahead_equals("test @*h", all_mentions);
     assert_typeahead_equals("test @", false);
     assert_typeahead_equals("test no@o", false);
-    assert_typeahead_equals("@ ", people_with_all);
-    assert_typeahead_equals("test\n@i", people_with_all);
-    assert_typeahead_equals("test\n @l", people_with_all);
-    assert_typeahead_equals("@zuli", people_with_all);
-    assert_typeahead_equals("@ zuli", people_with_all);
-    assert_typeahead_equals(" @zuli", people_with_all);
-    assert_typeahead_equals("test @o", people_with_all);
-    assert_typeahead_equals("test @z", people_with_all);
+    assert_typeahead_equals("@ ", false);
+    assert_typeahead_equals("@* ", false);
+    assert_typeahead_equals("@** ", false);
+    assert_typeahead_equals("test\n@i", all_mentions);
+    assert_typeahead_equals("test\n @l", all_mentions);
+    assert_typeahead_equals("@zuli", all_mentions);
+    assert_typeahead_equals("@ zuli", false);
+    assert_typeahead_equals(" @zuli", all_mentions);
+    assert_typeahead_equals("test @o", all_mentions);
+    assert_typeahead_equals("test @z", all_mentions);
 
     assert_typeahead_equals(":", false);
     assert_typeahead_equals(": ", false);
     assert_typeahead_equals(" :", false);
+    assert_typeahead_equals(":)", false);
+    assert_typeahead_equals(":4", false);
     assert_typeahead_equals("test :-P", false);
     assert_typeahead_equals("hi emoji :", false);
     assert_typeahead_equals("hi emoj:i", false);
+    assert_typeahead_equals("hi emoji :D", false);
+    assert_typeahead_equals("hi emoji :t", emoji_list);
     assert_typeahead_equals("hi emoji :ta", emoji_list);
     assert_typeahead_equals("hi emoji :da", emoji_list);
     assert_typeahead_equals("hi emoji :da_", emoji_list);
     assert_typeahead_equals("hi emoji :da ", emoji_list);
     assert_typeahead_equals("hi emoji\n:da", emoji_list);
     assert_typeahead_equals("hi emoji\n :ra", emoji_list);
+    assert_typeahead_equals(":+", emoji_list);
     assert_typeahead_equals(":la", emoji_list);
     assert_typeahead_equals(" :lee", emoji_list);
     assert_typeahead_equals("hi :see no", emoji_list);
@@ -807,6 +915,21 @@ global.people.add(deactivated_user);
     assert_typeahead_equals("~~~ f", lang_list);
     assert_typeahead_equals("test\n~~~ p", lang_list);
     assert_typeahead_equals("test\n~~~  p", lang_list);
+
+    // Following tests place the cursor before the second string
+    assert_typeahead_equals("#test", "ing", false);
+    assert_typeahead_equals("@test", "ing", false);
+    assert_typeahead_equals(":test", "ing", false);
+    assert_typeahead_equals("```test", "ing", false);
+    assert_typeahead_equals("~~~test", "ing", false);
+    var terminal_symbols = ',.;?!()[] "\'\n\t';
+    terminal_symbols.split().forEach(symbol => {
+        assert_typeahead_equals("#test", symbol, stream_list);
+        assert_typeahead_equals("@test", symbol, all_mentions);
+        assert_typeahead_equals(":test", symbol, emoji_list);
+        assert_typeahead_equals("```test", symbol, lang_list);
+        assert_typeahead_equals("~~~test", symbol, lang_list);
+    });
 }());
 
 (function test_tokenizing() {
@@ -832,14 +955,13 @@ global.people.add(deactivated_user);
 
 (function test_content_highlighter() {
     var fake_this = { completing: 'emoji' };
-    var item = { emoji_name: 'person shrugging', emoji_url: '¯\_(ツ)_/¯' };
+    var emoji = { emoji_name: 'person shrugging', emoji_url: '¯\_(ツ)_/¯' };
     var th_render_typeahead_item_called = false;
-    typeahead_helper.render_typeahead_item = function (item) {
-        assert.equal(item.primary, 'person shrugging');
-        assert.equal(item.img_src, '¯\_(ツ)_/¯');
+    typeahead_helper.render_emoji = function (item) {
+        assert.deepEqual(item, emoji);
         th_render_typeahead_item_called = true;
     };
-    ct.content_highlighter.call(fake_this, item);
+    ct.content_highlighter.call(fake_this, emoji);
 
     fake_this = { completing: 'mention' };
     var th_render_person_called = false;
@@ -848,6 +970,13 @@ global.people.add(deactivated_user);
         th_render_person_called = true;
     };
     ct.content_highlighter.call(fake_this, othello);
+
+    var th_render_user_group_called = false;
+    typeahead_helper.render_user_group = function (user_group) {
+        assert.deepEqual(user_group, backend);
+        th_render_user_group_called = true;
+    };
+    ct.content_highlighter.call(fake_this, backend);
 
     fake_this = { completing: 'stream' };
     var th_render_stream_called = false;
@@ -863,7 +992,7 @@ global.people.add(deactivated_user);
         assert.deepEqual(item, { primary: 'py' });
         th_render_typeahead_item_called = true;
     };
-    ct.content_highlighter.call(fake_this, 'py' );
+    ct.content_highlighter.call(fake_this, 'py');
 
     fake_this = { completing: 'something-else' };
     assert(!ct.content_highlighter.call(fake_this));
@@ -871,6 +1000,7 @@ global.people.add(deactivated_user);
     // Verify that all stub functions have been called.
     assert(th_render_typeahead_item_called);
     assert(th_render_person_called);
+    assert(th_render_user_group_called);
     assert(th_render_stream_called);
     assert(th_render_typeahead_item_called);
 }());

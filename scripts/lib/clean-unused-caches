@@ -1,0 +1,20 @@
+#!/usr/bin/env python3
+import argparse
+import os
+import subprocess
+import sys
+
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(ZULIP_PATH)
+from scripts.lib.zulip_tools import get_environment, parse_cache_script_args
+
+def main():
+    # type: () -> None
+    parse_cache_script_args("This script cleans unused zulip caches.")
+    os.chdir(ZULIP_PATH)
+    subprocess.check_call(["./scripts/lib/clean-venv-cache"] + sys.argv[1:])
+    subprocess.check_call(["./scripts/lib/clean-npm-cache"] + sys.argv[1:])
+    subprocess.check_call(["./scripts/lib/clean-emoji-cache"] + sys.argv[1:])
+
+if __name__ == "__main__":
+    main()

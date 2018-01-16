@@ -60,7 +60,7 @@ common.autofocus('#id_username');
                   server yet, so it is impossible to login!</p>
 
                   <p>See
-                  the <a href="http://zulip.readthedocs.io/en/latest/prod-install.html#step-3-configure-zulip">Zulip
+                  the <a href="https://zulip.readthedocs.io/en/latest/production/install.html#step-3-configure-zulip">Zulip
                   authentication documentation</a> to learn how to
                   configure authentication backends.</p>
               </div>
@@ -73,10 +73,19 @@ common.autofocus('#id_username');
 
                     <!-- .no-validation is for removing the red star in CSS -->
                     <div class="input-box no-validation">
-                        <input id="id_username" type="email" name="username" class="email required"
+                        <input id="id_username" type="{% if not require_email_format_usernames %}text{% else %}email{% endif %}"
+                               name="username" class="{% if require_email_format_usernames %}email {% endif %}required"
                             {% if email %} value="{{ email }}" {% else %} value="" {% endif %}
                             maxlength="72" required />
-                        <label for="id_username">{{ _('Email') }}</label>
+                        <label for="id_username">
+                            {% if not require_email_format_usernames and email_auth_enabled %}
+                                {{ _('Email or username') }}
+                            {% elif not require_email_format_usernames %}
+                                {{ _('Username') }}
+                            {% else %}
+                                {{ _('Email') }}
+                            {% endif %}
+                        </label>
                     </div>
 
                     <div class="input-box no-validation">
@@ -92,7 +101,7 @@ common.autofocus('#id_username');
                     </div>
                     {% endif %}
 
-                    {% if email %}
+                    {% if already_registered %}
                     <div class="alert">
                         {{ _("You've already registered with this email address. Please sign in below.") }}
                     </div>
@@ -116,7 +125,7 @@ common.autofocus('#id_username');
                 {% if google_auth_enabled %}
                 <div class="login-google">
                     <form class="form-inline" action="{{ url('zerver.views.auth.start_google_oauth2') }}" method="get">
-                        <button class="login-google-button full-width">{{ _('Sign in with Google') }}</button>
+                        <button class="login-social-button login-google-button full-width">{{ _('Sign in with Google') }}</button>
                     </form>
                 </div>
                 {% endif %}
@@ -124,15 +133,17 @@ common.autofocus('#id_username');
                 {% if github_auth_enabled %}
                  <div class="login-github">
                     <form class="form-inline github-wrapper" action="{{ url('login-social', args=('github',)) }}" method="get">
-                        <button class="login-github-button github">{{ _('Sign in with GitHub') }}</button>
+                        <button class="login-social-button login-github-button github">{{ _('Sign in with GitHub') }}</button>
                     </form>
                 </div>
                 {% endif %}
 
                 <div class="actions">
+                    {% if email_auth_enabled %}
                     <a class="forgot-password" href="/accounts/password/reset/">Forgot your password?</a>
+                    {% endif %}
                     {% if not register_link_disabled %}
-                    <a class="register-link float-right" href="/register/">Register</a>
+                    <a class="register-link float-right" href="/register/">Sign up</a>
                     {% endif %}
                 </div>
                 {% endif %}

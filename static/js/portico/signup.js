@@ -27,11 +27,11 @@ $(function () {
         errorPlacement: function (error, element) {
             // NB: this is called at most once, when the error element
             // is created.
-            element.next('.help-inline.text-error').remove();
+            element.next('.help-inline.alert.alert-error').remove();
             if (element.next().is('label[for="' + element.attr('id') + '"]')) {
-                error.insertAfter(element.next()).addClass('help-inline text-error');
+                error.insertAfter(element.next()).addClass('help-inline alert alert-error');
             } else {
-                error.insertAfter(element).addClass('help-inline text-error');
+                error.insertAfter(element).addClass('help-inline alert alert-error');
             }
         },
         highlight:   highlight('error'),
@@ -45,10 +45,10 @@ $(function () {
     });
 
     $("#send_confirm").validate({
-        errorElement: "p",
+        errorElement: "div",
         errorPlacement: function (error) {
-            $('#errors').empty();
-            error.appendTo("#errors")
+            $('.alert-error').empty();
+            error.appendTo(".alert-error")
                  .addClass("text-error");
         },
         success: function () {
@@ -59,5 +59,22 @@ $(function () {
     $("#login_form").validate({
         errorClass: "text-error",
         wrapper: "div",
+    });
+
+    $(".register-page #email, .login-page-container #id_username").on('focusout keydown', function (e) {
+        // check if it is the "focusout" or if it is a keydown, then check if
+        // the keycode was the one for "enter" (13).
+        if (e.type === "focusout" || e.which === 13) {
+            $(this).val($.trim($(this).val()));
+        }
+    });
+
+    var show_subdomain_section = function (bool) {
+        var action = bool ? "hide" : "show";
+        $("#subdomain_section")[action]();
+    };
+
+    $("#realm_in_root_domain").change(function () {
+        show_subdomain_section($(this).is(":checked"));
     });
 });

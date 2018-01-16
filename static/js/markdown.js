@@ -1,5 +1,5 @@
 // This contains zulip's frontend markdown implementation; see
-// docs/markdown.md for docs on our Markdown syntax.  The other
+// docs/subsystems/markdown.md for docs on our Markdown syntax.  The other
 // main piece in rendering markdown client-side is
 // static/third/marked/lib/marked.js, which we have significantly
 // modified from the original implementation.
@@ -16,8 +16,8 @@ var backend_only_markdown_re = [
     // Inline image previews, check for contiguous chars ending in image suffix
     // To keep the below regexes simple, split them out for the end-of-message case
 
-    /[^\s]*(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp)\s+/m,
-    /[^\s]*(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp)$/m,
+    /[^\s]*(?:(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp)\)?)\s+/m,
+    /[^\s]*(?:(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp)\)?)$/m,
 
     // Twitter and youtube links are given previews
 
@@ -42,16 +42,8 @@ exports.contains_backend_only_syntax = function (content) {
     return markedup !== undefined || false_filter_match !== undefined;
 };
 
-function push_uniquely(lst, elem) {
-    if (!_.contains(lst, elem)) {
-        lst.push(elem);
-    }
-}
-
 exports.apply_markdown = function (message) {
-    if (message.flags === undefined) {
-        message.flags = [];
-    }
+    message_store.init_booleans(message);
 
     // Our python-markdown processor appends two \n\n to input
     var options = {
@@ -59,31 +51,37 @@ exports.apply_markdown = function (message) {
             var person = people.get_by_name(name);
             if (person !== undefined) {
                 if (people.is_my_user_id(person.user_id)) {
-                    push_uniquely(message.flags, 'mentioned');
+                    message.mentioned = true;
+                    message.mentioned_me_directly = true;
                 }
                 return '<span class="user-mention" data-user-id="' + person.user_id + '">' +
                        '@' + person.full_name +
                        '</span>';
             } else if (name === 'all' || name === 'everyone') {
-                push_uniquely(message.flags, 'mentioned');
+                message.mentioned = true;
                 return '<span class="user-mention" data-user-id="*">' +
                        '@' + name +
                        '</span>';
             }
             return undefined;
         },
+        groupMentionHandler: function (name) {
+            var group = user_groups.get_user_group_from_name(name);
+            if (group !== undefined) {
+                if (user_groups.is_member_of(group.id, people.my_current_user_id())) {
+                    message.mentioned = true;
+                }
+                return '<span class="user-group-mention" data-user-group-id="' + group.id + '">' +
+                       '@' + group.name +
+                       '</span>';
+            }
+            return undefined;
+        },
     };
     message.content = marked(message.raw_content + '\n\n', options).trim();
-};
-
-exports.add_message_flags = function (message) {
-    // Note: mention flags are set in apply_markdown()
-
-    if (message.raw_content.indexOf('/me ') === 0 &&
-        message.content.indexOf('<p>') === 0 &&
-        message.content.lastIndexOf('</p>') === message.content.length - 4) {
-        message.flags.push('is_me_message');
-    }
+    message.is_me_message = (message.raw_content.indexOf('/me ') === 0 &&
+                             message.content.indexOf('<p>') === 0 &&
+                             message.content.lastIndexOf('</p>') === message.content.length - 4);
 };
 
 exports.add_subject_links = function (message) {
@@ -124,35 +122,33 @@ function escape(html, encode) {
 }
 
 function handleUnicodeEmoji(unicode_emoji) {
-    var hex_value = unicode_emoji.codePointAt(0).toString(16);
-    if (emoji.emojis_by_unicode.hasOwnProperty(hex_value)) {
-        var emoji_url = emoji.emojis_by_unicode[hex_value];
-        var emoji_name = emoji_codes.codepoint_to_name[hex_value];
+    var codepoint = unicode_emoji.codePointAt(0).toString(16);
+    if (emoji_codes.codepoint_to_name.hasOwnProperty(codepoint)) {
+        var emoji_name = emoji_codes.codepoint_to_name[codepoint];
         var alt_text = ':' + emoji_name + ':';
         var title = emoji_name.split("_").join(" ");
-        return '<img alt="' + alt_text + '"' +
-               ' class="emoji" src="' + emoji_url + '"' +
-               ' title="' + title + '">';
+        return '<span class="emoji emoji-' + codepoint + '"' +
+               ' title="' + title + '">' + alt_text +
+               '</span>';
     }
     return unicode_emoji;
 }
 
 function handleEmoji(emoji_name) {
-    var input_emoji = ':' + emoji_name + ':';
+    var alt_text = ':' + emoji_name + ':';
     var title = emoji_name.split("_").join(" ");
-    var emoji_url;
     if (emoji.active_realm_emojis.hasOwnProperty(emoji_name)) {
-        emoji_url = emoji.active_realm_emojis[emoji_name].emoji_url;
-        return '<img alt="' + input_emoji + '"' +
+        var emoji_url = emoji.active_realm_emojis[emoji_name].emoji_url;
+        return '<img alt="' + alt_text + '"' +
                ' class="emoji" src="' + emoji_url + '"' +
                ' title="' + title + '">';
-    } else if (emoji.emojis_by_name.hasOwnProperty(emoji_name)) {
-        emoji_url = emoji.emojis_by_name[emoji_name];
-        return '<img alt="' + input_emoji + '"' +
-               ' class="emoji" src="' + emoji_url + '"' +
-               ' title="' + title + '">';
+    } else if (emoji_codes.name_to_codepoint.hasOwnProperty(emoji_name)) {
+        var codepoint = emoji_codes.name_to_codepoint[emoji_name];
+        return '<span class="emoji emoji-' + codepoint + '"' +
+               ' title="' + title + '">' + alt_text +
+               '</span>';
     }
-    return input_emoji;
+    return alt_text;
 }
 
 function handleAvatar(email) {
@@ -261,6 +257,65 @@ exports.set_realm_filters = function (realm_filters) {
     marked.InlineLexer.rules.zulip.realm_filters = marked_rules;
 };
 
+var preprocess_auto_olists = (function () {
+    var TAB_LENGTH = 2;
+    var re = /^( *)(\d+)\. +(.*)/;
+
+    function getIndent(match) {
+        return Math.floor(match[1].length / TAB_LENGTH);
+    }
+
+    function extendArray(arr, arr2) {
+        Array.prototype.push.apply(arr, arr2);
+    }
+
+    function renumber(mlist) {
+        if (!mlist.length) {
+            return [];
+        }
+
+        var startNumber = parseInt(mlist[0][2], 10);
+        var changeNumbers = _.every(mlist, function (m) {
+            return startNumber === parseInt(m[2], 10);
+        });
+
+        var counter = startNumber;
+        return _.map(mlist, function (m) {
+            var number = changeNumbers ? counter.toString() : m[2];
+            counter += 1;
+            return m[1] + number + '. ' + m[3];
+        });
+    }
+
+    return function (src) {
+        var newLines = [];
+        var currentList = [];
+        var currentIndent = 0;
+
+        _.each(src.split('\n'), function (line) {
+            var m = line.match(re);
+            var isNextItem = m && currentList.length && currentIndent === getIndent(m);
+            if (!isNextItem) {
+                extendArray(newLines, renumber(currentList));
+                currentList = [];
+            }
+
+            if (!m) {
+                newLines.push(line);
+            } else if (isNextItem) {
+                currentList.push(m);
+            } else {
+                currentList = [m];
+                currentIndent = getIndent(m);
+            }
+        });
+
+        extendArray(newLines, renumber(currentList));
+
+        return newLines.join('\n');
+    };
+}());
+
 exports.initialize = function () {
 
     function disable_markdown_regex(rules, name) {
@@ -346,7 +401,7 @@ exports.initialize = function () {
         realmFilterHandler: handleRealmFilter,
         texHandler: handleTex,
         renderer: r,
-        preprocessors: [preprocess_code_blocks],
+        preprocessors: [preprocess_code_blocks, preprocess_auto_olists],
     });
 
 };

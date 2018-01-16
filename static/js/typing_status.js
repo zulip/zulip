@@ -2,6 +2,8 @@ var typing_status = (function () {
 
 var exports = {};
 
+// See docs/subsystems/typing-indicators.md for details on typing indicators.
+
 // The following constants are tuned to work with
 // TYPING_STARTED_EXPIRY_PERIOD, which is what the other
 // users will use to time out our messages.  (Or us,

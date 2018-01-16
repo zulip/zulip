@@ -1,6 +1,8 @@
 {
     "activity": "./static/third/sorttable/sorttable.js",
-    "api": "./static/js/portico/api.js",
+    "portico": [
+        "./static/js/portico/header.js"
+    ],
     "common": [
                "./node_modules/jquery/dist/jquery.js",
                "./node_modules/underscore/underscore.js",

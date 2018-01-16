@@ -112,21 +112,34 @@ function message_matches_search_term(message, operator, operand) {
     case 'sender':
         return people.id_matches_email_operand(message.sender_id, operand);
 
+    case 'group-pm-with':
+        var operand_ids = people.pm_with_operand_ids(operand);
+        if (!operand_ids) {
+            return false;
+        }
+        var user_ids = people.group_pm_with_user_ids(message);
+        if (!user_ids) {
+            return false;
+        }
+        return (user_ids.includes(operand_ids[0]));
+        // We should also check if the current user is in the recipient list (user_ids) of the
+        // message, but it is implicit by the fact that the current user has access to the message.
+
     case 'pm-with':
         // TODO: use user_ids, not emails here
         if (message.type !== 'private') {
             return false;
         }
-        var operand_ids = people.pm_with_operand_ids(operand);
+        operand_ids = people.pm_with_operand_ids(operand);
         if (!operand_ids) {
             return false;
         }
-        var message_ids = people.pm_with_user_ids(message);
-        if (!message_ids) {
+        user_ids = people.pm_with_user_ids(message);
+        if (!user_ids) {
             return false;
         }
 
-        return _.isEqual(operand_ids, message_ids);
+        return _.isEqual(operand_ids, user_ids);
     }
 
     return true; // unknown operators return true (effectively ignored)
@@ -156,7 +169,7 @@ Filter.canonicalize_term = function (opts) {
     var operator = opts.operator;
     var operand = opts.operand;
 
-    // Make negated be explictly false for both clarity and
+    // Make negated be explicitly false for both clarity and
     // simplifying deepEqual checks in the tests.
     if (!negated) {
         negated = false;
@@ -181,6 +194,9 @@ Filter.canonicalize_term = function (opts) {
         if (operand === 'me') {
             operand = people.my_current_email();
         }
+        break;
+    case 'group-pm-with':
+        operand = operand.toString().toLowerCase();
         break;
     case 'search':
         // The mac app automatically substitutes regular quotes with curly
@@ -210,15 +226,15 @@ Filter.canonicalize_term = function (opts) {
    narrow in the URL fragment.  There we do use full
    URI encoding to avoid problematic characters. */
 function encodeOperand(operand) {
-    return operand.replace(/%/g,  '%25')
+    return operand.replace(/%/g, '%25')
                   .replace(/\+/g, '%2B')
-                  .replace(/ /g,  '+')
-                  .replace(/"/g,  '%22');
+                  .replace(/ /g, '+')
+                  .replace(/"/g, '%22');
 }
 
 function decodeOperand(encoded, operator) {
     encoded = encoded.replace(/"/g, '');
-    if (operator !== 'pm-with' && operator !== 'sender' && operator !== 'from') {
+    if (_.contains(['group-pm-with','pm-with','sender','from'],operator) === false) {
         encoded = encoded.replace(/\+/g, ' ');
     }
     return util.robust_uri_decode(encoded).trim();
@@ -383,6 +399,7 @@ Filter.prototype = {
     update_email: function (user_id, new_email) {
         _.each(this._operators, function (term) {
             switch (term.operator) {
+                case 'group-pm-with':
                 case 'pm-with':
                 case 'sender':
                 case 'from':
@@ -458,6 +475,9 @@ Filter.operator_to_prefix = function (operator, negated) {
     // Note: We hack around using this in "describe" below.
     case 'is':
         return verb + 'messages that are';
+
+    case 'group-pm-with':
+        return verb + 'group private messages including';
     }
     return '';
 };
@@ -465,7 +485,7 @@ Filter.operator_to_prefix = function (operator, negated) {
 // Convert a list of operators to a human-readable description.
 Filter.describe = function (operators) {
     if (operators.length === 0) {
-        return 'Go to Home view';
+        return 'all messages';
     }
 
     var parts = [];

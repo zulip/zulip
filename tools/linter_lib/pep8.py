@@ -40,6 +40,11 @@ def check_pep8(files):
         # these may make the code less readable.
         'E226',
 
+        # "multiple spaces after ':'"
+        # This is the `{}` analogue of E221, and these are similarly being used
+        # for alignment.
+        'E241',
+
         # "unexpected spaces around keyword / parameter equals"
         # Many of these should be fixed, but many are also being used for
         # alignment/making the code easier to read.
@@ -74,6 +79,18 @@ def check_pep8(files):
         # "do not assign a lambda expression, use a def"
         # Fixing these would probably reduce readability in most cases.
         'E731',
+
+        # "line break before binary operator"
+        # This is a bug in the `pep8`/`pycodestyle` tool -- it's completely backward.
+        # See https://github.com/PyCQA/pycodestyle/issues/498 .
+        'W503',
+
+        # This number will probably be used for the corrected, inverse version of
+        # W503 when that's added: https://github.com/PyCQA/pycodestyle/pull/502
+        # Once that fix lands and we update to a version of pycodestyle that has it,
+        # we'll want the rule; but we might have to briefly ignore it while we fix
+        # existing code.
+        # 'W504',
     ]
 
     if len(files) == 0:

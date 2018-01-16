@@ -10,8 +10,6 @@ var subs_by_stream_id;
 
 var stream_ids_by_name = new Dict({fold_case: true});
 
-var defaults = {};
-
 exports.clear_subscriptions = function () {
     stream_info = new Dict({fold_case: true});
     subs_by_stream_id = new Dict();
@@ -109,6 +107,18 @@ exports.delete_sub = function (stream_id) {
     stream_info.del(sub.name);
 };
 
+exports.get_non_default_stream_names = function () {
+    var subs = stream_info.values();
+    subs = _.reject(subs, function (sub) {
+        return exports.is_default_stream_id(sub.stream_id);
+    });
+    subs = _.reject(subs, function (sub) {
+        return sub.invite_only;
+    });
+    var names = _.pluck(subs, 'name');
+    return names;
+};
+
 exports.subscribed_subs = function () {
     return _.where(stream_info.values(), {subscribed: true});
 };
@@ -156,8 +166,16 @@ exports.render_stream_description = function (sub) {
 
 exports.update_calculated_fields = function (sub) {
     sub.is_admin = page_params.is_admin;
+    // Admin can change stream name/description either stream is public or
+    // stream is private and admin is subscribed to private stream.
+    sub.can_change_name_description = page_params.is_admin &&
+                                     (!sub.invite_only || (sub.invite_only && sub.subscribed));
+    // If stream is public then any user can subscribe. If stream is private then only
+    // subscribed users can unsubscribe.
+    sub.should_display_subscription_button = !sub.invite_only || sub.subscribed;
     sub.can_make_public = page_params.is_admin && sub.invite_only && sub.subscribed;
     sub.can_make_private = page_params.is_admin && !sub.invite_only;
+    sub.can_add_subscribers = !sub.invite_only || (sub.invite_only && sub.subscribed);
     sub.preview_url = narrow.by_stream_uri(sub.name);
     exports.render_stream_description(sub);
     exports.update_subscribers_count(sub);
@@ -224,8 +242,29 @@ exports.get_invite_only = function (stream_name) {
     return sub.invite_only;
 };
 
+var default_stream_ids = new Dict();
+
+exports.set_realm_default_streams = function (realm_default_streams) {
+    page_params.realm_default_streams = realm_default_streams;
+    default_stream_ids.clear();
+
+    realm_default_streams.forEach(function (stream) {
+        default_stream_ids.set(stream.stream_id, true);
+    });
+};
+
 exports.get_default_status = function (stream_name) {
-    return defaults.hasOwnProperty(stream_name);
+    var stream_id = exports.get_stream_id(stream_name);
+
+    if (!stream_id) {
+        return false;
+    }
+
+    return default_stream_ids.has(stream_id);
+};
+
+exports.is_default_stream_id = function (stream_id) {
+    return default_stream_ids.has(stream_id);
 };
 
 exports.get_name = function (stream_name) {
@@ -259,17 +298,6 @@ exports.maybe_get_stream_name = function (stream_id) {
 
 exports.set_subscribers = function (sub, user_ids) {
     sub.subscribers = Dict.from_array(user_ids || []);
-};
-
-exports.set_subscriber_emails = function (sub, emails) {
-    _.each(emails, function (email) {
-        var user_id = people.get_user_id(email);
-        if (!user_id) {
-            blueslip.error("We tried to set invalid subscriber: " + email);
-        } else {
-            sub.subscribers.set(user_id, true);
-        }
-    });
 };
 
 exports.add_subscriber = function (stream_name, user_id) {
@@ -361,6 +389,7 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
         invite_only: false,
         desktop_notifications: page_params.enable_stream_desktop_notifications,
         audible_notifications: page_params.enable_stream_sounds,
+        push_notifications: page_params.enable_stream_push_notifications,
         description: '',
     });
 
@@ -413,6 +442,19 @@ exports.get_streams_for_settings_page = function () {
     return all_subs;
 };
 
+exports.get_streams_for_admin = function () {
+    // Sort and combine all our streams.
+    function by_name(a,b) {
+        return util.strcmp(a.name, b.name);
+    }
+
+    var subs = stream_info.values();
+
+    subs.sort(by_name);
+
+    return subs;
+};
+
 exports.initialize_from_page_params = function () {
     function populate_subscriptions(subs, subscribed) {
         subs.forEach(function (sub) {
@@ -423,9 +465,7 @@ exports.initialize_from_page_params = function () {
         });
     }
 
-    page_params.realm_default_streams.forEach(function (stream) {
-        defaults[stream.name] = true;
-    });
+    exports.set_realm_default_streams(page_params.realm_default_streams);
 
     populate_subscriptions(page_params.subscriptions, true);
     populate_subscriptions(page_params.unsubscribed, false);
@@ -466,6 +506,7 @@ exports.remove_default_stream = function (stream_id) {
             return stream.stream_id === stream_id;
         }
     );
+    default_stream_ids.del(stream_id);
 };
 
 return exports;

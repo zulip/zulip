@@ -34,24 +34,17 @@ function run {
 run ./tools/check-provision $FORCEARG
 run ./tools/clean-repo
 
-# travis/static-analysis
-run ./tools/run-mypy
-# Not running check-py3 because it demands a clean Git worktree.
-# run ./tools/check-py3
-
 # travis/backend
-run ./tools/lint --pep8 $FORCEARG
-run python manage.py makemessages --locale en
-run python -W ignore tools/check-capitalization --no-generate
-run python -W ignore tools/check-frontend-i18n --no-generate
+run ./tools/lint --backend $FORCEARG
 run ./tools/test-tools
 run ./tools/test-backend $FORCEARG
+run ./tools/run-mypy $FORCEARG
 run ./tools/test-migrations
 # Not running SVG optimizing since it's low-churn
 # run ./tools/optimize-svg
 # Not running documentation tests since it takes 20s and only tests documentation
 # run ./tools/test-documentation
-run ./tools/test-help-documentation.py $FORCEARG
+run ./tools/test-help-documentation $FORCEARG
 run ./tools/test-api
 # Not running run-dev tests locally; we never have
 # run ./tools/test-run-dev
@@ -59,7 +52,11 @@ run ./tools/test-api
 # run ./tools/test-queue-worker-reload
 
 # travis/frontend
+run ./tools/lint --frontend $FORCEARG
 run ./tools/test-js-with-node
+run ./manage.py makemessages --locale en
+run env PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
+run env PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate
 run ./tools/test-js-with-casper $FORCEARG
 
 printf '\n\e[32mAll OK!\e[0m\n'

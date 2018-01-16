@@ -1,12 +1,7 @@
 set_global('$', global.make_zjquery());
 
-add_dependencies({
-    people: 'js/people.js',
-});
-
-var people = global.people;
-
-var user_events = require("js/user_events.js");
+zrequire('people');
+zrequire('user_events');
 
 set_global('activity', {
     redraw: function () {},
@@ -134,14 +129,11 @@ initialize();
     assert(person.timezone);
 
     var error_msg;
-    var error_details;
-    global.blueslip.error = function (error_message_arg, error_details_arg) {
+    global.blueslip.error = function (error_message_arg) {
         error_msg = error_message_arg;
-        error_details = error_details_arg;
     };
 
     assert(!user_events.update_person({user_id: 29, full_name: 'Sir Isaac Newton'}));
-    assert.equal(error_msg, "Got update_person event for unexpected user");
-    assert.equal(error_details.email, 29);
+    assert.equal(error_msg, "Got update_person event for unexpected user 29");
 
 }());

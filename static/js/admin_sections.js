@@ -8,6 +8,7 @@ exports.load_admin_section = function (name) {
     var section;
 
     switch (name) {
+        case 'organization-profile':
         case 'organization-settings':
         case 'organization-permissions':
         case 'auth-methods':
@@ -27,6 +28,12 @@ exports.load_admin_section = function (name) {
             break;
         case 'filter-settings':
             section = 'filters';
+            break;
+        case 'invites-list-admin':
+            section = 'invites';
+            break;
+        case 'user-groups-admin':
+            section = 'user-groups';
             break;
         default:
             blueslip.error('Unknown admin id ' + name);
@@ -55,6 +62,12 @@ exports.load_admin_section = function (name) {
         case 'filters':
             settings_filters.set_up();
             break;
+        case 'invites':
+            settings_invites.set_up();
+            break;
+        case 'user-groups':
+            settings_user_groups.set_up();
+            break;
         default:
             blueslip.error('programming error for section ' + section);
             return;
@@ -70,6 +83,8 @@ exports.reset_sections = function () {
     settings_users.reset();
     settings_streams.reset();
     settings_filters.reset();
+    settings_invites.reset();
+    settings_user_groups.reset();
 };
 
 return exports;

@@ -3,13 +3,18 @@
   </div>
   <div id="compose-container">
     <div id="compose_controls" class="compose-content new-style">
+          <div id="nonexistent_stream_reply_error" class="alert-error">
+            <span class="compose-send-status-close">&times;</span>
+            <span id="compose-reply-error-msg"></span>
+          </div>
           <div id="compose_buttons">
             <span class="new_message_button">
-              <a class="drafts-link no-style" href="#drafts">
+              <a class="drafts-link no-style" href="#drafts" title="{{ _('Drafts') }} (d)">
                 <button type="button" class="button small rounded compose_drafts_button">
                   <span>{{ _('Drafts') }}</span>
                 </button>
               </a>
+              <span class="alert-draft pull-left">{{ _('Saved as draft') }}</span>
             </span>
             <span class="new_message_button">
               <button type="button" class="button small rounded compose_stream_button"
@@ -27,18 +32,27 @@
               </button>
             </span>
             {% endif %}
+            <span class="new_message_button">
+              <button type="button" class="button small rounded compose_reply_button"
+                      id="left_bar_compose_reply_button_big"
+                      title="{{ _('Reply') }} (r)">
+                <span class="compose_reply_button_label">{{ _('Reply') }}</span>
+              </button>
+            </span>
           </div>
     </div>
     <div class="message_comp compose-content">
-      <div class="alert" id="send-status">
-        <span class="send-status-close">&times;</span>
-        <span id="error-msg"></span>
+      <div class="alert" id="compose-send-status">
+        <span class="compose-send-status-close">&times;</span>
+        <span id="compose-error-msg"></span>
       </div>
       <div  id="compose_invite_users" class="alert home-error-bar"></div>
       <div  id="compose-all-everyone" class="alert home-error-bar"></div>
+      <div  id="compose-announce" class="alert home-error-bar"></div>
+      <div  id="compose_private_stream_alert" class="alert home-error-bar"></div>
       <div  id="out-of-view-notification" class="notification-alert"></div>
      <div class="composition-area">
-      <button type="button" class="close" id='compose_close'>×</button>
+      <button type="button" class="close" id='compose_close' title="{{ _('Cancel compose') }} (Esc)">&times;</button>
       <form id="send_message_form" action="/json/messages" method="post">
         {{ csrf_input }}
         <table class="compose_table">
@@ -77,7 +91,7 @@
             </tr>
             <tr>
               <td class="messagebox" colspan="2">
-                <textarea class="new_message_textarea" name="content" id="new_message_content"
+                <textarea class="new_message_textarea" name="content" id='compose-textarea'
                           value="" placeholder="{{ _('Compose your message here...') }}" tabindex="0" maxlength="10000" aria-label="{{ _('Compose your message here...') }}"></textarea>
                 <div class="scrolling_list" id="preview_message_area" style="display:none;">
                   <div id="markdown_preview_spinner"></div>
@@ -87,20 +101,27 @@
                 <div id="below-compose-content">
                   <input type="file" id="file_input" class="notvisible pull-left" multiple />
                   <a class="message-control-button icon-vector-smile"
-                        id="emoji_map" href="#"></a>
+                        id="emoji_map" href="#" title="{{ _('Add emoji') }}"></a>
+                  <a class="message-control-button icon-vector-font"
+                     title="{{ _('Formatting') }}" data-overlay-trigger="markdown-help"></a>
                   <a class="message-control-button icon-vector-dropbox notdisplayed"
                      id="attach_dropbox_files" href="#" title="{{ _('Attach files from Dropbox') }}"></a>
                   <a class="message-control-button icon-vector-paper-clip notdisplayed"
                      id="attach_files" href="#" title="{{ _('Attach files') }}"></a>
-                  <a class="message-control-button icon-vector-font" title="{{ _('Formatting') }}" data-overlay-trigger="markdown-help"></a>
-                  <a id="undo_markdown_preview" class="message-control-button icon-vector-edit" style="display:none;" title="{{ _('Write') }}"></a>
-                  <a id="markdown_preview" class="message-control-button icon-vector-eye-open" title="{{ _('Preview') }}"></a>
-                  <a class="drafts-link" href="#drafts">{{ _('Drafts') }}</a>
+                  <a class="message-control-button fa fa-video-camera"
+                     id="video_link" href="#" title="{{ _('Add video call') }}"></a>
+                  <a id="undo_markdown_preview"
+                     class="message-control-button icon-vector-edit"
+                     style="display:none;" title="{{ _('Write') }}"></a>
+                  <a id="markdown_preview" class="message-control-button icon-vector-eye-open"
+                     title="{{ _('Preview') }}"></a>
+                  <a class="drafts-link" href="#drafts" title="{{ _('Drafts') }} (d)">{{ _('Drafts') }}</a>
                   <span id="sending-indicator">{{ _('Sending...') }}</span>
                   <div id="send_controls" class="new-style">
-                    <label id="enter-sends-label" class="compose_checkbox_label" for="enter_sends">{{ _('Press Enter to send') }}&nbsp;</label>
-                    <input type="checkbox" id="enter_sends" name="enter_sends" value="enter_sends" />
-                    <button type="submit" id="compose-send-button" class="button small send_message" tabindex="150">{{ _('Send') }}</button>
+                    <label id="enter-sends-label" class="compose_checkbox_label">
+                        <input type="checkbox" id="enter_sends" />{{ _('Press Enter to send') }}
+                    </label>
+                    <button type="submit" id="compose-send-button" class="button small send_message" tabindex="150" title="{{ _('Send') }} (Ctrl + Enter)">{{ _('Send') }}</button>
                   </div>
                 </div>
               </td>

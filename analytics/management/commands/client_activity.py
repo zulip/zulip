@@ -1,16 +1,12 @@
-from __future__ import absolute_import
-from __future__ import print_function
-
+import datetime
+from argparse import ArgumentParser
 from typing import Any
 
-from argparse import ArgumentParser
 from django.db.models import Count, QuerySet
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import UserActivity
-
-import datetime
 
 class Command(ZulipBaseCommand):
     help = """Report rough client activity globally, for a realm, or for a user
@@ -21,18 +17,16 @@ Usage examples:
 ./manage.py client_activity --target realm --realm zulip
 ./manage.py client_activity --target user --user hamlet@zulip.com --realm zulip"""
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--target', dest='target', required=True, type=str,
                             help="'server' will calculate client activity of the entire server. "
                                  "'realm' will calculate client activity of realm. "
                                  "'user' will calculate client activity of the user.")
         parser.add_argument('--user', dest='user', type=str,
-                            help="The email adress of the user you want to calculate activity.")
+                            help="The email address of the user you want to calculate activity.")
         self.add_realm_args(parser)
 
-    def compute_activity(self, user_activity_objects):
-        # type: (QuerySet) -> None
+    def compute_activity(self, user_activity_objects: QuerySet) -> None:
         # Report data from the past week.
         #
         # This is a rough report of client activity because we inconsistently
@@ -62,8 +56,7 @@ Usage examples:
             print("%25s %15d" % (count[1], count[0]))
         print("Total:", total)
 
-    def handle(self, *args, **options):
-        # type: (*Any, **str) -> None
+    def handle(self, *args: Any, **options: str) -> None:
         realm = self.get_realm(options)
         if options["user"] is None:
             if options["target"] == "server" and realm is None:

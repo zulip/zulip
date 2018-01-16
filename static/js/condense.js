@@ -31,7 +31,7 @@ exports.uncollapse = function (row) {
     // [Condense] link if necessary.
     var message = current_msg_list.get(rows.id(row));
     message.collapsed = false;
-    message_flags.send_collapsed([message], false);
+    message_flags.save_uncollapsed(message.id);
 
     var process_row = function process_row(row) {
         var content = row.find(".message_content");
@@ -66,7 +66,16 @@ exports.collapse = function (row) {
     // [Condense] link if necessary.
     var message = current_msg_list.get(rows.id(row));
     message.collapsed = true;
-    message_flags.send_collapsed([message], true);
+
+    if (message.locally_echoed) {
+        // Trying to collapse a locally echoed message is
+        // very rare, and in our current implementation the
+        // server response overwrites the flag, so we just
+        // punt for now.
+        return;
+    }
+
+    message_flags.save_collapsed(message.id);
 
     var process_row = function process_row(row) {
         row.find(".message_content").addClass("collapsed");
@@ -85,9 +94,19 @@ exports.toggle_collapse = function (message) {
     if (!row) {
         return;
     }
+    var condensed = row.find(".could-be-condensed");
     if (message.collapsed) {
+        message.condensed = true;
         condense.uncollapse(row);
-    } else {
+        condensed.addClass("condensed");
+        exports.show_message_expander(row);
+        row.find(".message_condenser").hide();
+    } else if (!message.collapsed && condensed.hasClass("condensed")) {
+        message.condensed = false;
+        condensed.removeClass("condensed");
+        exports.hide_message_expander(row);
+        row.find(".message_condenser").show();
+    } else if (!message.collapsed && !condensed.hasClass("condensed")) {
         condense.collapse(row);
     }
 };

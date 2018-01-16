@@ -26,7 +26,7 @@ var exports = {};
  */
 function convert_from_raw(digits, part_length, raw) {
     var result = '';
-    for (var i = 0; i < raw.length; ) {
+    for (var i = 0; i < raw.length;) {
         var t = 0;
         for (var j = 0; j < part_length; j += 1) {
             t = t * digits.length + digits.indexOf(raw.charAt(i));

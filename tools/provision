@@ -10,26 +10,19 @@ if [ "$EUID" -eq 0 ]; then
     exit 1
 fi
 
-if [ -n "$TRAVIS" ]; then
-    PYTHON=python
-else
-    PYTHON=python3
-fi
-
 #Make the script independent of the location from where it is
 #executed
 PARENT_PATH=$( cd "$(dirname "${BASH_SOURCE}")" ; pwd -P )
 cd "$PARENT_PATH"
 mkdir -p ../var/log
 LOG_PATH="../var/log/provision.log"
-PROVISION_PATH="lib/provision.py"
 
 echo "PROVISIONING STARTING." >> $LOG_PATH
 
 # PYTHONUNBUFFERED is important to ensure that tracebacks don't get
 # lost far above where they should be in the output.
 export PYTHONUNBUFFERED=1
-"$PYTHON" "$PROVISION_PATH" "$@" 2>&1 | tee -a "$LOG_PATH"
+./lib/provision.py "$@" 2>&1 | tee -a "$LOG_PATH"
 failed=${PIPESTATUS[0]}
 
 if [ $failed = 1 ]; then
@@ -42,7 +35,7 @@ if [ $failed = 1 ]; then
     echo "* Logs are here: zulip/var/log/provision.log"
     echo -e "\033[0m"
     exit 1
-elif [ "$VIRTUAL_ENV" != "/srv/zulip-py3-venv" ] && [ -z "$TRAVIS" ]; then
+elif [ "$VIRTUAL_ENV" != "/srv/zulip-py3-venv" ] && [ -z "${TRAVIS}${SKIP_VENV_SHELL_WARNING}" ]; then
     echo -e "\033[0;31m"
     echo "WARNING: This shell does not have the Python 3 virtualenv activated."
     echo "Zulip commands will fail."

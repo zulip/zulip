@@ -1,15 +1,12 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Minifies JavaScripts, creating source maps
 
-from __future__ import absolute_import
-from __future__ import print_function
 
 import os
 import subprocess
 import argparse
 import sys
-import six
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--prev-deploy', metavar='DIR',
@@ -102,7 +99,7 @@ MIN_DIR = os.path.join(STATIC_PATH, 'min/')
 MAP_DIR = os.path.join(STATIC_PATH, 'source-map/')
 subprocess.check_call(['mkdir', '-p', MIN_DIR, MAP_DIR])
 
-for js_group_filespec_pair in six.iteritems(JS_SPECS):
+for js_group_filespec_pair in JS_SPECS.items():
     # JS_SPECS is not typed, so forcefully type keys and values being read from JS_SPECS
     js_group = js_group_filespec_pair[0]  # type: str
     filespec = js_group_filespec_pair[1]  # type: Dict[str, Any]

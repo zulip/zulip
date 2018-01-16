@@ -1,37 +1,49 @@
 #!/usr/bin/env bash
 set -e
 
+color_message () {
+    local color_code="$1" message="$2"
+    echo -e "\e[${color_code}m${message}\e[0m" >&2
+}
 
 case $1 in
     -h|--help)
-    echo "--help, -h                   show this help message and exit"
-    echo "--loglevel=LEVEL, -L LEVEL   log level (default: ERROR)"
-    exit 0
-    ;;
+        echo "--help, -h                   show this help message and exit"
+        echo "--loglevel=LEVEL, -L LEVEL   log level (default: ERROR)"
+        exit 0
+        ;;
     -L|--loglevel)
-    loglevel="$1 $2"
-    ;;
+        loglevel="$1 $2"
+        ;;
+    --skip-check-links)
+        skip_check_links=1
+        ;;
 esac
 
-cd "$(dirname "$0")"/..
-./tools/build-docs
-cd ./tools/documentation_crawler
+cd "$(dirname "$0")"/../docs
+rm -rf _build
 
-echo -en "\033[0;94m"
-echo "Testing links in documentation..."
-echo -en "\033[0m"
+# collapse_navigation is set to False in conf.py to improve sidebar navigation for users.
+# However, we must change its value to True before we begin testing links.
+# Otherwise, sphinx would generate a large number of links we don't need to test.
+# The crawler would take a very long time to finish and TravisCI would fail as a result.
+sphinx-build -j8 -b html -d _build/doctrees -D html_theme_options.collapse_navigation=True . _build/html
 
+if [ -n "$skip_check_links" ]; then
+    color_message 94 "Skipped testing links in documentation."
+    exit 0
+fi
+
+color_message 94 "Testing links in documentation..."
+
+cd ../tools/documentation_crawler
 set +e
 scrapy crawl_with_status documentation_crawler $loglevel
 result=$?
 if [ "$result" = 1 ]; then
-    echo -en "\033[0;91m"
-    echo "Failed!"
-    echo -en "\033[0m"
+    color_message 91 "Failed!"
     exit 1
 else
-    echo -en "\033[0;92m"
-    echo "Passed!"
-    echo -en "\033[0m"
+    color_message 92 "Passed!"
     exit 0
 fi

@@ -4,7 +4,7 @@ Next, on your {{ settings_html|safe }}, create a bot.
 
 Construct a webhook URL like the following:
 
-`{{ external_api_uri_subdomain }}/v1/external/zendesk?ticket_title={% raw %}{{ ticket.title }}&ticket_id={{ ticket.id }}{% endraw %}`
+`{{ api_url }}/v1/external/zendesk?ticket_title={% raw %}{{ ticket.title }}&ticket_id={{ ticket.id }}{% endraw %}`
 
 {!append-stream-name.md!}
 
@@ -48,7 +48,7 @@ Next we need need to enter the message body into Message. You can use
 Zulip markdown and the Zendesk placeholders when creating your message.
 
 You can copy this example template:
-</p>
+
 {% raw %}
 ~~~
 Ticket [#{{ ticket.id }}: {{ ticket.title }}]({{ ticket.link }}), was updated by {{ current_user.name }}

@@ -1,8 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Updates static files for production.
 
-from __future__ import absolute_import
 
 import os
 import subprocess
@@ -41,8 +40,20 @@ setup_node_modules(production=True, stdout=fp, stderr=fp)
 subprocess.check_call(['./tools/setup/emoji/build_emoji'],
                       stdout=fp, stderr=fp)
 
+# Inline CSS in emails
+subprocess.check_call(['./tools/inline-email-css'],
+                      stdout=fp, stderr=fp)
+
+# Copy over static files from the zulip_bots package
+subprocess.check_call(['./tools/setup/generate_zulip_bots_static_files'],
+                      stdout=fp, stderr=fp)
+
+# Generate custom icon webfont
+subprocess.check_call(['./tools/generate-custom-icon-webfont'],
+                      stdout=fp, stderr=fp)
+
 # Build pygment data
-subprocess.check_call(['./tools/setup/build_pygments_data.py'],
+subprocess.check_call(['./tools/setup/build_pygments_data'],
                       stdout=fp, stderr=fp)
 
 # Compile Handlebars templates and minify JavaScript.
@@ -100,7 +111,7 @@ subprocess.check_call(['cp', '-aT', 'static/locale',
                        os.path.join(settings.STATIC_ROOT, 'locale')],
                       stdout=fp, stderr=fp)
 
-# Generate /authors page markdown
+# Generate /team page markdown for authors
 authors_cmd = ['./tools/update-authors-json']
 if os.environ.get("TRAVIS"):
     authors_cmd.append("--use-fixture")

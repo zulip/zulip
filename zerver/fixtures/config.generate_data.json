@@ -18,13 +18,13 @@
       "emoji": [":thumbs_up:", ":thumbs_down:", ":shirt:", ":zulip:", ":tada:", ":earth_asia:",
         ":cop:", ":8ball:", ":boat:", ":egg:", ":heartpulse:", ":moon_ceremony:", ":cupid:", ":mag:"],
       "links":
-       ["http://zulip.readthedocs.io/en/latest/emoji.html",
-         "http://zulip.readthedocs.io/en/latest/full-text-search.html",
-         "http://zulip.readthedocs.io/en/latest/analytics.html",
-         "http://zulip.readthedocs.io/en/latest/translating.html",
-         "http://zulip.readthedocs.io/en/latest/client.html",
-         "http://zulip.readthedocs.io/en/latest/logging.html",
-         "http://zulip.readthedocs.io/en/latest/release-checklist.html"],
+       ["https://zulip.readthedocs.io/en/latest/subsystems/emoji.html",
+         "https://zulip.readthedocs.io/en/latest/subsystems/full-text-search.html",
+         "https://zulip.readthedocs.io/en/latest/subsystems/analytics.html",
+         "https://zulip.readthedocs.io/en/latest/translating/translating.html",
+         "https://zulip.readthedocs.io/en/latest/subsystems/client.html",
+         "https://zulip.readthedocs.io/en/latest/subsystems/logging.html",
+         "https://zulip.readthedocs.io/en/latest/subsystems/release-checklist.html"],
       "inline-code": [
         "`(reduce (fn [m [k v]] (assoc m v k)) {} {:b 2 :a 1 :c 3})`" ,
         "`select id, first-name, last-name from users where active = 1;`",
@@ -37,9 +37,11 @@
       ],
 
       "quote-blocks": [
-        "```quote\nBe yourself; everyone else is already taken. --Oscar Wilde\n```",
-        "```quote\nI've learned that people will forget what you said, people will forget what you did, but people will never forget how you made them feel.\n    - Maya Angelou\n```",
-        "```quote\nI am so clever that sometimes I don't understand a single word of what I am saying.\n    - Oscar Wilde, The Happy Prince and Other Stories\n```"
+        "```quote\nBe yourself; everyone else is already taken.\n -- Oscar Wilde\n```",
+        "```quote\nSocieties have always been shaped more by the nature of the media by which humans communicate than by the content of the communication.\n -- Marshall McLuhan```",
+        "```quote\nWord-work is sublime...because it is generative; it makes meaning that secures our difference, our human difference -- the way in which we are like no other life.\n -- Toni Morrison\n```",
+        "```quote\nI've learned that people will forget what you said, people will forget what you did, but people will never forget how you made them feel.\n -- Maya Angelou\n```",
+        "```quote\nAny sufficiently advanced technology is indistinguishable from magic.\n -- Arthur C. Clarke\n```"
       ],
 
       "maths": [

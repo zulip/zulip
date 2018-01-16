@@ -1,15 +1,10 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-from six.moves import range
-
-from django.db.utils import IntegrityError
-
+from django.db import migrations, models
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
-from django.db import migrations, models
+from django.db.utils import IntegrityError
 
-def set_string_id_using_domain(apps, schema_editor):
-    # type: (StateApps, DatabaseSchemaEditor) -> None
+def set_string_id_using_domain(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     Realm = apps.get_model('zerver', 'Realm')
     for realm in Realm.objects.all():
         if not realm.string_id:

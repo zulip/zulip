@@ -1,5 +1,36 @@
 var common = require('../casper_lib/common.js').common;
 
+function heading(heading_str) {
+    casper.then(function () {
+        casper.test.info(heading_str);
+    });
+}
+
+function submit() {
+    // Casper 1.1.4 has a strange bug related to dispatching functions
+    // twice.  We call save_organization_settings() to try to minimize
+    // the moving parts involved in troubleshooting.
+    casper.evaluate(function () {
+        settings_org.save_organization_settings();
+    });
+}
+
+function submit_checked() {
+    casper.then(function () {
+        casper.waitUntilVisible('input:checked[type="checkbox"][id="id_realm_allow_message_editing"] + span', function () {
+            submit();
+        });
+    });
+}
+
+function submit_unchecked() {
+    casper.then(function () {
+        casper.waitUntilVisible('input:not(:checked)[type="checkbox"][id="id_realm_allow_message_editing"] + span', function () {
+            submit();
+        });
+    });
+}
+
 common.start_and_log_in();
 
 // For clarity these should be different than what 08-edit uses, until
@@ -25,9 +56,11 @@ casper.then(function () {
 });
 
 // wait for message to be sent
-casper.waitFor(function () {
-    return casper.evaluate(function () {
-        return !current_msg_list.last().locally_echoed;
+casper.then(function () {
+    casper.waitFor(function () {
+        return casper.evaluate(function () {
+            return !current_msg_list.last().locally_echoed;
+        });
     });
 });
 
@@ -42,12 +75,14 @@ casper.then(function () {
 
 var edited_value = 'admin tests: test edit';
 
-casper.waitUntilVisible(".message_edit_content", function () {
-    casper.evaluate(function (edited_value) {
-        var msg = $('#zhome .message_row:last');
-        msg.find('.message_edit_content').val(edited_value);
-        msg.find('.message_edit_save').click();
-    }, edited_value);
+casper.then(function () {
+    casper.waitUntilVisible(".message_edit_content", function () {
+        casper.evaluate(function (edited_value) {
+            var msg = $('#zhome .message_row:last');
+            msg.find('.message_edit_content').val(edited_value);
+            msg.find('.message_edit_save').click();
+        }, edited_value);
+    });
 });
 
 casper.then(function () {
@@ -57,42 +92,26 @@ casper.then(function () {
     });
 });
 
-// Commented out due to Issue #1243
-// // edit the same message, but don't hit save this time
-// casper.then(function () {
-//     casper.evaluate(function () {
-//         var msg = $('#zhome .message_row:last');
-//         msg.find('.info').click();
-//         $('.popover_edit_message').click();
-//     });
-// });
-// casper.waitUntilVisible(".message_edit_content", function () {
-//     casper.evaluate(function () {
-//         var msg = $('#zhome .message_row:last');
-//         msg.find('.message_edit_content').val("test RE-edited");
-//     });
-// });
-
 // go to admin page
-casper.then(function () {
-    casper.click('#settings-dropdown');
-    casper.click('a[href^="#organization"]');
-});
-
-casper.waitForSelector('#settings_overlay_container.show', function () {
-    casper.test.info('Organization page is active');
-    casper.test.assertUrlMatch(/^http:\/\/[^/]+\/#organization/, 'URL suggests we are on organization page');
-});
+common.then_click('#settings-dropdown');
+common.then_click('a[href^="#organization"]');
 
 casper.then(function () {
-    casper.click("li[data-section='organization-permissions']");
+    casper.waitForSelector('#settings_overlay_container.show', function () {
+        casper.test.info('Organization page is active');
+        casper.test.assertUrlMatch(/^http:\/\/[^/]+\/#organization/, 'URL suggests we are on organization page');
+    });
 });
+
+// DEACTIVATE
+
+heading("DEACTIVATE");
+common.then_click("li[data-section='organization-settings']");
 
 // deactivate "allow message editing"
-casper.waitUntilVisible('input[type="checkbox"][id="id_realm_allow_message_editing"] + span', function () {
-    casper.click('input[type="checkbox"][id="id_realm_allow_message_editing"] + span');
-    casper.click('form.org-permissions-form button.button');
-});
+common.then_click('input[type="checkbox"][id="id_realm_allow_message_editing"] + span');
+
+submit_unchecked();
 
 casper.then(function () {
     casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
@@ -108,27 +127,17 @@ casper.then(function () {
     casper.click('.settings-header .exit');
 });
 
-// Commented out due to Issue #1243
-// // try to save the half-finished edit
-// casper.waitUntilVisible('.message_table', function () {
-//     casper.then(function () {
-//         casper.evaluate(function () {
-//             var msg = $('#zhome .message_row:last');
-//             msg.find('.message_edit_save').click();
-//         });
-//     });
-// });
+// VIEW SOURCE
 
-// // make sure we get the right error message, and that the message hasn't actually changed
-// casper.waitUntilVisible("div.edit_error", function () {
-//     casper.test.assertSelectorHasText(
-//         'div.edit_error',
-//         'Error saving edit: Your organization has turned off message editing.');
-//     casper.test.assertSelectorHasText(".last_message .message_content", "test edited");
-// });
-
+heading("VIEW SOURCE");
 // Check that edit link has changed to "View source" in the popover menu
 // TODO: also check that the edit icon no longer appears next to the message
+casper.then(function () {
+    // This somehow makes the "View source" test deterministic. It seems that
+    // we are waiting on a wrong condition somewhere.
+    casper.wait(1000);
+});
+
 casper.then(function () {
     casper.waitUntilVisible('.message_row');
     // Note that this could have a false positive, e.g. if all the messages aren't
@@ -146,14 +155,18 @@ casper.then(function () {
     });
 });
 
+// REACTIVATE
+
+heading("REACTIVATE");
+
 // go back to admin page, and reactivate "allow message editing"
+common.then_click('#settings-dropdown');
+common.then_click('a[href^="#organization"]');
+common.then_click("li[data-section='organization-settings']");
+common.then_click('input[type="checkbox"][id="id_realm_allow_message_editing"] + span');
+submit_checked();
+
 casper.then(function () {
-    casper.click('#settings-dropdown');
-    casper.click('a[href^="#organization"]');
-});
-casper.waitUntilVisible('input[type="checkbox"][id="id_realm_allow_message_editing"] + span', function () {
-    casper.click('input[type="checkbox"][id="id_realm_allow_message_editing"] + span');
-    casper.click('form.org-permissions-form button.button');
     casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
         casper.test.assertSelectorHasText('#admin-realm-message-editing-status', 'Users can now edit topics for all their messages, and the content of messages which are less than 10 minutes old.');
         casper.test.assertEval(function () {
@@ -162,40 +175,9 @@ casper.waitUntilVisible('input[type="checkbox"][id="id_realm_allow_message_editi
     });
 });
 
-// Commented out due to Issue #1243
-// go back home
-// casper.then(function () {
-//     casper.click('.settings-header .exit');
-// });
+// DEACTIVATE
 
-// // save our edit
-// casper.waitUntilVisible('.message_table', function () {
-//     casper.then(function () {
-//         casper.evaluate(function () {
-//             var msg = $('#zhome .message_row:last');
-//             msg.find('.message_edit_save').click();
-//         });
-//     });
-// });
-
-// // check that edit went through
-// casper.waitWhileVisible("textarea.message_edit_content", function () {
-//     casper.test.assertSelectorHasText(".last_message .message_content", "test RE-edited");
-// });
-
-// check that the edit link reappears in popover menu
-// TODO check for edit icon next to message on hover
-// casper.then(function () {
-//     casper.evaluate(function () {
-//         var msg = $('#zhome .message_row:last');
-//         msg.find('.info').click();
-//     });
-//     casper.test.assertExists('.popover_edit_message');
-//     casper.evaluate(function () {
-//         var msg = $('#zhome .message_row:last');
-//         msg.find('.info').click();
-//     });
-// });
+heading("DEACTIVATE");
 
 // go to admin page
 casper.then(function () {
@@ -205,16 +187,21 @@ casper.then(function () {
     casper.test.assertExists('#settings_overlay_container.show', 'Organization page is active');
 });
 
-casper.waitUntilVisible('form.admin-realm-form button.button');
+casper.then(function () {
+    casper.waitUntilVisible('form.admin-realm-form button.button');
+});
 
 // deactivate message editing
-casper.waitUntilVisible('input[type="checkbox"][id="id_realm_allow_message_editing"] + span', function () {
-    casper.evaluate(function () {
-        $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val('4');
+casper.then(function () {
+    casper.waitUntilVisible('input[type="checkbox"][id="id_realm_allow_message_editing"] + span', function () {
+        casper.evaluate(function () {
+            $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val('4');
+        });
     });
-    casper.click('input[type="checkbox"][id="id_realm_allow_message_editing"] + span');
-    casper.click('form.org-permissions-form button.button');
 });
+
+common.then_click('input[type="checkbox"][id="id_realm_allow_message_editing"] + span');
+submit_unchecked();
 
 casper.then(function () {
     casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
@@ -228,13 +215,11 @@ casper.then(function () {
     });
 });
 
-casper.then(function () {
-    // allow message editing again, and check that the old edit limit is still there
-    casper.waitUntilVisible('input[type="checkbox"][id="id_realm_allow_message_editing"] + span', function () {
-        casper.click('input[type="checkbox"][id="id_realm_allow_message_editing"] + span');
-        casper.click('form.org-permissions-form button.button');
-    });
-});
+// REACTIVATE
+heading("REACTIVATE");
+
+common.then_click('input[type="checkbox"][id="id_realm_allow_message_editing"] + span');
+submit_checked();
 
 casper.then(function () {
     casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
@@ -248,15 +233,18 @@ casper.then(function () {
     });
 });
 
+// SET LIMIT TO 0
+heading("NO LIMIT");
+
 casper.then(function () {
     // allow arbitrary message editing
     casper.waitUntilVisible('input[type="checkbox"][id="id_realm_allow_message_editing"] + span', function () {
         casper.evaluate(function () {
             $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val('0');
         });
-        casper.click('form.org-permissions-form button.button');
     });
 });
+submit_checked();
 
 casper.then(function () {
     casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
@@ -270,16 +258,19 @@ casper.then(function () {
     });
 });
 
+// ILLEGAL LIMIT
+heading("ILLEGAL LIMIT");
+
 casper.then(function () {
     // disallow message editing, with illegal edit limit value. should be fixed by admin.js
     casper.waitUntilVisible('input[type="checkbox"][id="id_realm_allow_message_editing"] + span', function () {
         casper.evaluate(function () {
             $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val('moo');
         });
-        casper.click('input[type="checkbox"][id="id_realm_allow_message_editing"] + span');
-        casper.click('form.org-permissions-form button.button');
     });
 });
+common.then_click('input[type="checkbox"][id="id_realm_allow_message_editing"] + span');
+submit_unchecked();
 
 casper.then(function () {
     casper.waitUntilVisible('#admin-realm-message-editing-status', function () {

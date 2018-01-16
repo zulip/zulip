@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
 
 from typing import Any, Dict, List
 
@@ -8,7 +6,6 @@ from .template_parser import (
     Token,
     is_django_block_tag,
 )
-from six.moves import range
 import subprocess
 
 def pretty_print_html(html, num_spaces=4):
@@ -97,8 +94,9 @@ def pretty_print_html(html, num_spaces=4):
                         ignore_lines=[]
                     )
                 stack.append(info)
-        elif token.kind in ('html_end', 'handlebars_end',
-                            'html_singleton_end', 'django_end') and (stack[-1]['tag'] != 'pre' or token.tag == 'pre'):
+        elif (token.kind in ('html_end', 'handlebars_end', 'html_singleton_end',
+                             'django_end') and
+              (stack[-1]['tag'] != 'pre' or token.tag == 'pre')):
             info = stack.pop()
             if info['block']:
                 # We are at the end of an indentation block.  We
@@ -124,7 +122,8 @@ def pretty_print_html(html, num_spaces=4):
                                              info['extra_indent_prev'])
                     elif (start_line + info['line_span'] - 1 == end_line and
                             info['line_span'] > 2 and token.kind != 'html_singleton_end'):
-                        offsets[end_line] = (1 + info['extra_indent'] + (info['depth'] + 1) * num_spaces) - adjustment
+                        offsets[end_line] = (1 + info['extra_indent'] +
+                                             (info['depth'] + 1) * num_spaces) - adjustment
                     elif token.line != info['line']:
                         offsets[end_line] = info['offset']
                 if token.tag != 'pre' and token.kind != 'html_singleton_end' and token.tag != 'script':
@@ -187,7 +186,8 @@ def validate_indent_html(fn):
         temp_file = open('/var/tmp/pretty_html.txt', 'w')
         temp_file.write(phtml)
         temp_file.close()
-        print('Invalid Indentation detected in file: %s\nDiff for the file against expected indented file:' % (fn))
+        print('Invalid Indentation detected in file: '
+              '%s\nDiff for the file against expected indented file:' % (fn))
         subprocess.call(['diff', fn, '/var/tmp/pretty_html.txt'], stderr=subprocess.STDOUT)
         return 0
     return 1

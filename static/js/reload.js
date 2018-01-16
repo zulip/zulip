@@ -1,4 +1,4 @@
-// Read https://zulip.readthedocs.io/en/latest/hashchange-system.html
+// Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
 var reload = (function () {
 
 var exports = {};
@@ -175,7 +175,10 @@ exports.initialize = function reload__initialize() {
 };
 
 function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compose, message) {
-    if (reload_in_progress) { return; }
+    if (reload_in_progress) {
+        blueslip.log("do_reload_app: Doing nothing since reload_in_progress");
+        return;
+    }
 
     // TODO: we should completely disable the UI here
     if (save_pointer || save_narrow || save_compose) {
@@ -195,6 +198,21 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
     ui_report.message(message, $("#reloading-application"));
     blueslip.log('Starting server requested page reload');
     reload_in_progress = true;
+
+    // Sometimes the window.location.reload that we attempt has no
+    // immediate effect (likely by browsers trying to save power by
+    // skipping requested reloads), which can leave the Zulip app in a
+    // broken state and cause lots of confusing tracebacks.  So, we
+    // set ourselves to try reloading a bit later, both periodically
+    // and when the user focuses the window.
+    $(window).on('focus', function () {
+        blueslip.log("Retrying on-focus page reload");
+        window.location.reload(true);
+    });
+    setInterval(function () {
+        blueslip.log("Retrying page reload due to 30s timer");
+        window.location.reload(true);
+    }, 30000);
 
     try {
         server_events.cleanup_event_queue();
@@ -290,6 +308,7 @@ window.addEventListener('beforeunload', function () {
     // When that happens we reload the page to correct the problem. If this
     // happens before the navigation is complete the user is kept captive at
     // zulip.
+    blueslip.log("Setting reload_in_progress in beforeunload handler");
     reload_in_progress = true;
 });
 

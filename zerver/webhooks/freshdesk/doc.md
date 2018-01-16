@@ -31,7 +31,7 @@ parts.
 4. In the **Action** section, add a new action of type **Trigger Webhook**.
    Set the **Request Type** to **POST**. Set the following **Callback URL**,
    replacing the Zulip stream with your desired stream:
-   `{{ external_api_uri_subdomain }}/v1/external/freshdesk?stream=freshdesk`
+   `{{ api_url }}/v1/external/freshdesk?stream=freshdesk`
 
 5. Check the **Requires Authentication** box, and supply the bot email
    address and API key. The **Action** section should look like this so
@@ -103,7 +103,7 @@ changes, please continue to the next section.
    **Trigger Webhook**. Set the **Request Type** to **POST**. Set the
    following **Callback URL**, replacing the Zulip stream with your
    desired stream:
-   `{{ external_api_uri_subdomain }}/v1/external/freshdesk?stream=freshdesk`
+   `{{ api_url }}/v1/external/freshdesk?stream=freshdesk`
 
 8. Check the **Requires Authentication** box, and supply the bot e-mail
    address and API key. The Action section should look like this so far:

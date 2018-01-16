@@ -8,6 +8,7 @@ class zulip_ops::app_frontend {
                    "autossh",
                    ]
   package { $app_packages: ensure => "installed" }
+  $hosts_domain = zulipconf("nagios", "hosts_domain", undef)
 
   file { "/etc/logrotate.d/zulip":
     ensure => file,
@@ -49,10 +50,25 @@ class zulip_ops::app_frontend {
     source     => 'puppet:///modules/zulip_ops/log2zulip.zuliprc',
   }
   file { "/etc/cron.d/check-apns-tokens":
-    ensure => file,
-    owner  => "root",
-    group  => "root",
-    mode => 644,
-    source => "puppet:///modules/zulip_ops/cron.d/check-apns-tokens",
+    ensure => absent,
   }
+
+  file { "/etc/supervisor/conf.d/redis_tunnel.conf":
+    require => Package["supervisor", "autossh"],
+    ensure => file,
+    owner => "root",
+    group => "root",
+    mode => 644,
+    content => template("zulip_ops/supervisor/conf.d/redis_tunnel.conf.template.erb"),
+    notify => Service["supervisor"],
+  }
+  # Need redis_password in its own file for Nagios
+  file { '/var/lib/nagios/redis_password':
+    ensure     => file,
+    mode       => 600,
+    owner      => "nagios",
+    group      => "nagios",
+    content    => zulipsecret('secrets', 'redis_password', ''),
+  }
+
 }

@@ -1,21 +1,18 @@
-from __future__ import absolute_import
-from __future__ import print_function
 
+import datetime
+import time
 from typing import Any
 
 from django.core.management.base import CommandParser
 from django.utils.timezone import utc as timezone_utc
-from zerver.models import Message, Stream, Recipient
-from zerver.lib.management import ZulipBaseCommand
 
-import datetime
-import time
+from zerver.lib.management import ZulipBaseCommand
+from zerver.models import Message, Recipient, Stream
 
 class Command(ZulipBaseCommand):
     help = "Dump messages from public streams of a realm"
 
-    def add_arguments(self, parser):
-        # type: (CommandParser) -> None
+    def add_arguments(self, parser: CommandParser) -> None:
         default_cutoff = time.time() - 60 * 60 * 24 * 30  # 30 days.
         self.add_realm_args(parser, True)
         parser.add_argument('--since',
@@ -24,8 +21,7 @@ class Command(ZulipBaseCommand):
                             default=default_cutoff,
                             help='The time in epoch since from which to start the dump.')
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)
         streams = Stream.objects.filter(realm=realm, invite_only=False)
         recipients = Recipient.objects.filter(

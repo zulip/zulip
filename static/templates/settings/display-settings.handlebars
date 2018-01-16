@@ -31,6 +31,17 @@
 
             <div class="input-group">
                 <label class="checkbox">
+                    <input type="checkbox" name="night_mode" id="night_mode"
+                    {{#if page_params.night_mode}}
+                      checked="checked"
+                    {{/if}} />
+                    <span></span>
+                </label>
+                <label for="night_mode" class="inline-block">{{t "Night mode (experimental)" }}</label>
+            </div>
+
+            <div class="input-group">
+                <label class="checkbox">
                     <input type="checkbox" name="left_side_userlist" id="left_side_userlist"
                     {{#if page_params.left_side_userlist}}
                       checked="checked"
@@ -38,17 +49,6 @@
                     <span></span>
                 </label>
                 <label for="left_side_userlist" class="inline-block">{{t "User list on left sidebar in narrow windows" }}</label>
-            </div>
-
-            <div class="input-group">
-                <label class="checkbox">
-                    <input type="checkbox" name="emoji_alt_code" id="emoji_alt_code"
-                    {{#if page_params.emoji_alt_code}}
-                      checked="checked"
-                    {{/if}} />
-                    <span></span>
-                </label>
-                <label for="emoji_alt_code" class="inline-block">{{t 'Display emoji reactions as text (:heart: instead of <img alt=":heart:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2764.png" title=":heart:"/>)' }}</label>
             </div>
         </div>
 
@@ -82,16 +82,27 @@
             </div>
         </div>
 
-        {{#if false}}
-        <div class="input-group">
-            <label for="emojiset_select">{{t "Emoji style" }}:</label>
-            <select name="emojiset_select" id="emojiset_select">
-                {{#each page_params.emojiset_choices}}
-                <option value={{@key}}>{{this}}</option>
+        <h3 class="light">Emoji style</h3>
+        <div class="input-group side-padded-container">
+            <div class="emojiset_choices grey-box">
+                {{#each page_params.emojiset_choices }}
+                <label>
+                    <input type="radio" class="emojiset_choice" name="emojiset_group" value="{{@key}}" />
+                    <span>{{t this }}</span>
+                    <span class="right">
+                        {{#if @last}}
+                        <div class="emoji_alt_code">&nbsp:relaxed:</div>
+                        {{else}}
+                        <img class="emoji" src="/static/generated/emoji/images-{{@key}}-64/1f642.png" />
+                        <img class="emoji" src="/static/generated/emoji/images-{{@key}}-64/1f44d.png" />
+                        <img class="emoji" src="/static/generated/emoji/images-{{@key}}-64/1f680.png" />
+                        <img class="emoji" src="/static/generated/emoji/images-{{@key}}-64/1f389.png" />
+                        {{/if}}
+                    </span>
+                </label>
                 {{/each}}
-            </select>
+            </div>
             <div id="emojiset_spinner"></div>
         </div>
-        {{/if}}
     </form>
 </div>

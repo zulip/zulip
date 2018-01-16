@@ -1,6 +1,5 @@
 .compose-content {
-    background-color: #fff;
-    border-top: 1px solid hsl(0, 0%, 93%);
+    border-top: 1px solid hsla(0, 0%, 0%, 0.07);
     -webkit-transition: background-color 200ms linear;
     -moz-transition: background-color 200ms linear;
     -o-transition: background-color 200ms linear;
@@ -33,6 +32,14 @@
     opacity: 1;
 }
 
+.alert-draft {
+    font-size: 14px;
+    color: hsl(170, 47%, 54%);
+    padding: 3px 12px;
+    font-weight: 400;
+    display: none;
+}
+
 #compose_buttons {
     text-align: right;
 }
@@ -40,6 +47,14 @@
 #compose_buttons .button.small {
     font-size: 1em;
     padding: 3px 10px;
+}
+
+#compose_buttons .compose_reply_button {
+    border-color: hsl(240, 100%, 80%);
+}
+
+#compose_buttons .compose_reply_button:hover {
+    border-color: hsl(240, 100%, 60%);
 }
 
 .compose_table .message_header_colorblock,
@@ -85,7 +100,7 @@
     padding-bottom: 0px;
     width: 4em;
     background: hsl(0, 0%, 27%);
-    color: #ffffff;
+    color: hsl(0, 0%, 100%);
 }
 
 .compose_table .pm_recipient #private_message_recipient {
@@ -125,7 +140,6 @@
     box-shadow: none !important;
 }
 
-
 table.compose_table {
     table-layout: fixed;
     margin-left: auto;
@@ -145,11 +159,6 @@ table.compose_table {
     border: none;
 }
 
-#enter-sends-label {
-    margin-bottom: 0px;
-    margin-top: 2px;
-}
-
 #send_message_form .message_content {
     margin-right: 0px;
 }
@@ -165,6 +174,8 @@ table.compose_table {
     left: 0px;
     z-index: 2;
     width: 100%;
+
+    background: #fff;
 }
 
 #compose-container {
@@ -192,16 +203,19 @@ table.compose_table {
     top: 5px;
 }
 
-#compose_invite_users {
+#compose_invite_users,
+#compose_private_stream_alert {
     /* Don't overlap into the compose_close × */
     margin-right: 10px;
 }
 
-.compose_invite_user {
+.compose_invite_user,
+.compose_private_stream_alert {
     padding: 4px 0px 4px 0px;
 }
 
-.compose_invite_close {
+.compose_invite_close,
+.compose_private_stream_alert_close {
     display: inline;
     margin-top: 4px;
 
@@ -209,7 +223,9 @@ table.compose_table {
 }
 
 .compose-all-everyone-controls,
-.compose_invite_user_controls {
+.compose-announce-controls,
+.compose_invite_user_controls,
+.compose_private_stream_alert_controls {
     float: right;
     -webkit-transform: translateY(-13%);
     -ms-transform: translateY(-13%);
@@ -223,8 +239,14 @@ table.compose_table {
 }
 
 /* Like .nav-tabs > li > a */
-#send-status {
-    width: calc(100% - 28px);
+#compose-send-status {
+    padding: 8px 14px 8px 14px;
+    margin-bottom: 8px;
+    line-height: 20px;
+    display: none;
+}
+
+#nonexistent_stream_reply_error {
     padding: 8px 14px 8px 14px;
     margin-bottom: 8px;
     line-height: 20px;
@@ -232,37 +254,29 @@ table.compose_table {
 }
 
 /* Like .alert .close */
-.send-status-close {
+.compose-send-status-close {
     font-size: 17px;
     font-weight: bold;
-    color: black;
+    color: hsl(0, 0%, 0%);
     text-shadow: 0 1px 0 white;
     opacity: .2;
     filter: alpha(opacity=20);
     float: right;
 }
 
-.send-status-close:hover {
+.compose-send-status-close:hover {
     cursor: pointer;
     opacity: .4;
     filter: alpha(opacity=40);
 }
 
 #out-of-view-notification {
-    background: hsl(112, 98%, 77%);
-    background: hsla(105, 42%, 70%, 0.95);
-    border-bottom: 1px solid #ffffff;
-    border-right: 1px solid #ffffff;
-    border-left: 1px solid #ffffff;
-    border-radius: 0px 0px 2px 2px;
-    font-weight: 400;
-    font-size: 12px;
-    display: inline-block;
-    box-shadow: 0px 0px 1px 0px hsla(0, 0%, 0%, 0.5);
     position: relative;
-    top: -8px;
-    width: 100%;
-    padding-right: 5px;
+    margin-bottom: 6px;
+
+    background: hsla(152, 51%, 63%, 0.25);
+    border: 1px solid hsla(0, 0%, 0%, 0.1);
+    border-radius: 4px;
 }
 
 .compose-notifications-content {
@@ -276,11 +290,11 @@ table.compose_table {
 
 #out-of-view-notification .close {
     position: absolute;
-    right: 5px;
-    top: 5px;
+    right: 14px;
+    top: 4px;
     font-size: 17px;
     font-weight: bold;
-    color: black;
+    color: hsl(0, 0%, 0%);
     text-shadow: 0 1px 0 white;
     opacity: .2;
     filter: alpha(opacity=20);
@@ -298,24 +312,23 @@ textarea.new_message_textarea {
 }
 
 textarea.new_message_textarea,
-#subject.recipient_box,
-#stream.recipient_box {
-    border: 1px solid hsl(0, 0%, 86%);
+.compose_table .recipient_box {
+    border: 1px solid hsla(0, 0%, 0%, 0.2);
     box-shadow: none;
     -webkit-box-shadow: none;
     transition: border 0.2s ease;
 }
 
 textarea.new_message_textarea:focus,
-#subject.recipient_box:focus,
-#stream.recipient_box:focus {
+.compose_table .recipient_box:focus {
     border: 1px solid hsl(0, 0%, 66%);
+    box-shadow: none;
+    -webkit-box-shadow: none;
 }
 
 #stream.recipient_box:focus {
     border-left: none;
 }
-
 
 input.recipient_box {
     margin: 0px;
@@ -357,20 +370,15 @@ input.recipient_box {
     margin-right: 2px;
 }
 
-#send_controls .compose_checkbox_label input {
-    position: relative;
-    top: -3px;
-}
-
 #send_controls #compose-send-button {
     border-radius: 4px;
-    padding-top: 4px;
-    padding-bottom: 2px;
+    padding-top: 3px;
+    padding-bottom: 3px;
     margin-right: 7px;
     font-weight: 600;
     border: 1px solid hsl(170, 68%, 41%);
     background-color: hsl(170, 47%, 54%);
-    color: #fff;
+    color: hsl(0, 0%, 100%);
 }
 
 #compose-send-button:focus {
@@ -401,7 +409,8 @@ input.recipient_box {
 
 #compose a.message-control-button {
     display: block;
-    color: hsl(0, 0%, 46%);
+    opacity: 0.4;
+    color: inherit;
     text-decoration: none;
     font-size: 14px;
     width: 14px;
@@ -413,7 +422,7 @@ input.recipient_box {
 }
 
 #compose a.message-control-button:hover {
-    color: hsl(0, 0%, 0%);
+    opacity: 1;
 }
 
 .drag {
@@ -426,8 +435,9 @@ input.recipient_box {
 }
 
 #enter_sends {
-    margin-top: 0px;
-    margin-right: 5px;
+    vertical-align: middle;
+    margin-top: -2px;
+    margin-right: 4px;
 }
 
 .inline-subscribe-error {
@@ -448,7 +458,7 @@ input.recipient_box {
 
     border: 1px solid hsl(0, 0%, 66%);
     border-radius: 4px;
-    background-color: hsl(0, 0%, 98%);
+    background-color: hsla(0, 0%, 0%, 0.02);
     cursor: not-allowed;
 }
 
@@ -462,4 +472,10 @@ a#undo_markdown_preview {
 
 #markdown_preview_spinner {
     margin: auto;
+}
+
+@media (max-width: 700px) {
+    #compose_buttons .compose_reply_button {
+        display: none;
+    }
 }

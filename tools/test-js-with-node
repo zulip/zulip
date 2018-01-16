@@ -1,11 +1,9 @@
-#!/usr/bin/env python
-from __future__ import print_function
-import optparse
+#!/usr/bin/env python3
+import argparse
 import os
 import subprocess
 import sys
-import ujson
-from typing import Dict
+from typing import Dict, Any
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
@@ -14,6 +12,9 @@ ROOT_DIR = os.path.dirname(TOOLS_DIR)
 # check for the venv
 from tools.lib import sanity_check
 sanity_check.check_venv(__file__)
+
+# Import this after we do the sanity_check so it doesn't crash.
+import ujson
 
 USAGE = '''
     tools/test-js-with-node                      - to run all tests
@@ -39,6 +40,7 @@ enforce_fully_covered = {
     'static/js/markdown.js',
     'static/js/message_store.js',
     'static/js/muting.js',
+    'static/js/narrow_state.js',
     'static/js/people.js',
     'static/js/pm_conversations.js',
     'static/js/pm_list.js',
@@ -47,6 +49,7 @@ enforce_fully_covered = {
     'static/js/recent_senders.js',
     'static/js/rtl.js',
     'static/js/search_suggestion.js',
+    'static/js/stream_data.js',
     'static/js/stream_events.js',
     'static/js/stream_sort.js',
     'static/js/topic_data.js',
@@ -56,17 +59,19 @@ enforce_fully_covered = {
     'static/js/typing_status.js',
     'static/js/unread.js',
     'static/js/user_events.js',
+    'static/js/user_groups.js',
     'static/js/util.js',
 }
 
-parser = optparse.OptionParser(USAGE)
-parser.add_option('--coverage', dest='coverage',
-                  action="store_true",
-                  default=False, help='Get coverage report')
-parser.add_option('--force', dest='force',
-                  action="store_true",
-                  default=False, help='Run tests despite possible problems.')
-(options, args) = parser.parse_args()
+parser = argparse.ArgumentParser(USAGE)
+parser.add_argument('--coverage', dest='coverage',
+                    action="store_true",
+                    default=False, help='Get coverage report')
+parser.add_argument('--force', dest='force',
+                    action="store_true",
+                    default=False, help='Run tests despite possible problems.')
+parser.add_argument('args', nargs=argparse.REMAINDER)
+options = parser.parse_args()
 
 from tools.lib.test_script import get_provisioning_status
 
@@ -88,7 +93,7 @@ INDEX_JS = 'frontend_tests/zjsunit/index.js'
 # tracebacks, so you generally want to get coverage reports only
 # after making sure tests will pass.
 if options.coverage:
-    if args:
+    if options.args:
         print('BAD ARGS! Coverage reports run against all files.')
         sys.exit(1)
 
@@ -97,7 +102,9 @@ if options.coverage:
 else:
     # Normal testing, no coverage analysis.
     # Run the index.js test runner, which runs all the other tests.
-    command = ['node', '--stack-trace-limit=100', INDEX_JS] + args
+    command = ['node', '--stack-trace-limit=100', INDEX_JS] + options.args
+
+print('Starting node tests...')
 
 # If we got this far, we can run the tests!
 try:
@@ -107,7 +114,7 @@ except OSError:
     raise
 
 def check_line_coverage(line_coverage, line_mapping, log=True):
-    # type: (Dict, Dict, bool) -> bool
+    # type: (Dict[Any, Any], Dict[Any, Any], bool) -> bool
     missing_lines = []
     for line in line_coverage:
         if line_coverage[line] == 0:

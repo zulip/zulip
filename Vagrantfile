@@ -26,11 +26,17 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # The Zulip development environment runs on 9991 on the guest.
   host_port = 9991
-  http_proxy = https_proxy = no_proxy = ""
+  http_proxy = https_proxy = no_proxy = nil
   host_ip_addr = "127.0.0.1"
 
   config.vm.synced_folder ".", "/vagrant", disabled: true
-  config.vm.synced_folder ".", "/srv/zulip"
+  if (/darwin/ =~ RUBY_PLATFORM) != nil
+    config.vm.synced_folder ".", "/srv/zulip", type: "nfs",
+        linux__nfs_options: ['rw']
+    config.vm.network "private_network", type: "dhcp"
+  else
+    config.vm.synced_folder ".", "/srv/zulip"
+  end
 
   vagrant_config_file = ENV['HOME'] + "/.zulip-vagrant-config"
   if File.file?(vagrant_config_file)
@@ -48,20 +54,26 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
   end
 
-  config.vm.network "forwarded_port", guest: 9991, host: host_port, host_ip: host_ip_addr
-
   if Vagrant.has_plugin?("vagrant-proxyconf")
-    if http_proxy != ""
+    if !http_proxy.nil?
       config.proxy.http = http_proxy
     end
-    if https_proxy != ""
+    if !https_proxy.nil?
       config.proxy.https = https_proxy
     end
-    if https_proxy != ""
+    if !no_proxy.nil?
       config.proxy.no_proxy = no_proxy
     end
+  elsif !http_proxy.nil? or !https_proxy.nil?
+    # This prints twice due to https://github.com/hashicorp/vagrant/issues/7504
+    # We haven't figured out a workaround.
+    puts 'You have specified value for proxy in ~/.zulip-vagrant-config file but did not ' \
+         'install the vagrant-proxyconf plugin. To install it, run `vagrant plugin install ' \
+         'vagrant-proxyconf` in a terminal.  This error will appear twice.'
+    exit
   end
 
+  config.vm.network "forwarded_port", guest: 9991, host: host_port, host_ip: host_ip_addr
   # Specify LXC provider before VirtualBox provider so it's preferred.
   config.vm.provider "lxc" do |lxc|
     if command? "lxc-ls"
@@ -94,10 +106,15 @@ $provision_script = <<SCRIPT
 set -x
 set -e
 set -o pipefail
+
+# Code should go here, rather than tools/provision, only if it is
+# something that we don't want to happen when running provision in a
+# development environment not using Vagrant.
+
 # If the host is running SELinux remount the /sys/fs/selinux directory as read only,
 # needed for apt-get to work.
 if [ -d "/sys/fs/selinux" ]; then
-  sudo mount -o remount,ro /sys/fs/selinux
+    sudo mount -o remount,ro /sys/fs/selinux
 fi
 
 # Set default locale, this prevents errors if the user has another locale set.
@@ -105,14 +122,22 @@ if ! grep -q 'LC_ALL=en_US.UTF-8' /etc/default/locale; then
     echo "LC_ALL=en_US.UTF-8" | sudo tee -a /etc/default/locale
 fi
 
+# Set an environment variable, so that we won't print the virtualenv
+# shell warning (it'll be wrong, since the shell is dying anyway)
+export SKIP_VENV_SHELL_WARNING=1
+
+# End `set -x`, so that the end of provision doesn't look like an error
+# message after a successful run.
+set +x
+
 # Provision the development environment
 ln -nsf /srv/zulip ~/zulip
 /srv/zulip/tools/provision
 
 # Run any custom provision hooks the user has configured
 if [ -f /srv/zulip/tools/custom_provision ]; then
-  chmod +x /srv/zulip/tools/custom_provision
-  /srv/zulip/tools/custom_provision
+    chmod +x /srv/zulip/tools/custom_provision
+    /srv/zulip/tools/custom_provision
 fi
 SCRIPT
 

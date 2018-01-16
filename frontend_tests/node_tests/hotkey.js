@@ -14,7 +14,7 @@
 set_global('activity', {
 });
 
-set_global('drafts', {
+set_global('page_params', {
 });
 
 set_global('overlays', {
@@ -32,7 +32,7 @@ set_global('$', function () {
 set_global('document', {
 });
 
-var hotkey = require('js/hotkey.js');
+var hotkey = zrequire('hotkey');
 
 set_global('list_util', {
 });
@@ -96,7 +96,7 @@ function stubbing(func_name_to_stub, test_function) {
     assert.equal(map_press(47).name, 'search'); // slash
     assert.equal(map_press(106).name, 'vim_down'); // j
 
-    assert.equal(map_down(219, false, true).name, 'esc_ctrl');
+    assert.equal(map_down(219, false, true).name, 'escape');
 
     // More negative tests.
     assert.equal(map_down(47), undefined);
@@ -129,7 +129,7 @@ function stubbing(func_name_to_stub, test_function) {
             // An exception will be thrown here if a different
             // function is called than the one declared.  Try to
             // provide a useful error message.
-            // add a newline to seperate from other console output.
+            // add a newline to separate from other console output.
             console.log('\nERROR: Mapping for character "' + e.which + '" does not match tests.');
         }
     }
@@ -162,6 +162,11 @@ function stubbing(func_name_to_stub, test_function) {
     set_global('emoji_picker', {
         reactions_popped: return_false,
     });
+    set_global('emoji_codes', {
+        codepoint_to_name: {
+            '1f44d': 'thumbs_up',
+        },
+    });
     set_global('hotspots', {
         is_open: return_false,
     });
@@ -174,7 +179,7 @@ function stubbing(func_name_to_stub, test_function) {
         assert_unmapped(' ');
         assert_unmapped('[]\\.,;');
         assert_unmapped('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
-        assert_unmapped('~!@#$%^*()_+{}:"<>?');
+        assert_unmapped('~!@#$%^*()_+{}:"<>');
     }
 
     _.each([return_true, return_false], function (settings_open) {
@@ -183,8 +188,8 @@ function stubbing(func_name_to_stub, test_function) {
                 set_global('overlays', {
                     is_active: is_active,
                     settings_open: settings_open,
-                    info_overlay_open: info_overlay_open});
-
+                    info_overlay_open: info_overlay_open,
+                });
                 test_normal_typing();
             });
         });
@@ -193,28 +198,42 @@ function stubbing(func_name_to_stub, test_function) {
     // Ok, now test keys that work when we're viewing messages.
     hotkey.processing_text = return_false;
     overlays.settings_open = return_false;
+    overlays.streams_open = return_false;
+    overlays.lightbox_open = return_false;
+    overlays.drafts_open = return_false;
 
+    page_params.can_create_streams = true;
     overlays.streams_open = return_true;
     overlays.is_active = return_true;
     assert_mapping('S', 'subs.keyboard_sub');
-    overlays.is_active = return_false;
     assert_mapping('V', 'subs.view_stream');
     assert_mapping('n', 'subs.new_stream_clicked');
+    page_params.can_create_streams = false;
+    assert_unmapped('n');
     overlays.streams_open = return_false;
+    test_normal_typing();
+    overlays.is_active = return_false;
 
     assert_mapping('?', 'ui.maybe_show_keyboard_shortcuts');
     assert_mapping('/', 'search.initiate_search');
-    assert_mapping('q', 'activity.initiate_search');
-    assert_mapping('w', 'stream_list.initiate_search');
+    assert_mapping('w', 'activity.initiate_search');
+    assert_mapping('q', 'stream_list.initiate_search');
 
-    assert_mapping('A', 'navigate.cycle_stream');
-    assert_mapping('D', 'navigate.cycle_stream');
+    assert_mapping('A', 'narrow.stream_cycle_backward');
+    assert_mapping('D', 'narrow.stream_cycle_forward');
 
     assert_mapping('c', 'compose_actions.start');
     assert_mapping('C', 'compose_actions.start');
     assert_mapping('P', 'narrow.by');
     assert_mapping('g', 'gear_menu.open');
-    assert_mapping('d', 'drafts.toggle');
+
+    overlays.is_active = return_true;
+    overlays.drafts_open = return_true;
+    assert_mapping('d', 'overlays.close_overlay');
+    overlays.drafts_open = return_false;
+    test_normal_typing();
+    overlays.is_active = return_false;
+    assert_mapping('d', 'drafts.launch');
 
     // Next, test keys that only work on a selected message.
     var message_view_only_keys = '@*+RjJkKsSuvi:GM';
@@ -245,9 +264,21 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('s', 'narrow.by_recipient');
     assert_mapping('S', 'narrow.by_subject');
     assert_mapping('u', 'popovers.show_sender_info');
-    assert_mapping('v', 'lightbox.show_from_selected_message');
     assert_mapping('i', 'popovers.open_message_menu');
-    assert_mapping(':', 'emoji_picker.toggle_emoji_popover', true);
+    assert_mapping(':', 'reactions.open_reactions_popover', true);
+
+    overlays.is_active = return_true;
+    overlays.lightbox_open = return_true;
+    assert_mapping('v', 'overlays.close_overlay');
+    overlays.lightbox_open = return_false;
+    test_normal_typing();
+    overlays.is_active = return_false;
+    assert_mapping('v', 'lightbox.show_from_selected_message');
+
+    global.emoji_picker.reactions_popped = return_true;
+    assert_mapping(':', 'emoji_picker.navigate', true);
+    global.emoji_picker.reactions_popped = return_false;
+
     assert_mapping('G', 'navigate.to_end');
     assert_mapping('M', 'muting_ui.toggle_mute');
 
@@ -289,7 +320,7 @@ function stubbing(func_name_to_stub, test_function) {
             // An exception will be thrown here if a different
             // function is called than the one declared.  Try to
             // provide a useful error message.
-            // add a newline to seperate from other console output.
+            // add a newline to separate from other console output.
             console.log('\nERROR: Mapping for character "' + e.which + '" does not match tests.');
         }
     }
@@ -306,7 +337,6 @@ function stubbing(func_name_to_stub, test_function) {
 
     list_util.inside_list = return_false;
     global.current_msg_list.empty = return_true;
-    global.drafts.drafts_overlay_open = return_false;
     overlays.settings_open = return_false;
     overlays.streams_open = return_false;
     overlays.lightbox_open = return_false;
@@ -366,8 +396,10 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('down_arrow', 'settings.handle_down_arrow');
     overlays.settings_open = return_false;
 
-    global.drafts.drafts_overlay_open = return_true;
+    overlays.is_active = return_true;
+    overlays.drafts_open = return_true;
     assert_mapping('up_arrow', 'drafts.drafts_handle_events');
     assert_mapping('down_arrow', 'drafts.drafts_handle_events');
-    global.drafts.drafts_overlay_open = return_false;
+    overlays.is_active = return_false;
+    overlays.drafts_open = return_false;
 }());

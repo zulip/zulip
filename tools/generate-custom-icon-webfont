@@ -1,0 +1,39 @@
+#!/usr/bin/env node
+
+const fs = require('fs');
+const webfontsGenerator = require('webfonts-generator');
+
+fs.readdir('./static/assets/icons', function (err, files) {
+    if (err) {
+        console.error(err);
+        process.exit(1);
+    }
+
+    // Filter out any non-SVG files and join by absolute path
+    const svg = files.filter(function (file) {
+        return file.slice(-4) === '.svg';
+    }).map(function (file) {
+        return './static/assets/icons/' + file;
+    });
+
+    // Generate webfonts
+    const options = {
+        files: svg,
+        dest: './static/generated/icons/fonts',
+        fontName: 'zulip-icons',
+        cssDest: './static/generated/icons/style.css',
+        cssFontsUrl: 'fonts/',
+        templateOptions: {
+            classPrefix: '',
+            baseSelector: '.zulip-icon',
+        },
+        cssTemplate: './static/icons/fonts/template.hbs',
+    };
+    webfontsGenerator(options, function (err) {
+        if (err) {
+            console.error(err);
+            process.exit(1);
+        }
+        console.log('SUCCESS! Webfonts generated in ./static/generated/icons/fonts.');
+    });
+});

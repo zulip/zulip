@@ -3,11 +3,9 @@ set_global('page_params', {});
 
 global.stub_out_jquery();
 
-add_dependencies({
-    XDate: 'node_modules/xdate/src/xdate.js',
-});
+zrequire('XDate', 'node_modules/xdate/src/xdate');
+zrequire('message_edit');
 
-var message_edit = require('js/message_edit.js');
 var get_editability = message_edit.get_editability;
 var editability_types = message_edit.editability_types;
 

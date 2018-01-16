@@ -21,6 +21,10 @@
                 <td class="definition">{{ _('Narrow to private messages with') }} <span class="operator_value">email</span></td>
             </tr>
             <tr>
+                <td class="operator">group-pm-with:<span class="operator_value">email</span></td>
+                <td class="definition">{{ _('Narrow to group private messages with') }} <span class="operator_value">email</span></td>
+            </tr>
+            <tr>
                 <td class="operator">sender:<span class="operator_value">email</span></td>
                 <td class="definition">{{ _('Narrow to messages sent by') }} <span class="operator_value">email</span></td>
             </tr>
@@ -80,13 +84,23 @@
         {% trans %}
         <p>You can use any combination of these search operators in a single query. For example:</p>
 
-        <p>&nbsp; <span class="operator">stream:<span class="operator_value">streamname</span>
-            sender:<span class="operator_value">user@example.com</span>
-                <span class="operator_value">keyword</span></span></p>
+        <p>
+            &nbsp;
+            <span class="operator">
+                stream:<span class="operator_value">streamname</span>
+                sender:<span class="operator_value">user@example.com</span>
+                <span class="operator_value">keyword</span>
+            </span>
+        </p>
 
-        <p>would search for messages sent by <span class="operator_value">user@example.com</span> to stream
+        <p>
+            would search for messages sent by
+            <span class="operator_value">user@example.com</span>
+            to stream
             <span class="operator_value">streamname</span>
-        containing the keyword <span class="operator_value">keyword</span>.</p>
+            containing the keyword
+            <span class="operator_value">keyword</span>.
+        </p>
         {% endtrans %}
         <hr/>
         <a href="/help/search-for-messages#search-operators" target="_blank">Detailed search operators documentation</a>

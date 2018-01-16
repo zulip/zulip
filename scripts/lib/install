@@ -1,7 +1,61 @@
 #!/usr/bin/env bash
-set -xe
+set -e
 
-# Assumes we've already been untarred
+usage() {
+    cat <<EOF
+Usage:
+  install [--certbot] [--hostname=zulip.example.com] [--email=admin@example.com]
+  install --help
+
+If --certbot is used, --hostname and --email are required.
+EOF
+    exit 0
+};
+
+# Shell option parsing.  Over time, we'll want to move some of the
+# environment variables below into this self-documenting system.
+args="$(getopt -o '' --long help,certbot,hostname:,email: -n "$0" -- "$@")"
+eval "set -- $args"
+while true; do
+    case "$1" in
+        --certbot)
+            USE_CERTBOT=1
+            shift
+            ;;
+        --help)
+            show_help=1
+            shift
+            ;;
+        --hostname)
+            EXTERNAL_HOST="$2"
+            shift
+            shift
+            ;;
+        --email)
+            ZULIP_ADMINISTRATOR="$2"
+            shift
+            shift
+            ;;
+        --)
+            break
+            ;;
+    esac
+done
+
+if [ -n "$show_help" ]; then
+    usage
+fi
+
+if [ -n "$USE_CERTBOT" ] \
+       && { [ -z "$EXTERNAL_HOST" ] || [ -z "$ZULIP_ADMINISTRATOR" ]; }; then
+    usage
+fi
+
+# Do set -x after option parsing is complete
+set -x
+
+# Force a known locale.  Some packages on PyPI fail to install in some locales.
+export LC_ALL="en_US.UTF-8"
 
 # Specify options for apt.
 APT_OPTIONS="${APT_OPTIONS:-}"
@@ -28,16 +82,38 @@ if ! [ -e /usr/bin/realpath ]; then
     # realpath is in coreutils on Xenial, but not in Trusty
     apt-get install -y realpath
 fi
+
 ZULIP_PATH="$(realpath $(dirname $0)/../..)"
 
 # setup-apt-repo does an `apt-get update`
 "$ZULIP_PATH"/scripts/lib/setup-apt-repo
 
-apt-get -y dist-upgrade $APT_OPTIONS
-apt-get install -y puppet git python python3 python-six python3-six crudini $ADDITIONAL_PACKAGES
-
 # Handle issues around upstart on Ubuntu Xenial
 "$ZULIP_PATH"/scripts/lib/check-upstart
+
+if [ -n "$USE_CERTBOT" ]; then
+    "$ZULIP_PATH"/scripts/setup/setup-certbot \
+        --no-zulip-conf --method=standalone \
+        --hostname "$EXTERNAL_HOST" --email "$ZULIP_ADMINISTRATOR"
+fi
+
+# Check for missing SSL certificates early as well
+if [ "$PUPPET_CLASSES" = "zulip::voyager" ] && { ! [ -e "/etc/ssl/private/zulip.key" ] || ! [ -e "/etc/ssl/certs/zulip.combined-chain.crt" ]; }; then
+   set +x
+   echo
+   echo "Could not find SSL certificates!"
+   for f in "/etc/ssl/private/zulip.key" "/etc/ssl/certs/zulip.combined-chain.crt"; do
+       [ -e "$f" ] || echo " - $f is missing!"
+   done
+   echo "See https://zulip.readthedocs.io/en/latest/production/ssl-certificates.html for help."
+   echo
+   echo "Once fixed, just rerun scripts/setup/install; it'll pick up from here!"
+   echo
+   exit 1
+fi
+
+apt-get -y dist-upgrade $APT_OPTIONS
+apt-get install -y puppet git python python3 python-six python3-six crudini $ADDITIONAL_PACKAGES
 
 # Create and activate a virtualenv
 if [ "$VIRTUALENV_NEEDED" = "yes" ]; then
@@ -69,6 +145,10 @@ mkdir -p /etc/zulip
     if [ -n "$TRAVIS" ] || ! dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null | grep -vq ' not-installed$'; then
         echo -e "\n[rabbitmq]\nnodename = zulip@localhost"
     fi
+
+    if [ -n "$USE_CERTBOT" ]; then
+        echo -e "\n[certbot]\nauto_renew = yes"
+    fi
 ) > /etc/zulip/zulip.conf
 "$ZULIP_PATH"/scripts/zulip-puppet-apply -f
 
@@ -96,13 +176,30 @@ apt-get -y upgrade
 if [ "$has_nginx" = 0 ]; then
     # Check nginx was configured properly now that we've installed it.
     # Most common failure mode is certs not having been installed.
-    nginx -t
+    nginx -t || (
+        set +x
+        echo
+        echo "Verifying the Zulip nginx configuration failed!"
+        echo
+        echo "This is almost always a problem with your SSL certificates."
+        echo "See https://zulip.readthedocs.io/en/latest/production/ssl-certificates.html for help"
+        echo
+        echo "Once fixed, just rerun scripts/setup/install; it'll pick up from here!"
+        echo
+        exit 1
+    )
     service nginx restart
 fi
 
 if [ "$has_appserver" = 0 ]; then
     "$ZULIP_PATH"/scripts/setup/generate_secrets.py --production
     cp -a "$ZULIP_PATH"/zproject/prod_settings_template.py /etc/zulip/settings.py
+    if [ -n "$EXTERNAL_HOST" ]; then
+        sed -i "s/^EXTERNAL_HOST =.*/EXTERNAL_HOST = '$EXTERNAL_HOST'/" /etc/zulip/settings.py
+    fi
+    if [ -n "ZULIP_ADMINISTRATOR" ]; then
+        sed -i "s/^ZULIP_ADMINISTRATOR =.*/ZULIP_ADMINISTRATOR = '$ZULIP_ADMINISTRATOR'/" /etc/zulip/settings.py
+    fi
     ln -nsf /etc/zulip/settings.py "$ZULIP_PATH"/zproject/prod_settings.py
 fi
 
@@ -140,6 +237,13 @@ if [ "$has_appserver" = 0 ]; then
     mkdir -p "$deploy_path"/prod-static/serve
     cp -rT "$deploy_path"/prod-static/serve /home/zulip/prod-static
     chown -R zulip:zulip /home/zulip /var/log/zulip /etc/zulip/settings.py
+
+    if ! [ -e "/home/zulip/prod-static/generated" ]; then
+        # If we're installing from a git checkout, we need to run
+        # `tools/update-prod-static` in order to build the static
+        # assets.
+        su zulip -c "/home/zulip/deployments/current/tools/update-prod-static --authors-not-required"
+    fi
 fi
 
 if [ -e "/var/run/supervisor.sock" ]; then

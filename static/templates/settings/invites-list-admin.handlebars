@@ -1,0 +1,18 @@
+<div id="admin-invites-list" class="settings-section" data-name="invites-list-admin">
+    <a class="invite-user-link" href="#invite"><i class="icon-vector-plus-sign"></i>{{t "Invite more users" }}</a>
+    <input type="text" class="search" placeholder="{{t 'Filter invites' }}" aria-label="{{t 'Filter invites' }}"/>
+    <div class="clear-float"></div>
+
+    <div class="progressive-table-wrapper">
+        <table class="table table-condensed table-striped">
+            <thead>
+                <th>{{t "Email" }}</th>
+                <th>{{t "Invited by" }}</th>
+                <th>{{t "Invited at" }}</th>
+                <th class="actions">{{t "Actions" }}</th>
+            </thead>
+            <tbody id="admin_invites_table" class="required-text thick admin_invites_table" data-empty="{{t 'No invites match your current filter.' }}"></tbody>
+        </table>
+    </div>
+    <div id="admin_page_invites_loading_indicator"></div>
+</div>

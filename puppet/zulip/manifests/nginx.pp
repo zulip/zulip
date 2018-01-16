@@ -46,6 +46,13 @@ class zulip::nginx {
     mode       => 650
   }
 
+  file { ["/var/lib/zulip", "/var/lib/zulip/certbot-webroot"]:
+    ensure     => "directory",
+    owner      => "zulip",
+    group      => "adm",
+    mode       => 660,
+  }
+
   service { 'nginx':
     ensure     => running,
   }

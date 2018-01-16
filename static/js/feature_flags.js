@@ -2,6 +2,8 @@ var feature_flags = (function () {
 
 var exports = {};
 
+exports.load_server_counts = false;
+
 // Experimental modification to support much wider message views.
 exports.full_width = false;
 
@@ -12,8 +14,6 @@ exports.propagate_topic_edits = true;
 exports.clicking_notification_causes_narrow = true;
 exports.collapsible = false;
 exports.dropbox_integration = false;
-
-exports.use_server_topic_history = false;
 
 return exports;
 

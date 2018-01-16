@@ -13,6 +13,16 @@ body {
     margin: 0 auto -56px;
 }
 
+.normal {
+    font-weight: normal;
+}
+
+.why-page h3.normal {
+    font-size: 1.2em;
+    margin-top: 20px;
+    margin-bottom: 5px;
+}
+
 .navbar {
     margin-bottom: 0px;
 }
@@ -44,7 +54,6 @@ body {
     padding-bottom: 0;
 }
 
-.footer,
 .push {
     height: 56px;
 }
@@ -58,13 +67,50 @@ html {
 }
 
 body {
-    font-family: 'Humbug', Helvetica, Arial, sans-serif;
+    font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif;
     line-height: 150%;
     height: 100%;
     font-weight: 300;
     font-size: 17px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
+
+.code-section ul.nav {
+    margin: 0;
+}
+
+.code-section ul.nav li {
+    display: inline-block;
+    padding: 3px 10px;
+    margin: 0;
+
+    border: 1px solid #ddd;
+    border-bottom: none;
+    border-radius: 4px 4px 0px 0px;
+
+    cursor: pointer;
+}
+
+.code-section ul.nav li.active {
+    color: hsl(176, 46%, 41%);
+}
+
+.code-section .blocks {
+    padding: 20px;
+
+    background-color: #fafafa;
+    border: 1px solid #ddd;
+
+    border-radius: 0px 4px 4px 4px;
+}
+
+.code-section .blocks > div {
+    display: none;
+}
+
+.code-section .blocks > .active {
+    display: block;
 }
 
 .app.help {
@@ -75,6 +121,8 @@ body {
 
     box-shadow: 0px -20px 50px rgba(0, 0, 0, 0.04);
     overflow: auto;
+
+    color: hsl(0, 0%, 27%);
 }
 
 .help .sidebar {
@@ -86,47 +134,104 @@ body {
     height: calc(100vh - 64px - 10px - 10px);
     padding: 10px 20px 10px 20px;
 
-    background-color: #278676;
-    color: #dae0df;
-
+    border-right: 1px solid hsl(219, 10%, 97%);
     overflow: auto;
+
+    background-color: hsl(153, 32%, 55%);
+    color: hsl(0, 0%, 100%);
+
+    -webkit-overflow-scrolling: touch;
+}
+
+.help .sidebar h1,
+.help .sidebar h2 {
+    font-weight: 400;
+}
+
+.help .sidebar h1 {
+    font-size: 1.25em;
+    line-height: 1.5;
+    margin-bottom: 0px;
+}
+
+.help .sidebar h1:not(:first-of-type) {
+    margin-top: 20px;
 }
 
 .help .sidebar h2 {
     font-size: 1.2em;
-    font-weight: 400;
-    margin-bottom: 0px;
-
-    text-transform: uppercase;
-    color: #fff;
+    line-height: 1.05;
+    margin-bottom: 5px;
 }
 
-.help .sidebar h3 {
-    font-size: 1em;
-    font-weight: 400;
-    text-transform: uppercase;
-    color: #badcd6;
+.help .sidebar.slide h2 {
+    cursor: pointer;
+}
 
-    line-height: 1;
-    margin: 10px 0 5px 10px;
+.help .sidebar.slide h2::before {
+    display: inline-block;
+    font: normal normal normal 14px/1 FontAwesome;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    content: "\f107";
+    margin-right: 5px;
+
+    opacity: 0.5;
+}
+
+.help .sidebar h1.home-link {
+    font-size: 1em;
+}
+
+.help .sidebar h1.home-link a::before {
+    display: inline-block;
+    font: normal normal normal 14px/1 FontAwesome;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    content: "\f0d9";
+    margin-right: 10px;
 }
 
 .help .sidebar ul {
-    margin-left: 25px;
+    margin: 5px 0px 10px 12px;
+}
+
+.help .sidebar.slide ul {
+    margin-left: 19px;
+}
+
+.help .sidebar.slide ul {
+    display: none;
 }
 
 .help .sidebar li {
-    list-style-type: circle;
-    font-size: 0.95;
-    font-weight: 500;
+    list-style-type: none;
+    font-size: 0.95em;
+    font-weight: 400;
     line-height: 1.7;
 
     cursor: pointer;
 }
 
-.help .sidebar li a {
+.help .sidebar li a,
+.help .sidebar h1 a {
     color: inherit;
     display: block;
+}
+
+.help .sidebar a.highlighted {
+    background-color: hsl(152, 40%, 42%);
+
+    /* Extend highlight to entire width of sidebar, not just link area */
+    width: calc(100% + 20px);
+    margin-left: -40px;
+    padding-left: 40px;
 }
 
 .app.help .hamburger {
@@ -139,9 +244,19 @@ body {
 .markdown h4[id]:before {
     display: block;
     content: " ";
-    margin-top: -40px;
-    height: 40px;
     visibility: hidden;
+}
+
+.markdown h1[id]:before {
+    margin-top: -30px;
+    height: 30px;
+}
+
+.markdown h2[id]:before,
+.markdown h3[id]:before,
+.markdown h4[id]:before {
+    margin-top: -10px;
+    height: 10px;
 }
 
 .markdown ul,
@@ -195,6 +310,7 @@ body {
 .markdown ol > li > p:not(:first-child) {
     padding-left: 30px;
 }
+
 .markdown ul > li:before {
     content: none;
 }
@@ -227,7 +343,7 @@ body {
     margin: 10px 0px;
 
     font-size: 0.9rem;
-    font-weight: 500;
+    font-weight: 400;
     line-height: 1.2;
 
     color: hsl(0, 0%, 27%);
@@ -246,12 +362,12 @@ body {
 }
 
 .help-inline {
-    font-weight: 500;
+    font-weight: 400;
     font-size: 0.9rem;
 }
 
 .help-inline.text-error {
-    color: hsl(1, 44%, 50%);
+    color: hsl(1, 54%, 61%);
 }
 
 a.title {
@@ -421,22 +537,67 @@ input.text-error {
     position: relative;
 }
 
-.portico-wrap {
-    overflow: hidden;
-    min-height: 100vh;
+.portico-container .if-zulip-electron {
+    display: none;
+}
+
+/* detect if the platform is `ZulipDesktop` and if so, hide this tag! */
+.portico-container[data-platform="ZulipElectron"] .if-zulip-electron {
+    display: block;
 }
 
 .footer {
-    position: absolute;
-    bottom: 0;
+    margin: 20px;
     z-index: 100;
-    width: 100%;
+    width: calc(100% - 40px);
+
+    text-align: center;
 }
 
 .footer .footer-navigation {
     margin-left: 0px;
     margin-right: 0px;
 }
+
+/* -- new footer -- */
+.footer {
+    font-size: 0.9em;
+}
+
+.footer a {
+    color: inherit !important;
+}
+
+.footer section {
+    width: calc(25% - 40px);
+    margin: 0px 20px;
+    max-width: 150px;
+
+    display: inline-block;
+    vertical-align: top;
+
+    text-align: left;
+}
+
+.footer section h3 {
+    text-transform: uppercase;
+    font-size: 1em;
+    font-weight: 600;
+    line-height: 1.2;
+
+    margin-bottom: 5px;
+}
+
+.footer section ul {
+    color: #aaa;
+
+    list-style-type: none;
+    margin-left: 0;
+
+    font-weight: 400;
+}
+
+/* -- end new footer -- */
 
 .header {
     padding: 20px 0 15px;
@@ -449,15 +610,15 @@ input.text-error {
     line-height: 0.8;
 }
 
-
 .header-main .logo .light {
     display: inline-block;
     vertical-align: top;
     margin-top: 8px;
 
     font-size: 1.2em;
-    font-weight: 300;
-    color: #aaa;
+    font-weight: 400;
+    color: #333;
+    opacity: 0.5;
 }
 
 .header-main .logo pipe {
@@ -489,6 +650,130 @@ input.text-error {
     padding: 6px 0px 6px 0px;
 }
 
+.portico-header .dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.portico-header .dropdown ul {
+    display: none;
+
+    position: absolute;
+    right: 0px;
+    margin: 10px 0 0 0;
+    list-style-type: none;
+    width: 200px;
+
+    background: #fff;
+    padding: 5px 0px;
+
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.portico-header .dropdown.show ul {
+    display: block;
+}
+
+.portico-header .dropdown ul::before {
+    content: "\25B2";
+
+    position: absolute;
+    top: -4px;
+    right: 9px;
+
+    font-size: 0.5em;
+    color: #ddd;
+
+    line-height: 0;
+
+    -webkit-transform: scale(1.8, 1);
+}
+
+.portico-header .dropdown ul li {
+    display: list-item;
+    margin: 0;
+    padding: 3px 10px;
+    text-align: left;
+
+    opacity: 1;
+
+    cursor: pointer;
+}
+
+.portico-header .dropdown ul li:hover {
+    background: linear-gradient(to bottom,#08c,#0077b3);
+    transition: none;
+}
+
+.portico-header .dropdown ul li a {
+    display: block;
+    margin: 2px 0px;
+
+    transition: none;
+    font-size: 0.9em;
+    font-weight: 400;
+
+    color: #444;
+}
+
+.portico-header .dropdown ul li:hover a {
+    background: transparent;
+    color: #fff;
+}
+
+.portico-header .dropdown ul li a i {
+    margin-right: 5px;
+}
+
+.portico-header .dropdown-pill {
+    border: 1px solid rgba(0,0,0,0.2);
+    border-radius: 4px;
+    font-weight: 400;
+    padding: 4px;
+    cursor: pointer;
+}
+
+.portico-header .dropdown-pill .realm-name {
+    display: inline-block;
+    vertical-align: top;
+
+    margin: 0px 5px 0px -4px;
+    padding: 1px 0px 1px 5px;
+
+    font-size: 0.9em;
+    font-weight: 600;
+
+    line-height: 1.6;
+}
+
+.portico-page-container .portico-header .dropdown-pill .realm-name {
+    margin-left: -3px;
+}
+
+.portico-header .dropdown-pill .realm-name i.fa {
+    position: relative;
+    top: -2px;
+
+    font-size: 0.6em;
+    margin-left: 5px;
+
+    opacity: 0.5;
+    transition: all 0.2s ease;
+}
+
+.portico-header .dropdown-pill:hover .realm-name i.fa {
+    opacity: 1;
+}
+
+.portico-header .dropdown-pill .header-realm-icon {
+    width: 26px;
+    height: 26px;
+    vertical-align: top;
+    border-radius: 4px;
+}
+
 .app {
     width: 100%;
     z-index: 99;
@@ -509,21 +794,6 @@ a.bottom-signup-button {
     margin-top: 30px;
     margin-bottom: 30px;
     font-weight: 300;
-}
-
-.login-page,
-.apps-page,
-.register-page,
-.portico-page,
-.api-page {
-    min-height: 100%;
-    height: auto;
-}
-
-.portico-page {
-    /* height of the white portico navbar */
-    min-height: calc(100% - 87px);
-    padding-bottom: 71px;
 }
 
 .signup-signature {
@@ -573,38 +843,149 @@ a.bottom-signup-button {
     box-shadow: 0px 0px 4px rgba(0,0,0,0.1);
 }
 
-.authors_row {
-    width: 100%;
-    table-layout: fixed;
+.team-profiles {
+    /* Compensate for gutter width */
+    margin: -10px;
+    margin-bottom: 20px;
 }
 
-.authors_row a {
+.team .profile .profile-name {
+    font-weight: 600;
+}
+
+.team .profile .profile-role {
+    opacity: 0.5;
+    text-transform: uppercase;
+    font-size: 0.8em;
+    font-weight: 400;
+}
+
+.team .bdfl {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.team .bdfl .profile-picture {
+    flex: 0 auto;
+    width: 200px;
+    margin: 10px;
+}
+
+.team .bdfl .profile-picture>img {
+    height: auto;
+    border-radius: 5px;
+}
+
+.team .bdfl .profile-information {
+    flex: 1;
+    /* Wrap when screen is small to prevent very short line */
+    min-width: 300px;
+    font-size: 1.4em;
+    margin: 10px 10px 0 10px;
+}
+
+.team .bdfl .profile-description {
+    margin-top: 20px;
+    font-weight: 400;
+    font-size: 0.8em;
+    opacity: 0.8;
+}
+
+.team .core-team {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.team .core-team .profile {
+    flex: 1;
+    min-width: 130px;
+    text-align: center;
+    align-content: center;
+    margin-bottom: 20px;
+    margin: 10px;
+}
+
+.team .core-team .profile .profile-picture {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    pointer-events: none;
+    box-shadow: 1px 2px 2px hsla(217, 47%, 17%, 0.03), 2px 2px 12px hsla(217, 47%, 17%, 0.09);
+    margin-bottom: 10px;
+}
+
+.team input {
+    display: none;
+}
+
+.team label {
+    font-size: initial;
+    display: inline-block;
+    padding: 10px;
+    border: 1px solid transparent;
+    margin: 0 0 -1px 0;
+}
+
+.team label:hover {
+    cursor: pointer;
+}
+
+.team input:checked + label {
+    border: 1px solid #eee;
+    border-top: 2px solid yellowgreen;
+    border-bottom-color: #fff;
+}
+
+.contributors {
+    display: none;
+}
+
+/* Activated .contributors */
+input#total:checked ~ #tab-total,
+input#server:checked ~ #tab-server,
+input#desktop:checked ~ #tab-desktop,
+input#mobile:checked ~ #tab-mobile,
+input#python-zulip-api:checked ~ #tab-python-zulip-api,
+input#zulip-js:checked ~ #tab-zulip-js,
+input#zulipbot:checked ~ #tab-zulipbot {
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+    display: grid;
+    grid-gap: 5px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.contributors .person a {
     color: inherit;
 }
 
-.authors_row td {
-    width: 100%;
-    height: 100%;
-    height: 120px;
+.contributors .person {
+    box-sizing: border-box;
     padding: 10px;
-    transition: box-shadow 0.3s ease-in-out;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    transition: all 0.3s ease;
 }
 
-.authors_row td:hover {
-    color: hsl(173, 100%, 24%);
-    box-shadow: 0px 0px 30px hsl(175, 41%, 78%);
+.contributors .person:hover {
+    border: 1px solid #bbb;
 }
 
-.authors_row .avatar {
-    width: 50%;
+.contributors .person .avatar {
+    width: 60px;
     text-align: center;
+    display: inline-block;
     vertical-align: top;
 }
 
-.authors_row .info {
+.contributors .person .info {
     width: 50%;
     text-align: left;
+    display: inline-block;
     vertical-align: top;
+    margin-left: 10px;
 }
 
 .avatar_img {
@@ -613,6 +994,12 @@ a.bottom-signup-button {
     max-width: 80%;
     max-height: 80%;
     border-radius: 20%;
+}
+
+.last-updated {
+    color: #aaa;
+    font-size: 0.8em;
+    text-align: center;
 }
 
 .integration-instruction-block .integration-lozenge {
@@ -786,8 +1173,7 @@ a.bottom-signup-button {
 }
 
 .register-form {
-    margin: auto;
-    width: 100%;
+    display: inline-block;
     text-align: center;
 }
 
@@ -836,7 +1222,7 @@ input.new-organization-button {
     min-width: 300px;
     margin: auto;
     text-align: center;
-    margin-top: 20px;
+    margin-top: 10px;
 }
 
 .login-google-button,
@@ -1104,15 +1490,15 @@ input.new-organization-button {
     position: absolute;
     right: 0px;
     /* 100vw - sidebar width - paddingTop - paddingBottom */
-    width: calc(100vw - 340px);
+    width: calc(100vw - 340px - 30px);
+    padding: 0px 30px 0px 30px;
 
     height: calc(100vh - 64px);
     font-weight: 400;
     font-size: 1rem;
     line-height: 1.5;
-    color: hsl(0, 0%, 40%);
 
-    background-color: #eee;
+    background-color: #fff;
 
     overflow: auto;
 
@@ -1120,11 +1506,11 @@ input.new-organization-button {
 }
 
 .markdown .content {
-    padding: 30px 30px 80px 30px;
+    padding: 30px;
     max-width: 768px;
     margin-left: 0px;
 
-    min-height: calc(100% - 60px - 50px);
+    min-height: calc(100% - 60px);
 
     background: #fff;
 }
@@ -1156,12 +1542,60 @@ input.new-organization-button {
 
 .markdown h1,
 .markdown h2,
-.markdown h3 {
-    font-weight: 400;
+.markdown h3,
+.why-page h1,
+.why-page h2,
+.why-page h3 {
+    font-weight: 700;
 }
 
-.markdown h3 {
-    margin-bottom: 5px;
+.markdown h1:hover,
+.markdown h2:hover,
+.markdown h3:hover {
+    cursor: pointer;
+}
+
+.markdown h1:hover:after,
+.markdown h2:hover:after,
+.markdown h3:hover:after {
+    display: inline-block;
+    font: normal normal normal 16px/1 FontAwesome;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    cursor: pointer;
+    content: "\f0c1";
+    margin-left: 5px;
+    vertical-align: middle;
+}
+
+.markdown h1,
+.why-page .main h1 {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.markdown h1#using-zulip,
+.markdown h1#zulip-administration {
+    font-size: 1.75em;
+    padding: 10px 0;
+    margin-bottom: 0px;
+    line-height: 100%;
+}
+
+.markdown h2,
+.why-page h2 {
+    font-size: 1.4em;
+    margin: 5px 0 0 0;
+}
+
+.markdown h3,
+.why-page h3 {
+    font-size: 1.1em;
+    opacity: 1;
+    margin-bottom: 0px;
 }
 
 .markdown img {
@@ -1181,15 +1615,15 @@ input.new-organization-button {
     position: relative;
     display: block;
     background-color: hsl(210, 22%, 96%);
-    border: 1px solid hsl(0, 0%, 93%);
+    border: 1px solid hsl(210, 22%, 90%);
     border-radius: 4px;
     padding: 10px;
-    margin-bottom: 10px;
+    margin: 5px 0px;
 }
 
 .markdown .tip {
     background-color: hsl(46, 63%, 95%);
-    border: 1px solid hsl(49, 20%, 84%);
+    border: 1px solid hsl(46, 63%, 84%);
 }
 
 .markdown .warn p,
@@ -1200,7 +1634,7 @@ input.new-organization-button {
 .markdown .tip::before {
     display: inline;
     content: "\f0eb   Tip:  ";
-    font-family: FontAwesome, "Yantramanav", Humbug;
+    font-family: FontAwesome, "Yantramanav", Source Sans Pro;
     font-weight: 600;
 }
 
@@ -1210,7 +1644,11 @@ input.new-organization-button {
 
 .markdown ol > li > div.tip,
 .markdown ol > li > div.warn {
-    margin: 0px 30px 15px;
+    margin: 5px 25px 5px;
+}
+
+.markdown ol p {
+    margin: 0 0 2px;
 }
 
 .markdown .indicator {
@@ -1254,22 +1692,106 @@ input.new-organization-button {
 
 .markdown .footer {
     position: relative;
-    margin-top: -64px;
+    margin-top: -240px;
     height: auto;
+    width: calc(100% - 40px);
+    max-width: calc(768px + 20px);
+}
+
+.error_page {
+    padding: 20px 0px;
+    min-height: calc(100vh - 290px);
+    background-color: #c9e9e0;
+    font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif;
+}
+
+.error_page .row-fluid {
+    margin-top: 60px;
+}
+
+.error_page img {
+    display: block;
+    clear: right;
+    margin: 0 auto;
+    max-width: 500px;
     width: 100%;
-    max-width: calc(768px + 30px + 30px);
 }
 
-@media (max-height: 678px) {
-    .portico-page {
-        /* the footer becomes two lines */
-        min-height: calc(100% - 96px);
+.error_page .errorbox {
+    margin: auto;
+    border: 2px solid #44A98C;
+    max-width: 500px;
+    background-color: white;
+    box-shadow: 0 0 4px #44A98C;
+    font-size: 18px;
+}
+
+.error_page .errorbox.config-error {
+    max-width: 750px;
+}
+
+.error_page p {
+    color: #333333;
+}
+
+.error_page .errorcontent {
+    text-align: left;
+    padding: 40px 40px 30px 40px;
+}
+
+.error_page .lead {
+    color: #39a688;
+    font-size: 40px;
+    margin-bottom: 20px;
+    line-height: normal;
+}
+
+@media (max-width: 1000px) {
+    .app.help .markdown {
+        width: calc(100vw - 50px);
+        height: calc(100vh - 64px);
+        left: 50px;
+        padding: 0px;
     }
-}
 
-@media (max-height: 600px) {
-    .password-container {
-        margin-top: 10px;
+    .app.help .markdown .content {
+        max-width: none;
+    }
+
+    .app.help .hamburger {
+        display: block;
+        position: fixed;
+        top: 70px;
+        left: 9px;
+        fill: hsl(0, 0%, 100%);
+        z-index: 2;
+
+
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .app.help .sidebar {
+        right: calc(100vw - 50px);
+        padding-right: 80px;
+        transform: translateX(0);
+        transition: all 0.3s ease;
+        overflow: hidden;
+        height: 100vh;
+    }
+
+    .app.help .sidebar.show {
+        padding-right: 20px;
+        transform: translateX(280px);
+        overflow: auto !important;
+    }
+
+    .app.help .sidebar.show + .hamburger {
+        transform: translateX(280px);
+    }
+
+    .app.help .sidebar.show ~ .markdown {
+        -webkit-filter: brightness(0.7);
     }
 }
 
@@ -1281,39 +1803,17 @@ input.new-organization-button {
     .footer-navigation {
         margin-left: 0px;
     }
-
 }
 
-@media (max-width: 1000px) {
-    .app.help .markdown {
-        width: calc(100vw);
-        height: calc(100vh - 64px);
-        left: 0;
+@media (max-width: 815px) {
+    .footer {
+        width: 450px;
+        margin-left: auto;
+        margin-right: auto;
     }
 
-    .app.help .markdown .content {
-        max-width: none;
-    }
-
-    .app.help .hamburger {
-        display: block;
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        fill: hsl(0, 0%, 40%);
-        z-index: 1;
-
-        cursor: pointer;
-    }
-
-    .app.help .sidebar {
-        right: 100vw;
-        transform: translateX(0);
-        transition: all 0.3s ease;
-    }
-
-    .app.help .sidebar.show {
-        transform: translateX(340px);
+    .footer section {
+        width: calc(50% - 40px);
     }
 }
 
@@ -1333,10 +1833,6 @@ input.new-organization-button {
         box-sizing: border-box !important;
         margin-top: 10px !important;
         margin-bottom: 10px !important;
-    }
-
-    .footer {
-        height: auto;
     }
 
     .postal-envelope {
@@ -1368,7 +1864,29 @@ input.new-organization-button {
     }
 }
 
+@media (max-height: 600px) {
+    .password-container {
+        margin-top: 10px;
+    }
+}
+
+@media (max-width: 558px) {
+    .team .bdfl .profile-name,
+    .team .bdfl .profile-role {
+        text-align: center;
+    }
+}
+
 @media (max-width: 500px) {
+    .error_page .lead {
+        font-size: 1.5em;
+        margin-bottom: 10px;
+    }
+
+    .markdown .content {
+        padding: 30px 10px 80px 10px;
+    }
+
     .brand.logo .light {
         display: none;
     }
@@ -1384,15 +1902,23 @@ input.new-organization-button {
 
     .app.help .sidebar {
         width: calc(100% - 40px);
-        height: calc(100vh - 40px - 10px - 10px);
+        height: calc(100vh - 40px - 10px - 9px);
     }
 
     .app.help .sidebar.show {
-        transform: translateX(100%);
+        transform: translateX(calc(100% - 50px));
+    }
+
+    .app.help .sidebar.show + .hamburger {
+        transform: translateX(calc(100vw - 50px));
+    }
+
+    .app.help .hamburger {
+        top: 50px;
     }
 
     .app.help .markdown {
-        height: auto;
+        height: 100%;
     }
 
     .app.help .footer-main {
@@ -1442,7 +1968,25 @@ input.new-organization-button {
         padding-left: 6px;
         padding-right: 6px;
     }
+}
 
+@media (max-width: 475px) {
+    .footer {
+        width: auto;
+    }
+
+    .footer section {
+        margin: 0px 3px;
+        width: calc(50% - 8px);
+    }
+}
+
+@media (max-width: 400px) {
+    .footer section {
+        width: calc(100% - 40px);
+        max-width: none;
+        text-align: center;
+    }
 }
 
 @font-face {
@@ -1560,11 +2104,11 @@ input.new-organization-button {
     float: right;
 }
 
-#find_my_team .form-control {
+#find_account .form-control {
     height: 30px;
 }
 
-#find_my_team .btn {
+#find_account .btn {
     height: 40px;
     border-radius: 5px;
 }
@@ -1589,45 +2133,4 @@ input.new-organization-button {
 
 .portico-page.error .portico-page-container {
     padding: 0;
-}
-
-.error_page {
-    min-height: calc(100vh - 64px);
-    background-color: #c9e9e0;
-    font-family: 'Humbug', Helvetica, Arial, sans-serif;
-}
-
-.error_page .row-fluid {
-    margin-top: 60px;
-}
-
-.error_page img {
-    display: block;
-    clear: right;
-    margin: 0 auto;
-    max-width: 500px;
-}
-
-.error_page .errorbox {
-    margin: auto;
-    border: 2px solid #44A98C;
-    max-width: 500px;
-    background-color: white;
-    box-shadow: 0 0 4px #44A98C;
-    font-size: 18px;
-}
-
-.error_page p {
-    color: #333333;
-}
-
-.error_page .errorcontent {
-    text-align: left;
-    padding: 40px 40px 30px 40px;
-}
-
-.error_page .lead {
-    color: #39a688;
-    font-size: 40px;
-    margin-bottom: 30px;
 }

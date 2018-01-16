@@ -1,15 +1,13 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from __future__ import print_function
-from __future__ import absolute_import
 
 import os
 import sys
 import time
 import signal
 import subprocess
+from typing import Tuple
 
-from six.moves import range
 # check for the venv
 from lib import sanity_check
 sanity_check.check_venv(__file__)
@@ -19,19 +17,23 @@ from typing import IO
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-def start_server(logfile):
-    # type: (IO[str]) -> bool
+def start_server(logfile_name: str) -> Tuple[bool, str]:
     failure = True
     key = "Quit the server with CTRL-C."
-    for i in range(200):
-        time.sleep(0.5)
-        print("Polling run-dev...")
-        logfile.seek(0)
-        if key in logfile.read():
-            failure = False
-            break
+    datalog = []
+    with open(logfile_name, 'rb', buffering=0) as logfile:
+        for i in range(200):
+            time.sleep(0.5)
+            print("{}. Polling run-dev...".format(i))
+            new_data = logfile.read().decode()
+            if new_data:
+                datalog.append(new_data)
 
-    return failure
+            if key in ''.join(datalog):
+                failure = False
+                break
+
+    return failure, ''.join(datalog)
 
 
 def test_nagios(nagios_logfile):
@@ -60,41 +62,37 @@ def test_nagios(nagios_logfile):
     return False
 
 
-def close_and_get_content(file_handle):
-    # type: (IO[str]) -> str
-    file_handle.seek(0)
-    content = file_handle.read()
-    file_handle.close()
-    return content
-
-
 if __name__ == '__main__':
     print("Testing development server start!")
 
-    logfile = open('/tmp/run-dev-output', 'w+')
-    nagios_logfile = open('/tmp/test-nagios-output', 'w+')
+    logfile_name = '/tmp/run-dev-output'
+    logfile = open(logfile_name, 'wb', buffering=0)
+    # nagios_logfile = open('/tmp/test-nagios-output', 'w+')
 
     args = ["{}/run-dev.py".format(TOOLS_DIR)]
-    run_dev = subprocess.Popen(args, stdout=logfile, stderr=logfile)
+    STDOUT = subprocess.STDOUT
+    run_dev = subprocess.Popen(args, stdout=logfile, stderr=STDOUT)
 
     try:
-        failure = start_server(logfile)
-        failure = failure or not test_nagios(nagios_logfile)
+        failure, log = start_server(logfile_name)
+        # We have moved API to a separate repo. `test_nagios` and
+        # `check_send_receive_time` need to be updated.
+        # failure = failure or not test_nagios(nagios_logfile)
     finally:
-        log = close_and_get_content(logfile)
-        nagios_log = close_and_get_content(nagios_logfile)
+        logfile.close()
+        # nagios_log = close_and_get_content(nagios_logfile)
 
     run_dev.send_signal(signal.SIGINT)
     run_dev.wait()
 
-    if not failure and 'Traceback' in log + ' ' + nagios_log:
+    if not failure and 'Traceback' in log:  # + ' ' + nagios_log:
         failure = True
 
     if failure:
         print("Development server is not working properly:")
         print(log)
-        print("check_send_receive_time output:")
-        print(nagios_log)
+        # print("check_send_receive_time output:")
+        # print(nagios_log)
         sys.exit(1)
     else:
         print("Development server is working properly.")

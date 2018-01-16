@@ -1,6 +1,8 @@
 var typing_events = (function () {
 var exports = {};
 
+// See docs/subsystems/typing-indicators.md for details on typing indicators.
+
 // This code handles the inbound side of typing notifications.
 // When another user is typing, we process the events here.
 //

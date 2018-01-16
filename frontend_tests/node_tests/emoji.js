@@ -1,12 +1,11 @@
 set_global('$', global.make_zjquery());
-set_global('page_params', {});
+set_global('page_params', {
+    emojiset: 'google',
+});
 set_global('upload_widget', {});
 
-add_dependencies({
-    emoji_codes: 'generated/emoji/emoji_codes.js',
-});
-
-var emoji = require('js/emoji.js');
+zrequire('emoji_codes', 'generated/emoji/emoji_codes');
+zrequire('emoji');
 
 (function test_build_emoji_upload_widget() {
     var build_widget_stub = false;
@@ -39,4 +38,39 @@ var emoji = require('js/emoji.js');
     set_global('Image', Image);
     emoji.initialize();
     assert(image_stub);
+}());
+
+(function test_get_canonical_name() {
+    emoji.active_realm_emojis = {
+        realm_emoji: 'TBD',
+    };
+    var canonical_name = emoji.get_canonical_name('realm_emoji');
+    assert.equal(canonical_name, 'realm_emoji');
+
+    global.emoji_codes = {
+        name_to_codepoint: {
+            '+1': '1f44d',
+        },
+        codepoint_to_name: {
+            '1f44d': 'thumbs_up',
+        },
+    };
+    canonical_name = emoji.get_canonical_name('+1');
+    assert.equal(canonical_name, 'thumbs_up');
+
+    emoji.active_realm_emojis = {
+        '+1': 'TBD',
+    };
+    canonical_name = emoji.get_canonical_name('+1');
+    assert.equal(canonical_name, '+1');
+
+    var errored = false;
+    set_global('blueslip', {
+        error: function (error) {
+            assert.equal(error, "Invalid emoji name: non_existent");
+            errored = true;
+        },
+    });
+    emoji.get_canonical_name('non_existent');
+    assert(errored);
 }());

@@ -18,6 +18,13 @@ exports.composing = function () {
     return !!message_type;
 };
 
+exports.focus_in_empty_compose = function () {
+    return (
+        exports.composing() &&
+        exports.message_content() === "" &&
+        $('#compose-textarea').is(':focus'));
+};
+
 function get_or_set(fieldname, keep_leading_whitespace) {
     // We can't hoist the assignment of 'elem' out of this lambda,
     // because the DOM element might not exist yet when get_or_set
@@ -35,9 +42,9 @@ function get_or_set(fieldname, keep_leading_whitespace) {
 // TODO: Break out setters and getter into their own functions.
 exports.stream_name     = get_or_set('stream');
 exports.subject         = get_or_set('subject');
-// We can't trim leading whitespace in `new_message_content` because
+// We can't trim leading whitespace in `compose_textarea` because
 // of the indented syntax for multi-line code blocks.
-exports.message_content = get_or_set('new_message_content', true);
+exports.message_content = get_or_set('compose-textarea', true);
 exports.recipient       = get_or_set('private_message_recipient');
 
 exports.has_message_content = function () {

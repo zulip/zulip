@@ -1,10 +1,8 @@
+zrequire('localstorage');
+zrequire('drafts');
+
 set_global('$', global.make_zjquery());
 set_global('window', {});
-
-add_dependencies({
-    localstorage: 'js/localstorage',
-    drafts: 'js/drafts',
-});
 
 var ls_container = {};
 set_global('localStorage', {
@@ -80,7 +78,7 @@ var draft_2 = {
     localStorage.clear();
     (function test_editDraft() {
          stub_timestamp(2, function () {
-             ls.set("drafts", { id1: draft_1 } );
+             ls.set("drafts", { id1: draft_1 });
              var expected = _.clone(draft_2);
              expected.updatedAt = 2;
              draft_model.editDraft("id1", _.clone(draft_2));
@@ -91,7 +89,7 @@ var draft_2 = {
 
     localStorage.clear();
     (function test_deleteDraft() {
-         ls.set("drafts", { id1: draft_1 } );
+         ls.set("drafts", { id1: draft_1 });
          draft_model.deleteDraft("id1");
 
          assert.deepEqual(ls.get("drafts"), {});
@@ -131,7 +129,7 @@ var draft_2 = {
 }());
 
 (function test_initialize() {
-    var message_content = $("#new_message_content");
+    var message_content = $("#compose-textarea");
     message_content.focusout = function (f) {
         assert.equal(f, drafts.update_draft);
         f();
@@ -147,11 +145,3 @@ var draft_2 = {
 
     drafts.initialize();
 }());
-
-(function test_drafts_overlay_open() {
-    var overlay = $("#draft_overlay");
-    assert(!drafts.drafts_overlay_open());
-    overlay.addClass("show");
-    assert(drafts.drafts_overlay_open());
-}());
-

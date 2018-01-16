@@ -1,18 +1,13 @@
-var th = require('js/typeahead_helper.js');
-
 set_global('page_params', {realm_is_zephyr_mirror_realm: false});
 set_global('templates', {});
 
-add_dependencies({
-    stream_data: 'js/stream_data.js',
-    people: 'js/people.js',
-    util: 'js/util.js',
-    Handlebars: 'handlebars',
-    recent_senders: 'js/recent_senders.js',
-    pm_conversations: 'js/pm_conversations.js',
-    message_store: 'js/message_store.js',
-    typeahead_helper: 'js/typeahead_helper.js',
-});
+zrequire('Handlebars', 'handlebars');
+zrequire('recent_senders');
+zrequire('pm_conversations');
+zrequire('people');
+zrequire('util');
+zrequire('stream_data');
+var th = zrequire('typeahead_helper');
 
 stream_data.create_streams([
     {name: 'Dev', subscribed: true, color: 'blue', stream_id: 1},
@@ -404,6 +399,32 @@ _.each(matches, function (person) {
     assert(rendered);
 }());
 
+(function test_clear_rendered_persons() {
+    var rendered = false;
+    global.templates.render = function (template_name, args) {
+        assert.equal(template_name, 'typeahead_list_item');
+        assert.equal(args.primary, matches[5].full_name);
+        assert.equal(args.secondary, matches[5].email);
+        rendered = true;
+        return 'typeahead-item-stub';
+    };
+    assert.equal(th.render_person(matches[5]), 'typeahead-item-stub');
+    assert(rendered);
+
+    // Bot once rendered won't be rendered again until clear_rendered_person
+    // function is called. clear_rendered_person is used to clear rendered
+    // data once bot name is modified.
+    rendered = false;
+    assert.equal(th.render_person(matches[5]), 'typeahead-item-stub');
+    assert.equal(rendered, false);
+
+    // Here rendered will be true as it is being rendered again.
+    th.clear_rendered_persons();
+    assert.equal(th.render_person(matches[5]), 'typeahead-item-stub');
+    assert(rendered);
+
+}());
+
 (function test_render_stream() {
     // Test render_stream with short description
     var rendered = false;
@@ -438,6 +459,57 @@ _.each(matches, function (person) {
         return 'typeahead-item-stub';
     };
     assert.equal(th.render_stream(stream), 'typeahead-item-stub');
+    assert(rendered);
+}());
+
+(function test_render_emoji() {
+    // Test render_emoji with normal emoji.
+    var rendered = false;
+    var emoji = {
+        emoji_name: 'thumbs_up',
+        codepoint: '1f44d',
+    };
+    set_global('emoji', {
+        active_realm_emojis: {
+            realm_emoji: 'TBD',
+        },
+    });
+
+    global.templates.render = function (template_name, args) {
+        assert.equal(template_name, 'typeahead_list_item');
+        assert.deepEqual(args, {
+            primary: 'thumbs up',
+            codepoint: '1f44d',
+            is_emoji: true,
+            has_image: false,
+            has_secondary: false,
+        });
+        rendered = true;
+        return 'typeahead-item-stub';
+    };
+    assert.equal(th.render_emoji(emoji), 'typeahead-item-stub');
+    assert(rendered);
+
+    // Test render_emoji with normal emoji.
+    rendered = false;
+    emoji = {
+        emoji_name: 'realm_emoji',
+        emoji_url: 'TBD',
+    };
+
+    global.templates.render = function (template_name, args) {
+        assert.equal(template_name, 'typeahead_list_item');
+        assert.deepEqual(args, {
+            primary: 'realm emoji',
+            img_src: 'TBD',
+            is_emoji: true,
+            has_image: true,
+            has_secondary: false,
+        });
+        rendered = true;
+        return 'typeahead-item-stub';
+    };
+    assert.equal(th.render_emoji(emoji), 'typeahead-item-stub');
     assert(rendered);
 }());
 

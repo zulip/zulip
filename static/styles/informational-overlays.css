@@ -8,7 +8,7 @@
     border-radius: 4px;
     overflow: hidden;
 
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
 }
 
 .informational-overlays .overlay-tabs {
@@ -35,6 +35,7 @@
 .informational-overlays .overlay-modal .modal-body {
     height: 70vh;
     text-align: center;
+    outline: none;
 }
 
 .informational-overlays .overlay-modal .modal-header h3 {

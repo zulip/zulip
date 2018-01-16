@@ -11,7 +11,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         break;
 
     case 'default_streams':
-        page_params.realm_default_streams = event.default_streams;
+        stream_data.set_realm_default_streams(event.default_streams);
         settings_streams.update_default_streams_table();
         break;
 
@@ -54,6 +54,9 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         var realm_settings = {
             add_emoji_by_admins_only: settings_emoji.update_custom_emoji_ui,
             allow_edit_history: noop,
+            allow_message_deleting: noop,
+            allow_message_editing: noop,
+            create_generic_bot_by_admins_only: noop,
             create_stream_by_admins_only: noop,
             default_language: settings_org.reset_realm_default_language,
             description: settings_org.update_realm_description,
@@ -67,6 +70,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             name: notifications.redraw_title,
             name_changes_disabled: settings_org.toggle_name_change_display,
             notifications_stream_id: noop,
+            signup_notifications_stream_id: noop,
             restricted_to_domain: noop,
             waiting_period_threshold: noop,
         };
@@ -81,10 +85,16 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             } else if (event.property === 'notifications_stream_id') {
                 settings_org.render_notifications_stream_ui(
                     page_params.realm_notifications_stream_id);
+            } else if (event.property === 'signup_notifications_stream_id') {
+                settings_org.render_signup_notifications_stream_ui(
+                    page_params.realm_signup_notifications_stream_id);
             }
         } else if (event.op === 'update_dict' && event.property === 'default') {
             _.each(event.data, function (value, key) {
                 page_params['realm_' + key] = value;
+                if (key === 'allow_message_editing') {
+                    settings_org.toggle_allow_message_editing_pencil();
+                }
             });
             if (event.data.authentication_methods !== undefined) {
                 settings_org.populate_auth_methods(event.data.authentication_methods);
@@ -120,6 +130,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         page_params.realm_emoji = event.realm_emoji;
         emoji.update_emojis(event.realm_emoji);
         settings_emoji.populate_emoji(event.realm_emoji);
+        emoji_picker.generate_emoji_picker_data(emoji.active_realm_emojis);
         break;
 
     case 'realm_filters':
@@ -174,17 +185,23 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             stream_data.create_streams(event.streams);
         } else if (event.op === 'delete') {
             _.each(event.streams, function (stream) {
-                if (stream_data.is_subscribed(stream.name)) {
+                var was_subscribed = stream_data.get_sub_by_id(stream.stream_id).subscribed;
+                stream_data.delete_sub(stream.stream_id);
+                subs.remove_stream(stream.stream_id);
+                if (was_subscribed) {
                     stream_list.remove_sidebar_row(stream.stream_id);
                 }
-                subs.remove_stream(stream.stream_id);
-                stream_data.delete_sub(stream.stream_id);
                 settings_streams.remove_default_stream(stream.stream_id);
                 stream_data.remove_default_stream(stream.stream_id);
                 if (page_params.realm_notifications_stream_id === stream.stream_id) {
                     page_params.realm_notifications_stream_id = -1;
                     settings_org.render_notifications_stream_ui(
                         page_params.realm_notifications_stream_id);
+                }
+                if (page_params.realm_signup_notifications_stream_id === stream.stream_id) {
+                    page_params.realm_signup_notifications_stream_id = -1;
+                    settings_org.render_signup_notifications_stream_ui(
+                        page_params.realm_signup_notifications_stream_id);
                 }
             });
         }
@@ -200,7 +217,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 if (sub) {
                     stream_events.mark_subscribed(sub, rec.subscribers);
                 } else {
-                    blueslip.error('Subscribing to unknown stream' + rec.stream_id);
+                    blueslip.error('Subscribing to unknown stream with ID ' + rec.stream_id);
                 }
             });
         } else if (event.op === 'peer_add') {
@@ -262,9 +279,9 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
     case 'update_display_settings':
         var user_display_settings = [
             'default_language',
-            'emoji_alt_code',
             'emojiset',
             'high_contrast_mode',
+            'night_mode',
             'left_side_userlist',
             'timezone',
             'twenty_four_hour_time',
@@ -282,12 +299,16 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         if (event.setting_name === 'high_contrast_mode') {
             $("body").toggleClass("high-contrast");
         }
-        if (event.setting_name === 'emoji_alt_code') {
-            // Rerender the whole message list UI
-            home_msg_list.rerender();
-            if (current_msg_list === message_list.narrowed) {
-                message_list.narrowed.rerender();
-            }
+        if (event.setting_name === 'night_mode') {
+            $("body").fadeOut(300);
+            setTimeout(function () {
+                if (event.setting === true) {
+                    night_mode.enable();
+                } else {
+                    night_mode.disable();
+                }
+                $("body").fadeIn(300);
+            }, 300);
         }
         if (event.setting_name === 'left_side_userlist') {
             // TODO: Make this change the view immediately rather
@@ -298,17 +319,13 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             // than requiring a reload or page resize.
         }
         if (event.setting_name === 'emojiset') {
-            var sprite = new Image();
-            sprite.onload = function () {
-                $("#emoji-spritesheet").attr('href', "/static/generated/emoji/" + page_params.emojiset + "_sprite.css");
-                if ($("#display-settings-status").length) {
-                    loading.destroy_indicator($("#emojiset_spinner"));
-                    $("#emojiset_select").val(page_params.emojiset);
-                    ui_report.success(i18n.t("Emojiset changed successfully!!"),
-                                      $('#display-settings-status').expectOne());
-                }
-            };
-            sprite.src = "/static/generated/emoji/sheet_" + page_params.emojiset + "_32.png";
+            settings_display.report_emojiset_change();
+
+            // Rerender the whole message list UI
+            home_msg_list.rerender();
+            if (current_msg_list === message_list.narrowed) {
+                message_list.narrowed.rerender();
+            }
         }
         if ($("#settings.tab-pane.active").length) {
             settings_display.update_page();
@@ -340,6 +357,13 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
     case 'delete_message':
         var msg_id = event.message_id;
         ui.remove_message(msg_id);
+        break;
+
+    case 'user_group':
+        if (event.op === 'add') {
+            user_groups.add(event.group);
+            settings_user_groups.reload();
+        }
         break;
 
     }

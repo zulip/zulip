@@ -14,7 +14,7 @@ the `homeassistant` stream.
 
 And the URL under `resource` should start with:
 
-`{{ external_api_uri_subdomain }}/v1/external/homeassistant`
+`{{ api_url }}/v1/external/homeassistant`
 
 Finally, you need to configure a trigger for the service by adding
 an automation entry in the HomeAssistant `configuration.yaml` file.

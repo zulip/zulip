@@ -1,0 +1,20 @@
+#!/bin/bash
+
+zulip_conf_get_boolean() {
+    # Get a boolean flag from zulip.conf, using the Python
+    # `configparser` library's conventions for what counts as true.
+    # Treat absent and invalid values as false.
+    value=$(crudini --get /etc/zulip/zulip.conf "$1" "$2" 2>/dev/null)
+    case "$(echo "$value" | tr A-Z a-z)" in
+        1|yes|true|on) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+if ! zulip_conf_get_boolean certbot auto_renew; then
+    exit 0
+fi
+
+/usr/local/sbin/certbot-auto renew --quiet \
+  --webroot --webroot-path=/var/lib/zulip/certbot-webroot/ \
+  --deploy-hook 'service nginx reload'

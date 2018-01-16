@@ -1,0 +1,10 @@
+{{#with emoji_dict}}
+<div class="emoji-showcase">
+    {{#if is_realm_emoji}}
+    <img src="{{url}}" class="emoji emoji-preview"/>
+    {{else}}
+    <div class="emoji emoji-preview emoji-{{css_class}}"></div>
+    {{/if}}
+    <div class="emoji-canonical-name" title="{{name}}">{{name}}</div>
+</div>
+{{/with}}

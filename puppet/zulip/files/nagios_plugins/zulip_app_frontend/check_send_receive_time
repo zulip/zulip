@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 Script to provide information about send-receive times.
@@ -8,17 +8,15 @@ It supports both munin and nagios outputs
 It must be run on a machine that is using the live database for the
 Django ORM.
 """
-from __future__ import print_function
-from __future__ import division
-
 import sys
-import optparse
+import argparse
 import random
 import subprocess
 import time
 import traceback
 import os
 
+sys.path.append('.')
 sys.path.append('/home/zulip/deployments/current')
 import scripts.lib.setup_path_on_import
 
@@ -31,40 +29,38 @@ usage = """Usage: send-receive.py [options] [config]
        'config' is optional, if present will return config info.
         Otherwise, returns the output data."""
 
-parser = optparse.OptionParser(usage=usage)
-parser.add_option('--site',
-                  dest='site',
-                  default="https://api.zulip.com",
-                  action='store')
+parser = argparse.ArgumentParser(usage=usage)
+parser.add_argument('--site',
+                    dest='site',
+                    default="https://api.zulip.com",
+                    action='store')
 
-parser.add_option('--nagios',
-                  dest='nagios',
-                  action='store_true')
+parser.add_argument('--nagios',
+                    dest='nagios',
+                    action='store_true')
 
-parser.add_option('--insecure',
-                  dest='insecure',
-                  action='store_true')
+parser.add_argument('--insecure',
+                    dest='insecure',
+                    action='store_true')
 
-parser.add_option('--munin',
-                  dest='munin',
-                  action='store_true')
+parser.add_argument('--munin',
+                    dest='munin',
+                    action='store_true')
 
-parser.add_option('--websocket',
-                  dest='websocket',
-                  action='store_true')
+parser.add_argument('--websocket',
+                    dest='websocket',
+                    action='store_true')
 
-(options, args) = parser.parse_args()
+parser.add_argument('config', nargs='?', default=None)
+
+options = parser.parse_args()
 
 if not options.nagios and not options.munin:
     print('No output options specified! Please provide --munin or --nagios')
     sys.exit(0)
 
-if len(args) > 2:
-    print(usage)
-    sys.exit(0)
-
 if options.munin:
-    if len(args) and args[0] == 'config':
+    if options.config == 'config':
         print("""graph_title Send-Receive times
 graph_info The number of seconds it takes to send and receive a message from the server
 graph_args -u 5 -l 0

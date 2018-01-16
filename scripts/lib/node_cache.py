@@ -1,15 +1,13 @@
-from __future__ import print_function
 
 import os
 import hashlib
-from os.path import dirname, abspath
 
 if False:
-    from typing import Optional, List, IO, Tuple, Any
+    from typing import Optional, List, IO, Text, Tuple, Any
 
 from scripts.lib.zulip_tools import subprocess_text_output, run
 
-ZULIP_PATH = dirname(dirname(dirname(abspath(__file__))))
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 ZULIP_SRV_PATH = "/srv"
 
 if 'TRAVIS' in os.environ:
@@ -30,21 +28,26 @@ def get_yarn_args(production):
         yarn_args = []
     return yarn_args
 
-def generate_sha1sum_node_modules(production=DEFAULT_PRODUCTION):
-    # type: (bool) -> str
+def generate_sha1sum_node_modules(setup_dir=None, production=DEFAULT_PRODUCTION):
+    # type: (Optional[Text], bool) -> str
+    if setup_dir is None:
+        setup_dir = os.path.realpath(os.getcwd())
+    PACKAGE_JSON_FILE_PATH = os.path.join(setup_dir, 'package.json')
+    YARN_LOCK_FILE_PATH = os.path.join(setup_dir, 'yarn.lock')
     sha1sum = hashlib.sha1()
-    sha1sum.update(subprocess_text_output(['cat', 'package.json']).encode('utf8'))
-    sha1sum.update(subprocess_text_output(['cat', 'yarn.lock']).encode('utf8'))
+    sha1sum.update(subprocess_text_output(['cat', PACKAGE_JSON_FILE_PATH]).encode('utf8'))
+    if os.path.exists(YARN_LOCK_FILE_PATH):
+        # For backwards compatibility, we can't assume yarn.lock exists
+        sha1sum.update(subprocess_text_output(['cat', YARN_LOCK_FILE_PATH]).encode('utf8'))
     sha1sum.update(subprocess_text_output([YARN_BIN, '--version']).encode('utf8'))
     sha1sum.update(subprocess_text_output(['node', '--version']).encode('utf8'))
     yarn_args = get_yarn_args(production=production)
     sha1sum.update(''.join(sorted(yarn_args)).encode('utf8'))
-
     return sha1sum.hexdigest()
 
 def setup_node_modules(production=DEFAULT_PRODUCTION, stdout=None, stderr=None, copy_modules=False,
                        prefer_offline=False):
-    # type: (bool, Optional[IO], Optional[IO], bool, bool) -> None
+    # type: (bool, Optional[IO[Any]], Optional[IO[Any]], bool, bool) -> None
     yarn_args = get_yarn_args(production=production)
     if prefer_offline:
         yarn_args.append("--prefer-offline")
@@ -71,7 +74,7 @@ def setup_node_modules(production=DEFAULT_PRODUCTION, stdout=None, stderr=None, 
 
 def do_yarn_install(target_path, yarn_args, success_stamp, stdout=None, stderr=None,
                     copy_modules=False):
-    # type: (str, List[str], str, Optional[IO], Optional[IO], bool) -> None
+    # type: (str, List[str], str, Optional[IO[Any]], Optional[IO[Any]], bool) -> None
     cmds = [
         ['mkdir', '-p', target_path],
         ['cp', 'package.json', "yarn.lock", target_path],

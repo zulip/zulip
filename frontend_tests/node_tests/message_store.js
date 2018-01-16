@@ -1,8 +1,7 @@
-add_dependencies({
-    people: 'js/people.js',
-    pm_conversations: 'js/pm_conversations.js',
-    util: 'js/util.js',
-});
+zrequire('pm_conversations');
+zrequire('util');
+zrequire('people');
+zrequire('message_store');
 
 var noop = function () {};
 var with_overrides = global.with_overrides;
@@ -61,8 +60,6 @@ people.add_in_realm(cindy);
 
 global.people.initialize_current_user(me.user_id);
 
-var message_store = require('js/message_store.js');
-
 (function test_insert_recent_private_message() {
     message_store.insert_recent_private_message('1', 1001);
     message_store.insert_recent_private_message('2', 2001);
@@ -84,8 +81,10 @@ var message_store = require('js/message_store.js');
         type: 'private',
         display_recipient: [me, bob, cindy],
         flags: ['has_alert_word'],
+        is_me_message: false,
         id: 2067,
     };
+    message_store.set_message_booleans(message);
     message_store.add_message_metadata(message);
 
     assert.equal(message.is_private, true);
@@ -130,47 +129,19 @@ var message_store = require('js/message_store.js');
         });
         global.with_stub(function (stub) {
             set_global('composebox_typeahead', {add_topic: stub.f});
+            message_store.set_message_booleans(message);
             message_store.add_message_metadata(message);
             var typeahead_added = stub.get_args('stream', 'subject');
             assert.deepEqual(typeahead_added.stream, [me, cindy]);
             assert.equal(message.subject, typeahead_added.subject);
         });
 
-        assert.equal(message.always_visible_topic_edit, true);
-        assert.equal(message.on_hover_topic_edit, false);
         assert.deepEqual(message.stream, [me, cindy]);
         assert.equal(message.reply_to, 'me@example.com');
-        assert.deepEqual(message.flags, []);
+        assert.deepEqual(message.flags, undefined);
         assert.equal(message.alerted, false);
-
-        override('compose.empty_topic_placeholder', function () {
-            return 'not_the_subject';
-        });
-
-        message = {
-            sender_id: me.user_id,
-            type: 'stream',
-            id: 2069,
-            display_recipient: [me],
-            sender_email: 'me@example.org',
-        };
-        message_store.add_message_metadata(message);
-
-        assert.equal(message.always_visible_topic_edit, false);
-        assert.equal(message.on_hover_topic_edit, true);
     });
 
-    page_params.realm_allow_message_editing = false;
-    message = {
-        sender_id: me.user_id,
-        type: 'stream',
-        id: 2070,
-        display_recipient: [me],
-        sender_email: 'me@example.org',
-    };
-    message_store.add_message_metadata(message);
-    assert.equal(message.always_visible_topic_edit, false);
-    assert.equal(message.on_hover_topic_edit, false);
 }());
 
 (function test_errors() {
@@ -210,6 +181,38 @@ var message_store = require('js/message_store.js');
     });
     message_store.process_message_for_recent_private_messages(message);
     assert.equal(num_partner, 0);
+}());
+
+(function test_update_booleans() {
+    var message = {};
+
+    // First, test fields that we do actually want to update.
+    message.mentioned = false;
+    message.mentioned_me_directly = false;
+    message.alerted = false;
+
+    var flags = ['mentioned', 'has_alert_word', 'read'];
+    message_store.update_booleans(message, flags);
+    assert.equal(message.mentioned, true);
+    assert.equal(message.mentioned_me_directly, true);
+    assert.equal(message.alerted, true);
+
+    flags = ['read'];
+    message_store.update_booleans(message, flags);
+    assert.equal(message.mentioned, false);
+    assert.equal(message.mentioned_me_directly, false);
+    assert.equal(message.alerted, false);
+
+    // Make sure we don't muck with unread.
+    message.unread = false;
+    flags = [''];
+    message_store.update_booleans(message, flags);
+    assert.equal(message.unread, false);
+
+    message.unread = true;
+    flags = ['read'];
+    message_store.update_booleans(message, flags);
+    assert.equal(message.unread, true);
 }());
 
 (function test_message_id_change() {

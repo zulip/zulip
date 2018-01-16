@@ -61,8 +61,20 @@ exports.toggle_email_change_display = function () {
         return;
     }
 
-    $("#change_email").toggle();
+    if ($('#change_email .button').attr('disabled')) {
+        $('#change_email .button').prop('disabled', false);
+    } else {
+        $('#change_email .button').attr('disabled', 'disabled');
+    }
     $(".change_email_tooltip").toggle();
+};
+
+exports.toggle_allow_message_editing_pencil = function () {
+    if (!meta.loaded) {
+        return;
+    }
+
+    $(".on_hover_topic_edit").toggle();
 };
 
 exports.update_realm_description = function () {
@@ -100,12 +112,12 @@ exports.populate_auth_methods = function (auth_methods) {
     if (!page_params.is_admin) {
         $(".organization-box [data-name='auth-methods']")
             .find("input, button, select, checked").attr("disabled", true);
+        var tip_box = $("<div class='tip'></div>")
+            .text(i18n.t("Only organization administrators can edit these settings."));
         // Don't prepend a tip to custom emoji settings page. We handle it separately.
         $(".organization-box").find(".settings-section:not(.can-edit)")
             .not("#emoji-settings")
-            .prepend("<div class='tip'>" +
-                     i18n.t("Only organization administrators can edit these settings.") +
-                     "</div>");
+            .prepend(tip_box);
     }
 };
 
@@ -131,23 +143,70 @@ exports.populate_notifications_stream_dropdown = function (stream_list) {
     var search_input = $("#id_realm_notifications_stream .dropdown-search > input[type=text]");
 
     list_render(dropdown_list_body, stream_list, {
-        name: "admin-realm-dropdown-stream-list",
+        name: "admin-realm-notifications-stream-dropdown-list",
         modifier: function (item) {
             return templates.render("admin-realm-dropdown-stream-list", { stream: item });
         },
         filter: {
             element: search_input,
             callback: function (item, value) {
-                return item.name.toLowerCase().match(value);
+                return item.name.toLowerCase().indexOf(value) >= 0;
+            },
+            onupdate: function () {
+                ui.update_scrollbar(dropdown_list_body);
             },
         },
     }).init();
+
+    ui.set_up_scrollbar(dropdown_list_body);
 
     $("#id_realm_notifications_stream .dropdown-search").click(function (e) {
         e.stopPropagation();
     });
 
     $("#id_realm_notifications_stream .dropdown-toggle").click(function () {
+        search_input.val("").trigger("input");
+    });
+};
+
+exports.render_signup_notifications_stream_ui = function (stream_id) {
+    var elem = $('#realm_signup_notifications_stream_name');
+
+    var name = stream_data.maybe_get_stream_name(stream_id);
+
+    if (!name) {
+        elem.text(i18n.t("Disabled"));
+        elem.addClass("text-warning");
+        return;
+    }
+
+    // Happy path
+    elem.text('#' + name);
+    elem.removeClass('text-warning');
+};
+
+exports.populate_signup_notifications_stream_dropdown = function (stream_list) {
+    var dropdown_list_body = $("#id_realm_signup_notifications_stream .dropdown-list-body").expectOne();
+    var search_input = $("#id_realm_signup_notifications_stream .dropdown-search > input[type=text]");
+
+    list_render(dropdown_list_body, stream_list, {
+        name: "admin-realm-signup-notifications-stream-dropdown-list",
+        modifier: function (item) {
+            return templates.render("admin-realm-dropdown-stream-list", { stream: item });
+        },
+        filter: {
+            element: search_input,
+            callback: function (item, value) {
+                return item.name.toLowerCase().indexOf(value) >= 0;
+            },
+        },
+    }).init();
+
+    $("#id_realm_signup_notifications_stream .dropdown-search").click(function (e) {
+        e.stopPropagation();
+    });
+
+    $("#id_realm_signup_notifications_stream .dropdown-toggle").click(function () {
         search_input.val("").trigger("input");
     });
 };
@@ -163,9 +222,12 @@ function _set_up() {
 
     // Populate notifications stream modal
     if (page_params.is_admin) {
-        exports.populate_notifications_stream_dropdown(stream_data.get_streams_for_settings_page());
+        var streams = stream_data.get_streams_for_settings_page();
+        exports.populate_notifications_stream_dropdown(streams);
+        exports.populate_signup_notifications_stream_dropdown(streams);
     }
     exports.render_notifications_stream_ui(page_params.realm_notifications_stream_id);
+    exports.render_signup_notifications_stream_ui(page_params.realm_signup_notifications_stream_id);
 
     // Populate realm domains
     exports.populate_realm_domains(page_params.realm_domains);
@@ -175,50 +237,36 @@ function _set_up() {
 
     // create property_types object
     var property_types = {
-        settings: {
+        profile: {
             name: {
-                type: 'Text',
+                type: 'text',
                 msg: i18n.t("Name changed!"),
             },
             description: {
-                type: 'Text',
+                type: 'text',
                 msg: i18n.t("Description changed!"),
             },
+        },
+
+        settings: {
             default_language: {
-                type: 'Text',
+                type: 'text',
                 msg: i18n.t("Default language changed!"),
             },
-        },
-        permissions: {
-            add_emoji_by_admins_only: {
+            allow_message_deleting: {
                 type: 'bool',
-                checked_msg: i18n.t("Only administrators may now add new emoji!"),
-                unchecked_msg: i18n.t("Any user may now add new emoji!"),
+                checked_msg: i18n.t("Users can delete their messages!"),
+                unchecked_msg: i18n.t("Users can no longer delete their messages!"),
             },
             allow_edit_history: {
                 type: 'bool',
                 checked_msg: i18n.t("Users can view message edit history!"),
                 unchecked_msg: i18n.t("Users can no longer view message edit history!"),
             },
-            create_stream_by_admins_only: {
+            mandatory_topics: {
                 type: 'bool',
-                checked_msg: i18n.t("Only administrators may now create new streams!"),
-                unchecked_msg: i18n.t("Any user may now create new streams!"),
-            },
-            email_changes_disabled: {
-                type: 'bool',
-                checked_msg: i18n.t("Users cannot change their email!"),
-                unchecked_msg: i18n.t("Users may now change their email!"),
-            },
-            invite_required: {
-                type: 'bool',
-                checked_msg: i18n.t("New users must be invited by e-mail!"),
-                unchecked_msg: i18n.t("New users may sign up online!"),
-            },
-            invite_by_admins_only: {
-                type: 'bool',
-                checked_msg: i18n.t("New users must be invited by an admin!"),
-                unchecked_msg: i18n.t("Any user may now invite new users!"),
+                checked_msg: i18n.t("Topics are required in messages to streams!"),
+                unchecked_msg: i18n.t("Topics are not required in messages to streams!"),
             },
             inline_image_preview: {
                 type: 'bool',
@@ -230,20 +278,52 @@ function _set_up() {
                 checked_msg: i18n.t("Previews for linked websites will be shown!"),
                 unchecked_msg: i18n.t("Previews for linked websites will not be shown!"),
             },
-            name_changes_disabled: {
-                type: 'bool',
-                checked_msg: i18n.t("Users cannot change their name!"),
-                unchecked_msg: i18n.t("Users may now change their name!"),
-            },
+        },
+
+        permissions: {
             restricted_to_domain: {
                 type: 'bool',
                 checked_msg: i18n.t("New user e-mails now restricted to certain domains!"),
                 unchecked_msg: i18n.t("New users may have arbitrary e-mails!"),
             },
-            mandatory_topics: {
+            invite_required: {
                 type: 'bool',
-                checked_msg: i18n.t("Topics are required in messages to streams"),
-                unchecked_msg: i18n.t("Topics are not required in messages to streams"),
+                checked_msg: i18n.t("New users must be invited by e-mail!"),
+                unchecked_msg: i18n.t("New users may sign up online!"),
+            },
+            invite_by_admins_only: {
+                type: 'bool',
+                checked_msg: i18n.t("New users must be invited by an admin!"),
+                unchecked_msg: i18n.t("Any user may now invite new users!"),
+            },
+            name_changes_disabled: {
+                type: 'bool',
+                checked_msg: i18n.t("Users cannot change their name!"),
+                unchecked_msg: i18n.t("Users may now change their name!"),
+            },
+            email_changes_disabled: {
+                type: 'bool',
+                checked_msg: i18n.t("Users cannot change their email!"),
+                unchecked_msg: i18n.t("Users may now change their email!"),
+            },
+            create_stream_by_admins_only: {
+                type: 'bool',
+                checked_msg: i18n.t("Only administrators may now create new streams!"),
+                unchecked_msg: i18n.t("Any user may now create new streams!"),
+            },
+            add_emoji_by_admins_only: {
+                type: 'bool',
+                checked_msg: i18n.t("Only administrators may now add new emoji!"),
+                unchecked_msg: i18n.t("Any user may now add new emoji!"),
+            },
+            waiting_period_threshold: {
+                type: 'integer',
+                msg: i18n.t("Waiting period threshold changed!"),
+            },
+            create_generic_bot_by_admins_only: {
+                type: 'bool',
+                checked_msg: i18n.t("Only administrators may now create new generic bots!"),
+                unchecked_msg: i18n.t("Any user may now create new generic bots!"),
             },
         },
     };
@@ -255,9 +335,12 @@ function _set_up() {
                 data[k] = JSON.stringify($('#id_realm_'+k).prop('checked'));
                 return;
             }
-            if (field.type === 'Text') {
+            if (field.type === 'text') {
                 data[k] = JSON.stringify($('#id_realm_'+k).val().trim());
                 return;
+            }
+            if (field.type === 'integer') {
+                data[k] = JSON.stringify(parseInt($("#id_realm_"+k).val().trim(), 10));
             }
         });
         return data;
@@ -288,7 +371,7 @@ function _set_up() {
                 return;
             }
 
-            if (setting_type === 'Text') {
+            if (setting_type === 'text') {
                 ui_report.success(field_info.msg,
                                   property_type_status_element(key));
                 return;
@@ -316,98 +399,47 @@ function _set_up() {
         }
     });
 
-    $(".organization").on("submit", "form.org-settings-form", function (e) {
+    exports.save_organization_settings = function () {
         _.each(property_types.settings, function (v, k) {
             property_type_status_element(k).hide();
         });
-        var name_status = $("#admin-realm-name-status").expectOne();
-        var waiting_period_threshold_status = $("#admin-realm-waiting-period-threshold-status").expectOne();
-        name_status.hide();
-        waiting_period_threshold_status.hide();
 
-        e.preventDefault();
-        e.stopPropagation();
-
-        var url = "/json/realm";
-        var data = {
-            waiting_period_threshold: JSON.stringify(parseInt($("#id_realm_waiting_period_threshold").val(), 10)),
-        };
-        data = populate_data_for_request(data, 'settings');
-
-        channel.patch({
-            url: url,
-            data: data,
-
-            success: function (response_data) {
-                process_response_data(response_data, 'settings');
-                if (response_data.waiting_period_threshold !== undefined) {
-                    if (response_data.waiting_period_threshold >= 0) {
-                        ui_report.success(i18n.t("Waiting period threshold changed!"), waiting_period_threshold_status);
-                    }
-                }
-                // Check if no changes made
-                var no_changes_made = true;
-                for (var key in response_data) {
-                    if (['msg', 'result'].indexOf(key) < 0) {
-                        no_changes_made = false;
-                    }
-                }
-                if (no_changes_made) {
-                    ui_report.success(i18n.t("No changes to save!"), name_status);
-                }
-            },
-            error: function (xhr) {
-                ui_report.error(i18n.t("Failed"), xhr, name_status);
-            },
-        });
-    });
-
-    $(".organization").on("submit", "form.org-permissions-form", function (e) {
-        _.each(property_types.permissions, function (v, k) {
-            property_type_status_element(k).hide();
-        });
-        var restricted_to_domain_status = $("#admin-realm-restricted-to-domain-status").expectOne();
         var message_editing_status = $("#admin-realm-message-editing-status").expectOne();
-        restricted_to_domain_status.hide();
-        message_editing_status.hide();
+        // grab the first alert available and use it for the status.
+        var $alerts = $(".settings-section.show .alert").hide();
+        // grab the first alert available and use it for the status.
+        var status = $("#admin-realm-notifications-stream-status");
 
-        e.preventDefault();
-        e.stopPropagation();
-
+        var compose_textarea_edit_limit_minutes = $("#id_realm_message_content_edit_limit_minutes").val();
         var new_allow_message_editing = $("#id_realm_allow_message_editing").prop("checked");
-        var new_message_content_edit_limit_minutes = $("#id_realm_message_content_edit_limit_minutes").val();
-        var new_message_retention_days = $("#id_realm_message_retention_days").val();
 
         // If allow_message_editing is unchecked, message_content_edit_limit_minutes
         // is irrelevant.  Hence if allow_message_editing is unchecked, and
         // message_content_edit_limit_minutes is poorly formed, we set the latter to
         // a default value to prevent the server from returning an error.
         if (!new_allow_message_editing) {
-            if ((parseInt(new_message_content_edit_limit_minutes, 10).toString() !==
-                 new_message_content_edit_limit_minutes) ||
-                new_message_content_edit_limit_minutes < 0) {
+            if ((parseInt(compose_textarea_edit_limit_minutes, 10).toString() !==
+                 compose_textarea_edit_limit_minutes) ||
+                compose_textarea_edit_limit_minutes < 0) {
             // Realm.DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS / 60
-            new_message_content_edit_limit_minutes = 10;
+            compose_textarea_edit_limit_minutes = 10;
             }
-        }
-        if (parseInt(new_message_retention_days, 10).toString() !==
-            new_message_retention_days && new_message_retention_days !== "") {
-                new_message_retention_days = "";
         }
 
         var url = "/json/realm";
-        var data = {
+        var data = {};
+        data = populate_data_for_request({
             allow_message_editing: JSON.stringify(new_allow_message_editing),
             message_content_edit_limit_seconds:
-                JSON.stringify(parseInt(new_message_content_edit_limit_minutes, 10) * 60),
-            message_retention_days: new_message_retention_days !== "" ? JSON.stringify(parseInt(new_message_retention_days, 10)) : null,
-        };
-        data = populate_data_for_request(data, 'permissions');
+                JSON.stringify(parseInt(compose_textarea_edit_limit_minutes, 10) * 60),
+        }, 'settings');
+
         channel.patch({
             url: url,
             data: data,
+
             success: function (response_data) {
-                process_response_data(response_data, 'permissions');
+                $alerts.hide();
                 if (response_data.allow_message_editing !== undefined) {
                     // We expect message_content_edit_limit_seconds was sent in the
                     // response as well
@@ -415,11 +447,10 @@ function _set_up() {
                         Math.ceil(response_data.message_content_edit_limit_seconds / 60);
                     if (response_data.allow_message_editing) {
                         if (response_data.message_content_edit_limit_seconds > 0) {
-                            ui_report.success(i18n.t("Users can now edit topics for all their messages,"
-                                                      +" and the content of messages which are less than __num_minutes__ minutes old.",
-                                                     {num_minutes :
-                                                       data_message_content_edit_limit_minutes}),
-                                              message_editing_status);
+                            ui_report.success(
+                                i18n.t("Users can now edit topics for all their messages, and the content of messages which are less than __num_minutes__ minutes old.",
+                                       {num_minutes : data_message_content_edit_limit_minutes}),
+                                message_editing_status);
                         } else {
                             ui_report.success(i18n.t("Users can now edit the content and topics of all their past messages!"), message_editing_status);
                         }
@@ -430,6 +461,8 @@ function _set_up() {
                     // in this function, so update the field just in case
                     $("#id_realm_message_content_edit_limit_minutes").val(data_message_content_edit_limit_minutes);
                 }
+
+                process_response_data(response_data, 'settings');
                 // Check if no changes made
                 var no_changes_made = true;
                 for (var key in response_data) {
@@ -438,14 +471,124 @@ function _set_up() {
                     }
                 }
                 if (no_changes_made) {
-                    ui_report.success(i18n.t("No changes to save!"), restricted_to_domain_status);
+                    ui_report.success(i18n.t("No changes to save!"), status);
                 }
             },
             error: function (xhr) {
-                ui_report.error(i18n.t("Failed"), xhr, restricted_to_domain_status);
+                $alerts.hide();
+                ui_report.error(i18n.t("Failed"), xhr, status);
+            },
+        });
+    };
+
+    // For historical reasons, the save_organization_settings() function handles
+    // saving data for two different sections of the "Organization settings" panel.
+    // TODO: Make two separate click handlers, so that we only save changes that
+    //       make sense for the individual buttons.
+    $(".organization").on("click", "button.save-message-org-settings", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        exports.save_organization_settings(e);
+    });
+
+    $(".organization").on("click", "button.save-language-org-settings", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        exports.save_organization_settings(e);
+    });
+
+    $(".organization").on("submit", "form.org-permissions-form", function (e) {
+        var $alerts = $(".settings-section.show .alert").hide();
+        // grab the first alert available and use it for the status.
+        var status = $("#admin-realm-restricted-to-domain-status");
+
+        var waiting_period_threshold_status = $("#admin-realm-waiting-period-threshold-status").expectOne();
+        status.hide();
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        var new_message_retention_days = $("#id_realm_message_retention_days").val();
+
+        if (parseInt(new_message_retention_days, 10).toString() !==
+            new_message_retention_days && new_message_retention_days !== "") {
+                new_message_retention_days = "";
+        }
+
+        // take the existing object and apply the rest of the properties.
+        var data = populate_data_for_request({
+            message_retention_days: new_message_retention_days !== "" ? JSON.stringify(parseInt(new_message_retention_days, 10)) : null,
+        }, 'permissions');
+
+
+        channel.patch({
+            url: "/json/realm",
+            data: data,
+            success: function (response_data) {
+                $alerts.hide();
+                if (response_data.waiting_period_threshold !== undefined) {
+                    if (response_data.waiting_period_threshold >= 0) {
+                        ui_report.success(i18n.t("Waiting period threshold changed!"), waiting_period_threshold_status);
+                    }
+                }
+
+                process_response_data(response_data, 'permissions');
+
+                // Check if no changes made
+                var no_changes_made = true;
+                for (var key in response_data) {
+                    if (['msg', 'result'].indexOf(key) < 0) {
+                        no_changes_made = false;
+                    }
+                }
+                if (no_changes_made) {
+                    ui_report.success(i18n.t("No changes to save!"), status);
+                }
+            },
+            error: function (xhr) {
+                $alerts.hide();
+                ui_report.error(i18n.t("Failed"), xhr, status);
             },
         });
     });
+
+    $(".organization").on("submit", "form.org-profile-form", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        var $alerts = $(".settings-section.show .alert");
+        // grab the first alert available and use it for the status.
+        var status = $("#admin-realm-name-status");
+
+        var data = populate_data_for_request({}, 'profile');
+
+        channel.patch({
+            url: "/json/realm",
+            data: data,
+
+            success: function (response_data) {
+                $alerts.hide();
+                process_response_data(response_data, 'profile');
+                // Check if no changes made
+                var no_changes_made = true;
+                for (var key in response_data) {
+                    if (['msg', 'result'].indexOf(key) < 0) {
+                        no_changes_made = false;
+                    }
+                }
+
+                if (no_changes_made) {
+                    ui_report.success(i18n.t("No changes to save!"), status);
+                }
+            },
+            error: function (xhr) {
+                ui_report.error(i18n.t("Failed"), xhr, status);
+            },
+        });
+    });
+
     $(".organization").on("submit", "form.org-authentications-form", function (e) {
         var authentication_methods_status = $("#admin-realm-authentication-methods-status").expectOne();
 
@@ -498,14 +641,10 @@ function _set_up() {
         channel.del({
             url: url,
             success: function () {
-                realm_domains_info.removeClass("text-error");
-                realm_domains_info.addClass("text-success");
-                realm_domains_info.text(i18n.t("Deleted successfully!"));
+                ui_report.success(i18n.t("Deleted successfully!"), realm_domains_info);
             },
             error: function (xhr) {
-                realm_domains_info.removeClass("text-success");
-                realm_domains_info.addClass("text-error");
-                realm_domains_info.text(JSON.parse(xhr.responseText).msg);
+                ui_report.error(i18n.t("Failed"), xhr, realm_domains_info);
             },
         });
     });
@@ -527,14 +666,10 @@ function _set_up() {
                 $("#add-realm-domain-widget .new-realm-domain").val("");
                 $("#add-realm-domain-widget .new-realm-domain-allow-subdomains").prop("checked", false);
                 $("#id_realm_restricted_to_domain").prop("disabled", false);
-                realm_domains_info.removeClass("text-error");
-                realm_domains_info.addClass("text-success");
-                realm_domains_info.text(i18n.t("Added successfully!"));
+                ui_report.success(i18n.t("Added successfully!"), realm_domains_info);
             },
             error: function (xhr) {
-                realm_domains_info.removeClass("text-success");
-                realm_domains_info.addClass("text-error");
-                realm_domains_info.text(JSON.parse(xhr.responseText).msg);
+                ui_report.error(i18n.t("Failed"), xhr, realm_domains_info);
             },
         });
     });
@@ -553,20 +688,16 @@ function _set_up() {
             url: url,
             data: data,
             success: function () {
-                realm_domains_info.removeClass("text-error");
-                realm_domains_info.addClass("text-success");
                 if (allow_subdomains) {
-                    realm_domains_info.text(i18n.t("Update successful: Subdomains allowed for __domain__",
-                                             {domain: domain}));
+                    ui_report.success(i18n.t("Update successful: Subdomains allowed for __domain__",
+                                             {domain: domain}), realm_domains_info);
                 } else {
-                    realm_domains_info.text(i18n.t("Update successful: Subdomains no longer allowed for __domain__",
-                                             {domain: domain}));
+                    ui_report.success(i18n.t("Update successful: Subdomains no longer allowed for __domain__",
+                                             {domain: domain}), realm_domains_info);
                 }
             },
             error: function (xhr) {
-                realm_domains_info.removeClass("text-success");
-                realm_domains_info.addClass("text-error");
-                realm_domains_info.text(JSON.parse(xhr.responseText).msg);
+                ui_report.error(i18n.t("Failed"), xhr, realm_domains_info);
             },
         });
     });
@@ -615,6 +746,52 @@ function _set_up() {
 
     $(".notifications-stream-disable").click(function () {
         update_notifications_stream(-1);
+    });
+
+    var signup_notifications_stream_status = $("#admin-realm-signup-notifications-stream-status").expectOne();
+    function update_signup_notifications_stream(new_signup_notifications_stream_id) {
+        exports.render_signup_notifications_stream_ui(new_signup_notifications_stream_id);
+        signup_notifications_stream_status.hide();
+        var stringified_id = JSON.stringify(parseInt(new_signup_notifications_stream_id, 10));
+        var url = "/json/realm";
+        var data = {
+            signup_notifications_stream_id: stringified_id,
+        };
+
+        channel.patch({
+            url: url,
+            data: data,
+
+            success: function (response_data) {
+                if (response_data.signup_notifications_stream_id !== undefined) {
+                    if (response_data.signup_notifications_stream_id < 0) {
+                        ui_report.success(i18n.t("Signup notifications stream disabled!"), signup_notifications_stream_status);
+                    } else {
+                        ui_report.success(i18n.t("Signup notifications stream changed!"), signup_notifications_stream_status);
+                    }
+                }
+            },
+            error: function (xhr) {
+                ui_report.error(i18n.t("Failed to change signup notifications stream!"), xhr, signup_notifications_stream_status);
+            },
+        });
+    }
+
+    dropdown_menu = $("#id_realm_signup_notifications_stream .dropdown-menu");
+    $("#id_realm_signup_notifications_stream .dropdown-list-body").on("click keypress", ".stream_name", function (e) {
+        if (e.type === "keypress") {
+            if (e.which === 13) {
+               dropdown_menu.dropdown("toggle");
+            } else {
+                return;
+            }
+        }
+
+        update_signup_notifications_stream($(this).attr("data-stream-id"));
+    });
+
+    $(".signup-notifications-stream-disable").click(function () {
+        update_signup_notifications_stream(-1);
     });
 
     function upload_realm_icon(file_input) {

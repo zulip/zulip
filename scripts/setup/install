@@ -1,4 +1,9 @@
 #!/bin/bash
+#
+# Thin wrapper around the actual install script (scripts/lib/install).
+# The purpose of this wrapper is to log the full install script output
+# to /var/log/zulip/install.log for easy debugging.
+
 set -e
 if [ "$EUID" -ne 0 ]; then
     echo "Error: The installation script must be run as root" >&2

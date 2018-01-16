@@ -1,7 +1,7 @@
-from django.conf.urls import url, include
-from zerver.lib.rest import rest_dispatch
+from django.conf.urls import include, url
 
 import analytics.views
+from zerver.lib.rest import rest_dispatch
 
 i18n_urlpatterns = [
     # Server admin (user_profile.is_staff) visible stats pages

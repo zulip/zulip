@@ -22,7 +22,7 @@ To find the Zulip hook, you have to click on **Configure services**.
 Select **Zulip** from the list of service hooks. Fill in the API key
 and email address for your bot that you created earlier and check
 the **"active"** checkbox. Specify
-`{{ external_api_uri_subdomain }}/v1/external/github` as the
+`{{ api_url }}/v1/external/github` as the
 **Alternative endpoint**. You can optionally supply the Zulip stream
 (the default is `commits`) and restrict Zulip notifications to a
 specified set of branches.

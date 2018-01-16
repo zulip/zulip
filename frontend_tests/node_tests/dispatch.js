@@ -1,6 +1,3 @@
-var assert = require('assert');
-var _ = global._;
-
 var noop = function () {};
 
 set_global('document', 'document-stub');
@@ -37,6 +34,7 @@ set_global('settings_emoji', {
 
 set_global('settings_org', {
     reset_realm_default_language: noop,
+    toggle_allow_message_editing_pencil: noop,
     toggle_email_change_display: noop,
     toggle_name_change_display: noop,
     update_message_retention_days: noop,
@@ -49,10 +47,7 @@ var page_params = global.page_params;
 
 // alert_words is coupled to dispatching in the sense
 // that we write directly to alert_words.words
-add_dependencies({alert_words: 'js/alert_words.js'});
-
-// contains the main event dispatching function
-add_dependencies({server_events_dispatch: 'js/server_events_dispatch.js'});
+zrequire('alert_words');
 
 // We access various msg_list object to rerender them
 set_global('current_msg_list', {rerender: noop});
@@ -70,7 +65,8 @@ set_global('blueslip', {
     },
 });
 
-var sed = require('js/server_events_dispatch.js');
+zrequire('server_events_dispatch');
+var sed = server_events_dispatch;
 
 function dispatch(ev) {
     sed.dispatch_normal_event(ev);
@@ -134,6 +130,9 @@ var event_fixtures = {
         op: 'add',
         message_id: 128,
         emoji_name: 'anguished_pig',
+        user: {
+            id: "1",
+        },
     },
 
     reaction__remove: {
@@ -141,6 +140,9 @@ var event_fixtures = {
         op: 'remove',
         message_id: 256,
         emoji_name: 'angery',
+        user: {
+            id: "1",
+        },
     },
 
     // Please keep this next section un-nested, as we want this to partly
@@ -177,6 +179,13 @@ var event_fixtures = {
         type: 'realm',
         op: 'update',
         property: 'restricted_to_domain',
+        value: false,
+    },
+
+    realm__update__create_generic_bot_by_admins_only: {
+        type: 'realm',
+        op: 'update',
+        property: 'create_generic_bot_by_admins_only',
         value: false,
     },
 
@@ -388,12 +397,6 @@ var event_fixtures = {
         setting: true,
     },
 
-    update_display_settings__emoji_alt_code: {
-        type: 'update_display_settings',
-        setting_name: 'emoji_alt_code',
-        setting: true,
-    },
-
     update_display_settings__twenty_four_hour_time: {
         type: 'update_display_settings',
         setting_name: 'twenty_four_hour_time',
@@ -454,8 +457,12 @@ with_overrides(function (override) {
     // default_streams
     var event = event_fixtures.default_streams;
     override('settings_streams.update_default_streams_table', noop);
-    dispatch(event);
-    assert_same(page_params.realm_default_streams, event.default_streams);
+    global.with_stub(function (stub) {
+        override('stream_data.set_realm_default_streams', stub.f);
+        dispatch(event);
+        var args = stub.get_args('realm_default_streams');
+        assert_same(args.realm_default_streams, event.default_streams);
+    });
 
 });
 
@@ -545,6 +552,9 @@ with_overrides(function (override) {
     event = event_fixtures.realm__update__restricted_to_domain;
     test_realm_boolean(event, 'realm_restricted_to_domain');
 
+    event = event_fixtures.realm__update__create_stream_by_admins_only;
+    test_realm_boolean(event, 'realm_create_stream_by_admins_only');
+
     event = event_fixtures.realm__update_dict__default;
     page_params.realm_allow_message_editing = false;
     page_params.realm_message_content_edit_limit_seconds = 0;
@@ -565,7 +575,7 @@ with_overrides(function (override) {
             var args = bot_stub.get_args('bot');
             assert_same(args.bot, event.bot);
 
-            args = admin_stub.get_args('update_user_id', 'update_bot_data');
+            admin_stub.get_args('update_user_id', 'update_bot_data');
         });
     });
 
@@ -578,7 +588,7 @@ with_overrides(function (override) {
             var args = bot_stub.get_args('email');
             assert_same(args.email, event.bot.email);
 
-            args = admin_stub.get_args('update_user_id', 'update_bot_data');
+            admin_stub.get_args('update_user_id', 'update_bot_data');
         });
     });
 
@@ -608,6 +618,7 @@ with_overrides(function (override) {
     global.with_stub(function (stub) {
         override('emoji.update_emojis', stub.f);
         override('settings_emoji.populate_emoji', noop);
+        override('emoji_picker.generate_emoji_picker_data', noop);
         dispatch(event);
         var args = stub.get_args('realm_emoji');
         assert_same(args.realm_emoji, event.realm_emoji);
@@ -797,11 +808,6 @@ with_overrides(function (override) {
     page_params.twenty_four_hour_time = false;
     dispatch(event);
     assert_same(page_params.twenty_four_hour_time, true);
-
-    event = event_fixtures.update_display_settings__emoji_alt_code;
-    page_params.emoji_alt_code = false;
-    dispatch(event);
-    assert_same(page_params.emoji_alt_code, true);
 
 });
 

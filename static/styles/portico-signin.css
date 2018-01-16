@@ -4,14 +4,11 @@ html {
 
 .flex {
     display: flex;
-    height: calc(100vh - 135px);
+    padding: 80px 0px;
     align-items: center;
     justify-content: center;
-}
 
-.flex.full-page {
-    min-height: calc(100vh - 170px);
-    height: auto;
+    min-height: calc(100vh - 407px);
 }
 
 .m-10 {
@@ -29,7 +26,11 @@ html {
     border-radius: 4px;
 }
 
-.find-team-page-container #find_my_team i {
+.grey {
+    color: #aaa;
+}
+
+.find-account-page-container #find_account i {
     font-size: 0.8em;
 }
 
@@ -107,7 +108,7 @@ html {
 
 .app-main .login-page-container.dev-login h2 {
     font-size: 1em;
-    font-weight: 500;
+    font-weight: 400;
 }
 
 .app-main .login-page-container .group {
@@ -121,14 +122,18 @@ html {
     font-weight: 400;
 }
 
-.app-main.find-team-page-container {
-    width: 456px;
+.app-main.find-account-page-container {
+    width: 500px;
     font-weight: 400;
 }
 
 .app-main.confirm-continue-page-container {
     width: 400px;
     font-weight: 400;
+}
+
+.app-main.confirm-continue-page-container .white-box {
+    min-width: 365px;
 }
 
 .app-main.confirm-continue-page-container .form-inline {
@@ -151,7 +156,7 @@ html {
     font-size: 19px;
 }
 
-.find-team-page-container h3,
+.find-account-page-container h3,
 .forgot-password-container h3 {
     margin-top: 0px;
 
@@ -169,6 +174,10 @@ html {
 
 .forgot-password-container form {
     margin-bottom: 0px;
+}
+
+.deactivated-realm-container {
+    width: 503px;
 }
 
 .header {
@@ -193,7 +202,6 @@ html {
     stroke: #fff !important;
 }
 
-
 .new-style {
     -webkit-font-smoothing: antialiased;
 }
@@ -205,7 +213,7 @@ html {
 
 .register-form #errors {
     font-size: 0.8em;
-    font-weight: 500;
+    font-weight: 400;
     margin-bottom: 20px;
     margin-top: 10px;
 }
@@ -216,6 +224,17 @@ html {
 
 .register-account .terms-of-service .input-group {
     margin: 0px 30px 10px 32px;
+}
+
+.register-account .terms-of-service .text-error {
+    position: relative;
+    display: block;
+    top: -5px;
+    padding: 0;
+    height: 0;
+
+    font-size: 0.7em;
+    font-weight: 600;
 }
 
 .account-creation {
@@ -278,8 +297,8 @@ html {
     padding: 0;
     margin-bottom: 0;
 
-    font-weight: 500;
-    font-size: 0.8em;
+    font-weight: 600;
+    font-size: 0.7em;
     line-height: 1.2;
     background-color: transparent;
 
@@ -292,14 +311,20 @@ html {
     max-width: 328px;
 }
 
+.new-style .alert.alert-error {
+    text-align: left;
+}
+
 .new-style .input-box input[type=text],
 .new-style .input-box input[type=email],
 .new-style .input-box input[type=password] {
-    padding: 13px 32px 11px 12px;
+    padding: 9px 32px 11px 12px;
     margin: 25px 0 4px;
 
-    font-family: "Humbug";
+    font-family: "Source Sans Pro";
     font-size: 1.2rem;
+    line-height: normal;
+    height: auto;
 
     width: 280px;
 
@@ -308,6 +333,10 @@ html {
     border-radius: 0px;
 
     transition: border 0.3s ease;
+}
+
+.new-style .input-box input[type=email] {
+    margin-bottom: 10px;
 }
 
 .new-style .input-box label {
@@ -323,10 +352,9 @@ html {
 .new-style .input-box.moving-label input[type=text]:invalid + label,
 .new-style .input-box.moving-label input[type=email]:invalid + label,
 .new-style .input-box.moving-label input[type=password]:invalid + label {
-    left: 50%;
-    transform: translateY(35px) translateX(-50%);
+    transform: translateY(35px) translateX(14px);
     font-size: 1.2rem;
-    font-weight: 500;
+    font-weight: 400;
     color: hsl(0, 0%, 66%);
 
     pointer-events: none;
@@ -373,6 +401,7 @@ html {
 
     position: relative;
     top: -4px;
+    left: 1px;
 }
 
 .new-style .input-box label.text-error {
@@ -396,7 +425,7 @@ html {
     vertical-align: top;
     padding: 15px 22px 13px 22px;
 
-    font-family: "Humbug";
+    font-family: "Source Sans Pro";
 
     font-size: 1.2rem;
     font-weight: 400;
@@ -465,7 +494,6 @@ html {
     width: 328px;
 }
 
-
 .split-view .org-header .avatar,
 .register-page-container .org-header .avatar {
     display: inline-block;
@@ -478,7 +506,7 @@ html {
 .split-view .org-header .info-box {
     display: inline-block;
     position: relative;
-    margin: 15px 0px 0px 20px;
+    margin: 20px 0px 0px 20px;
     width: calc(100% - 125px);
 
     /* full width minus the avatar + padding + borders */
@@ -496,23 +524,27 @@ html {
 .split-view .info-box .organization-name {
     font-size: 1.5em;
     font-weight: 300;
-    line-height: 1;
+    line-height: 1.2;
 }
 
 .split-view .info-box .organization-path {
-    font-weight: 500;
+    font-weight: 400;
     color: hsl(0, 0%, 46%);
-    margin-top: 10px;
+    margin-top: 5px;
 }
 
 .new-style .lead {
     margin: 0px;
 }
 
+.confirm-email-change-page .white-box {
+    max-width: 500px;
+}
+
 .portico-page .or {
     width: 328px;
     display: block;
-    margin: 0 auto;
+    margin: 10px auto;
     color: hsl(0, 0%, 34%);
     font-weight: 600;
     text-align: center;
@@ -541,12 +573,10 @@ html {
 }
 
 .login-google {
-    margin-top: 10px;
     margin-bottom: 10px;
 }
 
-button.login-google-button,
-button.login-github-button {
+button.login-social-button {
     width: 328px;
     padding-left: 35px;
 
@@ -559,21 +589,18 @@ button.login-github-button {
     color: #fff;
 }
 
-button.login-google-button,
-button.login-github-button {
+button.login-social-button {
     background-color: #fff;
     box-shadow: 0px 1px 3px hsla(0, 0%, 0%, 0.3), 0px 0px 5px hsla(0, 0%, 0%, 0.1);
     color: hsl(0, 0%, 34%);
 }
 
-button.login-google-button:hover,
-button.login-github-button:hover {
+button.login-social-button:hover {
     background-color: hsl(0, 0%, 98%);
     box-shadow: 1px 2px 5px hsla(0, 0%, 0%, 0.2);
 }
 
-button.login-google-button:active,
-button.login-github-button:active {
+button.login-social-button:active {
     background-color: hsl(0, 0%, 93%);
     box-shadow: 0px 1px 1px hsla(0, 0%, 0%, 0.3);
 }
@@ -592,12 +619,25 @@ button.login-google-button {
     transform: translateX(15px) translateY(13px);
 }
 
-.login-page-container .right-side .actions {
+.login-page-container .right-side .actions,
+.forgot-password-container .actions {
     margin: 20px 0px 0px;
     text-align: left;
 }
 
-.split-view .actions a {
+.forgot-password-container .actions {
+    line-height: 0;
+}
+
+.forgot-password-container .actions .back-to-login i {
+    position: relative;
+    top: 5px;
+
+    font-size: 0.8em;
+}
+
+.split-view .actions a,
+.back-to-login {
     color: hsl(164, 100%, 23%);
     text-decoration: none;
     font-weight: 600;
@@ -608,7 +648,9 @@ button.login-google-button {
     transition: color 0.2s ease;
 }
 
-.split-view .actions a:hover {
+.split-view .actions a:hover,
+.back-to-login:hover {
+    text-decoration: none;
     color: hsl(156, 62%, 61%);
 }
 
@@ -641,6 +683,17 @@ button.login-google-button {
     left: 2px;
 }
 
+#registration .input-box label.static {
+    width: 100%;
+    text-align: left;
+    position: static !important;
+    margin-left: 2px;
+}
+
+#registration [for="realm_in_root_domain"] {
+    font-weight: normal !important;
+}
+
 #registration .register-button-box {
     text-align: center;
 }
@@ -655,14 +708,32 @@ button.login-google-button {
     text-align: right;
     position: relative;
     padding-right: 10px;
+
+    width: 156px;
 }
 
-#registration .realm_subdomain_label {
-    font-weight: 400;
-    font-size: 1.07em;
-    position: absolute;
-    top: 37px;
-    right: 0;
+#registration #id_team_subdomain.subdomain + .realm_subdomain_label {
+    float: right;
+    margin-top: 12px;
+    margin-left: 10px;
+
+    font-weight: normal;
+}
+
+#registration #id_team_subdomain.subdomain {
+    margin-top: 0px;
+}
+
+#registration #subdomain_section .or {
+    margin-top: 0px;
+}
+
+.static.org-url + #subdomain_section {
+    margin-top: 0px !important;
+}
+
+.static.org-url + #subdomain_section .or {
+    display: none;
 }
 
 #registration .input-box.full-width {
@@ -705,6 +776,10 @@ button.login-google-button {
 
 #registration .input-group label.inline-block {
     margin-top: -1px;
+}
+
+#registration .org-url {
+    margin-bottom: 5px !important;
 }
 
 .split-view .right-side,
@@ -750,16 +825,21 @@ button.login-google-button {
     }
 }
 
+@media (max-width: 815px) {
+    .flex {
+        min-height: calc(100vh - 530px);
+    }
+}
 
 @media (max-width: 795px) {
     .register-account #registration {
         padding: 10px;
-        width: calc(350px);
     }
 
     .register-page-container,
     .login-page-container {
         width: 400px;
+        text-align: center;
     }
 
     .split-view .org-header .avatar {
@@ -810,19 +890,13 @@ button.login-google-button {
 }
 
 @media (max-width: 500px) {
-    .flex.full-page {
-        display: block;
-        margin: 0 auto;
-        text-align: center;
-    }
-
     .new-style .get-started {
         font-size: 1.6em;
     }
 
     .app-main.register-page-container,
     .app-main.login-page-container,
-    .app-main.find-team-page-container,
+    .app-main.find-account-page-container,
     .app-main.forgot-password-container {
         display: inline-block;
         padding: 20px;
@@ -848,5 +922,16 @@ button.login-google-button {
 
     .account-creation {
         font-weight: 400;
+    }
+
+    .flex {
+        /* the header becomes smaller, so comp for that. */
+        min-height: calc(100vh - 505px);
+    }
+}
+
+@media (max-width: 400px) {
+    .flex {
+        min-height: calc(100vh - 560px);
     }
 }

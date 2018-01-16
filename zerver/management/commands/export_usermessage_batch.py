@@ -1,23 +1,19 @@
-from __future__ import absolute_import
-from __future__ import print_function
-
-from typing import Any
-
-from argparse import ArgumentParser
-from django.core.management.base import BaseCommand
 
 import glob
 import logging
 import os
 import shutil
+from argparse import ArgumentParser
+from typing import Any
+
+from django.core.management.base import BaseCommand
 
 from zerver.lib.export import export_usermessages_batch
 
 class Command(BaseCommand):
     help = """UserMessage fetching helper for export.py"""
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--path',
                             dest='path',
                             action="store",
@@ -29,8 +25,7 @@ class Command(BaseCommand):
                             default=None,
                             help='Thread ID')
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         logging.info("Starting UserMessage batch thread %s" % (options['thread'],))
         files = set(glob.glob(os.path.join(options['path'], 'messages-*.json.partial')))
         for partial_path in files:

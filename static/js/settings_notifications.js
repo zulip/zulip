@@ -10,6 +10,7 @@ var notification_settings = [
     "enable_online_push_notifications",
     "enable_sounds",
     "enable_stream_desktop_notifications",
+    "enable_stream_push_notifications",
     "enable_stream_sounds",
     "pm_content_in_desktop_notifications",
 ];
@@ -51,21 +52,25 @@ exports.set_up = function () {
                 data: data,
                 success: function () {
                     if (setting_data === true) {
-                        ui_report.success(i18n.t("Enabled: __setting_name__",
+                        ui_report.success(i18n.t("Enabled: __- setting_name__",
                             context), notify_settings_status);
                     } else {
-                        ui_report.success(i18n.t("Disabled: __setting_name__",
+                        ui_report.success(i18n.t("Disabled: __- setting_name__",
                             context), notify_settings_status);
                     }
                 },
                 error: function (xhr) {
-                    ui_report.error(i18n.t('Error updating: __setting_name__',
+                    ui_report.error(i18n.t('Error updating: __- setting_name__',
                         context), xhr, notify_settings_status);
                 },
             });
             if (setting === 'enable_stream_desktop_notifications') {
                 maybe_bulk_update_stream_notification_setting($('#' + setting), function () {
                     stream_edit.set_notification_setting_for_all_streams('desktop_notifications', setting_data);
+                });
+            } else if (setting === 'enable_stream_push_notifications') {
+                maybe_bulk_update_stream_notification_setting($('#' + setting), function () {
+                    stream_edit.set_notification_setting_for_all_streams('push_notifications', setting_data);
                 });
             } else if (setting === 'enable_stream_sounds') {
                 maybe_bulk_update_stream_notification_setting($('#' + setting), function () {
@@ -82,6 +87,16 @@ exports.set_up = function () {
         } else {
             $("#pm_content_in_desktop_notifications").prop("disabled", true);
             $("#pm_content_in_desktop_notifications_label").parent().addClass("control-label-disabled");
+        }
+    });
+
+    $("#enable_offline_push_notifications").change(function () {
+        if (this.checked) {
+            $("#enable_online_push_notifications").prop("disabled", false);
+            $("#enable_online_push_notifications_label").parent().removeClass("control-label-disabled");
+        } else {
+            $("#enable_online_push_notifications").prop("disabled", true);
+            $("#enable_online_push_notifications_label").parent().addClass("control-label-disabled");
         }
     });
 };

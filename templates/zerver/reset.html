@@ -12,7 +12,7 @@
 
             <p>Forgot your password? No problem, we'll send a link to reset your password to the email you signed up with.</p>
 
-            <form method="post" class="form-horizontal" action="{{ url('django.contrib.auth.views.password_reset') }}">
+            <form method="post" class="form-horizontal" action="{{ url('zerver.views.auth.password_reset') }}">
                 {{ csrf_input }}
                 <div class="new-style">
                     <div class="input-box horizontal moving-label">
@@ -32,6 +32,9 @@
                     </div>
                 </div>
             </form>
+            <div class="actions if-zulip-electron"><!-- only show if on `ZulipElectron` -->
+                <a class="back-to-login" href="{{login_url}}"><i class="fa fa-arrow-left"></i> Back to the login page</a>
+            </div>
         </div>
     </div>
 </div>

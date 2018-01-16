@@ -8,6 +8,8 @@ exports.show_or_hide_menu_item = function () {
         item.find("span").text(i18n.t("Manage organization"));
     } else {
         item.find("span").text(i18n.t("Organization settings"));
+        $(".organization-box [data-name='organization-profile']")
+            .find("input, textarea, button, select").attr("disabled", true);
         $(".organization-box [data-name='organization-settings']")
             .find("input, textarea, button, select").attr("disabled", true);
         $(".organization-box [data-name='organization-permissions']")
@@ -39,6 +41,9 @@ function _setup_page() {
         realm_email_changes_disabled: page_params.realm_email_changes_disabled,
         realm_add_emoji_by_admins_only: page_params.realm_add_emoji_by_admins_only,
         can_admin_emojis: page_params.is_admin || !page_params.realm_add_emoji_by_admins_only,
+        realm_create_generic_bot_by_admins_only:
+            page_params.realm_create_generic_bot_by_admins_only,
+        realm_allow_message_deleting: page_params.realm_allow_message_deleting,
         realm_allow_message_editing: page_params.realm_allow_message_editing,
         realm_message_content_edit_limit_minutes:
             Math.ceil(page_params.realm_message_content_edit_limit_seconds / 60),
@@ -48,6 +53,7 @@ function _setup_page() {
         realm_default_language: page_params.realm_default_language,
         realm_waiting_period_threshold: page_params.realm_waiting_period_threshold,
         realm_notifications_stream_id: page_params.realm_notifications_stream_id,
+        realm_signup_notifications_stream_id: page_params.realm_signup_notifications_stream_id,
         is_admin: page_params.is_admin,
         realm_icon_source: page_params.realm_icon_source,
         realm_icon_url: page_params.realm_icon_url,
@@ -67,7 +73,7 @@ function _setup_page() {
         var hash_sequence = window.location.hash.split(/\//);
         if (/#*(organization)/.test(hash_sequence[0])) {
             tab = hash_sequence[1];
-            return tab || "organization-settings";
+            return tab || "organization-profile";
         }
         return tab;
     }());

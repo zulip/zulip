@@ -1,19 +1,13 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
+import datetime
 from typing import Any, Dict
 
-from zerver.lib.statistics import seconds_usage_between
-
-from optparse import make_option
 from django.core.management.base import BaseCommand, CommandParser
-from zerver.models import UserProfile
-import datetime
 from django.utils.timezone import utc
 
-def analyze_activity(options):
-    # type: (Dict[str, Any]) -> None
+from zerver.lib.statistics import seconds_usage_between
+from zerver.models import UserProfile
+
+def analyze_activity(options: Dict[str, Any]) -> None:
     day_start = datetime.datetime.strptime(options["date"], "%Y-%m-%d").replace(tzinfo=utc)
     day_end = day_start + datetime.timedelta(days=options["duration"])
 
@@ -52,13 +46,11 @@ Usage: ./manage.py analyze_user_activity [--realm=zulip] [--date=2013-09-10] [--
 By default, if no date is selected 2013-09-10 is used. If no realm is provided, information
 is shown for all realms"""
 
-    def add_arguments(self, parser):
-        # type: (CommandParser) -> None
+    def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument('--realm', action='store')
         parser.add_argument('--date', action='store', default="2013-09-06")
         parser.add_argument('--duration', action='store', default=1, type=int,
                             help="How many days to show usage information for")
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         analyze_activity(options)

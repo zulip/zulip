@@ -227,7 +227,7 @@ function edit_message(row, raw_content) {
         if (listeners) {
             currently_editing_messages[rows.id(row)].listeners = listeners;
         }
-        composebox_typeahead.initialize_compose_typeahead(edit_id, {emoji: true, stream: true});
+        composebox_typeahead.initialize_compose_typeahead(edit_id);
     }
 
     // Add tooltip
@@ -305,7 +305,7 @@ function edit_message(row, raw_content) {
 
     if (feature_flags.propagate_topic_edits && !message.locally_echoed) {
         var original_topic = message.subject;
-        message_edit_topic.keyup( function () {
+        message_edit_topic.keyup(function () {
             var new_topic = message_edit_topic.val();
             message_edit_topic_propagate.toggle(new_topic !== original_topic && new_topic !== "");
         });
@@ -330,6 +330,11 @@ function start_edit_with_content(row, content, edit_box_open_callback) {
 
 exports.start = function (row, edit_box_open_callback) {
     var message = current_msg_list.get(rows.id(row));
+    if (message === undefined) {
+        blueslip.error("Couldn't find message ID for edit " + rows.id(row));
+        return;
+    }
+
     if (message.raw_content) {
         start_edit_with_content(row, message.raw_content, edit_box_open_callback);
         return;

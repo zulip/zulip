@@ -1,7 +1,9 @@
-const ELECTRON_APP_VERSION = "1.2.0-beta";
+const ELECTRON_APP_VERSION = "1.7.0";
 const ELECTRON_APP_URL_LINUX = "https://github.com/zulip/zulip-electron/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-" + ELECTRON_APP_VERSION + "-x86_64.AppImage";
 const ELECTRON_APP_URL_MAC = "https://github.com/zulip/zulip-electron/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-" + ELECTRON_APP_VERSION + ".dmg";
 const ELECTRON_APP_URL_WINDOWS = "https://github.com/zulip/zulip-electron/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-Web-Setup-" + ELECTRON_APP_VERSION + ".exe";
+
+import render_tabs from './team.js';
 
 // this will either smooth scroll to an anchor where the `name`
 // is the same as the `scroll-to` reference, or to a px height
@@ -46,18 +48,22 @@ var apps_events = function () {
             alt: "Windows",
             description: "Zulip for Windows is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
             link: ELECTRON_APP_URL_WINDOWS,
+            show_instructions: true,
+            install_guide: "/help/desktop-app-install-guide#installing-on-windows",
         },
         mac: {
             image: "/static/images/landing-page/macbook.png",
-            alt: "MacOS",
-            description: "Zulip on MacOS is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
+            alt: "macOS",
+            description: "Zulip on macOS is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
             link: ELECTRON_APP_URL_MAC,
+            show_instructions: true,
+            install_guide: "/help/desktop-app-install-guide#installing-on-macos",
         },
         android: {
             image: "/static/images/app-screenshots/zulip-android.png",
             alt: "Android",
             description: "Zulip's native Android app makes it easy to keep up while on the go.",
-            link: "https://play.google.com/store/apps/details?id=com.zulip.android",
+            link: "https://play.google.com/store/apps/details?id=com.zulipmobile",
         },
         ios: {
             image: "/static/images/app-screenshots/zulip-iphone-rough.png",
@@ -70,10 +76,31 @@ var apps_events = function () {
             alt: "Linux",
             description: "Zulip on the Linux desktop is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
             link: ELECTRON_APP_URL_LINUX,
+            show_instructions: true,
+            install_guide: "/help/desktop-app-install-guide#installing-on-linux",
         },
     };
 
     var version;
+
+    function get_user_os() {
+        if (/Android/i.test(navigator.userAgent)) {
+            return "android";
+        }
+        if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+             return "ios";
+        }
+        if (/Mac/i.test(navigator.userAgent)) {
+             return "mac";
+        }
+        if (/Win/i.test(navigator.userAgent)) {
+             return "windows";
+        }
+        if (/Linux/i.test(navigator.userAgent)) {
+             return "linux";
+        }
+        return "mac"; // if unable to determine OS return Mac by default
+    }
 
     function get_version_from_path() {
         var result;
@@ -85,8 +112,7 @@ var apps_events = function () {
             }
         });
 
-        // display Mac app by default
-        result = result || 'mac';
+        result = result || get_user_os();
         return result;
     }
 
@@ -100,11 +126,20 @@ var apps_events = function () {
     }
 
     var update_page = function () {
+        var $download_instructions = $(".download-instructions");
         var version_info = info[version];
+
         $(".info .platform").text(version_info.alt);
         $(".info .description").text(version_info.description);
         $(".info .link").attr("href", version_info.link);
         $(".image img").attr("src", version_info.image);
+        $download_instructions.find("a").attr("href", version_info.install_guide);
+
+        if (version_info.show_instructions) {
+            $download_instructions.show();
+        } else {
+            $download_instructions.hide();
+        }
     };
 
     $(window).on('popstate', function () {
@@ -136,6 +171,14 @@ var events = function () {
     ScrollTo();
 
     $("a").click(function (e) {
+        // if a user is holding the CMD/CTRL key while clicking a link, they
+        // want to open the link in another browser tab which means that we
+        // should preserve the state of this one. Return out, and don't fade
+        // the page.
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+
         // if the pathname is different than what we are already on, run the
         // custom transition function.
         if (window.location.pathname !== this.pathname && !this.hasAttribute("download") &&
@@ -198,5 +241,11 @@ var load = function () {
 if (document.readyState === "complete") {
     load();
 } else {
-    $(document).ready(load);
+    $(load);
 }
+
+$(function () {
+    if (window.location.pathname === '/team/') {
+        render_tabs();
+    }
+});

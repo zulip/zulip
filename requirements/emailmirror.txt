@@ -1,5 +1,0 @@
--e git+https://github.com/umairwaheed/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#egg=talon==1.2.11
-cchardet==2.1.0
-cssselect==1.0.1
-lxml==3.8.0
-regex==2017.6.7

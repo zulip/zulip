@@ -4,21 +4,18 @@ from django.utils.translation import ugettext as _
 from typing import Any, Callable, Iterable, Mapping, Sequence, Text
 
 
-def check_supported_events_narrow_filter(narrow):
-    # type: (Iterable[Sequence[Text]]) -> None
+def check_supported_events_narrow_filter(narrow: Iterable[Sequence[Text]]) -> None:
     for element in narrow:
         operator = element[0]
         if operator not in ["stream", "topic", "sender", "is"]:
             raise JsonableError(_("Operator %s not supported.") % (operator,))
 
-def build_narrow_filter(narrow):
-    # type: (Iterable[Sequence[Text]]) -> Callable[[Mapping[str, Any]], bool]
+def build_narrow_filter(narrow: Iterable[Sequence[Text]]) -> Callable[[Mapping[str, Any]], bool]:
     """Changes to this function should come with corresponding changes to
     BuildNarrowFilterTest."""
     check_supported_events_narrow_filter(narrow)
 
-    def narrow_filter(event):
-        # type: (Mapping[str, Any]) -> bool
+    def narrow_filter(event: Mapping[str, Any]) -> bool:
         message = event["message"]
         flags = event["flags"]
         for element in narrow:

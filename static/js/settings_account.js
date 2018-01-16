@@ -126,7 +126,7 @@ exports.set_up = function () {
                             'Sorry for the trouble!');
                         return false;
                     } else if (!password_ok) {
-                        settings_change_error('New password is too weak');
+                        settings_change_error(i18n.t('New password is too weak'));
                         return false;
                     }
                 }
@@ -134,10 +134,10 @@ exports.set_up = function () {
             return true;
         },
         success: function () {
-            settings_change_success("Updated settings!");
+            settings_change_success(i18n.t("Updated settings!"));
         },
         error: function (xhr) {
-            settings_change_error("Error changing settings", xhr);
+            settings_change_error(i18n.t("Error changing settings"), xhr);
         },
         complete: function () {
             // Whether successful or not, clear the password boxes.
@@ -149,7 +149,7 @@ exports.set_up = function () {
     $('#change_email_button').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        $('#change_email_modal').modal('hide');
+        overlays.close_modal('change_email_modal');
 
         var data = {};
         data.email = $('.email_change_container').find("input[name='email']").val();
@@ -160,12 +160,16 @@ exports.set_up = function () {
             success: function (data) {
                 if ('account_email' in data) {
                     settings_change_success(data.account_email);
+                    if (page_params.development_environment) {
+                        var email_msg = templates.render('dev_env_email_access');
+                        $("#account-settings-status").append(email_msg);
+                    }
                 } else {
                     settings_change_success(i18n.t("No changes made."));
                 }
             },
             error: function (xhr) {
-                settings_change_error("Error changing settings", xhr);
+                settings_change_error(i18n.t("Error changing settings"), xhr);
             },
         });
     });
@@ -173,7 +177,7 @@ exports.set_up = function () {
     $('#change_email').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        $('#change_email_modal').modal('show');
+        overlays.open_modal('change_email_modal');
         var email = $('#email_value').text().trim();
         $('.email_change_container').find("input[name='email']").val(email);
     });

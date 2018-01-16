@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -15,8 +14,7 @@ from zerver.lib.response import json_success, json_error
 from zerver.lib.actions import check_add_realm_emoji, do_remove_realm_emoji
 
 
-def list_emoji(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
+def list_emoji(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
 
     # We don't call check_emoji_admin here because the list of realm
     # emoji is public.
@@ -24,8 +22,8 @@ def list_emoji(request, user_profile):
 
 
 @has_request_variables
-def upload_emoji(request, user_profile, emoji_name=REQ()):
-    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
+def upload_emoji(request: HttpRequest, user_profile: UserProfile,
+                 emoji_name: Text=REQ()) -> HttpResponse:
     check_valid_emoji_name(emoji_name)
     check_emoji_admin(user_profile)
     if len(request.FILES) != 1:
@@ -43,8 +41,8 @@ def upload_emoji(request, user_profile, emoji_name=REQ()):
     return json_success()
 
 
-def delete_emoji(request, user_profile, emoji_name):
-    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
+def delete_emoji(request: HttpRequest, user_profile: UserProfile,
+                 emoji_name: Text) -> HttpResponse:
     check_valid_emoji(user_profile.realm, emoji_name)
     check_emoji_admin(user_profile, emoji_name)
     do_remove_realm_emoji(user_profile.realm, emoji_name)

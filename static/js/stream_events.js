@@ -20,6 +20,12 @@ function update_stream_audible_notifications(sub, value) {
     sub.audible_notifications = value;
 }
 
+function update_stream_push_notifications(sub, value) {
+    var push_notifications_checkbox = $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #sub_push_notifications_setting .sub_setting_control");
+    push_notifications_checkbox.prop('checked', value);
+    sub.push_notifications = value;
+}
+
 function update_stream_pin(sub, value) {
     var pin_checkbox = $('#pinstream-' + sub.stream_id);
     pin_checkbox.prop('checked', value);
@@ -48,6 +54,9 @@ exports.update_property = function (stream_id, property, value) {
         break;
     case 'audible_notifications':
         update_stream_audible_notifications(sub, value);
+        break;
+    case 'push_notifications':
+        update_stream_push_notifications(sub, value);
         break;
     case 'name':
         subs.update_stream_name(sub, value);
@@ -94,10 +103,13 @@ exports.mark_subscribed = function (sub, subscribers, color) {
     }
     stream_data.subscribe_myself(sub);
     if (subscribers) {
-        stream_data.set_subscriber_emails(sub, subscribers);
+        stream_data.set_subscribers(sub, subscribers);
     }
 
-    subs.update_settings_for_subscribed(sub);
+    if (overlays.streams_open()) {
+        subs.update_settings_for_subscribed(sub);
+        subs.actually_filter_streams();
+    }
 
     if (narrow_state.is_for_stream_id(sub.stream_id)) {
         current_msg_list.update_trailing_bookend();
@@ -117,8 +129,9 @@ exports.mark_unsubscribed = function (sub) {
     } else if (sub.subscribed) {
         stream_data.unsubscribe_myself(sub);
 
-        subs.update_settings_for_unsubscribed(sub);
-
+        if (overlays.streams_open()) {
+            subs.update_settings_for_unsubscribed(sub);
+        }
     } else {
         // Already unsubscribed
         return;

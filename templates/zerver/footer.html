@@ -1,43 +1,54 @@
 <div class="footer">
-    <div class="footer-main">
-        <ul class="footer-navigation">
-            {% if about_link_disabled %}
+    <section>
+        <h3>{{ _("About Zulip") }}</h3>
+        <ul>
+            <li><a href="/">{{ _("Home") }}</a></li>
+            <li><a href="/why-zulip/">{{ _("Why Zulip") }}</a></li>
+            <li><a href="/features/">{{ _("Features") }}</a></li>
+            <li><a href="/plans/">{{ _("Plans &amp; pricing") }}</a></li>
+            <li><a href="/team/">{{ _("Team") }}</a></li>
+        </ul>
+    </section>
+    <section>
+        <h3>{{ _("Help &amp; community") }}</h3>
+        <ul>
+            <li><a href="https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html">{{ _("Community chat") }}</a></li>
+            <li><a href="/help/">{{ _("Help center") }}</a></li>
+            <li><a href="https://zulip.readthedocs.io/en/latest/">{{ _("Documentation") }}</a></li>
+            <li><a href="https://twitter.com/zulip/">Twitter</a></li>
+            <li><a href="https://github.com/zulip/zulip/">GitHub</a></li>
+        </ul>
+    </section>
+    <section>
+        <h3>{{ _("Accounts") }}</h3>
+        <ul>
+            {% if find_team_link_disabled %}
             {% else %}
-            <li><a class="no-style" href="{{ server_uri }}/hello">{{ _('About') }}</a></li>
-            <li><span class="little-bullet">·</span></li>
+            <li><a href="{{ root_domain_uri }}/accounts/find">{{ _("Find account") }}</a></li>
             {% endif %}
-
-            <li><a class="no-style" href="{{ server_uri }}/terms">{{ _('Legal') }}</a></li>
-            <li><span class="little-bullet">·</span></li>
-            <li><a class="no-style" href="{{ server_uri }}/privacy">{{ _('Privacy') }}</a></li>
-            <li><span class="little-bullet">·</span></li>
-            <li><a class="no-style" href="{{ server_uri }}/features">{{ _('Features') }}</a></li>
-            <li><span class="little-bullet">·</span></li>
-            <li><a class="no-style" href="{{ server_uri }}/help">{{ _('User documentation') }}</a></li>
-
+            {% if open_realm_creation %}
+            <li><a href="{{ root_domain_uri }}/create_realm/">{{ _("New organization") }}</a></li>
+            {% endif %}
             {% if login_link_disabled %}
             {% else %}
-            <li><span class="little-bullet">·</span></li>
-            <li><a class="no-style" href="{{login_url}}">{{ _('Log in') }}</a></li>
+            <li><a href="{{ login_url }}">{{ _("Login") }}</a></li>
             {% endif %}
-
             {% if register_link_disabled %}
             {% elif only_sso %}
             {% else %}
-            <li><span class="little-bullet">·</span></li>
-            <li><a class="no-style" href="{{ url('register') }}">{{ _('Register') }}</a></li>
+            <li><a href="{{ url('register') }}">{{ _("Sign up") }}</a></li>
             {% endif %}
-
-            {% if open_realm_creation %}
-            <li><span class="little-bullet">·</span></li>
-            <li><a class="no-style" href="{{ server_uri }}/create_realm">{{ _('Create new organization') }}</a></li>
-            {% endif %}
-
-            {% if find_team_link_disabled %}
-            {% else %}
-            <li><span class="little-bullet">·</span></li>
-            <li><a class="no-style" href="{{ server_uri }}/find_my_team">{{ _('Find my team') }}</a></li>
-            {% endif %}
+            <li><a href="{{ root_domain_uri }}/terms/">{{ _("Terms of Service") }}</a></li>
+            <li><a href="{{ root_domain_uri }}/privacy/">{{ _("Privacy policy") }}</a></li>
         </ul>
-    </div>
+    </section>
+    <section>
+        <h3>{{ _("Apps &amp; integrations") }}</h3>
+        <ul>
+            <li><a href="/apps/">{{ _("Desktop &amp; mobile apps") }}</a></li>
+            <li><a href="/integrations/">{{ _("Integrations") }}</a></li>
+            {# Interactive bots would go here? #}
+            <li><a href="/api/">REST API</a></li>
+        </ul>
+    </section>
 </div>

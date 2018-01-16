@@ -1,0 +1,6 @@
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+USER=root
+
+# Cron job to renew certbot twice a day.
+52 0,12 * * * root /home/zulip/deployments/current/scripts/lib/certbot-maybe-renew

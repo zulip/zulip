@@ -1,8 +1,7 @@
-from __future__ import absolute_import
 import re
 import logging
 import traceback
-from typing import Any, Optional, Text
+from typing import Any, Optional, Text, Dict
 from typing.re import Match
 import requests
 from zerver.lib.cache import cache_with_key, get_cache_with_key
@@ -21,19 +20,18 @@ link_regex = re.compile(
     r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
 
-def is_link(url):
-    # type: (Text) -> Match[Text]
+def is_link(url: Text) -> Match[Text]:
     return link_regex.match(smart_text(url))
 
 
-def cache_key_func(url):
-    # type: (Text) -> Text
+def cache_key_func(url: Text) -> Text:
     return url
 
 
 @cache_with_key(cache_key_func, cache_name=CACHE_NAME, with_statsd_key="urlpreview_data")
-def get_link_embed_data(url, maxwidth=640, maxheight=480):
-    # type: (Text, Optional[int], Optional[int]) -> Any
+def get_link_embed_data(url: Text,
+                        maxwidth: Optional[int]=640,
+                        maxheight: Optional[int]=480) -> Optional[Dict[Any, Any]]:
     if not is_link(url):
         return None
     # Fetch information from URL.
@@ -61,6 +59,5 @@ def get_link_embed_data(url, maxwidth=640, maxheight=480):
 
 
 @get_cache_with_key(cache_key_func, cache_name=CACHE_NAME)
-def link_embed_data_from_cache(url, maxwidth=640, maxheight=480):
-    # type: (Text, Optional[int], Optional[int]) -> Any
+def link_embed_data_from_cache(url: Text, maxwidth: Optional[int]=640, maxheight: Optional[int]=480) -> Any:
     return

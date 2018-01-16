@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from django.views.generic import TemplateView, RedirectView
+from django.views.generic import TemplateView
 
 i18n_urlpatterns = [
     # Zephyr/MIT

@@ -32,9 +32,9 @@
                 <h1>The world's most productive group chat</h1>
                 <p>
                     Zulip combines the immediacy of Slack with an email
-                    threading model.  <br />With Zulip, you don't have to
-                    choose between missing important conversations and
-                    wasting time reading irrelevant ones.
+                    threading model.  <br />With Zulip, you can catch
+                    up on important conversations while ignoring
+                    irrelevant ones.
                 </p>
                 {% if register_link_disabled %}
                 {% elif only_sso %}
@@ -43,9 +43,9 @@
                            name="button">{{ _('Log in now!') }}</button>
                 </a>
                 {% else %}
-                <a class="no-style" href="{{ url('register') }}">
+                <a href="{{ url('register') }}">
                    <button href="" class="download-button" type="button"
-                           name="button">{{ _('Register now!') }}</button>
+                           name="button">{{ _('Sign up now!') }}</button>
                 </a>
                 {% endif %}
                 <!-- we want this to be il-block so we'll put a <br> above so it's on
@@ -251,8 +251,8 @@
 
         </header>
         <div class="content">
-            <div class="col-3">
-            <img src="/static/images/landing-page/organised.png" alt=""/>
+            <div class="col-2">
+            <img src="/static/images/landing-page/organised.svg" alt=""/>
                 <div class="il-block">
                     <h2>Organized</h2>
                     <p>
@@ -265,12 +265,12 @@
                     </p>
                     <p>
                         Share content with drag-and-drop file uploads,
-                        link previews and inline images.
+                        link previews, and inline images.
                     </p>
                 </div>
             </div>
-            <div class="col-3">
-            <img src="/static/images/landing-page/featured.png" alt=""/>
+            <div class="col-2">
+            <img src="/static/images/landing-page/featured.svg" alt=""/>
                 <div class="il-block">
                     <h2>Fully Featured</h2>
                     <p>
@@ -284,26 +284,6 @@
                     <p>
                         Need anything else?  <a href="/features">We
                         probably have it.</a>
-                    </p>
-                </div>
-            </div>
-            <div class="col-3">
-            <img src="/static/images/landing-page/opensource.png" alt=""/>
-                <div class="il-block">
-                    <h2>Open Source</h2>
-                    <p>
-                        Zulip is 100% open source software, built by a
-                        vibrant community of hundreds of developers
-                        from all around the world.  With 90,000 words
-                        of developer documentation, a high quality
-                        code base and a welcoming community, it’s easy
-                        to extend or tweak Zulip.
-                    </p>
-                    <p>
-                        Zulip has a significantly larger and more
-                        active development community than other modern
-                        open source group chat solutions like
-                        Mattermost, Rocket.Chat, and matrix.org.
                     </p>
                 </div>
             </div>
@@ -333,22 +313,22 @@
                 </div>
                 <div class="group">
                     <h2>Desktop</h2>
-                    <a class="no-style" href="{{ apps_page_url }}mac">
+                    <a href="{{ apps_page_url }}mac">
                         <i class="icon-vector-apple platform-icon"></i>
                     </a>
-                    <a class="no-style" href="{{ apps_page_url }}windows">
+                    <a href="{{ apps_page_url }}windows">
                         <i class="icon-vector-windows platform-icon"></i>
                     </a>
-                    <a class="no-style" href="{{ apps_page_url }}linux">
+                    <a href="{{ apps_page_url }}linux">
                         <i class="icon-vector-linux platform-icon"></i>
                     </a>
                 </div>
                 <div class="group">
                     <h2>Mobile</h2>
-                    <a class="no-style" href="{{ apps_page_url }}ios">
+                    <a href="{{ apps_page_url }}ios">
                         <i class="icon-vector-mobile-phone platform-icon"></i>
                     </a>
-                    <a class="no-style" href="{{ apps_page_url }}android">
+                    <a href="{{ apps_page_url }}android">
                         <i class="icon-vector-android platform-icon"></i>
                     </a>
                 </div>
@@ -491,6 +471,29 @@
         </div>
     </div>
 
+    <div class="open-source">
+        <div class="flex">
+            <img src="/static/images/landing-page/opensource.svg" alt=""/>
+            <div class="il-block">
+                <h2>Open Source</h2>
+                <p>
+                    Zulip is 100% open source software, built by a
+                    vibrant community of hundreds of developers from
+                    all around the world.  With 100,000 words of
+                    developer documentation, a high quality code base,
+                    and a welcoming community, it’s easy to extend or
+                    tweak Zulip.
+                </p>
+                <p>
+                    Zulip has a significantly larger and more
+                    active development community than other modern
+                    open source group chat solutions like
+                    Mattermost, Rocket.Chat, and matrix.org.
+                </p>
+            </div>
+        </div>
+    </div>
+
     <div class="integrations">
         <div class="content">
             <header>
@@ -509,49 +512,49 @@
         </div>
 
         <div class="integration-icons">
-            <a href="/integrations/doc/travis" class="no-style">
+            <a href="/integrations/doc/travis">
                 <div class="group">
                    <img class="integration-logo" src="/static/images/integrations/logos/travis.svg" alt="{{ _('Travis logo') }}"></img>
                     <h3 class="integration-name">Travis CI</h3>
                     <p class="integration-description">See build results immediately</p>
                 </div>
             </a>
-            <a href="/integrations/doc/github" class="no-style">
+            <a href="/integrations/doc/github">
                 <div class="group">
                    <img class="integration-logo" src="/static/images/integrations/logos/github.svg" alt="{{ _('Github logo') }}"></img>
                     <h3 class="integration-name">Github</h3>
                     <p class="integration-description">Track issues and pull requests</p>
                 </div>
             </a>
-            <a href="/integrations/doc/heroku" class="no-style">
+            <a href="/integrations/doc/heroku">
                 <div class="group">
                    <img class="integration-logo" src="/static/images/integrations/logos/heroku.svg" alt="{{ _('Heroku logo') }}"></img>
                     <h3 class="integration-name">Heroku</h3>
                     <p class="integration-description">Keep up with deployments</p>
                 </div>
             </a>
-            <a href="/integrations/doc/zendesk" class="no-style">
+            <a href="/integrations/doc/zendesk">
                 <div class="group">
                     <img class="integration-logo" src="/static/images/integrations/logos/zendesk.svg" alt="{{ _('Zendesk logo') }}"></img>
                     <h3 class="integration-name">Zendesk</h3>
                     <p class="integration-description">Receive support tickets and updates</p>
                 </div>
             </a>
-            <a href="/integrations/doc/jira" class="no-style">
+            <a href="/integrations/doc/jira">
                 <div class="group">
                    <img class="integration-logo" src="/static/images/integrations/logos/jira.svg" alt="{{ _('JIRA logo') }}"></img>
                     <h3 class="integration-name">JIRA</h3>
                     <p class="integration-description">Monitor project bugs and issues</p>
                 </div>
             </a>
-            <a href="/integrations/doc/sentry" class="no-style">
+            <a href="/integrations/doc/sentry">
                 <div class="group">
                    <img class="integration-logo" src="/static/images/integrations/logos/sentry.svg" alt="{{ _('Sentry logo') }}"></img>
                     <h3 class="integration-name">Sentry</h3>
                     <p class="integration-description">See real-time error tracking</p>
                 </div>
             </a>
-            <a href="/integrations/doc/pagerduty" class="hide-1 no-style">
+            <a href="/integrations/doc/pagerduty" class="hide-1">
                 <div class="group">
                    <img class="integration-logo" src="/static/images/integrations/logos/pagerduty.svg" alt="{{ _('Pagerduty logo') }}"></img>
                     <h3 class="integration-name">Pagerduty</h3>
@@ -571,7 +574,8 @@
                     the world to stay involved, even years after their
                     batches finish. No other tool has a user
                     experience that scales to a community of our
-                    size.</blockquote>
+                    size.
+                </blockquote>
                 <cite>Nick Bergson-Shilcock, founder and CEO, Recurse Center</cite>
             </div>
 
@@ -595,22 +599,22 @@
                 </div>
             </div>
         </div>
-        <div class="padded-content call-to-action-bottom">
-            <h1>Experience Zulip today!</h1>
-            {% if register_link_disabled %}
-            {% elif only_sso %}
-            <a href="{{ url('login-sso') }}">
-               <button href="" type="button"
-                       name="button">{{ _('Log in now!') }}</button>
-            </a>
-            {% else %}
-            <a href="{{ url('register') }}">
-              <button href="" type="button"
-                      name="button">{{ _('Register now!') }}</button>
-            </a>
-            {% endif %}
-            <div class="zulip-octopus"></div>
-        </div>
+    </div>
+    <div class="padded-content call-to-action-bottom">
+        <h1>Experience Zulip today!</h1>
+        {% if register_link_disabled %}
+        {% elif only_sso %}
+        <a href="{{ url('login-sso') }}">
+           <button href="" type="button"
+                   name="button">{{ _('Log in now!') }}</button>
+        </a>
+        {% else %}
+        <a href="{{ url('register') }}">
+          <button href="" type="button"
+                  name="button">{{ _('Sign up now!') }}</button>
+        </a>
+        {% endif %}
+        <div class="zulip-octopus"></div>
     </div>
 </div>
 {% endblock %}

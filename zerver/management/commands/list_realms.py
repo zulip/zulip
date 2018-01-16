@@ -1,13 +1,10 @@
-from __future__ import absolute_import
-from __future__ import print_function
 
 import sys
-
-from typing import Any
 from argparse import ArgumentParser
+from typing import Any
 
-from zerver.models import Realm
 from zerver.lib.management import ZulipBaseCommand
+from zerver.models import Realm
 
 class Command(ZulipBaseCommand):
     help = """List realms in the server and it's configuration settings(optional).
@@ -17,16 +14,14 @@ Usage examples:
 ./manage.py list_realms
 ./manage.py list_realms --all"""
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--all",
                             dest="all",
                             action="store_true",
                             default=False,
                             help="Print all the configuration settings of the realms.")
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         realms = Realm.objects.all()
 
         outer_format = "%-5s %-40s %-40s"

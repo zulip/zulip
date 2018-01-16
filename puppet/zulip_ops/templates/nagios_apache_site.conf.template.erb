@@ -1,0 +1,54 @@
+<VirtualHost *:80>
+    ServerName nagios.<%= @hosts_domain %>
+    Redirect permanent / https://nagios.<%= @hosts_domain %>/
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerName nagios.<%= @hosts_domain %>
+
+    SSLEngine on
+    SSLCertificateFile /etc/letsencrypt/live/nagios.<%= @hosts_domain %>/cert.pem
+    SSLCertificateChainFile /etc/letsencrypt/live/nagios.<%= @hosts_domain %>/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/nagios.<%= @hosts_domain %>/privkey.pem
+
+    Header add Strict-Transport-Security "max-age=15768000"
+    Header add X-Frame-Options DENY
+
+    ScriptAlias /cgi-bin/nagios3 /usr/lib/cgi-bin/nagios3
+    ScriptAlias /nagios3/cgi-bin /usr/lib/cgi-bin/nagios3
+
+    # Where the stylesheets (config files) reside
+    Alias /nagios3/stylesheets /etc/nagios3/stylesheets
+
+    # Where the HTML pages live
+    Alias /nagios3 /usr/share/nagios3/htdocs
+
+    RedirectMatch ^/?$ https://nagios.<%= @hosts_domain %>/cgi-bin/nagios3/status.cgi?host=all
+
+    <Location "/">
+        AuthType Digest
+        AuthName "wiki"
+        AuthDigestProvider file
+        AuthUserFile /etc/apache2/users/wiki
+        Require valid-user
+    </Location>
+
+    <DirectoryMatch (/usr/share/nagios3/htdocs|/usr/lib/cgi-bin/nagios3|/etc/nagios3/stylesheets)>
+        Options FollowSymLinks
+
+        DirectoryIndex index.php index.html
+
+        Order Allow,Deny
+        Allow From All
+    </DirectoryMatch>
+
+    <Directory /usr/share/nagios3/htdocs>
+        Options +ExecCGI
+    </Directory>
+
+    # Enable this ScriptAlias if you want to enable the grouplist patch.
+    # See http://apan.sourceforge.net/download.html for more info
+    # It allows you to see a clickable list of all hostgroups in the
+    # left pane of the Nagios web interface
+    ScriptAlias /nagios3/side.html /usr/lib/cgi-bin/nagios3/grouplist.cgi
+</VirtualHost>

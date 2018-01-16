@@ -1,11 +1,9 @@
-from __future__ import absolute_import
-from __future__ import print_function
-
 from typing import Optional, Tuple
 
 import os
 from distutils.version import LooseVersion
 from version import PROVISION_VERSION
+from scripts.lib.zulip_tools import get_dev_uuid_var_path
 
 def get_major_version(v):
     # type: (str) -> int
@@ -13,7 +11,8 @@ def get_major_version(v):
 
 def get_version_file():
     # type: () -> str
-    return 'var/provision_version'
+    uuid_var_path = get_dev_uuid_var_path()
+    return os.path.join(uuid_var_path, 'provision_version')
 
 PREAMBLE = '''
 Before we run tests, we make sure your provisioning version

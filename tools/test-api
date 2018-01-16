@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-from __future__ import print_function
-from __future__ import absolute_import
+#!/usr/bin/env python3
 import os
 import sys
 
@@ -9,9 +7,9 @@ from lib import sanity_check
 sanity_check.check_venv(__file__)
 
 import django
-TOOLS_DIR = os.path.dirname(__file__)
-ROOT_DIR = os.path.dirname(TOOLS_DIR)
-sys.path.insert(0, ROOT_DIR)
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ZULIP_PATH)
+os.chdir(ZULIP_PATH)
 
 from zulip import Client
 
@@ -23,11 +21,11 @@ django.setup()
 from zerver.models import get_user, get_realm
 
 
-with test_server_running():
+with test_server_running(external_host='zulipdev.com:9981'):
     email = 'iago@zulip.com'  # Iago is an admin
     realm = get_realm("zulip")
     api_key = get_user(email, realm).api_key
-    site = 'http://127.0.0.1:9981'
+    site = 'http://zulip.zulipdev.com:9981'
 
     client = Client(
         email=email,

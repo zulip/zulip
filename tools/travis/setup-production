@@ -8,7 +8,7 @@
 # remove some and reconfigure others to make things run smoothly and
 # quickly.
 #
-# More description in https://zulip.readthedocs.io/en/latest/events-system.html.
+# More description in https://zulip.readthedocs.io/en/latest/testing/travis.html.
 set -e
 set -x
 
@@ -21,12 +21,15 @@ sudo chmod a+rX /home/travis
 # to conflicts over which version of postgres should be running.
 sudo apt-get remove postgresql-9.2 postgresql-client-9.2 postgresql-contrib-9.2 postgresql-9.4 postgresql-client-9.4 postgresql-9.5  postgresql-contrib-9.5 postgresql-client-9.5 postgresql-9.6 postgresql-contrib-9.6 postgresql-client-9.6 -y
 
+# Remove some of Travis's' stupid extra sources.list files
+sudo rm -f /etc/apt/sources.list.d/mongodb*.list
+
 # Provisioning may fail due to many issues but most of the times a network
 # connection issue is the reason. So we are going to retry entire provisioning
 # once again if that fixes our problem.
-if ! tools/provision --travis --production-travis; then
+if ! tools/provision --production-travis; then
     echo "\`provision\`: Something went wrong with the provisioning, might be a network issue, Retrying to provision..."
-    tools/provision --travis --production-travis
+    tools/provision --production-travis
 fi
 
 cp -a tools/travis/success-http-headers.txt ~/
@@ -36,14 +39,7 @@ source tools/travis/activate-venv
 # broken their java install, but also nicely provides consistency.
 sudo ln -nsf /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java /usr/bin/java
 
-py_version="$(python -c 'import sys; print(sys.version_info[0])')"
-if [ "$py_version" = 2 ]; then
-    build_options=()
-else
-    build_options=(--py3)
-fi
-
-if ! env TRAVIS=1 ./tools/build-release-tarball "${build_options[@]}" travis; then
+if ! env TRAVIS=1 ./tools/build-release-tarball travis; then
     echo "Attempting to output failure logging data"
     cat /tmp/tmp.*/update-prod-static.log || true
     exit 1

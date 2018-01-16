@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
 
 from typing import Union, List, Dict, Text, Any
 from mock import patch
@@ -14,8 +13,7 @@ import ujson
 
 class CustomProfileFieldTest(ZulipTestCase):
 
-    def test_list(self):
-        # type: () -> None
+    def test_list(self) -> None:
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
         try_add_realm_custom_profile_field(realm, u"Phone",
@@ -26,8 +24,7 @@ class CustomProfileFieldTest(ZulipTestCase):
         content = result.json()
         self.assertEqual(len(content["custom_fields"]), 1)
 
-    def test_create(self):
-        # type: () -> None
+    def test_create(self) -> None:
         self.login(self.example_email("iago"))
         data = {"name": u"Phone", "field_type": "text id"}  # type: Dict[str, Any]
         result = self.client_post("/json/realm/profile_fields", info=data)
@@ -51,16 +48,14 @@ class CustomProfileFieldTest(ZulipTestCase):
         self.assert_json_error(result,
                                u'A field with that name already exists.')
 
-    def test_not_realm_admin(self):
-        # type: () -> None
+    def test_not_realm_admin(self) -> None:
         self.login(self.example_email("hamlet"))
         result = self.client_post("/json/realm/profile_fields")
         self.assert_json_error(result, u'Must be a realm administrator')
         result = self.client_delete("/json/realm/profile_fields/1")
         self.assert_json_error(result, 'Must be a realm administrator')
 
-    def test_delete(self):
-        # type: () -> None
+    def test_delete(self) -> None:
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
         field = try_add_realm_custom_profile_field(
@@ -77,8 +72,7 @@ class CustomProfileFieldTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(CustomProfileField.objects.count(), 0)
 
-    def test_update(self):
-        # type: () -> None
+    def test_update(self) -> None:
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
         result = self.client_patch(
@@ -112,8 +106,7 @@ class CustomProfileFieldTest(ZulipTestCase):
         self.assertEqual(field.name, 'Phone Number')
         self.assertEqual(field.field_type, CustomProfileField.SHORT_TEXT)
 
-    def test_update_is_aware_of_uniqueness(self):
-        # type: () -> None
+    def test_update_is_aware_of_uniqueness(self) -> None:
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
         try_add_realm_custom_profile_field(realm, u"Phone",
@@ -134,8 +127,7 @@ class CustomProfileFieldTest(ZulipTestCase):
 
 class CustomProfileDataTest(ZulipTestCase):
 
-    def test_update_invalid(self):
-        # type: () -> None
+    def test_update_invalid(self) -> None:
         self.login(self.example_email("iago"))
         data = [{'id': 1234, 'value': '12'}]
         result = self.client_patch("/json/users/me/profile_data", {
@@ -144,8 +136,7 @@ class CustomProfileDataTest(ZulipTestCase):
         self.assert_json_error(result,
                                u"Field id 1234 not found.")
 
-    def test_update_invalid_value(self):
-        # type: () -> None
+    def test_update_invalid_value(self) -> None:
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
         age_field = try_add_realm_custom_profile_field(
@@ -162,8 +153,7 @@ class CustomProfileDataTest(ZulipTestCase):
             result,
             u"value[{}] is not an integer".format(age_field.id))
 
-    def test_update_invalid_double(self):
-        # type: () -> None
+    def test_update_invalid_double(self) -> None:
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
         field = try_add_realm_custom_profile_field(
@@ -180,8 +170,7 @@ class CustomProfileDataTest(ZulipTestCase):
             result,
             u"value[{}] is not a float".format(field.id))
 
-    def test_update_invalid_short_text(self):
-        # type: () -> None
+    def test_update_invalid_short_text(self) -> None:
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
         field = try_add_realm_custom_profile_field(
@@ -198,8 +187,7 @@ class CustomProfileDataTest(ZulipTestCase):
             result,
             u"value[{}] is longer than 200.".format(field.id))
 
-    def test_update_profile_data(self):
-        # type: () -> None
+    def test_update_profile_data(self) -> None:
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
         fields = [
@@ -246,8 +234,7 @@ class CustomProfileDataTest(ZulipTestCase):
             if f['id'] == field.id:
                 self.assertEqual(f['value'], 'foobar')
 
-    def test_delete(self):
-        # type: () -> None
+    def test_delete(self) -> None:
         user_profile = self.example_user('iago')
         realm = user_profile.realm
         field = try_add_realm_custom_profile_field(

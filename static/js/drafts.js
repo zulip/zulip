@@ -86,30 +86,37 @@ exports.snapshot_message = function () {
     return message;
 };
 
+function draft_notify() {
+    $(".alert-draft").css("display", "inline-block");
+    $(".alert-draft").delay(1000).fadeOut(300);
+}
+
 exports.update_draft = function () {
     var draft = drafts.snapshot_message();
-    var draft_id = $("#new_message_content").data("draft-id");
+    var draft_id = $("#compose-textarea").data("draft-id");
 
     if (draft_id !== undefined) {
         if (draft !== undefined) {
             draft_model.editDraft(draft_id, draft);
+            draft_notify();
         } else {
             draft_model.deleteDraft(draft_id);
         }
     } else {
         if (draft !== undefined) {
             var new_draft_id = draft_model.addDraft(draft);
-            $("#new_message_content").data("draft-id", new_draft_id);
+            $("#compose-textarea").data("draft-id", new_draft_id);
+            draft_notify();
         }
     }
 };
 
 exports.delete_draft_after_send = function () {
-    var draft_id = $("#new_message_content").data("draft-id");
+    var draft_id = $("#compose-textarea").data("draft-id");
     if (draft_id) {
         draft_model.deleteDraft(draft_id);
     }
-    $("#new_message_content").removeData("draft-id");
+    $("#compose-textarea").removeData("draft-id");
 };
 
 exports.restore_draft = function (draft_id) {
@@ -143,12 +150,14 @@ exports.restore_draft = function (draft_id) {
 
     overlays.close_overlay("drafts");
     compose_fade.clear_compose();
+    compose.clear_preview_area();
+
     if (draft.type === "stream" && draft.stream === "") {
         draft_copy.subject = "";
     }
     compose_actions.start(draft_copy.type, draft_copy);
     compose_ui.autosize_textarea();
-    $("#new_message_content").data("draft-id", draft_id);
+    $("#compose-textarea").data("draft-id", draft_id);
 };
 
 exports.setup_page = function (callback) {
@@ -175,7 +184,8 @@ exports.setup_page = function (callback) {
     }
 
     function format_drafts(data) {
-        var drafts = _.mapObject(data, function (draft, id) {
+        var drafts = {};
+        _.each(data, function (draft, id) {
             var formatted;
             if (draft.type === "stream") {
                 // In case there is no stream for the draft, we need a
@@ -194,8 +204,6 @@ exports.setup_page = function (callback) {
                     raw_content: draft.content,
 
                 };
-
-                markdown.apply_markdown(formatted);
             } else {
                 var emails = util.extract_pm_recipients(draft.private_message_recipient);
                 var recipients = _.map(emails, function (email) {
@@ -213,9 +221,25 @@ exports.setup_page = function (callback) {
                     recipients: recipients,
                     raw_content: draft.content,
                 };
-                markdown.apply_markdown(formatted);
             }
-            return formatted;
+
+            try {
+                markdown.apply_markdown(formatted);
+            } catch (error) {
+                // In the unlikely event that there is syntax in the
+                // draft content which our markdown processor is
+                // unable to process, we delete the draft, so that the
+                // drafts overlay can be opened without any errors.
+                // We also report the exception to the server so that
+                // the bug can be fixed.
+                draft_model.deleteDraft(id);
+                blueslip.error("Error in rendering draft.", {
+                    draft_content: draft.content,
+                }, error.stack);
+                return;
+            }
+
+            drafts[id] = formatted;
         });
         return drafts;
     }
@@ -242,10 +266,6 @@ exports.setup_page = function (callback) {
         });
     }
     populate_and_fill();
-};
-
-exports.drafts_overlay_open = function () {
-    return $("#draft_overlay").hasClass("show");
 };
 
 function drafts_initialize_focus(event_name) {
@@ -365,14 +385,6 @@ exports.drafts_handle_events = function (e, event_key) {
     }
 };
 
-exports.toggle = function () {
-    if (exports.drafts_overlay_open()) {
-        overlays.close_overlay("drafts");
-    } else {
-        exports.launch();
-    }
-};
-
 exports.launch = function () {
     exports.setup_page(function () {
         overlays.open_overlay({
@@ -383,7 +395,6 @@ exports.launch = function () {
             },
         });
 
-        $("#draft_overlay").addClass("show");
         var draft_list = drafts.draft_model.get();
         var draft_id_list = Object.getOwnPropertyNames(draft_list);
         if (draft_id_list.length > 0) {
@@ -401,7 +412,7 @@ exports.initialize = function () {
         exports.update_draft();
     });
 
-    $("#new_message_content").focusout(exports.update_draft);
+    $("#compose-textarea").focusout(exports.update_draft);
 };
 
 return exports;

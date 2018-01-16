@@ -56,7 +56,7 @@ function get_new_heights() {
 
     res.main_div_min_height = viewport_height - top_navbar_height;
 
-    res.bottom_sidebar_height = viewport_height - top_navbar_height - 40;
+    res.bottom_sidebar_height = viewport_height - top_navbar_height;
 
     res.right_sidebar_height = viewport_height - parseInt($("#right-sidebar").css("marginTop"), 10);
 
@@ -203,9 +203,7 @@ exports.watch_manual_resize = function (element) {
 };
 
 exports.resize_bottom_whitespace = function (h) {
-    if (page_params.autoscroll_forever) {
-        $("#bottom_whitespace").height($("#compose-container")[0].offsetHeight);
-    } else if (h !== undefined) {
+    if (h !== undefined) {
         $("#bottom_whitespace").height(h.bottom_whitespace_height);
     }
 };
@@ -254,11 +252,18 @@ exports.resize_page_components = function () {
     h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
 
     exports.resize_bottom_whitespace(h);
-    $("#stream-filters-container").css('max-height', h.stream_filters_max_height);
     $("#user_presences").css('max-height', h.user_presences_max_height);
     $("#group-pms").css('max-height', h.group_pms_max_height);
 
-    $('#stream-filters-container').perfectScrollbar('update');
+    $("#stream-filters-container")
+        .css('max-height', h.stream_filters_max_height)
+        // the `.css` method returns `$this`, so we can chain `perfectScrollbar`.
+        .perfectScrollbar('update');
+
+    activity.update_scrollbar.users();
+    activity.update_scrollbar.group_pms();
+
+    desktop_notifications_panel.resize_app();
 };
 
 var _old_width = $(window).width();

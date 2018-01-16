@@ -1,0 +1,29 @@
+# This is used by ReadTheDocs to install dependencies, so it's
+# valuable to keep this file as just the dependencies for our
+# documentation.
+
+# After editing this file, you MUST afterward run
+# /tools/update-locked-requirements to update requirements/dev.txt
+# and requirements/docs.txt.
+# See requirements/README.md for more detail.
+
+# Needed to build RTD docs
+sphinx==1.6.5
+sphinx-rtd-theme==0.2.4
+
+# Needed to build markdown docs
+recommonmark==0.4.0
+
+# Dependencies of Sphinx
+alabaster==0.7.10
+babel==2.5.1
+# Upgrading to the latest version of CommonMark breaks the
+# compatibility with recommonmark.  See
+# https://github.com/rtfd/recommonmark/issues/24
+CommonMark==0.5.4
+docutils==0.14
+imagesize==0.7.1
+snowballstemmer==1.2.1
+
+# Include typing explicitly, since it's needed on Python 3.4
+typing==3.6.2

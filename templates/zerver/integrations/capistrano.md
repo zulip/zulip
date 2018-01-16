@@ -16,7 +16,7 @@ namespace :notify do
     # ~/.zuliprc if you omit --user and --api-key
     run_locally "echo ':beers: I just deployed to #{stage}! :beers:' | zulip-send \
     --user capistrano-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 \
-    --site={{ external_api_uri_subdomain }} \
+    --site={{ api_url }} \
     --stream commits --subject deployments || true"
   end
 end

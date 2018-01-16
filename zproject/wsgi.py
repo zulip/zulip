@@ -14,10 +14,9 @@ framework.
 
 """
 import os
-from os.path import dirname, abspath
 import sys
 
-BASE_DIR = dirname(dirname(abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
 import scripts.lib.setup_path_on_import
 

@@ -61,7 +61,44 @@ $(function () {
             (target.is(".highlight") && target.parent().is("a"));
     }
 
-    $("#main_div").on("click", ".messagebox", function (e) {
+    function initialize_long_tap() {
+        var MS_DELAY = 750;
+        var meta = {
+            touchdown: false,
+        };
+
+        $("#main_div").on("touchstart", ".messagebox", function () {
+            meta.touchdown = true;
+            meta.invalid = false;
+
+            setTimeout(function () {
+                if (meta.touchdown === true && !meta.invalid) {
+                    $(this).trigger("longtap");
+                }
+            }.bind(this), MS_DELAY);
+        });
+
+        $("#main_div").on("touchend", ".messagebox", function () {
+            meta.touchdown = false;
+        });
+
+        $("#main_div").on("touchmove", ".messagebox", function () {
+            meta.invalid = true;
+        });
+
+        $("#main_div").on("contextmenu", ".messagebox", function (e) {
+            e.preventDefault();
+        });
+    }
+
+    // this initializes the trigger that will give off the longtap event, which
+    // there is no point in running if we are on desktop since this isn't a
+    // standard event that we would want to support.
+    if (util.is_mobile()) {
+        initialize_long_tap();
+    }
+
+    var select_message_function = function (e) {
         if (is_clickable_message_element($(e.target))) {
             // If this click came from a hyperlink, don't trigger the
             // reply action.  The simple way of doing this is simply
@@ -98,29 +135,45 @@ $(function () {
             e.stopPropagation();
             popovers.hide_all();
         }
-    });
+    };
 
-    function toggle_star(message_id) {
-        // Update the message object pointed to by the various message
-        // lists.
-        var message = ui.find_message(message_id);
+    // if on normal non-mobile experience, a `click` event should run the message
+    // selection function which will open the compose box  and select the message.
+    if (!util.is_mobile()) {
+        $("#main_div").on("click", ".messagebox", select_message_function);
+    // on the other hand, on mobile it should be done with a long tap.
+    } else {
+        $("#main_div").on("longtap", ".messagebox", function (e) {
+            // find the correct selection API for the browser.
+            var sel = window.getSelection ? window.getSelection() : document.selection;
+            // if one matches, remove the current selections.
+            // after a longtap that is valid, there should be no text selected.
+            if (sel) {
+                if (sel.removeAllRanges) {
+                    sel.removeAllRanges();
+                } else if (sel.empty) {
+                    sel.empty();
+                }
+            }
 
-        unread_ops.mark_message_as_read(message);
-        ui.update_starred(message.id, message.starred !== true);
-        message_flags.send_starred([message], message.starred);
+            select_message_function.call(this, e);
+        });
     }
 
     $("#main_div").on("click", ".star", function (e) {
         e.stopPropagation();
         popovers.hide_all();
-        toggle_star(rows.id($(this).closest(".message_row")));
+
+        var message_id = rows.id($(this).closest(".message_row"));
+        var message = message_store.get(message_id);
+        message_flags.toggle_starred(message);
     });
 
     $("#main_div").on("click", ".message_reaction", function (e) {
         e.stopPropagation();
-        var emoji_name = $(this).attr('data-emoji-name');
+        var local_id = $(this).attr('data-reaction-id');
         var message_id = rows.get_message_id(this);
-        reactions.toggle_emoji_reaction(message_id, emoji_name);
+        reactions.process_reaction_click(message_id, local_id);
     });
 
     $("#main_div").on("click", "a.stream", function (e) {
@@ -269,7 +322,7 @@ $(function () {
     $('#user_presences').expectOne().on('click', '.selectable_sidebar_block', function (e) {
         var user_id = $(e.target).parents('li').attr('data-user-id');
         var email = people.get_person_from_user_id(user_id).email;
-        activity.escape_search();
+        activity.clear_and_hide_search();
         narrow.by('pm-with', email, {select_first_unread: true, trigger: 'sidebar'});
         // The preventDefault is necessary so that clicking the
         // link doesn't jump us to the top of the page.
@@ -303,10 +356,11 @@ $(function () {
 
     // HOME
 
-    // Capture both the left-sidebar Home click and the tab breadcrumb Home
+    // Capture both the left-sidebar All Messages click and the tab breadcrumb All Messages
     $(document).on('click', ".home-link[data-name='home']", function (e) {
         ui_util.change_tab_to('#home');
         narrow.deactivate();
+        search.update_button_visibility();
         // We need to maybe scroll to the selected message
         // once we have the proper viewport set up
         setTimeout(navigate.maybe_scroll_to_selected, 0);
@@ -360,8 +414,11 @@ $(function () {
 
     // NB: This just binds to current elements, and won't bind to elements
     // created after ready() is called.
-    $('#send-status .send-status-close').click(
-        function () { $('#send-status').stop(true).fadeOut(500); }
+    $('#compose-send-status .compose-send-status-close').click(
+        function () { $('#compose-send-status').stop(true).fadeOut(500); }
+    );
+    $('#nonexistent_stream_reply_error .compose-send-status-close').click(
+        function () { $('#nonexistent_stream_reply_error').stop(true).fadeOut(500); }
     );
 
 
@@ -370,6 +427,9 @@ $(function () {
     });
     $('.compose_private_button').click(function () {
         compose_actions.start('private');
+    });
+    $('.compose_reply_button').click(function () {
+        compose_actions.respond_to_message({trigger: 'reply button'});
     });
 
     $('.empty_feed_compose_stream').click(function (e) {
@@ -409,11 +469,14 @@ $(function () {
         compose_actions.cancel();
     });
 
-    $("#join_unsub_stream").click(function (e) {
-        e.preventDefault();
+    $("#streams_inline_cog").click(function (e) {
         e.stopPropagation();
-
         window.location.hash = "streams/all";
+    });
+
+    $("#streams_filter_icon").click(function (e) {
+        e.stopPropagation();
+        stream_list.toggle_filter_displayed(e);
     });
 
     $("body").on("click", ".default_stream_row .remove-default-stream", function () {
@@ -654,17 +717,21 @@ $(function () {
         }
 
         // Dismiss popovers if the user has clicked outside them
-        if ($('.popover-inner').has(e.target).length === 0) {
+        if ($('.popover-inner, .emoji-info-popover, .app-main [class^="column-"].expanded').has(e.target).length === 0) {
             popovers.hide_all();
         }
 
-        // Unfocus our compose area if we click out of it. Don't let exits out
-        // of overlays or selecting text (for copy+paste) trigger cancelling.
-        if (compose_state.composing() && !$(e.target).is("a") &&
-            ($(e.target).closest(".overlay").length === 0) &&
-            window.getSelection().toString() === "" &&
-            ($(e.target).closest('.popover-content').length === 0)) {
-            compose_actions.cancel();
+        if (compose_state.composing()) {
+            if ($(e.target).is("a")) {
+                // Refocus compose message text box if link is clicked
+                $("#compose-textarea").focus();
+            } else if (!$(e.target).closest(".overlay").length &&
+            !window.getSelection().toString() &&
+            !$(e.target).closest('.popover-content').length) {
+                // Unfocus our compose area if we click out of it. Don't let exits out
+                // of overlays or selecting text (for copy+paste) trigger cancelling.
+                compose_actions.cancel();
+            }
         }
     });
 
@@ -712,6 +779,8 @@ $(function () {
 
         $(".settings-section, .settings-wrapper").removeClass("show");
 
+        ui.update_scrollbar($("#settings_content"));
+
         if (is_org_section) {
             admin_sections.load_admin_section(section);
         } else {
@@ -734,10 +803,10 @@ $(function () {
                 if (key === "organization") {
                     $("li.admin").show();
                     if (!payload.dont_switch_tab) {
-                        $("li[data-section='organization-settings']").click();
+                        $("li[data-section='organization-profile']").click();
                     }
                 } else {
-                    $("li:not(.admin)").show();
+                    $(".settings-list li:not(.admin)").show();
                     if (!payload.dont_switch_tab) {
                         $("li[data-section='your-account']").click();
                     }

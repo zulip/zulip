@@ -16,7 +16,7 @@ var block = {
   fences: noop,
   hr: /^( *[-*_]){3,} *(?:\n+|$)/,
   nptable: noop,
-  blockquote: /^( *>[^\n]+(\n(?!def)[^\n]+)*\n*)+/,
+  blockquote: /^(?!( *>\s*($|\n))*($|\n))( *>[^\n]*(\n(?!def)[^\n]+)*\n*)+/,
   list: /^( *)(bull) [\s\S]+?(?:hr|def|\n{2,}(?! )(?!\1bull )\n*|\s*$)/,
   html: /^ *(?:comment *(?:\n|\s*$)|closed *(?:\n{2,}|\s*$)|closing *(?:\n{2,}|\s*$))/,
   def: /^ *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +["(]([^\n]+)[")])? *(?:\n+|$)/,
@@ -445,12 +445,13 @@ var inline = {
   nolink: /^!?\[((?:\[[^\]]*\]|[^\[\]])*)\]/,
   strong: /^__([\s\S]+?)__(?!_)|^\*\*([\s\S]+?)\*\*(?!\*)/,
   em: /^\b_((?:[^_]|__)+?)_\b|^\*((?:\*\*|[\s\S])+?)\*(?!\*)/,
-  code: /^(`+)\s*([\s\S]*?[^`])\s*\1(?!`)/,
+  code: /^(`+)(\s*[\s\S]*?[^`]\s*)\1(?!`)/,
   br: /^ {2,}\n(?!\s*$)/,
   del: noop,
   emoji: noop,
   unicodeemoji: noop,
   usermention: noop,
+  groupmention: noop,
   stream: noop,
   avatar: noop,
   tex: noop,
@@ -516,10 +517,11 @@ inline.zulip = merge({}, inline.breaks, {
                        '[\u2000-\u206F]|[\u2300-\u27BF]|[\u2B00-\u2BFF]|' +
                        '[\u3000-\u303F]|[\u3200-\u32FF])'),
   usermention: /^(@(?:\*\*([^\*]+)\*\*|(\w+)))/, // Match multi-word string between @** ** or match any one-word
+  groupmention: /^@\*([^\*]+)\*/, // Match multi-word string between @* *
   stream: /^#\*\*([^\*]+)\*\*/,
   avatar: /^!avatar\(([^)]+)\)/,
   gravatar: /^!gravatar\(([^)]+)\)/,
-  tex: /^(\$\$([^ _$](\\\$|[^$])*)(?! )\$\$)\B/,
+  tex: /^(\$\$([^\n_$](\\\$|[^\n$])*)\$\$(?!\$))\B/,
   realm_filters: [],
   text: replace(inline.breaks.text)
     ('|', '|(\ud83c[\udd00-\udfff]|\ud83d[\udc00-\ude4f]|' +
@@ -527,6 +529,7 @@ inline.zulip = merge({}, inline.breaks, {
           '[\u2000-\u206F]|[\u2300-\u27BF]|[\u2B00-\u2BFF]|' +
           '[\u3000-\u303F]|[\u3200-\u32FF])|')
     (']|', '#@:]|')
+    ('^[', '^^\\${3,}|^^[')
     ()
 });
 
@@ -709,6 +712,13 @@ InlineLexer.prototype.output = function(src) {
       continue;
     }
 
+    // groupmention (zulip)
+    if (cap = this.rules.groupmention.exec(src)) {
+      src = src.substring(cap[0].length);
+      out += this.groupmention(cap[1], cap[0]);
+      continue;
+    }
+
     // stream (zulip)
     if (cap = this.rules.stream.exec(src)) {
       src = src.substring(cap[0].length);
@@ -859,6 +869,20 @@ InlineLexer.prototype.usermention = function (username, orig) {
   }
 
   var handled = this.options.userMentionHandler(username);
+  if (handled !== undefined) {
+    return handled;
+  }
+
+  return orig;
+};
+
+InlineLexer.prototype.groupmention = function (groupname, orig) {
+  if (typeof this.options.groupMentionHandler !== 'function')
+  {
+    return orig;
+  }
+
+  var handled = this.options.groupMentionHandler(groupname);
   if (handled !== undefined) {
     return handled;
   }

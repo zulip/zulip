@@ -1,4 +1,4 @@
-var typing_status = require('js/typing_status');
+zrequire('typing_status');
 
 function return_false() { return false; }
 function return_true() { return true; }

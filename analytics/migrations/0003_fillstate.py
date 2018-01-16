@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from django.db import migrations, models
-import zerver.lib.str_utils
 
+import zerver.lib.str_utils
 
 class Migration(migrations.Migration):
 

@@ -1,0 +1,32 @@
+{
+   "meta":{
+      "unsubscribe":"http://zulip.statuspage.io/?unsubscribe=vg38vmgl07y3",
+      "documentation":"http://doers.statuspage.io/customer-notifications/webhooks/",
+      "generated_at":"2017-12-28T10:45:26.829Z"
+   },
+   "page":{
+      "id":"s1t817q23lxb",
+      "status_indicator":"maintenance",
+      "status_description":"Service Under Maintenance"
+   },
+   "component":{
+      "status":"under_maintenance",
+      "name":"API (example)",
+      "created_at":"2017-12-28T10:18:12.283Z",
+      "updated_at":"2017-12-28T10:45:26.696Z",
+      "position":1,
+      "description":null,
+      "showcase":true,
+      "id":"h5h281dpzr56",
+      "page_id":"s1t817q23lxb",
+      "group_id":null
+   },
+   "component_update":{
+      "old_status":"operational",
+      "new_status":"under_maintenance",
+      "created_at":"2017-12-28T10:45:26.701Z",
+      "component_type":"Component",
+      "id":"yx0bx3m81vd6",
+      "component_id":"h5h281dpzr56"
+   }
+}

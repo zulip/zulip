@@ -1,23 +1,20 @@
-from __future__ import absolute_import
-from __future__ import print_function
 
+import sys
+from argparse import ArgumentParser
 from typing import Any
 
-from argparse import ArgumentParser
 from django.core.management.base import BaseCommand
-from zerver.models import get_realm, Realm
-import sys
+
+from zerver.models import Realm, get_realm
 
 class Command(BaseCommand):
     help = """Show the admins in a realm."""
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('realm', metavar='<realm>', type=str,
                             help="realm to show admins for")
 
-    def handle(self, *args, **options):
-        # type: (*Any, **str) -> None
+    def handle(self, *args: Any, **options: str) -> None:
         realm_name = options['realm']
 
         try:

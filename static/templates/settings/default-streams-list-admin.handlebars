@@ -5,15 +5,15 @@
 
     {{#if is_admin}}
     <form class="form-horizontal default-stream-form">
-        <div class="add-new-default-stream-box grey-bg">
-            <div class="new-default-stream-section-title">{{t "Add new default stream" }}</div>
-            <div class="control-group" id="default_stream_inputs">
-                <label for="default_stream_name" class="control-label">{{t "Stream name" }}</label>
-                <input class="create_default_stream" type="text" placeholder="{{t "Stream name" }}" name="stream_name" autocomplete="off" aria-label="{{t "Stream name" }}"></input>
+        <div class="add-new-default-stream-box grey-box">
+            <div class="wrapper">
                 <div class="alert" id="admin-default-stream-status"></div>
-            </div>
-            <div class="control-group">
-                <div class="controls">
+                <div class="settings-section-title">{{t "Add new default stream" }}</div>
+                <div class="inline-block" id="default_stream_inputs">
+                    <label for="default_stream_name">{{t "Stream name" }}</label>
+                    <input class="create_default_stream" type="text" placeholder="{{t "Stream name" }}" name="stream_name" autocomplete="off" aria-label="{{t "Stream name" }}"></input>
+                </div>
+                <div class="inline-block">
                     <button type="submit" id="do_submit_stream" class="button rounded sea-green">{{t "Add stream" }}</button>
                 </div>
             </div>

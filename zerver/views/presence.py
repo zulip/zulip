@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 
 import datetime
 import time
@@ -10,7 +9,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 
-from zerver.decorator import authenticated_json_post_view, human_users_only
+from zerver.decorator import human_users_only
 from zerver.lib.actions import get_status_dict, update_user_presence
 from zerver.lib.request import has_request_variables, REQ, JsonableError
 from zerver.lib.response import json_success, json_error
@@ -18,13 +17,12 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.validator import check_bool
 from zerver.models import UserActivity, UserPresence, UserProfile, get_user
 
-def get_status_list(requesting_user_profile):
-    # type: (UserProfile) -> Dict[str, Any]
+def get_status_list(requesting_user_profile: UserProfile) -> Dict[str, Any]:
     return {'presences': get_status_dict(requesting_user_profile),
             'server_timestamp': time.time()}
 
-def get_presence_backend(request, user_profile, email):
-    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
+def get_presence_backend(request: HttpRequest, user_profile: UserProfile,
+                         email: Text) -> HttpResponse:
     try:
         target = get_user(email, user_profile.realm)
     except UserProfile.DoesNotExist:
@@ -51,10 +49,11 @@ def get_presence_backend(request, user_profile, email):
 
 @human_users_only
 @has_request_variables
-def update_active_status_backend(request, user_profile, status=REQ(),
-                                 ping_only=REQ(validator=check_bool, default=False),
-                                 new_user_input=REQ(validator=check_bool, default=False)):
-    # type: (HttpRequest, UserProfile, str, bool, bool) -> HttpResponse
+def update_active_status_backend(request: HttpRequest, user_profile: UserProfile,
+                                 status: str=REQ(),
+                                 ping_only: bool=REQ(validator=check_bool, default=False),
+                                 new_user_input: bool=REQ(validator=check_bool, default=False)
+                                 ) -> HttpResponse:
     status_val = UserPresence.status_from_string(status)
     if status_val is None:
         raise JsonableError(_("Invalid status: %s") % (status,))

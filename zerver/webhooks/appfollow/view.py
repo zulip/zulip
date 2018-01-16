@@ -1,33 +1,32 @@
 # Webhooks for external integrations.
-from __future__ import absolute_import
 import re
+from typing import Any, Dict, Text, Optional
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
-from zerver.lib.actions import check_send_message
-from zerver.lib.response import json_success, json_error
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
+from zerver.decorator import api_key_only_webhook_view
+from zerver.lib.actions import check_send_stream_message
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_error, json_success
 from zerver.models import UserProfile
-
-from typing import Dict, Any, Text
 
 @api_key_only_webhook_view("AppFollow")
 @has_request_variables
-def api_appfollow_webhook(request, user_profile, stream=REQ(default="appfollow"),
-                          payload=REQ(argument_type="body")):
-    # type: (HttpRequest, UserProfile, Text, Dict[str, Any]) -> HttpResponse
-    try:
-        message = payload["text"]
-    except KeyError:
-        return json_error(_("Missing 'text' argument in JSON"))
+def api_appfollow_webhook(request: HttpRequest, user_profile: UserProfile,
+                          stream: Text=REQ(default="appfollow"),
+                          topic: Optional[Text]=REQ(default=None),
+                          payload: Dict[str, Any]=REQ(argument_type="body")) -> HttpResponse:
+    message = payload["text"]
     app_name = re.search('\A(.+)', message).group(0)
+    if topic is None:
+        topic = app_name
 
-    check_send_message(user_profile, request.client, "stream", [stream], app_name, convert_markdown(message))
+    check_send_stream_message(sender=user_profile, client=request.client, stream_name=stream,
+                              topic=topic, body=convert_markdown(message))
     return json_success()
 
-def convert_markdown(text):
-    # type: (Text) -> Text
+def convert_markdown(text: Text) -> Text:
     # Converts Slack-style markdown to Zulip format
     # Implemented mainly for AppFollow messages
     # Not ready for general use as some edge-cases not handled

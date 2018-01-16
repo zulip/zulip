@@ -14,9 +14,8 @@ allows you to narrow your view to show specific messages using
 [search constraints](/help/search-for-messages).
 
 !!! tip ""
-    If your current filter is not the **Home** view, clicking on the home ((<i
-    class="icon-vector-home"></i>) icon to the left of the search bar will also
-    narrow your view to that of the **Home** view.
+    Clicking on the home (<i class="icon-vector-home"></i>) icon to the left of
+    the search bar will narrow you to the **All messages** view.
 
 ### Message table
 The **message table** displays your messages in the middle of your browser
@@ -50,13 +49,12 @@ options for narrowing your view.
 ### Preset filters
 Preset filters are located at the top of the left sidebar.
 
-* Clicking on the **Home** filter narrows your view to show all messages from
+* Clicking on the **All messages** filter narrows your view to show all messages from
 unmuted streams that you're subscribed to as well as private messages that
 you have received.
 
     !!! tip ""
-        If your current filter is not the **Home** view, clicking on the Zulip
-        logo will also narrow your view to that of the **Home** view.
+        Clicking on the Zulip logo will also narrow you to the **All messages** view.
 
 * Clicking on the **Private messages** filter narrows your view to show all
 private messages that you have received.
@@ -94,8 +92,9 @@ configuration settings on the right side of the browser window.
 
 ### Configuration settings
 
-You can access your configuration settings, such as **Settings**,  by clicking the cog (<i
-class="icon-vector-cog"></i>) icon in the top right corner of the right sidebar.
+You can access your configuration settings, such as **Settings**, by
+clicking the cog (<i class="icon-vector-cog"></i>) icon in the top
+right corner of the right sidebar.
 
 ### Users section
 

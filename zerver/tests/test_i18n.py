@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
 
 from typing import Any
 
@@ -23,24 +22,21 @@ class TranslationTestCase(ZulipTestCase):
     aware.
     """
 
-    def tearDown(self):
-        # type: () -> None
+    def tearDown(self) -> None:
         translation.activate(settings.LANGUAGE_CODE)
 
     # e.g. self.client_post(url) if method is "post"
-    def fetch(self, method, url, expected_status, **kwargs):
-        # type: (str, str, int, **Any) -> HttpResponse
+    def fetch(self, method: str, url: str, expected_status: int, **kwargs: Any) -> HttpResponse:
         response = getattr(self.client, method)(url, **kwargs)
         self.assertEqual(response.status_code, expected_status,
                          msg="Expected %d, received %d for %s to %s" % (
                              expected_status, response.status_code, method, url))
         return response
 
-    def test_accept_language_header(self):
-        # type: () -> None
-        languages = [('en', u'Register'),
+    def test_accept_language_header(self) -> None:
+        languages = [('en', u'Sign up'),
                      ('de', u'Registrieren'),
-                     ('sr', u'Региструј се'),
+                     ('sr', u'Упишите се'),
                      ('zh-hans', u'注册'),
                      ]
 
@@ -49,11 +45,10 @@ class TranslationTestCase(ZulipTestCase):
                                   HTTP_ACCEPT_LANGUAGE=lang)
             self.assert_in_response(word, response)
 
-    def test_cookie(self):
-        # type: () -> None
-        languages = [('en', u'Register'),
+    def test_cookie(self) -> None:
+        languages = [('en', u'Sign up'),
                      ('de', u'Registrieren'),
-                     ('sr', u'Региструј се'),
+                     ('sr', u'Упишите се'),
                      ('zh-hans', u'注册'),
                      ]
 
@@ -65,11 +60,10 @@ class TranslationTestCase(ZulipTestCase):
             response = self.fetch('get', '/integrations/', 200)
             self.assert_in_response(word, response)
 
-    def test_i18n_urls(self):
-        # type: () -> None
-        languages = [('en', u'Register'),
+    def test_i18n_urls(self) -> None:
+        languages = [('en', u'Sign up'),
                      ('de', u'Registrieren'),
-                     ('sr', u'Региструј се'),
+                     ('sr', u'Упишите се'),
                      ('zh-hans', u'注册'),
                      ]
 
@@ -79,13 +73,11 @@ class TranslationTestCase(ZulipTestCase):
 
 
 class JsonTranslationTestCase(ZulipTestCase):
-    def tearDown(self):
-        # type: () -> None
+    def tearDown(self) -> None:
         translation.activate(settings.LANGUAGE_CODE)
 
     @mock.patch('zerver.lib.request._')
-    def test_json_error(self, mock_gettext):
-        # type: (Any) -> None
+    def test_json_error(self, mock_gettext: Any) -> None:
         dummy_value = "this arg is bad: '{var_name}' (translated to German)"
         mock_gettext.return_value = dummy_value
 
@@ -100,8 +92,7 @@ class JsonTranslationTestCase(ZulipTestCase):
                                         status_code=400)
 
     @mock.patch('zerver.views.auth._')
-    def test_jsonable_error(self, mock_gettext):
-        # type: (Any) -> None
+    def test_jsonable_error(self, mock_gettext: Any) -> None:
         dummy_value = "Some other language"
         mock_gettext.return_value = dummy_value
 
@@ -115,8 +106,7 @@ class JsonTranslationTestCase(ZulipTestCase):
 
 
 class FrontendRegexTestCase(TestCase):
-    def test_regexes(self):
-        # type: () -> None
+    def test_regexes(self) -> None:
         command = makemessages.Command()
 
         data = [
@@ -143,6 +133,6 @@ class FrontendRegexTestCase(TestCase):
         ]
 
         for input_text, expected in data:
-            result = list(command.extract_strings(input_text).keys())
+            result = command.extract_strings(input_text)
             self.assertEqual(len(result), 1)
             self.assertEqual(result[0], expected)

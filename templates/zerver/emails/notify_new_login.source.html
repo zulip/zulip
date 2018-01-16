@@ -1,0 +1,21 @@
+{% extends "zerver/emails/compiled/email_base_default.html" %}
+
+{% block illustration %}
+<img src="{{ email_images_base_uri }}/email_logo.png"/>
+{% endblock %}
+
+{% block content %}
+<p>Hi,</p>
+<p>This is a notification that a new login to your Zulip account has just occurred.</p>
+<p><b>Login details:</b></p>
+<blockquote>
+    <p>Server: <a href="{{ realm_uri }}" target="_blank">{{ realm_uri }}</a></p>
+    <p>Account: <a href="mailto:{{ user_email }}" target="_blank">{{ user_email }}</a></p>
+    <p>Time: {{ device_info.login_time }}</p>
+    <p>Device: {{ device_info.device_browser if device_info.device_browser else 'An unknown browser' }} on {{ device_info.device_os if device_info.device_os else 'an unknown operating system' }}.</p>
+    <p>IP Address: {{ device_info.device_ip }}</p>
+</blockquote>
+<p>If you do not recognize this login activity, or think your account may have been compromised, please contact us immediately at <a href="mailto:{{ support_email }}">{{ support_email }}</a>.</p>
+<p>If you recognize this login activity, you can archive this notice.</p>
+<p>Thanks,<br />Zulip Account Security</p>
+{% endblock %}

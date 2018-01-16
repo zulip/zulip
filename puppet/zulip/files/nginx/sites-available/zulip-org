@@ -3,6 +3,11 @@ server {
     return 301 https://$host$request_uri;
 }
 
+upstream zulipbot {
+    server localhost:8080;
+    keepalive 10000;
+}
+
 server {
     listen 443;
     server_name zulip.org;
@@ -16,8 +21,13 @@ server {
         alias /home/zulip/dist/;
     }
 
+    location /zulipbot/ {
+        rewrite /zulipbot(.*)/ /$1  break;
+        proxy_pass http://zulipbot;
+        proxy_set_header X-Real-IP       $remote_addr;
+    }
+
     location / {
-        autoindex on;
-        alias /home/zulip/zulip.github.io/;
+        rewrite ^/ https://zulipchat.com permanent;
     }
 }

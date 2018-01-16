@@ -1,17 +1,15 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
-from __future__ import print_function
 
 import importlib
 import os
-import six
 import ujson
 
 import django.core.urlresolvers
-from django.test import TestCase
+from django.test import TestCase, Client
 from typing import List, Optional
 
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_runner import slow
 from zerver.models import Stream
 from zproject import urls
 
@@ -21,8 +19,7 @@ class PublicURLTest(ZulipTestCase):
     URLs redirect to a page.
     """
 
-    def fetch(self, method, urls, expected_status):
-        # type: (str, List[str], int) -> None
+    def fetch(self, method: str, urls: List[str], expected_status: int) -> None:
         for url in urls:
             # e.g. self.client_post(url) if method is "post"
             response = getattr(self, method)(url)
@@ -30,8 +27,8 @@ class PublicURLTest(ZulipTestCase):
                              msg="Expected %d, received %d for %s to %s" % (
                                  expected_status, response.status_code, method, url))
 
-    def test_public_urls(self):
-        # type: () -> None
+    @slow("Tests dozens of endpoints, including all of our /help/ documents")
+    def test_public_urls(self) -> None:
         """
         Test which views are accessible when not logged in.
         """
@@ -50,7 +47,7 @@ class PublicURLTest(ZulipTestCase):
                           "/json/messages",
                           "/api/v1/streams",
                           ],
-                    404: ["/help/nonexistent"],
+                    404: ["/help/nonexistent", "/help/include/admin"],
                     }
 
         # Add all files in 'templates/zerver/help' directory (except for 'main.html' and
@@ -81,27 +78,24 @@ class PublicURLTest(ZulipTestCase):
         }
         put_urls = {401: ["/json/users/me/pointer"],
                     }
-        for status_code, url_set in six.iteritems(get_urls):
+        for status_code, url_set in get_urls.items():
             self.fetch("client_get", url_set, status_code)
-        for status_code, url_set in six.iteritems(post_urls):
+        for status_code, url_set in post_urls.items():
             self.fetch("client_post", url_set, status_code)
-        for status_code, url_set in six.iteritems(patch_urls):
+        for status_code, url_set in patch_urls.items():
             self.fetch("client_patch", url_set, status_code)
-        for status_code, url_set in six.iteritems(put_urls):
+        for status_code, url_set in put_urls.items():
             self.fetch("client_put", url_set, status_code)
 
-    def test_get_gcid_when_not_configured(self):
-        # type: () -> None
+    def test_get_gcid_when_not_configured(self) -> None:
         with self.settings(GOOGLE_CLIENT_ID=None):
             resp = self.client_get("/api/v1/fetch_google_client_id")
             self.assertEqual(400, resp.status_code,
                              msg="Expected 400, received %d for GET /api/v1/fetch_google_client_id" % (
                                  resp.status_code,))
-            data = ujson.loads(resp.content)
-            self.assertEqual('error', data['result'])
+            self.assertEqual('error', resp.json()['result'])
 
-    def test_get_gcid_when_configured(self):
-        # type: () -> None
+    def test_get_gcid_when_configured(self) -> None:
         with self.settings(GOOGLE_CLIENT_ID="ABCD"):
             resp = self.client_get("/api/v1/fetch_google_client_id")
             self.assertEqual(200, resp.status_code,
@@ -112,34 +106,46 @@ class PublicURLTest(ZulipTestCase):
             self.assertEqual('ABCD', data['google_client_id'])
 
 class URLResolutionTest(TestCase):
-    def get_callback_string(self, pattern):
-        # type: (django.core.urlresolvers.RegexURLPattern) -> Optional[str]
+    def get_callback_string(self, pattern: django.core.urlresolvers.RegexURLPattern) -> Optional[str]:
         callback_str = hasattr(pattern, 'lookup_str') and 'lookup_str'
         callback_str = callback_str or '_callback_str'
         return getattr(pattern, callback_str, None)
 
-    def check_function_exists(self, module_name, view):
-        # type: (str, str) -> None
+    def check_function_exists(self, module_name: str, view: str) -> None:
         module = importlib.import_module(module_name)
         self.assertTrue(hasattr(module, view), "View %s.%s does not exist" % (module_name, view))
 
     # Tests that all views in urls.v1_api_and_json_patterns exist
-    def test_rest_api_url_resolution(self):
-        # type: () -> None
+    def test_rest_api_url_resolution(self) -> None:
         for pattern in urls.v1_api_and_json_patterns:
             callback_str = self.get_callback_string(pattern)
             if callback_str and hasattr(pattern, "default_args"):
                 for func_string in pattern.default_args.values():
+                    if isinstance(func_string, tuple):
+                        func_string = func_string[0]
                     module_name, view = func_string.rsplit('.', 1)
                     self.check_function_exists(module_name, view)
 
     # Tests function-based views declared in urls.urlpatterns for
     # whether the function exists.  We at present do not test the
     # class-based views.
-    def test_non_api_url_resolution(self):
-        # type: () -> None
+    def test_non_api_url_resolution(self) -> None:
         for pattern in urls.urlpatterns:
             callback_str = self.get_callback_string(pattern)
             if callback_str:
                 (module_name, base_view) = callback_str.rsplit(".", 1)
                 self.check_function_exists(module_name, base_view)
+
+class ErrorPageTest(TestCase):
+    def test_bogus_http_host(self) -> None:
+        # This tests that we've successfully worked around a certain bug in
+        # Django's exception handling.  The enforce_csrf_checks=True,
+        # secure=True, and HTTP_REFERER with an `https:` scheme are all
+        # there to get us down just the right path for Django to blow up
+        # when presented with an HTTP_HOST that's not a valid DNS name.
+        client = Client(enforce_csrf_checks=True)
+        result = client.post('/json/users',
+                             secure=True,
+                             HTTP_REFERER='https://somewhere',
+                             HTTP_HOST='$nonsense')
+        self.assertEqual(result.status_code, 400)

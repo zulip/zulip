@@ -1,19 +1,17 @@
-from __future__ import absolute_import
-
-from typing import Any
 
 from argparse import ArgumentParser
+from typing import Any
+
 from django.core.management.base import BaseCommand
-from zerver.lib.cache_helpers import fill_remote_cache, cache_fillers
+
+from zerver.lib.cache_helpers import cache_fillers, fill_remote_cache
 
 class Command(BaseCommand):
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--cache', dest="cache", default=None,
                             help="Populate the memcached cache of messages.")
 
-    def handle(self, *args, **options):
-        # type: (*Any, **str) -> None
+    def handle(self, *args: Any, **options: str) -> None:
         if options["cache"] is not None:
             fill_remote_cache(options["cache"])
             return

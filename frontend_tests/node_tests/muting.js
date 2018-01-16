@@ -1,9 +1,4 @@
-set_global('page_params', {});
-add_dependencies({
-    unread: 'js/unread.js',
-});
-
-var muting = require('js/muting.js');
+zrequire('muting');
 
 (function test_edge_cases() {
     // private messages

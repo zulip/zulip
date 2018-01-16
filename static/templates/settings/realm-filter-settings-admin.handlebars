@@ -35,8 +35,8 @@
     </div>
     {{#if is_admin}}
     <form class="form-horizontal admin-filter-form">
-        <div class="add-new-filter-box grey-bg green-bg">
-            <div class="new-filter-form">
+        <div class="add-new-filter-box grey-box">
+            <div class="new-filter-form wrapper">
                 <div class="settings-section-title new-filter-section-title">{{t "Add a new filter" }}</div>
                 <div class="alert" id="admin-filter-status"></div>
                 <div class="control-group">
@@ -49,13 +49,9 @@
                     <input type="text" id="filter_format_string" name="url_format_string" placeholder="https://github.com/zulip/zulip/issues/%(id)s" />
                     <div class="alert" id="admin-filter-format-status"></div>
                 </div>
-                <div class="control-group">
-                    <div class="controls">
-                        <button type="submit" class="button rounded sea-green">
-                            {{t 'Add filter' }}
-                        </button>
-                    </div>
-                </div>
+                <button type="submit" class="button rounded sea-green">
+                    {{t 'Add filter' }}
+                </button>
             </div>
         </div>
     </form>

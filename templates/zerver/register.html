@@ -56,7 +56,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                            value="{% if form.password.value() %}{{ form.password.value() }}{% endif %}"
                            maxlength={{ MAX_PASSWORD_LENGTH }}
                            data-min-length="{{password_min_length}}"
-                           data-min-quality="{{password_min_quality}}" required />
+                           data-min-guesses="{{password_min_guesses}}" required />
                     <label for="id_password" class="inline-block">{{ _('Password') }}</label>
                     {% if full_name %}
                     <span class="help-inline">
@@ -74,6 +74,19 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 </div>
                 {% endif %}
             </section>
+
+            {% if default_stream_groups %}
+            <div class="input-group m-10 inline-block">
+                <label for="default_stream_group">{{ _('What parts of the organization are you interested in?') }}</label>
+                {% for default_stream_group in default_stream_groups %}
+                <div class="input-group radio">
+                    <input class="inline-block" type="checkbox" name="default_stream_group" value="{{ default_stream_group.name }}"
+                    {% if "default_stream_group" in  form.data and default_stream_group.name in form.data.getlist('default_stream_group') %} checked {% endif %} />
+                    <label for="id_radio_{{ default_stream_group.name }}" class="inline-block">{{ default_stream_group.name }}</label>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
 
             <section class="org-registration">
                 {% if creating_new_team %}
@@ -97,22 +110,29 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 </div>
 
                 <div class="input-box">
-                    <label for="id_team_subdomain" class="inline-block label-title">
-                        {% if realms_have_subdomains %}
-                        {{ _('Subdomain') }}
-                        {% else %}
-                        {{ _('Organization handle') }}
-                        {% endif %}
+                    <label class="static org-url">
+                        {{ _('Organization URL') }}
                     </label>
-                    <div class="breakpoint">
+                    {% if root_domain_available %}
+                    <label class="checkbox static" for="realm_in_root_domain">
+                        <input type="checkbox" name="realm_in_root_domain" id="realm_in_root_domain"
+                            {% if not form.realm_subdomain.value() and not form.realm_subdomain.errors %}checked="checked"{% endif %}/>
+                        <span></span>
+                        {% trans %}Use {{ external_host }}{% endtrans %}
+                    </label>
+                    {% endif %}
+
+                    <div class="inline-block" id="subdomain_section" {% if root_domain_available and
+                        not form.realm_subdomain.errors and not form.realm_subdomain.value() %}style="display: none;"{% endif %}>
+                        <div class="or">or</div>
                         <div class="inline-block relative">
-                            <input id="id_team_subdomain" class="required {% if realms_have_subdomains %}subdomain{% endif %}" type="text"
+                            <input id="id_team_subdomain"
+                                class="{% if root_domain_landing_page %}required{% endif %} subdomain" type="text"
                                 placeholder="acme"
                                 value="{% if form.realm_subdomain.value() %}{{ form.realm_subdomain.value() }}{% endif %}"
-                                name="realm_subdomain" maxlength={{ MAX_REALM_SUBDOMAIN_LENGTH }} required />
-                            {% if realms_have_subdomains %}
+                                name="realm_subdomain" maxlength={{ MAX_REALM_SUBDOMAIN_LENGTH }}
+                                {% if root_domain_landing_page %}required{% endif %} />
                             <p class="realm_subdomain_label">.{{ external_host }}</p>
-                            {% endif %}
                             <p id="id_team_subdomain_error_client" class="error help-inline text-error"></p>
                         </div>
                         {% if form.realm_subdomain.errors %}
@@ -122,11 +142,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                         {% endif %}
                     </div>
                     <div class="help-box margin-top">
-                        {% if realms_have_subdomains %}
                         {{ _("The address you'll use to sign in to your organization.") }}
-                        {% else %}
-                        {{ _("a-z, 0-9, and - only.") }}
-                        {% endif %}
                     </div>
                 </div>
                 {% endif %}
@@ -143,20 +159,21 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     This is distinct from 'checked', which determines whether the checkbox appears
                     at all. (So, it's not symmetric to the code above.)
                     #}
-                    <input id="id_terms" class="required" type="checkbox" name="terms"
-                           {% if form.terms.value() %}checked="checked"{% endif %} />
-                    <label for="id_terms" class="inline-block">
-                        {% trans %}I agree to the <a href="{{ server_uri }}/terms" target="_blank">Terms of Service</a>.{% endtrans %}
+                    <label for="id_terms" class="inline-block checkbox">
+                        <input id="id_terms" class="required" type="checkbox" name="terms"
+                               {% if form.terms.value() %}checked="checked"{% endif %} />
+                        <span></span>
+                        {% trans %}I agree to the <a href="{{ root_domain_uri }}/terms" target="_blank">Terms of Service</a>.{% endtrans %}
                     </label>
                     {% if form.terms.errors %}
                         {% for error in form.terms.errors %}
-                        <div class="help-inline text-error">{{ error }}</div>
+                        <p class="help-inline text-error">{{ error }}</p>
                         {% endfor %}
                     {% endif %}
                 </div>
                 {% endif %}
                 <div class="register-button-box">
-                    <button class="register-button" type="submit">{{ _('Register') }}</button>
+                    <button class="register-button" type="submit">{{ _('Sign up') }}</button>
                     <input type="hidden" name="next" value="{{ next }}" />
                 </div>
             </div>
@@ -175,12 +192,6 @@ if ($('#id_email').length === 1) {
 } else {
     common.autofocus('#id_full_name');
 }
-
-// if realms have subdomains, set the subdomain input width
-$('#id_team_subdomain').css({
-    width: 300 - $('.realm_subdomain_label').width(),
-    'margin-right': $('.realm_subdomain_label').width() + 4,
-});
 
 // reset error message displays
 $('#id_team_subdomain_error_client').css('display', 'none');

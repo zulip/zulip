@@ -1,9 +1,8 @@
-from __future__ import absolute_import
 from typing import Any, Dict
 
-from django.template import Node, Library, TemplateSyntaxError
 from django.conf import settings
 from django.contrib.staticfiles.storage import staticfiles_storage
+from django.template import Library, Node, TemplateSyntaxError
 
 if False:
     # no need to add dependency
@@ -40,7 +39,7 @@ def minified_js(parser, token):
     try:
         tag_name, sourcefile = token.split_contents()
     except ValueError:
-        raise TemplateSyntaxError("%s tag requires an argument" % (tag_name,))
+        raise TemplateSyntaxError("%s token requires an argument" % (token,))
     if not (sourcefile[0] == sourcefile[-1] and sourcefile[0] in ('"', "'")):
         raise TemplateSyntaxError("%s tag should be quoted" % (tag_name,))
 

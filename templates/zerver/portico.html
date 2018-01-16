@@ -11,45 +11,14 @@
 {{ render_bundle('translations') }}
 {% endblock %}
 
+{% block porticocustomhead %}
+{{ render_bundle('portico') }}
+{% endblock %}
+
 {% block content %}
-<div class="portico-container">
+<div class="portico-container" data-platform="{{ platform }}">
     <div class="portico-wrap">
-        <div class="header">
-            <div class="header-main" id="top_navbar">
-                <div class="column-left">
-                    <div>
-                        {% if custom_logo_url %}
-                        <a class="brand logo" href="{{ server_uri }}/"><img draggable="false" src="{{ custom_logo_url }}" class="portico-logo" alt="{{ _('Zulip') }}" content="Zulip" /></a>
-                        {% else %}
-                        <a class="brand logo" href="{{ server_uri }}">
-                            <svg class="brand-logo" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 40 40" version="1.1">
-                                <g transform="translate(-297.14285,-466.64792)">
-                                    <circle cx="317.14285" cy="486.64792" r="19.030317" style="fill:#fff;stroke-width:1.93936479;stroke:transparent"></circle>
-                                    <path d="m309.24286 477.14791 14.2 0 1.6 3.9-11.2 11.9 9.6 0 1.6 3.2-14.2 0-1.6-3.9 11.2-11.9-9.6 0z" style="fill:#52c2af;stroke:#52c2af"></path>
-                                </g>
-                            </svg>
-                            <span>Zulip</span>
-                        </a>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="column-right top-links">
-                    {% if login_link_disabled %}
-                    {% elif not only_sso %}
-                    <a href="{{login_url}}">{{ _('Log in') }}</a>
-                    {% endif %}
-
-                    {% if register_link_disabled %}
-                    {% elif only_sso %}
-                    <a href="{{ url('login-sso') }}">{{ _('Log in') }}</a>
-                    {% else %}
-                    <a href="{{ url('register') }}">{{ _('Register') }}</a>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
+        {% include 'zerver/portico-header.html' %}
         <div class="app portico-page {% block portico_class_name %}{% endblock %}">
             <div class="app-main portico-page-container{% block hello_page_container %}{% endblock %}">
                 {% block portico_content %}

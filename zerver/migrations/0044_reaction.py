@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 
-from django.db import migrations, models
 import django.db.models.deletion
 from django.conf import settings
-import zerver.lib.str_utils
+from django.db import migrations, models
 
+import zerver.lib.str_utils
 
 class Migration(migrations.Migration):
 

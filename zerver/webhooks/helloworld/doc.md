@@ -8,7 +8,7 @@ Next, on your {{ settings_html|safe }}, create a Hello World bot.
 Construct the URL for the Hello World bot using the API key and
 stream name:
 
-`{{ external_api_uri_subdomain }}/v1/external/helloworld?api_key=abcdefgh&stream=test`
+`{{ api_url }}/v1/external/helloworld?api_key=abcdefgh&stream=test`
 
 
 To trigger a notification using this webhook, use

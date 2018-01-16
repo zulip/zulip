@@ -3,16 +3,8 @@ var common = require('../casper_lib/common.js').common;
 var email = 'alice@test.example.com';
 var subdomain = 'testsubdomain';
 var organization_name = 'Awesome Organization';
-var REALMS_HAVE_SUBDOMAINS = casper.cli.get('subdomains');
-var host;
-var realm_host;
-
-if (REALMS_HAVE_SUBDOMAINS) {
-    host = 'zulipdev.com:9981';
-    realm_host = subdomain + '.' + host;
-} else {
-    host = realm_host = 'localhost:9981';
-}
+var host = "zulipdev.com:9981";
+var realm_host = "testsubdomain" + '.' + host;
 
 casper.start('http://' + host + '/create_realm/');
 
@@ -65,6 +57,7 @@ casper.then(function () {
             realm_subdomain: subdomain,
             password: 'passwordwhichisreallyreallyreallycomplexandnotguessable',
             terms: true,
+            realm_in_root_domain: false,
         }, true);
     });
 
@@ -75,7 +68,7 @@ casper.then(function () {
 
 casper.then(function () {
     // The user is logged in to the newly created realm and the app is loaded
-    casper.waitUntilVisible('#zhome', function () {
+    casper.waitUntilVisible('#zfilt', function () {
         this.test.assertTitleMatch(/ - Zulip$/, "Successfully logged into Zulip webapp");
     });
 });

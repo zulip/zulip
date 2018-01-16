@@ -1,22 +1,22 @@
-from __future__ import absolute_import
-
-from typing import Any, Mapping, Text, Optional
+from typing import Any, Mapping, Optional, Text
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.models import get_client, UserProfile
-from zerver.lib.actions import check_send_message
+from zerver.decorator import authenticated_rest_api_view
+from zerver.lib.actions import check_send_stream_message
+from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_dict
-from zerver.decorator import REQ, has_request_variables, authenticated_rest_api_view
-from zerver.lib.webhooks.git import get_push_commits_event_message, SUBJECT_WITH_BRANCH_TEMPLATE
-
+from zerver.lib.webhooks.git import SUBJECT_WITH_BRANCH_TEMPLATE, \
+    get_push_commits_event_message
+from zerver.models import UserProfile, get_client
 
 @authenticated_rest_api_view(is_webhook=True)
 @has_request_variables
-def api_bitbucket_webhook(request, user_profile, payload=REQ(validator=check_dict([])),
-                          stream=REQ(default='commits'), branches=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, Mapping[Text, Any], Text, Optional[Text]) -> HttpResponse
+def api_bitbucket_webhook(request: HttpRequest, user_profile: UserProfile,
+                          payload: Mapping[Text, Any]=REQ(validator=check_dict([])),
+                          stream: Text=REQ(default='commits'),
+                          branches: Optional[Text]=REQ(default=None)) -> HttpResponse:
     repository = payload['repository']
 
     commits = [
@@ -46,6 +46,6 @@ def api_bitbucket_webhook(request, user_profile, payload=REQ(validator=check_dic
         content = get_push_commits_event_message(payload['user'], None, branch, commits)
         subject = SUBJECT_WITH_BRANCH_TEMPLATE.format(repo=repository['name'], branch=branch)
 
-    check_send_message(user_profile, get_client("ZulipBitBucketWebhook"), "stream",
-                       [stream], subject, content)
+    check_send_stream_message(user_profile, get_client("ZulipBitBucketWebhook"),
+                              stream, subject, content)
     return json_success()

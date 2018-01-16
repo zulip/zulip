@@ -10,9 +10,9 @@ function subscribe_to_stream(bot_email, stream_name) {
 
 // This function puts together the main string for url that will be copied by the user
 // to use for incoming webhook services.
-function put_key_values_in_url(external_api_uri_subdomain, integration_url,
+function put_key_values_in_url(api_url, integration_url,
                                bot_api_key, stream_name) {
-    var integration_bot_url = external_api_uri_subdomain + integration_url +
+    var integration_bot_url = api_url + integration_url +
                               "?api_key=" + bot_api_key +
                               "&stream=" + stream_name;
     return integration_bot_url;
@@ -31,18 +31,18 @@ function update_integration_bot_url(integration_bot_url) {
 }
 
 // This is the function that runs after the bot is created successfully.
-function on_create_bot_success(result, stream_name, external_api_uri_subdomain, integration_url) {
+function on_create_bot_success(result, stream_name, api_url, integration_url) {
     var bot_api_key = result.api_key;
     var bot_email = result.email;
 
     subscribe_to_stream(bot_email, stream_name);
-    var integration_bot_url = put_key_values_in_url(external_api_uri_subdomain, integration_url,
+    var integration_bot_url = put_key_values_in_url(api_url, integration_url,
                                                     bot_api_key, stream_name);
     update_integration_bot_url(integration_bot_url);
 }
 
 function create_bot(full_name, short_name, bot_avatar_file, stream_name,
-                    external_api_uri_subdomain, integration_url, on_success) {
+                    api_url, integration_url, on_success) {
     var formData = new FormData();
     formData.append('csrfmiddlewaretoken', csrf_token);
     formData.append('full_name', full_name);
@@ -56,7 +56,7 @@ function create_bot(full_name, short_name, bot_avatar_file, stream_name,
         contentType: false,
         success: function (resp, statusText, xhr) {
             var result = JSON.parse(xhr.responseText);
-            on_success(result, stream_name, external_api_uri_subdomain, integration_url);
+            on_success(result, stream_name, api_url, integration_url);
         },
         error: function (xhr) {
             // UI yet to be created with this div id
@@ -67,11 +67,11 @@ function create_bot(full_name, short_name, bot_avatar_file, stream_name,
 
 // This is the main function to be called to set the integration bot url.
 exports.set_integration_bot_url = function (
-    external_api_uri_subdomain, integration_url, bot_full_name,
+    api_url, integration_url, bot_full_name,
     bot_short_name, bot_avatar_file, bot_owner, stream_name
 ) {
     create_bot(bot_full_name, bot_short_name, bot_avatar_file,
-               stream_name, external_api_uri_subdomain, integration_url, on_create_bot_success);
+               stream_name, api_url, integration_url, on_create_bot_success);
 };
 
 return exports;

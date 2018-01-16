@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 
 from django.db import migrations
-from zerver.lib.migrate import create_index_if_not_exist  # nolint
 
+from zerver.lib.migrate import create_index_if_not_exist  # nolint
 
 class Migration(migrations.Migration):
 

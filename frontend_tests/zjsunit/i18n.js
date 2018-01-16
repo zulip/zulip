@@ -1,7 +1,7 @@
 var i18n = {};
 
 i18n.t = function (str, context) {
-    // We are currently assuming that we will recieve context in form of a Dict
+    // We are currently assuming that we will receive context in form of a Dict
     // of key value pairs and string will be having substitution for keywords
     // like these "__keyword__".
     if (context === undefined) {

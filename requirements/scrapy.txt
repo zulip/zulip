@@ -1,9 +1,0 @@
-Scrapy==1.4.0
-asn1crypto==0.22.0
-
-parsel==1.2.0
-pyOpenSSL==17.0.0
-w3lib==1.17.0
-PyDispatcher==2.0.5
-queuelib==1.4.2
-service_identity==17.0.0

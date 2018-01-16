@@ -1,0 +1,341 @@
+body.dark-mode {
+    background-color: hsl(212, 28%, 18%);
+    color: hsl(236, 33%, 90%);
+
+    -webkit-font-smoothing: antialiased;
+}
+
+body.dark-mode .app-main,
+body.dark-mode .header-main,
+body.dark-mode #tab_bar_underpadding,
+body.dark-mode .floating_recipient .message-header-wrapper,
+body.dark-mode .column-middle,
+body.dark-mode #compose,
+body.dark-mode .column-left .left-sidebar,
+body.dark-mode .column-right .right-sidebar,
+body.dark-mode #subscription_overlay .right,
+body.dark-mode #settings_page .right {
+    background-color: hsl(212, 28%, 18%);
+}
+
+body.dark-mode .column-left .left-sidebar,
+body.dark-mode .column-right .right-sidebar {
+    border-left-color: hsla(0, 0%, 0%, 0.2);
+}
+
+body.dark-mode .dark .message_label_clickable.stream_label,
+body.dark-mode .dark .stream_label,
+body.dark-mode .stream_label {
+    color: hsl(212, 28%, 18%);
+}
+
+body.dark-mode .new-style label.checkbox input[type=checkbox] ~ span {
+    border-color: hsla(0, 0%, 100%, 0.4);
+}
+
+body.dark-mode .modal-bg {
+    background: hsl(212, 28%, 18%);
+}
+
+.streams_popover .sp-container {
+    background: transparent;
+}
+
+/* this one is because in the app we have blue and in dark-mode it should be white. */
+body.dark-mode .popover a {
+    color: inherit;
+}
+
+body.dark-mode .dark_background a,
+body.dark-mode a.dark_background:hover,
+body.dark-mode .dark_background,
+body.dark-mode .message_reactions .message_reaction_count,
+body.dark-mode .message_reactions .reaction_button i,
+body.dark-mode .message_reactions:hover .message_reaction + .reaction_button {
+    color: inherit !important;
+}
+
+/* do not turn the .message_header .stream_label text dark on hover because they're
+on a dark background, and don't change the dark labels dark either. */
+body.dark-mode .message_header:not(.dark_background) a.stream_label:not(.dark_background):hover,
+body.dark-mode #tab_list li.stream:not(.dark_background) {
+    color: hsl(212, 28%, 18%) !important;
+}
+
+/* these are converting grey things to "new grey" */
+body.dark-mode .sidebar-title,
+body.dark-mode .recipient_row_date,
+body.dark-mode .stream-row .sub-info-box .top-bar .subscriber-count,
+body.dark-mode .stream-row .sub-info-box .top-bar .message-count {
+    color: inherit;
+    opacity: 0.5;
+}
+
+body.dark-mode .new-style .button,
+body.dark-mode input[type="text"],
+body.dark-mode input[type="email"],
+body.dark-mode textarea,
+body.dark-mode .new-style .tab-switcher .ind-tab:not(.selected),
+body.dark-mode select {
+    background-color: hsla(0, 0%, 0%, 0.2);
+    border-color: hsla(0, 0%, 0%, 0.6);
+    color: inherit;
+}
+
+body.dark-mode .new-style .button.no-style {
+    background-color: transparent;
+}
+
+body.dark-mode .new-style .tab-switcher .ind-tab.selected,
+body.dark-mode .table-striped thead th,
+body.dark-mode .message_reactions .message_reaction.reacted,
+body.dark-mode .message_reactions:hover .message_reaction + .reaction_button {
+    background-color: hsla(0, 0%, 0%, 0.5);
+    border-color: hsla(0, 0%, 0%, 0.9);
+}
+
+body.dark-mode .message_reactions .message_reaction {
+    background-color: hsla(0, 0%, 0%, 0.2);
+    border-color: hsla(0, 0%, 0%, 0.5);
+    color: inherit;
+}
+
+body.dark-mode .new-style button.button:focus,
+body.dark-mode input[type="text"]:focus,
+body.dark-mode input[type="email"]:focus,
+body.dark-mode textarea:focus,
+body.dark-mode textarea.new_message_textarea:focus,
+body.dark-mode .compose_table .recipient_box:focus {
+    border-color: hsla(0, 0%, 0%, 0.9);
+}
+
+body.dark-mode .message-header-contents,
+body.dark-mode .message_header_private_message .message-header-contents,
+body.dark-mode #tab_list li.active {
+    background: hsla(0, 0%, 0%, 0.2);
+}
+
+body.dark-mode .message-header-contents,
+body.dark-mode .message_header_private_message .message-header-contents {
+    border-color: transparent;
+}
+
+/* Not that .message_row (below) needs to be more contrast on dark mode */
+body.dark-mode .compose-content,
+body.dark-mode .message_list .recipient_row,
+body.dark-mode .message_row,
+body.dark-mode .draft-row .draft-info-box,
+body.dark-mode #preview_message_area {
+    border-color: hsla(0, 0%, 0%, 0.2);
+}
+
+body.dark-mode .navbar-search {
+    border-right-color: hsla(0, 0%, 0%, 0.2);
+}
+
+body.dark-mode .overlay,
+body.dark-mode .emoji-popover-emoji:not(.reacted):focus {
+    background-color: hsla(212, 28%, 8%, 0.75);
+}
+
+body.dark-mode .overlay .flex.overlay-content > div,
+body.dark-mode #settings_page,
+body.dark-mode .informational-overlays .overlay-content {
+    box-shadow: 0px 0px 30px hsl(212, 32%, 7%);
+}
+
+body.dark-mode .dropdown .dropdown-menu,
+body.dark-mode .popover {
+    background: hsl(212, 32%, 14%);
+}
+
+body.dark-mode .dropdown .dropdown-menu li.divider,
+body.dark-mode .popover hr,
+body.dark-mode hr {
+    color: hsl(212, 28%, 18%);
+    opacity: 0.2;
+}
+
+body.dark-mode .nav .dropdown-menu::after,
+body.dark-mode .popover.bottom .arrow {
+    border-bottom-color: hsl(235, 18%, 7%);
+}
+
+body.dark-mode .popover.right .arrow,
+body.dark-mode .popover.left .arrow,
+body.dark-mode .popover.top .arrow {
+    border-top-color: hsl(235, 18%, 7%);
+}
+
+body.dark-mode ul.filters li:hover .arrow {
+    color: hsl(236, 33%, 80%);
+}
+
+body.dark-mode ul.filters li .arrow:hover {
+    color: hsl(0, 0%, 100%);
+}
+
+body.dark-mode li.active-filter,
+body.dark-mode li.active-sub-filter {
+    background-color: hsla(199, 33%, 46%, 0.2);
+}
+
+body.dark-mode #global_filters li:hover,
+body.dark-mode #stream_filters li:hover,
+body.dark-mode #group-pms li:hover,
+body.dark-mode #user_presences li:hover {
+    background-color: hsla(136, 25%, 73%, 0.2);
+}
+
+body.dark-mode #stream_filters li.active-sub-filter:hover {
+    background-color: hsla(136, 25%, 73%, 0.5);
+}
+
+body.dark-mode .floating_recipient .recipient_row {
+    border-top: none;
+}
+
+body.dark-mode .stream-row.active,
+body.dark-mode .emoji-showcase-container,
+body.dark-mode .emoji-popover-category-tabs,
+body.dark-mode .emoji-popover-top {
+    background-color: hsla(0, 0%, 0%, 0.2);
+}
+
+body.dark-mode .drafts-header,
+body.dark-mode .nav > li > a:hover,
+body.dark-mode .subscriptions-header,
+body.dark-mode .grey-box,
+body.dark-mode .stream-email,
+body.dark-mode #settings_page .settings-header,
+body.dark-mode #settings_page .sidebar li.active,
+body.dark-mode #settings_page .sidebar .tab-container,
+body.dark-mode .table-striped tbody tr:nth-child(odd) td,
+body.dark-mode .table-striped tbody tr:nth-child(odd) th,
+body.dark-mode .modal-footer,
+body.dark-mode #invite-user .modal-header,
+body.dark-mode #bankruptcy .modal-header {
+    border-color: hsla(0, 0%, 0%, 0.2);
+    background-color: hsla(0, 0%, 0%, 0.2);
+}
+
+body.dark-mode .modal-footer {
+    -webkit-box-shadow: inset 0 1px 0 hsla(0, 0%, 0%, 0.2);
+    box-shadow: inset 0 1px 0 hsla(0, 0%, 0%, 0.2);
+}
+
+body.dark-mode .subscriptions-container .right .display-type,
+body.dark-mode .stream-row,
+body.dark-mode .subscriptions-container .left .search-container,
+body.dark-mode .subscriptions-container .left,
+body.dark-mode .subscriber-list-box,
+body.dark-mode .subscriber-list tr,
+body.dark-mode #subscription_overlay ul.grey-box li,
+body.dark-mode #settings_page .sidebar,
+body.dark-mode #settings_page .sidebar *,
+body.dark-mode table,
+body.dark-mode table th,
+body.dark-mode table td {
+    border-color: hsla(0, 0%, 0%, 0.2);
+}
+
+body.dark-mode .draft-row .draft-info-box,
+body.dark-mode .private-message .messagebox,
+body.dark-mode .message_header_private_message .message-header-contents {
+    box-shadow: none;
+}
+
+body.dark-mode .draft-row .message_header_private_message .message_label_clickable {
+    padding: 4px 6px 3px 6px;
+    color: inherit;
+}
+
+body.dark-mode .nav-list > li > a,
+body.dark-mode .nav-list .nav-header {
+    text-shadow: none;
+}
+
+body.dark-mode .mention .messagebox {
+    background-color: hsla(8, 78%, 43%, 0.15);
+}
+
+body.dark-mode .user-mention,
+body.dark-mode .user-group-mention {
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,hsla(0, 0%, 0%, 0.1)), color-stop(100%,hsla(0, 0%, 0%, 0.0)));
+    background: -webkit-linear-gradient(top, hsla(0, 0%, 0%, 0.2) 0%, hsla(0, 0%, 0%, 0.1) 100%);
+    background: -o-linear-gradient(top, hsla(0, 0%, 0%, 0.2) 0%, hsla(0, 0%, 0%, 0.1) 100%);
+    background: -ms-linear-gradient(top, hsla(0, 0%, 0%, 0.2) 0%, hsla(0, 0%, 0%, 0.1) 100%);
+    background: linear-gradient(to bottom, hsla(0, 0%, 0%, 0.2) 0%, hsla(0, 0%, 0%, 0.1) 100%);
+
+    box-shadow: 0px 0px 0px 1px hsla(0, 0%, 0%, 0.4);
+}
+
+body.dark-mode .user-mention-me {
+    background: hsla(355, 37%, 31%, 1);
+    box-shadow: 0px 0px 0px 1px hsla(330, 40%, 20%, 1);
+}
+
+body.dark-mode .alert {
+    text-shadow: none;
+}
+
+body.dark-mode .alert-box .alert,
+body.dark-mode .alert.alert-error {
+    background: hsl(318, 12%, 21%);
+    color: inherit;
+
+    border: 1px solid hsl(0, 75%, 65%);
+}
+
+body.dark-mode .alert-box .alert.alert-error::before {
+    color: 1px solid hsl(0, 75%, 65%);
+}
+
+body.dark-mode .top-messages-logo svg path {
+    fill: hsl(214, 27%, 18%);
+    stroke: hsl(214, 27%, 18%);
+}
+
+body.dark-mode .top-messages-logo svg circle {
+    fill: hsl(0, 0%, 100%);
+    stroke: hsl(0, 0%, 100%);
+}
+
+body.dark-mode #unmute_muted_topic_notification,
+body.dark-mode .message_content code,
+body.dark-mode .message_edit_content code,
+body.dark-mode .typeahead.dropdown-menu {
+    background-color: hsl(212, 25%, 15%);
+    border-color: hsla(0, 0%, 0%, 0.5);
+    color: inherit;
+}
+
+body.dark-mode .highlight {
+    background-color: hsla(51, 100%, 64%, 0.42);
+}
+
+body.dark-mode .highlight_text_inserted {
+    color: hsl(122, 100%, 81%);
+    background-color: hsla(120, 64%, 95%, 0.3);
+}
+
+body.dark-mode .highlight_text_deleted {
+    text-decoration: line-through;
+    background-color: hsla(7, 54%, 62%, 0.38);
+}
+
+body.dark-mode .sub-unsub-message span:before,
+body.dark-mode .sub-unsub-message span:after,
+body.dark-mode .date_row span:before,
+body.dark-mode .date_row span:after {
+    opacity: 0.2;
+}
+
+body.dark-mode .star:not(.empty-star),
+body.dark-mode .empty-star:hover {
+    color: hsla(126, 66%, 72%, 0.75);
+}
+
+body.dark-mode #out-of-view-notification {
+    border: 1px solid 1px solid hsl(144, 45%, 62%);
+}

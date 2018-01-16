@@ -1,31 +1,26 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+import itertools
+import os
+import random
+from typing import Any, Callable, Dict, Iterable, List, \
+    Mapping, Optional, Sequence, Set, Text, Tuple
 
-from django.core.management.base import BaseCommand, CommandParser
-from django.utils.timezone import now as timezone_now
-from django.db.models import F, Max
-
-from zerver.models import Message, UserProfile, Stream, Recipient, UserPresence, \
-    Subscription, RealmAuditLog, get_huddle, Realm, RealmEmoji, UserMessage, \
-    RealmDomain, clear_database, get_client, get_user_profile_by_id, \
-    email_to_username, Service, get_user, DefaultStream, get_stream, \
-    get_realm
-
-from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, do_send_messages, \
-    do_change_is_admin
+import ujson
 from django.conf import settings
+from django.core.management.base import BaseCommand, CommandParser
+from django.db.models import F, Max
+from django.utils.timezone import now as timezone_now
+
+from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, \
+    do_change_is_admin, do_send_messages
 from zerver.lib.bulk_create import bulk_create_streams, bulk_create_users
 from zerver.lib.generate_test_data import create_test_data
 from zerver.lib.upload import upload_backend
-
-
-import random
-import os
-import ujson
-import itertools
-from six.moves import range
-from typing import Any, Callable, Dict, List, Iterable, Mapping, Sequence, Set, Tuple, Text
+from zerver.lib.user_groups import create_user_group
+from zerver.models import DefaultStream, Message, Realm, RealmAuditLog, \
+    RealmDomain, RealmEmoji, Recipient, Service, Stream, Subscription, \
+    UserMessage, UserPresence, UserProfile, clear_database, \
+    email_to_username, get_client, get_huddle, get_realm, get_stream, \
+    get_system_bot, get_user, get_user_profile_by_id
 
 settings.TORNADO_SERVER = None
 # Disable using memcached caches to avoid 'unsupported pickle
@@ -35,20 +30,20 @@ settings.CACHES['default'] = {
     'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
 }
 
-def create_users(realm, name_list, bot_type=None):
-    # type: (Realm, Iterable[Tuple[Text, Text]], int) -> None
+def create_users(realm: Realm, name_list: Iterable[Tuple[Text, Text]],
+                 bot_type: Optional[int]=None,
+                 bot_owner: Optional[UserProfile]=None) -> None:
     user_set = set()  # type: Set[Tuple[Text, Text, Text, bool]]
     for full_name, email in name_list:
         short_name = email_to_username(email)
         user_set.add((email, full_name, short_name, True))
     tos_version = settings.TOS_VERSION if bot_type is None else None
-    bulk_create_users(realm, user_set, bot_type=bot_type, tos_version=tos_version)
+    bulk_create_users(realm, user_set, bot_type=bot_type, bot_owner=bot_owner, tos_version=tos_version)
 
 class Command(BaseCommand):
     help = "Populate a test database"
 
-    def add_arguments(self, parser):
-        # type: (CommandParser) -> None
+    def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument('-n', '--num-messages',
                             dest='num_messages',
                             type=int,
@@ -66,6 +61,12 @@ class Command(BaseCommand):
                             type=int,
                             default=0,
                             help='The number of extra bots to create')
+
+        parser.add_argument('--extra-streams',
+                            dest='extra_streams',
+                            type=int,
+                            default=0,
+                            help='The number of extra streams to create')
 
         parser.add_argument('--huddles',
                             dest='num_huddles',
@@ -114,8 +115,7 @@ class Command(BaseCommand):
                             action="store_true",
                             help='Whether to delete all the existing messages.')
 
-    def handle(self, **options):
-        # type: (**Any) -> None
+    def handle(self, **options: Any) -> None:
         if options["percent_huddles"] + options["percent_personals"] > 100:
             self.stderr.write("Error!  More than 100% of messages allocated.\n")
             return
@@ -129,7 +129,8 @@ class Command(BaseCommand):
             # welcome-bot (needed for do_create_realm) hasn't been created yet
             zulip_realm = Realm.objects.create(
                 string_id="zulip", name="Zulip Dev", restricted_to_domain=True,
-                description="The Zulip development environment default organization.  It's great for testing!",
+                description="The Zulip development environment default organization."
+                            "  It's great for testing!",
                 invite_required=False, org_type=Realm.CORPORATE)
             RealmDomain.objects.create(realm=zulip_realm, domain="zulip.com")
             if options["test_suite"]:
@@ -137,6 +138,10 @@ class Command(BaseCommand):
                     string_id="zephyr", name="MIT", restricted_to_domain=True,
                     invite_required=False, org_type=Realm.CORPORATE)
                 RealmDomain.objects.create(realm=mit_realm, domain="mit.edu")
+
+                lear_realm = Realm.objects.create(
+                    string_id="lear", name="Lear & Co.", restricted_to_domain=False,
+                    invite_required=False, org_type=Realm.CORPORATE)
 
             # Create test Users (UserProfiles are automatically created,
             # as are subscriptions to the ability to receive personals).
@@ -152,10 +157,47 @@ class Command(BaseCommand):
             for i in range(options["extra_users"]):
                 names.append(('Extra User %d' % (i,), 'extrauser%d@zulip.com' % (i,)))
             create_users(zulip_realm, names)
-            iago = UserProfile.objects.get(email="iago@zulip.com")
+
+            iago = get_user("iago@zulip.com", zulip_realm)
             do_change_is_admin(iago, True)
             iago.is_staff = True
             iago.save(update_fields=['is_staff'])
+
+            # These bots are directly referenced from code and thus
+            # are needed for the test suite.
+            all_realm_bots = [(bot['name'], bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,))
+                              for bot in settings.INTERNAL_BOTS]
+            zulip_realm_bots = [
+                ("Zulip New User Bot", "new-user-bot@zulip.com"),
+                ("Zulip Error Bot", "error-bot@zulip.com"),
+                ("Zulip Default Bot", "default-bot@zulip.com"),
+                ("Welcome Bot", "welcome-bot@zulip.com"),
+            ]
+
+            for i in range(options["extra_bots"]):
+                zulip_realm_bots.append(('Extra Bot %d' % (i,), 'extrabot%d@zulip.com' % (i,)))
+            zulip_realm_bots.extend(all_realm_bots)
+            create_users(zulip_realm, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
+
+            zulip_webhook_bots = [
+                ("Zulip Webhook Bot", "webhook-bot@zulip.com"),
+            ]
+            create_users(zulip_realm, zulip_webhook_bots,
+                         bot_type=UserProfile.INCOMING_WEBHOOK_BOT)
+            zulip_outgoing_bots = [
+                ("Outgoing Webhook", "outgoing-webhook@zulip.com")
+            ]
+            aaron = get_user("AARON@zulip.com", zulip_realm)
+            create_users(zulip_realm, zulip_outgoing_bots,
+                         bot_type=UserProfile.OUTGOING_WEBHOOK_BOT, bot_owner=aaron)
+            # TODO: Clean up this initial bot creation code
+            Service.objects.create(
+                name="test",
+                user_profile=get_user("outgoing-webhook@zulip.com", zulip_realm),
+                base_url="http://127.0.0.1:5002/bots/followup",
+                token="abcd1234",
+                interface=1)
+
             # Create public streams.
             stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
             stream_dict = {
@@ -176,7 +218,8 @@ class Command(BaseCommand):
             subscriptions_to_add = []  # type: List[Subscription]
             event_time = timezone_now()
             all_subscription_logs = []  # type: (List[RealmAuditLog])
-            profiles = UserProfile.objects.select_related().all().order_by("email")  # type: Sequence[UserProfile]
+            profiles = UserProfile.objects.select_related().filter(
+                is_bot=False).order_by("email")  # type: Sequence[UserProfile]
             for i, profile in enumerate(profiles):
                 # Subscribe to some streams.
                 for type_id in recipient_streams[:int(len(recipient_streams) *
@@ -205,10 +248,10 @@ class Command(BaseCommand):
                                  Recipient.objects.filter(type=Recipient.STREAM)]
 
         # Extract a list of all users
-        user_profiles = list(UserProfile.objects.all())  # type: List[UserProfile]
+        user_profiles = list(UserProfile.objects.filter(is_bot=False))  # type: List[UserProfile]
 
         # Create a test realm emoji.
-        IMAGE_FILE_PATH = os.path.join(settings.STATIC_ROOT, 'images', 'checkbox-green.png')
+        IMAGE_FILE_PATH = os.path.join(settings.STATIC_ROOT, 'images', 'test-images', 'checkbox.png')
         UPLOADED_EMOJI_FILE_NAME = 'green_tick.png'
         with open(IMAGE_FILE_PATH, 'rb') as fp:
             upload_backend.upload_emoji_image(fp, UPLOADED_EMOJI_FILE_NAME, iago)
@@ -228,7 +271,10 @@ class Command(BaseCommand):
                 client = get_client("website")
                 if user.full_name[0] <= 'H':
                     client = get_client("ZulipAndroid")
-                UserPresence.objects.get_or_create(user_profile=user, client=client, timestamp=date, status=status)
+                UserPresence.objects.get_or_create(user_profile=user,
+                                                   client=client,
+                                                   timestamp=date,
+                                                   status=status)
 
         user_profiles_ids = [user_profile.id for user_profile in user_profiles]
 
@@ -271,43 +317,15 @@ class Command(BaseCommand):
                 ]
                 create_users(mit_realm, testsuite_mit_users)
 
-            # These bots are directly referenced from code and thus
-            # are needed for the test suite.
-            all_realm_bots = [(bot['name'], bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,))
-                              for bot in settings.INTERNAL_BOTS]
-            zulip_realm_bots = [
-                ("Zulip New User Bot", "new-user-bot@zulip.com"),
-                ("Zulip Error Bot", "error-bot@zulip.com"),
-                ("Zulip Default Bot", "default-bot@zulip.com"),
-            ]
-            for i in range(options["extra_bots"]):
-                zulip_realm_bots.append(('Extra Bot %d' % (i,), 'extrabot%d@zulip.com' % (i,)))
-            zulip_realm_bots.extend(all_realm_bots)
-            create_users(zulip_realm, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
-
-            zulip_webhook_bots = [
-                ("Zulip Webhook Bot", "webhook-bot@zulip.com"),
-            ]
-            create_users(zulip_realm, zulip_webhook_bots,
-                         bot_type=UserProfile.INCOMING_WEBHOOK_BOT)
-            zulip_outgoing_bots = [
-                ("Outgoing Webhook", "outgoing-webhook@zulip.com")
-            ]
-            create_users(zulip_realm, zulip_outgoing_bots,
-                         bot_type=UserProfile.OUTGOING_WEBHOOK_BOT)
-            # TODO: Clean up this initial bot creation code
-            Service.objects.create(
-                name="test",
-                user_profile=get_user("outgoing-webhook@zulip.com", zulip_realm),
-                base_url="http://127.0.0.1:5002/bots/followup",
-                token="abcd1234",
-                interface=1)
-
-            create_simple_community_realm()
+                testsuite_lear_users = [
+                    ("King Lear", "king@lear.org"),
+                    ("Cordelia Lear", "cordelia@zulip.com"),
+                ]
+                create_users(lear_realm, testsuite_lear_users)
 
             if not options["test_suite"]:
                 # Initialize the email gateway bot as an API Super User
-                email_gateway_bot = UserProfile.objects.get(email__iexact=settings.EMAIL_GATEWAY_BOT)
+                email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT)
                 email_gateway_bot.is_api_super_user = True
                 email_gateway_bot.save()
 
@@ -326,6 +344,24 @@ class Command(BaseCommand):
                     "errors": {"description": "For errors", "invite_only": False},
                     "sales": {"description": "For sales discussion", "invite_only": False}
                 }  # type: Dict[Text, Dict[Text, Any]]
+
+                # Calculate the maximum number of digits in any extra stream's
+                # number, since a stream with name "Extra Stream 3" could show
+                # up after "Extra Stream 29". (Used later to pad numbers with
+                # 0s).
+                maximum_digits = len(str(options['extra_streams'] - 1))
+
+                for i in range(options['extra_streams']):
+                    # Pad the number with 0s based on `maximum_digits`.
+                    number_str = str(i).zfill(maximum_digits)
+
+                    extra_stream_name = 'Extra Stream ' + number_str
+
+                    zulip_stream_dict[extra_stream_name] = {
+                        "description": "Auto-generated extra stream.",
+                        "invite_only": False,
+                    }
+
                 bulk_create_streams(zulip_realm, zulip_stream_dict)
                 # Now that we've created the notifications stream, configure it properly.
                 zulip_realm.notifications_stream = get_stream("announce", zulip_realm)
@@ -388,11 +424,11 @@ class Command(BaseCommand):
                     UserProfile.objects.filter(id=user['user_profile_id']).update(
                         pointer=user['pointer'])
 
+            create_user_groups()
             self.stdout.write("Successfully populated test database.\n")
 
 recipient_hash = {}  # type: Dict[int, Recipient]
-def get_recipient_by_id(rid):
-    # type: (int) -> Recipient
+def get_recipient_by_id(rid: int) -> Recipient:
     if rid in recipient_hash:
         return recipient_hash[rid]
     return Recipient.objects.get(id=rid)
@@ -404,10 +440,9 @@ def get_recipient_by_id(rid):
 # - multiple personals converastions
 # - multiple messages per subject
 # - both single and multi-line content
-def send_messages(data):
-    # type: (Tuple[int, Sequence[Sequence[int]], Mapping[str, Any], Callable[[str], Any], int]) -> int
+def send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any],
+                              Callable[[str], Any], int]) -> int:
     (tot_messages, personals_pairs, options, output, random_seed) = data
-    print(random_seed)
     random.seed(random_seed)
 
     with open("var/test_messages.json", "r") as infile:
@@ -475,30 +510,21 @@ def send_messages(data):
             saved_data['subject'] = message.subject
 
         message.pub_date = timezone_now()
+        # We disable USING_RABBITMQ here, so that deferred work is
+        # executed in do_send_message_messages, rather than being
+        # queued.  This is important, because otherwise, if run-dev.py
+        # wasn't running when populate_db was run, a developer can end
+        # up with queued events that reference objects from a previous
+        # life of the database, which naturally throws exceptions.
+        settings.USING_RABBITMQ = False
         do_send_messages([{'message': message}])
+        settings.USING_RABBITMQ = True
 
         recipients[num_messages] = (message_type, message.recipient.id, saved_data)
         num_messages += 1
     return tot_messages
 
-def create_simple_community_realm():
-    # type: () -> None
-    simple_realm = Realm.objects.create(
-        string_id="simple", name="Simple Realm", restricted_to_domain=False,
-        invite_required=False, org_type=Realm.CORPORATE)
-
-    names = [
-        ("alice", "alice@example.com"),
-        ("bob", "bob@foo.edu"),
-        ("cindy", "cindy@foo.tv"),
-    ]
-    create_users(simple_realm, names)
-
-    user_profiles = UserProfile.objects.filter(realm__string_id='simple')
-    create_user_presences(user_profiles)
-
-def create_user_presences(user_profiles):
-    # type: (Iterable[UserProfile]) -> None
+def create_user_presences(user_profiles: Iterable[UserProfile]) -> None:
     for user in user_profiles:
         status = 1  # type: int
         date = timezone_now()
@@ -508,3 +534,10 @@ def create_user_presences(user_profiles):
             client=client,
             timestamp=date,
             status=status)
+
+def create_user_groups() -> None:
+    zulip = get_realm('zulip')
+    members = [get_user('cordelia@zulip.com', zulip),
+               get_user('hamlet@zulip.com', zulip)]
+    create_user_group("hamletcharacters", members, zulip,
+                      description="Characters of Hamlet")

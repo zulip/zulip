@@ -5,7 +5,7 @@
 #
 # Our own documentation lives at
 #
-#   https://zulip.readthedocs.io/en/latest/swagger-api-docs.html
+#   https://zulip.readthedocs.io/en/latest/subsystems/swagger-api-docs.html
 #
 # Basic Swagger UI info
 swagger: '2.0'
@@ -443,6 +443,8 @@ paths:
                        * `presences`:
 
                        * `realm_add_emoji_by_admins_only`:
+
+                       * `realm_allow_message_deleting`:
 
                        * `realm_allow_message_editing`:
 
@@ -972,6 +974,8 @@ definitions:
       presences:
         type: string
       realm_add_emoji_by_admins_only:
+        type: boolean
+      realm_allow_message_deleting:
         type: boolean
       realm_allow_message_editing:
         type: boolean

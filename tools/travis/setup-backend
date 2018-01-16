@@ -6,15 +6,7 @@ set -x
 # Provisioning may fail due to many issues but most of the times a network
 # connection issue is the reason. So we are going to retry entire provisioning
 # once again if that fixes our problem.
-if ! tools/provision --travis; then
+if ! tools/provision; then
     echo "\`provision\`: Something went wrong with the provisioning, might be a network issue, Retrying to provision..."
-    tools/provision --travis
+    tools/provision
 fi
-
-# Create nagios state so that we can test-run the Nagios checks
-# against the run-dev.py server, as a form of end-to-end test
-# (tools/).
-#
-# TODO: Is this actually required?  We don't seem to use it.
-sudo mkdir -p /var/lib/nagios_state
-sudo chown travis /var/lib/nagios_state

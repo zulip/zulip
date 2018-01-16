@@ -10,10 +10,10 @@ $(function () {
 });
 </script>
 
-<div class="app register-page flex">
-    <div class="app-main register-page-container new-style flex full-page">
+<div class="app register-page">
+    <div class="app-main register-page-container new-style flex full-page center">
 
-        <div class="register-form">
+        <div class="register-form left">
             <div class="lead">
                 <h1 class="get-started">{{ _("Create a new Zulip organization") }}</h1>
             </div>
@@ -30,7 +30,7 @@ $(function () {
                     <button type="submit" class="new-organization-button register-button">{{ _("Create organization") }}</button>
                 </div>
             </form>
-            <div id="errors"></div>
+            <div class="alert alert-error"></div>
             {% if form.email.errors %}
                 {% for error in form.email.errors %}
                 <div class="alert alert-error">{{ error }}</div>

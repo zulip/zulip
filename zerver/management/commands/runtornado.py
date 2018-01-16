@@ -1,45 +1,42 @@
-from __future__ import absolute_import
-from __future__ import print_function
+
+import logging
+import sys
+from typing import Any, Callable
 
 from django.conf import settings
-settings.RUNNING_INSIDE_TORNADO = True
-# We must call zerver.tornado.ioloop_logging.instrument_tornado_ioloop
-# before we import anything else from our project in order for our
-# Tornado load logging to work; otherwise we might accidentally import
-# zerver.lib.queue (which will instantiate the Tornado ioloop) before
-# this.
-from zerver.tornado.ioloop_logging import instrument_tornado_ioloop
-instrument_tornado_ioloop()
-
-from django.core.management.base import BaseCommand, CommandError, CommandParser
+from django.core.management.base import BaseCommand, \
+    CommandError, CommandParser
 from tornado import ioloop
 from tornado.log import app_log
-from typing import Callable
 
 from zerver.lib.debug import interactive_debug_listen
 from zerver.tornado.application import create_tornado_application, \
     setup_tornado_rabbitmq
 from zerver.tornado.event_queue import add_client_gc_hook, \
     missedmessage_hook, process_notification, setup_event_queue
+# We must call zerver.tornado.ioloop_logging.instrument_tornado_ioloop
+# before we import anything else from our project in order for our
+# Tornado load logging to work; otherwise we might accidentally import
+# zerver.lib.queue (which will instantiate the Tornado ioloop) before
+# this.
+from zerver.tornado.ioloop_logging import instrument_tornado_ioloop
 from zerver.tornado.socket import respond_send_message
 
-import logging
-import sys
+settings.RUNNING_INSIDE_TORNADO = True
+instrument_tornado_ioloop()
 
 if settings.USING_RABBITMQ:
     from zerver.lib.queue import get_queue_client
 
 
-def handle_callback_exception(callback):
-    # type: (Callable) -> None
+def handle_callback_exception(callback: Callable[..., Any]) -> None:
     logging.exception("Exception in callback")
     app_log.error("Exception in callback %r", callback, exc_info=True)
 
 class Command(BaseCommand):
     help = "Starts a Tornado Web server wrapping Django."
 
-    def add_arguments(self, parser):
-        # type: (CommandParser) -> None
+    def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument('addrport', nargs="?", type=str,
                             help='[optional port number or ipaddr:port]\n '
                                  '(use multiple ports to start multiple servers)')
@@ -52,8 +49,7 @@ class Command(BaseCommand):
                             dest='xheaders', default=True,
                             help="Tells Tornado to NOT override remote IP with X-Real-IP.")
 
-    def handle(self, addrport, **options):
-        # type: (str, **bool) -> None
+    def handle(self, addrport: str, **options: bool) -> None:
         interactive_debug_listen()
 
         import django
@@ -78,8 +74,7 @@ class Command(BaseCommand):
             logging.basicConfig(level=logging.INFO,
                                 format='%(asctime)s %(levelname)-8s %(message)s')
 
-        def inner_run():
-            # type: () -> None
+        def inner_run() -> None:
             from django.conf import settings
             from django.utils import translation
             translation.activate(settings.LANGUAGE_CODE)

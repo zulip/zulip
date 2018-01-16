@@ -17,7 +17,7 @@ Fill in the form like this:
 
 * **Name**: Zulip
 * **Authentication Method**: Basic Auth
-* **URL**: `{{ external_api_uri_subdomain }}/v1/external/deskdotcom`
+* **URL**: `{{ api_url }}/v1/external/deskdotcom`
 * **User name**: *your bot's user name, e.g.* `desk-bot@yourdomain.com`
 * **Password**: *your bot's API key*
 
@@ -37,7 +37,9 @@ in a descriptive name like **Announce case update**, select
 to the **Appended URL path**:
 
 {% raw %}
+
 `?stream=desk&topic={{ case.id }}:+{{ case.subject }}`
+
 {% endraw %}
 
 The "appended URL path" will be the same for every notification —
@@ -47,6 +49,7 @@ within Zulip.
 Next, copy this template Zulip message into **Message to POST**:
 
 {% raw %}
+
 ```
 Case [{{ case.id }}, {{ case.subject }}]({{ case.direct_url }}), was updated.
 
@@ -56,12 +59,12 @@ Case [{{ case.id }}, {{ case.subject }}]({{ case.direct_url }}), was updated.
 * Company: {{ customer.company }}
 * Description: {{ case.description }}
 ```
+
 {% endraw %}
 
-You don't need to edit that, although you may if you wish. All
-the funny-looking stuff inside {% raw %}`{{` and `}}`{% endraw %}
-will be filled in by Desk.com for each event. The dialog should
-look like this:
+You don't need to edit that, although you may if you wish. All the
+funny-looking stuff inside `{{ "{{" }}` and `{{ "}}" }}` will be filled in by
+Desk.com for each event. The dialog should look like this:
 
 ![](/static/images/integrations/desk/004.png)
 

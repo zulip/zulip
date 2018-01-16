@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-from __future__ import print_function
+#!/usr/bin/env python3
 
 import requests
 import re
@@ -7,7 +6,7 @@ import argparse
 import sys
 import os
 
-from six.moves.configparser import ConfigParser
+import ConfigParser
 from typing import Any, Dict, MutableMapping, Optional, Text
 
 # Scans zulip repositary for issues that don't have any `area` labels.

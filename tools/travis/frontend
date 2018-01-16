@@ -5,7 +5,19 @@ source tools/travis/activate-venv
 set -e
 set -x
 
+# ./tools/lint --frontend
+# TEMP: turn off git lint
+./tools/lint --frontend --no-gitlint
+
+# Run the node tests first, since they're fast and deterministic
 ./tools/test-js-with-node --coverage
+
+# Check capitalization of strings
+./manage.py makemessages --locale en
+PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
+PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate
+
+# Run the slower Casper tests last
 ./tools/test-js-with-casper
 
 # NB: Everything here should be in `tools/test-all`.  If there's a

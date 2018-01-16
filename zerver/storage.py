@@ -1,9 +1,8 @@
-# Useful reading is https://zulip.readthedocs.io/en/latest/front-end-build-process.html
-from __future__ import absolute_import
+# Useful reading is https://zulip.readthedocs.io/en/latest/subsystems/front-end-build-process.html
 
 import os
 import shutil
-from typing import Dict, List, Any, Tuple
+from typing import Any, Dict, List, Tuple
 
 from django.conf import settings
 from django.contrib.staticfiles.storage import ManifestStaticFilesStorage
@@ -11,9 +10,9 @@ from pipeline.storage import PipelineMixin
 
 from zerver.lib.str_utils import force_str
 
-class AddHeaderMixin(object):
-    def post_process(self, paths, dry_run=False, **kwargs):
-        # type: (Dict[str, Tuple[ZulipStorage, str]], bool, **Any) -> List[Tuple[str, str, bool]]
+class AddHeaderMixin:
+    def post_process(self, paths: Dict[str, Tuple['ZulipStorage', str]], dry_run: bool=False,
+                     **kwargs: Any) -> List[Tuple[str, str, bool]]:
         if dry_run:
             return []
 
@@ -43,7 +42,7 @@ class AddHeaderMixin(object):
 
             ret_dict[path] = (path, path, True)
 
-        super_class = super(AddHeaderMixin, self)  # type: ignore # https://github.com/JukkaL/mypy/issues/857
+        super_class = super()
         if hasattr(super_class, 'post_process'):
             super_ret = super_class.post_process(paths, dry_run, **kwargs)  # type: ignore # https://github.com/python/mypy/issues/2956
         else:
@@ -58,9 +57,9 @@ class AddHeaderMixin(object):
         return list(ret_dict.values())
 
 
-class RemoveUnminifiedFilesMixin(object):
-    def post_process(self, paths, dry_run=False, **kwargs):
-        # type: (Dict[str, Tuple[ZulipStorage, str]], bool, **Any) -> List[Tuple[str, str, bool]]
+class RemoveUnminifiedFilesMixin:
+    def post_process(self, paths: Dict[str, Tuple['ZulipStorage', str]], dry_run: bool=False,
+                     **kwargs: Any) -> List[Tuple[str, str, bool]]:
         if dry_run:
             return []
 
@@ -73,7 +72,7 @@ class RemoveUnminifiedFilesMixin(object):
         is_valid = lambda p: all([not p.startswith(k) for k in to_remove])
 
         paths = {k: v for k, v in paths.items() if is_valid(k)}
-        super_class = super(RemoveUnminifiedFilesMixin, self)  # type: ignore # https://github.com/JukkaL/mypy/issues/857
+        super_class = super()
         if hasattr(super_class, 'post_process'):
             return super_class.post_process(paths, dry_run, **kwargs)  # type: ignore # https://github.com/python/mypy/issues/2956
 
@@ -89,8 +88,7 @@ if settings.PRODUCTION:
                                                             "staticfiles.json")
     orig_path = ManifestStaticFilesStorage.path
 
-    def path(self, name):
-        # type: (Any, str) -> str
+    def path(self: ManifestStaticFilesStorage, name: str) -> str:
         if name == ManifestStaticFilesStorage.manifest_name:
             return name
         return orig_path(self, name)

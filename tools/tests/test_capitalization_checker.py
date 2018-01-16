@@ -134,7 +134,7 @@ class CheckCapitalizationTestCase(TestCase):
                    "Not ignored phrase",
                    ('<p class="bot-settings-note padded-container"> Looking for our '
                     '<a href="/integrations" target="_blank">Integrations</a> or '
-                    '<a href="{{ server_uri }}/api" target="_blank">API</a> '
+                    '<a href="/api" target="_blank">API</a> '
                     'documentation? </p>'),
                    ]
         errored, ignored = check_capitalization(strings)
@@ -148,6 +148,6 @@ class CheckCapitalizationTestCase(TestCase):
                     "Some number 25MiB",
                     ('<p class="bot-settings-note padded-container"> Looking '
                      'for our <a href="/integrations" target="_blank">'
-                     'Integrations</a> or <a href="{{ server_uri }}/api" '
+                     'Integrations</a> or <a href="/api" '
                      'target="_blank">API</a> documentation? </p>'),
                     ]))

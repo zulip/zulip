@@ -2,7 +2,7 @@ var common = require('../casper_lib/common.js').common;
 
 common.start_and_log_in();
 
-casper.waitUntilVisible('#new_message_content', function () {
+casper.waitUntilVisible('#zhome', function () {
     casper.test.info('compose box visible');
     casper.page.sendEvent('keypress', "c"); // brings up the compose box
 });
@@ -13,7 +13,7 @@ casper.then(function () {
         subject: 'Test mention all',
     });
 });
-common.select_item_via_typeahead('#new_message_content', '@all', 'all');
+common.select_item_via_typeahead('#compose-textarea', '@all', 'all');
 
 casper.then(function () {
     common.turn_off_press_enter_to_send();
@@ -41,7 +41,7 @@ casper.then(function () {
     casper.waitWhileVisible('.compose-all-everyone-confirm', function () {
         casper.test.info('Check that error messages are gone.');
         casper.test.assertNotVisible('.compose-all-everyone-msg');
-        casper.test.assertNotVisible('#send-status');
+        casper.test.assertNotVisible('#compose-send-status');
     });
 });
 

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from typing import Any, Dict, Text
+
 from zerver.lib.test_classes import WebhookTestCase
 
 class YoHookTests(WebhookTestCase):
@@ -7,8 +8,7 @@ class YoHookTests(WebhookTestCase):
     URL_TEMPLATE = u"/api/v1/external/yo?api_key={api_key}"
     FIXTURE_DIR_NAME = 'yo'
 
-    def test_yo_message(self):
-        # type: () -> None
+    def test_yo_message(self) -> None:
         """
         Yo App sends notification whenever user receives a new Yo from another user.
         """
@@ -21,6 +21,5 @@ class YoHookTests(WebhookTestCase):
         self.send_and_test_private_message('', expected_message=expected_message,
                                            content_type="application/x-www-form-urlencoded")
 
-    def get_body(self, fixture_name):
-        # type: (Text) -> Dict[str, Any]
+    def get_body(self, fixture_name: Text) -> Dict[str, Any]:
         return {}

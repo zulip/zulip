@@ -34,7 +34,7 @@
                         <a href="/integrations/doc/hubot">Hubot</a>,
                         <a href="/integrations/doc/zapier">Zapier</a>,
                         and
-                        <a href="/integrations/doc/iftt">IFTTT</a>.
+                        <a href="/integrations/doc/ifttt">IFTTT</a>.
                         {% endtrans %}
                     </h2>
                 </div>
@@ -85,7 +85,7 @@
                     <div class="integration-lozenges">
                         {% for integration in integrations_dict.values() %}
                             {% if integration.is_enabled() %}
-                            <a href="/integrations/doc/{{ integration.name }}" class="no-style">
+                            <a href="/integrations/doc/{{ integration.name }}">
                                 <div
                                     {% if integration.legacy %}
                                     class="integration-lozenge integration-{{ integration.name }} legacy"{% else %}
@@ -108,7 +108,7 @@
                             </a>
                             {% endif %}
                         {% endfor %}
-                        <a href="http://zulip.readthedocs.io/en/latest/integration-guide.html" class="no-style">
+                        <a href="https://zulipchat.com/api/integration-guide">
                             <div class="integration-lozenge integration-create-your-own">
                                 <div class="integration-logo">
                                     <i class="icon-vector-plus"></i>
@@ -121,7 +121,7 @@
 
                 <div id="integration-instructions-group">
                     <div id="integration-instruction-block" class="integration-instruction-block">
-                        <a href="/integrations" id="integration-list-link"><i class="icon-vector-circle-arrow-left"></i><span>Back to list</span></a>
+                        <a href="/integrations" id="integration-list-link" class="no-underline"><i class="icon-vector-circle-arrow-left"></i><span>Back to list</span></a>
                         <h3 class="name"></h3>
                         <div class="categories"></div>
                     </div>

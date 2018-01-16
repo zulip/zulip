@@ -4,8 +4,6 @@ class zulip::postgres_common {
                         # tools for database monitoring
                         "ptop",
                         # Python modules used in our monitoring/worker threads
-                        # "python3-gevent", # missing on trusty
-                        "python-gevent",
                         "python3-tz", # TODO: use a virtualenv instead
                         "python-tz", # TODO: use a virtualenv instead
                         "python3-dateutil", # TODO: use a virtualenv instead
@@ -45,12 +43,12 @@ class zulip::postgres_common {
     require => Package["postgresql-${zulip::base::postgres_version}"],
   }
 
-  file { "/usr/local/bin/pg_backup_and_purge.py":
+  file { "/usr/local/bin/pg_backup_and_purge":
     ensure => file,
     owner => "root",
     group => "postgres",
     mode => 754,
-    source => "puppet:///modules/zulip/postgresql/pg_backup_and_purge.py",
+    source => "puppet:///modules/zulip/postgresql/pg_backup_and_purge",
     require => File["/usr/local/bin/env-wal-e"],
   }
 

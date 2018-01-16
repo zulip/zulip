@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-from __future__ import print_function
-from __future__ import absolute_import
+#!/usr/bin/env python3
 
 # check for the venv
 from lib import sanity_check
@@ -62,7 +60,7 @@ def fix_test_name(s):
     return s.replace('zerver.tests.', '')
 
 def create_single_page(pattern, out_dir, href, calls):
-    # type: (str, str, str, List[Any]) -> None
+    # type: (str, str, str, List[Call]) -> None
     fn = out_dir + '/' + href
     with open(fn, 'w') as f:
         f.write('''

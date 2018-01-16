@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from typing import Any, List, Dict, Optional, Callable, Tuple, Iterable, Sequence, Text
 
 from django.conf import settings
@@ -25,9 +24,8 @@ kerberos_alter_egos = {
 
 @authenticated_json_view
 @has_request_variables
-def webathena_kerberos_login(request, user_profile,
-                             cred=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
+def webathena_kerberos_login(request: HttpRequest, user_profile: UserProfile,
+                             cred: Text=REQ(default=None)) -> HttpResponse:
     global kerberos_alter_egos
     if cred is None:
         return json_error(_("Could not find Kerberos credential"))
@@ -47,7 +45,7 @@ def webathena_kerberos_login(request, user_profile,
     # TODO: Send these data via (say) rabbitmq
     try:
         subprocess.check_call(["ssh", settings.PERSONAL_ZMIRROR_SERVER, "--",
-                               "/home/zulip/zulip/api/integrations/zephyr/process_ccache",
+                               "/home/zulip/python-zulip-api/zulip/integrations/zephyr/process_ccache",
                                force_str(user),
                                force_str(user_profile.api_key),
                                force_str(base64.b64encode(ccache))])

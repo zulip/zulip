@@ -1,15 +1,11 @@
-add_dependencies({
-    people: 'js/people.js',
-    stream_data: 'js/stream_data.js',
-    util: 'js/util.js',
-    unread: 'js/unread.js',
-});
+zrequire('util');
+zrequire('unread');
+zrequire('stream_data');
+zrequire('people');
+zrequire('Filter', 'js/filter');
 
 set_global('page_params', {});
 set_global('feature_flags', {});
-
-var Filter = require('js/filter.js');
-var _ = global._;
 
 var me = {
     email: 'me@example.com',
@@ -258,8 +254,8 @@ function make_sub(name, stream_id) {
     assert(!predicate({starred: false}));
 
     predicate = get_predicate([['is', 'unread']]);
-    assert(predicate({flags: ''}));
-    assert(!predicate({flags: 'read'}));
+    assert(predicate({unread: true}));
+    assert(!predicate({unread: false}));
 
     predicate = get_predicate([['is', 'alerted']]);
     assert(predicate({alerted: true}));
@@ -328,6 +324,27 @@ function make_sub(name, stream_id) {
         type: 'private',
         display_recipient: [{id: joe.user_id}],
     }));
+
+    predicate = get_predicate([['group-pm-with', 'nobody@example.com']]);
+    assert(!predicate({
+        type: 'private',
+        display_recipient: [{id: joe.user_id}],
+    }));
+
+    predicate = get_predicate([['group-pm-with', 'Joe@example.com']]);
+    assert(predicate({
+        type: 'private',
+        display_recipient: [{id: joe.user_id}, {id: steve.user_id}, {id: me.user_id}],
+    }));
+    assert(!predicate({ // you must be a part of the group pm
+        type: 'private',
+        display_recipient: [{id: joe.user_id}, {id: steve.user_id}],
+    }));
+    assert(!predicate({
+        type: 'private',
+        display_recipient: [{id: steve.user_id}, {id: me.user_id}],
+    }));
+    assert(!predicate({type: 'stream'}));
 }());
 
 (function test_negated_predicates() {
@@ -401,7 +418,7 @@ function make_sub(name, stream_id) {
         {operator: 'topic', operand: 'bar'},
     ];
     var filter = new Filter(terms);
-    predicate = filter.predicate();
+    filter.predicate();
     predicate = filter.predicate(); // get cached version
     assert(predicate({type: 'stream', stream: 'foo', subject: 'bar'}));
 
@@ -644,7 +661,7 @@ function make_sub(name, stream_id) {
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [];
-    string = 'Go to Home view';
+    string = 'all messages';
     assert.equal(Filter.describe(narrow), string);
 }());
 

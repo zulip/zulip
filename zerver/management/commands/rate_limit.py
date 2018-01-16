@@ -1,20 +1,16 @@
-from __future__ import absolute_import
-from __future__ import print_function
-
-from typing import Any
 
 from argparse import ArgumentParser
-from zerver.models import UserProfile
-from zerver.lib.rate_limiter import block_access, unblock_access, RateLimitedUser
-from zerver.lib.management import ZulipBaseCommand
+from typing import Any
 
-from optparse import make_option
+from zerver.lib.management import ZulipBaseCommand
+from zerver.lib.rate_limiter import RateLimitedUser, \
+    block_access, unblock_access
+from zerver.models import UserProfile, get_user_profile_by_api_key
 
 class Command(ZulipBaseCommand):
     help = """Manually block or unblock a user from accessing the API"""
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('-e', '--email',
                             dest='email',
                             help="Email account of user.")
@@ -39,8 +35,7 @@ class Command(ZulipBaseCommand):
                             help="operation to perform (block or unblock)")
         self.add_realm_args(parser)
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         if (not options['api_key'] and not options['email']) or \
            (options['api_key'] and options['email']):
             print("Please enter either an email or API key to manage")
@@ -51,8 +46,8 @@ class Command(ZulipBaseCommand):
             user_profile = self.get_user(options['email'], realm)
         else:
             try:
-                user_profile = UserProfile.objects.get(api_key=options['api_key'])
-            except Exception:
+                user_profile = get_user_profile_by_api_key(options['api_key'])
+            except UserProfile.DoesNotExist:
                 print("Unable to get user profile for api key %s" % (options['api_key'],))
                 exit(1)
 

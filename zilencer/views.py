@@ -1,44 +1,36 @@
-from __future__ import absolute_import
 
-from django.utils.translation import ugettext as _
+from typing import Any, Dict, Optional, Text, Union, cast
+
+from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
-from django.http import HttpResponse, HttpRequest
+from django.utils.translation import ugettext as _
 
-from zilencer.models import Deployment, RemotePushDeviceToken, RemoteZulipServer
-
-from zerver.decorator import has_request_variables, REQ
-from zerver.lib.error_notify import do_report_error
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import send_android_push_notification, \
     send_apple_push_notification
-from zerver.lib.request import JsonableError
+from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
-from zerver.lib.validator import check_dict, check_int
-from zerver.models import UserProfile, PushDeviceToken, Realm
+from zerver.lib.validator import check_int
+from zerver.models import UserProfile
 from zerver.views.push_notifications import validate_token
+from zilencer.models import RemotePushDeviceToken, RemoteZulipServer
 
-from typing import Any, Dict, Optional, Union, Text, cast
-
-def validate_entity(entity):
-    # type: (Union[UserProfile, RemoteZulipServer]) -> None
+def validate_entity(entity: Union[UserProfile, RemoteZulipServer]) -> None:
     if not isinstance(entity, RemoteZulipServer):
         raise JsonableError(_("Must validate with valid Zulip server API key"))
 
-def validate_bouncer_token_request(entity, token, kind):
-    # type: (Union[UserProfile, RemoteZulipServer], bytes, int) -> None
+def validate_bouncer_token_request(entity: Union[UserProfile, RemoteZulipServer],
+                                   token: bytes, kind: int) -> None:
     if kind not in [RemotePushDeviceToken.APNS, RemotePushDeviceToken.GCM]:
         raise JsonableError(_("Invalid token type"))
     validate_entity(entity)
     validate_token(token, kind)
 
 @has_request_variables
-def report_error(request, deployment, type=REQ(), report=REQ(validator=check_dict([]))):
-    # type: (HttpRequest, Deployment, Text, Dict[str, Any]) -> HttpResponse
-    return do_report_error(deployment.name, type, report)
-
-@has_request_variables
-def remote_server_register_push(request, entity, user_id=REQ(),
-                                token=REQ(), token_kind=REQ(validator=check_int), ios_app_id=None):
-    # type: (HttpRequest, Union[UserProfile, RemoteZulipServer], int, bytes, int, Optional[Text]) -> HttpResponse
+def remote_server_register_push(request: HttpRequest, entity: Union[UserProfile, RemoteZulipServer],
+                                user_id: int=REQ(), token: bytes=REQ(),
+                                token_kind: int=REQ(validator=check_int),
+                                ios_app_id: Optional[Text]=None) -> HttpResponse:
     validate_bouncer_token_request(entity, token, token_kind)
     server = cast(RemoteZulipServer, entity)
 
@@ -61,9 +53,10 @@ def remote_server_register_push(request, entity, user_id=REQ(),
     return json_success()
 
 @has_request_variables
-def remote_server_unregister_push(request, entity, token=REQ(),
-                                  token_kind=REQ(validator=check_int), ios_app_id=None):
-    # type: (HttpRequest, Union[UserProfile, RemoteZulipServer], bytes, int, Optional[Text]) -> HttpResponse
+def remote_server_unregister_push(request: HttpRequest, entity: Union[UserProfile, RemoteZulipServer],
+                                  token: bytes=REQ(),
+                                  token_kind: int=REQ(validator=check_int),
+                                  ios_app_id: Optional[Text]=None) -> HttpResponse:
     validate_bouncer_token_request(entity, token, token_kind)
     server = cast(RemoteZulipServer, entity)
     deleted = RemotePushDeviceToken.objects.filter(token=token,
@@ -75,11 +68,8 @@ def remote_server_unregister_push(request, entity, token=REQ(),
     return json_success()
 
 @has_request_variables
-def remote_server_notify_push(request,  # type: HttpRequest
-                              entity,  # type: Union[UserProfile, RemoteZulipServer]
-                              payload=REQ(argument_type='body')  # type: Dict[str, Any]
-                              ):
-    # type: (...) -> HttpResponse
+def remote_server_notify_push(request: HttpRequest, entity: Union[UserProfile, RemoteZulipServer],
+                              payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
     validate_entity(entity)
     server = cast(RemoteZulipServer, entity)
 
@@ -102,9 +92,7 @@ def remote_server_notify_push(request,  # type: HttpRequest
     if android_devices:
         send_android_push_notification(android_devices, gcm_payload, remote=True)
 
-    # TODO: set badge count in a better way
     if apple_devices:
-        send_apple_push_notification(user_id, apple_devices,
-                                     badge=1, zulip=apns_payload)
+        send_apple_push_notification(user_id, apple_devices, apns_payload)
 
     return json_success()

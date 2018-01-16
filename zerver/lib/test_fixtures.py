@@ -2,20 +2,25 @@
 import os
 import re
 import hashlib
+import sys
 from typing import Any, List, Optional, Text
 from importlib import import_module
-from six.moves import cStringIO as StringIO
+from io import StringIO
 
 from django.db import connections, DEFAULT_DB_ALIAS
 from django.db.utils import OperationalError
 from django.apps import apps
+from django.conf import settings
 from django.core.management import call_command
 from django.utils.module_loading import module_has_submodule
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+from scripts.lib.zulip_tools import get_dev_uuid_var_path
+
+UUID_VAR_DIR = get_dev_uuid_var_path()
 FILENAME_SPLITTER = re.compile('[\W\-_]')
 
-def database_exists(database_name, **options):
-    # type: (Text, **Any) -> bool
+def database_exists(database_name: Text, **options: Any) -> bool:
     db = options.get('database', DEFAULT_DB_ALIAS)
     try:
         connection = connections[db]
@@ -28,8 +33,7 @@ def database_exists(database_name, **options):
     except OperationalError:
         return False
 
-def get_migration_status(**options):
-    # type: (**Any) -> str
+def get_migration_status(**options: Any) -> str:
     verbosity = options.get('verbosity', 1)
 
     for app_config in apps.get_app_configs():
@@ -55,8 +59,7 @@ def get_migration_status(**options):
     output = out.read()
     return re.sub('\x1b\[(1|0)m', '', output)
 
-def are_migrations_the_same(migration_file, **options):
-    # type: (Text, **Any) -> bool
+def are_migrations_the_same(migration_file: Text, **options: Any) -> bool:
     if not os.path.exists(migration_file):
         return False
 
@@ -64,14 +67,12 @@ def are_migrations_the_same(migration_file, **options):
         migration_content = f.read()
     return migration_content == get_migration_status(**options)
 
-def _get_hash_file_path(source_file_path, status_dir):
-    # type: (str, str) -> str
+def _get_hash_file_path(source_file_path: str, status_dir: str) -> str:
     basename = os.path.basename(source_file_path)
     filename = '_'.join(FILENAME_SPLITTER.split(basename)).lower()
     return os.path.join(status_dir, filename)
 
-def _check_hash(target_hash_file, status_dir):
-    # type: (str, str) -> bool
+def _check_hash(target_hash_file: str, status_dir: str) -> bool:
     """
     This function has a side effect of creating a new hash file or
     updating the old hash file.
@@ -93,12 +94,11 @@ def _check_hash(target_hash_file, status_dir):
     return source_hash_content == target_hash_content
 
 def is_template_database_current(
-        database_name='zulip_test_template',
-        migration_status='var/migration_status_test',
-        settings='zproject.test_settings',
-        status_dir='var/test_db_status',
-        check_files=None):
-    # type: (str, str, str, str, Optional[List[str]]) -> bool
+        database_name: str='zulip_test_template',
+        migration_status: str=None,
+        settings: str='zproject.test_settings',
+        status_dir: str=None,
+        check_files: Optional[List[str]]=None) -> bool:
     # Using str type for check_files because re.split doesn't accept unicode
     if check_files is None:
         check_files = [
@@ -107,6 +107,10 @@ def is_template_database_current(
             'tools/setup/postgres-init-test-db',
             'tools/setup/postgres-init-dev-db',
         ]
+    if status_dir is None:
+        status_dir = os.path.join(UUID_VAR_DIR, 'test_db_status')
+    if migration_status is None:
+        migration_status = os.path.join(UUID_VAR_DIR, 'migration_status_test')
 
     if not os.path.exists(status_dir):
         os.mkdir(status_dir)

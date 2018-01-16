@@ -1,14 +1,11 @@
-add_dependencies({
-    muting: 'js/muting',
-    stream_data: 'js/stream_data',
-    stream_sort: 'js/stream_sort',
-    topic_data: 'js/topic_data',
-    unread: 'js/unread',
-});
-
 set_global('blueslip', {});
 
-var tg = require('js/topic_generator.js');
+zrequire('muting');
+zrequire('unread');
+zrequire('stream_data');
+zrequire('topic_data');
+zrequire('stream_sort');
+var tg = zrequire('topic_generator');
 
 function is_even(i) { return i % 2 === 0; }
 function is_odd(i) { return i % 2 === 1; }
@@ -80,6 +77,67 @@ function is_odd(i) { return i % 2 === 1; }
     assert.equal(gen.next(), 200);
 }());
 
+(function test_reverse() {
+    var gen = tg.reverse_list_generator([10, 20, 30]);
+    assert.equal(gen.next(), 30);
+    assert.equal(gen.next(), 20);
+    assert.equal(gen.next(), 10);
+    assert.equal(gen.next(), undefined);
+    assert.equal(gen.next(), undefined);
+
+    // If second parameter is not in the list, we just traverse the list
+    // in reverse.
+    gen = tg.reverse_wrap_exclude([10, 20, 30]);
+    assert.equal(gen.next(), 30);
+    assert.equal(gen.next(), 20);
+    assert.equal(gen.next(), 10);
+    assert.equal(gen.next(), undefined);
+    assert.equal(gen.next(), undefined);
+
+    gen = tg.reverse_wrap_exclude([10, 20, 30], 'whatever');
+    assert.equal(gen.next(), 30);
+    assert.equal(gen.next(), 20);
+    assert.equal(gen.next(), 10);
+    assert.equal(gen.next(), undefined);
+    assert.equal(gen.next(), undefined);
+
+    // Witness the mostly typical cycling behavior.
+    gen = tg.reverse_wrap_exclude([5, 10, 20, 30], 20);
+    assert.equal(gen.next(), 10);
+    assert.equal(gen.next(), 5);
+    assert.equal(gen.next(), 30);
+    assert.equal(gen.next(), undefined);
+    assert.equal(gen.next(), undefined);
+
+    gen = tg.reverse_wrap_exclude([5, 10, 20, 30], 5);
+    assert.equal(gen.next(), 30);
+    assert.equal(gen.next(), 20);
+    assert.equal(gen.next(), 10);
+    assert.equal(gen.next(), undefined);
+    assert.equal(gen.next(), undefined);
+
+    gen = tg.reverse_wrap_exclude([5, 10, 20, 30], 30);
+    assert.equal(gen.next(), 20);
+    assert.equal(gen.next(), 10);
+    assert.equal(gen.next(), 5);
+    assert.equal(gen.next(), undefined);
+    assert.equal(gen.next(), undefined);
+
+    // Test small lists.
+    gen = tg.reverse_wrap_exclude([], 5);
+    assert.equal(gen.next(), undefined);
+    assert.equal(gen.next(), undefined);
+
+    gen = tg.reverse_wrap_exclude([5], 5);
+    assert.equal(gen.next(), undefined);
+    assert.equal(gen.next(), undefined);
+
+    gen = tg.reverse_wrap_exclude([5], 10);
+    assert.equal(gen.next(), 5);
+    assert.equal(gen.next(), undefined);
+    assert.equal(gen.next(), undefined);
+}());
+
 (function test_fchain() {
     var mults = function (n) {
         var ret = 0;
@@ -125,6 +183,32 @@ function is_odd(i) { return i % 2 === 1; }
     gen.next();
 }());
 
+(function test_streams() {
+    function assert_next_stream(curr_stream, expected) {
+        var actual = tg.get_next_stream(curr_stream);
+        assert.equal(actual, expected);
+    }
+
+    global.stream_sort.get_streams = function () {
+        return ['announce', 'muted', 'devel', 'test here'];
+    };
+
+    assert_next_stream(undefined, 'announce');
+    assert_next_stream('NOT THERE', 'announce');
+
+    assert_next_stream('announce', 'muted');
+    assert_next_stream('test here', 'announce');
+
+    function assert_prev_stream(curr_stream, expected) {
+        var actual = tg.get_prev_stream(curr_stream);
+        assert.equal(actual, expected);
+    }
+
+    assert_prev_stream(undefined, 'test here');
+    assert_prev_stream('test here', 'devel');
+    assert_prev_stream('announce', 'test here');
+
+}());
 
 (function test_topics() {
     var streams = [1, 2, 3, 4];
@@ -168,8 +252,6 @@ function is_odd(i) { return i % 2 === 1; }
 
     // Now test the deeper function that is wired up to
     // real functions stream_data/stream_sort/unread.
-    var curr_stream = 'announce';
-    var curr_topic = 'whatever';
 
     global.stream_sort.get_streams = function () {
         return ['announce', 'muted', 'devel', 'test here'];
@@ -186,7 +268,7 @@ function is_odd(i) { return i % 2 === 1; }
     topic_data.get_recent_names = function (stream_id) {
         switch (stream_id) {
             case muted_stream_id:
-                return ['red herring'];
+                return ['ms-topic1', 'ms-topic2'];
             case devel_stream_id:
                 return ['muted', 'python'];
         }
@@ -203,16 +285,22 @@ function is_odd(i) { return i % 2 === 1; }
     };
 
     global.unread.topic_has_any_unread = function (stream_id) {
-        return (stream_id === devel_stream_id);
+        return _.contains([devel_stream_id, muted_stream_id], stream_id);
     };
 
     global.muting.is_topic_muted = function (stream_name, topic) {
         return (topic === 'muted');
     };
 
-    var next_item = tg.get_next_topic(curr_stream, curr_topic);
+    var next_item = tg.get_next_topic('announce', 'whatever');
     assert.deepEqual(next_item, {
         stream: 'devel',
         topic: 'python',
+    });
+
+    next_item = tg.get_next_topic('muted', undefined);
+    assert.deepEqual(next_item, {
+        stream: 'muted',
+        topic: 'ms-topic1',
     });
 }());

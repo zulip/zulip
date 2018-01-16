@@ -20,7 +20,7 @@ hook if it installs in a different location on this system:
         email = "hg-bot@example.com"
         api_key = "0123456789abcdefg"
         stream = "commits"
-        {% if api_site_required %}site = {{ external_api_uri_subdomain }}{% endif %}
+        site = {{ api_url }}
 
 That’s all it takes for the basic setup! On the next `hg push`, you’ll
 get a Zulip update for the changeset.
@@ -44,7 +44,7 @@ notifications:
     api_key = "0123456789abcdefg"
     stream = "commits"
     web_url = "http://hg.example.com:8000/"
-    {% if api_site_required %}site = {{ external_api_uri_subdomain }}{% endif %}
+    site = {{ api_url }}
 
 [1]: http://mercurial.selenic.com/wiki/QuickStart#Network_support
 

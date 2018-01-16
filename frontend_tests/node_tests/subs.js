@@ -1,30 +1,20 @@
 global.stub_out_jquery();
 
-add_dependencies({
-    stream_data: 'js/stream_data',
-    Handlebars: 'handlebars',
-    templates: 'js/templates',
-    i18n: 'i18next',
+set_global('ui', {
+    update_scrollbar: function () {},
 });
 
+set_global('i18n', global.stub_i18n);
 set_global('channel', {});
 
-var subs = require('js/subs.js');
+zrequire('stream_data');
+zrequire('Handlebars', 'handlebars');
+zrequire('templates');
+zrequire('subs');
 
 var jsdom = require("jsdom");
 var window = jsdom.jsdom().defaultView;
 global.$ = require('jquery')(window);
-
-var i18n = global.i18n;
-i18n.init({
-    nsSeparator: false,
-    keySeparator: false,
-    interpolation: {
-        prefix: "__",
-        suffix: "__",
-    },
-    lng: 'en',
-});
 
 subs.stream_name_match_stream_ids = [];
 subs.stream_description_match_stream_ids = [];

@@ -15,10 +15,10 @@ def check_pyflakes(options, by_lang):
     color = next(colors)
     pyflakes = subprocess.Popen(['pyflakes'] + by_lang['py'],
                                 stdout=subprocess.PIPE,
-                                stderr=subprocess.STDOUT)
+                                stderr=subprocess.PIPE)
 
     assert pyflakes.stdout is not None  # Implied by use of subprocess.PIPE
-    for ln in iter(pyflakes.stdout.readline, b''):
+    for ln in pyflakes.stdout.readlines() + pyflakes.stderr.readlines():
         if options.full or not (
             b'imported but unused' in ln or
             b'redefinition of unused' in ln or
@@ -29,11 +29,7 @@ def check_pyflakes(options, by_lang):
             b"from .prod_settings_template import *" in ln or
             (b"settings.py" in ln and
              (b"settings import *' used; unable to detect undefined names" in ln or
-              b"may be undefined, or defined from star imports" in ln)) or
-            (b"zerver/tornado/ioloop_logging.py" in ln and
-             b"redefinition of function 'instrument_tornado_ioloop'" in ln) or
-            (b"zephyr_mirror_backend.py:" in ln and
-             b"redefinition of unused 'simplejson' from line" in ln)):
+              b"may be undefined, or defined from star imports" in ln))):
 
             print_err('pyflakes', color, ln)
             failed = True

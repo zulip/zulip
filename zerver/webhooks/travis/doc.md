@@ -9,7 +9,7 @@ Finally, set up a webhook in your `.travis.yml` file:
 ```
 notifications:
 webhooks:
-- {{ external_api_uri_subdomain }}/v1/external/travis?stream=travis&topic=build-status&api_key=abcdefgh
+- {{ api_url }}/v1/external/travis?stream=travis&topic=build-status&api_key=abcdefgh
 ```
 
 By default, pull request events are ignored since most people

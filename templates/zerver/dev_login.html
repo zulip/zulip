@@ -4,36 +4,50 @@
 {% block portico_content %}
 <div class="app login-page flex full-page">
     <div class="app-main login-page-container dev-login white-box">
-
-        <h4 class="login-page-header">{{ _('Click on a user to log in!') }}</h4>
+        {% if current_realm %}
+        <h4 class="login-page-header">Click on a user to log in to {{ current_realm.name }}!</h4>
+        {% else %}
+        <h4 class="login-page-header">Click on a user to log in!</h4>
+        {% endif %}
         <p class="devlogin_subheader">{{ _('(Or visit the <a href="/login">normal login page</a>)') }}</p>
-        <form name="direct_login_form" id="direct_login_form" method="post" class="login-form"
-            action="{{ url('zerver.views.auth.dev_direct_login') }}">
-            {{ csrf_input }}
+        <form name="direct_login_form" id="direct_login_form" method="post" class="login-form">
             <div class="control-group">
                 <div class="controls">
                     <div class="group">
                         <h2>{{ _('Administrators') }}</h2>
-                        {% for user_email in direct_admins %}
-                        <p><input type="submit" name="direct_email" class="btn-direct btn-admin" value="{{ user_email }}" /></p>
-                        {% endfor %}
+                        {% if direct_admins %}
+                            {% for direct_admin in direct_admins %}
+                            <p><input type="submit" formaction="{{ direct_admin.realm.uri }}{{ url('zerver.views.auth.dev_direct_login') }}"
+                                      name="direct_email" class="btn-direct btn-admin" value="{{ direct_admin.email }}" /></p>
+                            {% endfor %}
+                        {% else %}
+                            <p>No administrators found in this realm</p>
+                        {% endif %}
                     </div>
 
                     <div class="group">
                         <h2>{{ _('Normal users') }}</h2>
-                        {% for user_email in direct_users %}
-                        <p><input type="submit" name="direct_email" class="btn-direct btn-user" value="{{ user_email }}" /></p>
-                        {% endfor %}
-                    </div>
-
-                    <div class="group">
-                        <h2>{{ _('Community users') }}</h2>
-                        {% for user_email in community_users %}
-                        <p><input type="submit" name="direct_email" class="btn-direct btn-user" value="{{ user_email }}" /></p>
-                        {% endfor %}
+                        {% if direct_users %}
+                            {% for direct_user in direct_users %}
+                            <p><input type="submit" formaction="{{ direct_user.realm.uri }}{{ url('zerver.views.auth.dev_direct_login') }}"
+                                      name="direct_email" class="btn-direct btn-admin" value="{{ direct_user.email }}" /></p>
+                            {% endfor %}
+                        {% else %}
+                            <p>No normal users found in this realm</p>
+                        {% endif %}
                     </div>
                 </div>
             </div>
+        </form>
+        <form name="change_realm" action="{{ url('zerver.views.auth.login_page') }}" method="post">
+            {{ csrf_input }}
+            <h2>Realm</h2>
+            <select name="new_realm" onchange="this.form.submit()">
+                <option value="all_realms" {% if not current_realm %}selected="selected"{% endif %}>All Realms</option>
+                {% for realm in all_realms %}
+                <option value="{{realm.string_id}}" {% if current_realm == realm %}selected="selected"{% endif %}>{{realm.name}}</option>
+                {% endfor %}
+            </select>
         </form>
         <div id="devtools-wrapper">
             <a id="devtools-link" href="/devtools">Zulip developer tools</a>

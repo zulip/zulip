@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 
 from typing import Any, Dict
 
@@ -16,8 +15,7 @@ METHODS = ('GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH')
 FLAGS = ('override_api_url_scheme')
 
 @csrf_exempt
-def rest_dispatch(request, **kwargs):
-    # type: (HttpRequest, **Any) -> HttpResponse
+def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     """Dispatch to a REST API endpoint.
 
     Unauthenticated endpoints should not use this, as authentication is verified
@@ -98,7 +96,10 @@ def rest_dispatch(request, **kwargs):
         elif request.META.get('HTTP_AUTHORIZATION', None):
             # Wrap function with decorator to authenticate the user before
             # proceeding
-            target_function = authenticated_rest_api_view()(target_function)
+            view_kwargs = {}
+            if 'allow_incoming_webhooks' in view_flags:
+                view_kwargs['is_webhook'] = True
+            target_function = authenticated_rest_api_view(**view_kwargs)(target_function)
         # Pick a way to tell user they're not authed based on how the request was made
         else:
             # If this looks like a request from a top-level page in a

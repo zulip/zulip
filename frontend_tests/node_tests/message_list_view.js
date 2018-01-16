@@ -1,10 +1,6 @@
-var _ = require('node_modules/underscore/underscore.js');
-var MessageListView = require('js/message_list_view.js');
-
-add_dependencies({
-    XDate: 'node_modules/xdate/src/xdate.js',
-    util: 'js/util.js',
-});
+zrequire('util');
+zrequire('XDate', 'node_modules/xdate/src/xdate');
+var MessageListView = zrequire('message_list_view');
 
 set_global('page_params', {
   twenty_four_hour_time: false,
@@ -12,7 +8,6 @@ set_global('page_params', {
 set_global('home_msg_list', null);
 set_global('feature_flags', {twenty_four_hour_time: false});
 set_global('people', {small_avatar_url: function () { return ''; }});
-set_global('notifications', {speaking_at_me: function () {}});
 set_global('unread', {message_unread: function () {}});
 // timerender calls setInterval when imported
 set_global('timerender', {

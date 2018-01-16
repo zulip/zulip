@@ -5,7 +5,6 @@
 
 /* This max-width must be synced with message_viewport.is_narrow */
 @media (max-width: 975px) {
-
     .screen-full-show {
         display: none !important;
     }
@@ -46,7 +45,6 @@
         width: 30px;
     }
 
-
     #top_navbar.rightside-userlist .navbar-search {
         margin-right: 100px;
     }
@@ -58,7 +56,6 @@
     .navbar-search {
         margin-right: 60px;
     }
-
 
     #userlist-toggle {
         display: block;
@@ -86,16 +83,9 @@
     .column-middle {
         margin-right: 7px;
     }
-
-    #subscriptions-status {
-        left: 300px;
-        right: 50px;
-    }
-
 }
 
 @media (max-width: 775px) {
-
     body {
         padding: 0px;
     }
@@ -188,21 +178,18 @@
     .navbar-search {
         margin-right: 81px;
     }
+}
 
-    #subscriptions-status {
-        left: 35px;
+@media (max-width: 767px) {
+    /* Override Bootstrap's responsive grid to display input at full width */
+    .input-append .stream-list-filter {
+        /* Input width = 100% - 10px margin x2 - 6px padding x2 - 1px border x2. */
+        width: calc(100% - 34px);
+        margin-left: 10px;
     }
-
 }
 
 @media (max-width: 500px) {
-    .stream-name {
-        max-width: 120px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
     .column-right.expanded .right-sidebar,
     .column-left.expanded .left-sidebar {
         margin-top: 31px;
@@ -219,20 +206,10 @@
     .column-left.expanded .bottom_sidebar {
         margin-top: 10px;
     }
-}
 
-@media (max-width: 350px) {
-    html {
-        overflow-x: hidden;
-    }
-    .stream_row .description {
-        display: none;
-    }
-}
-
-@media (max-width: 500px) {
     .compose_stream_button,
-    .compose_private_button {
+    .compose_private_button,
+    .compose_reply_button {
         padding: 5px 10px 5px 10px;
     }
 
@@ -341,7 +318,35 @@
     .message_content {
         padding-right: 50px;
     }
+}
 
+@media (max-width: 370px) {
+    #subject.recipient_box {
+        width: calc(100% - 175px);
+        min-width: 95px;
+    }
+
+    .compose-content {
+        margin-right: 5px;
+        margin-left: 5px;
+    }
+}
+
+@media (max-width: 350px) {
+    html {
+        overflow-x: hidden;
+    }
+
+    .stream_row .description {
+        display: none;
+    }
+
+    body,
+    html,
+    .app-main,
+    .header-main {
+        min-width: 320px;
+    }
 }
 
 @media only screen and (min-device-width: 300px) and (max-device-width: 700px) {

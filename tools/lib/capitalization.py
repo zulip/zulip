@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 
 from typing import List, Tuple, Set, Pattern, Match
 import re
@@ -21,14 +20,16 @@ IGNORED_PHRASES = [
     r"Dropbox",
     r"GitHub",
     r"Google",
+    r"Hamlet",
     r"HTTP",
     r"ID",
     r"IDs",
     r"JIRA",
     r"JSON",
     r"Kerberos",
+    r"LDAP",
     r"Mac",
-    r"MacOS",
+    r"macOS",
     r"MiB",
     r"OTP",
     r"Pivotal",
@@ -63,14 +64,15 @@ IGNORED_PHRASES = [
     r"e.g.",
     r"etc.",
     r"images",
+    r"enabled",
+    r"disabled",
 
     # Fragments of larger strings
     (r'Change notification settings for individual streams on your '
      '<a href="/#streams">Streams page</a>.'),
     (r'Looking for our '
      '<a href="/integrations" target="_blank">Integrations</a> or '
-     '<a href="{{ server_uri }}/api" target="_blank">API</a> '
-     'documentation?'),
+     '<a href="/api" target="_blank">API</a> documentation?'),
     r'Most stream administration is done on the <a href="/#streams">Streams page</a>.',
     r"one or more people...",
     r"confirmation email",

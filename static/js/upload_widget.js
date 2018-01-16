@@ -4,18 +4,18 @@ var upload_widget = (function () {
 
     var default_max_file_size = 5;
 
+    var supported_types = [
+        'image/jpeg',
+        'image/png',
+        'image/gif',
+        'image/tiff',
+    ];
+
     function is_image_format(file) {
         var type = file.type;
         if (!type) {
             return false;
         }
-
-        var supported_types = [
-            'image/jpeg',
-            'image/png',
-            'image/gif',
-            'image/tiff',
-        ];
         return _.indexOf(supported_types, type) >= 0;
     }
 
@@ -60,6 +60,7 @@ var upload_widget = (function () {
             return false;
         });
 
+        get_file_input().attr('accept', supported_types.toString());
         get_file_input().on('change', function (e) {
             if (e.target.files.length === 0) {
                 input_error.hide();
@@ -136,6 +137,7 @@ var upload_widget = (function () {
             return false;
         });
 
+        get_file_input().attr('accept', supported_types.toString());
         get_file_input().on('change', function (e) {
             if (e.target.files.length === 0) {
                 input_error.hide();
@@ -152,7 +154,7 @@ var upload_widget = (function () {
                     input_error.show();
                     clear();
                 } else {
-                    accept(file);
+                    accept();
                 }
             } else {
                 input_error.text(i18n.t('Please just upload one file.'));

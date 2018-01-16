@@ -7,8 +7,9 @@
 {!go-to-the.md!} [Organization settings](/#organization/organization-settings)
 {!admin.md!}
 
-2. Find the **Default language** option.
+2. Find and click on the **Default language** option under the
+**Language & notifications** section.
 
-3. Choose the language that you would like to make default.
+3. Select the appropriate option from the dropdown menu that appears.
 
 {!save-changes.md!} organization settings.

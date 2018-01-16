@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from typing import Text
+
 from zerver.lib.test_classes import WebhookTestCase
 
 class GreenhouseHookTests(WebhookTestCase):
@@ -8,8 +9,7 @@ class GreenhouseHookTests(WebhookTestCase):
     FIXTURE_DIR_NAME = 'greenhouse'
     CONTENT_TYPE = "application/x-www-form-urlencoded"
 
-    def test_message_candidate_hired(self):
-        # type: () -> None
+    def test_message_candidate_hired(self) -> None:
         expected_subject = "Hire Candidate - 19"
         expected_message = ("Hire Candidate\n>Johnny Smith\nID: 19"
                             "\nApplying for role:\nDeveloper\n**Emails:**"
@@ -21,8 +21,7 @@ class GreenhouseHookTests(WebhookTestCase):
                                           expected_message,
                                           content_type=self.CONTENT_TYPE)
 
-    def test_message_candidate_rejected(self):
-        # type: () -> None
+    def test_message_candidate_rejected(self) -> None:
         expected_subject = "Reject Candidate - 265788"
         expected_message = ("Reject Candidate\n>Hector Porter\nID: "
                             "265788\nApplying for role:\nDesigner"
@@ -35,8 +34,7 @@ class GreenhouseHookTests(WebhookTestCase):
                                           expected_message,
                                           content_type=self.CONTENT_TYPE)
 
-    def test_message_candidate_stage_change(self):
-        # type: () -> None
+    def test_message_candidate_stage_change(self) -> None:
         expected_subject = "Candidate Stage Change - 265772"
         expected_message = ("Candidate Stage Change\n>Giuseppe Hurley"
                             "\nID: 265772\nApplying for role:\n"
@@ -51,8 +49,7 @@ class GreenhouseHookTests(WebhookTestCase):
                                           expected_message,
                                           content_type=self.CONTENT_TYPE)
 
-    def test_message_prospect_created(self):
-        # type: () -> None
+    def test_message_prospect_created(self) -> None:
         expected_subject = "New Prospect Application - 968190"
         expected_message = ("New Prospect Application\n>Trisha Troy"
                             "\nID: 968190\nApplying for role:\n"
@@ -65,6 +62,5 @@ class GreenhouseHookTests(WebhookTestCase):
                                           expected_message,
                                           content_type=self.CONTENT_TYPE)
 
-    def get_body(self, fixture_name):
-        # type: (Text) -> Text
+    def get_body(self, fixture_name: Text) -> Text:
         return self.fixture_data("greenhouse", fixture_name, file_type="json")

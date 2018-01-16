@@ -1,0 +1,50 @@
+define host{
+        use                     generic-host
+        host_name               nagios
+        alias                   nagios
+        address                 127.0.0.1
+        hostgroups              all
+        }
+
+define service{
+        use                             generic-service
+        host_name                       nagios
+        service_description             Current Users
+        check_command                   check_users!20!50
+        }
+
+define service{
+        use                             generic-service
+        host_name                       nagios
+        service_description             Total Processes
+        check_command                   check_procs_nokthreads!350!500
+        }
+
+
+define service{
+        use                             generic-service
+        host_name                       nagios
+        service_description             Disk Space
+        check_command                   check_all_disks!20%!10%
+        }
+
+define service{
+        use                             generic-service
+        host_name                       nagios
+        service_description             Current Load
+        check_command                   check_load!7.0!6.0!5.0!10.0!8.0!6.0
+        }
+
+define service{
+        use                             generic-service
+        host_name                       nagios
+        service_description             Check postgres replication lag
+        check_command                   check_postgres_replication_lag
+        }
+
+define service{
+        use                             generic-service
+        host_name                       nagios
+        service_description             Check Camo is operational
+        check_command                   check_website_response!<%= @nagios_camo_check_url %>!6000!12000!
+        }

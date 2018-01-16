@@ -2,7 +2,11 @@ set_global('$', global.make_zjquery());
 
 set_global('page_params', {
     realm_users: [],
-    user_id: 5,
+    user_id: 999,
+});
+
+set_global('ui', {
+    set_up_scrollbar: function () {},
 });
 
 set_global('feature_flags', {});
@@ -13,10 +17,14 @@ set_global('document', {
     },
 });
 
-set_global('XDate', require("xdate"));
 set_global('blueslip', function () {});
 set_global('channel', {});
 set_global('compose_actions', {});
+
+set_global('ui', {
+    set_up_scrollbar: function () {},
+    update_scrollbar: function () {},
+});
 
 zrequire('compose_fade');
 zrequire('Handlebars', 'handlebars');
@@ -30,6 +38,27 @@ zrequire('presence');
 zrequire('people');
 zrequire('activity');
 
+set_global('blueslip', {
+    log: function () {},
+});
+
+set_global('popovers', {
+    hide_all: function () {},
+    show_userlist_sidebar: function () {
+        $('.column-right').addClass('expanded');
+    },
+});
+
+set_global('stream_popover', {
+    show_streamlist_sidebar: function () {
+        $('.column-left').addClass('expanded');
+    },
+});
+
+
+set_global('reload', {
+    is_in_progress: function () {return false;},
+});
 set_global('resize', {
     resize_page_components: function () {},
 });
@@ -84,9 +113,6 @@ people.add_in_realm(zoe);
 people.add_in_realm(me);
 people.initialize_current_user(me.user_id);
 
-var activity = require('js/activity.js');
-var compose_fade = require('js/compose_fade.js');
-
 compose_fade.update_faded_users = function () {};
 
 var real_update_huddles = activity.update_huddles;
@@ -107,7 +133,18 @@ presence.presence_info = presence_info;
     assert.equal(presence.get_status(page_params.user_id), "active");
     assert.equal(presence.get_status(alice.user_id), "inactive");
     assert.equal(presence.get_status(fred.user_id), "active");
-    assert.equal(presence.get_status(zoe.user_id), "unknown");
+    assert.equal(presence.get_status(zoe.user_id), "offline");
+}());
+
+(function test_reload_defaults() {
+    var warned;
+
+    blueslip.warn = function (msg) {
+        assert.equal(msg, 'get_filter_text() is called before initialization');
+        warned = true;
+    };
+    assert.equal(activity.get_filter_text(), '');
+    assert(warned);
 }());
 
 (function test_sort_users() {
@@ -229,6 +266,10 @@ presence.presence_info[fred.user_id] = { status: activity.ACTIVE };
 presence.presence_info[jill.user_id] = { status: activity.ACTIVE };
 presence.presence_info[mark.user_id] = { status: activity.IDLE };
 presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
+presence.presence_info[zoe.user_id] = { status: activity.ACTIVE };
+presence.presence_info[me.user_id] = { status: activity.ACTIVE };
+
+activity.set_user_list_filter();
 
 (function test_presence_list_full_update() {
     var users = activity.build_user_sidebar();
@@ -239,7 +280,6 @@ presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
             num_unread: 0,
             type: 'active',
             type_desc: 'is active',
-            mobile: undefined,
         },
         {
             name: 'Jill Hill',
@@ -248,7 +288,6 @@ presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
             num_unread: 0,
             type: 'active',
             type_desc: 'is active',
-            mobile: undefined,
         },
         {
             name: 'Norbert Oswald',
@@ -257,7 +296,14 @@ presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
             num_unread: 0,
             type: 'active',
             type_desc: 'is active',
-            mobile: undefined,
+        },
+        {
+            name: 'Zoe Yang',
+            href: '#narrow/pm-with/6-zoe',
+            user_id: zoe.user_id,
+            num_unread: 0,
+            type: 'active',
+            type_desc: 'is active',
         },
         {
             name: 'Alice Smith',
@@ -266,7 +312,6 @@ presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
             num_unread: 0,
             type: 'idle',
             type_desc: 'is not active',
-            mobile: undefined,
         },
         {
             name: 'Marky Mark',
@@ -275,7 +320,6 @@ presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
             num_unread: 0,
             type: 'idle',
             type_desc: 'is not active',
-            mobile: undefined,
         },
     ]);
 }());
@@ -356,6 +400,7 @@ $('.user-list-filter').is = function (sel) {
     };
     compose_actions.start = function () {};
 
+    activity.set_user_list_filter_handlers();
     var keydown_handler = $('.user-list-filter').get_on_handler('keydown');
     keydown_handler(e);
 }());
@@ -372,38 +417,50 @@ presence.presence_info = {};
 presence.presence_info[alice.user_id] = { status: activity.ACTIVE };
 presence.presence_info[fred.user_id] = { status: activity.ACTIVE };
 presence.presence_info[jill.user_id] = { status: activity.ACTIVE };
+presence.presence_info[mark.user_id] = { status: activity.IDLE };
+presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
+presence.presence_info[zoe.user_id] = { status: activity.ACTIVE };
 
 (function test_filter_user_ids() {
     var user_filter = $('.user-list-filter');
     user_filter.val(''); // no search filter
 
-    var user_ids = activity._filter_and_sort([alice.user_id, fred.user_id]);
-    assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
+    activity.set_user_list_filter();
+
+    var user_ids = activity.get_filtered_and_sorted_user_ids();
+    assert.deepEqual(user_ids, [
+        alice.user_id,
+        fred.user_id,
+        jill.user_id,
+        norbert.user_id,
+        zoe.user_id,
+        mark.user_id,
+    ]);
 
     user_filter.val('abc'); // no match
-    user_ids = activity._filter_and_sort([alice.user_id, fred.user_id]);
+    user_ids = activity.get_filtered_and_sorted_user_ids();
     assert.deepEqual(user_ids, []);
 
     user_filter.val('fred'); // match fred
-    user_ids = activity._filter_and_sort([alice.user_id, fred.user_id]);
+    user_ids = activity.get_filtered_and_sorted_user_ids();
     assert.deepEqual(user_ids, [fred.user_id]);
 
     user_filter.val('fred,alice'); // match fred and alice
-    user_ids = activity._filter_and_sort([alice.user_id, fred.user_id]);
+    user_ids = activity.get_filtered_and_sorted_user_ids();
     assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
 
     user_filter.val('fr,al'); // match fred and alice partials
-    user_ids = activity._filter_and_sort([alice.user_id, fred.user_id]);
+    user_ids = activity.get_filtered_and_sorted_user_ids();
     assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
 
     presence.presence_info[alice.user_id] = { status: activity.IDLE };
     user_filter.val('fr,al'); // match fred and alice partials and idle user
-    user_ids = activity._filter_and_sort([alice.user_id, fred.user_id]);
+    user_ids = activity.get_filtered_and_sorted_user_ids();
     assert.deepEqual(user_ids, [fred.user_id, alice.user_id]);
 
     $.stub_selector('.user-list-filter', []);
     presence.presence_info[alice.user_id] = { status: activity.ACTIVE };
-    user_ids = activity._filter_and_sort([alice.user_id, fred.user_id]);
+    user_ids = activity.get_filtered_and_sorted_user_ids();
     assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
 }());
 
@@ -488,6 +545,7 @@ presence.presence_info[jill.user_id] = { status: activity.ACTIVE };
 
 // Reset jquery here.
 set_global('$', global.make_zjquery());
+activity.set_user_list_filter();
 
 (function test_insert_unfiltered_user_with_filter() {
     // This test only tests that we do not explode when
@@ -515,47 +573,53 @@ $('.user-list-filter').is = function (sel) {
     }
 };
 
+$('.user-list-filter').parent = function () {
+    return $('#user-list .input-append');
+};
+
 (function test_clear_search() {
     $('.user-list-filter').val('somevalue');
-    $('#clear_search_people_button').prop('disabled', false);
-    $('.user-list-filter').focus();
     activity.clear_search();
     assert.equal($('.user-list-filter').val(), '');
-    assert.equal($('.user-list-filter').is_focused(), false);
-    assert.equal($('#clear_search_people_button').attr('disabled'), 'disabled');
+    activity.clear_search();
+    assert($('#user-list .input-append').hasClass('notdisplayed'));
 }());
 
-(function test_blur_search() {
+(function test_escape_search() {
     $('.user-list-filter').val('somevalue');
-    $('.user-list-filter').focus();
-    $('#clear_search_people_button').attr('disabled', 'disabled');
-    activity.blur_search();
-    assert.equal($('.user-list-filter').is_focused(), false);
-    assert.equal($('#clear_search_people_button').prop('disabled'), false);
-    $('.user-list-filter').val('');
-    activity.blur_search();
-    assert.equal($('#clear_search_people_button').attr('disabled'), 'disabled');
+    activity.escape_search();
+    assert.equal($('.user-list-filter').val(), '');
+    activity.escape_search();
+    assert($('#user-list .input-append').hasClass('notdisplayed'));
 }());
 
 (function test_initiate_search() {
     $('.user-list-filter').blur();
+    $('.user-list-filter').closest = function (selector) {
+        assert.equal(selector, ".app-main [class^='column-']");
+        return $.create('right-sidebar').addClass('column-right');
+    };
     activity.initiate_search();
+    assert.equal($('.column-right').hasClass('expanded'), true);
+    assert.equal($('.user-list-filter').is_focused(), true);
+    $('.user-list-filter').closest = function (selector) {
+        assert.equal(selector, ".app-main [class^='column-']");
+        return $.create('left-sidebar').addClass('column-left');
+    };
+    activity.initiate_search();
+    assert.equal($('.column-left').hasClass('expanded'), true);
     assert.equal($('.user-list-filter').is_focused(), true);
 }());
 
-(function test_escape_search() {
-    $('.user-list-filter').val('');
-    activity.escape_search();
-    assert.equal($('.user-list-filter').is_focused(), false);
-    $('.user-list-filter').val('foobar');
-    $('#clear_search_people_button').prop('disabled', false);
-    activity.escape_search();
-    assert.equal($('.user-list-filter').val(), '');
-    assert.equal($('#clear_search_people_button').attr('disabled'), 'disabled');
-    $('.user-list-filter').focus();
-    $('.user-list-filter').val('foobar');
-    activity.escape_search();
-    assert.equal($('#clear_search_people_button').prop('disabled'), false);
+(function test_toggle_filter_display() {
+    activity.toggle_filter_displayed();
+    assert($('#user-list .input-append').hasClass('notdisplayed'));
+    $('.user-list-filter').closest = function (selector) {
+        assert.equal(selector, ".app-main [class^='column-']");
+        return $.create('sidebar').addClass('column-right');
+    };
+    activity.toggle_filter_displayed();
+    assert.equal($('#user-list .input-append').hasClass('notdisplayed'), false);
 }());
 
 (function test_searching() {
@@ -665,4 +729,11 @@ $('.user-list-filter').is = function (sel) {
   assert($('#zephyr-mirror-error').hasClass('show'));
   assert(!activity.new_user_input);
   assert(!activity.has_focus);
+
+  // Now execute the reload-in-progress code path
+  reload.is_in_progress = function () {
+      return true;
+  };
+  activity.initialize();
+
 }());

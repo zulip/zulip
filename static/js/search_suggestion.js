@@ -111,7 +111,7 @@ function get_stream_suggestions(last, operators) {
 }
 
 function get_group_suggestions(all_persons, last, operators) {
-    if (last.operator !== 'pm-with' ) {
+    if (last.operator !== 'pm-with') {
         return [];
     }
 
@@ -430,7 +430,7 @@ function get_special_filter_suggestions(last, operators) {
 
     // Only show home if there's an empty bar
     if (operators.length === 0 && last_string === '') {
-        suggestions.unshift({search_string: '', description: 'Home'});
+        suggestions.unshift({search_string: '', description: 'All messages'});
     }
     return suggestions;
 }
@@ -497,7 +497,7 @@ function get_operator_suggestions(last) {
             last.operand = last.operand.slice(1);
         }
 
-        var choices = ['stream', 'topic', 'pm-with', 'sender', 'near', 'has', 'from'];
+        var choices = ['stream', 'topic', 'pm-with', 'sender', 'near', 'has', 'from', 'group-pm-with'];
         choices = _.filter(choices, function (choice) {
             return phrase_match(choice, last.operand);
         });
@@ -570,6 +570,9 @@ exports.get_suggestions = function (query) {
     attach_suggestions(result, base, suggestions);
 
     suggestions = get_person_suggestions(persons, last, base_operators, 'from');
+    attach_suggestions(result, base, suggestions);
+
+    suggestions = get_person_suggestions(persons, last, base_operators, 'group-pm-with');
     attach_suggestions(result, base, suggestions);
 
     suggestions = get_group_suggestions(persons, last, base_operators);

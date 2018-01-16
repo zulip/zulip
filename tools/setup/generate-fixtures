@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-function migration_status {
-    ./manage.py get_migration_status --settings=zproject.test_settings > $1
-}
-
 if  [ "$1" != "--force" ]; then
     "$(dirname "$0")/../../scripts/setup/terminate-psql-sessions" zulip zulip_test zulip_test_base zulip_test_template
     psql -h localhost postgres zulip_test << EOF
@@ -26,7 +22,8 @@ EOF
 sh "$(dirname "$0")/../../scripts/setup/flush-memcached"
 
 ./manage.py migrate --noinput --settings=zproject.test_settings
-migration_status "var/migration_status_test"
+./manage.py get_migration_status --settings=zproject.test_settings \
+    --output="migration_status_test"
 
 # This next line can be simplified to "-n0" once we fix our app (and tests) with 0 messages.
 ./manage.py populate_db --settings=zproject.test_settings --test-suite -n30 \

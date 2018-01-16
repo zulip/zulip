@@ -55,7 +55,11 @@ exports.MessageList.prototype = {
                     return;
                 }
 
-                // Put messages in correct order on either side of the message list
+                // Put messages in correct order on either side of the
+                // message list.  This code path assumes that messages
+                // is a (1) sorted, and (2) consecutive block of
+                // messages that belong in this message list; those
+                // facts should be ensured by the caller.
                 if (self.empty() || msg.id > self.last().id) {
                     bottom_messages.push(msg);
                 } else if (msg.id < self.first().id) {
@@ -379,23 +383,29 @@ exports.MessageList.prototype = {
         if (!this.narrowed) {
             return;
         }
-        var stream = narrow_state.stream();
-        if (stream === undefined) {
+        var stream_name = narrow_state.stream();
+        if (stream_name === undefined) {
             return;
         }
         var trailing_bookend_content;
         var show_button = true;
-        var subscribed = stream_data.is_subscribed(stream);
+        var subscribed = stream_data.is_subscribed(stream_name);
         if (subscribed) {
-            trailing_bookend_content = this.subscribed_bookend_content(stream);
+            trailing_bookend_content = this.subscribed_bookend_content(stream_name);
         } else {
             if (!this.last_message_historical) {
-                trailing_bookend_content = this.unsubscribed_bookend_content(stream);
+                trailing_bookend_content = this.unsubscribed_bookend_content(stream_name);
 
-                // For invite only streams, hide the resubscribe button
-                show_button = !stream_data.get_sub(stream).invite_only;
+                // For invite only streams or streams that no longer
+                // exist, hide the resubscribe button
+                var sub = stream_data.get_sub(stream_name);
+                if (sub !== undefined) {
+                    show_button = !sub.invite_only;
+                } else {
+                    show_button = false;
+                }
             } else {
-                trailing_bookend_content = this.not_subscribed_bookend_content(stream);
+                trailing_bookend_content = this.not_subscribed_bookend_content(stream_name);
             }
         }
         if (trailing_bookend_content !== undefined) {
@@ -496,7 +506,7 @@ exports.MessageList.prototype = {
     show_edit_message: function MessageList_show_edit_message(row, edit_obj) {
         row.find(".message_edit_form").empty().append(edit_obj.form);
         row.find(".message_content, .status-message").hide();
-        row.find(".message_edit").show();
+        row.find(".message_edit").css("display", "block");
         row.find(".message_edit_content").autosize();
     },
 
@@ -508,12 +518,14 @@ exports.MessageList.prototype = {
 
     show_edit_topic: function MessageList_show_edit_topic(recipient_row, form) {
         recipient_row.find(".topic_edit_form").empty().append(form);
+        recipient_row.find('.icon-vector-pencil').hide();
         recipient_row.find(".stream_topic").hide();
         recipient_row.find(".topic_edit").show();
     },
 
     hide_edit_topic: function MessageList_hide_edit_topic(recipient_row) {
         recipient_row.find(".stream_topic").show();
+        recipient_row.find('.icon-vector-pencil').show();
         recipient_row.find(".topic_edit").hide();
     },
 
@@ -658,7 +670,7 @@ exports.MessageList.prototype = {
             var index = self._items.indexOf(current_message);
 
             if (index === -1) {
-                if ( !self.muting_enabled && current_msg_list === self) {
+                if (!self.muting_enabled && current_msg_list === self) {
                     blueslip.error("Trying to re-order message but can't find message with new_id in _items!");
                 }
                 return;

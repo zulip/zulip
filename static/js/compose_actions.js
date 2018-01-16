@@ -38,7 +38,7 @@ function get_focus_area(msg_type, opts) {
         if (opts.trigger === "new topic button") {
             return 'subject';
         }
-        return 'new_message_content';
+        return 'compose-textarea';
     }
 
     if (msg_type === 'stream') {
@@ -76,7 +76,7 @@ function show_box(msg_type, opts) {
         $("#stream_toggle").removeClass("active");
         $("#private_message_toggle").addClass("active");
     }
-    $("#send-status").removeClass(common.status_classes).hide();
+    $("#compose-send-status").removeClass(common.status_classes).hide();
     $('#compose').css({visibility: "visible"});
     $(".new_message_textarea").css("min-height", "3em");
 
@@ -92,16 +92,19 @@ function clear_box() {
 
     // TODO: Better encapsulate at-mention warnings.
     compose.clear_all_everyone_warnings();
+    compose.clear_announce_warnings();
+    compose.clear_private_stream_alert();
     compose.reset_user_acknowledged_all_everyone_flag();
+    compose.reset_user_acknowledged_announce_flag();
 
     exports.clear_textarea();
-    $("#new_message_content").removeData("draft-id");
+    $("#compose-textarea").removeData("draft-id");
     compose_ui.autosize_textarea();
-    $("#send-status").hide(0);
+    $("#compose-send-status").hide(0);
 }
 
 exports.autosize_message_content = function () {
-    $("#new_message_content").autosize();
+    $("#compose-textarea").autosize();
 };
 
 exports.expand_compose_box = function () {
@@ -163,7 +166,8 @@ function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
     };
 
     // Set default parameters based on the current narrowed view.
-    narrow_state.set_compose_defaults(default_opts);
+    var compose_opts = narrow_state.set_compose_defaults();
+    default_opts = _.extend(default_opts, compose_opts);
     opts = _.extend(default_opts, opts);
     return opts;
 }
@@ -220,7 +224,7 @@ exports.start = function (msg_type, opts) {
 };
 
 exports.cancel = function () {
-    $("#new_message_content").height(40 + "px");
+    $("#compose-textarea").height(40 + "px");
 
     if (page_params.narrow !== undefined) {
         // Never close the compose box in narrow embedded windows, but
@@ -256,6 +260,16 @@ exports.respond_to_message = function (opts) {
         if (!narrow_state.narrowed_by_pm_reply() &&
             !narrow_state.narrowed_by_stream_reply() &&
             !narrow_state.narrowed_by_topic_reply()) {
+            compose.nonexistent_stream_reply_error();
+            return;
+        }
+        var current_filter = narrow_state.get_current_filter();
+        var first_term = current_filter.operators()[0];
+        var first_operator = first_term.operator;
+        var first_operand = first_term.operand;
+
+        if ((first_operator === "stream") && !stream_data.is_subscribed(first_operand)) {
+            compose.nonexistent_stream_reply_error();
             return;
         }
 
@@ -306,7 +320,7 @@ exports.reply_with_mention = function (opts) {
     exports.respond_to_message(opts);
     var message = current_msg_list.selected_message();
     var mention = '@**' + message.sender_full_name + '**';
-    $('#new_message_content').val(mention + ' ');
+    $('#compose-textarea').val(mention + ' ');
 };
 
 exports.on_topic_narrow = function () {
@@ -348,7 +362,7 @@ exports.on_topic_narrow = function () {
     // See #3300 for context--a couple users specifically asked
     // for this convenience.
     compose_state.subject(narrow_state.topic());
-    $('#new_message_content').focus().select();
+    $('#compose-textarea').focus().select();
 };
 
 exports.on_narrow = function () {

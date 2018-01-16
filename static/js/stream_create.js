@@ -33,6 +33,11 @@ var stream_name_error = (function () {
         $("#stream_name_error").show();
     };
 
+    self.report_invalid_chars = function () {
+        $("#stream_name_error").text(i18n.t("Stream names cannot contain #, *, `, or @."));
+        $("#stream_name_error").show();
+    };
+
     self.select = function () {
         $("#create_stream_name").focus().select();
     };
@@ -66,6 +71,13 @@ var stream_name_error = (function () {
             return false;
         }
 
+        // Keep characters in sync with Stream.NAME_INVALID_CHARS
+        if (/[#*`@]/.test(stream_name)) {
+            self.report_invalid_chars();
+            self.select();
+            return false;
+        }
+
         // If we got this far, then we think we have a new unique stream
         // name, so we'll submit to the server.  (It's still plausible,
         // however, that there's some invite-only stream that we don't
@@ -87,9 +99,10 @@ function ajaxSubscribeForCreation(stream_name, description, principals, invite_o
                announce: JSON.stringify(announce),
         },
         success: function () {
+            $(".stream_change_property_info").hide();
             $("#create_stream_name").val("");
             $("#create_stream_description").val("");
-            $("#subscriptions-status").hide();
+            loading.destroy_indicator($('#stream_creating_indicator'));
             // The rest of the work is done via the subscribe event we will get
         },
         error: function (xhr) {
@@ -101,9 +114,8 @@ function ajaxSubscribeForCreation(stream_name, description, principals, invite_o
                 stream_name_error.select();
             }
 
-            // TODO: This next line does nothing.  See #4647.
-            ui_report.error(i18n.t("Error creating stream"), xhr,
-                            $("#subscriptions-status"), 'subscriptions-status');
+            ui_report.error(i18n.t("Error creating stream"), xhr, $(".stream_change_property_info"));
+            loading.destroy_indicator($('#stream_creating_indicator'));
         },
     });
 }
@@ -117,18 +129,18 @@ function update_announce_stream_state() {
         return;
     }
 
-    // If the stream is invite only, or everyone's added, disable
-    // the "Announce stream" option. Otherwise enable it.
+    // If the stream is invite only, disable the "Announce stream" option.
+    // Otherwise enable it.
     var announce_stream_checkbox = $('#announce-new-stream input');
+    var announce_stream_label = $('#announce-new-stream');
     var disable_it = false;
     var is_invite_only = $('input:radio[name=privacy]:checked').val() === 'invite-only';
+    announce_stream_label.removeClass("control-label-disabled");
 
     if (is_invite_only) {
         disable_it = true;
         announce_stream_checkbox.prop('checked', false);
-    } else {
-        disable_it = $('#user-checkboxes input').length
-                    === $('#user-checkboxes input:checked').length;
+        announce_stream_label.addClass("control-label-disabled");
     }
 
     announce_stream_checkbox.prop('disabled', disable_it);
@@ -150,13 +162,12 @@ function create_stream() {
     var is_invite_only = $('#stream_creation_form input[name=privacy]:checked').val() === "invite-only";
     var principals = get_principals();
 
-    // You are always subscribed to streams you create.
-    principals.push(people.my_current_email());
-
     created_stream = stream_name;
 
     var announce = (!!page_params.notifications_stream &&
         $('#announce-new-stream input').prop('checked'));
+
+    loading.make_indicator($('#stream_creating_indicator'), {text: i18n.t('Creating stream...')});
 
     ajaxSubscribeForCreation(stream_name,
         description,
@@ -183,7 +194,7 @@ exports.new_stream_clicked = function (stream_name) {
     exports.show_new_stream_modal();
 
     // at less than 700px we have a @media query that when you tap the
-    // #create_stream_button, the stream prompt slides in. However, when you
+    // .create_stream_button, the stream prompt slides in. However, when you
     // focus  the button on that page, the entire app view jumps over to
     // the other tab, and the animation breaks.
     // it is unclear whether this is a browser bug or "feature", however what
@@ -202,8 +213,12 @@ exports.new_stream_clicked = function (stream_name) {
 exports.show_new_stream_modal = function () {
     $("#stream-creation").removeClass("hide");
     $(".right .settings").hide();
+
+    var all_users = people.get_rest_of_realm();
+    // Add current user on top of list
+    all_users.unshift(people.get_person_from_user_id(page_params.user_id));
     $('#people_to_add').html(templates.render('new_stream_users', {
-        users: people.get_rest_of_realm(),
+        users: all_users,
         streams: stream_data.get_streams_for_settings_page(),
     }));
 
@@ -351,10 +366,12 @@ $(function () {
     $("body").on("mouseover", "#announce-stream-docs", function (e) {
         var announce_stream_docs = $("#announce-stream-docs");
         announce_stream_docs.popover({placement: "right",
-                                      content: templates.render('announce_stream_docs'),
+                                      content: templates.render('announce_stream_docs', {
+                                        notifications_stream: page_params.notifications_stream}),
                                       trigger: "manual"});
         announce_stream_docs.popover('show');
         announce_stream_docs.data('popover').tip().css('z-index', 2000);
+        announce_stream_docs.data('popover').tip().find('.popover-content').css('margin', '9px 14px');
         e.stopPropagation();
     });
     $("body").on("mouseout", "#announce-stream-docs", function (e) {

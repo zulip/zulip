@@ -1,5 +1,5 @@
-var assert = require('assert');
 var noop = function () {};
+var return_true = function () { return true; };
 set_global('$', global.make_zjquery());
 set_global('document', 'document-stub');
 
@@ -10,11 +10,8 @@ set_global('colorspace', {
     },
 });
 
-add_dependencies({
-    stream_data: 'js/stream_data.js',
-});
-
-var stream_events = require('js/stream_events.js');
+zrequire('stream_data');
+zrequire('stream_events');
 var with_overrides = global.with_overrides;
 
 var frontend = {
@@ -74,6 +71,12 @@ stream_data.add_sub('Frontend', frontend);
     stream_events.update_property(1, 'audible_notifications', true);
     assert.equal(frontend.audible_notifications, true);
     checkbox = $(".subscription_settings[data-stream-id='1'] #sub_audible_notifications_setting .sub_setting_control");
+    assert.equal(checkbox.prop('checked'), true);
+
+    // Tests push notifications
+    stream_events.update_property(1, 'push_notifications', true);
+    assert.equal(frontend.push_notifications, true);
+    checkbox = $(".subscription_settings[data-stream-id='1'] #sub_push_notifications_setting .sub_setting_control");
     assert.equal(checkbox.prop('checked'), true);
 
     // Test name change
@@ -142,15 +145,17 @@ stream_data.add_sub('Frontend', frontend);
 
     set_global('stream_data', {
         subscribe_myself: noop,
-        set_subscriber_emails: noop,
+        set_subscribers: noop,
         get_colors: noop,
     });
     set_global('subs', { update_settings_for_subscribed: noop });
     set_global('narrow_state', { is_for_stream_id: noop });
+    set_global('overlays', { streams_open: return_true });
 
     // Test unread count update
     with_overrides(function (override) {
         global.with_stub(function (stub) {
+            override('subs.actually_filter_streams', noop);
             override('message_util.do_unread_count_updates', stub.f);
             stream_events.mark_subscribed(frontend, [], '');
             var args = stub.get_args('messages');
@@ -161,15 +166,19 @@ stream_data.add_sub('Frontend', frontend);
     set_global('message_util', { do_unread_count_updates: noop });
 
     // Test jQuery event
-    global.with_stub(function (stub) {
-        $(document).on('subscription_add_done.zulip', stub.f);
-        stream_events.mark_subscribed(frontend, [], '');
-        var args = stub.get_args('event');
-        assert.equal(args.event.sub.stream_id, 1);
+    with_overrides(function (override) {
+        global.with_stub(function (stub) {
+            override('subs.actually_filter_streams', noop);
+            $(document).on('subscription_add_done.zulip', stub.f);
+            stream_events.mark_subscribed(frontend, [], '');
+            var args = stub.get_args('event');
+            assert.equal(args.event.sub.stream_id, 1);
+        });
     });
 
     // Test bookend update
     with_overrides(function (override) {
+        override('subs.actually_filter_streams', noop);
         override('narrow_state.is_for_stream_id', function () {
             return true;
         });
@@ -181,12 +190,15 @@ stream_data.add_sub('Frontend', frontend);
         assert.equal(updated, true);
     });
 
-    // reset overriden value
+    // reset overridden value
     set_global('narrow_state', { is_for_stream_id: noop });
 
-    // Test setting color
-    stream_events.mark_subscribed(frontend, [], 'blue');
-    assert.equal(frontend.color, 'blue');
+    with_overrides(function (override) {
+        override('subs.actually_filter_streams', noop);
+        // Test setting color
+        stream_events.mark_subscribed(frontend, [], 'blue');
+        assert.equal(frontend.color, 'blue');
+    });
 
     // Test assigning generated color
     with_overrides(function (override) {
@@ -200,6 +212,7 @@ stream_data.add_sub('Frontend', frontend);
         });
 
         global.with_stub(function (stub) {
+            override('subs.actually_filter_streams', noop);
             override('subs.set_color', stub.f);
             stream_events.mark_subscribed(frontend, [], undefined);
             var args = stub.get_args('id', 'color');
@@ -212,16 +225,13 @@ stream_data.add_sub('Frontend', frontend);
     // Test assigning subscriber emails
     with_overrides(function (override) {
         global.with_stub(function (stub) {
-            override('stream_data.set_subscriber_emails', stub.f);
-            var emails = [
-                'me@example.com',
-                'you@example.com',
-                'zooly@zulip.com',
-            ];
-            stream_events.mark_subscribed(frontend, emails, '');
+            override('stream_data.set_subscribers', stub.f);
+            override('subs.actually_filter_streams', noop);
+            var user_ids = [15, 20, 25];
+            stream_events.mark_subscribed(frontend, user_ids, '');
             var args = stub.get_args('sub', 'subscribers');
             assert.deepEqual(frontend, args.sub);
-            assert.deepEqual(emails, args.subscribers);
+            assert.deepEqual(user_ids, args.subscribers);
         });
 
         // assign self as well

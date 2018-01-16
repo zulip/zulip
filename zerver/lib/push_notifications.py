@@ -1,36 +1,39 @@
-from __future__ import absolute_import
-
-import random
-import requests
-from typing import Any, Dict, List, Optional, SupportsInt, Text, Union, Type
-
-from version import ZULIP_VERSION
-from zerver.models import PushDeviceToken, Message, Recipient, UserProfile, \
-    UserMessage, get_display_recipient, receives_offline_notifications, \
-    receives_online_notifications
-from zerver.models import get_user_profile_by_id
-from zerver.lib.avatar import absolute_avatar_url
-from zerver.lib.request import JsonableError
-from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
-from zerver.decorator import statsd_increment
-from zerver.lib.utils import generate_random_token
-from zerver.lib.redis_utils import get_redis_client
-
-from apns import APNs, Frame, Payload, SENT_BUFFER_QTY
-from gcm import GCM
-
-from django.conf import settings
-from django.utils.timezone import now as timezone_now
-from django.utils.translation import ugettext as _
-from six.moves import urllib
+# -*- coding: utf-8 -*-
 
 import base64
 import binascii
-import logging
-import os
-import time
-import ujson
 from functools import partial
+import logging
+import lxml.html as LH
+import os
+import re
+import time
+import random
+
+from typing import Any, Dict, List, Optional, SupportsInt, Text, Tuple, Type, Union
+
+from apns2.client import APNsClient
+from apns2.payload import Payload as APNsPayload
+from django.conf import settings
+from django.utils.timezone import now as timezone_now
+from django.utils.translation import ugettext as _
+from gcm import GCM
+from hyper.http20.exceptions import HTTP20Error
+import requests
+import urllib
+import ujson
+
+from zerver.decorator import statsd_increment
+from zerver.lib.avatar import absolute_avatar_url
+from zerver.lib.exceptions import ErrorCode, JsonableError
+from zerver.lib.message import access_message
+from zerver.lib.queue import retry_event
+from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
+from zerver.lib.utils import generate_random_token
+from zerver.models import PushDeviceToken, Message, Recipient, UserProfile, \
+    UserMessage, get_display_recipient, receives_offline_push_notifications, \
+    receives_online_notifications, receives_stream_notifications, get_user_profile_by_id
+from version import ZULIP_VERSION
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemotePushDeviceToken
@@ -40,200 +43,115 @@ else:  # nocoverage  -- Not convenient to add test for this.
 
 DeviceToken = Union[PushDeviceToken, RemotePushDeviceToken]
 
-# APNS error codes
-ERROR_CODES = {
-    1: 'Processing error',
-    2: 'Missing device token',  # looks like token was empty?
-    3: 'Missing topic',  # topic is encoded in the certificate, looks like certificate is wrong. bail out.
-    4: 'Missing payload',  # bail out, our message looks like empty
-    5: 'Invalid token size',  # current token has wrong size, skip it and retry
-    6: 'Invalid topic size',  # can not happen, we do not send topic, it is part of certificate. bail out.
-    7: 'Invalid payload size',  # our payload is probably too big. bail out.
-    8: 'Invalid token',  # our device token is broken, skipt it and retry
-    10: 'Shutdown',  # server went into maintenance mode. reported token is the last success, skip it and retry.
-    None: 'Unknown',  # unknown error, for sure we try again, but user should limit number of retries
-}
-
-redis_client = get_redis_client()
-
-# Maintain a long-lived Session object to avoid having to re-SSL-handshake
-# for each request
-connection = None
-
-# `APNS_SANDBOX` should be a bool
-assert isinstance(settings.APNS_SANDBOX, bool)
-
-def uses_notification_bouncer():
-    # type: () -> bool
-    return settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
-
-def get_apns_key(identifer):
-    # type: (SupportsInt) -> str
-    return 'apns:' + str(identifer)
-
-class APNsMessage(object):
-    def __init__(self, user_id, tokens, alert=None, badge=None, sound=None,
-                 category=None, **kwargs):
-        # type: (int, List[Text], Text, int, Text, Text, **Any) -> None
-        self.frame = Frame()
-        self.tokens = tokens
-        expiry = int(time.time() + 24 * 3600)
-        priority = 10
-        payload = Payload(alert=alert, badge=badge, sound=sound,
-                          category=category, custom=kwargs)
-        for token in tokens:
-            data = {'token': token, 'user_id': user_id}
-            identifier = random.getrandbits(32)
-            key = get_apns_key(identifier)
-            redis_client.hmset(key, data)
-            redis_client.expire(key, expiry)
-            self.frame.add_item(token, payload, identifier, expiry, priority)
-
-    def get_frame(self):
-        # type: () -> Frame
-        return self.frame
-
-def response_listener(error_response):
-    # type: (Dict[str, SupportsInt]) -> None
-    identifier = error_response['identifier']
-    key = get_apns_key(identifier)
-    if not redis_client.exists(key):
-        logging.warn("APNs key, {}, doesn't not exist.".format(key))
-        return
-
-    code = error_response['status']
-    assert isinstance(code, int)
-
-    errmsg = ERROR_CODES[code]
-    data = redis_client.hgetall(key)
-    token = data['token']
-    user_id = int(data['user_id'])
-    b64_token = hex_to_b64(token)
-
-    logging.warn("APNS: Failed to deliver APNS notification to %s, reason: %s" % (b64_token, errmsg))
-    if code == 8:
-        # Invalid Token, remove from our database
-        logging.warn("APNS: Removing token from database due to above failure")
-        try:
-            PushDeviceToken.objects.get(user_id=user_id, token=b64_token).delete()
-            return  # No need to check RemotePushDeviceToken
-        except PushDeviceToken.DoesNotExist:
-            pass
-
-        if settings.ZILENCER_ENABLED:
-            # Trying to delete from both models is a bit inefficient than
-            # deleting from only one model but this method is very simple.
-            try:
-                RemotePushDeviceToken.objects.get(user_id=user_id,
-                                                  token=b64_token).delete()
-            except RemotePushDeviceToken.DoesNotExist:
-                pass
-
-def get_connection(cert_file, key_file):
-    # type: (str, str) -> APNs
-    connection = APNs(use_sandbox=settings.APNS_SANDBOX,
-                      cert_file=cert_file,
-                      key_file=key_file,
-                      enhanced=True)
-    connection.gateway_server.register_response_listener(response_listener)
-    return connection
-
-if settings.APNS_CERT_FILE is not None and os.path.exists(settings.APNS_CERT_FILE):  # nocoverage
-    connection = get_connection(settings.APNS_CERT_FILE,
-                                settings.APNS_KEY_FILE)
-
-def num_push_devices_for_user(user_profile, kind = None):
-    # type: (UserProfile, Optional[int]) -> PushDeviceToken
-    if kind is None:
-        return PushDeviceToken.objects.filter(user=user_profile).count()
-    else:
-        return PushDeviceToken.objects.filter(user=user_profile, kind=kind).count()
-
 # We store the token as b64, but apns-client wants hex strings
-def b64_to_hex(data):
-    # type: (bytes) -> Text
+def b64_to_hex(data: bytes) -> Text:
     return binascii.hexlify(base64.b64decode(data)).decode('utf-8')
 
-def hex_to_b64(data):
-    # type: (Text) -> bytes
+def hex_to_b64(data: Text) -> bytes:
     return base64.b64encode(binascii.unhexlify(data.encode('utf-8')))
 
-def _do_push_to_apns_service(user_id, message, apns_connection):
-    # type: (int, APNsMessage, APNs) -> None
-    if not apns_connection:  # nocoverage
-        logging.info("Not delivering APNS message %s to user %s due to missing connection" % (message, user_id))
-        return
+#
+# Sending to APNs, for iOS
+#
 
-    frame = message.get_frame()
-    apns_connection.gateway_server.send_notification_multiple(frame)
+_apns_client = None  # type: APNsClient
 
-def send_apple_push_notification_to_user(user, alert, **extra_data):
-    # type: (UserProfile, Text, **Any) -> None
-    devices = PushDeviceToken.objects.filter(user=user, kind=PushDeviceToken.APNS)
-    send_apple_push_notification(user.id, devices, zulip=dict(alert=alert),
-                                 **extra_data)
+def get_apns_client() -> APNsClient:
+    global _apns_client
+    if _apns_client is None:
+        # NB if called concurrently, this will make excess connections.
+        # That's a little sloppy, but harmless unless a server gets
+        # hammered with a ton of these all at once after startup.
+        _apns_client = APNsClient(credentials=settings.APNS_CERT_FILE,
+                                  use_sandbox=settings.APNS_SANDBOX)
+    return _apns_client
 
-# Send a push notification to the desired clients
-# extra_data is a dict that will be passed to the
-# mobile app
+def modernize_apns_payload(data: Dict[str, Any]) -> Dict[str, Any]:
+    '''Take a payload in an unknown Zulip version's format, and return in current format.'''
+    # TODO this isn't super robust as is -- if a buggy remote server
+    # sends a malformed payload, we are likely to raise an exception.
+    if 'message_ids' in data:
+        # The format sent by 1.6.0, from the earliest pre-1.6.0
+        # version with bouncer support up until 613d093d7 pre-1.7.0:
+        #   'alert': str,              # just sender, and text about PM/group-PM/mention
+        #   'message_ids': List[int],  # always just one
+        return {
+            'alert': data['alert'],
+            'badge': 0,
+            'custom': {
+                'zulip': {
+                    'message_ids': data['message_ids'],
+                },
+            },
+        }
+    else:
+        # Something already compatible with the current format.
+        # `alert` may be a string, or a dict with `title` and `body`.
+        # In 1.7.0 and 1.7.1, before 0912b5ba8 pre-1.8.0, the only
+        # item in `custom.zulip` is `message_ids`.
+        return data
+
+APNS_MAX_RETRIES = 3
+
 @statsd_increment("apple_push_notification")
-def send_apple_push_notification(user_id, devices, **extra_data):
-    # type: (int, List[DeviceToken], **Any) -> None
-    if not connection:
-        logging.warning("Attempting to send push notification, but no connection was found. "
-                        "This may be because we could not find the APNS Certificate file.")
-        return
+def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
+                                 payload_data: Dict[str, Any]) -> None:
+    logging.info("APNs: Sending notification for user %d to %d devices",
+                 user_id, len(devices))
+    payload = APNsPayload(**modernize_apns_payload(payload_data))
+    expiration = int(time.time() + 24 * 3600)
+    client = get_apns_client()
+    retries_left = APNS_MAX_RETRIES
+    for device in devices:
+        # TODO obviously this should be made to actually use the async
 
-    # Plain b64 token kept for debugging purposes
-    tokens = [(b64_to_hex(device.token), device.ios_app_id, device.token)
-              for device in devices]
+        def attempt_send() -> Optional[str]:
+            stream_id = client.send_notification_async(
+                device.token, payload, topic='org.zulip.Zulip',
+                expiration=expiration)
+            try:
+                return client.get_notification_result(stream_id)
+            except HTTP20Error as e:
+                logging.warning("APNs: HTTP error sending for user %d to device %s: %s",
+                                user_id, device.token, e.__class__.__name__)
+                return None
 
-    valid_devices = [device for device in tokens if device[1] in [settings.ZULIP_IOS_APP_ID, None]]
-    valid_tokens = [device[0] for device in valid_devices]
-    if valid_tokens:
-        logging.info("APNS: Sending apple push notification "
-                     "to devices: %s" % (valid_devices,))
-        zulip_message = APNsMessage(user_id, valid_tokens,
-                                    alert=extra_data['zulip']['alert'],
-                                    **extra_data)
-        _do_push_to_apns_service(user_id, zulip_message, connection)
-    else:  # nocoverage
-        logging.warn("APNS: Not sending notification because "
-                     "tokens didn't match devices: %s/%s" % (tokens, settings.ZULIP_IOS_APP_ID,))
+        result = attempt_send()
+        while result is None and retries_left > 0:
+            retries_left -= 1
+            result = attempt_send()
+        if result is None:
+            result = "HTTP error, retries exhausted"
 
-# NOTE: This is used by the check_apns_tokens manage.py command. Do not call it otherwise, as the
-# feedback() call can take up to 15s
-def check_apns_feedback():
-    # type: () -> None
-    feedback_connection = APNs(use_sandbox=settings.APNS_SANDBOX,
-                               cert_file=settings.APNS_CERT_FILE,
-                               key_file=settings.APNS_KEY_FILE)
+        if result == 'Success':
+            logging.info("APNs: Success sending for user %d to device %s",
+                         user_id, device.token)
+        else:
+            logging.warning("APNs: Failed to send for user %d to device %s: %s",
+                            user_id, device.token, result)
+            # TODO delete token if status 410 (and timestamp isn't before
+            #      the token we have)
 
-    for token, since in feedback_connection.feedback_server.items():
-        since_date = timestamp_to_datetime(since)
-        logging.info("Found unavailable token %s, unavailable since %s" % (token, since_date))
-
-        PushDeviceToken.objects.filter(token=hex_to_b64(token), last_updated__lt=since_date,
-                                       kind=PushDeviceToken.APNS).delete()
-    logging.info("Finished checking feedback for stale tokens")
-
+#
+# Sending to GCM, for Android
+#
 
 if settings.ANDROID_GCM_API_KEY:  # nocoverage
     gcm = GCM(settings.ANDROID_GCM_API_KEY)
 else:
     gcm = None
 
-def send_android_push_notification_to_user(user_profile, data):
-    # type: (UserProfile, Dict[str, Any]) -> None
+def send_android_push_notification_to_user(user_profile: UserProfile, data: Dict[str, Any]) -> None:
     devices = list(PushDeviceToken.objects.filter(user=user_profile,
                                                   kind=PushDeviceToken.GCM))
     send_android_push_notification(devices, data)
 
 @statsd_increment("android_push_notification")
-def send_android_push_notification(devices, data, remote=False):
-    # type: (List[DeviceToken], Dict[str, Any], bool) -> None
+def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, Any],
+                                   remote: bool=False) -> None:
     if not gcm:
-        logging.warning("Attempting to send a GCM push notification, but no API key was configured")
+        logging.warning("Skipping sending a GCM push notification since "
+                        "PUSH_NOTIFICATION_BOUNCER_URL and ANDROID_GCM_API_KEY are both unset")
         return
     reg_ids = [device.token for device in devices]
 
@@ -292,99 +210,16 @@ def send_android_push_notification(devices, data, remote=False):
     # python-gcm handles retrying of the unsent messages.
     # Ref: https://github.com/geeknam/python-gcm/blob/master/gcm/gcm.py#L497
 
-def get_alert_from_message(message):
-    # type: (Message) -> Text
-    """
-    Determine what alert string to display based on the missed messages.
-    """
-    sender_str = message.sender.full_name
-    if message.recipient.type == Recipient.HUDDLE:
-        return "New private group message from %s" % (sender_str,)
-    elif message.recipient.type == Recipient.PERSONAL:
-        return "New private message from %s" % (sender_str,)
-    elif message.recipient.type == Recipient.STREAM:
-        return "New mention from %s" % (sender_str,)
-    else:
-        return "New Zulip mentions and private messages from %s" % (sender_str,)
+#
+# Sending to a bouncer
+#
 
-def get_apns_payload(message):
-    # type: (Message) -> Dict[str, Any]
-    return {
-        'alert': get_alert_from_message(message),
-        'message_ids': [message.id],
-    }
+def uses_notification_bouncer() -> bool:
+    return settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
 
-def get_gcm_payload(user_profile, message):
-    # type: (UserProfile, Message) -> Dict[str, Any]
-    content = message.content
-    content_truncated = (len(content) > 200)
-    if content_truncated:
-        content = content[:200] + "..."
-
-    android_data = {
-        'user': user_profile.email,
-        'event': 'message',
-        'alert': get_alert_from_message(message),
-        'zulip_message_id': message.id,  # message_id is reserved for CCS
-        'time': datetime_to_timestamp(message.pub_date),
-        'content': content,
-        'content_truncated': content_truncated,
-        'sender_email': message.sender.email,
-        'sender_full_name': message.sender.full_name,
-        'sender_avatar_url': absolute_avatar_url(message.sender),
-    }
-
-    if message.recipient.type == Recipient.STREAM:
-        android_data['recipient_type'] = "stream"
-        android_data['stream'] = get_display_recipient(message.recipient)
-        android_data['topic'] = message.subject
-    elif message.recipient.type in (Recipient.HUDDLE, Recipient.PERSONAL):
-        android_data['recipient_type'] = "private"
-
-    return android_data
-
-@statsd_increment("push_notifications")
-def handle_push_notification(user_profile_id, missed_message):
-    # type: (int, Dict[str, Any]) -> None
-    try:
-        user_profile = get_user_profile_by_id(user_profile_id)
-        if not (receives_offline_notifications(user_profile) or receives_online_notifications(user_profile)):
-            return
-
-        umessage = UserMessage.objects.get(user_profile=user_profile,
-                                           message__id=missed_message['message_id'])
-        message = umessage.message
-        if umessage.flags.read:
-            return
-
-        apns_payload = get_apns_payload(message)
-        gcm_payload = get_gcm_payload(user_profile, message)
-
-        if uses_notification_bouncer():
-            send_notifications_to_bouncer(user_profile_id,
-                                          apns_payload,
-                                          gcm_payload)
-            return
-
-        android_devices = list(PushDeviceToken.objects.filter(user=user_profile,
-                                                              kind=PushDeviceToken.GCM))
-
-        apple_devices = list(PushDeviceToken.objects.filter(user=user_profile,
-                                                            kind=PushDeviceToken.APNS))
-
-        # TODO: set badge count in a better way
-        if apple_devices:
-            send_apple_push_notification(user_profile.id, apple_devices,
-                                         badge=1, zulip=apns_payload)
-
-        if android_devices:
-            send_android_push_notification(android_devices, gcm_payload)
-
-    except UserMessage.DoesNotExist:
-        logging.error("Could not find UserMessage with message_id %s" % (missed_message['message_id'],))
-
-def send_notifications_to_bouncer(user_profile_id, apns_payload, gcm_payload):
-    # type: (int, Dict[str, Any], Dict[str, Any]) -> None
+def send_notifications_to_bouncer(user_profile_id: int,
+                                  apns_payload: Dict[str, Any],
+                                  gcm_payload: Dict[str, Any]) -> None:
     post_data = {
         'user_id': user_profile_id,
         'apns_payload': apns_payload,
@@ -392,8 +227,99 @@ def send_notifications_to_bouncer(user_profile_id, apns_payload, gcm_payload):
     }
     send_json_to_push_bouncer('POST', 'notify', post_data)
 
-def add_push_device_token(user_profile, token_str, kind, ios_app_id=None):
-    # type: (UserProfile, bytes, int, Optional[str]) -> None
+def send_json_to_push_bouncer(method: str, endpoint: str, post_data: Dict[str, Any]) -> None:
+    send_to_push_bouncer(
+        method,
+        endpoint,
+        ujson.dumps(post_data),
+        extra_headers={"Content-type": "application/json"},
+    )
+
+class PushNotificationBouncerException(Exception):
+    pass
+
+def send_to_push_bouncer(method: str,
+                         endpoint: str,
+                         post_data: Union[Text, Dict[str, Any]],
+                         extra_headers: Optional[Dict[str, Any]]=None) -> None:
+    """While it does actually send the notice, this function has a lot of
+    code and comments around error handling for the push notifications
+    bouncer.  There are several classes of failures, each with its own
+    potential solution:
+
+    * Network errors with requests.request.  We let those happen normally.
+
+    * 500 errors from the push bouncer or other unexpected responses;
+      we don't try to parse the response, but do make clear the cause.
+
+    * 400 errors from the push bouncer.  Here there are 2 categories:
+      Our server failed to connect to the push bouncer (should throw)
+      vs. client-side errors like and invalid token.
+
+    """
+    url = urllib.parse.urljoin(settings.PUSH_NOTIFICATION_BOUNCER_URL,
+                               '/api/v1/remotes/push/' + endpoint)
+    api_auth = requests.auth.HTTPBasicAuth(settings.ZULIP_ORG_ID,
+                                           settings.ZULIP_ORG_KEY)
+
+    headers = {"User-agent": "ZulipServer/%s" % (ZULIP_VERSION,)}
+    if extra_headers is not None:
+        headers.update(extra_headers)
+
+    res = requests.request(method,
+                           url,
+                           data=post_data,
+                           auth=api_auth,
+                           timeout=30,
+                           verify=True,
+                           headers=headers)
+
+    if res.status_code >= 500:
+        # 500s should be resolved by the people who run the push
+        # notification bouncer service, since they'll get an email
+        # too.  For now we email the server admin, but we'll likely
+        # want to do some sort of retry logic eventually.
+        raise PushNotificationBouncerException(
+            _("Received 500 from push notification bouncer"))
+    elif res.status_code >= 400:
+        # If JSON parsing errors, just let that exception happen
+        result_dict = ujson.loads(res.content)
+        msg = result_dict['msg']
+        if 'code' in result_dict and result_dict['code'] == 'INVALID_ZULIP_SERVER':
+            # Invalid Zulip server credentials should email this server's admins
+            raise PushNotificationBouncerException(
+                _("Push notifications bouncer error: %s") % (msg,))
+        else:
+            # But most other errors coming from the push bouncer
+            # server are client errors (e.g. never-registered token)
+            # and should be handled as such.
+            raise JsonableError(msg)
+    elif res.status_code != 200:
+        # Anything else is unexpected and likely suggests a bug in
+        # this version of Zulip, so we throw an exception that will
+        # email the server admins.
+        raise PushNotificationBouncerException(
+            "Push notification bouncer returned unexpected status code %s" % (res.status_code,))
+
+    # If we don't throw an exception, it's a successful bounce!
+
+#
+# Managing device tokens
+#
+
+def num_push_devices_for_user(user_profile: UserProfile, kind: Optional[int]=None) -> PushDeviceToken:
+    if kind is None:
+        return PushDeviceToken.objects.filter(user=user_profile).count()
+    else:
+        return PushDeviceToken.objects.filter(user=user_profile, kind=kind).count()
+
+def add_push_device_token(user_profile: UserProfile,
+                          token_str: bytes,
+                          kind: int,
+                          ios_app_id: Optional[str]=None) -> None:
+
+    logging.info("New push device: %d %r %d %r",
+                 user_profile.id, token_str, kind, ios_app_id)
 
     # If we're sending things to the push notification bouncer
     # register this user with them here
@@ -408,6 +334,7 @@ def add_push_device_token(user_profile, token_str, kind, ios_app_id=None):
         if kind == PushDeviceToken.APNS:
             post_data['ios_app_id'] = ios_app_id
 
+        logging.info("Sending new push device to bouncer: %r", post_data)
         send_to_push_bouncer('POST', 'register', post_data)
         return
 
@@ -422,11 +349,13 @@ def add_push_device_token(user_profile, token_str, kind, ios_app_id=None):
                                                                kind=kind,
                                                                ios_app_id=ios_app_id))
     if not created:
+        logging.info("Existing push device updated.")
         token.last_updated = timezone_now()
         token.save(update_fields=['last_updated'])
+    else:
+        logging.info("New push device created.")
 
-def remove_push_device_token(user_profile, token_str, kind):
-    # type: (UserProfile, bytes, int) -> None
+def remove_push_device_token(user_profile: UserProfile, token_str: bytes, kind: int) -> None:
 
     # If we're sending things to the push notification bouncer
     # register this user with them here
@@ -447,44 +376,181 @@ def remove_push_device_token(user_profile, token_str, kind):
     except PushDeviceToken.DoesNotExist:
         raise JsonableError(_("Token does not exist"))
 
-def send_json_to_push_bouncer(method, endpoint, post_data):
-    # type: (str, str, Dict[str, Any]) -> None
-    send_to_push_bouncer(
-        method,
-        endpoint,
-        ujson.dumps(post_data),
-        extra_headers={"Content-type": "application/json"},
-    )
+#
+# Push notifications in general
+#
 
-def send_to_push_bouncer(method, endpoint, post_data, extra_headers=None):
-    # type: (str, str, Union[Text, Dict[str, Any]], Optional[Dict[str, Any]]) -> None
-    url = urllib.parse.urljoin(settings.PUSH_NOTIFICATION_BOUNCER_URL,
-                               '/api/v1/remotes/push/' + endpoint)
-    api_auth = requests.auth.HTTPBasicAuth(settings.ZULIP_ORG_ID,
-                                           settings.ZULIP_ORG_KEY)
+def get_alert_from_message(message: Message) -> Text:
+    """
+    Determine what alert string to display based on the missed messages.
+    """
+    sender_str = message.sender.full_name
+    if message.recipient.type == Recipient.HUDDLE and message.trigger == 'private_message':
+        return "New private group message from %s" % (sender_str,)
+    elif message.recipient.type == Recipient.PERSONAL and message.trigger == 'private_message':
+        return "New private message from %s" % (sender_str,)
+    elif message.is_stream_message() and message.trigger == 'mentioned':
+        return "New mention from %s" % (sender_str,)
+    elif (message.is_stream_message() and
+            (message.trigger == 'stream_push_notify' and message.stream_name)):
+        return "New stream message from %s in %s" % (sender_str, message.stream_name,)
+    else:
+        return "New Zulip mentions and private messages from %s" % (sender_str,)
 
-    headers = {"User-agent": "ZulipServer/%s" % (ZULIP_VERSION,)}
-    if extra_headers is not None:
-        headers.update(extra_headers)
+def get_mobile_push_content(rendered_content: Text) -> Text:
+    def get_text(elem: LH.HtmlElement) -> Text:
+        # Convert default emojis to their unicode equivalent.
+        classes = elem.get("class", "")
+        if "emoji" in classes:
+            match = re.search("emoji-(?P<emoji_code>\S+)", classes)
+            if match:
+                emoji_code = match.group('emoji_code')
+                char_repr = ""
+                for codepoint in emoji_code.split('-'):
+                    char_repr += chr(int(codepoint, 16))
+                return char_repr
+        # Handles realm emojis, avatars etc.
+        if elem.tag == "img":
+            return elem.get("alt", "")
 
-    res = requests.request(method,
-                           url,
-                           data=post_data,
-                           auth=api_auth,
-                           timeout=30,
-                           verify=True,
-                           headers=headers)
+        return elem.text or ""
 
-    # TODO: Think more carefully about how this error hanlding should work.
-    if res.status_code >= 500:
-        raise JsonableError(_("Error received from push notification bouncer"))
-    elif res.status_code >= 400:
+    def process(elem: LH.HtmlElement) -> Text:
+        plain_text = get_text(elem)
+        for child in elem:
+            plain_text += process(child)
+        plain_text += elem.tail or ""
+        return plain_text
+
+    if settings.PUSH_NOTIFICATION_REDACT_CONTENT:
+        return "***REDACTED***"
+    else:
+        elem = LH.fromstring(rendered_content)
+        plain_text = process(elem)
+        return plain_text
+
+def truncate_content(content: Text) -> Tuple[Text, bool]:
+    # We use unicode character 'HORIZONTAL ELLIPSIS' (U+2026) instead
+    # of three dots as this saves two extra characters for textual
+    # content. This function will need to be updated to handle unicode
+    # combining characters and tags when we start supporting themself.
+    if len(content) <= 200:
+        return content, False
+    return content[:200] + "…", True
+
+def get_common_payload(message: Message) -> Dict[str, Any]:
+    data = {}  # type: Dict[str, Any]
+
+    # These will let the app support logging into multiple realms and servers.
+    data['server'] = settings.EXTERNAL_HOST
+    data['realm_id'] = message.sender.realm.id
+
+    # `sender_id` is preferred, but some existing versions use `sender_email`.
+    data['sender_id'] = message.sender.id
+    data['sender_email'] = message.sender.email
+
+    if message.is_stream_message():
+        data['recipient_type'] = "stream"
+        data['stream'] = get_display_recipient(message.recipient)
+        data['topic'] = message.subject
+    else:
+        data['recipient_type'] = "private"
+
+    return data
+
+def get_apns_payload(message: Message) -> Dict[str, Any]:
+    zulip_data = get_common_payload(message)
+    zulip_data.update({
+        'message_ids': [message.id],
+    })
+
+    content, _ = truncate_content(get_mobile_push_content(message.rendered_content))
+    apns_data = {
+        'alert': {
+            'title': get_alert_from_message(message),
+            'body': content,
+        },
+        'badge': 0,  # TODO: set badge count in a better way
+        'custom': {'zulip': zulip_data},
+    }
+    return apns_data
+
+def get_gcm_payload(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
+    data = get_common_payload(message)
+    content, truncated = truncate_content(get_mobile_push_content(message.rendered_content))
+    data.update({
+        'user': user_profile.email,
+        'event': 'message',
+        'alert': get_alert_from_message(message),
+        'zulip_message_id': message.id,  # message_id is reserved for CCS
+        'time': datetime_to_timestamp(message.pub_date),
+        'content': content,
+        'content_truncated': truncated,
+        'sender_full_name': message.sender.full_name,
+        'sender_avatar_url': absolute_avatar_url(message.sender),
+    })
+    return data
+
+@statsd_increment("push_notifications")
+def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any]) -> None:
+    """
+    missed_message is the event received by the
+    zerver.worker.queue_processors.PushNotificationWorker.consume function.
+    """
+    user_profile = get_user_profile_by_id(user_profile_id)
+    if not (receives_offline_push_notifications(user_profile) or
+            receives_online_notifications(user_profile)):
+        return
+
+    user_profile = get_user_profile_by_id(user_profile_id)
+    (message, user_message) = access_message(user_profile, missed_message['message_id'])
+    if user_message is not None:
+        # If ther user has read the message already, don't push-notify.
+        #
+        # TODO: It feels like this is already handled when things are
+        # put in the queue; maybe we should centralize this logic with
+        # the `zerver/tornado/event_queue.py` logic?
+        if user_message.flags.read:
+            return
+    else:
+        # Users should only be getting push notifications into this
+        # queue for messages they haven't received if they're
+        # long-term idle; anything else is likely a bug.
+        if not user_profile.long_term_idle:
+            logging.error("Could not find UserMessage with message_id %s and user_id %s" % (
+                missed_message['message_id'], user_profile_id))
+            return
+
+    message.trigger = missed_message['trigger']
+    message.stream_name = missed_message.get('stream_name', None)
+
+    apns_payload = get_apns_payload(message)
+    gcm_payload = get_gcm_payload(user_profile, message)
+    logging.info("Sending push notification to user %s" % (user_profile_id,))
+
+    if uses_notification_bouncer():
         try:
-            msg = ujson.loads(res.content)['msg']
-        except Exception:
-            raise JsonableError(_("Error received from push notification bouncer"))
-        raise JsonableError(msg)
-    elif res.status_code != 200:
-        raise JsonableError(_("Error received from push notification bouncer"))
+            send_notifications_to_bouncer(user_profile_id,
+                                          apns_payload,
+                                          gcm_payload)
+        except requests.ConnectionError:
+            def failure_processor(event: Dict[str, Any]) -> None:
+                logging.warning(
+                    "Maximum retries exceeded for trigger:%s event:push_notification" % (
+                        event['user_profile_id']))
+            retry_event('missedmessage_mobile_notifications', missed_message,
+                        failure_processor)
+        return
 
-    # If we don't throw an exception, it's a successful bounce!
+    android_devices = list(PushDeviceToken.objects.filter(user=user_profile,
+                                                          kind=PushDeviceToken.GCM))
+
+    apple_devices = list(PushDeviceToken.objects.filter(user=user_profile,
+                                                        kind=PushDeviceToken.APNS))
+
+    if apple_devices:
+        send_apple_push_notification(user_profile.id, apple_devices,
+                                     apns_payload)
+
+    if android_devices:
+        send_android_push_notification(android_devices, gcm_payload)

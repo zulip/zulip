@@ -1,6 +1,6 @@
-<nav class="{{className}}">
+<nav class="portico-header">
     <div class="content">
-        <a class="brand logo no-style" href="{{ server_uri }}">
+        <a class="brand logo" href="{{ root_domain_uri }}">
             <svg class="brand-logo" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 40 40" version="1.1">
                 <g transform="translate(-297.14285,-466.64792)">
                     <circle cx="317.14285" cy="486.64792" r="19.030317" style="fill:#fff;stroke-width:1.93936479;stroke:transparent"></circle>
@@ -12,36 +12,43 @@
         <ul>
             <div class="exit">&times;</div>
             <li on-page="hello">
-                <a class="no-style" href="/hello/">Home</a>
+                <a href="/hello/">Home</a>
             </li>
             <li on-page="features">
-                <a class="no-style" href="/features/">Features</a>
+                <a href="/features/">Features</a>
+            </li>
+            <li on-page="plans">
+                <a href="/plans/">Plans</a>
             </li>
             <li on-page="apps">
-                <a class="no-style" href="{{ apps_page_url }}">Apps</a>
+                <a href="{{ apps_page_url }}">Apps</a>
             </li>
             <li on-page="integrations">
-                <a class="no-style" href="/integrations/">Integrations</a>
+                <a href="/integrations/">Integrations</a>
             </li>
             <li on-page="help">
-                <a class="no-style" href="/help/">Help Center</a>
+                <a href="/help/">Help Center</a>
             </li>
-            {% if register_link_disabled %}
+            {% if user_is_authenticated %}
+                {% include 'zerver/portico-header-dropdown.html' %}
             {% else %}
-            <li>
-                <a class="no-style" href="/login/">Login</a>
-            </li>
-            {% endif %}
-            {% if register_link_disabled %}
-            {% else %}
-            <li>
-                <a class="no-style" href="/register/">Register</a>
-            </li>
+                {% if login_link_disabled %}
+                {% else %}
+                <li>
+                    <a href="/login/">Login</a>
+                </li>
+                {% endif %}
+                {% if register_link_disabled %}
+                {% else %}
+                <li>
+                    <a href="/register/">Sign up</a>
+                </li>
+                {% endif %}
             {% endif %}
             {% if find_team_link_disabled %}
             {% else %}
             <li>
-                <a class="no-style" href="/find_my_team/">Find Accounts</a>
+                <a href="/accounts/find/">Find Accounts</a>
             </li>
             {% endif %}
         </ul>

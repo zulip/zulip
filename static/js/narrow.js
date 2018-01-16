@@ -6,7 +6,7 @@ var unnarrow_times;
 
 function report_narrow_time(initial_core_time, initial_free_time, network_time) {
     channel.post({
-        url: '/json/report_narrow_time',
+        url: '/json/report/narrow_times',
         data: {initial_core: initial_core_time.toString(),
                initial_free: initial_free_time.toString(),
                network: network_time.toString()},
@@ -36,7 +36,7 @@ function report_unnarrow_time() {
     var initial_free_time = unnarrow_times.initial_free_time - unnarrow_times.start_time;
 
     channel.post({
-        url: '/json/report_unnarrow_time',
+        url: '/json/report/unnarrow_times',
         data: {initial_core: initial_core_time.toString(),
                initial_free: initial_free_time.toString()},
     });
@@ -71,6 +71,8 @@ exports.activate = function (raw_operators, opts) {
         exports.narrow_title = filter.operands("is")[0];
     } else if (filter.has_operator("pm-with")) {
         exports.narrow_title = "private";
+    } else if (filter.has_operator("group-pm-with")) {
+        exports.narrow_title = "private group";
     }
 
     notifications.redraw_title();
@@ -87,6 +89,9 @@ exports.activate = function (raw_operators, opts) {
         change_hash: true,
         trigger: 'unknown',
     });
+
+    // These two narrowing operators specify what message should be
+    // selected and should be the center of the narrow.
     if (filter.has_operator("near")) {
         opts.then_select_id = parseInt(filter.operands("near")[0], 10);
         opts.select_first_unread = false;
@@ -96,8 +101,11 @@ exports.activate = function (raw_operators, opts) {
         opts.select_first_unread = false;
     }
 
+    // This block is for a case of loading a browser window for the
+    // first time in a narrow.
+    // According to old comments, this shouldn't happen anymore;
+    // more investigation is needed.
     if (opts.then_select_id === -1 && !opts.use_initial_narrow_pointer) {
-        // According to old comments, this shouldn't happen anymore
         blueslip.warn("Setting then_select_id to page_params.pointer.");
         opts.then_select_id = page_params.pointer;
         opts.select_first_unread = false;
@@ -212,7 +220,7 @@ exports.activate = function (raw_operators, opts) {
         msg_list: message_list.narrowed,
         use_first_unread_anchor: opts.use_initial_narrow_pointer,
         cont: function () {
-            ui.hide_loading_more_messages_indicator();
+            message_fetch.reset_load_more_status();
             if (defer_selecting_closest) {
                 maybe_select_closest();
             }
@@ -243,6 +251,10 @@ exports.activate = function (raw_operators, opts) {
     compose_actions.on_narrow();
 
     var current_filter = narrow_state.get_current_filter();
+
+    top_left_corner.handle_narrow_activated(current_filter);
+    stream_list.handle_narrow_activated(current_filter);
+
     $(document).trigger($.Event('narrow_activated.zulip', {msg_list: message_list.narrowed,
                                                             filter: current_filter,
                                                             trigger: opts.trigger}));
@@ -272,6 +284,53 @@ exports.stream_topic = function () {
         stream: narrow_state.stream(),
         topic: narrow_state.topic(),
     };
+};
+
+exports.activate_stream_for_cycle_hotkey = function (stream_name) {
+    // This is the common code for A/D hotkeys.
+
+    var filter_expr = [
+        {operator: 'stream', operand: stream_name},
+    ];
+
+    var opts = {
+        select_first_unread: true,
+    };
+
+    exports.activate(filter_expr, opts);
+};
+
+
+exports.stream_cycle_backward = function () {
+    var curr_stream = narrow_state.stream();
+
+    if (!curr_stream) {
+        return;
+    }
+
+    var stream_name = topic_generator.get_prev_stream(curr_stream);
+
+    if (!stream_name) {
+        return;
+    }
+
+    exports.activate_stream_for_cycle_hotkey(stream_name);
+};
+
+exports.stream_cycle_forward = function () {
+    var curr_stream = narrow_state.stream();
+
+    if (!curr_stream) {
+        return;
+    }
+
+    var stream_name = topic_generator.get_next_stream(curr_stream);
+
+    if (!stream_name) {
+        return;
+    }
+
+    exports.activate_stream_for_cycle_hotkey(stream_name);
 };
 
 exports.narrow_to_next_topic = function () {
@@ -419,6 +478,9 @@ exports.deactivate = function () {
 
     compose_fade.update_message_list();
 
+    top_left_corner.handle_narrow_deactivated();
+    stream_list.handle_narrow_deactivated();
+
     $(document).trigger($.Event('narrow_deactivated.zulip', {msg_list: current_msg_list}));
 
     exports.narrow_title = "home";
@@ -432,10 +494,10 @@ exports.deactivate = function () {
 };
 
 exports.restore_home_state = function () {
-    // If we click on the Home link while already at Home, unnarrow.
-    // If we click on the Home link from another nav pane, just go
+    // If we click on the All Messages link while already at All Messages, unnarrow.
+    // If we click on the All Messages link from another nav pane, just go
     // back to the state you were in (possibly still narrowed) before
-    // you left the Home pane.
+    // you left the All Messages pane.
     if (!overlays.is_active()) {
         exports.deactivate();
     }
@@ -473,8 +535,10 @@ function pick_empty_narrow_banner() {
             return $("#no_unread_narrow_message");
         }
     } else if ((first_operator === "stream") && !stream_data.is_subscribed(first_operand)) {
-        // You are narrowed to a stream to which you aren't subscribed.
-        if (!stream_data.get_sub(narrow_state.stream())) {
+        // You are narrowed to a stream which does not exist or is a private stream
+        // in which you were never subscribed.
+        var stream_sub = stream_data.get_sub(narrow_state.stream());
+        if (!stream_sub || stream_sub.invite_only) {
             return $("#nonsubbed_private_nonexistent_stream_narrow_message");
         }
         return $("#nonsubbed_stream_narrow_message");
@@ -492,6 +556,8 @@ function pick_empty_narrow_banner() {
             return $("#silent_user");
         }
         return $("#non_existing_user");
+    } else if (first_operator === "group-pm-with") {
+        return $("#empty_narrow_group_private_message");
     }
     return default_banner;
 }

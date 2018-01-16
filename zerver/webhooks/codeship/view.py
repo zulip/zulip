@@ -1,17 +1,16 @@
 # Webhooks for external integrations.
-from __future__ import absolute_import
 
-from django.utils.translation import ugettext as _
-from django.http import HttpRequest, HttpResponse
 from typing import Any, Dict
 
-from zerver.lib.actions import check_send_message
-from zerver.lib.response import json_success, json_error
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
-from zerver.models import UserProfile
-
 import ujson
+from django.http import HttpRequest, HttpResponse
+from django.utils.translation import ugettext as _
 
+from zerver.decorator import api_key_only_webhook_view
+from zerver.lib.actions import check_send_stream_message
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_error, json_success
+from zerver.models import UserProfile
 
 CODESHIP_SUBJECT_TEMPLATE = '{project_name}'
 CODESHIP_MESSAGE_TEMPLATE = '[Build]({build_url}) triggered by {committer} on {branch} branch {status}.'
@@ -29,24 +28,19 @@ CODESHIP_STATUS_MAPPER = {
 def api_codeship_webhook(request, user_profile, payload=REQ(argument_type='body'),
                          stream=REQ(default='codeship')):
     # type: (HttpRequest, UserProfile, Dict[str, Any], str) -> HttpResponse
-    try:
-        payload = payload['build']
-        subject = get_subject_for_http_request(payload)
-        body = get_body_for_http_request(payload)
-    except KeyError as e:
-        return json_error(_("Missing key {} in JSON").format(str(e)))
+    payload = payload['build']
+    subject = get_subject_for_http_request(payload)
+    body = get_body_for_http_request(payload)
 
-    check_send_message(user_profile, request.client, 'stream', [stream], subject, body)
+    check_send_stream_message(user_profile, request.client, stream, subject, body)
     return json_success()
 
 
-def get_subject_for_http_request(payload):
-    # type: (Dict[str, Any]) -> str
+def get_subject_for_http_request(payload: Dict[str, Any]) -> str:
     return CODESHIP_SUBJECT_TEMPLATE.format(project_name=payload['project_name'])
 
 
-def get_body_for_http_request(payload):
-    # type: (Dict[str, Any]) -> str
+def get_body_for_http_request(payload: Dict[str, Any]) -> str:
     return CODESHIP_MESSAGE_TEMPLATE.format(
         build_url=payload['build_url'],
         committer=payload['committer'],
@@ -55,7 +49,6 @@ def get_body_for_http_request(payload):
     )
 
 
-def get_status_message(payload):
-    # type: (Dict[str, Any]) -> str
+def get_status_message(payload: Dict[str, Any]) -> str:
     build_status = payload['status']
     return CODESHIP_STATUS_MAPPER.get(build_status, CODESHIP_DEFAULT_STATUS.format(status=build_status))

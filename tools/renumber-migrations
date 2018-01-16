@@ -1,8 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from __future__ import absolute_import
-from __future__ import print_function
-from six.moves import input, map, range
 import glob
 import os
 import sys
@@ -35,7 +32,8 @@ def renumber_migration(conflicts, order, last_correct_migration):
                 print(re.sub(r'[\d]+(_[a-z0-9]+)+', last_correct_migration, line), end='')
 
             # Rename the migration indexing at the end
-            new_name = conflicts[i-1].replace(conflicts[i-1][0:4], '00' + str(int(last_correct_migration[0:4]) + 1))
+            new_name = conflicts[i-1].replace(conflicts[i-1][0:4],
+                                              '%04d' % (int(last_correct_migration[0:4]) + 1,))
             os.rename('zerver/migrations/' + conflicts[i-1], 'zerver/migrations/' + new_name)
 
             last_correct_migration = new_name.replace('.py', '')
@@ -50,10 +48,7 @@ def resolve_conflicts(conflicts, files_list):
     order = list(map(int, order_input.split()))
     validate_order(order, len(conflicts))
 
-    last_correct_migration = str(input('Enter the name of last correct migration file: '))
-    if last_correct_migration not in files_list:
-        print("File not found!")
-        sys.exit(1)
+    last_correct_migration = conflicts[order[0] - 1]
 
     last_correct_migration = last_correct_migration.replace('.py', '')
     renumber_migration(conflicts, order, last_correct_migration)

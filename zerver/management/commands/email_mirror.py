@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 
 """
 Forward messages sent to the configured email gateway to Zulip.
@@ -23,25 +22,16 @@ recipient address and retrieve, forward, and archive the message.
 """
 
 
-from __future__ import absolute_import
-from __future__ import print_function
-
-import six
-from typing import Any, List, Generator
-
+import email
 import logging
+from email.message import Message
+from imaplib import IMAP4_SSL
+from typing import Any, Generator, List
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from zerver.lib.queue import queue_json_publish
-from zerver.lib.email_mirror import logger, process_message, \
-    extract_and_validate, ZulipEmailForwardError, \
-    mark_missed_message_address_as_used, is_missed_message_address
-
-import email
-from email.message import Message
-from imaplib import IMAP4_SSL
+from zerver.lib.email_mirror import logger, process_message
 
 ## Setup ##
 
@@ -55,23 +45,19 @@ logger.setLevel(logging.DEBUG)
 logger.addHandler(file_handler)
 
 
-def get_imap_messages():
-    # type: () -> Generator[Message, None, None]
+def get_imap_messages() -> Generator[Message, None, None]:
     mbox = IMAP4_SSL(settings.EMAIL_GATEWAY_IMAP_SERVER, settings.EMAIL_GATEWAY_IMAP_PORT)
     mbox.login(settings.EMAIL_GATEWAY_LOGIN, settings.EMAIL_GATEWAY_PASSWORD)
     try:
         mbox.select(settings.EMAIL_GATEWAY_IMAP_FOLDER)
         try:
-            status, num_ids_data = mbox.search(None, 'ALL')  # type: bytes, List[bytes]
+            status, num_ids_data = mbox.search(None, 'ALL')  # type: ignore # https://github.com/python/typeshed/pull/1762
             for msgid in num_ids_data[0].split():
                 status, msg_data = mbox.fetch(msgid, '(RFC822)')
                 msg_as_bytes = msg_data[0][1]
-                if six.PY2:
-                    message = email.message_from_string(msg_as_bytes)
-                else:
-                    message = email.message_from_bytes(msg_as_bytes)
+                message = email.message_from_bytes(msg_as_bytes)
                 yield message
-                mbox.store(msgid, '+FLAGS', '\\Deleted')
+                mbox.store(msgid, '+FLAGS', '\\Deleted')  # type: ignore # https://github.com/python/typeshed/pull/1762
             mbox.expunge()
         finally:
             mbox.close()
@@ -82,8 +68,7 @@ def get_imap_messages():
 class Command(BaseCommand):
     help = __doc__
 
-    def handle(self, *args, **options):
-        # type: (*Any, **str) -> None
+    def handle(self, *args: Any, **options: str) -> None:
         # We're probably running from cron, try to batch-process mail
         if (not settings.EMAIL_GATEWAY_BOT or not settings.EMAIL_GATEWAY_LOGIN or
             not settings.EMAIL_GATEWAY_PASSWORD or not settings.EMAIL_GATEWAY_IMAP_SERVER or

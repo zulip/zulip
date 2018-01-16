@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from typing import Any, Dict, Text
+
 from zerver.lib.test_classes import WebhookTestCase
 
 class TransifexHookTests(WebhookTestCase):
@@ -14,8 +15,7 @@ class TransifexHookTests(WebhookTestCase):
     RESOURCE = 'file'
     REVIEWED = True
 
-    def test_transifex_reviewed_message(self):
-        # type: () -> None
+    def test_transifex_reviewed_message(self) -> None:
         self.REVIEWED = True
         expected_subject = "{} in {}".format(self.PROJECT, self.LANGUAGE)
         expected_message = "Resource {} fully reviewed.".format(self.RESOURCE)
@@ -27,8 +27,7 @@ class TransifexHookTests(WebhookTestCase):
         )
         self.send_and_test_stream_message("", expected_subject, expected_message)
 
-    def test_transifex_translated_message(self):
-        # type: () -> None
+    def test_transifex_translated_message(self) -> None:
         self.REVIEWED = False
         expected_subject = "{} in {}".format(self.PROJECT, self.LANGUAGE)
         expected_message = "Resource {} fully translated.".format(self.RESOURCE)
@@ -40,6 +39,5 @@ class TransifexHookTests(WebhookTestCase):
         )
         self.send_and_test_stream_message("", expected_subject, expected_message)
 
-    def get_body(self, fixture_name):
-        # type: (Text) -> Dict[str, Any]
+    def get_body(self, fixture_name: Text) -> Dict[str, Any]:
         return {}

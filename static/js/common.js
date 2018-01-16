@@ -30,31 +30,25 @@ exports.password_quality = function (password, bar, password_field) {
     }
 
     var min_length = password_field.data('minLength');
-    var min_quality = password_field.data('minQuality');
+    var min_guesses = password_field.data('minGuesses');
 
-    // Consider the password acceptable if it's at least 6 characters.
-    var acceptable = password.length >= min_length;
-
-    // Compute a quality score in [0,1].
-    var result  = zxcvbn(password);
-    var quality = Math.min(1,Math.log(1 + result.crack_times_seconds.
-                                          offline_slow_hashing_1e4_per_second) / 22);
-
-    // Even if zxcvbn loves your short password, the bar should be filled
-    // at most 1/3 of the way, because we won't accept it.
-    if (!acceptable) {
-        quality = Math.min(quality, 0.33);
-
-    // In case the quality is below the minimum, we should not accept the password
-    } else if (quality < min_quality) {
-        acceptable = false;
-    }
+    var result = zxcvbn(password);
+    var acceptable = (password.length >= min_length
+                      && result.guesses >= min_guesses);
 
     if (bar !== undefined) {
-        // Display the password quality score on a progress bar
-        // which bottoms out at 10% so there's always something
+        var t = result.crack_times_seconds.offline_slow_hashing_1e4_per_second;
+        var bar_progress = Math.min(1, Math.log(1 + t) / 22);
+
+        // Even if zxcvbn loves your short password, the bar should be
+        // filled at most 1/3 of the way, because we won't accept it.
+        if (!acceptable) {
+            bar_progress = Math.min(bar_progress, 0.33);
+        }
+
+        // The bar bottoms out at 10% so there's always something
         // for the user to see.
-        bar.width(((90 * quality) + 10) + '%')
+        bar.width(((90 * bar_progress) + 10) + '%')
            .removeClass('bar-success bar-danger')
            .addClass(acceptable ? 'bar-success' : 'bar-danger');
     }

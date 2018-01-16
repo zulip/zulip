@@ -1,25 +1,32 @@
 #!/bin/bash
 
 source tools/travis/activate-venv
+echo "Test suite is running under $(python --version)."
 
 set -e
 set -x
 
-./tools/lint --pep8 # Include the slow and thus non-default pep8 linter check
-python manage.py makemessages --locale en
-python -W ignore tools/check-capitalization --no-generate
-python -W ignore tools/check-frontend-i18n --no-generate
-
+#./tools/lint --backend ${CIRCLECI:+--no-gitlint}
+# TEMP: turn off git lint
+./tools/lint --backend --no-gitlint
 ./tools/test-tools
 ./tools/test-backend --coverage
+
+# We run mypy after the backend tests so we get output from the
+# backend tests, which tend to uncover more serious problems, first.
+./tools/run-mypy --version
+./tools/run-mypy --linecoverage-report
+
 ./tools/test-migrations
 ./tools/optimize-svg
-./tools/test-documentation
-./tools/test-help-documentation.py
+./tools/test-documentation ${CIRCLECI:+--skip-check-links}
+./tools/test-help-documentation
 ./tools/test-api
-#./tools/test-run-dev  # Disabled in CI because flaky.
-#./tools/test-queue-worker-reload  # Disabled in CI because flaky.
+./tools/test-locked-requirements
+./tools/test-run-dev
+./tools/test-queue-worker-reload
 
+./tools/test-slack-importer
 # NB: Everything here should be in `tools/test-all`.  If there's a
 # reason not to run it there, it should be there as a comment
 # explaining why.

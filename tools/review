@@ -1,6 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from __future__ import print_function
 import subprocess
 import sys
 
@@ -15,16 +14,20 @@ def run(command):
     print('\n>>> ' + command)
     subprocess.check_call(command.split())
 
+def check_output(command):
+    # type: (str) -> str
+    return subprocess.check_output(command.split()).decode('ascii')
+
 def get_git_branch():
     # type: () -> str
     command = 'git rev-parse --abbrev-ref HEAD'
-    output = subprocess.check_output(command.split())
+    output = check_output(command)
     return output.strip()
 
 def check_git_pristine():
     # type: () -> None
     command = 'git status --porcelain'
-    output = subprocess.check_output(command.split())
+    output = check_output(command)
     if output.strip():
         exit('Git is not pristine:\n' + output)
 

@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
 
 from typing import List, Set, Tuple
 
@@ -72,9 +70,13 @@ def find(fns):
     # type: (List[str]) -> List[Tuple[str, str]]
     encountered = set()  # type: Set[str]
     tups = []  # type: List[Tuple[str, str]]
-    for fn in fns:
-        lines = list(open(fn))
-        fn = os.path.basename(fn)
+    for full_fn in fns:
+        # Don't check frontend tests, since they may do all sorts of
+        # extra hackery that isn't of interest to us.
+        if full_fn.startswith("frontend_tests"):
+            continue
+        lines = list(open(full_fn))
+        fn = os.path.basename(full_fn)
         module_classes = set()  # type: Set[str]
         for i, line in enumerate(lines):
             if 'addClass' in line:
@@ -97,14 +99,14 @@ def find(fns):
                         html_classes = ['alert']
 
                 if not html_classes:
-                    raise_error(fn, i, line)
+                    raise_error(full_fn, i, line)
                 for html_class in html_classes:
                     if generic(html_class):
                         continue
                     if html_class in module_classes:
                         continue
                     if html_class in encountered:
-                        raise_error(fn, i, line)
+                        raise_error(full_fn, i, line)
                     tups.append((fn, html_class))
                     module_classes.add(html_class)
                     encountered.add(html_class)

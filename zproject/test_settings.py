@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 import os
 # test_settings.py works differently from
 # dev_settings.py/prod_settings.py; it actually is directly referenced
@@ -18,6 +17,9 @@ import os
 if os.getenv("EXTERNAL_HOST") is None:
     os.environ["EXTERNAL_HOST"] = "testserver"
 from .settings import *
+
+# Clear out the REALM_HOSTS set in dev_settings.py
+REALM_HOSTS = {}
 
 # Used to clone DBs in backend tests.
 BACKEND_DATABASE_TEMPLATE = 'zulip_test_template'
@@ -61,7 +63,7 @@ POLL_TIMEOUT = 1000
 # Don't use the real message log for tests
 EVENT_LOG_DIR = '/tmp/zulip-test-event-log'
 
-# Print our emails rather than sending them
+# Stores the messages in `django.core.mail.outbox` rather than sending them.
 EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 
 # The test suite uses EmailAuthBackend
@@ -94,6 +96,9 @@ CACHES['database'] = {
     }
 }
 
+# Disable caching on sessions to make query counts consistent
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
+
 # Use production config from Webpack in tests
 if CASPER_TESTS:
     WEBPACK_FILE = 'webpack-stats-production.json'
@@ -101,18 +106,25 @@ else:
     WEBPACK_FILE = os.path.join('var', 'webpack-stats-test.json')
 WEBPACK_LOADER['DEFAULT']['STATS_FILE'] = os.path.join(DEPLOY_ROOT, WEBPACK_FILE)
 
-if CASPER_TESTS:
-    # Don't auto-restart Tornado server during casper tests
-    AUTORELOAD = False
-else:
+# Don't auto-restart Tornado server during automated tests
+AUTORELOAD = False
+
+if not CASPER_TESTS:
     # Use local memory cache for backend tests.
     CACHES['default'] = {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
     }
-    LOGGING['loggers']['zulip.requests']['level'] = 'CRITICAL'
-    LOGGING['loggers']['zulip.management']['level'] = 'CRITICAL'
-    LOGGING['loggers']['django.request'] = {'level': 'ERROR'}
-    LOGGING['loggers']['fakeldap'] = {'level': 'ERROR'}
+
+    def set_loglevel(logger_name, level) -> None:
+        LOGGING['loggers'].setdefault(logger_name, {})['level'] = level
+    set_loglevel('zulip.requests', 'CRITICAL')
+    set_loglevel('zulip.management', 'CRITICAL')
+    set_loglevel('django.request', 'ERROR')
+    set_loglevel('fakeldap', 'ERROR')
+    set_loglevel('zulip.send_email', 'ERROR')
+    set_loglevel('zerver.lib.digest', 'ERROR')
+    set_loglevel('zerver.lib.email_mirror', 'ERROR')
+    set_loglevel('zerver.worker.queue_processors', 'WARNING')
 
 # Enable file:/// hyperlink support by default in tests
 ENABLE_FILE_LINKS = True
@@ -123,7 +135,7 @@ LOCAL_UPLOADS_DIR = 'var/test_uploads'
 S3_KEY = 'test-key'
 S3_SECRET_KEY = 'test-secret-key'
 S3_AUTH_UPLOADS_BUCKET = 'test-authed-bucket'
-REALMS_HAVE_SUBDOMAINS = bool(os.getenv('REALMS_HAVE_SUBDOMAINS', False))
+S3_AVATAR_BUCKET = 'test-avatar-bucket'
 
 # Test Custom TOS template rendering
 TERMS_OF_SERVICE = 'corporate/terms.md'
@@ -136,3 +148,13 @@ LOGIN_URL = '/accounts/login'
 # By default will not send emails when login occurs.
 # Explicity set this to True within tests that must have this on.
 SEND_LOGIN_EMAILS = False
+
+GOOGLE_OAUTH2_CLIENT_ID = "id"
+GOOGLE_OAUTH2_CLIENT_SECRET = "secret"
+
+SOCIAL_AUTH_GITHUB_KEY = "key"
+SOCIAL_AUTH_GITHUB_SECRET = "secret"
+
+# By default two factor authentication is disabled in tests.
+# Explicitly set this to True within tests that must have this on.
+TWO_FACTOR_AUTHENTICATION_ENABLED = False

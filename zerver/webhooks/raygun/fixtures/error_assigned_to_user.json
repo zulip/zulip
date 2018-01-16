@@ -1,0 +1,17 @@
+{
+  "event":"error_activity",
+  "eventType":"AssignedToUser",
+  "error":{
+    "url":"https://app.raygun.com/error-url",
+    "description":"Error Script Error was assigned to Kyle by Amy",
+    "activityDate":"1970-01-28T01:49:36Z",
+    "message":"Script Error",
+    "assignedTo":"Kyle Kenny",
+    "user":"Amy Loondon"
+  },
+  "application":{
+    "name":"application name",
+    "url":"http://app.raygun.io/application-url"
+  }
+}
+

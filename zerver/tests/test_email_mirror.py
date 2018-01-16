@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
 
 import subprocess
 
 from django.http import HttpResponse
+from django.utils.timezone import now as timezone_now
 
 from zerver.lib.test_helpers import (
     most_recent_message,
@@ -18,11 +18,17 @@ from zerver.models import (
     get_display_recipient,
     get_realm,
     get_stream,
-    Recipient
+    get_client,
+    Recipient,
+    UserProfile,
+    UserActivity,
+    Realm
 )
 
 from zerver.lib.actions import (
+    create_stream_if_needed,
     encode_email_address,
+    do_create_user
 )
 from zerver.lib.email_mirror import (
     process_message, process_stream_message, ZulipEmailForwardError,
@@ -30,7 +36,7 @@ from zerver.lib.email_mirror import (
     get_missed_message_token_from_address,
 )
 
-from zerver.lib.digest import handle_digest_email
+from zerver.lib.digest import gather_new_streams, handle_digest_email, enqueue_emails
 from zerver.lib.send_email import FromAddress
 from zerver.lib.notifications import (
     handle_missedmessage_emails,
@@ -46,19 +52,15 @@ import ujson
 import mock
 import os
 import sys
-from os.path import dirname, abspath
-from six.moves import cStringIO as StringIO
+from io import StringIO
 from django.conf import settings
 
-from zerver.lib.str_utils import force_str
 from typing import Any, Callable, Dict, Mapping, Union, Text
 
 class TestEmailMirrorLibrary(ZulipTestCase):
-    def test_get_missed_message_token(self):
-        # type: () -> None
+    def test_get_missed_message_token(self) -> None:
 
-        def get_token(address):
-            # type: (Text) -> Text
+        def get_token(address: Text) -> Text:
             with self.settings(EMAIL_GATEWAY_PATTERN="%s@example.com"):
                 return get_missed_message_token_from_address(address)
 
@@ -82,14 +84,13 @@ class TestEmailMirrorLibrary(ZulipTestCase):
             get_token(address)
 
 class TestStreamEmailMessagesSuccess(ZulipTestCase):
-    def test_receive_stream_email_messages_success(self):
-        # type: () -> None
+    def test_receive_stream_email_messages_success(self) -> None:
 
         # build dummy messages for stream
         # test valid incoming stream message is processed properly
         user_profile = self.example_user('hamlet')
         self.login(user_profile.email)
-        self.subscribe_to_stream(user_profile.email, "Denmark")
+        self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
 
         stream_to_address = encode_email_address(stream)
@@ -111,14 +112,13 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         self.assertEqual(message.topic_name(), incoming_valid_message['Subject'])
 
 class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
-    def test_receive_stream_email_messages_empty_body(self):
-        # type: () -> None
+    def test_receive_stream_email_messages_empty_body(self) -> None:
 
         # build dummy messages for stream
         # test message with empty body is not sent
         user_profile = self.example_user('hamlet')
         self.login(user_profile.email)
-        self.subscribe_to_stream(user_profile.email, "Denmark")
+        self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
 
         stream_to_address = encode_email_address(stream)
@@ -149,8 +149,7 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         self.assertEqual(exception_message, "Unable to find plaintext or HTML message body")
 
 class TestMissedPersonalMessageEmailMessages(ZulipTestCase):
-    def test_receive_missed_personal_message_email_messages(self):
-        # type: () -> None
+    def test_receive_missed_personal_message_email_messages(self) -> None:
 
         # build dummy messages for missed messages email reply
         # have Hamlet send Othello a PM. Othello will reply via email
@@ -190,8 +189,7 @@ class TestMissedPersonalMessageEmailMessages(ZulipTestCase):
         self.assertEqual(message.recipient.type, Recipient.PERSONAL)
 
 class TestMissedHuddleMessageEmailMessages(ZulipTestCase):
-    def test_receive_missed_huddle_message_email_messages(self):
-        # type: () -> None
+    def test_receive_missed_huddle_message_email_messages(self) -> None:
 
         # build dummy messages for missed messages email reply
         # have Othello send Iago and Cordelia a PM. Cordelia will reply via email
@@ -238,8 +236,7 @@ class TestMissedHuddleMessageEmailMessages(ZulipTestCase):
         self.assertEqual(message.recipient.type, Recipient.HUDDLE)
 
 class TestEmptyGatewaySetting(ZulipTestCase):
-    def test_missed_message(self):
-        # type: () -> None
+    def test_missed_message(self) -> None:
         email = self.example_email('othello')
         self.login(email)
         result = self.client_post("/json/messages", {"type": "private",
@@ -255,8 +252,7 @@ class TestEmptyGatewaySetting(ZulipTestCase):
             mm_address = create_missed_message_address(user_profile, usermessage.message)
             self.assertEqual(mm_address, FromAddress.NOREPLY)
 
-    def test_encode_email_addr(self):
-        # type: () -> None
+    def test_encode_email_addr(self) -> None:
         stream = get_stream("Denmark", get_realm("zulip"))
 
         with self.settings(EMAIL_GATEWAY_PATTERN=''):
@@ -266,8 +262,8 @@ class TestEmptyGatewaySetting(ZulipTestCase):
 class TestDigestEmailMessages(ZulipTestCase):
     @mock.patch('zerver.lib.digest.enough_traffic')
     @mock.patch('zerver.lib.digest.send_future_email')
-    def test_receive_digest_email_messages(self, mock_send_future_email, mock_enough_traffic):
-        # type: (mock.MagicMock, mock.MagicMock) -> None
+    def test_receive_digest_email_messages(self, mock_send_future_email: mock.MagicMock,
+                                           mock_enough_traffic: mock.MagicMock) -> None:
 
         # build dummy messages for missed messages email reply
         # have Hamlet send Othello a PM. Othello will reply via email
@@ -287,16 +283,105 @@ class TestDigestEmailMessages(ZulipTestCase):
         self.assertEqual(mock_send_future_email.call_count, 1)
         self.assertEqual(mock_send_future_email.call_args[1]['to_user_id'], user_profile.id)
 
+    @mock.patch('zerver.lib.digest.queue_digest_recipient')
+    @mock.patch('zerver.lib.digest.timezone_now')
+    def test_inactive_users_queued_for_digest(self, mock_django_timezone: mock.MagicMock,
+                                              mock_queue_digest_recipient: mock.MagicMock) -> None:
+        cutoff = timezone_now()
+        # Test Tuesday
+        mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=5)
+        all_user_profiles = UserProfile.objects.filter(
+            is_active=True, is_bot=False, enable_digest_emails=True)
+        # Check that all users without an a UserActivity entry are considered
+        # inactive users and get enqueued.
+        enqueue_emails(cutoff)
+        self.assertEqual(mock_queue_digest_recipient.call_count, all_user_profiles.count())
+        mock_queue_digest_recipient.reset_mock()
+        for realm in Realm.objects.filter(deactivated=False, show_digest_email=True):
+            user_profiles = all_user_profiles.filter(realm=realm)
+            for user_profile in user_profiles:
+                UserActivity.objects.create(
+                    last_visit=cutoff - datetime.timedelta(days=1),
+                    user_profile=user_profile,
+                    count=0,
+                    client=get_client('test_client'))
+        # Check that inactive users are enqueued
+        enqueue_emails(cutoff)
+        self.assertEqual(mock_queue_digest_recipient.call_count, all_user_profiles.count())
+
+    @mock.patch('zerver.lib.digest.enough_traffic', return_value=True)
+    @mock.patch('zerver.lib.digest.timezone_now')
+    def test_active_users_not_enqueued(self, mock_django_timezone: mock.MagicMock,
+                                       mock_enough_traffic: mock.MagicMock) -> None:
+        cutoff = timezone_now()
+        # A Tuesday
+        mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=5)
+        realms = Realm.objects.filter(deactivated=False, show_digest_email=True)
+        for realm in realms:
+            user_profiles = UserProfile.objects.filter(realm=realm)
+            for counter, user_profile in enumerate(user_profiles, 1):
+                UserActivity.objects.create(
+                    last_visit=cutoff + datetime.timedelta(days=1),
+                    user_profile=user_profile,
+                    count=0,
+                    client=get_client('test_client'))
+        # Check that an active user is not enqueued
+        with mock.patch('zerver.lib.digest.queue_digest_recipient') as mock_queue_digest_recipient:
+            enqueue_emails(cutoff)
+            self.assertEqual(mock_queue_digest_recipient.call_count, 0)
+
+    @mock.patch('zerver.lib.digest.queue_digest_recipient')
+    @mock.patch('zerver.lib.digest.timezone_now')
+    def test_only_enqueue_on_valid_day(self, mock_django_timezone: mock.MagicMock,
+                                       mock_queue_digest_recipient: mock.MagicMock) -> None:
+        # Not a Tuesday
+        mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=6)
+
+        # Check that digests are not sent on days other than Tuesday.
+        cutoff = timezone_now()
+        enqueue_emails(cutoff)
+        self.assertEqual(mock_queue_digest_recipient.call_count, 0)
+
+    @mock.patch('zerver.lib.digest.queue_digest_recipient')
+    @mock.patch('zerver.lib.digest.timezone_now')
+    def test_no_email_digest_for_bots(self, mock_django_timezone: mock.MagicMock,
+                                      mock_queue_digest_recipient: mock.MagicMock) -> None:
+        cutoff = timezone_now()
+        # A Tuesday
+        mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=5)
+        bot = do_create_user('some_bot@example.com', 'password', get_realm('zulip'), 'some_bot', '',
+                             bot_type=UserProfile.DEFAULT_BOT)
+        UserActivity.objects.create(
+            last_visit=cutoff - datetime.timedelta(days=1),
+            user_profile=bot,
+            count=0,
+            client=get_client('test_client'))
+
+        # Check that bots are not sent emails
+        enqueue_emails(cutoff)
+        for arg in mock_queue_digest_recipient.call_args_list:
+            user = arg[0][0]
+            self.assertNotEqual(user.id, bot.id)
+
+    @mock.patch('zerver.lib.digest.timezone_now')
+    def test_new_stream_link(self, mock_django_timezone: mock.MagicMock) -> None:
+        cutoff = datetime.datetime(year=2017, month=11, day=1)
+        mock_django_timezone.return_value = datetime.datetime(year=2017, month=11, day=5)
+        cordelia = self.example_user('cordelia')
+        create_stream_if_needed(cordelia.realm, 'New stream')
+        new_stream = gather_new_streams(cordelia, cutoff)[1]
+        expected_html = "<a href='http://zulip.testserver/#narrow/stream/New.20stream'>New stream</a>"
+        self.assertIn(expected_html, new_stream['html'])
+
 class TestReplyExtraction(ZulipTestCase):
-    def test_reply_is_extracted_from_plain(self):
-        # type: () -> None
+    def test_reply_is_extracted_from_plain(self) -> None:
 
         # build dummy messages for stream
         # test valid incoming stream message is processed properly
         email = self.example_email('hamlet')
         self.login(email)
         user_profile = self.example_user('hamlet')
-        self.subscribe_to_stream(user_profile.email, "Denmark")
+        self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
 
         stream_to_address = encode_email_address(stream)
@@ -320,15 +405,14 @@ class TestReplyExtraction(ZulipTestCase):
 
         self.assertEqual(message.content, "Reply")
 
-    def test_reply_is_extracted_from_html(self):
-        # type: () -> None
+    def test_reply_is_extracted_from_html(self) -> None:
 
         # build dummy messages for stream
         # test valid incoming stream message is processed properly
         email = self.example_email('hamlet')
         self.login(email)
         user_profile = self.example_user('hamlet')
-        self.subscribe_to_stream(user_profile.email, "Denmark")
+        self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
 
         stream_to_address = encode_email_address(stream)
@@ -365,13 +449,12 @@ class TestReplyExtraction(ZulipTestCase):
 
         self.assertEqual(message.content, 'Reply')
 
-MAILS_DIR = os.path.join(dirname(dirname(abspath(__file__))), "fixtures", "email")
+MAILS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "fixtures", "email")
 
 
 class TestScriptMTA(ZulipTestCase):
 
-    def test_success(self):
-        # type: () -> None
+    def test_success(self) -> None:
         script = os.path.join(os.path.dirname(__file__),
                               '../../scripts/lib/email-mirror-postfix')
 
@@ -387,11 +470,10 @@ class TestScriptMTA(ZulipTestCase):
         os.write(write_pipe, mail.encode())
         os.close(write_pipe)
         subprocess.check_call(
-            [script, '-r', force_str(stream_to_address), '-s', settings.SHARED_SECRET, '-t'],
+            [script, '-r', stream_to_address, '-s', settings.SHARED_SECRET, '-t'],
             stdin=read_pipe)
 
-    def test_error_no_recipient(self):
-        # type: () -> None
+    def test_error_no_recipient(self) -> None:
         script = os.path.join(os.path.dirname(__file__),
                               '../../scripts/lib/email-mirror-postfix')
 
@@ -421,8 +503,7 @@ class TestScriptMTA(ZulipTestCase):
 
 class TestEmailMirrorTornadoView(ZulipTestCase):
 
-    def send_private_message(self):
-        # type: () -> Text
+    def send_private_message(self) -> Text:
         email = self.example_email('othello')
         self.login(email)
         result = self.client_post(
@@ -440,15 +521,16 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
         return create_missed_message_address(user_profile, user_message.message)
 
     @mock.patch('zerver.lib.email_mirror.queue_json_publish')
-    def send_offline_message(self, to_address, sender, mock_queue_json_publish):
-        # type: (str, str, mock.Mock) -> HttpResponse
+    def send_offline_message(self, to_address: str, sender: str,
+                             mock_queue_json_publish: mock.Mock) -> HttpResponse:
         template_path = os.path.join(MAILS_DIR, "simple.txt")
         with open(template_path) as template_file:
             mail_template = template_file.read()
         mail = mail_template.format(stream_to_address=to_address, sender=sender)
 
-        def check_queue_json_publish(queue_name, event, processor):
-            # type: (str, Union[Mapping[str, Any], str], Callable[[Any], None]) -> None
+        def check_queue_json_publish(queue_name: str,
+                                     event: Union[Mapping[str, Any], str],
+                                     processor: Callable[[Any], None]=None) -> None:
             self.assertEqual(queue_name, "email_mirror")
             self.assertEqual(event, {"rcpt_to": to_address, "message": mail})
 
@@ -463,15 +545,13 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
         )
         return self.client_post('/email_mirror_message', post_data)
 
-    def test_success_stream(self):
-        # type: () -> None
+    def test_success_stream(self) -> None:
         stream = get_stream("Denmark", get_realm("zulip"))
         stream_to_address = encode_email_address(stream)
         result = self.send_offline_message(stream_to_address, self.example_email('hamlet'))
         self.assert_json_success(result)
 
-    def test_error_to_stream_with_wrong_address(self):
-        # type: () -> None
+    def test_error_to_stream_with_wrong_address(self) -> None:
         stream = get_stream("Denmark", get_realm("zulip"))
         stream_to_address = encode_email_address(stream)
         stream_to_address = stream_to_address.replace("Denmark", "Wrong_stream")
@@ -482,14 +562,12 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
             "5.1.1 Bad destination mailbox address: "
             "Please use the address specified in your Streams page.")
 
-    def test_success_to_private(self):
-        # type: () -> None
+    def test_success_to_private(self) -> None:
         mm_address = self.send_private_message()
         result = self.send_offline_message(mm_address, self.example_email('cordelia'))
         self.assert_json_success(result)
 
-    def test_using_mm_address_twice(self):
-        # type: () -> None
+    def test_using_mm_address_twice(self) -> None:
         mm_address = self.send_private_message()
         self.send_offline_message(mm_address, self.example_email('cordelia'))
         result = self.send_offline_message(mm_address, self.example_email('cordelia'))
@@ -497,8 +575,7 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
             result,
             "5.1.1 Bad destination mailbox address: Bad or expired missed message address.")
 
-    def test_wrong_missed_email_private_message(self):
-        # type: () -> None
+    def test_wrong_missed_email_private_message(self) -> None:
         self.send_private_message()
         mm_address = 'mm' + ('x' * 32) + '@testserver'
         result = self.send_offline_message(mm_address, self.example_email('cordelia'))

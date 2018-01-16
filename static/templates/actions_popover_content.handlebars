@@ -1,5 +1,5 @@
 {{! Contents of the "message actions" popup }}
-<ul class="nav nav-list actions_popover pull-right">
+<ul class="nav nav-list actions_popover">
     <li>
         <a href="#" class="popover_edit_message" data-message-id="{{message.id}}">
             {{! Can consider http://fontawesome.io/icon/file-code-o/ when we upgrade to font awesome 4.}}
@@ -13,12 +13,24 @@
         </a>
     </li>
 
+
+    {{#if should_display_collapse}}
     <li>
         <a href="#" class="popover_toggle_collapse" data-message-id="{{message.id}}">
-            <i class="{{#if message.collapsed}}fa fa-plus{{else}}fa fa-minus{{/if}}" aria-hidden="true"></i>
-            {{#if message.collapsed}}{{t "Un-collapse" }}{{else}}{{t "Collapse" }}{{/if}}
+            <i class="fa fa-minus" aria-hidden="true"></i>
+            {{t "Collapse" }} (-)
         </a>
     </li>
+    {{/if}}
+
+    {{#if should_display_uncollapse}}
+    <li>
+        <a href="#" class="popover_toggle_collapse" data-message-id="{{message.id}}">
+            <i class="fa fa-plus" aria-hidden="true"></i>
+            {{t "Un-collapse" }} (-)
+        </a>
+    </li>
+    {{/if}}
 
     {{#if should_display_edit_history_option}}
     <li>
@@ -40,7 +52,7 @@
     <li>
         <a href="#" class="popover_mute_topic" data-msg-stream="{{message.stream}}" data-msg-topic="{{message.subject}}">
             <i class="fa fa-eye-slash" aria-hidden="true"></i>
-            {{#tr message}}Mute the topic <b>__subject__</b>{{/tr}}
+            {{#tr message}}Mute the topic <b>__subject__</b>{{/tr}} (M)
         </a>
     </li>
     {{/if}}

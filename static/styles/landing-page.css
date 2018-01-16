@@ -31,15 +31,15 @@ p {
     line-height: 1.5;
 }
 
+ul {
+    font-weight: normal;
+}
+
 a,
 a:hover,
 a:visited {
-    color: hsl(170, 47%, 53%);
-}
-
-a.no-style:hover {
-    text-decoration: none;
-    color: inherit;
+    color: hsl(170, 47%, 33%);
+    font-weight: 500;
 }
 
 a.arrow:after {
@@ -75,21 +75,10 @@ a:hover {
     text-decoration: none;
 }
 
-a:not(.no-style):before {
-    content: " ";
-
-    position: absolute;
-    bottom: -1px;
-
-    height: 1px;
-    width: 0%;
-
-    background-color: hsl(170, 47%, 53%);
-    transition: all 0.5s ease;
-}
-
-a:not(.no-style):hover:before {
-    width: 100%;
+p a:hover,
+ul a:hover,
+ol a:hover {
+    text-decoration: underline;
 }
 
 .flex {
@@ -132,6 +121,10 @@ a:not(.no-style):hover:before {
     font-weight: 600;
 }
 
+.silver.bold {
+    font-weight: 600;
+}
+
 .padded-content {
     padding: 50px;
 }
@@ -164,6 +157,18 @@ button {
     border-radius: 4px;
     border: 1px solid hsl(0, 0%, 80%);
     outline: none;
+}
+
+button.green:hover {
+    -webkit-filter: brightness(1.05);
+    -moz-filter: brightness(1.05);
+    filter: brightness(1.05);
+}
+
+button.green:active {
+    -webkit-filter: brightness(0.95);
+    -moz-filter: brightness(0.95);
+    filter: brightness(0.95);
 }
 
 button:active {
@@ -214,8 +219,25 @@ nav {
     z-index: 4;
 }
 
+nav .brand.logo {
+    text-decoration: none;
+}
+
 nav.white {
     background-color: #fff;
+}
+
+a.silver {
+    text-decoration: underline;
+}
+
+.silver {
+    color: #fff !important;
+    opacity: 0.8;
+}
+
+.silver:hover {
+    opacity: 1;
 }
 
 nav.white li a,
@@ -285,7 +307,7 @@ nav .brand-logo {
 nav ul {
     float: right;
     list-style-type: none;
-    font-weight: 500;
+    font-weight: 400;
     margin: 0;
     padding: 0;
 
@@ -343,24 +365,14 @@ nav ul li.active::after {
 
     padding-top: 120px;
 
-    transition: all 0.5s ease;
-    -webkit-transform: translateY(120px);
-    transform: translateY(120px);
+    transition: opacity 0.3s ease;
+
     opacity: 0;
 
     z-index: 1;
 }
 
-.portico-landing.no-slide {
-    -webkit-transform: translateY(0px);
-    transform: translateY(0px);
-
-    opacity: 1;
-}
-
 .portico-landing.show {
-    -webkit-transform: translateY(0px);
-    transform: translateY(0px);
     opacity: 1;
 }
 
@@ -415,7 +427,7 @@ nav ul li.active::after {
 }
 
 .portico-landing.features-app section.hero .copy {
-    width: 800px;
+    max-width: 800px;
     margin: 0 auto;
 
     text-align: center;
@@ -430,7 +442,7 @@ nav ul li.active::after {
     font-size: 1.8em;
     margin: 30px auto 0 auto;
 
-    width: 600px;
+    max-width: 600px;
     line-height: 1.3;
 }
 
@@ -504,10 +516,11 @@ nav ul li.active::after {
 .portico-landing.features-app section.messages .image {
     width: calc(100% - 500px - 100px);
     margin: 50px 0px 50px 50px;
+    max-width: 500px;
 }
 
 .portico-landing.features-app section.messages .features {
-    width: 500px;
+    max-width: 500px;
 }
 
 .portico-landing.features-app section.messages .features h2 {
@@ -585,7 +598,7 @@ nav ul li.active::after {
 
     border-radius: 4px;
 
-    background-image: url(/static/images/checkbox-valid.svg);
+    background-image: url(/static/images/checkbox-green.svg);
     background-size: 100% auto;
     background-position: center;
     background-repeat: no-repeat;
@@ -693,7 +706,6 @@ nav ul li.active::after {
     background: linear-gradient(0deg, #fff 0%, transparent 40%);
 }
 
-
 .portico-landing.hello .hero .waves {
     position: absolute;
 
@@ -746,9 +758,11 @@ nav ul li.active::after {
     0% {
         transform: rotate(0);
     }
+
     50% {
         transform: rotate(180deg);
     }
+
     100% {
         transform: rotate(360deg);
     }
@@ -758,9 +772,11 @@ nav ul li.active::after {
     0% {
         transform: rotate(0);
     }
+
     50% {
         transform: rotate(-180deg);
     }
+
     100% {
         transform: rotate(-360deg);
     }
@@ -803,33 +819,31 @@ nav ul li.active::after {
 .portico-landing.hello .hero header a {
     display: block;
     margin: 20px auto 0px auto;
-    width: 150px;
     text-align: center;
 }
 
 .portico-landing.hello .hero header button {
     margin-top: 0px;
-    padding: 8px 15px;
+    padding: 12px 20px;
 
-    background-color: transparent;
+    background: #fff;
     border: 2px solid #fff;
 
-    font-size: 1em;
-    font-weight: 600;
-    color: #fff;
+    font-size: 1.2em;
+    font-weight: 500;
+    color: #679f81;
 
-    box-shadow: 0px 1px 50px rgba(0,0,0,0.1);
-    text-shadow: 0px 1px 2px rgba(0,0,0,0.1);
+    box-shadow: 0px 3px 10px rgba(0,0,0,0.2);
 
     transition: all 0.2s ease;
 }
 
 .portico-landing.hello .hero header button:hover {
-    box-shadow: 0px 0px 0px #fff;
+    box-shadow: 0px 3px 10px rgba(255,255,255,0.2);
 }
 
 .portico-landing.hello .hero header button:active {
-    box-shadow: 0px 1px 20px rgba(255,255,255,0.5);
+    box-shadow: 0px 3px 20px rgba(255,255,255,0.5);
 }
 
 .portico-landing.hello .hero header .download-button {
@@ -843,26 +857,28 @@ nav ul li.active::after {
     font-weight: normal;
 }
 
-.portico-landing.hello .col-2 {
-    width: 60%;
+.portico-landing.hello .col-3-5,
+.portico-landing.hello .col-2,
+.portico-landing.hello .col-4 {
     margin-right: -4px;
     display: inline-block;
     vertical-align: top;
+}
+
+.portico-landing.hello .col-3-5 {
+    width: 60%;
+}
+
+.portico-landing.hello .col-2 {
+    width: 49.9%;
 }
 
 .portico-landing.hello .col-3 {
     width: 33.3%;
-    margin-right: -4px;
-    display: inline-block;
-    vertical-align: top;
 }
-
 
 .portico-landing.hello .col-4 {
     width: 20%;
-    margin-right: -4px;
-    display: inline-block;
-    vertical-align: top;
 }
 
 /* -- compare css -- */
@@ -904,7 +920,7 @@ nav ul li.active::after {
 }
 
 .compare thead {
-    border-bottom: 5px solid hsla(0, 0%, 0%, 0.1);
+    border-bottom: 3px solid hsla(0, 0%, 0%, 0.1);
 }
 
 .compare thead th {
@@ -920,7 +936,7 @@ nav ul li.active::after {
 }
 
 .compare tbody tr {
-    border-bottom: 1px solid hsl(163, 22%, 28%);
+    border-bottom: 1px solid hsla(360, 0%, 100%, 0.03);
 }
 
 .compare tbody tr td {
@@ -942,7 +958,7 @@ nav ul li.active::after {
 }
 
 .compare tbody tr td.no::before {
-    content: "×";
+    content: "\d7";
 
     position: relative;
     display: inline-block;
@@ -950,13 +966,15 @@ nav ul li.active::after {
     top: 3px;
 
     font-size: 2.5rem;
-    font-weight: 300;
+    font-weight: 500;
     line-height: 0.9;
+
+    opacity: 0.4;
 }
 
 .compare tbody tr td a {
     font-size: 0.9rem;
-    font-weight: 500;
+    font-weight: 400;
     text-transform: uppercase;
 }
 
@@ -972,6 +990,50 @@ nav ul li.active::after {
     line-height: 1.2;
 
     color: hsla(0, 0%, 100%, 0.8);
+}
+
+.compare .terms a {
+    color: hsl(170, 47%, 73%);
+}
+
+/* -- faq css -- */
+.faqs {
+    position: relative;
+    background-color: #fafafa;
+}
+
+.faqs .padded-content {
+    position: relative;
+    z-index: 1;
+}
+
+.faqs header {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.faqs header h1 span {
+    vertical-align: top;
+}
+
+.faqs .faq {
+    margin: 50px auto;
+    max-width: 800px;
+    font-size: 1.3em;
+}
+
+/* the last faq in the box shouldn't have an extra 50px of margin. */
+.faqs .faq-box div:last-of-type {
+    margin-bottom: 10px;
+}
+
+.faqs .faq .question {
+    font-weight: 600;
+}
+
+.faqs .faq .answer {
+    margin: 20px 0px 0px 0px;
+    font-weight: 300;
 }
 
 .screen .line {
@@ -1175,32 +1237,68 @@ nav ul li.active::after {
     background-color: #fff;
 }
 
-.portico-landing.hello .features .col-3 {
+.portico-landing.hello .features .col-2 {
     text-align: center;
 
     position: relative;
     z-index: 1;
 }
 
-.portico-landing.hello .features .col-3 img {
+.portico-landing.hello .features .col-2 img {
     margin-bottom: 20px;
     width: 100%;
     max-width: 300px;
 }
 
-.portico-landing.hello .features .col-3 .il-block {
+.portico-landing.hello .features .col-2 .il-block {
     display: inline-block;
     width: 75%;
     text-align: left;
 }
 
-.portico-landing.hello .features .col-3 h2 {
+.portico-landing.hello .features .col-2 h2 {
     font-weight: normal;
 }
 
+.portico-landing.hello .open-source {
+    text-align: center;
+
+    position: relative;
+    z-index: 1;
+
+    background-color: #e9ecf1;
+}
+
+.portico-landing.hello .open-source .flex {
+    min-height: 0px;
+    padding: 50px 0px;
+}
+
+.portico-landing.hello .open-source img {
+    margin: 0px 2%;
+    width: 28%;
+    max-width: 500px;
+}
+
+.portico-landing.hello .open-source .il-block {
+    display: inline-block;
+    vertical-align: top;
+    width: 50%;
+    max-width: 700px;
+    text-align: left;
+}
+
+.portico-landing.hello .open-source h2 {
+    font-weight: normal;
+}
+
+.portico-landing.hello .open-source img {
+    display: inline-block;
+}
+
 .portico-landing.hello .testimonials {
-    color: hsl(220, 15%, 76%);
-    background-color: hsl(219, 21%, 19%);
+    color: #fff;
+    background-color: hsl(169, 35%, 35%);
 }
 
 .portico-landing.hello .testimonials .text-header .text-content {
@@ -1235,10 +1333,10 @@ nav ul li.active::after {
     margin-top: 5px;
     margin-bottom: 30px;
 
-    color: hsl(221, 8%, 51%);
+    color: white;
+    opacity: 0.5;
     font-weight: 400;
 }
-
 
 .portico-landing.hello .testimonials blockquote {
     padding: 0px;
@@ -1247,6 +1345,8 @@ nav ul li.active::after {
     line-height: 1.6;
     text-align: left;
     border: none;
+
+    opacity: 0.8;
 }
 
 .portico-landing.hello .testimonials hr {
@@ -1281,7 +1381,7 @@ nav ul li.active::after {
     margin: 10px 20px;
 
     height: 60px;
-    width: calc(20% - 44px);
+    width: calc(25% - 44px);
 
     background-color: hsl(0, 0%, 66%);
     background-size: contain;
@@ -1471,34 +1571,31 @@ nav ul li.active::after {
 
 .portico-landing.hello .call-to-action-bottom {
     position: relative;
-    padding: 125px 100px 60px 100px;
+    padding: 125px 100px 0px 100px;
     margin-top: 0px;
 
-    background-color: hsl(218, 23%, 16%);
 }
 
 .portico-landing.hello .call-to-action-bottom button {
     display: block;
     margin: 20px auto 0 auto;
-    padding: 12px 25px 10px 25px;
+    padding: 11px 25px 11px 25px;
 
     font-size: 1.2rem;
-    color: hsl(220, 15%, 76%);
+    color: hsl(220, 15%, 66%);
 
-    border: 1px solid hsl(220, 15%, 76%);
+    border: 1px solid hsl(220, 15%, 66%);
     background: transparent;
 
     transition: all 0.2s ease;
 }
 
 .portico-landing.hello .call-to-action-bottom button:hover {
-    border-color: #fff;
-    background: #fff;
     color: hsl(219, 23%, 33%);
+    border: 1px solid hsl(220, 15%, 20%);
 }
 
 .portico-landing.hello .call-to-action-bottom h1 {
-    color: #fff;
     text-align: center;
     margin-top: 20px;
 }
@@ -1509,6 +1606,10 @@ nav ul li.active::after {
     height: 30px;
     background-image: url(/static/images/landing-page/zulip-octopus.png);
     background-size: cover;
+
+    -webkit-filter: invert(0.9);
+    -moz-filter: invert(0.9);
+    filter: invert(0.9);
 }
 
 .footer.hello {
@@ -1527,6 +1628,7 @@ nav ul li.active::after {
 .portico-landing.apps {
     padding-top: 0px;
 }
+
 .portico-landing.apps .main,
 .portico-landing.features-app .main {
     background-color: #fff;
@@ -1542,6 +1644,11 @@ nav ul li.active::after {
     color: #fff;
 
     overflow: hidden;
+}
+
+.portico-landing.apps .hero .inner-content {
+    max-width: 1600px;
+    margin: 0 auto;
 }
 
 .portico-landing.apps .hero h1 {
@@ -1578,6 +1685,7 @@ nav ul li.active::after {
 
 .portico-landing.apps .hero .info .cta {
     text-shadow: 0px 0px 60px rgba(0,0,0,0.3);
+    max-width: 600px;
 }
 
 .portico-landing.apps .hero .image img[src="/static/images/landing-page/tar.gz.svg"] {
@@ -1592,8 +1700,10 @@ nav ul li.active::after {
     height: 100%;
 }
 
-.portico-landing.apps .hero .info .flex {
-    height: 100%;
+.portico-landing.apps .hero .info .flex,
+.portico-landing.apps .hero .image .flex {
+    height: 500px;
+    min-height: 0px;
 }
 
 .portico-landing.apps .hero .info button {
@@ -1662,13 +1772,14 @@ nav ul li.active::after {
 
     font-size: 0.8rem;
     font-weight: 600;
-    font-family: "Humbug", sans-serif;
+    font-family: "Source Sans Pro", sans-serif;
     margin-top: 10px;
 }
 
 /* -- /for/open-source/ -- */
 .portico-landing.why-page {
     padding-top: 0px;
+    color: hsl(222, 20%, 40%);
 }
 
 .portico-landing.why-page .main {
@@ -1681,6 +1792,10 @@ nav ul li.active::after {
 
     background: #69b190;
     color: #fff;
+}
+
+.portico-landing.why-page .hero.small-hero {
+    padding: 120px 50px 30px 50px;
 }
 
 .portico-landing.why-page .hero h1 {
@@ -1707,16 +1822,69 @@ nav ul li.active::after {
 }
 
 .portico-landing.why-page .main li {
-    color: #555;
+    line-height: 1.6;
+    font-size: 1em;
 }
 
-.portico-landing.why-page .main li p {
-    line-height: 1.8;
+.portico-landing.why-page .main p {
+    font-size: 1em;
+    margin: 0px 0px 20px;
+}
+
+.portico-landing.why-page .main h3 {
+    margin-top: 20px;
 }
 
 .portico-landing.why-page .main li strong {
     font-weight: 600;
     color: #333;
+}
+
+.portico-landing.why-page .photo-description {
+    position: relative;
+    top: -40px;
+    height: 0;
+
+    font-size: 0.8em;
+    font-weight: normal;
+    color: #888;
+}
+
+.portico-landing.why-page .team h2 {
+    margin-top: 20px;
+}
+
+.portico-landing.why-page .bg-pycon {
+    position: relative;
+
+    background-image: url(/static/images/landing-page/pycon.jpg);
+    background-size: cover;
+    background-position: center;
+}
+
+.portico-landing.why-page .bg-pycon.drone {
+    background-image: url(/static/images/landing-page/pycon-drone.jpg);
+}
+
+.portico-landing.why-page .bg-pycon.mit {
+    background-image: url(/static/images/landing-page/mit-lobby-7.jpg);
+}
+
+.portico-landing.why-page .bg-pycon .bg-dimmer {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+
+    background-color: rgba(15, 24, 48, 0.7);
+
+    z-index: 0;
+}
+
+.portico-landing.why-page .bg-pycon .content {
+    position: relative;
+    z-index: 1;
 }
 
 /* -- hello page styling -- */
@@ -1725,7 +1893,6 @@ nav ul li.active::after {
     margin: 0px 10px;
     text-align: left;
 }
-
 
 .portico-landing.hello .apps .screen.ios {
     width: 200px;
@@ -1805,6 +1972,7 @@ nav ul li.active::after {
 
 .portico-landing.integrations .main {
     width: calc(100% - 100px);
+    max-width: 1170px;
     margin: 0 auto;
 
     background-color: #fff;
@@ -1886,9 +2054,9 @@ nav ul li.active::after {
 }
 
 .portico-landing.integrations .searchbar input {
-    -webkit-box-shadow: 1px 3px 5px 3px rgba(0,0,0,0.03);
-    -moz-box-shadow: 1px 3px 5px 3px rgba(0,0,0,0.03);
-    box-shadow: 1px 3px 5px 3px rgba(0,0,0,0.03);
+    -webkit-box-shadow: 0px 0px 7px 2px rgba(0,0,0,0.03);
+    -moz-box-shadow: 0px 0px 7px 2px rgba(0,0,0,0.03);
+    box-shadow: 0px 0px 7px 2px rgba(0,0,0,0.03);
 
     font-size: 1em;
     font-family: inherit;
@@ -1922,7 +2090,7 @@ nav ul li.active::after {
 .portico-landing.integrations .integration-categories-sidebar {
     float: left;
     width: 200px;
-    padding: 0 30px 0 50px;
+    padding: 0 30px 0 0px;
     margin: 0;
 }
 
@@ -1930,12 +2098,12 @@ nav ul li.active::after {
     position: sticky;
     top: 40px;
     margin: auto;
-    height: 426px;
+    height: 490px;
     z-index: 10;
 }
 
 .portico-landing.integrations .integration-categories-sidebar h3 {
-    font-weight: 500;
+    font-weight: 400;
     font-size: 1.1em;
 }
 
@@ -2032,7 +2200,6 @@ nav ul li.active::after {
     color: hsla(216, 23%, 13%, 0.5);
 }
 
-
 /* -- integration instructions -- */
 
 .portico-landing.integrations #integration-instructions-group {
@@ -2065,7 +2232,7 @@ nav ul li.active::after {
 
 .portico-landing.integrations .integration-instruction-block .categories .integration-category {
     font-size: 0.90em;
-    font-weight: 500;
+    font-weight: 400;
     padding: 6px 10px 6px 3px;
     margin: 3px 0;
     width: 165px;
@@ -2115,6 +2282,306 @@ nav ul li.active::after {
     background: linear-gradient(0deg, #fff 0%, transparent 40%);
 }
 
+/* -- pricing css -- */
+.portico-landing.plans .main {
+    width: 100%;
+}
+
+.portico-landing.plans .main .padded-content > h1 {
+    text-align: center;
+    font-size: 2.5em;
+    margin: 0px;
+
+    color: #fff;
+}
+
+.portico-landing.plans .main .padded-content > h2 {
+    color: #444;
+    text-align: center;
+
+    font-size: 1.5em;
+
+    margin-bottom: 50px;
+
+    color: #fff;
+}
+
+.pricing-model .pricing-container {
+    text-align: center;
+}
+
+.pricing-model .pricing-container .block {
+    display: inline-block;
+    margin: 0px 20px;
+}
+
+.pricing-model .pricing-container .block .plan-title {
+    padding: 10px;
+    margin-bottom: 3px;
+
+    color: #fff;
+
+    font-size: 2em;
+    font-weight: 300;
+}
+
+.pricing-model .pricing-container .price-box {
+    position: relative;
+    display: inline-block;
+    vertical-align: bottom;
+    margin: 0px;
+    width: 300px;
+    height: 500px;
+
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+
+
+    text-align: left;
+    background-color: #fff;
+
+    transition-property: all;
+    transition-duration: 0.3s;
+    transition-timing-function: ease;
+}
+
+.pricing-model .pricing-container .text-content {
+    margin: 20px;
+}
+
+.pricing-model .padded-content .text-header .text-content h1 {
+    margin-top: 0px;
+}
+
+.pricing-model .pricing-container .text-content h2 {
+    font-size: 1.5em;
+    font-weight: 400;
+    margin-bottom: 0px;
+
+    text-align: left;
+}
+
+.pricing-model .pricing-container hr {
+    border: none;
+    border-bottom: 2px solid #4fc0ad;
+    margin: 15px 0px 15px 0px;
+}
+
+.pricing-model .pricing-container .text-content .description {
+    font-size: 0.9em;
+    font-weight: 400;
+    color: #888;
+}
+
+.pricing-model .pricing-container ul.feature-list {
+    list-style: none;
+    padding: 0px;
+    margin: 0px;
+}
+
+.pricing-model .pricing-container ul.feature-list li {
+    position: relative;
+    padding: 10px 0px 10px 25px;
+
+    font-size: 0.9em;
+    font-weight: 500;
+}
+
+.pricing-model .pricing-container ul.feature-list li::before {
+    content: " ";
+    position: absolute;
+    top: 10px;
+    left: 0;
+    width: 20px;
+    height: 18px;
+
+    background-image: url(/static/images/checkbox-green.svg);
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    -webkit-filter: invert(0.3);
+}
+
+.pricing-model .pricing-container .bottom {
+    position: absolute;
+    bottom: 0px;
+    width: 100%;
+    height: 150px;
+
+    background-color: #eee;
+}
+
+.pricing-model .pricing-container .text-content .price::before {
+    content: "$";
+    position: relative;
+    vertical-align: top;
+    top: 4px;
+    left: -3px;
+
+    font-size: 2rem;
+    font-weight: 300;
+    color: #888;
+}
+
+.pricing-model .pricing-container .text-content .price {
+    display: inline-block;
+    margin-right: 2px;
+
+    font-size: 3.5em;
+    font-weight: 600;
+    line-height: 0.8;
+}
+
+.pricing-model .pricing-container .bottom .details {
+    display: inline-block;
+    vertical-align: top;
+    margin-left: 15px;
+    margin-top: 4px;
+
+    font-size: 0.9em;
+    font-weight: 400;
+    color: #888;
+
+    text-align: left;
+}
+
+.pricing-model .pricing-container .bottom button {
+    margin-top: 20px;
+    width: 100%;
+
+    font-size: 0.9em;
+
+    transition: all 0.3s ease;
+}
+
+.pricing-model .pricing-container .price-box:focus {
+    outline: none;
+}
+
+.pricing-model .pricing-container .price-box:focus button {
+    box-shadow: 0px 0px 25px #6acab9;
+    animation: box-shadow-pulse 2s infinite;
+}
+
+/* while the overlay is showing, the transform properties should stay fixed
+   for the container that sits inline in the page. */
+
+.pricing-overlay.pricing-model {
+    position: fixed;
+    top: -140px;
+    left: 0px;
+    width: 100vw;
+    height: 100vh;
+
+    opacity: 0;
+    pointer-events: none;
+
+    z-index: 10;
+    transition: all 0.3s ease;
+}
+
+.portico-landing.plans .pricing-overlay.pricing-model {
+    top: -220px;
+}
+
+.pricing-overlay.pricing-model .pricing-container {
+    padding: 50px;
+    text-align: left;
+}
+
+.pricing-overlay.pricing-model.active {
+    opacity: 1;
+    pointer-events: all;
+    background-color: rgba(0,0,0,0.6);
+}
+
+.pricing-overlay.pricing-model .price-box {
+    vertical-align: top;
+}
+
+.pricing-overlay.pricing-model .info-box {
+    position: relative;
+    display: inline-block;
+    vertical-align: top;
+    margin-left: 50px;
+    margin-top: -2px;
+    width: calc(100% - 300px - 50px);
+
+    background: #fff;
+    opacity: 0;
+    transform: translateY(300px);
+
+    transition: all 0.3s ease;
+}
+
+.pricing-overlay.pricing-model .info-box.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.pricing-overlay.pricing-model .info-box .text-content {
+    position: relative;
+    display: inline-block;
+    height: calc(100% - 40px);
+    width: calc(100% - 300px - 40px);
+}
+
+.pricing-overlay.pricing-model .info-box .text-content h1 {
+    margin-top: 0px;
+}
+
+.pricing-overlay.pricing-model .info-box .text-content p {
+    color: #888;
+}
+
+.pricing-overlay.pricing-model .info-box .text-content .feature-detail-box {
+    position: absolute;
+    width: 100%;
+    bottom: 0px;
+    text-align: center;
+}
+
+.pricing-overlay.pricing-model .info-box .text-content .feature-detail-box .feature {
+    display: inline-block;
+    width: calc(33% - 21px);
+    height: 200px;
+    background-color: #eee;
+    margin: 10px;
+}
+
+.text-content .pricing-details {
+    padding: 15px 0px 15px 0px;
+    height: 20px;
+
+    font-weight: 400;
+    color: #888;
+    font-style: italic;
+    text-align: center;
+}
+
+.pricing-overlay.pricing-model .info-box .image {
+    width: 300px;
+    height: 100%;
+
+    float: right;
+
+    background-color: #3ca08d;
+}
+
+@keyframes box-shadow-pulse {
+    0% {
+        box-shadow: 0px 0px 0px rgba(106, 201, 185, 0);
+    }
+
+    50% {
+        box-shadow: 0px 0px 25px rgba(106, 201, 185, 0.8);
+    }
+
+    100% {
+        box-shadow: 0px 0px 0px rgba(106, 201, 185, 0);
+    }
+}
+
 /* -- media queries -- */
 @media (max-width: 1426px) {
     .portico-landing.hello .integrations .integration-icons .hide-1 {
@@ -2130,7 +2597,18 @@ nav ul li.active::after {
     }
 }
 
-@media (max-width: 1368px) {
+@media (max-width: 1390px) {
+    .portico-landing.plans .pricing-container .block .zulip-cloud {
+        color: inherit;
+    }
+}
+
+@media (max-width: 1376px) {
+    .portico-landing.plans .price-box {
+        height: 500px !important;
+        margin: 20px;
+    }
+
     .portico-landing.apps .main .details-container {
         height: auto;
     }
@@ -2162,10 +2640,16 @@ nav ul li.active::after {
     }
 }
 
+@media (min-width: 1295px), (max-width: 986px) and (min-width: 684px) {
+    /* while there are nine, show only two rows of four. */
+    .portico-landing.hello .testimonials .company-box > div:last-of-type {
+        display: none;
+    }
+}
+
 @media (max-width: 1295px) {
     .portico-landing.hello .apps .right-side {
         display: none;
-
     }
 
     .portico-landing.hello .apps .left-side {
@@ -2184,6 +2668,10 @@ nav ul li.active::after {
 
     .portico-landing.hello .apps .left-side .content {
         margin: 0px auto 50px;
+    }
+
+    .portico-landing.hello .testimonials .company-box .company {
+        width: calc(33% - 44px);
     }
 }
 
@@ -2239,6 +2727,25 @@ nav ul li.active::after {
 
     .portico-landing.features-app section .headliner .feature-box {
         width: calc(100% - 200px - 20px);
+    }
+
+    .portico-landing.features-app section.messages {
+        display: block;
+        text-align: center;
+    }
+
+    .portico-landing.features-app section.messages > * {
+        display: inline-block;
+        text-align: left;
+    }
+
+    .portico-landing.features-app section.messages .image {
+        width: 100%;
+        margin: 0;
+    }
+
+    .portico-landing.plans .compare .padded-content {
+        width: auto;
     }
 }
 
@@ -2314,6 +2821,10 @@ nav ul li.active::after {
     .portico-landing.hello .testimonials hr,
     .portico-landing.hello .testimonials .company-container {
         width: 100%;
+    }
+
+    .portico-landing.hello .testimonials .company-box .company {
+        width: calc(25% - 44px);
     }
 }
 
@@ -2427,14 +2938,20 @@ nav ul li.active::after {
     nav {
         padding-left: 50px;
         padding-right: 50px;
+        width: calc(100% - 100px);
+    }
+
+    .portico-landing.features-app section.hero {
+        padding: 50px;
+    }
+
+    .portico-landing.features-app section.hero h1 {
+        font-size: 3em;
     }
 
     .portico-landing.integrations .main,
     .main {
-        width: calc(100% - 100px);
-
-        margin-left: 50px;
-        margin-right: 50px;
+        width: auto;
     }
 
     .portico-landing.why-page .main {
@@ -2516,7 +3033,7 @@ nav ul li.active::after {
         padding: 43px 73px;
     }
 
-    .portico-landing.hello .features .col-3 {
+    .portico-landing.hello .features .col-2 {
         width: 100%;
     }
 
@@ -2542,6 +3059,12 @@ nav ul li.active::after {
     .portico-landing.apps .hero h1 {
         font-size: 1.9em;
         font-weight: 400;
+    }
+
+    .portico-landing.apps .hero .info .flex,
+    .portico-landing.apps .hero .image .flex {
+        height: 300px;
+        min-height: 0px;
     }
 
     .portico-landing.apps .other-apps {
@@ -2613,6 +3136,7 @@ nav ul li.active::after {
 
     nav .content {
         display: inline-block;
+        z-index: 11;
     }
 
     nav .hamburger {
@@ -2620,7 +3144,7 @@ nav ul li.active::after {
         float: right;
     }
 
-    nav ul:before {
+    .portico-header .content > ul:before {
         content: "Zulip";
         display: block;
         margin-top: 20px;
@@ -2637,6 +3161,13 @@ nav ul li.active::after {
         background-size: 40px auto;
         background-image: url(/static/images/zulip-logo.svg);
         background-repeat: no-repeat;
+    }
+
+    .portico-header .dropdown ul {
+        width: 100%;
+        height: 85px;
+        margin: 42px 0 0 0;
+        font-size: 0.8em;
     }
 
     nav ul {
@@ -2685,7 +3216,8 @@ nav ul li.active::after {
     }
 
     nav ul li,
-    nav ul li a {
+    nav ul li a,
+    .portico-header .dropdown-pill .realm-name {
         color: hsl(0, 0%, 27%) !important;
     }
 
@@ -2732,6 +3264,22 @@ nav ul li.active::after {
 }
 
 @media (max-width: 550px) {
+    .portico-landing.features-app section.hero {
+        padding: 50px 20px 20px;
+    }
+
+    .portico-landing.features-app section.messages {
+        padding: 0px 20px;
+    }
+
+    .portico-landing.features-app section.messages h2 {
+        font-size: 2em;
+    }
+
+    .portico-landing.features-app section.messages .features .feature-block {
+        margin: 20px 0px;
+    }
+
     .portico-landing.integrations .searchbar-reset {
         width: 100%;
     }
@@ -2770,12 +3318,35 @@ nav ul li.active::after {
         padding: 0 25px;
     }
 
+    .portico-landing.plans .compare .padded-content {
+        padding: 20px;
+    }
+
+    .portico-landing.plans .pricing-container .block {
+        margin: 0;
+    }
+
     .main .padded-content {
         padding: 20px;
     }
 
     .footer {
         width: 100vw;
+    }
+
+    /* the gradients leave the bottom of the text and the button white so we
+       want to have the gradients stay darker for longer.
+    */
+    .gradients .gradient.green {
+        background: linear-gradient(-25deg, transparent 10%, #3fb082 80%);
+    }
+
+    .gradients .gradient.blue {
+        background: linear-gradient(25deg, transparent 10%, #5298b1 80%);
+    }
+
+    .gradients .gradient.sunburst {
+        background: linear-gradient(5deg, transparent 20%, #e8d275 80%);
     }
 }
 

@@ -1,4 +1,4 @@
-var colorspace = require('js/colorspace.js');
+zrequire('colorspace');
 
 (function test_sRGB_to_linear() {
     var srgb_color = 0.0042;
@@ -13,7 +13,7 @@ var colorspace = require('js/colorspace.js');
 }());
 
 (function test_rgb_luminance() {
-    var channel = [ 1, 1, 1 ];
+    var channel = [1, 1, 1];
     var expected_value = 1;
     var actual_value = colorspace.rgb_luminance(channel);
     assert.equal(actual_value, expected_value);

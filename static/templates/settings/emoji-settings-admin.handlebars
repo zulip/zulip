@@ -2,6 +2,29 @@
     <div class="emoji-settings-tip-container">
         {{partial "emoji-settings-tip"}}
     </div>
+    <form class="form-horizontal admin-emoji-form {{#unless can_admin_emojis}}hide{{/unless}}">
+        <div class="add-new-emoji-box grey-box">
+            <div class="new-emoji-form">
+                <div class="settings-section-title new-emoji-section-title no-padding">{{t "Add a new emoji" }}</div>
+                <div class="alert" id="admin-emoji-status"></div>
+                <div class="inline-block">
+                    <label for="emoji_name">{{t "Emoji name" }}</label>
+                    <input type="text" name="name" id="emoji_name" placeholder="mouse_face" />
+                </div>
+                <div class="inline-block">
+                    <span id="emoji-file-name"></span>
+                    <input type="file" name="emoji_file_input" class="notvisible"
+                 id="emoji_file_input" value="{{t 'Upload emoji' }}"/>
+                    <button class="button white rounded display-none" id="emoji_image_clear_button">{{t "Clear emoji image" }}</button>
+                    <button class="button rounded" id="emoji_upload_button">{{t "Upload emoji" }}</button>
+                    <span id="emoji_file_input_error" class="text-error"></span>
+                </div>
+                <button type="submit" class="button rounded sea-green">
+                    {{t 'Add emoji' }}
+                </button>
+            </div>
+        </div>
+    </form>
     <div class="admin-table-wrapper">
         <p>{{#tr this}}Add extra emoji for members of the __realm_name__ organization.{{/tr}}</p>
         <table class="table table-condensed table-striped admin_emoji_table">
@@ -13,27 +36,4 @@
             </tbody>
         </table>
     </div>
-    <form class="form-horizontal admin-emoji-form {{#unless can_admin_emojis}}hide{{/unless}}">
-        <div class="add-new-emoji-box grey-bg green-bg">
-            <div class="new-emoji-form">
-                <div class="settings-section-title new-emoji-section-title no-padding">{{t "Add a new emoji" }}</div>
-                <div class="alert" id="admin-emoji-status"></div>
-                <div class="input-group">
-                    <label for="emoji_name">{{t "Emoji name" }}</label>
-                    <input type="text" name="name" id="emoji_name" placeholder="mouse_face" />
-                </div>
-                <div class="input-group">
-                    <p id="emoji-file-name"></p>
-                    <input type="file" name="emoji_file_input" class="notvisible"
-                 id="emoji_file_input" value="{{t 'Upload emoji' }}"/>
-                    <button class="button white rounded display-none" id="emoji_image_clear_button">{{t "Clear emoji image" }}</button>
-                    <button class="button" id="emoji_upload_button">{{t "Upload emoji" }}</button>
-                    <p id="emoji_file_input_error" class="text-error"></p>
-                </div>
-                <button type="submit" class="button rounded sea-green">
-                    {{t 'Add emoji' }}
-                </button>
-            </div>
-        </div>
-    </form>
 </div>

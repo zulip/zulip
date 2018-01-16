@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
 
 from datetime import timedelta
 
@@ -12,8 +10,7 @@ from zerver.models import Realm, Message, UserMessage, ArchivedMessage, Archived
 from typing import Any, Dict, Optional, Generator
 
 
-def get_realm_expired_messages(realm):
-    # type: (Any) -> Optional[Dict[str, Any]]
+def get_realm_expired_messages(realm: Any) -> Optional[Dict[str, Any]]:
     expired_date = timezone_now() - timedelta(days=realm.message_retention_days)
     expired_messages = Message.objects.order_by('id').filter(sender__realm=realm,
                                                              pub_date__lt=expired_date)
@@ -22,8 +19,7 @@ def get_realm_expired_messages(realm):
     return {'realm_id': realm.id, 'expired_messages': expired_messages}
 
 
-def get_expired_messages():
-    # type: () -> Generator[Any, None, None]
+def get_expired_messages() -> Generator[Any, None, None]:
     # Get all expired messages by Realm.
     realms = Realm.objects.order_by('string_id').filter(
         deactivated=False, message_retention_days__isnull=False)
@@ -33,8 +29,7 @@ def get_expired_messages():
             yield realm_expired_messages
 
 
-def move_attachment_message_to_archive_by_message(message_id):
-    # type: (int) -> None
+def move_attachment_message_to_archive_by_message(message_id: int) -> None:
     # Move attachments messages relation table data to archive.
     query = """
         INSERT INTO zerver_archivedattachment_messages (id, archivedattachment_id,
@@ -52,8 +47,7 @@ def move_attachment_message_to_archive_by_message(message_id):
 
 
 @transaction.atomic
-def move_message_to_archive(message_id):
-    # type: (int) -> None
+def move_message_to_archive(message_id: int) -> None:
     msg = list(Message.objects.filter(id=message_id).values())
     if not msg:
         raise Message.DoesNotExist

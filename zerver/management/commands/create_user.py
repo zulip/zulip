@@ -1,22 +1,17 @@
-from __future__ import absolute_import
-from __future__ import print_function
 
+import argparse
+import sys
 from typing import Any
 
-import sys
-import argparse
-
-from django.core.management.base import CommandError
-from django.core.exceptions import ValidationError
-from django.db.utils import IntegrityError
 from django.core import validators
+from django.core.exceptions import ValidationError
+from django.core.management.base import CommandError
+from django.db.utils import IntegrityError
 
-from zerver.models import email_to_username
-from zerver.lib.actions import do_create_user
-from zerver.lib.actions import notify_new_user
+from zerver.lib.actions import do_create_user, notify_new_user
 from zerver.lib.initial_password import initial_password
 from zerver.lib.management import ZulipBaseCommand
-from six.moves import input
+from zerver.models import email_to_username
 
 class Command(ZulipBaseCommand):
     help = """Create the specified user with a default initial password.
@@ -27,8 +22,7 @@ account this way.
 Omit both <email> and <full name> for interactive user creation.
 """
 
-    def add_arguments(self, parser):
-        # type: (argparse.ArgumentParser) -> None
+    def add_arguments(self, parser: argparse.ArgumentParser) -> None:
         parser.add_argument('--this-user-has-accepted-the-tos',
                             dest='tos',
                             action="store_true",
@@ -50,16 +44,18 @@ Omit both <email> and <full name> for interactive user creation.
                             help='The file containing the password of the new user.')
         parser.add_argument('email', metavar='<email>', type=str, nargs='?', default=argparse.SUPPRESS,
                             help='email address of new user')
-        parser.add_argument('full_name', metavar='<full name>', type=str, nargs='?', default=argparse.SUPPRESS,
+        parser.add_argument('full_name', metavar='<full name>', type=str, nargs='?',
+                            default=argparse.SUPPRESS,
                             help='full name of new user')
         self.add_realm_args(parser, True, "The name of the existing realm to which to add the user.")
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         if not options["tos"]:
             raise CommandError("""You must confirm that this user has accepted the
 Terms of Service by passing --this-user-has-accepted-the-tos.""")
         realm = self.get_realm(options)
+        assert realm is not None  # Should be ensured by parser
+
         try:
             email = options['email']
             full_name = options['full_name']

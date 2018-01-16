@@ -1,8 +1,7 @@
 var settings = (function () {
 
 var exports = {};
-var map = {};
-var map_initialized = false;
+var map;
 
 $("body").ready(function () {
     var $sidebar = $(".form-sidebar");
@@ -43,12 +42,27 @@ $("body").ready(function () {
     });
 
     $("body").on("click", "[data-sidebar-form-close]", close_sidebar);
+
+    $("#settings_overlay_container").click(function (e) {
+        if (!overlays.is_modal_open()) {
+            return;
+        }
+        if ($(e.target).closest(".modal").length > 0) {
+            return;
+        }
+        e.preventDefault();
+        e.stopPropagation();
+        overlays.close_active_modal();
+    });
 });
 
 
 function _setup_page() {
+    ui.set_up_scrollbar($("#settings_page .sidebar.left"));
+    ui.set_up_scrollbar($("#settings_content"));
+
     // only run once -- if the map has not already been initialized.
-    if (!map_initialized) {
+    if (map === undefined) {
         map = {
             "your-account": i18n.t("Your account"),
             "display-settings": i18n.t("Display settings"),
@@ -58,6 +72,7 @@ function _setup_page() {
             "uploaded-files": i18n.t("Uploaded files"),
             "muted-topics": i18n.t("Muted topics"),
             "zulip-labs": i18n.t("Zulip labs"),
+            "organization-profile": i18n.t("Organization profile"),
             "organization-settings": i18n.t("Organization settings"),
             "organization-permissions": i18n.t("Organization permissions"),
             "emoji-settings": i18n.t("Emoji settings"),
@@ -68,6 +83,8 @@ function _setup_page() {
             "streams-list-admin": i18n.t("Streams"),
             "default-streams-list": i18n.t("Default streams"),
             "filter-settings": i18n.t("Filter settings"),
+            "invites-list-admin": i18n.t("Invitations"),
+            "user-groups-admin": i18n.t("User groups"),
         };
     }
 
@@ -81,16 +98,14 @@ function _setup_page() {
         return tab;
     }());
 
-    // Most browsers do not allow filenames to start with `.` without the user manually changing it.
-    // So we use zuliprc, not .zuliprc.
-
     var settings_tab = templates.render('settings_tab', {
         full_name: people.my_full_name(),
         page_params: page_params,
         zuliprc: 'zuliprc',
         flaskbotrc: 'flaskbotrc',
         timezones: moment.tz.names(),
-        server_uri: page_params.server_uri,
+        upload_quota: attachments_ui.bytes_to_size(page_params.upload_quota),
+        total_uploads_size: attachments_ui.bytes_to_size(page_params.total_uploads_size),
     });
 
     $(".settings-box").html(settings_tab);

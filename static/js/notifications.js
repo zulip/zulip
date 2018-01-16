@@ -8,7 +8,6 @@ var notice_memory = {};
 // case after a server-initiated reload.
 var window_has_focus = document.hasFocus && document.hasFocus();
 
-var asked_permission_already = false;
 var supports_sound;
 
 var unread_pms_favicon = '/static/images/favicon/favicon-pms.png';
@@ -97,19 +96,15 @@ exports.initialize = function () {
                                       .attr("src", "/static/audio/zulip.mp3"));
         }
     }
+};
 
-    if (notifications_api) {
-        $(document).click(function () {
-            if (!page_params.enable_desktop_notifications || asked_permission_already) {
-                return;
-            }
-            if (notifications_api.checkPermission() !== 0) { // 0 is PERMISSION_ALLOWED
-                notifications_api.requestPermission(function () {
-                    asked_permission_already = true;
-                });
-            }
-        });
+exports.permission_state = function () {
+    if (window.Notification === undefined) {
+        // act like notifications are blocked if they do not have access to
+        // the notification API.
+        return "denied";
     }
+    return window.Notification.permission;
 };
 
 // For web pages, the initial favicon is the same as the favicon we
@@ -388,14 +383,6 @@ exports.close_notification = function (message) {
     });
 };
 
-exports.speaking_at_me = function (message) {
-    if (message === undefined) {
-        return false;
-    }
-
-    return message.mentioned_me_directly;
-};
-
 function message_is_notifiable(message) {
     // Independent of the user's notification settings, are there
     // properties of the message that unconditionally mean we
@@ -411,15 +398,19 @@ function message_is_notifiable(message) {
         return false;
     }
 
-    // @-<username> mentions take precedence over muted-ness. @all mentions
-    // are suppressed.
-    if (exports.speaking_at_me(message)) {
+    // @-<username> mentions take precedence over muted-ness. Note
+    // that @all mentions are still suppressed by muting.
+    if (message.mentioned_me_directly) {
         return true;
     }
+
+    // Messages to muted streams that don't mention us specifically
+    // are not notifiable.
     if ((message.type === "stream") &&
         !stream_data.in_home_view(message.stream_id)) {
         return false;
     }
+
     if ((message.type === "stream") &&
         muting.is_topic_muted(message.stream, message.subject)) {
         return false;
@@ -452,7 +443,7 @@ function should_send_desktop_notification(message) {
         return true;
     }
 
-    if (exports.speaking_at_me(message) &&
+    if (message.mentioned &&
         page_params.enable_desktop_notifications) {
         return true;
     }
@@ -477,22 +468,34 @@ function should_send_audible_notification(message) {
         return true;
     }
 
-    if (exports.speaking_at_me(message) && page_params.enable_sounds) {
+    if (message.mentioned && page_params.enable_sounds) {
         return true;
     }
 
     return false;
 }
 
+exports.granted_desktop_notifications_permission = function () {
+    return (notifications_api &&
+            // 0 is PERMISSION_ALLOWED
+            notifications_api.checkPermission() === 0) ||
+        // window.bridge is the legacy desktop app
+        (window.bridge !== undefined);
+};
+
+
+exports.request_desktop_notifications_permission = function () {
+    if (notifications_api) {
+        return notifications_api.requestPermission();
+    }
+};
+
 exports.received_messages = function (messages) {
     _.each(messages, function (message) {
         if (!message_is_notifiable(message)) {
             return;
         }
-        // checking for unread flags here is basically proxy for
-        // "is Zulip currently in focus". In the case of auto-scroll forever,
-        // we don't care
-        if (!unread.message_unread(message) && !page_params.autoscroll_forever) {
+        if (!unread.message_unread(message)) {
             return;
         }
 
@@ -656,6 +659,8 @@ exports.handle_global_notification_updates = function (notification_name, settin
     // particular stream should receive notifications.
     if (notification_name === "enable_stream_desktop_notifications") {
         page_params.enable_stream_desktop_notifications = setting;
+    } else if (notification_name === "enable_stream_push_notifications") {
+        page_params.enable_stream_push_notifications = setting;
     } else if (notification_name === "enable_stream_sounds") {
         page_params.enable_stream_sounds = setting;
     } else if (notification_name === "enable_desktop_notifications") {

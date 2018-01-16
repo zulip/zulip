@@ -1,4 +1,4 @@
-var common = require("js/common.js");
+zrequire('common');
 
 set_global('$', global.make_zjquery());
 

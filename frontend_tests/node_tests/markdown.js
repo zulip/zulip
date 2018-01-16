@@ -1,6 +1,19 @@
 /*global Dict */
-var path = require('path');
-var fs = require('fs');
+var path = zrequire('path', 'path');
+var fs = zrequire('fs', 'fs');
+
+zrequire('hash_util');
+zrequire('katex', 'node_modules/katex/dist/katex.min.js');
+zrequire('marked', 'third/marked/lib/marked');
+zrequire('util');
+zrequire('fenced_code');
+zrequire('stream_data');
+zrequire('people');
+zrequire('user_groups');
+zrequire('emoji_codes', 'generated/emoji/emoji_codes');
+zrequire('emoji');
+zrequire('message_store');
+zrequire('markdown');
 
 set_global('window', {
     location: {
@@ -30,19 +43,12 @@ set_global('page_params', {
     ],
 });
 
-set_global('blueslip', {});
+set_global('blueslip', {error: function () {}});
 
-add_dependencies({
-    marked: 'third/marked/lib/marked.js',
-    emoji_codes: 'generated/emoji/emoji_codes.js',
-    emoji: 'js/emoji.js',
-    people: 'js/people.js',
-    stream_data: 'js/stream_data.js',
-    hash_util: 'js/hash_util',
-    fenced_code: 'js/fenced_code.js',
-    katex: 'node_modules/katex/dist/katex.min.js',
-    util: 'js/util.js',
+set_global('Image', function () {
+  return {};
 });
+emoji.initialize();
 
 var doc = "";
 set_global('document', doc);
@@ -67,6 +73,23 @@ people.add({
 });
 
 people.initialize_current_user(cordelia.user_id);
+
+var hamletcharacters = {
+    name: "hamletcharacters",
+    id: 1,
+    description: "Characters of Hamlet",
+    members: [cordelia.user_id],
+};
+
+var backend = {
+    name: "Backend",
+    id: 2,
+    description: "Backend team",
+    members: [],
+};
+
+global.user_groups.add(hamletcharacters);
+global.user_groups.add(backend);
 
 var stream_data = global.stream_data;
 var denmark = {
@@ -96,8 +119,6 @@ stream_data.add_sub('social', social);
     assert.equal(output, expected);
 }());
 
-var markdown = require('js/markdown.js');
-
 markdown.initialize();
 
 var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver/fixtures/markdown_test_cases.json'), 'utf8', 'r'));
@@ -114,12 +135,14 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
                      "No png to be found here, a png",
                      "No user mention **leo**",
                      "No user mention @what there",
+                     "No group mention *hamletcharacters*",
                      "We like to code\n~~~\ndef code():\n    we = \"like to do\"\n~~~",
                      "This is a\nmultiline :emoji: here\n message",
                      "This is an :emoji: message",
                      "User Mention @**leo**",
                      "User Mention @**leo f**",
                      "User Mention @**leo with some name**",
+                     "Group Mention @*hamletcharacters*",
                      "Stream #**Verona**",
                      "This contains !gravatar(leo@zulip.com)",
                      "And an avatar !avatar(leo@zulip.com) is here",
@@ -151,20 +174,19 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
 
 (function test_marked_shared() {
     var tests = bugdown_data.regular_tests;
+
     tests.forEach(function (test) {
         var message = {raw_content: test.input};
         markdown.apply_markdown(message);
         var output = message.content;
 
         if (test.marked_expected_output) {
-            assert.notEqual(test.expected_output, output);
-            assert.equal(test.marked_expected_output, output);
+            global.bugdown_assert.notEqual(test.expected_output, output);
+            global.bugdown_assert.equal(test.marked_expected_output, output);
         } else if (test.backend_only_rendering) {
             assert.equal(markdown.contains_backend_only_syntax(test.input), true);
-        } else if (test.bugdown_matches_marked) {
-            assert.equal(test.expected_output, output);
         } else {
-            assert.notEqual(test.expected_output, output);
+            global.bugdown_assert.equal(test.expected_output, output);
         }
     });
 }());
@@ -172,15 +194,18 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
 (function test_message_flags() {
     var message = {raw_content: '@**Leo**'};
     markdown.apply_markdown(message);
-    assert(!_.contains(message.flags, 'mentioned'));
+    assert(!message.mentioned);
+    assert(!message.mentioned_me_directly);
 
     message = {raw_content: '@**Cordelia Lear**'};
     markdown.apply_markdown(message);
-    assert(_.contains(message.flags, 'mentioned'));
+    assert(message.mentioned);
+    assert(message.mentioned_me_directly);
 
     message = {raw_content: '@**all**'};
     markdown.apply_markdown(message);
-    assert(_.contains(message.flags, 'mentioned'));
+    assert(message.mentioned);
+    assert(!message.mentioned_me_directly);
 }());
 
 (function test_marked() {
@@ -211,8 +236,8 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
          expected: '<p>These @ @<em>**</em> are not mentions</p>'},
         {input: 'These # #**** are not mentions',
          expected: '<p>These # #<em>**</em> are not mentions</p>'},
-        {input: 'These @* @*** are not mentions',
-         expected: '<p>These @* @*** are not mentions</p>'},
+        {input: 'These @* are not mentions',
+         expected: '<p>These @* are not mentions</p>'},
         {input: 'These #* #*** are also not mentions',
          expected: '<p>These #* #*** are also not mentions</p>'},
         {input: 'This is a #**Denmark** stream link',
@@ -224,11 +249,11 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
         {input: 'mmm...:burrito:s',
          expected: '<p>mmm...<img alt=":burrito:" class="emoji" src="/static/generated/emoji/images/emoji/burrito.png" title="burrito">s</p>'},
         {input: 'This is an :poop: message',
-         expected: '<p>This is an <img alt=":poop:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/1f4a9.png" title="poop"> message</p>'},
+         expected: '<p>This is an <span class="emoji emoji-1f4a9" title="poop">:poop:</span> message</p>'},
         {input: "\ud83d\udca9",
-         expected: '<p><img alt=":poop:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/1f4a9.png" title="poop"></p>'},
-        {input: '\u{1f937}',
-         expected: '<p>\u{1f937}</p>' },
+         expected: '<p><span class="emoji emoji-1f4a9" title="poop">:poop:</span></p>'},
+        {input: '\u{1f6b2}',
+         expected: '<p>\u{1f6b2}</p>' },
         // Test only those realm filters which don't return True for
         // `contains_backend_only_syntax()`. Those which return True
         // are tested separately.
@@ -250,14 +275,24 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
          expected: '<p>T<br>\n<a class="stream" data-stream-id="1" href="http://zulip.zulipdev.com/#narrow/stream/Denmark">#Denmark</a></p>'},
         {input: 'T\n@**Cordelia Lear**',
           expected: '<p>T<br>\n<span class="user-mention" data-user-id="101">@Cordelia Lear</span></p>'},
+        {input: 'T\n@hamletcharacters',
+         expected: '<p>T<br>\n@hamletcharacters</p>'},
+        {input: 'T\n@*hamletcharacters*',
+         expected: '<p>T<br>\n<span class="user-group-mention" data-user-group-id="1">@hamletcharacters</span></p>'},
+        {input: 'T\n@*notagroup*',
+         expected: '<p>T<br>\n@*notagroup*</p>'},
+       {input: 'T\n@*backend*',
+         expected: '<p>T<br>\n<span class="user-group-mention" data-user-group-id="2">@Backend</span></p>'},
+        {input: '@*notagroup*',
+         expected: '<p>@*notagroup*</p>'},
         {input: 'This is a realm filter `hello` with text after it',
          expected: '<p>This is a realm filter <code>hello</code> with text after it</p>'},
     ];
 
     // We remove one of the unicode emoji we put as input in one of the test
-    // cases (U+1F937), to verify that we display the emoji as it was input if it
-    // isn't present in emoji.emojis_by_unicode.
-    delete emoji.emojis_by_unicode['1f937'];
+    // cases (U+1F6B2), to verify that we display the emoji as it was input if it
+    // isn't present in emoji_codes.codepoint_to_name.
+    delete emoji_codes.codepoint_to_name['1f6b2'];
 
     test_cases.forEach(function (test_case) {
         var input = test_case.input;
@@ -311,35 +346,38 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
 (function test_message_flags() {
     var input = "/me is testing this";
     var message = {subject: "No links here", raw_content: input};
-    message.flags = ['read'];
     markdown.apply_markdown(message);
-    markdown.add_message_flags(message);
 
-    assert.equal(message.flags.length, 2);
-    assert(message.flags.indexOf('read') !== -1);
-    assert(message.flags.indexOf('is_me_message') !== -1);
+    assert.equal(message.is_me_message, true);
+    assert(!message.unread);
 
     input = "testing this @**all** @**Cordelia Lear**";
     message = {subject: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    markdown.add_message_flags(message);
 
-    assert.equal(message.flags.length, 1);
-    assert(message.flags.indexOf('mentioned') !== -1);
+    assert.equal(message.is_me_message, false);
+    assert.equal(message.mentioned, true);
+    assert.equal(message.mentioned_me_directly, true);
 
     input = "test @all";
     message = {subject: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    markdown.add_message_flags(message);
-    assert.equal(message.flags.length, 1);
-    assert(message.flags.indexOf('mentioned') !== -1);
+    assert.equal(message.mentioned, true);
 
     input = "test @any";
     message = {subject: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    markdown.add_message_flags(message);
-    assert.equal(message.flags.length, 0);
-    assert(message.flags.indexOf('mentioned') === -1);
+    assert.equal(message.mentioned, false);
+
+    input = "test @*hamletcharacters*";
+    message = {subject: "No links here", raw_content: input};
+    markdown.apply_markdown(message);
+    assert.equal(message.mentioned, true);
+
+    input = "test @*backend*";
+    message = {subject: "No links here", raw_content: input};
+    markdown.apply_markdown(message);
+    assert.equal(message.mentioned, false);
 }());
 
 (function test_backend_only_realm_filters() {
@@ -355,9 +393,9 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
 (function test_python_to_js_filter() {
     // The only way to reach python_to_js_filter is indirectly, hence the call
     // to set_realm_filters.
-    markdown.set_realm_filters([[ '/a(?im)a/g'], [ '/a(?L)a/g' ]]);
+    markdown.set_realm_filters([['/a(?im)a/g'], ['/a(?L)a/g']]);
     var actual_value = (marked.InlineLexer.rules.zulip.realm_filters);
-    var expected_value = [ /\/aa\/g(?![\w])/gim, /\/aa\/g(?![\w])/g ];
+    var expected_value = [/\/aa\/g(?![\w])/gim, /\/aa\/g(?![\w])/g];
     assert.deepEqual(actual_value, expected_value);
 }());
 

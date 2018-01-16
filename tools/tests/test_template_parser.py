@@ -1,6 +1,3 @@
-from __future__ import absolute_import
-from __future__ import print_function
-
 from typing import Optional, Any
 
 import sys
@@ -18,14 +15,6 @@ except ImportError:
     sys.exit(1)
 
 class ParserTest(unittest.TestCase):
-    def __init__(self, *args, **kwargs):
-        # type: (*Any, **Any) -> None
-        # This method should be removed when we migrate to version 3 of Python
-        import six
-        if six.PY2:
-            self.assertRaisesRegex = self.assertRaisesRegexp  # type: ignore
-        super(ParserTest, self).__init__(*args, **kwargs)
-
     def _assert_validate_error(self, error, fn=None, text=None, check_indent=True):
         # type: (str, Optional[str], Optional[str], bool) -> None
         with self.assertRaisesRegex(TemplateParserException, error):

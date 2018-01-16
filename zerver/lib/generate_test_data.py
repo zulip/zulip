@@ -1,27 +1,21 @@
-from __future__ import absolute_import
-from __future__ import print_function
 import itertools
 import ujson
 import random
 from typing import List, Dict, Any, Text, Optional
-from six.moves import range
 
-def load_config():
-    # type: () -> Dict [str, Any]
+def load_config() -> Dict[str, Any]:
     with open("zerver/fixtures/config.generate_data.json", "r") as infile:
         config = ujson.load(infile)
 
     return config
 
-def get_stream_title(gens):
-    # type: (Dict[str, Any]) -> str
+def get_stream_title(gens: Dict[str, Any]) -> str:
 
     return next(gens["adjectives"]) + " " + next(gens["nouns"]) + " " + \
         next(gens["connectors"]) + " " + next(gens["verbs"]) + " " + \
         next(gens["adverbs"])
 
-def load_generators(config):
-    # type: (Dict[str, Any]) -> Dict[str, Any]
+def load_generators(config: Dict[str, Any]) -> Dict[str, Any]:
 
     results = {}
     cfg = config["gen_fodder"]
@@ -43,8 +37,7 @@ def load_generators(config):
 
     return results
 
-def parse_file(config, gens, corpus_file):
-    # type: (Dict[str, Any], Dict[str, Any], str) -> List[str]
+def parse_file(config: Dict[str, Any], gens: Dict[str, Any], corpus_file: str) -> List[str]:
 
     # First, load the entire file into a dictionary,
     # then apply our custom filters to it as needed.
@@ -52,14 +45,13 @@ def parse_file(config, gens, corpus_file):
     paragraphs = []  # type: List[str]
 
     with open(corpus_file, "r") as infile:
-        # OUR DATA: we need to seperate the person talking and what they say
+        # OUR DATA: we need to separate the person talking and what they say
         paragraphs = remove_line_breaks(infile)
         paragraphs = add_flair(paragraphs, gens)
 
     return paragraphs
 
-def get_flair_gen(length):
-    # type: (int) -> List[str]
+def get_flair_gen(length: int) -> List[str]:
 
     # Grab the percentages from the config file
     # create a list that we can consume that will guarantee the distribution
@@ -73,8 +65,7 @@ def get_flair_gen(length):
     random.shuffle(result)
     return result
 
-def add_flair(paragraphs, gens):
-    # type: (List[str], Dict[str, Any]) -> List[str]
+def add_flair(paragraphs: List[str], gens: Dict[str, Any]) -> List[str]:
 
     # roll the dice and see what kind of flair we should add, if any
     results = []
@@ -114,8 +105,7 @@ def add_flair(paragraphs, gens):
 
     return results
 
-def add_md(mode, text):
-    # type: (str, str) -> str
+def add_md(mode: str, text: str) -> str:
 
     # mode means: bold, italic, etc.
     # to add a list at the end of a paragraph, * iterm one\n * item two
@@ -130,8 +120,7 @@ def add_md(mode, text):
 
     return " ".join(vals).strip()
 
-def add_emoji(text, emoji):
-    # type: (str, str) -> str
+def add_emoji(text: str, emoji: str) -> str:
 
     vals = text.split()
     start = random.randrange(len(vals))
@@ -139,8 +128,7 @@ def add_emoji(text, emoji):
     vals[start] = vals[start] + " " + emoji + " "
     return " ".join(vals)
 
-def add_link(text, link):
-    # type: (str, str) -> str
+def add_link(text: str, link: str) -> str:
 
     vals = text.split()
     start = random.randrange(len(vals))
@@ -149,8 +137,7 @@ def add_link(text, link):
 
     return " ".join(vals)
 
-def remove_line_breaks(fh):
-    # type: (Any) -> List[str]
+def remove_line_breaks(fh: Any) -> List[str]:
 
     # We're going to remove line breaks from paragraphs
     results = []    # save the dialogs as tuples with (author, dialog)
@@ -171,14 +158,12 @@ def remove_line_breaks(fh):
 
     return results
 
-def write_file(paragraphs, filename):
-    # type: (List[str], str) -> None
+def write_file(paragraphs: List[str], filename: str) -> None:
 
     with open(filename, "w") as outfile:
         outfile.write(ujson.dumps(paragraphs))
 
-def create_test_data():
-    # type: () -> None
+def create_test_data() -> None:
 
     gens = load_generators(config)   # returns a dictionary of generators
 

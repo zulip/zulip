@@ -5,7 +5,7 @@
 }
 
 body {
-    font-family: 'Humbug', 'Helvetica Neue', sans-serif !important;
+    font-family: 'Source Sans Pro', 'Helvetica Neue', sans-serif !important;
     background-color: #fafafa;
 
     -webkit-font-smoothing: antialiased;
@@ -50,7 +50,7 @@ hr {
 .pie-chart .number-stat {
     float: left;
     font-size: 0.8em;
-    font-weight: 500;
+    font-weight: 400;
 }
 
 .chart-container:not(.pie-chart) .number-stat {
@@ -106,8 +106,32 @@ hr {
     display: none;
 }
 
+#id_messages_sent_by_client {
+    min-height: 100px;
+    width: 750px;
+    position: relative;
+}
+
+#id_messages_sent_by_message_type {
+    height: 300px;
+    width: 750px;
+    position: relative;
+}
+
+#id_messages_sent_over_time {
+    height: 400px;
+    width: 750px;
+    position: relative;
+}
+
 #id_messages_sent_over_time[last_value_is_partial='true'] .points path:last-of-type {
     opacity: 0.5;
+}
+
+#id_number_of_users {
+    height: 370px;
+    width: 750px;
+    position: relative;
 }
 
 #users_hover_info,
@@ -116,7 +140,7 @@ hr {
 }
 
 .button {
-    font-family: 'Humbug', 'Helvetica Neue', sans-serif !important;
+    font-family: 'Source Sans Pro', 'Helvetica Neue', sans-serif !important;
     border: none;
     border-radius: 4px;
     outline: none;
@@ -130,12 +154,18 @@ hr {
     margin-right: 10px;
 }
 
+.docs_link a {
+    font-weight: 300;
+    color: inherit;
+    text-decoration: none;
+}
+
 .tooltip-inner {
     padding: 10px;
     max-width: 350px;
 
     font-size: 0.75rem;
-    font-weight: 500;
+    font-weight: 400;
     text-align: left;
     line-height: 1.4;
 }
@@ -149,10 +179,32 @@ hr {
     color: #aaa;
 }
 
+@keyframes spinner {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.spinner:before {
+    content: '';
+    box-sizing: border-box;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 30px;
+    height: 30px;
+    margin-top: -15px;
+    margin-left: -15px;
+    border-radius: 50%;
+    border: 1px solid #ccc;
+    border-top-color: #07d;
+    animation: spinner 1s linear infinite;
+}
+
 #users_hover_info,
 #hoverinfo {
     font-size: 0.8em;
-    font-weight: 500;
+    font-weight: 400;
 }
 
 #users_hover_humans,
@@ -177,6 +229,7 @@ hr {
     .center-charts {
         width: calc(816px * 2); /* 790px + 4px for borders + 2px for il-block + 20px margins */
     }
+
     .center-charts .left,
     .center-charts .right {
         display: inline-block;

@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
-from __future__ import print_function
 
 from django.conf import settings
 from django.test import TestCase
@@ -10,7 +8,6 @@ import shutil
 import ujson
 
 from mock import patch, MagicMock
-from six.moves import range
 from typing import Any, Dict, List, Set
 
 from zerver.lib.actions import (
@@ -26,7 +23,6 @@ from zerver.lib.upload import (
     upload_message_image,
 )
 from zerver.lib.utils import (
-    mkdir_p,
     query_chunker,
 )
 from zerver.lib.test_classes import (
@@ -42,30 +38,26 @@ from zerver.models import (
     UserMessage,
 )
 
-def rm_tree(path):
-    # type: (str) -> None
+def rm_tree(path: str) -> None:
     if os.path.exists(path):
         shutil.rmtree(path)
 
 class QueryUtilTest(ZulipTestCase):
-    def _create_messages(self):
-        # type: () -> None
+    def _create_messages(self) -> None:
         for email in [self.example_email('cordelia'),
                       self.example_email('hamlet'),
                       self.example_email('iago')]:
             for _ in range(5):
-                self.send_message(email, self.example_email('othello'), Recipient.PERSONAL)
+                self.send_personal_message(email, self.example_email('othello'))
 
     @slow('creates lots of data')
-    def test_query_chunker(self):
-        # type: () -> None
+    def test_query_chunker(self) -> None:
         self._create_messages()
 
         cordelia = self.example_user('cordelia')
         hamlet = self.example_user('hamlet')
 
-        def get_queries():
-            # type: () -> List[Any]
+        def get_queries() -> List[Any]:
             queries = [
                 Message.objects.filter(sender_id=cordelia.id),
                 Message.objects.filter(sender_id=hamlet.id),
@@ -180,19 +172,16 @@ class QueryUtilTest(ZulipTestCase):
 
 class ExportTest(ZulipTestCase):
 
-    def setUp(self):
-        # type: () -> None
+    def setUp(self) -> None:
         rm_tree(settings.LOCAL_UPLOADS_DIR)
 
-    def _make_output_dir(self):
-        # type: () -> str
+    def _make_output_dir(self) -> str:
         output_dir = 'var/test-export'
         rm_tree(output_dir)
-        mkdir_p(output_dir)
+        os.makedirs(output_dir, exist_ok=True)
         return output_dir
 
-    def _export_realm(self, realm, exportable_user_ids=None):
-        # type: (Realm, Set[int]) -> Dict[str, Any]
+    def _export_realm(self, realm: Realm, exportable_user_ids: Set[int]=None) -> Dict[str, Any]:
         output_dir = self._make_output_dir()
         with patch('logging.info'), patch('zerver.lib.export.create_soft_link'):
             do_export_realm(
@@ -208,8 +197,7 @@ class ExportTest(ZulipTestCase):
                 output_path=os.path.join(output_dir, 'message.json')
             )
 
-        def read_file(fn):
-            # type: (str) -> Any
+        def read_file(fn: str) -> Any:
             full_fn = os.path.join(output_dir, fn)
             with open(full_fn) as f:
                 return ujson.load(f)
@@ -221,8 +209,7 @@ class ExportTest(ZulipTestCase):
         result['uploads_dir'] = os.path.join(output_dir, 'uploads')
         return result
 
-    def test_attachment(self):
-        # type: () -> None
+    def test_attachment(self) -> None:
         message = Message.objects.all()[0]
         user_profile = message.sender
         url = upload_message_image(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
@@ -246,8 +233,7 @@ class ExportTest(ZulipTestCase):
         with open(fn) as f:
             self.assertEqual(f.read(), 'zulip!')
 
-    def test_zulip_realm(self):
-        # type: () -> None
+    def test_zulip_realm(self) -> None:
         realm = Realm.objects.get(string_id='zulip')
         full_data = self._export_realm(realm)
 
@@ -255,14 +241,12 @@ class ExportTest(ZulipTestCase):
         self.assertEqual(len(data['zerver_userprofile_crossrealm']), 0)
         self.assertEqual(len(data['zerver_userprofile_mirrordummy']), 0)
 
-        def get_set(table, field):
-            # type: (str, str) -> Set[str]
+        def get_set(table: str, field: str) -> Set[str]:
             values = set(r[field] for r in data[table])
             # print('set(%s)' % sorted(values))
             return values
 
-        def find_by_id(table, db_id):
-            # type: (str, int) -> Dict[str, Any]
+        def find_by_id(table: str, db_id: int) -> Dict[str, Any]:
             return [
                 r for r in data[table]
                 if r['id'] == db_id][0]

@@ -1,21 +1,22 @@
 # Webhooks for external integrations.
-from __future__ import absolute_import
-from django.utils.translation import ugettext as _
-from zerver.lib.actions import check_send_message
-from zerver.lib.response import json_success, json_error
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
-from zerver.lib.validator import check_dict, check_string
-from zerver.models import UserProfile, MAX_SUBJECT_LENGTH
+from typing import Any, Dict, Iterable, Optional, Text
 
 from django.http import HttpRequest, HttpResponse
-from typing import Dict, Any, Iterable, Optional, Text
+from django.utils.translation import ugettext as _
+
+from zerver.decorator import api_key_only_webhook_view
+from zerver.lib.actions import check_send_stream_message
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_error, json_success
+from zerver.lib.validator import check_dict, check_string
+from zerver.models import MAX_SUBJECT_LENGTH, UserProfile
 
 @api_key_only_webhook_view('Splunk')
 @has_request_variables
-def api_splunk_webhook(request, user_profile,
-                       payload=REQ(argument_type='body'), stream=REQ(default='splunk'),
-                       topic=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, Dict[str, Any], Text, Optional[Text]) -> HttpResponse
+def api_splunk_webhook(request: HttpRequest, user_profile: UserProfile,
+                       payload: Dict[str, Any]=REQ(argument_type='body'),
+                       stream: Text=REQ(default='splunk'),
+                       topic: Optional[Text]=REQ(default=None)) -> HttpResponse:
 
     # use default values if expected data is not provided
     search_name = payload.get('search_name', 'Missing search_name')
@@ -39,6 +40,6 @@ def api_splunk_webhook(request, user_profile,
                                  host = host, source = source, raw = raw)
 
     # send the message
-    check_send_message(user_profile, request.client, 'stream', [stream], topic, body)
+    check_send_stream_message(user_profile, request.client, stream, topic, body)
 
     return json_success()

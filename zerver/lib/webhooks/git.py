@@ -1,31 +1,35 @@
 from typing import Optional, Any, Dict, List, Text, Tuple
 from collections import defaultdict
-SUBJECT_WITH_BRANCH_TEMPLATE = u'{repo} / {branch}'
-SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE = u'{repo} / {type} #{id} {title}'
+SUBJECT_WITH_BRANCH_TEMPLATE = '{repo} / {branch}'
+SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE = '{repo} / {type} #{id} {title}'
 
 EMPTY_SHA = '0000000000000000000000000000000000000000'
 
 COMMITS_LIMIT = 20
-COMMIT_ROW_TEMPLATE = u'* {commit_msg} ([{commit_short_sha}]({commit_url}))\n'
+COMMIT_ROW_TEMPLATE = '* {commit_msg} ([{commit_short_sha}]({commit_url}))\n'
 COMMITS_MORE_THAN_LIMIT_TEMPLATE = u"[and {commits_number} more commit(s)]"
 COMMIT_OR_COMMITS = u"commit{}"
 
 PUSH_PUSHED_TEXT_WITH_URL = u"[pushed]({compare_url}) {number_of_commits} {commit_or_commits}"
 PUSH_PUSHED_TEXT_WITHOUT_URL = u"pushed {number_of_commits} {commit_or_commits}"
-PUSH_COMMITS_MESSAGE_TEMPLATE_WITH_COMMITTERS = u"""{user_name} {pushed_text} to branch {branch_name}. {committers_details}.
+
+PUSH_COMMITS_BASE = '{user_name} {pushed_text} to branch {branch_name}.'
+PUSH_COMMITS_MESSAGE_TEMPLATE_WITH_COMMITTERS = PUSH_COMMITS_BASE + u""" {committers_details}.
 
 {commits_data}
 """
-PUSH_COMMITS_MESSAGE_TEMPLATE_WITHOUT_COMMITTERS = u"""{user_name} {pushed_text} to branch {branch_name}.
+PUSH_COMMITS_MESSAGE_TEMPLATE_WITHOUT_COMMITTERS = PUSH_COMMITS_BASE + u"""
 
 {commits_data}
 """
 PUSH_DELETE_BRANCH_MESSAGE_TEMPLATE = u"{user_name} [deleted]({compare_url}) the branch {branch_name}."
-PUSH_LOCAL_BRANCH_WITHOUT_COMMITS_MESSAGE_TEMPLATE = u"{user_name} [pushed]({compare_url}) the branch {branch_name}."
+PUSH_LOCAL_BRANCH_WITHOUT_COMMITS_MESSAGE_TEMPLATE = (u"{user_name} [pushed]({compare_url}) "
+                                                      "the branch {branch_name}.")
 PUSH_COMMITS_MESSAGE_EXTENSION = u"Commits by {}"
 PUSH_COMMITTERS_LIMIT_INFO = 3
 
-FORCE_PUSH_COMMITS_MESSAGE_TEMPLATE = u"{user_name} [force pushed]({url}) to branch {branch_name}. Head is now {head}"
+FORCE_PUSH_COMMITS_MESSAGE_TEMPLATE = (u"{user_name} [force pushed]({url}) "
+                                       "to branch {branch_name}. Head is now {head}")
 CREATE_BRANCH_MESSAGE_TEMPLATE = u"{user_name} created [{branch_name}]({url}) branch"
 REMOVE_BRANCH_MESSAGE_TEMPLATE = u"{user_name} deleted branch {branch_name}"
 
@@ -45,8 +49,10 @@ TAG_WITH_URL_TEMPLATE = u"[{tag_name}]({tag_url})"
 TAG_WITHOUT_URL_TEMPLATE = u"{tag_name}"
 
 
-def get_push_commits_event_message(user_name, compare_url, branch_name, commits_data, is_truncated=False, deleted=False):
-    # type: (Text, Optional[Text], Text, List[Dict[str, Any]], Optional[bool], Optional[bool]) -> Text
+def get_push_commits_event_message(user_name: Text, compare_url: Optional[Text],
+                                   branch_name: Text, commits_data: List[Dict[str, Any]],
+                                   is_truncated: Optional[bool]=False,
+                                   deleted: Optional[bool]=False) -> Text:
     if not commits_data and deleted:
         return PUSH_DELETE_BRANCH_MESSAGE_TEMPLATE.format(
             user_name=user_name,
@@ -66,7 +72,7 @@ def get_push_commits_event_message(user_name, compare_url, branch_name, commits_
     pushed_text_message = pushed_message_template.format(
         compare_url=compare_url,
         number_of_commits=len(commits_data),
-        commit_or_commits=COMMIT_OR_COMMITS.format(u's' if len(commits_data) > 1 else u''))
+        commit_or_commits=COMMIT_OR_COMMITS.format('s' if len(commits_data) > 1 else ''))
 
     committers_items = get_all_committers(commits_data)  # type: List[Tuple[str, int]]
     if len(committers_items) == 1 and user_name == committers_items[0][0]:
@@ -93,8 +99,7 @@ def get_push_commits_event_message(user_name, compare_url, branch_name, commits_
             commits_data=get_commits_content(commits_data, is_truncated),
         ).rstrip()
 
-def get_force_push_commits_event_message(user_name, url, branch_name, head):
-    # type: (Text, Text, Text, Text) -> Text
+def get_force_push_commits_event_message(user_name: Text, url: Text, branch_name: Text, head: Text) -> Text:
     return FORCE_PUSH_COMMITS_MESSAGE_TEMPLATE.format(
         user_name=user_name,
         url=url,
@@ -102,27 +107,23 @@ def get_force_push_commits_event_message(user_name, url, branch_name, head):
         head=head
     )
 
-def get_create_branch_event_message(user_name, url, branch_name):
-    # type: (Text, Text, Text) -> Text
+def get_create_branch_event_message(user_name: Text, url: Text, branch_name: Text) -> Text:
     return CREATE_BRANCH_MESSAGE_TEMPLATE.format(
         user_name=user_name,
         url=url,
         branch_name=branch_name,
     )
 
-def get_remove_branch_event_message(user_name, branch_name):
-    # type: (Text, Text) -> Text
+def get_remove_branch_event_message(user_name: Text, branch_name: Text) -> Text:
     return REMOVE_BRANCH_MESSAGE_TEMPLATE.format(
         user_name=user_name,
         branch_name=branch_name,
     )
 
-def get_pull_request_event_message(
-        user_name, action, url, number=None,
-        target_branch=None, base_branch=None,
-        message=None, assignee=None, type='PR'
-):
-    # type: (Text, Text, Text, Optional[int], Optional[Text], Optional[Text], Optional[Text], Optional[Text], Optional[Text]) -> Text
+def get_pull_request_event_message(user_name: Text, action: Text, url: Text, number: Optional[int]=None,
+                                   target_branch: Optional[Text]=None, base_branch: Optional[Text]=None,
+                                   message: Optional[Text]=None, assignee: Optional[Text]=None,
+                                   type: Optional[Text]='PR') -> Text:
     main_message = PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE.format(
         user_name=user_name,
         action=action,
@@ -142,15 +143,18 @@ def get_pull_request_event_message(
         main_message += '\n' + CONTENT_MESSAGE_TEMPLATE.format(message=message)
     return main_message.rstrip()
 
-def get_setup_webhook_message(integration, user_name=None):
-    # type: (Text, Optional[Text]) -> Text
+def get_setup_webhook_message(integration: Text, user_name: Optional[Text]=None) -> Text:
     content = SETUP_MESSAGE_TEMPLATE.format(integration=integration)
     if user_name:
         content += SETUP_MESSAGE_USER_PART.format(user_name=user_name)
     return content
 
-def get_issue_event_message(user_name, action, url, number=None, message=None, assignee=None):
-    # type: (Text, Text, Text, Optional[int], Optional[Text], Optional[Text]) -> Text
+def get_issue_event_message(user_name: Text,
+                            action: Text,
+                            url: Text,
+                            number: Optional[int]=None,
+                            message: Optional[Text]=None,
+                            assignee: Optional[Text]=None) -> Text:
     return get_pull_request_event_message(
         user_name,
         action,
@@ -161,8 +165,10 @@ def get_issue_event_message(user_name, action, url, number=None, message=None, a
         type='Issue'
     )
 
-def get_push_tag_event_message(user_name, tag_name, tag_url=None, action='pushed'):
-    # type: (Text, Text, Optional[Text], Optional[Text]) -> Text
+def get_push_tag_event_message(user_name: Text,
+                               tag_name: Text,
+                               tag_url: Optional[Text]=None,
+                               action: Optional[Text]='pushed') -> Text:
     if tag_url:
         tag_part = TAG_WITH_URL_TEMPLATE.format(tag_name=tag_name, tag_url=tag_url)
     else:
@@ -173,8 +179,11 @@ def get_push_tag_event_message(user_name, tag_name, tag_url=None, action='pushed
         tag=tag_part
     )
 
-def get_commits_comment_action_message(user_name, action, commit_url, sha, message=None):
-    # type: (Text, Text, Text, Text, Optional[Text]) -> Text
+def get_commits_comment_action_message(user_name: Text,
+                                       action: Text,
+                                       commit_url: Text,
+                                       sha: Text,
+                                       message: Optional[Text]=None) -> Text:
     content = COMMITS_COMMENT_MESSAGE_TEMPLATE.format(
         user_name=user_name,
         action=action,
@@ -187,9 +196,8 @@ def get_commits_comment_action_message(user_name, action, commit_url, sha, messa
         )
     return content
 
-def get_commits_content(commits_data, is_truncated=False):
-    # type: (List[Dict[str, Any]], Optional[bool]) -> Text
-    commits_content = u''
+def get_commits_content(commits_data: List[Dict[str, Any]], is_truncated: Optional[bool]=False) -> Text:
+    commits_content = ''
     for commit in commits_data[:COMMITS_LIMIT]:
         commits_content += COMMIT_ROW_TEMPLATE.format(
             commit_short_sha=get_short_sha(commit['sha']),
@@ -207,12 +215,10 @@ def get_commits_content(commits_data, is_truncated=False):
         ).replace('  ', ' ')
     return commits_content.rstrip()
 
-def get_short_sha(sha):
-    # type: (Text) -> Text
+def get_short_sha(sha: Text) -> Text:
     return sha[:7]
 
-def get_all_committers(commits_data):
-    # type: (List[Dict[str, Any]]) -> List[Tuple[str, int]]
+def get_all_committers(commits_data: List[Dict[str, Any]]) -> List[Tuple[str, int]]:
     committers = defaultdict(int)  # type: Dict[str, int]
 
     for commit in commits_data:

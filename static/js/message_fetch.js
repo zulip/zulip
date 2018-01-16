@@ -23,6 +23,7 @@ function process_result(messages, opts) {
         narrow.show_empty_narrow_message();
     }
 
+    _.each(messages, message_store.set_message_booleans);
     messages = _.map(messages, message_store.add_message_metadata);
 
     // If we're loading more messages into the home view, save them to
@@ -53,7 +54,7 @@ function get_old_messages_success(data, opts) {
         return;
     }
     if (! data) {
-        // The server occationally returns no data during a
+        // The server occasionally returns no data during a
         // restart.  Ignore those responses and try again
         setTimeout(function () {
             exports.load_old_messages(opts);
@@ -86,6 +87,8 @@ exports.load_old_messages = function load_old_messages(opts) {
     if (opts.use_first_unread_anchor) {
         data.use_first_unread_anchor = true;
     }
+
+    data.client_gravatar = true;
 
     channel.get({
         url:      '/json/messages',

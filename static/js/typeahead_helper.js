@@ -75,7 +75,7 @@ exports.render_typeahead_item = function (args) {
     return templates.render('typeahead_list_item', args);
 };
 
-var rendered = { persons: new Dict(), streams: new Dict() };
+var rendered = { persons: new Dict(), streams: new Dict(), user_groups: new Dict() };
 
 exports.render_person = function (person) {
     if (person.special_item_text) {
@@ -89,6 +89,23 @@ exports.render_person = function (person) {
             secondary: person.email,
         });
         rendered.persons.set(person.user_id, html);
+    }
+
+    return html;
+};
+
+exports.clear_rendered_persons = function () {
+    rendered.persons.clear();
+};
+
+exports.render_user_group = function (user_group) {
+    var html = rendered.user_groups.get(user_group.id);
+    if (html === undefined) {
+        html = exports.render_typeahead_item({
+            primary: user_group.name,
+            secondary: user_group.description,
+        });
+        rendered.user_groups.set(user_group.id, html);
     }
 
     return html;
@@ -112,6 +129,19 @@ exports.render_stream = function (stream) {
     }
 
     return html;
+};
+
+exports.render_emoji = function (item) {
+    var args = {
+        is_emoji: true,
+        primary: item.emoji_name.split("_").join(" "),
+    };
+    if (emoji.active_realm_emojis.hasOwnProperty(item.emoji_name)) {
+        args.img_src = item.emoji_url;
+    } else {
+        args.codepoint = item.codepoint;
+    }
+    return exports.render_typeahead_item(args);
 };
 
 exports.sorter = function (query, objs, get_item) {
@@ -249,6 +279,11 @@ exports.sort_recipients = function (matches, query, current_stream, current_subj
         current_subject
     );
     return matches_sorted.concat(rest_sorted);
+};
+
+exports.sort_user_groups = function (matches, query) {
+    var results = util.prefix_sort(query, matches, function (x) { return x.name; });
+    return results.matches.concat(results.rest);
 };
 
 exports.sort_emojis = function (matches, query) {

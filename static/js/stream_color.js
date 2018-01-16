@@ -4,7 +4,7 @@ var exports = {};
 
 exports.default_color = "#c2c2c2";
 // Auto-assigned colors should be from the default palette so it's easy to undo
-// changes, so if that pallete changes, change these colors.
+// changes, so if that palette changes, change these colors.
 var stream_assignment_colors = ["#76ce90", "#fae589", "#a6c7e5", "#e79ab5",
                                 "#bfd56f", "#f4ae55", "#b0a5fd", "#addfe5",
                                 "#f5ce6e", "#c2726a", "#94c849", "#bd86e5",
@@ -49,8 +49,7 @@ function update_table_stream_color(table, stream_name, color) {
         if ($.trim($label.text()) === stream_name) {
             var messages = $label.closest(".recipient_row").children(".message_row");
             messages.children(".messagebox").css("box-shadow", "inset 2px 0px 0px 0px " + style + ", -1px 0px 0px 0px " + style);
-            $label.css({background: style,
-                          "border-left-color": style});
+            $label.css({background: style});
             $label.removeClass(exports.color_classes);
             $label.addClass(color_class);
         }

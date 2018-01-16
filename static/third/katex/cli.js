@@ -39,7 +39,7 @@ try {
     katex = require("/home/zulip/prod-static/min/katex.js");
 } catch (ex) {
     // Import KaTeX from node_modules (development environment) otherwise
-    katex = require("../../node_modules/katex/katex.js");
+    katex = require("../../node_modules/katex/dist/katex.js");
 }
 
 let input = "";

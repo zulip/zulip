@@ -14,7 +14,7 @@ var page_params = {{ page_params }};
 {% block customhead %}
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link href="/static/images/logo/apple-touch-icon-precomposed.png" rel="apple-touch-icon-precomposed">
-{% stylesheet 'google_sprite' %}
+<link id="emoji-spritesheet" href="/static/generated/emoji/{{ user_profile.emojiset }}_sprite.css" rel="stylesheet" type="text/css">
 <style type="text/css">
 
 #css-loading {
@@ -45,14 +45,19 @@ var page_params = {{ page_params }};
 
 {% endblock %}
 {% block content %}
+
 <div id="css-loading">
     <h3>{{ _('Loading...') }}</h3>
     <p>{% trans %}If this message does not go away, please wait a couple seconds and <a href="javascript:location.reload(true)">reload</a> the page.{% endtrans %}</p>
 </div>
 
+{% include "zerver/lightbox_overlay.html" %}
+{% include "zerver/subscriptions.html" %}
+{% include "zerver/drafts.html" %}
 <div id="settings_overlay_container" class="overlay" data-overlay="settings" aria-hidden="true">
   {% include "zerver/settings_overlay.html" %}
 </div>
+
 {% include "zerver/navbar.html" %}
 
 <div class="fixed-app">
@@ -133,12 +138,9 @@ var page_params = {{ page_params }};
     <div class="column-right">
           {% include "zerver/right_sidebar.html" %}
     </div><!--/right sidebar-->
-    {% include "zerver/lightbox_overlay.html" %}
-    {% include "zerver/subscriptions.html" %}
-    {% include "zerver/drafts.html" %}
 </div><!--/row-->
     <div class="informational-overlays overlay new-style" data-overlay="informationalOverlays" aria-hidden="true">
-        <div class="overlay-content">
+        <div class="overlay-content modal-bg">
             <div class="overlay-tabs">
                 <button class="button no-style exit">&times;</button>
             </div>

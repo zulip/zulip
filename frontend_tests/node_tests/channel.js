@@ -1,4 +1,4 @@
-var channel = require('js/channel');
+zrequire('channel');
 
 set_global('$', {});
 set_global('reload', {});

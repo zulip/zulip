@@ -1,37 +1,29 @@
-from __future__ import absolute_import
-from __future__ import print_function
-
 import os
-import sys
-from scripts.lib.zulip_tools import ENDC, WARNING
-
-from argparse import ArgumentParser
-from datetime import timedelta
 import time
+from argparse import ArgumentParser
+from typing import Any, Dict
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
+from django.utils.dateparse import parse_datetime
 from django.utils.timezone import now as timezone_now
 from django.utils.timezone import utc as timezone_utc
-from django.utils.dateparse import parse_datetime
-from django.conf import settings
 
-from analytics.models import RealmCount, UserCount
 from analytics.lib.counts import COUNT_STATS, logger, process_count_stat
+from scripts.lib.zulip_tools import ENDC, WARNING
 from zerver.lib.timestamp import floor_to_hour
-from zerver.models import UserProfile, Message
-
-from typing import Any, Dict
+from zerver.models import Realm
 
 class Command(BaseCommand):
     help = """Fills Analytics tables.
 
     Run as a cron job that runs every hour."""
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--time', '-t',
                             type=str,
-                            help='Update stat tables from current state to --time. Defaults to the current time.',
+                            help='Update stat tables from current state to'
+                                 '--time. Defaults to the current time.',
                             default=timezone_now().isoformat())
         parser.add_argument('--utc',
                             action='store_true',
@@ -45,8 +37,7 @@ class Command(BaseCommand):
                             help="Print timing information to stdout.",
                             default=False)
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         try:
             os.mkdir(settings.ANALYTICS_LOCK_DIR)
         except OSError:
@@ -58,10 +49,14 @@ class Command(BaseCommand):
         finally:
             os.rmdir(settings.ANALYTICS_LOCK_DIR)
 
-    def run_update_analytics_counts(self, options):
-        # type: (Dict[str, Any]) -> None
-        fill_to_time = parse_datetime(options['time'])
+    def run_update_analytics_counts(self, options: Dict[str, Any]) -> None:
+        # installation_epoch relies on there being at least one realm; we
+        # shouldn't run the analytics code if that condition isn't satisfied
+        if not Realm.objects.exists():
+            logger.info("No realms, stopping update_analytics_counts")
+            return
 
+        fill_to_time = parse_datetime(options['time'])
         if options['utc']:
             fill_to_time = fill_to_time.replace(tzinfo=timezone_utc)
         if fill_to_time.tzinfo is None:

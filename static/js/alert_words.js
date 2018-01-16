@@ -14,7 +14,9 @@ function escape_user_regex(value) {
 }
 
 exports.process_message = function (message) {
-    if (!exports.notifies(message)) {
+    // Parsing for alert words is expensive, so we rely on the host
+    // to tell us there any alert words to even look for.
+    if (!message.alerted) {
         return;
     }
 
@@ -47,6 +49,10 @@ exports.process_message = function (message) {
 };
 
 exports.notifies = function (message) {
+    // We exclude ourselves from notifications when we type one of our own
+    // alert words into a message, just because that can be annoying for
+    // certain types of workflows where everybody on your team, including
+    // yourself, sets up an alert word to effectively mention the team.
     return !people.is_current_user(message.sender_email) && message.alerted;
 };
 

@@ -1,12 +1,6 @@
-var assert = require('assert');
-
-add_dependencies({
-    stream_data: 'js/stream_data.js',
-    util: 'js/util.js',
-});
-
-var stream_sort = require('js/stream_sort.js');
-var stream_data = require('js/stream_data.js');
+zrequire('util');
+zrequire('stream_data');
+zrequire('stream_sort');
 var with_overrides = global.with_overrides;
 
 // Test no subscribed streams
@@ -20,9 +14,9 @@ stream_data.add_sub('scalene', {
     stream_id: 1,
     pin_to_top: true,
 });
-stream_data.add_sub('tortoise', {
+stream_data.add_sub('fast tortoise', {
     subscribed: true,
-    name: 'tortoise',
+    name: 'fast tortoise',
     stream_id: 2,
     pin_to_top: false,
 });
@@ -53,7 +47,7 @@ with_overrides(function (override) {
     // Test sorting into categories/alphabetized
     var sorted = stream_sort.sort_groups("");
     assert.deepEqual(sorted.pinned_streams, ['scalene']);
-    assert.deepEqual(sorted.normal_streams, ['clarinet', 'tortoise']);
+    assert.deepEqual(sorted.normal_streams, ['clarinet', 'fast tortoise']);
     assert.deepEqual(sorted.dormant_streams, ['pneumonia']);
 
     // Test filtering
@@ -67,4 +61,16 @@ with_overrides(function (override) {
     assert.deepEqual(sorted.pinned_streams, []);
     assert.deepEqual(sorted.normal_streams, []);
     assert.deepEqual(sorted.dormant_streams, ['pneumonia']);
+
+    // Test searching part of word
+    sorted = stream_sort.sort_groups("tortoise");
+    assert.deepEqual(sorted.pinned_streams, []);
+    assert.deepEqual(sorted.normal_streams, ['fast tortoise']);
+    assert.deepEqual(sorted.dormant_streams, []);
+
+    // Test searching stream with spaces
+    sorted = stream_sort.sort_groups("fast t");
+    assert.deepEqual(sorted.pinned_streams, []);
+    assert.deepEqual(sorted.normal_streams, ['fast tortoise']);
+    assert.deepEqual(sorted.dormant_streams, []);
 });

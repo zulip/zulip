@@ -1,11 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 Nagios plugin to check the difference between the primary and
 secondary Postgres servers' xlog location.
 """
-from __future__ import print_function
-
 if False:
     from mypy_extensions import NoReturn
 

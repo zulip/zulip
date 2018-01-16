@@ -7,7 +7,7 @@
         {{! Most tabs are links, but some are not since we don't have a narrow for them (e.g. Search) }}
         {{#if hash}}
             {{#if home}}
-            <a href="{{hash}}"><i class="icon-vector-home"></i></a>
+            <a href="{{hash}}" title="{{t 'All messages' }} (Esc)"><i class="icon-vector-home"></i></a>
             {{else}}
             <a href="{{hash}}">{{title}}</a>
             {{/if}}

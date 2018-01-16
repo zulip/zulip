@@ -1,10 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from __future__ import print_function
-from __future__ import absolute_import
 from typing import List, Any
 import glob
-import optparse
+import argparse
 import os
 import sys
 import subprocess
@@ -25,52 +23,20 @@ target_fully_covered = {path for target in [
     'analytics/models.py',
     'analytics/tests/*.py',
     'analytics/views.py',
-    'zerver/context_processors.py',
-    'zerver/lib/alert_words.py',
-    'zerver/lib/attachments.py',
-    'zerver/lib/avatar.py',
-    'zerver/lib/avatar_hash.py',
-    'zerver/lib/context_managers.py',
-    'zerver/lib/domains.py',
-    'zerver/lib/emoji.py',
-    'zerver/lib/i18n.py',
-    'zerver/lib/mention.py',
-    'zerver/lib/message.py',
-    'zerver/lib/name_restrictions.py',
-    'zerver/lib/realm_icon.py',
-    'zerver/lib/retention.py',
-    'zerver/lib/streams.py',
-    'zerver/lib/users.py',
-    'zerver/lib/webhooks/*.py',
-    'zerver/logging_handlers.py',
-    # As a project, we require 100% test coverage in the views files.
-    'zerver/views/*.py',
+    # zerver/ and zerver/lib/ are important core files
+    'zerver/*.py',
+    'zerver/lib/*.py',
     # Test files should have 100% coverage; test code that isn't run
     # is likely a bug in the test.
     'zerver/tests/*.py',
+    # As a project, we require 100% test coverage in the views files.
+    'zerver/views/*.py',
+    'zproject/backends.py',
+    'confirmation/*.py',
+    'zerver/webhooks/*/*.py',
     # Once we have a nice negative tests system, we can add these:
     # 'zerver/webhooks/*/*.py',
     # 'zerver/webhooks/*/*/*.py',
-    'zproject/backends.py',
-    # Uncovered but in exclude list and we'd like to have included soon
-    'confirmation/models.py',
-    'zerver/decorator.py',
-    'zerver/lib/actions.py',
-    'zerver/lib/events.py',
-    'zerver/lib/bugdown/__init__.py',
-    'zerver/lib/events.py',
-    'zerver/lib/integrations.py',
-    'zerver/lib/message.py',
-    'zerver/lib/narrow.py',
-    'zerver/lib/notifications.py',
-    'zerver/lib/request.py',
-    'zerver/lib/response.py',
-    'zerver/lib/sessions.py',
-    'zerver/lib/test_helpers.py',
-    'zerver/lib/test_classes.py',
-    'zerver/lib/upload.py',
-    'zerver/lib/validator.py',
-    'zerver/models.py',
 ] for path in glob.glob(target)}
 
 not_yet_fully_covered = {
@@ -81,16 +47,92 @@ not_yet_fully_covered = {
     # We have 100% coverage on the new stuff; need to refactor old stuff.
     'analytics/views.py',
     # Major lib files should have 100% coverage
-    'confirmation/models.py',
     'zerver/decorator.py',
     'zerver/lib/actions.py',
+    'zerver/lib/addressee.py',
     'zerver/lib/bugdown/__init__.py',
+    'zerver/lib/cache.py',
+    'zerver/lib/cache_helpers.py',
+    'zerver/lib/create_user.py',
+    'zerver/lib/exceptions.py',
     'zerver/lib/i18n.py',
+    'zerver/lib/management.py',
     'zerver/lib/message.py',
     'zerver/lib/notifications.py',
-    'zerver/lib/push_notifications.py',
+    'zerver/lib/rest.py',
+    'zerver/lib/send_email.py',
+    'zerver/lib/soft_deactivation.py',
     'zerver/lib/upload.py',
     'zerver/models.py',
+    # Other lib files that ideally would coverage, but aren't sorted
+    'zerver/__init__.py',
+    'zerver/apps.py',
+    'zerver/filters.py',
+    'zerver/middleware.py',
+    'zerver/storage.py',
+    'zerver/lib/bot_lib.py',
+    'zerver/lib/camo.py',
+    'zerver/lib/db.py',
+    'zerver/lib/debug.py',
+    'zerver/lib/digest.py',
+    'zerver/lib/email_mirror.py',
+    'zerver/lib/error_notify.py',
+    'zerver/lib/export.py',
+    'zerver/lib/feedback.py',
+    'zerver/lib/fix_unreads.py',
+    'zerver/lib/hotspots.py',
+    'zerver/lib/html_diff.py',
+    'zerver/lib/initial_password.py',
+    'zerver/lib/logging_util.py',
+    'zerver/lib/migrate.py',
+    'zerver/lib/outgoing_webhook.py',
+    'zerver/lib/parallel.py',
+    'zerver/lib/profile.py',
+    'zerver/lib/queue.py',
+    'zerver/lib/rate_limiter.py',
+    'zerver/lib/slack_data_to_zulip_data.py',
+    'zerver/lib/sqlalchemy_utils.py',
+    'zerver/lib/str_utils.py',
+    'zerver/lib/stream_recipient.py',
+    'zerver/lib/tex.py',
+    'zerver/lib/timeout.py',
+    'zerver/lib/unminify.py',
+    'zerver/lib/user_agent.py',
+    'zerver/lib/utils.py',
+    # Low priority for coverage
+    'zerver/lib/bulk_create.py',
+    'zerver/lib/ccache.py',
+    'zerver/lib/generate_test_data.py',
+    'zerver/lib/initial_password',
+    'zerver/lib/statistics.py',
+    'zerver/lib/test_fixtures.py',
+    'zerver/lib/test_runner.py',
+    # Webhook integrations with incomplete coverage
+    'zerver/webhooks/basecamp/view.py',
+    'zerver/webhooks/beanstalk/view.py',
+    'zerver/webhooks/bitbucket2/view.py',
+    'zerver/webhooks/freshdesk/view.py',
+    'zerver/webhooks/github/view.py',
+    'zerver/webhooks/github_webhook/view.py',
+    'zerver/webhooks/gitlab/view.py',
+    'zerver/webhooks/gogs/view.py',
+    'zerver/webhooks/greenhouse/view.py',
+    'zerver/webhooks/hellosign/view.py',
+    'zerver/webhooks/ifttt/view.py',
+    'zerver/webhooks/jira/view.py',
+    'zerver/webhooks/librato/view.py',
+    'zerver/webhooks/newrelic/view.py',
+    'zerver/webhooks/pingdom/view.py',
+    'zerver/webhooks/pivotal/view.py',
+    'zerver/webhooks/semaphore/view.py',
+    'zerver/webhooks/solano/view.py',
+    'zerver/webhooks/stripe/view.py',
+    'zerver/webhooks/taiga/view.py',
+    'zerver/webhooks/teamcity/view.py',
+    'zerver/webhooks/transifex/view.py',
+    'zerver/webhooks/travis/view.py',
+    'zerver/webhooks/updown/view.py',
+    'zerver/webhooks/zapier/view.py',
 }
 
 enforce_fully_covered = sorted(target_fully_covered - not_yet_fully_covered)
@@ -120,7 +162,7 @@ def block_internet():
         # type: (*Any, **Any) -> None
         raise Exception("Outgoing network requests are not allowed in the Zulip tests. "
                         "More details and advice are available here:"
-                        "https://zulip.readthedocs.io/en/latest/testing.html#internet-access-inside-test-suits")
+                        "https://zulip.readthedocs.io/en/latest/testing/testing.html#internet-access-inside-test-suites")
 
     httplib2.Http.request = internet_guard
     requests.request = internet_guard
@@ -145,7 +187,7 @@ if __name__ == "__main__":
     # "-u" uses unbuffered IO, which is important when wrapping it in subprocess
     os.environ['PYTHONUNBUFFERED'] = 'y'
 
-    usage = """%prog [options]
+    usage = """test-backend [options]
     test-backend # Runs all backend tests
     test-backend zerver.tests.test_bugdown # run all tests in a test module
     test-backend zerver/tests/test_bugdown.py # run all tests in a test module
@@ -155,64 +197,64 @@ if __name__ == "__main__":
     test-backend zerver.tests.test_bugdown.BugdownTest.test_inline_youtube # run a single test
     test-backend BugdownTest.test_inline_youtube # run a single test"""
 
-    parser = optparse.OptionParser(usage)
+    parser = argparse.ArgumentParser(description=usage,
+                                     formatter_class=argparse.RawTextHelpFormatter)
 
-    parser.add_option('--nonfatal-errors', action="store_false", default=True,
-                      dest="fatal_errors", help="Continue past test failures to run all tests")
-    parser.add_option('--coverage', dest='coverage',
-                      action="store_true",
-                      default=False,
-                      help='Compute test coverage.')
-    parser.add_option('--verbose-coverage', dest='verbose_coverage',
-                      action="store_true",
-                      default=False, help='Enable verbose print of coverage report.')
+    parser.add_argument('--nonfatal-errors', action="store_false", default=True,
+                        dest="fatal_errors", help="Continue past test failures to run all tests")
+    parser.add_argument('--coverage', dest='coverage',
+                        action="store_true",
+                        default=False,
+                        help='Compute test coverage.')
+    parser.add_argument('--verbose-coverage', dest='verbose_coverage',
+                        action="store_true",
+                        default=False, help='Enable verbose print of coverage report.')
 
-    def allow_positive_int(option, opt_str, value, parser):
-        # type: (optparse.Option, str, int, optparse.OptionParser) -> None
-        if value < 1:
-            raise optparse.OptionValueError(
-                "option {}: Only positive integers are allowed.".format(opt_str))
-        setattr(parser.values, option.dest, value)
+    parser.add_argument('--processes', dest='processes',
+                        type=int,
+                        action='store',
+                        default=4,
+                        help='Specify the number of processes to run the '
+                             'tests in. Default is 4.')
+    parser.add_argument('--profile', dest='profile',
+                        action="store_true",
+                        default=False, help='Profile test runtime.')
+    parser.add_argument('--force', dest='force',
+                        action="store_true",
+                        default=False, help='Run tests despite possible problems.')
+    parser.add_argument('--no-shallow', dest='no_shallow',
+                        action="store_true",
+                        default=False,
+                        help="Don't allow shallow testing of templates (deprecated)")
+    parser.add_argument('--verbose', dest='verbose',
+                        action="store_true",
+                        default=False,
+                        help="Show detailed output")
+    parser.add_argument('--generate-fixtures', action="store_true", default=False,
+                        dest="generate_fixtures",
+                        help=("Force a call to generate-fixtures."))
+    parser.add_argument('--report-slow-tests', dest='report_slow_tests',
+                        action="store_true",
+                        default=False,
+                        help="Show which tests are slowest.")
+    parser.add_argument('--reverse', dest='reverse',
+                        action="store_true",
+                        default=False,
+                        help="Run tests in reverse order.")
+    parser.add_argument('--rerun', dest="rerun",
+                        action="store_true",
+                        default=False,
+                        help=("Run the tests which failed the last time "
+                              "test-backend was run.  Implies --nonfatal-errors."))
+    parser.add_argument('args', nargs=argparse.REMAINDER)
 
-    parser.add_option('--processes', dest='processes',
-                      type="int",
-                      callback=allow_positive_int,
-                      action='callback',
-                      default=None,
-                      help='Specify the number of processes to run the '
-                           'tests in. Default is 4.')
-    parser.add_option('--profile', dest='profile',
-                      action="store_true",
-                      default=False, help='Profile test runtime.')
-    parser.add_option('--force', dest='force',
-                      action="store_true",
-                      default=False, help='Run tests despite possible problems.')
-    parser.add_option('--no-shallow', dest='no_shallow',
-                      action="store_true",
-                      default=False,
-                      help="Don't allow shallow testing of templates (deprecated)")
-    parser.add_option('--verbose', dest='verbose',
-                      action="store_true",
-                      default=False,
-                      help="Show detailed output")
-    parser.add_option('--generate-fixtures', action="store_true", default=False,
-                      dest="generate_fixtures",
-                      help=("Force a call to generate-fixtures."))
-    parser.add_option('--report-slow-tests', dest='report_slow_tests',
-                      action="store_true",
-                      default=False,
-                      help="Show which tests are slowest.")
-    parser.add_option('--reverse', dest='reverse',
-                      action="store_true",
-                      default=False,
-                      help="Run tests in reverse order.")
-    parser.add_option('--rerun', dest="rerun",
-                      action = "store_true",
-                      default=False,
-                      help=("Run the tests which failed the last time "
-                            "test-backend was run.  Implies --nonfatal-errors."))
+    options = parser.parse_args()
+    args = options.args
 
-    (options, args) = parser.parse_args()
+    if options.processes < 1:
+        raise argparse.ArgumentError(
+            "option processes: Only positive integers are allowed.")
+
     zerver_test_dir = 'zerver/tests/'
 
     # While running --rerun, we read var/last_test_failure.json to get
@@ -315,9 +357,6 @@ if __name__ == "__main__":
 
     subprocess.check_call(['tools/webpack', '--test'])
 
-    if options.processes is None:
-        options.processes = 4
-
     TestRunner = get_runner(settings)
     parallel = options.processes
 
@@ -373,7 +412,10 @@ if __name__ == "__main__":
         prof.disable()
         prof.dump_stats("/tmp/profile.data")
         print("Profile data saved to /tmp/profile.data")
-        print("You can visualize it using e.g. `runsnake /tmp/profile.data`")
+        print("You can visualize it using e.g. `snakeviz /tmp/profile.data`")
+        print("Note: If you are using vagrant for development environment you will need to do:")
+        print("1.) `vagrant ssh -- -L 8080:127.0.0.1:8080`")
+        print("2.) `snakeviz -s /tmp/profile.data`")
 
     if options.report_slow_tests:
         from zerver.lib.test_runner import report_slow_tests

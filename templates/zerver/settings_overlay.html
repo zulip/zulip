@@ -1,4 +1,4 @@
-<div id="settings_page" class="new-style overlay-content">
+<div id="settings_page" class="new-style overlay-content modal-bg">
     <div class="settings-header mobile">
         <div class="icon-vector-chevron-left"></div>
         <h1>{{ _('Settings') }}<span class="section"></span></h1>
@@ -44,6 +44,10 @@
                     <div class="text">{{ _('Zulip labs') }}</div>
                 </li>
 
+                <li class="admin" tabindex="0" data-section="organization-profile">
+                    <i class="icon icon-vector-lock"></i>
+                    <div class="text">{{ _('Organization profile') }}</div>
+                </li>
                 <li class="admin" tabindex="0" data-section="organization-settings">
                     <i class="icon icon-vector-beaker"></i>
                     <div class="text">{{ _('Organization settings') }}</div>
@@ -55,6 +59,10 @@
                 <li class="admin" tabindex="0" data-section="emoji-settings">
                     <i class="icon icon-vector-smile"></i>
                     <div class="text">{{ _('Custom emoji') }}</div>
+                </li>
+                <li class="admin" tabindex="0" data-section="user-groups-admin">
+                    <i class="icon icon-vector-group"></i>
+                    <div class="text">{{ _('User groups') }}</div>
                 </li>
                 <li class="admin" tabindex="0" data-section="auth-methods">
                     <i class="icon icon-vector-lock"></i>
@@ -88,6 +96,12 @@
                     <i class="icon icon-vector-font"></i>
                     <div class="text">{{ _('Filter settings') }}</div>
                 </li>
+                {% if is_admin %}
+                <li class="admin" tabindex="0" data-section="invites-list-admin">
+                    <i class="icon icon-vector-user"></i>
+                    <div class="text">{{ _('Invitations') }}</div>
+                </li>
+                {% endif %}
             </ul>
         </div>
 

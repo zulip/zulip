@@ -36,6 +36,15 @@ class zulip::app_frontend {
     source => "puppet:///modules/zulip/cron.d/send-digest-emails",
   }
 
+  # Trigger 2x a day certbot renew
+  file { "/etc/cron.d/certbot-renew":
+    ensure => file,
+    owner  => "root",
+    group  => "root",
+    mode   => 644,
+    source => "puppet:///modules/zulip/cron.d/certbot-renew",
+  }
+
   # Restart the server regularly to avoid potential memory leak problems.
   file { "/etc/cron.d/restart-zulip":
     ensure => file,
@@ -43,5 +52,14 @@ class zulip::app_frontend {
     group  => "root",
     mode => 644,
     source => "puppet:///modules/zulip/cron.d/restart-zulip",
+  }
+
+  # Soft deactivate long term idle users weekly.
+  file { "/etc/cron.d/soft-deactivate-users":
+    ensure => file,
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    source => "puppet:///modules/zulip/cron.d/soft-deactivate-users",
   }
 }

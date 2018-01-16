@@ -1,21 +1,14 @@
-from __future__ import division, absolute_import
-
-from zerver.models import Realm, UserProfile, Stream, Message
-from analytics.models import InstallationCount, RealmCount, UserCount, StreamCount
-from analytics.lib.counts import CountStat
-from analytics.lib.time_utils import time_range
-
-from datetime import datetime
 from math import sqrt
 from random import gauss, random, seed
 from typing import List
 
-from six.moves import range, zip
+from analytics.lib.counts import CountStat
 
-def generate_time_series_data(days=100, business_hours_base=10, non_business_hours_base=10,
-                              growth=1, autocorrelation=0, spikiness=1, holiday_rate=0,
-                              frequency=CountStat.DAY, partial_sum=False, random_seed=26):
-    # type: (int, float, float, float, float, float, float, str, bool, int) -> List[int]
+def generate_time_series_data(days: int=100, business_hours_base: float=10,
+                              non_business_hours_base: float=10, growth: float=1,
+                              autocorrelation: float=0, spikiness: float=1,
+                              holiday_rate: float=0, frequency: str=CountStat.DAY,
+                              partial_sum: bool=False, random_seed: int=26) -> List[int]:
     """
     Generate semi-realistic looking time series data for testing analytics graphs.
 

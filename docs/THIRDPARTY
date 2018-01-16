@@ -20,20 +20,6 @@ Files: *
 Copyright: 2011-2017 Dropbox, Inc., Kandra Labs, Inc., and contributors
 License: Apache-2
 
-Files: api/*
-Copyright: 2012-2017 Dropbox, Inc., Kandra Labs, Inc., and contributors
-License: Expat
-
-Files: api/integrations/perforce/git_p4.py
-Copyright: 2007 Simon Hausmann <simon@lst.de>,
- 2007 Trolltech ASA
-License: Expat
-Comment: https://raw.github.com/git/git/34022ba/git-p4.py
-
-Files: bots/jabber_mirror_backend.py
-Copyright: 2013 Permabit, Inc., 2013-2014 Dropbox, Inc.
-License: Expat
-
 Files: confirmation/*
 Copyright: 2008, Jarek Zgoda <jarek.zgoda@gmail.com>
 License: BSD-3-Clause
@@ -76,10 +62,6 @@ License: GPL-2.0
 Files: puppet/zulip_internal/files/trac/cgi-bin/
 Copyright: 2003-2009 Edgewall Software
  2003-2004 Jonas Borgström <jonas@edgewall.com>
-License: BSD-3-Clause
-
-Files: puppet/zulip_internal/files/pagerduty_nagios.pl
-Copyright: 2011, PagerDuty, Inc.
 License: BSD-3-Clause
 
 Files: puppet/zulip_internal/files/zulip-ec2-configure-interfaces
@@ -199,6 +181,10 @@ License: Expat
 Files: zerver/lib/decorator.py zerver/management/commands/runtornado.py scripts/setup/generate_secrets.py
 Copyright: Django Software Foundation and individual contributors
 License: BSD-3-Clause
+
+Files: zerver/lib/json_encoder_for_html.py zerver/tests/test_json_encoder_for_html.py
+Copyright: 2006 Bob Ippolito
+License: MIT or Academic Free License v. 2.1
 
 License: Apache-2.0
  Licensed under the Apache License, Version 2.0 (the "License");

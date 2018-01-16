@@ -17,17 +17,11 @@ function is_local_part(value, element) {
     return this.optional(element) || /^[\-!#$%&'*+\/=?\^_`{}|~0-9A-Z]+(\.[\-!#$%&'*+\/=?\^_`{}|~0-9A-Z]+)*$/i.test(value);
 }
 
-// Note: These strings are mostly duplicates with a similar data set
-// in the bot-settings.handlebars.  We'll probably want to move this
-// map to be sent from the backend and shared.
 exports.type_id_to_string = function (type_id) {
-    if (type_id === 1) {
-        return i18n.t("Generic bot");
-    } else if (type_id === 2) {
-        return i18n.t("Incoming webhook");
-    } else if (type_id === 3) {
-        return i18n.t("Outgoing webhook");
-    }
+    var name = _.find(page_params.bot_types, function (bot_type) {
+        return bot_type.type_id === type_id;
+    }).name;
+    return i18n.t(name);
 };
 
 function render_bots() {
@@ -91,6 +85,23 @@ exports.generate_flaskbotrc_content = function (email, api_key) {
 exports.set_up = function () {
     $('#payload_url_inputbox').hide();
     $('#create_payload_url').val('');
+    $('#service_name_list').hide();
+    $('#config_inputbox').hide();
+    page_params.realm_embedded_bots.forEach(function (bot) {
+        $('#select_service_name').append($('<option>', {
+            value: bot.name,
+            text: bot.name,
+        }));
+        _.each(bot.config, function (value, key) {
+            var rendered_config_item = templates.render('embedded_bot_config_item',
+                {botname: bot.name, key: key, value: value});
+            $('#config_inputbox').append(rendered_config_item);
+        });
+    });
+    var selected_embedded_bot = 'converter';
+    $('#select_service_name').val(selected_embedded_bot); // TODO: Use 'select a bot'.
+    $('#config_inputbox').children().hide();
+    $("[name*='"+selected_embedded_bot+"']").show();
 
     $('#download_flaskbotrc').click(function () {
         var OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
@@ -122,6 +133,7 @@ exports.set_up = function () {
     var create_avatar_widget = avatar.build_bot_create_widget();
     var OUTGOING_WEBHOOK_BOT_TYPE = '3';
     var GENERIC_BOT_TYPE = '1';
+    var EMBEDDED_BOT_TYPE = '4';
 
     var GENERIC_INTERFACE = '1';
 
@@ -136,6 +148,7 @@ exports.set_up = function () {
             var short_name = $('#create_bot_short_name').val() || $('#create_bot_short_name').text();
             var payload_url = $('#create_payload_url').val();
             var interface_type = $('#create_interface_type').val();
+            var service_name = $('#select_service_name :selected').val();
             var formData = new FormData();
 
             formData.append('csrfmiddlewaretoken', csrf_token);
@@ -147,6 +160,13 @@ exports.set_up = function () {
             if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
                 formData.append('payload_url', JSON.stringify(payload_url));
                 formData.append('interface_type', interface_type);
+            } else if (bot_type === EMBEDDED_BOT_TYPE) {
+                formData.append('service_name', service_name);
+                var config_data = {};
+                $("[name*='"+service_name+"'] input").each(function () {
+                    config_data[$(this).attr('name')] = $(this).val();
+                });
+                formData.append('config_data', JSON.stringify(config_data));
             }
             jQuery.each($('#bot_avatar_file_input')[0].files, function (i, file) {
                 formData.append('file-'+i, file);
@@ -164,7 +184,13 @@ exports.set_up = function () {
                     $('#create_bot_short_name').val('');
                     $('#create_payload_url').val('');
                     $('#payload_url_inputbox').hide();
+                    $('#config_inputbox').hide();
+                    $("[name*='"+service_name+"'] input").each(function () {
+                        $(this).val('');
+                    });
                     $('#create_bot_type').val(GENERIC_BOT_TYPE);
+                    $('#select_service_name').val('converter'); // TODO: Later we can change this to hello bot or similar
+                    $('#service_name_list').hide();
                     $('#create_bot_button').show();
                     $('#create_interface_type').val(GENERIC_INTERFACE);
                     create_avatar_widget.clear();
@@ -183,14 +209,29 @@ exports.set_up = function () {
 
     $("#create_bot_type").on("change", function () {
         var bot_type = $('#create_bot_type :selected').val();
-        // If the selected bot_type is Outgoing webhook
+        // For "generic bot" or "incoming webhook" both these fields need not be displayed.
+        $('#service_name_list').hide();
+        $('#select_service_name').removeClass('required');
+        $('#config_inputbox').hide();
+
+        $('#payload_url_inputbox').hide();
+        $('#create_payload_url').removeClass('required');
         if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
             $('#payload_url_inputbox').show();
             $('#create_payload_url').addClass('required');
-        } else {
-            $('#payload_url_inputbox').hide();
-            $('#create_payload_url').removeClass('required');
+
+        } else if (bot_type === EMBEDDED_BOT_TYPE) {
+            $('#service_name_list').show();
+            $('#select_service_name').addClass('required');
+            $("#select_service_name").trigger('change');
+            $('#config_inputbox').show();
         }
+    });
+
+    $("#select_service_name").on("change", function () {
+        $('#config_inputbox').children().hide();
+        var selected_bot = $('#select_service_name :selected').val();
+        $("[name*='"+selected_bot+"']").show();
     });
 
     $("#active_bots_list").on("click", "button.delete_bot", function (e) {
@@ -312,6 +353,7 @@ exports.set_up = function () {
                         edit_button.show();
                         show_row_again();
                         avatar_widget.clear();
+                        typeahead_helper.clear_rendered_persons();
 
                         bot_info.find('.name').text(full_name);
                         if (data.avatar_url) {
@@ -354,6 +396,7 @@ exports.set_up = function () {
         $("#add-a-new-bot-form").show();
         $("#active_bots_list").hide();
         $("#inactive_bots_list").hide();
+        $('#bot_table_error').hide();
     });
 
     $("#bots_lists_navbar .active-bots-tab").click(function (e) {
@@ -378,6 +421,7 @@ exports.set_up = function () {
         $("#add-a-new-bot-form").hide();
         $("#active_bots_list").hide();
         $("#inactive_bots_list").show();
+        $('#bot_table_error').hide();
     });
 
 };

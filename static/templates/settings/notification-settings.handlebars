@@ -17,7 +17,7 @@
                     <span></span>
                 </label>
                 <label for="enable_stream_desktop_notifications" class="inline-block">
-                    {{t "Desktop notifications" }}
+                    {{t "Visual desktop notifications" }}
                 </label>
                 <div class="propagate_stream_notifications_change"></div>
             </div>
@@ -31,7 +31,21 @@
                     <span></span>
                 </label>
                 <label for="enable_stream_sounds" class="inline-block no-border">
-                    {{t "Audible notifications" }}
+                    {{t "Audible desktop notifications" }}
+                </label>
+                <div class="propagate_stream_notifications_change"></div>
+            </div>
+
+            <div class="input-group">
+                <label class="checkbox">
+                    <input type="checkbox" class="inline-block" name="enable_stream_push_notifications" id="enable_stream_push_notifications"
+                           {{#if page_params.enable_stream_push_notifications}}
+                           checked="checked"
+                           {{/if}} />
+                    <span></span>
+                </label>
+                <label for="enable_stream_push_notifications" class="inline-block no-border">
+                    {{t "Mobile notifications" }}
                 </label>
                 <div class="propagate_stream_notifications_change"></div>
             </div>
@@ -56,7 +70,7 @@
                     <span></span>
                 </label>
                 <label for="enable_desktop_notifications" class="inline-block">
-                    {{t "Desktop notifications" }}
+                    {{t "Visual desktop notifications" }}
                 </label>
             </div>
 
@@ -71,7 +85,7 @@
                     <span></span>
                 </label>
                 <label for="pm_content_in_desktop_notifications" id="pm_content_in_desktop_notifications_label" class="inline-block">
-                    {{t "Include content of private messages in desktop notifications" }}
+                    {{t "Include content of private messages" }}
                 </label>
             </div>
 
@@ -84,7 +98,7 @@
                     <span></span>
                 </label>
                 <label for="enable_sounds" class="inline-block">
-                    {{t "Audible notifications" }}
+                    {{t "Audible desktop notifications" }}
                 </label>
             </div>
 
@@ -110,20 +124,21 @@
                     <span></span>
                 </label>
                 <label for="enable_offline_push_notifications" class="inline-block">
-                    {{t "Mobile push notifications when offline" }}
+                    {{t "Mobile notifications when offline" }}
                 </label>
             </div>
 
-            <div class="input-group">
+            <div class="input-group disableable {{#unless page_params.enable_offline_push_notifications}}control-label-disabled{{/unless}}">
                 <label class="checkbox">
                     <input type="checkbox" name="enable_online_push_notifications" id="enable_online_push_notifications"
+                           {{#unless page_params.enable_offline_push_notifications}}disabled="disabled"{{/unless}}
                            {{#if page_params.enable_online_push_notifications}}
                            checked="checked"
                            {{/if}} />
                     <span></span>
                 </label>
-                <label for="enable_online_push_notifications" class="inline-block">
-                    {{t "Mobile push notifications always (even when online)" }}
+                <label for="enable_online_push_notifications" id="enable_online_push_notifications_label" class="inline-block">
+                    {{t "Mobile notifications always (even when online)" }}
                 </label>
             </div>
 

@@ -1,7 +1,4 @@
-from __future__ import absolute_import
-from __future__ import print_function
 from collections import defaultdict
-from six.moves import range
 from typing import Dict, List, Set
 
 from .html_branches import html_branches, HtmlTreeBranch
@@ -16,7 +13,7 @@ def show_all_branches(fns):
             print(branch.text())
         print('---')
 
-class Grepper(object):
+class Grepper:
     '''
     A Grepper object is optimized to do repeated
     searches of words that can be found in our

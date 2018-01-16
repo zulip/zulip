@@ -1,9 +1,7 @@
-from __future__ import absolute_import
-from __future__ import print_function
-
-from typing import Any
 
 from argparse import ArgumentParser
+from typing import Any
+
 from django.core.management.base import CommandError
 
 from zerver.lib.actions import do_change_full_name
@@ -12,14 +10,12 @@ from zerver.lib.management import ZulipBaseCommand
 class Command(ZulipBaseCommand):
     help = """Change the names for many users."""
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('data_file', metavar='<data file>', type=str,
                             help="file containing rows of the form <email>,<desired name>")
         self.add_realm_args(parser, True)
 
-    def handle(self, *args, **options):
-        # type: (*Any, **str) -> None
+    def handle(self, *args: Any, **options: str) -> None:
         data_file = options['data_file']
         realm = self.get_realm(options)
         with open(data_file, "r") as f:

@@ -3,154 +3,105 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Zulip documentation!
-===============================
+Welcome to the Zulip documentation!
+===================================
 
-Zulip is a powerful, open source group chat application. Written in
-Python and using the Django framework, Zulip supports both private
-messaging and group chats via conversation streams.
+Welcome! Zulip's documentation is split into four parts:
 
-Zulip also supports fast search, drag-and-drop file uploads, image
-previews, group private messages, audible notifications, missed-message
-emails, desktop apps, and much more.
+- `User documentation <https://zulipchat.com/help>`__, for users and
+  administrators of Zulip organizations.
+- `Installation documentation <production/overview.html>`__, for
+  installing and maintaining a self-hosted Zulip installation.
+- `API documentation <https://zulipchat.com/api/>`__, for writing
+  integrations or bots using the Zulip API.
+- `Contributor documentation <overview/contributing.html>`__, for
+  developing the Zulip software, translating, submitting bug reports,
+  or making other contributions to the project.
 
-Further information on the Zulip project and its features can be found
-at `https://www.zulip.org <https://www.zulip.org>`__ and in these
-docs.  Our code is available at `our GitHub repository
-<https://github.com/zulip/>`__.
+Zulip has well over 150,000 words of documentation. If you can't find
+what you're looking for, please `let us know
+<contributing/chat-zulip-org.html>`__!  Further information on the
+Zulip project and its features can be found at `https://www.zulip.org
+<https://www.zulip.org>`__.
 
-This set of documents covers installation and contribution instructions.
+This site contains our installation and contributor documentation. If
+this is your first time here, you may want to start with `Production
+overview <production/overview.html>`_ or `Contributing to Zulip
+<overview/contributing.html>`_.
 
 Contents:
 
-* :ref:`overview`
-* :ref:`zulip-in-production`
-* :ref:`development-environment`
-* :ref:`developer-tutorials`
-* :ref:`code-contribution-guide`
-* :ref:`code-testing`
-* :ref:`subsystem-documentation`
+* :ref:`Overview <overview>`
+* :ref:`Zulip in Production <zulip-in-production>`
+* :ref:`Development Environment <development-environment>`
+* :ref:`Developer Tutorials <developer-tutorials>`
+* :ref:`Git Guide <git-guide>`
+* :ref:`Code Contribution Guide <code-contribution-guide>`
+* :ref:`Code Testing <code-testing>`
+* :ref:`Subsystem Documentation <subsystem-documentation>`
+* :ref:`Translating <translating>`
 
 .. _overview:
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Overview
+   :maxdepth: 3
 
-   readme-symlink
-   architecture-overview
-   directory-structure
-   roadmap
-   changelog
+   overview/index
 
 .. _zulip-in-production:
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Zulip in production
+   :maxdepth: 3
 
-   Production overview <prod>
-   prod-requirements
-   Installing a production server <prod-install>
-   prod-troubleshooting
-   prod-customize
-   prod-mobile-push-notifications
-   prod-maintain-secure-upgrade
-   security-model
-   prod-authentication-methods
-   prod-postgres
+   production/index
 
 .. _development-environment:
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Development environment
+   :maxdepth: 3
 
-   Development environment installation <dev-overview>
-   Recommended setup (Vagrant) <dev-env-first-time-contributors>
-   Advanced setup (non-Vagrant) <dev-setup-non-vagrant>
-   Using the development environment <using-dev-environment>
-   Developing remotely <dev-remote>
+   development/index
 
 .. _developer-tutorials:
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Developer tutorials
+   :maxdepth: 3
 
-   integration-guide
-   integration-docs-guide
-   webhook-walkthrough
-   new-feature-tutorial
-   writing-views
-   life-of-a-request
-   reading-list
-   screenshot-and-gif-software
-   fixing-commits
-   git-cheat-sheet-detailed
-   git-cheat-sheet
-   shell-tips
-   working-copies
+   tutorials/index
+
+.. _git-guide:
+
+.. toctree::
+   :maxdepth: 3
+
+   git/index
 
 .. _code-contribution-guide:
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Code contribution guide
+   :maxdepth: 3
 
-   git-guide
-   version-control
-   code-style
-   mypy
-   code-reviewing
-   chat-zulip-org
-   zulipbot-usage
-   accessibility
-   bug-reports
+   contributing/index
 
 .. _code-testing:
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Code testing
+   :maxdepth: 3
 
-   testing
-   linters
-   testing-with-django
-   testing-with-node
-   testing-with-casper
-   travis
-   manual-testing
+   testing/index
 
 .. _subsystem-documentation:
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Subsystem documentation
+   :maxdepth: 3
 
-   settings
-   events-system
-   queuing
-   bots-guide
-   custom-apps
-   pointer
-   markdown
-   realms
-   management-commands
-   front-end-build-process
-   schema-migrations
-   html_css
-   hashchange-system
-   emoji
-   hotspots
-   full-text-search
-   email
-   analytics
-   translating
-   client
-   logging
-   release-checklist
-   api-release-checklist
-   swagger-api-docs
-   README
-   user-docs
+   subsystems/index
+
+.. _translating:
+
+.. toctree::
+   :maxdepth: 3
+
+   translating/index
+
+   Index <https://zulip.readthedocs.io/en/latest/>

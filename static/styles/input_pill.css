@@ -1,0 +1,112 @@
+.pill-container {
+    display: inline-block;
+
+    padding: 2px;
+    border: 1px solid hsl(0, 0%, 86%);
+    border-radius: 4px;
+
+    font-size: 0.9em;
+
+    cursor: text;
+}
+
+.pill-container .pill {
+    position: relative;
+    display: inline-block;
+
+    padding: 0px 18px 0px 2px;
+    margin: 1px 1px;
+
+    color: hsl(177, 38%, 54%);
+    border: 1px solid #b2e4e2;
+
+    border-radius: 4px;
+
+    cursor: pointer;
+}
+
+.pill-container .pill:focus {
+    color: hsl(0, 38%, 54%);
+    border: 1px solid #e4b2b2;
+
+    outline: none;
+}
+
+.pill-container .input {
+    display: inline-block;
+    padding: 2px 4px;
+
+    min-width: 2px;
+
+    outline: none;
+}
+
+.pill-container .pill .exit {
+    content: "\D7";
+    position: absolute;
+    top: 0px;
+    right: 3px;
+
+    opacity: 0.5;
+
+    font-size: 1.3em;
+}
+
+.pill-container .pill:hover .exit {
+    opacity: 1;
+}
+
+.pill-container .input.shake {
+    animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
+.pm_recipient .pill-container {
+    position: absolute;
+    left: 56px;
+    width: 100%;
+    height: 24px;
+
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+}
+
+.pm_recipient .pill-container .pill {
+    color: hsl(0, 0%, 100%);
+    border: 1px solid #36a29b;
+    background: hsl(170, 47%, 53%);
+    font-weight: 600;
+}
+
+.pm_recipient .pill-container .pill:focus {
+    border: 1px solid #108179;
+    background: hsl(176, 49%, 42%);
+}
+
+.pm_recipient .pill-container .input {
+    height: 12px;
+}
+
+@keyframes shake {
+    10%, 90% {
+        transform: translate3d(-1px, 0, 0);
+    }
+
+    20%,
+    80% {
+        transform: translate3d(2px, 0, 0);
+    }
+
+    30%,
+    50%,
+    70% {
+        transform: translate3d(-3px, 0, 0);
+    }
+
+    40%,
+    60% {
+        transform: translate3d(3px, 0, 0);
+    }
+}

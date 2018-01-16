@@ -1,5 +1,5 @@
 var font_14pt = {
-    family: 'Humbug',
+    family: 'Source Sans Pro',
     size: 14,
     color: '#000000',
 };
@@ -60,7 +60,7 @@ function update_last_full_update(end_times) {
     $('#id_last_full_update').closest('.last-update').show();
 }
 
-$(document).ready(function () {
+$(function () {
     $('span[data-toggle="tooltip"]').tooltip({
         animation: false,
         placement: 'top',
@@ -117,10 +117,7 @@ function populate_messages_sent_over_time(data) {
                            $.extend({stepmode: 'backward'}, button2),
                            {step: 'all', label: 'All time'}] };
     }
-    var hourly_rangeselector = make_rangeselector(
-        0.66, -0.62,
-        {count: 24, label: i18n.t('Last 24 hours'), step: 'hour'},
-        {count: 72, label: i18n.t('Last 72 hours'), step: 'hour'});
+
     // This is also the cumulative rangeselector
     var daily_rangeselector = make_rangeselector(
         0.68, -0.62,
@@ -208,7 +205,6 @@ function populate_messages_sent_over_time(data) {
         return format_date(date, true);
     };
     var values = {me: data.user.human, human: data.realm.human, bot: data.realm.bot};
-    var hourly_traces = make_traces(start_dates, values, 'bar', date_formatter);
 
     var info = aggregate_data('day');
     date_formatter = function (date) {
@@ -219,8 +215,7 @@ function populate_messages_sent_over_time(data) {
 
     info = aggregate_data('week');
     date_formatter = function (date) {
-        // return i18n.t("Week of __date__", {date: format_date(date, false)});
-        return i18n.t("Week of ") + format_date(date, false);
+        return i18n.t("Week of __date__", {date: format_date(date, false)});
     };
     var last_week_is_partial = info.last_value_is_partial;
     var weekly_traces = make_traces(info.dates, info.values, 'bar', date_formatter);
@@ -242,7 +237,8 @@ function populate_messages_sent_over_time(data) {
     var clicked_cumulative = false;
 
     function draw_or_update_plot(rangeselector, traces, last_value_is_partial, initial_draw) {
-        $('#daily_button, #weekly_button, #hourly_button, #cumulative_button').removeClass("selected");
+        $('#daily_button, #weekly_button, #cumulative_button').removeClass("selected");
+        $('#id_messages_sent_over_time > div').removeClass("spinner");
         if (initial_draw) {
             traces.human.visible = true;
             traces.bot.visible = 'legendonly';
@@ -267,12 +263,6 @@ function populate_messages_sent_over_time(data) {
     }
 
     // Click handlers for aggregation buttons
-    $('#hourly_button').click(function () {
-        draw_or_update_plot(hourly_rangeselector, hourly_traces, false, false);
-        $(this).addClass("selected");
-        clicked_cumulative = false;
-    });
-
     $('#daily_button').click(function () {
         draw_or_update_plot(daily_rangeselector, daily_traces, last_day_is_partial, false);
         $(this).addClass("selected");
@@ -407,7 +397,7 @@ function populate_messages_sent_by_client(data) {
         plot_data.values.reverse();
         plot_data.labels.reverse();
         plot_data.percentages.reverse();
-        var annotations = { values : [],  labels : [],  text : []};
+        var annotations = {values: [], labels: [], text: []};
         for (var i=0; i<plot_data.values.length; i+=1) {
             if (plot_data.values[i] > 0) {
                 annotations.values.push(plot_data.values[i]);
@@ -425,7 +415,7 @@ function populate_messages_sent_by_client(data) {
                 textinfo: "text",
                 hoverinfo: "none",
                 marker: { color: '#537c5e' },
-                font: { family: 'Humbug', size: 18, color: '#000000' },
+                font: { family: 'Source Sans Pro', size: 18, color: '#000000' },
             },
             trace_annotations: {
                 x: annotations.values,
@@ -474,6 +464,7 @@ function populate_messages_sent_by_client(data) {
     }
 
     function draw_plot() {
+        $('#id_messages_sent_by_client > div').removeClass("spinner");
         var data_ = plot_data[user_button][time_button];
         layout.height = layout.margin.b + data_.trace.x.length * 30;
         layout.xaxis.range = [0, Math.max.apply(null, data_.trace.x) * 1.3];
@@ -609,6 +600,7 @@ function populate_messages_sent_by_message_type(data) {
     }
 
     function draw_plot() {
+        $('#id_messages_sent_by_message_type > div').removeClass("spinner");
         Plotly.newPlot('id_messages_sent_by_message_type',
                        [plot_data[user_button][time_button].trace],
                        layout,
@@ -703,6 +695,8 @@ function populate_number_of_users(data) {
         text: text,
         visible: true,
     };
+
+    $('#id_number_of_users > div').removeClass("spinner");
 
     Plotly.newPlot('id_number_of_users', [trace], layout, {displayModeBar: false});
 

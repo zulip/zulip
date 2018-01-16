@@ -4,8 +4,6 @@ var exports = {};
 
 var actively_scrolling = false;
 
-exports.have_scrolled_away_from_top = true;
-
 exports.actively_scrolling = function () {
     return actively_scrolling;
 };
@@ -14,8 +12,24 @@ exports.actively_scrolling = function () {
 
 exports.replace_emoji_with_text = function (element) {
     element.find(".emoji").replaceWith(function () {
-        return $(this).attr("alt");
+        if ($(this).is("img")) {
+            return $(this).attr("alt");
+        }
+        return $(this).text();
     });
+};
+
+exports.set_up_scrollbar = function (element) {
+    element.perfectScrollbar({
+        suppressScrollX: true,
+        useKeyboard: false,
+        wheelSpeed: 0.68,
+    });
+};
+
+exports.update_scrollbar = function (element) {
+    element.scrollTop = 0;
+    element.perfectScrollbar('update');
 };
 
 function update_message_in_all_views(message_id, callback) {
@@ -33,6 +47,21 @@ function update_message_in_all_views(message_id, callback) {
     });
 }
 
+exports.show_error_for_unsupported_platform = function () {
+    // Check if the user is using old desktop app
+    if (window.bridge !== undefined) {
+        // We don't internationalize this string because it is long,
+        // and few users will have both the old desktop app and an
+        // internationalized version of Zulip anyway.
+        var error = "Hello! You're using the unsupported old Zulip desktop app," +
+            " which is no longer developed. We recommend switching to the new, " +
+            "modern desktop app, which you can download at " +
+            "<a href='https://zulipchat.com/apps'>zulipchat.com/apps</a>.";
+
+        ui_report.generic_embed_error(error);
+    }
+};
+
 exports.find_message = function (message_id) {
     // Try to find the message object. It might be in the narrow list
     // (if it was loaded when narrowed), or only in the message_list.all
@@ -46,23 +75,12 @@ exports.find_message = function (message_id) {
     return message;
 };
 
-exports.update_starred = function (message_id, starred) {
-    // Update the message object pointed to by the various message
-    // lists.
-    var message = exports.find_message(message_id);
-
-    // If it isn't cached in the browser, no need to do anything
-    if (message === undefined) {
-        return;
-    }
-
-    unread_ops.mark_message_as_read(message);
-
-    message.starred = starred;
+exports.update_starred = function (message) {
+    var starred = message.starred;
 
     // Avoid a full re-render, but update the star in each message
     // table in which it is visible.
-    update_message_in_all_views(message_id, function update_row(row) {
+    update_message_in_all_views(message.id, function update_row(row) {
         var elt = row.find(".star");
         if (starred) {
             elt.addClass("icon-vector-star").removeClass("icon-vector-star-empty").removeClass("empty-star");
@@ -72,21 +90,6 @@ exports.update_starred = function (message_id, starred) {
         var title_state = starred ? i18n.t("Unstar") : i18n.t("Star");
         elt.attr("title", i18n.t("__starred_status__ this message", {starred_status: title_state}));
     });
-};
-
-var local_messages_to_show = [];
-var show_message_timestamps = _.throttle(function () {
-    _.each(local_messages_to_show, function (message_id) {
-        update_message_in_all_views(message_id, function update_row(row) {
-            row.find('.message_time').toggleClass('notvisible', false);
-        });
-    });
-    local_messages_to_show = [];
-}, 100);
-
-exports.show_local_message_arrived = function (message_id) {
-    local_messages_to_show.push(message_id);
-    show_message_timestamps();
 };
 
 exports.show_message_failed = function (message_id, failed_msg) {
@@ -207,13 +210,10 @@ function scroll_finished() {
             pointer.suppress_scroll_pointer_update = false;
         }
         floating_recipient_bar.update();
-        if (message_viewport.scrollTop() === 0 &&
-            ui.have_scrolled_away_from_top) {
-            ui.have_scrolled_away_from_top = false;
+        if (message_viewport.scrollTop() === 0) {
             message_fetch.load_more_messages(current_msg_list);
-        } else if (!ui.have_scrolled_away_from_top) {
-            ui.have_scrolled_away_from_top = true;
         }
+
         // When the window scrolls, it may cause some messages to
         // enter the screen and become read.  Calling
         // unread_ops.process_visible will update necessary
@@ -239,7 +239,7 @@ $(function () {
         scroll_finish();
     }));
 
-    $('#new_message_content').blur(function () {
+    $('#compose-textarea').blur(function () {
         saved_compose_cursor = $(this).caret();
     });
 
@@ -251,7 +251,7 @@ $(function () {
 });
 
 exports.restore_compose_cursor = function () {
-    $('#new_message_content')
+    $('#compose-textarea')
         .focus()
         .caret(saved_compose_cursor);
 };
@@ -261,7 +261,7 @@ $(function () {
         // Disable "spellchecking" in our desktop app. The "spellchecking"
         // in our Mac app is actually autocorrect, and frustrates our
         // users.
-        $("#new_message_content").attr('spellcheck', 'false');
+        $("#compose-textarea").attr('spellcheck', 'false');
         // Modify the zephyr mirroring error message in our desktop
         // app, since it doesn't work from the desktop version.
         $("#webathena_login_menu").hide();
@@ -272,6 +272,11 @@ $(function () {
 
 exports.initialize = function () {
     i18n.ensure_i18n(_setup_info_overlay);
+    exports.show_error_for_unsupported_platform();
+
+    if (page_params.night_mode) {
+        night_mode.enable();
+    }
 };
 
 return exports;

@@ -5,33 +5,28 @@
     font-size: 0.89rem;
 }
 
-#left-sidebar .brand {
-    display: table-row;
-}
-
 #left-sidebar #user-list,
 #left-sidebar #group-pm-list {
     padding-left: 10px;
 }
 
 #streams_inline_cog,
-#streams_filter_icon,
-#join_unsub_stream {
+#streams_filter_icon {
     float: right;
-    color: hsl(0, 0%, 54%);
+    opacity: 0.50;
     font-size: 13px;
     margin-top: 3px;
     margin-left: 10px;
 }
 
 #streams_inline_cog:hover,
-#streams_filter_icon:hover,
-#join_unsub_stream:hover {
-    color: hsl(0, 0%, 33%);
+#streams_filter_icon:hover {
+    opacity: 1;
+    cursor: pointer;
 }
 
-#streams_header #join_unsub_stream {
-    margin-top: 1px;
+#streams_header {
+    margin-top: 3px;
 }
 
 #streams_inline_cog {
@@ -51,13 +46,21 @@
 
 #stream_filters {
     overflow: visible;
-    margin: 2px 0px 2px 0px;
+    margin: 2px 0px 22px 0px;
     padding: 0;
     font-weight: normal;
 }
 
+.left-sidebar li {
+    margin: 1px 0px;
+}
+
+.left-sidebar li a:hover {
+    text-decoration: none;
+}
+
 #stream_filters li {
-    padding: 0px;
+    padding: 1px 0px;
 }
 
 #stream_filters li ul {
@@ -65,7 +68,7 @@
 }
 
 #stream_filters li ul.topic-list li {
-    padding-left: 29px;
+    padding: 2px 0px 2px 29px;
 }
 
 #stream-filters-container {
@@ -74,15 +77,6 @@
     position: relative;
     z-index: 0;
     width: 100%;
-}
-
-#stream-filters-container .ps-scrollbar-y-rail {
-    right: 0px !important;
-    width: 4px !important;
-}
-
-#stream-filters-container .ps-scrollbar-y {
-    width: 4px !important;
 }
 
 .stream-list-filter {
@@ -104,7 +98,7 @@ ul.filters {
 }
 
 ul.filters a {
-    color: hsl(0, 0%, 20%);
+    color: inherit;
 }
 
 ul.filters hr {
@@ -125,12 +119,7 @@ li.active-sub-filter {
 }
 
 .left-sidebar .sidebar-title:hover {
-    color: hsl(0, 0%, 33%);
-}
-
-li.hidden-filter {
-    visibility: hidden;
-    display: none;
+    opacity: 1;
 }
 
 #left-sidebar .filter-icon {
@@ -147,13 +136,14 @@ li.hidden-filter {
 
 #global_filters .global-filter {
     position: relative;
-    padding-left: 10px;
-    padding-right: 10px;
+    padding: 1px 10px;
 }
 
 .left-sidebar li {
     padding-top: 2px;
     padding-bottom: 2px;
+
+    border-radius: 4px;
 }
 
 #global_filters .global-filter i {
@@ -182,9 +172,9 @@ li.hidden-filter {
     margin-top: 3px;
     line-height: 12px;
     background: hsl(105, 2%, 50%);
-    padding: 2px 4px 1px 4px;
+    padding: 1px 4px;
     border-radius: 0px;
-    color: #ffffff;
+    color: hsl(0, 0%, 100%);
     font-size: 12px;
     font-weight: normal;
     letter-spacing: 0.6px;
@@ -193,10 +183,10 @@ li.hidden-filter {
 
 #global_filters .count {
     margin-right: 20px;
-    margin-top: 2px;
+    margin-top: 3px;
     display: none;
 
-    line-height: 13px;
+    line-height: 12px;
 }
 
 #stream_filters .count {
@@ -209,9 +199,8 @@ li.hidden-filter {
 
 .topic-name {
     display: block;
-    line-height: 1.3em;
-    width: 100%;
-    max-width: 158px;
+    line-height: 1.1;
+    width: calc(100% - 5px);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -223,9 +212,9 @@ li.hidden-filter {
     position: absolute;
     line-height: 1em;
     top: 4px;
-    padding: 2px 4px 1px 4px;
+    padding: 1px 4px 1px 4px;
     background: hsl(107, 5%, 66%);
-    color: #ffffff;
+    color: hsl(0, 0%, 100%);
     border-radius: 1px;
     font-size: 12px;
     font-weight: normal;
@@ -235,7 +224,7 @@ li.hidden-filter {
 
 .topic-unread-count {
     right: 30px;
-    top: 2px;
+    top: 3px;
 }
 
 .private_message_count {
@@ -251,7 +240,6 @@ ul.filters i {
 
 ul.filters .arrow {
     position: absolute;
-    right: 2px;
     top: 2px;
     right: 10px;
     font-size: 0.8em;
@@ -305,7 +293,7 @@ ul.filters li.out_of_home_view li.muted_topic {
 }
 
 #stream_filters .subscription_block {
-    padding: 1px 0px;
+    padding: 0px;
     margin-right: 18px;
     margin-left: 10px;
 }
@@ -317,7 +305,16 @@ ul.filters li.out_of_home_view li.muted_topic {
 }
 
 #stream_filters .subscription_block .stream-name {
-    overflow-wrap: break-word;
+    display: inline-block;
+    width: calc(100% - 76px);
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+
+    line-height: 1.1;
+    position: relative;
+    top: 3px;
 }
 
 #stream_filters .subscription_block.stream-with-count {
@@ -348,10 +345,6 @@ ul.topic-list {
     font-weight: normal;
 }
 
-#streams_header a {
-    text-decoration: none;
-}
-
 ul.expanded_private_messages {
     list-style-type: none;
     font-weight: 300;
@@ -371,22 +364,15 @@ li.topic-list-item {
 li.show-more-private-messages,
 li.expanded_private_message {
     position: relative;
-    padding-left: 24px;
-    padding-bottom: 1px;
-    padding-top: 2px;
+    padding: 1px 0px 1px 24px;
 }
 
 li.expanded_private_message a {
-    margin-top: 3px;
+    margin: 2px 0px;
 }
 
 .show-all-streams a {
     color: hsl(0, 0%, 20%);
-}
-
-.all-streams-padding {
-    padding-top: 5px;
-    margin-bottom: -5px;
 }
 
 .pm-box,
@@ -414,15 +400,31 @@ li.expanded_private_message a {
     margin-bottom: 20px;
 }
 
+#global_filters i {
+    opacity: 0.5;
+}
+
 #topics_header {
-    border-top: 1px solid hsl(0, 0%, 88%);
-    margin-top: 5px;
     margin-right: 10px;
+    color: hsl(0, 0%, 43%);
+}
+
+#topics_header a {
+    color: inherit;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+#topics_header a i {
+    margin: 0 5px 0 10px;
+    position: relative;
+    top: 1px;
 }
 
 #streams_header {
     margin-right: 0px;
     padding-left: 10px;
+    cursor: pointer;
 }
 
 #stream_filters .inactive_stream {
@@ -434,11 +436,32 @@ li.expanded_private_message a {
 }
 
 li.show-more-topics a {
-    font-size: 75%;
+    margin-left: 5px;
+    font-size: 80%;
 }
 
 li.show-more-private-messages a {
     font-size: 90%;
+}
+
+.searching-for-more-topics {
+    display: none;
+}
+
+.searching-for-more-topics img {
+    height: 16px;
+    margin-left: 6px;
+}
+
+.no-more-topics-found {
+    opacity: 0.7;
+    font-style: italic;
+    margin: 2px 0px 0px 6px;
+    font-size: 0.9em;
+}
+
+.no-more-topics-found {
+    display: none;
 }
 
 .zoom-in .show-more-topics {

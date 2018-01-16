@@ -1,7 +1,3 @@
-add_dependencies({
-   people: 'js/people.js',
-});
-
 set_global('page_params', {
     alert_words: ['alertone', 'alerttwo', 'alertthree', 'al*rt.*s', '.+', 'emoji'],
 });
@@ -9,6 +5,9 @@ set_global('page_params', {
 set_global('feature_flags', {
     alert_words: true,
 });
+
+zrequire('people');
+zrequire('alert_words');
 
 global.people.add({
     email: 'tester@zulip.com',
@@ -18,7 +17,6 @@ global.people.add({
 
 global.people.initialize_current_user(42);
 
-var alert_words = require('js/alert_words.js');
 
 var regular_message = { sender_email: 'another@zulip.com', content: '<p>a message</p>'};
 var own_message = { sender_email: 'tester@zulip.com', content: '<p>hey this message alertone</p>',

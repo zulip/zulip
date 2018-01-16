@@ -28,10 +28,13 @@ function make_tab_data() {
         return !stream_data.in_home_view(stream_id);
     }
 
-    // Root breadcrumb item: Either Home or All Messages
-    if (filter !== undefined &&
-        (filtered_to_non_home_view_stream() ||
-         filter.has_operand("in", "all"))) {
+    function in_all() {
+        return (filter !== undefined &&
+               (filtered_to_non_home_view_stream() ||
+                filter.has_operand("in", "all")));
+    }
+
+    if (in_all()) {
         tabs.push(make_tab("All Messages", "#narrow/in/all", undefined, "root"));
     } else if (page_params.narrow !== undefined) {
         tabs.push(make_tab("Stream " + page_params.narrow_stream,
@@ -42,8 +45,6 @@ function make_tab_data() {
                                hashchange.operators_to_hash(page_params.narrow),
                                null));
         }
-    } else {
-        tabs.push(make_tab('Home', "#", "home", "root", true));
     }
 
     if (narrow_state.active() && narrow_state.operators().length > 0) {
@@ -72,6 +73,12 @@ function make_tab_data() {
                 tabs.push(make_tab(names.join(', '), hashed));
             }
 
+        } else if (filter.has_operator("group-pm-with")) {
+
+            tabs.push(make_tab("Group Private", '#narrow/group-pm-with',
+                                undefined, 'private_message '));
+
+
         } else if (filter.has_operand("is", "starred")) {
             tabs.push(make_tab("Starred", hashed));
         } else if (filter.has_operator("near")) {
@@ -95,7 +102,6 @@ function make_tab_data() {
         // Third breadcrumb item for stream-subject naarrows
         if (filter.has_operator("stream") &&
             filter.has_operator("topic")) {
-            stream = filter.operands("stream")[0];
             var subject = filter.operands("topic")[0];
             hashed = hashchange.operators_to_hash(ops.slice(0, 2));
 
@@ -103,8 +109,13 @@ function make_tab_data() {
         }
     }
 
+    if (tabs.length === 0) {
+        tabs.push(make_tab('All messages', "#", "home", "root", true));
+    }
+
     // Last tab is not a link
     tabs[tabs.length - 1].hash = null;
+
     return tabs;
 }
 
@@ -124,19 +135,13 @@ exports.colorize_tab_bar = function () {
                            colorspace.getDecimalColor(color_for_stream), 0.2));
 
         if (stream_tab.hasClass("stream")) {
-            stream_tab.css('border-left-color',
-                           color_for_stream).css('background-color',
-                                                 color_for_stream);
+            stream_tab.css('background-color', color_for_stream);
             if (stream_tab.hasClass("inactive")) {
               stream_tab.hover (
                 function () {
-                 $(this).css('border-left-color',
-                             stream_light).css('background-color',
-                             stream_light);
+                 $(this).css('background-color', stream_light);
                 }, function () {
-                 $(this).css('border-left-color',
-                             color_for_stream).css('background-color',
-                                                   color_for_stream);
+                 $(this).css('background-color', color_for_stream);
                 }
               );
             }

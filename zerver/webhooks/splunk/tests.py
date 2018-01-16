@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from typing import Text
+
 from zerver.lib.test_classes import WebhookTestCase
 
 class SplunkHookTests(WebhookTestCase):
@@ -8,8 +9,7 @@ class SplunkHookTests(WebhookTestCase):
     URL_TEMPLATE = "/api/v1/external/splunk?api_key={api_key}&stream={stream}"
     FIXTURE_DIR_NAME = 'splunk'
 
-    def test_splunk_search_one_result(self):
-        # type: () -> None
+    def test_splunk_search_one_result(self) -> None:
         self.url = self.build_webhook_url(topic=u"New Search Alert")
 
         # define the expected message contents
@@ -22,8 +22,7 @@ class SplunkHookTests(WebhookTestCase):
                                           expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def test_splunk_short_search_name(self):
-        # type: () -> None
+    def test_splunk_short_search_name(self) -> None:
 
         # don't provide a topic so the search name is used instead
         expected_subject = u"This search's name isn't that long"
@@ -34,8 +33,7 @@ class SplunkHookTests(WebhookTestCase):
                                           expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def test_splunk_long_search_name(self):
-        # type: () -> None
+    def test_splunk_long_search_name(self) -> None:
 
         # don't provide a topic so the search name is used instead
         expected_subject = u"this-search's-got-47-words-37-sentences-58-words-we-wanna..."
@@ -46,8 +44,7 @@ class SplunkHookTests(WebhookTestCase):
                                           expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def test_splunk_missing_results_link(self):
-        # type: () -> None
+    def test_splunk_missing_results_link(self) -> None:
 
         self.url = self.build_webhook_url(topic=u"New Search Alert")
 
@@ -59,8 +56,7 @@ class SplunkHookTests(WebhookTestCase):
                                           expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def test_splunk_missing_search_name(self):
-        # type: () -> None
+    def test_splunk_missing_search_name(self) -> None:
 
         self.url = self.build_webhook_url(topic=u"New Search Alert")
 
@@ -72,8 +68,7 @@ class SplunkHookTests(WebhookTestCase):
                                           expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def test_splunk_missing_host(self):
-        # type: () -> None
+    def test_splunk_missing_host(self) -> None:
 
         self.url = self.build_webhook_url(topic=u"New Search Alert")
 
@@ -85,8 +80,7 @@ class SplunkHookTests(WebhookTestCase):
                                           expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def test_splunk_missing_source(self):
-        # type: () -> None
+    def test_splunk_missing_source(self) -> None:
 
         self.url = self.build_webhook_url(topic=u"New Search Alert")
 
@@ -98,8 +92,7 @@ class SplunkHookTests(WebhookTestCase):
                                           expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def test_splunk_missing_raw(self):
-        # type: () -> None
+    def test_splunk_missing_raw(self) -> None:
 
         self.url = self.build_webhook_url(topic=u"New Search Alert")
 
@@ -111,6 +104,5 @@ class SplunkHookTests(WebhookTestCase):
                                           expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def get_body(self, fixture_name):
-        # type: (Text) -> Text
+    def get_body(self, fixture_name: Text) -> Text:
         return self.fixture_data("splunk", fixture_name, file_type="json")

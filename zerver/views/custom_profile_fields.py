@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 
 from typing import Text, Union, List, Dict
 import logging
@@ -8,8 +7,8 @@ from django.db import IntegrityError, connection
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
-from zerver.decorator import has_request_variables, REQ, require_realm_admin, \
-    human_users_only
+from zerver.decorator import require_realm_admin, human_users_only
+from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.actions import (try_add_realm_custom_profile_field,
                                 do_remove_realm_custom_profile_field,
                                 try_update_realm_custom_profile_field,
@@ -20,16 +19,15 @@ from zerver.lib.validator import check_dict, check_list, check_int
 from zerver.models import (custom_profile_fields_for_realm, UserProfile,
                            CustomProfileField, custom_profile_fields_for_realm)
 
-def list_realm_custom_profile_fields(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
+def list_realm_custom_profile_fields(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     fields = custom_profile_fields_for_realm(user_profile.realm_id)
     return json_success({'custom_fields': [f.as_dict() for f in fields]})
 
 @require_realm_admin
 @has_request_variables
-def create_realm_custom_profile_field(request, user_profile, name=REQ(),
-                                      field_type=REQ(validator=check_int)):
-    # type: (HttpRequest, UserProfile, Text, int) -> HttpResponse
+def create_realm_custom_profile_field(request: HttpRequest,
+                                      user_profile: UserProfile, name: Text=REQ(),
+                                      field_type: int=REQ(validator=check_int)) -> HttpResponse:
     if not name.strip():
         return json_error(_("Name cannot be blank."))
 
@@ -47,8 +45,8 @@ def create_realm_custom_profile_field(request, user_profile, name=REQ(),
         return json_error(_("A field with that name already exists."))
 
 @require_realm_admin
-def delete_realm_custom_profile_field(request, user_profile, field_id):
-    # type: (HttpRequest, UserProfile, int) -> HttpResponse
+def delete_realm_custom_profile_field(request: HttpRequest, user_profile: UserProfile,
+                                      field_id: int) -> HttpResponse:
     try:
         field = CustomProfileField.objects.get(id=field_id)
     except CustomProfileField.DoesNotExist:
@@ -60,9 +58,8 @@ def delete_realm_custom_profile_field(request, user_profile, field_id):
 
 @require_realm_admin
 @has_request_variables
-def update_realm_custom_profile_field(request, user_profile, field_id,
-                                      name=REQ()):
-    # type: (HttpRequest, UserProfile, int, Text) -> HttpResponse
+def update_realm_custom_profile_field(request: HttpRequest, user_profile: UserProfile,
+                                      field_id: int, name: Text=REQ()) -> HttpResponse:
     if not name.strip():
         return json_error(_("Name cannot be blank."))
 
@@ -81,10 +78,10 @@ def update_realm_custom_profile_field(request, user_profile, field_id,
 @human_users_only
 @has_request_variables
 def update_user_custom_profile_data(
-        request,
-        user_profile,
-        data=REQ(validator=check_list(check_dict([('id', check_int)])))):
-    # type: (HttpRequest, UserProfile, List[Dict[str, Union[int, Text]]]) -> HttpResponse
+        request: HttpRequest,
+        user_profile: UserProfile,
+        data: List[Dict[str, Union[int, Text]]]=REQ(validator=check_list(
+            check_dict([('id', check_int)])))) -> HttpResponse:
     for item in data:
         field_id = item['id']
         try:

@@ -6,6 +6,10 @@
     margin: 10px auto;
 }
 
+.subscriber_list_loading_indicator:empty {
+    margin: 0;
+}
+
 .subscription-email-hint-image {
     float: right;
     width: 80px;
@@ -26,8 +30,6 @@
 }
 
 .subscriptions {
-    margin-top: 55px;
-    padding-left: 15px;
     -webkit-font-smoothing: antialiased;
 }
 
@@ -76,26 +78,6 @@
     text-align: left;
 }
 
-#subscriptions-status {
-    position: fixed;
-    z-index: 999;
-    display: block;
-    left: 300px;
-    right: 300px;
-    margin: 0px auto;
-    opacity: 0.9 !important;
-    top: 55px;
-    max-width: 800px;
-}
-
-#close-subscriptions-status {
-    position: absolute;
-    top: 8px;
-    cursor: pointer;
-    font-size: 17px;
-    right: 8px;
-}
-
 .subscription_header {
     min-height: 47px;
 }
@@ -129,7 +111,7 @@
     font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
     padding: 5px;
     font-size: 0.9em;
-    background-color: hsl(0, 0%, 93%);
+    background-color: hsl(0, 0%, 97%);
     border: 1px solid hsl(0, 0%, 86%);
     border-radius: 4px;
 }
@@ -233,7 +215,7 @@ form#add_new_subscription {
     margin: 0;
 }
 
-#create_stream_button {
+.create_stream_button {
     margin: 0px 0px 0px 5px;
 
     border: none;
@@ -251,7 +233,7 @@ form#add_new_subscription {
     padding-top: 0px;
 }
 
-#create_stream_button:hover {
+.create_stream_button:hover {
     color: hsl(0, 0%, 27%);
 }
 
@@ -287,10 +269,15 @@ form#add_new_subscription {
 }
 
 .subscriber_list_container {
+    position: relative;
     max-height: 300px;
     overflow: auto;
     text-align: left;
     -webkit-overflow-scrolling: touch;
+}
+
+.subscriber_list_container .form_inline input {
+    vertical-align: top;
 }
 
 .subscriber-list {
@@ -413,7 +400,6 @@ form#add_new_subscription {
 .subscriptions-container {
     position: relative;
     height: 95%;
-    background-color: #fff;
     border-radius: 4px;
     padding: 0px;
     width: 97%;
@@ -495,12 +481,20 @@ form#add_new_subscription {
 
 .subscriptions-container .right .nothing-selected {
     display: block;
-    margin-top: calc(45vh - 30px - 1em);
+    margin-top: calc(45vh - 75px);
     text-align: center;
     font-size: 1em;
-    color: hsl(0, 0%, 66%);
-    pointer-events: none;
     -webkit-font-smoothing: antialiased;
+}
+
+.subscriptions-container .right .nothing-selected span {
+    color: hsl(0, 0%, 66%);
+}
+
+.subscriptions-container .right .nothing-selected button {
+    padding: 6px 10px 8px 10px;
+    display: block;
+    margin: 0 auto 10px auto;
 }
 
 .subscriptions-container .left {
@@ -532,9 +526,7 @@ form#add_new_subscription {
     font-size: 1em;
     line-height: 1;
     margin: 9px 0px;
-    font-weight: 400;
     font-weight: 600;
-    color: hsl(0, 0%, 27%);
 }
 
 .subscriptions-container .right #preview_iframe {
@@ -575,37 +567,26 @@ form#add_new_subscription {
     box-shadow: none;
 }
 
-.create-stream-title {
-    font-size: 1.5em;
-    font-weight: 600;
+.stream-title {
+    font-size: 1.3em;
+    font-weight: 400;
 }
 
 .stream-creation-info {
     font-style: italic;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .stream-creation-body section.block {
     margin-bottom: 20px;
 }
 
-.stream-creation-body #make-invite-only label span.fa-globe {
-    margin-left: 14px;
-    margin-right: 10px;
-}
-
-
-.stream-creation-body #make-invite-only label span.fa-lock {
-    margin-left: 15px;
-    margin-right: 11px;
-}
-
 .stream-creation-body #make-invite-only .radio {
-    margin-bottom: 10px;
+    margin: 5px;
 }
 
 #announce-new-stream {
-    margin-top: 5px;
+    margin-top: 10px;
 }
 
 .stream-creation-body #announce-new-stream div[class^="fa"] {
@@ -622,7 +603,7 @@ form#add_new_subscription {
 }
 
 .stream-row {
-    padding: 15px 10px 14px 10px;
+    padding: 15px 10px 11px 10px;
     border-bottom: 1px solid hsl(0, 0%, 93%);
     cursor: pointer;
 }
@@ -657,6 +638,15 @@ form#add_new_subscription {
     fill: hsl(0, 0%, 86%);
 }
 
+.stream-row .check:not(.checked):hover svg,
+.stream-row.active .check:not(.checked):hover svg {
+    fill: hsl(0, 0%, 72%);
+}
+
+.stream-row .check.checked:hover svg {
+    opacity: 0.5;
+}
+
 .stream-row .checked svg {
     fill: hsl(170, 47%, 54%);
 }
@@ -665,9 +655,9 @@ form#add_new_subscription {
     width: 35px;
     height: 35px;
     margin-right: 8px;
-    background-color: purple;
+    background-color: hsl(300, 100%, 25%);
     border-radius: 4px;
-    color: #fff;
+    color: hsl(0, 0%, 100%);
 }
 
 .stream-row .icon .symbol {
@@ -716,7 +706,7 @@ form#add_new_subscription {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    line-height: 1.1;
+    line-height: 1.5;
 }
 
 #subscription_overlay .stream-description:empty:after,
@@ -736,7 +726,7 @@ form#add_new_subscription {
 #subscription_overlay #stream-creation .modal-footer {
     position: absolute;
     bottom: 0;
-    width: calc(100% - 30px);
+    width: calc(100% - 27px);
 }
 
 #stream-creation .stream-creation-body {
@@ -757,6 +747,21 @@ form#add_new_subscription {
     margin: 0px;
 }
 
+#stream_creation_form #stream_creating_indicator:not(:empty) {
+    position: absolute;
+    width: 100% !important;
+    height: calc(100% - 105px) !important;
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    background: hsla(0, 0%, 100%, 0.9);
+    z-index: 1;
+}
+
+#stream_creation_form #stream_creating_indicator .loading_indicator_text {
+    font-weight: 400;
+}
+
 #subscription_overlay .inner-box {
     margin: 20px;
 }
@@ -775,6 +780,10 @@ form#add_new_subscription {
 #subscription_overlay .stream-header .subscribe-button {
     float: right;
     margin-top: -5px;
+}
+
+#subscription_overlay .stream-header .button-group {
+    float: right;
 }
 
 #subscription_overlay .stream-header .subscribe-button.unsubscribed {
@@ -867,7 +876,7 @@ form#add_new_subscription {
 #subscription_overlay .subscription-type {
     margin-bottom: 10px;
     font-size: 0.9em;
-    color: hsl(0, 0%, 53%);
+    opacity: 0.5;
 }
 
 #subscription_overlay .subscription-type .subscription-type-text {
@@ -876,7 +885,6 @@ form#add_new_subscription {
 
 #subscription_overlay .subscription-type b {
     font-weight: 600;
-    color: hsl(0, 0%, 40%);
 }
 
 #subscription_overlay .stream-header .large-icon.hash::after {
@@ -906,29 +914,25 @@ form#add_new_subscription {
     display: block;
 }
 
-#subscription_overlay .subscription_settings ul {
-    margin: 0px;
-    padding: 10px;
-    background-color: hsl(0, 0%, 93%);
-    border: 1px solid hsl(0, 0%, 86%);
-    border-radius: 4px;
-}
-
-#subscription_overlay .subscription_settings ul li {
+#subscription_overlay ul.grey-box li {
     border-bottom: 1px solid hsl(0, 0%, 86%);
     padding: 5px 0px;
 }
 
-#subscription_overlay .subscription_settings ul li input[type=checkbox] {
+#subscription_overlay ul.grey-box li input[type=checkbox] {
     margin-top: 0px;
 }
 
-#subscription_overlay .subscription_settings ul li:last-of-type {
+#subscription_overlay ul.grey-box li:last-of-type {
     border-bottom: none;
 }
 
-#subscription_overlay .subscription_settings ul li .sp-replacer {
+#subscription_overlay ul.grey-box li .sp-replacer {
     box-shadow: none;
+}
+
+#subscription_overlay ul.grey-box li input[type=radio] {
+    margin-right: 5px;
 }
 
 @media (max-width: 1130px) {
@@ -951,15 +955,35 @@ form#add_new_subscription {
     }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1033px) {
     #search_stream_name {
         display: none;
     }
-}
 
-@media (max-width: 1000px) {
     .search-container {
         text-align: center;
+    }
+
+    .subscriber_list_settings input {
+        float: left;
+        margin: 0px 5px 0px 0px;
+        width: calc(50% - 45px);
+    }
+
+    #subscription_overlay .stream-header .button-group {
+        float: none;
+        display: block;
+        clear: both;
+        margin-top: 10px;
+    }
+
+    #subscription_overlay .stream-header .button-group > * {
+        float: none !important;
+        vertical-align: top;
+    }
+
+    #subscription_overlay .stream-header .subscribe-button {
+        margin-top: -7px;
     }
 }
 
@@ -975,7 +999,7 @@ form#add_new_subscription {
     #subscription_overlay .left,
     #subscription_overlay .right,
     #settings_page .left,
-    #settings_page .right {
+    #settings_page .content-wrapper.right {
         position: absolute;
         display: block;
         margin: 0;
@@ -994,7 +1018,7 @@ form#add_new_subscription {
     }
 
     #subscription_overlay .right,
-    #settings_page .right {
+    #settings_page .content-wrapper.right {
         position: absolute;
         left: 101%;
 
@@ -1008,7 +1032,7 @@ form#add_new_subscription {
     }
 
     #subscription_overlay .right.show,
-    #settings_page .right.show {
+    #settings_page .content-wrapper.right.show {
         left: 0%;
     }
 
@@ -1024,6 +1048,15 @@ form#add_new_subscription {
         overflow: auto;
         height: calc(100% - 20px);
         -webkit-overflow-scrolling: touch;
+    }
+}
+
+@media (max-width: 367px) {
+    #subscription_overlay .subscription_settings .button-group {
+        margin-top: 10px;
+        float: none;
+        display: inline-block;
+        vertical-align: top;
     }
 }
 

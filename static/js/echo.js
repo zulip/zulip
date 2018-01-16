@@ -89,7 +89,6 @@ function insert_local_message(message_request, local_id) {
 
     // Locally delivered messages cannot be unread (since we sent them), nor
     // can they alert the user.
-    message.flags = ['read']; // we may add more flags later
     message.unread = false;
 
     message.raw_content = message.content;
@@ -105,7 +104,6 @@ function insert_local_message(message_request, local_id) {
     message.local_id = local_id;
     message.locally_echoed = true;
     message.id = message.local_id;
-    markdown.add_message_flags(message);
     markdown.add_subject_links(message);
 
     waiting_for_id[message.local_id] = message;
@@ -208,40 +206,60 @@ exports.reify_message_id = function reify_message_id(local_id, server_id) {
 };
 
 exports.process_from_server = function process_from_server(messages) {
-    var updated = false;
-    var locally_processed_ids = [];
     var msgs_to_rerender = [];
-    messages = _.filter(messages, function (message) {
+    var non_echo_messages = [];
+
+    _.each(messages, function (message) {
         // In case we get the sent message before we get the send ACK, reify here
 
         var client_message = waiting_for_ack[message.local_id];
-        if (client_message !== undefined) {
-            exports.reify_message_id(message.local_id, message.id);
 
-            if (client_message.content !== message.content) {
-                client_message.content = message.content;
-                updated = true;
-                sent_messages.mark_disparity(message.local_id);
-            }
-            msgs_to_rerender.push(client_message);
-            locally_processed_ids.push(client_message.id);
-            delete waiting_for_ack[client_message.id];
-            return false;
+        if (client_message === undefined) {
+            // For messages that weren't locally echoed, we go through
+            // the "main" codepath that doesn't have to id reconciliation.
+            // We simply return non-echo messages to our caller.
+            non_echo_messages.push(message);
+            return;
         }
-        return true;
+
+        exports.reify_message_id(message.local_id, message.id);
+
+        if (client_message.content !== message.content) {
+            client_message.content = message.content;
+            sent_messages.mark_disparity(message.local_id);
+        }
+
+        message_store.update_booleans(client_message, message.flags);
+
+        // We don't try to highlight alert words locally, so we have to
+        // do it now.  (Note that we will indeed highlight alert words in
+        // messages that we sent to ourselves, since we might want to test
+        // that our alert words are set up correctly.)
+        alert_words.process_message(client_message);
+
+        // Previously, the message had the "local echo" timestamp set
+        // by the browser; if there was some round-trip delay to the
+        // server, the actual server-side timestamp could be slightly
+        // different.  This corrects the frontend timestamp to match
+        // the backend.
+        client_message.timestamp = message.timestamp;
+
+        msgs_to_rerender.push(client_message);
+        delete waiting_for_ack[client_message.id];
     });
 
-    if (updated) {
+    if (msgs_to_rerender.length > 0) {
+        // In theory, we could just rerender messages where there were
+        // changes in either the rounded timestamp we display or the
+        // message content, but in practice, there's no harm to just
+        // doing it unconditionally.
         home_msg_list.view.rerender_messages(msgs_to_rerender);
         if (current_msg_list === message_list.narrowed) {
             message_list.narrowed.view.rerender_messages(msgs_to_rerender);
         }
-    } else {
-        _.each(locally_processed_ids, function (id) {
-            ui.show_local_message_arrived(id);
-        });
     }
-    return messages;
+
+    return non_echo_messages;
 };
 
 exports.message_send_error = function message_send_error(local_id, error_response) {

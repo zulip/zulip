@@ -1,11 +1,8 @@
 set_global('$', global.make_zjquery());
 set_global('i18n', global.stub_i18n);
 
-add_dependencies({
-    XDate: 'node_modules/xdate/src/xdate.js',
-});
-
-var timerender = require('js/timerender.js');
+zrequire('XDate', 'xdate');
+zrequire('timerender');
 
 (function test_render_now_returns_today() {
     var today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)

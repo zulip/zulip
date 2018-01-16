@@ -1,21 +1,19 @@
-from __future__ import absolute_import
-from __future__ import print_function
 
+import sys
+from argparse import ArgumentParser
 from typing import Any
 
-from argparse import ArgumentParser
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
-from zerver.models import can_add_realm_domain, RealmDomain, get_realm_domains
-from zerver.lib.management import ZulipBaseCommand
+
 from zerver.lib.domains import validate_domain
-import sys
+from zerver.lib.management import ZulipBaseCommand
+from zerver.models import RealmDomain, get_realm_domains
 
 class Command(ZulipBaseCommand):
     help = """Manage domains for the specified realm"""
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--op',
                             dest='op',
                             type=str,
@@ -30,9 +28,9 @@ class Command(ZulipBaseCommand):
                             help="domain to add or remove")
         self.add_realm_args(parser, True)
 
-    def handle(self, *args, **options):
-        # type: (*Any, **str) -> None
+    def handle(self, *args: Any, **options: str) -> None:
         realm = self.get_realm(options)
+        assert realm is not None  # Should be ensured by parser
         if options["op"] == "show":
             print("Domains for %s:" % (realm.string_id,))
             for realm_domain in get_realm_domains(realm):
@@ -50,9 +48,6 @@ class Command(ZulipBaseCommand):
             sys.exit(1)
         if options["op"] == "add":
             try:
-                if not can_add_realm_domain(domain):
-                    print("The domain %(domain)s belongs to another organization." % {'domain': domain})
-                    sys.exit(1)
                 RealmDomain.objects.create(realm=realm, domain=domain,
                                            allow_subdomains=options["allow_subdomains"])
                 sys.exit(0)

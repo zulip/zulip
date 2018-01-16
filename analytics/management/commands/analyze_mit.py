@@ -1,18 +1,14 @@
-from __future__ import absolute_import
-from __future__ import print_function
-
+import datetime
+import logging
+import time
 from typing import Any, Dict
 
-from optparse import make_option
 from django.core.management.base import BaseCommand, CommandParser
-from zerver.models import Recipient, Message
-from zerver.lib.timestamp import timestamp_to_datetime
-import datetime
-import time
-import logging
 
-def compute_stats(log_level):
-    # type: (int) -> None
+from zerver.lib.timestamp import timestamp_to_datetime
+from zerver.models import Message, Recipient
+
+def compute_stats(log_level: int) -> None:
     logger = logging.getLogger()
     logger.setLevel(log_level)
 
@@ -75,12 +71,10 @@ def compute_stats(log_level):
 class Command(BaseCommand):
     help = "Compute statistics on MIT Zephyr usage."
 
-    def add_arguments(self, parser):
-        # type: (CommandParser) -> None
+    def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument('--verbose', default=False, action='store_true')
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         level = logging.INFO
         if options["verbose"]:
             level = logging.DEBUG
