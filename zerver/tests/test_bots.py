@@ -141,6 +141,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                          default_sending_stream=None,
                          default_events_register_stream=None,
                          default_all_public_streams=False,
+                         services=[],
                          owner=self.example_email('hamlet'))
             ),
             event['event']
@@ -302,6 +303,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                          default_sending_stream='Denmark',
                          default_events_register_stream=None,
                          default_all_public_streams=False,
+                         services=[],
                          owner=self.example_email('hamlet'))
             ),
             event['event']
@@ -369,6 +371,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                          default_sending_stream=None,
                          default_events_register_stream='Denmark',
                          default_all_public_streams=False,
+                         services=[],
                          owner=self.example_email('hamlet'))
             ),
             event['event']
@@ -931,6 +934,47 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_patch("/json/bots/nonexistent-bot@zulip.com", bot_info)
         self.assert_json_error(result, 'No such user')
         self.assert_num_bots_equal(1)
+
+    def test_patch_outgoing_webhook_bot(self) -> None:
+        self.login(self.example_email('hamlet'))
+        bot_info = {
+            'full_name': u'The Bot of Hamlet',
+            'short_name': u'hambot',
+            'bot_type': UserProfile.OUTGOING_WEBHOOK_BOT,
+            'payload_url': ujson.dumps("http://foo.bar.com"),
+            'service_interface': Service.GENERIC,
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+        bot_info = {
+            'service_payload_url': ujson.dumps("http://foo.bar2.com"),
+            'service_interface': Service.SLACK,
+        }
+        result = self.client_patch("/json/bots/hambot-bot@zulip.testserver", bot_info)
+        self.assert_json_success(result)
+
+        service_interface = ujson.loads(result.content)['service_interface']
+        self.assertEqual(service_interface, Service.SLACK)
+
+        service_payload_url = ujson.loads(result.content)['service_payload_url']
+        self.assertEqual(service_payload_url, "http://foo.bar2.com")
+
+    def test_outgoing_webhook_invalid_interface(self):
+        # type: () -> None
+        self.login(self.example_email('hamlet'))
+        bot_info = {
+            'full_name': 'Outgoing Webhook test bot',
+            'short_name': 'outgoingservicebot',
+            'bot_type': UserProfile.OUTGOING_WEBHOOK_BOT,
+            'payload_url': ujson.dumps('http://127.0.0.1:5002/bots/followup'),
+            'interface_type': -1,
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_error(result, 'Invalid interface type')
+
+        bot_info['interface_type'] = Service.GENERIC
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
 
     def test_create_outgoing_webhook_bot(self, **extras: Any) -> None:
         self.login(self.example_email('hamlet'))

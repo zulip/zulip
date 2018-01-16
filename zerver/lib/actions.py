@@ -71,7 +71,8 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     custom_profile_fields_for_realm, get_huddle_user_ids, \
     CustomProfileFieldValue, validate_attachment_request, get_system_bot, \
     get_display_recipient_by_id, query_for_ids, get_huddle_recipient, \
-    UserGroup, UserGroupMembership, get_default_stream_groups
+    UserGroup, UserGroupMembership, get_default_stream_groups, \
+    get_service_dicts_for_bots, get_bot_services
 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import avatar_url
@@ -416,6 +417,7 @@ def notify_created_bot(user_profile: UserProfile) -> None:
                default_events_register_stream=default_events_register_stream_name,
                default_all_public_streams=user_profile.default_all_public_streams,
                avatar_url=avatar_url(user_profile),
+               services = get_service_dicts_for_bots(user_profile.id),
                )
 
     # Set the owner key only when the bot has an owner.
@@ -4392,6 +4394,24 @@ def do_update_user_group_description(user_group: UserGroup, description: Text) -
     user_group.description = description
     user_group.save(update_fields=['description'])
     do_send_user_group_update_event(user_group, dict(description=description))
+
+def do_update_outgoing_webhook_service(bot_profile, service_interface, service_payload_url):
+    # type: (UserProfile, int, Text) -> None
+    # TODO: First service is chosen because currently one bot can only have one service.
+    # Update this once multiple services are supported.
+    service = get_bot_services(bot_profile.id)[0]
+    service.base_url = service_payload_url
+    service.interface = service_interface
+    service.save()
+    send_event(dict(type='realm_bot',
+                    op='update',
+                    bot=dict(email=bot_profile.email,
+                             user_id=bot_profile.id,
+                             services = [dict(base_url=service.base_url,
+                                              interface=service.interface)],
+                             ),
+                    ),
+               bot_owner_user_ids(bot_profile))
 
 def do_send_user_group_members_update_event(event_name: Text,
                                             user_group: UserGroup,
