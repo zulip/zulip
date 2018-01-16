@@ -294,6 +294,7 @@ exports.set_up = function () {
         var old_full_name = bot_info.find(".name").text();
         var old_owner = bot_data.get(bot_info.find(".email .value").text()).owner;
         var bot_email = bot_info.find(".email .value").text();
+        var bot_type = bot_info.find(".type .value").text();
 
         $("#settings_page .edit_bot .edit_bot_name").val(old_full_name);
         $("#settings_page .edit_bot .select-form").text("").append(owner_select);
@@ -301,8 +302,17 @@ exports.set_up = function () {
         $("#settings_page .edit_bot_form").attr("data-email", bot_email);
         $(".edit_bot_email").text(bot_email);
 
-        avatar_widget.clear();
+        if (bot_type === "Outgoing webhook") {
+            var services = bot_data.get_services(bot_email);
+            $("#settings_page .edit_bot #service_data").show();
+            // Currently, we only support one service per bot.
+            $("#settings_page .edit_bot #edit_service_base_url").val(services[0].base_url);
+            $("#settings_page .edit_bot #edit_service_interface").val(services[0].interface);
+        } else {
+            $("#settings_page .edit_bot #service_data").hide();
+        }
 
+        avatar_widget.clear();
 
         function show_row_again() {
             image.show();
@@ -336,6 +346,12 @@ exports.set_up = function () {
                 formData.append('csrfmiddlewaretoken', csrf_token);
                 formData.append('full_name', full_name);
                 formData.append('bot_owner', bot_owner);
+                if (bot_type === "Outgoing webhook") {
+                    var service_payload_url = $("#settings_page .edit_bot #edit_service_base_url").val();
+                    var service_interface = $("#settings_page .edit_bot #edit_service_interface :selected").val();
+                    formData.append('service_payload_url', JSON.stringify(service_payload_url));
+                    formData.append('service_interface', service_interface);
+                }
                 jQuery.each(file_input[0].files, function (i, file) {
                     formData.append('file-'+i, file);
                 });
