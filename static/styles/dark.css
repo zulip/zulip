@@ -89,6 +89,7 @@ body.dark-mode .new-style .button.no-style {
 }
 
 body.dark-mode .new-style .tab-switcher .ind-tab.selected,
+body.dark-mode div.message_content thead,
 body.dark-mode .table-striped thead th,
 body.dark-mode .message_reactions .message_reaction.reacted,
 body.dark-mode .message_reactions:hover .message_reaction + .reaction_button {
