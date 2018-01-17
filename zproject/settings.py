@@ -39,7 +39,7 @@ if PRODUCTION:
 else:
     secrets_file.read(os.path.join(DEPLOY_ROOT, "zproject/dev-secrets.conf"))
 
-def get_secret(key: str) -> None:
+def get_secret(key: str) -> str:
     if secrets_file.has_option('secrets', key):
         return secrets_file.get('secrets', key)
     return None
