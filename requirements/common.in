@@ -186,5 +186,5 @@ lxml==4.1.0
 django-two-factor-auth==1.6.2
 twilio==6.9.0
 
-# Needed for processing payments
+# Needed for processing payments (in zilencer)
 stripe==1.77.0
