@@ -73,12 +73,9 @@ exports.populate_user_groups = function () {
                 if (pills.keys().includes(item.user_id)) {
                     return false;
                 }
-
-                var person = people.get_person_from_user_id(item.user_id);
                 var query = this.query.toLowerCase();
-
-                return (person.email.toLowerCase().indexOf(query) !== -1
-                        || person.full_name.toLowerCase().indexOf(query) !== -1);
+                return (item.email.toLowerCase().indexOf(query) !== -1
+                        || item.full_name.toLowerCase().indexOf(query) !== -1);
             },
             sorter: function (matches) {
                 return typeahead_helper.sort_recipientbox_typeahead(
