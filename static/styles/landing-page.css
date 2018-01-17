@@ -3176,7 +3176,7 @@ nav ul li.active::after {
         top: 0;
         left: 0;
         height: 100vh;
-        width: 300px;
+        width: calc(100% - 50px);
         padding-left: 30px;
 
         background-color: #fff;
