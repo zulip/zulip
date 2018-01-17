@@ -421,10 +421,13 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str) 
     zerver_attachment = []  # type: List[ZerverFieldsT]
 
     constants = [slack_data_dir, REALM_ID]
+    message_id_count = get_model_id(Message)
+    usermessage_id_count = get_model_id(UserMessage)
+
     print('######### IMPORTING MESSAGES STARTED #########\n')
     for channel in added_channels.keys():
-        message_id = len(zerver_message) + 1  # For the id of the messages
-        usermessage_id = len(zerver_usermessage) + 1
+        message_id = len(zerver_message) + message_id_count  # For the id of the messages
+        usermessage_id = len(zerver_usermessage) + usermessage_id_count
         id_list = [message_id, usermessage_id]
         zm, zum = channel_message_to_zerver_message(constants, channel,
                                                     added_users, added_recipient,
