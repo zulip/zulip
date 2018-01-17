@@ -68,6 +68,21 @@ function display_youtube_video(payload) {
     $(".image-actions .open").attr("href", "https://youtu.be/" + payload.source);
 }
 
+function display_vimeo_video(payload) {
+    render_lightbox_list_images(payload.preview);
+
+    $("#lightbox_overlay .image-preview, .image-description, .download, .lightbox-canvas-trigger").hide();
+
+    var iframe = $("<iframe></iframe>", {
+        src: "https://player.vimeo.com/video/" + payload.source,
+        frameborder: 0,
+        allowfullscreen: true,
+    });
+
+    $("#lightbox_overlay .player-container").html(iframe).show();
+    $(".image-actions .open").attr("href", "https://vimeo.com/" + payload.source);
+}
+
 // the image param is optional, but required on the first preview of an image.
 // this will likely be passed in every time but just ignored if the result is already
 // stored in the `asset_map`.
@@ -84,6 +99,7 @@ exports.open = function (image, options) {
     // if wrapped in the .youtube-video class, it will be length = 1, and therefore
     // cast to true.
     var is_youtube_video = !!$image.closest(".youtube-video").length;
+    var is_vimeo_video = !!$image.closest(".vimeo-video").length;
 
     var payload;
     // if the asset_map already contains the metadata required to display the
@@ -94,13 +110,25 @@ exports.open = function (image, options) {
     } else {
         var $parent = $image.parent();
         var $message = $parent.closest("[zid]");
+        var $type;
+        var $source;
+        if (is_youtube_video) {
+            $type = "youtube-video";
+            $source = $parent.attr("data-id");
+        } else if (is_vimeo_video) {
+            $type = "vimeo-video";
+            $source = $parent.attr("data-id");
+        } else {
+            $type = "image";
+            $source = $image.attr("src");
+        }
 
         payload = {
             user: message_store.get($message.attr("zid")).sender_full_name,
             title: $image.parent().attr("title"),
-            type: is_youtube_video ? "youtube-video" : "image",
+            type: $type,
             preview: $image.attr("src"),
-            source: is_youtube_video ? $parent.attr("data-id") : $image.attr("src"),
+            source: $source,
         };
 
         asset_map[payload.preview] = payload;
@@ -108,6 +136,8 @@ exports.open = function (image, options) {
 
     if (payload.type === "youtube-video") {
         display_youtube_video(payload);
+    } else if (payload.type === "vimeo-video") {
+        display_vimeo_video(payload);
     } else if (payload.type === "image") {
         display_image(payload, options);
     }
