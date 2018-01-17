@@ -34,6 +34,7 @@ from zerver.decorator import (
     rate_limit, validate_api_key, logged_in_and_active,
     return_success_on_head_request
 )
+from zerver.lib.cache import ignore_unhashable_lru_cache
 from zerver.lib.validator import (
     check_string, check_dict, check_dict_only, check_bool, check_float, check_int, check_list, Validator,
     check_variable_type, equals, check_none_or, check_url, check_short_string
@@ -1285,3 +1286,52 @@ class TestUserAgentParsing(ZulipTestCase):
             user_agents_parsed[ret["name"]] += int(count)
 
         self.assertEqual(len(parse_errors), 0)
+
+class TestIgnoreUnhashableLRUCache(ZulipTestCase):
+    def test_cache_hit(self) -> None:
+        @ignore_unhashable_lru_cache()
+        def f(arg: Any) -> Any:
+            return arg
+
+        def get_cache_info() -> Tuple[int, int, int]:
+            info = getattr(f, 'cache_info')()
+            hits = getattr(info, 'hits')
+            misses = getattr(info, 'misses')
+            currsize = getattr(info, 'currsize')
+            return hits, misses, currsize
+
+        def clear_cache() -> None:
+            getattr(f, 'cache_clear')()
+
+        # Check hashable argument.
+        result = f(1)
+        hits, misses, currsize = get_cache_info()
+        # First one should be a miss.
+        self.assertEqual(hits, 0)
+        self.assertEqual(misses, 1)
+        self.assertEqual(currsize, 1)
+        self.assertEqual(result, 1)
+
+        result = f(1)
+        hits, misses, currsize = get_cache_info()
+        # Second one should be a hit.
+        self.assertEqual(hits, 1)
+        self.assertEqual(misses, 1)
+        self.assertEqual(currsize, 1)
+        self.assertEqual(result, 1)
+
+        # Check unhashable argument.
+        result = f([1])
+        hits, misses, currsize = get_cache_info()
+        # Cache should not be used.
+        self.assertEqual(hits, 1)
+        self.assertEqual(misses, 1)
+        self.assertEqual(currsize, 1)
+        self.assertEqual(result, [1])
+
+        # Clear cache.
+        clear_cache()
+        hits, misses, currsize = get_cache_info()
+        self.assertEqual(hits, 0)
+        self.assertEqual(misses, 0)
+        self.assertEqual(currsize, 0)
