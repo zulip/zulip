@@ -31,7 +31,6 @@ from zerver.lib.message import (
     messages_for_ids,
     sew_messages_and_reactions,
     get_first_visible_message_id,
-    realm_last_visible_message_id_cache_key,
 )
 
 from zerver.lib.test_helpers import (

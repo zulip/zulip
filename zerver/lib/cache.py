@@ -411,9 +411,9 @@ def flush_realm(sender: Any, **kwargs: Any) -> None:
     delete_user_profile_caches(users)
 
     # Deleting realm or updating message_visibility_limit
-    # attribute should clear the last_visible_message_id cache.
+    # attribute should clear the first_visible_message_id cache.
     if kwargs.get('update_fields') is None or "message_visibility_limit" in kwargs['update_fields']:
-        cache_delete(realm_last_visible_message_id_cache_key(realm))
+        cache_delete(realm_first_visible_message_id_cache_key(realm))
 
     if realm.deactivated:
         cache_delete(realm_user_dicts_cache_key(realm.id))
@@ -425,9 +425,9 @@ def realm_alert_words_cache_key(realm):
     # type: (Realm) -> Text
     return u"realm_alert_words:%s" % (realm.string_id,)
 
-def realm_last_visible_message_id_cache_key(realm):
+def realm_first_visible_message_id_cache_key(realm):
     # type: (Realm) -> Text
-    return u"realm_last_visible_message_id:%s" % (realm.string_id,)
+    return u"realm_first_visible_message_id:%s" % (realm.string_id,)
 
 # Called by models.py to flush the stream cache whenever we save a stream
 # object.

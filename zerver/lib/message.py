@@ -13,7 +13,7 @@ from zerver.lib.cache import (
     generic_bulk_cached_fetch,
     to_dict_cache_key,
     to_dict_cache_key_id,
-    realm_last_visible_message_id_cache_key,
+    realm_first_visible_message_id_cache_key,
 )
 from zerver.lib.request import JsonableError
 from zerver.lib.stream_subscription import (
@@ -852,7 +852,7 @@ def apply_unread_message_event(user_profile: UserProfile,
 # don't need to restrict messages to exactly
 # message_visibility_limit. The query is also reasonably fast
 # so cache misses can be managed without cron job.
-@cache_with_key(realm_last_visible_message_id_cache_key, timeout=3600*4)
+@cache_with_key(realm_first_visible_message_id_cache_key, timeout=3600*4)
 def get_first_visible_message_id(realm: Realm) -> int:
     if realm.message_visibility_limit is None:
         return 0
