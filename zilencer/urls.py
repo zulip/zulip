@@ -19,7 +19,10 @@ v1_api_and_json_patterns = [
         {'POST': 'zilencer.views.remote_server_notify_push'}),
 ]
 
-urlpatterns = [
+# Make a copy of i18n_urlpatterns so that they appear without prefix for English
+urlpatterns = list(i18n_urlpatterns)
+
+urlpatterns += [
     url(r'^api/v1/', include(v1_api_and_json_patterns)),
     url(r'^json/', include(v1_api_and_json_patterns)),
 ]
