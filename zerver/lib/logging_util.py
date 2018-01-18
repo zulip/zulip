@@ -191,7 +191,7 @@ class ZulipFormatter(logging.Formatter):
 
 def log_to_file(logger: Logger,
                 filename: str,
-                log_format: str="%(asctime)s%(levelname)-8s%(message)s",
+                log_format: str="%(asctime)s %(levelname)-8s %(message)s",
                 ) -> None:
     """Note: `filename` should be declared in zproject/settings.py in ZULIP_PATHS."""
     formatter = logging.Formatter(log_format)
