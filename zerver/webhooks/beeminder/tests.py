@@ -1,4 +1,4 @@
-# -*- coding: utf -*-
+# -*- coding: utf-8 -*-
 import time as t
 from typing import Text
 from zerver.lib.test_classes import WebhookTestCase
