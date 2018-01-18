@@ -441,39 +441,6 @@ class Runner(DiscoverRunner):
             print()
             sys.exit(1)
 
-        # Checking for import failures in serial mode
-        if self.parallel == 1 and hasattr(suite, '_tests') and len(suite._tests):
-            if hasattr(suite._tests[0], '_exception'):
-                print()
-                print(suite._tests[0]._exception)
-                sys.exit(1)
-
-        # Checking for import failures in parallel mode
-        elif hasattr(suite, 'subsuites'):
-            # When a test suite has failed imports, test_name usually has one
-            # of the following forms:
-            # unittest.loader.ModuleImportFailure.zerver.tests.test_upload
-            # (on Python 3.4 or lower) or
-            # unittest.loader._FailedTest.zerver.tests.test_upload
-            # (on Python 3.5 or higher).
-            import_failure_prefix_old = 'unittest.loader.ModuleImportFailure.'
-            import_failure_prefix_new = 'unittest.loader._FailedTest.'
-            for subsuite in suite.subsuites:
-                if not isinstance(subsuite, tuple) or len(subsuite) < 2:
-                    continue
-                test_names = subsuite[1]
-                if not isinstance(test_names, list):
-                    continue
-                for test_name in test_names:
-                    if test_name.startswith(import_failure_prefix_old):
-                        actual_test_name = test_name[len(import_failure_prefix_old):]
-                        print_error_message(actual_test_name)
-                        sys.exit(1)
-                    if test_name.startswith(import_failure_prefix_new):
-                        actual_test_name = test_name[len(import_failure_prefix_new):]
-                        print_error_message(actual_test_name)
-                        sys.exit(1)
-
         if self.parallel == 1:
             # We are running in serial mode so create the databases here.
             # For parallel mode, the databases are created in init_worker.
