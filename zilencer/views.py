@@ -1,5 +1,6 @@
 
 import logging
+import os
 from typing import Any, Dict, Optional, Text, Union, cast
 
 from django.http import HttpRequest, HttpResponse
@@ -15,6 +16,7 @@ from stripe.error import CardError, RateLimitError, InvalidRequestError, \
 
 from zerver.decorator import require_post, zulip_login_required
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.logging_util import log_to_file
 from zerver.lib.push_notifications import send_android_push_notification, \
     send_apple_push_notification
 from zerver.lib.request import REQ, has_request_variables
@@ -28,6 +30,14 @@ from zproject.settings import get_secret
 STRIPE_SECRET_KEY = get_secret('stripe_secret_key')
 STRIPE_PUBLISHABLE_KEY = get_secret('stripe_publishable_key')
 stripe.api_key = STRIPE_SECRET_KEY
+
+BILLING_LOG_PATH = os.path.join('/var/log/zulip'
+                                if not settings.DEVELOPMENT
+                                else settings.DEVELOPMENT_LOG_DIRECTORY,
+                                'billing.log')
+billing_logger = logging.getLogger('zilencer.stripe')
+log_to_file(billing_logger, BILLING_LOG_PATH)
+log_to_file(logging.getLogger('stripe'), BILLING_LOG_PATH)
 
 def validate_entity(entity: Union[UserProfile, RemoteZulipServer]) -> None:
     if not isinstance(entity, RemoteZulipServer):
@@ -165,18 +175,18 @@ def add_payment_method(request: HttpRequest) -> HttpResponse:
             return render(request, 'zilencer/payment.html', context=ctx)
     except (CardError, RateLimitError, APIConnectionError) as e:
         err = e.json_body.get('error', {})
-        logging.error("Stripe error - Status: {}, Type: {}, Code: {}, Param: {}, Message: {}".format(
+        billing_logger.error("Stripe error - Status: {}, Type: {}, Code: {}, Param: {}, Message: {}".format(
             e.http_status, err.get('type'), err.get('code'), err.get('param'), err.get('message')
         ))
         ctx["error_message"] = err.get('message')
         return render(request, 'zilencer/payment.html', context=ctx)
     except (InvalidRequestError, AuthenticationError, StripeError) as e:
         err = e.json_body.get('error', {})
-        logging.error("Stripe error - Status: {}, Type: {}, Code: {}, Param: {}, Message: {}".format(
+        billing_logger.error("Stripe error - Status: {}, Type: {}, Code: {}, Param: {}, Message: {}".format(
             e.http_status, err.get('type'), err.get('code'), err.get('param'), err.get('message')
         ))
     except Exception as e:
-        logging.error('Stripe error: %s' % (str(e),))
+        billing_logger.error('Stripe error: %s' % (str(e),))
     ctx["error_message"] = _("Something went wrong. Please try again or email us at %s."
                              % (settings.ZULIP_ADMINISTRATOR,))
     return render(request, 'zilencer/payment.html', context=ctx)
