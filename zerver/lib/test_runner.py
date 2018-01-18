@@ -413,6 +413,30 @@ class Runner(DiscoverRunner):
             destroy_test_databases()
         return super().teardown_test_environment(*args, **kwargs)
 
+    def test_imports(self, test_labels: List[str], suite: unittest.TestSuite) -> None:
+        prefix_old = 'unittest.loader.ModuleImportFailure.'  # Python <= 3.4
+        prefix_new = 'unittest.loader._FailedTest.'  # Python > 3.4
+        error_prefixes = [prefix_old, prefix_new]
+        for test_name in get_test_names(suite):
+            for prefix in error_prefixes:
+                if test_name.startswith(prefix):
+                    test_name = test_name[len(prefix):]
+                    for label in test_labels:
+                        # This code block is for Python 3.5 when test label is
+                        # directly provided, for example:
+                        # ./tools/test-backend zerver.tests.test_alert_words.py
+                        #
+                        # In this case, the test name is of this form:
+                        # 'unittest.loader._FailedTest.test_alert_words'
+                        #
+                        # Whereas check_import_error requires test names of
+                        # this form:
+                        # 'unittest.loader._FailedTest.zerver.tests.test_alert_words'.
+                        if test_name in label:
+                            test_name = label
+                            break
+                    check_import_error(test_name)
+
     def run_tests(self, test_labels, extra_tests=None,
                   full_suite=False, **kwargs):
         # type: (List[str], Optional[List[TestCase]], bool, **Any) -> Tuple[bool, List[str]]
@@ -432,6 +456,7 @@ class Runner(DiscoverRunner):
             print()
             sys.exit(1)
 
+        self.test_imports(test_labels, suite)
         if self.parallel == 1:
             # We are running in serial mode so create the databases here.
             # For parallel mode, the databases are created in init_worker.
