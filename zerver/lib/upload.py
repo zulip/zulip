@@ -116,9 +116,10 @@ def resize_emoji(image_data: bytes, size: int=DEFAULT_EMOJI_SIZE) -> bytes:
 ### Common
 
 class ZulipUploadBackend:
-    def upload_message_image(self, uploaded_file_name, uploaded_file_size,
-                             content_type, file_data, user_profile, target_realm=None):
-        # type: (Text, int, Optional[Text], bytes, UserProfile, Optional[Realm]) -> Text
+    def upload_message_image(self, uploaded_file_name: Text, uploaded_file_size: int,
+                             content_type: Optional[Text], file_data: bytes,
+                             user_profile: UserProfile,
+                             target_realm: Optional[Realm]=None) -> Text:
         raise NotImplementedError()
 
     def upload_avatar_image(self, user_file: File,
@@ -163,12 +164,11 @@ def get_bucket(conn: S3Connection, bucket_name: Text) -> Bucket:
     return bucket
 
 def upload_image_to_s3(
-        bucket_name,
-        file_name,
-        content_type,
-        user_profile,
-        contents):
-    # type: (NonBinaryStr, Text, Optional[Text], UserProfile, bytes) -> None
+        bucket_name: NonBinaryStr,
+        file_name: Text,
+        content_type: Optional[Text],
+        user_profile: UserProfile,
+        contents: bytes) -> None:
 
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
     bucket = get_bucket(conn, bucket_name)
@@ -236,9 +236,9 @@ def get_realm_for_filename(path: Text) -> Optional[int]:
 
 class S3UploadBackend(ZulipUploadBackend):
 
-    def upload_message_image(self, uploaded_file_name, uploaded_file_size,
-                             content_type, file_data, user_profile, target_realm=None):
-        # type: (Text, int, Optional[Text], bytes, UserProfile, Optional[Realm]) -> Text
+    def upload_message_image(self, uploaded_file_name: Text, uploaded_file_size: int,
+                             content_type: Optional[Text], file_data: bytes,
+                             user_profile: UserProfile, target_realm: Optional[Realm]=None) -> Text:
         bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
         if target_realm is None:
             target_realm = user_profile.realm
@@ -415,9 +415,9 @@ def get_local_file_path(path_id: Text) -> Optional[Text]:
         return None
 
 class LocalUploadBackend(ZulipUploadBackend):
-    def upload_message_image(self, uploaded_file_name, uploaded_file_size,
-                             content_type, file_data, user_profile, target_realm=None):
-        # type: (Text, int, Optional[Text], bytes, UserProfile, Optional[Realm]) -> Text
+    def upload_message_image(self, uploaded_file_name: Text, uploaded_file_size: int,
+                             content_type: Optional[Text], file_data: bytes,
+                             user_profile: UserProfile, target_realm: Optional[Realm]=None) -> Text:
         # Split into 256 subdirectories to prevent directories from getting too big
         path = "/".join([
             str(user_profile.realm_id),
