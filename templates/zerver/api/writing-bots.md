@@ -120,28 +120,27 @@ we have a little tool to help you out: `zulip-terminal`
 
 * [Install all requirements](#installing-a-development-version-of-the-zulip-bots-package).
 
-* Run `zulip-terminal -b <path-to-bot.config> <bot-name>` to test one of the bots in
+* Run `zulip-terminal` to test one of the bots in
   [`zulip_bots/bots`](https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots).
-  Here, the `-b` or `--bot-config-file` arguement is for optional third party config file (e.g. ~/giphy.conf)
 
-  * Example: `zulip-terminal converter`
-    ```
-    Enter your message: "12 meter yard"
-    Response: 12.0 meter = 13.12336 yard
-    ```
-  * Example: `zulip-terminal -b ~/followup.conf followup`
-    ```
-    Enter your message: "Task Completed"
-    Response: stream: followup topic: foo_sender@zulip.com
-              from foo_sender@zulip.com: Task Completed
-    ```
+Example invocations are below:
 
-* Run `zulip-terminal <path/to/bot.py>"` to specify the bot's path yourself.
-  * Example: `zulip-terminal zulip_bots/zulip_bots/bots/converter/converter.py`
-    ```
-    Enter your message: "12 meter yard"
-    Response: 12.0 meter = 13.12336 yard
-    ```
+```
+> zulip-terminal converter
+
+Enter your message: "12 meter yard"
+Response: 12.0 meter = 13.12336 yard
+
+> zulip-terminal -b ~/followup.conf followup
+
+Enter your message: "Task Completed"
+Response: stream: followup topic: foo_sender@zulip.com
+          from foo_sender@zulip.com: Task Completed
+
+```
+
+Note that the `-b` (aka `--bot-config-file`) argument is for an optional third party
+config file (e.g. ~/giphy.conf), which only applies to certain types of bots.
 
 ## Bot API
 
