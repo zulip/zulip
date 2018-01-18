@@ -1,5 +1,6 @@
 
 from functools import partial
+import importlib
 import random
 
 from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, \
@@ -353,25 +354,15 @@ class ParallelTestSuite(django_runner.ParallelTestSuite):
         # definitions.
         self.subsuites = SubSuiteList(self.subsuites)  # type: ignore # Type of self.subsuites changes.
 
-def print_error_message(test_name: Text) -> None:
-    command = [sys.executable, "-c", "import %s" % test_name]
-    print()
-    print("Actual test to be run is %s, but import failed." % (test_name,))
-    print("Importing test module directly to generate clearer traceback:")
-    print("  {command}".format(command=' '.join(command)))
-    print()
+def check_import_error(test_name: Text) -> None:
     try:
-        subprocess.check_call(command)
-    except subprocess.CalledProcessError:
+        importlib.import_module(test_name)
+    except ImportError:
         print()
-        print("If that traceback is confusing, try doing the import "
-              "inside `./manage.py shell`.")
-    else:
+        print("Actual test to be run is %s, but import failed." % (test_name,))
+        print("Importing test module directly to generate clearer traceback:")
         print()
-        print("Import unexpectedly succeeded! Something is wrong.")
-        print("Try running `import %s` inside `./manage.py shell`." % (test_name,))
-        print("If that works, you may have introduced an import cycle.")
-    print()
+        raise
 
 class Runner(DiscoverRunner):
     test_suite = TestSuite
