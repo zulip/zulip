@@ -727,9 +727,12 @@ $(function () {
                 $("#compose-textarea").focus();
             } else if (!$(e.target).closest(".overlay").length &&
             !window.getSelection().toString() &&
-            !$(e.target).closest('.popover-content').length) {
+            !$(e.target).closest('.popover-content').length &&
+            $(e.target).closest('body').length) {
                 // Unfocus our compose area if we click out of it. Don't let exits out
                 // of overlays or selecting text (for copy+paste) trigger cancelling.
+                // Check if the click is within the body to prevent extensions from
+                // interfering with the compose box.
                 compose_actions.cancel();
             }
         }
