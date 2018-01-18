@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Ansgar Hofmann <ansgar@trollgames.de>, 2016
 # Ansgar Hofmann <ansgar@trollgames.de>, 2017
@@ -244,7 +244,7 @@ msgstr ""
 
 #: templates/zerver/compose.html:22 templates/zerver/compose.html:23
 msgid "New topic"
-msgstr "Neues Them"
+msgstr "Neues Thema"
 
 #: templates/zerver/compose.html:30 templates/zerver/compose.html:31
 #: templates/zerver/keyboard_shortcuts.html:69
