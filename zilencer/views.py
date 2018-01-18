@@ -177,20 +177,14 @@ def add_payment_method(request: HttpRequest) -> HttpResponse:
                 ctx["num_cards"] = 1
             ctx["payment_method_added"] = True
             return render(request, 'zilencer/payment.html', context=ctx)
-    except (CardError, RateLimitError, APIConnectionError) as e:
-        err = e.json_body.get('error', {})
-        billing_logger.error("Stripe error - Status: {}, Type: {}, Code: {}, Param: {}, Message: {}".format(
-            e.http_status, err.get('type'), err.get('code'), err.get('param'), err.get('message')
-        ))
-        ctx["error_message"] = err.get('message')
+    except StripeError as e:
+        billing_logger.error("Stripe error: %d %s", e.http_status, e.__class__.__name__)
+        if isinstance(e, CardError):
+            ctx["error_message"] = e.json_body.get('error', {}).get('message')
+        else:
+            ctx["error_message"] = _("Something went wrong. Please try again or email us at %s."
+                                     % (settings.ZULIP_ADMINISTRATOR,))
         return render(request, 'zilencer/payment.html', context=ctx)
-    except (InvalidRequestError, AuthenticationError, StripeError) as e:
-        err = e.json_body.get('error', {})
-        billing_logger.error("Stripe error - Status: {}, Type: {}, Code: {}, Param: {}, Message: {}".format(
-            e.http_status, err.get('type'), err.get('code'), err.get('param'), err.get('message')
-        ))
     except Exception as e:
-        billing_logger.error('Stripe error: %s' % (str(e),))
-    ctx["error_message"] = _("Something went wrong. Please try again or email us at %s."
-                             % (settings.ZULIP_ADMINISTRATOR,))
-    return render(request, 'zilencer/payment.html', context=ctx)
+        billing_logger.exception("Uncaught error in billing")
+        raise
