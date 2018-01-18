@@ -446,15 +446,11 @@ class Runner(DiscoverRunner):
         except AttributeError:
             # We are likely to get here only when running tests in serial
             # mode on Python 3.4 or lower.
-            traceback.print_exc()
-            print()
-            print("  This is often caused by a test module/class/function that doesn't exist or ")
-            print("  import properly. You can usually debug in a `./manage.py shell` via e.g. ")
-            print("    import zerver.tests.test_messages")
-            print("    from zerver.tests.test_messages import StreamMessagesTest")
-            print("    StreamMessagesTest.test_message_to_stream")
-            print()
-            sys.exit(1)
+            # test_labels are always normalized to include the correct prefix.
+            # If we run the command with ./tools/test-backend test_alert_words,
+            # test_labels will be equal to ['zerver.tests.test_alert_words'].
+            for test_label in test_labels:
+                check_import_error(test_label)
 
         self.test_imports(test_labels, suite)
         if self.parallel == 1:
