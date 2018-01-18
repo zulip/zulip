@@ -44,6 +44,14 @@ function message_in_home(message) {
     return stream_data.in_home_view(message.stream_id);
 }
 
+function Filter(operators) {
+    if (operators === undefined) {
+        this._operators = [];
+    } else {
+        this._operators = this._canonicalize_operators(operators);
+    }
+}
+
 function message_matches_search_term(message, operator, operand) {
     switch (operator) {
     case 'is':
@@ -108,7 +116,6 @@ function message_matches_search_term(message, operator, operand) {
         }
         return (message.subject.toLowerCase() === operand);
 
-
     case 'sender':
         return people.id_matches_email_operand(message.sender_id, operand);
 
@@ -140,21 +147,23 @@ function message_matches_search_term(message, operator, operand) {
         }
 
         return _.isEqual(operand_ids, user_ids);
+
+    case 'filter':
+        if (Filter.custom_filters.has(operand)) {
+            var custom_filter = Filter.custom_filters.get(operand);
+            return custom_filter(message);
+        }
+        return false;
     }
 
     return true; // unknown operators return true (effectively ignored)
 }
 
 
-function Filter(operators) {
-    if (operators === undefined) {
-        this._operators = [];
-    } else {
-        this._operators = this._canonicalize_operators(operators);
-    }
-}
 
 var canonical_operators = {from: "sender", subject: "topic"};
+
+Filter.custom_filters = new Dict();
 
 Filter.canonicalize_operator = function (operator) {
     operator = operator.toLowerCase();
@@ -205,6 +214,8 @@ Filter.canonicalize_term = function (opts) {
         // curly quotes with regular quotes when doing a search.  This is
         // unlikely to cause any problems and is probably what the user wants.
         operand = operand.toString().toLowerCase().replace(/[\u201c\u201d]/g, '"');
+        break;
+    case 'filter':
         break;
     default:
         operand = operand.toString().toLowerCase();
@@ -478,6 +489,9 @@ Filter.operator_to_prefix = function (operator, negated) {
 
     case 'group-pm-with':
         return verb + 'group private messages including';
+
+    case 'filter':
+        return verb + 'apply custom filter';
     }
     return '';
 };
