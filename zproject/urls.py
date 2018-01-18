@@ -31,6 +31,7 @@ import zerver.views.user_groups
 import zerver.views.user_settings
 import zerver.views.muting
 import zerver.views.streams
+import zerver.views.service_worker
 
 from zerver.lib.rest import rest_dispatch
 
@@ -584,6 +585,10 @@ urls += [url(r'^help/(?P<article>.*)$',
 urls += [url(r'^api/(?P<article>[-\w]*\/?)$',
              MarkdownDirectoryView.as_view(template_name='zerver/api/main.html',
                                            path_template='/zerver/api/%s.md'))]
+
+# Service Worker needs to be served from '/' so it can cache all files
+urls += [url(r'^zulip-sw.js$', zerver.views.service_worker.zulip_sw,
+             name='zerver.views.zulip_sw')]
 
 # Two Factor urls
 if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
