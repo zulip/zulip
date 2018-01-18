@@ -156,12 +156,16 @@ def add_payment_method(request: HttpRequest) -> HttpResponse:
             try:
                 customer_obj = Customer.objects.get(realm=user.realm)
                 customer = stripe.Customer.retrieve(customer_obj.stripe_customer_id)
+                billing_logger.info("Adding card on customer %s: source=%r, metadata=%r",
+                                    customer_obj.stripe_customer_id, token, card_metadata)
                 customer.sources.create(source=token, metadata=card_metadata)
                 ctx["num_cards"] = len(customer.sources.all(object="card")["data"])
             except Customer.DoesNotExist:
                 customer_metadata = {"string_id": user.realm.string_id}
                 # Description makes it easier to identify customers in Stripe dashboard
                 description = "{} ({})".format(user.realm.name, user.realm.string_id)
+                billing_logger.info("Creating customer: source=%r, description=%r, metadata=%r",
+                                    token, description, customer_metadata)
                 customer = stripe.Customer.create(source=token,
                                                   description=description,
                                                   metadata=customer_metadata)
