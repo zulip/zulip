@@ -495,8 +495,17 @@ class Runner(DiscoverRunner):
             write_instrumentation_reports(full_suite=full_suite)
         return failed, result.failed_tests
 
-def get_test_names(suite: TestSuite) -> List[str]:
-    return [full_test_name(t) for t in get_tests_from_suite(suite)]
+def get_test_names(suite: unittest.TestSuite) -> List[str]:
+    if isinstance(suite, ParallelTestSuite):
+        # suite is ParallelTestSuite. It will have a subsuites parameter of
+        # type SubSuiteList. Each element of a SubsuiteList is a tuple whose
+        # first element is the type of TestSuite and the second element is a
+        # list of test names in that test suite. See serialize_suite() for the
+        # implementation details.
+        return [name for subsuite in suite.subsuites for name in subsuite[1]]
+    else:
+        suite = cast(TestSuite, suite)
+        return [full_test_name(t) for t in get_tests_from_suite(suite)]
 
 def get_tests_from_suite(suite: TestSuite) -> TestCase:
     for test in suite:
