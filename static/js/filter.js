@@ -159,11 +159,23 @@ function message_matches_search_term(message, operator, operand) {
     return true; // unknown operators return true (effectively ignored)
 }
 
-
-
 var canonical_operators = {from: "sender", subject: "topic"};
 
 Filter.custom_filters = new Dict();
+
+// Sample filters.
+Filter.custom_filters.set('test', function (msg) {
+    if (msg.subject.indexOf('1') !== -1) {
+        return true;
+    }
+    return false;
+});
+Filter.custom_filters.set('long', function (msg) {
+    if (msg.content.length > 300) {
+        return true;
+    }
+    return false;
+});
 
 Filter.canonicalize_operator = function (operator) {
     operator = operator.toLowerCase();
