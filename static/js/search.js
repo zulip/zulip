@@ -38,11 +38,6 @@ exports.update_button_visibility = function () {
 
 exports.initialize = function () {
 
-    // Data storage for the typeahead.
-    // This maps a search string to an object with a "description" field.
-    // (It's a bit of legacy that we have an object with only one important
-    // field.  There's also a "search_string" field on each element that actually
-    // just represents the key of the hash, so it's redundant.)
     var search_object = {};
 
     $("#search_query").typeahead({
@@ -95,14 +90,20 @@ exports.initialize = function () {
             update_buttons_with_focus(false);
         }
     });
-
-    // Some of these functions don't actually need to be exported,
-    // but the code was moved here from elsewhere, and it would be
-    // more work to re-order everything and make them private.
+    
     $('#search_exit').on('click', exports.clear_search);
 
-    var query = $('#search_query');
-    query.on('focus', exports.focus_search)
+
+        var window_focus;
+
+        $(window).focus(function() {
+            window_focus = true;
+        }).blur(function() {
+            window_focus = false;
+        });
+
+        var query = $('#search_query');
+        query.on('focus', exports.focus_search)
          .on('blur' , function () {
 
         // The search query box is a visual cue as to
@@ -118,14 +119,33 @@ exports.initialize = function () {
         // The workaround is to check 100ms later -- long
         // enough for the search to have gone through, but
         // short enough that the user won't notice (though
-        // really it would be OK if they did).
+        // really  would be OK if they did).
+        //
+        // window_check is done so that only if "TABS-AWAY" the
+        // search query string is not lost.
+        // 
+        // However if User is active and busy using application, 
+        // the seach box is filled with narrow_state.search_string().
+        
 
+        //if (window_focus == true){}
         setTimeout(function () {
             var search_string = narrow_state.search_string();
-            query.val(search_string);
+            //query.val(search_string);
+            if ( window_focus)
+            {
+                query.val(search_string)
+            }
             exports.update_button_visibility();
         }, 100);
     });
+
+
+    
+
+
+
+
 };
 
 exports.focus_search = function () {
