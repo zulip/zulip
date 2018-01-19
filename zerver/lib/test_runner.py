@@ -1,6 +1,5 @@
 
 from functools import partial
-import importlib
 import random
 
 from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, \
@@ -356,13 +355,11 @@ class ParallelTestSuite(django_runner.ParallelTestSuite):
 
 def check_import_error(test_name: Text) -> None:
     try:
-        importlib.import_module(test_name)
-    except ImportError:
-        print()
-        print("Actual test to be run is %s, but import failed." % (test_name,))
-        print("Importing test module directly to generate clearer traceback:")
-        print()
-        raise
+        # Directly using __import__ is not recommeded, but here it gives
+        # clearer traceback as compared to importlib.import_module.
+        __import__(test_name)
+    except ImportError as exc:
+        raise exc from exc  # Disable exception chaining in Python 3.
 
 class Runner(DiscoverRunner):
     test_suite = TestSuite
