@@ -34,6 +34,7 @@ from zerver.models import (
     Stream,
     Subscription,
 )
+from zerver.lib import encryption
 from zerver.lib.actions import do_delete_message
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib import push_notifications as apn
@@ -547,6 +548,10 @@ class HandlePushNotificationTest(PushNotificationTest):
                            return_value={'apns': True}), \
                 mock.patch('zerver.lib.push_notifications.get_gcm_payload',
                            return_value={'gcm': True}), \
+                mock.patch('zerver.lib.push_notifications.encrypt_apns_payload',
+                           return_value={'apns_encrypted': True}), \
+                mock.patch('zerver.lib.push_notifications.encrypt_gcm_payload',
+                           return_value={'gcm_encrypted': True}), \
                 mock.patch('zerver.lib.push_notifications'
                            '.send_notifications_to_bouncer') as mock_send:
             apn.handle_push_notification(user_profile.id, missed_message)
@@ -584,6 +589,8 @@ class HandlePushNotificationTest(PushNotificationTest):
                         return_value={'apns': True}), \
                 mock.patch('zerver.lib.push_notifications.get_gcm_payload',
                            return_value={'gcm': True}), \
+                mock.patch('zerver.lib.push_notifications.encrypt_apns_payload'), \
+                mock.patch('zerver.lib.push_notifications.encrypt_gcm_payload'), \
                 mock.patch('zerver.lib.push_notifications'
                            '.send_apple_push_notification') as mock_send_apple, \
                 mock.patch('zerver.lib.push_notifications'
@@ -646,6 +653,64 @@ class HandlePushNotificationTest(PushNotificationTest):
                                                   'event': 'remove',
                                                   'zulip_message_id': message.id})
 
+    @mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value = True)
+    def test_non_bouncer_push_encrypted(self, mock_push_notifications_enabled: Any) -> None:
+        message = self.get_message(Recipient.PERSONAL, type_id=1)
+        UserMessage.objects.create(
+            user_profile=self.user_profile,
+            message=message
+        )
+
+        non_encrypted_device = PushDeviceToken.objects.create(
+            kind=PushDeviceToken.GCM,
+            token=apn.hex_to_b64(u'eeee'),
+            user=self.user_profile)
+
+        encrypted_device = PushDeviceToken.objects.create(
+            kind=PushDeviceToken.GCM,
+            token=apn.hex_to_b64(u'dddd'),
+            notification_encryption_key=encryption.generate_encryption_key(),
+            user=self.user_profile)
+
+        apple_devices = list(
+            PushDeviceToken.objects.filter(user=self.user_profile,
+                                           kind=PushDeviceToken.APNS))
+        for ad in apple_devices:
+            ad.notification_encryption_key = encryption.generate_encryption_key()
+            ad.save()
+
+        missed_message = {
+            'message_id': message.id,
+            'trigger': 'private_message',
+        }
+        with mock.patch('zerver.lib.push_notifications.get_apns_payload',
+                        return_value={'apns': True}), \
+                mock.patch('zerver.lib.push_notifications.get_gcm_payload',
+                           return_value={'gcm': True}), \
+                mock.patch('zerver.lib.push_notifications.encrypt_apns_payload',
+                           return_value={'en_apns': True}), \
+                mock.patch('zerver.lib.push_notifications.encrypt_gcm_payload',
+                           return_value={'en_gcm': True}), \
+                mock.patch('zerver.lib.push_notifications'
+                           '.send_apple_push_notification') as mock_send_apple, \
+                mock.patch('zerver.lib.push_notifications'
+                           '.send_android_push_notification') as mock_send_android, \
+                self.settings(PUSH_NOTIFICATION_ENCRYPTION=True):
+
+            apn.handle_push_notification(self.user_profile.id, missed_message)
+            mock_send_apple.assert_any_call(self.user_profile.id,
+                                            [apple_devices[0]],
+                                            {'en_apns': True})
+            mock_send_apple.assert_any_call(self.user_profile.id,
+                                            [apple_devices[1]],
+                                            {'en_apns': True})
+            self.assertEqual(mock_send_apple.call_count, 2)
+            mock_send_android.assert_called_with([encrypted_device],
+                                                 {'en_gcm': True})
+            mock_send_android.assert_any_call([non_encrypted_device],
+                                              {'gcm': True})
+            self.assertEqual(mock_send_android.call_count, 2)
+
     def test_user_message_does_not_exist(self) -> None:
         """This simulates a condition that should only be an error if the user is
         not long-term idle; we fake it, though, in the sense that the user should
@@ -693,6 +758,8 @@ class HandlePushNotificationTest(PushNotificationTest):
                         return_value={'apns': True}), \
                 mock.patch('zerver.lib.push_notifications.get_gcm_payload',
                            return_value={'gcm': True}), \
+                mock.patch('zerver.lib.push_notifications.encrypt_apns_payload'), \
+                mock.patch('zerver.lib.push_notifications.encrypt_gcm_payload'), \
                 mock.patch('zerver.lib.push_notifications'
                            '.send_apple_push_notification') as mock_send_apple, \
                 mock.patch('zerver.lib.push_notifications'
@@ -994,6 +1061,21 @@ class TestGetAPNsPayload(PushNotificationTest):
         }
         self.assertDictEqual(payload, expected)
 
+    @override_settings(PUSH_NOTIFICATION_ENCRYPTION = True)
+    def test_get_apns_payload_encrypted_content(self) -> None:
+        hamlet = self.example_user('hamlet')
+        key = encryption.generate_encryption_key()
+        hamlet.notification_encryption_key = key
+        hamlet.save()
+
+        message = self.get_message(Recipient.HUDDLE)
+        message.trigger = 'private_message'
+        payload = apn.get_apns_payload(hamlet, message)
+        payload = apn.encrypt_apns_payload(payload, key)
+        self.assertNotEqual(payload['alert']['body'], "This is test content")
+        data = encryption.decrypt_data(key, payload['alert']['body'])
+        self.assertEqual(data, "This is test content")
+
 class TestGetGCMPayload(PushNotificationTest):
     def test_get_gcm_payload(self) -> None:
         stream = Stream.objects.filter(name='Verona').get()
@@ -1105,6 +1187,20 @@ class TestGetGCMPayload(PushNotificationTest):
         }
         self.assertDictEqual(payload, expected)
 
+    @override_settings(PUSH_NOTIFICATION_ENCRYPTION = True)
+    def test_get_gcm_payload_encrypted_content(self) -> None:
+        hamlet = self.example_user('hamlet')
+        key = encryption.generate_encryption_key()
+        hamlet.notification_encryption_key = key
+        hamlet.save()
+
+        message = self.get_message(Recipient.HUDDLE)
+        message.trigger = 'private_message'
+        payload = apn.get_gcm_payload(hamlet, message)
+        payload = apn.encrypt_gcm_payload(payload, key)
+        self.assertNotEqual(payload['content'], "This is test content")
+        data = encryption.decrypt_data(key, payload['content'])
+        self.assertEqual(data, "This is test content")
 
 class TestSendNotificationsToBouncer(ZulipTestCase):
     @mock.patch('zerver.lib.push_notifications.send_to_push_bouncer')
