@@ -1170,7 +1170,8 @@ class Message(AbstractMessage):
         return ('http://' in content or
                 'https://' in content or
                 '/user_uploads' in content or
-                (settings.ENABLE_FILE_LINKS and 'file:///' in content))
+                (settings.ENABLE_FILE_LINKS and 'file:///' in content) or
+                'bitcoin:' in content)
 
     @staticmethod
     def is_status_message(content: Text, rendered_content: Text) -> bool:
