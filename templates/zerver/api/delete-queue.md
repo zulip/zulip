@@ -29,7 +29,7 @@ curl -X "DELETE" {{ api_url }}/v1/events \
 
 <div data-language="python" markdown="1">
 
-```
+```python
 #!/usr/bin/env python
 
 import zulip
