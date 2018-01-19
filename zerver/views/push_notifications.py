@@ -9,6 +9,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import human_users_only
+from zerver.lib.encryption import generate_encryption_key
 from zerver.lib.push_notifications import add_push_device_token, \
     b64_to_hex, remove_push_device_token
 from zerver.lib.request import has_request_variables, REQ, JsonableError
@@ -26,23 +27,39 @@ def validate_token(token_str: bytes, kind: int) -> None:
         except Exception:
             raise JsonableError(_('Invalid APNS token'))
 
-@human_users_only
-@has_request_variables
-def add_apns_device_token(request: HttpRequest, user_profile: UserProfile,
-                          token: bytes=REQ(),
-                          appid: str=REQ(default=settings.ZULIP_IOS_APP_ID)
-                          ) -> HttpResponse:
-    validate_token(token, PushDeviceToken.APNS)
-    add_push_device_token(user_profile, token, PushDeviceToken.APNS, ios_app_id=appid)
+def return_encryption_key(device: PushDeviceToken) -> HttpResponse:
+    data = {'encryption_key': device.notification_encryption_key}
+    return json_success(data=data)
+
+def device_registration_response(device: PushDeviceToken) -> HttpResponse:
+    if settings.PUSH_NOTIFICATION_ENCRYPTION:
+        return return_encryption_key(device)
+
     return json_success()
 
 @human_users_only
 @has_request_variables
+def add_apns_device_token(request: HttpRequest, user_profile: UserProfile,
+                          token: bytes=REQ(),
+                          encrypt_notifications: bool=REQ(default=False),
+                          appid: str=REQ(default=settings.ZULIP_IOS_APP_ID)
+                          ) -> HttpResponse:
+    validate_token(token, PushDeviceToken.APNS)
+    device = add_push_device_token(user_profile, token,
+                                   PushDeviceToken.APNS,
+                                   ios_app_id=appid,
+                                   encrypt_notifications=encrypt_notifications)
+    return device_registration_response(device)
+
+@human_users_only
+@has_request_variables
 def add_android_reg_id(request: HttpRequest, user_profile: UserProfile,
+                       encrypt_notifications: bool=REQ(default=False),
                        token: bytes=REQ()) -> HttpResponse:
     validate_token(token, PushDeviceToken.GCM)
-    add_push_device_token(user_profile, token, PushDeviceToken.GCM)
-    return json_success()
+    device = add_push_device_token(user_profile, token, PushDeviceToken.GCM,
+                                   encrypt_notifications=encrypt_notifications)
+    return device_registration_response(device)
 
 @human_users_only
 @has_request_variables

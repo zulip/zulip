@@ -28,7 +28,8 @@ from zerver.lib.message import access_message, huddle_users
 from zerver.lib.queue import retry_event
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import generate_random_token
-from zerver.lib.encryption import encrypt_data, get_device_key
+from zerver.lib.encryption import encrypt_data, get_device_key, \
+    generate_encryption_key
 from zerver.models import PushDeviceToken, Message, Recipient, UserProfile, \
     UserMessage, get_display_recipient, receives_offline_push_notifications, \
     receives_online_notifications, receives_stream_notifications, get_user_profile_by_id, \
@@ -375,15 +376,21 @@ def num_push_devices_for_user(user_profile: UserProfile, kind: Optional[int]=Non
 def add_push_device_token(user_profile: UserProfile,
                           token_str: bytes,
                           kind: int,
+                          encrypt_notifications: bool=False,
                           ios_app_id: Optional[str]=None) -> PushDeviceToken:
     logger.info("Registering push device: %d %r %d %r",
                 user_profile.id, token_str, kind, ios_app_id)
+
+    key = None
+    if encrypt_notifications:
+        key = generate_encryption_key()
 
     try:
         with transaction.atomic():
             token = PushDeviceToken.objects.create(
                 user_id=user_profile.id,
                 kind=kind,
+                notification_encryption_key=key,
                 token=token_str,
                 ios_app_id=ios_app_id,
                 # last_updated is to be renamed to date_created.
