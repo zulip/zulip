@@ -37,6 +37,7 @@ curl -X "PATCH" {{ api_url }}/v1/messages/<msg_id> \
 </div>
 
 <div data-language="python" markdown="1">
+
 ```python
 #!/usr/bin/env python
 
@@ -52,6 +53,7 @@ print(client.update_message({
 }))
 
 ```
+
 </div>
 
 </div>
