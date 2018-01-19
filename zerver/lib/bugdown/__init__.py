@@ -1118,7 +1118,7 @@ def sanitize_url(url: Text) -> Optional[Text]:
     if not scheme:
         return sanitize_url('http://' + url)
 
-    locless_schemes = ['mailto', 'news', 'file']
+    locless_schemes = ['mailto', 'news', 'file', 'bitcoin']
     if netloc == '' and scheme not in locless_schemes:
         # This fails regardless of anything else.
         # Return immediately to save additional processing
@@ -1128,7 +1128,7 @@ def sanitize_url(url: Text) -> Optional[Text]:
     # appears to have a netloc.  Additionally there are plenty of other
     # schemes that do weird things like launch external programs.  To be
     # on the safe side, we whitelist the scheme.
-    if scheme not in ('http', 'https', 'ftp', 'mailto', 'file'):
+    if scheme not in ('http', 'https', 'ftp', 'mailto', 'file', 'bitcoin'):
         return None
 
     # Upstream code scans path, parameters, and query for colon characters
@@ -1622,6 +1622,7 @@ class Bugdown(markdown.Extension):
                 )?)              # Path is optional
                 | (?:[\w.-]+\@[\w.-]+\.[\w]+) # Email is separate, since it can't have a path
                 %s               # File path start with file:///, enable by setting ENABLE_FILE_LINKS=True
+                | (?:bitcoin:[13][a-km-zA-HJ-NP-Z1-9]{25,34})  # Bitcoin address pattern, see https://mokagio.github.io/tech-journal/2014/11/21/regex-bitcoin.html
             )
             (?=                            # URL must be followed by (not included in group)
                 [!:;\?\),\.\'\"\>]*         # Optional punctuation characters

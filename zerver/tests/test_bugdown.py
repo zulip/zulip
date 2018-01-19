@@ -279,6 +279,11 @@ class BugdownTest(ZulipTestCase):
             converted = bugdown.convert(msg, message_realm=realm)
             self.assertEqual(converted, '<p>Check out this file file:///Volumes/myserver/Users/Shared/pi.py</p>')
 
+    def test_inline_bitcoin(self) -> None:
+        msg = 'To bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa or not to bitcoin'
+        converted = bugdown_convert(msg)
+        self.assertEqual(converted, '<p>To <a href="bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa" target="_blank" title="bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa">bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa</a> or not to bitcoin</p>')
+
     def test_inline_youtube(self) -> None:
         msg = 'Check out the debate: http://www.youtube.com/watch?v=hx1mjT73xYE'
         converted = bugdown_convert(msg)
