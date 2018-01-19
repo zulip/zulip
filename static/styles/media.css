@@ -261,14 +261,14 @@
     }
 
     .message_time {
-        right: auto;
-        left: -3px;
+        right: -5px;
+        left: auto;
     }
 
     .message_controls {
         width: 56px;
-        right: -10px;
-        top: 0px;
+        right: 40px;
+        top: 1px;
     }
 
     .message_hovered .message_controls {
@@ -276,7 +276,7 @@
     }
 
     .selected_message .message_controls {
-        right: -10px;
+        right: 40px;
     }
 
     .include-sender .message_controls {
