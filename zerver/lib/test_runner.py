@@ -449,6 +449,12 @@ class Runner(DiscoverRunner):
             for test_label in test_labels:
                 check_import_error(test_label)
 
+            # I think we won't reach this line under normal circumstances, but
+            # for some unforeseen scenario in which the AttributeError was not
+            # caused by an import error, let's re-raise the exception for
+            # debugging purposes.
+            raise
+
         self.test_imports(test_labels, suite)
         if self.parallel == 1:
             # We are running in serial mode so create the databases here.
