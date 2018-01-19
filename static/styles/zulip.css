@@ -2699,3 +2699,9 @@ button.topic_edit_cancel {
     visibility: visible;
     opacity: 1;
 }
+@media (max-width: 500px) {
+    .messagebox p {
+        margin: 3px 45px 10px 0px;
+    }
+}
+    
