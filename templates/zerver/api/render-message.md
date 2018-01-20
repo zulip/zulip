@@ -4,10 +4,6 @@ Render a message to HTML.
 
 `POST {{ api_url }}/v1/messages/render`
 
-## Arguments
-
-{generate_api_arguments_table|arguments.json|render-message.md}
-
 ## Usage examples
 <div class="code-section" markdown="1">
 <ul class="nav">
@@ -65,6 +61,10 @@ zulip(config).then((client) => {
 </div>
 
 </div>
+
+## Arguments
+
+{generate_api_arguments_table|arguments.json|render-message.md}
 
 ## Response
 

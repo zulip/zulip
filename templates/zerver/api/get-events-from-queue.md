@@ -6,20 +6,6 @@ This endpoint allows you to receive new events from an event queue that
 can be created by
 [requesting the `{{ api_url}}/v1/register` endpoint](/api/register-queue).
 
-## Arguments
-
-{generate_api_arguments_table|arguments.json|get-events-from-queue.md}
-
-**Note**: The arguments documented above are optional in the sense that
-even if you haven't registered a queue by explicitly requesting the
-`{{ api_url}}/v1/register` endpoint, you could pass the arguments for
-[the `{{ api_url}}/v1/register` endpoint](/api/register-queue) to this
-endpoint and a queue would be registered in the absence of a `queue_id`.
-
-You may also pass in the following keyword arguments to `call_on_each_event`:
-
-{generate_api_arguments_table|arguments.json|call_on_each_event}
-
 ## Usage examples
 <div class="code-section" markdown="1">
 <ul class="nav">
@@ -106,6 +92,20 @@ zulip(config).then((client) => {
 </div>
 
 </div>
+
+## Arguments
+
+{generate_api_arguments_table|arguments.json|get-events-from-queue.md}
+
+**Note**: The arguments documented above are optional in the sense that
+even if you haven't registered a queue by explicitly requesting the
+`{{ api_url}}/v1/register` endpoint, you could pass the arguments for
+[the `{{ api_url}}/v1/register` endpoint](/api/register-queue) to this
+endpoint and a queue would be registered in the absence of a `queue_id`.
+
+You may also pass in the following keyword arguments to `call_on_each_event`:
+
+{generate_api_arguments_table|arguments.json|call_on_each_event}
 
 ## Response
 

@@ -4,12 +4,6 @@ Get the unique ID of a given stream.
 
 `GET {{ api_url }}/v1/get_stream_id`
 
-## Arguments
-
-**Note**: The following arguments are all URL query parameters.
-
-{generate_api_arguments_table|arguments.json|get-stream-id.md}
-
 ## Usage examples
 
 <div class="code-section" markdown="1">
@@ -63,6 +57,12 @@ zulip(config).then((client) => {
 </div>
 
 </div>
+
+## Arguments
+
+**Note**: The following arguments are all URL query parameters.
+
+{generate_api_arguments_table|arguments.json|get-stream-id.md}
 
 ## Response
 
