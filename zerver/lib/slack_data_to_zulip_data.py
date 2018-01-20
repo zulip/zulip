@@ -405,8 +405,9 @@ def channel_message_to_zerver_message(constants: List[Any], channel: str,
 def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str) -> None:
     check_subdomain_available(realm_subdomain)
     slack_data_dir = slack_zip_file.replace('.zip', '')
-    zip_file_dir = os.path.dirname(slack_data_dir)
-    subprocess.check_call(['unzip', '-q', slack_zip_file, '-d', zip_file_dir])
+    if not os.path.exists(slack_data_dir):
+        os.makedirs(slack_data_dir)
+    subprocess.check_call(['unzip', '-q', slack_zip_file, '-d', slack_data_dir])
     # with zipfile.ZipFile(slack_zip_file, 'r') as zip_ref:
     #     zip_ref.extractall(slack_data_dir)
 
