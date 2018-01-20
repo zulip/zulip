@@ -1,0 +1,60 @@
+#!/bin/bash
+set -ex
+
+if [ "$EUID" -ne 0 ]; then
+    echo "error: this script must be run as root" >&2
+    exit 1
+fi
+
+RELEASE="$1"
+INSTALLER="$2"
+
+THIS_DIR="$(dirname "$(readlink -f "$0")")"
+
+BASE_CONTAINER_NAME=zulip-install-"$RELEASE"-base
+if ! lxc-info -n "$BASE_CONTAINER_NAME" >/dev/null 2>&1; then
+    "$THIS_DIR"/prepare-base "$RELEASE"
+fi
+
+while [ -z "$CONTAINER_NAME" ] || lxc-info -n "$CONTAINER_NAME" >/dev/null 2>&1; do
+    CONTAINER_NAME="$(mktemp -u zulip-install-"$RELEASE"-XXXXX)"
+done
+
+lxc-copy --ephemeral --keepdata -n "$BASE_CONTAINER_NAME" -N "$CONTAINER_NAME"
+
+run() {
+    lxc-attach -n "$CONTAINER_NAME" -- "$@"
+}
+
+# Wait for the container to boot, polling.
+ok=
+for i in {1..60}; do
+    runlevel="$(run runlevel 2>/dev/null)" || { sleep 1; continue; }
+    if [ "$runlevel" != "${0%[0-9]}" ]; then
+        ok=1
+        break
+    fi
+    sleep 1
+done
+if [ -z "ok" ]; then
+    echo "error: timeout waiting for container to boot" >&2
+    exit 1
+fi
+
+# TODO kill this with an installer flag
+run apt-get install -y openssl ssl-cert
+run ln -nsf /etc/ssl/certs/ssl-cert-snakeoil.pem /etc/ssl/certs/zulip.combined-chain.crt
+run ln -nsf /etc/ssl/private/ssl-cert-snakeoil.key /etc/ssl/private/zulip.key
+
+# TODO make this a proper dep -- else
+# /tmp/zulip-server-1.7.1/scripts/lib/../../scripts/lib/third/install-yarn.sh: line 43: curl: command not found
+run apt-get install -y curl
+
+<"$INSTALLER" run dd of=/tmp/zulip-server.tar.gz
+run tar -xf /tmp/zulip-server.tar.gz -C /tmp/
+run sh -c '/tmp/zulip-server-*/scripts/setup/install'
+# TODO install ends as a zombie (workaround: `sudo ps aux | grep lxc-attach`, kill that)
+
+# TODO settings.py, initialize-database, create realm
+
+# TODO eatmydata, for speed
