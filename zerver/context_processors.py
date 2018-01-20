@@ -113,7 +113,6 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         'realm_icon': realm_icon,
         'realm_description': realm_description,
         'root_domain_uri': settings.ROOT_DOMAIN_URI,
-        'email_gateway_example': settings.EMAIL_GATEWAY_EXAMPLE,
         'apps_page_url': apps_page_url,
         'open_realm_creation': settings.OPEN_REALM_CREATION,
         'password_auth_enabled': password_auth_enabled(realm),
