@@ -158,7 +158,9 @@ def add_payment_method(request: HttpRequest) -> HttpResponse:
                 customer = stripe.Customer.retrieve(customer_obj.stripe_customer_id)
                 billing_logger.info("Adding card on customer %s: source=%r, metadata=%r",
                                     customer_obj.stripe_customer_id, token, card_metadata)
-                customer.sources.create(source=token, metadata=card_metadata)
+                card = customer.sources.create(source=token, metadata=card_metadata)
+                customer.default_source = card.id
+                customer.save()
                 ctx["num_cards"] = len(customer.sources.all(object="card")["data"])
             except Customer.DoesNotExist:
                 customer_metadata = {"string_id": user.realm.string_id}
