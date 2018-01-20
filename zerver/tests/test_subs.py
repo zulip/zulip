@@ -729,6 +729,25 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_json_error(
             result, "Unable to access stream (%s)." % (deactivated_stream_name,))
 
+    def test_stream_admin_cant_delete_stream(self) -> None:
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
+        self.login(email)
+        private_stream = self.make_stream("private_stream", invite_only=True)
+        public_stream = self.make_stream("public_stream")
+
+        stream = self.subscribe(user_profile, 'public_stream')
+        sub = get_subscription('public_stream', user_profile)
+        do_change_subscription_property(user_profile, sub, public_stream, 'is_admin', True)
+        result = self.client_delete('/json/streams/' + str(stream.id))
+        self.assert_json_error(result, "Must be a realm administrator")
+
+        stream = self.subscribe(user_profile, 'private_stream')
+        sub = get_subscription('private_stream', user_profile)
+        do_change_subscription_property(user_profile, sub, private_stream, 'is_admin', True)
+        result = self.client_delete('/json/streams/' + str(stream.id))
+        self.assert_json_error(result, "Must be a realm administrator")
+
     def test_you_must_be_realm_admin(self) -> None:
         """
         You must be on the realm to create a stream.
