@@ -4,10 +4,6 @@ Get the profile of the user/bot that requests this endpoint.
 
 `GET {{ api_url }}/v1/users/me`
 
-## Arguments
-
-This endpoint takes no arguments.
-
 ## Usage examples
 
 <div class="code-section" markdown="1">
@@ -65,6 +61,10 @@ zulip(config).then((client) => {
 </div>
 
 </div>
+
+## Arguments
+
+This endpoint takes no arguments.
 
 ## Response
 

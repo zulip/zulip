@@ -10,10 +10,6 @@ from this endpoint can be used in a subsequent call to the
 
 `POST {{ api_url }}/v1/register`
 
-## Arguments
-
-{generate_api_arguments_table|arguments.json|register-queue.md}
-
 ## Usage examples
 <div class="code-section" markdown="1">
 <ul class="nav">
@@ -79,6 +75,10 @@ zulip(config).then((client) => {
 </div>
 
 </div>
+
+## Arguments
+
+{generate_api_arguments_table|arguments.json|register-queue.md}
 
 ## Response
 

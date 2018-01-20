@@ -4,10 +4,6 @@ Get all streams that the user is subscribed to.
 
 `GET {{ api_url }}/v1/users/me/subscriptions`
 
-## Arguments
-
-This request takes no arguments.
-
 ## Usage examples
 <div class="code-section" markdown="1">
 <ul class="nav">
@@ -63,6 +59,10 @@ zulip(config).then((client) => {
 </div>
 
 </div>
+
+## Arguments
+
+This request takes no arguments.
 
 ## Response
 

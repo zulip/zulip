@@ -7,18 +7,6 @@ Edit/update the content or topic of a message.
 `<msg_id>` in the above URL should be replaced with the ID of the
 message you wish you update.
 
-## Permissions
-
-You only have permission to edit a message if:
-
-1. You sent it, **OR**:
-2. This is a topic-only edit for a (no topic) message, **OR**:
-3. This is a topic-only edit and you are an admin.
-
-## Arguments
-
-{generate_api_arguments_table|arguments.json|update-message.md}
-
 ## Usage examples
 <div class="code-section" markdown="1">
 <ul class="nav">
@@ -82,6 +70,18 @@ zulip(config).then((client) => {
 </div>
 
 </div>
+
+## Permissions
+
+You only have permission to edit a message if:
+
+1. You sent it, **OR**:
+2. This is a topic-only edit for a (no topic) message, **OR**:
+3. This is a topic-only edit and you are an admin.
+
+## Arguments
+
+{generate_api_arguments_table|arguments.json|update-message.md}
 
 ## Response
 

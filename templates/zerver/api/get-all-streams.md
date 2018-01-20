@@ -4,12 +4,6 @@ Get all streams that the user has access to.
 
 `GET {{ api_url }}/v1/streams`
 
-## Arguments
-
-**Note**: The following arguments are all URL query parameters.
-
-{generate_api_arguments_table|arguments.json|get-all-streams.md}
-
 ## Usage examples
 <div class="code-section" markdown="1">
 <ul class="nav">
@@ -76,6 +70,12 @@ zulip(config).then((client) => {
 </div>
 
 </div>
+
+## Arguments
+
+**Note**: The following arguments are all URL query parameters.
+
+{generate_api_arguments_table|arguments.json|get-all-streams.md}
 
 ## Response
 

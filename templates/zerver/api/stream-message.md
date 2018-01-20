@@ -4,10 +4,6 @@ Send a message to a stream.
 
 `POST {{ api_url }}/v1/messages`
 
-## Arguments
-
-{generate_api_arguments_table|arguments.json|stream-message.md}
-
 ## Usage examples
 <div class="code-section" markdown="1">
 <ul class="nav">
@@ -104,6 +100,10 @@ zulip(config).then((client) => {
 </div>
 
 </div>
+
+## Arguments
+
+{generate_api_arguments_table|arguments.json|stream-message.md}
 
 ## Response
 

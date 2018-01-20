@@ -4,12 +4,6 @@ Retrieve all users in a realm.
 
 `GET {{ api_url }}/v1/users`
 
-## Arguments
-
-**Note**: The following arguments are all URL query parameters.
-
-{generate_api_arguments_table|arguments.json|get-all-users.md}
-
 ## Usage examples
 <div class="code-section" markdown="1">
 <ul class="nav">
@@ -80,6 +74,12 @@ zulip(config).then((client) => {
 </div>
 
 </div>
+
+## Arguments
+
+**Note**: The following arguments are all URL query parameters.
+
+{generate_api_arguments_table|arguments.json|get-all-users.md}
 
 ## Response
 

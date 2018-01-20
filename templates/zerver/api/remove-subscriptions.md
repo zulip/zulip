@@ -4,10 +4,6 @@ Unsubscribe yourself or other users from one or more streams.
 
 `DELETE {{ api_url }}/v1/users/me/subcriptions`
 
-## Arguments
-
-{generate_api_arguments_table|arguments.json|remove-subscriptions.md}
-
 ## Usage examples
 <div class="code-section" markdown="1">
 <ul class="nav">
@@ -92,6 +88,10 @@ zulip(config).then((client) => {
 </div>
 
 </div>
+
+## Arguments
+
+{generate_api_arguments_table|arguments.json|remove-subscriptions.md}
 
 #### Return values
 
