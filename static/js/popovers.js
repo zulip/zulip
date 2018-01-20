@@ -192,6 +192,7 @@ exports.toggle_actions_popover = function (element, id) {
             conversation_time_uri: narrow.by_conversation_and_time_uri(message, true),
             narrowed: narrow_state.active(),
             should_display_delete_option: should_display_delete_option,
+            should_display_reminder_option: feature_flags.reminders_in_message_action_menu,
         };
 
         var ypos = elt.offset().top;

@@ -14,6 +14,7 @@ exports.propagate_topic_edits = true;
 exports.clicking_notification_causes_narrow = true;
 exports.collapsible = false;
 exports.dropbox_integration = false;
+exports.reminders_in_message_action_menu = false;
 
 return exports;
 
