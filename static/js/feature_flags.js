@@ -8,7 +8,7 @@ exports.load_server_counts = false;
 // be removed when we get a chance
 exports.propagate_topic_edits = true;
 exports.clicking_notification_causes_narrow = true;
-exports.reminders_in_message_action_menu = false;
+exports.reminders_in_message_action_menu = true;
 
 return exports;
 
