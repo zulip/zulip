@@ -1351,6 +1351,10 @@ thead .actions {
     width: 340px;
 }
 
+.dropdown-title {
+    margin-bottom: 3px;
+}
+
 .invited-as-admin {
     opacity: 0.5;
     margin-left: 2px;
