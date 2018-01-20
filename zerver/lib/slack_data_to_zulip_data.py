@@ -25,11 +25,24 @@ def rm_tree(path: str) -> None:
     if os.path.exists(path):
         shutil.rmtree(path)
 
-def get_model_id(model: Any) -> int:
+def get_model_id(model: Any, table_name: str, sequence_increase_factor: int) -> int:
+    """
+    Increases the sequence number for a given table by the amount of objects being
+    imported into that table. Hence, this gives a reserved range of ids to import the converted
+    slack objects into the tables.
+    """
     if model.objects.all().last():
-        return model.objects.all().last().id + 1
+        start_id_sequence = model.objects.all().last().id + 1
     else:
-        return 1
+        start_id_sequence = 1
+
+    restart_sequence_id = start_id_sequence + sequence_increase_factor
+    sequence_name = table_name + '_id_Seq'
+    increment_id_command = "ALTER SEQUENCE %s RESTART WITH %s" % (sequence_name,
+                                                                  str(restart_sequence_id))
+
+    os.system('echo %s | ./manage.py dbshell' % (increment_id_command))
+    return start_id_sequence
 
 def users_to_zerver_userprofile(slack_data_dir: str, realm_id: int, timestamp: Any,
                                 domain_name: str) -> Tuple[List[ZerverFieldsT], AddedUsersT]:
@@ -41,9 +54,11 @@ def users_to_zerver_userprofile(slack_data_dir: str, realm_id: int, timestamp: A
     """
     print('######### IMPORTING USERS STARTED #########\n')
     users = json.load(open(slack_data_dir + '/users.json'))
+    total_users = len(users)
     zerver_userprofile = []
     added_users = {}
-    user_id_count = get_model_id(UserProfile)
+
+    user_id_count = get_model_id(UserProfile, 'zerver_userprofile', total_users)
     for user in users:
         slack_user_id = user['id']
         profile = user['profile']
@@ -152,18 +167,27 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
     """
     print('######### IMPORTING CHANNELS STARTED #########\n')
     channels = json.load(open(slack_data_dir + '/channels.json'))
+
     added_channels = {}
+    added_recipient = {}
 
     zerver_stream = []
     zerver_subscription = []
     zerver_recipient = []
     zerver_defaultstream = []
 
-    stream_id_count = get_model_id(Stream)
-    subscription_id_count = get_model_id(Subscription)
-    recipient_id_count = get_model_id(Recipient)
+    # Pre-compute all the total number of ids to fastword the ids in active db
+    total_channels = len(channels)
+    total_users = len(zerver_userprofile)
+    total_recipients = total_channels + total_users
+    total_subscription = total_users
+    for channel in channels:
+        for member in channel['members']:
+            total_subscription += 1
 
-    added_recipient = {}
+    stream_id_count = get_model_id(Stream, 'zerver_stream', total_users)
+    subscription_id_count = get_model_id(Subscription, 'zerver_subscription', total_subscription)
+    recipient_id_count = get_model_id(Recipient, 'zerver_recipient', total_recipients)
 
     for channel in channels:
         # slack_channel_id = channel['id']
@@ -188,7 +212,7 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
             defaultstream = dict(
                 stream=stream_id_count,
                 realm=realm_id,
-                id=get_model_id(DefaultStream))
+                id=get_model_id(DefaultStream, 'zerver_defaultstream', 1))
             zerver_defaultstream.append(defaultstream)
 
         zerver_stream.append(stream)
@@ -247,7 +271,6 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
         #             "created": "1444755463"
         #         }
         #         ],
-    subscription_id_count += 1
 
     for user in zerver_userprofile:
         zulip_user_id = user['id']
@@ -278,6 +301,34 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
     print('######### IMPORTING STREAMS FINISHED #########\n')
     return zerver_defaultstream, zerver_stream, added_channels, zerver_subscription, \
         zerver_recipient, added_recipient
+
+def get_total_messages_and_usermessages(slack_data_dir: str, channel: str,
+                                        zerver_userprofile: List[ZerverFieldsT],
+                                        zerver_subscription: List[ZerverFieldsT],
+                                        added_recipient: AddedRecipientsT) -> Tuple[int, int]:
+    """
+    Returns:
+    1. message_id, which is total number of messages
+    2. usermessage_id, which is total number of usermessages
+    """
+    json_names = os.listdir(slack_data_dir + '/' + channel)
+    total_messages = 0
+    total_usermessages = 0
+
+    for json_name in json_names:
+        messages = json.load(open(slack_data_dir + '/%s/%s' % (channel, json_name)))
+        for message in messages:
+            if 'subtype' in message.keys():
+                subtype = message['subtype']
+                if subtype in ["channel_join", "channel_leave", "channel_name"]:
+                    continue
+
+            for subscription in zerver_subscription:
+                if subscription['recipient'] == added_recipient[channel]:
+                    total_usermessages += 1
+            total_messages += 1
+
+    return total_messages, total_usermessages
 
 def channel_message_to_zerver_message(constants: List[Any], channel: str,
                                       added_users: AddedUsersT, added_recipient: AddedRecipientsT,
@@ -336,7 +387,7 @@ def channel_message_to_zerver_message(constants: List[Any], channel: str,
 
             # construct usermessages
             for subscription in zerver_subscription:
-                if subscription['recipient'] == zulip_message['recipient']:
+                if subscription['recipient'] == recipient_id:
                     flags_mask = 1  # For read
                     if subscription['user_profile'] in mentioned_users_id:
                         flags_mask = 9  # For read and mentioned
@@ -362,7 +413,7 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str) 
     # TODO fetch realm config from zulip config
     DOMAIN_NAME = "zulipchat.com"
 
-    REALM_ID = get_model_id(Realm)
+    REALM_ID = get_model_id(Realm, 'zerver_realm', 1)
     NOW = float(timezone_now().timestamp())
 
     script_path = os.path.dirname(os.path.abspath(__file__)) + '/'
@@ -420,11 +471,21 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str) 
     zerver_usermessage = []  # type: List[ZerverFieldsT]
     zerver_attachment = []  # type: List[ZerverFieldsT]
 
-    constants = [slack_data_dir, REALM_ID]
-    message_id_count = get_model_id(Message)
-    usermessage_id_count = get_model_id(UserMessage)
-
     print('######### IMPORTING MESSAGES STARTED #########\n')
+    # To pre-compute the total number of messages and usermessages
+    total_messages = 0
+    total_usermessages = 0
+    for channel in added_channels.keys():
+        tm, tum = get_total_messages_and_usermessages(slack_data_dir, channel,
+                                                      zerver_userprofile,
+                                                      realm['zerver_subscription'],
+                                                      added_recipient)
+        total_messages += tm
+        total_usermessages += tum
+    message_id_count = get_model_id(Message, 'zerver_message', total_messages)
+    usermessage_id_count = get_model_id(UserMessage, 'zerver_usermessage', total_usermessages)
+
+    constants = [slack_data_dir, REALM_ID]
     for channel in added_channels.keys():
         message_id = len(zerver_message) + message_id_count  # For the id of the messages
         usermessage_id = len(zerver_usermessage) + usermessage_id_count
@@ -465,5 +526,4 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str) 
 
     print('######### DATA CONVERSION FINISHED #########\n')
     print("Zulip data dump created at %s" % (output_dir))
-    print("Import Command: ./manage.py import --destroy-rebuild-database %s\n" % (output_dir))
     sys.exit(0)
