@@ -126,7 +126,7 @@
 
         <div class="m-10 inline-block organization-settings-parent">
             <div class="input-group">
-                <label for="realm_default_language">{{t "Default language" }}:</label>
+                <label for="realm_default_language" class="dropdown-title">{{t "Default language" }}:</label>
                 <select name="realm_default_language" id="id_realm_default_language">
                     {{#each language_list}}
                     <option value='{{this.code}}'>{{this.name}}</option>
