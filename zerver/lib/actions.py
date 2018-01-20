@@ -1814,11 +1814,6 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
         check_stream_name(stream_name)
 
         topic_name = addressee.topic()
-        if topic_name is None:
-            raise JsonableError(_("Missing topic"))
-        topic_name = topic_name.strip()
-        if topic_name == "":
-            raise JsonableError(_("Topic can't be empty"))
         topic_name = truncate_topic(topic_name)
 
         try:

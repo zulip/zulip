@@ -111,6 +111,11 @@ class Addressee:
 
     @staticmethod
     def for_stream(stream_name: Text, topic: Text) -> 'Addressee':
+        if topic is None:
+            raise JsonableError(_("Missing topic"))
+        topic = topic.strip()
+        if topic == "":
+            raise JsonableError(_("Topic can't be empty"))
         return Addressee(
             msg_type='stream',
             stream_name=stream_name,

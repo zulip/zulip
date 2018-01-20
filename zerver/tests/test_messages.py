@@ -1049,6 +1049,52 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "to": self.example_email("othello")})
         self.assert_json_error(result, "Message must not be empty")
 
+    def test_empty_string_topic(self) -> None:
+        """
+        Sending a message that has empty string topic should fail
+        """
+        self.login(self.example_email("hamlet"))
+        result = self.client_post("/json/messages", {"type": "stream",
+                                                     "to": "Verona",
+                                                     "client": "test suite",
+                                                     "content": "Test message",
+                                                     "subject": ""})
+        self.assert_json_error(result, "Topic can't be empty")
+
+    def test_missing_topic(self) -> None:
+        """
+        Sending a message without topic should fail
+        """
+        self.login(self.example_email("hamlet"))
+        result = self.client_post("/json/messages", {"type": "stream",
+                                                     "to": "Verona",
+                                                     "client": "test suite",
+                                                     "content": "Test message"})
+        self.assert_json_error(result, "Missing topic")
+
+    def test_invalid_message_type(self) -> None:
+        """
+        Messages other than the type of "private" or "stream" are considered as invalid
+        """
+        self.login(self.example_email("hamlet"))
+        result = self.client_post("/json/messages", {"type": "invalid",
+                                                     "to": "Verona",
+                                                     "client": "test suite",
+                                                     "content": "Test message",
+                                                     "subject": "Test subject"})
+        self.assert_json_error(result, "Invalid message type")
+
+    def test_private_message_without_recipients(self) -> None:
+        """
+        Sending private message without recipients should fail
+        """
+        self.login(self.example_email("hamlet"))
+        result = self.client_post("/json/messages", {"type": "private",
+                                                     "content": "Test content",
+                                                     "client": "test suite",
+                                                     "to": ""})
+        self.assert_json_error(result, "Message must have recipients")
+
     def test_mirrored_huddle(self) -> None:
         """
         Sending a mirrored huddle message works
