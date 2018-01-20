@@ -1,3 +1,19 @@
+## Integrations
+
+* [Overview](/api/integration-guide)
+* [Existing integrations](/integrations)
+
+## Writing webhook integrations
+
+* [Overview](/api/integration-guide#webhook-integrations)
+* [Walkthrough](/api/webhook-walkthrough)
+* [Documenting integrations](/api/integration-docs-guide)
+
+## Interactive bots (experimental)
+
+* [Running bots](/api/running-bots)
+* [Writing bots](/api/writing-bots)
+
 ## REST API
 
 * [Installation instructions](/api/installation-instructions)
@@ -28,19 +44,3 @@
 * [Register a queue](/api/register-queue)
 * [Get events from queue](/api/get-events-from-queue)
 * [Delete a queue](/api/delete-queue)
-
-## Integrations
-
-* [Overview](/api/integration-guide)
-* [Existing integrations](/integrations)
-
-## Writing webhook integrations
-
-* [Overview](/api/integration-guide#webhook-integrations)
-* [Walkthrough](/api/webhook-walkthrough)
-* [Documenting integrations](/api/integration-docs-guide)
-
-## Interactive bots (experimental)
-
-* [Running bots](/api/running-bots)
-* [Writing bots](/api/writing-bots)
