@@ -16,6 +16,22 @@ exports.get_name = function () {
     return created_stream;
 };
 
+var stream_subscription_error = (function () {
+    var self = {};
+
+    self.report_no_subs_to_stream = function () {
+        $("#stream_subscription_error").text(i18n.t("You cannot create a stream with no subscribers!"));
+        $("#stream_subscription_error").show();
+    };
+
+    self.clear_errors = function () {
+        $("#stream_subscription_error").hide();
+    };
+
+    return self;
+
+}());
+
 var stream_name_error = (function () {
     var self = {};
 
@@ -236,6 +252,7 @@ exports.show_new_stream_modal = function () {
 
     stream_name_error.clear_errors();
     $(".stream_create_info").hide();
+    stream_subscription_error.clear_errors();
 
     $("#stream-checkboxes label.checkbox").on('change', function (e) {
         var elem = $(this);
@@ -338,6 +355,11 @@ $(function () {
         }
 
         var principals = get_principals();
+        if (principals.length === 0) {
+            stream_subscription_error.report_no_subs_to_stream();
+            return;
+        }
+
         if (principals.length >= 50) {
             var invites_warning_modal = templates.render('subscription_invites_warning_modal',
                                                          {stream_name: stream_name,

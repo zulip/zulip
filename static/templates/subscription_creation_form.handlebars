@@ -10,7 +10,7 @@
                 </div>
                 <input type="text" name="stream_name" id="create_stream_name"
                      placeholder="{{t 'Stream name' }}" value="" autocomplete="off" />
-                <div id="stream_name_error"></div>
+                <div id="stream_name_error" class="stream_creation_error"></div>
             </section>
             <section class="block">
                 <div class="stream-title">
@@ -60,6 +60,7 @@
                 <label class="stream-title" for="people_to_add">
                     {{t "People to add" }}
                 </label>
+                <div id="stream_subscription_error" class="stream_creation_error"></div>
                 <div class="controls" id="people_to_add"></div>
             </section>
         </div>

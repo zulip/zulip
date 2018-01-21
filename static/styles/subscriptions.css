@@ -241,7 +241,7 @@ form#add_new_subscription {
     width: calc(100% - 15px);
 }
 
-#stream_name_error {
+.stream_creation_error {
     display: none;
     margin-left: 2px;
     color: hsl(0, 100%, 50%);
