@@ -73,8 +73,8 @@
             </div>
         </div>
 
-        <h3 class="light">{{t "Streams" }}</h3>
-        <div class="m-10 inline-block organization-permissions-parent">
+        <h3 class="light">{{t "Other permissions" }}</h3>
+        <div class="m-10 organization-permissions-parent">
             <div class="inline-block create-stream-dropdown">
                 <label for="realm_create_stream_permission" class="dropdown-title">{{t "Who can create streams" }}</label>
                 <select name="realm_create_stream_permission" id="id_realm_create_stream_permission">
@@ -92,17 +92,13 @@
                      value="{{ realm_waiting_period_threshold }}"/>
             </div>
         </div>
-        <h3 class="light">{{t "Custom emoji" }}</h3>
-        <div class="side-padded-container m-10 inline-block organization-permissions-parent">
-            <div class="input-group">
-                <label class="checkbox">
-                    <input type="checkbox" id="id_realm_add_emoji_by_admins_only" name="realm_add_emoji_by_admins_only"
-                           {{#if realm_add_emoji_by_admins_only}}checked="checked"{{/if}} />
-                    <span></span>
-                </label>
-                <label for="id_realm_add_emoji_by_admins_only" id="id_realm_add_emoji_by_admins_only_label" class="inline-block">
-                    {{t "Prevent users from adding custom emoji" }}
-                </label>
+        <div class="m-10 inline-block organization-permissions-parent">
+            <div class="inline-block">
+                <label for="realm_add_emoji_by_admins_only" class="dropdown-title">{{t "Who can add emoji" }}</label>
+                <select name="realm_add_emoji_by_admins_only" id="id_realm_add_emoji_by_admins_only">
+                    <option value="by_admins_only">{{t "Admins only" }}</option>
+                    <option value="by_anyone">{{t "Everyone" }}</option>
+                </select>
             </div>
         </div>
 
