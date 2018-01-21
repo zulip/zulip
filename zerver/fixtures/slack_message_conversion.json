@@ -16,6 +16,16 @@
       "conversion_output": "http://datausa.io/ this is a good website."
     },
     {
+      "name": "mailto_format1",
+      "input": "email me at <mailto:random@gmail.com|random@gmail.com>",
+      "conversion_output": "email me at mailto:random@gmail.com"
+    },
+    {
+      "name": "mailto_format2",
+      "input": "email me at <mailto:random@gmail.com>",
+      "conversion_output": "email me at mailto:random@gmail.com"
+    },
+    {
       "name": "valid_strikethrough_test",
       "input": "(~str ike!~, text. ~Also ~)",
       "conversion_output": "(~~str ike!~~, text. ~~Also ~~)"

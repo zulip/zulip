@@ -15,6 +15,14 @@ LINK_REGEX = r"""
               (\|)?(?:\|([^>]+))?                                # char after pipe (for slack links)
               (>)
               """
+
+SLACK_MAILTO_REGEX = r"""
+                      <((mailto:)?                     # match  `<mailto:`
+                      ([\w\.-]+@[\w\.-]+(\.[\w]+)+))   # match email
+                          (\|)?                        # match pipe
+                      ([\w\.-]+@[\w\.-]+(\.[\w]+)+)?>  # match email
+                      """
+
 SLACK_USERMENTION_REGEX = r"""
                            (<@)                  # Start with '<@'
                                ([a-zA-Z0-9]+)    # Here we have the Slack id
@@ -83,6 +91,8 @@ def convert_to_zulip_markdown(text: str, users: List[ZerverFieldsT],
 
     # Check and convert link format
     text, has_link = convert_link_format(text)
+    # convert `<mailto:foo@foo.com>` to `mailto:foo@foo.com`
+    text, has_link = convert_mailto_format(text)
 
     return text, mentioned_users_id, has_link
 
@@ -125,4 +135,15 @@ def convert_link_format(text: str) -> Tuple[str, bool]:
         converted_text = match.group(0).replace('>', '').replace('<', '')
         has_link = True
         text = text.replace(match.group(0), converted_text)
+    return text, has_link
+
+def convert_mailto_format(text: str) -> Tuple[str, bool]:
+    """
+    1. Converts '<mailto:foo@foo.com>' to 'mailto:foo@foo.com'
+    2. Converts '<mailto:foo@foo.com|foo@foo.com>' to 'mailto:foo@foo.com'
+    """
+    has_link = False
+    for match in re.finditer(SLACK_MAILTO_REGEX, text, re.VERBOSE):
+        has_link = True
+        text = text.replace(match.group(0), match.group(1))
     return text, has_link
