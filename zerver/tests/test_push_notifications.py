@@ -1262,7 +1262,7 @@ class TestPushNotificationsContent(ZulipTestCase):
             },
             {
                 'name': 'mentions',
-                'rendered_content': '<p>Mentioning <span class="user-mention" data-user-email="cordelia@zulip.com" data-user-id="3">@Cordelia Lear</span>.</p>',
+                'rendered_content': '<p>Mentioning <span class="user-mention" data-user-id="3">@Cordelia Lear</span>.</p>',
                 'expected_output': 'Mentioning @Cordelia Lear.',
             },
             {

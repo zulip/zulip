@@ -1872,6 +1872,6 @@ class GetOldMessagesTest(ZulipTestCase):
         othello = self.example_user('othello')
         self.assertEqual(
             meeting_message['match_content'],
-            ('<p>How are you doing, <span class="user-mention" data-user-email="%s" data-user-id="%s">' +
+            ('<p>How are you doing, <span class="user-mention" data-user-id="%s">' +
              '@<span class="highlight">Othello</span>, the Moor of Venice</span>?</p>') % (
-                 othello.email, othello.id))
+                 othello.id))
