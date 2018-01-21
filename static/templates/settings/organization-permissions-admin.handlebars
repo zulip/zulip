@@ -11,7 +11,7 @@
         <div class="alert" id="admin-realm-create-stream-by-admins-only-status"></div>
         <div class="alert" id="admin-realm-create-generic-bot-by-admins-only-status"></div>
 
-        <div class="side-padded-container m-10 inline-block organization-permissions-parent">
+        <div class="side-padded-container inline-block organization-permissions-parent">
             <div class="input-group admin-restricted-to-domain">
                 <label class="checkbox">
                     <input type="checkbox" name="realm_restricted_to_domain" id="id_realm_restricted_to_domain"
@@ -49,7 +49,7 @@
         </div>
 
         <h3 class="light">{{t "User identity" }}</h3>
-        <div class="side-padded-container m-10 inline-block organization-permissions-parent">
+        <div class="side-padded-container inline-block organization-permissions-parent">
             <div class="input-group">
                 <label class="checkbox">
                     <input type="checkbox" id="id_realm_name_changes_disabled" name="realm_name_changes_disabled"
@@ -74,7 +74,7 @@
         </div>
 
         <h3 class="light">{{t "Other permissions" }}</h3>
-        <div class="m-10 organization-permissions-parent">
+        <div class="organization-permissions-parent">
             <div class="inline-block create-stream-dropdown">
                 <label for="realm_create_stream_permission" class="dropdown-title">{{t "Who can create streams" }}</label>
                 <select name="realm_create_stream_permission" id="id_realm_create_stream_permission">
@@ -92,7 +92,7 @@
                      value="{{ realm_waiting_period_threshold }}"/>
             </div>
         </div>
-        <div class="m-10 inline-block organization-permissions-parent">
+        <div class="m-t-10 inline-block organization-permissions-parent">
             <div class="inline-block">
                 <label for="realm_add_emoji_by_admins_only" class="dropdown-title">{{t "Who can add emoji" }}</label>
                 <select name="realm_add_emoji_by_admins_only" id="id_realm_add_emoji_by_admins_only">
@@ -103,7 +103,7 @@
         </div>
 
         <h3 class="light">{{t "Interactive bots" }}</h3>
-        <div class="side-padded-container m-10 inline-block organization-permissions-parent">
+        <div class="side-padded-container inline-block organization-permissions-parent">
             <div class="input-group">
                 <label class="checkbox">
                     <input type="checkbox" id="id_realm_create_generic_bot_by_admins_only" name="realm_create_generic_bot_by_admins_only"
