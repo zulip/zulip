@@ -424,6 +424,20 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
         except Exception:
             pass
 
+    # create email list for each realm
+    for row in rows:
+        try:
+            realm = Realm.objects.get(string_id=row['string_id'])
+            emails = realm.get_admin_users().values_list('email', flat=True)
+            emails = ', '.join(list(emails))
+            row['emails'] = emails
+        except Realm.DoesNotExist:
+            row['emails'] = 'No admin email found'
+
+    # create total for emails
+    total_emails = [d['emails'] for d in rows if 'emails' in d]
+    total_emails = ', '.join(list(total_emails))
+
     # formatting
     for row in rows:
         row['string_id'] = realm_activity_link(row['string_id'])
@@ -448,6 +462,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     rows.append(dict(
         string_id='Total',
         date_created_day='',
+        emails=total_emails,
         dau_count=total_dau_count,
         user_profile_count=total_user_profile_count,
         bot_count=total_bot_count,
