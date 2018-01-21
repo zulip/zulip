@@ -738,6 +738,14 @@ class BugdownTest(ZulipTestCase):
         )
         self.assertTrue(Message.is_status_message(content, rendered_content))
 
+        content = '/me writes a second line\nline'
+        rendered_content = render_markdown(msg, content)
+        self.assertEqual(
+            rendered_content,
+            '<p>/me writes a second line<br>\nline</p>'
+        )
+        self.assertFalse(Message.is_status_message(content, rendered_content))
+
     def test_alert_words(self) -> None:
         user_profile = self.example_user('othello')
         do_set_alert_words(user_profile, ["ALERTWORD", "scaryword"])

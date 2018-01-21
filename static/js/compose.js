@@ -927,9 +927,11 @@ exports.initialize = function () {
         $("#compose #file_input").trigger("click");
     });
 
-    function show_preview(rendered_content) {
+    // content is passed to check for status messages ("/me ...")
+    // and will be undefined in case of errors
+    function show_preview(rendered_content, content) {
         var preview_html;
-        if (rendered_content.indexOf("<p>/me ") === 0) {
+        if (content !== undefined && markdown.is_status_message(content, rendered_content)) {
             // Handle previews of /me messages
             preview_html = "<strong>" + page_params.full_name + "</strong> " + rendered_content.slice(4 + 3, -4);
         } else {
@@ -988,7 +990,7 @@ exports.initialize = function () {
                     if (markdown.contains_backend_only_syntax(content)) {
                         loading.destroy_indicator($("#markdown_preview_spinner"));
                     }
-                    show_preview(response_data.rendered);
+                    show_preview(response_data.rendered, content);
                 },
                 error: function () {
                     if (markdown.contains_backend_only_syntax(content)) {

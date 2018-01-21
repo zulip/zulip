@@ -134,6 +134,10 @@ exports.update_messages = function update_messages(events) {
             msg.content = event.rendered_content;
         }
 
+        if (event.is_me_message !== undefined) {
+            msg.is_me_message = event.is_me_message;
+        }
+
         var row = current_msg_list.get_row(event.message_id);
         if (row.length > 0) {
             message_edit.end(row);

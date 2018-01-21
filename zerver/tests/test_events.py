@@ -681,6 +681,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('subject', check_string),
             ('subject_links', check_list(None)),
             ('user_id', check_int),
+            ('is_me_message', check_bool),
         ])
 
         message = Message.objects.order_by('-id')[0]
