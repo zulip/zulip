@@ -7,11 +7,12 @@ AddedUsersT = Dict[str, int]
 
 # Slack link can be in the format <http://www.foo.com|www.foo.com> and <http://foo.com/>
 LINK_REGEX = r"""
-              (<)                                                     # match '>'
-              (http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?
-                  ([a-z0-9]+([\-\.]{1}[a-z0-9]+)*)(\.)                # subdomain
-                  ([a-z]{3,63}(:[0-9]{1,5})?)(\/[^>]*)?               # domain name has chars in range {3,63}
-              (\|)?(?:\|([^>]+))?                                     # char after pipe (for slack links)
+              (<)                                                              # match '>'
+              (http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/|ftp:\/\/)?  # protocol and www
+                  ([a-z0-9]+([\-\.]{1}[a-z0-9]+)*)(\.)                         # domain name
+                      ([a-z]{2,63}(:[0-9]{1,5})?)                              # domain
+                  (\/[^>]*)?                                                   # path
+              (\|)?(?:\|([^>]+))?                                # char after pipe (for slack links)
               (>)
               """
 SLACK_USERMENTION_REGEX = r"""
