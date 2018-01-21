@@ -1,7 +1,7 @@
 {
   "regular_tests": [
     {
-      "name": "slack_link",
+      "name": "slack_link1",
       "input": ">Google logo today:\n><https://www.google.com/images/srpr/logo4w.png>\n>Kinda boring",
       "conversion_output": ">Google logo today:\n>https://www.google.com/images/srpr/logo4w.png\n>Kinda boring"
     },
@@ -9,6 +9,11 @@
       "name": "slack_link_with_pipe",
       "input": ">Google logo today:\n><https://foo.com|foo>\n>Kinda boring",
       "conversion_output": ">Google logo today:\n>https://foo.com|foo\n>Kinda boring"
+    },
+    {
+      "name": "slack_link2",
+      "input": "<http://datausa.io/> this is a good website.",
+      "conversion_output": "http://datausa.io/ this is a good website."
     },
     {
       "name": "valid_strikethrough_test",
