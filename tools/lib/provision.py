@@ -150,6 +150,9 @@ APT_DEPENDENCIES = {
         "postgresql-9.5",
         "postgresql-9.5-tsearch-extras",
         "postgresql-9.5-pgroonga",
+        # Since Ubuntu Xenial there is a new package, virtualenv, which has to
+        # be installed additionally to avoid having 'command not found' error
+        "virtualenv"
     ],
     "zesty": UBUNTU_COMMON_APT_DEPENDENCIES + [
         "postgresql-9.6",
