@@ -25,3 +25,20 @@ If the users are not from the same organization, you should change your organiza
 {!admin.md!}
 
 2. Disable the **Restrict new users to the following email domains** option.
+
+## Elements that are not mapped one to one
+
+- Non-Gravatar-based avatar. This is not yet implemented by the conversion script.
+- Attachment. This is not yet implemented by the conversion script.
+  Additionally, pinning attachment to a channel is not yet supported by Zulip.
+- Reactions. This is not yet implemented by the conversion script.
+- Message edit history. We only keep the latest revision of an edited message.
+- Permission hierarchy. They are mapped as follows
+  * `Primary owner` and `owner` are mapped to `organization admin`.
+  * `Admin` is mapped to `staff`.
+  * `Member`, `restricted`, and `ultra restricted` are mapped to regular user.
+  * `Channel creators` have no special permission in Zulip.
+- Simultaneous bold and italic formatting of a word. This is not yet supported
+  by Zulip's backend markdown.
+- The "joined #channel_name" messages. They are intentionally removed because
+  they are spammy.
