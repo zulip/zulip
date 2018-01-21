@@ -3558,6 +3558,7 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
         event["content"] = content
         event["rendered_content"] = rendered_content
         event['prev_rendered_content_version'] = message.rendered_content_version
+        event['is_me_message'] = Message.is_status_message(content, rendered_content)
 
         prev_content = edit_history_event['prev_content']
         if Message.content_has_attachment(prev_content) or Message.content_has_attachment(message.content):
