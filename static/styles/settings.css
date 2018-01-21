@@ -1100,6 +1100,10 @@ input[type=checkbox].inline-block {
     width: 100%;
 }
 
+.m-t-10 {
+    margin-top: 10px;
+}
+
 .create-stream-dropdown {
     margin-right: 10px;
     margin-bottom: 5px;
