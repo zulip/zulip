@@ -7,10 +7,10 @@ Send a message to a stream.
 ## Usage examples
 <div class="code-section" markdown="1">
 <ul class="nav">
-<li data-language="curl">curl</li>
 <li data-language="python">Python</li>
-<li data-language="zulip-send">zulip-send</li>
 <li data-language="javascript">JavaScript</li>
+<li data-language="curl">curl</li>
+<li data-language="zulip-send">zulip-send</li>
 </ul>
 <div class="blocks">
 
