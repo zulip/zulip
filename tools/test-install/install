@@ -74,10 +74,6 @@ run apt-get install -y openssl ssl-cert
 run ln -nsf /etc/ssl/certs/ssl-cert-snakeoil.pem /etc/ssl/certs/zulip.combined-chain.crt
 run ln -nsf /etc/ssl/private/ssl-cert-snakeoil.key /etc/ssl/private/zulip.key
 
-# TODO make this a proper dep -- else
-# /tmp/zulip-server-1.7.1/scripts/lib/../../scripts/lib/third/install-yarn.sh: line 43: curl: command not found
-run apt-get install -y curl
-
 run /tmp/zulip-server/scripts/setup/install "${INSTALLER_ARGS[@]}"
 # TODO install ends as a zombie (workaround: `sudo ps aux | grep lxc-attach`, kill that)
 

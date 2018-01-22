@@ -113,7 +113,10 @@ if [ "$PUPPET_CLASSES" = "zulip::voyager" ] && { ! [ -e "/etc/ssl/private/zulip.
 fi
 
 apt-get -y dist-upgrade $APT_OPTIONS
-apt-get install -y puppet git python python3 python-six python3-six crudini $ADDITIONAL_PACKAGES
+apt-get install -y \
+    puppet git curl \
+    python python3 python-six python3-six crudini \
+    $ADDITIONAL_PACKAGES
 
 # Create and activate a virtualenv
 if [ "$VIRTUALENV_NEEDED" = "yes" ]; then
