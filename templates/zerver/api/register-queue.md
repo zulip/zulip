@@ -13,9 +13,9 @@ from this endpoint can be used in a subsequent call to the
 ## Usage examples
 <div class="code-section" markdown="1">
 <ul class="nav">
-<li data-language="curl">curl</li>
 <li data-language="python">Python</li>
 <li data-language="javascript">JavaScript</li>
+<li data-language="curl">curl</li>
 </ul>
 <div class="blocks">
 
