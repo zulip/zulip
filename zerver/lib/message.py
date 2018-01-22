@@ -5,6 +5,9 @@ import zlib
 
 from django.utils.translation import ugettext as _
 from django.utils.timezone import now as timezone_now
+from django.db.models import Sum
+
+from analytics.lib.counts import COUNT_STATS, RealmCount
 
 from zerver.lib.avatar import get_avatar_field
 import zerver.lib.bugdown as bugdown
@@ -14,6 +17,7 @@ from zerver.lib.cache import (
     to_dict_cache_key,
     to_dict_cache_key_id,
     realm_first_visible_message_id_cache_key,
+    cache_get, cache_set,
 )
 from zerver.lib.request import JsonableError
 from zerver.lib.stream_subscription import (
@@ -847,18 +851,28 @@ def apply_unread_message_event(user_profile: UserProfile,
     if 'mentioned' in flags:
         state['mentions'].add(message_id)
 
-# 4 hours is probably frequent enough to encourage upgrade
-# and largely mitigates the cache-miss problem. We also
-# don't need to restrict messages to exactly
-# message_visibility_limit. The query is also reasonably fast
-# so cache misses can be managed without cron job.
-@cache_with_key(realm_first_visible_message_id_cache_key, timeout=3600*4)
-def get_first_visible_message_id(realm: Realm) -> int:
-    if realm.message_visibility_limit is None:
-        return 0
+def estimate_recent_messages(realm: Realm, hours: int) -> int:
+    stat = COUNT_STATS['messages_sent:is_bot:hour']
+    d = timezone_now() - datetime.timedelta(hours=hours)
+    return RealmCount.objects.filter(property=stat.property, end_time__gt=d,
+                                     realm=realm).aggregate(Sum('value'))['value__sum'] or 0
 
+def get_first_visible_message_id(realm: Realm) -> int:
+    val = cache_get(realm_first_visible_message_id_cache_key(realm))
+    if val is not None:
+        return val[0]
+    return 0
+
+def maybe_update_first_visible_message_id(realm: Realm, lookback_hours: int) -> None:
+    cache_empty = cache_get(realm_first_visible_message_id_cache_key(realm)) is None
+    recent_messages_count = estimate_recent_messages(realm, lookback_hours)
+    if realm.message_visibility_limit is not None and (recent_messages_count > 0 or cache_empty):
+        update_first_visible_message_id(realm)
+
+def update_first_visible_message_id(realm: Realm) -> None:
     try:
-        return Message.objects.filter(sender__realm=realm).values('id').\
+        first_visible_message_id = Message.objects.filter(sender__realm=realm).values('id').\
             order_by('-id')[realm.message_visibility_limit - 1]["id"]
     except IndexError:
-        return 0
+        first_visible_message_id = 0
+    cache_set(realm_first_visible_message_id_cache_key(realm), first_visible_message_id)

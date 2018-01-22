@@ -31,6 +31,8 @@ from zerver.lib.message import (
     messages_for_ids,
     sew_messages_and_reactions,
     get_first_visible_message_id,
+    update_first_visible_message_id,
+    maybe_update_first_visible_message_id,
 )
 
 from zerver.lib.test_helpers import (
@@ -2858,27 +2860,52 @@ class MessageHydrationTest(ZulipTestCase):
         self.assertEqual(new_message['flags'], ['mentioned'])
 
 class MessageVisibilityTest(ZulipTestCase):
-    def test_get_first_visible_message_id_with_no_limit(self) -> None:
-        realm = get_realm("zulip")
-        realm.message_visibility_limit = None
-        realm.save()
-
-        self.assertEqual(get_first_visible_message_id(realm), 0)
-
-    def test_get_first_visible_message_id_with_limit(self) -> None:
+    def test_update_first_visible_message_id(self) -> None:
         Message.objects.all().delete()
         message_ids = [self.send_stream_message(self.example_email("othello"), "Scotland") for i in range(15)]
 
         realm = get_realm("zulip")
         realm.message_visibility_limit = 10
         realm.save()
-
         expected_message_id = message_ids[5]
+        update_first_visible_message_id(realm)
         self.assertEqual(get_first_visible_message_id(realm), expected_message_id)
+
         # If the message_visibility_limit is greater than number of messages
         # get_first_visible_message_id should return 0
         message_visibility_limit = 50
         realm.message_visibility_limit = message_visibility_limit
         realm.save()
-
+        update_first_visible_message_id(realm)
         self.assertEqual(get_first_visible_message_id(realm), 0)
+
+    def test_maybe_update_first_visible_message_id(self) -> None:
+        realm = get_realm("zulip")
+        lookback_hours = 30
+
+        realm.message_visibility_limit = None
+        realm.save()
+        with mock.patch('zerver.lib.message.estimate_recent_messages', return_value=1), \
+                mock.patch("zerver.lib.message.update_first_visible_message_id") as m:
+            maybe_update_first_visible_message_id(realm, lookback_hours)
+        m.assert_not_called()
+
+        realm.message_visibility_limit = 10
+        realm.save()
+        with mock.patch('zerver.lib.message.estimate_recent_messages', return_value=0), \
+                mock.patch("zerver.lib.message.update_first_visible_message_id") as m:
+            maybe_update_first_visible_message_id(realm, lookback_hours)
+        # Cache got cleared when the value of message_visibility_limit was updated
+        m.assert_called_once_with(realm)
+
+        with mock.patch('zerver.lib.message.estimate_recent_messages', return_value=0), \
+                mock.patch('zerver.lib.message.cache_get', return_value=True), \
+                mock.patch("zerver.lib.message.update_first_visible_message_id") as m:
+            maybe_update_first_visible_message_id(realm, lookback_hours)
+        m.assert_not_called()
+
+        with mock.patch('zerver.lib.message.estimate_recent_messages', return_value=1), \
+                mock.patch('zerver.lib.message.cache_get', return_value=True), \
+                mock.patch("zerver.lib.message.update_first_visible_message_id") as m:
+            maybe_update_first_visible_message_id(realm, lookback_hours)
+        m.assert_called_once_with(realm)

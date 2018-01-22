@@ -3,7 +3,7 @@
 import os
 import glob
 from datetime import timedelta
-from mock import MagicMock, patch
+from mock import MagicMock, patch, call
 from typing import List, Dict, Any, Optional
 
 from django.conf import settings
@@ -13,6 +13,7 @@ from zerver.lib.management import ZulipBaseCommand, CommandError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import stdout_suppressed
 from zerver.lib.test_runner import slow
+
 from zerver.models import get_realm, UserProfile, Realm
 from confirmation.models import RealmCreationKey, generate_realm_creation_url
 
@@ -214,3 +215,16 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
 
             result = self.client_get(generated_link)
             self.assert_in_success_response(["The organization creation link has expired or is not valid."], result)
+
+class TestCalculateFirstVisibleMessageID(ZulipTestCase):
+    COMMAND_NAME = 'calculate_first_visible_message_id'
+
+    def test_check_if_command_calls_maybe_update_first_visible_message_id(self) -> None:
+        with patch('zerver.lib.message.maybe_update_first_visible_message_id') as m:
+            call_command(self.COMMAND_NAME, "--realm=zulip", "--lookback-hours=30")
+        m.assert_called_with(get_realm("zulip"), 30)
+
+        with patch('zerver.lib.message.maybe_update_first_visible_message_id') as m:
+            call_command(self.COMMAND_NAME, "--lookback-hours=35")
+        calls = [call(realm, 35) for realm in Realm.objects.all()]
+        m.has_calls(calls, any_order=True)
