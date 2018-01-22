@@ -75,7 +75,11 @@ CERTBOT_PATH="/usr/local/sbin/certbot-auto"
 wget -q https://dl.eff.org/certbot-auto -O "$CERTBOT_PATH"
 chmod a+x "$CERTBOT_PATH"
 
-"$CERTBOT_PATH" certonly "${method_args[@]}" -d "$DOMAIN" -m "$EMAIL" --agree-tos --non-interactive
+# We don't use --no-interactive, because certbot needs to ask the user
+# to agree to the Let's Encrypt Subscriber Agreement (aka ToS).
+# Passing --force-interactive suppresses a warning, but also brings up
+# an annoying prompt we stifle with --no-eff-email.
+"$CERTBOT_PATH" certonly "${method_args[@]}" -d "$DOMAIN" -m "$EMAIL" --force-interactive --no-eff-email
 
 symlink_with_backup() {
     if [ -e "$2" ]; then
