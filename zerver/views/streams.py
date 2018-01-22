@@ -31,7 +31,7 @@ from zerver.lib.validator import check_string, check_int, check_list, check_dict
     check_bool, check_variable_type
 from zerver.models import UserProfile, Stream, Realm, Subscription, \
     Recipient, get_recipient, get_stream, \
-    get_system_bot, get_user, get_user_profile_by_id
+    get_system_bot, get_user, get_user_profile_by_id, get_stream_recipient
 
 from collections import defaultdict
 import ujson
@@ -225,10 +225,6 @@ def remove_subscriptions_backend(
 
     removing_someone_else = principals and \
         set(principals) != set((user_profile.email,))
-    if removing_someone_else and not user_profile.is_realm_admin:
-        # You can only unsubscribe other people from a stream if you are a realm
-        # admin.
-        return json_error(_("This action requires administrative rights"))
 
     streams_as_dict = []
     for stream_name in streams_raw:
@@ -237,11 +233,17 @@ def remove_subscriptions_backend(
     streams, __ = list_to_streams(streams_as_dict, user_profile)
 
     for stream in streams:
-        if removing_someone_else and stream.invite_only and \
-                not subscribed_to_stream(user_profile, stream.id):
-            # Even as an admin, you can't remove other people from an
-            # invite-only stream you're not on.
-            return json_error(_("Cannot administer invite-only streams this way"))
+        # If you are removing someone else, either you should be a stream admin
+        # or org admin.
+        if removing_someone_else:
+            try:
+                recipient = get_stream_recipient(stream.id)
+                sub = Subscription.objects.get(user_profile=user_profile,
+                                               recipient=recipient,
+                                               active=True)
+            except Subscription.DoesNotExist:
+                sub = None
+            access_stream_for_admin_actions(user_profile, stream, sub)
 
     if principals:
         people_to_unsub = set(user_email_to_user_profile(
