@@ -69,12 +69,7 @@ if [ -z "ok" ]; then
     exit 1
 fi
 
-# TODO kill this with an installer flag
-run apt-get install -y openssl ssl-cert
-run ln -nsf /etc/ssl/certs/ssl-cert-snakeoil.pem /etc/ssl/certs/zulip.combined-chain.crt
-run ln -nsf /etc/ssl/private/ssl-cert-snakeoil.key /etc/ssl/private/zulip.key
-
-run /tmp/zulip-server/scripts/setup/install "${INSTALLER_ARGS[@]}"
+run /tmp/zulip-server/scripts/setup/install --snakeoil-cert "${INSTALLER_ARGS[@]}"
 # TODO install ends as a zombie (workaround: `sudo ps aux | grep lxc-attach`, kill that)
 
 # TODO settings.py, initialize-database, create realm
