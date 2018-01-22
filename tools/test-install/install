@@ -1,7 +1,7 @@
 #!/bin/bash
 
 usage() {
-    echo "usage: install -r RELEASE TARBALL [...installer opts..]" >&2
+    echo "usage: install -r RELEASE {TARBALL|DIR} [...installer opts..]" >&2
     exit 1
 }
 
@@ -40,7 +40,15 @@ while [ -z "$CONTAINER_NAME" ] || lxc-info -n "$CONTAINER_NAME" >/dev/null 2>&1;
     CONTAINER_NAME="$(mktemp -u zulip-install-"$RELEASE"-XXXXX)"
 done
 
-lxc-copy --ephemeral --keepdata -n "$BASE_CONTAINER_NAME" -N "$CONTAINER_NAME"
+if [ -d "$INSTALLER" ]; then
+    installer_dir="$(readlink -f $INSTALLER)"
+else
+    installer_dir="$(mktemp -d --tmpdir zulip-server-XXXXX)"
+    tar -xf "$INSTALLER" -C "$installer_dir" --strip-components=1
+fi
+
+lxc-copy --ephemeral --keepdata -n "$BASE_CONTAINER_NAME" -N "$CONTAINER_NAME" \
+         -m bind="$installer_dir":/tmp/zulip-server:ro
 
 run() {
     lxc-attach -n "$CONTAINER_NAME" -- "$@"
@@ -70,10 +78,7 @@ run ln -nsf /etc/ssl/private/ssl-cert-snakeoil.key /etc/ssl/private/zulip.key
 # /tmp/zulip-server-1.7.1/scripts/lib/../../scripts/lib/third/install-yarn.sh: line 43: curl: command not found
 run apt-get install -y curl
 
-<"$INSTALLER" run dd of=/tmp/zulip-server.tar.gz
-run tar -xf /tmp/zulip-server.tar.gz -C /tmp/
-installer_path=$(run sh -c 'echo /tmp/zulip-server-*/scripts/setup/install')
-run "$installer_path" "${INSTALLER_ARGS[@]}"
+run /tmp/zulip-server/scripts/setup/install "${INSTALLER_ARGS[@]}"
 # TODO install ends as a zombie (workaround: `sudo ps aux | grep lxc-attach`, kill that)
 
 # TODO settings.py, initialize-database, create realm
