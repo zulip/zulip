@@ -4,8 +4,12 @@ set -e
 usage() {
     cat <<EOF
 Usage:
-  install [--certbot] [--hostname=zulip.example.com] [--email=admin@example.com]
+  install [--hostname=zulip.example.com] [--email=admin@example.com] [options...]
   install --help
+
+Other options:
+  --certbot
+  --snakeoil-cert
 
 If --certbot is used, --hostname and --email are required.
 EOF
@@ -14,16 +18,20 @@ EOF
 
 # Shell option parsing.  Over time, we'll want to move some of the
 # environment variables below into this self-documenting system.
-args="$(getopt -o '' --long help,certbot,hostname:,email: -n "$0" -- "$@")"
+args="$(getopt -o '' --long help,snakeoil-cert,certbot,hostname:,email: -n "$0" -- "$@")"
 eval "set -- $args"
 while true; do
     case "$1" in
-        --certbot)
-            USE_CERTBOT=1
-            shift
-            ;;
         --help)
             show_help=1
+            shift
+            ;;
+        --snakeoil-cert)
+            SNAKEOIL_CERT=1
+            shift
+            ;;
+        --certbot)
+            USE_CERTBOT=1
             shift
             ;;
         --hostname)
@@ -91,14 +99,8 @@ ZULIP_PATH="$(realpath $(dirname $0)/../..)"
 # Handle issues around upstart on Ubuntu Xenial
 "$ZULIP_PATH"/scripts/lib/check-upstart
 
-if [ -n "$USE_CERTBOT" ]; then
-    "$ZULIP_PATH"/scripts/setup/setup-certbot \
-        --no-zulip-conf --method=standalone \
-        --hostname "$EXTERNAL_HOST" --email "$ZULIP_ADMINISTRATOR"
-fi
-
-# Check for missing SSL certificates early as well
-if [ "$PUPPET_CLASSES" = "zulip::voyager" ] && { ! [ -e "/etc/ssl/private/zulip.key" ] || ! [ -e "/etc/ssl/certs/zulip.combined-chain.crt" ]; }; then
+# Check early for missing SSL certificates
+if [ "$PUPPET_CLASSES" = "zulip::voyager" ] && [ -z "$USE_CERTBOT""$SNAKEOIL_CERT" ] && { ! [ -e "/etc/ssl/private/zulip.key" ] || ! [ -e "/etc/ssl/certs/zulip.combined-chain.crt" ]; }; then
    set +x
    echo
    echo "Could not find SSL certificates!"
@@ -106,6 +108,8 @@ if [ "$PUPPET_CLASSES" = "zulip::voyager" ] && { ! [ -e "/etc/ssl/private/zulip.
        [ -e "$f" ] || echo " - $f is missing!"
    done
    echo "See https://zulip.readthedocs.io/en/latest/production/ssl-certificates.html for help."
+   echo "For non-production testing, try the --snakeoil-cert option to use"
+   echo "your system's self-signed certificate."
    echo
    echo "Once fixed, just rerun scripts/setup/install; it'll pick up from here!"
    echo
@@ -117,6 +121,12 @@ apt-get install -y \
     puppet git curl \
     python python3 python-six python3-six crudini \
     $ADDITIONAL_PACKAGES
+
+if [ -n "$USE_CERTBOT" ]; then
+    "$ZULIP_PATH"/scripts/setup/setup-certbot \
+        --no-zulip-conf --method=standalone \
+        --hostname "$EXTERNAL_HOST" --email "$ZULIP_ADMINISTRATOR"
+fi
 
 # Create and activate a virtualenv
 if [ "$VIRTUALENV_NEEDED" = "yes" ]; then
@@ -177,6 +187,12 @@ fi
 apt-get -y upgrade
 
 if [ "$has_nginx" = 0 ]; then
+    if [ -n "$SNAKEOIL_CERT" ] && ! [ -e "/etc/ssl/private/zulip.key" ]; then
+        apt-get install -y openssl ssl-cert
+        ln -nsf /etc/ssl/certs/ssl-cert-snakeoil.pem /etc/ssl/certs/zulip.combined-chain.crt
+        ln -nsf /etc/ssl/private/ssl-cert-snakeoil.key /etc/ssl/private/zulip.key
+    fi
+
     # Check nginx was configured properly now that we've installed it.
     # Most common failure mode is certs not having been installed.
     nginx -t || (
