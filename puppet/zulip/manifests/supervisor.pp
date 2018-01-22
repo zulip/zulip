@@ -13,6 +13,7 @@ class zulip::supervisor {
       require    => [
         File["/var/log/zulip"],
         Package["supervisor"],
+        Service["rabbitmq-server"],
       ],
       hasstatus  => true,
       status     => "/bin/true",
@@ -25,6 +26,7 @@ class zulip::supervisor {
       require => [
         File["/var/log/zulip"],
         Package["supervisor"],
+        Service["rabbitmq-server"],
       ],
       hasstatus => true,
       status => "supervisorctl status",
