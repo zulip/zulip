@@ -19,6 +19,7 @@ import functools
 import ujson
 import xml.etree.cElementTree as etree
 from xml.etree.cElementTree import Element, SubElement
+from urllib.request import urlopen
 
 from collections import deque, defaultdict
 
@@ -1185,13 +1186,12 @@ class AutoLink(VerbosePattern):
             request_url = "https://noembed.com/embed?url=" + url
             request_url = sanitize_url(request_url)
             try:
-                response = ujson.load(urllib.request.urlopen(request_url))
+                response = ujson.load(urlopen(request_url))
                 youtube_title = response['title']
                 return url_to_a(url, youtube_title)
             except ConnectionError:
                 # If there is a network error, preview url instead of youtube video
                 logging.warning(traceback.format_exc())
-                return url_to_a(url)
         return url_to_a(url)
 
 class UListProcessor(markdown.blockprocessors.UListProcessor):
