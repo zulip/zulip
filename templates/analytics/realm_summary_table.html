@@ -1,4 +1,4 @@
-<link href="/static/third/thirdparty-fonts.css" rel="stylesheet" type="text/css" />
+
 <h2 style="text-align: center;">{{ num_active_sites }} active sites</h2>
 
 <p id="utctime" style="text-align: center;"></p>
@@ -26,7 +26,7 @@
         <tr>
             <th>Realm</th>
             <th>Created (green if ≤12wk)</th>
-            <th><i class="icon-vector-envelope"></i></th>
+            <th><i class="fa fa-envelope" aria-hidden="true"></i></th>
             <th>DAU</th>
             <th>WAU</th>
             <th>Total users</th>
@@ -54,7 +54,7 @@
 
             <td class="number">
                 <a class="clipboard" data-clipboard-text="{{ row.emails }}">
-                    <i class="icon-vector-envelope"></i>
+                    <i class="fa fa-envelope" aria-hidden="true"></i>
                 </a>
             </td>
 
@@ -96,7 +96,6 @@
     </tbody>
 
 </table>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js"></script>
 <script type="text/javascript">
     new Clipboard('.clipboard');
 </script>
