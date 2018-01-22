@@ -214,6 +214,7 @@ var event_fixtures = {
         op: 'remove',
         bot: {
             email: 'the-bot@example.com',
+            user_id: '42',
             full_name: 'The Bot',
         },
     },
@@ -585,8 +586,8 @@ with_overrides(function (override) {
             override('bot_data.deactivate', bot_stub.f);
             override('settings_users.update_user_data', admin_stub.f);
             dispatch(event);
-            var args = bot_stub.get_args('email');
-            assert_same(args.email, event.bot.email);
+            var args = bot_stub.get_args('user_id');
+            assert_same(args.user_id, event.bot.user_id);
 
             admin_stub.get_args('update_user_id', 'update_bot_data');
         });
@@ -600,8 +601,8 @@ with_overrides(function (override) {
 
             dispatch(event);
 
-            var args = bot_stub.get_args('email', 'bot');
-            assert_same(args.email, event.bot.email);
+            var args = bot_stub.get_args('user_id', 'bot');
+            assert_same(args.user_id, event.bot.user_id);
             assert_same(args.bot, event.bot);
 
             args = admin_stub.get_args('update_user_id', 'update_bot_data');

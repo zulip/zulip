@@ -403,7 +403,7 @@ exports.on_load_success = function (realm_people_data) {
         } else if (person.is_bot) {
             // Dynamically add the owner select control in order to
             // avoid performance issues in case of large number of users.
-            owner_select.val(bot_data.get(person.email).owner || "");
+            owner_select.val(bot_data.get(user_id).owner || "");
             form_row.find(".edit_bot_owner_container").append(owner_select);
         }
 
