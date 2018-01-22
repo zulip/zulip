@@ -32,6 +32,7 @@ function render_bots() {
         add_bot_row({
             name: elem.full_name,
             email: elem.email,
+            user_id: elem.user_id,
             type: exports.type_id_to_string(elem.bot_type),
             avatar_url: elem.avatar_url,
             api_key: elem.api_key,
@@ -106,14 +107,9 @@ exports.set_up = function () {
     $('#download_flaskbotrc').click(function () {
         var OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
         var content = "";
-        $("#active_bots_list .bot-information-box").each(function () {
-            var bot_info = $(this);
-            var email = bot_info.find(".email .value").text();
-            var api_key = bot_info.find(".api_key .api-key-value-and-button .value").text();
-            var bot = bot_data.get(email);
-
-            if (bot.bot_type === OUTGOING_WEBHOOK_BOT_TYPE_INT) {
-                content += exports.generate_flaskbotrc_content(email, api_key);
+        _.each(bot_data.get_all_bots_for_current_user(), function (bot) {
+            if (bot.is_active && bot.bot_type === OUTGOING_WEBHOOK_BOT_TYPE_INT) {
+                content += exports.generate_flaskbotrc_content(bot.email, bot.api_key);
             }
         });
         $(this).attr("href", "data:application/octet-stream;charset=utf-8," + encodeURIComponent(content));
@@ -289,21 +285,22 @@ exports.set_up = function () {
         var form = $('#settings_page .edit_bot_form');
         var image = li.find(".image");
         var bot_info = li;
+        var bot_id = bot_info.find('.bot_info').attr('data-user_id').valueOf();
         var reset_edit_bot = li.find(".reset_edit_bot");
         var owner_select = $(templates.render("bot_owner_select", {users_list:users_list}));
         var old_full_name = bot_info.find(".name").text();
-        var old_owner = bot_data.get(bot_info.find(".email .value").text()).owner;
-        var bot_email = bot_info.find(".email .value").text();
-        var bot_type = bot_info.find(".type .value").text();
-
+        var old_owner = bot_data.get(bot_id).owner;
+        var bot_email = bot_data.get(bot_id).email;
+        var bot_type = bot_data.get(bot_id).bot_type;
         $("#settings_page .edit_bot .edit_bot_name").val(old_full_name);
         $("#settings_page .edit_bot .select-form").text("").append(owner_select);
         $("#settings_page .edit_bot .edit-bot-owner select").val(old_owner);
         $("#settings_page .edit_bot_form").attr("data-email", bot_email);
+        $("#settings_page .edit_bot_form").attr("data-type", bot_type);
         $(".edit_bot_email").text(bot_email);
 
-        if (bot_type === "Outgoing webhook") {
-            var services = bot_data.get_services(bot_email);
+        if (bot_type.toString() === OUTGOING_WEBHOOK_BOT_TYPE) {
+            var services = bot_data.get_services(bot_id);
             $("#settings_page .edit_bot #service_data").show();
             // Currently, we only support one service per bot.
             $("#settings_page .edit_bot #edit_service_base_url").val(services[0].base_url);
@@ -336,17 +333,17 @@ exports.set_up = function () {
             },
             submitHandler: function () {
                 var email = form.attr('data-email');
+                var type = form.attr('data-type');
                 var full_name = form.find('.edit_bot_name').val();
                 var bot_owner = form.find('.edit-bot-owner select').val();
                 var file_input = $(".edit_bot").find('.edit_bot_avatar_file_input');
                 var spinner = form.find('.edit_bot_spinner');
                 var edit_button = form.find('.edit_bot_button');
                 var formData = new FormData();
-
                 formData.append('csrfmiddlewaretoken', csrf_token);
                 formData.append('full_name', full_name);
                 formData.append('bot_owner', bot_owner);
-                if (bot_type === "Outgoing webhook") {
+                if (type === OUTGOING_WEBHOOK_BOT_TYPE) {
                     var service_payload_url = $("#settings_page .edit_bot #edit_service_base_url").val();
                     var service_interface = $("#settings_page .edit_bot #edit_service_interface :selected").val();
                     formData.append('service_payload_url', JSON.stringify(service_payload_url));
