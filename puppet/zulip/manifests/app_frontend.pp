@@ -54,7 +54,6 @@ class zulip::app_frontend {
     source => "puppet:///modules/zulip/cron.d/restart-zulip",
   }
 
-  # Soft deactivate long term idle users weekly.
   file { "/etc/cron.d/soft-deactivate-users":
     ensure => file,
     owner  => "root",
