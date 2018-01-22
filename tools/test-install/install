@@ -1,13 +1,32 @@
 #!/bin/bash
-set -ex
+
+usage() {
+    echo "usage: install -r RELEASE TARBALL" >&2
+    exit 1
+}
+
+args="$(getopt -o +r: --long help,release: -- "$@")"
+eval "set -- $args"
+while true; do
+    case "$1" in
+        --help) usage;;
+        -r|--release) RELEASE="$2"; shift; shift;;
+        --) shift; break;;
+        *) usage;;
+    esac
+done
+INSTALLER="$1"; shift
+
+if [ -z "$RELEASE" ] || [ -z "$INSTALLER" ]; then
+    usage
+fi
 
 if [ "$EUID" -ne 0 ]; then
     echo "error: this script must be run as root" >&2
     exit 1
 fi
 
-RELEASE="$1"
-INSTALLER="$2"
+set -ex
 
 THIS_DIR="$(dirname "$(readlink -f "$0")")"
 
