@@ -35,6 +35,7 @@ preparing a new release.
   any revisions from the draft blog post.  (And the date!)
 * Update `ZULIP_VERSION` in `version.py`.
 * Update `version` and/or `release` in `docs/conf.py` (ReadTheDocs meta tags).
+  Leave "+git" off.
 * Use `build-release-tarball` to generate a final release tarball.
 * Post the release tarball on https://www.zulip.org/dist/releases/ :
   add the file, update the `zulip-server-latest.tar.gz` symlink, and
@@ -50,8 +51,8 @@ preparing a new release.
 * Push the release commit to master, if applicable (typically for a
   major release); otherwise, make sure any last changes make it back
   to master.
-* Update `ZULIP_VERSION` in `version.py` and `release` in
- `docs/conf.py` to e.g. `1.6.0+git`.
+* Update `ZULIP_VERSION` in `version.py`, and `release` and `version` in
+ `docs/conf.py`, to e.g. `1.6.0+git`.
 * Update the handful of places where we link to docs for the latest
   release, rather than for master.  See `git grep 'zulip.readthedocs.io/en/[0-9]'`.
 * Consider removing a few old releases from ReadTheDocs.
