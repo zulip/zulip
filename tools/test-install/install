@@ -71,9 +71,7 @@ if [ -z "ok" ]; then
     exit 1
 fi
 
-run /tmp/src/zulip-server/scripts/setup/install --snakeoil-cert "${INSTALLER_ARGS[@]}"
+run eatmydata -- /tmp/src/zulip-server/scripts/setup/install --snakeoil-cert "${INSTALLER_ARGS[@]}"
 # TODO install ends as a zombie (workaround: `sudo ps aux | grep lxc-attach`, kill that)
 
 # TODO settings.py, initialize-database, create realm
-
-# TODO eatmydata, for speed
