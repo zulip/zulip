@@ -12,6 +12,8 @@ class zulip::postgres_common {
                         "ssl-cert",
                         # our dictionary
                         "hunspell-en-us",
+                        # Postgres Nagios check plugin
+                        "check-postgres",
                         ]
   define safepackage ( $ensure = present ) {
     if !defined(Package[$title]) {
