@@ -250,7 +250,7 @@ def access_user_by_api_key(request: HttpRequest, api_key: Text, email: Optional[
         user_profile = get_user_profile_by_api_key(api_key)
     except UserProfile.DoesNotExist:
         raise JsonableError(_("Invalid API key"))
-    if email is not None and email != user_profile.email:
+    if email is not None and email.lower() != user_profile.email.lower():
         # This covers the case that the API key is correct, but for a
         # different user.  We may end up wanting to relaxing this
         # constraint or give a different error message in the future.
