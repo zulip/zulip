@@ -889,6 +889,10 @@ class TestValidateApiKey(ZulipTestCase):
                                    is_webhook=True)
         self.assertEqual(profile.id, self.webhook_bot.id)
 
+    def test_validate_api_key_if_email_is_case_insensitive(self) -> None:
+        profile = validate_api_key(HostRequestMock(host="zulip.testserver"), self.default_bot.email.upper(), self.default_bot.api_key)
+        self.assertEqual(profile.id, self.default_bot.id)
+
     def test_valid_api_key_if_user_is_on_wrong_subdomain(self) -> None:
         with self.settings(RUNNING_INSIDE_TORNADO=False):
             with mock.patch('logging.warning') as mock_warning:
