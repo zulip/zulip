@@ -47,8 +47,10 @@ else
     tar -xf "$INSTALLER" -C "$installer_dir" --strip-components=1
 fi
 
+mkdir -p /srv/zulip/test-install/pip-cache
+
 lxc-copy --ephemeral --keepdata -n "$BASE_CONTAINER_NAME" -N "$CONTAINER_NAME" \
-         -m bind="$installer_dir":/tmp/zulip-server:ro
+         -m bind="$installer_dir":/tmp/zulip-server:ro,bind=/srv/zulip/test-install/pip-cache:/root/.cache/pip
 
 run() {
     lxc-attach -n "$CONTAINER_NAME" -- "$@"
