@@ -16,9 +16,9 @@ def truncate(string: Text, length: int) -> Text:
 
 @authenticated_rest_api_view(is_webhook=True)
 @has_request_variables
-def api_zendesk_webhook(request, user_profile, ticket_title=REQ(), ticket_id=REQ(),
-                        message=REQ(), stream=REQ(default="zendesk")):
-                        # type: (HttpRequest, UserProfile, str, str, str, str) -> HttpResponse
+def api_zendesk_webhook(request: HttpRequest, user_profile: UserProfile,
+                        ticket_title: str=REQ(), ticket_id: str=REQ(),
+                        message: str=REQ(), stream: str=REQ(default="zendesk")) -> HttpResponse:
     """
     Zendesk uses trigers with message templates. This webhook uses the
     ticket_id and ticket_title to create a subject. And passes with zendesk
