@@ -65,7 +65,6 @@ class ChangeSettingsTest(ZulipTestCase):
                 full_name='Foo Bar',
                 old_password=initial_password(self.example_email("hamlet")),
                 new_password='foobar1',
-                confirm_password='foobar1',
             ))
         self.assert_json_success(json_result)
         result = ujson.loads(json_result.content)
@@ -132,31 +131,13 @@ class ChangeSettingsTest(ZulipTestCase):
     def test_enter_sends_setting(self) -> None:
         self.check_for_toggle_param('/json/users/me/enter-sends', "enter_sends")
 
-    def test_mismatching_passwords(self) -> None:
-        """
-        new_password and confirm_password must match
-        """
-        self.login(self.example_email("hamlet"))
-        result = self.client_patch(
-            "/json/settings",
-            dict(
-                new_password="mismatched_password",
-                confirm_password="not_the_same",
-            ))
-        self.assert_json_error(result,
-                               "New password must match confirmation password!")
-
     def test_wrong_old_password(self) -> None:
-        """
-        new_password and confirm_password must match
-        """
         self.login(self.example_email("hamlet"))
         result = self.client_patch(
             "/json/settings",
             dict(
                 old_password='bad_password',
                 new_password="ignored",
-                confirm_password="ignored",
             ))
         self.assert_json_error(result, "Wrong password!")
 
@@ -169,7 +150,7 @@ class ChangeSettingsTest(ZulipTestCase):
         self.login(self.example_email("hamlet"))
         result = self.client_patch("/json/settings",
                                    dict(old_password='ignored',))
-        self.assert_json_error(result, "No new data supplied")
+        self.assert_json_error(result, "Please fill out all fields.")
 
     def do_test_change_user_display_setting(self, setting_name: str) -> None:
 

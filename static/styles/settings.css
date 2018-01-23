@@ -1092,6 +1092,14 @@ input[type=checkbox].inline-block {
     cursor: pointer;
 }
 
+#settings_page #change_password_modal {
+    width: auto;
+}
+
+#settings_page #change_password_modal .change_password_info {
+    margin: 10px;
+}
+
 #deactivation_user_modal.fade.in {
     top: calc(50% - 120px);
 }

@@ -102,6 +102,8 @@ exports.open_modal = function (name) {
     blueslip.debug('open modal: ' + name);
 
     $("#" + name).modal("show").attr("aria-hidden", false);
+    // Remove previous alert messsages from modal, if exists.
+    $("#" + name).find(".alert").hide();
 };
 
 exports.close_overlay = function (name) {
