@@ -499,17 +499,13 @@ function validate_stream_message_announce(stream_name) {
     return true;
 }
 
-exports.validate_stream_message_address_info = function (stream_name) {
-    if (stream_data.is_subscribed(stream_name)) {
-        return true;
-    }
-
+exports.validation_error = function (error_type, stream_name) {
     var response;
 
     var context = {};
     context.stream_name = Handlebars.Utils.escapeExpression(stream_name);
-    switch (check_unsubscribed_stream_for_send(stream_name,
-                                               page_params.narrow_stream !== undefined)) {
+
+    switch (error_type) {
     case "does-not-exist":
         response = i18n.t("<p>The stream <b>__stream_name__</b> does not exist.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>", context);
         compose_error(response, $('#stream'));
@@ -523,6 +519,15 @@ exports.validate_stream_message_address_info = function (stream_name) {
         return false;
     }
     return true;
+};
+
+exports.validate_stream_message_address_info = function (stream_name) {
+    if (stream_data.is_subscribed(stream_name)) {
+        return true;
+    }
+    var autosubscribe = page_params.narrow_stream !== undefined;
+    var error_type = check_unsubscribed_stream_for_send(stream_name, autosubscribe);
+    return exports.validation_error(error_type, stream_name);
 };
 
 function validate_stream_message() {
