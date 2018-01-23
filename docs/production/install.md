@@ -34,6 +34,17 @@ If you'd like to verify the download, we
 
 ## Step 2: Install Zulip
 
+```eval_rst
+.. only:: unreleased
+
+   .. warning::
+      You are reading a **development version** of the Zulip documentation.
+      These instructions may not correspond to the latest Zulip Server
+      release.  See `documentation for the latest release`__.
+
+__ https://zulip.readthedocs.io/en/stable/prod-install.html
+```
+
 To set up Zulip with the most common configuration, you can run the
 installer as follows:
 
