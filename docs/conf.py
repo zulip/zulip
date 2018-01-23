@@ -215,11 +215,6 @@ html_static_path = ['_static']
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'zulip-contributor-docsdoc'
 
-def setup(app: Any) -> None:
-
-    # overrides for wide tables in RTD theme
-    app.add_stylesheet('theme_overrides.css')  # path relative to _static
-
 # -- Options for LaTeX output ---------------------------------------------
 
 latex_elements = {
@@ -302,6 +297,7 @@ texinfo_documents = [
 #texinfo_no_detailmenu = False
 
 from recommonmark.parser import CommonMarkParser
+from recommonmark.transform import AutoStructify
 
 source_parsers = {
     '.md': CommonMarkParser,
@@ -310,3 +306,24 @@ source_parsers = {
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 source_suffix = ['.rst', '.md']
+
+def setup(app: Any) -> None:
+
+    app.add_config_value('recommonmark_config', {
+        'enable_eval_rst': True,
+        # Turn off recommonmark features we aren't using.
+        'enable_auto_doc_ref': False,
+        'auto_toc_tree_section': None,
+        'enable_auto_toc_tree': False,
+        'enable_math': False,
+        'enable_inline_math': False,
+        'url_resolver': lambda x: x,
+    }, True)
+
+    # Enable `eval_rst`, and any other features enabled in recommonmark_config.
+    # Docs: http://recommonmark.readthedocs.io/en/latest/auto_structify.html
+    # (But NB those docs are for master, not latest release.)
+    app.add_transform(AutoStructify)
+
+    # overrides for wide tables in RTD theme
+    app.add_stylesheet('theme_overrides.css')  # path relative to _static
