@@ -230,8 +230,8 @@ If you are interested in backups because you are moving from one Zulip
 server to another server and can't transfer a full postgres dump
 (which is definitely the simplest approach), our draft
 [conversion and export design document](../subsystems/conversion.html) may help.
-The tool is well designed and was tested carefully with dozens of
-realms as of mid-2016 but is not integrated into Zulip's regular
+The tool is well designed, and was tested carefully with dozens of
+realms in mid-2016; but it's not integrated into Zulip's regular
 testing process, and thus it is worth asking on the Zulip developers
 mailing list whether it needs any minor updates to do things like
 export newly added tables.
