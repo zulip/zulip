@@ -2,12 +2,12 @@
 
 [mypy](http://mypy-lang.org/) is a compile-time static type checker
 for Python, allowing optional, gradual typing of Python code.  Zulip
-was fully annotated with mypy's Python 2 syntax (as of late 2016)
-before our migration to Python 3 (in late 2017).
+was fully annotated with mypy's Python 2 syntax in 2016, before our
+migration to Python 3 in late 2017.
 
 As a result, Zulip is in the process of migrating from using mypy's
-Python 2 compatible syntax for type annotations, which means that type
-annotations are written inside comments that start with `# type: `, to
+Python 2 compatible syntax for type annotations (in which type
+annotations are written inside comments that start with `# type: `) to
 the Python 3 syntax.  Here's a brief example of the mypy syntax we're
 using in Zulip:
 
