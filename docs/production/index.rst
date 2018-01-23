@@ -17,11 +17,3 @@ Zulip in Production
    postgres
    ssl-certificates
    email
-
-.. toctree::
-   :hidden:
-
-   expensive-migrations
-   install-existing-server
-   multiple-organizations
-   password-strength

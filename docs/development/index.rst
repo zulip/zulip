@@ -10,8 +10,3 @@ Development Environment
    Advanced Setup (non-Vagrant) <setup-advanced>
    Using the development environment <using>
    Developing remotely <remote>
-
-.. toctree::
-   :hidden:
-
-   request-remote

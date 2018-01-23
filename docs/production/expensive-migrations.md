@@ -1,3 +1,7 @@
+```eval_rst
+:orphan:
+```
+
 # Running expensive migrations early
 
 Zulip 1.7 contains some significant database migrations that can take
