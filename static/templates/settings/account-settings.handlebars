@@ -65,7 +65,13 @@
                                 <label for="old_password" class="inline-block title">{{t "Old password" }}</label>
                                 <input type="password" autocomplete="off" name="old_password" id="old_password" class="w-200 inline-block" value="" />
                                 <div class="warning">
-                                    <a href="/accounts/password/reset/" class="sea-green" target="_blank">{{t "Forgotten it?" }}</a>
+                                    <a class="sea-green" id="forgot_password">{{t "Forgotten it?" }}</a>
+                                    <a class="sea-green" id="reset_password" style="display: none">{{t "Reset password" }}</a>
+                                    <div class="loading_indicator_spinner" style="display:none"></div>
+                                    <span class="loading_indicator_message" style="display:none">{{t "Sending ..." }}</span>
+                                    <span id="reset_sent" style="display:none; padding-right: 3px">{{t "Check your email!" }}</span>
+                                    <span id="reset_failed" style="display:none; padding-right: 3px">{{t "Reset failed to send" }}</span>
+                                    <a class="sea-green" id="resend_link" style="display:none">{{t "Resend" }}</a>
                                 </div>
                             </div>
 
