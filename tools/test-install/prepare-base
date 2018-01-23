@@ -38,6 +38,7 @@ run apt-get update
 # would install for itself.
 run apt-get install -y --no-install-recommends \
   xvfb parallel netcat unzip zip jq python3-pip wget curl realpath \
+  git crudini openssl ssl-cert \
   build-essential python3-dev \
   closure-compiler memcached rabbitmq-server redis-server \
   hunspell-en-us supervisor libssl-dev yui-compressor puppet \
