@@ -3,9 +3,9 @@
 To keep your communications secure, Zulip runs over HTTPS only.
 You'll need an SSL/TLS certificate.
 
-Fortunately, as of 2017 new options can make getting and maintaining a
-genuine, trusted-by-browsers certificate no longer the chore (nor
-expense) that it used to be.
+Fortunately, since about 2017, new options can make getting and
+maintaining a genuine, trusted-by-browsers certificate no longer the
+chore (nor expense) that it used to be.
 
 ## Manual install
 
