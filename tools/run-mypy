@@ -16,6 +16,7 @@ sys.path.append(os.path.dirname(TOOLS_DIR))
 from lib.test_script import get_provisioning_status
 
 exclude = """
+docs/conf.py
 zproject/settings.py
 zproject/test_settings.py
 """.split()
