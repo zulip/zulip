@@ -17,12 +17,14 @@ from zerver.models import UserProfile, Realm, Stream, MultiuseInvite, \
     get_realm, get_user, get_default_stream_groups
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.events import do_events_register
+from zerver.lib.export import do_import_realm
+from zerver.lib.slack_data_to_zulip_data import do_convert_data
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
     do_activate_user, do_create_user, do_create_realm, \
     email_not_system_bot, compute_mit_user_fullname, validate_email_for_realm, \
     do_set_user_display_setting, lookup_default_stream_groups, bulk_add_subscriptions
 from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
-    CreateUserForm, FindMyTeamForm
+    CreateUserForm, FindMyTeamForm, ImportDataForm
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from zerver.decorator import require_post, has_request_variables, \
     JsonableError, REQ, do_login
@@ -44,6 +46,10 @@ import logging
 import requests
 import smtplib
 import ujson
+import tempfile
+import subprocess
+import os
+import shutil
 
 import urllib
 
@@ -353,6 +359,45 @@ def create_realm(request: HttpRequest, creation_key: Optional[Text]=None) -> Htt
     return render(request,
                   'zerver/create_realm.html',
                   context={'form': form, 'current_url': request.get_full_path},
+                  )
+
+def web_import(request: HttpRequest) -> HttpResponse:
+    if request.method == 'POST':
+        form = ImportDataForm(request.POST, request.FILES)
+        if form.is_valid():
+            zulip_import_file = request.FILES['zulip_data_file']
+            realm_name = form.cleaned_data['realm_subdomain']
+            uploaded_dir = os.path.dirname(zulip_import_file.temporary_file_path())
+            web_import_dir = uploaded_dir + '/web_import/'
+
+            if not os.path.exists(web_import_dir):
+                os.makedirs(web_import_dir)
+            os.rename(zulip_import_file.temporary_file_path(),
+                      web_import_dir + zulip_import_file.name)
+            output_dir = tempfile.mkdtemp(prefix="/tmp/converted-slack-data-")
+
+            try:
+                do_convert_data(web_import_dir + zulip_import_file.name, realm_name,
+                                output_dir)
+                do_import_realm(output_dir)
+                subprocess.check_call([os.path.join(settings.DEPLOY_ROOT,
+                                      "scripts/setup/postgres-reset-sequences")])
+
+            except FileNotFoundError as e:
+                shutil.rmtree(web_import_dir)
+                return render(request, "zerver/web_import.html",
+                              context={'form': form,
+                                       'form_error': e,
+                                       'MAX_REALM_SUBDOMAIN_LENGTH': str(Realm.MAX_REALM_SUBDOMAIN_LENGTH)
+                                       },
+                              )
+    else:
+        form = ImportDataForm()
+    return render(request,
+                  'zerver/web_import.html',
+                  context={'form': form,
+                           'MAX_REALM_SUBDOMAIN_LENGTH': str(Realm.MAX_REALM_SUBDOMAIN_LENGTH)
+                           },
                   )
 
 # This is used only by the casper test in 00-realm-creation.js.

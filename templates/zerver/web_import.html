@@ -1,0 +1,94 @@
+{% extends "zerver/portico_signup.html" %}
+{# This is the page where we import data from Slack into Zulip. #}
+
+{% block portico_content %}
+
+<div class="register-account flex full-page">
+    <div class="center-block new-style">
+        <div class="pitch">
+            {% trans %}
+            <h1>Import Slack Workspace</h1>
+            {% endtrans %}
+        </div>
+        <form class="form-horizontal white-box" id="web-import" action="/web_import/"
+            method="post" enctype="multipart/form-data">
+            {{ csrf_input }}
+
+            <section>
+                <div class="input-box">
+                    <input id="import_email" name="email"
+                    class="email required" type="text" placeholder="{{ _("Enter Email") }}"
+                    value="{% if form.email.value() %}{{ form.email.value() }}{% endif %}"
+                    required />
+                    <label for="id_email" class="inline-block label-title">{{ _('Email') }}</label>
+                    {% if form.email.errors %}
+                        {% for error in form.email.errors %}
+                        <p class="help-inline text-error">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </section>
+
+            <section>
+                <div class="input-box">
+                    <input id="import_full_name" name="full_name"
+                    class="full_name" type="text" placeholder="{{ _("Enter Full Name") }}"
+                    value="{% if form.full_name.value() %}{{ form.full_name.value() }}{% endif %}"
+                    required />
+                    <label for="id_fullname" class="inline-block">{{ _('Full name') }}</label>
+                    {% if form.full_name.errors %}
+                        {% for error in form.full_name.errors %}
+                        <p class="help-inline text-error">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </section>
+
+            <section>
+                <div class="input-box">
+                    <input id="import_team_subdomain" name="realm_subdomain"
+                    class="realm_subdomain" type="text" placeholder="{{ _("Enter Realm Subdomain") }}"
+                    value="{% if form.realm_subdomain.value() %}{{ form.realm_subdomain.value() }}{% endif %}"
+                    required />
+                    <label for="id_subdomain" class="inline-block">{{ _('Realm Subdomain') }}</label>
+                    {% if form.realm_subdomain.errors %}
+                        {% for error in form.realm_subdomain.errors %}"
+                        <p class="help-inline text-error">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </section>
+
+            <section>
+                <input type="file" name="zulip_data_file"
+                    value="{{ _('Upload Import file') }}" required />
+                <div>
+                    {% if form.zulip_data_file.errors %}
+                        {% for error in form.zulip_data_file.errors %}"
+                        <p class="alert alert-error">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </section>
+
+            <section>
+                {% if form_error %}
+                <p class="alert alert-error">{{ form_error }}</p>
+                {% endif %}
+            </section>
+
+            <section>
+                <div class="register-button-box">
+                    <button class="register-button" type="submit">{{ _('Import') }}</button>
+                    <input type="hidden" name="next" value="{{ next }}" />
+                </div>
+            </section>
+        </form>
+
+    </div>
+</div>
+
+<script type="text/javascript">
+
+</script>
+{% endblock %}
