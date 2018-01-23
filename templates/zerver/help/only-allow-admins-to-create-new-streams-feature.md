@@ -12,8 +12,7 @@ only allows administrators to create new streams in the organization.
 **Streams & custom emoji** section.
 
     !!! tip ""
-        Type a number in the **Waiting period for stream creation (in days)**
-        input to specify the period of time users must wait to create a new
-        stream.
+        Type a number in the **New user waiting period for stream creation (in days) [ ]**
+        input to specify the period of time new joined users must wait to create a new stream.
 
 {!save-changes.md!} organization settings.
