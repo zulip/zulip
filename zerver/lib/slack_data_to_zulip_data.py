@@ -10,7 +10,7 @@ import re
 from django.utils.timezone import now as timezone_now
 from typing import Any, Dict, List, Tuple
 from zerver.models import UserProfile, Realm, Stream, UserMessage, \
-    Subscription, Message, Recipient, DefaultStream
+    Subscription, Message, Recipient, DefaultStream, Attachment
 from zerver.forms import check_subdomain_available
 from zerver.lib.slack_message_conversion import convert_to_zulip_markdown, \
     get_user_full_name
@@ -302,18 +302,22 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
     return zerver_defaultstream, zerver_stream, added_channels, zerver_subscription, \
         zerver_recipient, added_recipient
 
-def get_total_messages_and_usermessages(slack_data_dir: str, channel: str,
-                                        zerver_userprofile: List[ZerverFieldsT],
-                                        zerver_subscription: List[ZerverFieldsT],
-                                        added_recipient: AddedRecipientsT) -> Tuple[int, int]:
+def get_total_messages_and_attachments(slack_data_dir: str, channel: str,
+                                       zerver_userprofile: List[ZerverFieldsT],
+                                       zerver_subscription: List[ZerverFieldsT],
+                                       added_recipient: AddedRecipientsT) -> Tuple[int,
+                                                                                   int,
+                                                                                   int]:
     """
     Returns:
     1. message_id, which is total number of messages
     2. usermessage_id, which is total number of usermessages
+    3. attachment_id, which is total number of attachments
     """
     json_names = os.listdir(slack_data_dir + '/' + channel)
     total_messages = 0
     total_usermessages = 0
+    total_attachments = 0
 
     for json_name in json_names:
         messages = json.load(open(slack_data_dir + '/%s/%s' % (channel, json_name)))
@@ -322,19 +326,22 @@ def get_total_messages_and_usermessages(slack_data_dir: str, channel: str,
                 subtype = message['subtype']
                 if subtype in ["channel_join", "channel_leave", "channel_name"]:
                     continue
+                elif subtype == "file_share":
+                    total_attachments += 1
 
             for subscription in zerver_subscription:
                 if subscription['recipient'] == added_recipient[channel]:
                     total_usermessages += 1
             total_messages += 1
 
-    return total_messages, total_usermessages
+    return total_messages, total_usermessages, total_attachments
 
 def channel_message_to_zerver_message(constants: List[Any], channel: str,
                                       added_users: AddedUsersT, added_recipient: AddedRecipientsT,
                                       zerver_userprofile: List[ZerverFieldsT],
                                       zerver_subscription: List[ZerverFieldsT],
                                       ids: List[int]) -> Tuple[List[ZerverFieldsT],
+                                                               List[ZerverFieldsT],
                                                                List[ZerverFieldsT]]:
     """
     Returns:
@@ -342,28 +349,46 @@ def channel_message_to_zerver_message(constants: List[Any], channel: str,
     2. zerver_usermessage, which is a list of the usermessages
     """
     slack_data_dir, REALM_ID = constants
-    message_id, usermessage_id = ids
+    message_id, usermessage_id, attachment_id = ids
     json_names = os.listdir(slack_data_dir + '/' + channel)
     users = json.load(open(slack_data_dir + '/users.json'))
     zerver_message = []
     zerver_usermessage = []
+    zerver_attachment = []
 
     for json_name in json_names:
         messages = json.load(open(slack_data_dir + '/%s/%s' % (channel, json_name)))
         for message in messages:
             has_attachment = False
+            url_private = None
             content, mentioned_users_id, has_link = convert_to_zulip_markdown(message['text'],
                                                                               users,
                                                                               added_users)
             rendered_content = None
-            if 'subtype' in message.keys():
-                subtype = message['subtype']
-                if subtype in ["channel_join", "channel_leave", "channel_name"]:
-                    continue
             try:
                 user = message.get('user', message['file']['user'])
             except KeyError:
                 user = message['user']
+            if 'subtype' in message.keys():
+                subtype = message['subtype']
+                if subtype in ["channel_join", "channel_leave", "channel_name"]:
+                    continue
+                elif subtype == "file_share":
+                    has_attachment = True
+                    fileinfo = message['file']
+                    url_private = fileinfo['url_private']
+                    zerver_attachment.append(dict(
+                        owner=added_users[user],
+                        messages=[message_id],
+                        id=attachment_id,
+                        size=fileinfo['size'],
+                        create_time=fileinfo['created'],
+                        is_realm_public=True,  # is always strue for stream message
+                        path_id="",  # TODO
+                        realm=1,
+                        file_name=fileinfo['name']
+                    ))
+                    attachment_id += 1
 
             recipient_id = added_recipient[channel]
             # construct message
@@ -476,28 +501,30 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str) 
     # To pre-compute the total number of messages and usermessages
     total_messages = 0
     total_usermessages = 0
+    total_attachments = 0
     for channel in added_channels.keys():
-        tm, tum = get_total_messages_and_usermessages(slack_data_dir, channel,
-                                                      zerver_userprofile,
-                                                      realm['zerver_subscription'],
-                                                      added_recipient)
+        tm, tum, ta = get_total_messages_and_attachments(
+            slack_data_dir, channel, zerver_userprofile,
+            realm['zerver_subscription'], added_recipient)
         total_messages += tm
         total_usermessages += tum
+        total_attachments += ta
     message_id_count = get_model_id(Message, 'zerver_message', total_messages)
     usermessage_id_count = get_model_id(UserMessage, 'zerver_usermessage', total_usermessages)
+    attachment_id_count = get_model_id(Attachment, 'zerver_attachment', total_attachments)
 
     constants = [slack_data_dir, REALM_ID]
     for channel in added_channels.keys():
         message_id = len(zerver_message) + message_id_count  # For the id of the messages
         usermessage_id = len(zerver_usermessage) + usermessage_id_count
-        id_list = [message_id, usermessage_id]
-        zm, zum = channel_message_to_zerver_message(constants, channel,
-                                                    added_users, added_recipient,
-                                                    zerver_userprofile,
-                                                    realm['zerver_subscription'],
-                                                    id_list)
+        attachment_id = len(zerver_attachment) + attachment_id_count
+        id_list = [message_id, usermessage_id, attachment_id]
+        zm, zum, za = channel_message_to_zerver_message(
+            constants, channel, added_users, added_recipient,
+            zerver_userprofile, realm['zerver_subscription'], id_list)
         zerver_message += zm
         zerver_usermessage += zum
+        zerver_attachment += za
     print('######### IMPORTING MESSAGES FINISHED #########\n')
 
     message_json['zerver_message'] = zerver_message
