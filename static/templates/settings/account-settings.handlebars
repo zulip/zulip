@@ -39,53 +39,60 @@
                 </div>
             </form>
 
-            <form action="/json/settings" method="patch"
-                class="form-horizontal your-account-settings">
+            <form class="password-change-form grid">
+                <div class="input-group user-name-section">
+                    <label class="inline-block title">{{t "Password" }}</label>
+                    <a id="change_password" {{#if page_params.realm_email_auth_enabled}}href="#change_password"{{/if}}>
+                        {{#if page_params.realm_email_auth_enabled}}
+                        <div class="input-group inline-block" id="pw_change_link">
+                            <button type="button" class="change_password_button button rounded inline-block input-size" data-dismiss="modal">{{t "Change password" }}</button>
+                        </div>
+                        {{/if}}
+                    </a>
+                </div>
 
+                <div id="change_password_modal" class="modal hide" tabindex="-1" role="dialog"
+                    aria-labelledby="change_password_modal_label" aria-hidden="true">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
+                        <h3 id="change_password_modal_label">{{t "Change password" }}</h3>
+                    </div>
+                    <div class="flex-row normal">
+                        <div class="field">
+                            <label for="old_password" class="title">{{t "Old password" }}</label>
+                            <input type="password" autocomplete="off" name="old_password" id="old_password" class="w-200 inline-block" value="" />
+                            <div class="info">
+                                <a href="/accounts/password/reset/" class="sea-green" target="_blank">{{t "Forgotten it?" }}</a>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label for="new_password" class="title">{{t "New password" }}</label>
+                            <input type="password" autocomplete="off" name="new_password" id="new_password" class="w-200 inline-block" value=""
+                             data-min-length="{{ page_params.password_min_length }}" data-min-guesses="{{ page_params.password_min_guesses }}" />
+                            <div class="progress inline-block" id="pw_strength">
+                                <div class="bar bar-danger fade" style="width: 10%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="alert change_password_info"></div>
+                    <div class="modal-footer">
+                        <button class="button white rounded" data-dismiss="modal">{{t "Cancel" }}</button>
+                        <button id='change_password_button' class="button rounded sea-green" data-dismiss="modal">{{t "Change" }}</button>
+                    </div>
+                </div>
+            </form>
+
+            <form class="form-horizontal your-account-settings">
                 <div class="m-10 inline-block grid user-name-parent">
                     <div class="user-name-section inline-block">
                         <div class="input-group" id="name_change_container">
                             <label for="full_name" class="inline-block title">{{t "Full name" }}</label>
                             <input type="text" name="full_name" id="full_name" class="w-200 inline-block" value="{{ page_params.full_name }}" {{#if page_params.realm_name_changes_disabled}}disabled="disabled" {{/if}}/>
-                            <i class="icon-vector-question-sign settings-info-icon change_name_tooltip" data-toggle="tooltip"
+                            <i class="icon-vector-question-sign change_name_tooltip" data-toggle="tooltip"
                             {{#unless page_params.realm_name_changes_disabled}}style="display:none" {{/unless}}
                             title="{{t 'Changing your name has been disabled by your Zulip organization administrators. Contact an administrator for help.' }}"/>
                             <div class="warning"></div>
                         </div>
-
-                        <!-- password start -->
-                        {{#if page_params.realm_email_auth_enabled}}
-                        <div class="input-group" id="pw_change_link">
-                            <label for="change_password_button" class="inline-block title">{{t "Password" }}</label>
-                            <button class="change_password_button button rounded inline-block input-size" data-dismiss="modal">{{t "Change password" }}</button>
-                        </div>
-
-                        <div id="pw_change_controls">
-                            <div class="input-group">
-                                <label for="old_password" class="inline-block title">{{t "Old password" }}</label>
-                                <input type="password" autocomplete="off" name="old_password" id="old_password" class="w-200 inline-block" value="" />
-                                <div class="warning">
-                                    <a href="/accounts/password/reset/" class="sea-green" target="_blank">{{t "Forgotten it?" }}</a>
-                                </div>
-                            </div>
-
-                            <div class="input-group">
-                                <label for="new_password" class="inline-block title">{{t "New password" }}</label>
-                                <input type="password" autocomplete="off" name="new_password" id="new_password" class="w-200 inline-block" value=""
-                                 data-min-length="{{ page_params.password_min_length }}" data-min-guesses="{{ page_params.password_min_guesses }}" />
-                                <div class="warning">
-                                    <div class="progress inline-block" id="pw_strength">
-                                        <div class="bar bar-danger fade" style="width: 10%;"></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="input-group">
-                                <label class="inline-block title" for="confirm_password title">{{t "Confirm password" }}</label>
-                                <input type="password" autocomplete="off" name="confirm_password" id="confirm_password" class="w-200 inline-block" value="" />
-                            </div>
-                        </div>
-                        {{/if}}
 
                         <div class="input-group no-border">
                             <label for="" class="inline-block"></label>
