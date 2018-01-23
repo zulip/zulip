@@ -11,104 +11,132 @@ var rs = zrequire('recent_senders');
 
     var sender1 = 1;
     var sender2 = 2;
-    var sender3 = 3;
+    var sender3 = 3;    // This is used to post a message in an empty topic/stream.
 
-    // New stream
+// No one has posted in organisation
+assert.equal(
+    rs.compare_by_recency({user_id: sender1}, {user_id: sender2}, stream1, topic1),
+    0);
+
+// Only one person has posted in the orgainsation
     var message1 = {
         stream_id: stream1,
         timestamp: _.uniqueId(),
         subject: topic1,
         sender_id: sender1,
     };
-    var message2 = {
-        stream_id: stream2,
-        timestamp: _.uniqueId(),
-        subject: topic1,
-        sender_id: sender2,
-    };
     rs.process_message_for_senders(message1);
-    rs.process_message_for_senders(message2);
-
-    // Users have posted in only one of the streams
     assert.equal(
         rs.compare_by_recency({user_id: sender1}, {user_id: sender2}, stream1, topic1) < 0,
         true);
     assert.equal(
-        rs.compare_by_recency({user_id: sender1}, {user_id: sender2}, stream2, topic1) > 0,
+        rs.compare_by_recency({user_id: sender1}, {user_id: sender2}, stream1, topic2) < 0,
         true);
-
-    // Users haven't posted in this stream, return zero
     assert.equal(
-        rs.compare_by_recency({user_id: sender1}, {user_id: sender2}, stream3, undefined) === 0,
+        rs.compare_by_recency({user_id: sender1}, {user_id: sender2}, stream2, topic1) < 0,
         true);
 
-    // New topic
-    var message3 = {
-        stream_id: stream1,
-        timestamp: _.uniqueId(),
-        subject: topic2,
-        sender_id: sender3,
-    };
-    rs.process_message_for_senders(message3);
-    assert.equal(
-        rs.compare_by_recency({user_id: sender3}, {user_id: sender2}, stream1, topic2) < 0,
-        true);
 
-    // New sender
-    var message4 = {
+// When recency is checked on the basis of topic:
+
+    // Both have posted in current stream and topic.
+    var message2 = {
         stream_id: stream1,
         timestamp: _.uniqueId(),
         subject: topic1,
         sender_id: sender2,
     };
-    rs.process_message_for_senders(message4);
+    rs.process_message_for_senders(message2);
     assert.equal(
         rs.compare_by_recency({user_id: sender1}, {user_id: sender2}, stream1, topic1) > 0,
         true);
 
-    // More recent message
-    var message5 = {
+    var message3 = {
         stream_id: stream1,
+        timestamp: _.uniqueId(),
+        subject: topic1,
+        sender_id: sender1,
+    };
+    rs.process_message_for_senders(message3);
+    assert.equal(
+        rs.compare_by_recency({user_id: sender1}, {user_id: sender2}, stream1, topic1) < 0,
+        true);
+    var message4 = {
+        stream_id: stream1,
+        timestamp: _.uniqueId(),
+        subject: topic2,
+        sender_id: sender2,
+    };
+    rs.process_message_for_senders(message4);
+    assert.equal(
+        rs.compare_by_recency({user_id: sender1}, {user_id: sender2}, stream1, topic1) < 0,
+        true);
+
+    // Both have posted in current stream but only one has posted in the current topic.
+    assert.equal(
+        rs.compare_by_recency({user_id: sender1}, {user_id: sender2}, stream1, topic2) > 0,
+        true);
+
+    //  Only one has posted in current stream and topic.
+    var message5 = {
+        stream_id: stream2,
         timestamp: _.uniqueId(),
         subject: topic1,
         sender_id: sender1,
     };
     rs.process_message_for_senders(message5);
     assert.equal(
-        rs.compare_by_recency({user_id: sender1}, {user_id: sender2}, stream1, topic1) < 0,
+        rs.compare_by_recency({user_id: sender1}, {user_id: sender2}, stream2, topic1) < 0,
         true);
 
-    // Same stream, but different topics
+
+// When recency is checked on the basis of the whole stream.
+
+    // Both have posted in current stream but no one has posted in the current topic.
+    assert.equal(
+        rs.compare_by_recency({user_id: sender1}, {user_id: sender2}, stream1, topic3) > 0,
+        true);
     var message6 = {
-        stream_id: stream3,
-        timestamp: _.uniqueId(),
-        subject: topic1,
-        sender_id: sender1,
-    };
-    var message7 = {
-        stream_id: stream3,
-        timestamp: _.uniqueId(),
-        subject: topic2,
-        sender_id: sender2,
-    };
-    var message8 = {
-        stream_id: stream3,
+        stream_id: stream1,
         timestamp: _.uniqueId(),
         subject: topic3,
         sender_id: sender3,
     };
-
     rs.process_message_for_senders(message6);
+    assert.equal(
+        rs.compare_by_recency({user_id: sender1}, {user_id: sender2}, stream1, topic3) > 0,
+        true);
+
+    // Only one has posted in current stream but no one has posted in the current topic.
+    assert.equal(
+        rs.compare_by_recency({user_id: sender1}, {user_id: sender2}, stream2, topic2) < 0,
+        true);
+    var message7 = {
+        stream_id: stream2,
+        timestamp: _.uniqueId(),
+        subject: topic2,
+        sender_id: sender3,
+    };
     rs.process_message_for_senders(message7);
+    assert.equal(
+        rs.compare_by_recency({user_id: sender1}, {user_id: sender2}, stream2, topic2) < 0,
+        true);
+
+
+// When recency is checked on the basis of the recent message in the whole organization.
+
+    // Neither of them has posted in the current stream.
+    assert.equal(
+        rs.compare_by_recency({user_id: sender1}, {user_id: sender2}, stream3, topic1) < 0,
+        true);
+    var message8 = {
+        stream_id: stream3,
+        timestamp: _.uniqueId(),
+        subject: topic1,
+        sender_id: sender3,
+    };
     rs.process_message_for_senders(message8);
-
-    // topic3 has a message in it, but sender1 nor sender2 have participated, so sort by stream
     assert.equal(
-        rs.compare_by_recency({user_id: sender1}, {user_id: sender2}, stream3, topic3) > 0,
+        rs.compare_by_recency({user_id: sender1}, {user_id: sender2}, stream3, topic1) < 0,
         true);
-    assert.equal(
-        rs.compare_by_recency({user_id: sender2}, {user_id: sender1}, stream3, topic3) < 0,
-        true);
-
-    assert.equal(rs.compare_by_recency({}, {}, _.uniqueId(), ''), 0);
 }());
