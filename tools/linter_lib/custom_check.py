@@ -522,7 +522,6 @@ def build_custom_checkers(by_lang):
          'bad_lines': ["<button aria-label='foo'></button>"]},
         {'pattern': 'aria-label="[^{]',
          'description': "`aria-label` value should be translatable.",
-         'exclude': set(["docs/_templates/layout.html"]),
          'good_lines': ['<button type="button" class="close close-alert-word-status" aria-label="{{t \'Close\' }}">'],
          'bad_lines': ['<button aria-label="foo"></button>']},
         {'pattern': 'script src="http',
