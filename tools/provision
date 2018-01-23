@@ -10,6 +10,15 @@ if [ "$EUID" -eq 0 ]; then
     exit 1
 fi
 
+if id zulip >/dev/null 2>&1; then
+    echo "Error: User 'zulip' exists in this machine."
+    echo "This means a Zulip production environment exists here"
+    echo "or a production install has been run before."
+    echo "Currently provisioning a development environment"
+    echo "within a production environment is not yet supported."
+    exit 1
+fi
+
 #Make the script independent of the location from where it is
 #executed
 PARENT_PATH=$( cd "$(dirname "${BASH_SOURCE}")" ; pwd -P )
