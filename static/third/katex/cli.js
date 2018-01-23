@@ -36,15 +36,7 @@ SOFTWARE.
 let katex;
 try {
     // Attempt to import KaTeX from the production bundle
-    const paths = require('/home/zulip/deployments/current/staticfiles.json').paths.values();
-    var katexPath = paths[paths.lastIndexOf('webpack-bundles/katex-')];
-    if (!katexPath.endsWith('js')) {
-      // This is to anticipate that the webpack staticfiles ordering may not be
-      // deterministic, that katex-somehash.js.map gets selected instead of
-      // katex-somehash.js
-      katexPath = paths[paths.indexOf('webpack-bundles/katex-')];
-    }
-    katex = require('/home/zulip/prod-static/' + katexPath);
+    katex = require("/home/zulip/prod-static/min/katex.js");
 } catch (ex) {
     // Import KaTeX from node_modules (development environment) otherwise
     katex = require("../../node_modules/katex/dist/katex.js");
