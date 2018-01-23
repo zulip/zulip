@@ -223,9 +223,12 @@ if [ "$has_appserver" = 0 ]; then
 fi
 
 # Restart camo since generate_secrets.py likely replaced its secret key
-if [ "$has_camo" = 0 ] && [ -z "$TRAVIS" ]; then
-    # We don't run this in Travis CI due to a weird hang bug
-    service camo restart
+if [ "$has_camo" = 0 ]; then
+    # Cut off stdin because a bug in the Debian packaging for camo
+    # causes our stdin to leak to the daemon, which can cause tools
+    # invoking the installer to hang.
+    # TODO: fix in Debian too.
+    service camo restart </dev/null
 fi
 
 if [ "$has_rabbit" = 0 ]; then
