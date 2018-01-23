@@ -20,6 +20,9 @@ suppress_patterns = [
 
     (b"settings.py", b"settings import *' used; unable to detect undefined names"),
     (b"settings.py", b"may be undefined, or defined from star imports"),
+
+    # Sphinx adds `tags` specially to the environment when running conf.py.
+    (b"docs/conf.py", b"undefined name 'tags'"),
 ]
 
 def suppress_line(line: str) -> bool:
