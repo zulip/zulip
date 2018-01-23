@@ -44,13 +44,13 @@ if [ -d "$INSTALLER" ]; then
     installer_dir="$(readlink -f $INSTALLER)"
 else
     installer_dir="$(mktemp -d --tmpdir zulip-server-XXXXX)"
-    tar -xf "$INSTALLER" -C "$installer_dir" --strip-components=1
+    tar -xf "$INSTALLER" -C "$installer_dir" --transform='s,^[^/]*,zulip-server,'
 fi
 
 mkdir -p /srv/zulip/test-install/pip-cache
 
 lxc-copy --ephemeral --keepdata -n "$BASE_CONTAINER_NAME" -N "$CONTAINER_NAME" \
-         -m bind="$installer_dir":/tmp/zulip-server:ro,bind=/srv/zulip/test-install/pip-cache:/root/.cache/pip
+         -m overlay="$installer_dir":/tmp/src/,bind=/srv/zulip/test-install/pip-cache:/root/.cache/pip
 
 run() {
     lxc-attach -n "$CONTAINER_NAME" -- "$@"
@@ -71,7 +71,7 @@ if [ -z "ok" ]; then
     exit 1
 fi
 
-run /tmp/zulip-server/scripts/setup/install --snakeoil-cert "${INSTALLER_ARGS[@]}"
+run /tmp/src/zulip-server/scripts/setup/install --snakeoil-cert "${INSTALLER_ARGS[@]}"
 # TODO install ends as a zombie (workaround: `sudo ps aux | grep lxc-attach`, kill that)
 
 # TODO settings.py, initialize-database, create realm
