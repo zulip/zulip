@@ -1,3 +1,7 @@
+```eval_rst
+:orphan:
+```
+
 # Password strength
 
 When a user tries to set a password, we use [zxcvbn][zxcvbn] to check
