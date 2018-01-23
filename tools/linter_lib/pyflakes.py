@@ -13,7 +13,16 @@ def check_pyflakes(options, by_lang):
         return False
     failed = False
     color = next(colors)
-    pyflakes = subprocess.Popen(['pyflakes'] + by_lang['py'],
+
+    excluded_files = set([
+        # We are ignoring this file because its run by sphinx in a sandboxed
+        # environment and thus some objects which are not defined but used in
+        # the file actually do exist in the environment when this file is run.
+        'docs/conf.py',
+    ])
+    files_to_check = list(set(by_lang['py']) - excluded_files)
+
+    pyflakes = subprocess.Popen(['pyflakes'] + files_to_check,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
 
