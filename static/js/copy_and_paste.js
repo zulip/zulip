@@ -35,6 +35,19 @@ function find_boundary_tr(initial_tr, iterate_row) {
     return [rows.id(tr), skip_same_td_check];
 }
 
+function check_multiple_messages_selected(start_id, end_id) {
+    // Check if we are selcting more than two recipient blocks
+    var more_than_two = false;
+    var row;
+    for (row = current_msg_list.get_row(start_id);
+        rows.id(row) <= end_id;
+        row = rows.next_visible(row)) {
+        if (row.prev().hasClass("message_header") && rows.id(row) !== start_id) {
+           return true;
+       }
+    }
+    return more_than_two;
+}
 
 function copy_handler() {
     var selection = window.getSelection();
@@ -53,6 +66,7 @@ function copy_handler() {
     var skip_same_td_check = false;
     var div = $('<div>');
     var content;
+    var multiple_messages_selected = false;
     for (i = 0; i < selection.rangeCount; i += 1) {
         range = selection.getRangeAt(i);
         ranges.push(range);
@@ -89,6 +103,8 @@ function copy_handler() {
             skip_same_td_check = true;
         }
 
+        multiple_messages_selected = check_multiple_messages_selected(start_id, end_id);
+
         // we should let the browser handle the copy-paste entirely on its own
         // (In this case, there is no need for our special copy code)
         if (!skip_same_td_check &&
@@ -96,11 +112,24 @@ function copy_handler() {
             return;
         }
 
+        if (multiple_messages_selected) {
+            for (row = current_msg_list.get_row(start_id);;
+                row = rows.prev_visible(row)) {
+                if (row.prev().hasClass("message_header")) {
+                    content = $('<div>').text(row.prev().text()
+                                        .replace(/\s+/g, " ")
+                                        .replace(/^\s/, "").replace(/\s$/, ""));
+                    div.append($('<p>').append($('<strong>').text(content.text())));
+                    break;
+                }
+            }
+        }
+
             // Construct a div for what we want to copy (div)
         for (row = current_msg_list.get_row(start_id);
              rows.id(row) <= end_id;
              row = rows.next_visible(row)) {
-             if (row.prev().hasClass("message_header")) {
+             if (row.prev().hasClass("message_header") && multiple_messages_selected) {
                 content = $('<div>').text(row.prev().text()
                                             .replace(/\s+/g, " ")
                                             .replace(/^\s/, "").replace(/\s$/, ""));
