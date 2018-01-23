@@ -94,7 +94,7 @@ logged in as root, use `sudo -i` to start an interactive root shell.
 The quickest way to create a cert is to use the script we provide:
 
 ```
-scripts/setup/generate-self-signed-certs zulip.example.com
+scripts/setup/generate-self-signed-cert zulip.example.com
 ```
 
 from the root of your Zulip directory (replacing `zulip.example.com`

@@ -130,7 +130,7 @@ configure_nginx() {
 configure_certs() {
     echo "Executing certificates configuration..."
     if [ ! -f "$DATA_DIR/certs/zulip.key" ] && [ ! -f "$DATA_DIR/certs/zulip.combined-chain.crt" ]; then
-        /root/zulip/scripts/setup/generate-self-signed-certs "$ZULIP_USER_DOMAIN"
+        /root/zulip/scripts/setup/generate-self-signed-cert "$ZULIP_USER_DOMAIN"
         mv /etc/ssl/private/zulip.key "$DATA_DIR/certs/zulip.key"
         mv /etc/ssl/certs/zulip.combined-chain.crt "$DATA_DIR/certs/zulip.combined-chain.crt"
     fi

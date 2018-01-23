@@ -68,7 +68,7 @@ Files: puppet/zulip_internal/files/zulip-ec2-configure-interfaces
 Copyright: 2013-2017, Dropbox, Inc., Kandra Labs, Inc., and contributors
 License: Expat
 
-Files: scripts/setup/generate-self-signed-certs
+Files: scripts/setup/generate-self-signed-cert
 Copyright: 2003-2006 Thom May
            2006 Fabio M. Di Nitto
            2006 Adam Conrad
