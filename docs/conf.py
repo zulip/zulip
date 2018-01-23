@@ -34,8 +34,6 @@ from typing import Any, Dict, List, Optional
 extensions = []  # type: List[str]
 
 # Add any paths that contain templates here, relative to this directory.
-# For more info about changes in _templates/layout.html,
-# see https://github.com/zulip/zulip/pull/7463.
 templates_path = ['_templates']
 
 # The encoding of source files.
