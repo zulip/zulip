@@ -150,11 +150,12 @@ APT_DEPENDENCIES = {
         "postgresql-9.5",
         "postgresql-9.5-tsearch-extras",
         "postgresql-9.5-pgroonga",
+        "virtualenv",  # see comment on stretch
     ],
     "zesty": UBUNTU_COMMON_APT_DEPENDENCIES + [
         "postgresql-9.6",
         "postgresql-9.6-pgroonga",
-        "virtualenv",
+        "virtualenv",  # see comment on stretch
     ],
 }
 
