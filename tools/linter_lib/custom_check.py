@@ -694,7 +694,7 @@ def build_custom_checkers(by_lang):
 
         color = next(colors)
         for fn in by_lang['js']:
-            if custom_check_file(fn, 'js', js_rules, color):
+            if custom_check_file(fn, 'js', js_rules, color, max_length=120):
                 failed = True
 
         color = next(colors)
