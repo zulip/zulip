@@ -31,7 +31,7 @@ else if:
 * you have an existing workflow for managing SSL certificates
   that you prefer;
 * you need wildcard certificates (support from Let's Encrypt planned
-  for [January 2018][letsencrypt-wildcard]); or
+  for [early 2018][letsencrypt-wildcard]); or
 * your Zulip server is not on the public Internet. (In this case you
   can [still use Certbot][certbot-manual-mode], but it's less
   convenient; and you'll want to ignore Zulip's automation.)
