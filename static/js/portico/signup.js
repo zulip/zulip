@@ -4,7 +4,7 @@ $(function () {
     var password_field = $('#id_password, #id_new_password1');
 
     $.validator.addMethod('password_strength', function (value) {
-        return common.password_quality(value, undefined, password_field);
+        return common.password_quality(value, undefined, undefined, password_field);
     }, function () {
         return common.password_warning(password_field.val(), password_field);
     });
@@ -41,7 +41,8 @@ $(function () {
     password_field.on('change keyup', function () {
         // Update the password strength bar even if we aren't validating
         // the field yet.
-        common.password_quality($(this).val(), $('#pw_strength .bar'), $(this));
+        common.password_quality($(this).val(), $('#pw_strength .bar'), $('.pw_score'), $(this));
+        common.password_crack_time($(this).val(), $('.pw_crack_time'));
     });
 
     $("#send_confirm").validate({

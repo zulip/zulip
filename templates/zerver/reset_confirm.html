@@ -47,6 +47,10 @@
                     </div>
                 </div>
                 <div class="input-box">
+                    <div class="pw_score" title="{{ _('Password strength') }}" style="font-weight: 400;"></div>
+                    <div class="pw_crack_time" style="font-weight: 400;"></div>
+                </div>
+                <div class="input-box">
                     <label for="id_new_password2" class="">{{ _('Confirm password') }}</label>
                     <input id="id_new_password2" class="required" type="password" name="new_password2"
                            value="{% if form.new_password2.value() %}{{ form.new_password2.value() }}{% endif %}"
