@@ -119,9 +119,13 @@ DEFAULT_SETTINGS = {
     'ALLOWED_HOSTS': [],
 
     # Basic email settings
-    'EMAIL_HOST': None,
     'NOREPLY_EMAIL_ADDRESS': "noreply@" + EXTERNAL_HOST.split(":")[0],
     'PHYSICAL_ADDRESS': '',
+
+    # SMTP settings
+    'EMAIL_HOST': None,
+    # Other settings, like EMAIL_HOST_USER, EMAIL_PORT, and EMAIL_USE_TLS,
+    # we leave up to Django's defaults.
 
     # Google auth
     'GOOGLE_OAUTH2_CLIENT_ID': None,
