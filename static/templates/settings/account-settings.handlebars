@@ -13,12 +13,9 @@
                             <i class="fa fa-pencil"></i>
                         </button>
                     </a>
-                    <i class="icon-vector-question-sign change_email_tooltip" {{#unless page_params.realm_email_changes_disabled}}style="display:none" {{/unless}} data-toggle="tooltip"
+                    <i class="icon-vector-question-sign change_email_tooltip settings-info-icon" {{#unless page_params.realm_email_changes_disabled}}style="display:none" {{/unless}} data-toggle="tooltip"
                     title="{{t 'Changing email addresses has been disabled by your Zulip organization administrators. Contact an administrator for help.' }}"></i>
                 </div>
-
-                <i class="icon-vector-question-sign settings-info-icon change_email_tooltip" {{#unless page_params.realm_email_changes_disabled}}style="display:none" {{/unless}} data-toggle="tooltip"
-                title="{{t 'Changing email addresses has been disabled by your Zulip organization administrators. Contact an administrator for help.' }}"></i>
 
                 <div id="change_email_modal" class="modal hide" tabindex="-1" role="dialog"
                     aria-labelledby="change_email_modal_label" aria-hidden="true">
@@ -50,7 +47,7 @@
                                 <i class="fa fa-pencil"></i>
                             </button>
                         </a>
-                        <i class="icon-vector-question-sign change_name_tooltip" data-toggle="tooltip"
+                        <i class="icon-vector-question-sign change_name_tooltip settings-info-icon" data-toggle="tooltip"
                         {{#unless page_params.realm_name_changes_disabled}}style="display:none" {{/unless}}
                         title="{{t 'Changing your name has been disabled by your Zulip organization administrators. Contact an administrator for help.' }}"/>
                     </div>
@@ -72,19 +69,11 @@
                             <button id='change_full_name_button' class="button rounded sea-green" data-dismiss="modal">{{t "Change" }}</button>
                         </div>
                     </div>
-                    <div class="input-group">
-                        <div class="input-group">
-                            <label for="" class="inline-block"></label>
-                            <button type="submit" class="button rounded w-200 btn-danger input-size" id="user_deactivate_account_button">
-                                {{t 'Deactivate account' }}
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </form>
 
             <form class="password-change-form grid">
-                <div class="input-group user-name-section">
+                <div class="user-name-section">
                     <label class="inline-block title">{{t "Password" }}</label>
                     <a id="change_password" {{#if page_params.realm_email_auth_enabled}}href="#change_password"{{/if}}>
                         {{#if page_params.realm_email_auth_enabled}}
@@ -125,6 +114,15 @@
                         <button class="button white rounded" type="button" data-dismiss="modal">{{t "Cancel" }}</button>
                         <button id='change_password_button' class="button rounded sea-green" data-dismiss="modal">{{t "Change" }}</button>
                     </div>
+                </div>
+            </form>
+
+            <form class="deactivate_account grid">
+                <div class="input-group">
+                    <label for="" class="inline-block"></label>
+                    <button type="submit" class="button rounded w-200 btn-danger input-size" id="user_deactivate_account_button">
+                        {{t 'Deactivate account' }}
+                    </button>
                 </div>
             </form>
         </div>
