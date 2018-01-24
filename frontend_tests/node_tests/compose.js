@@ -56,7 +56,7 @@ zrequire('Handlebars', 'handlebars');
 zrequire('stream_data');
 zrequire('compose_state');
 zrequire('people');
-zrequire('input_pill')
+zrequire('input_pill');
 zrequire('compose');
 zrequire('upload');
 page_params.use_websockets = false;

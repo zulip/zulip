@@ -624,7 +624,7 @@ exports.initialize = function () {
             return typeahead_helper.sort_recipientbox_typeahead(
                 this.query, matches, "");
         },
-        updater: function (item, event) {
+        updater: function (item) {
             pm_pill().pill.append(item.full_name, item.user_id);
             pm_pill().clear_text();
         },

@@ -751,11 +751,13 @@ exports.initialize_pills = function () {
             return;
         }
 
-        if (match) {
-            return { key: match.user_id, value: match.full_name };
-        } else {
-            return { key: value, value: value };
-        }
+        return match ? {
+            key: match.user_id,
+            value: match.full_name,
+        } : {
+            key: value,
+            value: value,
+        };
     });
 };
 
