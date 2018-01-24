@@ -29,6 +29,7 @@ class zulip_ops::nagios {
   $hosts_redis = split(zulipconf("nagios", "hosts_redis", undef), ",")
   $hosts_loadbalancer = split(zulipconf("nagios", "hosts_loadbalancer", undef), ",")
   $hosts_stats = split(zulipconf("nagios", "hosts_stats", undef), ",")
+  $hosts_fullstack = split(zulipconf("nagios", "hosts_fullstack", undef), ",")
 
   apache2site { 'nagios':
     require => [File['/etc/apache2/sites-available/'],

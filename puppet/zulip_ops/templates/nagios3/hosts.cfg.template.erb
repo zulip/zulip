@@ -18,6 +18,16 @@ define host{
        }
 <% end -%>
 
+<% @hosts_fullstack.each do |host| -%>
+define host{
+       use              generic-host
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %>
+       hostgroups       all,web,frontends,staging_frontends,not_pageable_servers,postgres,postgres_appdb_primary
+       }
+<% end -%>
+
 <% @hosts_app_staging.each do |host| -%>
 define host{
        use              generic-host
