@@ -115,7 +115,6 @@ def check_html_templates(templates, all_dups):
         'templates/analytics/activity.html',
         'templates/analytics/stats.html',
         'templates/corporate/zephyr-mirror.html',
-        'templates/zerver/api.html',
         'templates/zerver/compose.html',
         'templates/zerver/hello.html',
         'templates/zerver/index.html',
