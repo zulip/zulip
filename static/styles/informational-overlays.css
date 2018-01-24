@@ -13,7 +13,7 @@
 
 .informational-overlays .overlay-tabs {
     padding: 10px 0px;
-    border-bottom: 1px solid hsl(0, 0%, 93%);
+    border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
 }
 
 .informational-overlays .overlay-tabs .tab-switcher {
