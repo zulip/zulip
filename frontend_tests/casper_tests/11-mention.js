@@ -13,7 +13,7 @@ casper.then(function () {
         subject: 'Test mention all',
     });
 });
-common.select_item_via_typeahead('#compose-textarea', '@all', 'all');
+common.select_item_via_typeahead('#compose-textarea', '@**all**', 'all');
 
 casper.then(function () {
     common.turn_off_press_enter_to_send();
@@ -33,7 +33,7 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitForSelectorText(".compose-all-everyone-msg", "Are you sure you want to mention all", function () {
-        casper.test.info('Warning message appears when mentioning @all');
+        casper.test.info('Warning message appears when mentioning @**all**');
         casper.test.assertSelectorHasText('.compose-all-everyone-msg', 'Are you sure you want to mention all');
         casper.click('.compose-all-everyone-confirm');
     });

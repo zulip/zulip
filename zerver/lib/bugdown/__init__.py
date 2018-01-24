@@ -1362,9 +1362,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
             if match.startswith("**") and match.endswith("**"):
                 name = match[2:-2]
             else:
-                if not mention.user_mention_matches_wildcard(match):
-                    return None
-                name = match
+                return None
 
             wildcard = mention.user_mention_matches_wildcard(name)
             user = db_data['mention_data'].get_user(name)
