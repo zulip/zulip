@@ -296,6 +296,17 @@ body.dark-mode .alert.alert-success {
     border-color: #1e9e7f;
 }
 
+body.dark-mode .alert.alert-error,
+body.dark-mode .alert.alert-danger {
+    background: hsl(318, 12%, 21%);
+    color: inherit;
+    border: 1px solid hsl(0, 75%, 65%);
+}
+
+body.dark-mode .alert .close {
+    color: inherit;
+}
+
 body.dark-mode .alert-box .alert,
 body.dark-mode .alert.alert-error {
     background: hsl(318, 12%, 21%);
