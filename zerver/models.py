@@ -609,10 +609,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     alert_words = models.TextField(default=u'[]')  # type: Text # json-serialized list of strings
 
     objects = UserManager()  # type: UserManager
-
-    DEFAULT_UPLOADS_QUOTA = 1024*1024*1024
-
-    quota = models.IntegerField(default=DEFAULT_UPLOADS_QUOTA)  # type: int
     # The maximum length of a timezone in pytz.all_timezones is 32.
     # Setting max_length=40 is a safe choice.
     # In Django, the convention is to use empty string instead of Null

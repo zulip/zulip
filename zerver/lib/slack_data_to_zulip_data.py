@@ -84,8 +84,6 @@ def users_to_zerver_userprofile(slack_data_dir: str, realm_id: int, timestamp: A
         if timezone is None or '/' not in timezone:
             timezone = _default_timezone
 
-        # userprofile's quota is hardcoded as per
-        # https://github.com/zulip/zulip/blob/e1498988d9094961e6f9988fb308b3e7310a8e74/zerver/migrations/0059_userprofile_quota.py#L18
         userprofile = dict(
             enable_desktop_notifications=DESKTOP_NOTIFICATION,
             is_staff=user.get('is_admin', False),
@@ -134,7 +132,6 @@ def users_to_zerver_userprofile(slack_data_dir: str, realm_id: int, timestamp: A
             onboarding_steps="[]",
             emojiset="google",
             realm=realm_id,
-            quota=1073741824,
             # invites_used=0,  # TODO
             id=user_id_count)
 
