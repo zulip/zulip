@@ -513,21 +513,21 @@ html {
     text-align: left;
 }
 
-.split-view .info-box .organization-name,
-.split-view .info-box .organization-path {
+.info-box .organization-name,
+.info-box .organization-path {
     max-width: 100%;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
 }
 
-.split-view .info-box .organization-name {
+.info-box .organization-name {
     font-size: 1.5em;
     font-weight: 300;
     line-height: 1.2;
 }
 
-.split-view .info-box .organization-path {
+.info-box .organization-path {
     font-weight: 400;
     color: hsl(0, 0%, 46%);
     margin-top: 5px;
@@ -662,6 +662,14 @@ button.login-google-button {
 
 #registration section {
     margin: 30px;
+}
+
+#registration .info-box {
+    margin: 10px 0px 0px 20px;
+}
+
+#registration .info-box .organization-name {
+    max-width: 228px;
 }
 
 #registration .input-box {
