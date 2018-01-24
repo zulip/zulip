@@ -71,6 +71,6 @@ if [ -z "ok" ]; then
     exit 1
 fi
 
-run eatmydata -- /tmp/src/zulip-server/scripts/setup/install --snakeoil-cert "${INSTALLER_ARGS[@]}"
+run eatmydata -- /tmp/src/zulip-server/scripts/setup/install --self-signed-cert "${INSTALLER_ARGS[@]}"
 
 # TODO settings.py, initialize-database, create realm

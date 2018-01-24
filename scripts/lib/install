@@ -9,7 +9,7 @@ Usage:
 
 Other options:
   --certbot
-  --snakeoil-cert
+  --self-signed-cert
 
 If --certbot is used, --hostname and --email are required.
 EOF
@@ -18,7 +18,7 @@ EOF
 
 # Shell option parsing.  Over time, we'll want to move some of the
 # environment variables below into this self-documenting system.
-args="$(getopt -o '' --long help,snakeoil-cert,certbot,hostname:,email: -n "$0" -- "$@")"
+args="$(getopt -o '' --long help,self-signed-cert,certbot,hostname:,email: -n "$0" -- "$@")"
 eval "set -- $args"
 while true; do
     case "$1" in
@@ -26,8 +26,8 @@ while true; do
             show_help=1
             shift
             ;;
-        --snakeoil-cert)
-            SNAKEOIL_CERT=1
+        --self-signed-cert)
+            SELF_SIGNED_CERT=1
             shift
             ;;
         --certbot)
@@ -100,7 +100,7 @@ ZULIP_PATH="$(realpath $(dirname $0)/../..)"
 "$ZULIP_PATH"/scripts/lib/check-upstart
 
 # Check early for missing SSL certificates
-if [ "$PUPPET_CLASSES" = "zulip::voyager" ] && [ -z "$USE_CERTBOT""$SNAKEOIL_CERT" ] && { ! [ -e "/etc/ssl/private/zulip.key" ] || ! [ -e "/etc/ssl/certs/zulip.combined-chain.crt" ]; }; then
+if [ "$PUPPET_CLASSES" = "zulip::voyager" ] && [ -z "$USE_CERTBOT""$SELF_SIGNED_CERT" ] && { ! [ -e "/etc/ssl/private/zulip.key" ] || ! [ -e "/etc/ssl/certs/zulip.combined-chain.crt" ]; }; then
    set +x
    echo
    echo "Could not find SSL certificates!"
@@ -108,7 +108,7 @@ if [ "$PUPPET_CLASSES" = "zulip::voyager" ] && [ -z "$USE_CERTBOT""$SNAKEOIL_CER
        [ -e "$f" ] || echo " - $f is missing!"
    done
    echo "See https://zulip.readthedocs.io/en/latest/production/ssl-certificates.html for help."
-   echo "For non-production testing, try the --snakeoil-cert option to use"
+   echo "For non-production testing, try the --self-signed-cert option to use"
    echo "your system's self-signed certificate."
    echo
    echo "Once fixed, just rerun scripts/setup/install; it'll pick up from here!"
@@ -187,7 +187,7 @@ fi
 apt-get -y upgrade
 
 if [ "$has_nginx" = 0 ]; then
-    if [ -n "$SNAKEOIL_CERT" ] && ! [ -e "/etc/ssl/private/zulip.key" ]; then
+    if [ -n "$SELF_SIGNED_CERT" ] && ! [ -e "/etc/ssl/private/zulip.key" ]; then
         apt-get install -y openssl ssl-cert
         ln -nsf /etc/ssl/certs/ssl-cert-snakeoil.pem /etc/ssl/certs/zulip.combined-chain.crt
         ln -nsf /etc/ssl/private/ssl-cert-snakeoil.key /etc/ssl/private/zulip.key
