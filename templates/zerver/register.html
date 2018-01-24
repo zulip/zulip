@@ -27,6 +27,14 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             {{ csrf_input }}
 
             <section class="user-registration">
+                {% if realm_name %}
+                <img class="avatar inline-block" src="{{ realm_icon }}" alt="" />
+                <div class="info-box inline-block">
+                    <div class="organization-name">{{ realm_name }}</div>
+                    <div class="organization-path">{{ realm_uri }}</div>
+                </div>
+                {% endif %}
+
                 <div class="input-box no-validation">
                     <input type='hidden' name='key' value='{{ key }}' />
                     <input type='hidden' name='timezone' id='timezone'/>
