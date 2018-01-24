@@ -280,6 +280,12 @@ body.dark-mode .user-mention-me {
     box-shadow: 0px 0px 0px 1px hsla(330, 40%, 20%, 1);
 }
 
+body.dark-mode .tip {
+    color: inherit;
+    background-color: hsla(46, 28%, 38%, 0.27);
+    border: 1px solid hsl(49, 38%, 46%);
+}
+
 body.dark-mode .alert {
     text-shadow: none;
 }
