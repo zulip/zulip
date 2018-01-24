@@ -196,6 +196,8 @@ function edit_message(row, raw_content) {
 
     form.keydown(_.partial(handle_edit_keydown, false));
 
+    upload.feature_check($('#attach_files_' + rows.id(row)));
+
     var message_edit_content = row.find('textarea.message_edit_content');
     var message_edit_topic = row.find('input.message_edit_topic');
     var message_edit_topic_propagate = row.find('select.message_edit_topic_propagate');

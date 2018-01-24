@@ -11,6 +11,10 @@ set_global('document', {
     execCommand: function () { return false; },
     location: {},
 });
+set_global('window', {
+    bridge: false,
+});
+
 set_global('channel', {});
 set_global('templates', {});
 

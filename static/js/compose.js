@@ -19,7 +19,6 @@ exports.announce_warn_threshold = 60;
 exports.uploads_domain = document.location.protocol + '//' + document.location.host;
 exports.uploads_path = '/user_uploads';
 exports.uploads_re = new RegExp("\\]\\(" + exports.uploads_domain + "(" + exports.uploads_path + "[^\\)]+)\\)", 'g');
-exports.clone_file_input = undefined;
 
 function make_uploads_relative(content) {
     // Rewrite uploads in markdown links back to domain-relative form
@@ -739,11 +738,7 @@ exports.initialize = function () {
 
     resize.watch_manual_resize("#compose-textarea");
 
-    // Run a feature test and decide whether to display
-    // the "Attach files" button
-    if (window.XMLHttpRequest && (new XMLHttpRequest()).upload) {
-        $("#compose #attach_files").removeClass("notdisplayed");
-    }
+    upload.feature_check($("#compose #attach_files"));
 
     // Lazy load the Dropbox script, since it can slow our page load
     // otherwise, and isn't enabled for all users. Also, this Dropbox
@@ -921,9 +916,6 @@ exports.initialize = function () {
 
     $("#compose").on("click", "#attach_files", function (e) {
         e.preventDefault();
-        if (exports.clone_file_input === undefined) {
-            exports.clone_file_input = $('#file_input').clone(true);
-        }
         $("#compose #file_input").trigger("click");
     });
 
@@ -1025,7 +1017,11 @@ exports.initialize = function () {
         Dropbox.choose(options);
     });
 
-    upload.initialize();
+    $('#compose').filedrop(
+        upload.options({
+            mode: 'compose',
+        })
+    );
 
     if (page_params.narrow !== undefined) {
         if (page_params.narrow_topic !== undefined) {
