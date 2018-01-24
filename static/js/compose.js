@@ -427,15 +427,8 @@ exports.get_invalid_recipient_emails = function () {
     return invalid_recipients;
 };
 
-function check_unsubscribed_stream_for_send(stream_name, autosubscribe) {
-    var stream_obj = stream_data.get_sub(stream_name);
+function check_unsubscribed_stream_for_send(stream_name) {
     var result;
-    if (!stream_obj) {
-        return "does-not-exist";
-    }
-    if (!autosubscribe) {
-        return "not-subscribed";
-    }
 
     // In the rare circumstance of the autosubscribe option, we
     // *Synchronously* try to subscribe to the stream before sending
@@ -537,8 +530,15 @@ exports.validate_stream_message_address_info = function (stream_name) {
     if (stream_data.is_subscribed(stream_name)) {
         return true;
     }
+    var stream_obj = stream_data.get_sub(stream_name);
+    if (!stream_obj) {
+        return exports.validation_error("does-not-exist", stream_name);
+    }
     var autosubscribe = page_params.narrow_stream !== undefined;
-    var error_type = check_unsubscribed_stream_for_send(stream_name, autosubscribe);
+    if (!autosubscribe) {
+        return exports.validation_error("not-subscribed", stream_name);
+    }
+    var error_type = check_unsubscribed_stream_for_send(stream_name);
     return exports.validation_error(error_type, stream_name);
 };
 
