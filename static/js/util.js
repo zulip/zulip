@@ -198,7 +198,7 @@ exports.CachedValue.prototype = {
 };
 
 exports.is_all_or_everyone_mentioned = function (message_content) {
-    var all_everyone_re = /(^|\s)(@\*{2}(all|everyone)\*{2})|(@(all|everyone))($|\s)/;
+    var all_everyone_re = /(^|\s)(@\*{2}(all|everyone)\*{2})($|\s)/;
     return all_everyone_re.test(message_content);
 };
 

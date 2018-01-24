@@ -368,9 +368,19 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
     input = "test @all";
     message = {subject: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    assert.equal(message.mentioned, true);
+    assert.equal(message.mentioned, false);
+
+    input = "test @everyone";
+    message = {subject: "No links here", raw_content: input};
+    markdown.apply_markdown(message);
+    assert.equal(message.mentioned, false);
 
     input = "test @any";
+    message = {subject: "No links here", raw_content: input};
+    markdown.apply_markdown(message);
+    assert.equal(message.mentioned, false);
+
+    input = "test @alleycat.com";
     message = {subject: "No links here", raw_content: input};
     markdown.apply_markdown(message);
     assert.equal(message.mentioned, false);
@@ -381,6 +391,11 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
     assert.equal(message.mentioned, true);
 
     input = "test @*backend*";
+    message = {subject: "No links here", raw_content: input};
+    markdown.apply_markdown(message);
+    assert.equal(message.mentioned, false);
+
+    input = "test @**invalid_user**";
     message = {subject: "No links here", raw_content: input};
     markdown.apply_markdown(message);
     assert.equal(message.mentioned, false);

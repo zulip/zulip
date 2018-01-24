@@ -253,7 +253,7 @@ people.add(bob);
     $('#compose-all-everyone').append = function (data) {
         compose_content = data;
     };
-    compose_state.message_content('Hey @all');
+    compose_state.message_content('Hey @**all**');
     assert(!compose.validate());
     assert.equal($("#compose-send-button").prop('disabled'), false);
     assert(!$("#compose-send-status").visible());

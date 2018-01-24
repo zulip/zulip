@@ -772,7 +772,7 @@ class BugdownTest(ZulipTestCase):
         user_profile = self.example_user('othello')
         msg = Message(sender=user_profile, sending_client=get_client("test"))
 
-        content = "@all test"
+        content = "@**all** test"
         self.assertEqual(render_markdown(msg, content),
                          '<p><span class="user-mention" data-user-email="*" data-user-id="*">'
                          '@all'
@@ -783,12 +783,44 @@ class BugdownTest(ZulipTestCase):
         user_profile = self.example_user('othello')
         msg = Message(sender=user_profile, sending_client=get_client("test"))
 
-        content = "@everyone test"
+        content = "@**everyone** test"
         self.assertEqual(render_markdown(msg, content),
-                         '<p><span class="user-mention" data-user-email="*" data-user-id="*">@everyone</span> test</p>')
+                         '<p><span class="user-mention" data-user-email="*" data-user-id="*">'
+                         '@everyone'
+                         '</span> test</p>')
         self.assertTrue(msg.mentions_wildcard)
 
-    def test_mention_everyone_style_normal_user(self) -> None:
+    def test_mention_at_wildcard(self) -> None:
+        user_profile = self.example_user('othello')
+        msg = Message(sender=user_profile, sending_client=get_client("test"))
+
+        content = "@all test"
+        self.assertEqual(render_markdown(msg, content),
+                         '<p>@all test</p>')
+        self.assertFalse(msg.mentions_wildcard)
+        self.assertEqual(msg.mentions_user_ids, set([]))
+
+    def test_mention_at_everyone(self) -> None:
+        user_profile = self.example_user('othello')
+        msg = Message(sender=user_profile, sending_client=get_client("test"))
+
+        content = "@everyone test"
+        self.assertEqual(render_markdown(msg, content),
+                         '<p>@everyone test</p>')
+        self.assertFalse(msg.mentions_wildcard)
+        self.assertEqual(msg.mentions_user_ids, set([]))
+
+    def test_mention_word_starting_with_at_wildcard(self) -> None:
+        user_profile = self.example_user('othello')
+        msg = Message(sender=user_profile, sending_client=get_client("test"))
+
+        content = "test @alleycat.com test"
+        self.assertEqual(render_markdown(msg, content),
+                         '<p>test @alleycat.com test</p>')
+        self.assertFalse(msg.mentions_wildcard)
+        self.assertEqual(msg.mentions_user_ids, set([]))
+
+    def test_mention_at_normal_user(self) -> None:
         user_profile = self.example_user('othello')
         msg = Message(sender=user_profile, sending_client=get_client("test"))
 
@@ -818,7 +850,7 @@ class BugdownTest(ZulipTestCase):
 
         assert_mentions('', set())
         assert_mentions('boring', set())
-        assert_mentions('@all', set())
+        assert_mentions('@**all**', set())
         assert_mentions('smush@**steve**smush', set())
 
         assert_mentions(
@@ -885,7 +917,7 @@ class BugdownTest(ZulipTestCase):
 
         assert_mentions('', set())
         assert_mentions('boring', set())
-        assert_mentions('@all', set())
+        assert_mentions('@**all**', set())
         assert_mentions('smush@*steve*smush', set())
 
         assert_mentions(
