@@ -448,6 +448,18 @@ class TestMissedMessages(ZulipTestCase):
                           'title="avatar_103.jpeg">avatar_103.jpeg</a>.</p></div>'
         self.assertEqual(actual_output, expected_output)
 
+        # A message containing only an inline image URL preview, we do
+        # somewhat more extensive surgery.
+        test_data = '<div class="message_inline_image"><a href="https://www.google.com/images/srpr/logo4w.png" ' + \
+                    'target="_blank" title="https://www.google.com/images/srpr/logo4w.png">' + \
+                    '<img data-original="/thumbnail/https%3A//www.google.com/images/srpr/logo4w.png?size=0x0" ' + \
+                    'src="/thumbnail/https%3A//www.google.com/images/srpr/logo4w.png?size=0x100"></a></div>'
+        actual_output = relative_to_full_url("http://example.com", test_data)
+        expected_output = '<p><a href="https://www.google.com/images/srpr/logo4w.png" ' + \
+                          'target="_blank" title="https://www.google.com/images/srpr/logo4w.png">' + \
+                          'https://www.google.com/images/srpr/logo4w.png</a></p>'
+        self.assertEqual(actual_output, expected_output)
+
     def test_fix_emoji(self) -> None:
         # An emoji.
         test_data = '<p>See <span class="emoji emoji-26c8" title="cloud with lightning and rain">' + \
