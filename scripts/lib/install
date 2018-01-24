@@ -43,10 +43,15 @@ while true; do
             shift
             ;;
         --)
+            shift
             break
             ;;
     esac
 done
+
+if [ "$#" -gt 0 ]; then
+    usage
+fi
 
 if [ -n "$show_help" ]; then
     usage
