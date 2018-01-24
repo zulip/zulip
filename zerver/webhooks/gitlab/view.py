@@ -1,5 +1,6 @@
 from functools import partial
 from typing import Any, Dict, Iterable, Optional, Text
+import re
 
 from django.http import HttpRequest, HttpResponse
 
@@ -61,12 +62,16 @@ def get_tag_push_event_body(payload: Dict[str, Any]) -> Text:
     )
 
 def get_issue_created_event_body(payload: Dict[str, Any]) -> Text:
+    description = payload['object_attributes'].get('description')
+    # Filter out multiline hidden comments
+    description = re.sub('<!--.*?-->', '', description, 0, re.DOTALL)
+    description = description.rstrip()
     return get_issue_event_message(
         get_issue_user_name(payload),
         'created',
         get_object_url(payload),
         payload['object_attributes'].get('iid'),
-        payload['object_attributes'].get('description'),
+        description,
         get_objects_assignee(payload)
     )
 
