@@ -1,6 +1,6 @@
 {{! Client-side Mustache template for rendering the message edit form. }}
 
-<form id="message_edit_form" class="form-horizontal">
+<form id="message_edit_form" class="form-horizontal new-style">
     {{#if is_stream}}
     <div class="control-group no-margin">
         <div class="controls edit-controls">
@@ -26,10 +26,10 @@
     <div class="control-group action-buttons">
         <div class="controls edit-controls">
             {{#if is_editable}}
-            <button type="button" class="message_edit_save btn btn-primary btn-small">{{t "Save" }}</button>
-            <button type="button" class="message_edit_cancel btn btn-default btn-small">{{t "Cancel" }}</button>
+            <button type="button" class="button small rounded sea-green message_edit_save">{{t "Save" }}</button>
+            <button type="button" class="button small rounded btn-danger message_edit_cancel">{{t "Cancel" }}</button>
             {{else}}
-            <button type="button" class="message_edit_close btn btn-primary btn-small">{{t "Close" }}</button>
+            <button type="button" class="button small rounded btn-danger message_edit_close">{{t "Close" }}</button>
             {{/if}}
             {{#if has_been_editable}}
             <div class="message-edit-timer-control-group">
