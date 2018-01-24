@@ -45,7 +45,8 @@
                     <a id="change_password" {{#if page_params.realm_email_auth_enabled}}href="#change_password"{{/if}}>
                         {{#if page_params.realm_email_auth_enabled}}
                         <div class="input-group inline-block" id="pw_change_link">
-                            <button type="button" class="change_password_button button rounded inline-block input-size" data-dismiss="modal">{{t "Change password" }}</button>
+                            <button type="button" class="change_password_button small button rounded inline-block" data-dismiss="modal">{{t "********" }}<i class="fa fa-pencil"></i>
+                            </button>
                         </div>
                         {{/if}}
                     </a>
@@ -77,7 +78,7 @@
                     </div>
                     <div class="alert change_password_info"></div>
                     <div class="modal-footer">
-                        <button class="button white rounded" data-dismiss="modal">{{t "Cancel" }}</button>
+                        <button class="button white rounded" type="button" data-dismiss="modal">{{t "Cancel" }}</button>
                         <button id='change_password_button' class="button rounded sea-green" data-dismiss="modal">{{t "Change" }}</button>
                     </div>
                 </div>
