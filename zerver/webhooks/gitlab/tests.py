@@ -113,6 +113,17 @@ class GitlabHookTests(WebhookTestCase):
             HTTP_X_GITLAB_EVENT="Issue Hook"
         )
 
+    def test_create_issue_with_hidden_comment_in_description(self) -> None:
+        expected_subject = u"public-repo / Issue #3 New Issue with hidden comment"
+        expected_message = u"Eeshan Garg created [Issue #3](https://gitlab.com/eeshangarg/public-repo/issues/3)\n\n~~~ quote\nThis description actually has a hidden comment in it!\n~~~"
+
+        self.send_and_test_stream_message(
+            'issue_created_with_hidden_comment_in_description',
+            expected_subject,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Issue Hook"
+        )
+
     def test_update_issue_event_message(self) -> None:
         expected_subject = u"my-awesome-project / Issue #1 Issue title_new"
         expected_message = u"Tomasz Kolek updated [Issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)"
