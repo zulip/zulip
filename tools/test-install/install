@@ -37,8 +37,16 @@ if ! lxc-info -n "$BASE_CONTAINER_NAME" >/dev/null 2>&1; then
 fi
 
 while [ -z "$CONTAINER_NAME" ] || lxc-info -n "$CONTAINER_NAME" >/dev/null 2>&1; do
-    CONTAINER_NAME="$(mktemp -u zulip-install-"$RELEASE"-XXXXX)"
+    shared_dir="$(mktemp -d --tmpdir "$RELEASE"-XXXXX)"
+    CONTAINER_NAME=zulip-install-"$(basename "$shared_dir")"
 done
+
+message="$(cat <<EOF)"
+
+$CONTAINER_NAME
+$shared_dir
+EOF
+trap 'echo "$message"' EXIT
 
 if [ -d "$INSTALLER" ]; then
     installer_dir="$(readlink -f $INSTALLER)"
@@ -49,8 +57,13 @@ fi
 
 mkdir -p /srv/zulip/test-install/pip-cache
 
+mkdir "$shared_dir"/upper "$shared_dir"/work "$shared_dir"/mnt
+mount -t overlay overlay \
+    -o lowerdir="$installer_dir",upperdir="$shared_dir"/upper,workdir="$shared_dir"/work \
+    "$shared_dir"/mnt
+
 lxc-copy --ephemeral --keepdata -n "$BASE_CONTAINER_NAME" -N "$CONTAINER_NAME" \
-         -m overlay="$installer_dir":/tmp/src/,bind=/srv/zulip/test-install/pip-cache:/root/.cache/pip
+         -m bind="$shared_dir"/mnt:/tmp/src/,bind=/srv/zulip/test-install/pip-cache:/root/.cache/pip
 
 run() {
     lxc-attach -n "$CONTAINER_NAME" -- "$@"

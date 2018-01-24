@@ -1533,12 +1533,12 @@ DEFAULT_FROM_EMAIL = ZULIP_ADMINISTRATOR
 if EMAIL_BACKEND is not None:
     # If the server admin specified a custom email backend, use that.
     pass
-elif not EMAIL_HOST and PRODUCTION:
-    # If an email host is not specified, fail silently and gracefully
-    EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
 elif DEVELOPMENT:
     # In the dev environment, emails are printed to the run-dev.py console.
     EMAIL_BACKEND = 'zproject.email_backends.EmailLogBackEnd'
+elif not EMAIL_HOST:
+    # If an email host is not specified, fail silently and gracefully
+    EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
