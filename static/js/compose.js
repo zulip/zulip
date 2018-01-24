@@ -675,11 +675,11 @@ exports.handle_keydown = function (event) {
     var code = event.keyCode || event.which;
     var textarea = $("#compose-textarea");
     var range = textarea.range();
-    var bKey = 66;
-    var iKey = 73;
-    var lKey = 76;
+    var isBold = code === 66;
+    var isItalic = code === 73;
+    var isLink = code === 76 && event.shiftKey;
 
-    if ((code === bKey || code === iKey || code === lKey) && (event.ctrlKey || event.metaKey)) {
+    if (isBold || isItalic || isLink && (event.ctrlKey || event.metaKey)) {
         function add_markdown(markdown) {
             var textarea = $("#compose-textarea");
             var range = textarea.range();
@@ -689,21 +689,21 @@ exports.handle_keydown = function (event) {
             event.preventDefault();
         }
 
-        if (code === bKey) {
+        if (isBold) {
             // ctrl + b: Convert selected text to bold text
             add_markdown("**" + range.text + "**");
             if (!range.length) {
                 textarea.caret(textarea.caret() - 2);
             }
         }
-        if (code === iKey) {
+        if (isItalic) {
             // ctrl + i: Convert selected text to italic text
             add_markdown("*" + range.text + "*");
             if (!range.length) {
                 textarea.caret(textarea.caret() - 1);
             }
         }
-        if (code === lKey) {
+        if (isLink) {
             // ctrl + l: Insert a link to selected text
             add_markdown("[" + range.text + "](url)");
             var position = textarea.caret();

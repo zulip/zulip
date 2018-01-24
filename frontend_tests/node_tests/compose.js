@@ -354,6 +354,7 @@ people.add(bob);
     event.keyCode = 76;
     event.which = undefined;
     event.ctrlKey = true;
+    event.shiftKey = true;
     compose.handle_keydown(event);
     assert.equal("Any [link](url).", $('#compose-textarea').val());
     // Test if exec command is not enabled in browser.
