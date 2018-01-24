@@ -290,6 +290,12 @@ body.dark-mode .alert {
     text-shadow: none;
 }
 
+body.dark-mode .alert.alert-success {
+    color: inherit;
+    background-color: hsla(161, 60%, 46%, 0.20);
+    border-color: #1e9e7f;
+}
+
 body.dark-mode .alert-box .alert,
 body.dark-mode .alert.alert-error {
     background: hsl(318, 12%, 21%);
