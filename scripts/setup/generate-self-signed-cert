@@ -2,16 +2,17 @@
 set -e
 
 usage() {
-    echo "usage: $0 [--force] EXTERNAL_HOST" >&2
+    echo "usage: $0 [--force] [--exists-ok] EXTERNAL_HOST" >&2
     exit 1
 }
 
-args="$(getopt -o '' --long help,force -- "$@")"
+args="$(getopt -o '' --long help,force,exists-ok -- "$@")"
 eval "set -- $args"
 while true; do
     case "$1" in
         --help) usage;;
         --force) FORCE=1; shift;;
+        --exists-ok) EXISTS_OK=1; shift;;
         --) shift; break;;
         *) usage;;
     esac
@@ -31,6 +32,10 @@ set -x
 
 KEYFILE=/etc/ssl/private/zulip.key
 CERTFILE=/etc/ssl/certs/zulip.combined-chain.crt
+
+if [ -n "$EXISTS_OK" ] && [ -e "$KEYFILE" -a -e "$CERTFILE" ]; then
+    exit 0
+fi
 
 if [ -z "$FORCE" ] && [ -e "$KEYFILE" -o -e "$CERTFILE" ]; then
     echo "$0: certificate and/or key already exists; use --force to overwrite." >&2

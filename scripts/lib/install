@@ -8,10 +8,8 @@ Usage:
   install --help
 
 Other options:
-  --certbot
+  --certbot (requires --hostname and --email)
   --self-signed-cert
-
-If --certbot is used, --hostname and --email are required.
 EOF
     exit 0
 };
@@ -51,6 +49,12 @@ while true; do
 done
 
 if [ -n "$show_help" ]; then
+    usage
+fi
+
+if [ -n "$SELF_SIGNED_CERT" ] && [ -n "$USE_CERTBOT" ]; then
+    echo "error: --self-signed-cert and --certbot are incompatible" >&2
+    echo >&2
     usage
 fi
 
@@ -186,10 +190,8 @@ fi
 apt-get -y upgrade
 
 if [ "$has_nginx" = 0 ]; then
-    if [ -n "$SELF_SIGNED_CERT" ] && ! [ -e "/etc/ssl/private/zulip.key" ]; then
-        apt-get install -y openssl ssl-cert
-        ln -nsf /etc/ssl/certs/ssl-cert-snakeoil.pem /etc/ssl/certs/zulip.combined-chain.crt
-        ln -nsf /etc/ssl/private/ssl-cert-snakeoil.key /etc/ssl/private/zulip.key
+    if [ -n "$SELF_SIGNED_CERT" ]; then
+        "$ZULIP_PATH"/scripts/setup/generate-self-signed-cert --exists-ok "${EXTERNAL_HOST:-$(hostname)}"
     fi
 
     # Check nginx was configured properly now that we've installed it.
