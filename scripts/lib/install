@@ -108,8 +108,7 @@ if [ "$PUPPET_CLASSES" = "zulip::voyager" ] && [ -z "$USE_CERTBOT""$SELF_SIGNED_
        [ -e "$f" ] || echo " - $f is missing!"
    done
    echo "See https://zulip.readthedocs.io/en/latest/production/ssl-certificates.html for help."
-   echo "For non-production testing, try the --self-signed-cert option to use"
-   echo "your system's self-signed certificate."
+   echo "For non-production testing, try the --self-signed-cert option."
    echo
    echo "Once fixed, just rerun scripts/setup/install; it'll pick up from here!"
    echo
