@@ -69,6 +69,10 @@ dependencies from the PyPI and NPM repositories.
   This becomes `EXTERNAL_HOST` ([docs][doc-settings]) in the Zulip
   settings.
 
+* `--self-signed-cert`: With this option, the Zulip installer
+  generates a self-signed SSL certificate for the server.  This isn't
+  suitable for production use, but may be convenient for testing.
+
 * `--certbot`: With this option, the Zulip installer automatically
   obtains an SSL certificate for the server [using Certbot][doc-certbot].
   If you'd prefer to acquire an SSL certificate yourself in any other
