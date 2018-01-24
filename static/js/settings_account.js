@@ -81,6 +81,7 @@ exports.set_up = function () {
         // Clear the password boxes so that passwords don't linger in the DOM
         // for an XSS attacker to find.
         $('#old_password, #new_password').val('');
+        common.password_quality('', $('#pw_strength .bar'), $('#new_password'));
     }
 
     clear_password_change();
@@ -103,6 +104,10 @@ exports.set_up = function () {
                 $('#pw_strength .bar').removeClass("fade");
             });
         }
+    });
+
+    $('#change_password_modal').find('[data-dismiss=modal]').on('click', function () {
+        clear_password_change();
     });
 
     $('#change_password_button').on('click', function (e) {
