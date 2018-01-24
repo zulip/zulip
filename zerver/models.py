@@ -1084,6 +1084,17 @@ class PushDeviceToken(AbstractPushDeviceToken):
     user = models.ForeignKey(UserProfile, db_index=True, on_delete=CASCADE)  # type: UserProfile
     token = models.CharField(max_length=4096, db_index=True)  # type: bytes
 
+    # Encryption
+    # Fernet.generate_key() converts a 32 byte long string into a url-safe
+    # base64 encoded string. 32 bytes can be represented by 43 base64
+    # characters, so max_length of 50 should be safe.
+    #
+    # NB: We don't store the key as a BinaryField because Django reads it as a
+    # memoryview from the DB. memoryview can be pickled but the result cannot
+    # be unpickled. This causes an exception when we cache the UserProfile
+    # object.
+    notification_encryption_key = models.CharField(max_length=50, null=True)  # type: Optional[str]
+
     class Meta:
         unique_together = ("user", "kind", "token")
 
