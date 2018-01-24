@@ -273,6 +273,10 @@ DEFAULT_SETTINGS.update({
     # available for sysadmin override in unusual cases.
     'EMAIL_BACKEND': None,
 
+    # Whether to give admins a warning in the web app that email isn't set up.
+    # Set below when email isn't configured.
+    'WARN_NO_EMAIL': False,
+
     # Whether to keep extra frontend stack trace data.
     # TODO: Investigate whether this should be removed and set one way or other.
     'SAVE_FRONTEND_STACKTRACES': False,
@@ -1537,7 +1541,8 @@ elif DEVELOPMENT:
     # In the dev environment, emails are printed to the run-dev.py console.
     EMAIL_BACKEND = 'zproject.email_backends.EmailLogBackEnd'
 elif not EMAIL_HOST:
-    # If an email host is not specified, fail silently and gracefully
+    # If an email host is not specified, fail gracefully
+    WARN_NO_EMAIL = True
     EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

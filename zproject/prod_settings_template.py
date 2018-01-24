@@ -51,10 +51,12 @@ ZULIP_ADMINISTRATOR = 'zulip-admin@example.com'
 #   /home/zulip/deployments/current/manage.py send_test_email username@example.com
 #
 # A common problem is hosting provider firewalls that block outgoing SMTP traffic.
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = ''
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+#
+#EMAIL_HOST = 'smtp.gmail.com'
+#EMAIL_HOST_USER = ''
+#EMAIL_PORT = 587
+#EMAIL_USE_TLS = True
+EMAIL_HOST = None
 
 ## OPTIONAL SETTINGS
 
