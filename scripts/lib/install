@@ -16,7 +16,7 @@ EOF
 
 # Shell option parsing.  Over time, we'll want to move some of the
 # environment variables below into this self-documenting system.
-args="$(getopt -o '' --long help,self-signed-cert,certbot,hostname:,email: -n "$0" -- "$@")"
+args="$(getopt -o '' --long help,self-signed-cert,certbot,hostname:,email:,express -n "$0" -- "$@")"
 eval "set -- $args"
 while true; do
     case "$1" in
@@ -40,6 +40,10 @@ while true; do
         --email)
             ZULIP_ADMINISTRATOR="$2"
             shift
+            shift
+            ;;
+        --express)  # experimental, not documented
+            EXPRESS_SETUP=1
             shift
             ;;
         --)
@@ -279,8 +283,9 @@ if [ -e "/var/run/supervisor.sock" ]; then
     chown zulip:zulip /var/run/supervisor.sock
 fi
 
-set +x
-cat <<EOF
+if [ -z "$EXPRESS_SETUP" ]; then
+    set +x
+    cat <<EOF
 
  Installation complete!
 
@@ -292,3 +297,10 @@ cat <<EOF
 
  To configure the initial database.
 EOF
+    exit 0
+fi
+
+# TODO suppress instructions on success
+sudo -u zulip /home/zulip/deployments/current/scripts/setup/initialize-database
+
+sudo -u zulip /home/zulip/deployments/current/manage.py generate_realm_creation_link
