@@ -932,6 +932,12 @@ input[type=checkbox].inline-block {
     opacity: 0.6;
 }
 
+#settings_page h3 {
+    font-size: 1.5em;
+    font-weight: normal;
+    line-height: 1.5;
+}
+
 #settings_page .settings-header.mobile {
     display: none;
     border-bottom: 1px solid hsl(0, 0%, 86%);
