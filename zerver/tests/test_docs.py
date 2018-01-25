@@ -113,6 +113,17 @@ class DocPageTest(ZulipTestCase):
             url = '/integrations/doc-html/{}'.format(integration)
             self._test(url, '')
 
+    def test_email_integration(self) -> None:
+        self._test('/integrations/doc-html/email',
+                   'support+abcdefg@testserver')
+
+        with self.settings(EMAIL_GATEWAY_PATTERN=''):
+            result = self.client_get('integrations/doc-html/email', subdomain='zulip')
+            self.assertNotIn('support+abcdefg@testserver', str(result.content))
+            # if EMAIL_GATEWAY_PATTERN is empty, the main /integrations page should
+            # be rendered instead
+            self._test('/integrations/', 'Over 60 native integrations.')
+
 
 class IntegrationTest(TestCase):
     def test_check_if_every_integration_has_logo_that_exists(self) -> None:
