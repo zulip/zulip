@@ -3,6 +3,9 @@ from typing import Any, Dict, Optional, List, Text
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.views.decorators.http import require_GET
+
 from zerver.decorator import require_realm_admin, to_non_negative_int, to_not_negative_int_or_none
 from zerver.lib.actions import (
     do_set_realm_message_editing,
@@ -18,7 +21,7 @@ from zerver.lib.response import json_success, json_error
 from zerver.lib.validator import check_string, check_dict, check_bool, check_int
 from zerver.lib.streams import access_stream_by_id
 from zerver.models import Realm, UserProfile
-
+from zerver.forms import check_subdomain_available as check_subdomain
 
 @require_realm_admin
 @has_request_variables
@@ -132,3 +135,11 @@ def deactivate_realm(request: HttpRequest, user_profile: UserProfile) -> HttpRes
     realm = user_profile.realm
     do_deactivate_realm(realm)
     return json_success()
+
+@require_GET
+def check_subdomain_available(request: HttpRequest, subdomain: Text) -> HttpResponse:
+    try:
+        check_subdomain(subdomain)
+        return json_success({"msg": "available"})
+    except ValidationError as e:
+        return json_success({"msg": e.message})

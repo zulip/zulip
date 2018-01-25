@@ -88,4 +88,25 @@ $(function () {
             $("#login_form .alert.alert-error").remove();
         },
     });
+
+    function check_subdomain_avilable(subdomain) {
+        var url = "/json/realm/subdomain/" + subdomain;
+        $.get(url, function (response) {
+            if (response.msg !== "available") {
+                $("#id_team_subdomain_error_client").html(response.msg);
+                $("#id_team_subdomain_error_client").show();
+            }
+        });
+    }
+
+    var timer;
+    $('#id_team_subdomain').on("keydown", function () {
+        $('.team_subdomain_error_server').text('').css('display', 'none');
+        $("#id_team_subdomain_error_client").css('display', 'none');
+        clearTimeout(timer);
+    });
+    $('#id_team_subdomain').on("keyup", function () {
+        clearTimeout(timer);
+        timer = setTimeout(check_subdomain_avilable, 250, $('#id_team_subdomain').val());
+    });
 });
