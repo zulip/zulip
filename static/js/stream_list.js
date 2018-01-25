@@ -472,6 +472,8 @@ exports.initialize = function () {
         popovers.hide_all();
         narrow.by('stream', sub.name, {select_first_unread: true, trigger: 'sidebar'});
 
+        exports.clear_and_hide_search();
+
         e.preventDefault();
         e.stopPropagation();
     });

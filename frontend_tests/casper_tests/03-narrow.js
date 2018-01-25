@@ -365,6 +365,23 @@ casper.waitForSelector('.input-append.notdisplayed', function () {
     casper.test.assertExists('.input-append.notdisplayed', 'Stream filter box not visible after second click');
 });
 
+// We search for the beginning of "Verona", not case sensitive
+casper.then(function () {
+    casper.evaluate(function () {
+        $('.stream-list-filter').expectOne()
+            .focus()
+            .val('ver')
+            .trigger($.Event('input'));
+    });
+});
+
+casper.waitWhileVisible('#stream_filters [data-stream-name="Denmark"]', function () {
+    // Clicking the narrowed list should clear the search
+    casper.click('#stream_filters [data-stream-name="Verona"] a');
+    expect_stream();
+    casper.test.assertEquals(casper.fetchText('.stream-list-filter'), '', 'Clicking on a stream clears the search');
+});
+
 un_narrow();
 
 common.then_log_out();
