@@ -1,6 +1,6 @@
 <div id="organization-permissions" data-name="organization-permissions" class="settings-section">
     <form class="form-horizontal admin-realm-form org-permissions-form">
-        <h3 class="light">{{t "Joining the organization" }}</h3>
+        <h3>{{t "Joining the organization" }}</h3>
 
         <div class="alert" id="admin-realm-restricted-to-domain-status"></div>
         <div class="alert" id="admin-realm-invite-required-status"></div>
@@ -11,7 +11,7 @@
         <div class="alert" id="admin-realm-create-stream-by-admins-only-status"></div>
         <div class="alert" id="admin-realm-create-generic-bot-by-admins-only-status"></div>
 
-        <div class="side-padded-container inline-block organization-permissions-parent">
+        <div class="inline-block organization-permissions-parent">
             <div class="input-group admin-restricted-to-domain">
                 <label class="checkbox">
                     <input type="checkbox" name="realm_restricted_to_domain" id="id_realm_restricted_to_domain"
@@ -48,8 +48,8 @@
             </div>
         </div>
 
-        <h3 class="light">{{t "User identity" }}</h3>
-        <div class="side-padded-container inline-block organization-permissions-parent">
+        <h3>{{t "User identity" }}</h3>
+        <div class="inline-block organization-permissions-parent">
             <div class="input-group">
                 <label class="checkbox">
                     <input type="checkbox" id="id_realm_name_changes_disabled" name="realm_name_changes_disabled"
@@ -73,7 +73,7 @@
             </div>
         </div>
 
-        <h3 class="light">{{t "Other permissions" }}</h3>
+        <h3>{{t "Other permissions" }}</h3>
         <div class="organization-permissions-parent">
             <div class="inline-block create-stream-dropdown">
                 <label for="realm_create_stream_permission" class="dropdown-title">{{t "Who can create streams" }}</label>
@@ -102,8 +102,8 @@
             </div>
         </div>
 
-        <h3 class="light">{{t "Interactive bots" }}</h3>
-        <div class="side-padded-container inline-block organization-permissions-parent">
+        <h3>{{t "Interactive bots" }}</h3>
+        <div class="inline-block organization-permissions-parent">
             <div class="input-group">
                 <label class="checkbox">
                     <input type="checkbox" id="id_realm_create_generic_bot_by_admins_only" name="realm_create_generic_bot_by_admins_only"
