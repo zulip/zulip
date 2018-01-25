@@ -341,10 +341,16 @@ DEFAULT_SETTINGS.update({
     'INVITES_NEW_REALM_DAYS': 7,
 
     # Controls for which links are published in portico footers/headers/etc.
-    'EMAIL_DELIVERER_DISABLED': False,
     'REGISTER_LINK_DISABLED': None,
     'LOGIN_LINK_DISABLED': False,
     'FIND_TEAM_LINK_DISABLED': True,
+
+    # Controls if the server should run certain jobs like deliver_email or
+    # deliver_scheduled_messages. This setting in long term is meant for
+    # handling jobs for which we don't have a means of establishing a locking
+    # mechanism that works with multiple servers running these jobs.
+    # TODO: We should rename this setting so that it reflects its purpose actively.
+    'EMAIL_DELIVERER_DISABLED': False,
 
     # What domains to treat like the root domain
     'ROOT_SUBDOMAIN_ALIASES': ["www"],

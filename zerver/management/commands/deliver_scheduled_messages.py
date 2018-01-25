@@ -22,6 +22,11 @@ class Command(BaseCommand):
     help = """Deliver scheduled messages from the ScheduledMessage table.
 Run this command under supervisor.
 
+This management command is run via supervisor.  Do not run on multiple
+machines, as you may encounter multiple sends in a specific race
+condition.  (Alternatively, you can set `EMAIL_DELIVERER_DISABLED=True`
+on all but one machine to make the command have no effect.)
+
 Usage: ./manage.py deliver_scheduled_messages
 """
 
@@ -46,6 +51,15 @@ Usage: ./manage.py deliver_scheduled_messages
                 'realm': scheduled_message.realm}
 
     def handle(self, *args: Any, **options: Any) -> None:
+
+        if settings.EMAIL_DELIVERER_DISABLED:
+            # Here doing a check and sleeping indefinitely on this setting might
+            # not sound right. Actually we do this check to avoid running this
+            # process on every server that might be in service to a realm. See
+            # the comment in zproject/settings.py file about renaming this setting.
+            while True:
+                time.sleep(10*9)
+
         with lockfile("/tmp/zulip_scheduled_message_deliverer.lockfile"):
             while True:
                 messages_to_deliver = ScheduledMessage.objects.filter(
