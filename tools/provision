@@ -10,6 +10,7 @@ if [ "$EUID" -eq 0 ]; then
     exit 1
 fi
 
+FAIL="\033[91m"
 RED="\033[0;31m"
 ENDC="\033[0m"
 
@@ -29,7 +30,7 @@ export PYTHONUNBUFFERED=1
 failed=${PIPESTATUS[0]}
 
 if [ $failed = 1 ]; then
-    echo -e "$RED"
+    echo -e "$FAIL"
     echo "Provisioning failed!"
     echo
     echo "* Look at the traceback(s) above to find more about the errors."
@@ -39,7 +40,7 @@ if [ $failed = 1 ]; then
     echo -e "$ENDC"
     exit 1
 elif [ "$VIRTUAL_ENV" != "/srv/zulip-py3-venv" ] && [ -z "${TRAVIS}${SKIP_VENV_SHELL_WARNING}" ]; then
-    echo -e "$RED"
+    echo -e "$WARN"
     echo "WARNING: This shell does not have the Python 3 virtualenv activated."
     echo "Zulip commands will fail."
     echo
