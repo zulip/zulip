@@ -2,12 +2,23 @@ var invite = (function () {
 
 var exports = {};
 
+function hide_message_show_checkboxes() {
+    $("#default_stream_message").hide();
+    $("#streams_to_add").show();
+}
+
+function show_message_hide_checkboxes() {
+    $("#default_stream_message").show();
+    $("#streams_to_add").hide();
+}
+
 function update_subscription_checkboxes() {
     // TODO: If we were more clever, we would only do this if the
     // stream list has actually changed; that way, the settings of the
     // checkboxes are saved from invocation to invocation (which is
     // nice if I want to invite a bunch of people at once)
     var streams = [];
+    var default_streams = [];
 
     _.each(stream_data.invite_streams(), function (value) {
         var is_notifications_stream = value === page_params.notifications_stream;
@@ -24,9 +35,23 @@ function update_subscription_checkboxes() {
             streams.sort(function (a, b) {
                 return b.default_stream - a.default_stream;
             });
+            if (default_status) {
+                default_streams.push(value);
+            }
         }
     });
     $('#streams_to_add').html(templates.render('invite_subscription', {streams: streams}));
+    if (default_streams.length !== 0) {
+        $('#edit_streams_button').on('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            hide_message_show_checkboxes();
+        });
+        show_message_hide_checkboxes();
+        $('#default_streams').text(default_streams.join(", "));
+    } else {
+        hide_message_show_checkboxes();
+    }
 }
 
 function reset_error_messages() {
