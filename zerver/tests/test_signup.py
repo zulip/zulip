@@ -1408,6 +1408,17 @@ class RealmCreationTest(ZulipTestCase):
         realm.save()
         self.assertFalse(is_root_domain_available())
 
+    def test_subdomain_check_api(self) -> None:
+        result = self.client_get("/json/realm/subdomain/zulip")
+        self.assert_in_success_response(["Subdomain unavailable. Please choose a different one."], result)
+
+        result = self.client_get("/json/realm/subdomain/zu_lip")
+        self.assert_in_success_response(["Subdomain can only have lowercase letters, numbers, and \'-\'s."], result)
+
+        result = self.client_get("/json/realm/subdomain/hufflepuff")
+        self.assert_in_success_response(["available"], result)
+        self.assert_not_in_success_response(["unavailable"], result)
+
 class UserSignUpTest(ZulipTestCase):
 
     def _assert_redirected_to(self, result: HttpResponse, url: Text) -> None:
