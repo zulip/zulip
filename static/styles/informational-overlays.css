@@ -50,6 +50,42 @@
     font-size: 0.9em;
 }
 
+.hotkeys_table {
+    width: 247px;
+    /* this is because some generic setting for striped tables in settings.css
+       overrides this. */
+    margin: 5px !important;
+    font-size: 90%;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.hotkeys_table:not(.hotkeys_full_table) th {
+    width: 245px;
+}
+
+.hotkeys_table .hotkey {
+    font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+    text-align: right;
+    font-weight: bold;
+    font-size: 90%;
+    white-space: nowrap;
+}
+
+.hotkeys_full_table {
+    display: table;
+    width: calc(100% - 11px) !important;
+}
+
+.hotkeys_full_table td.hotkey {
+    /* this is to keep the <td> for hotkey the same width as the two-col layout. */
+    width: 131px;
+}
+
+#keyboard-shortcuts table {
+    margin-bottom: 10px;
+}
+
 @media only screen and (max-width: 768px) {
     .informational-overlays .overlay-content {
         width: calc(100% - 20px);
