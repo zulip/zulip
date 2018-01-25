@@ -121,18 +121,21 @@ exports.show_failed_message_success = function (message_id) {
 };
 
 function adjust_mac_shortcuts() {
-    var keys_map = new Map([
+    var keys_map = [
         ['Backspace', 'Delete'],
         ['Enter', 'Return'],
         ['Home', 'Fn + Left'],
         ['End', 'Fn + Right'],
         ['PgUp', 'Fn + Up'],
         ['PgDn', 'Fn + Down'],
-    ]);
+    ];
 
-    keys_map.forEach(function (v, k) {
-        var hotkeys_table = $('.hotkeys_table');
-        hotkeys_table.html(hotkeys_table.html().replace(k, v));
+    $(".hotkeys_table").each(function () {
+        var html = $(this).html();
+        keys_map.forEach(function (pair) {
+            html = html.replace(new RegExp(pair[0]), pair[1]);
+        });
+        $(this).html(html);
     });
 }
 
