@@ -3,7 +3,7 @@
     <div class="account-settings-form">
         <div class="inline-block">
             <form class="email-change-form grid">
-                <h3 class="light">{{t "User settings" }}</h3>
+                <h3>{{t "User settings" }}</h3>
                 <div class="input-group user-name-section">
                     <label class="inline-block title">{{t "Email" }}</label>
                     <a id="change_email" {{#unless page_params.realm_email_changes_disabled}}href="#change_email"{{/unless}}>
@@ -113,7 +113,7 @@
         </div>
 
         <div class="inline-block user-avatar-section">
-            <h3 class="light">{{t "User avatar" }}</h3>
+            <h3>{{t "User avatar" }}</h3>
 
             <div class="inline-block">
                 <img id="user-settings-avatar" src="{{ page_params.avatar_url_medium }}" />
@@ -150,7 +150,7 @@
         <hr class="settings_separator" />
 
         <div class="form-horizontal" id="api_key_button_box">
-            <h3 class="light">{{t "API key" }}</h3>
+            <h3>{{t "API key" }}</h3>
 
             <div class="input-group">
                 <p class="api-key-note">
