@@ -2,6 +2,60 @@
      aria-label="{{ _('Keyboard shortcuts') }}">
   <div class="modal-body" tabindex="0">
     <div>
+      <table class="hotkeys_table wide table table-striped table-bordered table-condensed">
+        <thead>
+          <tr>
+            <th colspan="2">{{ _("The basics") }}</th>
+          </tr>
+        </thead>
+        <tr>
+          <td class="hotkey">Enter, r</td>
+          <td class="definition">{% trans %}Reply to message{% endtrans %}</td>
+        </tr>
+        <tr>
+          <td class="hotkey">c</td>
+          <td class="definition">{% trans %}New stream message{% endtrans %}</td>
+        </tr>
+        <tr>
+          <td class="hotkey">C</td>
+          <td class="definition">{% trans %}New private message{% endtrans %}</td>
+        </tr>
+        <tr>
+          <td class="hotkey">Esc, Ctrl + [</td>
+          <td class="definition">{% trans %}Cancel compose{% endtrans %}</td>
+        </tr>
+        <tr>
+          <td class="hotkey">d</td>
+          <td class="definition">{% trans %}View drafts{% endtrans %}</td>
+        </tr>
+        <tr>
+          <td class="hotkey">Down, j</td>
+          <td class="definition">{% trans %}Next message{% endtrans %}</td>
+        </tr>
+        <tr>
+          <td class="hotkey">End, G</td>
+          <td class="definition">{% trans %}Last message{% endtrans %}</td>
+        </tr>
+        <tr>
+          <td class="hotkey">n</td>
+          <td class="definition">{% trans %}Next unread topic{% endtrans %}</td>
+        </tr>
+        <tr>
+          <td class="hotkey">P</td>
+          <td class="definition">{% trans %}All private messages{% endtrans %}</td>
+        </tr>
+        <tr>
+          <td class="hotkey">/</td>
+          <td class="definition">{% trans %}Initiate a search{% endtrans %}</td>
+        </tr>
+        <tr>
+          <td class="hotkey">?</td>
+          <td class="definition">{% trans %}Show keyboard shortcuts{% endtrans %}</td>
+        </tr>
+      </table>
+    </div>
+
+    <div>
       <table class="hotkeys_table table table-striped table-bordered table-condensed">
         <thead>
           <tr>
