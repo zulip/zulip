@@ -85,6 +85,11 @@ body.dark-mode select {
     color: inherit;
 }
 
+body.dark-mode select option {
+    background-color: hsl(212, 28%, 18%);
+    color: hsl(236, 33%, 90%);
+}
+
 body.dark-mode .new-style .button.no-style {
     background-color: transparent;
 }
