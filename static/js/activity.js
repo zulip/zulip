@@ -473,7 +473,7 @@ exports.initialize = function () {
     exports.set_user_list_filter_handlers();
 
     $('#clear_search_people_button').on('click', exports.clear_search);
-    $('#user_filter_icon, #userlist-title').click(exports.toggle_filter_displayed);
+    $('#userlist-header').click(exports.toggle_filter_displayed);
 
     // Let the server know we're here, but pass "false" for
     // want_redraw, since we just got all this info in page_params.
