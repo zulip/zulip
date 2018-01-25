@@ -10,6 +10,9 @@ if [ "$EUID" -eq 0 ]; then
     exit 1
 fi
 
+RED="\033[0;31m"
+ENDC="\033[0m"
+
 #Make the script independent of the location from where it is
 #executed
 PARENT_PATH=$( cd "$(dirname "${BASH_SOURCE}")" ; pwd -P )
@@ -26,23 +29,23 @@ export PYTHONUNBUFFERED=1
 failed=${PIPESTATUS[0]}
 
 if [ $failed = 1 ]; then
-    echo -e "\033[0;31m"
+    echo -e "$RED"
     echo "Provisioning failed!"
     echo
     echo "* Look at the traceback(s) above to find more about the errors."
     echo "* Resolve the errors or get help on chat."
     echo "* If you can fix this yourself, you can re-run tools/provision at any time."
     echo "* Logs are here: zulip/var/log/provision.log"
-    echo -e "\033[0m"
+    echo -e "$ENDC"
     exit 1
 elif [ "$VIRTUAL_ENV" != "/srv/zulip-py3-venv" ] && [ -z "${TRAVIS}${SKIP_VENV_SHELL_WARNING}" ]; then
-    echo -e "\033[0;31m"
+    echo -e "$RED"
     echo "WARNING: This shell does not have the Python 3 virtualenv activated."
     echo "Zulip commands will fail."
     echo
     echo "To update the shell, run:"
     echo "    source /srv/zulip-py3-venv/bin/activate"
     echo "or just close this shell and start a new one."
-    echo -en "\033[0m"
+    echo -en "$ENDC"
 fi
 exit 0
