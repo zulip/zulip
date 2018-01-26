@@ -345,6 +345,14 @@ def create_realm(request: HttpRequest, creation_key: Optional[Text]=None) -> Htt
         if form.is_valid():
             email = form.cleaned_data['email']
             activation_url = prepare_activation_url(email, request, realm_creation=True)
+            if key_record is not None and key_record.presume_email_valid:
+                # The user has a token created from the server command line;
+                # skip confirming the email is theirs, taking their word for it.
+                # This is essential on first install if the admin hasn't stopped
+                # to configure outbound email up front, or it isn't working yet.
+                key_record.delete()
+                return HttpResponseRedirect(activation_url)
+
             try:
                 send_confirm_registration_email(email, activation_url)
             except smtplib.SMTPException as e:

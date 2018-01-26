@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import os
 import glob
+import os
+import re
 from datetime import timedelta
 from mock import MagicMock, patch, call
 from typing import List, Dict, Any, Optional
@@ -188,12 +189,27 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
             self.assertIsNone(get_realm('test'))
             result = self.client_post(generated_link, {'email': email})
             self.assertEqual(result.status_code, 302)
-            self.assertTrue(result["Location"].endswith(
-                "/accounts/send_confirm/%s" % (email,)))
+            self.assertTrue(re.search('/accounts/do_confirm/\w+$', result["Location"]))
             result = self.client_get(result["Location"])
-            self.assert_in_response("Check your email so we can get started.", result)
+            self.assert_in_response('action="/accounts/register/"', result)
 
             # Generated link used for creating realm
+            result = self.client_get(generated_link)
+            self.assert_in_success_response(["The organization creation link has expired or is not valid."], result)
+
+    def test_generate_link_confirm_email(self) -> None:
+        email = "user1@test.com"
+        generated_link = generate_realm_creation_url(by_admin=False)
+
+        with self.settings(OPEN_REALM_CREATION=False):
+            result = self.client_post(generated_link, {'email': email})
+            self.assertEqual(result.status_code, 302)
+            self.assertTrue(re.search('/accounts/send_confirm/{}$'.format(email),
+                                      result["Location"]))
+            result = self.client_get(result["Location"])
+            self.assert_in_response("Check your email so we can get started", result)
+
+            # Original link is now dead
             result = self.client_get(generated_link)
             self.assert_in_success_response(["The organization creation link has expired or is not valid."], result)
 
