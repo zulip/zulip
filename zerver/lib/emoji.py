@@ -15,7 +15,8 @@ NAME_TO_CODEPOINT_PATH = os.path.join(settings.STATIC_ROOT, "generated", "emoji"
 CODEPOINT_TO_NAME_PATH = os.path.join(settings.STATIC_ROOT, "generated", "emoji", "codepoint_to_name.json")
 
 # Emoticons and which emoji they should become. Duplicate emoji are allowed.
-# Changes here should be mimicked in `static/js/emoji.js`.
+# Changes here should be mimicked in `static/js/emoji.js`
+# and `templates/zerver/help/enable-emoticon-translations.md`.
 EMOTICON_CONVERSIONS = {
     ':)': ':smiley:',
     '(:': ':smiley:',

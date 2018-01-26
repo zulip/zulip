@@ -19,7 +19,8 @@ var zulip_emoji = {
 };
 
 // Emoticons, and which emoji they should become (without colons). Duplicate
-// emoji are allowed. Changes here should be mimicked in `zerver/lib/emoji.py`.
+// emoji are allowed. Changes here should be mimicked in `zerver/lib/emoji.py`
+// and `templates/zerver/help/enable-emoticon-translations.md`.
 var EMOTICON_CONVERSIONS = {
     ':)': 'smiley',
     '(:': 'smiley',
