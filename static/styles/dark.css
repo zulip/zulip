@@ -76,6 +76,7 @@ body.dark-mode .stream-row .sub-info-box .top-bar .message-count {
 body.dark-mode .new-style .button,
 body.dark-mode input[type="text"],
 body.dark-mode input[type="email"],
+body.dark-mode input[type="password"],
 body.dark-mode textarea,
 body.dark-mode .new-style .tab-switcher .ind-tab:not(.selected),
 body.dark-mode select {
