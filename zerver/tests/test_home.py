@@ -159,6 +159,7 @@ class HomeTest(ZulipTestCase):
             "unsubscribed",
             "use_websockets",
             "user_id",
+            "warn_no_email",
             "zulip_version",
         ]
 
