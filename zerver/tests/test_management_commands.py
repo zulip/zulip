@@ -9,7 +9,7 @@ from typing import List, Dict, Any, Optional
 
 from django.conf import settings
 from django.core.management import call_command
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from zerver.lib.management import ZulipBaseCommand, CommandError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import stdout_suppressed
@@ -176,61 +176,61 @@ class TestSendWebhookFixtureMessage(TestCase):
 class TestGenerateRealmCreationLink(ZulipTestCase):
     COMMAND_NAME = "generate_realm_creation_link"
 
+    @override_settings(OPEN_REALM_CREATION=False)
     def test_generate_link_and_create_realm(self) -> None:
         email = "user1@test.com"
         generated_link = generate_realm_creation_url(by_admin=True)
 
-        with self.settings(OPEN_REALM_CREATION=False):
-            # Check realm creation page is accessible
-            result = self.client_get(generated_link)
-            self.assert_in_success_response([u"Create a new Zulip organization"], result)
+        # Check realm creation page is accessible
+        result = self.client_get(generated_link)
+        self.assert_in_success_response([u"Create a new Zulip organization"], result)
 
-            # Create Realm with generated link
-            self.assertIsNone(get_realm('test'))
-            result = self.client_post(generated_link, {'email': email})
-            self.assertEqual(result.status_code, 302)
-            self.assertTrue(re.search('/accounts/do_confirm/\w+$', result["Location"]))
-            result = self.client_get(result["Location"])
-            self.assert_in_response('action="/accounts/register/"', result)
+        # Create Realm with generated link
+        self.assertIsNone(get_realm('test'))
+        result = self.client_post(generated_link, {'email': email})
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(re.search('/accounts/do_confirm/\w+$', result["Location"]))
+        result = self.client_get(result["Location"])
+        self.assert_in_response('action="/accounts/register/"', result)
 
-            # Generated link used for creating realm
-            result = self.client_get(generated_link)
-            self.assert_in_success_response(["The organization creation link has expired or is not valid."], result)
+        # Generated link used for creating realm
+        result = self.client_get(generated_link)
+        self.assert_in_success_response(["The organization creation link has expired or is not valid."], result)
 
+    @override_settings(OPEN_REALM_CREATION=False)
     def test_generate_link_confirm_email(self) -> None:
         email = "user1@test.com"
         generated_link = generate_realm_creation_url(by_admin=False)
 
-        with self.settings(OPEN_REALM_CREATION=False):
-            result = self.client_post(generated_link, {'email': email})
-            self.assertEqual(result.status_code, 302)
-            self.assertTrue(re.search('/accounts/send_confirm/{}$'.format(email),
-                                      result["Location"]))
-            result = self.client_get(result["Location"])
-            self.assert_in_response("Check your email so we can get started", result)
+        result = self.client_post(generated_link, {'email': email})
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(re.search('/accounts/send_confirm/{}$'.format(email),
+                                  result["Location"]))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started", result)
 
-            # Original link is now dead
-            result = self.client_get(generated_link)
-            self.assert_in_success_response(["The organization creation link has expired or is not valid."], result)
+        # Original link is now dead
+        result = self.client_get(generated_link)
+        self.assert_in_success_response(["The organization creation link has expired or is not valid."], result)
 
+    @override_settings(OPEN_REALM_CREATION=False)
     def test_realm_creation_with_random_link(self) -> None:
-        with self.settings(OPEN_REALM_CREATION=False):
-            # Realm creation attempt with an invalid link should fail
-            random_link = "/create_realm/5e89081eb13984e0f3b130bf7a4121d153f1614b"
-            result = self.client_get(random_link)
-            self.assert_in_success_response(["The organization creation link has expired or is not valid."], result)
+        # Realm creation attempt with an invalid link should fail
+        random_link = "/create_realm/5e89081eb13984e0f3b130bf7a4121d153f1614b"
+        result = self.client_get(random_link)
+        self.assert_in_success_response(["The organization creation link has expired or is not valid."], result)
 
+    @override_settings(OPEN_REALM_CREATION=False)
     def test_realm_creation_with_expired_link(self) -> None:
-        with self.settings(OPEN_REALM_CREATION=False):
-            generated_link = generate_realm_creation_url(by_admin=True)
-            key = generated_link[-24:]
-            # Manually expire the link by changing the date of creation
-            obj = RealmCreationKey.objects.get(creation_key=key)
-            obj.date_created = obj.date_created - timedelta(days=settings.REALM_CREATION_LINK_VALIDITY_DAYS + 1)
-            obj.save()
+        generated_link = generate_realm_creation_url(by_admin=True)
+        key = generated_link[-24:]
+        # Manually expire the link by changing the date of creation
+        obj = RealmCreationKey.objects.get(creation_key=key)
+        obj.date_created = obj.date_created - timedelta(days=settings.REALM_CREATION_LINK_VALIDITY_DAYS + 1)
+        obj.save()
 
-            result = self.client_get(generated_link)
-            self.assert_in_success_response(["The organization creation link has expired or is not valid."], result)
+        result = self.client_get(generated_link)
+        self.assert_in_success_response(["The organization creation link has expired or is not valid."], result)
 
 class TestCalculateFirstVisibleMessageID(ZulipTestCase):
     COMMAND_NAME = 'calculate_first_visible_message_id'
