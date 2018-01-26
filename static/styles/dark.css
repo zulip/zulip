@@ -219,8 +219,7 @@ body.dark-mode #settings_page .sidebar .tab-container,
 body.dark-mode .table-striped tbody tr:nth-child(odd) td,
 body.dark-mode .table-striped tbody tr:nth-child(odd) th,
 body.dark-mode .modal-footer,
-body.dark-mode #invite-user .modal-header,
-body.dark-mode #bankruptcy .modal-header {
+body.dark-mode .modal-bg .modal-header {
     border-color: hsla(0, 0%, 0%, 0.2);
     background-color: hsla(0, 0%, 0%, 0.2);
 }
