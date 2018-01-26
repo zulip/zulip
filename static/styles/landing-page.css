@@ -311,7 +311,11 @@ nav ul {
     margin: 0;
     padding: 0;
 
+    outline: 1000px solid;
+    outline-color: transparent;
+
     cursor: pointer;
+    transition: outline-color 0.2s ease;
 }
 
 nav ul .exit {
@@ -3190,6 +3194,10 @@ nav ul li.active::after {
 
     nav ul.show {
         transform: translate(0px, 0px);
+    }
+
+    nav .content > ul.show {
+        outline-color: rgba(32, 62, 80, 0.7);
     }
 
     nav ul .exit {
