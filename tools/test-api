@@ -14,7 +14,7 @@ os.chdir(ZULIP_PATH)
 from zulip import Client
 
 from tools.lib.test_server import test_server_running
-from tools.lib.api_tests import test_the_api
+from zerver.lib.api_test_helpers import test_the_api
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
 django.setup()

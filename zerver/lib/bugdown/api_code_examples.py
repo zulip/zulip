@@ -9,11 +9,7 @@ from markdown.preprocessors import Preprocessor
 from typing import Any, Dict, Optional, List
 import markdown
 
-ZULIP_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-TOOLS_DIR = os.path.join(ZULIP_DIR, 'tools', 'lib')
-sys.path.insert(0, TOOLS_DIR)
-
-import api_tests
+import zerver.lib.api_test_helpers
 
 REGEXP = re.compile(r'\{generate_code_example\|\s*(.+?)\s*\|\s*(.+?)\s*\}')
 
@@ -72,7 +68,7 @@ class APICodeExamplesPreprocessor(Preprocessor):
     def render_fixture(self, function: str) -> List[str]:
         fixture = []
 
-        fixture_dict = api_tests.FIXTURES[function]
+        fixture_dict = zerver.lib.api_test_helpers.FIXTURES[function]
         fixture_json = ujson.dumps(fixture_dict, indent=4, sort_keys=True)
 
         fixture.append('```')
@@ -82,7 +78,7 @@ class APICodeExamplesPreprocessor(Preprocessor):
         return fixture
 
     def render_code_example(self, function: str) -> List[str]:
-        method = api_tests.TEST_FUNCTIONS[function]
+        method = zerver.lib.api_test_helpers.TEST_FUNCTIONS[function]
         function_source_lines = inspect.getsourcelines(method)[0]
         ce_regex = re.compile(r'\# \{code_example\|\s*(.+?)\s*\}')
 
