@@ -1,6 +1,20 @@
+from typing import Dict, Any, Optional, Iterable
+import os
+import ujson
 
 if False:
     from zulip import Client
+
+ZULIP_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+FIXTURE_PATH = os.path.join(ZULIP_DIR, 'templates', 'zerver', 'api', 'fixtures.json')
+
+def load_api_fixtures():
+    # type: () -> Dict[str, Any]
+    with open(FIXTURE_PATH, 'r') as fp:
+        json_dict = ujson.loads(fp.read())
+        return json_dict
+
+FIXTURES = load_api_fixtures()
 
 def add_subscriptions(client):
     # type: (Client) -> None
@@ -96,10 +110,16 @@ def remove_subscriptions(client):
 def render_message(client):
     # type: (Client) -> None
 
-    request = dict(content='**foo**')
+    # {code_example|start}
+    # Render a message
+    request = {
+        'content': '**foo**'
+    }
     result = client.render_message(request)
-    assert result['result'] == 'success'
-    assert result['rendered'] == '<p><strong>foo</strong></p>'
+    # {code_example|end}
+
+    fixture = FIXTURES['render-message']
+    test_against_fixture(result, fixture)
 
 def send_message(client):
     # type: (Client) -> int
@@ -145,7 +165,25 @@ def update_message(client, message_id):
     assert result['result'] == 'success'
     assert result['raw_content'] == 'new content'
 
+TEST_FUNCTIONS = {
+    'render-message': render_message,
+}
+
 # SETUP METHODS FOLLOW
+
+def test_against_fixture(result, fixture, check_if_equal=[], check_if_exists=[]):
+    # type: (Dict[str, Any], Dict[str, Any], Optional[Iterable[str]], Optional[Iterable[str]]) -> None
+    if not check_if_equal and not check_if_exists:
+        for key, value in fixture.items():
+            assert result[key] == fixture[key]
+
+    if check_if_equal:
+        for key in check_if_equal:
+            assert result[key] == fixture[key]
+
+    if check_if_exists:
+        for key in check_if_exists:
+            assert key in result
 
 def test_messages(client):
     # type: (Client) -> None
