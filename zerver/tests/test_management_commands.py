@@ -181,19 +181,21 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
         email = "user1@test.com"
         generated_link = generate_realm_creation_url(by_admin=True)
 
-        # Check realm creation page is accessible
+        # Get realm creation page
         result = self.client_get(generated_link)
         self.assert_in_success_response([u"Create a new Zulip organization"], result)
 
-        # Create Realm with generated link
+        # Enter email
         self.assertIsNone(get_realm('test'))
         result = self.client_post(generated_link, {'email': email})
         self.assertEqual(result.status_code, 302)
         self.assertTrue(re.search('/accounts/do_confirm/\w+$', result["Location"]))
+
+        # Bypass sending mail for confirmation, go straight to creation form
         result = self.client_get(result["Location"])
         self.assert_in_response('action="/accounts/register/"', result)
 
-        # Generated link used for creating realm
+        # Original link is now dead
         result = self.client_get(generated_link)
         self.assert_in_success_response(["The organization creation link has expired or is not valid."], result)
 
