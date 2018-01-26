@@ -41,12 +41,16 @@ while [ -z "$CONTAINER_NAME" ] || lxc-info -n "$CONTAINER_NAME" >/dev/null 2>&1;
     CONTAINER_NAME=zulip-install-"$(basename "$shared_dir")"
 done
 
-message="$(cat <<EOF)"
+message="$(cat <<EOF
 
-$CONTAINER_NAME
-$shared_dir
+Container:
+  sudo lxc-attach -n $CONTAINER_NAME
+
+Unpacked tree:
+  sudo ls $shared_dir/mnt/zulip-server
 EOF
-trap 'echo "$message"' EXIT
+)"
+trap 'set +x; echo "$message"' EXIT
 
 if [ -d "$INSTALLER" ]; then
     installer_dir="$(readlink -f $INSTALLER)"
