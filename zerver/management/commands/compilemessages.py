@@ -130,6 +130,7 @@ class Command(compilemessages.Command):
 
         with open(output_path, 'w') as writer:
             ujson.dump(data, writer, indent=2)
+            writer.write('\n')
 
     def get_translation_percentage(self, locale_path: Text, locale: Text) -> int:
 
