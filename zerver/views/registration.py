@@ -294,9 +294,9 @@ def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> Htt
     do_login(request, user_profile)
     return HttpResponseRedirect(user_profile.realm.uri + reverse('zerver.views.home.home'))
 
-def send_registration_completion_email(email: str, request: HttpRequest,
-                                       realm_creation: bool=False,
-                                       streams: Optional[List[Stream]]=None) -> None:
+def prepare_activation_url(email: str, request: HttpRequest,
+                           realm_creation: bool=False,
+                           streams: Optional[List[Stream]]=None) -> str:
     """
     Send an email with a confirmation link to the provided e-mail so the user
     can complete their registration.
@@ -312,10 +312,13 @@ def send_registration_completion_email(email: str, request: HttpRequest,
         confirmation_type = Confirmation.REALM_CREATION
 
     activation_url = create_confirmation_link(prereg_user, request.get_host(), confirmation_type)
-    send_email('zerver/emails/confirm_registration', to_email=email, from_address=FromAddress.NOREPLY,
-               context={'activate_url': activation_url})
     if settings.DEVELOPMENT and realm_creation:
         request.session['confirmation_key'] = {'confirmation_key': activation_url.split('/')[-1]}
+    return activation_url
+
+def send_confirm_registration_email(email: str, activation_url: str) -> None:
+    send_email('zerver/emails/confirm_registration', to_email=email, from_address=FromAddress.NOREPLY,
+               context={'activate_url': activation_url})
 
 def redirect_to_email_login_url(email: str) -> HttpResponseRedirect:
     login_url = reverse('django.contrib.auth.views.login')
@@ -341,8 +344,9 @@ def create_realm(request: HttpRequest, creation_key: Optional[Text]=None) -> Htt
         form = RealmCreationForm(request.POST)
         if form.is_valid():
             email = form.cleaned_data['email']
+            activation_url = prepare_activation_url(email, request, realm_creation=True)
             try:
-                send_registration_completion_email(email, request, realm_creation=True)
+                send_confirm_registration_email(email, activation_url)
             except smtplib.SMTPException as e:
                 logging.error('Error in create_realm: %s' % (str(e),))
                 return HttpResponseRedirect("/config-error/smtp")
@@ -381,8 +385,9 @@ def accounts_home(request: HttpRequest, multiuse_object: Optional[MultiuseInvite
         form = HomepageForm(request.POST, realm=realm, from_multiuse_invite=from_multiuse_invite)
         if form.is_valid():
             email = form.cleaned_data['email']
+            activation_url = prepare_activation_url(email, request, streams=streams_to_subscribe)
             try:
-                send_registration_completion_email(email, request, streams=streams_to_subscribe)
+                send_confirm_registration_email(email, activation_url)
             except smtplib.SMTPException as e:
                 logging.error('Error in accounts_home: %s' % (str(e),))
                 return HttpResponseRedirect("/config-error/smtp")

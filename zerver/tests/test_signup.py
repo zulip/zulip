@@ -20,7 +20,7 @@ from zerver.views.auth import login_or_register_remote_user, \
     redirect_and_log_into_subdomain
 from zerver.views.invite import get_invitee_emails_set
 from zerver.views.registration import confirmation_key, \
-    send_registration_completion_email
+    send_confirm_registration_email
 
 from zerver.models import (
     get_realm, get_user, get_stream_recipient,
@@ -1421,7 +1421,7 @@ class UserSignUpTest(ZulipTestCase):
         email = self.nonreg_email('newguy')
 
         smtp_mock = patch(
-            'zerver.views.registration.send_registration_completion_email',
+            'zerver.views.registration.send_confirm_registration_email',
             side_effect=smtplib.SMTPException('uh oh')
         )
 
@@ -1444,7 +1444,7 @@ class UserSignUpTest(ZulipTestCase):
         email = self.nonreg_email('newguy')
 
         smtp_mock = patch(
-            'zerver.views.registration.send_registration_completion_email',
+            'zerver.views.registration.send_confirm_registration_email',
             side_effect=smtplib.SMTPException('uh oh')
         )
 
