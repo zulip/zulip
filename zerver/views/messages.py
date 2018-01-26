@@ -19,7 +19,7 @@ from zerver.lib.actions import recipient_for_emails, do_update_message_flags, \
     create_mirror_user_if_needed, check_send_message, do_update_message, \
     extract_recipients, truncate_body, render_incoming_message, do_delete_message, \
     do_mark_all_as_read, do_mark_stream_messages_as_read, \
-    get_user_info_for_message_updates, check_schedule_message
+    get_user_info_for_message_updates, check_schedule_message, bulk_add_subscriptions
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.message import (
     access_message,
@@ -29,7 +29,8 @@ from zerver.lib.message import (
 )
 from zerver.lib.response import json_success, json_error
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
-from zerver.lib.streams import access_stream_by_id, can_access_stream_history_by_name
+from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
+    can_access_stream_history_by_name
 from zerver.lib.timestamp import datetime_to_timestamp, convert_to_UTC
 from zerver.lib.timezone import get_timezone
 from zerver.lib.topic_mutes import exclude_topic_mutes
@@ -1212,6 +1213,26 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
                                        delivery_type, defer_until, tz_guess,
                                        forwarder_user_profile=user_profile,
                                        realm=realm)
+
+    # If user is not subscribed to the stream, try to subscribe them.
+    if message_type_name == 'stream' and len(message_to):
+        try:
+            stream, recipient, sub = access_stream_by_name(user_profile, message_to[0])
+        except JsonableError as e:
+            return json_error(e.msg, data={'error_type': 'does-not-exist'})
+
+        if not sub:
+            # autosubscribe is bool if the message is sent using websockets,
+            # and str otherwise.
+            autosubscribe = request.POST.get('autosubscribe')
+            if type(autosubscribe) is str:
+                autosubscribe = ujson.loads(autosubscribe)
+
+            if not autosubscribe:
+                error_msg = _("User not subscribed to this stream")
+                return json_error(error_msg, data={'error_type': 'not-subscribed'})
+
+            bulk_add_subscriptions([stream], [user_profile])
 
     ret = check_send_message(sender, client, message_type_name, message_to,
                              topic_name, message_content, forged=forged,

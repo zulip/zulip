@@ -312,12 +312,6 @@
         "result": "error",
         "var_name": "content"
     },
-    "nonexistent-stream-error": {
-        "code": "STREAM_DOES_NOT_EXIST",
-        "msg": "Stream 'nonexistent_stream' does not exist",
-        "result": "error",
-        "stream": "nonexistent_stream"
-    },
     "private-message": {
         "id": 134,
         "msg": "",

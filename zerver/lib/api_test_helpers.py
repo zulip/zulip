@@ -315,19 +315,6 @@ def stream_message(client):
 
     return message_id
 
-def test_nonexistent_stream_error(client):
-    # type: (Client) -> None
-    request = {
-        "type": "stream",
-        "to": "nonexistent_stream",
-        "subject": "Castle",
-        "content": "Something is rotten in the state of Denmark."
-    }
-    result = client.send_message(request)
-
-    fixture = FIXTURES['nonexistent-stream-error']
-    test_against_fixture(result, fixture)
-
 def private_message(client):
     # type: (Client) -> None
 
@@ -560,7 +547,7 @@ def test_messages(client):
     update_message(client, message_id)
     private_message(client)
 
-    test_nonexistent_stream_error(client)
+    test_invalid_stream_error(client)
     test_private_message_invalid_recipient(client)
 
 def test_users(client):
