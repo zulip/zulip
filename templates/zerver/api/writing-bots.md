@@ -8,9 +8,8 @@ third-party service.
 * **Interactive bots**, for when you want the tool to react to
   messages in Zulip.
 
-* This guide is about writing and testing interactive bots. We assume
- familiarity with our
- [guide for running bots](running-bots).
+This guide is about writing and testing interactive bots. We assume
+familiarity with our [guide for running bots](running-bots).
 
 On this page you'll find:
 
