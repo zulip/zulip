@@ -1,0 +1,7 @@
+{
+    "render-message":{
+        "msg":"",
+        "rendered":"<p><strong>foo<\/strong><\/p>",
+        "result":"success"
+    }
+}
