@@ -1,7 +1,7 @@
 # Interactive bots
 
 Zulip's API has a powerful framework for interactive bots that react
-the messages in Zulip.  This page documents how to run a bot
+to messages in Zulip.  This page documents how to run a bot
 implemented using that framework, both on your laptop for quick
 testing as well in a production server environment.
 
