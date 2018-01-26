@@ -58,7 +58,7 @@ def slack_workspace_to_realm(REALM_ID: int, realm_subdomain: str, fixtures_path:
     DOMAIN_NAME = "zulipchat.com"
     NOW = float(timezone_now().timestamp())
 
-    zerver_realm = get_zerver_realm(fixtures_path, REALM_ID, realm_subdomain, NOW)
+    zerver_realm = build_zerver_realm(fixtures_path, REALM_ID, realm_subdomain, NOW)
 
     realm = dict(zerver_client=[{"name": "populate_db", "id": 1},
                                 {"name": "website", "id": 2},
@@ -98,8 +98,8 @@ def slack_workspace_to_realm(REALM_ID: int, realm_subdomain: str, fixtures_path:
 
     return realm, added_users, added_recipient, added_channels
 
-def get_zerver_realm(fixtures_path: str, REALM_ID: int, realm_subdomain: str,
-                     time: float) -> List[ZerverFieldsT]:
+def build_zerver_realm(fixtures_path: str, REALM_ID: int, realm_subdomain: str,
+                       time: float) -> List[ZerverFieldsT]:
 
     zerver_realm_skeleton = get_data_file(fixtures_path + 'zerver_realm_skeleton.json')
 
@@ -408,9 +408,9 @@ def build_subscription(channel_members: List[str], zerver_subscription: List[Zer
         subscription_id += 1
     return zerver_subscription, subscription_id
 
-def slack_workspace_messages(slack_data_dir: str, REALM_ID: int, added_users: AddedUsersT,
-                             added_recipient: AddedRecipientsT, added_channels: AddedChannelsT,
-                             realm: ZerverFieldsT) -> ZerverFieldsT:
+def convert_slack_workspace_messages(slack_data_dir: str, REALM_ID: int, added_users: AddedUsersT,
+                                     added_recipient: AddedRecipientsT, added_channels: AddedChannelsT,
+                                     realm: ZerverFieldsT) -> ZerverFieldsT:
     """
     Returns:
     1. message.json, Converted messages
@@ -581,8 +581,8 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str) 
                                                                                    realm_subdomain,
                                                                                    fixtures_path,
                                                                                    slack_data_dir)
-    message_json = slack_workspace_messages(slack_data_dir, REALM_ID, added_users,
-                                            added_recipient, added_channels, realm)
+    message_json = convert_slack_workspace_messages(slack_data_dir, REALM_ID, added_users,
+                                                    added_recipient, added_channels, realm)
 
     zerver_attachment = []  # type: List[ZerverFieldsT]
     attachment = {"zerver_attachment": zerver_attachment}
