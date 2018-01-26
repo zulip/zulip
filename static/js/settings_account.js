@@ -259,16 +259,27 @@ exports.set_up = function () {
     });
 
     $("#do_deactivate_self_button").on('click',function () {
-        $("#deactivate_self_modal").modal("hide");
-        channel.del({
-            url: '/json/users/me',
-            success: function () {
-                window.location.href = "/login";
-            },
-            error: function (xhr) {
-                ui_report.error(i18n.t("Error deactivating account"), xhr, $('#account-settings-status').expectOne());
-            },
+        $("#do_deactivate_self_button .loader").css('display', 'inline-block');
+        $("#do_deactivate_self_button span").hide();
+        $("#do_deactivate_self_button object").on("load", function () {
+            var doc = this.getSVGDocument();
+            var $svg = $(doc).find("svg");
+            $svg.find("rect").css("fill", "#000");
         });
+
+        setTimeout(function () {
+            channel.del({
+                url: '/json/users/me',
+                success: function () {
+                    $("#deactivate_self_modal").modal("hide");
+                    window.location.href = "/login";
+                },
+                error: function (xhr) {
+                    $("#deactivate_self_modal").modal("hide");
+                    ui_report.error(i18n.t("Error deactivating account"), xhr, $('#account-settings-status').expectOne());
+                },
+            });
+        }, 5000);
     });
 
 

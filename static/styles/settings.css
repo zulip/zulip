@@ -1150,6 +1150,15 @@ input[type=checkbox].inline-block {
     border-radius: 0px;
 }
 
+#do_deactivate_self_button .loader {
+    display: none;
+    vertical-align: top;
+    position: relative;
+    height: 30px;
+    margin-top: -10px;
+    top: 5px;
+}
+
 #id_realm_notifications_stream .dropdown-search > input[type=text],
 #id_realm_signup_notifications_stream .dropdown-search > input[type=text] {
     margin: 9px;
