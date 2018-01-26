@@ -3169,7 +3169,7 @@ nav ul li.active::after {
 
     .portico-header .dropdown ul {
         width: 100%;
-        height: 85px;
+        height: auto;
         margin: 42px 0 0 0;
         font-size: 0.8em;
     }
