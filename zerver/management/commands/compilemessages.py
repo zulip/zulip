@@ -45,6 +45,7 @@ class Command(compilemessages.Command):
 
         with open(output_path, 'w') as output_file:
             ujson.dump({'name_map': lang_list}, output_file, indent=4)
+            output_file.write('\n')
 
     def get_po_filename(self, locale_path: Text, locale: Text) -> Text:
         po_template = '{}/{}/LC_MESSAGES/django.po'
