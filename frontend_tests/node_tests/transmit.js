@@ -60,6 +60,10 @@ function test_with_mock_socket(test_params) {
         assert.equal(error_msg, 'Error sending message: simulated_error');
         error_func_checked = true;
     };
+    transmit.report_validation_error = function (error_type) {
+        assert.equal(error_type, 'does-not-exist');
+        error_func_checked = true;
+    };
 
     test_with_mock_socket({
         run_code: function () {
@@ -83,6 +87,12 @@ function test_with_mock_socket(test_params) {
             // invoke our test error function via a wrapper
             // function in the real code.
             send_args.error('response', {msg: 'simulated_error'});
+            assert(error_func_checked);
+
+            // autosubscribe=true
+            error_func_checked = false;
+            request.autosubscribe = true;
+            send_args.error('response', {error_type: 'does-not-exist'});
             assert(error_func_checked);
         },
     });
@@ -117,13 +127,23 @@ page_params.use_websockets = false;
     channel.post = function (opts) {
         assert.equal(opts.url, '/json/messages');
         assert.equal(opts.data.foo, 'bar');
-        var xhr = 'whatever';
+        var xhr = {responseJSON: {error_type: 'not-subscribed'}};
         opts.error(xhr, 'timeout');
     };
 
     var error_func_called;
     var error = function (response) {
         assert.equal(response, 'Error sending message');
+        error_func_called = true;
+    };
+    transmit.send_message(request, success, error);
+    assert(error_func_called);
+
+    // autosubscribe=true
+    error_func_called = false;
+    request.autosubscribe = true;
+    transmit.report_validation_error = function (error_type) {
+        assert.equal(error_type, 'not-subscribed');
         error_func_called = true;
     };
     transmit.send_message(request, success, error);

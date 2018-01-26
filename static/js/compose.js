@@ -232,21 +232,27 @@ exports.send_message = function send_message(request) {
     var local_id;
     var locally_echoed;
 
-    local_id = echo.try_deliver_locally(request);
-    if (local_id) {
-        // We are rendering this message locally with an id
-        // like 92l99.01 that corresponds to a reasonable
-        // approximation of the id we'll get from the server
-        // in terms of sorting messages.
-        locally_echoed = true;
-    } else {
+    if (request.autosubscribe) {
         // We are not rendering this message locally, but we
         // track the message's life cycle with an id like
         // loc-1, loc-2, loc-3,etc.
         locally_echoed = false;
         local_id = sent_messages.get_new_local_id();
+    } else {
+        local_id = echo.try_deliver_locally(request);
+        if (local_id) {
+            // We are rendering this message locally with an id
+            // like 92l99.01 that corresponds to a reasonable
+            // approximation of the id we'll get from the server
+            // in terms of sorting messages.
+            locally_echoed = true;
+        } else {
+            // Again, we are not rendering the message locally,
+            // but we track its life cycle.
+            locally_echoed = false;
+            local_id = sent_messages.get_new_local_id();
+        }
     }
-
     request.local_id = local_id;
 
     sent_messages.start_tracking_message({
@@ -394,12 +400,14 @@ exports.finish = function () {
     if (! compose.validate()) {
         return false;
     }
+    var request = create_message_object();
+    request.autosubscribe = false; // Temporarily always set to false.
 
     var message_content = compose_state.message_content();
     if (is_deferred_delivery(message_content)) {
-        exports.schedule_message();
+        exports.schedule_message(request);
     } else {
-        exports.send_message();
+        exports.send_message(request);
     }
     exports.clear_preview_area();
     // TODO: Do we want to fire the event even if the send failed due
