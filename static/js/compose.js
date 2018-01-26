@@ -401,7 +401,7 @@ exports.finish = function () {
         return false;
     }
     var request = create_message_object();
-    request.autosubscribe = false; // Temporarily always set to false.
+    request.autosubscribe = page_params.narrow_stream !== undefined;
 
     var message_content = compose_state.message_content();
     if (is_deferred_delivery(message_content)) {
@@ -434,35 +434,6 @@ exports.get_invalid_recipient_emails = function () {
 
     return invalid_recipients;
 };
-
-function check_unsubscribed_stream_for_send(stream_name) {
-    var result;
-
-    // In the rare circumstance of the autosubscribe option, we
-    // *Synchronously* try to subscribe to the stream before sending
-    // the message.  This is deprecated and we hope to remove it; see
-    // #4650.
-    channel.post({
-        url: "/json/subscriptions/exists",
-        data: {stream: stream_name, autosubscribe: true},
-        async: false,
-        success: function (data) {
-            if (data.subscribed) {
-                result = "subscribed";
-            } else {
-                result = "not-subscribed";
-            }
-        },
-        error: function (xhr) {
-            if (xhr.status === 404) {
-                result = "does-not-exist";
-            } else {
-                result = "error";
-            }
-        },
-    });
-    return result;
-}
 
 function validate_stream_message_mentions(stream_name) {
     var stream_count = stream_data.get_subscriber_count(stream_name) || 0;
@@ -540,14 +511,15 @@ exports.validate_stream_message_address_info = function (stream_name) {
     }
     var stream_obj = stream_data.get_sub(stream_name);
     if (!stream_obj) {
-        return exports.validation_error("does-not-exist", stream_name);
+        exports.validation_error("does-not-exist", stream_name);
+        return false;
     }
     var autosubscribe = page_params.narrow_stream !== undefined;
     if (!autosubscribe) {
-        return exports.validation_error("not-subscribed", stream_name);
+        exports.validation_error("not-subscribed", stream_name);
+        return false;
     }
-    var error_type = check_unsubscribed_stream_for_send(stream_name);
-    return exports.validation_error(error_type, stream_name);
+    return true;
 };
 
 function validate_stream_message() {
