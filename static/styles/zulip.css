@@ -203,6 +203,10 @@ p.n-margin {
     background: hsl(170, 46%, 54%);
 }
 
+#panels .alert.alert-info.red {
+    background: hsl(0, 46%, 54%);
+}
+
 #panels .alert .close {
     line-height: 24px;
 }
@@ -210,6 +214,10 @@ p.n-margin {
 #panels .alert .alert-link {
     color: hsl(169, 100%, 88%);
     font-weight: 600;
+}
+
+#panels .alert.red .alert-link {
+    color: hsl(0, 100%, 88%);
 }
 
 #panels .alert .buttons .alert-link {

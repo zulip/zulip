@@ -12,16 +12,28 @@ var resize_app = function () {
 
 exports.resize_app = resize_app;
 
-var show_step = function (step) {
-    $("#panels [data-step]").hide().filter("[data-step=" + step + "]").show();
+var show_step = function ($process, step) {
+    $process.find("[data-step]").hide().filter("[data-step=" + step + "]").show();
 };
 
-var get_step = function () {
-    return $("#panels [data-step]").filter(":visible").data("step");
+var get_step = function ($process) {
+    return $process.find("[data-step]").filter(":visible").data("step");
 };
 
 exports.initialize = function () {
+    // if email has not been set up and the user is the admin, display a warning
+    // to tell them to set up an email server.
+    if (page_params.warn_no_email === true && page_params.is_admin) {
+        panels.open($("[data-process='email-server']"));
+    } else {
+        panels.open($("[data-process='notifications']"));
+    }
+};
+
+exports.open = function ($process) {
     var ls = localstorage();
+
+    $("[data-process]").hide();
 
     var should_show_notifications = (
         // notifications *basically* don't work on any mobile platforms, so don't
@@ -38,7 +50,14 @@ exports.initialize = function () {
     );
 
     if (should_show_notifications) {
-        $("#desktop-notifications-panel").show();
+        $process.show();
+        resize_app();
+    }
+
+    // if it is not the notifications prompt, show the error if it has been
+    // initialized here.
+    if ($process.is(":not([data-process='notifications'])")) {
+        $process.show();
         resize_app();
     }
 
@@ -57,8 +76,8 @@ exports.initialize = function () {
 
     $("#panels").on("click", ".alert .close, .alert .exit", function (e) {
         e.stopPropagation();
-        if (get_step() === 1) {
-            show_step(2);
+        if (get_step($process) === 1 && $process.data("process") === "notifications") {
+            show_step($process, 2);
         } else {
             $(this).closest(".alert").hide();
         }
