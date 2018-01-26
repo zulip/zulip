@@ -34,8 +34,6 @@ jobs:
             # Install moreutils so we can use `ts` and `mispipe` in the following.
             sudo apt-get install -y moreutils
 
-            # TODO: Install and use codecov.
-
             # CircleCI sets the following in Git config at clone time:
             #   url.ssh://git@github.com.insteadOf https://github.com
             # This breaks the Git clones in the NVM `install.sh` we run
@@ -74,6 +72,13 @@ jobs:
           command: |
             . /srv/zulip-py3-venv/bin/activate
             mispipe ./tools/travis/frontend ts
+
+      -  run:
+          name: upload coverage report
+          command: |
+            . /srv/zulip-py3-venv/bin/activate
+            pip install codecov && codecov \
+              || echo "Error in uploading coverage reports to codecov.io."
 
       # - store_artifacts:  # TODO
       #     path: var/casper/
