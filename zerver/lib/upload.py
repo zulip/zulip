@@ -50,6 +50,9 @@ DEFAULT_EMOJI_SIZE = 64
 # "file name" is the original filename provided by the user run
 # through a sanitization function.
 
+class RealmUploadQuotaError(JsonableError):
+    code = ErrorCode.REALM_UPLOAD_QUOTA
+
 attachment_url_re = re.compile('[/\-]user[\-_]uploads[/\.-].*?(?=[ )]|\Z)')
 
 def attachment_url_to_path_id(attachment_url: Text) -> Text:
@@ -180,6 +183,19 @@ def upload_image_to_s3(
         headers = None
 
     key.set_contents_from_string(contents, headers=headers)  # type: ignore # https://github.com/python/typeshed/issues/1552
+
+def currently_used_upload_space(realm: Realm) -> int:
+    used_space = Attachment.objects.filter(realm=realm).aggregate(Sum('size'))['size__sum']
+    if used_space is None:
+        return 0
+    return used_space
+
+def check_upload_within_quota(realm: Realm, uploaded_file_size: int) -> None:
+    if realm.upload_quota_bytes() is None:
+        return
+    used_space = currently_used_upload_space(realm)
+    if (used_space + uploaded_file_size) > realm.upload_quota_bytes():
+        raise RealmUploadQuotaError(_("Upload would exceed your organization's upload quota."))
 
 def get_file_info(request: HttpRequest, user_file: File) -> Tuple[Text, int, Optional[Text]]:
 

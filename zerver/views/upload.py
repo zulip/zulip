@@ -8,7 +8,7 @@ from django.utils.translation import ugettext as _
 from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_success, json_error
 from zerver.lib.upload import upload_message_image_from_request, get_local_file_path, \
-    get_signed_upload_url, get_realm_for_filename
+    get_signed_upload_url, get_realm_for_filename, check_upload_within_quota
 from zerver.lib.validator import check_bool
 from zerver.models import UserProfile, validate_attachment_request
 from django.conf import settings
@@ -55,6 +55,7 @@ def upload_file_backend(request: HttpRequest, user_profile: UserProfile) -> Http
     if settings.MAX_FILE_UPLOAD_SIZE * 1024 * 1024 < file_size:
         return json_error(_("Uploaded file is larger than the allowed limit of %s MB") % (
             settings.MAX_FILE_UPLOAD_SIZE))
+    check_upload_within_quota(user_profile.realm, file_size)
 
     if not isinstance(user_file.name, str):
         # It seems that in Python 2 unicode strings containing bytes are

@@ -389,6 +389,44 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             result = self.client_post("/json/user_uploads", {'f1': fp})
             assert sanitize_name(expected) in result.json()['uri']
 
+    def test_realm_quota(self) -> None:
+        """
+        Realm quota for uploading should not be exceeded.
+        """
+        self.login(self.example_email("hamlet"))
+
+        d1 = StringIO("zulip!")
+        d1.name = "dummy_1.txt"
+        result = self.client_post("/json/user_uploads", {'file': d1})
+        d1_path_id = re.sub('/user_uploads/', '', result.json()['uri'])
+        d1_attachment = Attachment.objects.get(path_id = d1_path_id)
+        self.assert_json_success(result)
+
+        realm = get_realm("zulip")
+        realm.upload_quota_gb = 1
+        realm.save(update_fields=['upload_quota_gb'])
+
+        # The size of StringIO("zulip!") is 6 bytes. Setting the size of
+        # d1_attachment to realm.upload_quota_bytes() - 11 should allow
+        # us to upload only one more attachment.
+        d1_attachment.size = realm.upload_quota_bytes() - 11
+        d1_attachment.save(update_fields=['size'])
+
+        d2 = StringIO("zulip!")
+        d2.name = "dummy_2.txt"
+        result = self.client_post("/json/user_uploads", {'file': d2})
+        self.assert_json_success(result)
+
+        d3 = StringIO("zulip!")
+        d3.name = "dummy_3.txt"
+        result = self.client_post("/json/user_uploads", {'file': d3})
+        self.assert_json_error(result, "Upload would exceed your organization's upload quota.")
+
+        realm.upload_quota_gb = None
+        realm.save(update_fields=['upload_quota_gb'])
+        result = self.client_post("/json/user_uploads", {'file': d3})
+        self.assert_json_success(result)
+
     def test_cross_realm_file_access(self) -> None:
 
         def create_user(email: Text, realm_id: Text) -> UserProfile:

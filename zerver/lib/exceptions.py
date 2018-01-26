@@ -27,7 +27,7 @@ class ErrorCode(AbstractEnum):
     REQUEST_VARIABLE_MISSING = ()
     REQUEST_VARIABLE_INVALID = ()
     BAD_IMAGE = ()
-    QUOTA_EXCEEDED = ()
+    REALM_UPLOAD_QUOTA = ()
     BAD_NARROW = ()
     UNAUTHORIZED_PRINCIPAL = ()
     BAD_EVENT_QUEUE_ID = ()
