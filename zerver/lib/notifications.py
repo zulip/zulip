@@ -449,7 +449,7 @@ def enqueue_welcome_emails(user: UserProfile) -> None:
     context.update({
         'unsubscribe_link': unsubscribe_link,
         'organization_setup_advice_link':
-        user.realm.uri + '%s/help/getting-your-organization-started-with-zulip',
+        user.realm.uri + '/help/getting-your-organization-started-with-zulip',
         'is_realm_admin': user.is_realm_admin,
     })
     send_future_email(
