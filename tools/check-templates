@@ -106,8 +106,6 @@ def check_html_templates(templates, all_dups):
 
     # Ignore these files since these have not been cleaned yet :/
     IGNORE_FILES = [
-        # Temporarily Avoiding cleaning these to avoid merge conflicts for now.
-        'templates/zerver/keyboard_shortcuts.html',
         # zephyr-mirror.html has some whitespace-dependent formatting
         # for code blocks that prevent cleaning it.  Might make sense
         # to convert it to a /help/ markdown article.
