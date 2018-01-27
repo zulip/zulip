@@ -66,9 +66,9 @@ zrequire('upload');
         assert.equal($("#compose-error-msg").text(), msg);
     }
 
-    function test(err, file, msg) {
+    function test(err, msg, server_response=null, file={}) {
         setup_test();
-        upload.uploadError(err, null, file);
+        upload.uploadError(err, server_response, file);
         assert_side_effects(msg);
     }
 
@@ -79,11 +79,12 @@ zrequire('upload');
     var msg_4 = 'Sorry, the file was too large.';
     var msg_5 = 'An unknown error occurred.';
 
-    test('BrowserNotSupported', {}, msg_prefix + msg_1);
-    test('TooManyFiles', {}, msg_prefix + msg_2);
-    test('FileTooLarge', {name: 'foobar.txt'}, msg_prefix + msg_3);
-    test(413, {}, msg_prefix + msg_4);
-    test('Do-not-match-any-case', {}, msg_prefix + msg_5);
+    test('BrowserNotSupported', msg_prefix + msg_1);
+    test('TooManyFiles', msg_prefix + msg_2);
+    test('FileTooLarge', msg_prefix + msg_3, null, {name: 'foobar.txt'});
+    test(413, msg_prefix + msg_4);
+    test(400, 'ちょっと…', {msg: 'ちょっと…'});
+    test('Do-not-match-any-case', msg_prefix + msg_5);
 }());
 
 (function test_upload_finish() {
