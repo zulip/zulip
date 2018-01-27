@@ -2902,6 +2902,46 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertFalse(sub.is_admin)
         self.assertTrue(sub.active)
 
+    def test_restrict_private_stream_without_admins(self) -> None:
+        """
+        Private stream must have at least one stream admin or at least one
+        realm admin subscriber, who has same rights as stream admin.
+        """
+        hamlet = self.example_user("hamlet")
+        prospero = self.example_user("prospero")
+        principals = [hamlet.email, self.example_email("cordelia"), self.example_email("AARON"),
+                      prospero.email]
+        stream_admins = [self.example_user("hamlet").id]
+
+        # Create private stream
+        stream_name = "private_stream"
+        self.common_subscribe_to_streams(prospero.email, [stream_name],
+                                         dict(principals=ujson.dumps(principals)),
+                                         stream_admins=stream_admins,
+                                         invite_only=True)
+        stream = get_stream(stream_name, hamlet.realm)
+
+        # Hamlet is only one stream admin and no other realm subscriber to stream.
+        result = self.client_delete("/json/streams/%d/admins" % (stream.id,),
+                                    {'stream_id': ujson.dumps(stream.id),
+                                     'stream_admin_ids': ujson.dumps([hamlet.id])})
+        self.assert_json_error(result, 'Private stream must require at least one admin.')
+
+        # Suppose there are two stream admins and try to remove both together.
+        sub = get_subscription(stream_name, prospero)
+        do_change_subscription_property(prospero, sub, stream, 'is_admin', True)
+        result = self.client_delete("/json/streams/%d/admins" % (stream.id,),
+                                    {'stream_id': ujson.dumps(stream.id),
+                                     'stream_admin_ids': ujson.dumps([hamlet.id, prospero.id])})
+        self.assert_json_error(result, 'Private stream must require at least one admin.')
+
+        # But if there are other realm admin subscriber to stream, then it's okay.
+        do_change_is_admin(self.example_user("AARON"), True)
+        result = self.client_delete("/json/streams/%d/admins" % (stream.id,),
+                                    {'stream_id': ujson.dumps(stream.id),
+                                     'stream_admin_ids': ujson.dumps([hamlet.id, prospero.id])})
+        self.assert_json_success(result)
+
 class GetPublicStreamsTest(ZulipTestCase):
 
     def test_public_streams_api(self) -> None:

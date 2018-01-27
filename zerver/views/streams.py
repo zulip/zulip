@@ -27,7 +27,7 @@ from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
     check_stream_name, check_stream_name_available, filter_stream_authorization, \
     list_to_streams, access_stream_for_delete, access_default_stream_group_by_id, \
-    access_stream_for_admin_actions
+    access_stream_for_admin_actions, restrict_private_stream_without_admin
 from zerver.lib.validator import check_string, check_int, check_list, check_dict, \
     check_bool, check_variable_type
 from zerver.models import UserProfile, Stream, Realm, Subscription, \
@@ -522,6 +522,11 @@ def remove_admin_subscriber_backend(request: HttpRequest, user_profile: UserProf
     (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
     # Check if request user have the rights to perform admin actions
     access_stream_for_admin_actions(user_profile, stream, sub)
+
+    # Restrict private stream without stream and realm admin
+    if stream.invite_only:
+        restrict_private_stream_without_admin(stream, user_profile,
+                                              num_stream_admin_will_be_removed=len(stream_admin_ids))
 
     for stream_admin_id in stream_admin_ids:
         stream_admin = user_id_to_user_profile(stream_admin_id)
