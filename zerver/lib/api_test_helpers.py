@@ -182,12 +182,20 @@ def update_message(client, message_id):
     # type: (Client, int) -> None
 
     assert int(message_id)
-    request = dict(
-        message_id=message_id,
-        content='new content',
-    )
+
+    # {code_example|start}
+    # Edit a message
+    # (make sure that message_id below is set to the ID of the
+    # message you wish to update)
+    request = {
+        "message_id": message_id,
+        "content": "New content"
+    }
     result = client.update_message(request)
-    assert result['result'] == 'success'
+    # {code_example|end}
+
+    fixture = FIXTURES['update-message']
+    test_against_fixture(result, fixture)
 
     # test it was actually updated
     url = 'messages/' + str(message_id)
@@ -196,12 +204,13 @@ def update_message(client, message_id):
         method='GET'
     )
     assert result['result'] == 'success'
-    assert result['raw_content'] == 'new content'
+    assert result['raw_content'] == request['content']
 
 TEST_FUNCTIONS = {
     'render-message': render_message,
     'stream-message': stream_message,
     'private-message': private_message,
+    'update-message': update_message,
 }
 
 # SETUP METHODS FOLLOW
