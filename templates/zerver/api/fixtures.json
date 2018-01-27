@@ -17,5 +17,10 @@
     "update-message": {
         "msg":"",
         "result":"success"
+    },
+    "get-stream-id": {
+        "stream_id":15,
+        "result":"success",
+        "msg":""
     }
 }
