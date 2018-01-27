@@ -3,5 +3,10 @@
         "msg":"",
         "rendered":"<p><strong>foo<\/strong><\/p>",
         "result":"success"
+    },
+    "stream-message": {
+        "msg":"",
+        "id":134,
+        "result":"success"
     }
 }
