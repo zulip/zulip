@@ -27,7 +27,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             {{ csrf_input }}
 
             <section class="user-registration">
-                {% if realm_name %}
+                {% if realm_name and not creating_new_team %}
                 <img class="avatar inline-block" src="{{ realm_icon }}" alt="" />
                 <div class="info-box inline-block">
                     <div class="organization-name">{{ realm_name }}</div>
