@@ -106,14 +106,16 @@ def check_html_templates(templates, all_dups):
 
     # Ignore these files since these have not been cleaned yet :/
     IGNORE_FILES = [
-        # These use various whitespace-dependent formatting that
-        # prevent cleaning them.
-        'templates/corporate/zephyr-mirror.html',
+        # Temporarily Avoiding cleaning these to avoid merge conflicts for now.
         'templates/zerver/compose.html',
         'templates/zerver/keyboard_shortcuts.html',
+        'templates/zerver/navbar.html',
+        # zephyr-mirror.html has some whitespace-dependent formatting
+        # for code blocks that prevent cleaning it.  Might make sense
+        # to convert it to a /help/ markdown article.
+        'templates/corporate/zephyr-mirror.html',
         # Can't clean this because of `preserve_spaces`
         'templates/zerver/markdown_help.html',
-        'templates/zerver/navbar.html',
     ]
     # TODO: Clean these files
     for fn in templates:
