@@ -430,6 +430,13 @@ class ZulipTestCase(TestCase):
 
         return [subscription.user_profile for subscription in subscriptions]
 
+    def admin_subscribers_of_stream(self, stream_name: Text, realm: Realm) -> List[UserProfile]:
+        stream = Stream.objects.get(name=stream_name, realm=realm)
+        recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
+        admin_subscriptions = Subscription.objects.filter(recipient=recipient, active=True, is_admin=True)
+
+        return [admin_subscription.user_profile for admin_subscription in admin_subscriptions]
+
     def assert_url_serves_contents_of_file(self, url: str, result: bytes) -> None:
         response = self.client_get(url)
         data = b"".join(response.streaming_content)

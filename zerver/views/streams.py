@@ -21,7 +21,8 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
     do_create_default_stream_group, do_add_streams_to_default_stream_group, \
     do_remove_streams_from_default_stream_group, do_remove_default_stream_group, \
     do_change_default_stream_group_description, do_change_default_stream_group_name, \
-    prep_stream_welcome_message, do_update_stream_admin_subscriptions
+    prep_stream_welcome_message, do_update_stream_admin_subscriptions, \
+    get_admin_subscriber_emails
 from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
     check_stream_name, check_stream_name_available, filter_stream_authorization, \
@@ -171,6 +172,7 @@ def update_stream_backend(
         do_rename_stream(stream, new_name)
     if is_private is not None:
         do_change_stream_invite_only(stream, is_private)
+
     return json_success()
 
 def list_subscriptions_backend(request, user_profile):
@@ -469,6 +471,15 @@ def get_streams_backend(request: HttpRequest, user_profile: UserProfile,
                              include_all_active=include_all_active,
                              include_default=include_default)
     return json_success({"streams": streams})
+
+@has_request_variables
+def get_admin_subscribers_backend(request: HttpRequest, user_profile: UserProfile,
+                                  stream_id: int=REQ('stream',
+                                                     converter=to_non_negative_int)) -> HttpResponse:
+    (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
+    admin_subscribers = get_admin_subscriber_emails(stream, user_profile)
+
+    return json_success({'admin_subscribers': admin_subscribers})
 
 @has_request_variables
 def get_topics_backend(request: HttpRequest, user_profile: UserProfile,

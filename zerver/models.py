@@ -1418,6 +1418,11 @@ def get_user_profile_by_api_key(api_key: Text) -> UserProfile:
 def get_user(email: Text, realm: Realm) -> UserProfile:
     return UserProfile.objects.select_related().get(email__iexact=email.strip(), realm=realm)
 
+@cache_with_key(user_profile_cache_key, timeout=3600*24*7)
+def get_stream_admins(stream_id: int, realm: Realm) -> List[int]:
+    recipient = get_stream_recipient(stream_id)
+    return Subscription.objects.select_related().get(is_admin=True, recipient=recipient)
+
 def get_user_including_cross_realm(email: Text, realm: Optional[Realm]=None) -> UserProfile:
     if is_cross_realm_bot_email(email):
         return get_system_bot(email)

@@ -2743,7 +2743,7 @@ class GetSubscribersTest(ZulipTestCase):
 
         self.assertEqual(non_ws(msg.content), non_ws(expected_msg))
 
-    def check_well_formed_result(self, result: Dict[str, Any], stream_name: Text, realm: Realm) -> None:
+    def check_well_formed_subscribers_result(self, result: Dict[str, Any], stream_name: Text, realm: Realm) -> None:
         """
         A successful call to get_subscribers returns the list of subscribers in
         the form:
@@ -2758,17 +2758,36 @@ class GetSubscribersTest(ZulipTestCase):
             stream_name, realm)]
         self.assertEqual(sorted(result["subscribers"]), sorted(true_subscribers))
 
-    def make_subscriber_request(self, stream_id: int, email: Optional[Text]=None) -> HttpResponse:
+    def check_well_formed_admin_subscribers_result(self, result: Dict[str, Any], stream_name: Text, realm: Realm) -> None:
+        """
+        A successful call to get_admin_subscribers returns the list of stream admins in
+        the form:
+
+        {"msg": "",
+         "result": "success",
+         "admin_subscribers": [self.example_email("hamlet"), self.example_email("prospero")]}
+        """
+        self.assertIn("admin_subscribers", result)
+        self.assertIsInstance(result["admin_subscribers"], list)
+        true_admin_subscribers = [user_profile.email for user_profile in self.admin_subscribers_of_stream(
+            stream_name, realm)]
+        self.assertEqual(sorted(result["admin_subscribers"]), sorted(true_admin_subscribers))
+
+    def make_subscriber_request(self, stream_id: int, email: Optional[Text]=None,
+                                sub_type: Text="members") -> HttpResponse:
         if email is None:
             email = self.email
-        return self.api_get(email, "/api/v1/streams/%d/members" % (stream_id,))
+        return self.api_get(email, "/api/v1/streams/%d/%s" % (stream_id, sub_type,))
 
-    def make_successful_subscriber_request(self, stream_name: Text) -> None:
+    def make_successful_subscriber_request(self, stream_name: Text, sub_type: Text="members",
+                                           email: Optional[Text]=None) -> None:
         stream_id = get_stream(stream_name, self.user_profile.realm).id
-        result = self.make_subscriber_request(stream_id)
+        result = self.make_subscriber_request(stream_id, sub_type=sub_type, email=email)
         self.assert_json_success(result)
-        self.check_well_formed_result(result.json(),
-                                      stream_name, self.user_profile.realm)
+        if sub_type is "members":
+            self.check_well_formed_subscribers_result(result.json(), stream_name, self.user_profile.realm)
+        elif sub_type is "admins":
+            self.check_well_formed_admin_subscribers_result(result.json(), stream_name, self.user_profile.realm)
 
     def test_subscriber(self) -> None:
         """
@@ -3036,6 +3055,58 @@ class GetSubscribersTest(ZulipTestCase):
         # Try to fetch the subscriber list as a non-member.
         stream_id = get_stream(stream_name, user_profile.realm).id
         result = self.make_subscriber_request(stream_id, email=other_email)
+        self.assert_json_error(result, "Invalid stream id")
+
+    def test_get_admin_subscriber(self) -> None:
+        """
+        Public stream admins can be accessed by anyone, but private stream admins can only accessed by
+        private stream subscribers.
+        """
+        hamlet = self.example_user("hamlet")
+        prospero = self.example_user("prospero")
+        principals = [hamlet.email, self.example_email("iago"), self.example_email("cordelia")]
+        stream_admins = [self.example_user("hamlet").id, self.example_user("cordelia").id]
+
+        # Create public stream
+        stream_name = "public_stream"
+        self.common_subscribe_to_streams(self.email, [stream_name],
+                                         dict(principals=ujson.dumps(principals)),
+                                         stream_admins=stream_admins)
+        self.make_successful_subscriber_request(stream_name, sub_type="admins")
+
+        # Any unsubscribed user can access public stream subscribers
+        self.make_successful_subscriber_request(stream_name, sub_type="admins", email=prospero.email)
+
+        # Inactive stream subscription should be automatically removed from stream admins
+        stream = get_stream(stream_name, hamlet.realm)
+        sub = get_subscription(stream_name, hamlet)
+        do_change_subscription_property(hamlet, sub, stream, 'active', False)
+        self.make_successful_subscriber_request(stream_name, sub_type="admins")
+
+        # Create private stream
+        stream_name = "private_stream"
+        self.common_subscribe_to_streams(self.email, [stream_name],
+                                         dict(principals=ujson.dumps(principals)),
+                                         invite_only=True,
+                                         stream_admins=stream_admins)
+        stream = get_stream(stream_name, hamlet.realm)
+
+        # Private stream admins can be accessed by any private stream subscriber
+        self.make_successful_subscriber_request(stream_name, sub_type="admins", email=self.example_email("iago"))
+
+        # But can not be accessed by any non-subscriber
+        result = self.make_subscriber_request(stream.id, sub_type="admins", email=prospero.email)
+        self.assert_json_error(result, "Invalid stream id")
+
+        # Not by previously subscribed user, who is currently not subscribed
+        sub = get_subscription(stream_name, hamlet)
+        do_change_subscription_property(hamlet, sub, stream, 'active', False)
+        result = self.make_subscriber_request(stream.id, sub_type="admins", email=prospero.email)
+        self.assert_json_error(result, "Invalid stream id")
+
+        # Not by non subscribed realm admin
+        do_change_is_admin(prospero, True)
+        result = self.make_subscriber_request(stream.id, sub_type="admins", email=prospero.email)
         self.assert_json_error(result, "Invalid stream id")
 
 class AccessStreamTest(ZulipTestCase):
