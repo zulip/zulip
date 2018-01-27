@@ -13,5 +13,9 @@
         "msg":"",
         "id":134,
         "result":"success"
+    },
+    "update-message": {
+        "msg":"",
+        "result":"success"
     }
 }
