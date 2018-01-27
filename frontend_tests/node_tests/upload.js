@@ -68,7 +68,7 @@ zrequire('upload');
 
     function test(err, file, msg) {
         setup_test();
-        upload.uploadError(err, file);
+        upload.uploadError(err, null, file);
         assert_side_effects(msg);
     }
 
@@ -82,7 +82,7 @@ zrequire('upload');
     test('BrowserNotSupported', {}, msg_prefix + msg_1);
     test('TooManyFiles', {}, msg_prefix + msg_2);
     test('FileTooLarge', {name: 'foobar.txt'}, msg_prefix + msg_3);
-    test('REQUEST ENTITY TOO LARGE', {}, msg_prefix + msg_4);
+    test(413, {}, msg_prefix + msg_4);
     test('Do-not-match-any-case', {}, msg_prefix + msg_5);
 }());
 

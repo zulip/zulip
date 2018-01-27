@@ -35,12 +35,12 @@ exports.progressUpdated = function (i, file, progress) {
     $("#compose-upload-bar").width(progress + "%");
 };
 
-exports.uploadError = function (err, file) {
+exports.uploadError = function (error_code, server_response, file) {
     var msg;
     $("#compose-send-status").addClass("alert-error")
         .removeClass("alert-info");
     $("#compose-send-button").prop("disabled", false);
-    switch (err) {
+    switch (error_code) {
         case 'BrowserNotSupported':
             msg = i18n.t("File upload is not yet available for your browser.");
             break;
@@ -54,7 +54,7 @@ exports.uploadError = function (err, file) {
             };
             msg = i18n.t('"__file_name__" was too large; the maximum file size is 25MiB.', context);
             break;
-        case 'REQUEST ENTITY TOO LARGE':
+        case 413: // HTTP status "Request Entity Too Large"
             msg = i18n.t("Sorry, the file was too large.");
             break;
         default:

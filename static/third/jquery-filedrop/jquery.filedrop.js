@@ -76,7 +76,7 @@
       beforeEach: empty,
       afterAll: empty,
       rename: empty,
-      error: function(err, file, i, status) {
+      error: function(err, response, file, i) {
         alert(err);
       },
       uploadStarted: empty,
@@ -362,7 +362,7 @@
 
         // Pass any errors to the error option
         if (xhr.status < 200 || xhr.status > 299) {
-          on_error(xhr.statusText, xhr.status);
+          on_error(xhr.status, serverResponse);
         }
       };
 
@@ -380,7 +380,7 @@
       if (opts.allowedfiletypes.push && opts.allowedfiletypes.length) {
         for(var fileIndex = files.length;fileIndex--;) {
           if(!files[fileIndex].type || $.inArray(files[fileIndex].type, opts.allowedfiletypes) < 0) {
-            opts.error(errors[3], files[fileIndex]);
+            opts.error(errors[3], null, files[fileIndex], fileIndex);
             return false;
           }
         }
@@ -442,7 +442,7 @@
 
             reader.index = fileIndex;
             if (files[fileIndex].size > max_file_size) {
-              opts.error(errors[2], files[fileIndex], fileIndex);
+              opts.error(errors[2], null, files[fileIndex], fileIndex);
               // Remove from queue
               processingQueue.forEach(function(value, key) {
                 if (value === fileIndex) {
@@ -530,8 +530,8 @@
           return result;
         }
 
-        function on_error(status_text, status) {
-          opts.error(status_text, file, fileIndex, status);
+        function on_error(status_code, response) {
+          opts.error(status_code, response, file, fileIndex);
         }
 
         var fileName,
