@@ -56,6 +56,11 @@ $(function () {
         },
     });
 
+    $("#login_form").submit(function () {
+        $('.spinner').show();
+        document.getElementById('login_button').innerHTML = 'Signing in ...';
+    });
+
     $("#login_form").validate({
         errorClass: "text-error",
         wrapper: "div",

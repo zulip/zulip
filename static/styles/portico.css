@@ -2134,3 +2134,12 @@ input.new-organization-button {
 .portico-page.error .portico-page-container {
     padding: 0;
 }
+
+.spinner {
+    position: absolute;
+    top: 46%;
+    left: 25%;
+    width: 25px;
+    height: 25px;
+    display: none;
+}

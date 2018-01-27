@@ -112,8 +112,8 @@ common.autofocus('#id_username');
                         {{ wrong_subdomain_error }}
                     </div>
                     {% endif %}
-
-                    <button type="submit" name="button" class="full-width">{{ _("Sign in") }}</button>
+                    <img src="../../static/images/landing-page/ajax-loader.gif" class="spinner" />
+                    <button type="submit" name="button" class="full-width login_button" id="login_button">{{ _("Sign in") }}</button>
                 </form>
 
                 {% if any_oauth_backend_enabled %}
