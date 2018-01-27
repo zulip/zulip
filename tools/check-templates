@@ -108,7 +108,6 @@ def check_html_templates(templates, all_dups):
 
     # Ignore these files since these have not been cleaned yet :/
     IGNORE_FILES = [
-        'static/html/5xx.html',
         'templates/analytics/activity.html',
         'templates/analytics/stats.html',
         'templates/corporate/zephyr-mirror.html',
