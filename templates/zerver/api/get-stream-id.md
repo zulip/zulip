@@ -24,17 +24,8 @@ curl {{ api_url }}/v1/get_stream_id?stream=Denmark \
 
 <div data-language="python" markdown="1">
 
-```python
-#!/usr/bin/env python
+{generate_code_example|get-stream-id|method}
 
-import zulip
-
-# Download ~/zuliprc-dev from your dev server
-client = zulip.Client(config_file="~/zuliprc-dev")
-
-# Get the ID of a given stream
-print(client.get_stream_id("Denmark"))
-```
 </div>
 
 <div data-language="javascript" markdown="1">
@@ -74,13 +65,7 @@ zulip(config).then((client) => {
 
 A typical successful JSON response may look like:
 
-```
-{
-    'stream_id':15,
-    'result':'success',
-    'msg':''
-}
-```
+{generate_code_example|get-stream-id|fixture}
 
 An example of a JSON response for when the supplied stream does not
 exist:

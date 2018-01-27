@@ -63,9 +63,15 @@ def get_profile(client):
 def get_stream_id(client):
     # type: (Client) -> None
 
+    # {code_example|start}
+    # Get the ID of a given stream
     stream_name = 'new stream'
     result = client.get_stream_id(stream_name)
-    assert int(result['stream_id'])
+    # {code_example|end}
+
+    fixture = FIXTURES['get-stream-id']
+    test_against_fixture(result, fixture, check_if_equal=['msg', 'result'],
+                         check_if_exists=['stream_id'])
 
 def get_streams(client):
     # type: (Client) -> None
@@ -211,6 +217,7 @@ TEST_FUNCTIONS = {
     'stream-message': stream_message,
     'private-message': private_message,
     'update-message': update_message,
+    'get-stream-id': get_stream_id,
 }
 
 # SETUP METHODS FOLLOW
