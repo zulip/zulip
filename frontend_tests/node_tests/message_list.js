@@ -16,6 +16,9 @@ var MessageList = zrequire('message_list').MessageList;
 
 set_global('i18n', global.stub_i18n);
 set_global('feature_flags', {});
+set_global('locking', {
+    is_topic_locked: function () { return false; },
+});
 
 var with_overrides = global.with_overrides; // make lint happy
 
@@ -345,6 +348,57 @@ var with_overrides = global.with_overrides; // make lint happy
             assert.equal(bookend.content, expected);
             assert.equal(bookend.subscribed, false);
             assert.equal(bookend.show_button, true);
+        });
+    });
+}());
+
+(function test_locked_topic_bookend() {
+    var table;
+    var filter = {};
+
+    var list = new MessageList(table, filter);
+
+    with_overrides(function (override) {
+        var expected = "translated: The topic is locked";
+        list.view.clear_locked_bookend = noop;
+        list.narrowed = true;
+
+        override("narrow_state.stream", function () {
+            return "social";
+        });
+
+        override("narrow_state.topic", function () {
+            return "breakfast";
+        });
+
+        global.with_stub(function (render_stub) {
+            global.with_stub(function (is_locked_stub) {
+                list.view.render_locked_bookend = render_stub.f;
+                override('locking.is_topic_locked', is_locked_stub.f);
+                list.update_locked_bookend();
+                var bookend = render_stub.get_args('content');
+                assert.equal(bookend.content, expected);
+                var is_locked_args = is_locked_stub.get_args('stream', 'topic');
+                var valid_args = {
+                    stream: 'social',
+                    topic: 'breakfast',
+                };
+                assert.deepEqual(is_locked_args, valid_args);
+            });
+        });
+
+        set_global('locking', {
+            is_topic_locked: function () { return false; },
+        });
+
+        global.with_stub(function (render_stub) {
+            global.with_stub(function (clear_stub) {
+                list.view.render_trailing_bookend = render_stub.f;
+                list.view.clear_locked_bookend = clear_stub.f;
+                list.update_locked_bookend();
+                assert(render_stub.num_calls === 0);
+                render_stub.num_calls = 1; // it's checked later in with_sub
+            });
         });
     });
 }());

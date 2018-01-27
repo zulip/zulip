@@ -145,6 +145,8 @@ function build_topic_popover(e) {
     var is_muted = muting.is_topic_muted(sub.name, topic_name);
     var can_mute_topic = !is_muted;
     var can_unmute_topic = is_muted;
+    var can_lock_topic = locking.can_lock_topic(sub.name, topic_name);
+    var can_unlock_topic = locking.can_unlock_topic(sub.name, topic_name);
 
     var content = templates.render('topic_sidebar_actions', {
         stream_name: sub.name,
@@ -152,6 +154,8 @@ function build_topic_popover(e) {
         topic_name: topic_name,
         can_mute_topic: can_mute_topic,
         can_unmute_topic: can_unmute_topic,
+        can_lock_topic: can_lock_topic,
+        can_unlock_topic: can_unlock_topic,
     });
 
     $(elt).popover({
@@ -363,6 +367,30 @@ exports.register_topic_handlers = function () {
 
         var topic = $(e.currentTarget).attr('data-topic-name');
         muting_ui.unmute(sub.name, topic);
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    // Lock the topic
+    $('body').on('click', '.sidebar-popover-lock-topic', function (e) {
+        var sub = topic_popover_sub(e);
+        if (!sub) {
+            return;
+        }
+        var topic = $(e.currentTarget).attr('data-topic-name');
+        locking_ui.lock_topic(sub.name, topic);
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    // Unlock the topic
+    $('body').on('click', '.sidebar-popover-unlock-topic', function (e) {
+        var sub = topic_popover_sub(e);
+        if (!sub) {
+            return;
+        }
+        var topic = $(e.currentTarget).attr('data-topic-name');
+        locking_ui.unlock_topic(sub.name, topic);
         e.stopPropagation();
         e.preventDefault();
     });

@@ -415,6 +415,24 @@ exports.MessageList.prototype = {
         }
     },
 
+    update_locked_bookend: function MessageList_update_locked_bookend() {
+        this.view.clear_locked_bookend();
+        if (!this.narrowed) {
+            return;
+        }
+        var stream_name = narrow_state.stream();
+        var topic = narrow_state.topic();
+        if (stream_name === undefined || topic === undefined) {
+            return;
+        }
+        var locked = locking.is_topic_locked(stream_name, topic);
+        if (!locked) {
+            return;
+        }
+        var trailing_bookend_content = i18n.t("The topic is locked");
+        this.view.render_locked_bookend(trailing_bookend_content);
+    },
+
     unmuted_messages: function MessageList_unmuted_messages(messages) {
         return _.reject(messages, function (message) {
             return muting.is_topic_muted(message.stream, message.subject) &&

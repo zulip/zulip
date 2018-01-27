@@ -38,6 +38,7 @@ enforce_fully_covered = {
     'static/js/fetch_status.js',
     'static/js/filter.js',
     'static/js/hash_util.js',
+    'static/js/locking.js',
     'static/js/markdown.js',
     'static/js/message_store.js',
     'static/js/muting.js',

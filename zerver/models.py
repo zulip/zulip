@@ -1008,6 +1008,16 @@ class MutedTopic(models.Model):
     def __str__(self) -> Text:
         return "<MutedTopic: (%s, %s, %s)>" % (self.user_profile.email, self.stream.name, self.topic_name)
 
+class LockedTopic(models.Model):
+    stream = models.ForeignKey(Stream, on_delete=CASCADE)
+    topic_name = models.CharField(max_length=MAX_SUBJECT_LENGTH)
+
+    class Meta:
+        unique_together = ('stream', 'topic_name')
+
+    def __str__(self) -> Text:
+        return "<LockedTopic: (%s, %s)>" % (self.stream.name, self.topic_name)
+
 class Client(models.Model):
     name = models.CharField(max_length=30, db_index=True, unique=True)  # type: Text
 

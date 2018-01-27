@@ -536,12 +536,16 @@ function validate_stream_message() {
         return false;
     }
 
-    if (page_params.realm_mandatory_topics) {
-        var topic = compose_state.subject();
-        if (topic === "") {
-            compose_error(i18n.t("Please specify a topic"), $("#subject"));
-            return false;
-        }
+    var topic = compose_state.subject();
+
+    if (page_params.realm_mandatory_topics && topic === "") {
+        compose_error(i18n.t("Please specify a topic"), $("#subject"));
+        return false;
+    }
+
+    if (locking.is_topic_locked(stream_name, topic)) {
+        compose_error(i18n.t("The topic is locked."));
+        return false;
     }
 
     // If both `@all` is mentioned and it's in `#announce`, just validate

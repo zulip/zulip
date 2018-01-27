@@ -59,6 +59,12 @@ from zerver.lib.topic_mutes import (
     add_topic_mute,
     remove_topic_mute,
 )
+from zerver.lib.locked_topics import (
+    add_locked_topic,
+    remove_locked_topic,
+    get_locked_topics,
+    topic_is_locked,
+)
 from zerver.lib.users import bulk_get_users, check_full_name
 from zerver.lib.user_groups import create_user_group, access_user_group_by_id
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
@@ -1860,6 +1866,9 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
             raise JsonableError(_("Stream '%(stream_name)s' "
                                   "does not exist") % {'stream_name': escape(stream_name)})
         recipient = get_stream_recipient(stream.id)
+
+        if topic_is_locked(stream, topic_name):
+            raise JsonableError(_("Topic is locked"))
 
         if not stream.invite_only:
             # This is a public stream
@@ -4322,6 +4331,16 @@ def do_unmute_topic(user_profile: UserProfile, stream: Stream, topic: str) -> No
     remove_topic_mute(user_profile, stream.id, topic)
     event = dict(type="muted_topics", muted_topics=get_topic_mutes(user_profile))
     send_event(event, [user_profile.id])
+
+def do_lock_topic(user_profile: UserProfile, stream: Stream, topic: str) -> None:
+    add_locked_topic(stream.id, topic)
+    event = dict(type="locked_topics", locked_topics=get_locked_topics())
+    send_event(event, active_user_ids(stream.realm.id))
+
+def do_unlock_topic(user_profile: UserProfile, stream: Stream, topic: str) -> None:
+    remove_locked_topic(stream.id, topic)
+    event = dict(type="locked_topics", locked_topics=get_locked_topics())
+    send_event(event, active_user_ids(stream.realm.id))
 
 def do_mark_hotspot_as_read(user: UserProfile, hotspot: str) -> None:
     UserHotspot.objects.get_or_create(user=user, hotspot=hotspot)

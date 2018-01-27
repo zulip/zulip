@@ -625,6 +625,10 @@ MessageListView.prototype = {
             if (sub === undefined || !sub.subscribed) {
                 list.update_trailing_bookend();
             }
+            var topic = narrow_state.topic();
+            if (topic !== undefined) {
+                list.update_locked_bookend();
+            }
         }
 
         if (list === current_msg_list) {
@@ -962,14 +966,29 @@ MessageListView.prototype = {
         trailing_bookend.remove();
     },
 
+    clear_locked_bookend: function MessageListView_clear_locked_bookend() {
+        rows.get_table(this.table_name).find('.locked_bookend').remove();
+    },
+
     render_trailing_bookend: function MessageListView_render_trailing_bookend(
                                 trailing_bookend_content, subscribed, show_button) {
         var rendered_trailing_bookend = $(templates.render('bookend', {
             bookend_content: trailing_bookend_content,
             trailing: show_button,
             subscribed: subscribed,
+            locked: false,
         }));
         rows.get_table(this.table_name).append(rendered_trailing_bookend);
+    },
+
+    render_locked_bookend: function MessageListView_render_trailing_bookend(content) {
+        var rendered_bookend = $(templates.render('bookend', {
+            bookend_content: content,
+            trailing: false,
+            subscribed: false,
+            locked: true,
+        }));
+        rows.get_table(this.table_name).append(rendered_bookend);
     },
 
     selected_row: function MessageListView_selected_row() {

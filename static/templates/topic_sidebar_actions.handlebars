@@ -31,5 +31,20 @@
         </a>
     </li>
 
-
+    {{#if can_lock_topic}}
+    <li>
+        <a class="sidebar-popover-lock-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            <i class="fa fa-lock" aria-hidden="true"></i>
+            {{#tr this}}Lock the topic <b>__topic_name__</b>{{/tr}}
+        </a>
+    </li>
+    {{/if}}
+    {{#if can_unlock_topic}}
+    <li>
+        <a class="sidebar-popover-unlock-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            <i class="fa fa-unlock" aria-hidden="true"></i>
+            {{#tr this}}Unlock the topic <b>__topic_name__</b>{{/tr}}
+        </a>
+    </li>
+    {{/if}}
 </ul>

@@ -326,6 +326,10 @@ v1_api_and_json_patterns = [
     url(r'^users/me/subscriptions/muted_topics$', rest_dispatch,
         {'PATCH': 'zerver.views.muting.update_muted_topic'}),
 
+    # locking -> zerver.views.locking
+    url(r'^lock_topic$', rest_dispatch,
+        {'PATCH': 'zerver.views.locking.update_locked_topic'}),
+
     # used to register for an event queue in tornado
     url(r'^register$', rest_dispatch,
         {'POST': 'zerver.views.events_register.events_register_backend'}),

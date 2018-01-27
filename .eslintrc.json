@@ -171,7 +171,10 @@
         "compose_ui": false,
         "common": false,
         "panels": false,
-        "PerfectScrollbar": false
+        "PerfectScrollbar": false,
+        "desktop_notifications_panel": false,
+        "locking": false,
+        "locking_ui": false
     },
     "plugins": [
         "eslint-plugin-empty-returns"

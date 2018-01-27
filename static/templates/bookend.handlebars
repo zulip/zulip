@@ -1,7 +1,7 @@
 {{! Client-side Mustache template for rendering the trailing bookend.}}
 
 {{#if bookend_content}}
-<div class="{{#if trailing}}trailing_bookend{{/if}} bookend sub-unsub-message">
+<div class="{{#if trailing}}trailing_bookend{{/if}} {{#if locked}}locked_bookend{{/if}} bookend sub-unsub-message">
     <span>{{{bookend_content}}}</span>
     {{#if trailing}}
     <div class="sub_button_row new-style">

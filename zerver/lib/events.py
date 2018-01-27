@@ -30,6 +30,7 @@ from zerver.lib.soft_deactivation import maybe_catch_up_soft_deactivated_user
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.request import JsonableError
 from zerver.lib.topic_mutes import get_topic_mutes
+from zerver.lib.locked_topics import get_locked_topics
 from zerver.lib.actions import (
     validate_user_access_to_subscribers_helper,
     do_get_streams, get_default_streams_for_realm,
@@ -47,7 +48,6 @@ from zerver.models import Client, Message, Realm, UserPresence, UserProfile, Cus
     get_default_stream_groups
 from zproject.backends import email_auth_enabled, password_auth_enabled
 from version import ZULIP_VERSION
-
 
 def get_raw_user_data(realm_id: int, client_gravatar: bool) -> Dict[int, Dict[str, Text]]:
     user_dicts = get_realm_user_dicts(realm_id)
@@ -143,6 +143,9 @@ def fetch_initial_state_data(user_profile: UserProfile,
 
     if want('muted_topics'):
         state['muted_topics'] = get_topic_mutes(user_profile)
+
+    if want('locked_topics'):
+        state['locked_topics'] = get_locked_topics()
 
     if want('pointer'):
         state['pointer'] = user_profile.pointer
@@ -581,6 +584,8 @@ def apply_event(state: Dict[str, Any],
         state['alert_words'] = event['alert_words']
     elif event['type'] == "muted_topics":
         state['muted_topics'] = event["muted_topics"]
+    elif event['type'] == "locked_topics":
+        state['locked_topics'] = event["locked_topics"]
     elif event['type'] == "realm_filters":
         state['realm_filters'] = event["realm_filters"]
     elif event['type'] == "update_display_settings":

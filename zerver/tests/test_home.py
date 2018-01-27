@@ -84,6 +84,7 @@ class HomeTest(ZulipTestCase):
             "language_list_dbl_col",
             "last_event_id",
             "left_side_userlist",
+            "locked_topics",
             "login_page",
             "max_avatar_file_size",
             "max_icon_file_size",

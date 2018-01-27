@@ -26,6 +26,10 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         muting_ui.handle_updates(event.muted_topics);
         break;
 
+    case 'locked_topics':
+        locking_ui.handle_updates(event.locked_topics);
+        break;
+
     case 'presence':
         activity.set_user_status(event.email, event.presence, event.server_timestamp);
         break;

@@ -68,6 +68,8 @@ from zerver.lib.timezone import get_timezone
 
 from zerver.views.messages import create_mirrored_message_users
 
+from zerver.lib.locked_topics import topic_is_locked
+
 import datetime
 import DNS
 import mock
@@ -589,7 +591,7 @@ class StreamMessagesTest(ZulipTestCase):
                 body=content,
             )
 
-        self.assert_length(queries, 13)
+        self.assert_length(queries, 14)
 
     def test_stream_message_dict(self) -> None:
         user_profile = self.example_user('iago')
@@ -2533,6 +2535,17 @@ class CheckMessageTest(ZulipTestCase):
         self.assertEqual(new_count, old_count + 2)
         self.assertEqual(ret['message'].sender.email, 'othello-bot@zulip.com')
         self.assertIn("there are no subscribers to that stream", most_recent_message(parent).content)
+
+    def test_check_message_locked_topic(self) -> None:
+        sender = self.example_user('othello')
+        client = make_client(name="test suite")
+        stream_name = 'Verona'
+        topic = 'Verona3'
+        message_content = 'whatever'
+        addressee = Addressee.for_stream(stream_name, topic)
+        with mock.patch('zerver.lib.actions.topic_is_locked', return_value=True):
+            with self.assertRaisesRegex(JsonableError, "Topic is locked"):
+                check_message(sender, client, addressee, message_content)
 
 
 class DeleteMessageTest(ZulipTestCase):

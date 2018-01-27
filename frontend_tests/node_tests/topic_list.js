@@ -5,6 +5,7 @@ set_global('narrow_state', {});
 set_global('stream_data', {});
 set_global('unread', {});
 set_global('muting', {});
+set_global('locking', {});
 set_global('stream_popover', {});
 set_global('templates', {});
 
@@ -42,6 +43,7 @@ zrequire('topic_list');
     };
 
     var checked_mutes;
+    var checked_locked;
     var rendered;
 
     templates.render = function (name, info) {
@@ -51,6 +53,7 @@ zrequire('topic_list');
             unread: 3,
             is_zero: false,
             is_muted: false,
+            is_locked: false,
             url: '#narrow/stream/devel/subject/coding',
         };
         assert.deepEqual(info, expected);
@@ -62,6 +65,13 @@ zrequire('topic_list');
         assert.equal(stream_name, 'devel');
         assert.equal(topic_name, 'coding');
         checked_mutes = true;
+        return false;
+    };
+
+    locking.is_topic_locked = function (stream_name, topic_name) {
+        assert.equal(stream_name, 'devel');
+        assert.equal(topic_name, 'coding');
+        checked_locked = true;
         return false;
     };
 
@@ -95,6 +105,7 @@ zrequire('topic_list');
     assert.equal(widget.get_parent(), parent_elem);
 
     assert(checked_mutes);
+    assert(checked_locked);
     assert(rendered);
     assert.equal(list_items[0].html(), '<topic list item>');
     assert.equal(list_items[1].html(), '<more topics>');

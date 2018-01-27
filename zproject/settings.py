@@ -1022,6 +1022,8 @@ JS_SPECS = {
             'js/setup.js',
             'js/unread_ui.js',
             'js/unread_ops.js',
+            'js/locking.js',
+            'js/locking_ui.js',
             'js/muting.js',
             'js/muting_ui.js',
             'js/message_viewport.js',
