@@ -151,6 +151,33 @@ def stream_message(client):
 
     return message_id
 
+def private_message(client):
+    # type: (Client) -> None
+
+    # {code_example|start}
+    # Send a private message
+    request = {
+        "type": "private",
+        "to": "iago@zulip.com",
+        "content": "I come not, friends, to steal away your hearts."
+    }
+    result = client.send_message(request)
+    # {code_example|end}
+
+    fixture = FIXTURES['private-message']
+    test_against_fixture(result, fixture, check_if_equal=['result'],
+                         check_if_exists=['id'])
+
+    # test it was actually sent
+    message_id = result['id']
+    url = 'messages/' + str(message_id)
+    result = client.call_endpoint(
+        url=url,
+        method='GET'
+    )
+    assert result['result'] == 'success'
+    assert result['raw_content'] == request['content']
+
 def update_message(client, message_id):
     # type: (Client, int) -> None
 
@@ -174,6 +201,7 @@ def update_message(client, message_id):
 TEST_FUNCTIONS = {
     'render-message': render_message,
     'stream-message': stream_message,
+    'private-message': private_message,
 }
 
 # SETUP METHODS FOLLOW
@@ -200,6 +228,7 @@ def test_messages(client):
     render_message(client)
     message_id = stream_message(client)
     update_message(client, message_id)
+    private_message(client)
 
 def test_users(client):
     # type: (Client) -> None
