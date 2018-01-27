@@ -2468,7 +2468,7 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
         occupied_streams_before = list(get_occupied_streams(our_realm))
         Subscription.objects.filter(
             id__in=sub_ids_to_deactivate,
-        ) .update(active=False)
+        ) .update(active=False, is_admin=False)
         occupied_streams_after = list(get_occupied_streams(our_realm))
 
     # Log Subscription Activities in RealmAuditLog

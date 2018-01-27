@@ -840,6 +840,39 @@ class StreamAdminTest(ZulipTestCase):
 
         return result
 
+    def test_when_stream_admin_unsubscribe_also_remove_from_admin(self) -> None:
+        """
+        If stream admin who had previously unsusbscribed from stream, subscribe back then he can
+        subscribe as a normal subscriber, not as a stream admin.
+        In short, when stream admin unsubscribe from stream(active=False) also remove user from
+        stream admin(is_admin=False).
+        """
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        subscriptions = [hamlet.email, cordelia.email, self.example_email("iago"), self.example_email("prospero")]
+        stream_admins = [hamlet.id, cordelia.id]
+        stream_name = "public stream"
+        self.login(cordelia.email)
+
+        # Create public stream
+        result = self.common_subscribe_to_streams(self.example_email("iago"), [stream_name],
+                                                  dict(principals=ujson.dumps(subscriptions)),
+                                                  stream_admins=stream_admins)
+        self.assert_json_success(result)
+
+        # Unsubscribe stream admin
+        new_subscriptions = [hamlet.email]
+        result = self.client_delete("/json/users/me/subscriptions",
+                                    {"subscriptions": ujson.dumps([stream_name]),
+                                     "principals": ujson.dumps(new_subscriptions)})
+        self.assert_json_success(result)
+
+        # Subscribe back to stream.
+        self.subscribe(hamlet, stream_name)
+        sub = get_subscription(stream_name, hamlet)
+        self.assertFalse(sub.is_admin)
+        self.assertTrue(sub.active)
+
     def test_cant_remove_others_from_stream(self) -> None:
         """
         If you're not an admin, you can't remove other people from streams.
