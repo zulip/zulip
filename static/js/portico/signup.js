@@ -77,4 +77,9 @@ $(function () {
     $("#realm_in_root_domain").change(function () {
         show_subdomain_section($(this).is(":checked"));
     });
+
+    $("#login_form").submit(function () {
+        $('#loader').css('display', 'inline-block');
+        $("#signin-btn").html($("#signin-btn").html().replace('Sign in', ''));
+    });
 });

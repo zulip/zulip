@@ -113,7 +113,9 @@ common.autofocus('#id_username');
                     </div>
                     {% endif %}
 
-                    <button type="submit" name="button" class="full-width">{{ _("Sign in") }}</button>
+                    <button type="submit" name="button" id="signin-btn" class="full-width">
+                        <img id="loader" src="/static/images/loader.svg" />{{ _("Sign in") }}
+                    </button>
                 </form>
 
                 {% if any_oauth_backend_enabled %}
