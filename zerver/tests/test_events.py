@@ -2651,7 +2651,7 @@ class FetchQueriesTest(ZulipTestCase):
                     client_gravatar=False,
                 )
 
-        self.assert_length(queries, 29)
+        self.assert_length(queries, 28)
 
         expected_counts = dict(
             alert_words=0,
@@ -2674,11 +2674,9 @@ class FetchQueriesTest(ZulipTestCase):
             realm_user_groups=2,
             stream=2,
             subscription=5,
-            total_uploads_size=1,
             update_display_settings=0,
             update_global_notifications=0,
             update_message_flags=5,
-            upload_quota=0,
             zulip_version=0,
         )
 

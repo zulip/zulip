@@ -362,12 +362,7 @@
 
         // Pass any errors to the error option
         if (xhr.status < 200 || xhr.status > 299) {
-          if (this.responseText.includes("Upload would exceed your maximum quota.")) {
-              var errorString = "QuotaExceeded";
-            on_error(errorString, xhr.status);
-          } else {
-            on_error(xhr.statusText, xhr.status);
-        }
+          on_error(xhr.statusText, xhr.status);
         }
       };
 

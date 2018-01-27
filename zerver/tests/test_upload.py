@@ -389,35 +389,6 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             result = self.client_post("/json/user_uploads", {'f1': fp})
             assert sanitize_name(expected) in result.json()['uri']
 
-    def test_upload_size_quote(self) -> None:
-        """
-        User quote for uploading should not be exceeded
-        """
-        self.login(self.example_email("hamlet"))
-
-        d1 = StringIO("zulip!")
-        d1.name = "dummy_1.txt"
-        result = self.client_post("/json/user_uploads", {'file': d1})
-        d1_path_id = re.sub('/user_uploads/', '', result.json()['uri'])
-        d1_attachment = Attachment.objects.get(path_id = d1_path_id)
-        self.assert_json_success(result)
-
-        """
-        Below we set size quota to the limit without 1 upload(1GB - 11 bytes).
-        """
-        d1_attachment.size = UserProfile.DEFAULT_UPLOADS_QUOTA - 11
-        d1_attachment.save()
-
-        d2 = StringIO("zulip!")
-        d2.name = "dummy_2.txt"
-        result = self.client_post("/json/user_uploads", {'file': d2})
-        self.assert_json_success(result)
-
-        d3 = StringIO("zulip!")
-        d3.name = "dummy_3.txt"
-        result = self.client_post("/json/user_uploads", {'file': d3})
-        self.assert_json_error(result, "Upload would exceed your maximum quota.")
-
     def test_cross_realm_file_access(self) -> None:
 
         def create_user(email: Text, realm_id: Text) -> UserProfile:

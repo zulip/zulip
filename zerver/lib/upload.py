@@ -181,22 +181,6 @@ def upload_image_to_s3(
 
     key.set_contents_from_string(contents, headers=headers)  # type: ignore # https://github.com/python/typeshed/issues/1552
 
-def get_total_uploads_size_for_user(user: UserProfile) -> int:
-    uploads = Attachment.objects.filter(owner=user)
-    total_quota = uploads.aggregate(Sum('size'))['size__sum']
-
-    # In case user has no uploads
-    if (total_quota is None):
-        total_quota = 0
-    return total_quota
-
-def within_upload_quota(user: UserProfile, uploaded_file_size: int) -> bool:
-    total_quota = get_total_uploads_size_for_user(user)
-    if (total_quota + uploaded_file_size > user.quota):
-        return False
-    else:
-        return True
-
 def get_file_info(request: HttpRequest, user_file: File) -> Tuple[Text, int, Optional[Text]]:
 
     uploaded_file_name = user_file.name
