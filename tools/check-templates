@@ -99,8 +99,6 @@ def check_html_templates(templates, all_dups):
             # These use various whitespace-dependent formatting that
             # prevent cleaning them.
             'templates/corporate/zephyr-mirror.html',
-            'templates/zerver/api.html',
-            'templates/zerver/api_endpoints.html',
             # These just need to be reindented
             'templates/zerver/login.html',
             # Can't clean this because of `preserve_spaces`
