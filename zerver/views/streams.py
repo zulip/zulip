@@ -482,6 +482,67 @@ def get_admin_subscribers_backend(request: HttpRequest, user_profile: UserProfil
     return json_success({'admin_subscribers': admin_subscribers})
 
 @has_request_variables
+def add_admin_subscriber_backend(request: HttpRequest, user_profile: UserProfile,
+                                 stream_id: int=REQ('stream', converter=to_non_negative_int),
+                                 new_stream_admin_ids: List[int]=REQ(validator=check_list(check_int),
+                                                                     default=[]),
+                                 ) -> HttpResponse:
+    # Check if request user can access stream
+    (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
+    # Check if request user have the rights to perform admin actions
+    access_stream_for_admin_actions(user_profile, stream, sub)
+    for new_stream_admin_id in new_stream_admin_ids:
+        new_stream_admin = user_id_to_user_profile(new_stream_admin_id)
+        try:
+            recipient = get_stream_recipient(stream.id)
+            new_stream_admin_sub = Subscription.objects.get(user_profile=new_stream_admin,
+                                                            recipient=recipient,
+                                                            active=True)
+        except Subscription.DoesNotExist:
+            new_stream_admin_sub = None
+
+        if new_stream_admin_sub is None:
+            return json_error(_("Stream admin must subscribe to stream."))
+        if new_stream_admin_sub.is_admin:
+            return json_error(_("User '%s' is already stream admin.") % (new_stream_admin.email))
+
+    new_stream_admins = [user_id_to_user_profile(new_stream_admin_id)
+                         for new_stream_admin_id in new_stream_admin_ids]
+    do_update_stream_admin_subscriptions(stream, new_stream_admins, True)
+    admin_subscribers = get_admin_subscriber_emails(stream, user_profile)
+    return json_success({'admin_subscribers': admin_subscribers})
+
+@has_request_variables
+def remove_admin_subscriber_backend(request: HttpRequest, user_profile: UserProfile,
+                                    stream_id: int=REQ('stream', converter=to_non_negative_int),
+                                    stream_admin_ids: List[int]=REQ(validator=check_list(check_int),
+                                                                    default=[])
+                                    ) -> HttpResponse:
+    # Check if request user can access stream
+    (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
+    # Check if request user have the rights to perform admin actions
+    access_stream_for_admin_actions(user_profile, stream, sub)
+
+    for stream_admin_id in stream_admin_ids:
+        stream_admin = user_id_to_user_profile(stream_admin_id)
+        # Check if stream admin can access stream
+        (stream, recipient, stream_admin_sub) = access_stream_by_id(stream_admin, stream_id)
+
+        if stream_admin_sub is None:
+            return json_error(_("User '%s' is already not a stream admin.") % (stream_admin.email))
+        if not stream_admin_sub.is_admin:
+            return json_error(_("User '%s' is already not a stream admin.") % (stream_admin.email))
+        if stream_admin.is_realm_admin:
+            return json_error(_("Realm admin `%s` is by default stream admin. Can't be removed.") %
+                               (stream_admin.email))
+
+    stream_admins = [user_id_to_user_profile(stream_admin_id)
+                     for stream_admin_id in stream_admin_ids]
+    do_update_stream_admin_subscriptions(stream, stream_admins, False)
+    admin_subscribers = get_admin_subscriber_emails(stream, user_profile)
+    return json_success({'admin_subscribers': admin_subscribers})
+
+@has_request_variables
 def get_topics_backend(request: HttpRequest, user_profile: UserProfile,
                        stream_id: int=REQ(converter=to_non_negative_int)) -> HttpResponse:
     (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
