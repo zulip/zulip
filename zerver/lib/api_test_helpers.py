@@ -121,27 +121,33 @@ def render_message(client):
     fixture = FIXTURES['render-message']
     test_against_fixture(result, fixture)
 
-def send_message(client):
+def stream_message(client):
     # type: (Client) -> int
 
-    request = dict(
-        type='stream',
-        to='Denmark',
-        subject='Copenhagen',
-        content='hello',
-    )
+    # {code_example|start}
+    # Send a stream message
+    request = {
+        "type": "stream",
+        "to": "Denmark",
+        "subject": "Castle",
+        "content": "Something is rotten in the state of Denmark."
+    }
     result = client.send_message(request)
-    assert result['result'] == 'success'
-    message_id = result['id']
+    # {code_example|end}
+
+    fixture = FIXTURES['stream-message']
+    test_against_fixture(result, fixture, check_if_equal=['result'],
+                         check_if_exists=['id'])
 
     # test it was actually sent
+    message_id = result['id']
     url = 'messages/' + str(message_id)
     result = client.call_endpoint(
         url=url,
         method='GET'
     )
     assert result['result'] == 'success'
-    assert result['raw_content'] == 'hello'
+    assert result['raw_content'] == request['content']
 
     return message_id
 
@@ -167,12 +173,15 @@ def update_message(client, message_id):
 
 TEST_FUNCTIONS = {
     'render-message': render_message,
+    'stream-message': stream_message,
 }
 
 # SETUP METHODS FOLLOW
 
 def test_against_fixture(result, fixture, check_if_equal=[], check_if_exists=[]):
     # type: (Dict[str, Any], Dict[str, Any], Optional[Iterable[str]], Optional[Iterable[str]]) -> None
+    assert len(result) == len(fixture)
+
     if not check_if_equal and not check_if_exists:
         for key, value in fixture.items():
             assert result[key] == fixture[key]
@@ -189,7 +198,7 @@ def test_messages(client):
     # type: (Client) -> None
 
     render_message(client)
-    message_id = send_message(client)
+    message_id = stream_message(client)
     update_message(client, message_id)
 
 def test_users(client):
