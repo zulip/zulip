@@ -96,8 +96,15 @@ def get_user_agent(client):
 def list_subscriptions(client):
     # type: (Client) -> None
 
+    # {code_example|start}
+    # Get all streams that the user is subscribed to
     result = client.list_subscriptions()
-    assert result['result'] == 'success'
+    # {code_example|end}
+
+    fixture = FIXTURES['get-subscribed-streams']
+    test_against_fixture(result, fixture, check_if_equal=['msg', 'result'],
+                         check_if_exists=['subscriptions'])
+
     streams = [s for s in result['subscriptions'] if s['name'] == 'new stream']
     assert streams[0]['description'] == 'New stream for testing'
 
@@ -218,6 +225,7 @@ TEST_FUNCTIONS = {
     'private-message': private_message,
     'update-message': update_message,
     'get-stream-id': get_stream_id,
+    'get-subscribed-streams': list_subscriptions,
 }
 
 # SETUP METHODS FOLLOW

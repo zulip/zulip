@@ -24,17 +24,8 @@ curl {{ api_url }}/v1/users/me/subscriptions \
 
 <div data-language="python" markdown="1">
 
-```python
-#!/usr/bin/env python
+{generate_code_example|get-subscribed-streams|method}
 
-import zulip
-
-# Download ~/zuliprc-dev from your dev server
-client = zulip.Client(config_file="~/zuliprc-dev")
-
-# Get all streams that the user is subscribed to
-print(client.list_subscriptions())
-```
 </div>
 
 <div data-language="javascript" markdown="1">
@@ -95,54 +86,6 @@ This request takes no arguments.
 
 A typical successful JSON response may look like:
 
-```
-{
-    'result':'success',
-    'subscriptions':[
-        {
-            'desktop_notifications':False,
-            'pin_to_top':False,
-            'subscribers':[
-                'ZOE@zulip.com',
-                'hamlet@zulip.com',
-                'iago@zulip.com',
-                'othello@zulip.com',
-                'prospero@zulip.com',
-                'sample-bot@localhost'
-            ],
-            'invite_only':True,
-            'email_address':'Denmark+cb16118453aa4e76cb36e394a153a1a3@zulipdev.com:9991',
-            'name':'Denmark',
-            'color':'#76ce90',
-            'description':'A Scandinavian country',
-            'in_home_view':True,
-            'push_notifications':False,
-            'stream_id':15,
-            'audible_notifications':False
-        },
-        {
-            'desktop_notifications':False,
-            'pin_to_top':False,
-            'subscribers':[
-                'ZOE@zulip.com',
-                'iago@zulip.com',
-                'othello@zulip.com',
-                'prospero@zulip.com',
-                'sample-bot@localhost'
-            ],
-            'invite_only':False,
-            'email_address':'Scotland+463ab6b458e2d0364aab52ca55b70ffb@zulipdev.com:9991',
-            'name':'Scotland',
-            'color':'#fae589',
-            'description':'Located in the United Kingdom',
-            'in_home_view':True,
-            'push_notifications':False,
-            'stream_id':17,
-            'audible_notifications':False
-        }
-    ],
-    'msg':''
-}
-```
+{generate_code_example|get-subscribed-streams|fixture}
 
 {!invalid-api-key-json-response.md!}
