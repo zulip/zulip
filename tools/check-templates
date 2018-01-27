@@ -110,7 +110,6 @@ def check_html_templates(templates, all_dups):
     IGNORE_FILES = [
         'templates/corporate/zephyr-mirror.html',
         'templates/zerver/compose.html',
-        'templates/zerver/hello.html',
         'templates/zerver/index.html',
         'templates/zerver/keyboard_shortcuts.html',
         'templates/zerver/login.html',
