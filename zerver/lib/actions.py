@@ -3360,6 +3360,24 @@ def do_update_message_flags(user_profile: UserProfile,
     statsd.incr("flags.%s.%s" % (flag, operation), count)
     return count
 
+def do_update_stream_admin_subscriptions(stream: Stream, stream_admins: List[UserProfile],
+                                         value: bool) -> None:
+    for stream_admin in stream_admins:
+        if not subscribed_to_stream(stream_admin, stream.id):
+            raise JsonableError(_("User '%s' not subscribed to stream '%s'.") % (stream_admin.email,
+                                                                                 stream.name))
+    recipient = get_stream_recipient(stream.id)
+    for stream_admin in stream_admins:
+        try:
+            stream_admin_sub = Subscription.objects.get(user_profile=stream_admin,
+                                                        recipient=recipient,
+                                                        active=True)
+        except Subscription.DoesNotExist:
+            # This excpetion will never raise, cause we do check this condition above.
+            raise JsonableError(_("User '%s' not subscribed to stream '%s'.") % (stream_admin.email,
+                                                                                 stream.name))
+        do_change_subscription_property(stream_admin, stream_admin_sub, stream, "is_admin", value)
+
 def subscribed_to_stream(user_profile: UserProfile, stream_id: int) -> bool:
     try:
         if Subscription.objects.get(user_profile=user_profile,

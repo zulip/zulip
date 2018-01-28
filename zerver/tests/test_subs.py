@@ -58,7 +58,7 @@ from zerver.lib.actions import (
     do_remove_default_stream_group,
     do_change_default_stream_group_description,
     do_change_default_stream_group_name,
-    lookup_default_stream_groups,
+    lookup_default_stream_groups, do_update_stream_admin_subscriptions
 )
 
 from zerver.views.streams import (
@@ -154,6 +154,38 @@ class RecipientTest(ZulipTestCase):
             stream.id, Recipient.STREAM))
 
 class StreamAdminTest(ZulipTestCase):
+    def test_update_stream_admin_subscription(self) -> None:
+        """
+        Update stream admins of stream.
+        """
+        hamlet = self.example_user("hamlet")
+        principals = [hamlet.email, self.example_email("cordelia"), self.example_email("prospero")]
+
+        # Create public stream
+        stream_name = "public stream"
+        result = self.common_subscribe_to_streams(hamlet.email, [stream_name],
+                                                  dict(principals=ujson.dumps(principals)))
+        self.assert_json_success(result)
+
+        # Add all as stream admins.
+        stream = get_stream(stream_name, hamlet.realm)
+        do_update_stream_admin_subscriptions(stream, stream_admins=[hamlet, self.example_user("prospero")],
+                                             value=True)
+        prospero_sub = get_subscription(stream_name, self.example_user("prospero"))
+        self.assertTrue(prospero_sub.is_admin)
+
+        # Remove stream admins.
+        do_update_stream_admin_subscriptions(stream, stream_admins=[hamlet, self.example_user("prospero")],
+                                             value=False)
+        prospero_sub = get_subscription(stream_name, self.example_user("prospero"))
+        self.assertFalse(prospero_sub.is_admin)
+
+        # If unsubscribed user is passed.
+        with self.assertRaisesRegex(
+                JsonableError, "User 'iago@zulip.com' not subscribed to stream 'public stream'."):
+            do_update_stream_admin_subscriptions(stream, stream_admins=[self.example_user("iago")],
+                                                 value=True)
+
     def test_make_stream_public(self) -> None:
         user_profile = self.example_user('hamlet')
         email = user_profile.email
