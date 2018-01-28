@@ -4,7 +4,8 @@ from typing import Any, Iterable, List, Mapping, Set, Text, Tuple
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
-from zerver.lib.actions import check_stream_name, create_streams_if_needed
+from zerver.lib.actions import check_stream_name, create_streams_if_needed, \
+    get_admin_subscriber_emails
 from zerver.lib.request import JsonableError
 from zerver.models import UserProfile, Stream, Subscription, \
     Realm, Recipient, bulk_get_recipients, get_stream_recipient, get_stream, \
@@ -75,6 +76,24 @@ def access_stream_by_id(user_profile: UserProfile,
     (recipient, sub) = access_stream_common(user_profile, stream, error,
                                             require_active=require_active)
     return (stream, recipient, sub)
+
+def access_stream_for_admin_actions(user_profile: UserProfile, stream: Stream,
+                                    sub: Subscription) -> None:
+    is_public_stream = not stream.invite_only
+    is_user_subscribed = (sub is not None)
+
+    if not is_user_subscribed:
+        # If user is not subscribed then only realm admin can modify only public streams.
+        if not user_profile.is_realm_admin:
+            raise JsonableError(_("Invalid stream id"))
+        # Even as an realm admin, you can't remove other people from an
+        # invite-only stream you're not on.
+        if not is_public_stream:
+            raise JsonableError(_("Cannot administer unsubscribed invite-only streams this way."))
+    else:
+        # If a realm admin is subscribed to a stream, they get admin powers for that stream.
+        if not (user_profile.is_realm_admin or sub.is_admin):
+            raise JsonableError(_("This action requires administrative rights."))
 
 def check_stream_name_available(realm: Realm, name: Text) -> None:
     check_stream_name(name)
