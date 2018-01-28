@@ -92,9 +92,14 @@ def convert_to_zulip_markdown(text: str, users: List[ZerverFieldsT],
     # Check and convert link format
     text, has_link = convert_link_format(text)
     # convert `<mailto:foo@foo.com>` to `mailto:foo@foo.com`
-    text, has_link = convert_mailto_format(text)
+    text, has_mailto_link = convert_mailto_format(text)
 
-    return text, mentioned_users_id, has_link
+    if has_link is True or has_mailto_link is True:
+        message_has_link = True
+    else:
+        message_has_link = False
+
+    return text, mentioned_users_id, message_has_link
 
 def get_user_mentions(token: str, users: List[ZerverFieldsT],
                       added_users: AddedUsersT) -> Tuple[str, int]:
