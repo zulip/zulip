@@ -873,6 +873,55 @@ class StreamAdminTest(ZulipTestCase):
         self.assertFalse(sub.is_admin)
         self.assertTrue(sub.active)
 
+    def test_cant_remove_all_admins_from_private_stream(self) -> None:
+        """
+        After unsubscribing principals from private stream if private stream will not have any admin,
+        raise an error.
+        """
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        # We will have two stream admins and one realm admin subscribed to stream.
+        subscriptions = [hamlet.email, cordelia.email, self.example_email("iago")]
+        stream_admins = [hamlet.id, cordelia.id]
+        stream_name = "private stream"
+        self.login(cordelia.email)
+
+        # Create private stream
+        result = self.common_subscribe_to_streams(self.example_email("iago"), [stream_name],
+                                                  dict(principals=ujson.dumps(subscriptions)),
+                                                  stream_admins=stream_admins,
+                                                  invite_only=True)
+        self.assert_json_success(result)
+
+        # Unsubscribe all stream admin and realm admin(which should throw an error)
+        new_subscriptions = [hamlet.email, cordelia.email, self.example_email("iago")]
+        result = self.client_delete("/json/users/me/subscriptions",
+                                    {"subscriptions": ujson.dumps([stream_name]),
+                                     "principals": ujson.dumps(new_subscriptions)})
+        self.assert_json_error(result, "Private stream must require at least one admin.")
+
+    def test_cant_remove_all_stream_admins_from_private_stream(self) -> None:
+        # If there is no realm admin and we try to remove all stream admin.
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        # We will have two stream admins subscribed to stream.
+        subscriptions = [hamlet.email, cordelia.email]
+        stream_admins = [hamlet.id, cordelia.id]
+        stream_name = "private stream"
+        self.login(cordelia.email)
+
+        # Create private stream
+        result = self.common_subscribe_to_streams(self.example_email("iago"), [stream_name],
+                                                  dict(principals=ujson.dumps(subscriptions)),
+                                                  stream_admins=stream_admins,
+                                                  invite_only=True)
+        self.assert_json_success(result)
+        new_subscriptions = [hamlet.email, cordelia.email]
+        result = self.client_delete("/json/users/me/subscriptions",
+                                    {"subscriptions": ujson.dumps([stream_name]),
+                                     "principals": ujson.dumps(new_subscriptions)})
+        self.assert_json_error(result, "Private stream must require at least one admin.")
+
     def test_cant_remove_others_from_stream(self) -> None:
         """
         If you're not an admin, you can't remove other people from streams.
@@ -909,7 +958,7 @@ class StreamAdminTest(ZulipTestCase):
         """
         If you're a stream admin, you can remove people from private streams.
         """
-        result = self.attempt_unsubscribe_of_principal(query_count=22, is_stream_admin=True,
+        result = self.attempt_unsubscribe_of_principal(query_count=27, is_stream_admin=True,
                                                        invite_only=True,
                                                        other_user_subbed=True)
         json = self.assert_json_success(result)
@@ -933,7 +982,7 @@ class StreamAdminTest(ZulipTestCase):
         If you're an admin, you can remove other people from private streams you
         are on.
         """
-        result = self.attempt_unsubscribe_of_principal(query_count=22, is_realm_admin=True,
+        result = self.attempt_unsubscribe_of_principal(query_count=27, is_realm_admin=True,
                                                        is_subbed=True, invite_only=True,
                                                        other_user_subbed=True)
         json = self.assert_json_success(result)

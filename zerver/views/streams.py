@@ -253,6 +253,19 @@ def remove_subscriptions_backend(
     else:
         people_to_unsub = set([user_profile])
 
+    for stream in streams:
+        # Restrict private stream without stream and realm admin
+        if stream.invite_only:
+            # Find realm admins, who will be unsubscribed from stream
+            realm_admin_to_unsub = set([user for user in people_to_unsub if user.is_realm_admin])
+            # Find stream admins, who will be unsubscribed from stream
+            stream_admin_to_unsub = set(get_admin_subscriber_emails(stream, user_profile)) & set(
+                [user.email for user in people_to_unsub])
+            restrict_private_stream_without_admin(stream, user_profile,
+                                                  num_realm_admin_will_be_removed=len(realm_admin_to_unsub),
+                                                  num_stream_admin_will_be_removed=len(stream_admin_to_unsub)
+                                                  )
+
     result = dict(removed=[], not_subscribed=[])  # type: Dict[str, List[Text]]
     (removed, not_subscribed) = bulk_remove_subscriptions(people_to_unsub, streams,
                                                           acting_user=user_profile)
