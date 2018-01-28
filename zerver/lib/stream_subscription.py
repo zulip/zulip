@@ -83,3 +83,8 @@ def num_subscribers_for_stream_id(stream_id: int) -> int:
     return get_active_subscriptions_for_stream_id(stream_id).filter(
         user_profile__is_active=True,
     ).count()
+
+def num_realm_admin_subscribers_for_stream_id(stream_id: int) -> int:
+    return get_active_subscriptions_for_stream_id(stream_id).filter(
+        user_profile__is_realm_admin=True,
+    ).count()
