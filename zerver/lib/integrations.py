@@ -315,6 +315,7 @@ WEBHOOK_INTEGRATIONS = [
         stream_name='github'
     ),
     WebhookIntegration('gitlab', ['version-control'], display_name='GitLab'),
+    WebhookIntegration('gocd', ['continuous-integration'], display_name='GoCD'),
     WebhookIntegration('gogs', ['version-control'], stream_name='commits'),
     WebhookIntegration('gosquared', ['marketing'], display_name='GoSquared'),
     WebhookIntegration('greenhouse', ['hr'], display_name='Greenhouse'),

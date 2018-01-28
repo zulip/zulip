@@ -30,7 +30,7 @@ in bursts.
 
 **Full feature changelog:**
 
-- New integrations: ErrBot, Google Code-In, Opbeat, Groove, Raygun,
+- New integrations: ErrBot, GoCD, Google Code-In, Opbeat, Groove, Raygun,
   Insping, Dropbox, Front, Intercom, Statuspage.io, Flock and Beeminder.
 - The local uploads backend now does the same security checks that the
   S3 backend did before serving files to users.
