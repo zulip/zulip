@@ -440,6 +440,11 @@ input[type=checkbox].inline-block {
     margin: 0px 5px;
 }
 
+#id_realm_message_content_edit_limit_label,
+#change_content_edit_button_label {
+    display: inline;
+}
+
 .control-label-disabled {
     color: hsl(0, 0%, 82%);
 }
@@ -448,7 +453,7 @@ input[type=checkbox].inline-block {
     margin-left: 25px;
 }
 
-.admin-realm-message-content-edit-limit-minutes {
+.admin-realm-message-content-edit-limit {
     width: 5ch;
     text-align: right;
 }
@@ -1370,4 +1375,16 @@ thead .actions {
 .invited-as-admin {
     opacity: 0.5;
     margin-left: 2px;
+}
+
+#content_edit_limit {
+    text-decoration: none;
+}
+
+#edit_limit_unit {
+    display: inline;
+}
+
+#edit_limit_unit_select {
+    width: 100px;
 }

@@ -45,8 +45,6 @@ function _setup_page() {
             page_params.realm_create_generic_bot_by_admins_only,
         realm_allow_message_deleting: page_params.realm_allow_message_deleting,
         realm_allow_message_editing: page_params.realm_allow_message_editing,
-        realm_message_content_edit_limit_minutes:
-            Math.ceil(page_params.realm_message_content_edit_limit_seconds / 60),
         realm_message_retention_days: page_params.realm_message_retention_days,
         realm_allow_edit_history: page_params.realm_allow_edit_history,
         language_list: page_params.language_list,

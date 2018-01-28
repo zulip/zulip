@@ -1,0 +1,31 @@
+<div id="message_edit_limit_modal" class="modal hide" tabindex="-1" role="dialog"
+    aria-labelledby="change_content_edit_limit_modal" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
+        <h3 id="change_message_content_edit_limit_modal_label">{{t "Change edit time limit" }}</h3>
+    </div>
+    <div class="modal-body">
+        <div class="input-group change_edit_limit_container">
+            <label for="id_realm_message_content_edit_limit"
+                id="id_realm_message_content_edit_limit_label"
+                title="{{t 'If non-zero, users can edit their message for this much time after it is sent. If no limit, users can edit all their past messages.' }}">
+                {{t 'New limit:' }}
+            </label>
+            <input type="text" id="id_realm_message_content_edit_limit"
+                name="realm_message_content_edit_limit"
+                class="admin-realm-message-content-edit-limit" value=""
+            {{#unless realm_allow_message_editing}}disabled="disabled"{{/unless}} />
+            <div class="input-group" id="edit_limit_unit">
+                <select name="edit_limit_unit_select" id="edit_limit_unit_select">
+                    <option value='minutes'>{{t 'Minutes' }}</option>
+                    <option value='hours'>{{t 'Hours' }}</option>
+                    <option value='days'>{{t 'Days' }}</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button id='change_message_edit_limit_button' class="button rounded sea-green" data-dismiss="modal">{{t "Save" }}</button>
+        <button id='close_message_edit_modal' class="button white rounded" data-dismiss="modal">{{t "Close" }}</button>
+    </div>
+</div>

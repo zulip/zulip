@@ -5,6 +5,8 @@ zrequire('stream_data');
 zrequire('settings_org');
 
 var noop = function () {};
+var return_true = function () { return true; };
+var return_false = function () { return false; };
 
 set_global('loading', {
     make_indicator: noop,
@@ -26,6 +28,12 @@ set_global('channel', {
 });
 
 set_global('templates', {
+});
+
+set_global('overlays', {
+    is_modal_open: return_true,
+    close_modal: noop,
+    open_modal: noop,
 });
 
 (function test_unloaded() {
@@ -59,6 +67,11 @@ set_global('ui_report', {
 
     error: function (msg, xhr, elem) {
         elem.val(msg);
+    },
+
+    message: function (msg, elem, cls) {
+        elem.html(msg);
+        elem.addClass(cls);
     },
 });
 
@@ -189,15 +202,19 @@ function test_submit_settings_form(submit_form) {
     };
 
     $('#id_realm_default_language').val('fr');
+    $("#id_realm_message_content_edit_limit").val(10);
+    $('#edit_limit_unit_select').val("minutes");
 
     var patched;
     var success_callback;
+    var data;
+    var response_data;
 
     channel.patch = function (req) {
         patched = true;
         assert.equal(req.url, '/json/realm');
 
-        var data = req.data;
+        data = req.data;
 
         assert.equal(data.default_language, '"fr"');
 
@@ -207,33 +224,127 @@ function test_submit_settings_form(submit_form) {
     submit_form(ev);
     assert(patched);
 
-    var response_data = {
+    response_data = {
         allow_message_editing: true,
-        message_content_edit_limit_seconds: 210,
+        message_content_edit_limit_seconds: 180,
     };
-
     success_callback(response_data);
+    var editing_status = $('#content_edit_limit_button').html();
+    assert.equal(editing_status, "translated: 3 Minutes");
+    assert.equal($('#admin-realm-message-editing-status').val(), 'translated: Setting updated!');
 
-    var editing_status = $('#admin-realm-message-editing-status').val();
-    assert(editing_status.indexOf('content of messages which are less than') > 0);
+    response_data = {
+        allow_message_editing: true,
+        message_content_edit_limit_seconds: 60*60*3,
+    };
+    success_callback(response_data);
+    editing_status = $('#content_edit_limit_button').html();
+    assert.equal(editing_status, "translated: 3 Hours");
+    assert.equal($('#admin-realm-message-editing-status').val(), 'translated: Setting updated!');
+
+    response_data = {
+        allow_message_editing: true,
+        message_content_edit_limit_seconds: 60*60*24*3,
+    };
+    success_callback(response_data);
+    editing_status = $('#content_edit_limit_button').html();
+    assert.equal(editing_status, "translated: 3 Days");
+    assert.equal($('#admin-realm-message-editing-status').val(), 'translated: Setting updated!');
 
     response_data = {
         allow_message_editing: true,
         message_content_edit_limit_seconds: 0,
     };
     success_callback(response_data);
-
-    assert.equal($('#admin-realm-message-editing-status').val(),
-                 'translated: Users can now edit the content and topics ' +
-                 'of all their past messages!');
+    editing_status = $('#content_edit_limit_button').html();
+    assert.equal(editing_status, "translated: No limit");
+    assert.equal($('#admin-realm-message-editing-status').val(), 'translated: Setting updated!');
 
     response_data = {
         allow_message_editing: false,
     };
     success_callback(response_data);
-
     assert.equal($('#admin-realm-message-editing-status').val(),
           'translated: Users can no longer edit their past messages!');
+
+    response_data = {
+        msg: '',
+        result: 'success',
+    };
+    success_callback(response_data);
+    editing_status = $("#admin-realm-notifications-stream-status").val();
+    assert.equal(editing_status, "translated: No changes to save!");
+
+    $("#id_realm_message_content_edit_limit").val(1);
+    $('#edit_limit_unit_select').val("minutes");
+    patched = false;
+    submit_form(ev);
+    assert(patched);
+    assert.equal(data.message_content_edit_limit_seconds, 60);
+
+    $("#id_realm_message_content_edit_limit").val(1);
+    $('#edit_limit_unit_select').val("hours");
+    patched = false;
+    submit_form(ev);
+    assert(patched);
+    assert.equal(data.message_content_edit_limit_seconds, 60*60);
+
+    $("#id_realm_message_content_edit_limit").val(1);
+    $('#edit_limit_unit_select').val("days");
+    patched = false;
+    submit_form(ev);
+    assert(patched);
+    assert.equal(data.message_content_edit_limit_seconds, 60*60*24);
+
+    $("#id_realm_message_content_edit_limit").val(-10);
+    $('#edit_limit_unit_select').val("minutes");
+    patched = false;
+    submit_form(ev);
+    assert.equal(patched, false);
+    assert.equal($("#admin-realm-message-editing-status").html(),
+        'translated: Failed: Must be a positive number');
+
+    $("#id_realm_message_content_edit_limit").val('/+*10');
+    $('#edit_limit_unit_select').val("minutes");
+    patched = false;
+    submit_form(ev);
+    assert.equal(patched, false);
+    assert.equal($("#admin-realm-message-editing-status").html(),
+        'translated: Failed: Must be a positive number');
+}
+
+function test_cancel_change_edit_limit(cancel_change_edit_limit) {
+    page_params.realm_message_content_edit_limit_seconds = 180;
+    cancel_change_edit_limit();
+    assert.equal($("#content_edit_limit_button").html(),"translated: 3 Minutes");
+}
+
+function test_set_no_edit_limit(set_no_edit_limit) {
+    var ev = {
+        preventDefault: noop,
+        stopPropagation: noop,
+    };
+    var patched;
+    var data;
+    var success_callback;
+    channel.patch = function (req) {
+        patched = true;
+        assert.equal(req.url, '/json/realm');
+        data = req.data;
+        success_callback = req.success;
+    };
+    $('#id_realm_allow_message_editing').prop('checked', true);
+    overlays.is_modal_open = return_false;
+
+    set_no_edit_limit(ev);
+    assert(patched);
+    var response_data = {
+        allow_message_editing: true,
+        message_content_edit_limit_seconds: 0,
+    };
+    success_callback(response_data);
+    assert.equal(data.message_content_edit_limit_seconds, 0);
+    assert.equal($('#content_edit_limit_button').html(), "translated: No limit");
 }
 
 function test_submit_permissions_form(submit_form) {
@@ -328,17 +439,18 @@ function test_upload_realm_icon(upload_realm_icon) {
 }
 
 function test_change_message_editing(change_message_editing) {
+
     var parent_elem = $.create('editing-parent-stub');
-
-    $('#id_realm_message_content_edit_limit_minutes_label').set_parent(parent_elem);
-
+    $('#change_content_edit_button_label').set_parent(parent_elem);
     change_message_editing.apply({checked: false});
     assert(parent_elem.hasClass('control-label-disabled'));
-    assert.equal($('#id_realm_message_content_edit_limit_minutes').attr('disabled'), true);
+    assert.equal($('#id_realm_message_content_edit_limit').attr('disabled'), true);
+    assert.equal($('#change_content_edit_limit').attr('disabled'), true);
 
     change_message_editing.apply({checked: true});
     assert(!parent_elem.hasClass('control-label-disabled'));
-    assert.equal($('#id_realm_message_content_edit_limit_minutes').prop('disabled'), false);
+    assert.equal($('#id_realm_message_content_edit_limit').prop('disabled'), false);
+    assert.equal($('#change_content_edit_limit').prop('disabled'), false);
 }
 
 function test_change_invite_required(change_invite_required) {
@@ -511,6 +623,19 @@ function test_change_allow_subdomains(change_allow_subdomains) {
 
     var parent_elem = $.create('waiting-period-parent-stub');
     $('#id_realm_waiting_period_threshold').set_parent(parent_elem);
+
+    var cancel_change_edit_limit;
+    $('#close_message_edit_modal').on = function (action, f) {
+        assert.equal(action, 'click');
+        cancel_change_edit_limit = f;
+    };
+
+    var set_no_edit_limit;
+    $('#set_no_edit_limit').on = function (action, f) {
+        assert.equal(action, 'click');
+        set_no_edit_limit = f;
+    };
+
     // TEST set_up() here, but this mostly just allows us to
     // get access to the click handlers.
     settings_org.set_up();
@@ -518,13 +643,14 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     verify_realm_domains();
 
     test_realms_domain_modal(callbacks.add_realm_domain);
-
     test_submit_profile_form(submit_profile_form);
     test_submit_settings_form(submit_settings_form);
     test_submit_permissions_form(submit_permissions_form);
     test_upload_realm_icon(upload_realm_icon);
     test_change_invite_required(callbacks.change_invite_required);
     test_change_message_editing(callbacks.change_message_editing);
+    test_cancel_change_edit_limit(cancel_change_edit_limit);
+    test_set_no_edit_limit(set_no_edit_limit);
     test_disable_notifications_stream(callbacks.disable_notifications_stream);
     test_disable_signup_notifications_stream(callbacks.disable_signup_notifications_stream);
     test_change_allow_subdomains(change_allow_subdomains);
