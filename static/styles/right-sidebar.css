@@ -66,6 +66,20 @@
     top: 5px;
 }
 
+.bot-status-indicator {
+    display: block;
+    width: 8px;
+    height: 8px;
+    margin: 0px 5px;
+    border-radius: 50%;
+    border: 1px solid;
+    float: left;
+    position: relative;
+    top: 5px;
+    background-color: hsl(106, 74%, 44%);
+    border-color: hsl(106, 74%, 44%);
+}
+
 .user_active .user-status-indicator,
 .group-pm-status-indicator {
     background-color: hsl(106, 74%, 44%);

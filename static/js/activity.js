@@ -35,6 +35,7 @@ var huddle_timestamps = new Dict();
 
 exports.update_scrollbar = (function () {
     var $user_presences = $("#user_presences");
+    var $bot_presences = $("#bot_presences");
     var $group_pms = $("#group-pms");
 
     return {
@@ -43,6 +44,12 @@ exports.update_scrollbar = (function () {
                 $user_presences = $("#user_presences");
             }
             ui.update_scrollbar($user_presences);
+        },
+        bots: function () {
+            if (!$bot_presences.length) {
+                $bot_presences = $("#bot_presences");
+            }
+            ui.update_scrollbar($bot_presences);
         },
         group_pms: function () {
             if (!$group_pms.length) {
@@ -295,6 +302,15 @@ function info_for(user_id) {
     };
 }
 
+function info_for_bot(bot_id) {
+    var bot = people.get_person_from_user_id(bot_id);
+    return {
+        href: narrow.pm_with_uri(bot.email),
+        name: bot.full_name,
+        bot_id: bot_id,
+    };
+}
+
 exports.insert_user_into_list = function (user_id) {
     if (page_params.realm_presence_disabled) {
         return;
@@ -332,6 +348,42 @@ exports.insert_user_into_list = function (user_id) {
     compose_fade.update_one_user_row(elt);
 };
 
+exports.insert_or_remove_bot_into_list = function (bot_id, is_present) {
+    if (page_params.realm_presence_disabled) {
+        return;
+    }
+
+    var info = info_for_bot(bot_id);
+    var html = templates.render('bot_presence_row', info);
+
+    var items = $('#bot_presences li').toArray();
+
+    function insert() {
+        var i = 0;
+
+        for (i = 0; i < items.length; i += 1) {
+            var li = $(items[i]);
+            var list_bot_id = li.attr('data-bot-id');
+            function compare_function(bot_id1, bot_id2) {
+                var full_name_a = people.get_person_from_user_id(bot_id1).full_name;
+                var full_name_b = people.get_person_from_user_id(bot_id2).full_name;
+                return util.strcmp(full_name_a, full_name_b);
+            }
+            if (compare_function(bot_id, list_bot_id) < 0) {
+                li.before(html);
+                return;
+            }
+        }
+
+        $('#bot_presences').append(html);
+    }
+    $('#bot_presences').find('[data-bot-id="' + bot_id + '"]').remove();
+    if (is_present) {
+        insert();
+    }
+    exports.update_scrollbar.bots();
+};
+
 exports.build_user_sidebar = function () {
     if (page_params.realm_presence_disabled) {
         return;
@@ -353,6 +405,19 @@ exports.build_user_sidebar = function () {
     resize.resize_page_components();
 
     return user_info; // for testing
+};
+
+exports.build_bot_sidebar = function (bot_presence_info) {
+    if (page_params.realm_presence_disabled) {
+        return;
+    }
+    bot_info = _.map(bot_presence_info, info_for_bot)
+    var html = templates.render('bot_presence_rows', {bots: bot_info});
+    $('#bot_presences').html(html);
+
+    resize.resize_page_components();
+
+    return bot_info; // for testing
 };
 
 var update_users_for_search = _.throttle(exports.build_user_sidebar, 50);
@@ -472,6 +537,9 @@ exports.initialize = function () {
 
     exports.set_user_list_filter_handlers();
 
+    exports.build_bot_sidebar(page_params.bot_presence);
+    delete page_params.bot_presence;
+
     $('#clear_search_people_button').on('click', exports.clear_search);
     $('#userlist-header').click(exports.toggle_filter_displayed);
 
@@ -486,6 +554,7 @@ exports.initialize = function () {
     setInterval(get_full_presence_list_update, ACTIVE_PING_INTERVAL_MS);
 
     ui.set_up_scrollbar($("#user_presences"));
+    ui.set_up_scrollbar($("#bot_presences"));
     ui.set_up_scrollbar($("#group-pms"));
 };
 
@@ -503,6 +572,15 @@ exports.set_user_status = function (email, info, server_time) {
     presence.set_user_status(user_id, info, server_time);
     exports.insert_user_into_list(user_id);
     exports.update_huddles();
+};
+
+exports.set_bot_status = function (bot_id, is_present) {
+    var bot = people.get_person_from_user_id(bot_id);
+    if (!bot) {
+        blueslip.warn('unknown id: ' + bot.id);
+        return;
+    }
+    exports.insert_or_remove_bot_into_list(bot_id, is_present);
 };
 
 exports.redraw = function () {
