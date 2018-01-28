@@ -3384,7 +3384,9 @@ def do_update_stream_admin_subscriptions(stream: Stream, stream_admins: List[Use
             # This excpetion will never raise, cause we do check this condition above.
             raise JsonableError(_("User '%s' not subscribed to stream '%s'.") % (stream_admin.email,
                                                                                  stream.name))
-        do_change_subscription_property(stream_admin, stream_admin_sub, stream, "is_admin", value)
+        # Realm admins have by default all stream admins rights, so don't need to add them as stream admin.
+        if not stream_admin.is_realm_admin:
+            do_change_subscription_property(stream_admin, stream_admin_sub, stream, "is_admin", value)
 
 def subscribed_to_stream(user_profile: UserProfile, stream_id: int) -> bool:
     try:
