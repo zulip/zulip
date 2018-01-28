@@ -604,7 +604,7 @@ def do_events_register(user_profile: UserProfile, user_client: Client,
 
     # Note that we pass event_types, not fetch_event_types here, since
     # that's what controls which future events are sent.
-    queue_id = request_event_queue(user_profile, user_client, apply_markdown, client_gravatar,
+    queue_id, bot_presence_data = request_event_queue(user_profile, user_client, apply_markdown, client_gravatar,
                                    queue_lifespan_secs, event_types, all_public_streams,
                                    narrow=narrow)
 
@@ -624,6 +624,9 @@ def do_events_register(user_profile: UserProfile, user_client: Client,
     ret = fetch_initial_state_data(user_profile, event_types_set, queue_id,
                                    client_gravatar=client_gravatar,
                                    include_subscribers=include_subscribers)
+
+    if event_types_set is None:
+        ret['bot_presence'] = bot_presence_data
 
     # Apply events that came in while we were fetching initial data
     events = get_user_events(user_profile, queue_id, -1)

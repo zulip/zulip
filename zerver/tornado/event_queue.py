@@ -44,6 +44,8 @@ for host in ['127.0.0.1', 'localhost']:
 # due to the accumulation of message data in those queues.
 IDLE_EVENT_QUEUE_TIMEOUT_SECS = 60 * 10
 EVENT_QUEUE_GC_FREQ_MSECS = 1000 * 60 * 5
+# Bot heartbeats arrive every ~50 sec. Include a 10 sec buffer.
+BOT_PRESENCE_UPDATE_FREQ_MSECS = 1000 * 60
 
 # Capped limit for how long a client can request an event queue
 # to live
@@ -60,6 +62,7 @@ class ClientDescriptor:
     def __init__(self,
                  user_profile_id: int,
                  user_profile_email: Text,
+                 user_profile_is_bot: bool,
                  realm_id: int, event_queue: 'EventQueue',
                  event_types: Optional[Sequence[str]],
                  client_type_name: Text,
@@ -74,6 +77,7 @@ class ClientDescriptor:
         # Additionally, the to_dict and from_dict methods must be updated
         self.user_profile_id = user_profile_id
         self.user_profile_email = user_profile_email
+        self.user_profile_is_bot = user_profile_is_bot
         self.realm_id = realm_id
         self.current_handler_id = None  # type: Optional[int]
         self.current_client_name = None  # type: Optional[Text]
@@ -93,12 +97,21 @@ class ClientDescriptor:
         self.queue_timeout = max(IDLE_EVENT_QUEUE_TIMEOUT_SECS,
                                  min(self.queue_timeout, MAX_QUEUE_TIMEOUT_SECS))
 
+        if self.user_profile_is_bot:
+            user_ids = [client.user_profile_id for client in clients.values() if client.realm_id == self.realm_id]
+            send_event(dict(type='bot_presence',
+                    user_id=self.user_profile_id,
+                    is_present=True,
+                    ),
+               user_ids)
+
     def to_dict(self) -> Dict[str, Any]:
         # If you add a new key to this dict, make sure you add appropriate
         # migration code in from_dict or load_event_queues to account for
         # loading event queues that lack that key.
         return dict(user_profile_id=self.user_profile_id,
                     user_profile_email=self.user_profile_email,
+                    user_profile_is_bot=self.user_profile_is_bot,
                     realm_id=self.realm_id,
                     event_queue=self.event_queue.to_dict(),
                     queue_timeout=self.queue_timeout,
@@ -129,6 +142,7 @@ class ClientDescriptor:
         ret = cls(
             d['user_profile_id'],
             d['user_profile_email'],
+            d['user_profile_is_bot'],
             d['realm_id'],
             EventQueue.from_dict(d['event_queue']),
             d['event_types'],
@@ -322,6 +336,8 @@ class EventQueue:
 clients = {}  # type: Dict[str, ClientDescriptor]
 # maps user id to list of client descriptors
 user_clients = {}  # type: Dict[int, List[ClientDescriptor]]
+# like user_clients, but contains only bots
+bot_clients = {}  # type: Dict[int, List[ClientDescriptor]]
 # maps realm id to list of client descriptors with all_public_streams=True
 realm_clients_all_streams = {}  # type: Dict[int, List[ClientDescriptor]]
 
@@ -338,6 +354,7 @@ def clear_client_event_queues_for_testing() -> None:
     assert(settings.TEST_SUITE)
     clients.clear()
     user_clients.clear()
+    bot_clients.clear()
     realm_clients_all_streams.clear()
     gc_hooks.clear()
     global next_queue_id
@@ -357,6 +374,8 @@ def get_client_descriptors_for_realm_all_streams(realm_id: int) -> List[ClientDe
 
 def add_to_client_dicts(client: ClientDescriptor) -> None:
     user_clients.setdefault(client.user_profile_id, []).append(client)
+    if client.user_profile_is_bot:
+        bot_clients.setdefault(client.user_profile_id, []).append(client)
     if client.all_public_streams or client.narrow != []:
         realm_clients_all_streams.setdefault(client.realm_id, []).append(client)
 
@@ -369,6 +388,22 @@ def allocate_client_descriptor(new_queue_data: MutableMapping[str, Any]) -> Clie
     clients[queue_id] = client
     add_to_client_dicts(client)
     return client
+
+def maybe_send_bot_presence_udpate_event():
+    for bot_id, clients_of_bot in bot_clients.items():
+        is_active = False
+        for client in clients_of_bot:
+            time_since_last_heartbeat = time.time() - client.last_connection_time
+            if client.user_profile_is_bot and time_since_last_heartbeat <= 45:
+                is_active = True
+        if not is_active:
+            bot_realm_id = clients_of_bot[0].realm_id
+            user_ids = [client.user_profile_id for client in clients.values() if client.realm_id == bot_realm_id]
+            send_event(dict(type='bot_presence',
+                    user_id=bot_id,
+                    is_present=False,
+                    ),
+                user_ids)
 
 def do_gc_event_queues(to_remove: AbstractSet[str], affected_users: AbstractSet[int],
                        affected_realms: AbstractSet[int]) -> None:
@@ -384,6 +419,7 @@ def do_gc_event_queues(to_remove: AbstractSet[str], affected_users: AbstractSet[
 
     for user_id in affected_users:
         filter_client_dict(user_clients, user_id)
+        filter_client_dict(bot_clients, user_id)
 
     for realm_id in affected_realms:
         filter_client_dict(realm_clients_all_streams, realm_id)
@@ -474,11 +510,17 @@ def setup_event_queue() -> None:
     except OSError:
         pass
 
-    # Set up event queue garbage collection
     ioloop = tornado.ioloop.IOLoop.instance()
+    # Set up event queue garbage collection
     pc = tornado.ioloop.PeriodicCallback(gc_event_queues,
                                          EVENT_QUEUE_GC_FREQ_MSECS, ioloop)
     pc.start()
+
+    # Set up periodic check for the presence status of active external generic bots.
+    pu = tornado.ioloop.PeriodicCallback(maybe_send_bot_presence_udpate_event,
+                                         BOT_PRESENCE_UPDATE_FREQ_MSECS, ioloop)
+    pu.start()
+
 
     send_restart_events(immediate=settings.DEVELOPMENT)
 
@@ -514,8 +556,16 @@ def fetch_events(query: Mapping[str, Any]) -> Dict[str, Any]:
             was_connected = client.finish_current_handler()
 
         if not client.event_queue.empty() or dont_block:
+            def is_bot_present(clients):
+                for client in clients:
+                    time_since_last_heartbeat = time.time() - client.last_connection_time
+                    if client.user_profile_is_bot and time_since_last_heartbeat <= 45:
+                        return True
+                return False
+            bots_present = [bot_id for bot_id, clients in bot_clients.items() if is_bot_present(clients)]
             response = dict(events=client.event_queue.contents(),
-                            handler_id=handler_id)  # type: Dict[str, Any]
+                            handler_id=handler_id,
+                            bot_presence=bots_present)  # type: Dict[str, Any]
             if orig_queue_id is None:
                 response['queue_id'] = queue_id
             if len(response["events"]) == 1:
@@ -581,7 +631,8 @@ def request_event_queue(user_profile: UserProfile, user_client: Client, apply_ma
 
         resp.raise_for_status()
 
-        return extract_json_response(resp)['queue_id']
+        resp_json = extract_json_response(resp)
+        return (resp_json['queue_id'], resp_json['bot_presence'],)
 
     return None
 

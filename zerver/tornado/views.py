@@ -54,6 +54,7 @@ def get_events_backend(request: HttpRequest, user_profile: UserProfile, handler:
     events_query = dict(
         user_profile_id = user_profile.id,
         user_profile_email = user_profile.email,
+        user_profile_is_bot = user_profile.is_bot,
         queue_id = queue_id,
         last_event_id = last_event_id,
         event_types = event_types,
@@ -69,6 +70,7 @@ def get_events_backend(request: HttpRequest, user_profile: UserProfile, handler:
             user_profile_id = user_profile.id,
             realm_id = user_profile.realm_id,
             user_profile_email = user_profile.email,
+            user_profile_is_bot = user_profile.is_bot,
             event_types = event_types,
             client_type_name = user_client.name,
             apply_markdown = apply_markdown,
