@@ -58,7 +58,8 @@ from zerver.lib.actions import (
     do_remove_default_stream_group,
     do_change_default_stream_group_description,
     do_change_default_stream_group_name,
-    lookup_default_stream_groups, do_update_stream_admin_subscriptions
+    lookup_default_stream_groups, do_update_stream_admin_subscriptions,
+    get_admin_subscriber_emails
 )
 
 from zerver.views.streams import (
@@ -171,20 +172,22 @@ class StreamAdminTest(ZulipTestCase):
         stream = get_stream(stream_name, hamlet.realm)
         do_update_stream_admin_subscriptions(stream, stream_admins=[hamlet, self.example_user("prospero")],
                                              value=True)
-        prospero_sub = get_subscription(stream_name, self.example_user("prospero"))
-        self.assertTrue(prospero_sub.is_admin)
+        expected_admins = [hamlet.email, self.example_email("prospero")]
+        self.assertEqual(get_admin_subscriber_emails(stream, hamlet), expected_admins)
 
         # Remove stream admins.
         do_update_stream_admin_subscriptions(stream, stream_admins=[hamlet, self.example_user("prospero")],
                                              value=False)
-        prospero_sub = get_subscription(stream_name, self.example_user("prospero"))
-        self.assertFalse(prospero_sub.is_admin)
+        expected_admins = []
+        self.assertEqual(get_admin_subscriber_emails(stream, hamlet), expected_admins)
 
         # If unsubscribed user is passed.
         with self.assertRaisesRegex(
                 JsonableError, "User 'iago@zulip.com' not subscribed to stream 'public stream'."):
             do_update_stream_admin_subscriptions(stream, stream_admins=[self.example_user("iago")],
                                                  value=True)
+        expected_admins = []
+        self.assertEqual(get_admin_subscriber_emails(stream, hamlet), expected_admins)
 
     def test_make_stream_public(self) -> None:
         user_profile = self.example_user('hamlet')

@@ -39,6 +39,7 @@ from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
     get_active_subscriptions_for_stream_ids,
+    get_admin_subscriptions_for_stream_id,
     get_bulk_stream_subscriber_info,
     get_stream_subscriptions_for_user,
     get_stream_subscriptions_for_users,
@@ -3377,6 +3378,13 @@ def do_update_stream_admin_subscriptions(stream: Stream, stream_admins: List[Use
             raise JsonableError(_("User '%s' not subscribed to stream '%s'.") % (stream_admin.email,
                                                                                  stream.name))
         do_change_subscription_property(stream_admin, stream_admin_sub, stream, "is_admin", value)
+
+def get_admin_subscriber_emails(stream: Stream,
+                                requesting_user: Optional[UserProfile]=None) -> List[Text]:
+    validate_user_access_to_subscribers(requesting_user, stream)
+    admin_subscriptions_query = get_admin_subscriptions_for_stream_id(stream.id)
+    admin_subscriptions = admin_subscriptions_query.values('user_profile__email')
+    return [admin_subscription['user_profile__email'] for admin_subscription in admin_subscriptions]
 
 def subscribed_to_stream(user_profile: UserProfile, stream_id: int) -> bool:
     try:
