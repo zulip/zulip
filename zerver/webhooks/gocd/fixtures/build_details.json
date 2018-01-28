@@ -1,0 +1,18 @@
+{
+  "build_details": {
+    "_links": {
+      "job": {
+        "href": "https://ci.example.com/go/tab/build/detail/pipelineName/pipelineCounter/stageName/stageCounter/jobName"
+      },
+      "stage": {
+        "href": "https://ci.example.com/go/pipelines/pipelineName/pipelineCounter/stageName/stageCounter"
+      },
+      "pipeline": {
+        "href": "https://ci.example.com/go/tab/pipeline/history/pipelineName"
+      }
+    },
+    "pipeline_name": "pipelineName",
+    "stage_name": "stageName",
+    "job_name": "jobName"
+  }
+}
