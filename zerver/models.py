@@ -756,15 +756,15 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 class UserGroup(models.Model):
     name = models.CharField(max_length=100)
     members = models.ManyToManyField(UserProfile, through='UserGroupMembership')
-    realm = models.ForeignKey(Realm)
+    realm = models.ForeignKey(Realm, on_delete=CASCADE)
     description = models.CharField(max_length=1024, default=u'')  # type: Text
 
     class Meta:
         unique_together = (('realm', 'name'),)
 
 class UserGroupMembership(models.Model):
-    user_group = models.ForeignKey(UserGroup)
-    user_profile = models.ForeignKey(UserProfile)
+    user_group = models.ForeignKey(UserGroup, on_delete=CASCADE)
+    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
 
     class Meta:
         unique_together = (('user_group', 'user_profile'),)
