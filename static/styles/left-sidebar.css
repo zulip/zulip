@@ -487,3 +487,21 @@ li.show-more-private-messages a {
 .show-all-streams .icon-vector-chevron-left {
     text-decoration: none;
 }
+
+.organization-info {
+  margin: 15px 10px;
+}
+
+.organization-info #organization_name {
+  font-size: 1.5em;
+  line-height: initial;
+  margin: 0;
+}
+
+.organization-info .personal-info .user-status-indicator {
+  margin-left: 0px;
+}
+
+.organization-info .personal-info #user_name {
+
+}

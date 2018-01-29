@@ -279,6 +279,11 @@ exports.restore_compose_cursor = function () {
         .caret(saved_compose_cursor);
 };
 
+exports.show_sidebar_organization_information = function () {
+  $("#organization_name").text(page_params.realm_name);
+  $("#user_name").text(page_params.full_name);
+};
+
 $(function () {
     if (window.bridge !== undefined) {
         // Disable "spellchecking" in our desktop app. The "spellchecking"
@@ -296,6 +301,7 @@ $(function () {
 exports.initialize = function () {
     i18n.ensure_i18n(_setup_info_overlay);
     exports.show_error_for_unsupported_platform();
+    exports.show_sidebar_organization_information();
 
     if (page_params.night_mode) {
         night_mode.enable();
