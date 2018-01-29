@@ -327,16 +327,14 @@ def redirect_to_email_login_url(email: str) -> HttpResponseRedirect:
     return HttpResponseRedirect(redirect_url)
 
 def create_realm(request: HttpRequest, creation_key: Optional[Text]=None) -> HttpResponse:
-    have_valid_key = creation_key is not None and check_key_is_valid(creation_key)
-
+    if creation_key is not None and not check_key_is_valid(creation_key):
+        return render(request, "zerver/realm_creation_failed.html",
+                      context={'message': _('The organization creation link has expired'
+                                            ' or is not valid.')})
     if not settings.OPEN_REALM_CREATION:
         if creation_key is None:
             return render(request, "zerver/realm_creation_failed.html",
                           context={'message': _('New organization creation disabled.')})
-        elif not have_valid_key:
-            return render(request, "zerver/realm_creation_failed.html",
-                          context={'message': _('The organization creation link has expired'
-                                                ' or is not valid.')})
 
     # When settings.OPEN_REALM_CREATION is enabled, anyone can create a new realm,
     # subject to a few restrictions on their email address.
@@ -351,7 +349,7 @@ def create_realm(request: HttpRequest, creation_key: Optional[Text]=None) -> Htt
                 logging.error('Error in create_realm: %s' % (str(e),))
                 return HttpResponseRedirect("/config-error/smtp")
 
-            if have_valid_key:
+            if creation_key is not None:
                 RealmCreationKey.objects.get(creation_key=creation_key).delete()
             return HttpResponseRedirect(reverse('send_confirm', kwargs={'email': email}))
     else:
