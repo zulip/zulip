@@ -326,6 +326,7 @@ WEBHOOK_INTEGRATIONS = [
         function='zerver.webhooks.ifttt.view.api_iftt_app_webhook',
         display_name='IFTTT'
     ),
+    WebhookIntegration('insping', ['monitoring'], display_name='Insping'),
     WebhookIntegration('intercom', ['customer-support'], display_name='Intercom'),
     WebhookIntegration('jira', ['project-management'], display_name='JIRA'),
     WebhookIntegration('librato', ['monitoring']),
