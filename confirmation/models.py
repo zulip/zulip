@@ -140,9 +140,11 @@ def check_key_is_valid(creation_key: Text) -> bool:
         return False
     return True
 
-def generate_realm_creation_url() -> Text:
+def generate_realm_creation_url(by_admin: bool=False) -> Text:
     key = generate_key()
-    RealmCreationKey.objects.create(creation_key=key, date_created=timezone_now())
+    RealmCreationKey.objects.create(creation_key=key,
+                                    date_created=timezone_now(),
+                                    presume_email_valid=by_admin)
     return '%s%s%s' % (settings.EXTERNAL_URI_SCHEME,
                        settings.EXTERNAL_HOST,
                        reverse('zerver.views.create_realm',
