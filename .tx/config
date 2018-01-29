@@ -13,3 +13,9 @@ source_file = static/locale/en/translations.json
 source_lang = en
 type = KEYVALUEJSON
 file_filter = static/locale/<lang>/translations.json
+
+[zulip.messages]
+source_file = static/locale/en/mobile.json
+source_lang = en
+type = KEYVALUEJSON
+file_filter = static/locale/<lang>/mobile.json

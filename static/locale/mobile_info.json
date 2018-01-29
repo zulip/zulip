@@ -1,0 +1,82 @@
+{
+  "bg": {
+    "not_translated": 0,
+    "total": 129
+  },
+  "cs": {
+    "not_translated": 21,
+    "total": 129
+  },
+  "de": {
+    "not_translated": 19,
+    "total": 129
+  },
+  "es": {
+    "not_translated": 43,
+    "total": 129
+  },
+  "fr": {
+    "not_translated": 19,
+    "total": 129
+  },
+  "hi": {
+    "not_translated": 56,
+    "total": 129
+  },
+  "hu": {
+    "not_translated": 114,
+    "total": 129
+  },
+  "id_ID": {
+    "not_translated": 25,
+    "total": 129
+  },
+  "it": {
+    "not_translated": 119,
+    "total": 129
+  },
+  "ja": {
+    "not_translated": 22,
+    "total": 129
+  },
+  "ko": {
+    "not_translated": 0,
+    "total": 129
+  },
+  "ml": {
+    "not_translated": 106,
+    "total": 129
+  },
+  "nl": {
+    "not_translated": 83,
+    "total": 129
+  },
+  "pl": {
+    "not_translated": 58,
+    "total": 129
+  },
+  "pt": {
+    "not_translated": 119,
+    "total": 129
+  },
+  "ru": {
+    "not_translated": 94,
+    "total": 129
+  },
+  "sr": {
+    "not_translated": 112,
+    "total": 129
+  },
+  "ta": {
+    "not_translated": 60,
+    "total": 129
+  },
+  "zh_Hans": {
+    "not_translated": 22,
+    "total": 129
+  },
+  "zh_Hant": {
+    "not_translated": 99,
+    "total": 129
+  }
+}

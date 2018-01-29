@@ -98,7 +98,7 @@ translating, you should check out the
      contains a translated text.
 
 3. Those resource files are uploaded to Transifex by a maintainer using the
-   `tx push -s -a` command.
+   `./tools/push-translations` command.
 
 4. Translators translate the strings in Transifex.
 
