@@ -8,7 +8,7 @@ import datetime
 
 from django.db import models
 from django.db.models import CASCADE
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -85,7 +85,7 @@ def confirmation_url(confirmation_key: str, host: str,
                        reverse(_properties[confirmation_type].url_name, kwargs=url_args))
 
 class Confirmation(models.Model):
-    content_type = models.ForeignKey(ContentType)
+    content_type = models.ForeignKey(ContentType, on_delete=CASCADE)
     object_id = models.PositiveIntegerField()  # type: int
     content_object = GenericForeignKey('content_type', 'object_id')
     date_sent = models.DateTimeField()  # type: datetime.datetime
