@@ -177,7 +177,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
 
     def test_generate_link_and_create_realm(self) -> None:
         email = "user1@test.com"
-        generated_link = generate_realm_creation_url()
+        generated_link = generate_realm_creation_url(by_admin=True)
 
         with self.settings(OPEN_REALM_CREATION=False):
             # Check realm creation page is accessible
@@ -206,7 +206,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
 
     def test_realm_creation_with_expired_link(self) -> None:
         with self.settings(OPEN_REALM_CREATION=False):
-            generated_link = generate_realm_creation_url()
+            generated_link = generate_realm_creation_url(by_admin=True)
             key = generated_link[-24:]
             # Manually expire the link by changing the date of creation
             obj = RealmCreationKey.objects.get(creation_key=key)
