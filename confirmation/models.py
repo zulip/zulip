@@ -151,3 +151,7 @@ def generate_realm_creation_url() -> Text:
 class RealmCreationKey(models.Model):
     creation_key = models.CharField('activation key', max_length=40)
     date_created = models.DateTimeField('created', default=timezone_now)
+
+    # True just if we should presume the email address the user enters
+    # is theirs, and skip sending mail to it to confirm that.
+    presume_email_valid = models.BooleanField(default=False)  # type: bool
