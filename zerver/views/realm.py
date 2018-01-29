@@ -38,7 +38,6 @@ def update_realm(
         inline_url_embed_preview: Optional[bool]=REQ(validator=check_bool, default=None),
         create_stream_by_admins_only: Optional[bool]=REQ(validator=check_bool, default=None),
         add_emoji_by_admins_only: Optional[bool]=REQ(validator=check_bool, default=None),
-        create_generic_bot_by_admins_only: Optional[bool]=REQ(validator=check_bool, default=None),
         allow_message_deleting: Optional[bool]=REQ(validator=check_bool, default=None),
         allow_message_editing: Optional[bool]=REQ(validator=check_bool, default=None),
         mandatory_topics: Optional[bool]=REQ(validator=check_bool, default=None),
@@ -50,7 +49,8 @@ def update_realm(
         notifications_stream_id: Optional[int]=REQ(validator=check_int, default=None),
         signup_notifications_stream_id: Optional[int]=REQ(validator=check_int, default=None),
         message_retention_days: Optional[int]=REQ(converter=to_not_negative_int_or_none, default=None),
-        send_welcome_emails: Optional[bool]=REQ(validator=check_bool, default=None)
+        send_welcome_emails: Optional[bool]=REQ(validator=check_bool, default=None),
+        bot_creation_policy: Optional[int]=REQ(converter=to_not_negative_int_or_none, default=None)
 ) -> HttpResponse:
     realm = user_profile.realm
 
@@ -67,6 +67,9 @@ def update_realm(
     if signup_notifications_stream_id is not None and settings.NEW_USER_BOT is None:
         return json_error(_("NEW_USER_BOT must configured first."))
 
+    # Additional validation of permissions values to add new bot
+    if bot_creation_policy is not None and bot_creation_policy not in Realm.BOT_CREATION_POLICY_TYPES:
+        return json_error(_("Invalid bot creation policy"))
     # The user of `locals()` here is a bit of a code smell, but it's
     # restricted to the elements present in realm.property_types.
     #

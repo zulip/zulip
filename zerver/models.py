@@ -144,7 +144,6 @@ class Realm(models.Model):
     inline_url_embed_preview = models.BooleanField(default=True)  # type: bool
     create_stream_by_admins_only = models.BooleanField(default=False)  # type: bool
     add_emoji_by_admins_only = models.BooleanField(default=False)  # type: bool
-    create_generic_bot_by_admins_only = models.BooleanField(default=False)  # type: bool
     mandatory_topics = models.BooleanField(default=False)  # type: bool
     show_digest_email = models.BooleanField(default=True)  # type: bool
     name_changes_disabled = models.BooleanField(default=False)  # type: bool
@@ -163,6 +162,13 @@ class Realm(models.Model):
     CORPORATE = 1
     COMMUNITY = 2
     org_type = models.PositiveSmallIntegerField(default=CORPORATE)  # type: int
+
+    # This value is also being used in static/js/settings_bots.bot_creation_policy_values.
+    # On updating it here, update it there as well.
+    BOT_CREATION_EVERYONE = 1
+    BOT_CREATION_LIMIT_GENERIC_BOTS = 2
+    BOT_CREATION_ADMINS_ONLY = 3
+    bot_creation_policy = models.PositiveSmallIntegerField(default=BOT_CREATION_EVERYONE)  # type: int
 
     date_created = models.DateTimeField(default=timezone_now)  # type: datetime.datetime
     notifications_stream = models.ForeignKey('Stream', related_name='+', null=True, blank=True, on_delete=CASCADE)  # type: Optional[Stream]
@@ -183,7 +189,7 @@ class Realm(models.Model):
         add_emoji_by_admins_only=bool,
         allow_edit_history=bool,
         allow_message_deleting=bool,
-        create_generic_bot_by_admins_only=bool,
+        bot_creation_policy=int,
         create_stream_by_admins_only=bool,
         default_language=Text,
         description=Text,
@@ -213,6 +219,12 @@ class Realm(models.Model):
 
     DEFAULT_NOTIFICATION_STREAM_NAME = u'announce'
     INITIAL_PRIVATE_STREAM_NAME = u'core team'
+
+    BOT_CREATION_POLICY_TYPES = [
+        BOT_CREATION_EVERYONE,
+        BOT_CREATION_LIMIT_GENERIC_BOTS,
+        BOT_CREATION_ADMINS_ONLY,
+    ]
 
     def authentication_methods_dict(self) -> Dict[Text, bool]:
         """Returns the a mapping from authentication flags to their status,
@@ -724,7 +736,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def allowed_bot_types(self):
         # type: () -> List[int]
         allowed_bot_types = []
-        if self.is_realm_admin or not self.realm.create_generic_bot_by_admins_only:
+        if self.is_realm_admin or \
+                not self.realm.bot_creation_policy == Realm.BOT_CREATION_LIMIT_GENERIC_BOTS:
             allowed_bot_types.append(UserProfile.DEFAULT_BOT)
         allowed_bot_types += [
             UserProfile.INCOMING_WEBHOOK_BOT,

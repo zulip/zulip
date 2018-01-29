@@ -353,7 +353,7 @@ input[type=checkbox] + .inline-block {
     margin-top: 10px;
 }
 
-.organization-submission {
+.org-settings-form .organization-submission {
     margin-top: 0px;
 }
 
@@ -1192,7 +1192,8 @@ input[type=checkbox].inline-block {
     transform: translateY(-50%);
 }
 
-#id_realm_create_stream_permission {
+#id_realm_create_stream_permission,
+#id_realm_bot_creation_policy {
     width: 100%;
 }
 

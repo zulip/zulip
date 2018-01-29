@@ -54,6 +54,10 @@ set_global('message_edit', {
     update_message_topic_editing_pencil: noop,
 });
 
+set_global('settings_bots', {
+    update_bot_permissions_ui: noop,
+});
+
 // page_params is highly coupled to dispatching now
 set_global('page_params', {test_suite: false});
 var page_params = global.page_params;
@@ -195,11 +199,11 @@ var event_fixtures = {
         value: false,
     },
 
-    realm__update__create_generic_bot_by_admins_only: {
+    realm__update__bot_creation_policy: {
         type: 'realm',
         op: 'update',
-        property: 'create_generic_bot_by_admins_only',
-        value: false,
+        property: 'bot_creation_policy',
+        value: 1,
     },
 
     realm__update_dict__default: {
