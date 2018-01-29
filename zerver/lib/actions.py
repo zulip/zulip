@@ -3310,6 +3310,8 @@ def do_update_pointer(user_profile: UserProfile, pointer: int, update_flags: boo
                                    message__id__lte=pointer,
                                    flags=~UserMessage.flags.read)        \
                            .update(flags=F('flags').bitor(UserMessage.flags.read))
+        do_increment_logging_stat(user_profile, COUNT_STATS['messages_read_log:client:day'],
+                                  None, timezone_now(), increment=(pointer-prev_pointer))
 
     event = dict(type='pointer', pointer=pointer)
     send_event(event, [user_profile.id])
@@ -3337,6 +3339,9 @@ def do_mark_all_as_read(user_profile: UserProfile) -> int:
     send_event(event, [user_profile.id])
 
     statsd.incr("mark_all_as_read", count)
+
+    do_increment_logging_stat(user_profile, COUNT_STATS['messages_read_log:client:day'],
+                              None, timezone_now(), increment=count)
     return count
 
 def do_mark_stream_messages_as_read(user_profile: UserProfile,
@@ -3374,6 +3379,8 @@ def do_mark_stream_messages_as_read(user_profile: UserProfile,
     send_event(event, [user_profile.id])
 
     statsd.incr("mark_stream_as_read", count)
+    do_increment_logging_stat(user_profile, COUNT_STATS['messages_read_log:client:day'],
+                              None, timezone_now(), increment=count)
     return count
 
 def do_update_message_flags(user_profile: UserProfile,
@@ -3404,6 +3411,9 @@ def do_update_message_flags(user_profile: UserProfile,
 
     if operation == 'add':
         count = msgs.update(flags=F('flags').bitor(flagattr))
+        if flag == 'read':
+            do_increment_logging_stat(user_profile, COUNT_STATS['messages_read_log:client:day'],
+                                      None, timezone_now(), increment=count)
     elif operation == 'remove':
         count = msgs.update(flags=F('flags').bitand(~flagattr))
     else:
