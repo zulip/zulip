@@ -437,7 +437,7 @@ li.expanded_private_message a {
 
 li.show-more-topics a {
     margin-left: 5px;
-    font-size: 80%;
+    opacity: 0.5;
 }
 
 li.show-more-private-messages a {
