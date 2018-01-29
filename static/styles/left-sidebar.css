@@ -255,13 +255,13 @@ ul.filters .arrow {
 ul.filters li:hover .arrow {
     display: inline;
     cursor: pointer;
-    color: hsl(0, 0%, 53%);
+    opacity: 0.5;
 }
 
 ul.filters li .arrow:hover {
     display: inline;
     cursor: pointer;
-    color: hsl(0, 0%, 0%);
+    opacity: 1;
 }
 
 ul.filters .topic-sidebar-arrow {
@@ -273,13 +273,13 @@ ul.filters .topic-sidebar-arrow {
 li.topic-list-item:hover .topic-sidebar-arrow {
     display: inline !important;
     cursor: pointer;
-    color: hsl(0, 0%, 53%);
+    opacity: 0.5;
 }
 
 li.topic-list-item .topic-sidebar-arrow:hover {
     display: inline;
     cursor: pointer;
-    color: hsl(0, 0%, 0%);
+    opacity: 1;
 }
 
 ul.filters li.muted_topic,
@@ -412,7 +412,8 @@ li.expanded_private_message a {
 
 #topics_header {
     margin-right: 10px;
-    color: hsl(0, 0%, 43%);
+    color: inherit;
+    opacity: 0.5;
 }
 
 #topics_header a {

@@ -511,7 +511,8 @@ a:hover code {
 
 .sidebar-title {
     font-size: 1em;
-    color: hsl(0, 0%, 43%);
+    color: inherit;
+    opacity: 0.5;
     font-weight: normal;
     display: inline;
 }
