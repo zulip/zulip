@@ -40,6 +40,19 @@ def check_valid_bot_config(service_name: str, config_data: Dict[str, str]) -> No
         # error message.
         raise JsonableError(_("Invalid configuration data!"))
 
+def check_bot_creation_policy(user_profile: UserProfile, bot_type: int) -> None:
+    # Realm administrators can always add bot
+    if user_profile.is_realm_admin:
+        return
+
+    if user_profile.realm.bot_creation_policy == Realm.BOT_CREATION_EVERYONE:
+        return
+    if user_profile.realm.bot_creation_policy == Realm.BOT_CREATION_ADMINS_ONLY:
+        raise JsonableError(_("Must be an organization administrator"))
+    if user_profile.realm.bot_creation_policy == Realm.BOT_CREATION_LIMIT_GENERIC_BOTS and \
+            bot_type == UserProfile.DEFAULT_BOT:
+        raise JsonableError(_("Must be an organization administrator"))
+
 def check_valid_bot_type(user_profile: UserProfile, bot_type: int) -> None:
     if bot_type not in user_profile.allowed_bot_types:
         raise JsonableError(_('Invalid bot type'))

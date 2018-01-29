@@ -41,8 +41,6 @@ function _setup_page() {
         realm_email_changes_disabled: page_params.realm_email_changes_disabled,
         realm_add_emoji_by_admins_only: page_params.realm_add_emoji_by_admins_only,
         can_admin_emojis: page_params.is_admin || !page_params.realm_add_emoji_by_admins_only,
-        realm_create_generic_bot_by_admins_only:
-            page_params.realm_create_generic_bot_by_admins_only,
         realm_allow_message_deleting: page_params.realm_allow_message_deleting,
         realm_allow_message_editing: page_params.realm_allow_message_editing,
         realm_message_content_edit_limit_minutes:
@@ -62,9 +60,13 @@ function _setup_page() {
         realm_send_welcome_emails: page_params.realm_send_welcome_emails,
     };
 
+    options.bot_creation_policy_values = settings_bots.bot_creation_policy_values;
     var admin_tab = templates.render('admin_tab', options);
     $("#settings_content .organization-box").html(admin_tab);
     $("#settings_content .alert").removeClass("show");
+
+    settings_bots.update_bot_settings_tip();
+    $("#id_realm_bot_creation_policy").val(page_params.realm_bot_creation_policy);
 
     // Since we just swapped in a whole new page, we need to
     // tell admin_sections nothing is loaded.

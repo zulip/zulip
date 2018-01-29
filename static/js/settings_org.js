@@ -309,10 +309,9 @@ function _set_up() {
                 checked_msg: i18n.t("Only administrators may now add new emoji!"),
                 unchecked_msg: i18n.t("Any user may now add new emoji!"),
             },
-            create_generic_bot_by_admins_only: {
-                type: 'bool',
-                checked_msg: i18n.t("Only administrators may now create new generic bots!"),
-                unchecked_msg: i18n.t("Any user may now create new generic bots!"),
+            bot_creation_policy: {
+                type: 'integer',
+                msg: i18n.t("Permissions changed"),
             },
         },
     };
@@ -361,7 +360,7 @@ function _set_up() {
                 return;
             }
 
-            if (setting_type === 'text') {
+            if (setting_type === 'text' || setting_type === 'integer') {
                 ui_report.success(field_info.msg,
                                   property_type_status_element(key));
                 return;
