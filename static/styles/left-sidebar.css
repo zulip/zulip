@@ -2,7 +2,10 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 
+    background-color: #467d78;
+    color: #fff;
     height: calc(100vh - 40px);
+
     font-size: 0.89rem;
 }
 
@@ -84,9 +87,9 @@
     margin-left: 1ex;
 }
 
-#global_filters li:hover,
-#stream_filters li:hover {
-    background-color: hsl(93, 19%, 88%);
+#global_filters li:not(.active-filter):hover,
+#stream_filters li:not(.active-filter):hover {
+    background-color: hsla(175, 35%, 50%, 0.5);
 }
 
 #stream_filters li.active-sub-filter:hover {
@@ -110,7 +113,7 @@ ul.filters hr {
 li.active-filter,
 li.active-sub-filter {
     font-weight: 600 !important;
-    background: hsl(202, 56%, 91%);
+    background: hsl(175, 34%, 50%);
     position: relative;
 }
 
@@ -137,14 +140,16 @@ li.active-sub-filter {
 
 #global_filters .global-filter {
     position: relative;
-    padding: 1px 10px;
+    padding: 1px 0px;
+}
+
+#global_filters .global-filter a {
+    margin: 0px 10px;
 }
 
 .left-sidebar li {
     padding-top: 2px;
     padding-bottom: 2px;
-
-    border-radius: 4px;
 }
 
 #global_filters .global-filter i {

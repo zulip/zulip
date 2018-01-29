@@ -246,6 +246,12 @@ p.n-margin {
     left: 0px;
 }
 
+#top_navbar .column-left {
+    background: #2b6761;
+    height: 40px;
+    border-bottom: 1px solid #245a55;
+}
+
 .column-left,
 .column-right {
     width: 250px;
