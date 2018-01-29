@@ -2,6 +2,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 
+    height: calc(100vh - 40px);
     font-size: 0.89rem;
 }
 

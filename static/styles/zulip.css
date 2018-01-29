@@ -267,17 +267,18 @@ p.n-margin {
 .app-main .column-left .left-sidebar,
 .app-main .column-right .right-sidebar {
     position: fixed;
-    margin-top: 50px;
     z-index: 100;
 }
 
 .app-main .column-left .left-sidebar {
-    width: 242px;
+    width: 250px;
+    margin-top: 40px;
     padding-left: 0px;
 }
 
 .app-main .column-right .right-sidebar {
     padding-left: 10px;
+    margin-top: 50px;
     width: 240px;
 }
 
@@ -289,6 +290,10 @@ p.n-margin {
     margin-right: 250px;
     margin-left: 250px;
     position: relative;
+}
+
+.app-main .column-middle {
+  margin-left: 260px;
 }
 
 textarea,
