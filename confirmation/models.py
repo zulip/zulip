@@ -132,13 +132,18 @@ _properties = {
 # Arguably RealmCreationKey should just be another ConfirmationObjT and we should
 # add another Confirmation.type for this; it's this way for historical reasons.
 
-def check_key_is_valid(creation_key: Text) -> bool:
-    if not RealmCreationKey.objects.filter(creation_key=creation_key).exists():
-        return False
-    time_elapsed = timezone_now() - RealmCreationKey.objects.get(creation_key=creation_key).date_created
+def validate_key(creation_key: Optional[str]) -> Optional['RealmCreationKey']:
+    """Get the record for this key, raising InvalidCreationKey if non-None but invalid."""
+    if creation_key is None:
+        return None
+    try:
+        key_record = RealmCreationKey.objects.get(creation_key=creation_key)
+    except RealmCreationKey.DoesNotExist:
+        raise RealmCreationKey.Invalid()
+    time_elapsed = timezone_now() - key_record.date_created
     if time_elapsed.total_seconds() > settings.REALM_CREATION_LINK_VALIDITY_DAYS * 24 * 3600:
-        return False
-    return True
+        raise RealmCreationKey.Invalid()
+    return key_record
 
 def generate_realm_creation_url(by_admin: bool=False) -> Text:
     key = generate_key()
@@ -157,3 +162,6 @@ class RealmCreationKey(models.Model):
     # True just if we should presume the email address the user enters
     # is theirs, and skip sending mail to it to confirm that.
     presume_email_valid = models.BooleanField(default=False)  # type: bool
+
+    class Invalid(Exception):
+        pass

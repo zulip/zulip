@@ -37,7 +37,7 @@ from zerver.views.auth import create_preregistration_user, \
 from zproject.backends import ldap_auth_enabled, password_auth_enabled, ZulipLDAPAuthBackend
 
 from confirmation.models import Confirmation, RealmCreationKey, ConfirmationKeyException, \
-    check_key_is_valid, create_confirmation_link, get_object_from_key, \
+    validate_key, create_confirmation_link, get_object_from_key, \
     render_confirmation_key_error
 
 import logging
@@ -327,12 +327,14 @@ def redirect_to_email_login_url(email: str) -> HttpResponseRedirect:
     return HttpResponseRedirect(redirect_url)
 
 def create_realm(request: HttpRequest, creation_key: Optional[Text]=None) -> HttpResponse:
-    if creation_key is not None and not check_key_is_valid(creation_key):
+    try:
+        key_record = validate_key(creation_key)
+    except RealmCreationKey.Invalid:
         return render(request, "zerver/realm_creation_failed.html",
                       context={'message': _('The organization creation link has expired'
                                             ' or is not valid.')})
     if not settings.OPEN_REALM_CREATION:
-        if creation_key is None:
+        if key_record is None:
             return render(request, "zerver/realm_creation_failed.html",
                           context={'message': _('New organization creation disabled.')})
 
@@ -349,8 +351,8 @@ def create_realm(request: HttpRequest, creation_key: Optional[Text]=None) -> Htt
                 logging.error('Error in create_realm: %s' % (str(e),))
                 return HttpResponseRedirect("/config-error/smtp")
 
-            if creation_key is not None:
-                RealmCreationKey.objects.get(creation_key=creation_key).delete()
+            if key_record is not None:
+                key_record.delete()
             return HttpResponseRedirect(reverse('send_confirm', kwargs={'email': email}))
     else:
         form = RealmCreationForm()
