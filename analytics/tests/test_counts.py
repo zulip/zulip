@@ -21,13 +21,15 @@ from analytics.models import Anomaly, BaseCount, \
 from zerver.lib.actions import do_activate_user, do_create_user, \
     do_deactivate_user, do_reactivate_user, update_user_activity_interval, \
     do_invite_users, do_revoke_user_invite, do_resend_user_invite_email, \
-    InvitationError
+    InvitationError, do_update_pointer, do_mark_all_as_read, \
+    do_mark_stream_messages_as_read, do_update_message_flags
+from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import TimezoneNotUTCException, floor_to_day
 from zerver.models import Client, Huddle, Message, Realm, \
     RealmAuditLog, Recipient, Stream, UserActivityInterval, \
-    UserProfile, get_client, get_user, PreregistrationUser
+    UserProfile, get_client, get_user, PreregistrationUser, UserMessage
 
-class AnalyticsTestCase(TestCase):
+class AnalyticsTestCase(ZulipTestCase):
     MINUTE = timedelta(seconds = 60)
     HOUR = MINUTE * 60
     DAY = HOUR * 24
@@ -89,6 +91,10 @@ class AnalyticsTestCase(TestCase):
         for key, value in defaults.items():
             kwargs[key] = kwargs.get(key, value)
         return Message.objects.create(**kwargs)
+
+    def create_user_message(self, sender: UserProfile, recipient: Recipient, **kwargs: Any) -> int:
+        msg = self.create_message(sender, recipient)
+        return UserMessage.objects.create(user_profile=sender, message = msg).message_id
 
     # kwargs should only ever be a UserProfile or Stream.
     def assertCountEquals(self, table: Type[BaseCount], value: int, property: Optional[str]=None,
@@ -790,6 +796,45 @@ class TestLoggingCountStats(AnalyticsTestCase):
                          .aggregate(Sum('value'))['value__sum'])
         do_reactivate_user(user)
         self.assertEqual(1, RealmCount.objects.filter(property=property, subgroup=False)
+                         .aggregate(Sum('value'))['value__sum'])
+
+    def test_messages_read_log_client_day(self) -> None:
+        property = 'messages_read_log:client:day'
+        user = self.create_user()
+        stream, recipient = self.create_stream_with_recipient()
+        unsubbed_stream, unsubbed_recipient = self.create_stream_with_recipient()
+        client = get_client("website")
+        self.subscribe(user, stream.name)
+
+        self.create_user_message(user, recipient)
+        do_mark_all_as_read(user, client)
+        self.assertEqual(1, UserCount.objects.filter(property=property, subgroup=client.id)
+                         .aggregate(Sum('value'))['value__sum'])
+
+        self.create_user_message(user, recipient)
+        do_mark_stream_messages_as_read(user, client, unsubbed_stream)
+        self.assertEqual(1, UserCount.objects.filter(property=property, subgroup=client.id)
+                         .aggregate(Sum('value'))['value__sum'])
+        do_mark_stream_messages_as_read(user, client, stream)
+        self.assertEqual(2, UserCount.objects.filter(property=property, subgroup=client.id)
+                         .aggregate(Sum('value'))['value__sum'])
+
+        message_id = self.create_user_message(user, recipient)
+        do_update_pointer(user, client, message_id - 1, True)
+        self.assertEqual(2, UserCount.objects.filter(property=property, subgroup=client.id)
+                         .aggregate(Sum('value'))['value__sum'])
+        do_update_pointer(user, client, message_id, True)
+        self.assertEqual(3, UserCount.objects.filter(property=property, subgroup=client.id)
+                         .aggregate(Sum('value'))['value__sum'])
+
+        message_id = self.create_user_message(user, recipient)
+        do_update_message_flags(user, client, 'add', 'read', [message_id])
+        self.assertEqual(4, UserCount.objects.filter(property=property, subgroup=client.id)
+                         .aggregate(Sum('value'))['value__sum'])
+
+        # Nothing visible if you filter with another subgroup.
+        mobile_client = get_client("ZulipMobile")
+        self.assertEqual(None, UserCount.objects.filter(property=property, subgroup=mobile_client.id)
                          .aggregate(Sum('value'))['value__sum'])
 
     def test_invites_sent(self) -> None:

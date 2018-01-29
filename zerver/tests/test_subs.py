@@ -852,7 +852,7 @@ class StreamAdminTest(ZulipTestCase):
         those you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=22, is_admin=True, is_subbed=True, invite_only=False,
+            query_count=24, is_admin=True, is_subbed=True, invite_only=False,
             other_user_subbed=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
@@ -864,7 +864,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=22, is_admin=True, is_subbed=True, invite_only=True,
+            query_count=24, is_admin=True, is_subbed=True, invite_only=True,
             other_user_subbed=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
@@ -876,7 +876,7 @@ class StreamAdminTest(ZulipTestCase):
         streams you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=22, is_admin=True, is_subbed=False, invite_only=True,
+            query_count=24, is_admin=True, is_subbed=False, invite_only=True,
             other_user_subbed=True, other_sub_users=[self.example_user("othello")])
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
