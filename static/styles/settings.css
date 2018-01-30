@@ -1327,6 +1327,16 @@ input[type=text]#settings_search {
     border-bottom: none;
 }
 
+#muted_users_table {
+    margin-bottom: 0px;
+    width: 90%;
+    margin: 0 auto;
+}
+
+#muted_users_table tbody {
+    border-bottom:  none;
+}
+
 #admin-user-list .last_active {
     width: 100px;
 }
