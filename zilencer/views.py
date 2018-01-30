@@ -132,11 +132,11 @@ def add_payment_method(request: HttpRequest) -> HttpResponse:
     if not user.is_realm_admin:
         ctx["error_message"] = _("You should be an administrator of the organization %s to view this page."
                                  % (user.realm.name,))
-        return render(request, 'zilencer/payment.html', context=ctx)
+        return render(request, 'zilencer/billing.html', context=ctx)
     if STRIPE_PUBLISHABLE_KEY is None:
         # Dev-only message; no translation needed.
         ctx["error_message"] = "Missing Stripe config. In dev, add to zproject/dev-secrets.conf ."
-        return render(request, 'zilencer/payment.html', context=ctx)
+        return render(request, 'zilencer/billing.html', context=ctx)
 
     try:
         if request.method == "GET":
@@ -146,7 +146,7 @@ def add_payment_method(request: HttpRequest) -> HttpResponse:
                 ctx["num_cards"] = len(cards["data"])
             except Customer.DoesNotExist:
                 ctx["num_cards"] = 0
-            return render(request, 'zilencer/payment.html', context=ctx)
+            return render(request, 'zilencer/billing.html', context=ctx)
 
         if request.method == "POST":
             token = request.POST.get("stripeToken", "")
