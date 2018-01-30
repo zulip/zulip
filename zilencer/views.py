@@ -22,7 +22,7 @@ from zerver.lib.push_notifications import send_android_push_notification, \
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_int
-from zerver.models import UserProfile
+from zerver.models import UserProfile, Realm
 from zerver.views.push_notifications import validate_token
 from zilencer.models import RemotePushDeviceToken, RemoteZulipServer, Customer
 from zproject.settings import get_secret
@@ -121,6 +121,43 @@ def remote_server_notify_push(request: HttpRequest, entity: Union[UserProfile, R
 
     return json_success()
 
+def count_stripe_cards(realm: Realm) -> int:
+    try:
+        customer_obj = Customer.objects.get(realm=realm)
+        cards = stripe.Customer.retrieve(customer_obj.stripe_customer_id).sources.all(object="card")
+        return len(cards["data"])
+    except Customer.DoesNotExist:
+        return 0
+
+def save_stripe_token(user: UserProfile, token: str) -> int:
+    """Returns total number of cards."""
+    # The card metadata doesn't show up in Dashboard but can be accessed
+    # using the API.
+    card_metadata = {"added_user_id": user.id, "added_user_email": user.email}
+    try:
+        customer_obj = Customer.objects.get(realm=user.realm)
+        customer = stripe.Customer.retrieve(customer_obj.stripe_customer_id)
+        billing_logger.info("Adding card on customer %s: source=%r, metadata=%r",
+                            customer_obj.stripe_customer_id, token, card_metadata)
+        card = customer.sources.create(source=token, metadata=card_metadata)
+        customer.default_source = card.id
+        customer.save()
+        return len(customer.sources.all(object="card")["data"])
+    except Customer.DoesNotExist:
+        customer_metadata = {"string_id": user.realm.string_id}
+        # Description makes it easier to identify customers in Stripe dashboard
+        description = "{} ({})".format(user.realm.name, user.realm.string_id)
+        billing_logger.info("Creating customer: source=%r, description=%r, metadata=%r",
+                            token, description, customer_metadata)
+        customer = stripe.Customer.create(source=token,
+                                          description=description,
+                                          metadata=customer_metadata)
+
+        card = customer.sources.all(object="card")["data"][0]
+        card.metadata = card_metadata
+        card.save()
+        Customer.objects.create(realm=user.realm, stripe_customer_id=customer.id)
+        return 1
 
 @zulip_login_required
 def add_payment_method(request: HttpRequest) -> HttpResponse:
@@ -129,64 +166,34 @@ def add_payment_method(request: HttpRequest) -> HttpResponse:
         "publishable_key": STRIPE_PUBLISHABLE_KEY,
         "email": user.email,
     }  # type: Dict[str, Any]
-    if not user.is_realm_admin:
-        ctx["error_message"] = _("You should be an administrator of the organization %s to view this page."
-                                 % (user.realm.name,))
+
+    def render_error(message: str) -> HttpResponse:
+        ctx["error_message"] = message
         return render(request, 'zilencer/billing.html', context=ctx)
+
+    if not user.is_realm_admin:
+        return render_error(_("You should be an administrator of the organization %s to view this page.")
+                            % (user.realm.name,))
     if STRIPE_PUBLISHABLE_KEY is None:
         # Dev-only message; no translation needed.
-        ctx["error_message"] = "Missing Stripe config. In dev, add to zproject/dev-secrets.conf ."
-        return render(request, 'zilencer/billing.html', context=ctx)
+        return render_error("Missing Stripe config. In dev, add to zproject/dev-secrets.conf .")
 
     try:
         if request.method == "GET":
-            try:
-                customer_obj = Customer.objects.get(realm=user.realm)
-                cards = stripe.Customer.retrieve(customer_obj.stripe_customer_id).sources.all(object="card")
-                ctx["num_cards"] = len(cards["data"])
-            except Customer.DoesNotExist:
-                ctx["num_cards"] = 0
+            ctx["num_cards"] = count_stripe_cards(user.realm)
             return render(request, 'zilencer/billing.html', context=ctx)
-
         if request.method == "POST":
             token = request.POST.get("stripeToken", "")
-            # The card metadata doesn't show up in Dashboard but can be accessed
-            # using the API.
-            card_metadata = {"added_user_id": user.id, "added_user_email": user.email}
-            try:
-                customer_obj = Customer.objects.get(realm=user.realm)
-                customer = stripe.Customer.retrieve(customer_obj.stripe_customer_id)
-                billing_logger.info("Adding card on customer %s: source=%r, metadata=%r",
-                                    customer_obj.stripe_customer_id, token, card_metadata)
-                card = customer.sources.create(source=token, metadata=card_metadata)
-                customer.default_source = card.id
-                customer.save()
-                ctx["num_cards"] = len(customer.sources.all(object="card")["data"])
-            except Customer.DoesNotExist:
-                customer_metadata = {"string_id": user.realm.string_id}
-                # Description makes it easier to identify customers in Stripe dashboard
-                description = "{} ({})".format(user.realm.name, user.realm.string_id)
-                billing_logger.info("Creating customer: source=%r, description=%r, metadata=%r",
-                                    token, description, customer_metadata)
-                customer = stripe.Customer.create(source=token,
-                                                  description=description,
-                                                  metadata=customer_metadata)
-
-                card = customer.sources.all(object="card")["data"][0]
-                card.metadata = card_metadata
-                card.save()
-                Customer.objects.create(realm=user.realm, stripe_customer_id=customer.id)
-                ctx["num_cards"] = 1
+            ctx["num_cards"] = save_stripe_token(user, token)
             ctx["payment_method_added"] = True
             return render(request, 'zilencer/billing.html', context=ctx)
     except StripeError as e:
         billing_logger.error("Stripe error: %d %s", e.http_status, e.__class__.__name__)
         if isinstance(e, CardError):
-            ctx["error_message"] = e.json_body.get('error', {}).get('message')
+            return render_error(e.json_body.get('error', {}).get('message'))
         else:
-            ctx["error_message"] = _("Something went wrong. Please try again or email us at %s."
-                                     % (settings.ZULIP_ADMINISTRATOR,))
-        return render(request, 'zilencer/billing.html', context=ctx)
+            return render_error(_("Something went wrong. Please try again or email us at %s.")
+                                % (settings.ZULIP_ADMINISTRATOR,))
     except Exception as e:
         billing_logger.exception("Uncaught error in billing")
         raise
