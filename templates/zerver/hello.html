@@ -38,15 +38,16 @@
                 </p>
                 {% if register_link_disabled %}
                 {% elif only_sso %}
-                <a href="{{ url('login-sso') }}">
-                    <button href="" class="download-button" type="button"
-                            name="button">{{ _('Log in now!') }}</button>
-                </a>
+
+                    <form class="form-inline" action="{{ url('login-sso') }}" method="get">
+                        <button href="" class="download-button" type="button"
+                                name="button">{{ _('Log in now!') }}</button>
+                    </form>
                 {% else %}
-                <a href="{{ url('register') }}">
-                    <button href="" class="download-button" type="button"
-                            name="button">{{ _('Sign up now!') }}</button>
-                </a>
+                <form class="form-inline" action="{{ url('register') }}" method="get">
+                   <button href="" class="download-button" type="button"
+                           name="button">{{ _('Sign up now!') }}</button>
+                </form>
                 {% endif %}
                 <!-- we want this to be il-block so we'll put a <br> above so it's on
                 the next line.
