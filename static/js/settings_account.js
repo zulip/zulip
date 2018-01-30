@@ -179,7 +179,7 @@ exports.set_up = function () {
     $('#change_email_button').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        overlays.close_modal('change_email_modal');
+        var change_email_info = $('#change_email_modal').find(".change_email_info").expectOne();
 
         var data = {};
         data.email = $('.email_change_container').find("input[name='email']").val();
@@ -197,9 +197,10 @@ exports.set_up = function () {
                 } else {
                     settings_change_success(i18n.t("No changes made."));
                 }
+                overlays.close_modal('change_email_modal');
             },
             error: function (xhr) {
-                settings_change_error(i18n.t("Error changing settings"), xhr);
+                ui_report.error(i18n.t("Failed"), xhr, change_email_info);
             },
         });
     });
