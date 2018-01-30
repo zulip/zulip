@@ -1948,3 +1948,13 @@ class BotConfigData(models.Model):
 
     class Meta(object):
         unique_together = ("bot_profile", "key")
+		
+class MutedUser(models.Model):
+	user_profile = models.ForeignKey(UserProfile, related_name='+', on_delete=CASCADE)
+	muted_user_profile = models.ForeignKey(UserProfile, related_name='+', on_delete=CASCADE)
+	
+	class Meta:
+		unique_together = ("user_profile", "muted_user_profile")
+		
+	def __str__(self) -> Text:
+		return "<MutedUser: (%s, %s)>" % (self.user_profile.full_name, self.muted_user_profile.full_name)
