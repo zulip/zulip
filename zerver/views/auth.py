@@ -6,7 +6,7 @@ from django.contrib.auth import authenticate, get_backends
 from django.contrib.auth.views import login as django_login_page, \
     logout_then_login as django_logout_then_login
 from django.contrib.auth.views import password_reset as django_password_reset
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from zerver.decorator import authenticated_json_post_view, require_post, \
     process_client, do_login, log_view_func
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, \

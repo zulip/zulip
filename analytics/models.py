@@ -49,7 +49,7 @@ class BaseCount(models.Model):
     subgroup = models.CharField(max_length=16, null=True)  # type: Optional[Text]
     end_time = models.DateTimeField()  # type: datetime.datetime
     value = models.BigIntegerField()  # type: int
-    anomaly = models.ForeignKey(Anomaly, null=True)  # type: Optional[Anomaly]
+    anomaly = models.ForeignKey(Anomaly, on_delete=models.SET_NULL, null=True)  # type: Optional[Anomaly]
 
     class Meta:
         abstract = True
@@ -63,7 +63,7 @@ class InstallationCount(BaseCount):
         return "<InstallationCount: %s %s %s>" % (self.property, self.subgroup, self.value)
 
 class RealmCount(BaseCount):
-    realm = models.ForeignKey(Realm)
+    realm = models.ForeignKey(Realm, on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ("realm", "property", "subgroup", "end_time")
@@ -73,8 +73,8 @@ class RealmCount(BaseCount):
         return "<RealmCount: %s %s %s %s>" % (self.realm, self.property, self.subgroup, self.value)
 
 class UserCount(BaseCount):
-    user = models.ForeignKey(UserProfile)
-    realm = models.ForeignKey(Realm)
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    realm = models.ForeignKey(Realm, on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ("user", "property", "subgroup", "end_time")
@@ -86,8 +86,8 @@ class UserCount(BaseCount):
         return "<UserCount: %s %s %s %s>" % (self.user, self.property, self.subgroup, self.value)
 
 class StreamCount(BaseCount):
-    stream = models.ForeignKey(Stream)
-    realm = models.ForeignKey(Realm)
+    stream = models.ForeignKey(Stream, on_delete=models.CASCADE)
+    realm = models.ForeignKey(Realm, on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ("stream", "property", "subgroup", "end_time")

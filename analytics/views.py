@@ -11,7 +11,7 @@ from typing import Any, Callable, Dict, List, \
 
 import pytz
 from django.conf import settings
-from django.core import urlresolvers
+from django.urls import reverse
 from django.db import connection
 from django.db.models import Sum
 from django.db.models.query import QuerySet
@@ -881,13 +881,13 @@ def format_date_for_activity_reports(date: Optional[datetime]) -> str:
 
 def user_activity_link(email: str) -> mark_safe:
     url_name = 'analytics.views.get_user_activity'
-    url = urlresolvers.reverse(url_name, kwargs=dict(email=email))
+    url = reverse(url_name, kwargs=dict(email=email))
     email_link = '<a href="%s">%s</a>' % (url, email)
     return mark_safe(email_link)
 
 def realm_activity_link(realm_str: str) -> mark_safe:
     url_name = 'analytics.views.get_realm_activity'
-    url = urlresolvers.reverse(url_name, kwargs=dict(realm_str=realm_str))
+    url = reverse(url_name, kwargs=dict(realm_str=realm_str))
     realm_link = '<a href="%s">%s</a>' % (url, realm_str)
     return mark_safe(realm_link)
 
