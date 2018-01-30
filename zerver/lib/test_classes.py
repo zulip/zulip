@@ -2,7 +2,7 @@ from contextlib import contextmanager
 from typing import (cast, Any, Callable, Dict, Iterable, Iterator, List, Mapping, Optional,
                     Sized, Tuple, Union, Text)
 
-from django.core.urlresolvers import resolve
+from django.urls import resolve
 from django.conf import settings
 from django.test import TestCase
 from django.test.client import (

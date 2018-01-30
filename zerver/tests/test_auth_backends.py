@@ -10,7 +10,7 @@ from typing import Any, Callable, Dict, List, Optional, Text
 from builtins import object
 from oauth2client.crypt import AppIdentityError
 from django.core import signing
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 import jwt
 import mock

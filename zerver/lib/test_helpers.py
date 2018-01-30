@@ -5,7 +5,7 @@ from typing import (
 )
 
 from django.core import signing
-from django.core.urlresolvers import LocaleRegexURLResolver
+from django.urls.resolvers import LocaleRegexURLResolver
 from django.conf import settings
 from django.test import TestCase, override_settings
 from django.test.client import (
