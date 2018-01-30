@@ -120,9 +120,10 @@ I'm a generic exception :(
 class TestOutgoingWebhookMessaging(ZulipTestCase):
     def setUp(self) -> None:
         self.user_profile = self.example_user("othello")
-        self.bot_profile = self.create_test_bot(
-            'outgoing-webhook-bot@zulip.testserver', self.user_profile, 'Outgoing Webhook bot',
-            'outgoing-webhook-bot', UserProfile.OUTGOING_WEBHOOK_BOT, service_name='foo-service')
+        self.bot_profile = self.create_test_bot('outgoing-webhook', self.user_profile,
+                                                full_name='Outgoing Webhook bot',
+                                                bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
+                                                service_name='foo-service')
 
     @mock.patch('requests.request', return_value=ResponseMock(200, {"response_string": "Hidley ho, I'm a webhook responding!"}))
     def test_pm_to_outgoing_webhook_bot(self, mock_requests_request: mock.Mock) -> None:
