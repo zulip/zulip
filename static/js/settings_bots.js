@@ -159,7 +159,7 @@ exports.set_up = function () {
             } else if (bot_type === EMBEDDED_BOT_TYPE) {
                 formData.append('service_name', service_name);
                 var config_data = {};
-                $("[name*='"+service_name+"'] input").each(function () {
+                $("#config_inputbox [name*='"+service_name+"'] input").each(function () {
                     config_data[$(this).attr('name')] = $(this).val();
                 });
                 formData.append('config_data', JSON.stringify(config_data));
