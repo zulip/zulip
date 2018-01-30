@@ -44,6 +44,15 @@ assert.equal(bot_data.get(314).full_name, 'Outgoing webhook');
         extra: 'Not in data',
     };
 
+    var test_embedded_bot = {
+        email: 'embedded-bot@zulip.com',
+        user_id: 143,
+        avatar_url: '',
+        full_name: 'Embedded bot 1',
+        services: [{config_data: {key: '12345678'},
+                    service_name: "giphy"}],
+    };
+
     (function test_add() {
         bot_data.add(test_bot);
 
@@ -71,6 +80,15 @@ assert.equal(bot_data.get(314).full_name, 'Outgoing webhook');
         assert.equal('New Bot 1', bot.full_name);
         assert.equal(2, services[0].interface);
         assert.equal('http://baz.com', services[0].base_url);
+    }());
+
+    (function test_embedded_bot_update() {
+        bot_data.add(test_embedded_bot);
+        var bot_id = 143;
+        var services = bot_data.get_services(bot_id);
+        assert.equal('12345678', services[0].config_data.key);
+        bot_data.update(bot_id, {services: [{config_data: {key: '87654321'}}]});
+        assert.equal('87654321', services[0].config_data.key);
     }());
 
     (function test_remove() {
