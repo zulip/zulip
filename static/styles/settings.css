@@ -109,7 +109,8 @@ label {
     box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
 }
 
-#change_email_modal {
+#change_email_modal,
+#change_full_name_modal {
     width: 460px;
 }
 
@@ -1097,7 +1098,8 @@ input[type=checkbox].inline-block {
 }
 
 #settings_page #change_password_modal .change_password_info,
-#settings_page #change_email_modal .change_email_info {
+#settings_page #change_email_modal .change_email_info,
+#settings_page #change_full_name_modal .change_full_name_info {
     margin: 10px;
 }
 
