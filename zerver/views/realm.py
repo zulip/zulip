@@ -10,6 +10,7 @@ from zerver.lib.actions import (
     do_set_realm_notifications_stream,
     do_set_realm_signup_notifications_stream,
     do_set_realm_property,
+    do_deactivate_realm,
 )
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.request import has_request_variables, REQ, JsonableError
@@ -124,3 +125,10 @@ def update_realm(
             data['signup_notifications_stream_id'] = signup_notifications_stream_id
 
     return json_success(data)
+
+@require_realm_admin
+@has_request_variables
+def deactivate_realm(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+    realm = user_profile.realm
+    do_deactivate_realm(realm)
+    return json_success()
