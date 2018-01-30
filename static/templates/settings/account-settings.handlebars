@@ -32,9 +32,10 @@
                             <input type="text" name="email" value="{{ page_params.email }}" autocomplete="off" spellcheck="false" autofocus="autofocus"/>
                         </div>
                     </div>
+                    <div class="alert change_email_info"></div>
                     <div class="modal-footer">
+                        <button class="button white rounded" type="button" data-dismiss="modal">{{t "Cancel" }}</button>
                         <button id='change_email_button' class="button rounded sea-green" data-dismiss="modal">{{t "Change" }}</button>
-                        <button class="button white rounded" data-dismiss="modal">{{t "Cancel" }}</button>
                     </div>
                 </div>
             </form>
