@@ -1,0 +1,2 @@
+trusty:
+  base_image: buildpack-deps:trusty-scm

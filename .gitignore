@@ -29,6 +29,9 @@ package-lock.json
 /.vagrant
 /var
 
+# Dockerfiles generated for CircleCI
+/tools/circleci/images
+
 # Static build
 *.mo
 npm-debug.log
