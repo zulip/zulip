@@ -1100,11 +1100,8 @@ td.pointer {
 }
 
 .selected_message .messagebox-content {
-    box-shadow: inset 0px 0px 0px 2px hsl(215, 47%, 50%),
-                     -1px -1px 0px 0px hsl(215, 47%, 50%),
-                      1px 1px 0px 0px hsl(215, 47%, 50%),
-                     -1px 1px 0px 0px hsl(215, 47%, 50%),
-                      1px -1px 0px 0px hsl(215, 47%, 50%);
+    box-shadow: inset 0px 0px 0px 2px hsla(170, 83%, 34%, 0.39);
+    background-color: hsla(170, 46%, 79%, 0.08);
 }
 
 .message_sender {
