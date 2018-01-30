@@ -89,6 +89,9 @@ function show_user_info_popover(element, user, message) {
             return;
         }
 
+        var is_muted = muting_user.is_user_muted(user.user_id);
+	var can_mute_user = !is_muted;
+	var can_unmute_user = is_muted;	
         var args = {
             user_full_name: user.full_name,
             user_email: user.email,
@@ -102,6 +105,8 @@ function show_user_info_popover(element, user, message) {
             private_message_class: "respond_personal_button",
             is_active: people.is_active_user_for_popover(user.user_id),
             is_bot: people.get_person_from_user_id(user.user_id).is_bot,
+            can_mute_user: can_mute_user,
+            can_unmute_user: can_unmute_user,
         };
 
         var ypos = elt.offset().top;
@@ -485,6 +490,26 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
+	// Mute the user
+	$('body').on('click', '.user_popover .sidebar-popover-mute-user', function (e) {
+	var muted_id = $(e.target).parents('ul').attr('data-user-id');
+        var muted_name = people.get_person_from_user_id(muted_id).full_name;
+	popovers.hide_user_sidebar_popover();
+        muting_user_ui.mute_user([muted_id, muted_name]);
+	e.stopPropagation();
+	e.preventDefault();
+    });
+
+	// Unmute the user
+	$('body').on('click', '.user_popover .sidebar-popover-unmute-user', function (e) {
+	var muted_id = $(e.target).parents('ul').attr('data-user-id');
+	var muted_name = people.get_person_from_user_id(muted_id).full_name;
+	popovers.hide_user_sidebar_popover();
+        muting_user_ui.unmute_user([muted_id, muted_name]);
+	e.stopPropagation();
+	e.preventDefault();
+    });
+
     $('body').on('click', '.sender_info_popover .narrow_to_private_messages', function (e) {
         var user_id = $(e.target).parents('ul').attr('data-user-id');
         var email = people.get_person_from_user_id(user_id).email;
@@ -514,6 +539,26 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
+	// Mute the user
+	$('body').on('click', '.sender_info_popover .sidebar-popover-mute-user', function (e) {
+	var muted_id = $(e.target).parents('ul').attr('data-user-id');
+        var muted_name = people.get_person_from_user_id(muted_id).full_name;
+	popovers.hide_message_info_popover();
+	muting_user_ui.mute_user([muted_id, muted_name]);
+	e.stopPropagation();
+	e.preventDefault();
+    });
+
+	// Unmute the user
+	$('body').on('click', '.sender_info_popover .sidebar-popover-unmute-user', function (e) {
+	var muted_id = $(e.target).parents('ul').attr('data-user-id');
+        var muted_name = people.get_person_from_user_id(muted_id).full_name;
+	popovers.hide_message_info_popover();
+        muting_user_ui.unmute_user([muted_id, muted_name]);
+	e.stopPropagation();
+	e.preventDefault();
+    });
+
     $('#user_presences').on('click', 'span.arrow', function (e) {
         e.stopPropagation();
 
@@ -535,6 +580,9 @@ exports.register_click_handlers = function () {
 
         var user = people.get_person_from_user_id(user_id);
         var user_email = user.email;
+	var is_mute = muting_user.is_user_muted(user_id);
+	var can_mute_user = !is_mute;
+	var can_unmute_user = is_mute;
 
         var args = {
             user_email: user_email,
@@ -548,6 +596,8 @@ exports.register_click_handlers = function () {
             private_message_class: "compose_private_message",
             is_active: people.is_active_user_for_popover(user_id),
             is_bot: user.is_bot,
+	    can_mute_user: can_mute_user,
+	    can_unmute_user: can_unmute_user,
         };
 
         target.popover({
