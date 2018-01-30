@@ -8,7 +8,7 @@ jobs:
       # This is built from tools/circleci/images/trusty/Dockerfile .
       - image: gregprice/circleci:trusty-python-3.test
 
-    working_directory: ~/repo
+    working_directory: ~/zulip
 
     steps:
       - checkout
@@ -90,7 +90,7 @@ jobs:
       # This is built from tools/circleci/images/xenial/Dockerfile .
       - image: gregprice/circleci:xenial-python-3.test
 
-    working_directory: ~/repo
+    working_directory: ~/zulip
 
     steps:
       - checkout
