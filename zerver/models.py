@@ -1927,11 +1927,23 @@ def get_bot_services(user_profile_id: str) -> List[Service]:
     return list(Service.objects.filter(user_profile__id=user_profile_id))
 
 def get_service_dicts_for_bots(user_profile_id: str) -> List[Dict[str, Any]]:
+    user_profile = get_user_profile_by_id(user_profile_id)
     services = get_bot_services(user_profile_id)
-    service_dicts = [{'base_url': service.base_url,
-                      'interface': service.interface,
-                      }
-                     for service in services]
+    service_dicts = []  # type: List[Dict[Text, Any]]
+    if user_profile.bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
+        service_dicts = [{'base_url': service.base_url,
+                          'interface': service.interface,
+                          }
+                         for service in services]
+    elif user_profile.bot_type == UserProfile.EMBEDDED_BOT:
+        from zerver.lib.bot_config import get_bot_config, ConfigError
+        try:
+            service_dicts = [{'config_data': get_bot_config(user_profile),
+                              'service_name': services[0].name
+                              }]
+        # A ConfigError just means that there are no config entries for user_profile.
+        except ConfigError:
+            pass
     return service_dicts
 
 def get_service_profile(user_profile_id: str, service_name: str) -> Service:
