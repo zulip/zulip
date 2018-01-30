@@ -86,6 +86,12 @@ exports.set_up = function () {
 
     clear_password_change();
 
+    $("#change_full_name").on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        overlays.open_modal('change_full_name_modal');
+    });
+
     $('#change_password').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -166,14 +172,30 @@ exports.set_up = function () {
         common.password_quality(field.val(), $('#pw_strength .bar'), field);
     });
 
-    $("form.your-account-settings").ajaxForm({
-        dataType: 'json', // This seems to be ignored. We still get back an xhr.
-        success: function () {
-            settings_change_success(i18n.t("Updated settings!"));
-        },
-        error: function (xhr) {
-            settings_change_error(i18n.t("Error changing settings"), xhr);
-        },
+    $("#change_full_name_button").on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var change_full_name_info = $('#change_full_name_modal').find(".change_full_name_info").expectOne();
+        var data = {};
+        var full_name_field = $("#change_full_name button #full_name_value").expectOne();
+
+        data.full_name = $('.full_name_change_container').find("input[name='full_name']").val();
+        channel.patch({
+            url: '/json/settings',
+            data: data,
+            success: function (data) {
+                if ('full_name' in data) {
+                    settings_change_success(i18n.t("Updated settings!"));
+                    full_name_field.html(data.full_name);
+                } else {
+                    settings_change_success(i18n.t("No changes made."));
+                }
+                overlays.close_modal('change_full_name_modal');
+            },
+            error: function (xhr) {
+                ui_report.error(i18n.t("Failed"), xhr, change_full_name_info);
+            },
+        });
     });
 
     $('#change_email_button').on('click', function (e) {
