@@ -1142,7 +1142,8 @@ input[type=checkbox].inline-block {
     margin-bottom: 5px;
 }
 
-#deactivate_self_modal {
+#deactivate_self_modal,
+#deactivate-realm-modal {
     box-shadow: 0px 0px 75px hsla(0, 0%, 0%, 0.5);
     outline: 10000px solid hsla(0, 0%, 0%, 0.3);
     border: none;

@@ -1,0 +1,13 @@
+<div id="deactivate-realm-modal" class="modal modal-bg hide fade" tabindex="-1" role="dialog" aria-labelledby="deactivate_realm_modal_label" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
+        <h3 id="deactivate_realm_modal_label">{{t "Deactivate organization" }} <span class="realm_name"></span></h3>
+    </div>
+    <div class="modal-body">
+        <p>{{t "This action is permanent and cannot be undone. All users will permanently lose access to their Zulip accounts." }}</p>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="button rounded" data-dismiss="modal">{{t "Cancel" }}</button>
+        <button type="button" class="button rounded btn-danger" id="do_deactivate_realm_button">{{t "Deactivate organization" }}</button>
+    </div>
+</div>

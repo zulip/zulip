@@ -607,6 +607,10 @@ def do_deactivate_realm(realm: Realm) -> None:
         # notice when they try to log in.
         delete_user_sessions(user)
 
+    event = dict(type="realm", op="deactivated",
+                 realm_id=realm.id)
+    send_event(event, active_user_ids(realm.id))
+
 def do_reactivate_realm(realm: Realm) -> None:
     realm.deactivated = False
     realm.save(update_fields=["deactivated"])

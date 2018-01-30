@@ -871,6 +871,28 @@ function _set_up() {
     }
     realm_icon.build_realm_icon_widget(upload_realm_icon);
 
+    $('#deactivate_realm_button').on('click', function (e) {
+        if (!overlays.is_modal_open()) {
+            e.preventDefault();
+            e.stopPropagation();
+            overlays.open_modal('deactivate-realm-modal');
+        }
+    });
+
+    $('#do_deactivate_realm_button').on('click', function () {
+        if (overlays.is_modal_open()) {
+            overlays.close_modal('deactivate-realm-modal');
+        }
+        channel.post({
+            url:'/json/realm/deactivate',
+            error: function (xhr) {
+                ui_report.error(
+                    i18n.t("Failed"), xhr, $('#admin-realm-deactivation-status').expectOne()
+                );
+            },
+        });
+    });
+
 }
 exports.set_up = function () {
     i18n.ensure_i18n(_set_up);
