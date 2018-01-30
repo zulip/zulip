@@ -1302,6 +1302,7 @@ div.focused_table {
 
 .message_content {
     line-height: 17px;
+    max-width: 800px;
     min-height: 17px;
     font-size: 14px;
     margin-left: 46px;
