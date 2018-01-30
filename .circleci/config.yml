@@ -34,7 +34,8 @@ jobs:
             # Install moreutils so we can use `ts` and `mispipe` in the following.
             sudo apt-get install -y moreutils
 
-            # TODO: Install and use codecov.
+            # With a retry to minimize impact of transient networking errors.
+            mispipe "sudo pip install codecov" ts || mispipe "sudo pip install codecov" ts
 
             # CircleCI sets the following in Git config at clone time:
             #   url.ssh://git@github.com.insteadOf https://github.com
@@ -74,6 +75,12 @@ jobs:
           command: |
             . /srv/zulip-py3-venv/bin/activate
             mispipe ./tools/travis/frontend ts
+
+      -  run:
+          name: run codecov
+          command: |
+            . /srv/zulip-py3-venv/bin/activate
+            codecov
 
       # - store_artifacts:  # TODO
       #     path: var/casper/
