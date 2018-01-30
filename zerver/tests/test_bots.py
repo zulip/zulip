@@ -1056,6 +1056,19 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         service_payload_url = ujson.loads(result.content)['service_payload_url']
         self.assertEqual(service_payload_url, "http://foo.bar2.com")
 
+    def test_patch_bot_config_data(self) -> None:
+        self.create_test_bot('test', self.example_user("hamlet"),
+                             full_name=u'Bot with config data',
+                             bot_type=UserProfile.EMBEDDED_BOT,
+                             service_name='giphy',
+                             config_data=ujson.dumps({'key': '12345678'}))
+        bot_info = {'config_data': ujson.dumps({'key': '87654321'})}
+        result = self.client_patch("/json/bots/test-bot@zulip.testserver", bot_info)
+        self.assert_json_success(result)
+
+        config_data = ujson.loads(result.content)['config_data']
+        self.assertEqual(config_data, ujson.loads(bot_info['config_data']))
+
     def test_outgoing_webhook_invalid_interface(self):
         # type: () -> None
         self.login(self.example_email('hamlet'))

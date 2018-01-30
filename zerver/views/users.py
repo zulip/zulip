@@ -15,7 +15,8 @@ from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
     do_change_is_admin, do_change_default_all_public_streams, \
     do_change_default_events_register_stream, do_change_default_sending_stream, \
     do_create_user, do_deactivate_user, do_reactivate_user, do_regenerate_api_key, \
-    check_change_full_name, notify_created_bot, do_update_outgoing_webhook_service
+    check_change_full_name, notify_created_bot, do_update_outgoing_webhook_service, \
+    do_update_bot_config_data
 from zerver.lib.avatar import avatar_url, get_gravatar_url, get_avatar_field
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.exceptions import JsonableError
@@ -156,6 +157,8 @@ def patch_bot_backend(
         request: HttpRequest, user_profile: UserProfile, email: Text,
         full_name: Optional[Text]=REQ(default=None),
         bot_owner: Optional[Text]=REQ(default=None),
+        config_data: Optional[Dict[Text, Text]]=REQ(default=None,
+                                                    validator=check_dict(value_validator=check_string)),
         service_payload_url: Optional[Text]=REQ(validator=check_url, default=None),
         service_interface: Optional[int]=REQ(validator=check_int, default=1),
         default_sending_stream: Optional[Text]=REQ(default=None),
@@ -204,6 +207,9 @@ def patch_bot_backend(
         check_valid_interface_type(service_interface)
         do_update_outgoing_webhook_service(bot, service_interface, service_payload_url)
 
+    if config_data is not None:
+        do_update_bot_config_data(bot, config_data)
+
     if len(request.FILES) == 0:
         pass
     elif len(request.FILES) == 1:
@@ -219,6 +225,7 @@ def patch_bot_backend(
         avatar_url=avatar_url(bot),
         service_interface = service_interface,
         service_payload_url = service_payload_url,
+        config_data = config_data,
         default_sending_stream=get_stream_name(bot.default_sending_stream),
         default_events_register_stream=get_stream_name(bot.default_events_register_stream),
         default_all_public_streams=bot.default_all_public_streams,

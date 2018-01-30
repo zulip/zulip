@@ -1540,9 +1540,17 @@ class EventsRegisterTest(ZulipTestCase):
 
         def get_bot_created_checker(bot_type: str) -> Validator:
             if bot_type == "GENERIC_BOT":
-                bot_services_count = 0
+                check_services = check_list(sub_validator=None, length=0)
             elif bot_type == "OUTGOING_WEBHOOK_BOT":
-                bot_services_count = 1
+                check_services = check_list(check_dict_only([  # type: ignore  # check_url doesn't completely fit the default validator spec, but is de facto working here.
+                    ('base_url', check_url),
+                    ('interface', check_int),
+                ]), length=1)
+            elif bot_type == "EMBEDDED_BOT":
+                check_services = check_list(check_dict_only([  # type: ignore  # See above.
+                    ('service_name', check_string),
+                    ('config_data', check_dict(value_validator=check_string)),
+                ]), length=1)
             return self.check_events_dict([
                 ('type', equals('realm_bot')),
                 ('op', equals('add')),
@@ -1558,10 +1566,7 @@ class EventsRegisterTest(ZulipTestCase):
                     ('default_all_public_streams', check_bool),
                     ('avatar_url', check_string),
                     ('owner', check_string),
-                    ('services', check_list(check_dict_only([  # type: ignore  # check_url doesn't completely fit the default validator spec, but is de facto working here.
-                        ('base_url', check_url),
-                        ('interface', check_int),
-                    ]), length=bot_services_count)),
+                    ('services', check_services),
                 ])),
             ])
         action = lambda: self.create_bot('test')
@@ -1577,6 +1582,14 @@ class EventsRegisterTest(ZulipTestCase):
         # The third event is the second call of notify_created_bot, which contains additional
         # data for services (in contrast to the first call).
         error = get_bot_created_checker(bot_type="OUTGOING_WEBHOOK_BOT")('events[2]', events[2])
+        self.assert_on_error(error)
+
+        action = lambda: self.create_bot('test_embedded',
+                                         service_name='helloworld',
+                                         config_data=ujson.dumps({'foo': 'bar'}),
+                                         bot_type=UserProfile.EMBEDDED_BOT)
+        events = self.do_test(action, num_events=3)
+        error = get_bot_created_checker(bot_type="EMBEDDED_BOT")('events[2]', events[2])
         self.assert_on_error(error)
 
     def test_change_bot_full_name(self) -> None:

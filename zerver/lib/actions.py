@@ -24,6 +24,7 @@ from zerver.lib.addressee import (
 from zerver.lib.bot_config import (
     ConfigError,
     get_bot_config,
+    set_bot_config,
 )
 from zerver.lib.cache import (
     bot_dict_fields,
@@ -4425,6 +4426,19 @@ def do_update_outgoing_webhook_service(bot_profile, service_interface, service_p
                              user_id=bot_profile.id,
                              services = [dict(base_url=service.base_url,
                                               interface=service.interface)],
+                             ),
+                    ),
+               bot_owner_user_ids(bot_profile))
+
+def do_update_bot_config_data(bot_profile: UserProfile,
+                              config_data: Dict[Text, Text]) -> None:
+    for key, value in config_data.items():
+        set_bot_config(bot_profile, key, value)
+    send_event(dict(type='realm_bot',
+                    op='update',
+                    bot=dict(email=bot_profile.email,
+                             user_id=bot_profile.id,
+                             services = [dict(config_data=config_data)],
                              ),
                     ),
                bot_owner_user_ids(bot_profile))
