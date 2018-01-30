@@ -315,6 +315,12 @@ v1_api_and_json_patterns = [
     url(r'^users/me/subscriptions/muted_topics$', rest_dispatch,
         {'PATCH': 'zerver.views.muting.update_muted_topic'}),
 
+    # muting_user -> zerver.views.muting
+    url(r'^users/me/user_mute/(?P<muted_user_id>[0-9]+)$',
+        rest_dispatch,
+        {'PUT': 'zerver.views.muting.add_muted_user',
+         'DELETE': 'zerver.views.muting.remove_muted_user'}),
+
     # used to register for an event queue in tornado
     url(r'^register$', rest_dispatch,
         {'POST': 'zerver.views.events_register.events_register_backend'}),
