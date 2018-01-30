@@ -15,10 +15,10 @@ for i in range(1, 100):
     s = '%2d' % (i,)
     for e in elems:
         e.text = s
-    with open('tmp.svg', 'w') as out:
+    with open('tmp.svg', 'wb') as out:
         tree.write(out)
 
     # Convert to PNG
     subprocess.check_call(['inkscape', '--without-gui', '--export-area-page',
-                           '--export-png=../../static/images/favicon/favicon-%d.png' % (i,),
+                           '--export-png=../../../static/images/favicon/favicon-%d.png' % (i,),
                            'tmp.svg'])
