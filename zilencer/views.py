@@ -132,11 +132,11 @@ def add_payment_method(request: HttpRequest) -> HttpResponse:
     if not user.is_realm_admin:
         ctx["error_message"] = _("You should be an administrator of the organization %s to view this page."
                                  % (user.realm.name,))
-        return render(request, 'zilencer/payment.html', context=ctx)
+        return render(request, 'zilencer/billing.html', context=ctx)
     if STRIPE_PUBLISHABLE_KEY is None:
         # Dev-only message; no translation needed.
         ctx["error_message"] = "Missing Stripe config. In dev, add to zproject/dev-secrets.conf ."
-        return render(request, 'zilencer/payment.html', context=ctx)
+        return render(request, 'zilencer/billing.html', context=ctx)
 
     try:
         if request.method == "GET":
@@ -146,7 +146,7 @@ def add_payment_method(request: HttpRequest) -> HttpResponse:
                 ctx["num_cards"] = len(cards["data"])
             except Customer.DoesNotExist:
                 ctx["num_cards"] = 0
-            return render(request, 'zilencer/payment.html', context=ctx)
+            return render(request, 'zilencer/billing.html', context=ctx)
 
         if request.method == "POST":
             token = request.POST.get("stripeToken", "")
@@ -178,7 +178,7 @@ def add_payment_method(request: HttpRequest) -> HttpResponse:
                 Customer.objects.create(realm=user.realm, stripe_customer_id=customer.id)
                 ctx["num_cards"] = 1
             ctx["payment_method_added"] = True
-            return render(request, 'zilencer/payment.html', context=ctx)
+            return json_success()
     except StripeError as e:
         billing_logger.error("Stripe error: %d %s", e.http_status, e.__class__.__name__)
         if isinstance(e, CardError):
@@ -186,7 +186,7 @@ def add_payment_method(request: HttpRequest) -> HttpResponse:
         else:
             ctx["error_message"] = _("Something went wrong. Please try again or email us at %s."
                                      % (settings.ZULIP_ADMINISTRATOR,))
-        return render(request, 'zilencer/payment.html', context=ctx)
+        return json_error(ctx["error_message"])
     except Exception as e:
         billing_logger.exception("Uncaught error in billing")
         raise

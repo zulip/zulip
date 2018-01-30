@@ -220,7 +220,6 @@ var events = function () {
     }
 };
 
-
 // run this callback when the page is determined to have loaded.
 var load = function () {
     // show the .portico-landing when the document is loaded.

@@ -17,7 +17,10 @@
             "./static/js/portico/help.js"
     ],
     "katex": "./node_modules/katex/dist/katex.min.js",
-    "landing-page": "./static/js/portico/landing-page.js",
+    "landing-page": [
+      "./static/js/portico/landing-page.js",
+      "./static/js/zilencer/landing-page.js"
+    ],
     "integrations": "./static/js/portico/integrations.js",
     "signup": [
                "./static/js/portico/signup.js",
