@@ -244,6 +244,8 @@ def build_custom_checkers(by_lang):
          'bad_lines': ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"']},
     ]) + whitespace_rules + comma_whitespace_rule
     python_rules = cast(RuleList, [
+        {'pattern': 'urlresolvers',
+         'description': "urlresolvers module is deprecated. Use django.urls.resolvers."},
         {'pattern': '^(?!#)@login_required',
          'description': '@login_required is unsupported; use @zulip_login_required',
          'good_lines': ['@zulip_login_required', '# foo @login_required'],
