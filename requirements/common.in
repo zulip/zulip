@@ -177,7 +177,7 @@ py3dns==3.1.0
 pyldap==2.4.37
 
 # Install Python Social Auth
-social-auth-app-django==1.2.0
+social-auth-app-django==2.1.0
 
 # Needed for messages' rendered content parsing in push notifications.
 lxml==4.1.0
