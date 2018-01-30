@@ -28,7 +28,6 @@
 #   3. $ sudo docker push $NAME
 #   4. update .circleci/config.yml to refer to the new name
 
-# TODO add xenial
 FROM {base_image}
 
 RUN echo 'APT::Get::Assume-Yes "true";' > /etc/apt/apt.conf.d/90circleci \
@@ -37,6 +36,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
   && apt-get install -y \
+    sudo \
+    locales \
     xvfb \
     parallel \
     netcat unzip zip jq \
@@ -93,8 +94,8 @@ RUN apt-get update \
     hunspell-en-us supervisor libssl-dev yui-compressor puppet \
     gettext libffi-dev libfreetype6-dev libz-dev libjpeg-dev \
     libldap2-dev libmemcached-dev python-dev python-pip \
-    python-virtualenv python-six libxml2-dev libxslt1-dev libpq-dev \
-    postgresql-9.3
+    python-six libxml2-dev libxslt1-dev libpq-dev \
+    {extra_packages}
 
 RUN groupadd --gid 3434 circleci \
   && useradd --uid 3434 --gid circleci --shell /bin/bash --create-home circleci \
