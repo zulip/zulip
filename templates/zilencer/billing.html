@@ -27,20 +27,6 @@
                         <div class="plan-title zulip-cloud">
                             Zulip Cloud subscription for {{ realm_name }}
                         </div>
-                        {% if payment_method_added %}
-                        <div class="alert alert-info">
-                            The card has been saved successfully.
-                        </div>
-                        {% endif %}
-                        {% if num_cards %}
-                        <div class="alert alert-info">
-                            {% if num_cards > 1 %}
-                            You have {{ num_cards }} saved cards.
-                            {% else %}
-                            You have one saved card.
-                            {% endif %}
-                        </div>
-                        {% endif %}
                         <div class="price-box" tabindex="-1">
                             <div class="text-content">
                                 <h2>Premium</h2>
@@ -63,26 +49,29 @@
                                         <div class="details">
                                             per active user, per month
                                             <br />
-                                            "$80/year billed annually"
+                                            ($80/year billed annually)
                                         </div>
                                     </div>
-                                    <form method="post">
-                                        {{ csrf_input }}
-                                        <script src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-                                            data-key="{{ publishable_key }}"
-                                            data-image="/static/images/logo/zulip-icon-128x128.png"
-                                            data-name="Zulip"
-                                            data-description="Zulip Cloud Premium"
-                                            data-panel-label="Save card"
-                                            {% if num_cards %}
-                                            data-label="Add another card"
-                                            {% else %}
-                                            data-label="Add card"
-                                            {% endif %}
-                                            data-email="{{ email }}"
-                                            data-locale="auto">
-                                        </script>
-                                    </form>
+                                    {{ csrf_input }}
+                                    <button class="stripe" type="button" name="button"
+                                        data-key="{{ publishable_key }}"
+                                        data-image="/static/images/logo/zulip-icon-128x128.png"
+                                        data-name="Zulip"
+                                        data-description="Zulip Cloud Premium"
+                                        data-panel-label="Save card"
+                                        {% if num_cards %}
+                                        data-label="Add another card"
+                                        {% else %}
+                                        data-label="Add payment method"
+                                        {% endif %}
+                                        data-email="{{ email }}"
+                                        data-locale="auto">
+                                        {% if num_cards %}
+                                        Add another card
+                                        {% else %}
+                                        Add payment method
+                                        {% endif %}
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -92,5 +81,7 @@
         </div>
         {% endif %}
     </div>
+
+    <script src="https://checkout.stripe.com/checkout.js"></script>
 </div>
 {% endblock %}

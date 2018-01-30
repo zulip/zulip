@@ -178,7 +178,7 @@ def add_payment_method(request: HttpRequest) -> HttpResponse:
                 Customer.objects.create(realm=user.realm, stripe_customer_id=customer.id)
                 ctx["num_cards"] = 1
             ctx["payment_method_added"] = True
-            return render(request, 'zilencer/payment.html', context=ctx)
+            return json_success()
     except StripeError as e:
         billing_logger.error("Stripe error: %d %s", e.http_status, e.__class__.__name__)
         if isinstance(e, CardError):
@@ -186,7 +186,7 @@ def add_payment_method(request: HttpRequest) -> HttpResponse:
         else:
             ctx["error_message"] = _("Something went wrong. Please try again or email us at %s."
                                      % (settings.ZULIP_ADMINISTRATOR,))
-        return render(request, 'zilencer/payment.html', context=ctx)
+        return json_error(ctx["error_message"])
     except Exception as e:
         billing_logger.exception("Uncaught error in billing")
         raise

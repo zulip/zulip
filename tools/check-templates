@@ -112,6 +112,7 @@ def check_html_templates(templates, all_dups):
         'templates/corporate/zephyr-mirror.html',
         # Can't clean this because of `preserve_spaces`
         'templates/zerver/markdown_help.html',
+        'templates/zilencer/billing.html',
     ]
     # TODO: Clean these files
     for fn in templates:
