@@ -10,6 +10,7 @@ from django.test import TestCase
 from mock import patch, MagicMock
 from typing import Any, Callable, Dict, List, Mapping, Tuple
 
+from zerver.lib.send_email import FromAddress
 from zerver.lib.test_helpers import simulated_queue_client
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import get_client, UserActivity, PreregistrationUser
@@ -171,7 +172,13 @@ class WorkerTest(ZulipTestCase):
         retries sending the email 3 times and then gives up."""
         fake_client = self.FakeClient()
 
-        data = {'test': 'test', 'id': 'test_missed'}
+        data = {
+            'template_prefix': 'zerver/emails/confirm_new_email',
+            'to_email': self.example_email("hamlet"),
+            'from_name': 'Zulip Account Security',
+            'from_address': FromAddress.NOREPLY,
+            'context': {}
+        }
         fake_client.queue.append(('email_senders', data))
 
         def fake_publish(queue_name: str,
@@ -182,7 +189,7 @@ class WorkerTest(ZulipTestCase):
         with simulated_queue_client(lambda: fake_client):
             worker = queue_processors.EmailSendingWorker()
             worker.setup()
-            with patch('zerver.worker.queue_processors.send_email_from_dict',
+            with patch('zerver.lib.send_email.build_email',
                        side_effect=smtplib.SMTPServerDisconnected), \
                     patch('zerver.lib.queue.queue_json_publish',
                           side_effect=fake_publish), \

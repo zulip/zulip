@@ -1,6 +1,7 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/queuing.html
 from typing import Any, Callable, Dict, List, Mapping, Optional, cast
 
+import copy
 import signal
 from functools import wraps
 
@@ -112,11 +113,10 @@ def retry_send_email_failures(func):
         # type: (QueueProcessingWorker, Dict[str, Any]) -> None
         try:
             func(worker, data)
-        except (smtplib.SMTPServerDisconnected, socket.gaierror):
-
+        except (smtplib.SMTPServerDisconnected, socket.gaierror, EmailNotDeliveredException):
             def on_failure(event):
                 # type: (Dict[str, Any]) -> None
-                logging.exception("Event {} failed".format(event['id']))
+                logging.exception("Event {} failed".format(event))
 
             retry_event(worker.queue_name, data, on_failure)
 
@@ -299,13 +299,14 @@ class MissedMessageWorker(LoopQueueProcessingWorker):
 @assign_queue('email_senders')
 class EmailSendingWorker(QueueProcessingWorker):
     @retry_send_email_failures
-    def consume(self, data):
-        # type: (Dict[str, Any]) -> None
-        try:
-            send_email_from_dict(data)
-        except EmailNotDeliveredException:
-            # TODO: Do something smarter here ..
-            pass
+    def consume(self, event: Dict[str, Any]) -> None:
+        # Copy the event, so that we don't pass the `failed_tries'
+        # data to send_email_from_dict (which neither takes that
+        # argument nor needs that data).
+        copied_event = copy.deepcopy(event)
+        if 'failed_tries' in copied_event:
+            del copied_event['failed_tries']
+        send_email_from_dict(copied_event)
 
 @assign_queue('missedmessage_email_senders')
 class MissedMessageSendingWorker(EmailSendingWorker):
