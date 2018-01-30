@@ -740,12 +740,7 @@ td.pointer {
 }
 
 .message_list .recipient_row {
-    border-bottom: 1px solid hsl(0, 0%, 88%);
     margin-bottom: 10px;
-}
-
-.floating_recipient .recipient_row {
-    border-top: 1px solid hsl(0, 0%, 88%);
 }
 
 .stream_label {
@@ -762,6 +757,7 @@ td.pointer {
     border-width: 0px;
     position: relative;
     text-decoration: none;
+    border-top-left-radius: 4px;
 }
 
 .stream_label .invite-stream-icon {
@@ -778,44 +774,19 @@ td.pointer {
     text-decoration: none;
 }
 
-.stream_label:after {
-    left: 100%;
-    top: 50%;
-    content: " ";
-    height: 0px;
-    width: 0px;
-    position: absolute;
-    pointer-events: none;
-    margin-top: -11px;
-    border-style: solid;
-    border-width: 11px 0 11px 5px;
-    border-color: inherit;
-    z-index: 2;
-    -moz-transform: scale(.9999);
-}
-
-.stream_label:before {
-    left: 100%;
-    top: 50%;
-    content: " ";
-    height: 0px;
-    width: 0px;
-    position: absolute;
-    pointer-events: none;
-    margin-top: -14px;
-    border-style: solid;
-    border-width: 14px 0 14px 6px;
-    border-color: hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) #ffffff;
-    z-index: 1;
-    -moz-transform: scale(.9999);
-}
-
 .stream_topic {
     display: inline-block;
-    padding: 3px 3px 2px 12px;
+    padding: 3px 5px 2px 6px;
     margin-left: -5px;
     height: 17px;
     line-height: 17px;
+    border: 1px solid #ccc;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.recipient_bar_controls {
+    margin-left: 5px;
 }
 
 .recipient_row_date {
@@ -1046,6 +1017,9 @@ td.pointer {
     height: 17px;
     line-height: 17px;
     border-left-color: hsl(0, 0%, 27%);
+
+    border-bottom-right-radius: 4px;
+    border-top-right-radius: 4px;
 }
 
 /* Base color backgrounds for messageboxes,
@@ -1059,10 +1033,6 @@ td.pointer {
 .message_header_private_message .message-header-contents {
     background-color: hsla(192, 19%, 75%, 0.2);
     box-shadow: inset 1px 1px 0px hsl(0, 0%, 88%);
-}
-
-.message-header-contents {
-    border-right: 1px solid hsl(0, 0%, 88%);
 }
 
 .mention .messagebox {
@@ -1326,8 +1296,6 @@ div.message_table {
 
 .message_row {
     position: relative;
-    border-left: 1px solid hsla(0, 0%, 0%, 0.10);
-    border-right: 1px solid hsla(0, 0%, 0%, 0.10);
 }
 
 .message_row.selected_message {
@@ -1962,10 +1930,6 @@ div.floating_recipient {
 
 #floating_recipient_bar {
     top: 50px;
-}
-
-.message-header-contents {
-    background: hsl(0, 0%, 88%);
 }
 
 .recipient_row.sticky {

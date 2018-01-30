@@ -51,6 +51,7 @@ function update_table_stream_color(table, stream_name, color) {
             messages.children(".messagebox").css("box-shadow", "inset 2px 0px 0px 0px " + style + ", -1px 0px 0px 0px " + style);
             $label.css({background: style,
                           "border-left-color": style});
+            $label.parent().find(".stream_topic").css("border-color", style);
             $label.removeClass(exports.color_classes);
             $label.addClass(color_class);
         }
