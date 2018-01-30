@@ -57,6 +57,7 @@
         "settings_filters": false,
         "settings_invites": false,
         "settings_user_groups": false,
+        "settings_muting_user": false,
         "settings": false,
         "resize": false,
         "loading": false,
@@ -120,6 +121,7 @@
         "topic_data": false,
         "list_util": false,
         "muting": false,
+        "muting_user": false,
         "Dict": false,
         "unread": false,
         "alert_words_ui": false,
@@ -164,6 +166,7 @@
         "hotspots": false,
         "compose_ui": false,
         "common": false,
+        "muting_user_ui": false,
         "desktop_notifications_panel": false
     },
     "rules": {
