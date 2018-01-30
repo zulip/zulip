@@ -6,7 +6,8 @@ var bot_data = (function () {
                       'default_events_register_stream', 'default_sending_stream',
                       'email', 'full_name', 'is_active', 'owner', 'bot_type', 'user_id'];
     var services = {};
-    var services_fields = ['base_url', 'interface'];
+    var services_fields = ['base_url', 'interface',
+                           'config_data', 'service_name'];
 
     var send_change_event = _.debounce(function () {
         $(document).trigger('zulip.bot_data_changed');
