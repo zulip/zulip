@@ -1520,30 +1520,46 @@ class EventsRegisterTest(ZulipTestCase):
         self.assert_on_error(error)
 
     def test_create_bot(self) -> None:
-        bot_created_checker = self.check_events_dict([
-            ('type', equals('realm_bot')),
-            ('op', equals('add')),
-            ('bot', check_dict_only([
-                ('email', check_string),
-                ('user_id', check_int),
-                ('bot_type', check_int),
-                ('full_name', check_string),
-                ('is_active', check_bool),
-                ('api_key', check_string),
-                ('default_sending_stream', check_none_or(check_string)),
-                ('default_events_register_stream', check_none_or(check_string)),
-                ('default_all_public_streams', check_bool),
-                ('avatar_url', check_string),
-                ('owner', check_string),
-                ('services', check_list(check_dict_only([  # type: ignore  # check_url doesn't completely fit the default validator spec, but is de facto working here.
-                    ('base_url', check_url),
-                    ('interface', check_int),
-                ]))),
-            ])),
-        ])
+
+        def get_bot_created_checker(bot_type: str) -> Validator:
+            if bot_type == "GENERIC_BOT":
+                bot_services_count = 0
+            elif bot_type == "OUTGOING_WEBHOOK_BOT":
+                bot_services_count = 1
+            return self.check_events_dict([
+                ('type', equals('realm_bot')),
+                ('op', equals('add')),
+                ('bot', check_dict_only([
+                    ('email', check_string),
+                    ('user_id', check_int),
+                    ('bot_type', check_int),
+                    ('full_name', check_string),
+                    ('is_active', check_bool),
+                    ('api_key', check_string),
+                    ('default_sending_stream', check_none_or(check_string)),
+                    ('default_events_register_stream', check_none_or(check_string)),
+                    ('default_all_public_streams', check_bool),
+                    ('avatar_url', check_string),
+                    ('owner', check_string),
+                    ('services', check_list(check_dict_only([  # type: ignore  # check_url doesn't completely fit the default validator spec, but is de facto working here.
+                        ('base_url', check_url),
+                        ('interface', check_int),
+                    ]), length=bot_services_count)),
+                ])),
+            ])
         action = lambda: self.create_bot('test')
         events = self.do_test(action, num_events=3)
-        error = bot_created_checker('events[1]', events[1])
+        error = get_bot_created_checker(bot_type="GENERIC_BOT")('events[1]', events[1])
+        self.assert_on_error(error)
+
+        action = lambda: self.create_bot('test_outgoing_webhook',
+                                         payload_url=ujson.dumps('https://foo.bar.com'),
+                                         interface_type=Service.GENERIC,
+                                         bot_type=UserProfile.OUTGOING_WEBHOOK_BOT)
+        events = self.do_test(action, num_events=3)
+        # The third event is the second call of notify_created_bot, which contains additional
+        # data for services (in contrast to the first call).
+        error = get_bot_created_checker(bot_type="OUTGOING_WEBHOOK_BOT")('events[2]', events[2])
         self.assert_on_error(error)
 
     def test_change_bot_full_name(self) -> None:
