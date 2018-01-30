@@ -107,6 +107,7 @@ class TemplateTestCase(ZulipTestCase):
             'zilencer/enterprise_tos_accept_body.txt',
             'zerver/closed_realm.html',
             'zerver/topic_is_muted.html',
+	    'zerver/user_is_muted.html',
             'zerver/bankruptcy.html',
             'zerver/lightbox_overlay.html',
             'zerver/invalid_realm.html',
