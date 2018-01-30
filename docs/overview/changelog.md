@@ -12,28 +12,51 @@ in bursts.
 - Added a user setting to choose the emoji set used in Zulip: Google,
   Twitter, Apple, or Emoji One.
 - Added a video call integration powered by Jitsi.
-- Added certbot support to the installer, supporting much better automation.
-- Rewrote our API documentation to be much more friendly.
+- Dramatically simplified the installation process.
+- Added certbot support to the installer for getting certificates.
+- Added support for user groups that can be mentioned.
+- Added a new "night mode" theme for dark environments.
+- Rewrote our API documentation to be much more friendly and expansive.
 - Lots of visual polish improvements.
 
 **Full feature changelog:**
 
 - New integrations: ErrBot, Google Code-In.
+- Added support for users in multiple realms having the same email.
+- Added support for embedded interactive bots.
 - Added a setting to allow users to delete their messages.
 - Added new event types to several webhook integrations.
 - Added a display for whether the user is logged-in in logged-out
   pages.
-- Added support for hosting multiple domains not as subdomains.
-- Added a new /team/ page explaining the team.
+- Added support for hosting multiple domains, not all as subdomains of
+  the same base domain.
+- Added a new /team/ page explaining the team, with a nice
+  visualization of our contributors.
 - Added support for default bots to receive messages when they're
-  mentioned, even if they are not subscribed.
+mentioned, even if they are not subscribed.
 - Added support for inviting a new user as an administrator.
 - Added a new organization settings page for managing invites.
 - Added support for clicking on a mention to see a user's profile.
-- Migrated the codebase to use nice Python 3 syntax that wasn't
-  available on Python 2.
+- Added new compose features for pasting HTML.
+- Added new ctrl+B, ctrl+I compose shortcuts for common syntax.
+- Added warning when linking to a private stream via typeahead.
+- Renamed "Home" to "All messages", to avoid users clicking on it too
+  early in using Zulip.
+- Messages containing just a link to an image (or an uploaded image)
+  now don't clutter the feed with the URL: we just display the image.
+- Refactored the authentication backends codebase to be much easier to
+  verify.
+- Expanded setting for displaying emoji as text to cover all display
+  settings (previously only affected reactions).
+- Redesigned the API for emoji reactions to support the full range of
+  how emoji reactions are used.
+- Migrated the codebase to use the nice Python 3 typing syntax.
 - Optimized how user avatar URLs are transmitted over the wire.
 - Optimized message sending performance a bit more.
+- Split the Notifications Stream setting in two settings, one for new
+  users, the other for new streams.
+- Fixed numerous bugs in the "stream settings" UI.
+- Fixed most known bugs in the message formatting logic.
 - Fixed several bugs around interacting with deactivated users.
 - Fixed image upload file pickers offering non-image files.
 - Fixed some subtle bugs with full-text search and unicode.
@@ -42,9 +65,17 @@ in bursts.
 - Fixed popovers being closed when new messages come in.
 - Fixed unexpected code blocks when using the email mirror.
 - Fixed clicking on links to a narrow opening a new window.
+- Fixed several subtle bugs with the email gateway system.
+- Fixed layering issues with mobile Safari.
+- Dramatically improved organization of developer docs.
+- Improved typeahead's handling of editing an already-completed mention.
 - Improved syntax for inline LaTeX to be more convenient.
 - Improved the design for the "uploaded files" UI.
+- Improved the design for the "account settings" UI.
 - Improved placement of text when inserting emoji via picker.
+- Improved the password reset flow to be less confusing if you don't
+  have an account.
+- Improved Tornado retry logic for connecting to RabbitMQ.
 
 ### 1.7.1 -- 2017-11-21
 
