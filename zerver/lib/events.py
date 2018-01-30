@@ -29,6 +29,7 @@ from zerver.lib.soft_deactivation import maybe_catch_up_soft_deactivated_user
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.request import JsonableError
 from zerver.lib.topic_mutes import get_topic_mutes
+from zerver.lib.mute_users import get_user_mutes
 from zerver.lib.actions import (
     validate_user_access_to_subscribers_helper,
     do_get_streams, get_default_streams_for_realm,
@@ -137,6 +138,9 @@ def fetch_initial_state_data(user_profile: UserProfile,
 
     if want('muted_topics'):
         state['muted_topics'] = get_topic_mutes(user_profile)
+
+    if want('muted_users'):
+        state['muted_users'] = get_user_mutes(user_profile)
 
     if want('pointer'):
         state['pointer'] = user_profile.pointer
@@ -555,6 +559,8 @@ def apply_event(state: Dict[str, Any],
         state['alert_words'] = event['alert_words']
     elif event['type'] == "muted_topics":
         state['muted_topics'] = event["muted_topics"]
+    elif event['type'] == "muted_users":
+        state['muted_users'] = event["muted_users"]
     elif event['type'] == "realm_filters":
         state['realm_filters'] = event["realm_filters"]
     elif event['type'] == "update_display_settings":
