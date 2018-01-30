@@ -93,6 +93,11 @@ body.dark-mode select option {
     color: hsl(236, 33%, 90%);
 }
 
+body.dark-mode .topic-unread-count,
+body.dark-mode .private_message_count {
+    background-color: hsla(105, 2%, 50%, 0.5);
+}
+
 body.dark-mode .pm_recipient .pill-container .pill {
     color: inherit;
     border: 1px solid hsla(0, 0%, 0%, 0.50);
