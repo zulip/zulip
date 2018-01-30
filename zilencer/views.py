@@ -19,7 +19,7 @@ from zerver.lib.validator import check_int
 from zerver.models import UserProfile, Realm
 from zerver.views.push_notifications import validate_token
 from zilencer.lib.stripe import STRIPE_PUBLISHABLE_KEY, count_stripe_cards, \
-    save_stripe_token, CardError, StripeError, billing_logger
+    save_stripe_token, StripeError
 from zilencer.models import RemotePushDeviceToken, RemoteZulipServer
 
 def validate_entity(entity: Union[UserProfile, RemoteZulipServer]) -> None:
@@ -112,16 +112,11 @@ def add_payment_method(request: HttpRequest) -> HttpResponse:
         "email": user.email,
     }  # type: Dict[str, Any]
 
-    def render_error(message: str) -> HttpResponse:
-        ctx["error_message"] = message
-        return render(request, 'zilencer/billing.html', context=ctx)
-
     if not user.is_realm_admin:
-        return render_error(_("You should be an administrator of the organization %s to view this page.")
-                            % (user.realm.name,))
-    if STRIPE_PUBLISHABLE_KEY is None:
-        # Dev-only message; no translation needed.
-        return render_error("Missing Stripe config. In dev, add to zproject/dev-secrets.conf .")
+        ctx["error_message"] = (
+            _("You should be an administrator of the organization %s to view this page.")
+            % (user.realm.name,))
+        return render(request, 'zilencer/billing.html', context=ctx)
 
     try:
         if request.method == "GET":
@@ -133,12 +128,5 @@ def add_payment_method(request: HttpRequest) -> HttpResponse:
             ctx["payment_method_added"] = True
             return render(request, 'zilencer/billing.html', context=ctx)
     except StripeError as e:
-        billing_logger.error("Stripe error: %d %s", e.http_status, e.__class__.__name__)
-        if isinstance(e, CardError):
-            return render_error(e.json_body.get('error', {}).get('message'))
-        else:
-            return render_error(_("Something went wrong. Please try again or email us at %s.")
-                                % (settings.ZULIP_ADMINISTRATOR,))
-    except Exception as e:
-        billing_logger.exception("Uncaught error in billing")
-        raise
+        ctx["error_message"] = e.msg
+        return render(request, 'zilencer/billing.html', context=ctx)

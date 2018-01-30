@@ -1,12 +1,13 @@
-
+from functools import wraps
 import logging
 import os
+from typing import Any, Callable, TypeVar
 
 from django.conf import settings
+from django.utils.translation import ugettext as _
 import stripe
-from stripe.error import CardError, RateLimitError, InvalidRequestError, \
-    AuthenticationError, APIConnectionError, StripeError
 
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.logging_util import log_to_file
 from zerver.models import Realm, UserProfile
 from zilencer.models import Customer
@@ -24,6 +25,35 @@ billing_logger = logging.getLogger('zilencer.stripe')
 log_to_file(billing_logger, BILLING_LOG_PATH)
 log_to_file(logging.getLogger('stripe'), BILLING_LOG_PATH)
 
+CallableT = TypeVar('CallableT', bound=Callable[..., Any])
+
+class StripeError(JsonableError):
+    pass
+
+def catch_stripe_errors(func: CallableT) -> CallableT:
+    @wraps(func)
+    def wrapped(*args: Any, **kwargs: Any) -> Any:
+        if STRIPE_PUBLISHABLE_KEY is None:
+            # Dev-only message; no translation needed.
+            raise StripeError(
+                "Missing Stripe config. In dev, add to zproject/dev-secrets.conf .")
+        try:
+            return func(*args, **kwargs)
+        except stripe.error.StripeError as e:
+            billing_logger.error("Stripe error: %d %s",
+                                 e.http_status, e.__class__.__name__)
+            if isinstance(e, stripe.error.CardError):
+                raise StripeError(e.json_body.get('error', {}).get('message'))
+            else:
+                raise StripeError(
+                    _("Something went wrong. Please try again or email us at %s.")
+                    % (settings.ZULIP_ADMINISTRATOR,))
+        except Exception as e:
+            billing_logger.exception("Uncaught error in Stripe integration")
+            raise
+    return wrapped  # type: ignore # https://github.com/python/mypy/issues/1927
+
+@catch_stripe_errors
 def count_stripe_cards(realm: Realm) -> int:
     try:
         customer_obj = Customer.objects.get(realm=realm)
@@ -32,6 +62,7 @@ def count_stripe_cards(realm: Realm) -> int:
     except Customer.DoesNotExist:
         return 0
 
+@catch_stripe_errors
 def save_stripe_token(user: UserProfile, token: str) -> int:
     """Returns total number of cards."""
     # The card metadata doesn't show up in Dashboard but can be accessed
