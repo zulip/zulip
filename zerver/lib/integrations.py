@@ -4,7 +4,7 @@ import pathlib
 from typing import Dict, List, Optional, TypeVar, Any, Text
 from django.conf import settings
 from django.conf.urls import url
-from django.core.urlresolvers import LocaleRegexProvider
+from django.urls.resolvers import LocaleRegexProvider
 from django.utils.module_loading import import_string
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _

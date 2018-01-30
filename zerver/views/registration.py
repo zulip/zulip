@@ -4,7 +4,7 @@ from typing import Any, List, Dict, Mapping, Optional, Text
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.contrib.auth import authenticate, get_backends
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.http import HttpResponseRedirect, HttpResponseForbidden, HttpResponse, HttpRequest
 from django.shortcuts import redirect, render
 from django.template import RequestContext, loader

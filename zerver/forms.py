@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.forms import SetPasswordForm, AuthenticationForm, \
     PasswordResetForm
 from django.core.exceptions import ValidationError
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.core.validators import validate_email
 from django.db.models.query import QuerySet
 from django.utils.translation import ugettext as _

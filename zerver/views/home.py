@@ -1,7 +1,7 @@
 from typing import Any, List, Dict, Optional, Text, Iterator
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.http import HttpResponseRedirect, HttpResponse, HttpRequest
 from django.shortcuts import redirect, render
 from django.utils import translation
