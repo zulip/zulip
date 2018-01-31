@@ -31,21 +31,7 @@ curl {{ api_url }}/v1/streams?include_public=false \
 
 <div data-language="python" markdown="1">
 
-```
-#!/usr/bin/env python
-
-import zulip
-
-# Download ~/zuliprc-dev from your dev server
-client = zulip.Client(config_file="~/zuliprc-dev")
-
-# Get all streams that the user has access to
-print(client.get_streams())
-
-# You may pass in one or more of the query parameters mentioned above
-# as keyword arguments, like so:
-print(client.get_streams(include_public=False))
-```
+{generate_code_example|get-all-streams|method}
 
 </div>
 
@@ -91,44 +77,7 @@ zulip(config).then((client) => {
 
 A typical successful JSON response may look like:
 
-```
-{
-    'result':'success',
-    'streams':[
-        {
-            'stream_id':15,
-            'name':'Denmark',
-            'invite_only':False,
-            'description':'A Scandinavian country'
-        },
-        {
-            'stream_id':16,
-            'name':'Rome',
-            'invite_only':False,
-            'description':'Yet another Italian city'
-        },
-        {
-            'stream_id':17,
-            'name':'Scotland',
-            'invite_only':False,
-            'description':'Located in the United Kingdom'
-        },
-        {
-            'stream_id':18,
-            'name':'Venice',
-            'invite_only':False,
-            'description':'A northeastern Italian city'
-        },
-        {
-            'stream_id':19,
-            'name':'Verona',
-            'invite_only':False,
-            'description':'A city in Italy'
-        }
-    ],
-    'msg':''
-}
-```
+{generate_code_example|get-all-streams|fixture}
 
 An example of a JSON response for when the user is not authorized
 to use the `include_all_active` parameter:
