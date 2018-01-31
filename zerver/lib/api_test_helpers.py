@@ -76,8 +76,20 @@ def get_stream_id(client):
 def get_streams(client):
     # type: (Client) -> None
 
+    # {code_example|start}
+    # Get all streams that the user has access to
     result = client.get_streams()
-    assert result['result'] == 'success'
+
+    # You may pass in one or more of the query parameters mentioned above
+    # as keyword arguments, like so:
+    result = client.get_streams(include_public=True)
+    # {code_example|end}
+
+    fixture = FIXTURES['get-all-streams']
+    test_against_fixture(result, fixture, check_if_equal=['msg', 'result'],
+                         check_if_exists=['streams'])
+    assert len(result['streams']) == len(fixture['streams'])
+
     streams = [s for s in result['streams'] if s['name'] == 'new stream']
     assert streams[0]['description'] == 'New stream for testing'
 
@@ -226,6 +238,7 @@ TEST_FUNCTIONS = {
     'update-message': update_message,
     'get-stream-id': get_stream_id,
     'get-subscribed-streams': list_subscriptions,
+    'get-all-streams': get_streams,
 }
 
 # SETUP METHODS FOLLOW
