@@ -21,6 +21,9 @@ class Command(BaseCommand):
         parser.add_argument('realm_name', metavar='<realm_name>',
                             type=str, help="Realm Name")
 
+        parser.add_argument('--token', metavar='<slack_token>',
+                            type=str, help='Slack legacy token of the organsation')
+
         parser.add_argument('--output', dest='output_dir',
                             action="store", default=None,
                             help='Directory to write exported data to.')
@@ -37,8 +40,13 @@ class Command(BaseCommand):
         os.makedirs(output_dir)
 
         realm_name = options['realm_name']
+        token = options['token']
         if realm_name is None:
             print("Enter realm name!")
+            exit(1)
+
+        if token is None:
+            print("Enter slack legacy token!")
             exit(1)
 
         for path in options['slack_data_zip']:
@@ -47,4 +55,4 @@ class Command(BaseCommand):
                 exit(1)
 
             print("Converting Data ...")
-            do_convert_data(path, realm_name, output_dir)
+            do_convert_data(path, realm_name, output_dir, token)
