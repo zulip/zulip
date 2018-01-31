@@ -1,4 +1,4 @@
-var desktop_notifications_panel = (function () {
+var panels = (function () {
 
 var exports = {};
 
@@ -71,5 +71,5 @@ return exports;
 }());
 
 if (typeof module !== 'undefined') {
-    module.exports = desktop_notifications_panel;
+    module.exports = panels;
 }

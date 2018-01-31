@@ -164,7 +164,7 @@
         "hotspots": false,
         "compose_ui": false,
         "common": false,
-        "desktop_notifications_panel": false
+        "panels": false
     },
     "rules": {
         "array-callback-return": "error",
