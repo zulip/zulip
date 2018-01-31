@@ -1,21 +1,16 @@
 #!/usr/bin/env python3
 
-
 import os
-import sys
-import time
 import signal
 import subprocess
+import sys
+import time
 from typing import Tuple
 
-# check for the venv
 from lib import sanity_check
 sanity_check.check_venv(__file__)
-from typing import IO
-
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
-
 
 def start_server(logfile_name: str) -> Tuple[bool, str]:
     failure = True
@@ -35,26 +30,20 @@ def start_server(logfile_name: str) -> Tuple[bool, str]:
 
     return failure, ''.join(datalog)
 
-
 if __name__ == '__main__':
     print("Testing development server start!")
 
     logfile_name = '/tmp/run-dev-output'
-    logfile = open(logfile_name, 'wb', buffering=0)
-
-    args = ["{}/run-dev.py".format(TOOLS_DIR)]
-    STDOUT = subprocess.STDOUT
-    run_dev = subprocess.Popen(args, stdout=logfile, stderr=STDOUT)
-
-    try:
+    with open(logfile_name, 'wb', buffering=0) as logfile:
+        run_dev = subprocess.Popen(
+            [os.path.join(TOOLS_DIR, "run-dev.py")],
+            stdout=logfile, stderr=subprocess.STDOUT)
         failure, log = start_server(logfile_name)
-    finally:
-        logfile.close()
 
     run_dev.send_signal(signal.SIGINT)
     run_dev.wait()
 
-    if not failure and 'Traceback' in log:
+    if 'Traceback' in log:
         failure = True
 
     if failure:
