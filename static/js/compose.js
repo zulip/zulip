@@ -483,7 +483,7 @@ function validate_stream_message_announce(stream_name) {
     return true;
 }
 
-exports.validation_error = function (error_type, stream_name) {
+exports.report_validation_error = function (error_type, stream_name) {
     var response;
 
     var context = {};
@@ -511,12 +511,12 @@ exports.validate_stream_message_address_info = function (stream_name) {
     }
     var stream_obj = stream_data.get_sub(stream_name);
     if (!stream_obj) {
-        exports.validation_error("does-not-exist", stream_name);
+        exports.report_validation_error("does-not-exist", stream_name);
         return false;
     }
     var autosubscribe = page_params.narrow_stream !== undefined;
     if (!autosubscribe) {
-        exports.validation_error("not-subscribed", stream_name);
+        exports.report_validation_error("not-subscribed", stream_name);
         return false;
     }
     return true;

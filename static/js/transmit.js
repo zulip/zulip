@@ -17,7 +17,7 @@ function send_message_socket(request, success, error) {
     request.socket_user_agent = navigator.userAgent;
     socket.send(request, success, function (type, resp) {
         if (request.autosubscribe) {
-            exports.validation_error(resp.error_type, request.stream);
+            exports.report_validation_error(resp.error_type, request.stream);
             return;
         }
         var err_msg = "Error sending message";
@@ -45,7 +45,7 @@ function send_message_ajax(request, success, error) {
             }
             if (request.autosubscribe) {
                 error_type = xhr.responseJSON.error_type;
-                exports.validation_error(error_type, request.stream);
+                exports.report_validation_error(error_type, request.stream);
                 return;
             }
             var response = channel.xhr_error_message("Error sending message", xhr);
