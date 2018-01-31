@@ -96,36 +96,30 @@
         </div>
 
         {{#render_subscribers}}
-        <div class="subscriber_list_settings">
-            <div class="sub_settings_title float-left">
-                {{t "Stream membership" }}
-                <div class="stream_subscription_info small"></div>
-            </div>
-            <div class="subscriber_list_add float-right">
-                <form class="form-inline">
-                    <input type="text" class="search" placeholder="{{t 'Search subscribers' }}" />
-                    {{#if can_add_subscribers}}
-                    <input type="text" name="principal" placeholder="{{t 'Email address' }}" value="" class="input-block" autocomplete="off" tabindex="-1" />
-                    <button type="submit" name="add_subscriber" class="button add-subscriber-button small rounded" tabindex="-1 ">
-                        {{t 'Add' }}
-                    </button>
-                    {{/if}}
-                </form>
-            </div>
-            <div class="clear-float"></div>
-        </div>
-        <div class="subscriber-list-box">
-            <div class="subscriber_list_container">
-                <div class="subscriber_list_loading_indicator"></div>
-                {{#if can_add_subscribers}}
-                <table class="subscriber-list"></table>
-                {{else}}
-                <div class="hide-subscriber-list">
-                    {{t "This stream is private, so you can't see who is subscribed." }}
+            {{#if can_add_subscribers}}
+            <div class="subscriber_list_settings">
+                <div class="sub_settings_title float-left">
+                    {{t "Stream membership" }}
+                    <div class="stream_subscription_info small"></div>
                 </div>
-                {{/if}}
+                <div class="subscriber_list_add float-right">
+                    <form class="form-inline">
+                        <input type="text" class="search" placeholder="{{t 'Search subscribers' }}" />
+                        <input type="text" name="principal" placeholder="{{t 'Email address' }}" value="" class="input-block" autocomplete="off" tabindex="-1" />
+                        <button type="submit" name="add_subscriber" class="button add-subscriber-button small rounded" tabindex="-1 ">
+                            {{t 'Add' }}
+                        </button>
+                    </form>
+                </div>
+                <div class="clear-float"></div>
             </div>
-        </div>
+            <div class="subscriber-list-box">
+                <div class="subscriber_list_container">
+                    <div class="subscriber_list_loading_indicator"></div>
+                    <table class="subscriber-list"></table>
+                </div>
+            </div>
+            {{/if}}
         {{/render_subscribers}}
     </div>
 </div>
