@@ -21,7 +21,7 @@ def main() -> None:
     # starts referring to the system Python interpreter.
     python_interpreter = subprocess_text_output(['which', 'python3'])
     setup_virtualenv("/srv/zulip-thumbor-venv", THUMBOR_REQS_FILE,
-                     patch_activate_script=True)
+                     patch_activate_script=True, virtualenv_args=['-p', 'python2.7'])
     setup_virtualenv(VENV_PATH, DEV_REQS_FILE, patch_activate_script=True,
                      virtualenv_args=['-p', python_interpreter])
 
