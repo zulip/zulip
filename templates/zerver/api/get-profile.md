@@ -25,18 +25,7 @@ curl {{ api_url }}/v1/users/me \
 
 <div data-language="python" markdown="1">
 
-```python
-#!/usr/bin/env python
-
-import zulip
-
-# Download ~/zuliprc-dev from your dev server
-client = zulip.Client(config_file="~/zuliprc-dev")
-
-# Get the profile of the user/bot that requests this endpoint,
-# which is `client` in this case:
-print(client.get_profile())
-```
+{generate_code_example|get-profile|method}
 
 </div>
 
@@ -80,20 +69,6 @@ The rest of the return values are quite self-descriptive.
 
 A typical successful JSON response may look like:
 
-```
-{
-    'short_name':'sample-bot',
-    'result':'success',
-    'msg':'',
-    'is_bot':True,
-    'email':'sample-bot@localhost',
-    'pointer':-1,
-    'max_message_id':131,
-    'full_name':'Sample',
-    'user_id':45,
-    'client_id':'77431db17e4f32068756902d7c09c8bb',
-    'is_admin':False
-}
-```
+{generate_code_example|get-profile|fixture}
 
 {!invalid-api-key-json-response.md!}

@@ -60,10 +60,18 @@ def get_members(client):
 def get_profile(client):
     # type: (Client) -> None
 
+    # {code_example|start}
+    # Get the profile of the user/bot that requests this endpoint,
+    # which is `client` in this case:
     result = client.get_profile()
-    assert result['is_admin']
-    assert result['email'] == 'iago@zulip.com'
-    assert result['full_name'] == 'Iago'
+    # {code_example|end}
+
+    fixture = FIXTURES['get-profile']
+    check_if_equal = ['email', 'full_name', 'msg', 'result', 'short_name']
+    check_if_exists = ['client_id', 'is_admin', 'is_bot', 'max_message_id',
+                       'pointer', 'user_id']
+    test_against_fixture(result, fixture, check_if_equal=check_if_equal,
+                         check_if_exists=check_if_exists)
 
 def get_stream_id(client):
     # type: (Client) -> None
@@ -245,6 +253,7 @@ TEST_FUNCTIONS = {
     'get-subscribed-streams': list_subscriptions,
     'get-all-streams': get_streams,
     'create-user': create_user,
+    'get-profile': get_profile,
 }
 
 # SETUP METHODS FOLLOW
