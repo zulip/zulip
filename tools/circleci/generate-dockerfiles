@@ -1,17 +1,8 @@
 #!/usr/bin/env python3
 
-import errno
 import os
 
 import yaml
-
-def generate_dockerfile_directories(dockerfile_path: str) -> None:
-    if not os.path.exists(os.path.dirname(dockerfile_path)):
-        try:
-            os.makedirs(os.path.dirname(dockerfile_path))
-        except OSError as e:
-            if e.errno != errno.EEXIST:
-                raise
 
 if __name__ == "__main__":
     os.chdir(os.path.abspath(os.path.dirname(__file__)))
@@ -30,6 +21,6 @@ if __name__ == "__main__":
 
         dockerfile_content = docker_template.format_map(dockerfile_settings[distro])
         dockerfile_path = "images/{}/Dockerfile".format(distro)
-        generate_dockerfile_directories(dockerfile_path)
+        os.makedirs(os.path.dirname(dockerfile_path), exist_ok=True)
         with open(dockerfile_path, "w") as f:
             f.write(dockerfile_content)
