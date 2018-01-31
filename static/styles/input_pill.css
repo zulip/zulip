@@ -74,6 +74,9 @@
     margin: -1px 0px;
 
     border: none;
+
+    display: flex;
+    align-content: center;
 }
 
 .pm_recipient .pill-container .input {
