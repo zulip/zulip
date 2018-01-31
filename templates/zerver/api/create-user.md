@@ -31,22 +31,7 @@ curl {{ api_url }}/v1/users \
 
 <div data-language="python" markdown="1">
 
-```python
-#!/usr/bin/env python
-
-import zulip
-
-# You need a zuliprc-admin with administrator credentials
-client = zulip.Client(config_file="~/zuliprc-admin")
-
-# Create a user
-print(client.create_user({
-    'email': 'newbie@zulip.com',
-    'password': 'temp',
-    'full_name': 'New User',
-    'short_name': 'newbie'
-}))
-```
+{generate_code_example|create-user|method(admin_config=True)}
 
 </div>
 
@@ -87,12 +72,8 @@ zulip(config).then((client) => {
 
 A typical successful JSON response may look like:
 
-```
-{
-    'result':'success',
-    'msg':''
-}
-```
+{generate_code_example|create-user|fixture}
+
 
 A typical JSON response for when another user with the same
 email address already exists in the realm:
