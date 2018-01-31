@@ -130,6 +130,13 @@ jobs:
             . /srv/zulip-py3-venv/bin/activate
             mispipe ./tools/travis/backend ts
 
+      -  run:
+          name: upload coverage report
+          command: |
+            . /srv/zulip-py3-venv/bin/activate
+            pip install codecov && codecov \
+              || echo "Error in uploading coverage reports to codecov.io."
+
 workflows:
   version: 2
   build:
