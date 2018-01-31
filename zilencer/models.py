@@ -28,4 +28,4 @@ class RemotePushDeviceToken(AbstractPushDeviceToken):
 
 class Customer(models.Model):
     stripe_customer_id = models.CharField(max_length=255, unique=True)
-    realm = models.OneToOneField(Realm)
+    realm = models.OneToOneField(Realm, on_delete=models.CASCADE)
