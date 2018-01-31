@@ -4,6 +4,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.lib.slack_data_to_zulip_data import (
     get_model_id,
+    get_user_data,
     build_zerver_realm,
     get_user_email,
     get_user_avatar_source,
@@ -31,9 +32,25 @@ from zerver.lib import mdiff
 import ujson
 import json
 
+import requests
 import os
 import mock
 from typing import Any, AnyStr, Dict, List, Optional, Set, Tuple, Text
+
+# This method will be used by the mock to replace requests.get
+def mocked_requests_get(*args: List[str], **kwargs: List[str]) -> mock.Mock:
+    class MockResponse:
+        def __init__(self, json_data: Dict[str, Any], status_code: int) -> None:
+            self.json_data = json_data
+            self.status_code = status_code
+
+        def json(self) -> Dict[str, Any]:
+            return self.json_data
+
+    if args[0] == 'https://slack.com/api/users.list?token=valid-token':
+        return MockResponse({"members": "user_data"}, 200)
+    else:
+        return MockResponse(None, 404)
 
 class SlackImporter(ZulipTestCase):
 
@@ -43,6 +60,15 @@ class SlackImporter(ZulipTestCase):
         test_id_sequence = Realm.objects.all().last().id + 1
 
         self.assertEqual(start_id_sequence, test_id_sequence)
+
+    @mock.patch('requests.get', side_effect=mocked_requests_get)
+    def test_get_user_data(self, mock_get: mock.Mock) -> None:
+        token = 'valid-token'
+        self.assertEqual(get_user_data(token), "user_data")
+        token = 'invalid-token'
+        with self.assertRaises(Exception) as invalid:
+            get_user_data(token)
+        self.assertEqual(invalid.exception.args, ('Enter a valid token!',),)
 
     def test_build_zerver_realm(self) -> None:
         fixtures_path = os.path.dirname(os.path.abspath(__file__)) + '/../fixtures/'
@@ -72,10 +98,8 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(get_user_timezone(user_timezone_none), "America/New_York")
         self.assertEqual(get_user_timezone(user_no_timezone), "America/New_York")
 
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.get_data_file")
     @mock.patch("zerver.lib.slack_data_to_zulip_data.get_model_id", return_value=1)
-    def test_users_to_zerver_userprofile(self, mock_get_model_id: mock.Mock,
-                                         mock_get_data_file: mock.Mock) -> None:
+    def test_users_to_zerver_userprofile(self, mock_get_model_id: mock.Mock) -> None:
         user_data = [{"id": "U0CBK5KAT",
                       "is_admin": True,
                       "is_bot": False,
@@ -97,13 +121,13 @@ class SlackImporter(ZulipTestCase):
                       "deleted": False,
                       "profile": {"image_32": "https:\/\/secure.gravatar.com\/avatar\/random1.png",
                                   "email": "bot1@zulipchat.com"}}]
-        mock_get_data_file.return_value = user_data
         test_added_users = {'U08RGD1RD': 2,
                             'U0CBK5KAT': 1,
                             'U09TYF5Sk': 3}
         slack_data_dir = './random_path'
         timestamp = int(timezone_now().timestamp())
-        zerver_userprofile, added_users = users_to_zerver_userprofile(slack_data_dir, 1, timestamp, 'test_domain')
+        zerver_userprofile, added_users = users_to_zerver_userprofile(slack_data_dir, user_data,
+                                                                      1, timestamp, 'test_domain')
 
         self.assertDictEqual(added_users, test_added_users)
 
@@ -243,7 +267,9 @@ class SlackImporter(ZulipTestCase):
                                       mock_build_zerver_realm: mock.Mock) -> None:
 
         realm_id = 1
+        user_list = []  # type: List[Dict[str, Any]]
         realm, added_users, added_recipient, added_channels = slack_workspace_to_realm(realm_id,
+                                                                                       user_list,
                                                                                        'test-realm',
                                                                                        './fixture',
                                                                                        './random_path')
@@ -350,7 +376,7 @@ class SlackImporter(ZulipTestCase):
                  {"text": "random test", "user": "U061A1R2R",
                   "ts": "1433868669.000012"}]
 
-        mock_get_data_file.side_effect = [user_data, date1, date2]
+        mock_get_data_file.side_effect = [date1, date2]
         added_recipient = {'random': 2}
         constants = ['./random_path', 2]
         ids = [3, 7]
@@ -359,7 +385,8 @@ class SlackImporter(ZulipTestCase):
         zerver_usermessage = []  # type: List[Dict[str, Any]]
         zerver_subscription = []  # type: List[Dict[str, Any]]
         zerver_message, zerver_usermessage = channel_message_to_zerver_message(constants, channel_name,
-                                                                               added_users, added_recipient,
+                                                                               user_data, added_users,
+                                                                               added_recipient,
                                                                                zerver_subscription, ids)
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
@@ -399,13 +426,14 @@ class SlackImporter(ZulipTestCase):
         zerver_message2 = [{'id': 5}]
 
         realm = {'zerver_subscription': []}  # type: Dict[str, Any]
+        user_list = []  # type: List[Dict[str, Any]]
 
         zerver_usermessage1 = [{'id': 3}, {'id': 5}]
         zerver_usermessage2 = [{'id': 6}, {'id': 9}]
 
         mock_message.side_effect = [[zerver_message1, zerver_usermessage1],
                                     [zerver_message2, zerver_usermessage2]]
-        message_json = convert_slack_workspace_messages('./random_path', 2, {},
+        message_json = convert_slack_workspace_messages('./random_path', user_list, 2, {},
                                                         {}, added_channels,
                                                         realm)
         self.assertEqual(message_json['zerver_message'], zerver_message1 + zerver_message2)

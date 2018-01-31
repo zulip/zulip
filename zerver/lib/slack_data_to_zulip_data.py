@@ -6,6 +6,7 @@ import argparse
 import shutil
 import subprocess
 import re
+import requests
 
 from django.utils.timezone import now as timezone_now
 from typing import Any, Dict, List, Tuple
@@ -44,7 +45,8 @@ def get_model_id(model: Any, table_name: str, sequence_increase_factor: int) -> 
     os.system('echo %s | ./manage.py dbshell' % (increment_id_command))
     return start_id_sequence
 
-def slack_workspace_to_realm(REALM_ID: int, realm_subdomain: str, fixtures_path: str,
+def slack_workspace_to_realm(REALM_ID: int, user_list: List[ZerverFieldsT],
+                             realm_subdomain: str, fixtures_path: str,
                              slack_data_dir: str) -> Tuple[ZerverFieldsT, AddedUsersT,
                                                            AddedRecipientsT, AddedChannelsT]:
     """
@@ -78,6 +80,7 @@ def slack_workspace_to_realm(REALM_ID: int, realm_subdomain: str, fixtures_path:
                  zerver_realmemoji=[])
 
     zerver_userprofile, added_users = users_to_zerver_userprofile(slack_data_dir,
+                                                                  user_list,
                                                                   REALM_ID,
                                                                   int(NOW),
                                                                   DOMAIN_NAME)
@@ -110,8 +113,9 @@ def build_zerver_realm(fixtures_path: str, REALM_ID: int, realm_subdomain: str,
 
     return zerver_realm_skeleton
 
-def users_to_zerver_userprofile(slack_data_dir: str, realm_id: int, timestamp: Any,
-                                domain_name: str) -> Tuple[List[ZerverFieldsT], AddedUsersT]:
+def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT], realm_id: int,
+                                timestamp: Any, domain_name: str) -> Tuple[List[ZerverFieldsT],
+                                                                           AddedUsersT]:
     """
     Returns:
     1. zerver_userprofile, which is a list of user profile
@@ -119,7 +123,6 @@ def users_to_zerver_userprofile(slack_data_dir: str, realm_id: int, timestamp: A
        user id
     """
     print('######### IMPORTING USERS STARTED #########\n')
-    users = get_data_file(slack_data_dir + '/users.json')
     total_users = len(users)
     zerver_userprofile = []
     added_users = {}
@@ -408,8 +411,9 @@ def build_subscription(channel_members: List[str], zerver_subscription: List[Zer
         subscription_id += 1
     return zerver_subscription, subscription_id
 
-def convert_slack_workspace_messages(slack_data_dir: str, REALM_ID: int, added_users: AddedUsersT,
-                                     added_recipient: AddedRecipientsT, added_channels: AddedChannelsT,
+def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFieldsT], REALM_ID: int,
+                                     added_users: AddedUsersT, added_recipient: AddedRecipientsT,
+                                     added_channels: AddedChannelsT,
                                      realm: ZerverFieldsT) -> ZerverFieldsT:
     """
     Returns:
@@ -438,7 +442,7 @@ def convert_slack_workspace_messages(slack_data_dir: str, REALM_ID: int, added_u
         message_id = len(zerver_message) + message_id_count  # For the id of the messages
         usermessage_id = len(zerver_usermessage) + usermessage_id_count
         id_list = [message_id, usermessage_id]
-        zm, zum = channel_message_to_zerver_message(constants, channel,
+        zm, zum = channel_message_to_zerver_message(constants, channel, users,
                                                     added_users, added_recipient,
                                                     realm['zerver_subscription'],
                                                     id_list)
@@ -479,7 +483,8 @@ def get_total_messages_and_usermessages(slack_data_dir: str, channel_name: str,
     return total_messages, total_usermessages
 
 def channel_message_to_zerver_message(constants: List[Any], channel: str,
-                                      added_users: AddedUsersT, added_recipient: AddedRecipientsT,
+                                      users: List[ZerverFieldsT], added_users: AddedUsersT,
+                                      added_recipient: AddedRecipientsT,
                                       zerver_subscription: List[ZerverFieldsT],
                                       ids: List[int]) -> Tuple[List[ZerverFieldsT],
                                                                List[ZerverFieldsT]]:
@@ -491,7 +496,6 @@ def channel_message_to_zerver_message(constants: List[Any], channel: str,
     slack_data_dir, REALM_ID = constants
     message_id, usermessage_id = ids
     json_names = os.listdir(slack_data_dir + '/' + channel)
-    users = get_data_file(slack_data_dir + '/users.json')
     zerver_message = []
     zerver_usermessage = []  # type: List[ZerverFieldsT]
 
@@ -564,7 +568,7 @@ def build_zerver_usermessage(zerver_usermessage: List[ZerverFieldsT], usermessag
             zerver_usermessage.append(usermessage)
     return zerver_usermessage, usermessage_id
 
-def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str) -> None:
+def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str, token: str) -> None:
     check_subdomain_available(realm_subdomain)
     slack_data_dir = slack_zip_file.replace('.zip', '')
     if not os.path.exists(slack_data_dir):
@@ -577,12 +581,16 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str) 
     fixtures_path = script_path + '../fixtures/'
 
     REALM_ID = get_model_id(Realm, 'zerver_realm', 1)
+
+    user_list = get_user_data(token)
     realm, added_users, added_recipient, added_channels = slack_workspace_to_realm(REALM_ID,
+                                                                                   user_list,
                                                                                    realm_subdomain,
                                                                                    fixtures_path,
                                                                                    slack_data_dir)
-    message_json = convert_slack_workspace_messages(slack_data_dir, REALM_ID, added_users,
-                                                    added_recipient, added_channels, realm)
+    message_json = convert_slack_workspace_messages(slack_data_dir, user_list, REALM_ID,
+                                                    added_users, added_recipient, added_channels,
+                                                    realm)
 
     zerver_attachment = []  # type: List[ZerverFieldsT]
     attachment = {"zerver_attachment": zerver_attachment}
@@ -609,6 +617,15 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str) 
 def get_data_file(path: str) -> Any:
     data = json.load(open(path))
     return data
+
+def get_user_data(token: str) -> List[ZerverFieldsT]:
+    slack_user_list_url = "https://slack.com/api/users.list"
+    user_list = requests.get('%s?token=%s' % (slack_user_list_url, token))
+    if user_list.status_code == requests.codes.ok:
+        user_list_json = user_list.json()['members']
+        return user_list_json
+    else:
+        raise Exception('Enter a valid token!')
 
 def create_converted_data_files(data: Any, output_dir: str, file_path: str,
                                 make_new_dir: bool) -> None:
