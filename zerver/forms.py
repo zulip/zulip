@@ -217,7 +217,7 @@ class ZulipPasswordResetForm(PasswordResetForm):
 
         if user is not None:
             token = token_generator.make_token(user)
-            uid = urlsafe_base64_encode(force_bytes(user.id))
+            uid = urlsafe_base64_encode(force_bytes(user.id)).decode('ascii')
             endpoint = reverse('django.contrib.auth.views.password_reset_confirm',
                                kwargs=dict(uidb64=uid, token=token))
 
