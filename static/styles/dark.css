@@ -159,7 +159,7 @@ body.dark-mode .popover {
 }
 
 body.dark-mode .dropdown-menu a {
-  color: inherit;
+    color: inherit;
 }
 
 body.dark-mode .dropdown .dropdown-menu li.divider,

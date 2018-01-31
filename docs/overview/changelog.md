@@ -52,6 +52,7 @@ mentioned, even if they are not subscribed.
 discoverable.
 - Added a fast local echo to emoji reactions.
 - Added new "basics" section to keyboard shortcuts documentation.
+- Added a new keyboard shortcut for quote-and-reply.
 - Renamed "Home" to "All messages", to avoid users clicking on it too
   early in using Zulip.
 - Messages containing just a link to an image (or an uploaded image)

@@ -577,22 +577,12 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.respond_button', function (e) {
-        var textarea = $("#compose-textarea");
-        var msgid = $(e.currentTarget).data("message-id");
-
-        compose_actions.respond_to_message({trigger: 'popover respond'});
-        channel.get({
-            url: '/json/messages/' + msgid,
-            idempotent: true,
-            success: function (data) {
-                if (textarea.val() === "") {
-                    textarea.val("```quote\n" + data.raw_content +"\n```\n");
-                } else {
-                    textarea.val(textarea.val() + "\n```quote\n" + data.raw_content +"\n```\n");
-                }
-                $("#compose-textarea").trigger("autosize.resize");
-            },
-        });
+        // Arguably, we should fetch the message ID to respond to from
+        // e.target, but that should always be the current selected
+        // message in the current message list (and
+        // compose_actions.respond_to_message doesn't take a message
+        // argument).
+        compose_actions.quote_and_reply({trigger: 'popover respond'});
         popovers.hide_actions_popover();
         e.stopPropagation();
         e.preventDefault();
