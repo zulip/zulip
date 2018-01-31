@@ -942,7 +942,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
         default_stream_groups = get_default_stream_groups(realm)
         self.assert_length(default_stream_groups, 1)
         self.assertEqual(default_stream_groups[0].name, group_name)
-        self.assertEqual(list(default_stream_groups[0].streams.all()), streams)
+        self.assertEqual(list(default_stream_groups[0].streams.all().order_by('name')), streams)
 
         result = self.client_patch("/json/default_stream_groups/{}/streams".format(group_id),
                                    {"op": "add", "stream_names": ujson.dumps(new_stream_names)})
@@ -965,7 +965,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
         default_stream_groups = get_default_stream_groups(realm)
         self.assert_length(default_stream_groups, 1)
         self.assertEqual(default_stream_groups[0].name, group_name)
-        self.assertEqual(list(default_stream_groups[0].streams.all()), streams)
+        self.assertEqual(list(default_stream_groups[0].streams.all().order_by('name')), streams)
 
         result = self.client_patch("/json/default_stream_groups/{}/streams".format(group_id),
                                    {"op": "remove", "stream_names": ujson.dumps(new_stream_names)})
