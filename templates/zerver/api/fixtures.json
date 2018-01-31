@@ -151,5 +151,18 @@
     "create-user": {
         "msg":"",
         "result":"success"
+    },
+    "get-profile": {
+        "client_id":"74c768b081076fdb3c4326256c17467e",
+        "email":"iago@zulip.com",
+        "full_name":"Iago",
+        "is_admin":true,
+        "is_bot":false,
+        "max_message_id":30,
+        "msg":"",
+        "pointer":-1,
+        "result":"success",
+        "short_name":"iago",
+        "user_id":5
     }
 }
