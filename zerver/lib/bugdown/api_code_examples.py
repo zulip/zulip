@@ -23,6 +23,16 @@ client = zulip.Client(config_file="~/zuliprc-dev")
 
 """
 
+PYTHON_CLIENT_ADMIN_CONFIG = """
+#!/usr/bin/env python
+
+import zulip
+
+# You need a zuliprc-admin with administrator credentials
+client = zulip.Client(config_file="~/zuliprc-admin")
+
+"""
+
 
 class APICodeExamplesGenerator(Extension):
     def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
@@ -50,6 +60,8 @@ class APICodeExamplesPreprocessor(Preprocessor):
                         text = self.render_fixture(function)
                     elif key == 'method':
                         text = self.render_code_example(function)
+                    elif key == 'method(admin_config=True)':
+                        text = self.render_code_example(function, admin_config=True)
 
                     # The line that contains the directive to include the macro
                     # may be preceded or followed by text or tags, in that case
@@ -77,7 +89,7 @@ class APICodeExamplesPreprocessor(Preprocessor):
 
         return fixture
 
-    def render_code_example(self, function: str) -> List[str]:
+    def render_code_example(self, function: str, admin_config: Optional[bool]=False) -> List[str]:
         method = zerver.lib.api_test_helpers.TEST_FUNCTIONS[function]
         function_source_lines = inspect.getsourcelines(method)[0]
         ce_regex = re.compile(r'\# \{code_example\|\s*(.+?)\s*\}')
@@ -92,7 +104,11 @@ class APICodeExamplesPreprocessor(Preprocessor):
                 elif match.group(1) == 'end':
                     end = function_source_lines.index(line)
 
-        config = PYTHON_CLIENT_CONFIG_LINES.splitlines()
+        if admin_config:
+            config = PYTHON_CLIENT_ADMIN_CONFIG.splitlines()
+        else:
+            config = PYTHON_CLIENT_CONFIG_LINES.splitlines()
+
         snippet = function_source_lines[start + 1: end]
 
         code_example = []
