@@ -201,14 +201,18 @@ var events = function () {
     $("body").click(function (e) {
         var $e = $(e.target);
 
-
         if ($e.is("nav ul .exit")) {
+            $("nav ul").removeClass("show");
+        }
+
+        if ($("nav ul.show") && !$e.closest("nav ul.show").length && !$e.is("nav ul.show")) {
             $("nav ul").removeClass("show");
         }
     });
 
-    $(".hamburger").click(function () {
+    $(".hamburger").click(function (e) {
         $("nav ul").addClass("show");
+        e.stopPropagation();
     });
 
     if (path_parts().includes("apps")) {
