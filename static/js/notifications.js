@@ -496,6 +496,7 @@ exports.received_messages = function (messages) {
             return;
         }
         if (!unread.message_unread(message)) {
+            // The message is already read; Zulip is currently in focus.
             return;
         }
 
