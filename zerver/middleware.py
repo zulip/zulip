@@ -3,6 +3,7 @@ import cProfile
 import logging
 import time
 import traceback
+from functools import wraps
 from typing import Any, AnyStr, Callable, Dict, \
     Iterable, List, MutableMapping, Optional, Text
 
@@ -13,7 +14,7 @@ from django.db import connection
 from django.http import HttpRequest, HttpResponse, StreamingHttpResponse
 from django.shortcuts import redirect, render
 from django.utils.cache import patch_vary_headers
-from django.utils.deprecation import MiddlewareMixin
+from django.utils.deprecation import MiddlewareMixin as DjangoMiddlewareMixin
 from django.utils.http import cookie_date
 from django.utils.translation import ugettext as _
 from django.views.csrf import csrf_failure as html_csrf_failure
@@ -27,6 +28,7 @@ from zerver.lib.response import json_error, json_response_from_error
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.utils import statsd
 from zerver.models import Realm, flush_per_request_caches, get_realm
+from zerver.decorator import _RespondAsynchronously
 
 logger = logging.getLogger('zulip.requests')
 
@@ -219,6 +221,30 @@ def write_log_line(log_data: MutableMapping[str, Any], path: Text, method: str, 
         if len(error_data) > 100:
             error_data = u"[content more than 100 characters]"
         logger.info('status=%3d, data=%s, uid=%s' % (status_code, error_data, email))
+
+ProcessResponse = Callable[..., HttpResponse]
+
+class MiddlewareMixin(DjangoMiddlewareMixin):
+    def __init__(self, *args, **kwargs):
+        super(MiddlewareMixin, self).__init__(*args, **kwargs)
+        if hasattr(self, 'process_response'):
+            self.process_response = self.defer_on_async(self.process_response)
+
+    @staticmethod
+    def defer_on_async(process_response: ProcessResponse) -> ProcessResponse:
+        """This decorator adds the process_response methods of middlewares into a
+        list. When asynchronous request finishes and returns a response, all these
+        methods are applied on the response.
+        """
+        @wraps(process_response)
+        def wrapper(request: HttpRequest,
+                    response: HttpResponse) -> HttpResponse:
+            if isinstance(response, AsyncResponse):
+                request._tornado_handler.deferred_middlewares.append(process_response)
+                return response
+            return process_response(request, response)
+
+        return wrapper
 
 class LogRequests(MiddlewareMixin):
     # We primarily are doing logging using the process_view hook, but
@@ -423,3 +449,18 @@ class SetRemoteAddrFromForwardedFor(MiddlewareMixin):
             # For NGINX reverse proxy servers, the client's IP will be the first one.
             real_ip = real_ip.split(",")[0].strip()
             request.META['REMOTE_ADDR'] = real_ip
+
+class AsyncResponse(HttpResponse):
+    pass
+
+class TornadoAsyncMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        return self.get_response(request)
+
+    def process_exception(self, request, exception):
+        if isinstance(exception, _RespondAsynchronously):
+            async_request_stop(request)
+            return AsyncResponse()

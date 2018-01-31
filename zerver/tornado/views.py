@@ -84,7 +84,7 @@ def get_events_backend(request: HttpRequest, user_profile: UserProfile, handler:
 
     if result["type"] == "async":
         handler._request = request
-        return RespondAsynchronously
+        raise RespondAsynchronously
     if result["type"] == "error":
         raise result["exception"]
     return json_success(result["response"])

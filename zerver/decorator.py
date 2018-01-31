@@ -48,7 +48,7 @@ ReturnT = TypeVar('ReturnT')
 webhook_logger = logging.getLogger("zulip.zerver.webhooks")
 log_to_file(webhook_logger, settings.API_KEY_ONLY_WEBHOOK_LOG_PATH)
 
-class _RespondAsynchronously:
+class _RespondAsynchronously(Exception):
     pass
 
 # Return RespondAsynchronously from an @asynchronous view if the

@@ -451,6 +451,9 @@ MIDDLEWARE = (
     'zerver.middleware.SetRemoteAddrFromForwardedFor',
     'zerver.middleware.LogRequests',
     'zerver.middleware.JsonErrorHandler',
+    # TornadoAsyncMiddlewae must come before JsonErrorHandler, otherwise
+    # JsonErrorHandler will catch the JSON exception.
+    'zerver.middleware.TornadoAsyncMiddleware',
     'zerver.middleware.RateLimitMiddleware',
     'zerver.middleware.FlushDisplayRecipientCache',
     'django.middleware.common.CommonMiddleware',
