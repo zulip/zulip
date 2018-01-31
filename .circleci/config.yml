@@ -83,8 +83,6 @@ jobs:
       #     # also /tmp/zulip-test-event-log/
       #     destination: test-reports
 
-      # TODO: notify zulipbot
-
   "xenial-python-3.5":
     docker:
       # This is built from tools/circleci/images/xenial/Dockerfile .

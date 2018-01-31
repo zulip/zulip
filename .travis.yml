@@ -70,9 +70,3 @@ addons:
       - moreutils
 after_success:
   - codecov
-notifications:
-  webhooks:
-    urls:
-      - https://zulip.org/zulipbot/travis
-    on_success: always
-    on_failure: always
