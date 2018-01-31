@@ -562,23 +562,33 @@ exports.validate_stream_message_address_info = function (stream_name) {
         return true;
     }
 
+    var context = {
+       link: "<a href='#streams/all'>",
+       para: '<p>',
+       bold: '<b>',
+       closepara: '</p>',
+       closelink: '</a>',
+       closebold: '</b>',
+       interpolation: {prefix: "{{", suffix: "}}", escapeValue: false},  // We override the interpolation prefix and suffix here.
+    };
     var response;
+    var i18n_response;
 
     switch (check_unsubscribed_stream_for_send(stream_name,
                                                page_params.narrow_stream !== undefined)) {
     case "does-not-exist":
-        response = "<p>The stream <b>" +
-            Handlebars.Utils.escapeExpression(stream_name) + "</b> does not exist.</p>" +
-            "<p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>";
+        i18n_response = "{{ para }}The stream {{ bold }}" + Handlebars.Utils.escapeExpression(stream_name) + "{{ closebold }} does not exist.{{ closepara }}" +
+                        "{{ para }}Manage your subscriptions {{ link }}on your Streams page{{ closelink }}.{{ closepara }}";
+        response = i18n.t(i18n_response, context);
         compose_error(response, $('#stream'));
         return false;
     case "error":
         compose_error(i18n.t("Error checking subscription"), $("#stream"));
         return false;
     case "not-subscribed":
-        response = "<p>You're not subscribed to the stream <b>" +
-            Handlebars.Utils.escapeExpression(stream_name) + "</b>.</p>" +
-            "<p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>";
+        i18n_response = "{{ para }}You're not subscribed to the stream {{ bold }}" + Handlebars.Utils.escapeExpression(stream_name) + "{{ closebold }}.{{ closepara }}" +
+                        "{{ para }}Manage your subscriptions {{ link }}on your Streams page{{ closelink }}.{{ closepara }}";
+        response = i18n.t(i18n_response, context);
         compose_error(response, $('#stream'));
         return false;
     }
