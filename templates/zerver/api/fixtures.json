@@ -147,5 +147,9 @@
                 "stream_id":6
             }
         ]
+    },
+    "create-user": {
+        "msg":"",
+        "result":"success"
     }
 }

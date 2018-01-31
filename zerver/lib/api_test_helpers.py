@@ -31,14 +31,19 @@ def add_subscriptions(client):
 def create_user(client):
     # type: (Client) -> None
 
-    request = dict(
-        email='newbie@zulip.com',
-        full_name='New User',
-        short_name='Newbie',
-        password='temp',
-    )
+    # {code_example|start}
+    # Create a user
+    request = {
+        'email': 'newbie@zulip.com',
+        'password': 'temp',
+        'full_name': 'New User',
+        'short_name': 'newbie'
+    }
     result = client.create_user(request)
-    assert result['result'] == 'success'
+    # {code_example|end}
+
+    fixture = FIXTURES['create-user']
+    test_against_fixture(result, fixture)
 
 def get_members(client):
     # type: (Client) -> None
@@ -239,6 +244,7 @@ TEST_FUNCTIONS = {
     'get-stream-id': get_stream_id,
     'get-subscribed-streams': list_subscriptions,
     'get-all-streams': get_streams,
+    'create-user': create_user,
 }
 
 # SETUP METHODS FOLLOW
