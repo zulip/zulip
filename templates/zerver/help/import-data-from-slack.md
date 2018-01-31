@@ -42,3 +42,6 @@ If the users are not from the same organization, you should change your organiza
   by Zulip's backend markdown.
 - The "joined #channel_name" messages. They are intentionally removed because
   they are spammy.
+- Zulip does not support default channels which can't be unsubscribed from, but
+  it does include a list of streams where everyone is subscribed to by default
+  when they register.
