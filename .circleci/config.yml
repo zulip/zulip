@@ -6,7 +6,7 @@ jobs:
   "trusty-python-3.4":
     docker:
       # This is built from tools/circleci/images/trusty/Dockerfile .
-      - image: gregprice/circleci:trusty-python-3.test
+      - image: gregprice/circleci:trusty-python-4.test
 
     working_directory: ~/zulip
 
