@@ -1,4 +1,3 @@
-{generated_file_warning}
 # Dockerfile for a generic Ubuntu image with just the basics we need
 # to make it suitable for CI.  In particular:
 #  * a non-root user to run as (a pain to try to do in setup,

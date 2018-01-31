@@ -14,13 +14,12 @@ if __name__ == "__main__":
         dockerfile_settings = yaml.safe_load(f)
 
     for distro in dockerfile_settings:
-        dockerfile_settings[distro]["generated_file_warning"] = """\
-# THIS IS A GENERATED FILE. DO NOT EDIT.
-# See template: tools/circleci/Dockerfile.template
-"""
-
-        dockerfile_content = docker_template.format_map(dockerfile_settings[distro])
         dockerfile_path = "images/{}/Dockerfile".format(distro)
         os.makedirs(os.path.dirname(dockerfile_path), exist_ok=True)
         with open(dockerfile_path, "w") as f:
-            f.write(dockerfile_content)
+            f.write("""\
+# THIS IS A GENERATED FILE. DO NOT EDIT.
+# See template: tools/circleci/Dockerfile.template
+
+""")
+            f.write(docker_template.format_map(dockerfile_settings[distro]))
