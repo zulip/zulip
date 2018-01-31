@@ -892,8 +892,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         # Now confirm an invitation link works
         referrer = self.example_user("hamlet")
         multiuse_obj = MultiuseInvite.objects.create(realm=realm, referred_by=referrer)
-        multiuse_obj.streams = streams
-        multiuse_obj.save()
+        multiuse_obj.streams.set(streams)
         invite_link = create_confirmation_link(multiuse_obj, realm.host,
                                                Confirmation.MULTIUSE_INVITE)
 

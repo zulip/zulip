@@ -1024,8 +1024,7 @@ class MultiuseInviteTest(ZulipTestCase):
         invite.save()
 
         if streams is not None:
-            invite.streams = streams
-            invite.save()
+            invite.streams.set(streams)
 
         if date_sent is None:
             date_sent = timezone_now()

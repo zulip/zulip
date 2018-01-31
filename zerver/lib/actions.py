@@ -3047,8 +3047,7 @@ def do_create_default_stream_group(realm: Realm, group_name: Text,
         raise JsonableError(_("Default stream group '%(group_name)s' already exists")
                             % {'group_name': group_name})
 
-    group.streams = streams
-    group.save()
+    group.streams.set(streams)
     notify_default_stream_groups(realm)
 
 def do_add_streams_to_default_stream_group(realm: Realm, group: DefaultStreamGroup,
@@ -4086,8 +4085,7 @@ def do_create_multiuse_invite_link(referred_by: UserProfile, streams: Optional[L
     realm = referred_by.realm
     invite = MultiuseInvite.objects.create(realm=realm, referred_by=referred_by)
     if streams:
-        invite.streams = streams
-        invite.save()
+        invite.streams.set(streams)
 
     return create_confirmation_link(invite, realm.host, Confirmation.MULTIUSE_INVITE)
 

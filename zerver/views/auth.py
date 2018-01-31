@@ -90,8 +90,7 @@ def maybe_send_to_registration(request: HttpRequest, email: Text, full_name: Tex
         if multiuse_object_key is not None:
             del request.session["multiuse_object_key"]
             request.session.modified = True
-            prereg_user.streams = streams_to_subscribe
-            prereg_user.save()
+            prereg_user.streams.set(streams_to_subscribe)
 
         return redirect("".join((
             create_confirmation_link(prereg_user, request.get_host(), Confirmation.USER_REGISTRATION),
