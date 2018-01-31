@@ -156,7 +156,7 @@ function show_subscription_settings(sub_row) {
     var color = stream_data.get_color(sub.name);
     stream_color.set_colorpicker_color(colorpicker, color);
 
-    if (!sub.render_subscribers) {
+    if (!sub.render_subscribers || !sub.can_add_subscribers) {
         return;
     }
     // fetch subscriber list from memory.
@@ -165,12 +165,6 @@ function show_subscription_settings(sub_row) {
 
     var emails = get_email_of_subscribers(sub.subscribers);
 
-    // If user can not access subscribers no need for search widget.
-    if (!sub.can_add_subscribers) {
-        $("[data-stream-id='" + stream_id + "'] .search").hide();
-    } else {
-        $("[data-stream-id='" + stream_id + "'] .search").show();
-    }
     list_render(list, emails.sort(), {
         name: "stream_subscribers/" + stream_id,
         modifier: function (item) {
