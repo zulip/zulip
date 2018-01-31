@@ -11,7 +11,8 @@ from django.core import exceptions, signals
 from django.urls import resolvers
 from django.core.exceptions import MiddlewareNotUsed
 from django.core.handlers import base
-from django.core.handlers.exception import convert_exception_to_response
+from django.core.handlers.exception import convert_exception_to_response, \
+    handle_uncaught_exception
 from django.core.handlers.wsgi import WSGIRequest, get_script_name
 from django.urls import set_script_prefix, set_urlconf
 from django.http import HttpRequest, HttpResponse
@@ -96,6 +97,28 @@ class AsyncDjangoHandlerBase(tornado.web.RequestHandler, base.BaseHandler):  # n
     def __repr__(self) -> str:
         descriptor = get_descriptor_by_handler_id(self.handler_id)
         return "AsyncDjangoHandler<%s, %s>" % (self.handler_id, descriptor)
+
+    def _legacy_get_response(self, request: HttpRequest) -> HttpResponse:
+        """
+        Apply process_request() middleware and call the main _get_response(),
+        if needed. Used only for legacy MIDDLEWARE_CLASSES.
+        """
+        response = None
+        # Apply request middleware
+        for middleware_method in self._request_middleware:
+            response = middleware_method(request)
+            if response:
+                break
+
+        if response is None:
+            response = self._get_response(request)
+        return response
+
+    def handle_uncaught_exception(self, request: HttpRequest,
+                                  resolver: resolvers.RegexURLResolver,
+                                  exc_info: Any) -> HttpResponse:
+        """Allow subclasses to override uncaught exception handling."""
+        return handle_uncaught_exception(request, resolver, exc_info)
 
     def load_middleware(self) -> None:
         """
