@@ -9,6 +9,7 @@ Translating Zulip
    chinese
    french
    german
+   hindi
    polish
    russian
    spanish
