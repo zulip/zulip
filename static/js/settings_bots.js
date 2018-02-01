@@ -88,12 +88,6 @@ exports.set_up = function () {
     $('#create_payload_url').val('');
     $('#service_name_list').hide();
     $('#config_inputbox').hide();
-    page_params.realm_embedded_bots.forEach(function (bot) {
-        $('#select_service_name').append($('<option>', {
-            value: bot.name,
-            text: bot.name,
-        }));
-    });
     var selected_embedded_bot = 'converter';
     $('#select_service_name').val(selected_embedded_bot); // TODO: Use 'select a bot'.
     $('#config_inputbox').children().hide();
