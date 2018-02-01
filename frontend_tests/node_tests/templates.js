@@ -1479,6 +1479,16 @@ function render(template_name, args) {
     assert.equal($(html).find('#edit_service_interface').attr('value'), args.service.interface);
 }());
 
+(function edit_embedded_bot_service() {
+    var args = {
+        service: {service_name: "giphy",
+                  config_data: {key: "abcd1234"}},
+    };
+    var html = render('edit-embedded-bot-service', args);
+    assert.equal($(html).find('#embedded_bot_key_edit').attr('name'), 'key');
+    assert.equal($(html).find('#embedded_bot_key_edit').val(), 'abcd1234');
+}());
+
 // By the end of this test, we should have compiled all our templates.  Ideally,
 // we will also have exercised them to some degree, but that's a little trickier
 // to enforce.

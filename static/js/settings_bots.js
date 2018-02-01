@@ -279,11 +279,16 @@ exports.set_up = function () {
         var errors = form.find('.bot_edit_errors');
 
         $("#settings_page .edit_bot .edit-bot-owner select").val(bot.owner);
+        var service = bot_data.get_services(bot_id)[0];
         if (bot.bot_type.toString() === OUTGOING_WEBHOOK_BOT_TYPE) {
-            var services = bot_data.get_services(bot_id);
             $("#service_data").append(templates.render("edit-outgoing-webhook-service",
-                                                       {service: services[0]}));
+                                                       {service: service}));
         }
+        if (bot.bot_type.toString() === EMBEDDED_BOT_TYPE) {
+            $("#service_data").append(templates.render("edit-embedded-bot-service",
+                                                       {service: service}));
+        }
+
         avatar_widget.clear();
 
         form.validate({
@@ -312,6 +317,12 @@ exports.set_up = function () {
                     var service_interface = $("#edit_service_interface :selected").val();
                     formData.append('service_payload_url', JSON.stringify(service_payload_url));
                     formData.append('service_interface', service_interface);
+                } else if (type === EMBEDDED_BOT_TYPE) {
+                    var config_data = {};
+                    $("#config_edit_inputbox input").each(function () {
+                        config_data[$(this).attr('name')] = $(this).val();
+                    });
+                    formData.append('config_data', JSON.stringify(config_data));
                 }
                 jQuery.each(file_input[0].files, function (i, file) {
                     formData.append('file-'+i, file);
