@@ -16,15 +16,19 @@ in bursts.
 - Added certbot support to the installer for getting certificates.
 - Added support for user groups that can be mentioned.
 - Added a new "night mode" theme for dark environments.
-- Rewrote our API documentation to be much more friendly and expansive.
+- Rewrote our API documentation to be much more friendly and
+  expansive; it now covers most important endpoints, with nice examples.
 - Lots of visual polish improvements.
 
 **Full feature changelog:**
 
-- New integrations: ErrBot, Google Code-In.
+- New integrations: ErrBot, Google Code-In, Opbeat, Groove, Raygun,
+  Insping, Dropbox, Intercom, and Beeminder.
 - Added support for users in multiple realms having the same email.
 - Added support for embedded interactive bots.
+- Added inline preview + player for Vimeo videos.
 - Added a setting to allow users to delete their messages.
+- Added a new setting to limit creation of bots that can read message history.
 - Added new event types to several webhook integrations.
 - Added a display for whether the user is logged-in in logged-out
   pages.
@@ -38,8 +42,16 @@ mentioned, even if they are not subscribed.
 - Added a new organization settings page for managing invites.
 - Added support for clicking on a mention to see a user's profile.
 - Added new compose features for pasting HTML.
-- Added new ctrl+B, ctrl+I compose shortcuts for common syntax.
+- Added new ctrl+B, ctrl+I, ctrl+L compose shortcuts for inserting
+  common syntax.
 - Added warning when linking to a private stream via typeahead.
+- Added rate-limiting on inviting users to join a realm (prevents spam).
+- Added support for automatically-numbered markdown lists.
+- Added a big warning when posting to #announce.
+- Added a notification when drafts are saved, to make them more
+discoverable.
+- Added a fast local echo to emoji reactions.
+- Added new "basics" section to keyboard shortcuts documentation.
 - Renamed "Home" to "All messages", to avoid users clicking on it too
   early in using Zulip.
 - Messages containing just a link to an image (or an uploaded image)
@@ -55,8 +67,9 @@ mentioned, even if they are not subscribed.
 - Optimized message sending performance a bit more.
 - Split the Notifications Stream setting in two settings, one for new
   users, the other for new streams.
-- Fixed numerous bugs in the "stream settings" UI.
-- Fixed most known bugs in the message formatting logic.
+- Fixed numerous issues in the "stream settings" UI.
+- Fixed most of the known (mostly obscure) bugs in how messages are
+  formatted in Zulip.
 - Fixed several bugs around interacting with deactivated users.
 - Fixed image upload file pickers offering non-image files.
 - Fixed some subtle bugs with full-text search and unicode.
@@ -67,7 +80,9 @@ mentioned, even if they are not subscribed.
 - Fixed clicking on links to a narrow opening a new window.
 - Fixed several subtle bugs with the email gateway system.
 - Fixed layering issues with mobile Safari.
+- Fixed several obscure real-time synchronization bugs.
 - Dramatically improved organization of developer docs.
+- Statistics on translation percentages now include mobile apps.
 - Improved typeahead's handling of editing an already-completed mention.
 - Improved syntax for inline LaTeX to be more convenient.
 - Improved the design for the "uploaded files" UI.
@@ -76,6 +91,14 @@ mentioned, even if they are not subscribed.
 - Improved the password reset flow to be less confusing if you don't
   have an account.
 - Improved Tornado retry logic for connecting to RabbitMQ.
+- Improved the descriptions and UI for many settings.
+- Improved handling of browser undo in compose.
+- Improved mobile notifications to support narrowing when one click a
+  mobile push notification.
+- Improved visual design of the help center.
+- Removed the legacy "Zulip labs" autoscroll_forever setting.  It was
+  enabled mostly by accident.
+- Countless other little bug fixes to the UI.
 
 ### 1.7.1 -- 2017-11-21
 
