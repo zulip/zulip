@@ -676,7 +676,7 @@ exports.handle_keydown = function (event) {
     var textarea = $("#compose-textarea");
     var range = textarea.range();
     var isBold = code === 66;
-    var isItalic = code === 73;
+    var isItalic = code === 73 && !event.shiftKey;
     var isLink = code === 76 && event.shiftKey;
 
     if (isBold || isItalic || isLink && (event.ctrlKey || event.metaKey)) {
