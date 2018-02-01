@@ -713,12 +713,16 @@ exports.handle_keydown = function (event) {
             // where "url" should be automatically selected.
             // Position of cursor depends on whether browser supports exec
             // command or not. So set cursor position accrodingly.
-            if (document.queryCommandEnabled('insertText')) {
-                txt.selectionStart = position - 4;
-                txt.selectionEnd = position - 1;
+            if (range.length > 0) {
+                if (document.queryCommandEnabled('insertText')) {
+                    txt.selectionStart = position - 4;
+                    txt.selectionEnd = position - 1;
+                } else {
+                    txt.selectionStart = position + range.length + 3;
+                    txt.selectionEnd = position + range.length + 6;
+                }
             } else {
-                txt.selectionStart = position + range.length + 3;
-                txt.selectionEnd = position + range.length + 6;
+                textarea.caret(textarea.caret() - 6);
             }
         }
 
