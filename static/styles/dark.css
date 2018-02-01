@@ -191,10 +191,16 @@ body.dark-mode .popover.bottom .arrow {
     border-bottom-color: hsl(235, 18%, 7%);
 }
 
-body.dark-mode .popover.right .arrow,
-body.dark-mode .popover.left .arrow,
+body.dark-mode .popover.left .arrow {
+    border-left-color: hsl(235, 18%, 7%);
+}
+
 body.dark-mode .popover.top .arrow {
     border-top-color: hsl(235, 18%, 7%);
+}
+
+body.dark-mode .popover.right .arrow {
+    border-right-color: hsl(235, 18%, 7%);
 }
 
 body.dark-mode ul.filters li:hover .arrow {
