@@ -4,6 +4,7 @@ Contents:
 
 * [Installing directly on Ubuntu](#installing-directly-on-ubuntu)
 * [Installing manually on Linux](#installing-manually-on-linux)
+* [Installing directly on cloud9](#installing-directly-on-cloud9)
 * [Using Docker (experimental)](#using-docker-experimental)
 
 ## Installing directly on Ubuntu
@@ -372,6 +373,34 @@ proxy in the environment as follows:
  yarn config set proxy http://proxy_host:port
  yarn config set https-proxy http://proxy_host:port
  ```
+
+## Installing directly on cloud9
+This section documents how to setup zulip dev environment on cloud9 workspace.
+If you don't have a cloud9 account signup [here](https://aws.amazon.com/cloud9/)
+although new AWS cloud9 is not free. And the zulip dev env may work with zulip-cloud9 package.
+
+* Create a Workspace, and select the blank template.
+* Resize the workspace to be 1GB of memory and 4GB of disk space. (This is under free limit)
+* Clone the zulip repo `git clone --config pull.rebase https://github.com/<your-username>/zulip.git`
+* Restart rabbitmq-server since its broken on cloud9 `sudo service rabbitmq-server restart`.
+* And run provison `cd zulip && ./tools/provision`, once this is done.
+* Activate virtual environment by `source /srv/zulip-py3-venv/bin/activate` or by opening a new terminal.
+
+#### Install zulip-cloud9
+Note: `npm i -g zulip-cloud9` does not work in zulip's virtual enviorment.
+Although by default any package installed in workspace folder (i.e. the top level folder) are added to `$PATH`.
+
+```bash
+cd .. # switch to workspace folder if you are in zulip directory
+npm i zulip-cloud9
+zulip-dev start # to start the devlopment server
+```
+If you get error like `bash: cannot find command zulip-dev` start a new terminal.
+
+Your devlopment server would be running at `https://<workspace-name>-<username>.c9users.io` on port 8080.
+You dont need to add `:8080` to your url since cloud9 proxy don't require you to. You might want to visit
+[zulip-cloud9 repo](https://github.com/cPhost/zulip-cloud9) and it's
+[wiki](https://github.com/cPhost/zulip-cloud9/wiki) for more info on how to use zulip-cloud9 package.
 
 ## Using Docker (experimental)
 
