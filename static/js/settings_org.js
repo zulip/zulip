@@ -38,6 +38,7 @@ exports.populate_realm_domains = function (realm_domains) {
     if (!meta.loaded) {
         return;
     }
+    $("#id_realm_restricted_to_domain").prop("disabled", false);
 
     var domains_list = _.map(realm_domains, function (realm_domain) {
         return (realm_domain.allow_subdomains ? "*." + realm_domain.domain : realm_domain.domain);
@@ -47,7 +48,11 @@ exports.populate_realm_domains = function (realm_domains) {
     $("#id_realm_restricted_to_domain").prop("checked", page_params.realm_restricted_to_domain);
     if (domains.length === 0) {
         domains = i18n.t("None");
-        $("#id_realm_restricted_to_domain").prop("disabled", true);
+        $("#id_realm_restricted_to_domain").attr("data-toggle", "modal");
+        $("#id_realm_restricted_to_domain").attr("href", "#realm_domains_modal");
+    }
+    if (domains !== "None") {
+        $("#id_realm_restricted_to_domain").attr("data-toggle", "none");
     }
     $("#realm_restricted_to_domains_label").text(i18n.t("Restrict new users to the following email domains: __domains__", {domains: domains}));
 
