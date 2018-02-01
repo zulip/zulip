@@ -4,6 +4,7 @@ Contents:
 
 * [Installing directly on Ubuntu](#installing-directly-on-ubuntu)
 * [Installing manually on Linux](#installing-manually-on-linux)
+* [Installing directly on cloud9](#installing-directly-on-cloud9)
 * [Using Docker (experimental)](#using-docker-experimental)
 
 ## Installing directly on Ubuntu
@@ -372,6 +373,54 @@ proxy in the environment as follows:
  yarn config set proxy http://proxy_host:port
  yarn config set https-proxy http://proxy_host:port
  ```
+
+## Installing on cloud9
+
+AWS Cloud9 is a cloud-based integrated development environment (IDE)
+that lets you write, run, and debug your code with just a browser. It
+includes a code editor, debugger, and terminal.
+
+This section documents how to setup the Zulip development environment
+in a cloud9 workspace.  If you don't have an existing cloud9 account,
+you can sign up [here](https://aws.amazon.com/cloud9/).
+
+* Create a Workspace, and select the blank template.
+* Resize the workspace to be 1GB of memory and 4GB of disk
+  space. (This is under free limit for both the old Cloud9 and the AWS
+  Free Tier).
+* Clone the zulip repo: `git clone --config pull.rebase
+  https://github.com/<your-username>/zulip.git`
+* Restart rabbitmq-server since its broken on cloud9: `sudo service
+  rabbitmq-server restart`.
+* And run provision `cd zulip && ./tools/provision`, once this is done.
+* Activate the zulip virtual environment by `source
+  /srv/zulip-py3-venv/bin/activate` or by opening a new terminal.
+
+#### Install zulip-cloud9
+
+There's an NPM package, `zulip-cloud9`, that provides a wrapper around
+the Zulip development server for use in the Cloud9 environment.
+
+Note: `npm i -g zulip-cloud9` does not work in zulip's virtual
+environment.  Although by default, any packages installed in workspace
+folder (i.e. the top level folder) are added to `$PATH`.
+
+```bash
+cd .. # switch to workspace folder if you are in zulip directory
+npm i zulip-cloud9
+zulip-dev start # to start the development server
+```
+
+If you get error of the form `bash: cannot find command zulip-dev`,
+you need to start a new terminal.
+
+Your development server would be running at
+`https://<workspace-name>-<username>.c9users.io` on port 8080.  You
+dont need to add `:8080` to your url, since the cloud9 proxy should
+automatically forward the connection. You might want to visit
+[zulip-cloud9 repo](https://github.com/cPhost/zulip-cloud9) and it's
+[wiki](https://github.com/cPhost/zulip-cloud9/wiki) for more info on
+how to use zulip-cloud9 package.
 
 ## Using Docker (experimental)
 
