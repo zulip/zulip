@@ -102,12 +102,8 @@ function test_create_bot_type_input_box_toggle(f) {
     };
 
     var embedded_bots_added = 0;
-    var config_fields_added = 0;
     $('#select_service_name').append = function () {
         embedded_bots_added += 1;
-    };
-    $('#config_inputbox').append = function () {
-        config_fields_added += 1;
     };
     $('#config_inputbox').children = function () {
         var mock_children = {
@@ -123,6 +119,5 @@ function test_create_bot_type_input_box_toggle(f) {
 
     settings_bots.set_up();
     assert(embedded_bots_added === page_params.realm_embedded_bots.length);
-    assert(config_fields_added === 3);
 }());
 
