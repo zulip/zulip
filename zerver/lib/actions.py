@@ -2374,13 +2374,16 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
     # first batch is notifications to users on invite-only streams
     # that the stream exists.
     for stream in streams:
-        new_users = [user for user in users if (user.id, stream.id) in new_streams]
-
-        # Users newly added to invite-only streams need a `create`
-        # notification, since they didn't have the invite-only stream
-        # in their browser yet.
         if not stream.is_public():
-            send_stream_creation_event(stream, [user.id for user in new_users])
+            new_users_ids = [user.id for user in users if (user.id, stream.id) in new_streams]
+
+            # Users newly added to invite-only streams and all realm
+            # administrators need a `create` notification.  The
+            # former, because they need the stream to exist before
+            # they get the "subscribe" notification, and the latter so
+            # they can manage the new stream.
+            realm_admin_user_ids = [user.id for user in user_profile.realm.get_admin_users()]
+            send_stream_creation_event(stream, list(set(new_users_ids + realm_admin_user_ids)))
 
     recent_traffic = get_streams_traffic(streams)
     # The second batch is events for the users themselves that they
