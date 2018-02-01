@@ -68,7 +68,7 @@ def maybe_send_to_registration(request: HttpRequest, email: Text, full_name: Tex
         from_multiuse_invite = True
         multiuse_obj = Confirmation.objects.get(confirmation_key=multiuse_object_key).content_object
         realm = multiuse_obj.realm
-        streams_to_subscribe = multiuse_obj.streams.all()
+        streams_to_subscribe = list(multiuse_obj.streams.all())
 
     form = HomepageForm({'email': email}, realm=realm, from_multiuse_invite=from_multiuse_invite)
     request.verified_email = None
@@ -90,8 +90,7 @@ def maybe_send_to_registration(request: HttpRequest, email: Text, full_name: Tex
         if multiuse_object_key is not None:
             del request.session["multiuse_object_key"]
             request.session.modified = True
-            if streams_to_subscribe is not None:
-                prereg_user.streams = streams_to_subscribe
+            prereg_user.streams = streams_to_subscribe
             prereg_user.save()
 
         return redirect("".join((
