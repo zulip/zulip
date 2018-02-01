@@ -275,6 +275,7 @@ people.add(bob);
     var range_length = 0;
     var compose_value = $("#compose_textarea").val();
     var selected_word = "";
+    var cursor_pos = 0;
 
     global.document.queryCommandEnabled = function () {
         return queryCommandEnabled;
@@ -285,8 +286,34 @@ people.add(bob);
         $("#compose-textarea").val(value.substring(0, compose_textarea.range().start)+
             markdown+value.substring(compose_textarea.range().end, value.length));
     };
+    function set_markdown_text_range(cursor_position, compose_msg) {
+        // It's the same logic which is used in frontend to extract the word
+        // present at cursor position for markdown.
+        var start_pos = cursor_position - 1;
+        var end_pos = cursor_position;
+        var next_char = compose_msg.charAt(start_pos);
+
+        while ((next_char !== " " && next_char !== "\n") && start_pos >= 0) {
+            start_pos -= 1;
+            next_char = compose_msg.charAt(start_pos);
+        }
+        next_char = compose_msg.charAt(end_pos);
+        while ((next_char !== " " && next_char !== "\n") && end_pos <= compose_msg.length) {
+            end_pos += 1;
+            next_char = compose_msg.charAt(end_pos);
+        }
+        return [start_pos + 1, end_pos - start_pos - 1];
+    }
 
     $("#compose-textarea").range = function () {
+        if (range_length === 0) {
+            // If text for markdown is not selected by user, then select the word present
+            // at cursor position.
+            var temp = set_markdown_text_range(cursor_pos, $("#compose-textarea").val());
+            range_start = temp[0];
+            range_length = temp[1];
+        }
+        // If there is already selected text, we don't need to set the range.
         return {
             start: range_start,
             end: range_start + range_length,
@@ -330,7 +357,7 @@ people.add(bob);
         // Change cursor to first position.
         range_length = 0;
         compose.handle_keydown(event);
-        assert.equal("****Any **text**.", $('#compose-textarea').val());
+        assert.equal("**Any** **text**.", $('#compose-textarea').val());
 
         // Test italic:
         // Mac = cmd+i
@@ -347,7 +374,7 @@ people.add(bob);
         // Change cursor to first position.
         range_start = 0;
         compose.handle_keydown(event);
-        assert.equal("**Any *text*.", $('#compose-textarea').val());
+        assert.equal("*Any* *text*.", $('#compose-textarea').val());
 
         // Test link insertion:
         // Mac = cmd+shift+l
@@ -416,6 +443,63 @@ people.add(bob);
 
     // Reset userAgent
     global.navigator.userAgent = "";
+
+    // Test markdown shortcuts without selecting any text.
+    // Set compose text.
+    input_text = "firstword inbetweenwords lastword\nlongstring\nsmallstring s\nspaceafterword ";
+    $("#compose-textarea").val(input_text);
+    compose_value = $("#compose-textarea").val();
+    var expected_text = "";
+    // Set no text selected.
+    range_start = 0;
+    range_length = 0;
+    // Set any one markdown shortcut event.
+    event.shiftKey = false;
+    event.keyCode = 73;
+    event.metaKey = false;
+    event.ctrlKey = true;
+
+    // Set cursor position to first letter of word.
+    cursor_pos = 0;
+    expected_text = "*firstword* inbetweenwords lastword\nlongstring\nsmallstring s\nspaceafterword ";
+    compose.handle_keydown(event);
+    assert.equal(expected_text, $('#compose-textarea').val());
+
+    // Set cursor position to last letter of word.
+    cursor_pos = ("*firstword* inbetweenwords lastword").length;
+    range_length = 0;
+    expected_text = "*firstword* inbetweenwords *lastword*\nlongstring\nsmallstring s\nspaceafterword ";
+    compose.handle_keydown(event);
+    assert.equal(expected_text, $('#compose-textarea').val());
+
+    // Set cursor position in between word.
+    cursor_pos = ("*firstword* inbetwee").length;
+    range_length = 0;
+    expected_text = "*firstword* *inbetweenwords* *lastword*\nlongstring\nsmallstring s\nspaceafterword ";
+    compose.handle_keydown(event);
+    assert.equal(expected_text, $('#compose-textarea').val());
+
+    // Set cursor position to first word of line.
+    cursor_pos = ("*firstword* *inbetweenwords* *lastword*\n").length;
+    range_length = 0;
+    expected_text = "*firstword* *inbetweenwords* *lastword*\n*longstring*\nsmallstring s\nspaceafterword ";
+    compose.handle_keydown(event);
+    assert.equal(expected_text, $('#compose-textarea').val());
+
+    // Set cursor position to last word of line.
+    cursor_pos = ("*firstword* *inbetweenwords* *lastword*\n*longstring*\nsmallstring s").length;
+    range_length = 0;
+    expected_text = "*firstword* *inbetweenwords* *lastword*\n*longstring*\nsmallstring *s*\nspaceafterword ";
+    compose.handle_keydown(event);
+    assert.equal(expected_text, $('#compose-textarea').val());
+
+    // Set cursor position to empty space.
+    cursor_pos = ("*firstword* *inbetweenwords* *lastword*\n*longstring*\nsmallstring *s*\nspaceafterword ").length;
+    range_length = 0;
+    expected_text = "*firstword* *inbetweenwords* *lastword*\n*longstring*\nsmallstring *s*\nspaceafterword **";
+    compose.handle_keydown(event);
+    assert.equal(expected_text, $('#compose-textarea').val());
+
 }());
 
 (function test_send_message_success() {

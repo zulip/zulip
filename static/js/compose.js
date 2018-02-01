@@ -631,7 +631,30 @@ exports.handle_keydown = function (event) {
             }
             event.preventDefault();
         }
+        function get_text_for_markdown(cursor_position, compose_msg) {
+            var start_pos = cursor_position - 1;
+            var end_pos = cursor_position;
+            var txt = document.getElementById("compose-textarea");
+            var next_char = compose_msg.charAt(start_pos);
 
+            while ((next_char !== " " && next_char !== "\n") && start_pos >= 0) {
+                start_pos -= 1;
+                next_char = compose_msg.charAt(start_pos);
+            }
+            next_char = compose_msg.charAt(end_pos);
+            while ((next_char !== " " && next_char !== "\n") && end_pos <= compose_msg.length) {
+                end_pos += 1;
+                next_char = compose_msg.charAt(end_pos);
+            }
+            txt.selectionStart = start_pos + 1;
+            txt.selectionEnd = end_pos;
+        }
+
+        if (!range.length) {
+            get_text_for_markdown(textarea.caret(), textarea.val());
+        }
+
+        range = textarea.range();
         if (isBold) {
             // ctrl + b: Convert selected text to bold text
             add_markdown("**" + range.text + "**");
