@@ -596,6 +596,34 @@ $(function () {
             }
         });
 
+        $.fn.autosave = function ($target) {
+            var self = this;
+            var meta = {
+                save: null,
+            };
+
+            $target.blur(function () {
+                $(self).click();
+                if (meta.save) {
+                    meta.save.call($target[0], $target);
+                }
+            });
+
+            $(this).on("mousedown", function () {
+                if ($target.is("[disabled]")) {
+                    $target.removeAttr("disabled");
+                } else {
+                    $target.attr("disabled", true);
+                }
+            });
+
+            return {
+                onsave: function (callback) {
+                    meta.save = callback;
+                },
+            };
+        };
+
         $("body").on("click", "[data-make-editable]", function () {
             var selector = $(this).attr("data-make-editable");
             var edit_area = $(this).parent().find(selector);

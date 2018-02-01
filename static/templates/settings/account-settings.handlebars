@@ -88,11 +88,13 @@
                     <div class="user-name-section inline-block">
                         <div class="input-group" id="name_change_container">
                             <label for="full_name" class="inline-block title">{{t "Full name" }}</label>
-                            <input type="text" name="full_name" id="full_name" class="w-200 inline-block" value="{{ page_params.full_name }}" {{#if page_params.realm_name_changes_disabled}}disabled="disabled" {{/if}}/>
+                            <input type="text" name="full_name" id="full_name" class="w-200 inline-block autosave" value="{{ page_params.full_name }}" disabled="disabled" />
                             <i class="icon-vector-question-sign change_name_tooltip" data-toggle="tooltip"
                             {{#unless page_params.realm_name_changes_disabled}}style="display:none" {{/unless}}
-                            title="{{t 'Changing your name has been disabled by your Zulip organization administrators. Contact an administrator for help.' }}"/>
-                            <div class="warning"></div>
+                            title="{{t 'Changing your name has been disabled by your Zulip organization administrators. Contact an administrator for help.' }}" />
+                            {{#unless page_params.realm_name_changes_disabled}}
+                            <span class="save"></span>
+                            {{/unless}}
                         </div>
 
                         <div class="input-group no-border">

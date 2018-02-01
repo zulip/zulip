@@ -161,6 +161,29 @@ exports.set_up = function () {
         common.password_quality(field.val(), $('#pw_strength .bar'), field);
     });
 
+    var update_account = {
+        name: function (full_name) {
+            $.ajax({
+                url: "/json/settings",
+                type: "PATCH",
+                data: { full_name: full_name },
+                contentType: "application/x-www-form-urlencoded",
+                success: function () {
+                    settings_change_success("Updated name to '" + full_name + "'!");
+                },
+                error: function (xhr) {
+                    settings_change_error("Error changing name!", xhr);
+                },
+            });
+        },
+    };
+
+    $("#name_change_container .save").autosave($("#name_change_container .autosave"))
+        // when a `save` is triggered by the input.
+        .onsave(function () {
+            update_account.name(this.value);
+        });
+
     $("form.your-account-settings").ajaxForm({
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
         success: function () {

@@ -320,6 +320,36 @@ td .button {
     margin: 20px 0px;
 }
 
+.autosave:not([disabled]) {
+    color: #0088cc !important;
+}
+
+.autosave ~ .save {
+    position: relative;
+    top: 3px;
+
+    left: -25px;
+    margin-top: 1px;
+
+    font-size: 1.2em;
+    color: #0088cc;
+    cursor: pointer;
+
+    transition: opacity 0.2s ease;
+}
+
+.autosave ~ .save::before {
+    content: "\f0c7";
+
+    font-family: "FontAwesome";
+}
+
+.autosave[disabled] ~ .save::before {
+    content: "\f040";
+
+    color: initial;
+}
+
 .input-group.thinner {
     margin: 10px 0px;
 }
