@@ -1,7 +1,7 @@
 # Translation Guidelines
 
 To make Zulip even better for users around the world, the Zulip UI is
-being translated into a number of major languages, including Spanish,
+being translated into a number of major languages, including Hindi,Spanish,
 German, French, Chinese, Russian, and Japanese, with varying levels of
 progress. If you speak a language other than English, your help with
 translating Zulip would be greatly appreciated!
@@ -30,6 +30,7 @@ languages (e.g. what word to translate words like "home" to):
 * [Chinese](chinese.html)
 * [French](french.html)
 * [German](german.html)
+* [Hindi](hindi.html)
 * [Polish](polish.html)
 * [Russian](russian.html)
 * [Spanish](spanish.html)
