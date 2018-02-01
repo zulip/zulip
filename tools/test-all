@@ -46,6 +46,8 @@ run ./tools/test-migrations
 # run ./tools/test-documentation
 run ./tools/test-help-documentation $FORCEARG
 run ./tools/test-api
+# Not running requirements check locally, because slow and low-churn
+# run ./tools/test-locked-requirements
 # Not running run-dev tests locally; we never have
 # run ./tools/test-run-dev
 # Not running queue worker reload tests since it's low-churn code
