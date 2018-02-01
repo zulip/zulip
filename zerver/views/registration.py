@@ -184,7 +184,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                 name_validated = True
             except KeyError:
                 pass
-        form = RegistrationForm(postdata, realm_creation=realm_creation)
+        form = RegistrationForm(postdata, realm_creation=realm_creation, realm=realm)
         if not (password_auth_enabled(realm) and password_required):
             form['password'].field.required = False
 

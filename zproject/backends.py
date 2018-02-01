@@ -18,7 +18,7 @@ from social_core.exceptions import AuthFailed, SocialAuthBaseException
 from social_django.models import DjangoStorage
 from social_django.strategy import DjangoStrategy
 
-from zerver.lib.actions import do_create_user
+from zerver.lib.actions import do_create_user, make_unique_display_name
 from zerver.lib.request import JsonableError
 from zerver.lib.subdomains import user_matches_subdomain, get_subdomain
 from zerver.lib.users import check_full_name
@@ -396,6 +396,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             full_name = check_full_name(full_name)
         except JsonableError as e:
             raise ZulipLDAPException(e.msg)
+        full_name = make_unique_display_name(self._realm, full_name)
         if "short_name" in settings.AUTH_LDAP_USER_ATTR_MAP:
             short_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["short_name"]
             short_name = ldap_user.attrs[short_name_attr][0]

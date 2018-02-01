@@ -454,7 +454,7 @@ class LoginTest(ZulipTestCase):
         with queries_captured() as queries:
             self.register(self.nonreg_email('test'), "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assert_length(queries, 78)
+        self.assert_length(queries, 79)
         user_profile = self.nonreg_user('test')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
         self.assertFalse(user_profile.enable_stream_desktop_notifications)
@@ -1887,6 +1887,32 @@ class UserSignUpTest(ZulipTestCase):
         # Pick a password and agree to the ToS.
         result = self.submit_reg_form_for_user(email, password, full_name="<invalid>")
         self.assert_in_success_response(["Invalid characters in name!"], result)
+
+        # Verify that the user is asked for name and password
+        self.assert_in_success_response(['id_password', 'id_full_name'], result)
+
+    def test_signup_name_in_use(self) -> None:
+        """
+        Check if signup with a name that is already in use for realm is handled properly.
+        """
+        email = "newguy@zulip.com"
+        password = "newpassword"
+
+        result = self.client_post('/accounts/home/', {'email': email})
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(
+            "/accounts/send_confirm/%s" % (email,)))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started.", result)
+
+        # Visit the confirmation link.
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url)
+        self.assertEqual(result.status_code, 200)
+
+        # Pick a password and agree to the ToS.
+        result = self.submit_reg_form_for_user(email, password, full_name="Iago")
+        self.assert_in_success_response(["name has already been taken."], result)
 
         # Verify that the user is asked for name and password
         self.assert_in_success_response(['id_password', 'id_full_name'], result)

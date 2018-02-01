@@ -18,7 +18,7 @@ from django.http import HttpRequest
 from jinja2 import Markup as mark_safe
 
 from zerver.lib.actions import do_change_password, email_not_system_bot, \
-    validate_email_for_realm
+    validate_email_for_realm, make_unique_display_name
 from zerver.lib.name_restrictions import is_reserved_subdomain, is_disposable_domain
 from zerver.lib.request import JsonableError
 from zerver.lib.send_email import send_email, FromAddress
@@ -90,6 +90,7 @@ class RegistrationForm(forms.Form):
     realm_subdomain = forms.CharField(max_length=Realm.MAX_REALM_SUBDOMAIN_LENGTH, required=False)
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
+        self.realm = kwargs.pop('realm', None)
         # Since the superclass doesn't except random extra kwargs, we
         # remove it from the kwargs dict before initializing.
         self.realm_creation = kwargs['realm_creation']
@@ -103,10 +104,16 @@ class RegistrationForm(forms.Form):
             required=self.realm_creation)
 
     def clean_full_name(self) -> str:
+        realm = self.realm
+        realm_creation = self.realm_creation
         try:
-            return check_full_name(self.cleaned_data['full_name'])
+            full_name = check_full_name(self.cleaned_data['full_name'])
         except JsonableError as e:
             raise ValidationError(e.msg)
+        if not realm_creation and full_name != make_unique_display_name(realm, full_name):
+            raise ValidationError(_("{full_name} name has already been taken.")
+                                  .format(full_name=full_name))
+        return full_name
 
     def clean_realm_subdomain(self) -> str:
         if not self.realm_creation:
