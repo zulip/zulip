@@ -104,7 +104,9 @@ exports.set_up = function () {
     $("#change_full_name").on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        overlays.open_modal('change_full_name_modal');
+        if (!page_params.realm_name_changes_disabled) {
+            overlays.open_modal('change_full_name_modal');
+        }
     });
 
     $('#change_password').on('click', function (e) {
@@ -243,9 +245,11 @@ exports.set_up = function () {
     $('#change_email').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        overlays.open_modal('change_email_modal');
-        var email = $('#email_value').text().trim();
-        $('.email_change_container').find("input[name='email']").val(email);
+        if (!page_params.realm_email_changes_disabled) {
+            overlays.open_modal('change_email_modal');
+            var email = $('#email_value').text().trim();
+            $('.email_change_container').find("input[name='email']").val(email);
+        }
     });
 
     $("#user_deactivate_account_button").on('click', function (e) {
