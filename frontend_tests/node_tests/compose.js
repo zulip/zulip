@@ -321,6 +321,14 @@ people.add(bob);
     compose.handle_keydown(event);
     assert.equal("****Anything **bold**.", $('#compose-textarea').val());
 
+    // Test 'i' is typed correctly.
+    $("#compose-textarea").val('i');
+    event.keyCode = undefined;
+    event.which = 73;
+    event.metaKey = false;
+    event.ctrlKey = false;
+    compose.handle_keydown(event);
+    assert.equal("i", $('#compose-textarea').val());
     // Test italic: ctrl/cmd + i.
     input_text = "Anything italic";
     $("#compose-textarea").val(input_text);

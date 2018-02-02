@@ -679,7 +679,7 @@ exports.handle_keydown = function (event) {
     var isItalic = code === 73 && !event.shiftKey;
     var isLink = code === 76 && event.shiftKey;
 
-    if (isBold || isItalic || isLink && (event.ctrlKey || event.metaKey)) {
+    if ((isBold || isItalic || isLink) && (event.ctrlKey || event.metaKey)) {
         function add_markdown(markdown) {
             var textarea = $("#compose-textarea");
             var range = textarea.range();
