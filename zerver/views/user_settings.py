@@ -37,7 +37,7 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
     old_email = email_change_object.old_email
     user_profile = email_change_object.user_profile
 
-    if user_profile.realm.email_changes_disabled:
+    if user_profile.realm.email_changes_disabled and not user_profile.is_realm_admin:
         raise JsonableError(_("Email address changes are disabled in this organization."))
     do_change_user_email(user_profile, new_email)
 
@@ -100,7 +100,7 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
     result = {}  # type: Dict[str, Any]
     new_email = email.strip()
     if user_profile.email != email and new_email != '':
-        if user_profile.realm.email_changes_disabled:
+        if user_profile.realm.email_changes_disabled and not user_profile.is_realm_admin:
             return json_error(_("Email address changes are disabled in this organization."))
         error, skipped = validate_email(user_profile, new_email)
         if error:
@@ -112,7 +112,7 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
         result['account_email'] = _("Check your email for a confirmation link. ")
 
     if user_profile.full_name != full_name and full_name.strip() != "":
-        if name_changes_disabled(user_profile.realm):
+        if name_changes_disabled(user_profile.realm) and not user_profile.is_realm_admin:
             # Failingly silently is fine -- they can't do it through the UI, so
             # they'd have to be trying to break the rules.
             pass

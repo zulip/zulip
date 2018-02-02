@@ -525,6 +525,7 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     settings_org.reset_realm_default_language();
     assert.equal($('#id_realm_default_language').val(), 'es');
 
+    page_params.is_admin = false;
     var name_toggled;
     $('.change_name_tooltip').toggle = function () {
         name_toggled = true;
@@ -550,6 +551,20 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     settings_org.toggle_email_change_display();
     assert.equal($("#change_email .button").attr('disabled'), 'disabled');
     assert(email_tooltip_toggled);
+
+    // Test should't toggle name display or email display for org admins.
+    page_params.is_admin = true;
+    name_toggled = false;
+    $('#full_name').attr('disabled', false);
+    settings_org.toggle_name_change_display();
+    assert.equal($('#full_name').prop('disabled'), false);
+    assert(!name_toggled);
+
+    email_tooltip_toggled = false;
+    $('#change_email .button').attr('disabled', false);
+    settings_org.toggle_email_change_display();
+    assert.equal($("#change_email .button").attr('disabled'), false);
+    assert(!email_tooltip_toggled);
 
     page_params.realm_description = 'realm description';
     settings_org.update_realm_description();
