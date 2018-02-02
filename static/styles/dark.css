@@ -158,6 +158,10 @@ body.dark-mode .popover {
     background: hsl(212, 32%, 14%);
 }
 
+body.dark-mode .dropdown-menu a {
+  color: inherit;
+}
+
 body.dark-mode .dropdown .dropdown-menu li.divider,
 body.dark-mode .popover hr,
 body.dark-mode hr {
