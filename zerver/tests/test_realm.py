@@ -133,6 +133,12 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
         # Since the setting fails silently, no message is returned
         self.assert_in_response("", result)
+        # Realm admins can change their name even setting is disabled.
+        data = {'full_name': 'New Iago'}
+        self.login(self.example_email("iago"))
+        url = '/json/settings'
+        result = self.client_patch(url, data)
+        self.assert_in_success_response(['"full_name":"New Iago"'], result)
 
     def test_do_deactivate_realm_clears_user_realm_cache(self) -> None:
         """The main complicated thing about deactivating realm names is
