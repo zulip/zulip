@@ -10,6 +10,21 @@ exports.update_email = function (new_email) {
     }
 };
 
+exports.update_full_name = function (new_full_name) {
+    var full_name_field = $("#change_full_name button #full_name_value");
+    if (full_name_field) {
+        full_name_field.text(new_full_name);
+    }
+
+    // Arguably, this should work more like how the `update_email`
+    // flow works, where we update the name in the modal on open,
+    // rather than updating it here, but this works.
+    var full_name_input = $(".full_name_change_container input[name='full_name']");
+    if (full_name_input) {
+        full_name_input.val(new_full_name);
+    }
+};
+
 function settings_change_error(message, xhr) {
     ui_report.error(message, xhr, $('#account-settings-status').expectOne());
 }
@@ -177,7 +192,6 @@ exports.set_up = function () {
         e.stopPropagation();
         var change_full_name_info = $('#change_full_name_modal').find(".change_full_name_info").expectOne();
         var data = {};
-        var full_name_field = $("#change_full_name button #full_name_value").expectOne();
 
         data.full_name = $('.full_name_change_container').find("input[name='full_name']").val();
         channel.patch({
@@ -186,7 +200,6 @@ exports.set_up = function () {
             success: function (data) {
                 if ('full_name' in data) {
                     settings_change_success(i18n.t("Updated settings!"));
-                    full_name_field.html(data.full_name);
                 } else {
                     settings_change_success(i18n.t("No changes made."));
                 }
