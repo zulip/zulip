@@ -3,7 +3,7 @@
 # and requirements/prod.txt.
 # See requirements/README.md for more detail.
 # Django itself
-Django==1.11.*  # https://github.com/zulip/zulip/issues/10835
+Django==2.0.13
 
 # needed for Deque (in Python < 3.5.4) and TypedDict
 typing-extensions

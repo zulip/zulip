@@ -535,7 +535,7 @@ do not match the types declared in the implementation of {}.\n""".format(functio
                 # accepted by every view function in arguments_map.
                 accepted_arguments = set(arguments_map[function_name])
 
-                regex_pattern = p.regex.pattern
+                regex_pattern = p.pattern.regex.pattern
                 url_pattern = self.convert_regex_to_url_pattern(regex_pattern)
 
                 if "intentionally_undocumented" in tags:
@@ -567,7 +567,7 @@ so maybe we shouldn't include it in pending_endpoints.
                 #
                 # * method is the HTTP method, e.g. GET, POST, or PATCH
                 #
-                # * p.regex.pattern is the URL pattern; might require
+                # * p.pattern.regex.pattern is the URL pattern; might require
                 #   some processing to match with OpenAPI rules
                 #
                 # * accepted_arguments is the full set of arguments

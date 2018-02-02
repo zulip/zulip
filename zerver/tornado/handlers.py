@@ -8,7 +8,7 @@ import tornado.web
 from django import http
 from django.conf import settings
 from django.core import exceptions, signals
-from django.urls import resolvers
+from django.urls.resolvers import RegexPattern, URLResolver
 from django.core.exceptions import MiddlewareNotUsed
 from django.core.handlers import base
 from django.core.handlers.exception import convert_exception_to_response, \
@@ -115,7 +115,7 @@ class AsyncDjangoHandlerBase(tornado.web.RequestHandler, base.BaseHandler):  # n
         return response
 
     def handle_uncaught_exception(self, request: HttpRequest,
-                                  resolver: resolvers.RegexURLResolver,
+                                  resolver: URLResolver,
                                   exc_info: Any) -> HttpResponse:
         """Allow subclasses to override uncaught exception handling."""
         return handle_uncaught_exception(request, resolver, exc_info)
@@ -215,7 +215,7 @@ class AsyncDjangoHandlerBase(tornado.web.RequestHandler, base.BaseHandler):  # n
                 # Setup default url resolver for this thread.
                 urlconf = settings.ROOT_URLCONF
                 set_urlconf(urlconf)
-                resolver = resolvers.RegexURLResolver(r'^/', urlconf)
+                resolver = URLResolver(RegexPattern(r'^/'), urlconf)
 
                 response = None
 
@@ -229,7 +229,7 @@ class AsyncDjangoHandlerBase(tornado.web.RequestHandler, base.BaseHandler):  # n
                     # Reset url resolver with a custom urlconf.
                     urlconf = request.urlconf
                     set_urlconf(urlconf)
-                    resolver = resolvers.RegexURLResolver(r'^/', urlconf)
+                    resolver = URLResolver(RegexPattern(r'^/'), urlconf)
 
                 ### ADDED BY ZULIP
                 request._resolver = resolver
@@ -333,7 +333,7 @@ class AsyncDjangoHandlerBase(tornado.web.RequestHandler, base.BaseHandler):  # n
 
     ### Copied from get_response (above in this file)
     def apply_response_middleware(self, request: HttpRequest, response: HttpResponse,
-                                  resolver: resolvers.RegexURLResolver) -> HttpResponse:
+                                  resolver: URLResolver) -> HttpResponse:
         try:
             # Apply response middleware, regardless of the response
             for middleware_method in self._response_middleware:
