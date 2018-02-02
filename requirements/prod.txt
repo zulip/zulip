@@ -190,9 +190,9 @@ django-two-factor-auth[phonenumberslite]==1.10.0 \
 django-webpack4-loader==0.0.5 \
     --hash=sha256:baa043c4601ed763d161490e2888cf6aa93a2fd9b60681e6b19e35dc7fcb155d \
     --hash=sha256:be90257041170f39c025ff674c9064569c9303b464536488b6a6cedd8e3d28be
-django==1.11.28 \
-    --hash=sha256:a3b01cdff845a43830d7ccacff55e0b8ff08305a4cbf894517a686e53ba3ad2d \
-    --hash=sha256:b33ce35f47f745fea6b5aa3cf3f4241069803a3712d423ac748bd673a39741eb
+django==2.2.10 \
+    --hash=sha256:1226168be1b1c7efd0e66ee79b0e0b58b2caa7ed87717909cd8a57bb13a7079a \
+    --hash=sha256:9a4635813e2d498a3c01b10c701fe4a515d76dd290aaa792ccb65ca4ccb6b038
 future==0.18.2 \
     --hash=sha256:b1bead90b70cf6ec3f0710ae53a525360fa360d306a86583adc6bf83a4db537d \
     # via python-twitter
@@ -529,6 +529,10 @@ sourcemap==0.2.1 \
     --hash=sha256:c448a8c48f9482e522e4582106b0c641a83b5dbc7f13927b178848e3ea20967b
 sqlalchemy==1.3.13 \
     --hash=sha256:64a7b71846db6423807e96820993fa12a03b89127d278290ca25c0b11ed7b4fb
+sqlparse==0.3.0 \
+    --hash=sha256:40afe6b8d4b1117e7dff5504d7a8ce07d9a1b15aeeade8a2d10f130a834f8177 \
+    --hash=sha256:7c3dca29c022744e95b547e867cee89f4fce4373f3549ccd8797d8eb52cdb873 \
+    # via django
 statsd==3.3.0 \
     --hash=sha256:c610fb80347fca0ef62666d241bce64184bd7cc1efe582f9690e045c25535eaa \
     --hash=sha256:e3e6db4c246f7c59003e51c9720a51a7f39a396541cb9b147ff4b14d15b5dd1f \

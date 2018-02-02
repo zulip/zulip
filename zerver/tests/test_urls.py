@@ -108,7 +108,7 @@ class PublicURLTest(ZulipTestCase):
             self.assertEqual('ABCD', data['google_client_id'])
 
 class URLResolutionTest(TestCase):
-    def get_callback_string(self, pattern: django.urls.resolvers.RegexURLPattern) -> Optional[str]:
+    def get_callback_string(self, pattern: django.urls.resolvers.URLPattern) -> Optional[str]:
         callback_str = hasattr(pattern, 'lookup_str') and 'lookup_str'
         callback_str = callback_str or '_callback_str'
         return getattr(pattern, callback_str, None)

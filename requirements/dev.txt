@@ -269,9 +269,9 @@ django-two-factor-auth[phonenumberslite]==1.10.0 \
 django-webpack4-loader==0.0.5 \
     --hash=sha256:baa043c4601ed763d161490e2888cf6aa93a2fd9b60681e6b19e35dc7fcb155d \
     --hash=sha256:be90257041170f39c025ff674c9064569c9303b464536488b6a6cedd8e3d28be
-django==1.11.28 \
-    --hash=sha256:a3b01cdff845a43830d7ccacff55e0b8ff08305a4cbf894517a686e53ba3ad2d \
-    --hash=sha256:b33ce35f47f745fea6b5aa3cf3f4241069803a3712d423ac748bd673a39741eb
+django==2.2.10 \
+    --hash=sha256:1226168be1b1c7efd0e66ee79b0e0b58b2caa7ed87717909cd8a57bb13a7079a \
+    --hash=sha256:9a4635813e2d498a3c01b10c701fe4a515d76dd290aaa792ccb65ca4ccb6b038
 docker==4.1.0 \
     --hash=sha256:6e06c5e70ba4fad73e35f00c55a895a448398f3ada7faae072e2bb01348bafc1 \
     --hash=sha256:8f93775b8bdae3a2df6bc9a5312cce564cade58d6555f2c2570165a1270cd8a7 \
@@ -804,6 +804,10 @@ sphinxcontrib-serializinghtml==1.1.3 \
     # via sphinx
 sqlalchemy==1.3.13 \
     --hash=sha256:64a7b71846db6423807e96820993fa12a03b89127d278290ca25c0b11ed7b4fb
+sqlparse==0.3.0 \
+    --hash=sha256:40afe6b8d4b1117e7dff5504d7a8ce07d9a1b15aeeade8a2d10f130a834f8177 \
+    --hash=sha256:7c3dca29c022744e95b547e867cee89f4fce4373f3549ccd8797d8eb52cdb873 \
+    # via django
 sshpubkeys==3.1.0 \
     --hash=sha256:9f73d51c2ef1e68cd7bde0825df29b3c6ec89f4ce24ebca3bf9eaa4a23a284db \
     --hash=sha256:b388399caeeccdc145f06fd0d2665eeecc545385c60b55c282a15a022215af80 \
