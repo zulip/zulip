@@ -34,6 +34,23 @@ var list_of_popovers = [];
     }
 }($.fn.popover));
 
+function init_email_clipboard() {
+  var copy_email_clipboard = new Clipboard($('.copy_email')[0]);
+  var copy_email_span = $('.copy_email span');
+
+  copy_email_clipboard.on('success', function (e) {
+      copy_email_span.text(i18n.t('Email copied'));
+      setTimeout(function () {
+        copy_email_span.text(i18n.t("Copy user's email"));
+      }, 3000);
+      e.clearSelection();
+  });
+
+  copy_email_clipboard.on('error', function () {
+      copy_email_span.text(i18n.t('Failed to copy email!'));
+  });
+}
+
 function load_medium_avatar(user, elt) {
     var user_avatar_url = "avatar/" + user.user_id + "/medium";
     var sender_avatar_medium = new Image();
@@ -126,6 +143,7 @@ function show_user_info_popover(element, user, message) {
             trigger: "manual",
         });
         elt.popover("show");
+        init_email_clipboard();
 
         load_medium_avatar(user, $(".popover-avatar"));
 
@@ -204,6 +222,7 @@ exports.toggle_actions_popover = function (element, id) {
             trigger:   "manual",
         });
         elt.popover("show");
+        init_email_clipboard();
         current_actions_popover_elem = elt;
     }
 };
@@ -267,6 +286,7 @@ exports.render_actions_remind_popover = function (element, id) {
             trigger:   "manual",
         });
         elt.popover("show");
+        init_email_clipboard();
         current_flatpickr_instance = $('.remind.custom[data-message-id="'+message.id+'"]').flatpickr({
             enableTime: true,
             clickOpens: false,
@@ -559,6 +579,7 @@ exports.register_click_handlers = function () {
             placement: userlist_placement === "left" ? "right" : "left",
         });
         target.popover("show");
+        init_email_clipboard();
 
         load_medium_avatar(user, $(".popover-avatar"));
 
@@ -767,7 +788,6 @@ exports.register_click_handlers = function () {
             last_scroll = date;
         });
     }());
-
 };
 
 exports.any_active = function () {

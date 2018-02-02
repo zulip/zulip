@@ -2679,3 +2679,20 @@ button.topic_edit_cancel {
     visibility: visible;
     opacity: 1;
 }
+
+.copy_email {
+    color: #3188cc;
+    cursor: pointer;
+    padding: 3px 0;
+    padding: 3px 15px;
+    margin-left: -15px;
+    margin-right: -15px;
+}
+
+.copy_email:hover {
+    background-color: #f1f1f1;
+}
+
+.fake_email_input {
+    display: none;
+}

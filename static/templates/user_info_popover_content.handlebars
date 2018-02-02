@@ -28,6 +28,12 @@
         {{/if}}
     </div>
     <hr />
+    <li>
+        <div class="copy_email" data-clipboard-action="copy" data-clipboard-text="{{ user_email }}">
+            <i class="fa fa-clone" aria-hidden="true"></i>
+            <span>{{#tr this}}Copy user's email{{/tr}}</span>
+        </div>
+    </li>
     {{#if is_active }}
     <li>
         <a href="#" class="{{ private_message_class }}">
