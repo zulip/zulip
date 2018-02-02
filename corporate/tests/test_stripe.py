@@ -11,7 +11,7 @@ import ujson
 import json
 
 from django.core import signing
-from django.core.urlresolvers import get_resolver
+from django.urls.resolvers import get_resolver
 from django.http import HttpResponse
 from django.utils.timezone import utc as timezone_utc
 

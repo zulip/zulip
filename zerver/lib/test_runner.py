@@ -8,7 +8,7 @@ from unittest.result import TestResult
 
 from django.conf import settings
 from django.db import connections, ProgrammingError
-from django.urls.resolvers import RegexURLPattern
+from django.urls.resolvers import URLPattern
 from django.test import TestCase
 from django.test import runner as django_runner
 from django.test.runner import DiscoverRunner
@@ -253,7 +253,7 @@ def destroy_test_databases(worker_id: Optional[int]=None) -> None:
             if worker_id is not None:
                 """Modified from the Django original to """
                 database_id = random_id_range_start + worker_id
-                connection.creation.destroy_test_db(number=database_id)
+                connection.creation.destroy_test_db(suffix=str(database_id))
             else:
                 connection.creation.destroy_test_db()
         except ProgrammingError:
@@ -265,7 +265,7 @@ def create_test_databases(worker_id: int) -> None:
     for alias in connections:
         connection = connections[alias]
         connection.creation.clone_test_db(
-            number=database_id,
+            suffix=str(database_id),
             keepdb=True,
         )
 
@@ -304,8 +304,8 @@ def init_worker(counter: Synchronized) -> None:
     create_test_databases(_worker_id)
     initialize_worker_path(_worker_id)
 
-    def is_upload_avatar_url(url: RegexURLPattern) -> bool:
-        if url.regex.pattern == r'^user_avatars/(?P<path>.*)$':
+    def is_upload_avatar_url(url: URLPattern) -> bool:
+        if url.pattern.regex.pattern == r'^user_avatars/(?P<path>.*)$':
             return True
         return False
 

@@ -28,8 +28,6 @@ new major versions of Django.  Here are the steps:
   * `PasswordResetForm` and any other forms we import from
     `django.contrib.auth.forms` in `zerver/forms.py` (which has all of
     our Django forms).
-  * `AsyncDjangoHandlerBase` in `zerver/tornado/handlers.py` is a very
-    small patch on `base.BaseHandler`; see the comments with `BY
-    ZULIP` for our changes (unfortunately now more different due to
-    style differences and mypy annotations).  This configurability
-    should also be contributed to Django upstream.
+  * Our AsyncDjangoHandler class has some code copied from the core
+    Django handlers code; look at whether that code was changed in
+    Django upstream.

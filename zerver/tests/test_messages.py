@@ -4203,7 +4203,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         self.assertNotEqual(idle_user_msg_list[-1], sent_message)
         with queries_captured() as queries:
             add_missing_messages(long_term_idle_user)
-        self.assert_length(queries, 6)
+        self.assert_length(queries, 7)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assertEqual(len(idle_user_msg_list), idle_user_msg_count + 1)
         self.assertEqual(idle_user_msg_list[-1], sent_message)

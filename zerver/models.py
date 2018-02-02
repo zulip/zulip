@@ -2332,7 +2332,7 @@ class UserPresence(models.Model):
         ]
 
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
-    realm = models.ForeignKey(Realm)  # type: Realm
+    realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
     client = models.ForeignKey(Client, on_delete=CASCADE)  # type: Client
 
     # The time we heard this update from the client.
