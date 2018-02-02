@@ -92,37 +92,49 @@ class APICodeExamplesPreprocessor(Preprocessor):
     def render_code_example(self, function: str, admin_config: Optional[bool]=False) -> List[str]:
         method = zerver.lib.api_test_helpers.TEST_FUNCTIONS[function]
         function_source_lines = inspect.getsourcelines(method)[0]
-        ce_regex = re.compile(r'\# \{code_example\|\s*(.+?)\s*\}')
-
-        start = 0
-        end = 0
-        for line in function_source_lines:
-            match = ce_regex.search(line)
-            if match:
-                if match.group(1) == 'start':
-                    start = function_source_lines.index(line)
-                elif match.group(1) == 'end':
-                    end = function_source_lines.index(line)
 
         if admin_config:
             config = PYTHON_CLIENT_ADMIN_CONFIG.splitlines()
         else:
             config = PYTHON_CLIENT_CONFIG_LINES.splitlines()
 
-        snippet = function_source_lines[start + 1: end]
+        snippet = self.extractCodeExample(function_source_lines, [])
 
         code_example = []
-        code_example.append('```')
+        code_example.append('```python')
         code_example.extend(config)
 
         for line in snippet:
             # Remove one level of indentation and strip newlines
             code_example.append(line[4:].rstrip())
 
-        code_example.append('print(result)')
         code_example.append('```')
 
         return code_example
+
+    def extractCodeExample(self, source: List[str], snippet: List[str]) -> List[str]:
+        ce_regex = re.compile(r'\# \{code_example\|\s*(.+?)\s*\}')
+
+        start = -1
+        end = -1
+        for line in source:
+            match = ce_regex.search(line)
+            if match:
+                if match.group(1) == 'start':
+                    start = source.index(line)
+                elif match.group(1) == 'end':
+                    end = source.index(line)
+                    break
+
+        if (start == -1 and end == -1):
+            return snippet
+
+        snippet.extend(source[start + 1: end])
+        snippet.append('    print(result)')
+        snippet.append('\n')
+        source = source[end + 1:]
+        return self.extractCodeExample(source, snippet)
+
 
 def makeExtension(*args: Any, **kwargs: str) -> APICodeExamplesGenerator:
     return APICodeExamplesGenerator(kwargs)
