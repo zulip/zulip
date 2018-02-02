@@ -76,7 +76,7 @@ def save_stripe_token(user: UserProfile, token: str) -> int:
         card = customer.sources.create(source=token, metadata=card_metadata)
         customer.default_source = card.id
         customer.save()
-        return len(customer.sources.all(object="card")["data"])
+        return len(customer.sources.list(object="card")["data"])
     except Customer.DoesNotExist:
         customer_metadata = {"string_id": user.realm.string_id}
         # Description makes it easier to identify customers in Stripe dashboard
@@ -87,7 +87,7 @@ def save_stripe_token(user: UserProfile, token: str) -> int:
                                           description=description,
                                           metadata=customer_metadata)
 
-        card = customer.sources.all(object="card")["data"][0]
+        card = customer.sources.list(object="card")["data"][0]
         card.metadata = card_metadata
         card.save()
         Customer.objects.create(realm=user.realm, stripe_customer_id=customer.id)
