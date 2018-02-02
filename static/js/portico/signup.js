@@ -82,5 +82,10 @@ $(function () {
 
             form.submit();
         },
+        invalidHandler: function () {
+            // this removes all previous errors that were put on screen
+            // by the server.
+            $("#login_form .alert.alert-error").remove();
+        },
     });
 });
