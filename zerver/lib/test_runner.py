@@ -9,7 +9,7 @@ from unittest.result import TestResult
 
 from django.conf import settings
 from django.db import connections, ProgrammingError
-from django.urls.resolvers import RegexURLPattern
+from django.urls.resolvers import URLPattern
 from django.test import TestCase
 from django.test import runner as django_runner
 from django.test.runner import DiscoverRunner
@@ -229,7 +229,7 @@ def destroy_test_databases(database_id: Optional[int]=None) -> None:
     for alias in connections:
         connection = connections[alias]
         try:
-            connection.creation.destroy_test_db(number=database_id)
+            connection.creation.destroy_test_db(suffix=str(database_id))
         except ProgrammingError:
             # DB doesn't exist. No need to do anything.
             pass
@@ -238,7 +238,7 @@ def create_test_databases(database_id: int) -> None:
     for alias in connections:
         connection = connections[alias]
         connection.creation.clone_test_db(
-            number=database_id,
+            suffix=str(database_id),
             keepdb=True,
         )
 
@@ -283,8 +283,8 @@ def init_worker(counter: Synchronized) -> None:
     settings.LOCAL_UPLOADS_DIR = '{}_{}'.format(settings.LOCAL_UPLOADS_DIR,
                                                 _worker_id)
 
-    def is_upload_avatar_url(url: RegexURLPattern) -> bool:
-        if url.regex.pattern == r'^user_avatars/(?P<path>.*)$':
+    def is_upload_avatar_url(url: URLPattern) -> bool:
+        if url.pattern.regex.pattern == r'^user_avatars/(?P<path>.*)$':
             return True
         return False
 

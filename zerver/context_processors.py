@@ -80,7 +80,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
 
     user_is_authenticated = False
     if hasattr(request, 'user') and hasattr(request.user, 'is_authenticated'):
-        user_is_authenticated = request.user.is_authenticated.value
+        user_is_authenticated = request.user.is_authenticated
 
     if settings.DEVELOPMENT:
         secrets_path = "zproject/dev-secrets.conf"
