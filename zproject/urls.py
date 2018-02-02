@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.conf.urls import url, include
 from django.conf.urls.i18n import i18n_patterns
-from django.http import HttpResponseBadRequest, HttpRequest, HttpResponse
 from django.views.generic import TemplateView, RedirectView
 from django.utils.module_loading import import_string
 import os
@@ -752,22 +751,3 @@ if settings.DEVELOPMENT:
 # reverse url mapping points to i18n urls which causes the frontend
 # tests to fail
 urlpatterns = i18n_patterns(*i18n_urls) + urls + legacy_urls
-
-def handler400(request: HttpRequest, exception: Exception) -> HttpResponse:
-    # (This workaround should become obsolete with Django 2.1; the
-    #  issue was fixed upstream in commit 7ec0fdf62 on 2018-02-14.)
-    #
-    # This behaves exactly like the default Django implementation in
-    # the case where you haven't made a template "400.html", which we
-    # haven't -- except that it doesn't call `@requires_csrf_token` to
-    # attempt to set a `csrf_token` variable that the template could
-    # use if there were a template.  We skip @requires_csrf_token
-    # because that codepath can raise an error on a bad request, which
-    # is exactly the case we're trying to handle when we get here.
-    # Bug filed upstream: https://code.djangoproject.com/ticket/28693
-    #
-    # This function is used just because it has this special name in
-    # the root urls.py file; for more details, see:
-    # https://docs.djangoproject.com/en/1.11/topics/http/views/#customizing-error-views
-    return HttpResponseBadRequest(
-        '<h1>Bad Request (400)</h1>', content_type='text/html')

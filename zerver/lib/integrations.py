@@ -3,7 +3,7 @@ import os
 from typing import Dict, List, Optional, Any, Tuple
 from django.conf.urls import url
 from django.contrib.staticfiles.storage import staticfiles_storage
-from django.urls.resolvers import LocaleRegexProvider
+from django.urls.resolvers import RegexPattern
 from django.utils.module_loading import import_string
 from django.utils.translation import ugettext as _
 from zerver.lib.storage import static_path
@@ -178,7 +178,7 @@ class WebhookIntegration(Integration):
         self.doc = doc
 
     @property
-    def url_object(self) -> LocaleRegexProvider:
+    def url_object(self) -> RegexPattern:
         return url(self.url, self.function)
 
 class HubotIntegration(Integration):
