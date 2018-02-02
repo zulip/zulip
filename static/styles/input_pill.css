@@ -37,6 +37,7 @@
     padding: 2px 4px;
 
     min-width: 2px;
+    word-break: break-all;
 
     outline: none;
 }

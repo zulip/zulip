@@ -939,6 +939,7 @@ input[type=checkbox].inline-block {
 
 #user-groups .user-group span[contenteditable] {
     display: inline-block;
+    word-break: break-all;
 }
 
 #user-groups .user-group span[contenteditable]:empty::before {
