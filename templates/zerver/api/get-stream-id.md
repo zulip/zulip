@@ -24,7 +24,7 @@ curl {{ api_url }}/v1/get_stream_id?stream=Denmark \
 
 <div data-language="python" markdown="1">
 
-{generate_code_example|get-stream-id|method}
+{generate_code_example|get-stream-id|example}
 
 </div>
 

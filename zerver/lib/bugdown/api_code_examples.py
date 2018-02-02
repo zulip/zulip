@@ -58,9 +58,9 @@ class APICodeExamplesPreprocessor(Preprocessor):
 
                     if key == 'fixture':
                         text = self.render_fixture(function)
-                    elif key == 'method':
+                    elif key == 'example':
                         text = self.render_code_example(function)
-                    elif key == 'method(admin_config=True)':
+                    elif key == 'example(admin_config=True)':
                         text = self.render_code_example(function, admin_config=True)
 
                     # The line that contains the directive to include the macro

@@ -29,7 +29,7 @@ curl {{ api_url }}/v1/messages \
 
 <div data-language="python" markdown="1">
 
-{generate_code_example|stream-message|method}
+{generate_code_example|stream-message|example}
 
 </div>
 

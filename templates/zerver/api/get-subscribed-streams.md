@@ -24,7 +24,7 @@ curl {{ api_url }}/v1/users/me/subscriptions \
 
 <div data-language="python" markdown="1">
 
-{generate_code_example|get-subscribed-streams|method}
+{generate_code_example|get-subscribed-streams|example}
 
 </div>
 
