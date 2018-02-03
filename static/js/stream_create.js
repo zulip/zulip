@@ -24,6 +24,11 @@ var stream_subscription_error = (function () {
         $("#stream_subscription_error").show();
     };
 
+    self.cant_create_stream_without_susbscribing = function () {
+        $("#stream_subscription_error").text(i18n.t("You must be a realm administrator to create a stream without subscribing."));
+        $("#stream_subscription_error").show();
+    };
+
     self.clear_errors = function () {
         $("#stream_subscription_error").hide();
     };
@@ -230,6 +235,7 @@ exports.show_new_stream_modal = function () {
     $('#people_to_add').html(templates.render('new_stream_users', {
         users: all_users,
         streams: stream_data.get_streams_for_settings_page(),
+        is_admin: page_params.is_admin,
     }));
 
     // Make the options default to the same each time:
@@ -281,7 +287,12 @@ $(function () {
 
     $(document).on('click', '.subs_unset_all_users', function (e) {
         $('#user-checkboxes .checkbox').each(function (idx, li) {
-            if  (li.style.display !== "none") {
+            if (li.style.display !== "none") {
+                // The first checkbox is the one for ourself; this is the code path for:
+                // `stream_subscription_error.cant_create_stream_without_susbscribing`
+                if (idx === 0 && !page_params.is_admin) {
+                    return;
+                }
                 $(li.firstElementChild).prop('checked', false);
             }
         });
@@ -350,6 +361,10 @@ $(function () {
         var principals = get_principals();
         if (principals.length === 0) {
             stream_subscription_error.report_no_subs_to_stream();
+            return;
+        }
+        if (principals.indexOf(people.my_current_email()) < 0 && !page_params.is_admin) {
+            stream_subscription_error.cant_create_stream_without_susbscribing();
             return;
         }
 
