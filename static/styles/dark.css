@@ -399,6 +399,14 @@ body.dark-mode #out-of-view-notification {
     border: 1px solid 1px solid hsl(144, 45%, 62%);
 }
 
+body.dark-mode .email_tooltip {
+    background-color: #404c59;
+}
+
+body.dark-mode .email_tooltip:after {
+    border-bottom-color: #404c59 !important;
+}
+
 @-moz-document url-prefix() {
     body.dark-mode #settings_page select {
         background-color: hsla(0, 0%, 0%, 0.2);
