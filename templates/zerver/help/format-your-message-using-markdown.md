@@ -75,6 +75,12 @@ to include lists in your messages.
     You can add nested bullets within lists by adding two spaces before each
     nested bullet.
 
+Numbered lists in which each item begins with the same number will
+have the numbers automatically edited to increment (e.g. if every line
+starts with `3.`, it'll go 3, 4, 5, ...).
+
+![Numbered lists](/static/images/help/numbered-lists-screenshot.png)
+
 ## Emojis
 
 Zulip features a variety of emojis provided by the
