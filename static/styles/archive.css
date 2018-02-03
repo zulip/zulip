@@ -1,0 +1,46 @@
+body {
+    font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 14px;
+}
+
+.header {
+    padding: 5px 0px 5px 15px;
+    line-height: 10px;
+}
+
+.header-main .logo {
+    margin-top: 5px;
+}
+
+.header-main .logo .brand-logo {
+    margin-top: 4px;
+}
+
+.message_area_padder {
+    margin-top: 60px;
+}
+
+.top-links {
+    position: relative;
+    right: 20px;
+    margin-top: 12px;
+}
+
+@media (max-width: 500px) {
+    .header {
+        height: 40px;
+        line-height: 10px;
+    }
+
+    .header-main .logo {
+        margin-top: 5px;
+    }
+
+    .header-main .logo .brand-logo {
+        margin-top: 4px;
+    }
+
+    #floating_recipient_bar {
+        top: 50px;
+    }
+}
