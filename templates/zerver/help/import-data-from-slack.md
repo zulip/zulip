@@ -10,10 +10,18 @@
    `slack_data.zip`. Currently we only support standard export. See
    https://get.slack.help/hc/en-us/articles/201658943-Export-data-and-message-history
    for more detail on this step.
-2. Convert the zip file `slack_data.zip` to Zulip export format using the
-   command `./manage.py convert_slack_data <slack_zip_file> <organization_name> --output <output_dir>`.
-3. Import the converted data. If you are importing into an existing database,
-   run the command `./manage.py import --import-into-nonempty <output_dit>`,
+2. Generate a Slack API token using Slack's test
+   [token generator](https://api.slack.com/custom-integrations/legacy-tokens)
+   to import all of the necessary data. We use this as current Slack exports don't
+   include user's email data, however, we still get that data from Slack's older
+   method of legacy tokens.
+   **Note:** Once Slack starts including user emails in the exports,
+   this extra step of using legacy tokens to get user data would no longer be
+   necessary.
+3. Convert the zip file `slack_data.zip` to Zulip export format using the command
+   `./manage.py convert_slack_data <slack_zip_file> <organization_name> --token <token> --output <output_dir>`.
+4. Import the converted data. If you are importing into an existing database,
+   run the command `./manage.py import --import-into-nonempty <output_dir>`,
    otherwise, if you are importing into a new Zulip instance, run the command
    `./manage.py import --destory-rebuild-database <output_dir>`.
 
