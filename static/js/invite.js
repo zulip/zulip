@@ -2,22 +2,24 @@ var invite = (function () {
 
 var exports = {};
 
-function hide_message_show_checkboxes() {
+var selected_streams;
+
+function hide_message_show_edit_streams() {
     $("#default_stream_message").hide();
-    $("#streams_to_add").show();
+    $("#edit_streams").show();
 }
 
-function show_message_hide_checkboxes() {
+function show_message_hide_edit_streams() {
     $("#default_stream_message").show();
-    $("#streams_to_add").hide();
+    $("#edit_streams").hide();
 }
 
-function update_subscription_checkboxes() {
+function update_subscription_input() {
     // TODO: If we were more clever, we would only do this if the
     // stream list has actually changed; that way, the settings of the
     // checkboxes are saved from invocation to invocation (which is
     // nice if I want to invite a bunch of people at once)
-    var streams = [];
+    var all_streams = [];
     var default_streams = [];
 
     _.each(stream_data.invite_streams(), function (value) {
@@ -28,29 +30,71 @@ function update_subscription_checkboxes() {
             // You can't actually elect not to invite someone to the
             // notifications stream. We won't even show it as a choice unless
             // it's the only stream you have, or if you've made it private.
-            var default_status = stream_data.get_default_status(value);
-            var invite_status = stream_data.get_invite_only(value);
-            streams.push({name: value, invite_only: invite_status, default_stream: default_status});
-            // Sort by default status.
-            streams.sort(function (a, b) {
-                return b.default_stream - a.default_stream;
-            });
-            if (default_status) {
+            if (stream_data.get_default_status(value)) {
                 default_streams.push(value);
+            }
+            if (value !== 'all') {
+                all_streams.push(value);
             }
         }
     });
-    $('#streams_to_add').html(templates.render('invite_subscription', {streams: streams}));
+    selected_streams = default_streams.slice();
+
+    var pill_container = $("#edit_streams");
+    pill_container.html('<input id="add_invite_stream_input" class="input" placeholder= "Add stream..." />');
+    var pills = input_pill(pill_container);
+
+    $("#edit_streams .pill").remove();
+
+    pills.onPillCreate(function (value, reject) {
+        if (all_streams.indexOf(value) === -1 || pills.keys().indexOf(value) >= 0) {
+            return reject();
+        }
+        selected_streams.push(value);
+        return { key: value, value: '#' + value };
+    });
+
+    pills.onPillRemove(function () {
+        selected_streams = pills.keys();
+    });
+
+    selected_streams.forEach(function (value) {
+        pills.pill.append(value);
+    });
+
+    var input = $('#add_invite_stream_input');
+    input.typeahead({
+        items: all_streams.length,
+        fixed: true,
+        source: all_streams,
+        matcher: function (item) {
+            if (pills.keys().indexOf(item) >= 0) {
+                return false;
+            }
+            return true;
+        },
+        updater: function (stream) {
+            pills.pill.append(stream);
+            input.text('');
+        },
+        stopAdvance: true,
+        menu: '<ul id="scrollable-dropdown-menu" class="typeahead dropdown-menu"></ul>',
+    });
+
+    $('#add_invite_stream_input').on('input', function () {
+        $(this).attr('size', Math.max(14, $(this).val().length));
+    });
+
     if (default_streams.length !== 0) {
         $('#edit_streams_button').on('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
-            hide_message_show_checkboxes();
+            hide_message_show_edit_streams();
         });
-        show_message_hide_checkboxes();
-        $('#default_streams').text(default_streams.join(", "));
+        show_message_hide_edit_streams();
+        $('#default_streams').text(default_streams.map(function (s) {return '#' + s;}).join(", "));
     } else {
-        hide_message_show_checkboxes();
+        hide_message_show_edit_streams();
     }
 }
 
@@ -67,7 +111,7 @@ function reset_error_messages() {
 }
 
 function prepare_form_to_be_shown() {
-    update_subscription_checkboxes();
+    update_subscription_input();
     reset_error_messages();
 }
 
@@ -84,7 +128,7 @@ exports.initialize = function () {
 
     $("#invite_user_form").ajaxForm({
         dataType: 'json',
-        beforeSubmit: function () {
+        beforeSubmit: function (formData) {
             reset_error_messages();
             // TODO: You could alternatively parse the textarea here, and return errors to
             // the user if they don't match certain constraints (i.e. not real email addresses,
@@ -92,6 +136,9 @@ exports.initialize = function () {
             //
             // OR, you could just let the server do it. Probably my temptation.
             $('#submit-invitation').button('loading');
+            selected_streams.forEach(function (stream) {
+                formData.push({name: "stream", value: stream});
+            });
             return true;
         },
         success: function () {
@@ -152,18 +199,6 @@ exports.initialize = function () {
         },
     });
 };
-
-$(function () {
-    $(document).on('click', '.invite_check_all_button', function (e) {
-        $('#streams_to_add :checkbox').prop('checked', true);
-        e.preventDefault();
-    });
-
-    $(document).on('click', '.invite_uncheck_all_button', function (e) {
-        $('#streams_to_add :checkbox').prop('checked', false);
-        e.preventDefault();
-    });
-});
 
 return exports;
 
