@@ -228,7 +228,8 @@ body.dark-mode #settings_page .sidebar .tab-container,
 body.dark-mode .table-striped tbody tr:nth-child(odd) td,
 body.dark-mode .table-striped tbody tr:nth-child(odd) th,
 body.dark-mode .modal-footer,
-body.dark-mode .modal-bg .modal-header {
+body.dark-mode .modal-bg .modal-header,
+body.dark-mode .copy_email:hover {
     border-color: hsla(0, 0%, 0%, 0.2);
     background-color: hsla(0, 0%, 0%, 0.2);
 }
@@ -265,7 +266,8 @@ body.dark-mode .draft-row .message_header_private_message .message_label_clickab
 }
 
 body.dark-mode .nav-list > li > a,
-body.dark-mode .nav-list .nav-header {
+body.dark-mode .nav-list .nav-header,
+body.dark-mode .nav-list > li > .copy_email {
     text-shadow: none;
 }
 
@@ -376,6 +378,10 @@ body.dark-mode .empty-star:hover {
 
 body.dark-mode #out-of-view-notification {
     border: 1px solid 1px solid hsl(144, 45%, 62%);
+}
+
+body.dark-mode .copy_email {
+    color: inherit;
 }
 
 @-moz-document url-prefix() {
