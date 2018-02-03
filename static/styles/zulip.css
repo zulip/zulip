@@ -2706,12 +2706,26 @@ button.topic_edit_cancel {
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
+    transition: all 0.4s ease;
 }
 
 .my_email .tooltip_holder {
     display: none;
     position: absolute;
     left: 50%;
+}
+
+.my_email i {
+    cursor: pointer;
+}
+
+.email_copied,
+.my_email i:hover {
+    color: #53c1ae;
+}
+
+.email_copied i {
+    display: none !important;
 }
 
 .display-tooltip {
@@ -2746,6 +2760,10 @@ button.topic_edit_cancel {
 .my_email:hover .email_tooltip {
     visibility: visible;
     opacity: 1;
+}
+
+.my_email i.hide_copy_icon {
+    display: none;
 }
 
 .hotkey-hint {
