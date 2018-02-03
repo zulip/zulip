@@ -76,6 +76,7 @@ exports.initialize = function () {
     var invite_status = $('#invite_status');
     var invitee_emails = $("#invitee_emails");
     var invitee_emails_group = invitee_emails.closest('.control-group');
+    var invite_status_timeout = 3000;
 
     $('#submit-invitation').button();
     prepare_form_to_be_shown();
@@ -104,6 +105,8 @@ exports.initialize = function () {
                 var email_msg = templates.render('dev_env_email_access');
                 $('#dev_env_msg').html(email_msg).addClass('alert-info').show();
             }
+
+            setTimeout(reset_error_messages, invite_status_timeout);
 
         },
         error: function (xhr) {
@@ -135,6 +138,8 @@ exports.initialize = function () {
                 }
 
             }
+
+            setTimeout(reset_error_messages, invite_status_timeout);
 
         },
     });
