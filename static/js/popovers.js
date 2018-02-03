@@ -438,10 +438,13 @@ exports.register_click_handlers = function () {
     });
 
     $("#main_div").on("click", ".user-mention", function (e) {
+        var id = $(this).attr('data-user-id');
+        if (id === '*') {
+            return;
+        }
         var row = $(this).closest(".message_row");
         e.stopPropagation();
         var message = current_msg_list.get(rows.id(row));
-        var id = $(this).attr('data-user-id');
         var user = people.get_person_from_user_id(id);
         show_user_info_popover(this, user, message);
     });
