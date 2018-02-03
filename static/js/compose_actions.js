@@ -365,6 +365,15 @@ exports.on_topic_narrow = function () {
     $('#compose-textarea').focus().select();
 };
 
+exports.on_compose_narrow = function () {
+    if (compose_state.composing()) {
+        compose_fade.update_message_list();
+        return;
+    }
+
+    exports.cancel();
+};
+
 exports.on_narrow = function () {
     if (narrow_state.narrowed_by_topic_reply()) {
         exports.on_topic_narrow();

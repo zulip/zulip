@@ -40,6 +40,10 @@ var keydown_unshift_mappings = {
     40: {name: 'down_arrow', message_view_only: false}, // down arrow
 };
 
+var keydown_meta_mappings = {
+    73: {name: 'narrow_compose', message_view_only: false}, // 'i'
+};
+
 var keydown_ctrl_mappings = {
     219: {name: 'escape', message_view_only: false}, // '['
 };
@@ -95,11 +99,19 @@ var keypress_mappings = {
 };
 
 exports.get_keydown_hotkey = function (e) {
-    if (e.metaKey || e.altKey) {
+    if (e.altKey) {
         return;
     }
 
     var hotkey;
+    if (e.metaKey) {
+        hotkey = keydown_meta_mappings[e.which];
+        if (hotkey) {
+            return hotkey;
+        }
+        return;
+    }
+
     if (e.ctrlKey) {
         hotkey = keydown_ctrl_mappings[e.which];
         if (hotkey) {
@@ -526,9 +538,13 @@ exports.process_hotkey = function (e, hotkey) {
     if (exports.processing_text()) {
         // Note that there is special handling for enter/escape too, but
         // we handle this in other functions.
-
         if (event_name === 'left_arrow' && compose_state.focus_in_empty_compose()) {
             message_edit.edit_last_sent_message();
+            return true;
+        }
+
+        if (event_name === "narrow_compose" && compose_state.composing()) {
+            narrow.to_compose_target();
             return true;
         }
 
