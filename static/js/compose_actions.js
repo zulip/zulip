@@ -365,6 +365,27 @@ exports.on_topic_narrow = function () {
     $('#compose-textarea').focus().select();
 };
 
+exports.quote_and_reply = function (opts) {
+
+    var message = current_msg_list.selected_message();
+    var textarea = $("#compose-textarea");
+    var msgid = message.id;
+
+        exports.respond_to_message(opts);
+        channel.get({
+            url: '/json/messages/' + msgid,
+            idempotent: true,
+            success: function (data) {
+                if (textarea.val() === "") {
+                    textarea.val("```quote\n" + data.raw_content +"\n```\n");
+                } else {
+                    textarea.val(textarea.val() + "\n```quote\n" + data.raw_content +"\n```\n");
+                }
+                $("#compose-textarea").trigger("autosize.resize");
+            },
+        });
+};
+
 exports.on_narrow = function () {
     if (narrow_state.narrowed_by_topic_reply()) {
         exports.on_topic_narrow();

@@ -236,7 +236,7 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('d', 'drafts.launch');
 
     // Next, test keys that only work on a selected message.
-    var message_view_only_keys = '@*+RjJkKsSuvi:GM';
+    var message_view_only_keys = '@*+>RjJkKsSuvi:GM';
 
     // Check that they do nothing without a selected message
     global.current_msg_list.empty = return_true;
@@ -246,7 +246,7 @@ function stubbing(func_name_to_stub, test_function) {
 
     // Check that they do nothing while in the settings overlay
     overlays.settings_open = return_true;
-    assert_unmapped('@*+-rRjJkKsSuvi:GM');
+    assert_unmapped('@*+->rRjJkKsSuvi:GM');
     overlays.settings_open = return_false;
 
     // TODO: Similar check for being in the subs page
@@ -266,6 +266,7 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('u', 'popovers.show_sender_info');
     assert_mapping('i', 'popovers.open_message_menu');
     assert_mapping(':', 'reactions.open_reactions_popover', true);
+    assert_mapping('>', 'compose_actions.quote_and_reply');
 
     overlays.is_active = return_true;
     overlays.lightbox_open = return_true;
