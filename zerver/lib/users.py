@@ -7,6 +7,7 @@ from zerver.lib.cache import generic_bulk_cached_fetch, user_profile_cache_key_i
 from zerver.lib.request import JsonableError
 from zerver.models import UserProfile, Service, Realm, \
     get_user_profile_by_id
+import string
 
 def check_full_name(full_name_raw: Text) -> Text:
     full_name = full_name_raw.strip()
@@ -16,6 +17,8 @@ def check_full_name(full_name_raw: Text) -> Text:
         raise JsonableError(_("Name too short!"))
     if list(set(full_name).intersection(UserProfile.NAME_INVALID_CHARS)):
         raise JsonableError(_("Invalid characters in name!"))
+    if list(set(full_name).intersection(string.punctuation)):
+        raise JsonableError(_("Special characters in name!"))
     return full_name
 
 def check_short_name(short_name_raw: Text) -> Text:
