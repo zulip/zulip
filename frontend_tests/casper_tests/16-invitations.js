@@ -25,12 +25,14 @@ casper.waitUntilVisible('#invite_user_form', function () {
     casper.fill('form#invite_user_form', {invitee_emails: 'foo@zulip.com'});
     casper.click('input[name="invite_as_admin"] ~ span');
     casper.click('#edit_streams_button');
+    casper.test.assertVisible("#add_invite_stream_input", "Stream input visible");
+    common.select_item_via_typeahead('#add_invite_stream_input', 'D', 'Denmark');
 });
 
-casper.waitUntilVisible("#invite-stream-checkboxes", function () {
-    casper.click('input[value="Denmark"] ~ span');
-    casper.click('input[value="Scotland"] ~ span');
-    casper.click('#submit-invitation');
+casper.then(function () {
+    casper.waitUntilVisible("div .pill", function () {
+        casper.click('#submit-invitation');
+    });
 });
 
 casper.waitUntilVisible("#invite_status.alert.alert-success", function () {

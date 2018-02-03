@@ -880,24 +880,6 @@ function render(template_name, args) {
     assert($(html).hasClass('pill'));
 }());
 
-(function invite_subscription() {
-    var args = {
-        streams: [
-            {
-                name: "devel",
-            },
-            {
-                name: "social",
-            },
-        ],
-    };
-    var html = render('invite_subscription', args);
-    global.write_handlebars_output("invite_subscription", html);
-
-    var input = $(html).find("label:first");
-    assert.equal(input.text().trim(), "devel");
-}());
-
 (function single_message() {
     var message =  {
         msg: {
