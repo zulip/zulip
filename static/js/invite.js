@@ -3,6 +3,7 @@ var invite = (function () {
 var exports = {};
 
 var selected_streams;
+var multiuse_invites;
 
 function update_subscription_input() {
     // TODO: If we were more clever, we would only do this if the
@@ -89,9 +90,39 @@ function reset_error_messages() {
     }
 }
 
+function show_invite_by_email() {
+    $('#invite-by-email').show();
+    $('#cancel-invitation-button').show();
+    $('#submit-invitation-button').show();
+    $('#invite-streams').show();
+    $('#back-invitation-button').hide();
+    $('#create-invitation-link-button').hide();
+    $('#multiuse-invite-link-group').hide();
+    $('#invite_user_form').attr('action', '/json/invites');
+    multiuse_invites = false;
+}
+
 function prepare_form_to_be_shown() {
     update_subscription_input();
     reset_error_messages();
+    $('#multiuse-invite').on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $('#invite-by-email').hide();
+        $('#cancel-invitation-button').hide();
+        $('#submit-invitation-button').hide();
+        $('#back-invitation-button').show();
+        $('#create-invitation-link-button').show();
+        $('#invite-streams').show();
+        $('#invite_user_form').attr('action', '/json/multiuse_invites');
+        multiuse_invites = true;
+    });
+    $('#back-invitation-button').on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        show_invite_by_email();
+    });
+    show_invite_by_email();
 }
 
 exports.initialize = function () {
@@ -120,11 +151,26 @@ exports.initialize = function () {
             });
             return true;
         },
-        success: function () {
-            $('#submit-invitation').button('reset');
+        success: function (data) {
+            if (multiuse_invites) {
+                $('#create-invitation-link-button').button('reset');
+                $('#back-invitation-button').hide();
+                $('#invite-streams').hide();
+                $('#multiuse-invite-link-group').show();
+                $('#multiuse-invite-link').val(data.invite_link);
+                $('#create-invitation-link-button').hide();
+                $('#copy-link-button').on('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    $('#multiuse-invite-link').select();
+                    document.execCommand('copy');
+                });
+            } else {
+                $('#submit-invitation-button').button('reset');
+            }
             invite_status.text(i18n.t('User(s) invited successfully.'))
-                          .addClass('alert-success')
-                          .show();
+                        .addClass('alert-success')
+                        .show();
             invitee_emails.val('');
 
             if (page_params.development_environment) {
@@ -136,7 +182,7 @@ exports.initialize = function () {
 
         },
         error: function (xhr) {
-            $('#submit-invitation').button('reset');
+            $('#submit-invitation-button').button('reset');
             var arr = JSON.parse(xhr.responseText);
             if (arr.errors === undefined) {
                 // There was a fatal error, no partial processing occurred.

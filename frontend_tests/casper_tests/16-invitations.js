@@ -30,7 +30,7 @@ casper.waitUntilVisible('#invite_user_form', function () {
 
 casper.then(function () {
     casper.waitUntilVisible("div .pill", function () {
-        casper.click('#submit-invitation');
+        casper.click('#submit-invitation-button');
     });
 });
 

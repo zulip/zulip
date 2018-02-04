@@ -2295,13 +2295,14 @@ div.topic_edit_spinner .loading_indicator_spinner {
 }
 
 #invitee_emails {
-    min-height: 40px;
+    min-height: 60px;
     max-height: 300px;
+    margin: 5px 0 0;
 }
 
 #invite-user .overlay-content {
     position: relative;
-    width: 500px;
+    width: 400px;
     border-radius: 4px;
 }
 
@@ -2321,14 +2322,15 @@ div.topic_edit_spinner .loading_indicator_spinner {
 }
 
 #invite-user #invite-user-label {
-    font-size: 1em;
+    font-size: 1.1em;
     font-weight: 700;
     text-align: center;
     text-transform: uppercase;
 }
 
-#invite-user .invite-stream-controls {
-    margin-top: 5px;
+#invite-user label {
+    font-size: 1.1em;
+    font-weight: 400;
 }
 
 #invite-user #add_invite_stream_input {
@@ -2341,6 +2343,42 @@ div.topic_edit_spinner .loading_indicator_spinner {
     max-width: inherit;
     font-size: inherit;
     font-family: inherit;
+}
+
+#invite-user .hidden-button {
+    display: none;
+}
+
+#invite-user #multiuse-invite-link {
+    width: 80%;
+    cursor: pointer;
+}
+
+#invite-user .horizontal-line-with-text {
+    text-align: center;
+    border-top: 1px solid #eeeeee;
+    border-bottom: 1px solid #ffffff;
+    line-height: 0.1em;
+    margin: 20px 0;
+}
+
+#invite-user .horizontal-line-with-text span {
+    background: #ffffff;
+    padding: 0 10px;
+    color: #808080;
+}
+
+#invite-user #invite-streams {
+    margin-top: 30px;
+}
+
+#invite-user .invite-button {
+    padding-left: 7px;
+}
+
+#invite-user .pill-container .input[contenteditable]:empty::after {
+    content: attr(data-placeholder);
+    opacity: 0.5;
 }
 
 #scrollable-dropdown-menu {
