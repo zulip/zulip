@@ -426,6 +426,39 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assert_json_error(result, 'No such bot')
         self.assert_num_bots_equal(1)
 
+    def test_deactivate_bot_with_owner_deactivation(self) -> None:
+        email = self.example_email("hamlet")
+        user = self.example_user('hamlet')
+        self.login(email)
+
+        bot_info = {
+            'full_name': u'The Bot of Hamlet',
+            'short_name': u'hambot',
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        bot_info = {
+            'full_name': u'The Another Bot of Hamlet',
+            'short_name': u'hambot-another',
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        all_bots = UserProfile.objects.filter(is_bot=True, bot_owner=user, is_active=True)
+        bots = [bot for bot in all_bots]
+        self.assertEqual(len(bots), 2)
+
+        result = self.client_delete('/json/users/me')
+        self.assert_json_success(result)
+        user = self.example_user('hamlet')
+        self.assertFalse(user.is_active)
+
+        self.login(self.example_email("iago"))
+        all_bots = UserProfile.objects.filter(is_bot=True, bot_owner=user, is_active=True)
+        bots = [bot for bot in all_bots]
+        self.assertEqual(len(bots), 0)
+
     def test_bot_deactivation_attacks(self) -> None:
         """You cannot deactivate somebody else's bot."""
         self.login(self.example_email('hamlet'))
