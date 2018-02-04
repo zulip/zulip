@@ -1,0 +1,26 @@
+#!/bin/bash
+
+#"OK": 0
+#"WARNING": 1
+#"CRITICAL": 2
+#"UNKNOWN": 3
+
+SUPERVISOR_STATUS=$(supervisorctl status zulip-workers:zulip-deliver-enqueued-emails 2>&1)
+STATUS=$(echo "$SUPERVISOR_STATUS" | awk '{ print $2 }')
+
+
+if [ "$STATUS" == "RUNNING" ]
+then
+    echo "Running"
+    exit 0
+elif [ "$(echo "$STATUS" | egrep '(STOPPED)|(STARTING)|(BACKOFF)|(STOPPING)|(EXITED)|(FATAL)|(UNKNOWN)$')" ]
+then
+    # not "RUNNING", but a recognized supervisor status
+    echo "$STATUS"
+    exit 1
+else
+    # we don't recognize the second column in this SUPERVISOR_STATUS.
+    # This may be indicative of a supervisor configuration problem
+    echo "$SUPERVISOR_STATUS"
+    exit 3
+fi

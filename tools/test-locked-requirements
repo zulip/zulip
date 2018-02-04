@@ -1,0 +1,124 @@
+#!/usr/bin/env python3
+import difflib
+import filecmp
+import glob
+import hashlib
+import os
+import subprocess
+import sys
+import ujson
+
+from typing import Optional, List, Tuple
+
+TOOLS_DIR = os.path.abspath(os.path.dirname(__file__))
+ZULIP_PATH = os.path.dirname(TOOLS_DIR)
+REQS_DIR = os.path.join(ZULIP_PATH, 'requirements')
+CACHE_DIR = os.path.join(ZULIP_PATH, 'var', 'tmp')
+TMP_DIR = '/var/tmp'
+if 'TRAVIS' in os.environ:
+    CACHE_DIR = os.path.join(os.environ['HOME'], 'misc')
+CACHE_FILE = os.path.join(CACHE_DIR, 'requirements_hashes')
+LOCKED_REQS_FILE_NAMES = ['dev.txt', 'docs.txt', 'mypy.txt', 'prod.txt', 'thumbor.txt']
+
+def print_diff(path_file1, path_file2):
+    # type: (str, str) -> None
+    with open(path_file1) as file1:
+        with open(path_file2) as file2:
+            diff = difflib.unified_diff(
+                file1.readlines(),
+                file2.readlines(),
+                fromfile=path_file1,
+                tofile=path_file2,
+            )
+    for line in diff:
+        print(line)
+
+def test_locked_requirements():
+    # type: () -> bool
+    # `pip-compile` tries to avoid unnecessarily updating recursive dependencies
+    # if lock files are present already. If we don't copy these files to the tmp
+    # dir then recursive dependencies will get updated to their latest version
+    # without any change in the input requirements file and the test will not pass.
+    for fn in LOCKED_REQS_FILE_NAMES:
+        locked_file = os.path.join(REQS_DIR, fn)
+        test_locked_file = os.path.join(TMP_DIR, fn)
+        subprocess.check_call(['cp', locked_file, test_locked_file])
+    subprocess.check_call([os.path.join(TOOLS_DIR, 'update-locked-requirements'), '--output-dir', TMP_DIR],
+                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    same = True
+    for fn in LOCKED_REQS_FILE_NAMES:
+        locked_file = os.path.join(REQS_DIR, fn)
+        test_locked_file = os.path.join(TMP_DIR, fn)
+        same = same and filecmp.cmp(test_locked_file, locked_file, shallow=False)
+
+    return same
+
+def get_requirements_hash(use_test_lock_files=False):
+    # type: (Optional[bool]) -> str
+    sha1 = hashlib.sha1()
+    reqs_files = glob.glob(os.path.join(ZULIP_PATH, "requirements", "*.in"))
+    lock_files_path = REQS_DIR
+    if use_test_lock_files:
+        lock_files_path = TMP_DIR
+    reqs_files.extend([os.path.join(lock_files_path, fn) for fn in LOCKED_REQS_FILE_NAMES])
+    for file_path in reqs_files:
+        with open(file_path) as fp:
+            sha1.update(fp.read().encode("utf-8"))
+    return sha1.hexdigest()
+
+def may_be_setup_cache():
+    # type: () -> None
+    if not os.path.exists(CACHE_DIR):
+        subprocess.check_call(['mkdir', CACHE_DIR])
+    if not os.path.exists(CACHE_FILE):
+        with open(CACHE_FILE, 'w') as fp:
+            ujson.dump([], fp)
+
+def load_cache():
+    # type: () -> List[str]
+    with open(CACHE_FILE) as fp:
+        hash_list = ujson.load(fp)
+    return hash_list
+
+def update_cache(hash_list):
+    # type: (List[str]) -> None
+    # We store last 100 hash entries. Aggressive caching is
+    # not a problem as it is cheap to do.
+    if len(hash_list) > 100:
+        hash_list = hash_list[-100:]
+    with open(CACHE_FILE, 'w') as fp:
+        ujson.dump(hash_list, fp)
+
+def main():
+    # type: () -> None
+    may_be_setup_cache()
+    hash_list = load_cache()
+    curr_hash = get_requirements_hash()
+
+    if curr_hash in hash_list:
+        # We have already checked this set of requirements and they
+        # were consistent so no need to check again.
+        return
+
+    requirements_are_consistent = test_locked_requirements()
+
+    # Cache the hash so that we need not to run the `update_locked_requirements`
+    # tool again for checking this set of requirements.
+    valid_hash = get_requirements_hash(use_test_lock_files=True)
+    hash_list.append(valid_hash)
+    update_cache(hash_list)
+    if not requirements_are_consistent:
+        for fn in LOCKED_REQS_FILE_NAMES:
+            locked_file = os.path.join(REQS_DIR, fn)
+            test_locked_file = os.path.join(TMP_DIR, fn)
+            print_diff(test_locked_file, locked_file)
+        # Flush the output to ensure we print the error at the end.
+        sys.stdout.flush()
+        raise Exception("It looks like you have updated some python dependencies but haven't "
+                        "updated locked requirements files. Please update them by running "
+                        "`tools/update-locked-requirements`. For more information please "
+                        "refer to `requirements/README.md`.")
+
+if __name__ == '__main__':
+    main()

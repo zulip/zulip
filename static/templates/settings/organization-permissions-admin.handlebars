@@ -1,0 +1,128 @@
+<div id="organization-permissions" data-name="organization-permissions" class="settings-section">
+    <form class="form-horizontal admin-realm-form org-permissions-form">
+        <h3 class="light">{{t "Joining the organization" }}</h3>
+
+        <div class="alert" id="admin-realm-restricted-to-domain-status"></div>
+        <div class="alert" id="admin-realm-invite-required-status"></div>
+        <div class="alert" id="admin-realm-invite-by-admins-only-status"></div>
+        <div class="alert" id="admin-realm-email-changes-disabled-status"></div>
+        <div class="alert" id="admin-realm-name-changes-disabled-status"></div>
+        <div class="alert" id="admin-realm-add-emoji-by-admins-only-status"></div>
+        <div class="alert" id="admin-realm-create-stream-by-admins-only-status"></div>
+        <div class="alert" id="admin-realm-create-generic-bot-by-admins-only-status"></div>
+
+        <div class="side-padded-container inline-block organization-permissions-parent">
+            <div class="input-group admin-restricted-to-domain">
+                <label class="checkbox">
+                    <input type="checkbox" name="realm_restricted_to_domain" id="id_realm_restricted_to_domain"
+                           {{#if realm_restricted_to_domain}}checked="checked"{{/if}} />
+                    <span></span>
+                </label>
+                <label for="id_realm_restricted_to_domain" id="realm_restricted_to_domains_label" class="inline-block" />
+                {{#if is_admin }}
+                <a data-toggle="modal" href="#realm_domains_modal">{{t "[Configure]" }}</a>
+                {{/if}}
+            </div>
+
+            <div class="input-group">
+                <label class="checkbox">
+                    <input type="checkbox" name="realm_invite_required" id="id_realm_invite_required"
+                           {{#if realm_invite_required}}checked="checked"{{/if}} />
+                    <span></span>
+                </label>
+                <label for="id_realm_invite_required" id="realm_invite_required_label" class="inline-block">
+                    {{t "Users need an invitation to join" }}
+                </label>
+            </div>
+
+            <div class="input-group disableable {{#unless realm_invite_required}}control-label-disabled{{/unless}}">
+                <label class="checkbox">
+                    <input type="checkbox" name="realm_invite_by_admins_only" id="id_realm_invite_by_admins_only"
+                           {{#unless realm_invite_required}}disabled="disabled"{{/unless}}
+                           {{#if realm_invite_by_admins_only}}checked="checked"{{/if}} />
+                    <span></span>
+                </label>
+                <label for="id_realm_invite_by_admins_only" id="id_realm_invite_by_admins_only_label" class="inline-block">
+                    {{t "Only admins can invite new users" }}
+                </label>
+            </div>
+        </div>
+
+        <h3 class="light">{{t "User identity" }}</h3>
+        <div class="side-padded-container inline-block organization-permissions-parent">
+            <div class="input-group">
+                <label class="checkbox">
+                    <input type="checkbox" id="id_realm_name_changes_disabled" name="realm_name_changes_disabled"
+                           {{#if realm_name_changes_disabled}}checked="checked"{{/if}} />
+                    <span></span>
+                </label>
+                <label for="id_realm_name_changes_disabled" id="id_realm_name_changes_disabled_label" class="inline-block">
+                    {{t "Prevent users from changing their name" }}
+                </label>
+            </div>
+
+            <div class="input-group">
+                <label class="checkbox">
+                    <input type="checkbox" id="id_realm_email_changes_disabled" name="realm_email_changes_disabled"
+                           {{#if realm_email_changes_disabled}}checked="checked"{{/if}} />
+                    <span></span>
+                </label>
+                <label for="id_realm_email_changes_disabled" id="id_realm_email_changes_disabled_label" class="inline-block">
+                    {{t "Prevent users from changing their email address" }}
+                </label>
+            </div>
+        </div>
+
+        <h3 class="light">{{t "Other permissions" }}</h3>
+        <div class="organization-permissions-parent">
+            <div class="inline-block create-stream-dropdown">
+                <label for="realm_create_stream_permission" class="dropdown-title">{{t "Who can create streams" }}</label>
+                <select name="realm_create_stream_permission" id="id_realm_create_stream_permission">
+                    <option value="by_anyone">{{t "Everyone" }}</option>
+                    <option value="by_admins_only">{{t "Admins only" }}</option>
+                    <option value="by_admin_user_with_three_days_old">{{t "All admins, and users with accounts at least 3 days old." }}</option>
+                    <option value="by_admin_user_with_custom_time">{{t "All admins, and users with accounts at least N days old." }}</option>
+                </select>
+            </div>
+            <div class="inline-block">
+                <label for="aitin" class="inline-block">{{t "Minimum account age (N)" }}:</label>
+                <input type="text" id="id_realm_waiting_period_threshold"
+                     name="realm_waiting_period_threshold"
+                     class="admin-realm-message-content-edit-limit-minutes"
+                     value="{{ realm_waiting_period_threshold }}"/>
+            </div>
+        </div>
+        <div class="m-t-10 inline-block organization-permissions-parent">
+            <div class="inline-block">
+                <label for="realm_add_emoji_by_admins_only" class="dropdown-title">{{t "Who can add emoji" }}</label>
+                <select name="realm_add_emoji_by_admins_only" id="id_realm_add_emoji_by_admins_only">
+                    <option value="by_anyone">{{t "Everyone" }}</option>
+                    <option value="by_admins_only">{{t "Admins only" }}</option>
+                </select>
+            </div>
+        </div>
+
+        <h3 class="light">{{t "Interactive bots" }}</h3>
+        <div class="side-padded-container inline-block organization-permissions-parent">
+            <div class="input-group">
+                <label class="checkbox">
+                    <input type="checkbox" id="id_realm_create_generic_bot_by_admins_only" name="realm_create_generic_bot_by_admins_only"
+                           {{#if realm_create_generic_bot_by_admins_only}}checked="checked"{{/if}} />
+                    <span></span>
+                </label>
+                <label for="id_realm_create_generic_bot_by_admins_only" id="id_realm_create_generic_bot_by_admins_only_label" class="inline-block"
+                    title="{{t 'If checked, only administrators may create new generic bots.' }}">
+                    {{t "Prevent users from creating generic bots" }}
+                </label>
+            </div>
+        </div>
+
+        {{#if is_admin }}
+        <div class="input-group organization-submission">
+            <button type="submit" class="button rounded sea-green">
+                {{t 'Save changes' }}
+            </button>
+        </div>
+        {{/if}}
+    </form>
+</div>

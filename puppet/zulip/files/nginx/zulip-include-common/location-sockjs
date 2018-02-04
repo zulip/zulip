@@ -1,0 +1,7 @@
+# Longpolling version needed for xhr streaming support
+include /etc/nginx/zulip-include/proxy_longpolling;
+
+proxy_set_header Upgrade         $http_upgrade;
+# This should override the Connection setting in zulip-include/proxy
+proxy_set_header Connection      $connection_upgrade;
+proxy_set_header X-Real-IP       $remote_addr;

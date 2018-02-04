@@ -1,0 +1,117 @@
+#!/usr/bin/env python3
+
+
+import os
+import sys
+import argparse
+import subprocess
+
+import lister
+from typing import cast, Dict, List
+
+TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+os.chdir(os.path.dirname(TOOLS_DIR))
+
+sys.path.append(os.path.dirname(TOOLS_DIR))
+from lib.test_script import get_provisioning_status
+
+exclude = """
+docs/conf.py
+zproject/settings.py
+zproject/test_settings.py
+""".split()
+
+parser = argparse.ArgumentParser(description="Run mypy on files tracked by git.")
+parser.add_argument('targets', nargs='*',
+                    help="files and directories to check (default: .)")
+parser.add_argument('--version', action='store_true',
+                    help="show mypy version information and exit")
+parser.add_argument('--quick', action='store_true',
+                    help="pass --quick to mypy")
+parser.add_argument('-m', '--modified', action='store_true',
+                    help="check only modified files")
+parser.add_argument('--scripts-only', action='store_true',
+                    help="only check extensionless python scripts")
+parser.add_argument('-a', '--all', action='store_true',
+                    help="check all files, bypassing the default exclude list")
+parser.add_argument('--force', action="store_true",
+                    help="run tests despite possible provisioning problems")
+parser.add_argument('--linecoverage-report', action='store_true',
+                    help="emit a coverage report under var/")
+parser.add_argument('--no-disallow-untyped-defs',
+                    dest='disallow_untyped_defs', action='store_false',
+                    help="don't pass --disallow-untyped-defs to mypy")
+parser.add_argument('--strict-optional', action='store_true',
+                    help="pass --strict-optional to mypy")
+parser.add_argument('--warn-unused-ignores', action='store_true',
+                    help="pass --warn-unused-ignores to mypy")
+parser.add_argument('--no-ignore-missing-imports',
+                    dest='ignore_missing_imports', action='store_false',
+                    help="don't pass --ignore-missing-imports to mypy")
+args = parser.parse_args()
+
+if not args.force:
+    ok, msg = get_provisioning_status()
+    if not ok:
+        print(msg)
+        print('If you really know what you are doing, use --force to run anyway.')
+        sys.exit(1)
+
+# Use zulip-py3-venv's mypy if it's available.
+VENV_DIR = "/srv/zulip-py3-venv"
+MYPY_VENV_PATH = os.path.join(VENV_DIR, "bin", "mypy")
+if os.path.exists(MYPY_VENV_PATH):
+    mypy_command = MYPY_VENV_PATH
+else:
+    mypy_command = "mypy"
+
+if args.version:
+    print("mypy command:", mypy_command)
+    sys.exit(subprocess.call([mypy_command, "--version"]))
+
+if args.all:
+    exclude = []
+
+# find all non-excluded files in current directory
+files_dict = cast(Dict[str, List[str]],
+                  lister.list_files(targets=args.targets, ftypes=['py', 'pyi'],
+                                    use_shebang=True, modified_only=args.modified,
+                                    exclude=exclude, group_by_ftype=True,
+                                    extless_only=args.scripts_only))
+pyi_files = set(files_dict['pyi'])
+python_files = [fpath for fpath in files_dict['py']
+                if not fpath.endswith('.py') or fpath + 'i' not in pyi_files]
+if not python_files:
+    print("There are no files to run mypy on.")
+    sys.exit(0)
+
+extra_args = ["--check-untyped-defs",
+              "--follow-imports=silent",
+              "--scripts-are-modules",
+              "-i", "--cache-dir=var/mypy-cache",
+              "--disallow-any-generics"]
+if args.linecoverage_report:
+    extra_args.append("--linecoverage-report")
+    extra_args.append("var/linecoverage-report")
+if args.disallow_untyped_defs:
+    extra_args.append("--disallow-untyped-defs")
+if args.warn_unused_ignores:
+    extra_args.append("--warn-unused-ignores")
+if args.strict_optional:
+    extra_args.append("--strict-optional")
+if args.ignore_missing_imports:
+    extra_args.append("--ignore-missing-imports")
+if args.quick:
+    extra_args.append("--quick")
+
+rc = subprocess.call([mypy_command] + extra_args + python_files)
+
+if args.linecoverage_report:
+    # Move the coverage report to where codecov will look for it.
+    try:
+        os.rename('var/linecoverage-report/coverage.txt', 'var/.coverage')
+    except OSError:
+        # maybe mypy crashed; exit with its error code
+        pass
+
+sys.exit(rc)

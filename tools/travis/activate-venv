@@ -1,0 +1,4 @@
+#!/bin/bash
+
+source /srv/zulip-py3-venv/bin/activate
+echo "Using $VIRTUAL_ENV"

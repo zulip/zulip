@@ -1,0 +1,36 @@
+{% extends "zerver/emails/compiled/email_base_default.html" %}
+
+{% block illustration %}
+<img src="{{ email_images_base_uri }}/day2_1.png"/>
+{% endblock %}
+
+{% block content %}
+<p>Hey,</p>
+
+<p>I wanted to share one last thing with you: a few tips about topics, since mastering topics is a key part of being a Zulip power user.</p>
+
+<img src="{{ email_images_base_uri }}/day2_2.png"/>
+
+<p>Topics are like email subject lines. The big difference, though, is that they're really short and lightweight. Two or three words will do it. Don't overthink 'em&mdash;you can always edit the message later!</p>
+
+<ul>
+    <li>Good topics: design mockup, Bug 345, acme burgers</li>
+    <li>Not recommended: "What do people think of this new design mockup?", "I'm looking at Bug 345", "Is Acme Burgers open for lunch?"</li>
+</ul>
+
+<img src="{{ email_images_base_uri }}/day2_3.png"/>
+
+<p>Why bother with topics? Well, two reasons: it makes conversations clearer (imagine if email didn't have them!), and it lets you more efficiently catch up on what's happened while you're away&mdash;read the topics that are relevant to you, and ignore the ones that aren't!</p>
+
+<p><a href="{{ realm_uri }}">Take it for a spin now.</a></p>
+
+<p>Thanks,<br />Zulip</p>
+{% endblock %}
+
+{% block manage_preferences %}
+
+<p>
+    <a href="{{ realm_uri }}/#settings">Manage email preferences</a> |
+    <a href="{{ unsubscribe_link }}">Unsubscribe from welcome emails</a>
+</p>
+{% endblock %}

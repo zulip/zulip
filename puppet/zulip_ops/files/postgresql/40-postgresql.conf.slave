@@ -1,0 +1,7 @@
+# Virtual memory settings
+vm.swappiness = 0
+vm.overcommit_memory = 2
+
+# These are the defaults on newer kernels
+vm.dirty_ratio = 10
+vm.dirty_background_ratio = 5

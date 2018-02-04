@@ -1,0 +1,17 @@
+{{#if is_emoji}}
+    {{#if has_image}}
+    <img class="emoji" src="{{ img_src }}" />
+    {{else}}
+    <span class='emoji emoji-{{ codepoint }}' />
+    {{/if}}
+    &nbsp;&nbsp;
+{{/if}}
+<strong>
+    {{~ primary ~}}
+</strong>
+{{~#if has_secondary}}
+&nbsp;&nbsp;
+<small class="autocomplete_secondary">
+    {{~ secondary ~}}
+</small>
+{{~/if}}

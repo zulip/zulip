@@ -1,0 +1,201 @@
+{% extends "zerver/portico.html" %}
+
+{% block title %}
+<title>Zulip: the best group chat for open source projects</title>
+{% endblock %}
+
+{% block customhead %}
+{{ super() }}
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% stylesheet 'portico' %}
+{% stylesheet 'landing-page' %}
+{{ render_bundle('landing-page') }}
+
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+
+<div class="portico-landing why-page no-slide">
+    <div class="hero bg-pycon">
+        <div class="bg-dimmer"></div>
+        <div class="content">
+            <h1 class="center">About the Zulip project</h1>
+            <p>Learn about the history of the Zulip project and community!</p>
+        </div>
+    </div>
+    <div class="main">
+        <div class="padded-content">
+            <div class="inner-content">
+                <div class="photo-description">
+                    Developers contributing to Zulip at the PyCon 2017
+                    sprints in Portland, Oregon.  Over 75 people
+                    sprinted on Zulip during the 4-day event!
+                </div>
+
+                <h1>About Zulip</h1>
+
+                <p>
+                    This server is an installation of version {{ zulip_version }} of
+                    the <a href="https://zulipchat.com">Zulip open source group chat
+                    software</a>.  Written in Python and using the Django web framework,
+                    Zulip has an extensive real-time messaging featureset, including
+                    both group and private messaging, conversation streams, powerful
+                    search, drag-and-drop file uploads, image previews, audible
+                    notifications, missed-message emails, markdown formatting, desktop
+                    and mobile apps, dozens of integrations, and much, much more.
+                </p>
+
+                <p>
+                    Zulip was designed from the ground up to optimize the productivity
+                    of discussions and real-time decision-making.  Zulip's unique model
+                    for threading topics, together with its system for tracking unread
+                    messages, make it easy to have multiple simultaneous conversations
+                    in the same stream.  As a result, Zulip is more efficient than any
+                    other chat product for catching up on conversations you missed while
+                    you were away from your devices.  You can read exactly the threads
+                    that are important to you, and it feels natural to follow up on
+                    conversations that happened while you were away.
+                </p>
+
+                <p>
+                    Zulip's vision is to create the world's best group chat software,
+                    completely open source, so that everyone has the freedom to
+                    customize, improve, and run their own copy of this essential piece
+                    of collaboration infrastructure.
+                </p>
+
+                <p>
+                    Further information on the Zulip project and <a href="/features">its
+                    features</a> can be found on
+                    the <a href="https://www.zulip.org">Zulip open source project's
+                    website</a> and
+                    the <a href="https://zulip.readthedocs.io/en/latest/">Zulip
+                    documentation</a>.
+                </p>
+
+                <h2>Zulip Community</h2>
+
+                <p>
+                    Zulip is developed by a vibrant community of developers from around
+                    the world.  Every month, dozens of people contribute code to it, and
+                    dozens more contribute bug reports, feedback, and translations.  The
+                    Zulip community welcomes new contributors from any background.  The
+                    project has an easy to install development environment, an extensive
+                    test suite,
+                    and <a href="https://zulip.readthedocs.io/en/latest/">over 100,000
+                    words of developer documentation</a> to make it easy for new
+                    contributors to contribute effectively to the project.
+                </p>
+
+                <h3 class=" normal">Contributing to Zulip</h3>
+
+                <p>
+                    If you'd like to join the Zulip community, we'd love to have you!
+                    Please
+                    visit <a href="https://github.com/zulip/zulip/#zulip-overview">the
+                    main Zulip project on GitHub</a> for details on how to get involved!
+                </p>
+
+                <h2>Early history</h2>
+
+                <p>
+                    Zulip was originally developed by Zulip, Inc., a small startup in
+                    Cambridge, Massachusetts.  Zulip, Inc. was founded by the MIT team
+                    that previously created
+                    <a href="https://www.ksplice.com">Ksplice</a>, software for
+                    live-patching a running Linux kernel.  Zulip was inspired by
+                    the <a href="https://barnowl.mit.edu/">Barnowl</a> client for
+                    the <a href="https://en.wikipedia.org/wiki/Zephyr_(protocol)">Zephyr</a>
+                    protocol, and the incredible community that Zephyr supported at MIT.
+                </p>
+
+                <p>
+                    Zulip, Inc. was acquired by Dropbox in early 2014, while the product
+                    was still in private beta.  Zulip's beta
+                    users <a href="https://www.recurse.com/blog/90-zulip-supporting-oss-at-the-recurse-center">loved
+                    Zulip's unique user experience</a> and continued using it, despite
+                    the fact that the product was not being actively developed.  After a
+                    year and a half, Dropbox generously decided to release Zulip as open
+                    source software so that Zulip's users could continue enjoying the
+                    software.
+                </p>
+
+                <p>
+                    As a result, the first time the public had the opportunity to use
+                    Zulip was when Dropbox
+                    <a href="https://blogs.dropbox.com/tech/2015/09/open-sourcing-zulip-a-dropbox-hack-week-project/">released
+                    Zulip as open source software</a> in late 2015.  The open sourcing
+                    announcement was very popular, staying at the top of
+                    both <a href="https://news.ycombinator.com/item?id=10279961">Hacker
+                    News</a>
+                    and <a href="https://www.reddit.com/r/programming/comments/3me9qp/dropbox_has_open_sourced_zulip_group_chat_software/">the
+                    programming subreddit</a> for an entire day.
+                </p>
+
+                <p>
+                    Zulip was open sourced with the complete version control history
+                    intact because 10 Zulip users visited Dropbox for a full week to
+                    help with the technical work.  The Zulip community is incredibly
+                    grateful to both Dropbox and those enthusiastic early users for
+                    making the Zulip open source project possible.
+                </p>
+
+                <h2>Success as an open source project</h2>
+
+                <p>
+                    At first, the Zulip open source project was
+                    maintained with just a bit of lead developer Tim
+                    Abbott's nights and weekends.  However, the
+                    community steadily gained new contributors, and
+                    has now grown to be one of the world's largest and
+                    most active open source projects.  We highlight a
+                    few milestones below:
+                </p>
+
+                <ul>
+                    <li>
+                        By the end of 2015, the open source project
+                        was already going strong with a community of
+                        dozens of developers around the world.
+                    </li>
+                    <li>
+                        At the PyCon Sprints in May 2016, dozens of
+                        developers got involved in contributing to
+                        Zulip; a major accomplishment from those
+                        sprints
+                        was <a href="https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/">annotating
+                        Zulip with mypy static types</a>.
+                    </li>
+                    <li>
+                        By late
+                        2016, <a href="https://github.com/zulip/zulip/graphs/contributors">more
+                        than 150 people from all over the world</a>
+                        had contributed almost 1000 pull requests to
+                        the software, and the Zulip project was moving
+                        faster than when the original startup employed
+                        11 full-time engineers.
+                    </li>
+                    <li>
+                        At the PyCon Sprints in May 2017, dozens of
+                        Zulip core developers gathered and led the
+                        largest PyCon sprint ever, with over 75
+                        developers contributing to Zulip over course
+                        of the 4-day event.
+                    </li>
+                    <li>
+                        As of August 2017, the Zulip server project had
+                        merged <a href="https://github.com/zulip/zulip/pulls">over
+                        4000 pull requests</a> written by
+                        <a href="https://github.com/zulip/zulip/graphs/contributors">well
+                        over 325 developers</a>.
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

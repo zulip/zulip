@@ -1,0 +1,88 @@
+upstream staging {
+    server staging0.zulipchat.net:443;
+
+    keepalive 10000;
+}
+
+upstream prod {
+    server prod0.zulipchat.net:443;
+
+    keepalive 10000;
+}
+
+server {
+    listen 80;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    # The listen needs to be `www.zulipstaging.com` since bare zulipstaging.com
+    # is not a CNAME and thus has the public IP inside EC2
+    listen www.zulipstaging.com:443;
+    server_name zulipstaging.com *.zulipstaging.com;
+
+    ssl on;
+    ssl_certificate /etc/ssl/certs/wildcard-zulipstaging.com.combined-chain.crt;
+    ssl_certificate_key /etc/ssl/private/wildcard-zulipstaging.com.key;
+
+    location / {
+        proxy_pass https://staging/;
+        include /etc/nginx/zulip-include/proxy;
+    }
+
+    location /sockjs {
+        proxy_pass https://staging;
+        include /etc/nginx/zulip-include/location-sockjs;
+    }
+
+    location ~ /json/events|/api/v1/events {
+        proxy_pass https://staging;
+        include /etc/nginx/zulip-include/proxy_longpolling;
+    }
+
+    include /etc/nginx/zulip-include/certbot;
+}
+
+server {
+    # The listen needs to be `www.zulipchat.com` since bare zulipchat.com
+    # is not a CNAME and thus has the public IP inside EC2
+    listen www.zulipchat.com:443 default_server;
+    server_name zulipchat.com *.zulipchat.com;
+
+    ssl on;
+    ssl_certificate /etc/ssl/certs/wildcard-zulipchat.com.combined-chain.crt;
+    ssl_certificate_key /etc/ssl/private/wildcard-zulipchat.com.key;
+
+    location / {
+        proxy_pass https://prod;
+        include /etc/nginx/zulip-include/proxy;
+    }
+
+    location /sockjs {
+        proxy_pass https://prod;
+        include /etc/nginx/zulip-include/location-sockjs;
+    }
+
+    location ~ /json/events|/api/v1/events {
+        proxy_pass https://prod;
+        include /etc/nginx/zulip-include/proxy_longpolling;
+    }
+
+    include /etc/nginx/zulip-include/certbot;
+}
+
+server {
+    listen uploads.zulipusercontent.net:443;
+    server_name uploads.zulipusercontent.net;
+
+    ssl on;
+    ssl_certificate /etc/letsencrypt/live/uploads.zulipusercontent.net/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/uploads.zulipusercontent.net/privkey.pem;
+
+    location / {
+        proxy_pass http://127.0.0.1:9292;
+        include /etc/nginx/zulip-include/proxy;
+    }
+
+    include /etc/nginx/zulip-include/certbot;
+}

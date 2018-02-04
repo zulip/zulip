@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -e
+
+if  [ "$1" != "--force" ]; then
+    "$(dirname "$0")/../../scripts/setup/terminate-psql-sessions" zulip zulip_test zulip_test_base zulip_test_template
+    psql -h localhost postgres zulip_test << EOF
+DROP DATABASE IF EXISTS zulip_test;
+CREATE DATABASE zulip_test TEMPLATE zulip_test_template;
+EOF
+    sh "$(dirname "$0")/../../scripts/setup/flush-memcached"
+    exit 0
+fi
+
+mkdir -p zerver/fixtures
+
+"$(dirname "$0")/../../scripts/setup/terminate-psql-sessions" zulip zulip_test zulip_test_base zulip_test_template
+
+psql -h localhost postgres zulip_test <<EOF
+DROP DATABASE IF EXISTS zulip_test;
+CREATE DATABASE zulip_test TEMPLATE zulip_test_base;
+EOF
+sh "$(dirname "$0")/../../scripts/setup/flush-memcached"
+
+./manage.py migrate --noinput --settings=zproject.test_settings
+./manage.py get_migration_status --settings=zproject.test_settings \
+    --output="migration_status_test"
+
+# This next line can be simplified to "-n0" once we fix our app (and tests) with 0 messages.
+./manage.py populate_db --settings=zproject.test_settings --test-suite -n30 \
+    --threads=1 --huddles=0 --personals=0 --percent-huddles=0 --percent-personals=0
+./manage.py dumpdata  --settings=zproject.test_settings \
+    zerver.UserProfile zerver.Stream zerver.Recipient \
+    zerver.Subscription zerver.Message zerver.Huddle zerver.Realm \
+    zerver.UserMessage zerver.Client \
+    zerver.DefaultStream > zerver/fixtures/messages.json
+
+# create pristine template database, for fast fixture restoration after tests are run.
+psql -h localhost postgres zulip_test << EOF
+DROP DATABASE IF EXISTS zulip_test_template;
+CREATE DATABASE zulip_test_template TEMPLATE zulip_test;
+EOF

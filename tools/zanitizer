@@ -1,0 +1,178 @@
+#!/usr/bin/perl
+
+# usage:
+# git clone --bare git@git.zulip.net:eng/zulip.git
+# cd zulip.git
+# git fast-export --export-marks=/tmp/em --progress=1000 --all > /tmp/fe
+# git init --bare ../zulip-zanitized.git
+# cd ../zulip-zanitized.git
+# zanitizer /tmp/fe /tmp/em | git fast-import --quiet
+
+use strict;
+use warnings;
+
+use Digest::SHA qw(sha1_hex);
+use FindBin;
+
+use lib $FindBin::Bin;
+use zanitizer_config;
+
+sub eq_tree {
+    my ($a, $b) = @_;
+    !(grep{!exists $$b{$_} || $$a{$_} ne $$b{$_}} keys %$a) &&
+	!(grep {!exists $$a{$_}} keys %$b)
+}
+
+my ($fast_export_file, $export_marks_file) = @ARGV;
+
+my %export_marks = ();
+if (defined $export_marks_file) {
+    open EXPORT_MARKS, '<', $export_marks_file or die "cannot open $export_marks_file: $!";
+    %export_marks = map {split} <EXPORT_MARKS>;
+    close EXPORT_MARKS;
+}
+
+my %mark_map = ();
+my %blob_mark = ();
+my %ref_commit = ();
+my %commit_tree = ();
+my %scrubbed_blob = ();
+my %scrubbed_file = ();
+my %deleted_file = ();
+my %renamed_file = ();
+
+open FAST_EXPORT, '<', $fast_export_file or die "cannot open $fast_export_file: $!";
+$_ = <FAST_EXPORT>;
+while (defined $_) {
+    if ($_ eq "blob\n") {
+	my ($mark) = <FAST_EXPORT> =~ /^mark (\S*)\n$/s or die;
+	my ($len) = <FAST_EXPORT> =~ /^data (\d+)\n$/s or die;
+	read(FAST_EXPORT, my $data, $len) == $len or die;
+	$_ = $data;
+	scrub_text;
+	if ($_ ne $data) {
+	    $scrubbed_blob{$mark} = 1;
+	    $data = $_;
+	}
+	<FAST_EXPORT> eq "\n" or die;
+
+	my $hash = sha1_hex($data);
+	if (exists $blob_mark{$hash}) {
+	    $mark_map{$mark} = $blob_mark{$hash};
+	} else {
+	    $blob_mark{$hash} = $mark_map{$mark} = $mark;
+	    print "blob\nmark $mark\ndata ", length $data, "\n", $data, "\n";
+	}
+    } elsif (/^reset (?'ref'.*)\n$/s) {
+	my $ref = $+{ref};
+	$_ = <FAST_EXPORT>;
+	my $from = undef;
+	while (1) {
+	    if ($_ eq "\n") {
+		$_ = <FAST_EXPORT>;
+		last;
+	    } elsif (my ($from_) = /^from (?'from'.*)\n$/s) {
+		$from = $+{from};
+	    } else {
+		# The trailing LF on reset is optional
+		last;
+	    }
+	    $_ = <FAST_EXPORT>;
+	}
+
+	$ref_commit{$ref} = $mark_map{from};
+	print "reset $ref\n";
+	print "from $mark_map{$from}\n" if defined $from && defined $mark_map{$from};
+	print "\n";
+
+	next;
+    } elsif (/^commit (?'ref'.*)\n$/s) {
+	my $ref = $+{ref};
+	my ($mark) = <FAST_EXPORT> =~ /^mark (\S*)\n$/s or die;
+	my ($author) = <FAST_EXPORT> =~ /^author (.*)\n$/s or die;
+	my ($committer) = <FAST_EXPORT> =~ /^committer (.*)\n$/s or die;
+	my ($len) = <FAST_EXPORT> =~ /^data (\d+)\n$/s or die;
+	read FAST_EXPORT, my ($data), $len;
+	$_ = <FAST_EXPORT>;
+	my $from = undef;
+	if (/^from (?'from'.*)\n$/s) {
+	    $from = $+{from};
+	    $_ = <FAST_EXPORT>;
+	}
+	my $base = defined $from ? $mark_map{$from} : $ref_commit{ref};
+	my @merge = ();
+	while (/^merge (?'mark'\S*)\n$/s) {
+	    die "unimplemented case" if !defined $from;
+	    push @merge, $+{mark};
+	    $_ = <FAST_EXPORT>;
+	}
+	# git fast-export incorrectly writes M before D when replacing
+	# a symlink with a directory.  We move every D before every M
+	# to work around this bug.
+	my @delete = ();
+	my @modify = ();
+	while (1) {
+	    if ($_ eq "\n") {
+		last;
+	    } elsif (/^D (?'file'.*)\n$/s) {
+		$_ = $+{file};
+		scrub_filename;
+		push @delete, {%+, file => $_} if defined $_;
+	    } elsif (/^M (?'mode'\d+) (?'mark'\S+) (?'file'.*)\n$/s) {
+		$_ = $+{file};
+		scrub_filename;
+		if (defined $_) {
+		    $renamed_file{$+{file}} = $_ if $_ ne $+{file};
+		    $scrubbed_file{$_} = 1 if exists $scrubbed_blob{$+{mark}};
+		    push @modify, {%+, file => $_};
+		} else {
+		    $deleted_file{$+{file}} = 1;
+		}
+	    } else {
+		die "unhandled command in commit: $_";
+	    }
+	    $_ = <FAST_EXPORT>;
+	}
+	my $base_tree = defined $base ? $commit_tree{$base} : {};
+	my %tree = %$base_tree;
+	delete $tree{$$_{file}} for @delete;
+	$tree{$$_{file}} = "$$_{mode} $mark_map{$$_{mark}}" for @modify;
+
+	if (eq_tree(\%tree, $base_tree) && !(grep {defined $mark_map{$_}} @merge)) {
+	    $ref_commit{$ref} = $mark_map{$mark} = $base;
+	} else {
+	    $ref_commit{$ref} = $mark_map{$mark} = $mark;
+	    $commit_tree{$mark} = \%tree;
+	    $_ = $data;
+	    scrub_text;
+	    if (exists $export_marks{$mark}) {
+		$_ .= "\n" until /\n\n$/;
+		$_ .= "(imported from commit $export_marks{$mark})\n";
+	    }
+	    print "commit $ref\nmark $mark\nauthor $author\ncommitter $committer\ndata ", length $_, "\n", $_;
+	    if (defined $from) {
+		die "unimplemented case" if !defined $mark_map{$from};
+		print "from $mark_map{$from}\n";
+	    }
+	    for (@merge) {
+		print "merge $mark_map{$_}\n" if defined $mark_map{$_};
+	    }
+	    print "D $$_{file}\n" for @delete;
+	    print "M $$_{mode} $mark_map{$$_{mark}} $$_{file}\n" for @modify;
+	    print "\n";
+	}
+    } elsif (/^progress /) {
+	print $_;
+    } else {
+	die "unhandled command: $_";
+    }
+    $_ = <FAST_EXPORT>;
+}
+close FAST_EXPORT;
+
+print STDERR "Deleted files:\n";
+print STDERR "  $_\n" for sort keys %deleted_file;
+print STDERR "Renamed files:\n";
+print STDERR "  $_ => $renamed_file{$_}\n" for sort keys %renamed_file;
+print STDERR "Scrubbed files:\n";
+print STDERR "  $_\n" for sort keys %scrubbed_file;

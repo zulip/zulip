@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+set -eu
+
+usage() {
+    echo "Usage: $0 <ZULIP_VERSION> [--authors-not-required]" >&2
+    exit 1
+}
+
+args="$(getopt -o '' -l 'authors-not-required,help' -n "$0" -- "$@")"
+eval "set -- $args"
+
+authors_not_required=
+while true; do
+    case "$1" in
+        --authors-not-required)
+            authors_not_required=--authors-not-required; shift;;
+        --) shift; break;;
+        *) usage;;
+    esac
+done
+
+if [ -z "${1:-}" ]; then
+    usage
+fi
+
+version="$1"
+prefix="zulip-server-$version"
+
+set -x
+GITID=$(git rev-parse HEAD)
+
+if ! git diff --exit-code >/dev/null; then
+    set +x
+    echo "ERROR: tarballs builds are based on a commit hash so your changes "
+    echo "will not be included; you should commit or stash them based on "
+    echo "what you want and then try again."
+    echo
+    git diff
+    exit 1
+fi
+
+TMPDIR=$(mktemp -d)
+TARBALL=$TMPDIR/$prefix.tar
+BASEDIR=$(pwd)
+
+git archive -o "$TARBALL" "--prefix=$prefix/" HEAD
+
+cd "$TMPDIR"
+tar -xf "$TARBALL"
+for i in `cat "$TMPDIR/$prefix/tools/release-tarball-exclude.txt"`; do
+    rm -r --interactive=never "$TMPDIR/$prefix/$i";
+done
+tar -cf "$TARBALL" "$prefix"
+rm -rf "$prefix"
+
+if tar -tf "$TARBALL" | grep -q -e ^zerver/tests; then
+    set +x
+    echo "BUG: Excluded files remain in tarball!"
+    exit 1
+fi
+cd "$BASEDIR"
+
+# Check out a temporary full copy of the index to generate static files
+git checkout-index -f -a --prefix "$TMPDIR/$prefix/"
+cd "$TMPDIR/$prefix"
+
+# create var/log directory in the new temporary checkout
+mkdir -p "var/log"
+
+# Some settings need to be updated for update-prod-static to work
+#
+# TODO: Would be much better to instead run the below tools with some
+# sort of environment hack so that we don't need to create this dummy
+# secrets file.
+cat >> zproject/prod_settings_template.py <<EOF
+DEBUG = False
+EOF
+cat >> zproject/dev-secrets.conf <<EOF
+[secrets]
+local_database_password = ''
+secret_key = 'not_used_here'
+shared_secret = 'not_used_here'
+avatar_salt = 'not_used_here'
+rabbitmq_password = 'not_used_here'
+initial_password_salt = 'not_used_here'
+EOF
+
+# We do a bit of gymnastics to have update-prod-static.log be easily
+# visible to the user and end up in the same directory as the final
+# release tarball.
+USER_PROD_STATIC_LOGPATH="$TMPDIR/update-prod-static.log"
+BUILD_PROD_STATIC_LOGPATH="$TMPDIR/$prefix/var/log/update-prod-static.log"
+ln -nfs "$BUILD_PROD_STATIC_LOGPATH" "$USER_PROD_STATIC_LOGPATH"
+
+./tools/update-prod-static $authors_not_required || (
+    set +x
+    echo; echo -ne "\033[33mRunning update-prod-static failed. "
+    echo -e "Check $TMPDIR/update-prod-static.log for more information.\033[0m"
+    exit 1
+)
+rm -f "$USER_PROD_STATIC_LOGPATH"
+mv "$BUILD_PROD_STATIC_LOGPATH" "$USER_PROD_STATIC_LOGPATH"
+
+# We don't need duplicate copies of emoji with hashed paths, and they would break bugdown
+find prod-static/serve/generated/emoji/images/emoji/ -regex '.*\.[0-9a-f]+\.png' -delete
+
+echo "$GITID" > build_id
+echo "$version" > version
+
+cd "$TMPDIR"
+
+tar --append -f "$TARBALL" "$prefix/prod-static" "$prefix/build_id" "$prefix/version" "$prefix/staticfiles.json" "$prefix/templates/zerver/emails/compiled" "$prefix/webpack-stats-production.json"
+
+rm -rf "$prefix"
+
+gzip "$TARBALL"
+
+set +x
+echo "Generated $TARBALL.gz"

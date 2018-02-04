@@ -1,0 +1,11 @@
+#!/bin/bash
+release=$(lsb_release -sc)
+
+if [ "$release" = "xenial" ] && [ -x /sbin/start ] && [ -x /sbin/stop ] && [ -x /sbin/restart ] && [ -x /sbin/status ] && [ -x /sbin/initctl ]; then
+    echo "You appear to be running Ubuntu Xenial, but with the upstart package installed."
+    echo "In Ubuntu Xenial, upstart has been replaced by systemd, and having upstart"
+    echo "installed will break the init scripts for Zulip dependencies like nginx."
+    echo "Please uninstall the \"upstart\" package (apt-get remove upstart) and rerun"
+    echo "this install script."
+    exit 1
+fi

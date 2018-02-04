@@ -1,0 +1,31 @@
+#!/usr/bin/env python3
+
+import os
+import argparse
+import sys
+
+tools_dir = os.path.dirname(os.path.abspath(__file__))
+root_dir = os.path.dirname(tools_dir)
+sys.path.insert(0, root_dir)
+
+from tools.lib.test_script import (
+    get_provisioning_status,
+)
+
+def run():
+    # type: () -> None
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--force', default=False,
+                        action="store_true",
+                        help='Run tests despite possible problems.')
+    options = parser.parse_args()
+
+    if not options.force:
+        ok, msg = get_provisioning_status()
+        if not ok:
+            print(msg)
+            print('If you really know what you are doing, use --force to run anyway.')
+            sys.exit(1)
+
+if __name__ == '__main__':
+    run()

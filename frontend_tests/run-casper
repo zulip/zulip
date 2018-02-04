@@ -1,0 +1,116 @@
+#!/usr/bin/env python3
+import argparse
+import subprocess
+import sys
+import os
+import glob
+
+#
+# In order to use remote casperjs debugging, pass the --remote-debug flag
+# This will start a remote debugging session listening on port 7777
+#
+# See https://wiki.zulip.net/wiki/Testing_the_app for more information
+# on how to use remote debugging
+#
+
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+os.environ["CASPER_TESTS"] = "1"
+os.environ["PHANTOMJS_EXECUTABLE"] = os.path.join(ZULIP_PATH, "node_modules/.bin/phantomjs")
+os.environ["http_proxy"] = ""
+os.environ["https_proxy"] = ""
+
+usage = """test-js-with-casper [options]
+    test-js-with-casper # Run all test files
+    test-js-with-casper 09-navigation.js # Run a single test file
+    test-js-with-casper 09 # Run a single test file 09-navigation.js
+    test-js-with-casper 01-login.js 03-narrow.js # Run a few test files
+    test-js-with-casper 01 03 # Run a few test files, 01-login.js and 03-narrow.js here"""
+parser = argparse.ArgumentParser(usage)
+
+parser.add_argument('--skip-flaky-tests', dest='skip_flaky',
+                    action="store_true",
+                    default=False, help='Skip flaky tests')
+parser.add_argument('--force', dest='force',
+                    action="store_true",
+                    default=False, help='Run tests despite possible problems.')
+parser.add_argument('--remote-debug',
+                    help='Whether or not to enable remote debugging on port 7777',
+                    action="store_true",
+                    default=False)
+parser.add_argument('tests', nargs=argparse.REMAINDER,
+                    help='Specific tests to run; by default, runs all tests')
+options = parser.parse_args()
+
+sys.path.insert(0, ZULIP_PATH)
+
+# check for the venv
+from tools.lib import sanity_check
+sanity_check.check_venv(__file__)
+
+from tools.lib.test_script import get_provisioning_status
+from tools.lib.test_server import test_server_running
+
+from typing import Iterable
+
+if not options.force:
+    ok, msg = get_provisioning_status()
+    if not ok:
+        print(msg)
+        print('If you really know what you are doing, use --force to run anyway.')
+        sys.exit(1)
+
+os.chdir(ZULIP_PATH)
+
+subprocess.check_call(['mkdir', '-p', 'var/casper'])
+
+subprocess.check_call(['rm', '-f'] + glob.glob('var/casper/casper-failure*.png'))
+
+def run_tests(files: Iterable[str], external_host: str) -> None:
+    test_dir = os.path.join(ZULIP_PATH, 'frontend_tests/casper_tests')
+    test_files = []
+    for file in files:
+        for file_name in os.listdir(test_dir):
+            if file_name.startswith(file):
+                file = file_name
+                break
+        if not os.path.exists(file):
+            file = os.path.join(test_dir, file)
+        test_files.append(os.path.abspath(file))
+
+    if not test_files:
+        test_files = sorted(glob.glob(os.path.join(test_dir, '*.js')))
+
+    # 10-admin.js is too flaky!
+    if options.skip_flaky:
+        test_files = [fn for fn in test_files if '10-admin' not in fn]
+
+    remote_debug = ""
+    if options.remote_debug:
+        remote_debug = "--remote-debugger-port=7777 --remote-debugger-autorun=yes"
+
+    with test_server_running(options.force, external_host):
+        # Important: do this next call inside the `with` block, when Django
+        #            will be pointing at the test database.
+        subprocess.check_call('tools/setup/generate-test-credentials')
+
+        ret = 1
+        for test_file in test_files:
+            test_name = os.path.basename(test_file)
+            cmd = "node_modules/.bin/casperjs %s test %s" % (remote_debug, test_file)
+            print("\n\n===================== %s\nRunning %s\n\n" % (test_name, cmd))
+            ret = subprocess.call(cmd, shell=True)
+            if ret != 0:
+                break
+    if ret != 0:
+        print("""
+Oops, the frontend tests failed. Tips for debugging:
+ * Check the screenshots of failed tests at var/casper/casper-failure*.png
+ * Try remote debugging the test web browser as described in docs/testing/testing-with-casper.md
+""", file=sys.stderr)
+
+        sys.exit(ret)
+
+external_host = "zulipdev.com:9981"
+run_tests(options.tests, external_host)
+sys.exit(0)

@@ -1,0 +1,26 @@
+{{#with emoji}}
+<tr class="emoji_row" id="emoji_{{name}}">
+    <td>
+        <span class="emoji_name">{{name}}</span>
+    </td>
+    <td>
+        <span class="emoji_image">
+            <a href="{{source_url}}" target="_blank">
+                <img src="{{source_url}}" alt="{{name}}" />
+            </a>
+        </span>
+    </td>
+    <td>
+        {{#if author}}
+        <span class="emoji_author">{{author.full_name}}</span>
+        {{else}}
+        <span class="emoji_author">Unknown Author</span>
+        {{/if}}
+    </td>
+    <td>
+        <button class="button rounded small delete btn-danger" {{#unless can_admin_emoji}}disabled="disabled"{{/unless}} data-emoji-name="{{name}}">
+            <i class="icon-vector-trash" aria-hidden="true"></i>
+        </button>
+    </td>
+</tr>
+{{/with}}

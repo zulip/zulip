@@ -1,0 +1,67 @@
+# See https://zulip.readthedocs.io/en/latest/testing/travis.html for
+# high-level documentation on our Travis CI setup.
+dist: trusty
+group: deprecated-2017Q4
+install:
+  # Disable sometimes-broken sources.list in Travis base images
+  - sudo rm -vf /etc/apt/sources.list.d/*
+  - sudo apt-get update
+
+  # Disable Travis CI's built-in NVM installation
+  - mispipe "mv ~/.nvm ~/.travis-nvm-disabled" ts
+
+  # Install codecov, the library for the code coverage reporting tool we use
+  # With a retry to minimize impact of transient networking errors.
+  - mispipe "pip install codecov" ts || mispipe "pip install codecov" ts
+
+  # This is the main setup job for the test suite
+  - mispipe "tools/travis/setup-$TEST_SUITE" ts
+
+  # Clean any caches that are not in use to avoid our cache
+  # becoming huge.
+  - mispipe "scripts/lib/clean-unused-caches --verbose --threshold 0" ts
+
+script:
+  # We unset GEM_PATH here as a hack to work around Travis CI having
+  # broken running their system puppet with Ruby.  See
+  # https://travis-ci.org/zulip/zulip/jobs/240120991 for an example traceback.
+  - unset GEM_PATH
+  - mispipe "./tools/travis/$TEST_SUITE" ts
+cache:
+  yarn: true
+  apt: false
+  directories:
+    - $HOME/zulip-venv-cache
+    - $HOME/zulip-npm-cache
+    - $HOME/zulip-emoji-cache
+    - $HOME/node
+    - $HOME/misc
+env:
+  global:
+    - BOTO_CONFIG=/tmp/nowhere
+language: python
+# Our test suites generally run on Python 3.4, the version in
+# Ubuntu 14.04 trusty, which is the oldest OS release we support.
+matrix:
+  include:
+    # Travis will actually run the jobs in the order they're listed here;
+    # that doesn't seem to be documented, but it's what we see empirically.
+    # We only get 4 jobs running at a time, so we try to make the first few
+    # the most likely to break.
+    - python: "3.4"
+      env: TEST_SUITE=production
+    # Other suites moved to CircleCI -- see .circleci/.
+sudo: required
+addons:
+  artifacts:
+    paths:
+      # Casper debugging data (screenshots, etc.) is super useful for
+      # debugging test flakes.
+      - $(ls var/casper/* | tr "\n" ":")
+      - $(ls /tmp/zulip-test-event-log/* | tr "\n" ":")
+  postgresql: "9.3"
+  apt:
+    packages:
+      - moreutils
+after_success:
+  - codecov

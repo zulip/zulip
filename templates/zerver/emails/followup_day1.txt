@@ -1,0 +1,25 @@
+Hi there,
+
+Welcome to Zulip!
+
+Zulip is the team communication solution that combines the real-time ease of
+chat with the threaded organization of email. At its core, Zulip is about
+productivity -- making communication fun and easy, while avoiding the
+distracting and disorganized conversations of chatrooms.
+
+We hope you love using Zulip as much as we do. Zulip works best when it's
+always open, so we suggest pinning a browser tab or downloading our desktop
+and mobile apps (https://zulipchat.com/apps). If you're new to Zulip's
+threading, we recommend starting with the desktop or browser experience, and
+using mobile for notifications on the go.
+
+If you have any feedback, or want to see how we use Zulip for managing the
+Zulip project itself, swing by https://chat.zulip.org and say hi! {% if is_realm_admin %}If this is
+your first Zulip organization, we also recommend checking out
+{{ organization_setup_advice_link }}.{% endif %}
+
+Cheers,
+Team Zulip
+
+PS: Check us out on Twitter (@zulip) or star us on GitHub
+(https://github.com/zulip/zulip)!

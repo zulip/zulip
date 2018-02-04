@@ -1,0 +1,1 @@
+stream=deskdotcom&topic=case%20updated%20notification&data=Case+2+updated.+Link%3A+%3Ca+href%3D%27https%3A%2F%2Fdeskdotcomtest.desk.com%2Fweb%2Fagent%2Fcase%2F2%27%3EI+have+a+question%3C%2Fa%3E

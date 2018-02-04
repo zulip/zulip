@@ -1,0 +1,83 @@
+#!/usr/bin/env python3
+
+import os
+import glob
+import subprocess
+import sys
+import time
+
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
+from django.conf import settings
+
+from typing import Dict, List
+
+os.chdir(settings.DEPLOY_ROOT)
+STATIC_PATH = 'static/'
+
+def get_templates():
+    # type: () -> List[str]
+    return (glob.glob(os.path.join(STATIC_PATH, 'templates/*.handlebars')) +
+            glob.glob(os.path.join(STATIC_PATH, 'templates/settings/*.handlebars')))
+
+def run():
+    # type: () -> None
+    subprocess.check_call(['node', 'node_modules/.bin/handlebars'] +
+                          get_templates() +
+                          ['--output', os.path.join(STATIC_PATH, 'templates/compiled.js'),
+                           '--known', 'if,unless,each,with'])
+
+
+def add_error_stamp_file(file_path):
+    # type: (str) -> None
+    file_dir = os.path.dirname(file_path)
+    if not os.path.exists(file_dir):
+        os.makedirs(file_dir)
+    open(file_path, 'a').close()
+
+
+def remove_error_stamp_file(file_path):
+    # type: (str) -> None
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
+
+def run_forever():
+    # type: () -> None
+    # Keep polling for file changes, similar to how Django does it in
+    # django/utils/autoreload.py.  If any of our templates change, rebuild
+    # compiled.js
+    mtimes = {}  # type: Dict[str, float]
+    error_file_path = os.path.join(settings.DEPLOY_ROOT,
+                                   'var/handlebars-templates/compile.error')
+    while True:
+        changed = False
+        for fn in get_templates():
+            new_mtime = os.stat(fn).st_mtime
+            if new_mtime != mtimes.get(fn, None):
+                changed = True
+            mtimes[fn] = new_mtime
+        if changed:
+            print('Recompiling templates')
+            try:
+                run()
+                remove_error_stamp_file(error_file_path)
+                print('done')
+            except Exception:
+                add_error_stamp_file(error_file_path)
+                print('\n\n\n\033[91mPLEASE FIX!!\033[0m\n\n')
+
+        time.sleep(0.200)
+
+if __name__ == '__main__':
+    if len(sys.argv) == 2 and sys.argv[1] == 'forever':
+        try:
+            run_forever()
+        except KeyboardInterrupt:
+            print(sys.argv[0], "exited after receiving KeyboardInterrupt")
+    else:
+        run()

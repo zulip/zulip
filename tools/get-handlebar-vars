@@ -1,0 +1,114 @@
+#!/usr/bin/env python3
+import sys
+import re
+import json
+
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
+from typing import Any, Dict, List
+
+def debug(obj):
+    # type: (Any) -> None
+    print(json.dumps(obj, indent=4))
+
+def parse_file(fn):
+    # type: (str) -> Dict[str, Any]
+    text = open(fn).read()
+    tags = re.findall('{+\s*(.*?)\s*}+', text)
+    root = {}  # type: Dict[str, Any]
+    context = root
+    stack = []  # type: List[Dict[str, Any]]
+
+    def set_var(var, val):
+        # type: (str, Any) -> None
+        num_levels_up = len(re.findall('\.\.', var))
+        if num_levels_up:
+            var = var.split('/')[-1]
+            stack[-1 * num_levels_up][var] = val
+        else:
+            context[var] = val
+
+    for tag in tags:
+        if tag.startswith('! '):
+            continue
+
+        if tag == 'else':
+            continue
+
+        if tag[0] in '#^' and ' ' not in tag:
+            var = tag[1:]
+            set_var(var, True)
+            stack.append(context)
+            continue
+
+        if tag.startswith('#if'):
+            vars = tag.split()[1:]
+            for var in vars:
+                set_var(var, True)
+            stack.append(context)
+            continue
+
+        if tag.startswith('/if'):
+            context = stack.pop()
+            continue
+
+        if tag.startswith('#with '):
+            var = tag.split()[1]
+            new_context = {}  # type: Dict[str, Any]
+            context[var] = new_context
+            stack.append(context)
+            context = new_context
+            continue
+
+        if tag.startswith('/with'):
+            context = stack.pop()
+            continue
+
+        if tag.startswith('#unless '):
+            var = tag.split()[1]
+            set_var(var, True)
+            stack.append(context)
+            continue
+
+        if tag.startswith('/unless'):
+            context = stack.pop()
+            continue
+
+        if tag.startswith('#each '):
+            var = tag.split()[1]
+            new_context = {}
+            context[var] = [new_context]
+            stack.append(context)
+            context = new_context
+            continue
+
+        if tag.startswith('/each'):
+            context = stack.pop()
+            continue
+
+        if tag.startswith('/'):
+            context = stack.pop()
+            continue
+
+        set_var(tag, '')
+
+    def clean_this(obj):
+        # type: (Any) -> Any
+        if isinstance(obj, list):
+            return [clean_this(item) for item in obj]
+        if isinstance(obj, dict):
+            if len(obj) == 1 and 'this' in obj:
+                return clean_this(obj['this'])
+            return {k: clean_this(v) for k, v in obj.items()}
+        return obj
+    root = clean_this(root)
+    return root
+
+if __name__ == '__main__':
+    for fn in sys.argv[1:]:
+        print('===', fn)
+        root = parse_file(fn)
+        debug(root)
+        print()

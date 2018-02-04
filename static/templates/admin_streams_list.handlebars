@@ -1,0 +1,13 @@
+{{#with stream}}
+<tr class="stream_row">
+    <td>
+        {{#if invite_only}}<i class="icon-vector-lock "></i>{{/if}}
+        <span class="stream_name">{{name}}</span>
+    </td>
+    <td>
+        <button class="button small btn-danger deactivate btn-danger" aria-label="{{t 'Deactivate stream' }}">
+            <i class="icon-vector-trash" aria-hidden="true"></i>
+        </button>
+    </td>
+</tr>
+{{/with}}

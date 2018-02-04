@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+import os
+import sys
+
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
+import django
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ZULIP_PATH)
+os.chdir(ZULIP_PATH)
+
+from zulip import Client
+
+from tools.lib.test_server import test_server_running
+from zerver.lib.api_test_helpers import test_the_api
+
+os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
+django.setup()
+from zerver.models import get_user, get_realm
+
+
+with test_server_running(external_host='zulipdev.com:9981'):
+    email = 'iago@zulip.com'  # Iago is an admin
+    realm = get_realm("zulip")
+    api_key = get_user(email, realm).api_key
+    site = 'http://zulip.zulipdev.com:9981'
+
+    client = Client(
+        email=email,
+        api_key=api_key,
+        site=site)
+
+    print("Running API tests...")
+    test_the_api(client)
+
+print("API tests passed!")

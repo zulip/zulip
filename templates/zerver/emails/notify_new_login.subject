@@ -1,0 +1,1 @@
+New login from {{ device_info.device_browser if device_info.device_browser else 'an unknown browser' }} on {{ device_info.device_os if device_info.device_os else 'an unknown operating system' }}

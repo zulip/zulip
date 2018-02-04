@@ -1,0 +1,11 @@
+Hello there.
+
+You recently signed up for Zulip. Awesome!
+
+To complete signup, visit this link below:
+    <{{ activate_url }}>
+
+Feel free to give us a shout at <{{ support_email }}> if you have any questions.
+
+Cheers,
+Team Zulip

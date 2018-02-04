@@ -1,0 +1,51 @@
+#!/usr/bin/env python3
+from lib.css_parser import parse, CssParserException
+from typing import Iterable, Text
+import sys
+import glob
+import subprocess
+
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
+def validate(fn):
+    # type: (str) -> None
+    text = open(fn).read()
+    section_list = parse(text)
+    if text != section_list.text():
+        sys.stderr.write('''
+FAIL: {} is being rejected by our finicky linter)
+(you can manually apply the diff to fix)\n\n'''.format(fn,))
+        sys.stderr.flush()
+
+        open('/var/tmp/pretty_css.txt', 'w').write(section_list.text())
+        subprocess.call(['diff', '-u', fn, '/var/tmp/pretty_css.txt'], stderr=subprocess.STDOUT)
+        sys.exit(1)
+
+def check_our_files(filenames):
+    # type: (Iterable[str]) -> None
+    for filename in filenames:
+        if 'pygments.css' in filename:
+            # This just has really strange formatting that our
+            # parser doesn't like
+            continue
+
+        try:
+            validate(filename)
+        except CssParserException as e:
+            msg = '''
+                ERROR! Some CSS seems to be misformatted.
+                {}
+                See line {} in file {}
+                '''.format(e.msg, e.token.line, filename)
+            print(msg)
+            sys.exit(1)
+
+if __name__ == '__main__':
+    # If command arguments are provided, we only check those filenames.
+    # Otherwise, we check all possible filenames.
+    filenames = sys.argv[1:]
+    if not filenames:
+        filenames = glob.glob('static/styles/*.css')
+    check_our_files(filenames)

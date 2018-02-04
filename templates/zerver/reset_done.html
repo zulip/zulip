@@ -1,0 +1,18 @@
+{% extends "zerver/portico_signup.html" %}
+
+{% block portico_content %}
+<div class="app portico-page">
+    <div class="app-main portico-page-container center-block flex full-page account-creation new-style">
+        <div class="inline-block">
+
+            <div class="get-started">
+                <h1>{{ _("We've reset your password!") }}</h1>
+            </div>
+
+            <div class="white-box">
+                <p>{% trans login_url=url('django.contrib.auth.views.login') %}Please <a href="{{ login_url }}">log in</a> with your new password.{% endtrans %}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

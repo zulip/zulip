@@ -1,0 +1,253 @@
+#!/usr/bin/env python3
+#
+# See docs/subsystems/emoji.md for a high-level explanation of how this system
+# works.
+import os
+import sys
+import ujson
+
+from typing import Any, Dict, List
+
+from emoji_setup_utils import generate_emoji_catalog, generate_codepoint_to_name_map, \
+    get_extended_codepoint_to_name, get_extended_name_to_codepoint, get_extended_names_list, \
+    get_new_emoji_dicts, emoji_names_for_picker, EMOJISETS
+
+ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../')
+sys.path.append(ZULIP_PATH)
+
+from scripts.lib.zulip_tools import generate_sha1sum_emoji, run
+
+TARGET_EMOJI_DUMP = os.path.join(ZULIP_PATH, 'static', 'generated', 'emoji')
+EMOJI_CACHE_PATH = "/srv/zulip-emoji-cache"
+EMOJI_SCRIPT_DIR_PATH = os.path.join(ZULIP_PATH, 'tools', 'setup', 'emoji')
+NODE_MODULES_PATH = os.path.join(ZULIP_PATH, 'node_modules')
+EMOJI_DATA_PATH = os.path.join(NODE_MODULES_PATH, 'emoji-datasource')
+
+EMOJI_CODES_FILE_TEMPLATE = """\
+var emoji_codes = (function () {
+var exports = {};
+
+exports.names = %(names)s;
+
+exports.name_to_codepoint = %(name_to_codepoint)s;
+
+exports.codepoint_to_name = %(codepoint_to_name)s;
+
+exports.emoji_catalog = %(emoji_catalog)s;
+
+return exports;
+}());
+if (typeof module !== 'undefined') {
+    module.exports = emoji_codes;
+}
+"""
+
+SPRITE_CSS_FILE_TEMPLATE = """\
+div.emoji,
+span.emoji
+{
+    display: inline-block;
+    background-image: url('sheet_%(emojiset)s_32.png');
+    -webkit-background-size: 4900%%;
+    -moz-background-size: 4900%%;
+    background-size: 4900%%;
+    background-repeat: no-repeat;
+
+    /* Hide the text. */
+    text-indent: 100%%;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+%(emoji_positions)s
+"""
+
+EMOJI_POS_INFO_TEMPLATE = """\
+.emoji-%(codepoint)s {
+    background-position: %(pos_x)s%% %(pos_y)s%%;
+}
+"""
+
+# change directory
+os.chdir(EMOJI_SCRIPT_DIR_PATH)
+
+if 'TRAVIS' in os.environ:
+    # In Travis CI, we don't have root access
+    EMOJI_CACHE_PATH = "/home/travis/zulip-emoji-cache"
+
+def main():
+    # type: () -> None
+    success_stamp = get_success_stamp()
+    source_emoji_dump = os.path.dirname(success_stamp)
+
+    if not os.path.exists(success_stamp):
+        print("Dumping emojis ...")
+        dump_emojis(source_emoji_dump)
+        run(['touch', success_stamp])
+
+    print("Using cached emojis from {}".format(source_emoji_dump))
+    run(['rm', '-rf', TARGET_EMOJI_DUMP])
+    os.symlink(source_emoji_dump, TARGET_EMOJI_DUMP)
+
+def get_success_stamp():
+    # type: () -> str
+    sha1_hexdigest = generate_sha1sum_emoji(ZULIP_PATH)
+    return os.path.join(EMOJI_CACHE_PATH, sha1_hexdigest, 'emoji', '.success-stamp')
+
+def generate_sprite_css_files(cache_path, emoji_map, emoji_data):
+    # type: (str, Dict[str, str], List[Dict[str, Any]]) -> None
+    # Spritesheet CSS generation code.
+    emoji_positions = ""
+    for emoji in emoji_data:
+        if emoji["has_img_google"]:
+            emoji_positions += EMOJI_POS_INFO_TEMPLATE % {
+                'codepoint': emoji['unified'].lower(),
+                'pos_x': (emoji["sheet_x"] * 100) / 48,
+                'pos_y': (emoji["sheet_y"] * 100) / 48,
+            }
+
+    for emojiset in EMOJISETS:
+        SPRITE_CSS_PATH = os.path.join(cache_path, '%s_sprite.css' % (emojiset,))
+        sprite_css_file = open(SPRITE_CSS_PATH, 'w')
+        sprite_css_file.write(SPRITE_CSS_FILE_TEMPLATE % {'emojiset': emojiset,
+                                                          'emoji_positions': emoji_positions,
+                                                          })
+        sprite_css_file.close()
+
+def setup_emoji_farm(cache_path, emoji_map, emoji_data):
+    # type: (str, Dict[str, str], List[Dict[str, Any]]) -> None
+    for emojiset in EMOJISETS:
+        # Copy individual emoji images from npm packages.
+        src_emoji_farm = os.path.join(
+            NODE_MODULES_PATH, 'emoji-datasource-' + emojiset, 'img', emojiset, '64', '*')
+        target_emoji_farm = os.path.join(cache_path, 'images-' + emojiset + '-64')
+        run(['mkdir', '-p', target_emoji_farm])
+        run(['cp', '-RPp', src_emoji_farm, target_emoji_farm], shell=True)
+
+        # Copy zulip.png to the emoji farm.
+        zulip_image = "{}/static/assets/zulip-emoji/*".format(ZULIP_PATH)
+        run(['cp', '-RPp', zulip_image, target_emoji_farm], shell=True)
+
+        # Copy spritesheets.
+        input_sprite_sheet = os.path.join(EMOJI_DATA_PATH, 'img', emojiset, 'sheets', '32.png')
+        output_sprite_sheet = os.path.join(cache_path, 'sheet_%s_32.png' % (emojiset,))
+        run(['cp', input_sprite_sheet, output_sprite_sheet])
+
+    generate_sprite_css_files(cache_path, emoji_map, emoji_data)
+
+def setup_old_emoji_farm(cache_path, emoji_map):
+    # type: (str, Dict[str, str]) -> None
+    # Code for setting up old emoji farm.
+    # Some image files in the old emoji farm had a different name than in the new emoji
+    # farm. `remapped_emojis` is a map that contains a mapping of their name in the old
+    # emoji farm to their name in the new emoji farm.
+    remapped_emojis = {
+        "0023": "0023-20e3",    # Hash
+        "0030": "0030-20e3",    # Zero
+        "0031": "0031-20e3",    # One
+        "0032": "0032-20e3",    # Two
+        "0033": "0033-20e3",    # Three
+        "0034": "0034-20e3",    # Four
+        "0035": "0035-20e3",    # Five
+        "0036": "0036-20e3",    # Six
+        "0037": "0037-20e3",    # Seven
+        "0038": "0038-20e3",    # Eight
+        "0039": "0039-20e3",    # Nine
+        "1f48f": "1f469-200d-2764-200d-1f48b-200d-1f468",    # Couple kiss
+        "1f491": "1f469-200d-2764-200d-1f468",  # Couple with heart
+    }
+
+    os.chdir(cache_path)
+    emoji_cache_path = os.path.join(cache_path, 'images', 'emoji')
+    unicode_emoji_cache_path = os.path.join(cache_path, 'images', 'emoji', 'unicode')
+    google_emoji_cache_path = os.path.join(cache_path, 'images-google-64')
+    run(['mkdir', '-p', emoji_cache_path])
+    run(['mkdir', '-p', unicode_emoji_cache_path])
+
+    # Symlink zulip.png image file.
+    image_file_path = os.path.join(google_emoji_cache_path, 'zulip.png')
+    symlink_path = os.path.join(emoji_cache_path, 'zulip.png')
+    os.symlink(image_file_path, symlink_path)
+
+    unicode_symlink_path = os.path.join(unicode_emoji_cache_path, 'zulip.png')
+    os.symlink(image_file_path, unicode_symlink_path)
+
+    for name, codepoint in emoji_map.items():
+        mapped_codepoint = remapped_emojis.get(codepoint, codepoint)
+        image_file_path = os.path.join(google_emoji_cache_path, '{}.png'.format(mapped_codepoint))
+        symlink_path = os.path.join(emoji_cache_path, '{}.png'.format(name))
+        os.symlink(image_file_path, symlink_path)
+        try:
+            # `emoji_map` contains duplicate entries for the same codepoint with different
+            # names. So creation of symlink for <codepoint>.png may throw `FileExistsError`.
+            unicode_symlink_path = os.path.join(unicode_emoji_cache_path, '{}.png'.format(codepoint))
+            os.symlink(image_file_path, unicode_symlink_path)
+        except FileExistsError:
+            pass
+
+def generate_map_files(cache_path, emoji_map, emoji_data, emoji_catalog, unified_reactions_data):
+    # type: (str, Dict[str, str], List[Dict[str, Any]], Dict[str, List[str]], Dict[str, str]) -> None
+    # This function generates the various data files consumed by webapp, mobile apps, bugdown etc.
+    EMOJI_CODES_PATH = os.path.join(cache_path, 'emoji_codes.js')
+    emoji_codes_file = open(EMOJI_CODES_PATH, 'w')
+
+    # put thumbs_up before thumbs_down
+    names = emoji_names_for_picker(emoji_map)
+    down_index = names.index('thumbs_down')
+    up_index = names.index('thumbs_up')
+    names[down_index], names[up_index] = ('thumbs_up', 'thumbs_down')
+
+    name_to_codepoint = {name: unified_reactions_data[name] for name in names}
+    codepoint_to_name = generate_codepoint_to_name_map(names, unified_reactions_data)
+
+    # Extend to use new emojis from iamcal dataset(See `emoji_can_be_included()` in emoji_setup_utils).
+    new_emoji_dicts = get_new_emoji_dicts(unified_reactions_data, emoji_data)
+    names = get_extended_names_list(names, new_emoji_dicts)
+    name_to_codepoint = get_extended_name_to_codepoint(name_to_codepoint, new_emoji_dicts)
+    codepoint_to_name = get_extended_codepoint_to_name(codepoint_to_name, new_emoji_dicts)
+
+    emoji_codes_file.write(EMOJI_CODES_FILE_TEMPLATE % {
+        'names': names,
+        'name_to_codepoint': name_to_codepoint,
+        'codepoint_to_name': codepoint_to_name,
+        'emoji_catalog': emoji_catalog,
+    })
+    emoji_codes_file.close()
+
+    NAME_TO_CODEPOINT_PATH = os.path.join(cache_path, 'name_to_codepoint.json')
+    name_to_codepoint_file = open(NAME_TO_CODEPOINT_PATH, 'w')
+
+    name_to_codepoint_file.write(ujson.dumps(name_to_codepoint))
+    name_to_codepoint_file.close()
+
+    CODEPOINT_TO_NAME_PATH = os.path.join(cache_path, 'codepoint_to_name.json')
+    codepoint_to_name_file = open(CODEPOINT_TO_NAME_PATH, 'w')
+
+    codepoint_to_name_file.write(ujson.dumps(codepoint_to_name))
+    codepoint_to_name_file.close()
+
+def dump_emojis(cache_path):
+    # type: (str) -> None
+    with open('emoji_map.json') as emoji_map_file:
+        emoji_map = ujson.load(emoji_map_file)
+
+    EMOJI_DATA_FILE_PATH = os.path.join(EMOJI_DATA_PATH, 'emoji.json')
+    with open(EMOJI_DATA_FILE_PATH) as emoji_data_file:
+        emoji_data = ujson.load(emoji_data_file)
+    emoji_catalog = generate_emoji_catalog(emoji_data)
+
+    UNIFIED_REACTIONS_PATH = os.path.join(ZULIP_PATH, 'zerver',
+                                          'management', 'data', 'unified_reactions.json')
+    with open(UNIFIED_REACTIONS_PATH) as unified_reactions_file:
+        unified_reactions_data = ujson.load(unified_reactions_file)
+
+    # Setup emoji farms.
+    run(['rm', '-rf', cache_path])
+    setup_emoji_farm(cache_path, emoji_map, emoji_data)
+    setup_old_emoji_farm(cache_path, emoji_map)
+
+    # Generate various map files.
+    generate_map_files(cache_path, emoji_map, emoji_data, emoji_catalog, unified_reactions_data)
+
+if __name__ == "__main__":
+    main()

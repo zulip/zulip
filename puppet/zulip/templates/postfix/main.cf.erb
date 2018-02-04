@@ -1,0 +1,38 @@
+# This file is managed by puppet; local changes will be overridden.
+
+smtpd_banner = $myhostname ESMTP $mail_name (Zulip Voyager)
+biff = no
+
+# appending .domain is the MUA's job.
+append_dot_mydomain = no
+
+readme_directory = no
+
+# TLS parameters
+smtpd_tls_cert_file=/etc/ssl/certs/ssl-cert-snakeoil.pem
+smtpd_tls_key_file=/etc/ssl/private/ssl-cert-snakeoil.key
+smtpd_use_tls=yes
+smtpd_tls_session_cache_database = btree:${data_directory}/smtpd_scache
+smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
+
+myhostname = <%= @fqdn %>
+alias_maps = hash:/etc/aliases
+alias_database = hash:/etc/aliases
+transport_maps = hash:/etc/postfix/transport
+myorigin = /etc/mailname
+mydestination = localhost, <%= @fqdn %>
+relayhost =
+mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
+mailbox_size_limit = 0
+recipient_delimiter = +
+inet_interfaces = all
+inet_protocols = all
+
+# This enables us to do a catchall
+virtual_alias_maps = regexp:/etc/postfix/virtual
+
+# Needed to accept mail with percents without trying to interpret as
+# percent-style routing.
+allow_percent_hack = no
+allow_untrusted_routing = yes
+strict_rfc821_envelopes = no

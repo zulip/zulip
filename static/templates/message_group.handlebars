@@ -1,0 +1,28 @@
+{{! Client-side Mustache template for rendering messages.}}
+
+{{#each message_groups}}
+    {{#with this}}
+
+        {{#if show_date_separator}}
+        <div class="date_row no-select">{{{show_date}}}</div>
+        {{/if}}
+
+        {{#if bookend_top}}
+        {{partial "bookend"}}
+        {{/if}}
+
+        <div class="recipient_row" id="{{message_group_id}}">
+            {{partial "recipient_row" "use_match_properties" ../use_match_properties}}
+            {{#each message_containers}}
+                {{#with this}}
+                {{partial "single_message" "use_match_properties" ../../use_match_properties "table_name" ../../table_name}}
+                {{/with}}
+            {{/each}}
+        </div>
+
+        {{#if bookend_bottom}}
+        {{partial "bookend"}}
+        {{/if}}
+
+    {{/with}}
+{{/each}}

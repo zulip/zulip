@@ -1,0 +1,55 @@
+{
+  "alert": {
+    "id": 6294535,
+    "name": "ToHighTemeprature",
+    "runbook_url": "http://www.use.water.pl",
+    "version": 2,
+    "description": "Measurment of temperature in your computer"
+  },
+  "account": "lizonr@gmail.com",
+  "trigger_time": 1460407214,
+  "conditions": [
+    {
+      "id": 4158783,
+      "type": "above",
+      "threshold": 4,
+      "summary_function": "absolute_value",
+      "duration": 300
+    },
+    {
+      "id": 4299396,
+      "type": "above",
+      "threshold": 99,
+      "summary_function": "max"
+    },
+    {
+      "id": 3651148,
+      "type": "absent",
+      "summary_function": "average",
+      "duration": 60
+    }
+  ],
+  "violations": {
+    "test-source": [
+      {
+        "metric": "collectd.interface.eth0.if_octets.tx",
+        "value": 46,
+        "recorded_at": 1460407214,
+        "condition_violated": 4158783
+      },
+      {
+        "metric": "collectd.load.load.longterm",
+        "value": 141,
+        "recorded_at": 1460407214,
+        "condition_violated": 4299396
+      },
+      {
+        "metric": "librato.swap.swap.cached",
+        "value": 42,
+        "recorded_at": 1460407214,
+        "condition_violated": 3651148
+      }
+    ]
+  },
+  "triggered_by_user_test": true
+}

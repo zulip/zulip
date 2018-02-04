@@ -1,0 +1,325 @@
+#lightbox_overlay {
+    background-color: hsl(227, 40%, 16%);
+
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+#lightbox_overlay .image-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 100%;
+    height: calc(100% - 65px - 95px);
+    margin: 0px;
+
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+#lightbox_overlay .image-preview img {
+    max-height: 100%;
+    max-width: 100%;
+
+    background-color: hsl(0, 0%, 100%);
+    background-image:
+        -moz-linear-gradient(45deg, hsl(0, 0%, 80%) 25%, transparent 25%),
+        -moz-linear-gradient(-45deg, hsl(0, 0%, 80%) 25%, transparent 25%),
+        -moz-linear-gradient(45deg, transparent 75%, hsl(0, 0%, 0%) 75%),
+        -moz-linear-gradient(-45deg, transparent 75%, hsl(0, 0%, 0%) 75%);
+    background-image:
+        -webkit-gradient(linear, 0 100%, 100% 0, color-stop(.25, hsl(0, 0%, 80%)), color-stop(.25, transparent)),
+        -webkit-gradient(linear, 0 0, 100% 100%, color-stop(.25, hsl(0, 0%, 80%)), color-stop(.25, transparent)),
+        -webkit-gradient(linear, 0 100%, 100% 0, color-stop(.75, transparent), color-stop(.75, hsl(0, 0%, 80%))),
+        -webkit-gradient(linear, 0 0, 100% 100%, color-stop(.75, transparent), color-stop(.75, hsl(0, 0%, 80%)));
+
+    -moz-background-size: 20px 20px;
+    background-size: 20px 20px;
+    -webkit-background-size: 20px 20px;
+
+    background-position: 0 0, 50px 0, 50px -50px, 0px 50px;
+}
+
+#lightbox_overlay .image-preview canvas {
+    cursor: pointer;
+}
+
+#lightbox_overlay .exit {
+    float: right;
+
+    color: hsla(0, 0%, 100%, 0.8);
+    font-size: 2rem;
+    font-weight: 200;
+    margin: 24px 20px 0px 0px;
+
+    transform: scaleY(0.75);
+    font-weight: 300;
+
+    opacity: 0;
+    pointer-events: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#lightbox_overlay.show .exit {
+    pointer-events: auto;
+    opacity: 1;
+}
+
+#lightbox_overlay .image-info-wrapper {
+    background-color: transparent;
+}
+
+#lightbox_overlay .image-description,
+#lightbox_overlay .image-actions {
+    float: left;
+    margin: 20px 20px;
+}
+
+#lightbox_overlay .image-actions {
+    float: right;
+}
+
+#lightbox_overlay .image-actions .lightbox-canvas-trigger {
+    display: inline-block;
+    vertical-align: top;
+
+    min-width: 75px;
+
+    margin: 0px;
+    margin-right: 5px;
+    padding: 0px 5px;
+
+    border-radius: 4px;
+
+    border: 1px solid rgba(255, 255, 255, 0.6);
+
+    text-align: center;
+    color: hsl(0, 0%, 100%);
+
+    cursor: pointer;
+
+    transition: all 0.3s ease;
+}
+
+#lightbox_overlay .image-actions .lightbox-canvas-trigger:hover {
+    background-color: hsl(0, 0%, 100%);
+    border: 1px solid #fff;
+    color: hsl(227, 40%, 16%);
+    opacity: 1;
+}
+
+#lightbox_overlay .image-actions .lightbox-canvas-trigger .status::after {
+    content: attr(data-disabled);
+    text-transform: uppercase;
+
+    opacity: 0.7;
+}
+
+#lightbox_overlay .image-actions .lightbox-canvas-trigger.enabled .status::after {
+    content: attr(data-enabled);
+}
+
+#lightbox_overlay .image-actions .lightbox-canvas-trigger .title {
+    font-weight: 600;
+}
+
+#lightbox_overlay .image-actions .lightbox-canvas-trigger .status {
+    margin-top: -7px;
+}
+
+#lightbox_overlay .image-actions a {
+    margin: 0px 5px;
+}
+
+#lightbox_overlay .image-actions .icon {
+    font-size: 1.1rem;
+    display: inline-block;
+}
+
+#lightbox_overlay .image-actions .icon .text {
+    font-size: 0.9rem;
+}
+
+#lightbox_overlay .image-actions span:nth-of-type(2) {
+    position: relative;
+    top: 1px;
+}
+
+#lightbox_overlay .image-actions .open span:nth-of-type(2) {
+    top: 2px;
+}
+
+#lightbox_overlay .image-description {
+    width: 100%;
+    /* approx width of screen minus action buttons on the side. */
+    max-width: calc(100% - 450px);
+    /* add some extra margin top and remove some bottom to keep the
+       height the same. and vertically center the text with the buttons. */
+    margin-top: 25px;
+    margin-bottom: 15px;
+
+    font-size: 1.3rem;
+    color: hsl(0, 0%, 100%);
+}
+
+#lightbox_overlay .image-description .title {
+    display: inline-block;
+    vertical-align: top;
+
+    font-weight: 400;
+    line-height: normal;
+    max-width: calc(100% - 110px);
+
+    /* Required for text-overflow */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#lightbox_overlay .image-description .user::before {
+    margin-right: 5px;
+    content: "\2014";
+}
+
+#lightbox_overlay .player-container {
+    height: calc(100% - 65px - 95px);
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+}
+
+#lightbox_overlay .player-container iframe {
+    /* maintain 16:9 ratio. */
+    width: calc((100vh - 65px - 95px) * 16 / 9);
+    height: 100%;
+    margin: auto;
+}
+
+#lightbox_overlay .image-description .user {
+    max-width: 200px;
+    display: inline-block;
+    vertical-align: top;
+    font-weight: 300;
+    line-height: normal;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: pre;
+}
+
+#lightbox_overlay .center .arrow {
+    display: inline-block;
+    vertical-align: top;
+    margin-top: 25px;
+    padding: 5px 10px;
+
+    color: hsl(0, 0%, 100%);
+    font-size: 1.8em;
+    font-weight: 100;
+
+    transform: scaleY(2);
+    cursor: pointer;
+
+    opacity: 0.5;
+    transition: all 0.3s ease;
+}
+
+#lightbox_overlay .center .arrow:hover {
+    opacity: 1;
+}
+
+#lightbox_overlay .center .image-list {
+    position: relative;
+    display: inline-block;
+    padding: 15px 0px 12px 0px;
+    height: 50px;
+    font-size: 0px;
+
+    max-width: 40vw;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+#lightbox_overlay .center .image-list .image {
+    display: inline-block;
+    vertical-align: top;
+    width: 50px;
+    height: 50px;
+    margin: 0px 2px;
+
+    background-color: hsla(0, 0%, 94%, 0.2);
+    opacity: 0.5;
+
+    background-size: cover;
+    background-position: center;
+    cursor: pointer;
+}
+
+#lightbox_overlay .image-list .image.selected {
+    opacity: 1;
+}
+
+.image-actions .button {
+    font-size: 0.8rem;
+    min-width: inherit;
+    padding: 4px 10px;
+    border: 1px solid hsla(0, 0%, 100%, 0.6);
+    background-color: transparent;
+    color: hsl(0, 0%, 100%);
+    border-radius: 4px;
+}
+
+.image-actions .button:hover {
+    background-color: hsl(0, 0%, 100%);
+    border-color: hsl(0, 0%, 100%);
+    color: hsl(227, 40%, 16%);
+}
+
+.image-actions a.button {
+    text-decoration: none;
+}
+
+.button .download {
+    top: 1px;
+}
+
+#lightbox_overlay .clear-float {
+    clear: both;
+}
+
+@media only screen and (min-device-width : 320px) and (max-device-width : 736px) {
+    #lightbox_overlay .image-actions {
+        float: left;
+        margin-top: 0;
+    }
+
+    #lightbox_overlay .image-description {
+        max-width: calc(100% - 100px);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 5px;
+    }
+
+    #lightbox_overlay .image-description .title {
+        max-width: calc(100% - 70px);
+    }
+
+    #lightbox_overlay .center .image-list {
+        max-width: 80vw;
+    }
+
+    #lightbox_overlay .player-container iframe {
+        /* maintain 16:9 ratio. */
+        width: 100%;
+        height: calc((100vw) * 9 / 16);
+        margin: auto;
+    }
+
+    #lightbox_overlay .image-preview {
+        height: calc(100% - 101px - 95px);
+    }
+}

@@ -1,0 +1,57 @@
+#!/bin/bash
+set -e
+set -x
+
+# What user should we use for connecting to the database
+POSTGRES_USER="${POSTGRES_USER:-postgres}"
+
+# We pipe this output through cat to ensure we always get return code 0
+# We have to do this because on production database zulip may not exist, so psql
+# will fail with return code 2. Because set -e is on, this will cause the script
+# to bail.
+records=`su "$POSTGRES_USER" -c "psql -Atc 'SELECT COUNT(*) FROM zulip.zerver_message;' zulip" | cat`
+
+if [[ $records -gt 200 ]]
+then
+    set +x
+    echo "WARNING: This will delete your Zulip database which currently contains $records messages."
+    read -p "Do you want to proceed? " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]
+    then
+        exit 1
+    fi
+    set -x
+fi
+
+# Shut down all services to ensure a quiescent state.
+if [ -e "/var/run/supervisor.sock" ]; then
+    supervisorctl stop all
+fi
+
+# Drop any open connections to any old database.  Hackishly call using
+# `source`, because postgres user may not be able to read this directory
+# if unpacked by root.
+source "$(dirname "$0")/terminate-psql-sessions" postgres zulip zulip_base
+
+(
+# Make sure the current working directory is readable by postgres
+cd /
+
+su "$POSTGRES_USER" -c psql <<EOF
+CREATE USER zulip;
+ALTER ROLE zulip SET search_path TO zulip,public;
+DROP DATABASE IF EXISTS zulip;
+CREATE DATABASE zulip OWNER=zulip;
+EOF
+
+su "$POSTGRES_USER" -c 'psql zulip' <<EOF
+CREATE SCHEMA zulip AUTHORIZATION zulip;
+CREATE EXTENSION tsearch_extras SCHEMA zulip;
+EOF
+)
+
+# Clear memcached to avoid contamination from previous database state
+"$(dirname "$0")/flush-memcached"
+
+echo "Database created"

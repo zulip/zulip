@@ -1,0 +1,46 @@
+{% extends "zerver/portico_signup.html" %}
+{% block portico_content %}
+
+
+<div class="flex new-style app portico-page">
+    <div class="inline-block">
+        <div class="lead">
+            <h1 class="get-started">{{ _('Reset your password') }}</h1>
+        </div>
+
+        <div class="app-main forgot-password-container white-box new-style">
+
+            <p>Forgot your password? No problem, we'll send a link to reset your password to the email you signed up with.</p>
+
+            <form method="post" class="form-horizontal" action="{{ url('zerver.views.auth.password_reset') }}">
+                {{ csrf_input }}
+                <div class="new-style">
+                    <div class="input-box horizontal moving-label">
+                        <div class="inline-block relative">
+                            <input id="id_email" class="required" type="text" name="email"
+                                   value="{% if form.email.value() %}{{ form.email.value() }}{% endif %}"
+                                   maxlength="100" required />
+                            <label for="id_email" class="">{{ _('Email') }}</label>
+                            {% if form.email.errors %}
+                                {% for error in form.email.errors %}
+                                <div class="alert alert-error">{{ error }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        <button type="submit">{{ _('Reset password') }}</button>
+
+                    </div>
+                </div>
+            </form>
+            <div class="actions if-zulip-electron"><!-- only show if on `ZulipElectron` -->
+                <a class="back-to-login" href="{{login_url}}"><i class="fa fa-arrow-left"></i> Back to the login page</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    common.autofocus('#id_email');
+</script>
+
+{% endblock %}

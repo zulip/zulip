@@ -1,0 +1,14 @@
+<div id="alert-word-settings" class="settings-section" data-name="alert-words">
+    <form class="form-horizontal" id="alert_word_info_box">
+        <p class="alert-word-settings-note">
+            {{t "Alert words allow you to be notified as if you were @-mentioned when certain words or phrases are used in Zulip."}}
+        </p>
+    </form>
+    <div class="alert" id="alert_word_status" role="alert">
+        <button type="button" class="close close-alert-word-status" aria-label="{{t 'Close' }}">
+            <span aria-hidden="true">&times;</span>
+        </button>
+        <span class="alert_word_status_text"></span>
+    </div>
+    <ul id="alert_words_list"></ul>
+</div>

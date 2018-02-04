@@ -1,0 +1,65 @@
+{% extends "zerver/portico.html" %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style media="screen">
+    .app.portico-page { padding-bottom: 0px; }
+</style>
+{% stylesheet 'portico' %}
+{% stylesheet 'landing-page' %}
+{{ render_bundle('landing-page') }}
+
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+{% include 'zerver/gradients.html' %}
+
+<div class="portico-landing apps">
+    <div class="hero">
+        <div id="waves"></div>
+        <div class="inner-content">
+            <div class="info">
+                <div class="flex">
+                    <div class="cta">
+                        <h1>Zulip for <span class="platform"></span></h1>
+                        <p class="description"></p>
+                        <p class="download-instructions">For download instructions, go to the <a class="silver bold" href="/help/desktop-app-install-guide" target="_blank">desktop app install guide</a>.</p>
+                        <a class="link no-action" href="">
+                            <button type="button" name="button">Download Zulip for <span class="platform"></span></button>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="image">
+                <div class="flex">
+                    <img src="" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="other-apps">
+        <h2>Apps for every platform.</h2>
+
+        <div class="apps">
+            <a class="" href="/apps/mac">
+                <i class="icon fa fa-apple" data-label="macOS"></i>
+            </a>
+            <a class="" href="/apps/windows">
+                <i class="icon fa fa-windows" data-label="Windows"></i>
+            </a>
+            <a class="" href="/apps/linux">
+                <i class="icon fa fa-linux" data-label="Linux"></i>
+            </a>
+            <a class="" href="/apps/android">
+                <i class="icon fa fa-android" data-label="Android"></i>
+            </a>
+            <a class="" href="/apps/ios">
+                <i class="icon fa fa-mobile-phone" data-label="iOS"></i>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

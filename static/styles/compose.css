@@ -1,0 +1,473 @@
+.compose-content {
+    border-top: 1px solid hsla(0, 0%, 0%, 0.07);
+    -webkit-transition: background-color 200ms linear;
+    -moz-transition: background-color 200ms linear;
+    -o-transition: background-color 200ms linear;
+    -ms-transition: background-color 200ms linear;
+    transition: background-color 200ms linear;
+}
+
+.ztable_comp_col1 {
+    width: 10px;
+}
+
+#compose_controls .drafts-link {
+    float: left;
+}
+
+.new_message_button {
+    padding-top: 1.1em;
+}
+
+.message_comp {
+    display: none;
+    padding: 10px 10px 8px 5px;
+}
+
+.autocomplete_secondary {
+    opacity: 0.8;
+}
+
+.active .autocomplete_secondary {
+    opacity: 1;
+}
+
+.alert-draft {
+    font-size: 14px;
+    color: hsl(170, 47%, 54%);
+    padding: 3px 12px;
+    font-weight: 400;
+    display: none;
+}
+
+#compose_buttons {
+    text-align: right;
+}
+
+#compose_buttons .button.small {
+    font-size: 1em;
+    padding: 3px 10px;
+}
+
+.compose_table .message_header_colorblock,
+.compose_table .message_header {
+    box-shadow: none;
+    background: none;
+}
+
+.compose_table .message_header_colorblock,
+.compose_table .message_header_colorblock.message_header_private_message {
+    border-radius: 3px 0px 0px 3px;
+    border-bottom: 0px;
+}
+
+.compose_table .message_header_colorblock.message_header_private_message {
+    background: hsl(0, 0%, 27%);
+}
+
+.compose_table .right_part {
+    padding: 0px;
+}
+
+.compose_table .right_part .icon-vector-narrow {
+    font-size: 0.6em;
+    position: relative;
+}
+
+.compose_table .compose_checkbox_label {
+    display: inline-block;
+}
+
+.compose_table .pm_recipient {
+    position: relative;
+    margin-right: 30px;
+    height: 25px;
+}
+
+.compose_table #private-message .you_text {
+    position: absolute;
+    height: 25px;
+    line-height: 25px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    width: 4em;
+    background: hsl(0, 0%, 27%);
+    color: hsl(0, 0%, 100%);
+}
+
+.compose_table .pm_recipient #private_message_recipient {
+    margin-left: 4em;
+    border-left: none;
+    border-radius: 0px 3px 3px 0px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    height: 23px;
+    line-height: 23px;
+}
+
+.compose_table #private-message .right_part {
+    padding-right: 4em;
+}
+
+.compose_table #compose-lock-icon {
+    position: relative;
+    width: 0px;
+}
+
+.compose_table #compose-lock-icon i {
+    position: absolute;
+    left: 5px;
+    top: 3px;
+}
+
+.compose_table .message_header {
+    background: none;
+    background-color: hsl(0, 0%, 92%);
+    border: none;
+    border-radius: 0px;
+    box-shadow: none !important;
+}
+
+.compose_table .messagebox {
+    box-shadow: none !important;
+}
+
+table.compose_table {
+    table-layout: fixed;
+    margin-left: auto;
+    width: 100%;
+}
+
+#send_message_form {
+    margin: 0px;
+}
+
+#send_message_form .messagebox {
+    /* normally 5px 14px; pull in the right and bottom a bit */
+    cursor: default;
+    padding: 0px;
+    background: none;
+    box-shadow: none;
+    border: none;
+}
+
+#send_message_form .message_content {
+    margin-right: 0px;
+}
+
+#below-compose-content {
+    width: 100%;
+    margin-top: 6px;
+}
+
+#compose {
+    position: fixed;
+    bottom: 0px;
+    left: 0px;
+    z-index: 2;
+    width: 100%;
+
+    background: #fff;
+}
+
+#compose-container {
+    width: 100%;
+    max-width: 1400px;
+    margin: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.compose-content {
+    padding: 8px 10px 8px 10px;
+    margin-left: 250px;
+    margin-right: 250px;
+    position: relative;
+
+    border-left: 1px solid hsl(0, 0%, 93%);
+    border-right: 1px solid hsl(0, 0%, 93%);
+}
+
+#compose_close {
+    display: none;
+    position: absolute;
+    right: 0px;
+    top: 5px;
+}
+
+#compose_invite_users,
+#compose_private_stream_alert {
+    /* Don't overlap into the compose_close × */
+    margin-right: 10px;
+}
+
+.compose_invite_user,
+.compose_private_stream_alert {
+    padding: 4px 0px 4px 0px;
+}
+
+.compose_invite_close,
+.compose_private_stream_alert_close {
+    display: inline;
+    margin-top: 4px;
+
+    width: 10px;
+}
+
+.compose-all-everyone-controls,
+.compose-announce-controls,
+.compose_invite_user_controls,
+.compose_private_stream_alert_controls {
+    float: right;
+    -webkit-transform: translateY(-13%);
+    -ms-transform: translateY(-13%);
+    -o-transform: translateY(-13%);
+    transform: translateY(-13%);
+}
+
+.compose_invite_user_error {
+    margin-right: 10px;
+    padding: 3px 8px 3px 8px;
+}
+
+/* Like .nav-tabs > li > a */
+#compose-send-status {
+    padding: 8px 14px 8px 14px;
+    margin-bottom: 8px;
+    line-height: 20px;
+    display: none;
+}
+
+#nonexistent_stream_reply_error {
+    padding: 8px 14px 8px 14px;
+    margin-bottom: 8px;
+    line-height: 20px;
+    display: none;
+}
+
+/* Like .alert .close */
+.compose-send-status-close {
+    font-size: 17px;
+    font-weight: bold;
+    color: hsl(0, 0%, 0%);
+    text-shadow: 0 1px 0 white;
+    opacity: .2;
+    filter: alpha(opacity=20);
+    float: right;
+}
+
+.compose-send-status-close:hover {
+    cursor: pointer;
+    opacity: .4;
+    filter: alpha(opacity=40);
+}
+
+#out-of-view-notification {
+    position: relative;
+    margin-bottom: 6px;
+
+    background: hsla(152, 51%, 63%, 0.25);
+    border: 1px solid hsla(0, 0%, 0%, 0.1);
+    border-radius: 4px;
+}
+
+.compose-notifications-content {
+    padding: 4px 10px 4px 10px;
+    text-align: center;
+}
+
+.composition-area {
+    position: relative;
+}
+
+#out-of-view-notification .close {
+    position: absolute;
+    right: 14px;
+    top: 4px;
+    font-size: 17px;
+    font-weight: bold;
+    color: hsl(0, 0%, 0%);
+    text-shadow: 0 1px 0 white;
+    opacity: .2;
+    filter: alpha(opacity=20);
+}
+
+textarea.new_message_textarea {
+    display: table-cell;
+    width: calc(100% - 12px);
+    padding: 5px;
+    height: 1.5em;
+    max-height: 22em;
+    margin-bottom: 0px;
+    resize: vertical !important;
+    margin-top: 5px;
+}
+
+textarea.new_message_textarea,
+.compose_table .recipient_box {
+    border: 1px solid hsla(0, 0%, 0%, 0.2);
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    transition: border 0.2s ease;
+}
+
+textarea.new_message_textarea:focus,
+.compose_table .recipient_box:focus {
+    border: 1px solid hsl(0, 0%, 66%);
+    box-shadow: none;
+    -webkit-box-shadow: none;
+}
+
+#stream.recipient_box:focus {
+    border-left: none;
+}
+
+input.recipient_box {
+    margin: 0px;
+    height: 1.1em;
+    border-radius: 3px;
+}
+
+#stream.recipient_box {
+    width: 20%;
+    border-radius: 0px 3px 3px 0px;
+    border-left: 0px;
+    min-width: 120px;
+}
+
+#subject.recipient_box {
+    width: calc(20% + 14px);
+    min-width: 140px;
+    max-width: 165px;
+}
+
+#stream.recipient_box.lock-padding {
+    padding-left: 18px;
+}
+
+#private_message_recipient.recipient_box {
+    width: 100%;
+}
+
+#send_controls {
+    float: right;
+    position: relative;
+    right: -7px;
+    font-size: 0.8em;
+    height: 2.2em;
+}
+
+#send_controls .compose_checkbox_label {
+    color: hsl(0, 0%, 66%);
+    margin-right: 2px;
+}
+
+#send_controls #compose-send-button {
+    border-radius: 4px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    margin-right: 7px;
+    font-weight: 600;
+    border: 1px solid hsl(170, 68%, 41%);
+    background-color: hsl(170, 47%, 54%);
+    color: hsl(0, 0%, 100%);
+}
+
+#compose-send-button:focus {
+    box-shadow: 0px 0px 10px hsl(170, 47%, 54%), 0px 0px 5px hsl(170, 47%, 54%);
+}
+
+#stream-message,
+#private-message {
+    display: none;
+}
+
+.compose_table .drafts-link {
+    position: relative;
+    margin-right: 1em;
+    margin-left: 5px;
+    top: 2px;
+}
+
+#sending-indicator {
+    float: left;
+    font-weight: bold;
+    display: none;
+}
+
+#sending-indicator {
+    padding-top: 2px;
+}
+
+#compose a.message-control-button {
+    display: block;
+    opacity: 0.4;
+    color: inherit;
+    text-decoration: none;
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    margin-right: 8px;
+    padding-top: 5px;
+    text-align: center;
+    float: left;
+}
+
+#compose a.message-control-button:hover {
+    opacity: 1;
+}
+
+.drag {
+    display: none;
+    height: 18px;
+    width: 100%;
+    top: 23px;
+    position: relative;
+    cursor: ns-resize;
+}
+
+#enter_sends {
+    vertical-align: middle;
+    margin-top: -2px;
+    margin-right: 4px;
+}
+
+.inline-subscribe-error {
+    margin-left: 5px;
+}
+
+#preview_message_area {
+    /* minus 5px padding. */
+    width: calc(100% - 12px);
+    padding: 5px;
+    /* the maximum height the textarea gets to. */
+    max-height: 308px;
+    /* the minimum height the textarea collapses to. */
+    min-height: 42px;
+    overflow: auto;
+
+    margin-top: 5px;
+
+    border: 1px solid hsl(0, 0%, 66%);
+    border-radius: 4px;
+    background-color: hsla(0, 0%, 0%, 0.02);
+    cursor: not-allowed;
+}
+
+a#markdown_preview,
+a#undo_markdown_preview {
+    text-decoration: none;
+    position: relative;
+    font-size: 16px;
+    color: hsl(0, 0%, 46%);
+}
+
+#markdown_preview_spinner {
+    margin: auto;
+}
+
+@media (max-width: 700px) {
+    #compose_buttons .compose_reply_button {
+        display: none;
+    }
+}

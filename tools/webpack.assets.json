@@ -1,0 +1,32 @@
+{
+    "activity": "./static/third/sorttable/sorttable.js",
+    "portico": [
+        "./static/js/portico/header.js"
+    ],
+    "common": [
+               "./node_modules/jquery/dist/jquery.js",
+               "./node_modules/underscore/underscore.js",
+               "./static/js/blueslip.js",
+               "./static/third/bootstrap/js/bootstrap.js",
+               "./static/js/common.js",
+               "./node_modules/moment/min/moment.min.js",
+               "./node_modules/moment-timezone/builds/moment-timezone-with-data.min.js"
+              ],
+    "help": [
+            "./node_modules/perfect-scrollbar/dist/js/perfect-scrollbar.jquery.js",
+            "./static/js/portico/help.js"
+    ],
+    "katex": "./node_modules/katex/dist/katex.min.js",
+    "landing-page": "./static/js/portico/landing-page.js",
+    "integrations": "./static/js/portico/integrations.js",
+    "signup": [
+               "./static/js/portico/signup.js",
+               "./node_modules/jquery-validation/dist/jquery.validate.min.js"
+              ],
+    "stats": [
+              "./static/js/stats/stats.js",
+              "./node_modules/plotly.js/dist/plotly-basic.min.js"
+             ],
+    "translations": "./static/js/translations.js",
+    "zxcvbn": "./node_modules/zxcvbn/dist/zxcvbn.js"
+}

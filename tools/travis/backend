@@ -1,0 +1,29 @@
+#!/bin/bash
+
+source tools/travis/activate-venv
+echo "Test suite is running under $(python --version)."
+
+set -e
+set -x
+
+./tools/lint --backend --no-gitlint  # gitlint disabled because flaky
+./tools/test-tools
+./tools/test-backend --coverage
+
+# We run mypy after the backend tests so we get output from the
+# backend tests, which tend to uncover more serious problems, first.
+./tools/run-mypy --version
+./tools/run-mypy --linecoverage-report
+
+./tools/test-migrations
+./tools/optimize-svg
+./tools/test-documentation ${CIRCLECI:+--skip-check-links}
+./tools/test-help-documentation
+./tools/test-api
+./tools/test-locked-requirements
+./tools/test-run-dev
+./tools/test-queue-worker-reload
+
+# NB: Everything here should be in `tools/test-all`.  If there's a
+# reason not to run it there, it should be there as a comment
+# explaining why.

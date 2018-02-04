@@ -1,0 +1,3 @@
+This directory contains e.g. the editable originals for image files.
+
+The exported files we serve are checked in under static/.

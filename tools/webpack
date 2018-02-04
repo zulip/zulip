@@ -1,0 +1,82 @@
+#!/usr/bin/env python3
+
+import argparse
+import os
+import subprocess
+import sys
+import json
+
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
+from django.conf import settings
+
+os.chdir(settings.DEPLOY_ROOT)
+STATIC_PATH = 'static/'
+
+
+def run():
+    # type: () -> None
+    """Builds for production, writing the output to disk"""
+    subprocess.check_call(['node', 'node_modules/.bin/webpack'] +
+                          ['--config', 'tools/webpack.config.ts', '-p'] +
+                          ['--env', 'production'])
+
+def run_watch(host, port, minify):
+    # type: (str, str, bool) -> None
+    """watches and rebuilds on changes, serving files from memory via webpack-dev-server"""
+    webpack_args = ['node', 'node_modules/.bin/webpack-dev-server']
+    webpack_args += ['--config', 'tools/webpack.config.ts', '--watch-poll', '--port', port, "--host", host]
+    if minify:
+        webpack_args.append('--optimize-minimize')
+    subprocess.Popen(webpack_args)
+
+def run_test():
+    # type: () -> None
+    """Generates a stub asset stat file for django so backend test can render a page"""
+    entries = {}
+    with open('tools/webpack.assets.json') as json_data:
+        for entry in json.load(json_data).keys():
+            entries[entry] = [{
+                "name": "%s.js" % (entry,),
+                "publicPath": "http://localhost:3000/webpack-stub/%s-stubentry.js" % (entry,),
+                "path": "/stubfolder/%s-stubfile.js" % (entry,)
+            }]
+    stat_data = {
+        "status": "done",
+        "chunks": entries
+    }
+    directory = 'var'
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    with open(os.path.join(directory, 'webpack-stats-test.json'), 'w') as outfile:
+        json.dump(stat_data, outfile)
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--test',
+                    action='store_true', dest='test', default=False,
+                    help='generate a stub webpack-stats.json file (for backend testing)')
+parser.add_argument('--watch',
+                    action='store_true', dest='watch', default=False,
+                    help='watch for changes to source files (for development)')
+parser.add_argument('--host',
+                    action='store', dest='host',
+                    default='127.0.0.1', help='set the host for the webpack server to run on')
+parser.add_argument('--port',
+                    action='store', dest='port',
+                    default='9994', help='set the port for the webpack server to run on')
+parser.add_argument('--minify',
+                    action='store_true', dest='minify', default=False,
+                    help='Minify and optimize the assets (for development)')
+
+args = parser.parse_args()
+if args.test:
+    run_test()
+elif args.watch:
+    run_watch(args.host, args.port, args.minify)
+else:
+    run()

@@ -1,0 +1,27 @@
+[report]
+# Regexes for lines to exclude from consideration
+exclude_lines =
+    # Re-enable the standard coverage pragma
+    nocoverage
+    # Don't complain if non-runnable code isn't run:
+    if False:
+    # Don't require coverage for base class NotImplementedErrors
+    raise NotImplementedError()
+    # Don't require coverage for test suite AssertionError -- they're usually for clarity
+    raise AssertionError
+    # Don't require coverage for __str__ statements just used for printing
+    def __str__[(]self[)] -> .*:
+
+[run]
+omit =
+    */zulip-venv-cache/*
+    */migrations/*
+    */management/commands/*
+    # Parts of the test runner infrastructure
+    tools/test-backend
+    zerver/lib/test_fixtures.py
+    zerver/lib/test_runner.py
+    # Excluded because its coverage state is flaky.
+    zerver/tornado/ioloop_logging.py
+    # Zulip's library for use in scripts
+    scripts/lib/zulip_tools.py

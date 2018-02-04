@@ -1,0 +1,302 @@
+.message_reactions {
+    padding-left: 46px;
+    overflow: hidden;
+
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.message_reactions .message_reaction {
+    float: left;
+    margin: 0.15em;
+    padding: 0 2px 0 0;
+    height: 19px;
+    cursor: pointer;
+    background-color: hsl(0, 0%, 100%);
+    border: 1px solid hsl(194, 37%, 84%);
+    border-radius: 4px;
+}
+
+.private-message .message_reactions .message_reaction {
+    background-color: hsl(192, 19%, 95%);
+}
+
+.message_reactions .message_reaction.reacted {
+    background-color: hsl(195, 50%, 95%);
+}
+
+.emoji-popover-emoji.reacted.reaction:focus {
+    background: hsl(195, 55%, 88%);
+    outline: none;
+}
+
+.private-message .message_reactions .message_reaction.reacted {
+    background-color: hsl(196, 51%, 93%);
+    border-color: hsl(193, 38%, 70%);
+}
+
+.message_reaction .emoji {
+    display: inline-block;
+    vertical-align: top;
+    top: 0px;
+    margin: 1px 3px;
+
+    height: 17px;
+    width: 17px;
+    position: relative;
+}
+
+.message_reactions .message_reaction_count {
+    position: relative;
+    top: 4px;
+    font-size: 0.8em;
+    display: inline-block;
+    vertical-align: top;
+    color: hsl(200, 100%, 40%);
+    margin: 0px 1px 0px 0px;
+    line-height: 1em;
+}
+
+.message_reactions .reaction_button .message_reaction_count {
+    top: 0.5px;
+}
+
+.message_reactions i {
+    font-size: 1.3em;
+    float: left;
+    color: hsl(0, 0%, 33%);
+}
+
+.message_reactions .reaction_button:not(:only-child) {
+    margin-bottom: 5px;
+}
+
+.message_reactions:hover .message_reaction + .reaction_button {
+    visibility: visible;
+    pointer-events: all;
+    background-color: hsl(0, 0%, 98%);
+}
+
+.reaction_button_visible {
+    visibility: visible !important;
+    pointer-events: all !important;
+    opacity: 1 !important;
+    color: hsl(0, 0%, 73%);
+}
+
+.message_reactions .reaction_button i {
+    font-size: 1em;
+    margin-right: 3px;
+}
+
+.message_reactions .reaction_button:hover i {
+    color: hsl(200, 100%, 40%);
+}
+
+.message_reactions .message_reaction:hover {
+    border: 1px solid hsl(200, 100%, 40%);
+}
+
+.message_reactions .reaction_button:only-child {
+    display: none;
+}
+
+.message_reactions .message_reaction + .reaction_button {
+    visibility: hidden;
+    pointer-events: none;
+    margin: 2px 0.1em 3px 0.1em;
+    padding: 3px;
+    height: 14px;
+    border-radius: 4px;
+    padding-left: 0.3em;
+    border: 1px solid hsl(0, 0%, 73%);
+    padding-right: 0.3em;
+    float: left;
+}
+
+.message_reactions .reaction_button:hover {
+    border: 1px solid hsl(200, 100%, 40%);
+    background-color: hsl(195, 50%, 95%);
+    cursor: pointer;
+    opacity: 1.0;
+    color: hsl(200, 100%, 40%);
+}
+
+.message_reactions .reaction_button .message_reaction_count {
+    font-size: 1.1em;
+    color: hsl(0, 0%, 33%);
+    margin-left: 3px;
+}
+
+.message_reactions .reaction_button:hover .message_reaction_count {
+    color: hsl(200, 100%, 40%);
+}
+
+.emoji-info-popover {
+    padding: 0;
+    height: 370px;
+}
+
+.emoji-info-popover .popover-content {
+    padding: 0;
+}
+
+.emoji-info-popover.bottom .arrow {
+    border-bottom-color: hsl(0, 0%, 93%);
+}
+
+.emoji-info-popover.top .arrow {
+    border-top-color: hsl(0, 0%, 93%);
+}
+
+.emoji-popover {
+    display: block;
+    width: 250px;
+}
+
+.emoji-popover-top {
+    position: relative;
+
+    padding: 8px 10px;
+    margin-bottom: 0px;
+
+    background-color: hsl(0, 0%, 93%);
+
+    border-radius: 5px 5px 0px 0px;
+}
+
+.emoji-popover-top .icon-vector-search {
+    position: absolute;
+    color: hsl(0, 0%, 73%);
+    top: 15px;
+    left: 17px;
+    z-index: 3;
+}
+
+.emoji-popover-top .emoji-popover-filter {
+    margin: auto;
+    padding-left: 22px;
+    width: calc(100% - 22px - 8px);
+}
+
+.emoji-popover-emoji-map,
+.emoji-search-results-container {
+    padding: 0px;
+    position: relative;
+    overflow: hidden;
+    display: block;
+    height: 250px;
+    width: 247px;
+    margin-left: 3px;
+}
+
+.emoji-search-results-container {
+    height: 283px;
+}
+
+.emoji-popover-results-heading {
+    font-weight: 600;
+    padding: 5px 3px 3px 5px;
+    font-size: 17px;
+}
+
+.emoji-popover-subheading {
+    font-weight: 600;
+    padding: 5px 3px;
+}
+
+.emoji-popover-emoji {
+    display: inline-block;
+    margin: 0;
+    padding: 6px;
+    cursor: pointer;
+    border-radius: 0.5em;
+    height: 25px;
+    width: 25px;
+}
+
+.emoji-popover-emoji:not(.reacted):focus {
+    background-color: hsl(0, 0%, 93%);
+    outline: none;
+}
+
+.emoji-popover-emoji.hide {
+    display: none;
+}
+
+.emoji-popover-emoji .emoji {
+    top: 6px;
+}
+
+.emoji-popover .reacted {
+    background-color: hsl(195, 50%, 95%);
+    border-color: hsl(195, 52%, 79%);
+}
+
+.emoji_alt_code {
+    position: relative;
+    top: 4px;
+    font-size: 0.8em;
+    display: inline-block;
+    vertical-align: top;
+    margin: 0px 1px 0px 0px;
+    line-height: 1em;
+}
+
+.emoji-popover-category-tabs {
+    /* Flex needed here to work around #7511 (90% zoom issues in firefox) */
+    display: flex;
+    background-color: hsl(0, 0%, 93%);
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.emoji-popover-category-tabs .emoji-popover-tab-item {
+    display: inline-block;
+    padding-top: 8px;
+    width: 25px;
+    height: 25px;
+    text-align: center;
+    font-size: 16px;
+    cursor: pointer;
+    /* Flex needed here to work around #7511 (90% zoom issues in firefox) */
+    flex-grow: 1;
+}
+
+.emoji-popover-category-tabs .emoji-popover-tab-item.active {
+    background: hsla(0, 0%, 100%, 0.2);
+}
+
+.typeahead .emoji {
+    top: 2px;
+}
+
+.emoji-showcase-container {
+    position: relative;
+    background-color: hsl(0, 0%, 93%);
+    min-height: 44px;
+    width: 250px;
+}
+
+.emoji-preview {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    left: 5px;
+    top: 6px;
+    margin-top: 0px;
+}
+
+.emoji-canonical-name {
+    position: relative;
+    top: 12px;
+    margin-left: 50px;
+    font-size: 16px;
+    font-weight: 600;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}

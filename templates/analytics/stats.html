@@ -1,0 +1,106 @@
+{% extends "zerver/base.html" %}
+
+{% block customhead %}
+{% stylesheet 'portico' %}
+{% endblock %}
+
+{% block content %}
+<div class="app portico-page">
+
+    {{ render_bundle('translations') }}
+    {{ render_bundle('stats') }}
+    {% stylesheet 'stats' %}
+
+    <div class="page-content">
+        <div id="id_stats_errors" class="alert alert-error"></div>
+        <div class="center-charts">
+            <h1 class="analytics-page-header">{% trans %}Zulip analytics for {{ realm_name }}{% endtrans %}</h1>
+
+            <div class="left">
+                <div class="chart-container">
+                    <h1>{{ _("Messages sent over time") }}</h1>
+                    <div class="button-container">
+                        <label>{{ _("Aggregation") }}</label>
+                        <div class="buttons">
+                            <button class="button" type="button" id='daily_button'>{{ _("Daily") }} </button>
+                            <button class="button" type="button" id='weekly_button'>{{ _("Weekly") }} </button>
+                            <button class="button" type="button" id='cumulative_button'>{{ _("Cumulative") }} </button>
+                        </div>
+                    </div>
+                    <div id="id_messages_sent_over_time">
+                        <div class="spinner"></div>
+                    </div>
+                    <div id="hoverinfo">
+                        <span id="hover_date"></span>
+                        <span id="hover_me">{{ _("Me") }}:</span>
+                        <span id="hover_me_value"></span>
+                        <b id="hover_human">{{ _("Humans") }}:</b>
+                        <span id="hover_human_value"></span>
+                        <b id="hover_bot">{{ _("Bots") }}:</b>
+                        <span id="hover_bot_value"></span>
+                    </div>
+                </div>
+
+                <div class="chart-container pie-chart">
+                    <div id="pie_messages_sent_by_client">
+                        <h1>{{ _("Messages sent by client") }}</h1>
+                        <div id="id_messages_sent_by_client" class="number-stat">
+                            <div class="spinner"></div>
+                        </div>
+                        <div class="buttons">
+                            <button class="button" type="button" data-user="user">{{ _("Me") }}</button>
+                            <button class="button selected" type="button" data-user="realm">{{ _("Everyone") }}</button>
+                            <button class="button" type="button" data-time="week">{{ _("Last week") }}</button>
+                            <button class="button selected" type="button" data-time="month">{{ _("Last month") }}</button>
+                            <button class="button" type="button" data-time="year">{{ _("Last year") }}</button>
+                            <button class="button" type="button" data-time="cumulative">{{ _("All time") }}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right">
+                <div class="chart-container pie-chart">
+                    <div id="pie_messages_sent_by_type">
+                        <h1>{{ _("Messages sent by recipient type") }}</h1>
+                        <div id="id_messages_sent_by_message_type">
+                            <div class="spinner"></div>
+                        </div>
+                        <div id="pie_messages_sent_by_type_total" class="number-stat"></div>
+                        <div class="buttons">
+                            <button class="button" type="button" data-user="user">{{ _("Me") }}</button>
+                            <button class="button selected" type="button" data-user="realm">{{ _("Everyone") }}</button>
+                            <button class="button" type="button" data-time="week">{{ _("Last week") }}</button>
+                            <button class="button selected" type="button" data-time="month">{{ _("Last month") }}</button>
+                            <button class="button" type="button" data-time="year">{{ _("Last year") }}</button>
+                            <button class="button" type="button" data-time="cumulative">{{ _("All time") }}</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h1>{{ _("Active users") }}</h1>
+                    <div id="id_number_of_users">
+                        <div class="spinner"></div>
+                    </div>
+                    <div id="users_hover_info" class="number-stat">
+                        <span id="users_hover_date"></span>
+                        <b id="users_hover_humans">{{ _("Users") }}: </b>
+                        <span id="users_hover_humans_value"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="last-update">
+            {{ _("Last update") }}: <span id="id_last_full_update"></span>
+            <span data-toggle="tooltip" title="{% trans %}A full update of all the graphs happens once a day.<br/>The “Messages Sent Over Time” graph is updated once an hour.{% endtrans %}">
+                <span class="fa fa-info-circle" id="id_last_update_question_sign"></span>
+            </span>
+            <br />
+            <span class="docs_link"><a href="/help/analytics">{{ _("Analytics documentation") }}</a></span>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,9 @@
+# Configuration for making Zulip app frontends accept the
+# X-Forwarded-For header used by the Zulip proxy.  The accepted IP
+# addresses here are set in /etc/zulip/zulip.conf.
+real_ip_header X-Forwarded-For;
+<% @loadbalancers.each do |host| -%>
+set_real_ip_from <%= host %>;
+<%
+end
+-%>

@@ -1,0 +1,89 @@
+#!/usr/bin/env python3
+
+import sys
+import time
+import argparse
+from collections import defaultdict
+import os
+import subprocess
+
+if False:
+    from typing import Dict
+
+states = {
+    0: "OK",
+    1: "WARNING",
+    2: "CRITICAL",
+    3: "UNKNOWN"
+}
+
+if 'USER' in os.environ and not os.environ['USER'] in ['root', 'rabbitmq']:
+    print("This script must be run as the root or rabbitmq user")
+
+
+usage = """Usage: check-rabbitmq-consumers --queue=[queue-name] --min-threshold=[min-threshold]"""
+
+parser = argparse.ArgumentParser(usage=usage)
+parser.add_argument('--min-threshold',
+                    dest='min_count',
+                    type=int,
+                    default=1,
+                    action='store')
+
+options = parser.parse_args()
+
+output = subprocess.check_output(['/usr/sbin/rabbitmqctl', 'list_consumers'],
+                                 universal_newlines=True)
+
+consumers = defaultdict(int)  # type: Dict[str, int]
+
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
+from scripts.lib.zulip_tools import su_to_zulip
+queues = {
+    'deferred_work'
+    'digest_emails',
+    'email_mirror',
+    'embed_links',
+    'embedded_bots',
+    'error_reports',
+    'feedback_messages',
+    'invites',
+    'message_sender',
+    'missedmessage_emails',
+    'missedmessage_email_senders',
+    'email_senders',
+    'missedmessage_mobile_notifications',
+    'outgoing_webhooks',
+    'notify_tornado',
+    'signups',
+    'slow_queries',
+    'tornado_return',
+    'user_activity'
+    'user_activity_interval',
+    'user_presence',
+}
+
+for queue_name in queues:
+    queue_name = queue_name.strip()
+    consumers[queue_name] = 0
+
+for line in output.split('\n'):
+    parts = line.split('\t')
+    if len(parts) >= 2:
+        consumers[parts[0]] += 1
+
+now = int(time.time())
+
+for queue_name in consumers.keys():
+    state_file_path = "/var/lib/nagios_state/check-rabbitmq-consumers-" + queue_name
+    state_file_tmp = state_file_path + "-tmp"
+
+    if consumers[queue_name] < options.min_count:
+        status = 2
+    else:
+        status = 0
+    with open(state_file_tmp, "w") as f:
+        f.write("%s|%s|%s|queue %s has %s consumers, needs %s\n" % (
+            now, status, states[status], queue_name,
+            consumers[queue_name], options.min_count))
+    subprocess.check_call(["mv", state_file_tmp, state_file_path])

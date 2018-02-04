@@ -1,0 +1,130 @@
+#!/usr/bin/env bash
+set -e
+
+server=$1
+type=$2
+hostname=$3
+branch=$4
+if [ -z "$hostname" ]; then
+    echo "USAGE: $0 server type hostname [branch]"
+    echo "Installs an empty Ubuntu server in AWS with a Zulip server role."
+    echo "* hostname is the current hostname/IP of the server"
+    echo "* type is a list of puppet rules to be passed to scripts/lib/install"
+    echo "  E.g. 'zulip::base,zulip::apt_repository,zulip::postgres_common'"
+    echo "* hostname is to be the server's external hostname."
+    echo "* branch is used to override the default branch to install from."
+    echo "Reads configuration from $HOME/.zulip-install-server.conf."
+    exit 1
+fi
+if ! echo "$hostname" | grep -q zulip; then
+    echo "USAGE: $0 server type hostname [branch]"
+    echo "Hostname must have zulip in it."
+    exit 1
+fi
+set -x
+zulip_root=${ZULIP_ROOT:-$HOME/zulip}
+
+zulip_ssh_config_file="$HOME/.zulip-install-server.conf"
+amazon_key_file=$(crudini --get "$zulip_ssh_config_file" ssh amazon_key_file)
+if ! [ -e "$amazon_key_file" ]; then
+    echo "You need the amazon ssh key at $amazon_key_file"
+    exit 1
+fi
+
+server_private_key_file=$(crudini --get "$zulip_ssh_config_file" ssh server_private_key_file)
+if ! [ -e "$server_private_key_file" ]; then
+    echo "You need a server ssh key at $server_private_key_file"
+    exit 1
+fi
+
+if [ -n "$zulip_confdir" ]; then
+    zulipconf_file="$zulip_confdir/zulip.conf"
+    secrets_file="$zulip_confdir/zulip-secrets.conf"
+fi
+if [ -z "$secrets_file" ]; then
+    echo "Specify secrets_file via environment."
+    exit 1
+fi
+
+zulip_repo=$(crudini --get "$zulip_ssh_config_file" repo repo_url)
+
+if [ -z "$branch" ]; then
+    branch=$(crudini --get "$zulip_ssh_config_file" repo default_branch)
+fi
+
+VIRTUALENV_NEEDED=$(if $(echo "$type" | grep -q app_frontend); then echo -n yes; else echo -n no; fi)
+
+# Force RSA keys. We do this because the ECDSA key is not printed on syslog,
+# and our puppet configuration does not use ECDSA. If we don't do this,
+# we'll get key errors after puppet apply.
+SSH_OPTS=(-o HostKeyAlgorithms=ssh-rsa)
+
+set +e
+
+ssh "${SSH_OPTS[@]}" "$server" -t -i "$amazon_key_file" -lubuntu -o "ControlMaster=no" <<EOF
+sudo mkdir -p ~root/.ssh && sudo cp .ssh/authorized_keys /root/.ssh/authorized_keys
+sudo sed -i 's/disable_root: true/disable_root: false/' /etc/cloud/cloud.cfg
+sudo mkdir -p /etc/zulip
+EOF
+ssh "${SSH_OPTS[@]}" "$server" -t -i "$amazon_key_file" -lroot <<EOF
+# Set the hostname early
+echo "$hostname" > /etc/hostname
+hostname "$hostname"
+sed -i 's/localhost$/localhost $hostname/' /etc/hosts
+EOF
+
+set -e
+
+# Give server its SSH keys
+scp "${SSH_OPTS[@]}" -i "$amazon_key_file" "$server_private_key_file" root@"$server":/root/.ssh/id_rsa
+scp "${SSH_OPTS[@]}" -i "$amazon_key_file" "$server_private_key_file".pub root@"$server":/root/.ssh/id_rsa.pub
+scp "${SSH_OPTS[@]}" -i "$amazon_key_file" "$secrets_file" root@"$server":/etc/zulip/zulip-secrets.conf
+if [ -e "$zulipconf_file" ]; then
+    scp "${SSH_OPTS[@]}" -i "$amazon_key_file" "$zulipconf_file" root@"$server":/etc/zulip/zulip.conf
+fi
+
+ssh "${SSH_OPTS[@]}" "$server" -t -i "$amazon_key_file" -lroot <<EOF
+set -x
+# Finish setting up the SSH private key
+chmod 600 /root/.ssh/id_rsa
+# Delete the ubuntu user
+if grep -q '^ubuntu:' /etc/passwd; then
+    userdel ubuntu
+fi
+# Make sure root doesn't have a password
+passwd -d root
+
+apt-get update
+apt-get -y upgrade
+
+cd "$(mktemp -d)"
+
+# Get GitHub known_hosts setup
+# TODO: Replace this with hardcoding the actual GitHub keys
+ssh -oStrictHostKeyChecking=no git@github.com </dev/null >/dev/null || true
+
+if ! [ -e "zulip" ]; then
+    # need to install git to clone the repo
+    apt-get install -y git crudini
+    git clone "$zulip_repo" zulip
+fi
+cd zulip
+git fetch
+git checkout origin/$branch
+# The main Zulip production install script can take things from here!
+env VIRTUALENV_NEEDED=$VIRTUALENV_NEEDED PUPPET_CLASSES="$type" \
+  ./scripts/setup/install
+EOF
+
+scp "${SSH_OPTS[@]}" -i "$amazon_key_file" "$server_private_key_file" root@"$server":/home/zulip/.ssh/id_rsa
+scp "${SSH_OPTS[@]}" -i "$amazon_key_file" "$server_private_key_file".pub root@"$server":/home/zulip/.ssh/id_rsa.pub
+ssh "${SSH_OPTS[@]}" "$server" -t -i "$amazon_key_file" -lroot <<EOF
+chown zulip:zulip /home/zulip/.ssh/id_rsa*
+chmod 600 /home/zulip/.ssh/id_rsa*
+EOF
+set +x
+cat <<EOF
+
+ Done.
+
+EOF

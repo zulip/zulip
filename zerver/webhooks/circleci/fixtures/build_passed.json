@@ -1,0 +1,500 @@
+{
+  "payload": {
+    "compare": "https://github.com/username/RepoName/compare/6920bd506184...73d745dc5cca",
+    "previous_successful_build": {
+      "build_num": 8,
+      "status": "success",
+      "build_time_millis": 49544
+    },
+    "build_parameters": null,
+    "oss": true,
+    "all_commit_details_truncated": false,
+    "committer_date": "2016-05-09T19:43:03+02:00",
+    "steps": [
+      {
+        "name": "Starting the build",
+        "actions": [
+          {
+            "truncated": false,
+            "index": 0,
+            "parallel": false,
+            "failed": null,
+            "infrastructure_fail": null,
+            "name": "Starting the build",
+            "bash_command": null,
+            "status": "success",
+            "timedout": null,
+            "continue": null,
+            "end_time": "2016-05-09T17:46:11.048Z",
+            "type": "infrastructure",
+            "output_url": "https://circle-production-action-output.s3.amazonaws.com/de671c76626a34dcddcc0375-username-RepoName-0-0?AWSAccessKeyId=AKIAIJNI6FA5RIAFFQ7Q&Expires=1620582546&Signature=gkBS%2BwBFiC4jDuxzXrAyCn6heFE%3D",
+            "start_time": "2016-05-09T17:46:05.952Z",
+            "exit_code": null,
+            "canceled": null,
+            "step": 0,
+            "run_time_millis": 5096,
+            "has_output": true
+          }
+        ]
+      },
+      {
+        "name": "Start container",
+        "actions": [
+          {
+            "truncated": false,
+            "index": 0,
+            "parallel": true,
+            "failed": null,
+            "infrastructure_fail": null,
+            "name": "Start container",
+            "bash_command": null,
+            "status": "success",
+            "timedout": null,
+            "continue": null,
+            "end_time": "2016-05-09T17:46:19.152Z",
+            "source": "config",
+            "type": "infrastructure",
+            "output_url": "https://circle-production-action-output.s3.amazonaws.com/0f671c76626a34dc3ecc0375-username-RepoName-1-0?AWSAccessKeyId=AKIAIJNI6FA5RIAFFQ7Q&Expires=1620582546&Signature=LREfyz00wuzwKXie4kOEnLLPyoE%3D",
+            "start_time": "2016-05-09T17:46:11.056Z",
+            "exit_code": 0,
+            "canceled": null,
+            "step": 1,
+            "run_time_millis": 8096,
+            "has_output": true
+          }
+        ]
+      },
+      {
+        "name": "Enable SSH",
+        "actions": [
+          {
+            "truncated": false,
+            "index": 0,
+            "parallel": true,
+            "failed": null,
+            "infrastructure_fail": null,
+            "name": "Enable SSH",
+            "bash_command": null,
+            "status": "success",
+            "timedout": null,
+            "continue": null,
+            "end_time": "2016-05-09T17:46:21.010Z",
+            "type": "infrastructure",
+            "output_url": "https://circle-production-action-output.s3.amazonaws.com/1f671c76626a34dcbecc0375-username-RepoName-2-0?AWSAccessKeyId=AKIAIJNI6FA5RIAFFQ7Q&Expires=1620582546&Signature=rPk2hDVW0sky4hfh0PHO43OwGsw%3D",
+            "start_time": "2016-05-09T17:46:19.158Z",
+            "exit_code": null,
+            "canceled": null,
+            "step": 2,
+            "run_time_millis": 1852,
+            "has_output": true
+          }
+        ]
+      },
+      {
+        "name": "Restore source cache",
+        "actions": [
+          {
+            "truncated": false,
+            "index": 0,
+            "parallel": false,
+            "failed": null,
+            "infrastructure_fail": null,
+            "name": "Restore source cache",
+            "bash_command": null,
+            "status": "success",
+            "timedout": null,
+            "continue": null,
+            "end_time": "2016-05-09T17:46:22.866Z",
+            "source": "cache",
+            "type": "checkout",
+            "output_url": "https://circle-production-action-output.s3.amazonaws.com/3f671c76626a34dcdecc0375-username-RepoName-3-0?AWSAccessKeyId=AKIAIJNI6FA5RIAFFQ7Q&Expires=1620582546&Signature=3mXDVeKbeGQ%2BIRNs7C5HXqCBpXM%3D",
+            "start_time": "2016-05-09T17:46:21.018Z",
+            "exit_code": null,
+            "canceled": null,
+            "step": 3,
+            "run_time_millis": 1848,
+            "has_output": true
+          }
+        ]
+      },
+      {
+        "name": "Checkout using deploy key: 60:9e:22:1b:ea:bf:15:c5:27:89:ce:c1:b7:38:a5:f9",
+        "actions": [
+          {
+            "truncated": false,
+            "index": 0,
+            "parallel": true,
+            "failed": null,
+            "infrastructure_fail": null,
+            "name": "Checkout using deploy key: 60:9e:22:1b:ea:bf:15:c5:27:89:ce:c1:b7:38:a5:f9",
+            "bash_command": null,
+            "status": "success",
+            "timedout": null,
+            "continue": null,
+            "end_time": "2016-05-09T17:46:25.856Z",
+            "source": "config",
+            "type": "checkout",
+            "output_url": "https://circle-production-action-output.s3.amazonaws.com/5f671c76626a34dceecc0375-username-RepoName-4-0?AWSAccessKeyId=AKIAIJNI6FA5RIAFFQ7Q&Expires=1620582546&Signature=CqqLgI7Jfk943kqbaPwsIqfnuEo%3D",
+            "start_time": "2016-05-09T17:46:22.874Z",
+            "exit_code": 0,
+            "canceled": null,
+            "step": 4,
+            "run_time_millis": 2982,
+            "has_output": true
+          }
+        ]
+      },
+      {
+        "name": "Configure the build",
+        "actions": [
+          {
+            "truncated": false,
+            "index": 0,
+            "parallel": false,
+            "failed": null,
+            "infrastructure_fail": null,
+            "name": "Configure the build",
+            "bash_command": null,
+            "status": "success",
+            "timedout": null,
+            "continue": null,
+            "end_time": "2016-05-09T17:46:29.178Z",
+            "source": "cache",
+            "type": "machine",
+            "start_time": "2016-05-09T17:46:25.863Z",
+            "exit_code": null,
+            "canceled": null,
+            "step": 5,
+            "run_time_millis": 3315,
+            "has_output": false
+          }
+        ]
+      },
+      {
+        "name": "Restore cache",
+        "actions": [
+          {
+            "truncated": false,
+            "index": 0,
+            "parallel": false,
+            "failed": null,
+            "infrastructure_fail": null,
+            "name": "Restore cache",
+            "bash_command": null,
+            "status": "success",
+            "timedout": null,
+            "continue": null,
+            "end_time": "2016-05-09T17:46:35.855Z",
+            "source": "cache",
+            "type": "machine",
+            "output_url": "https://circle-production-action-output.s3.amazonaws.com/9f671c76626a34dc5fcc0375-username-RepoName-6-0?AWSAccessKeyId=AKIAIJNI6FA5RIAFFQ7Q&Expires=1620582546&Signature=p3pdN63VBafFplCOVi8KmlMCnbE%3D",
+            "start_time": "2016-05-09T17:46:29.183Z",
+            "exit_code": null,
+            "canceled": null,
+            "step": 6,
+            "run_time_millis": 6672,
+            "has_output": true
+          }
+        ]
+      },
+      {
+        "name": "virtualenv",
+        "actions": [
+          {
+            "truncated": false,
+            "index": 0,
+            "parallel": true,
+            "failed": null,
+            "infrastructure_fail": null,
+            "name": "virtualenv",
+            "bash_command": null,
+            "status": "success",
+            "timedout": null,
+            "continue": null,
+            "end_time": "2016-05-09T17:46:36.790Z",
+            "source": "inference",
+            "type": "checkout",
+            "output_url": "https://circle-production-action-output.s3.amazonaws.com/00771c76626a34dcbfcc0375-username-RepoName-7-0?AWSAccessKeyId=AKIAIJNI6FA5RIAFFQ7Q&Expires=1620582546&Signature=ldi9Ac1pbpOLnbUYO8tP112OWTo%3D",
+            "start_time": "2016-05-09T17:46:35.862Z",
+            "exit_code": 0,
+            "canceled": null,
+            "step": 7,
+            "run_time_millis": 928,
+            "has_output": true
+          }
+        ]
+      },
+      {
+        "name": "pip install",
+        "actions": [
+          {
+            "truncated": false,
+            "index": 0,
+            "parallel": true,
+            "failed": null,
+            "infrastructure_fail": null,
+            "name": "pip install",
+            "bash_command": "if [ -e requirements.txt ]; then pip install -r requirements.txt;else pip install -r requirements.pip;fi",
+            "status": "success",
+            "timedout": null,
+            "continue": null,
+            "end_time": "2016-05-09T17:46:38.323Z",
+            "source": "inference",
+            "type": "dependencies",
+            "output_url": "https://circle-production-action-output.s3.amazonaws.com/20771c76626a34dccfcc0375-username-RepoName-8-0?AWSAccessKeyId=AKIAIJNI6FA5RIAFFQ7Q&Expires=1620582546&Signature=ydUob0Rmh4UKSp4KWio9D2tdTp4%3D",
+            "start_time": "2016-05-09T17:46:36.797Z",
+            "exit_code": 0,
+            "canceled": null,
+            "step": 8,
+            "run_time_millis": 1526,
+            "has_output": true
+          }
+        ]
+      },
+      {
+        "name": "pip install unittest-xml-reporting",
+        "actions": [
+          {
+            "truncated": false,
+            "index": 0,
+            "parallel": true,
+            "failed": null,
+            "infrastructure_fail": null,
+            "name": "pip install unittest-xml-reporting",
+            "bash_command": "pip install unittest-xml-reporting",
+            "status": "success",
+            "timedout": null,
+            "continue": null,
+            "end_time": "2016-05-09T17:46:39.857Z",
+            "source": "inference",
+            "type": "dependencies",
+            "output_url": "https://circle-production-action-output.s3.amazonaws.com/40771c76626a34dcefcc0375-username-RepoName-9-0?AWSAccessKeyId=AKIAIJNI6FA5RIAFFQ7Q&Expires=1620582546&Signature=QfIcBYxW%2Fz73Q09Q8%2BZsjoOHzAc%3D",
+            "start_time": "2016-05-09T17:46:38.330Z",
+            "exit_code": 0,
+            "canceled": null,
+            "step": 9,
+            "run_time_millis": 1527,
+            "has_output": true
+          }
+        ]
+      },
+      {
+        "name": "Save cache",
+        "actions": [
+          {
+            "truncated": false,
+            "index": 0,
+            "parallel": false,
+            "failed": null,
+            "infrastructure_fail": null,
+            "name": "Save cache",
+            "bash_command": null,
+            "status": "success",
+            "timedout": null,
+            "continue": null,
+            "end_time": "2016-05-09T17:46:42.148Z",
+            "source": "cache",
+            "type": "database",
+            "output_url": "https://circle-production-action-output.s3.amazonaws.com/50771c76626a34dcffcc0375-username-RepoName-10-0?AWSAccessKeyId=AKIAIJNI6FA5RIAFFQ7Q&Expires=1620582546&Signature=domD%2FzJ3QcinZjNXYvqfEQuEIWg%3D",
+            "start_time": "2016-05-09T17:46:39.864Z",
+            "exit_code": null,
+            "canceled": null,
+            "step": 10,
+            "run_time_millis": 2284,
+            "has_output": true
+          }
+        ]
+      },
+      {
+        "name": "Django Test",
+        "actions": [
+          {
+            "truncated": false,
+            "index": 0,
+            "parallel": false,
+            "failed": null,
+            "infrastructure_fail": null,
+            "name": "Django Test",
+            "bash_command": null,
+            "status": "success",
+            "timedout": null,
+            "continue": null,
+            "end_time": "2016-05-09T17:46:44.609Z",
+            "source": "inference",
+            "type": "test",
+            "output_url": "https://circle-production-action-output.s3.amazonaws.com/70771c76626a34dc20dc0375-username-RepoName-11-0?AWSAccessKeyId=AKIAIJNI6FA5RIAFFQ7Q&Expires=1620582546&Signature=kZhXMO7XgJ95e3WoLYg3CSAr2Og%3D",
+            "start_time": "2016-05-09T17:46:42.156Z",
+            "exit_code": 0,
+            "canceled": null,
+            "step": 11,
+            "run_time_millis": 2453,
+            "has_output": true
+          }
+        ]
+      },
+      {
+        "name": "Collect test metadata",
+        "actions": [
+          {
+            "truncated": false,
+            "index": 0,
+            "parallel": true,
+            "failed": null,
+            "infrastructure_fail": null,
+            "name": "Collect test metadata",
+            "bash_command": null,
+            "status": "success",
+            "timedout": null,
+            "continue": null,
+            "end_time": "2016-05-09T17:46:47.500Z",
+            "type": "teardown",
+            "output_url": "https://circle-production-action-output.s3.amazonaws.com/b0771c76626a34dc40dc0375-username-RepoName-12-0?AWSAccessKeyId=AKIAIJNI6FA5RIAFFQ7Q&Expires=1620582546&Signature=jSZgba9ChMgK5QA5tec62CKWvno%3D",
+            "start_time": "2016-05-09T17:46:44.618Z",
+            "exit_code": null,
+            "canceled": null,
+            "step": 12,
+            "run_time_millis": 2882,
+            "has_output": true
+          }
+        ]
+      },
+      {
+        "name": "Collect artifacts",
+        "actions": [
+          {
+            "truncated": false,
+            "index": 0,
+            "parallel": true,
+            "failed": null,
+            "infrastructure_fail": null,
+            "name": "Collect artifacts",
+            "bash_command": null,
+            "status": "success",
+            "timedout": null,
+            "continue": null,
+            "end_time": "2016-05-09T17:46:54.636Z",
+            "type": "teardown",
+            "output_url": "https://circle-production-action-output.s3.amazonaws.com/f0771c76626a34dc70dc0375-username-RepoName-13-0?AWSAccessKeyId=AKIAIJNI6FA5RIAFFQ7Q&Expires=1620582546&Signature=S7xM9ekaaHdWBG1woewGaZ%2FyeAU%3D",
+            "start_time": "2016-05-09T17:46:47.507Z",
+            "exit_code": null,
+            "canceled": null,
+            "step": 13,
+            "run_time_millis": 7129,
+            "has_output": true
+          }
+        ]
+      },
+      {
+        "name": "Disable SSH",
+        "actions": [
+          {
+            "truncated": false,
+            "index": 0,
+            "parallel": true,
+            "failed": null,
+            "infrastructure_fail": null,
+            "name": "Disable SSH",
+            "bash_command": null,
+            "status": "success",
+            "timedout": null,
+            "continue": null,
+            "end_time": "2016-05-09T17:46:54.646Z",
+            "type": "teardown",
+            "start_time": "2016-05-09T17:46:54.643Z",
+            "exit_code": null,
+            "canceled": null,
+            "step": 16,
+            "run_time_millis": 3,
+            "has_output": false
+          }
+        ]
+      }
+    ],
+    "body": "",
+    "usage_queued_at": "2016-05-09T17:47:40.500Z",
+    "retry_of": null,
+    "reponame": "RepoName",
+    "ssh_users": [],
+    "build_url": "https://circleci.com/gh/username/project/build_number",
+    "parallel": 1,
+    "failed": null,
+    "branch": "master",
+    "username": "username",
+    "author_date": "2016-05-09T19:43:03+02:00",
+    "why": "github",
+    "user": {
+      "vcs_type": "github",
+      "id": "5993758",
+      "name": "User name",
+      "login": "username",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5993758?v=3",
+      "is_user": true
+    },
+    "vcs_revision": "73d745dc5cca92ebbb326304426536df50cc6a94",
+    "owners": [
+      "username"
+    ],
+    "vcs_tag": null,
+    "build_num": 9,
+    "infrastructure_fail": false,
+    "committer_email": "user@email.com",
+    "previous": {
+      "build_num": 8,
+      "status": "success",
+      "build_time_millis": 49544
+    },
+    "status": "success",
+    "committer_name": "User name",
+    "pull_request_urls": [],
+    "retries": null,
+    "subject": "f",
+    "vcs_type": "github",
+    "timedout": false,
+    "dont_build": null,
+    "lifecycle": "finished",
+    "no_dependency_cache": false,
+    "stop_time": "2016-05-09T17:46:55.355Z",
+    "ssh_disabled": false,
+    "build_time_millis": 50717,
+    "circle_yml": {
+      "string": "general:\n  build_dir: circlecitest\n\nnotify:\n  webhooks:\n      # A list of hook hashes, containing the URL field\n          - url: http://requestb.in/vrfwumvr\n"
+    },
+    "messages": [],
+    "is_first_green_build": false,
+    "job_name": null,
+    "start_time": "2016-05-09T17:46:04.638Z",
+    "canceler": null,
+    "all_commit_details": [
+      {
+        "committer_date": "2016-05-09T19:43:03+02:00",
+        "body": "",
+        "branch": "master",
+        "author_date": "2016-05-09T19:43:03+02:00",
+        "committer_email": "user@email.com",
+        "commit": "73d745dc5cca92ebbb326304426536df50cc6a94",
+        "committer_login": null,
+        "committer_name": "User name",
+        "subject": "f",
+        "commit_url": "https://github.com/username/RepoName/commit/73d745dc5cca92ebbb326304426536df50cc6a94",
+        "author_login": null,
+        "author_name": "User name",
+        "author_email": "user@email.com"
+      }
+    ],
+    "outcome": "success",
+    "vcs_url": "https://github.com/username/RepoName",
+    "author_name": "User name",
+    "node": [
+      {
+        "public_ip_addr": "54.242.71.11",
+        "port": 64558,
+        "username": "ubuntu",
+        "image_id": "s3://lxc-images/circletar-1741-cc586-20160424T232626Z",
+        "ssh_enabled": null
+      }
+    ],
+    "queued_at": "2016-05-09T17:46:04.611Z",
+    "canceled": false,
+    "author_email": "user@email.com"
+  }
+}

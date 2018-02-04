@@ -1,0 +1,49 @@
+# Copyright © 2013 Zulip, Inc. All rights reserved.
+
+# Copy, modify, and enable this site if you need to use an Apache httpd module
+# for user authentication.
+
+# Requests to /accounts/login/sso/ will be passed unchanged by the primary
+# Zulip web server to Apache. Once a request is authenticated, the REMOTE_USER
+# environment variable should be set by your authentication module.
+
+# The config below will then invoke the Zulip web app under Apache, which will
+# detect the presence of the variable, log the user in, and then redirect back
+# to the app (served by the primary web server). You should configure your
+# authentication module below.
+
+NameVirtualHost 127.0.0.1:8888
+Listen 127.0.0.1:8888
+
+<VirtualHost 127.0.0.1:8888>
+	# As an example, we've configured this service to use HTTP basic auth.
+	# Insert the configuration for your SSO authentication module here:
+	<Location />
+		AuthType basic
+		AuthName "zulip.example.com"
+		AuthUserFile /home/zulip/zpasswd
+		Require valid-user
+	</Location>
+
+	ServerAdmin webmaster@localhost
+
+	ServerSignature Off
+
+	# You shouldn't need to edit anything below this line.
+
+	SSLEngine On
+	SSLCertificateFile /etc/ssl/certs/zulip.combined-chain.crt
+	SSLCertificateKeyFile /etc/ssl/private/zulip.key
+
+	WSGIScriptAlias / /home/zulip/deployments/current/zproject/wsgi.py
+	WSGIDaemonProcess zulip threads=5 user=zulip python-path=/home/zulip/deployments/current/
+	WSGIProcessGroup zulip
+
+	ErrorLog ${APACHE_LOG_DIR}/zulip_auth_error.log
+
+	# Possible values include: debug, info, notice, warn, error, crit,
+	# alert, emerg.
+	LogLevel warn
+
+	CustomLog ${APACHE_LOG_DIR}/zulip_auth_access.log combined
+</VirtualHost>

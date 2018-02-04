@@ -1,0 +1,12 @@
+<div class="{{this.class}}" title="{{this.title}}" data-reaction-id={{this.local_id}}>
+    {{#if this.emoji_alt_code}}
+        <div class="emoji_alt_code">&nbsp:{{this.emoji_name}}:</div>
+    {{else}}
+        {{#if this.is_realm_emoji}}
+        <img src="{{this.url}}" class="emoji" />
+        {{else}}
+        <div class="emoji emoji-{{this.emoji_code}}" />
+        {{/if}}
+    {{/if}}
+    <div class="message_reaction_count">{{this.count}}</div>
+</div>

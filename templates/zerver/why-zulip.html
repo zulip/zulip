@@ -1,0 +1,34 @@
+{% extends "zerver/portico.html" %}
+
+{% block title %}
+<title>The best group chat</title>
+{% endblock %}
+
+{% block customhead %}
+{{ super() }}
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% stylesheet 'portico' %}
+{% stylesheet 'landing-page' %}
+{{ render_bundle('landing-page') }}
+
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+
+<div class="portico-landing why-page">
+    <div class="hero small-hero">
+        <h1 class="center">{% trans %}Why Zulip?{% endtrans %}</h1>
+    </div>
+    <div class="main">
+        <div class="padded-content">
+            <div class="inner-content">
+                {{ render_markdown_path('zerver/why-zulip.md') }}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

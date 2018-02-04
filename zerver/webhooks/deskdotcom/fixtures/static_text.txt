@@ -1,0 +1,1 @@
+stream=deskdotcom&topic=static%20text%20notification&data=This%20is%20a%20custom%20action.

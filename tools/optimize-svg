@@ -1,0 +1,10 @@
+#!/bin/bash
+
+if [ `node_modules/.bin/svgo -f static/images/integrations/logos | grep -o '\.[0-9]% = ' | wc -l` -ge 1 ]
+ then
+   echo "ERROR: svgo detected unoptimized SVG files in the \`static/images/integrations/logos\` folder." 1>&2
+   echo "Please run \`svgo -f static/images/integrations/logos\` and commit the file changes to optimize them."
+   exit 1
+ else
+  echo "SUCCESS: SVG files in static/images/integrations/logos are all optimized!"
+fi

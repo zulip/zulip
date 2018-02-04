@@ -1,0 +1,11 @@
+Hi again,
+
+This is a friendly reminder that {{ referrer_name }} ({{ referrer_email }}) wants you to join them on Zulip, a workplace chat tool that actually makes you more productive.
+
+To get started, visit the link below:
+    <{{ activate_url }}>
+
+We're here for you at <{{ support_email }}> if you have any questions.
+
+Cheers,
+The Zulip Team

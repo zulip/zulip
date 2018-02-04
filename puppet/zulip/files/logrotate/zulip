@@ -1,0 +1,19 @@
+/var/log/zulip/workers.log /var/log/zulip/manage.log /var/log/zulip/errors.log /var/log/zulip/analytics.log /var/log/zulip/digest.log /var/log/zulip/send_email.log {
+    missingok
+    rotate 3
+    size 25M
+    compress
+    delaycompress
+    notifempty
+    create 644 zulip zulip
+}
+
+/var/log/zulip/server.log {
+    missingok
+    rotate 10
+    size 500M
+    compress
+    delaycompress
+    notifempty
+    create 644 zulip zulip
+}

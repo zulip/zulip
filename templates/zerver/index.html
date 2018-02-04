@@ -1,0 +1,158 @@
+{% extends "zerver/base.html" %}
+{# The app itself. #}
+{# Includes some other templates as tabs. #}
+
+{% block page_params %}
+{# Insert parameters, which have been encoded with JSONEncoderForHTML. #}
+<script type="text/javascript">
+    {% autoescape off %}
+    var page_params = {{ page_params }};
+    {% endautoescape %}
+</script>
+{% endblock %}
+
+{% block customhead %}
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link href="/static/images/logo/apple-touch-icon-precomposed.png" rel="apple-touch-icon-precomposed">
+    <link id="emoji-spritesheet" href="/static/generated/emoji/{{ user_profile.emojiset }}_sprite.css" rel="stylesheet" type="text/css">
+    <style type="text/css">
+
+        #css-loading {
+        background: white;
+        position: fixed;
+        height: 100%;
+        width: 100%;
+        padding: 10px;
+        top: 0px;
+        left: 0px;
+        }
+
+    </style>
+
+    {% if nofontface %}
+    {# We can't use @font-face on qtwebkit, so use differently minified CSS #}
+    {% stylesheet 'app-fontcompat' %}
+    {% else %}
+    {% stylesheet 'app' %}
+    {% endif %}
+    {{ minified_js('app')|safe }}
+
+    {{ render_bundle('translations') }}
+
+    {{ render_bundle('katex') }}
+
+    {% include "zerver/topic_is_muted.html" %}
+
+{% endblock %}
+{% block content %}
+
+<div id="css-loading">
+    <h3>{{ _('Loading...') }}</h3>
+    <p>{% trans %}If this message does not go away, please wait a couple seconds and <a href="javascript:location.reload(true)">reload</a> the page.{% endtrans %}</p>
+</div>
+
+{% include "zerver/lightbox_overlay.html" %}
+{% include "zerver/subscriptions.html" %}
+{% include "zerver/drafts.html" %}
+<div id="settings_overlay_container" class="overlay" data-overlay="settings" aria-hidden="true">
+    {% include "zerver/settings_overlay.html" %}
+</div>
+
+{% include "zerver/navbar.html" %}
+
+<div class="fixed-app">
+    <div class="app-main">
+        <div class="column-middle column-overlay">
+            <div id="tab_bar_underpadding"></div>
+        </div>
+    </div>
+</div>
+
+<div class="app">
+    <div class="alert-box">
+        <div class="alert alert_sidebar alert-error home-error-bar" id="connection-error">
+            <div class="exit"></div>
+            {% trans %}<strong class="message">Unable to connect to
+            Zulip.</strong>  Updates may be delayed.{% endtrans %} {{ _('Retrying soon...') }} <a class="restart_get_events_button">{{ _('Try now.') }}</a>
+        </div>
+        <div class="alert alert_sidebar alert-error home-error-bar" id="zephyr-mirror-error">
+            <div class="exit"></div>
+            {# The below isn't tagged for translation
+            intentionally, because the feature is only used at
+            MIT. #}
+            <strong>Your Zephyr mirror is not working.</strong>
+            <span id="normal-zephyr-mirror-error-text">
+                We recommend that
+                you <a class="webathena_login">give Zulip the ability to mirror the messages for you via
+                WebAthena</a>.  If you'd prefer, you can instead
+                <a href="/zephyr-mirror" target="_blank">run the
+                Zephyr mirror script yourself</a> in a screen
+                session.
+            </span>
+            <span id="desktop-zephyr-mirror-error-text" class="notdisplayed">To fix
+              this, you'll need to use the web interface.</span>
+        </div>
+        <div class="alert alert_sidebar alert-error home-error-bar" id="home-error"></div>
+        <div class="alert alert_sidebar alert-error home-error-bar" id="reloading-application"></div>
+    </div>
+    <div class="app-main">
+        <div class="column-left">
+            {% include "zerver/left_sidebar.html" %}
+        </div>
+        <div class="column-middle">
+            <div class="column-middle-inner tab-content">
+                <div class="tab-pane active" id="home">
+                    <div class="fixed-app" id="floating_recipient_bar">
+                        <div class="app-main recipient_bar_content">
+                            <div class="column-middle column-overlay recipient-bar-main">
+                                <div class="floating_recipient">
+                                    <div style="display: none;" id="current_label_stream" class="recipient_row">
+                                        <div class="message_label_clickable message_header message_header_stream right_part"></div>
+                                    </div>
+                                    <div style="display: none;" id="current_label_private_message" class="recipient_row">
+                                        <div class="message_label_clickable message_header message_header_private_message right_part"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="alert-bar-container" class="alert-bar-container" style='display: none;'>
+                        <div id="alert-bar" class="alert-bar">
+                            <div id="alert-bar-contents" class="alert-bar-contents">
+                                <div id="custom-alert-bar-content"></div>
+                                <i class="icon-vector-remove close-alert-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                    {% include "zerver/home.html" %}
+                </div>
+
+                {% if show_debug %}
+                <div class="tab-pane" id="debug">
+                    {% include "zerver/debug.html" %}
+                </div>
+                {% endif %}
+            </div><!--/tab-content-->
+        </div>
+        <div class="column-right">
+            {% include "zerver/right_sidebar.html" %}
+        </div><!--/right sidebar-->
+    </div><!--/row-->
+    <div class="informational-overlays overlay new-style" data-overlay="informationalOverlays" aria-hidden="true">
+        <div class="overlay-content modal-bg">
+            <div class="overlay-tabs">
+                <button class="button no-style exit">&times;</button>
+            </div>
+            <div class="overlay-body">
+                {% include "zerver/keyboard_shortcuts.html" %}
+                {% include "zerver/search_operators.html" %}
+                {% include "zerver/markdown_help.html" %}
+            </div>
+        </div>
+    </div>
+    {% include "zerver/invite_user.html" %}
+    {% include "zerver/bankruptcy.html" %}
+    {% include "zerver/logout.html" %}
+    <div class='notifications top-right'></div>
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "zerver/portico.html" %}
+
+{# Zephyr Mirroring information page #}
+
+{% block portico_content %}
+<h1 style="margin-top:30px;">Zulip for MIT Zephyr</h1>
+
+<p>If you have an MIT Athena account, you can start using Zulip for Zephyr in a couple of minutes.</p>
+
+<h3>First time setup</h3>
+<ol>
+    <li><p>Activate your account here: <a href="https://zephyr.zulipchat.com/register/">https://zephyr.zulipchat.com/register/</a></p></li>
+    <li><p>Log in to Zulip here: <a href="https://zephyr.zulipchat.com">https://zephyr.zulipchat.com</a></p></li>
+    <li><p>Follow the on-screen instructions for linking Zulip with Webathena</p></li>
+    <li><p>(Optional) Get the Zulip desktop and/or mobile apps here: <a href="https://zephyr.zulipchat.com/apps">https://zephyr.zulipchat.com/apps</a></p></li>
+</ol>
+
+<h3>You're done!</h3>
+<p>If you have any questions, please contact us using the "Send feedback" button in Zulip or e-mail us at
+<a href="mailto:{{ support_email }}">{{ support_email }}</a></p>
+
+<h3>If you want to automatically transfer your existing Zephyr subscriptions</h3>
+
+<ol>
+    <li><p>Get your Zulip API key from the Zulip "Settings" panel and put it in a file in your
+      Athena home directory called <code>~/Private/.zulip-api-key</code>.</p></li>
+
+    <li><p>Run the following command to copy over all of your subscriptions:<br />
+        <code>/mit/tabbott/zulip/zephyr_mirror.py --sync-subscriptions</code></p>
+
+        <p> NOTE: Zulip supports several ways to control what messages you want to read
+            right now, but Zulip does not yet have a direct equivalent to Barnowl filters.
+            If you have more subscriptions than you generally read, we recommend that you use
+            Zulip's "Mute" option to hide those subscriptions from your
+            home view that you less commonly read.  You can still easily access those streams
+            from Zulip when you want to read them.  You can control your subscriptions
+            and what's in your home view by clicking the gear in the upper right-hand corner
+            and then selecting "Streams".
+        </p>
+    </li>
+</ol>
+
+<h3>If you subscribe to any encrypted Zephyr classes</h3>
+
+<p>You can get set up to participate on an encrypted Zephyr class using Zulip by either:
+    <ol>
+        <li><p>E-mailing us at <a href="mailto:{{ support_email }}">{{ support_email }}</a> to get set up, or</p></li>
+        <li><p>Someone who is already set up to participate on that encrypted Zephyr class using Zulip can use Zulip to invite you</p></li>
+    </ol>
+</p>
+
+{% endblock %}

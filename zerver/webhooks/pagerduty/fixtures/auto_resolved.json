@@ -1,0 +1,41 @@
+{
+    "messages": [
+        {
+            "created_on": "2015-02-07T21:29:42Z",
+            "data": {
+                "incident": {
+                    "assigned_to": [],
+                    "assigned_to_user": null,
+                    "created_on": "2015-02-07T21:19:42Z",
+                    "escalation_policy": {
+                        "deleted_at": null,
+                        "id": "PUIGL4T",
+                        "name": "Default"
+                    },
+                    "html_url": "https://zulip-test.pagerduty.com/incidents/PX7K9J2",
+                    "id": "PX7K9J2",
+                    "incident_key": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                    "incident_number": 2,
+                    "last_status_change_by": null,
+                    "last_status_change_on": "2015-02-07T21:29:42Z",
+                    "number_of_escalations": 0,
+                    "resolved_by_user": null,
+                    "service": {
+                        "deleted_at": null,
+                        "html_url": "https://zulip-test.pagerduty.com/services/PIL5CUQ",
+                        "id": "PIL5CUQ",
+                        "name": "Test service"
+                    },
+                    "status": "resolved",
+                    "trigger_details_html_url": "https://zulip-test.pagerduty.com/incidents/PX7K9J2/log_entries/Q2LOVDWN1FGDPC",
+                    "trigger_summary_data": {
+                        "subject": "new"
+                    },
+                    "trigger_type": "web_trigger"
+                }
+            },
+            "id": "6e0d4b20-af10-11e4-8aca-f23c91739642",
+            "type": "incident.resolve"
+        }
+    ]
+}

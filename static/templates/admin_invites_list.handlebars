@@ -1,0 +1,24 @@
+{{#with invite}}
+<tr class="invite_row">
+    <td>
+        <span class="email">{{email}}</span>
+        {{#if invited_as_admin}}
+        <i title="{{t 'Invited as administrator'}}" class="icon-vector-bolt invited-as-admin"></i>
+        {{/if}}
+    </td>
+    <td>
+        <span class="referred_by">{{ref}}</span>
+    </td>
+    <td>
+        <span class="invited_at">{{invited}}</span>
+    </td>
+    <td>
+        <button class="button rounded small revoke btn-danger" data-invite-id="{{id}}">
+            {{t "Revoke" }}
+        </button>
+        <button class="button rounded small resend btn-warning" data-invite-id="{{id}}">
+            {{t "Resend" }}
+        </button>
+    </td>
+</tr>
+{{/with}}

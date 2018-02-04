@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang='{{LANGUAGE_CODE}}'>
+
+    {# Base template for the whole site. #}
+
+    <head>
+        <meta charset="UTF-8">
+        {% block title %}
+            {% if user_profile and user_profile.realm.name %}
+            <title>{{user_profile.realm.name}} - Zulip</title>
+            {% else %}
+            <title>Zulip</title>
+            {% endif %}
+        {% endblock %}
+        <link href="/static/favicon.ico?v=2" rel="shortcut icon">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+        {% if dropboxAppKey %}
+        <script type="text/javascript">var dropboxAppKey = "{{ dropboxAppKey }}";</script>
+        {% endif %}
+
+        {# We need to import jQuery before Bootstrap #}
+        {% stylesheet 'common' %}
+        {% block page_params %}
+        {# blueslip needs page_params.debug_mode.  Set it to false by default. #}
+        <script type="text/javascript">
+        var page_params = {debug_mode: false};
+        </script>
+        {% endblock %}
+        {{ render_bundle('common') }}
+        {% block customhead %}
+        {% endblock %}
+
+        <!-- this is required because we want to put a custom head in
+        `zerver/portico.html` that isn't overwritten like the
+        `customhead` -->
+        {% block porticocustomhead %}
+        {% endblock %}
+    </head>
+
+    <body>
+        {% block content %}
+        {% endblock %}
+    </body>
+
+</html>

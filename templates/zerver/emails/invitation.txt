@@ -1,0 +1,12 @@
+Hi there,
+
+{{ referrer.full_name }} ({{ referrer.email }}) wants you to join them on Zulip -- the team communication tool designed for productivity.
+
+To get started, visit the link below:
+    <{{ activate_url }}>
+
+Feel free to give us a shout at <{{ support_email }}> if you have any questions.
+
+Cheers,
+
+The Zulip Team

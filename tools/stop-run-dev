@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+
+import os
+import signal
+import sys
+
+os.chdir(os.path.join(os.path.dirname(__file__), '..'))
+pid_file_path = os.path.join(os.path.join(os.getcwd(), 'var/run/run_dev.pid'))
+
+try:
+    with open(pid_file_path, 'r') as pid_file:
+        try:
+            pid = int(pid_file.read())
+        except ValueError:
+            print('PID value is not an integer!')
+            sys.exit(1)
+except Exception as e:
+    print("PID file can't be opened!")
+    print(e)
+    sys.exit(1)
+
+# Kill development server process group.
+try:
+    os.killpg(pid, signal.SIGTERM)
+except OSError as e:
+    print(e)
+    sys.exit(1)
+
+print("Done")

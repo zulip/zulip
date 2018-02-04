@@ -1,0 +1,53 @@
+#!/bin/bash
+
+command="$0"
+lockdir="deployments/lock"
+
+function usage {
+echo "$command <command> [target]
+
+Manages the lock state of staging and prod deployments.
+
+    lock target         locks a logical target
+    unlock target       unlocks a logical target
+    status              shows the deployment lock state on various hosts"
+exit 1
+}
+
+
+if [[ $# -lt 1 || $# -gt 2 ]]; then
+    usage
+fi
+
+function get_status {
+    if (ssh "zulip@$1.zulip.net" '[ -d "'"$lockdir"'" ]'); then
+        printf "%-10s %b" "$1" "is currently \e[31mlocked\e[0m\n"
+    else
+        printf "%-10s %b" "$1" "is currently \e[32munlocked\e[0m\n"
+    fi
+}
+
+if [[ "$1" == "lock" ]]; then
+    verb="mkdir"
+elif [[ "$1" == "unlock" ]]; then
+    verb="rmdir"
+elif [[ $# == 1 && "$1" == "status" ]]; then
+    get_status "staging"
+    get_status "prod0"
+    exit
+else
+    usage
+fi
+
+
+if [[ "$2" == "staging" ]]; then
+    ssh zulip@staging.zulip.net "$verb $lockdir"
+    get_status "staging"
+    exit
+elif [[ "$2" == "prod" ]]; then
+    ssh zulip@prod0.zulip.net "$verb $lockdir"
+    get_status "prod0"
+    exit
+else
+    usage
+fi

@@ -1,0 +1,155 @@
+#!/usr/bin/env python3
+
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
+from collections import defaultdict
+from typing import Any, Dict, Iterable, List, Set
+
+import cgi
+import os
+import pprint
+import re
+import ujson
+
+Call = Dict[str, Any]
+
+def clean_up_pattern(s):
+    # type: (str) -> str
+    paren_level = 0
+    in_braces = False
+    result = ''
+    prior_char = None
+    for c in s:
+        if c == '(':
+            paren_level += 1
+        if c == '<' and prior_char == 'P':
+            in_braces = True
+        if in_braces or (paren_level == 0):
+            if c != '?':
+                result += c
+        if c == ')':
+            paren_level -= 1
+        if c == '>':
+            in_braces = False
+        prior_char = c
+    return result
+
+def encode_info(info):
+    # type: (Any) -> str
+    try:
+        result = ''
+        try:
+            info = ujson.loads(info)
+            result = '(stringified)\n'
+        except Exception:
+            pass
+        result += cgi.escape(pprint.pformat(info, indent=4))
+        return '<pre>' + result + '</pre>'
+    except Exception:
+        pass
+    try:
+        return cgi.escape(str(info))
+    except Exception:
+        pass
+    return 'NOT ENCODABLE'
+
+def fix_test_name(s):
+    # type: (str) -> str
+    return s.replace('zerver.tests.', '')
+
+def create_single_page(pattern, out_dir, href, calls):
+    # type: (str, str, str, List[Call]) -> None
+    fn = out_dir + '/' + href
+    with open(fn, 'w') as f:
+        f.write('''
+            <style>
+            .test {
+                margin: 20px;
+            }
+            </style>
+            ''')
+        f.write('<h3>%s</h3>\n' % (cgi.escape(pattern),))
+        calls.sort(key=lambda call: call['status_code'])
+        for call in calls:
+            f.write('<hr>')
+            f.write('\n%s' % (fix_test_name(call['test_name']),))
+            f.write('<div class="test">')
+            try:
+                f.write(call['url'])
+            except Exception:
+                f.write(call['url'].encode('utf8'))
+            f.write('<br>\n')
+            f.write(call['method'] + '<br>\n')
+            f.write('status code: %s<br>\n' % (call['status_code'],))
+            f.write('<br>')
+            f.write('</div>')
+
+def create_user_docs():
+    # type: () -> None
+    fn = 'var/url_coverage.txt'  # TODO: make path more robust, maybe use json suffix
+
+    out_dir = 'var/api_docs'
+    try:
+        os.mkdir(out_dir)
+    except OSError:
+        pass
+
+    main_page = out_dir + '/index.html'
+
+    with open(main_page, 'w') as f:
+        f.write('''
+            <style>
+            li {
+                list-style-type: none;
+            }
+
+            a {
+                text-decoration: none;
+            }
+            </style>
+            ''')
+
+        calls = []
+        for line in open(fn):
+            calls.append(ujson.loads(line))
+
+        pattern_dict = defaultdict(list)  # type: Dict[str, List[Call]]
+        for call in calls:
+            if 'pattern' in call:
+                pattern = clean_up_pattern(call['pattern'])
+                if pattern:
+                    pattern_dict[pattern].append(call)
+
+        patterns = set(pattern_dict.keys())
+
+        tups = [
+            ('api/v1/external', 'webhooks'),
+            ('api/v1', 'api'),
+            ('json', 'legacy'),
+        ]
+
+        groups = dict()  # type: Dict[str, Set[str]]
+        for prefix, name in tups:
+            groups[name] = {p for p in patterns if p.startswith(prefix)}
+            patterns -= groups[name]
+
+        groups['other'] = patterns
+
+        for name in ['api', 'legacy', 'webhooks', 'other']:
+            f.write(name + ' endpoints:\n\n')
+            f.write('<ul>\n')
+            for pattern in sorted(groups[name]):
+                href = pattern.replace('/', '-') + '.html'
+                link = '<a href="%s">%s</a>' % (href, cgi.escape(pattern))
+                f.write('<li>' + link + '</li>\n')
+                create_single_page(pattern, out_dir, href, pattern_dict[pattern])
+            f.write('</ul>')
+            f.write('\n')
+
+    print('open %s' % (main_page,))
+
+
+if __name__ == '__main__':
+    create_user_docs()

@@ -1,0 +1,24 @@
+<ul id="tab_list">
+    {{#each tabs}}
+    <li class="{{active}} {{cls}} {{#if home}}home-link{{/if}}" {{#if data}}data-name="{{data}}"{{/if}}>
+        {{#if icon}}
+        <i class="icon-vector-narrow icon-vector-small"></i>
+        {{/if}}
+        {{! Most tabs are links, but some are not since we don't have a narrow for them (e.g. Search) }}
+        {{#if hash}}
+            {{#if home}}
+            <a href="{{hash}}" title="{{t 'All messages' }} (Esc)"><i class="icon-vector-home"></i></a>
+            {{else}}
+            <a href="{{hash}}">{{title}}</a>
+            {{/if}}
+        {{else}}
+            {{#if home}}
+            <i class="icon-vector-home"></i>
+            {{/if}}
+            {{#unless home}}
+            {{title}}
+            {{/unless}}
+        {{/if}}
+    </li>
+    {{/each}}
+</ul>

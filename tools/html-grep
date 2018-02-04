@@ -1,0 +1,82 @@
+#!/usr/bin/env python3
+from lib.html_grep import grep
+import argparse
+import sys
+
+from typing import List
+
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
+import lister
+
+USAGE = '''
+    This file greps HTML files for keywords in a context-sensitive manner.
+
+    Example:
+
+        $ ./tools/html-grep '#group-pms' '.filters'
+        templates/zerver/right_sidebar.html 45
+
+            div.right-sidebar#right-sidebar
+                div#group-pm-list
+                    ul.filters.scrolling_list#group-pms
+
+    Keyword syntax:
+
+        When supplying keywords, they must correspond to HTML elements,
+        classes, or ids.  Typical keywords are:
+
+            li // search for "<li>"
+            '.modal' // search for '<foo class="modal">'
+            '#intro' // search for '<bar id="intro">'
+
+        Searches are context-sensitive in the sense that the keyword
+        may be found among parent tags of a leaf tag, not just the leaf
+        tag itself.  (Think of this as being similar to the way a
+        browser applies nested CSS styles; it looks at the whole HTML
+        tree.)
+
+    Finding files to search:
+
+        The tool currently searches your git repo for files with
+        the extension .html or .handlebars., and then it does
+        the grep against all those files.
+
+        TODO: allow specific files to be searched.'''
+
+def check_our_files():
+    # type: () -> None
+
+    parser = argparse.ArgumentParser(description=USAGE,
+                                     formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument('--modified', '-m',
+                        action='store_true', default=False,
+                        help='Only check modified files')
+    parser.add_argument('--no-filter', '-a',
+                        dest='show_all',
+                        action='store_true', default=False,
+                        help='Show all HTML files (no filtering)')
+    parser.add_argument("keyword", nargs="*", help='keyword to be searched')
+    options = parser.parse_args()
+
+    if options.show_all:
+        keywords = []  # type: List[str]
+    else:
+        if not options.keyword:
+            print('No keywords specified...try --help or --no-filter')
+            sys.exit(1)
+        else:
+            keywords = options.keyword
+
+    files = lister.list_files(
+        modified_only=options.modified,
+        ftypes=['handlebars', 'html'],
+    )
+
+    fns = [fn for fn in files if ('casperjs' not in fn) and ('puppet/zulip' not in fn)]
+    grep(fns, set(keywords))
+
+if __name__ == '__main__':
+    check_our_files()

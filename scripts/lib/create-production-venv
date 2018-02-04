@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+
+import os
+import argparse
+import sys
+
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if ZULIP_PATH not in sys.path:
+    sys.path.append(ZULIP_PATH)
+
+from scripts.lib.zulip_tools import run
+from scripts.lib.setup_venv import setup_virtualenv, VENV_DEPENDENCIES
+
+parser = argparse.ArgumentParser(description="Create a production virtualenv with caching")
+parser.add_argument("deploy_path")
+args = parser.parse_args()
+
+# install dependencies for setting up the virtualenv
+run(["apt-get", "-y", "install"] + VENV_DEPENDENCIES)
+
+python_version = sys.version_info[0]
+
+# Set the current working directory to the Zulip checkout, so the api/
+# relative path in requirements/common.in works.
+os.chdir(ZULIP_PATH)
+
+venv_name = "zulip-venv" if sys.version_info[0] == 2 else "zulip-py3-venv"
+cached_venv_path = setup_virtualenv(
+    os.path.join(args.deploy_path, venv_name),
+    os.path.join(ZULIP_PATH, "requirements", "prod.txt"),
+    virtualenv_args=['-p', 'python{}'.format(python_version)])
+
+current_venv_path = os.path.join(args.deploy_path, 'zulip-current-venv')
+run(['ln', '-nsf', venv_name, current_venv_path])
+# Now the virtualenv has been activated

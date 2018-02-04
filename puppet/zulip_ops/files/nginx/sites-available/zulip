@@ -1,0 +1,16 @@
+include /etc/nginx/zulip-include/upstreams;
+
+server {
+    listen 443;
+
+    # While a proper wildcard cert is recommended, because nginx
+    # doesn't actually check SSL certificates when reverse proxying
+    # :(, one can get away with a snake-oil cert if one wants.
+    ssl on;
+    ssl_certificate /etc/ssl/certs/wildcard-zulipchat.com.combined-chain.crt;
+    ssl_certificate_key /etc/ssl/private/wildcard-zulipchat.com.key;
+
+    server_name zulipchat.com *.zulipchat.com;
+
+    include /etc/nginx/zulip-include/app;
+}

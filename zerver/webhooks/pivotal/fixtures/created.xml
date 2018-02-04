@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<activity>
+    <id type="integer">346161339</id>
+    <version type="integer">2</version>
+    <event_type>story_create</event_type>
+    <occurred_at type="datetime">2013/04/17 20:09:17 UTC</occurred_at>
+    <author>Leo Franchi</author>
+    <project_id type="integer">807213</project_id>
+    <description>Leo Franchi added &quot;My new Feature story&quot;</description>
+    <stories type="array">
+        <story>
+            <id type="integer">48276573</id>
+            <url>http://www.pivotaltracker.com/services/v3/projects/807213/stories/48276573</url>
+            <name>My new Feature story</name>
+            <story_type>feature</story_type>
+            <description>This is my long description</description>
+            <current_state>unscheduled</current_state>
+            <requested_by>Leo Franchi</requested_by>
+        </story>
+    </stories>
+</activity>

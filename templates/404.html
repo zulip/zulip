@@ -1,0 +1,21 @@
+{% extends "zerver/portico.html" %}
+
+{% block portico_class_name %}error{% endblock %}
+
+{% block portico_content %}
+<div class="error_page">
+    <div class="container">
+        <div class="row-fluid">
+            <img src="/static/images/400art.svg" alt=""/>
+            <div class="errorbox">
+                <div class="errorcontent">
+                    <h1 class="lead">Page not found (404)</h1>
+                    <p>We know this is stressful, but we still love you.</p>
+                    <p>If you'd like, you can <a href="mailto:{{ support_email }}?Subject=404%20error%20on%20%7Bwhich%20URL%3F%7D&Body=Hi%20there%21%0A%0AI%20was%20trying%20to%20do%20%7Bwhat%20were%20you%20trying%20to%20do%3F%7D%20at%20around%20%7Bwhen%20was%20this%3F%7D%20when%20I%20got%20a%20404%20error%20while%20accessing%20%7Bwhich%20URL%3F%7D.%0A%0AThanks!%0A%0ASincerely%2C%20%0A%0A%7BYour%20name%7D">drop us a line</a> to let us know what happened.</p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,428 @@
+#!/usr/bin/env python3
+
+from typing import List, Any
+import glob
+import argparse
+import os
+import sys
+import subprocess
+import ujson
+import httplib2
+import requests
+
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
+import django
+from django.conf import settings
+from django.test.utils import get_runner
+
+target_fully_covered = {path for target in [
+    'analytics/lib/*.py',
+    'analytics/models.py',
+    'analytics/tests/*.py',
+    'analytics/views.py',
+    # zerver/ and zerver/lib/ are important core files
+    'zerver/*.py',
+    'zerver/lib/*.py',
+    # Test files should have 100% coverage; test code that isn't run
+    # is likely a bug in the test.
+    'zerver/tests/*.py',
+    # As a project, we require 100% test coverage in the views files.
+    'zerver/views/*.py',
+    'zproject/backends.py',
+    'confirmation/*.py',
+    'zerver/webhooks/*/*.py',
+    # Once we have a nice negative tests system, we can add these:
+    # 'zerver/webhooks/*/*.py',
+    # 'zerver/webhooks/*/*/*.py',
+] for path in glob.glob(target)}
+
+not_yet_fully_covered = {
+    # Analytics fixtures library is used to generate test fixtures;
+    # isn't properly accounted for in test coverage analysis since it
+    # runs before tests.
+    'analytics/lib/fixtures.py',
+    # We have 100% coverage on the new stuff; need to refactor old stuff.
+    'analytics/views.py',
+    # Major lib files should have 100% coverage
+    'zerver/decorator.py',
+    'zerver/lib/actions.py',
+    'zerver/lib/addressee.py',
+    'zerver/lib/bugdown/__init__.py',
+    'zerver/lib/cache.py',
+    'zerver/lib/cache_helpers.py',
+    'zerver/lib/create_user.py',
+    'zerver/lib/exceptions.py',
+    'zerver/lib/i18n.py',
+    'zerver/lib/management.py',
+    'zerver/lib/message.py',
+    'zerver/lib/notifications.py',
+    'zerver/lib/rest.py',
+    'zerver/lib/send_email.py',
+    'zerver/lib/soft_deactivation.py',
+    'zerver/lib/upload.py',
+    'zerver/models.py',
+    # Other lib files that ideally would coverage, but aren't sorted
+    'zerver/__init__.py',
+    'zerver/apps.py',
+    'zerver/filters.py',
+    'zerver/middleware.py',
+    'zerver/storage.py',
+    'zerver/lib/bot_lib.py',
+    'zerver/lib/camo.py',
+    'zerver/lib/db.py',
+    'zerver/lib/debug.py',
+    'zerver/lib/digest.py',
+    'zerver/lib/email_mirror.py',
+    'zerver/lib/error_notify.py',
+    'zerver/lib/export.py',
+    'zerver/lib/feedback.py',
+    'zerver/lib/fix_unreads.py',
+    'zerver/lib/hotspots.py',
+    'zerver/lib/html_diff.py',
+    'zerver/lib/initial_password.py',
+    'zerver/lib/logging_util.py',
+    'zerver/lib/migrate.py',
+    'zerver/lib/outgoing_webhook.py',
+    'zerver/lib/parallel.py',
+    'zerver/lib/profile.py',
+    'zerver/lib/queue.py',
+    'zerver/lib/rate_limiter.py',
+    'zerver/lib/slack_data_to_zulip_data.py',
+    'zerver/lib/sqlalchemy_utils.py',
+    'zerver/lib/str_utils.py',
+    'zerver/lib/stream_recipient.py',
+    'zerver/lib/tex.py',
+    'zerver/lib/timeout.py',
+    'zerver/lib/unminify.py',
+    'zerver/lib/user_agent.py',
+    'zerver/lib/utils.py',
+    # Low priority for coverage
+    'zerver/lib/bulk_create.py',
+    'zerver/lib/ccache.py',
+    'zerver/lib/generate_test_data.py',
+    'zerver/lib/initial_password',
+    'zerver/lib/statistics.py',
+    'zerver/lib/test_fixtures.py',
+    'zerver/lib/test_runner.py',
+    'zerver/lib/api_test_helpers.py',
+    # Webhook integrations with incomplete coverage
+    'zerver/webhooks/basecamp/view.py',
+    'zerver/webhooks/beanstalk/view.py',
+    'zerver/webhooks/bitbucket2/view.py',
+    'zerver/webhooks/freshdesk/view.py',
+    'zerver/webhooks/github/view.py',
+    'zerver/webhooks/github_webhook/view.py',
+    'zerver/webhooks/gitlab/view.py',
+    'zerver/webhooks/gogs/view.py',
+    'zerver/webhooks/greenhouse/view.py',
+    'zerver/webhooks/hellosign/view.py',
+    'zerver/webhooks/ifttt/view.py',
+    'zerver/webhooks/jira/view.py',
+    'zerver/webhooks/librato/view.py',
+    'zerver/webhooks/newrelic/view.py',
+    'zerver/webhooks/pingdom/view.py',
+    'zerver/webhooks/pivotal/view.py',
+    'zerver/webhooks/semaphore/view.py',
+    'zerver/webhooks/solano/view.py',
+    'zerver/webhooks/stripe/view.py',
+    'zerver/webhooks/taiga/view.py',
+    'zerver/webhooks/teamcity/view.py',
+    'zerver/webhooks/transifex/view.py',
+    'zerver/webhooks/travis/view.py',
+    'zerver/webhooks/updown/view.py',
+    'zerver/webhooks/zapier/view.py',
+}
+
+enforce_fully_covered = sorted(target_fully_covered - not_yet_fully_covered)
+
+FAILED_TEST_PATH = 'var/last_test_failure.json'
+
+def get_failed_tests():
+    # type: () -> List[str]
+    try:
+        with open(FAILED_TEST_PATH, 'r') as f:
+            return ujson.load(f)
+    except IOError:
+        print("var/last_test_failure.json doesn't exist; running all tests.")
+        return []
+
+def write_failed_tests(failed_tests):
+    # type: (List[str]) -> None
+    if failed_tests:
+        with open(FAILED_TEST_PATH, 'w') as f:
+            ujson.dump(failed_tests, f)
+
+def block_internet():
+    # type: () -> None
+    # We are blocking internet currently by assuming mostly any test would use
+    # httplib2 to access internet.
+    def internet_guard(*args, **kwargs):
+        # type: (*Any, **Any) -> None
+        raise Exception("Outgoing network requests are not allowed in the Zulip tests. "
+                        "More details and advice are available here:"
+                        "https://zulip.readthedocs.io/en/latest/testing/testing.html#internet-access-inside-test-suites")
+
+    httplib2.Http.request = internet_guard
+    requests.request = internet_guard
+
+if __name__ == "__main__":
+    block_internet()
+    TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+    os.chdir(os.path.dirname(TOOLS_DIR))
+    sys.path.insert(0, os.path.dirname(TOOLS_DIR))
+
+    # Remove proxy settings for running backend tests
+    os.environ["http_proxy"] = ""
+    os.environ["https_proxy"] = ""
+
+    from zerver.lib.test_fixtures import is_template_database_current
+
+    from tools.lib.test_script import (
+        get_provisioning_status,
+    )
+
+    os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
+    # "-u" uses unbuffered IO, which is important when wrapping it in subprocess
+    os.environ['PYTHONUNBUFFERED'] = 'y'
+
+    usage = """test-backend [options]
+    test-backend # Runs all backend tests
+    test-backend zerver.tests.test_bugdown # run all tests in a test module
+    test-backend zerver/tests/test_bugdown.py # run all tests in a test module
+    test-backend test_bugdown # run all tests in a test module
+    test-backend zerver.tests.test_bugdown.BugdownTest # run all tests in a test class
+    test-backend BugdownTest # run all tests in a test class
+    test-backend zerver.tests.test_bugdown.BugdownTest.test_inline_youtube # run a single test
+    test-backend BugdownTest.test_inline_youtube # run a single test"""
+
+    parser = argparse.ArgumentParser(description=usage,
+                                     formatter_class=argparse.RawTextHelpFormatter)
+
+    parser.add_argument('--nonfatal-errors', action="store_false", default=True,
+                        dest="fatal_errors", help="Continue past test failures to run all tests")
+    parser.add_argument('--coverage', dest='coverage',
+                        action="store_true",
+                        default=False,
+                        help='Compute test coverage.')
+    parser.add_argument('--verbose-coverage', dest='verbose_coverage',
+                        action="store_true",
+                        default=False, help='Enable verbose print of coverage report.')
+
+    parser.add_argument('--processes', dest='processes',
+                        type=int,
+                        action='store',
+                        default=4,
+                        help='Specify the number of processes to run the '
+                             'tests in. Default is 4.')
+    parser.add_argument('--profile', dest='profile',
+                        action="store_true",
+                        default=False, help='Profile test runtime.')
+    parser.add_argument('--force', dest='force',
+                        action="store_true",
+                        default=False, help='Run tests despite possible problems.')
+    parser.add_argument('--no-shallow', dest='no_shallow',
+                        action="store_true",
+                        default=False,
+                        help="Don't allow shallow testing of templates (deprecated)")
+    parser.add_argument('--verbose', dest='verbose',
+                        action="store_true",
+                        default=False,
+                        help="Show detailed output")
+    parser.add_argument('--generate-fixtures', action="store_true", default=False,
+                        dest="generate_fixtures",
+                        help=("Force a call to generate-fixtures."))
+    parser.add_argument('--report-slow-tests', dest='report_slow_tests',
+                        action="store_true",
+                        default=False,
+                        help="Show which tests are slowest.")
+    parser.add_argument('--reverse', dest='reverse',
+                        action="store_true",
+                        default=False,
+                        help="Run tests in reverse order.")
+    parser.add_argument('--rerun', dest="rerun",
+                        action="store_true",
+                        default=False,
+                        help=("Run the tests which failed the last time "
+                              "test-backend was run.  Implies --nonfatal-errors."))
+    parser.add_argument('args', nargs=argparse.REMAINDER)
+
+    options = parser.parse_args()
+    args = options.args
+
+    if options.processes < 1:
+        raise argparse.ArgumentError(
+            "option processes: Only positive integers are allowed.")
+
+    zerver_test_dir = 'zerver/tests/'
+
+    # While running --rerun, we read var/last_test_failure.json to get
+    # the list of tests that failed on the last run, and then pretend
+    # those tests were passed explicitly.  --rerun implies
+    # --nonfatal-errors, so that we don't end up removing tests from
+    # the list that weren't run.
+    if options.rerun:
+        options.processes = 1
+        options.fatal_errors = False
+        failed_tests = get_failed_tests()
+        if failed_tests:
+            args = failed_tests
+    if len(args) > 0:
+        # If we passed a specific set of tests, run in serial mode.
+        options.processes = 1
+
+    # to transform forward slashes '/' present in the argument into dots '.'
+    for suite in args:
+        args[args.index(suite)] = suite.rstrip('/').replace("/", ".")
+
+    def rewrite_arguments(search_key):
+        # type: (str) -> None
+        for root, dirs, files_names in os.walk(zerver_test_dir, topdown=False):
+            for file_name in files_names:
+                # Check for files starting with alphanumeric characters and ending with '.py'
+                # Ignore backup files if any
+                if not file_name[0].isalnum() or not file_name.endswith(".py"):
+                    continue
+                filepath = os.path.join(root, file_name)
+                for line in open(filepath):
+                    if search_key not in line:
+                        continue
+                    new_suite = filepath.replace(".py", ".") + suite
+                    args[args.index(suite)] = new_suite
+                    return
+
+    for suite in args:
+        if suite[0].isupper() and "test_" in suite:
+            classname = suite.rsplit('.', 1)[0]
+            rewrite_arguments(classname)
+        elif suite[0].isupper():
+            rewrite_arguments('class %s(' % (suite,))
+
+    for suite in args:
+        if suite.startswith('test'):
+            for root, dirs, files_names in os.walk(zerver_test_dir):
+                for file_name in files_names:
+                    if file_name == suite or file_name == suite + ".py":
+                        new_suite = os.path.join(root, file_name)
+                        args[args.index(suite)] = new_suite
+                        break
+
+    for suite in args:
+        args[args.index(suite)] = suite.replace(".py", "")
+
+    # to transform forward slashes '/' introduced by the zerver_test_dir into dots '.'
+    # taking care of any forward slashes that might be present
+    for suite in args:
+        args[args.index(suite)] = suite.replace("/", ".")
+
+    full_suite = len(args) == 0
+
+    if len(args) == 0:
+        suites = ["zerver.tests",
+                  "zerver.webhooks",
+                  "analytics.tests"]
+    else:
+        suites = args
+
+    if not options.force:
+        ok, msg = get_provisioning_status()
+        if not ok:
+            print(msg)
+            print('If you really know what you are doing, use --force to run anyway.')
+            sys.exit(1)
+
+    if options.coverage:
+        import coverage
+        cov = coverage.Coverage(config_file="tools/coveragerc", concurrency='multiprocessing')
+        cov.start()
+    if options.profile:
+        import cProfile
+        prof = cProfile.Profile()
+        prof.enable()
+
+    # This is kind of hacky, but it's the most reliable way
+    # to make sure instrumentation decorators know the
+    # setting when they run.
+    os.environ['TEST_INSTRUMENT_URL_COVERAGE'] = 'TRUE'
+
+    # setup() needs to be called after coverage is started to get proper coverage reports of model
+    # files, since part of setup is importing the models for all applications in INSTALLED_APPS.
+    django.setup()
+
+    if options.generate_fixtures or not is_template_database_current():
+        generate_fixtures_command = [os.path.join(TOOLS_DIR, 'setup', 'generate-fixtures')]
+        generate_fixtures_command.append('--force')
+        subprocess.call(generate_fixtures_command)
+
+    subprocess.check_call(['tools/webpack', '--test'])
+
+    TestRunner = get_runner(settings)
+    parallel = options.processes
+
+    if parallel > 1:
+        print("-- Running tests in parallel mode with {} "
+              "processes.".format(parallel))
+    else:
+        print("-- Running tests in serial mode.")
+
+    test_runner = TestRunner(failfast=options.fatal_errors, verbosity=2,
+                             parallel=parallel, reverse=options.reverse,
+                             keepdb=True)
+    failures, failed_tests = test_runner.run_tests(suites, full_suite=full_suite)
+    write_failed_tests(failed_tests)
+
+    templates_not_rendered = test_runner.get_shallow_tested_templates()
+    # We only check the templates if all the tests ran and passed
+    if not failures and full_suite and templates_not_rendered:
+        missed_count = len(templates_not_rendered)
+        print("\nError: %s templates have no tests!" % (missed_count,))
+        for template in templates_not_rendered:
+            print('  {}'.format(template))
+        print("See zerver/tests/test_templates.py for the exclude list.")
+        failures = True
+
+    if options.coverage:
+        cov.stop()
+        cov.save()
+        cov.combine()
+        cov.data_suffix = False  # Disable suffix so that filename is .coverage
+        cov.save()
+        if options.verbose_coverage:
+            print("Printing coverage data")
+            cov.report(show_missing=False)
+        cov.html_report(directory='var/coverage')
+        print("HTML report saved; visit at http://127.0.0.1:9991/coverage/index.html")
+    if full_suite and not failures and options.coverage:
+        # Assert that various files have full coverage
+        for path in enforce_fully_covered:
+            missing_lines = cov.analysis2(path)[3]
+            if len(missing_lines) > 0:
+                print("ERROR: %s no longer has complete backend test coverage" % (path,))
+                print("  Lines missing coverage: %s" % (missing_lines,))
+                print()
+                failures = True
+        if failures:
+            print("It looks like your changes lost 100% test coverage in one or more files")
+            print("Usually, the right fix for this is to add some tests.")
+            print("But also check out the include/exclude lists in tools/test-backend.")
+            print("If this line intentionally is not tested, you can use a # nocoverage comment.")
+            print("To run this check locally, use `test-backend --coverage`.")
+    if options.profile:
+        prof.disable()
+        prof.dump_stats("/tmp/profile.data")
+        print("Profile data saved to /tmp/profile.data")
+        print("You can visualize it using e.g. `snakeviz /tmp/profile.data`")
+        print("Note: If you are using vagrant for development environment you will need to do:")
+        print("1.) `vagrant ssh -- -L 8080:127.0.0.1:8080`")
+        print("2.) `snakeviz -s /tmp/profile.data`")
+
+    if options.report_slow_tests:
+        from zerver.lib.test_runner import report_slow_tests
+        # We do this even with failures, since slowness can be
+        # an important clue as to why tests fail.
+        report_slow_tests()
+
+    # We'll have printed whether tests passed or failed above
+    sys.exit(bool(failures))

@@ -1,0 +1,29 @@
+{
+  "check_id": 2051844,
+  "check_name": "SMTP check",
+  "check_type": "SMTP",
+  "check_params": {
+    "basic_auth": false,
+    "encryption": false,
+    "hostname": "smtp.someurl.com",
+    "ipv6": false,
+    "port": 25
+  },
+  "tags": [],
+  "previous_state": "UP",
+  "current_state": "DOWN",
+  "state_changed_timestamp": 1458068544,
+  "state_changed_utc_time": "2016-03-15T19:02:24",
+  "long_description": "Connection refused",
+  "description": "Connection refused",
+  "first_probe": {
+    "ip": "174.34.162.242",
+    "ipv6": "",
+    "location": "Atlanta, GA"
+  },
+  "second_probe": {
+    "ip": "64.141.100.136",
+    "ipv6": "",
+    "location": "Calgary, Canada"
+  }
+}

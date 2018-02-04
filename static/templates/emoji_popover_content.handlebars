@@ -1,0 +1,25 @@
+<div class="emoji-popover">
+    <div class="emoji-popover-top input-append">
+        <input class="emoji-popover-filter" type="text" autofocus placeholder={{t 'Search' }} />
+        <i class="icon-vector-search"></i>
+    </div>
+    <div class="emoji-popover-category-tabs">
+        {{#each emoji_categories}}
+        <span class="emoji-popover-tab-item {{#if @first}} active {{/if}}" data-tab-name='{{name}}' title='{{name}}'><i class="fa {{icon}}"></i></span>
+        {{/each}}
+    </div>
+    <div class="emoji-popover-emoji-map" data-message-id="{{message_id}}">
+        {{#each emoji_categories }}
+        <div class="emoji-popover-subheading" data-section="{{name}}">{{name}}</div>
+        <div class="emoji-collection" data-section="{{name}}">
+            {{#each this.emojis }}
+            {{ partial "emoji_popover_emoji" "type" "emoji_picker_emoji" "section" @../index "index" @index "message_id" ../../message_id "emoji_dict" this}}
+            {{/each}}
+        </div>
+        {{/each}}
+    </div>
+    <div class="emoji-search-results-container" data-message-id="{{message_id}}">
+        <div class="emoji-popover-results-heading">{{t "Search results" }}</div>
+        <div class="emoji-search-results"></div>
+    </div>
+</div>

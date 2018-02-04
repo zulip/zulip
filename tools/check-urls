@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+
+import re
+import sys
+
+
+def check_urls():
+    # type: () -> None
+    url_files = ['zproject/urls.py',
+                 'zproject/dev_urls.py',
+                 'zproject/legacy_urls.py',
+                 'analytics/urls.py',
+                 'zilencer/urls.py']
+
+    pattern_1 = "\s+\[?url\(.+,\s*'.+'\s*,\s*.*\)"
+    pattern_2 = '\s+\[?url\(.+,\s*".+"\s*,\s*.*\)'
+
+    for url_file in url_files:
+        with open(url_file) as f:
+            data = f.read()
+            for pattern in (pattern_1, pattern_2):
+                r = re.search(pattern, data)
+                if r:
+                    print('View should not be a string: {}'.format(r.group()))
+                    sys.exit(1)
+
+if __name__ == '__main__':
+    check_urls()

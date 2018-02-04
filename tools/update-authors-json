@@ -1,0 +1,128 @@
+#!/usr/bin/env python3
+"""
+Fetch contributors data from Github using their API, convert it to structured
+JSON data for the /team page contributors section.
+"""
+
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
+from typing import Any, Dict, List, Optional, Union, Text
+from mypy_extensions import TypedDict
+
+import os
+import sys
+import argparse
+from time import sleep
+from datetime import date
+import subprocess
+
+import requests
+import json
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
+from django.conf import settings
+from zerver.lib.utils import split_by
+
+FIXTURE_FILE = os.path.join(os.path.dirname(__file__), '../zerver/fixtures/authors.json')
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--max-retries', type=int, default=3,
+                    help='Number of times to retry fetching data from Github')
+# In Travis CI and development environment, we use test fixture to avoid
+# fetching from Github constantly.
+parser.add_argument('--use-fixture', action='store_true', default=False,
+                    help='Use fixture data instead of fetching from Github')
+parser.add_argument('--not-required', action='store_true', default=False,
+                    help='Consider failures to reach GitHub nonfatal')
+args = parser.parse_args()
+
+
+ContributorsJSON = TypedDict('ContributorsJSON', {
+    'date': str,
+    'contrib': List[Dict[str, Union[str, int]]],
+})
+
+
+def fetch_contributors(repo_link: str) -> Optional[List[Dict[str, Dict[str, Any]]]]:
+    r = requests.get(repo_link)  # type: requests.Response
+    return r.json() if r.status_code == 200 else None
+
+
+def write_to_disk(json_data: ContributorsJSON, out_file: str) -> None:
+    with open(out_file, 'w') as f:
+        try:
+            f.write("{}\n".format(json.dumps(json_data)))
+        except IOError as e:
+            print(e)
+            sys.exit(1)
+
+
+def run_production() -> None:
+    """
+    Get contributors data from Github and insert them into a temporary
+    dictionary. Retry fetching each repository if responded with non HTTP 200
+    status.
+    """
+    repositories = {
+        'server': 'https://api.github.com/repos/zulip/zulip/stats/contributors',
+        'desktop': 'https://api.github.com/repos/zulip/zulip-electron/stats/contributors',
+        'mobile': 'https://api.github.com/repos/zulip/zulip-mobile/stats/contributors',
+        'python-zulip-api': 'https://api.github.com/repos/zulip/python-zulip-api/stats/contributors',
+        'zulip-js': 'https://api.github.com/repos/zulip/zulip-js/stats/contributors',
+        'zulipbot': 'https://api.github.com/repos/zulip/zulipbot/stats/contributors',
+    }
+
+    data = dict(date=str(date.today()), contrib=[])  # type: ContributorsJSON
+    contribs_list = {}  # type: Dict[str, Dict[str, Union[str, int]]]
+
+    for _ in range(args.max_retries):
+        repos_done = []
+        for name, link in repositories.items():
+            contribs = fetch_contributors(link)
+            if contribs:
+                repos_done.append(name)
+                for contrib in contribs:
+                    username = contrib.get('author').get('login')
+                    contrib_data = {
+                        'avatar': contrib.get('author').get('avatar_url'),
+                        name: contrib.get('total'),
+                    }
+                    if username in contribs_list:
+                        contribs_list[username].update(contrib_data)
+                    else:
+                        contribs_list[username] = contrib_data
+        for repo in repos_done:
+            del repositories[repo]
+
+        if not repositories:
+            break
+
+        # Wait before retrying failed requests for Github to aggregate data.
+        sleep(2)
+    else:
+        print("ERROR: Failed fetching contributors data from Github.")
+        if not args.not_required:
+            sys.exit(1)
+
+    for contributor_name, contributor_data in contribs_list.items():
+        contributor_data['name'] = contributor_name
+        data['contrib'].append(contributor_data)
+
+    write_to_disk(data, settings.CONTRIBUTORS_DATA)
+
+
+def copy_fixture() -> None:
+    """
+    Copy test fixture file from zerver/fixtures. This is used to avoid
+    constantly fetching data from Github during testing.
+    """
+    subprocess.check_call(['cp', FIXTURE_FILE, settings.CONTRIBUTORS_DATA])
+
+
+if args.use_fixture:
+    copy_fixture()
+else:
+    run_production()

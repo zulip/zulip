@@ -1,0 +1,15 @@
+{{#with stream}}
+<tr class="default_stream_row" id="{{name}}">
+    <td>
+        {{#if invite_only}}<i class="icon-vector-lock "></i>{{/if}}
+        <span class="default_stream_name">{{name}}</span>
+    </td>
+    {{#if ../can_modify}}
+    <td>
+        <button class="button rounded remove-default-stream btn-danger">
+            {{t "Remove from default" }}
+        </button>
+    </td>
+    {{/if}}
+</tr>
+{{/with}}

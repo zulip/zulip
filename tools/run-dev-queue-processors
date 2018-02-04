@@ -1,0 +1,22 @@
+#!/usr/bin/env python3
+
+# This script is only meant to be run from run-dev.py, which sets up the
+# environment correctly and passes the correct arguments for manage.py.  It is a
+# separate script so that the import from zerver.worker.queue_processors (which
+# is slow) can be done in parallel with the rest of the work in bringing up the
+# dev server.
+import sys
+import os
+import subprocess
+
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
+import django
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+django.setup()
+
+args = sys.argv[1:]
+subprocess.Popen(['./manage.py', 'process_queue', '--all'] + args,
+                 stderr=subprocess.STDOUT)

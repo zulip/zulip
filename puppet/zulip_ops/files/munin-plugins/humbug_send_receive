@@ -1,0 +1,7 @@
+#!/bin/sh
+if [ "$(hostname)" = "staging.zulip.net" ]; then
+    site="https://staging.zulip.com"
+else
+    site="https://api.zulip.com"
+fi
+/home/zulip/deployments/current/api/integrations/zephyr/check_send_receive.py --munin "$1" --site="$site"

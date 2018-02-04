@@ -1,0 +1,13 @@
+{
+   "entry":[
+      {
+         "time":1514912232,
+         "id":"0",
+         "changed_fields":[
+            "manage_pages"
+         ],
+         "uid":"0"
+      }
+   ],
+   "object":"permissions"
+}

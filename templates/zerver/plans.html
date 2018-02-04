@@ -1,0 +1,160 @@
+{% extends "zerver/portico.html" %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% stylesheet 'portico' %}
+{% stylesheet 'landing-page' %}
+{{ render_bundle('landing-page') }}
+
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/gradients.html' %}
+{% include 'zerver/landing_nav.html' %}
+
+<div class="portico-landing plans">
+    <div class="main">
+        <div class="pricing-model">
+            <div class="padded-content">
+                <h1>Get started today</h1>
+
+                <div class="pricing-container">
+                    <div class="block">
+                        <div class="plan-title zulip-cloud">
+                            Zulip Cloud
+                        </div>
+
+                        <div class="price-box" tabindex="-1">
+                            <div class="text-content">
+                                <h2>Free</h2>
+                                <div class="description">
+                                    Try Zulip for an unlimited period of time
+                                </div>
+                                <hr />
+                                <ul class="feature-list">
+                                    <li>10,000 messages of search history</li>
+                                    <li>File storage up to 5 GB total</li>
+                                    <li>Convenient web service</li>
+                                    <li>No sysadmin work required</li>
+                                </ul>
+                            </div>
+                            <div class="bottom">
+                                <div class="text-content">
+                                    <div class="pricing-details">
+                                        Free
+                                    </div>
+                                    <a href="/create_realm/">
+                                        <button class="green" type="button">
+                                            Sign up now
+                                        </button>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="price-box" tabindex="-1">
+                            <div class="text-content">
+                                <h2>Premium</h2>
+                                <div class="description">
+                                    Make Zulip your home
+                                </div>
+                                <hr />
+                                <ul class="feature-list">
+                                    <li>Full search history</li>
+                                    <li>File storage up to 10 GB per user</li>
+                                    <li>Full access to enterprise features
+                                    like Google and GitHub OAuth</li>
+                                    <li>Priority commercial support</li>
+                                    <li>Funds the Zulip open source project</li>
+                                </ul>
+                            </div>
+                            <div class="bottom">
+                                <div class="text-content">
+                                    <div class="">
+                                        <div class="price">8</div>
+                                        <div class="details">
+                                            per active user, per month
+                                            <br />
+                                            $80/year billed annually
+                                        </div>
+                                    </div>
+                                    <a href="/create_realm/">
+                                        <button class="green" type="button">
+                                            Try it free
+                                        </button>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="block">
+                        <div class="plan-title">
+                            Zulip On-Premise
+                        </div>
+
+                        <div class="price-box" tabindex="-1">
+                            <div class="text-content">
+                                <h2>Community support</h2>
+                                <div class="description">
+                                    Install your own Zulip server
+                                </div>
+                                <hr />
+                                <ul class="feature-list">
+                                    <li>Easy self-service installation</li>
+                                    <li>Free and open source forever under Apache 2.0 license</li>
+                                    <li>LDAP/Active directory integration</li>
+                                    <li>All Premium/Enterprise features included</li>
+                                </ul>
+                            </div>
+                            <div class="bottom">
+                                <div class="text-content">
+                                    <div class="pricing-details">
+                                        Free and open source forever
+                                    </div>
+                                    <a href="https://zulip.readthedocs.io/en/1.7.1/prod.html">
+                                        <button class="green" type="button">
+                                            Install a Zulip server
+                                        </button>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="price-box" tabindex="-1">
+                            <div class="text-content">
+                                <h2>Enterprise</h2>
+                                <div class="description">
+                                    For mission-critical installations
+                                </div>
+                                <hr />
+                                <ul class="feature-list">
+                                    <li>Easy self-service installation</li>
+                                    <li>Support response SLAs</li>
+                                    <li>High availability assistance</li>
+                                    <li>Input into the Zulip roadmap</li>
+                                    <li>Funds the Zulip open source project</li>
+                                </ul>
+                            </div>
+                            <div class="bottom">
+                                <div class="text-content">
+                                    <div class="pricing-details">
+                                        Pricing varies with support required
+                                    </div>
+                                    <a href="mailto:sales@zulipchat.com" target="_blank" class="no-action">
+                                        <button class="green" type="button" name="button">Contact sales</button>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include "zerver/faq.html" %}
+    {% include "zerver/compare.html" %}
+</div>
+{% endblock %}

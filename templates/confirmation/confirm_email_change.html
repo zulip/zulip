@@ -1,0 +1,18 @@
+{% extends "zerver/portico.html" %}
+
+{% block portico_content %}
+
+<div class="app confirm-email-change-page flex full-page">
+    <div class="inline-block new-style">
+        <div class="lead">
+            <h1 class="get-started">{{ _('Email changed!') }}</h1>
+        </div>
+
+        <div class="app-main white-box">
+            This confirms that the email address for your Zulip account has changed
+            from <a href="mailto:{{old_email}}">{{old_email}}</a> to <a href="mailto:{{new_email}}">{{new_email}}</a>.
+        </div>
+    </div>
+</div>
+
+{% endblock %}

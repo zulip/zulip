@@ -1,0 +1,22 @@
+<ul class='expanded_private_messages {{zoom_class}}' data-name='private'>
+    {{#each messages}}
+    <li class='{{#if is_zero}}zero-subject-unreads{{/if}} {{#if zoom_out_hide}}zoom-out-hide{{/if}} expanded_private_message' data-user-ids-string='{{user_ids_string}}'>
+        <span class='pm-box'>
+            <a href='{{url}}' class="conversation-partners">
+                {{recipients}}
+            </a>
+            <div class="private_message_count {{#if is_zero}}zero_count{{/if}}">
+                <div class="value">{{unread}}</div>
+            </div>
+        </span>
+        <span class="arrow topic-sidebar-arrow">
+            <i class="icon-vector-chevron-down"></i>
+        </span>
+    </li>
+    {{/each}}
+    {{#if want_show_more_messages_links}}
+    <li class="show-more-private-messages" data-name='more-private-messages'>
+        <a href="#">({{t "more conversations" }})</a>
+    </li>
+    {{/if}}
+</ul>

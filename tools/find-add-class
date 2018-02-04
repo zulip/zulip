@@ -1,0 +1,44 @@
+#!/usr/bin/env python3
+
+from lib.find_add_class import display, find
+import glob
+import argparse
+import sys
+
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
+def process_files():
+    # type: () -> None
+
+    description = '''
+        Use this tool to find HTML classes that we use in our JS code.
+        This looks for calls to addClass, and if you use the -v option,
+        you will get a display of (fn, html_class) tuples that
+        represent addClass calls.
+
+        If you call it with no options, the tool acts as a linter, and
+        it will complain if it can't resolve the class for an addClass()
+        call.
+        '''
+
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument('-v', '--verbose',
+                        action='store_true', default=False,
+                        help='show where calls are')
+    parser.add_argument('targets', nargs=argparse.REMAINDER)
+    args = parser.parse_args()
+
+    if args.targets == []:
+        fns = glob.glob('static/js/*.js')
+    else:
+        fns = args.targets
+
+    if args.verbose:
+        display(fns)
+    else:
+        find(fns)
+
+if __name__ == '__main__':
+    process_files()

@@ -1,0 +1,68 @@
+{
+  "message": "Leo Franchi added comment: \"A comment on the story\"",
+  "primary_resources": [
+    {
+      "url": "http://www.pivotaltracker.com/story/show/63486316",
+      "kind": "story",
+      "story_type": "feature",
+      "id": 63486316,
+      "name": "Story of the Year"
+    }
+  ],
+  "guid": "807213_61",
+  "kind": "comment_create_activity",
+  "project": {
+    "kind": "project",
+    "id": 807213,
+    "name": "Hard Code"
+  },
+  "occurred_at": 1389218474000,
+  "performed_by": {
+    "initials": "LF",
+    "kind": "person",
+    "id": 981905,
+    "name": "Leo Franchi"
+  },
+  "changes": [
+    {
+      "kind": "comment",
+      "id": 59124096,
+      "change_type": "create",
+      "new_values": {
+        "story_id": 63486316,
+        "file_attachment_ids": [
+
+        ],
+        "google_attachment_ids": [
+
+        ],
+        "updated_at": 1389218474000,
+        "created_at": 1389218474000,
+        "google_attachments": [
+
+        ],
+        "file_attachments": [
+
+        ],
+        "text": "A comment on the story",
+        "id": 59124096,
+        "person_id": 981905
+      }
+    },
+    {
+      "kind": "story",
+      "story_type": "feature",
+      "change_type": "update",
+      "id": 63486316,
+      "original_values": {
+        "updated_at": 1389218398000
+      },
+      "new_values": {
+        "updated_at": 1389218474000
+      },
+      "name": "Story of the Year"
+    }
+  ],
+  "project_version": 61,
+  "highlight": "added comment:"
+}

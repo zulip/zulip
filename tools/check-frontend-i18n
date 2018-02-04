@@ -1,0 +1,52 @@
+#!/usr/bin/env python3
+
+from typing import List, Text
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
+import argparse
+import json
+import os
+import sys
+import subprocess
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from scripts.lib.zulip_tools import WARNING, FAIL, ENDC
+
+def find_handlebars(translatable_strings):
+    # type: (List[Text]) -> List[Text]
+    errored = []
+    for string in translatable_strings:
+        if '{{' in string:
+            errored.append(string)
+    return errored
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--no-generate',
+                        action='store_true', dest='no_generate', default=False,
+                        help="Don't run makemessages command.")
+    args = parser.parse_args()
+
+    if not args.no_generate:
+        subprocess.call(['./manage.py', 'makemessages', '--locale', 'en'],
+                        stderr=subprocess.STDOUT)
+
+    with open('static/locale/en/translations.json') as f:
+        data = json.load(f)
+
+    found = find_handlebars(list(data.keys()))
+    if not found:
+        sys.exit(0)
+
+    print(WARNING + "Translation strings contain handlebars:" + ENDC)
+    print('\n'.join(found))
+
+    print(WARNING +
+          "See https://zulip.readthedocs.io/en/latest/translating/translating.html#frontend-translations "
+          "on how you can insert variables in the frontend translatable "
+          "strings." +
+          ENDC)
+    print(FAIL + "Failed!" + ENDC)
+    sys.exit(1)

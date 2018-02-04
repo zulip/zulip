@@ -1,0 +1,55 @@
+#!/usr/bin/env python3
+
+import os
+import signal
+import subprocess
+import sys
+import time
+from typing import Tuple
+
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
+TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+
+def start_server(logfile_name: str) -> Tuple[bool, str]:
+    failure = True
+    key = "Quit the server with CTRL-C."
+    datalog = []
+    with open(logfile_name, 'rb', buffering=0) as logfile:
+        for i in range(200):
+            time.sleep(0.5)
+            print("{}. Polling run-dev...".format(i))
+            new_data = logfile.read().decode()
+            if new_data:
+                datalog.append(new_data)
+
+            if key in ''.join(datalog):
+                failure = False
+                break
+
+    return failure, ''.join(datalog)
+
+if __name__ == '__main__':
+    print("Testing development server start!")
+
+    logfile_name = '/tmp/run-dev-output'
+    with open(logfile_name, 'wb', buffering=0) as logfile:
+        run_dev = subprocess.Popen(
+            [os.path.join(TOOLS_DIR, "run-dev.py")],
+            stdout=logfile, stderr=subprocess.STDOUT)
+        failure, log = start_server(logfile_name)
+
+    run_dev.send_signal(signal.SIGINT)
+    run_dev.wait()
+
+    if 'Traceback' in log:
+        failure = True
+
+    if failure:
+        print("Development server is not working properly:")
+        print(log)
+        sys.exit(1)
+    else:
+        print("Development server is working properly.")
+        sys.exit(0)

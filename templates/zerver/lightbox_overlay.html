@@ -1,0 +1,30 @@
+<div id="lightbox_overlay" class="overlay new-style" data-overlay="lightbox">
+    <div class="image-info-wrapper">
+        <div class="image-description">
+            <div class="title"></div>
+            <div class="user"></div>
+        </div>
+        <div class="exit" aria-label="{{ _('Close') }}"><span aria-hidden="true">x</span></div>
+        <div class="image-actions">
+            <div class="lightbox-canvas-trigger">
+                <div class="title">{{ _('Pan &amp; Zoom') }}</div>
+                <div class="status" data-disabled="{{ _('Disabled') }}" data-enabled="{{ _('Enabled') }}"></div>
+            </div>
+            <a class="button small open icon" target="_blank">
+                <span class="text">{{ _('Open') }}</span>
+            </a>
+            <a class="button small download icon" download>
+                <span class="text">{{ _('Download') }}</span>
+            </a>
+        </div>
+        <div class="clear-float"></div>
+    </div>
+
+    <div class="image-preview overlay-content no-select"></div>
+    <div class="player-container"></div>
+    <div class="center">
+        <div class="arrow no-select" data-direction="prev">&lt;</div>
+        <div class="image-list"></div>
+        <div class="arrow no-select" data-direction="next">&gt;</div>
+    </div>
+</div>

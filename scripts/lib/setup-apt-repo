@@ -1,0 +1,43 @@
+#!/bin/bash
+set -x
+
+SOURCES_FILE=/etc/apt/sources.list.d/zulip.list
+STAMP_FILE=/etc/apt/sources.list.d/zulip.list.apt-update-in-progress
+zulip_source_hash=`shasum $SOURCES_FILE`
+
+apt-get install -y lsb-release
+
+SCRIPTS_PATH="$(dirname $(dirname $0))"
+# Add the apt keys
+apt-key add "$SCRIPTS_PATH"/setup/zulip-ppa.asc
+apt-key add "$SCRIPTS_PATH"/setup/pgroonga-ppa.asc
+
+release=$(lsb_release -sc)
+if [ "$release" = "trusty" ] || [ "$release" = "xenial" ] || [ "$release" = "zesty" ]; then
+    cat >/etc/apt/sources.list.d/zulip.list <<EOF
+deb http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
+deb http://ppa.launchpad.net/tabbott/zulip/ubuntu $release main
+deb-src http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
+deb-src http://ppa.launchpad.net/tabbott/zulip/ubuntu $release main
+EOF
+elif [ "$release" = "stretch" ]; then
+    apt-get install -y -V apt-transport-https
+    apt-key add "$SCRIPTS_PATH"/setup/pgroonga-debian.asc
+    cat >/etc/apt/sources.list.d/zulip.list <<EOF
+deb https://packages.groonga.org/debian/ stretch main
+deb-src https://packages.groonga.org/debian/ stretch main
+EOF
+else
+    echo "Unsupported release $release."
+    exit 1
+fi
+
+if [ "$zulip_source_hash" = "`shasum $SOURCES_FILE`" ] && ! [ -e "$STAMP_FILE" ]; then
+    echo "zulip.list file did not change; skipping apt-get update"
+else
+    # We create this stamp file to ensure `apt-get update` will be run
+    # the next time this script is invoked, and each time after, until
+    # `apt-get update` finishes successfully.
+    touch "$STAMP_FILE"
+    apt-get update && rm -f "$STAMP_FILE"
+fi

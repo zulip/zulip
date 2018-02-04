@@ -1,0 +1,173 @@
+# Keyboard shortcuts
+
+Everything in Zulip can be done with the mouse, but mastering a few keyboard
+shortcuts will change your experience of the app. Start with the basics
+below, and add more to your repertoire as needed.
+
+* [The basics](#the-basics)
+* [Navigation](#navigation)
+* [Narrowing](#narrowing)
+* [Composing messages](#composing-messages)
+* [Message actions](#message-actions)
+* [Drafts](#drafts)
+* [Menus](#menus)
+* [Streams settings](#streams-settings-page)
+
+## The basics
+
+* **Reply to message**: `r` or `Enter` — Reply to the selected
+  message (outlined in blue).
+
+* **New stream message**: `c` — Start a new topic in the current stream.
+
+* **New private message**: `C`
+
+* **Cancel compose**: `Esc` or `Ctrl + [` — Close the compose box and save
+  the unsent message as a draft.
+
+* **View drafts**: `d` — Use the arrow keys and `Enter` to restore a draft.
+  Press `d` again to close.
+
+* **Next message**: `↓` or `j`
+
+* **Last message**: `End` or `G` — Also marks all messages in
+  the current view as read.
+
+* **Next unread topic**: `n`
+
+* **All private messages**: `P`
+
+* **Search messages**: `/`
+
+* **Toggle keyboard shortcuts view**: `?`
+
+## Navigation
+
+* **Search messages**: `/`
+
+* **Search streams**: `q`
+
+* **Search people**: `w`
+
+* **Last message**: `End` or `G` — Also marks all messages in
+  the current view as read.
+
+* **First message**: `Home`
+
+* **Previous message**: `↑` or `k`
+
+* **Next message**: `↓` or `j`
+
+* **Scroll up**: `PgUp` or `K`
+
+* **Scroll down**: `PgDn`, `J`, or `Spacebar`
+
+## Narrowing
+
+* **Narrow to next unread topic**: `n`
+
+* **Narrow to stream**: `s`
+
+* **Narrow to topic**: `S`
+
+* **Narrow to all private messages**: `P`
+
+* **Cycle between stream narrows**: `A` (previous) and `D` (next)
+
+* **Narrow to all messages**: `Esc` or `Ctrl` + `[` — Shows all unmuted messages.
+
+## Composing messages
+
+* **Reply to message**: `r` or `Enter` — Reply to the selected
+  message (outlined in blue). Same behavior as clicking on the message.
+
+* **Reply to message, mentioning author**: `@`
+
+* **Reply only to author**: `R`
+
+* **Quote and reply to message**: `>`
+
+* **New stream message**: `c` — For starting a new topic in a stream.
+
+* **New private message**: `C`
+
+### In the compose box
+
+* **Send message**: `Enter`, `Tab` then `Enter`, and/or `Ctrl` + `Enter`,
+  depending on your settings. See
+  [enable or disable pressing enter to send](https://zulipchat.com/help/enable-or-disable-pressing-enter-to-send).
+
+* **Insert new line**: `Enter`, or `Shift` + `Enter`, depending on your
+  settings. See
+  [enable or disable pressing enter to send](https://zulipchat.com/help/enable-or-disable-pressing-enter-to-send).
+
+* **Cancel compose**: `Esc` or `Ctrl + [` — Close the compose box and save
+  the unsent message as a draft.
+
+## Message actions
+
+* **Edit last message**: `⇽` — Open the last editable message in the current
+  view (if any).
+
+### For a selected message (outlined in blue)
+
+* **Show sender's profile**: `u`
+
+* **View image**: `v`
+
+* **Edit message**: `i` then `Enter`
+
+* **Star message**: `*`
+
+* **React with <img alt=":thumbs_up:" class="emoji"
+src="/static/generated/emoji/images/emoji/unicode/1f44d.png"
+title="thumbs up"/>**: `+`
+
+* **Collapse/show message**: `-`
+
+* **Toggle topic mute**: `M` — Muted topics don't show up in any views
+  (including All messages), and don't contribute to unread counts. Read more about
+  [muting topics](/help/mute-a-topic).
+
+## Drafts
+
+* **Toggle drafts view**: `d`
+
+### Within the drafts view
+
+* **Edit selected draft**: `Enter`
+
+* **Delete selected draft**: `Backspace`
+
+Keyboard navigation (e.g. arrow keys) works as expected.
+
+## Menus
+
+* **Toggle shortcuts help**: `?`
+
+* **Toggle gear menu**: `g`
+
+### For a selected message (outlined in blue)
+
+* **Toggle emoji reactions menu**: `:`
+
+* **Toggle message actions menu**: `i`
+
+## Streams settings page
+
+* **Scroll through streams**: `↑` and `↓`
+
+    !!! tip ""
+        Pressing `↑` from the first stream in the list moves
+        you to the **Filter streams** input.
+
+* **Switch between tabs**: `⇽` and `⇾` — Switch between the
+**Subscribed** and **All streams** tabs.
+
+* **Create new stream**: `n`
+
+### For a selected stream
+
+* **View stream messages**: `V`
+
+* **Toggle subscription**: `S`

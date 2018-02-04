@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+
+import subprocess
+import sys
+
+def exit(message):
+    # type: (str) -> None
+    print('PROBLEM!')
+    print(message)
+    sys.exit(1)
+
+def run(command):
+    # type: (str) -> None
+    print('\n>>> ' + command)
+    subprocess.check_call(command.split())
+
+def check_output(command):
+    # type: (str) -> str
+    return subprocess.check_output(command.split()).decode('ascii')
+
+def get_git_branch():
+    # type: () -> str
+    command = 'git rev-parse --abbrev-ref HEAD'
+    output = check_output(command)
+    return output.strip()
+
+def check_git_pristine():
+    # type: () -> None
+    command = 'git status --porcelain'
+    output = check_output(command)
+    if output.strip():
+        exit('Git is not pristine:\n' + output)
+
+def ensure_on_clean_master():
+    # type: () -> None
+    branch = get_git_branch()
+    if branch != 'master':
+        exit('You are still on a feature branch: %s' % (branch,))
+    check_git_pristine()
+    run('git fetch upstream master')
+    run('git rebase upstream/master')
+
+def create_pull_branch(pull_id):
+    # type: (int) -> None
+    run('git fetch upstream pull/%d/head' % (pull_id,))
+    run('git checkout -B review-%s FETCH_HEAD' % (pull_id,))
+    run('git rebase upstream/master')
+    run('git log upstream/master.. --oneline')
+    run('git diff upstream/master.. --name-status')
+
+    print()
+    print('PR: %d' % (pull_id,))
+    print(subprocess.check_output(['git', 'log', 'HEAD~..',
+                                   '--pretty=format:Author: %an']))
+
+def review_pr():
+    # type: () -> None
+    try:
+        pull_id = int(sys.argv[1])
+    except Exception:
+        exit('please provide an integer pull request id')
+
+    ensure_on_clean_master()
+    create_pull_branch(pull_id)
+
+if __name__ == '__main__':
+    review_pr()

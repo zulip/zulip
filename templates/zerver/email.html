@@ -1,0 +1,16 @@
+<h4>From: {{ from_email }}</h4>
+<h4>To:
+    {% for recipient in recipients %}
+    {{ recipient }}&nbsp;
+    {% endfor %}
+</h4>
+<h4>Subject: {{subject}}</h4>
+<div class="email-html" style="display: block;">
+    {% autoescape off %}
+    {{ html_message }}
+    {% endautoescape %}
+</div>
+<div class="email-text" style="display: none;">
+    <pre>{{ body }}</pre>
+</div>
+<hr/>

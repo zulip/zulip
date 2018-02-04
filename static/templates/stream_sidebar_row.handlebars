@@ -1,0 +1,18 @@
+{{! Stream sidebar rows }}
+
+<li class="narrow-filter{{#if not_in_home_view}} out_of_home_view{{/if}}"
+    data-stream-id="{{id}}" data-stream-name="{{name}}">
+    <div class="subscription_block selectable_sidebar_block">
+
+        <span id="stream_sidebar_privacy_swatch_{{id}}" class="stream-privacy" style="color: {{color}}">
+            {{! This controls whether the swatchnext to streams in the left sidebar has a lock icon. }}
+            {{ partial "stream_privacy" }}
+        </span>
+
+        <a href="{{uri}}" class="stream-name">{{name}}</a>
+
+        <div class="count"><div class="value"></div></div>
+    </div>
+    <span class="arrow stream-sidebar-arrow"><i class="icon-vector-chevron-down"></i></span>
+
+</li>

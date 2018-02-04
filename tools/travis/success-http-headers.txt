@@ -1,0 +1,32 @@
+  Self-signed certificate encountered.
+WARNING: no certificate subject alternative name matches
+	requested host name ‘localhost’.
+  HTTP/1.1 302 Found
+  Server: nginx/1.4.6 (Ubuntu)
+  Content-Type: text/html; charset=utf-8
+  Content-Length: 0
+  Connection: keep-alive
+  Location: /login
+  Strict-Transport-Security: max-age=15768000
+Location: /login [following]
+Reusing existing connection to localhost:443.
+  HTTP/1.1 301 Moved Permanently
+  Server: nginx/1.4.6 (Ubuntu)
+  Content-Type: text/html; charset=utf-8
+  Content-Length: 0
+  Connection: keep-alive
+  Location: /login/
+  Strict-Transport-Security: max-age=15768000
+Location: /login/ [following]
+Reusing existing connection to localhost:443.
+  HTTP/1.1 200 OK
+  Server: nginx/1.4.6 (Ubuntu)
+  Content-Type: text/html; charset=utf-8
+  Content-Length: 6361
+  Connection: keep-alive
+  Strict-Transport-Security: max-age=15768000
+Length: 6361 (6.2K) [text/html]
+Saving to: ‘/tmp/index.html’
+
+
+

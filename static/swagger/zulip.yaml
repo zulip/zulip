@@ -1,0 +1,1221 @@
+# This file contains the Swagger UI configuration and API definitions
+# for the Zulip REST API.
+#
+# For details on the Swagger/OpenAPI specification, see http://swagger.io/specification
+#
+# Our own documentation lives at
+#
+#   https://zulip.readthedocs.io/en/latest/subsystems/swagger-api-docs.html
+#
+# Basic Swagger UI info
+swagger: '2.0'
+info:
+  version: '1.0.0'
+  title: Zulip REST API
+  description: Powerful open source group chat
+  contact:
+    url: https://zulip.org/
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+
+# Backend host to use for API examples.
+# This defaults to the Swagger UI host,
+# which in this case is also the Zulip host.
+#host: 10.2.3.4:9991
+
+# The base configuration for this API
+basePath: /api/v1
+schemes:
+- http
+- https
+consumes:
+- application/x-www-form-urlencoded
+produces:
+- application/json
+
+######################
+# Endpoint definitions
+
+paths:
+
+  /dev_fetch_api_key:
+    post:
+      description: |
+                   Gather a token bound to a user account, to identify and
+                   authenticate them when making operations in the API.
+
+                   This token must be used as the password in the rest of the
+                   endpoints that require Basic authentication.
+
+                   ---
+
+                   **This endpoint is only for development environments!**
+                   It will not work if `settings.PRODUCTION` is set to `False`.
+      operationId: zerver.views.auth.api_dev_fetch_api_key
+      parameters:
+      - name: username
+        in: formData
+        description: The email address for the user that owns the API key.
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Success.
+          schema:
+            allOf:
+            - $ref: '#/definitions/JsonSuccess'
+            - required:
+              - api_key
+              - email
+            - properties:
+                api_key:
+                  type: string
+                  example: c2hvdWxuJ3QgdSBiZSB3b3JraW5nPzsp
+                email:
+                  description: |
+                               The email address for the user that owns the API
+                               key.
+                  type: string
+                  example: iago@zulip.com
+                msg:
+                  enum:
+                    - ''
+
+  /events:
+    get:
+      description: Get new events from an events queue
+      operationId: getEvents
+      parameters:
+      - name: queue_id
+        in: query
+        description: The ID of a queue that you registered via `POST /api/v1/register`.
+        required: true
+        type: string
+      - name: last_event_id
+        in: query
+        description: |
+                     The highest event ID in this queue that you've received and
+                     wish to acknowledge. See the code for `call_on_each_event` in
+                     the zulip Python module for an example implementation of
+                     correctly processing each event exactly once.
+        required: true
+        type: string
+      - name: dont_block
+        in: query
+        description: |
+                     Set to `true` if the client is requesting a
+                     nonblocking reply. If not specified, the request will block
+                     until either a new event is available or a few minutes have
+                     passed, in which case the server will send the client a
+                     heartbeat event.
+        required: false
+        type: string
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: |
+                       * `events`: An array (possibly zero-length if `dont_block` is
+                       set) of events with IDs newer than `last_event_id`.
+
+                       Event IDs are guaranted to be increasing, but they are not
+                       guaranteed to be consecutive.
+          schema:
+            $ref: '#/definitions/EventsResponse'
+
+  /fetch_api_key:
+    post:
+      description: |
+                   Gather a token bound to a user account, to identify and
+                   authenticate them when making operations in the API.
+
+                   This token must be used as the password in the rest of the
+                   endpoints that require Basic authentication.
+      operationId: zerver.views.auth.api_fetch_api_key
+      parameters:
+      - name: username
+        in: formData
+        description: The email address for the user that owns the API key.
+        required: true
+        type: string
+      - name: password
+        in: formData
+        description: The password for the account of the API key's owner.
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Success.
+          schema:
+            allOf:
+            - $ref: '#/definitions/JsonSuccess'
+            - required:
+              - api_key
+              - email
+            - properties:
+                api_key:
+                  type: string
+                  example: c2hvdWxuJ3QgdSBiZSB3b3JraW5nPzsp
+                email:
+                  description: |
+                               The email address for the user that owns the API
+                               key.
+                  type: string
+                  example: iago@zulip.com
+                msg:
+                  enum:
+                    - ''
+
+  /get_stream_id:
+    get:
+      description: Fetch a stream's ID from its name.
+      operationId: zerver.views.streams.json_get_stream_id
+      parameters:
+      - name: stream
+        in: query
+        description: The name of the stream whose ID to fetch.
+        required: true
+        type: string
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          schema:
+            allOf:
+            - $ref: '#/definitions/JsonSuccess'
+            - properties:
+                stream_id:
+                  type: integer
+                  example: 42
+                msg:
+                  enum:
+                    - ''
+        '400':
+          description: Bad request.
+          schema:
+            allOf:
+            - $ref: '#/definitions/JsonError'
+            - properties:
+                msg:
+                  enum:
+                  - Invalid stream name '<stream>'
+
+  /messages:
+    get:
+      description: |
+                   Retrieve a specific amount of messages, previous and
+                   posterior to the specified `anchor`.
+      operationId: zerver.views.messages.get_messages_backend
+      parameters:
+      - name: anchor
+        in: query
+        description: A message ID.
+        required: true
+        type: integer
+      - name: num_before
+        in: query
+        description: The number of messages to retrieve before the anchor value.
+        required: true
+        type: integer
+      - name: num_after
+        in: query
+        description: The number of messages to retrieve after the anchor value.
+        required: true
+        type: integer
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          schema:
+            $ref: '#/definitions/MessagesResponse'
+    post:
+      description: Send a message
+      operationId: zerver.views.messages.send_message_backend
+      parameters:
+      - name: type
+        in: formData
+        description: One of {`private`, `stream`}
+        required: true
+        type: string
+      - name: content
+        in: formData
+        description: The content of the message. Maximum message size of 10000 bytes.
+        required: true
+        type: string
+      - name: to
+        in: formData
+        description: |
+                     In the case of a stream message, a string identifying the
+                     stream. In the case of a private message, a JSON-encoded
+                     list containing the usernames of the recipients.
+        required: true
+        type: string
+      - name: subject
+        in: formData
+        description: |
+                     The topic for the message (only required if type is `stream`).
+                     Maximum length of 60 characters.
+        required: false
+        type: string
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: |
+                       * `msg`:
+
+                       * `result`:
+
+                       * `id`: The ID of the newly created message.
+          schema:
+            $ref: '#/definitions/MessageResponse'
+
+  /messages/{message_id}:
+    get:
+      description: Retrieve the content of a message.
+      parameters:
+      - name: message_id
+        in: path
+        description: ID of the message to be retrieved.
+        type: integer
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          schema:
+            type: object
+            required:
+            - msg
+            - result
+            - raw_content
+            properties:
+              msg:
+                type: string
+              result:
+                type: string
+              raw_content:
+                type: string
+                description: Body of the queried message.
+    patch:
+      description: Edit a message that has already been sent.
+      parameters:
+      - name: message_id
+        in: path
+        description: ID of the message to be edited.
+        type: integer
+        required: true
+      - name: subject
+        in: query
+        description: Message's new topic.
+        type: string
+      - name: propagate_mode
+        in: query
+        description: |
+                     Which message(s) should be edited: just
+                     the one indicated in `message_id`, messages in the
+                     same topic that had been sent after this one, or all of
+                     them.
+        type: string
+        enum:
+        - change_one
+        - change_later
+        - change_all
+        default: change_one
+      - name: content
+        in: query
+        description: Message's new body.
+        type: string
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/JsonSuccess'
+        '400':
+          description: Bad request.
+          schema:
+            allOf:
+            - $ref: '#/definitions/JsonError'
+            - properties:
+                msg:
+                  enum:
+                  - Your organization has turned off message editing
+                  - You don't have permission to edit this message
+                  - The time limit for editing this message has past
+                  - Nothing to change
+                  - Topic can't be empty
+
+  /register:
+    post:
+      description: Register a queue to receive new messages
+      operationId: registerQueue
+      parameters:
+      - name: event_types
+        in: formData
+        description: |
+                     A JSON-encoded array indicating which types of
+                     events you're interested in. Values that you might find
+                     useful include:
+
+                     `message` (messages),
+
+                     `subscriptions` (changes in your subscriptions),
+
+                     `realm_user` (changes in the list of users in your realm), and
+
+                     `pointer` (changes in your pointer).
+
+                     If you do not specify this argument, you will receive all
+                     events, and have to filter out the events not relevant to
+                     your client in your client code. For most applications, one
+                     is only interested in messages, so one specifies:
+                     `event_types=["message"]`
+        required: false
+        type: string
+      - name: apply_markdown
+        in: formData
+        description: |
+                     Set to `true` if you would like the content to
+                     be rendered in HTML format (by default, the API returns the
+                     raw text that the user entered.)
+        required: false
+        type: string
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: |
+                       ## These values will always be in the response:
+
+                       * `msg`:
+
+                       * `result`:
+
+                       * `queue_id`: The ID of the queue that has been allocated for
+                       your client.
+
+                       * `last_event_id`: The initial value of the `last_event_id`
+                       value to pass to `GET /api/v1/events`.
+
+                       ## The following values may be returned, depending on the value
+                       of `event_types` provided:
+
+                       * `max_message_id`:
+
+                       * `pointer`:
+
+                       * `realm_users`:
+
+                       * `alert_words`:
+
+                       * `attachments`:
+
+                       * `default_language`:
+
+                       * `enable_desktop_notifications`:
+
+                       * `enable_digest_emails`:
+
+                       * `enable_offline_email_notifications`:
+
+                       * `enable_offline_push_notifications`:
+
+                       * `enable_online_push_notifications`:
+
+                       * `enable_sounds`:
+
+                       * `enable_stream_desktop_notifications`:
+
+                       * `enable_stream_sounds`:
+
+                       * `left_side_userlist`:
+
+                       * `muted_topics`:
+
+                       * `never_subscribed`:
+
+                       * `presences`:
+
+                       * `realm_add_emoji_by_admins_only`:
+
+                       * `realm_allow_message_deleting`:
+
+                       * `realm_allow_message_editing`:
+
+                       * `realm_authentication_methods`:
+
+                       * `realm_bots`:
+
+                       * `realm_create_stream_by_admins_only`:
+
+                       * `realm_default_language`:
+
+                       * `realm_default_streams`:
+
+                       * `realm_domain`:
+
+                       * `realm_domains`:
+
+                       * `realm_emoji`:
+
+                       * `realm_filters`:
+
+                       * `realm_invite_by_admins_only`:
+
+                       * `realm_invite_required`:
+
+                       * `realm_message_content_edit_limit_seconds`:
+
+                       * `realm_name`:
+
+                       * `realm_restricted_to_domain`:
+
+                       * `realm_users`:
+
+                       * `realm_waiting_period_threshold`:
+
+                       * `streams`:
+
+                       * `twenty_four_hour_time`:
+
+                       * `unsubscribed`:
+          schema:
+            $ref: '#/definitions/RegisterResponse'
+
+  /streams:
+    get:
+      description: Gets a list of streams available to a user on the server.
+      operationId: zerver.views.streams.get_streams_backend
+      security:
+      - basicAuth: []
+      parameters:
+      - name: include_public
+        in: query
+        description: |
+                     Set to `false` if the response should not include
+                     public streams.
+        type: string
+        default: true
+      - name: include_all_active
+        in: query
+        description: |
+                     Set to `true` if the response should include all active
+                     streams, including private ones. This requires
+                     API super user access.
+        type: string
+        default: false
+      - name: include_default
+        in: query
+        description: |
+                     Set to `true` if the response should include all the
+                     streams to which new users are subscribed by default.
+        type: string
+        default: false
+      - name: include_subscribed
+        in: query
+        description: |
+                     Set to `false` if response should not include streams
+                     where user is considered subscribed.
+        type: string
+        default: true
+      responses:
+        '200':
+          description: Success.
+          schema:
+            allOf:
+            - $ref: '#/definitions/JsonSuccess'
+            - description: |
+                           `stream` is an array (that can be zero-length
+                           depending on the parameters set) of available
+                           streams for the authenticated user.
+            - properties:
+                streams:
+                  type: array
+                  items:
+                    $ref: '#/definitions/stream'
+
+  /streams/{stream_id}:
+    patch:
+      description: Update a stream's name, description or privacy setting.
+      operationId: zerver.views.streams.update_stream_backend
+      parameters:
+      - name: stream_id
+        in: path
+        description: The ID of the stream to modify.
+        required: true
+        type: integer
+      - name: new_name
+        in: formData
+        description: |
+                     New name for the stream.
+
+                     Must be a valid JSON string (enclosed in double quotes and
+                     special characters escaped with backslashes).
+        type: string
+      - name: description
+        in: formData
+        description: |
+                     New description for the stream.
+
+                     Must be a valid JSON string (enclosed in double quotes and
+                     special characters escaped with backslashes).
+        type: string
+      - name: is_private
+        in: formData
+        description: New privacy setting for the stream.
+        type: boolean
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          schema:
+            $ref: '#/definitions/JsonSuccess'
+        '400':
+          description: Bad request.
+          schema:
+            allOf:
+            - $ref: '#/definitions/JsonError'
+            - properties:
+                msg:
+                  enum:
+                  - Argument "new_name" is not valid JSON.
+                  - Argument "description" is not valid JSON.
+                  - '"new_name" is not a string'
+                  - '"description" is not a string'
+                  - '"is_private" is not a boolean'
+                  - Stream already has that name!
+                  # API_FIXME: There's no error for when the stream already has
+                  # the specified description or privacy setting.
+    delete:
+      description: |
+                   Delete a stream.
+
+                   The result is the stream deactivation; its messages will
+                   remain in the database, but they won't be recoverable
+                   through the API.
+      operationId: zerver.views.streams.deactivate_stream_backend
+      parameters:
+      - name: stream_id
+        in: path
+        description: The ID of the stream to delete.
+        required: true
+        type: integer
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          schema:
+            $ref: '#/definitions/JsonSuccess'
+        '400':
+          description: Bad request.
+          schema:
+            allOf:
+            - $ref: '#/definitions/JsonError'
+            - properties:
+                msg:
+                  enum:
+                  - 'Invalid stream id'
+
+  /users/{user}/presence:
+    get:
+      description: Get presence data for another user.
+      operationId: getPresence
+      parameters:
+      - name: user
+        in: path
+        description: Enter email address
+        required: true
+        type: string
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: The response from a successful call
+          schema:
+            type: object
+            required:
+            - msg
+            - result
+            - presence
+            properties:
+              msg:
+                type: string
+              result:
+                type: string
+              presence:
+                type: array
+
+  /users/me/subscriptions:
+    get:
+      description: List streams subscription data for the current user.
+      operationId: zerver.views.streams.list_subscriptions_backend
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          schema:
+            type: object
+            required:
+            - msg
+            - result
+            - subscriptions
+            properties:
+              msg:
+                type: string
+              result:
+                type: string
+              subscriptions:
+                type: array
+                items:
+                  $ref: '#/definitions/stream'
+    post:
+      description: Bulk adds streams subscription data for the current user.
+      operationId: zerver.views.streams.add_subscriptions_backend
+      parameters:
+      - name: subscriptions
+        in: formData
+        description: |
+                     Serialized JSON string, with the details of the streams
+                     the user is subscribing to.
+
+                     ```
+                     [{
+                       "name":string,      (required)
+                       "invite-only":bool  (optional)
+                     }]
+                     ```
+        required: true
+        type: string
+      - name: invite_only
+        in: formData
+        type: boolean
+        default: false
+      - name: announce
+        in: formData
+        type: boolean
+        default: false
+      - name: authorization_errors_fatal
+        in: formData
+        type: boolean
+        default: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          schema:
+            type: object
+            required:
+            - msg
+            - already_subscribed
+            - result
+            - subscribed
+            properties:
+              msg:
+                type: string
+              already_subscribed:
+                type: object
+                properties:
+                  subscriber:
+                    type: array
+                    items:
+                      type: string
+              result:
+                type: string
+              subscribed:
+                type: object
+                properties:
+                  subscriber:
+                    type: array
+                    items:
+                      type: string
+    patch:
+      description: |
+                   Bulk modifies (add or delete) streams subscription data
+                   for the current user.
+      operationId: zerver.views.streams.update_subscriptions_backend
+      parameters:
+      - name: delete
+        in: formData
+        description: |
+                     Serialized JSON list of streams to delete. See the
+                     `subscriptions` parameter in the POST method for
+                     details about the format.
+        type: string
+      - name: add
+        in: formData
+        description: |
+                     Serialized JSON list of streams to add. See the
+                     `subscriptions` parameter in the POST method for
+                     details about the format.
+        type: string
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          schema:
+            type: object
+            required:
+            - subscribed
+            - not_subscribed
+            - result
+            - msg
+            - already_subscribed
+            - removed
+            properties:
+              subscribed:
+                type: object
+                properties:
+                  subscriber:
+                    type: array
+                    items:
+                      type: string
+              not_subscribed:
+                type: array
+                items:
+                  type: string
+              result:
+                type: string
+              msg:
+                type: string
+              already_subscribed:
+                type: object
+                properties:
+                  subscriber:
+                    type: array
+                    items:
+                      type: string
+              removed:
+                type: array
+                items:
+                  type: string
+    delete:
+      description: |
+                   Bulk deletes streams subscription data for the current
+                   user.
+      operationId: zerver.views.streams.remove_subscriptions_backend
+      parameters:
+      - name: subscriptions
+        in: formData
+        description: |
+                     Serialized JSON list of streams to unsubscribe from.
+                     See the `subscriptions` parameter in the POST method
+                     for details about the format.
+        required: true
+        type: string
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          schema:
+            type: object
+            required:
+            - msg
+            - removed
+            - not_subscribed
+            - result
+            properties:
+              msg:
+                type: string
+              removed:
+                type: array
+                items:
+                  type: string
+              not_subscribed:
+                type: array
+                items:
+                  type: string
+              result:
+                type: string
+
+  /user_uploads:
+    post:
+      description: Upload a file, and print the corresponding URI.
+      operationId: userUploads
+      consumes:
+      - multipart/form-data
+      parameters:
+      - name: file
+        in: formData
+        description: File to be uploaded
+        type: file
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: object
+            required:
+            - msg
+            - result
+            - uri
+            properties:
+              msg:
+                type: string
+              result:
+                type: string
+              uri:
+                type: string
+
+#######################
+# Security definitions
+#######################
+securityDefinitions:
+  basicAuth:
+    type: basic
+    description: |
+                 Basic authentication, with the user's email as the
+                 username, and the API key as the password.
+                 The API key can be fetched using the `/fetch_api_key` or
+                 `/dev_fetch_api_key` endpoints.
+
+####################
+# Shared definitions
+definitions:
+  JsonResponse:
+    type: object
+    properties:
+      result:
+        type: string
+
+  JsonSuccess:
+    allOf:
+    - $ref: '#/definitions/JsonResponse'
+    - required:
+      - result
+      - msg
+    - properties:
+        result:
+          enum:
+          - success
+        msg:
+          type: string
+
+  JsonError:
+    allOf:
+    - $ref: '#/definitions/JsonResponse'
+    - required:
+      - result
+      - msg
+    - properties:
+        result:
+          enum:
+          - error
+        msg:
+          type: string
+
+  # /register
+  RegisterResponse:
+    type: object
+    required:
+    - msg
+    - result
+    - queue_id
+    - last_event_id
+    properties:
+      msg:
+        type: string
+      result:
+        type: string
+      queue_id:
+        type: string
+      last_event_id:
+        type: integer
+        format: int64
+      alert_words:
+        type: string
+      attachments:
+        type: string
+      default_language:
+        type: string
+      enable_desktop_notifications:
+        type: boolean
+      enable_digest_emails:
+        type: boolean
+      enable_offline_email_notifications:
+        type: boolean
+      enable_offline_push_notifications:
+        type: boolean
+      enable_online_push_notifications:
+        type: boolean
+      enable_sounds:
+        type: boolean
+      enable_stream_desktop_notifications:
+        type: boolean
+      enable_stream_sounds:
+        type: boolean
+      left_side_userlist:
+        type: boolean
+      max_message_id:
+        type: integer
+        format: int64
+      muted_topics:
+        type: string
+      never_subscribed:
+        type: array
+        items:
+          $ref: '#/definitions/stream'
+      pointer:
+        type: integer
+        format: int64
+      presences:
+        type: string
+      realm_add_emoji_by_admins_only:
+        type: boolean
+      realm_allow_message_deleting:
+        type: boolean
+      realm_allow_message_editing:
+        type: boolean
+      realm_authentication_methods:
+        type: string
+      realm_bots:
+        type: string
+      realm_create_stream_by_admins_only:
+        type: boolean
+      realm_default_language:
+        type: string
+      realm_default_streams:
+        type: array
+        items:
+          $ref: '#/definitions/stream'
+      realm_domain:
+        type: string
+      realm_domains:
+        type: string
+      realm_emoji:
+        type: string
+      realm_filters:
+        type: string
+      realm_invite_by_admins_only:
+        type: boolean
+      realm_invite_required:
+        type: boolean
+      realm_message_content_edit_limit_seconds:
+        type: integer
+        format: int64
+      realm_name:
+        type: string
+      realm_restricted_to_domain:
+        type: boolean
+      realm_users:
+        type: array
+        items:
+          $ref: '#/definitions/user'
+      realm_waiting_period_threshold:
+        type: integer
+        format: int64
+      streams:
+        type: array
+        items:
+          $ref: '#/definitions/stream'
+      twenty_four_hour_time:
+        type: boolean
+      unsubscribed:
+        type: string
+
+  # /messages GET
+  MessagesResponse:
+    type: object
+    required:
+      - msg
+      - result
+      - messages
+    properties:
+      msg:
+        type: string
+      result:
+        type: string
+      messages:
+        type: array
+        items:
+          $ref: '#/definitions/message'
+
+  # /messages POST
+  MessageResponse:
+    type: object
+    required:
+    - msg
+    - result
+    - id
+    properties:
+      msg:
+        type: string
+      result:
+        type: string
+      id:
+        type: integer
+        format: int64
+
+  # /events
+  EventsResponse:
+    type: object
+    required:
+    - msg
+    - result
+    - events
+    properties:
+      msg:
+        type: string
+      result:
+        type: string
+      events:
+        type: array
+        items:
+          $ref: '#/definitions/event'
+
+  #####
+  # definitions used by /register
+  #
+
+  #alert_words
+  #attachments
+  #muted_topics
+  #presences
+  #realm_authentication_methods
+  #realm_bots
+  #realm_domains
+  #realm_emoji
+  #realm_filters
+  #subscriptions
+  #unsubscribed
+
+  message:
+    type: object
+    required:
+      - reactions
+      - recipient_id
+      - content_type
+      - timestamp
+      - display_recipient
+      - sender_id
+      - sender_full_name
+      - client
+      - content
+      - stream_id
+      - avatar_url
+      - flags
+      - sender_email
+      - subject_links
+      - sender_realm_str
+      - subject
+      - type
+      - id
+      - sender_short_name
+    properties:
+      reactions:
+        # TODO: Create a full definition for reactions
+        type: object
+      recipient_id:
+        type: integer
+      content_type:
+        type: string
+      timestamp:
+        type: integer
+      display_recipient:
+        type: array
+        description: |
+                     If the recipient is a stream, this will be a `string`
+                     (not an `array`), with the stream's name.
+        items:
+          type: object
+          # TODO: Create a definition for this type of user (doesn't match
+          # the already existing ones)
+      sender_id:
+        type: integer
+      sender_full_name:
+        type: string
+      client:
+        type: string
+      content:
+        type: string
+      stream_id:
+        type: integer
+      avatar_url:
+        type: string
+      flags:
+        type: array
+        items:
+          type: string
+      sender_email:
+        type: string
+      subject_links:
+        type: array
+        items:
+          type: string
+      sender_realm_str:
+        type: string
+      subject:
+        type: string
+      type:
+        type: string
+      id:
+        type: integer
+      sender_short_name:
+        type: string
+
+  stream:
+    type: object
+    required:
+    - stream_id
+    - description
+    - name
+    - invite_only
+    properties:
+      stream_id:
+        type: integer
+        format: int64
+      description:
+        type: string
+      name:
+        type: string
+      invite_only:
+        type: boolean
+
+  user:
+    type: object
+    required:
+    - is_admin
+    - user_id
+    - email
+    - full_name
+    - is_bot
+    properties:
+      is_admin:
+        type: boolean
+      user_id:
+        type: integer
+        format: int64
+      email:
+        type: string
+      full_name:
+        type: string
+      is_bot:
+        type: boolean
+
+  #####
+  # definitions used by /events
+  #
+  event:
+    type: object
+    required:
+    - type
+    - id
+    properties:
+      type:
+        type: string
+      id:
+        type: integer
+        format: int64

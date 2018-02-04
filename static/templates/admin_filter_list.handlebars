@@ -1,0 +1,17 @@
+{{#with filter}}
+<tr class="filter_row">
+    <td>
+        <span class="filter_pattern">{{pattern}}</span>
+    </td>
+    <td>
+        <span class="filter_url_format_string">{{url_format_string}}</span>
+    </td>
+    {{#if ../can_modify}}
+    <td>
+        <button class="button small delete btn-danger" data-filter-id="{{id}}">
+            <i class="icon-vector-trash" aria-hidden="true"></i>
+        </button>
+    </td>
+    {{/if}}
+</tr>
+{{/with}}

@@ -1,0 +1,54 @@
+{{! Contents of the "message info" popup }}
+<ul class="nav nav-list actions_popover sender_info_popover" data-user-id="{{user_id}}">
+    <div class="popover_info">
+        <li class="user_{{presence_status}}">
+            <b>{{user_full_name}}</b>
+            {{#if is_active }}
+                {{#if is_bot}}
+                <i class="zulip-icon bot" aria-hidden="true"></i>
+                {{else}}
+                <span class="user-status-indicator popover_user_presence" title="{{user_last_seen_time_status}}"></span>
+                {{/if}}
+            {{/if}}
+        </li>
+
+        {{#if is_active }}
+        <li class='my_email'>
+            {{ user_email }}
+            <div class="tooltip_holder">
+                <span class="email_tooltip">{{ user_email }}</span>
+            </div>
+        </li>
+        {{else}}
+        <li class='my_email half-opacity italic'>{{#tr this}}(This user has been deactivated){{/tr}}</li>
+        {{/if}}
+
+        {{#if user_time}}
+        <li>{{ user_time }} {{#tr this}}Local time{{/tr}}</li>
+        {{/if}}
+    </div>
+    <hr />
+    {{#if is_active }}
+    <li>
+        <a href="#" class="{{ private_message_class }}">
+            <i class="fa fa-envelope" aria-hidden="true"></i> {{#tr this}}Send private message{{/tr}} (R)
+        </a>
+    </li>
+    {{/if}}
+    <li>
+        <a class="mention_user">
+            <i class="fa fa-at" aria-hidden="true"></i> {{#tr this}}Reply mentioning user{{/tr}} (@)
+        </a>
+    </li>
+    <hr />
+    <li>
+        <a href="{{ pm_with_uri }}" class="narrow_to_private_messages">
+            <i class="icon-vector-user"></i> {{#tr this}}View private messages{{/tr}}
+        </a>
+    </li>
+    <li>
+        <a href="{{ sent_by_uri }}" class="narrow_to_messages_sent">
+            <i class="icon-vector-bullhorn"></i> {{#tr this}}View messages sent{{/tr}}
+        </a>
+    </li>
+</ul>

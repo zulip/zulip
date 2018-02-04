@@ -1,0 +1,244 @@
+{% extends "zerver/portico.html" %}
+
+{% block customhead %}
+
+{% stylesheet 'portico' %}
+{% stylesheet 'landing-page' %}
+{{ render_bundle('landing-page') }}
+
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+{% include 'zerver/gradients.html' %}
+
+<div class="portico-landing features-app">
+    <section class="hero">
+        <div class="copy">
+            <h1>Powerful group chat</h1>
+            <h2>First class threading on top of everything you could want from real-time chat.</h2>
+        </div>
+    </section>
+
+    <section class="messages">
+        <div class="features">
+            <h2>Beautiful messaging</h2>
+
+            <div class="feature-block">
+                <h3>MARKDOWN OPTIMIZED FOR CHAT</h3>
+                <p>
+                    Express your ideas clearly with bulleted lists,
+                    bold, italics,
+                    and <a href="/help/format-your-message-using-markdown">much
+                    more</a>.  Zulip even supports discussing math
+                    with LaTeX.
+                </p>
+            </div>
+            <div class="feature-block">
+                <h3>EMOJI AND EMOJI REACTIONS</h3>
+                <p>Have fun expressing yourself with emoji!</p>
+            </div>
+            <div class="feature-block">
+                <h3>INLINE IMAGE, VIDEO, AND TWEET PREVIEWS</h3>
+                <p>Send a link and we'll automatically generate a
+                preview; click the preview to see it at full scale.</p>
+            </div>
+            <div class="feature-block">
+                <h3>DRAG-AND-DROP FILE UPLOADS</h3>
+                <p>
+                    Drag a file into the compose box and we'll upload
+                    and preview it for you. Sharing and discussing
+                    work with team mates has never been easier.
+                </p>
+            </div>
+            <div class="feature-block">
+                <h3>CODE AND QUOTE BLOCKS</h3>
+                <p>
+                    Discuss code with ease using Markdown code blocks
+                    (and syntax highlighting).  And discuss blocks of
+                    text with ease with block quotes.
+                </p>
+            </div>
+            <div class="feature-block">
+                <h3>CUSTOMIZABLE AUTOMATIC LINKIFICATION</h3>
+                <p>
+                    Customize Zulip’s markup to automatically link back
+                    to your issue tracker or GitHub when you type
+                    “#1235” or a commit ID.
+                </p>
+            </div>
+        </div>
+        <img class="image" src="/static/images/features/message-formatting.png" />
+    </section>
+
+    <section class="notifications">
+        <svg class="envelope" height="500" width="100" preserveAspectRatio="none" viewBox="0 0 100 100">
+            <polygon points="0,0 100,0 50,50" style="fill: #fafafa;" />
+            Sorry, your browser does not support inline SVG.
+        </svg>
+        <h2>All the notifications you need!</h2>
+
+        <div class="center">
+            <div class="image-block"></div>
+            <div class="feature-list">
+                <h3>@-mentions</h3>
+                <h3>Stream-wide announcements</h3>
+                <h3>Desktop notifications</h3>
+                <h3>Audible notifications</h3>
+                <h3>Emails for important missed messages</h3>
+                <h3>Alert words</h3>
+                <h3>Optional weekly digest emails</h3>
+            </div>
+        </div>
+    </section>
+
+    <section class="keyboard-shortcuts">
+        <div class="feature-block">
+            <h3>Keyboard Shortcuts</h3>
+            <p>Communicate as efficiently as you use your favorite
+                text editor.  Anything you can do with a mouse, you
+                can do even faster from the keyboard.
+                <a class="cta" href="/help/">
+                Learn more about keyboard shortcuts.</a>
+            </p>
+        </div>
+        <img class="image" src="/static/images/landing-page/love-keyboard-shortcuts.svg" />
+    </section>
+
+    <section>
+        <h2>Apps, Integrations, and API</h2>
+
+        <div class="feature-block">
+            <h3>INTEGRATIONS</h3>
+            <p>
+                Get alerts and updates from your favorite services with
+                off-the-shelf integrations for Trac, Nagios, GitHub,
+                Jenkins, and more.
+            </p>
+        </div>
+        <div class="feature-block">
+            <h3>API</h3>
+            <p>
+                Want to roll your own notifications? We've got a
+                dead-simple RESTful API and Python bindings that will make
+                integrations—both sending and receiving—a snap!
+            </p>
+        </div>
+        <div class="feature-block">
+            <h3>MOBILE APPS</h3>
+            <p>Keep up while on the go with our native quality iOS and
+            Android apps.</p>
+        </div>
+        <div class="feature-block">
+            <h3>DESKTOP APPS</h3>
+            <p>Prefer Zulip in its own window and rich, OS-level
+            notifications? Enjoy Zulip on your desktop.</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>And everything else you need...</h2>
+
+        <div class="feature-block">
+            <h3>FULL-TEXT FULL-HISTORY SEARCH</h3>
+            <p>
+                Search is both snappy and smart, helping you look for
+                text, people, and threads of conversation, with advanced
+                search operators for fine-grained control.
+            </p>
+        </div>
+        <div class="feature-block">
+            <h3>HISTORY</h3>
+            <p>Join a stream and see its history, so even new team
+            members are never out of the loop.</p>
+        </div>
+        <div class="feature-block">
+            <h3>STARRED MESSAGES</h3>
+            <p>Keep a todo list of messages to come back to, or keep
+            track of interesting conversations.</p>
+        </div>
+
+        <div class="feature-block">
+            <h3>STATISTICS</h3>
+            <p>Zulip has a powerful set of analytics available to
+            help you see how your organization communicates.</p>
+        </div>
+        <div class="feature-block">
+            <h3>ONE-ON-ONE AND GROUP PRIVATE CONVERSATIONS</h3>
+            <p>Lightweight private conversations with one or as many people as you need.</p>
+        </div>
+        <div class="feature-block">
+            <h3>TEAM PRESENCE</h3>
+            <p>See who is currently online at a glance.</p>
+        </div>
+        <div class="feature-block">
+            <h3>INVITE-ONLY STREAMS</h3>
+            <p>Enjoy the benefits of threaded conversations while
+            controlling your audience and privacy.</p>
+        </div>
+        <div class="feature-block">
+            <h3>PERSISTENCE</h3>
+            <p>We're always receiving messages for you, even when
+            you're logged out or away from your computer.</p>
+        </div>
+        <div class="feature-block">
+            <h3>MESSAGE EDITING</h3>
+            <p>Don't worry, you can always fix that typo, either in
+            the body of message or its topic.</p>
+        </div>
+        <div class="feature-block">
+            <h3>TYPING NOTIFICATIONS</h3>
+            <p>Know when other users are composing messages to you.</p>
+        </div>
+        <div class="feature-block">
+            <h3>SAVED DRAFTS</h3>
+            <p>Zulip's drafts make it easy to write longer messages
+            without worrying about losing your work.</p>
+        </div>
+        <div class="feature-block">
+            <h3>ACCESSIBILITY</h3>
+            <p>
+                Zulip follows best practices for accessibility, and has
+                been validated using popular accessibility auditing
+                tools.
+            </p>
+        </div>
+        <div class="feature-block">
+            <h3>CONVERSATIONS THREADED BY TOPIC</h3>
+            <p>Participate in several conversations with the same
+            group at once, without getting lost or overwhelmed.</p>
+        </div>
+        <div class="feature-block">
+            <h3>CATCH UP IN NO TIME</h3>
+            <p>With topics, hotkeys and snappy performance, usefully
+            reviewing hundreds of messages takes just minutes.</p>
+        </div>
+        <div class="feature-block">
+            <h3>FULL INTERNATIONALIZED</h3>
+            <p>The Zulip UI is fully internationalized and has been
+            translated into over a dozen languages.</p>
+        </div>
+        <div class="feature-block">
+            <h3>CUSTOMIZABLE LOGIN AND REGISTRATION</h3>
+            <p>
+                Customize the available authentication methods and
+                customize the login and registration pages for your
+                organization using Markdown.
+            </p>
+        </div>
+        <div class="feature-block">
+            <h3>VIDEO CALLS</h3>
+            <p>
+                Create and join video calls with a single click. Powered
+                by Jitsi.
+            </p>
+        </div>
+        <div class="feature-block">
+            <h3>YOUR FEATURE HERE</h3>
+            <p>Zulip is open source, so if something important for
+            your use case is missing, you can make it happen!</p>
+        </div>
+    </section>
+</div>
+{% endblock %}

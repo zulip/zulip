@@ -1,0 +1,4 @@
+# Directory needed for certbot --webroot to work.
+location /.well-known/acme-challenge/ {
+    alias /var/lib/zulip/certbot-webroot/.well-known/acme-challenge/;
+}

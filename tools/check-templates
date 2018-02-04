@@ -1,0 +1,153 @@
+#!/usr/bin/env python3
+from lib.template_parser import validate
+from lib.html_branches import build_id_dict
+from lib.pretty_print import validate_indent_html
+import argparse
+import sys
+import logging
+
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
+import lister
+from typing import cast, Callable, Dict, Iterable, List
+
+EXCLUDED_FILES = [
+    ## Test data Files for testing modules in tests
+    "tools/tests/test_template_data",
+]
+
+def check_our_files(modified_only, all_dups, targets):
+    # type: (bool, bool, List[str]) -> None
+    by_lang = cast(
+        Dict[str, List[str]],
+        lister.list_files(
+            targets=targets,
+            modified_only=args.modified,
+            ftypes=['handlebars', 'html'],
+            group_by_ftype=True, exclude=EXCLUDED_FILES))
+
+    check_handlebar_templates(by_lang['handlebars'])
+    check_html_templates(by_lang['html'], args.all_dups)
+
+def check_html_templates(templates, all_dups):
+    # type: (Iterable[str], bool) -> None
+    # Our files with .html extensions are usually for Django, but we also
+    # have a few static .html files.
+    #
+    # We also have .html files that we vendored from Casper.
+    # The casperjs files use HTML5 (whereas Zulip prefers XHTML), and
+    # there are also cases where Casper deliberately uses invalid HTML,
+    # so we exclude them from our linter.
+    logging.basicConfig(format='%(levelname)s:%(message)s')
+    templates = filter(
+        lambda fn: ('casperjs' not in fn),
+        templates)
+    templates = sorted(list(templates))
+    # Use of underscore templates <%= %>.
+    if 'templates/zerver/team.html' in templates:
+        templates.remove('templates/zerver/team.html')
+
+    template_id_dict = build_id_dict(templates)
+    # TODO: Clean up these cases of duplicate ids in the code
+    IGNORE_IDS = [
+        'api-example-tabs',
+        'errors',
+        'email',
+        'messages',
+        'registration',
+        'pw_strength',
+        'id_password',
+        'top_navbar',
+        'id_email',
+        'id_terms',
+        'send_confirm',
+        'register',
+        'footer',
+    ]
+    bad_ids_dict = {ids: fns for ids, fns in template_id_dict.items()
+                    if (ids not in IGNORE_IDS) and len(fns) > 1}
+
+    if all_dups:
+        ignorable_ids_dict = {ids: fns for ids, fns in template_id_dict.items()
+                              if ids in IGNORE_IDS and len(fns) > 1}
+
+        for ids, fns in ignorable_ids_dict.items():
+            logging.warning("Duplicate ID(s) detected :Id '" + ids +
+                            "' present at following files:")
+            for fn in fns:
+                print(fn)
+
+    for ids, fns in bad_ids_dict.items():
+        logging.error("Duplicate ID(s) detected :Id '" + ids +
+                      "' present at following files:")
+        for fn in fns:
+            print(fn)
+
+    if list(bad_ids_dict.keys()):
+        print('Exiting--please clean up all duplicates before running this again.')
+        sys.exit(1)
+
+    for fn in templates:
+        # Many of our Django templates have strange indentation.  The
+        # indentation errors are often harmless, even stylistically
+        # harmless, but they tend to be in files that might be old
+        # and might eventually require more scrutiny for things like
+        # localization.  See github #1236.
+        bad_files = [
+            # These use various whitespace-dependent formatting that
+            # prevent cleaning them.
+            'templates/corporate/zephyr-mirror.html',
+            # Can't clean this because of `preserve_spaces`
+            'templates/zerver/markdown_help.html',
+        ]
+        validate(fn=fn, check_indent=(fn not in bad_files))
+
+    # Ignore these files since these have not been cleaned yet :/
+    IGNORE_FILES = [
+        # zephyr-mirror.html has some whitespace-dependent formatting
+        # for code blocks that prevent cleaning it.  Might make sense
+        # to convert it to a /help/ markdown article.
+        'templates/corporate/zephyr-mirror.html',
+        # Can't clean this because of `preserve_spaces`
+        'templates/zerver/markdown_help.html',
+    ]
+    # TODO: Clean these files
+    for fn in templates:
+        if fn not in IGNORE_FILES:
+            if not validate_indent_html(fn):
+                sys.exit(1)
+
+def check_handlebar_templates(templates):
+    # type: (Iterable[str]) -> None
+    # Check all our handlebars templates.
+    templates = [fn for fn in templates if fn.endswith('.handlebars')]
+
+    IGNORE_FILES = [
+        # TODO: Add some exclude mechanism for the line-wrapping issue here.
+        'static/templates/recipient_row.handlebars',
+    ]
+
+    for fn in templates:
+        if fn in IGNORE_FILES:
+            continue
+        validate(fn=fn, check_indent=True)
+
+    for fn in templates:
+        if fn in IGNORE_FILES:
+            continue
+        if not validate_indent_html(fn):
+            sys.exit(1)
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-m', '--modified',
+                        action='store_true', default=False,
+                        help='only check modified files')
+    parser.add_argument('--all-dups',
+                        action="store_true", default=False,
+                        help='Run lint tool to detect duplicate ids on ignored files as well')
+    parser.add_argument('targets', nargs=argparse.REMAINDER)
+    args = parser.parse_args()
+    check_our_files(args.modified, args.all_dups, args.targets)

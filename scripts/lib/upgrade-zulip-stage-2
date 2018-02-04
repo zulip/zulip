@@ -1,0 +1,147 @@
+#!/usr/bin/env python3
+#
+# This script contains the actual logic for upgrading from an old
+# version of Zulip to the new version.  upgrade-zulip-stage-2 is
+# always run from the new version of Zulip, so any bug fixes take
+# effect on the very next upgrade.
+import argparse
+import subprocess
+import os
+import sys
+import logging
+
+os.environ["PYTHONUNBUFFERED"] = "y"
+
+# Force a known locale.  Some packages on PyPI fail to install in some locales.
+os.environ["LC_ALL"] = "en_US.UTF-8"
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, FAIL, WARNING, ENDC, su_to_zulip
+
+logging.basicConfig(format="%(asctime)s upgrade-zulip-stage-2: %(message)s",
+                    level=logging.INFO)
+
+if os.getuid() != 0:
+    logging.error("Must be run as root.")
+    sys.exit(1)
+
+# make sure we have appropriate file permissions
+os.umask(0o22)
+
+parser = argparse.ArgumentParser()
+parser.add_argument("deploy_path", metavar="deploy_path",
+                    help="Path to deployment directory")
+parser.add_argument("--skip-puppet", dest="skip_puppet", action='store_true',
+                    help="Skip doing puppet/apt upgrades.")
+parser.add_argument("--skip-migrations", dest="skip_migrations", action='store_true',
+                    help="Skip doing migrations.")
+parser.add_argument("--from-git", dest="from_git", action='store_true',
+                    help="Upgrading from git, so run update-prod-static.")
+args = parser.parse_args()
+
+deploy_path = args.deploy_path
+os.chdir(deploy_path)
+
+# Handle issues around upstart on Ubuntu Xenial
+subprocess.check_call(["./scripts/lib/check-upstart"])
+
+if not args.skip_puppet:
+    logging.info("Upgrading system packages...")
+    subprocess.check_call(["apt-get", "update"])
+    subprocess.check_call(["apt-get", "-y", "upgrade"])
+
+if not os.path.exists((os.path.join(deploy_path, "zproject/prod_settings"))):
+    # For upgrading from <1.4.0.  See discussion in commit 586b23637.
+    subprocess.check_call(["ln", "-nsf", "/etc/zulip/settings.py",
+                           os.path.join(deploy_path, "zproject/prod_settings.py")])
+
+# Now we should have an environment setup where we can run our tools;
+# first, creating the production venv.
+subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "create-production-venv"),
+                       deploy_path])
+
+# Make sure the right version of node is installed
+subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "install-node"),
+                       deploy_path])
+
+# Generate any new secrets that were added in the new version required.
+# TODO: Do caching to only run this when it has changed.
+subprocess.check_call([os.path.join(deploy_path, "scripts", "setup", "generate_secrets.py"),
+                       "--production"])
+
+# And then, building/installing the static assets.
+if args.from_git:
+    # Note: The fact that this is before we apply puppet changes means
+    # that we don't support adding new puppet dependencies of
+    # update-prod-static with the git upgrade process.  But it'll fail
+    # safely; this seems like a worthwhile tradeoff to minimize downtime.
+    logging.info("Building static assets...")
+    subprocess.check_call(["./tools/update-prod-static", "--authors-not-required", "--prev-deploy",
+                           os.path.join(DEPLOYMENTS_DIR, 'current')],
+                          preexec_fn=su_to_zulip)
+else:
+    # Since this doesn't do any actual work, it's likely safe to have
+    # this run before we apply puppet changes (saving a bit of downtime).
+    logging.info("Installing static assets...")
+    subprocess.check_call(["cp", "-rT", os.path.join(deploy_path, 'prod-static/serve'),
+                           '/home/zulip/prod-static'], preexec_fn=su_to_zulip)
+
+usermessage_index_migrations = [
+    "[ ] 0082_index_starred_user_messages",
+    "[ ] 0083_index_mentioned_user_messages",
+    "[ ] 0095_index_unread_user_messages",
+    "[ ] 0098_index_has_alert_word_user_messages",
+    "[ ] 0099_index_wildcard_mentioned_user_messages",
+]
+# Our next optimization is to check whether any migrations are needed
+# before we start the critical section of the restart.  This saves
+# about 1s of downtime in a no-op upgrade.
+migrations_needed = False
+if not args.skip_migrations:
+    logging.info("Checking for needed migrations")
+    migrations_output = subprocess.check_output(["./manage.py", "showmigrations"],
+                                                preexec_fn=su_to_zulip)
+    need_create_large_indexes = False
+    for ln in migrations_output.split(b"\n"):
+        if ln.strip().startswith(b"[ ]"):
+            migrations_needed = True
+            if ln.strip() in usermessage_index_migrations:
+                need_create_large_indexes = True
+    if need_create_large_indexes:
+        logging.info("Creating some expensive indexes before starting downtime.")
+        subprocess.check_call(["./manage.py", "create_large_indexes"],
+                              preexec_fn=su_to_zulip)
+
+# Now we start shutting down services; we start with
+# process-fts-updates, which isn't on the critical serving path.
+if os.path.exists("/etc/supervisor/conf.d/zulip_db.conf"):
+    subprocess.check_call(["supervisorctl", "stop", "process-fts-updates"], preexec_fn=su_to_zulip)
+
+if not args.skip_puppet or migrations_needed:
+    # By default, we shut down the service to apply migrations and
+    # puppet changes, to minimize risk of issues due to inconsistent
+    # state.
+    logging.info("Stopping Zulip...")
+    subprocess.check_call(["supervisorctl", "stop", "zulip-workers:*", "zulip-django",
+                           "zulip-tornado", "zulip-senders:*"], preexec_fn=su_to_zulip)
+
+if not args.skip_puppet:
+    logging.info("Applying puppet changes...")
+    subprocess.check_call(["./scripts/zulip-puppet-apply", "--force"])
+    subprocess.check_call(["apt-get", "upgrade"])
+
+if migrations_needed:
+    logging.info("Applying database migrations...")
+    subprocess.check_call(["./manage.py", "migrate", "--noinput"], preexec_fn=su_to_zulip)
+
+subprocess.check_call(["./manage.py", "create_realm_internal_bots"], preexec_fn=su_to_zulip)
+
+logging.info("Restarting Zulip...")
+subprocess.check_output(["./scripts/restart-server"], preexec_fn=su_to_zulip)
+
+if os.path.exists("/etc/supervisor/conf.d/zulip_db.conf"):
+    subprocess.check_call(["supervisorctl", "start", "process-fts-updates"], preexec_fn=su_to_zulip)
+
+logging.info("Upgrade complete!")
+
+subprocess.check_call(["./scripts/purge-old-deployments"])

@@ -1,0 +1,55 @@
+#!/usr/bin/env python3
+
+"""
+Nagios plugin to check that Zephyr personals mirrors are forwarding.
+
+This script works by just monitoring the files under
+/home/zulip/mirror_status, which are updated by the Zephyr personals
+mirrors when they receive the messages sent every minute by
+/etc/cron.d/test_zephyr_personal_mirrors
+"""
+if False:
+    from typing import Dict
+
+import os
+import time
+
+RESULTS_DIR = "/home/zulip/mirror_status"  # type: str
+
+states = {
+    "OK": 0,
+    "WARNING": 1,
+    "CRITICAL": 2,
+    "UNKNOWN": 3
+}  # type: Dict[str, int]
+
+def report(state, output):
+    # type: (str, str) -> None
+    print("%s\n%s" % (state, output))
+    exit(states[state])
+
+output = ""
+down_count = 0
+for results_file_name in os.listdir(RESULTS_DIR):
+    this_state = "OK"
+    results_file = os.path.join(RESULTS_DIR, results_file_name)
+    data = open(results_file).read().strip()
+    last_check = os.stat(results_file).st_mtime
+    time_since_last_check = time.time() - last_check
+    # time_since_last_check threshold needs to be strictly greater
+    # than 1 minute, since with cron we expect intervals of at least 1
+    # minute without any update
+    if data.split("\n")[-1].strip() != "0" or time_since_last_check >= 90:
+        down_count += 1
+        this_state = "DOWN"
+    last_check_ts = time.strftime("%Y-%m-%d %H:%M %Z", time.gmtime(last_check))
+    output += "%s: %s (%s)\n" % (results_file, this_state, last_check_ts)
+
+if down_count == 0:
+    state = "OK"
+elif down_count < 5:
+    state = "WARNING"
+else:
+    state = "CRITICAL"
+
+report(state, output)

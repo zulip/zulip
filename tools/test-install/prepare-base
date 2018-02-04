@@ -1,0 +1,55 @@
+#!/bin/bash
+set -ex
+
+if [ "$EUID" -ne 0 ]; then
+    echo "error: this script must be run as root" >&2
+    exit 1
+fi
+
+RELEASE="$1"
+ARCH=amd64  # TODO: maybe i686 too
+
+# TODO: xenial too
+case "$RELEASE" in
+    trusty) ;;
+    *)
+        echo "error: unsupported target release: $RELEASE" >&2
+        exit 1
+        ;;
+esac
+
+CONTAINER_NAME=zulip-install-$RELEASE-base
+
+if ! lxc-info -n "$CONTAINER_NAME" >/dev/null 2>&1; then
+    lxc-create -n "$CONTAINER_NAME" -t download -- -d ubuntu -r "$RELEASE" -a "$ARCH"
+fi
+
+lxc-start -n "$CONTAINER_NAME"
+
+run() {
+    lxc-attach -n "$CONTAINER_NAME" -- "$@"
+}
+
+run passwd -d root
+
+run apt-get update
+
+# As an optimization, we install a bunch of packages the installer
+# would install for itself.
+run apt-get install -y --no-install-recommends \
+  xvfb parallel netcat unzip zip jq python3-pip wget curl realpath eatmydata \
+  git crudini openssl ssl-cert \
+  build-essential python3-dev \
+  closure-compiler memcached rabbitmq-server redis-server \
+  hunspell-en-us supervisor libssl-dev yui-compressor puppet \
+  gettext libffi-dev libfreetype6-dev libz-dev libjpeg-dev \
+  libldap2-dev libmemcached-dev python-dev python-pip \
+  python-virtualenv python-six libxml2-dev libxslt1-dev libpq-dev \
+  postgresql-9.3
+
+run ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime
+run locale-gen en_US.UTF-8 || true
+echo "LC_ALL=en_US.UTF-8" | run tee /etc/default/locale
+
+# TODO: on failure, either stop or print message
+lxc-stop -n "$CONTAINER_NAME"

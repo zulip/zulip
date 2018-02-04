@@ -1,0 +1,49 @@
+{% extends "zerver/base.html" %}
+
+{# User Activity. #}
+
+{% block title %}
+<title>{{ title }}</title>
+{% endblock %}
+
+
+{% block customhead %}
+{{ super() }}
+{{ render_bundle('activity') }}
+{% stylesheet 'activity' %}
+{% endblock %}
+
+{% block content %}
+
+    {% if not is_home %}
+    <a class="show-all" href="/activity">Home</a>
+    <br />
+    {% endif %}
+
+    <h4>{{ title }}</h4>
+
+    {% if realm_link %}
+    <a href="{{ realm_link }}">Graph</a><br />
+    {% endif %}
+
+    <ul class="nav nav-tabs">
+        {% for name, activity in data %}
+        <li {% if loop.first %} class="active" {% endif %}>
+            <a href="#{{ name|slugify }}" data-toggle="tab">{{ name }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <div class="tab-content">
+
+        {% for name, activity in data %}
+
+        <div class="tab-pane {% if loop.first %} active {% endif %}" id="{{ name|slugify }}">
+            {{ activity|safe }}
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+{% endblock %}

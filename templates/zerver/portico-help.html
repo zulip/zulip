@@ -1,0 +1,29 @@
+{% extends "zerver/base.html" %}
+
+{# A base template for stuff like login, register, etc.
+
+    Not inside the app itself, but covered by the same structure,
+    hence the name.
+#}
+
+{% block customhead %}
+{% stylesheet 'portico' %}
+{% endblock %}
+
+{% block porticocustomhead %}
+{{ render_bundle('portico') }}
+{% endblock %}
+
+{% block content %}
+<div class="portico-container help">
+    <div class="portico-wrap">
+        {% include 'zerver/portico-header.html' %}
+        <div class="app portico-page">
+            <div class="app-main portico-page-container{% block hello_page_container %}{% endblock %}">
+                {% block portico_content %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

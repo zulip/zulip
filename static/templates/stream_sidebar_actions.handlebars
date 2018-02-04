@@ -1,0 +1,59 @@
+{{! Contents of the "stream actions" popup }}
+<ul class="nav nav-list streams_popover" data-stream-id="{{ stream.stream_id }}" data-name="{{ stream.name }}">
+    <li>
+        <a class="open_stream_settings">
+            <i class="icon-vector-cog"></i>
+            {{t "Stream settings" }}
+        </a>
+    </li>
+    <li>
+        <a class="narrow_to_stream">
+            <i class="icon-vector-bullhorn"></i>
+            {{#tr this}}Narrow to stream <b>__stream.name__</b>{{/tr}}
+        </a>
+    </li>
+    <li>
+        <a class="pin_to_top">
+            <i class="icon-vector-pushpin stream-pin-icon"></i>
+            {{#if stream.pin_to_top}}
+                {{#tr this}}Unpin stream <b>__stream.name__</b> from top{{/tr}}
+            {{else}}
+                {{#tr this}}Pin stream <b>__stream.name__</b> to top{{/tr}}
+            {{/if}}
+        </a>
+    </li>
+    <li>
+        <a class="compose_to_stream">
+            <i class="icon-vector-edit"></i>
+            {{#tr this}}Compose a message to stream <b>__stream.name__</b>{{/tr}}
+        </a>
+    </li>
+    <li>
+        <a class="mark_stream_as_read">
+            <i class="icon-vector-book"></i>
+            {{#tr this}}Mark all messages in <b>__stream.name__</b> as read{{/tr}}
+        </a>
+    </li>
+    <li>
+        <a class="toggle_home">
+            {{#if stream.in_home_view}}
+                <i class="icon-vector-eye-close"></i>
+                {{#tr this}}Mute the stream <b>__stream.name__</b>{{/tr}}
+            {{else}}
+                <i class="icon-vector-eye-open"></i>
+                {{#tr this}}Unmute the stream <b>__stream.name__</b>{{/tr}}
+            {{/if}}
+        </a>
+    </li>
+    <li>
+        <a class="popover_sub_unsub_button" data-name="{{stream.name}}">
+            <i class='icon-vector-envelope'></i>
+            {{t "Unsubscribe" }}
+        </a>
+    </li>
+    <li>
+        <span class="colorpicker-container"><input stream_id="{{stream.stream_id}}" class="colorpicker" type="text" value="{{stream.color}}" /></span>
+        <a class="custom_color">{{t "Choose custom color" }}</a>
+    </li>
+
+</ul>

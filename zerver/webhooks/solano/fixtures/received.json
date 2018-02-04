@@ -1,0 +1,21 @@
+{
+    "event": "received",
+    "timestamp": "2017-01-02T18:23:06+00:00",
+    "session": 3317799,
+    "profile_name": "default",
+    "url": "https:\/\/ci.solanolabs.com:443\/reports\/3317799",
+    "commit_id": "191d34f9da8ff7279b051cd68e44223253e18408",
+    "committers": [
+        "solano-ci[bot]@users.noreply.github.com"
+    ],
+    "status": "running",
+    "branch": "master",
+    "ref": "refs\/heads\/master",
+    "repository": {
+        "name": "scipy",
+        "url": "ssh:\/\/git@github.com\/anirudhjain75\/scipy",
+        "org_name": "anirudhjain75"
+    },
+    "gen": 1,
+    "xid": "8c7f63bf9"
+}

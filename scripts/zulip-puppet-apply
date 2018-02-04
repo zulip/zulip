@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+import subprocess
+import configparser
+import re
+
+force = False
+extra_args = sys.argv[1:]
+
+if len(extra_args) and extra_args[0] in ('-f', '--force'):
+    force = True
+    extra_args = extra_args[1:]
+
+config = configparser.RawConfigParser()
+config.read("/etc/zulip/zulip.conf")
+
+if not os.path.exists("/etc/puppet/hiera.yaml"):
+    # Suppress warnings about hiera.yaml not existing.
+    subprocess.check_call(["touch", "/etc/puppet/hiera.yaml"])
+
+puppet_config = """
+Exec { path => "/usr/sbin:/usr/bin:/sbin:/bin" }
+include apt
+"""
+
+for pclass in re.split(r'\s*,\s*', config.get('machine', 'puppet_classes')):
+    puppet_config += "include %s\n" % (pclass,)
+
+# We use the puppet configuration from the same Zulip checkout as this script
+puppet_module_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "puppet")
+puppet_cmd = ["puppet", "apply", "--modulepath", puppet_module_path, "-e", puppet_config]
+puppet_cmd += extra_args
+
+if not force:
+    subprocess.check_call(puppet_cmd + ['--noop', '--show_diff'])
+
+    do_apply = None
+    while do_apply != 'y':
+        sys.stdout.write("Apply changes? [y/N] ")
+        sys.stdout.flush()
+        do_apply = sys.stdin.readline().strip().lower()
+        if do_apply == '' or do_apply == 'n':
+            sys.exit(0)
+
+ret = subprocess.call(puppet_cmd + ['--detailed-exitcodes'])
+# ret = 0 => no changes, no errors
+# ret = 2 => changes, no errors
+# ret = 4 => no changes, yes errors
+# ret = 6 => changes, yes errors
+if ret != 0 and ret != 2:
+    sys.exit(1)

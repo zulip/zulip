@@ -1,0 +1,8 @@
+Hi,
+
+We just wanted to let you know that the email associated with your Zulip account
+was recently changed to {{ new_email }}. If you did not request this change,
+please contact us immediately at <{{ support_email }}>.
+
+Best,
+Team Zulip

@@ -1,0 +1,26 @@
+{% extends "zerver/portico_signup.html" %}
+{% block portico_content %}
+
+<div class="app portico-page">
+    <div class="app-main portico-page-container center-block flex full-page account-creation new-style">
+        <div class="inline-block">
+
+            <div class="get-started">
+                <h1>{{ _("Deactivated organization") }}</h1>
+            </div>
+
+            <div class="white-box deactivated-realm-container">
+                <p>
+                    {% trans %}
+                    The organization you are trying to join, {{ deactivated_domain_name }}, has been deactivated.
+                    Please contact <a href="mailto:{{ support_email }}">{{ support_email }}</a> to reactivate
+                    this group.
+                    {% endtrans %}
+                </p>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

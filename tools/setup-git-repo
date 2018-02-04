@@ -1,0 +1,12 @@
+#!/bin/bash
+
+if ! [ -d ".git/hooks/" ]; then
+    echo "Error: Could not find .git/hooks directory"
+    echo "Please re-run this script from the root of your zulip.git checkout"
+    exit 1
+fi
+
+for hook in pre-commit commit-msg
+do
+    ln -snf ../../tools/"$hook" .git/hooks/
+done

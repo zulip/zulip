@@ -1,0 +1,50 @@
+.activity_head {
+    background-color: hsl(208, 100%, 97%);
+}
+
+.table td {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    white-space: nowrap;
+}
+
+.table-striped tr.recently_active td {
+    background-color: hsl(120, 97%, 83%);
+}
+
+.table-striped tr.recently_active:nth-child(odd) td {
+    background-color: hsl(120, 70%, 76%);
+}
+
+.table-striped tr.long_inactive td {
+    background-color: hsl(0, 97%, 83%);
+}
+
+.table-striped tr.long_inactive:nth-child(odd) td {
+    background-color: hsl(0, 70%, 76%);
+}
+
+td.number {
+    text-align: right;
+}
+
+.summary-table {
+    width: auto;
+    margin: 0px auto;
+}
+
+tr.admin td:first-child {
+    font-weight: bold;
+    color: hsl(240, 100%, 50%);
+    font-size: 110%;
+}
+
+.good {
+    font-weight: bold;
+    color: hsl(120, 100%, 33%);
+}
+
+.bad {
+    font-weight: bold;
+    color: hsl(0, 100%, 39%);
+}

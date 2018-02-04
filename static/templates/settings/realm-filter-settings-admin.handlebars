@@ -1,0 +1,59 @@
+<div id="filter-settings" class="settings-section" data-name="filter-settings">
+    <div class="admin-table-wrapper">
+
+        <p>
+            {{#tr this}}
+            Configure regular expression patterns that will be
+            automatically linkified when used in Zulip message bodies or
+            topics.  For example to automatically linkify commit IDs and
+            issue numbers (e.g. #123) to the corresponding items in a GitHub
+            project, you could use the following:
+            {{/tr}}
+        </p>
+        <ul>
+            <li>
+                <code>#(?P&lt;id&gt;[0-9]+)</code>
+                {{t "and" }}
+                <code>https://github.com/zulip/zulip/issues/%(id)s</code>
+            </li>
+            <li>
+                <code>(?P&lt;id&gt;[0-9a-f]{40})</code>
+                {{t "and" }}
+                <code>https://github.com/zulip/zulip/commit/%(id)s</code>
+            </li>
+        </ul>
+
+        <table class="table table-condensed table-striped admin_filters_table">
+            <tbody id="admin_filters_table">
+                <th>{{t "Pattern" }}</th>
+                <th>{{t "URL format string" }}</th>
+                {{#if is_admin}}
+                <th class="actions">{{t "Actions" }}</th>
+                {{/if}}
+            </tbody>
+        </table>
+    </div>
+    {{#if is_admin}}
+    <form class="form-horizontal admin-filter-form">
+        <div class="add-new-filter-box grey-box">
+            <div class="new-filter-form wrapper">
+                <div class="settings-section-title new-filter-section-title">{{t "Add a new filter" }}</div>
+                <div class="alert" id="admin-filter-status"></div>
+                <div class="control-group">
+                    <label for="filter_pattern" class="control-label">{{t "Regular expression" }}</label>
+                    <input type="text" id="filter_pattern" name="pattern" placeholder="#(?P<id>[0-9]+)" />
+                    <div class="alert" id="admin-filter-pattern-status"></div>
+                </div>
+                <div class="control-group">
+                    <label for="filter_format_string" class="control-label">{{t "URL format string" }}</label>
+                    <input type="text" id="filter_format_string" name="url_format_string" placeholder="https://github.com/zulip/zulip/issues/%(id)s" />
+                    <div class="alert" id="admin-filter-format-status"></div>
+                </div>
+                <button type="submit" class="button rounded sea-green">
+                    {{t 'Add filter' }}
+                </button>
+            </div>
+        </div>
+    </form>
+    {{/if}}
+</div>

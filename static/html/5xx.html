@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Zulip - 500 internal server error</title>
+        <link href="/static/third/bootstrap/css/bootstrap.css" rel="stylesheet">
+        <link href="/static/third/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+        <!-- NB: Relies on the fact that PipelineCachedStorage also includes
+        a copy of the file with no hash in the name.
+        This file will not load in dev unless you run `manage.py collectstatic`. -->
+        <link href="/static/min/portico.css" rel="stylesheet">
+
+        <meta http-equiv="refresh" content="60;URL='/'">
+
+    </head>
+
+    <body class="error_page">
+        <!-- TODO: Make nginx 5xx error page customizable -->
+        <!-- This is tricky because it's not served by Django, -->
+        <!-- so we can't use variables -->
+        <div class="header" style="background-color: #c9e9e0;">
+            <div class="header-main" id="top_navbar">
+                <div class="column-left">
+                    <div>
+                        <a class="brand logo" href="https://zulipchat.com/">
+                            <svg class="brand-logo" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 40 40" version="1.1">
+                                <g transform="translate(-297.14285,-466.64792)">
+                                    <circle cx="317.14285" cy="486.64792" r="19.030317" style="fill:hsl(156, 100%, 24%)!important;stroke-width:1.93936479;stroke:transparent"></circle>
+                                    <path d="m309.24286 477.14791 14.2 0 1.6 3.9-11.2 11.9 9.6 0 1.6 3.2-14.2 0-1.6-3.9 11.2-11.9-9.6 0z" style="fill:#52c2af;stroke:#52c2af"></path>
+                                </g>
+                            </svg>
+                            <span style="color: hsl(156, 100%, 24%);">Zulip</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+
+            <div class="row-fluid">
+                <img src="/static/images/500art.svg" alt=""/>
+                <div class="errorbox">
+                    <div class="errorcontent">
+                        <h1 class="lead">Internal server error</h1>
+                        <p>This Zulip server is currently experiencing some technical difficulties. Sorry about that!</p>
+                        <p>The page will reload automatically soon after service is restored.</p>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+    </body>
+
+</html>

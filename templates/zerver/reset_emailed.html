@@ -1,0 +1,19 @@
+{% extends "zerver/portico_signup.html" %}
+
+{% block portico_content %}
+<div class="app portico-page">
+    <div class="app-main portico-page-container center-block flex full-page account-creation new-style">
+        <div class="inline-block">
+
+            <div class="get-started">
+                <h1>{{ _("Password reset sent!") }}</h1>
+            </div>
+
+            <div class="white-box">
+                <p>{{ _('Check your email to finish the process.') }} <i class="grey">{{ _("(Or don't, but then why did you fill out this form?)") }}</i></p>
+                {% include 'zerver/dev_env_email_access_details.html' %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

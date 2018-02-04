@@ -1,0 +1,3 @@
+include /etc/nginx/zulip-include/proxy;
+proxy_buffering off;
+proxy_read_timeout 1200;

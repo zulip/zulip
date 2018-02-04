@@ -1,0 +1,19 @@
+server {
+    listen 80;
+    server_name staging.zulip.com;
+    return 301 https://$server_name$request_uri;
+}
+
+include /etc/nginx/zulip-include/upstreams;
+
+server {
+    listen 443;
+
+    ssl on;
+    ssl_certificate /etc/ssl/certs/staging.zulip.com.combined-chain.crt;
+    ssl_certificate_key /etc/ssl/private/staging_and_dev.humbughq.com.key;
+
+    server_name staging.zulip.com;
+
+    include /etc/nginx/zulip-include/app;
+}
