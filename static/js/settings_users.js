@@ -404,7 +404,8 @@ exports.on_load_success = function (realm_people_data) {
             form_row.find(".edit_bot_owner_container").append(owner_select);
         }
 
-        // Show user form.
+        // Show user form and set the full name value in input field.
+        full_name.val(person.full_name);
         user_row.hide();
         form_row.show();
 
