@@ -481,6 +481,11 @@ exports.format_small_avatar_url = function (raw_url) {
     return url;
 };
 
+exports.format_medium_avatar_url = function (raw_url) {
+    var url = raw_url + "&s=200";
+    return url;
+};
+
 exports.sender_is_bot = function (message) {
     if (message.sender_id) {
         var person = exports.get_person_from_user_id(message.sender_id);
@@ -538,6 +543,52 @@ exports.small_avatar_url = function (message) {
     }
 
     return url;
+};
+
+
+exports.initialize_avatar_url = function (user_id) {
+    // Call this function when no avatar is set initially
+    // to get the gravatar using the email of the user
+
+    var url = "";
+    var person;
+    person = exports.get_person_from_user_id(user_id);
+
+    var email;
+
+    // Try to get the avatar_url from the 'person' object
+    if (person) {
+        url = person.avatar_url;
+        email = person.email;
+    }
+
+    if (!email) {
+        email = page_params.email;
+    }
+
+    // Get the gravatar url if no url exists
+    if (!url) {
+        var hash = md5(email);
+        url = 'https://secure.gravatar.com/avatar/' + hash + '?d=identicon';
+    }
+
+    return url;
+};
+
+exports.initialize_person_avatar = function (user_id) {
+    // When the user is initialized for the first time
+    // this sets the gravatar for the user
+
+    if (!page_params.avatar_url) {
+        var avatar_url = "";
+        avatar_url = exports.initialize_avatar_url(user_id);
+
+        page_params.avatar_url = avatar_url;
+        page_params.avatar_url_medium = exports.format_medium_avatar_url(avatar_url);
+
+        $("#user-settings-avatar").attr("src", page_params.avatar_url_medium);
+    }
+
 };
 
 exports.is_valid_email_for_compose = function (email) {
@@ -867,6 +918,7 @@ exports.initialize = function () {
     });
 
     exports.initialize_current_user(page_params.user_id);
+    exports.initialize_person_avatar(page_params.user_id);
 
     delete page_params.realm_users; // We are the only consumer of this.
     delete page_params.realm_non_active_users;
