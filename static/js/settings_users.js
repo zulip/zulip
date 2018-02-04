@@ -436,8 +436,8 @@ exports.on_load_success = function (realm_people_data) {
                 success: function () {
                     ui_report.success(i18n.t('Updated successfully!'), admin_status);
                 },
-                error: function () {
-                    ui_report.error(i18n.t('Failed'), admin_status);
+                error: function (xhr) {
+                    ui_report.error(i18n.t('Failed'), xhr, admin_status);
                 },
             });
         });
