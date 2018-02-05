@@ -1,9 +1,9 @@
 <div id="display-settings" class="settings-section" data-name="display-settings">
     <div class="alert" id="display-settings-status"></div>
     <form class="display-settings-form">
-        <h3 class="light">{{t "Language settings" }}</h3>
+        <h3>{{t "Language settings" }}</h3>
 
-        <div class="side-padded-container input-group user-name-section">
+        <div class="input-group user-name-section">
             <label class="inline-block title">{{t "Default language" }}</label>
             <a id="default_language" href="#default_language">
                 <button type="button" class="button rounded small inline-block" id='default_language_name'>
@@ -15,74 +15,70 @@
 
         {{ partial "default_language_modal"}}
 
-        <h3 class="light">{{t "Display settings" }}</h3>
+        <h3>{{t "Display settings" }}</h3>
 
-        <div class="side-padded-container">
-            <div class="input-group">
-                <label class="checkbox">
-                    <input type="checkbox" name="high_contrast_mode" id="high_contrast_mode"
-                    {{#if page_params.high_contrast_mode}}
-                      checked="checked"
-                    {{/if}} />
-                    <span></span>
-                </label>
-                <label for="high_contrast_mode" class="inline-block">{{t "High contrast mode" }}</label>
-            </div>
-
-            <div class="input-group">
-                <label class="checkbox">
-                    <input type="checkbox" name="night_mode" id="night_mode"
-                    {{#if page_params.night_mode}}
-                      checked="checked"
-                    {{/if}} />
-                    <span></span>
-                </label>
-                <label for="night_mode" class="inline-block">{{t "Night mode (experimental)" }}</label>
-            </div>
-
-            <div class="input-group">
-                <label class="checkbox">
-                    <input type="checkbox" name="left_side_userlist" id="left_side_userlist"
-                    {{#if page_params.left_side_userlist}}
-                      checked="checked"
-                    {{/if}} />
-                    <span></span>
-                </label>
-                <label for="left_side_userlist" class="inline-block">{{t "User list on left sidebar in narrow windows" }}</label>
-            </div>
+        <div class="input-group">
+            <label class="checkbox">
+                <input type="checkbox" name="high_contrast_mode" id="high_contrast_mode"
+                {{#if page_params.high_contrast_mode}}
+                  checked="checked"
+                {{/if}} />
+                <span></span>
+            </label>
+            <label for="high_contrast_mode" class="inline-block">{{t "High contrast mode" }}</label>
         </div>
 
-        <h3 class="light">{{t "Time settings" }}</h3>
-
-        <div class="side-padded-container">
-            <div class="input-group">
-                <label class="checkbox">
-                    <input type="checkbox" name="twenty_four_hour_time" id="twenty_four_hour_time"
-                    {{#if page_params.twenty_four_hour_time}}
-                      checked="checked"
-                    {{/if}} />
-                    <span></span>
-                </label>
-                <label for="twenty_four_hour_time" class="inline-block">
-                    {{t "24-hour time (17:00 instead of 5:00 PM)" }}
-                </label>
-            </div>
-
-            <div class="input-group">
-                <label for="timezone" class="dropdown-title">{{t "Time zone" }}:</label>
-                <select name="timezone" id="user_timezone">
-                    {{#unless page_params.timezone}}
-                    <option></option>
-                    {{/unless}}
-
-                    {{#each timezones}}
-                    <option value="{{ this }}">{{ this }}</option>
-                    {{/each}}
-                </select>
-            </div>
+        <div class="input-group">
+            <label class="checkbox">
+                <input type="checkbox" name="night_mode" id="night_mode"
+                {{#if page_params.night_mode}}
+                  checked="checked"
+                {{/if}} />
+                <span></span>
+            </label>
+            <label for="night_mode" class="inline-block">{{t "Night mode (experimental)" }}</label>
         </div>
 
-        <h3 class="light">Emoji style</h3>
+        <div class="input-group">
+            <label class="checkbox">
+                <input type="checkbox" name="left_side_userlist" id="left_side_userlist"
+                {{#if page_params.left_side_userlist}}
+                  checked="checked"
+                {{/if}} />
+                <span></span>
+            </label>
+            <label for="left_side_userlist" class="inline-block">{{t "User list on left sidebar in narrow windows" }}</label>
+        </div>
+
+        <h3>{{t "Time settings" }}</h3>
+
+        <div class="input-group">
+            <label class="checkbox">
+                <input type="checkbox" name="twenty_four_hour_time" id="twenty_four_hour_time"
+                {{#if page_params.twenty_four_hour_time}}
+                  checked="checked"
+                {{/if}} />
+                <span></span>
+            </label>
+            <label for="twenty_four_hour_time" class="inline-block">
+                {{t "24-hour time (17:00 instead of 5:00 PM)" }}
+            </label>
+        </div>
+
+        <div class="input-group">
+            <label for="timezone" class="dropdown-title">{{t "Time zone" }}:</label>
+            <select name="timezone" id="user_timezone">
+                {{#unless page_params.timezone}}
+                <option></option>
+                {{/unless}}
+
+                {{#each timezones}}
+                <option value="{{ this }}">{{ this }}</option>
+                {{/each}}
+            </select>
+        </div>
+
+        <h3>Emoji style</h3>
         <div class="input-group side-padded-container">
             <div class="emojiset_choices grey-box">
                 {{#each page_params.emojiset_choices }}
