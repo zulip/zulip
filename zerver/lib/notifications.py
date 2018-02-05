@@ -285,6 +285,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
         'message_count': message_count,
         'mention': missed_messages[0].is_stream_message(),
         'unsubscribe_link': unsubscribe_link,
+        'realm_name_in_notifications': user_profile.realm_name_in_notifications,
     })
 
     # If this setting (email mirroring integration) is enabled, only then

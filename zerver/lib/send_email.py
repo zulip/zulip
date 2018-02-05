@@ -41,7 +41,6 @@ def build_email(template_prefix: str, to_user_id: Optional[int]=None,
         context = {}
 
     context.update({
-        'realm_name_in_notifications': False,
         'support_email': FromAddress.SUPPORT,
         'email_images_base_uri': settings.ROOT_DOMAIN_URI + '/static/images/emails',
         'physical_address': settings.PHYSICAL_ADDRESS,

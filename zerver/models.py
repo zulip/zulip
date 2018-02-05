@@ -561,6 +561,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     enable_online_push_notifications = models.BooleanField(default=False)  # type: bool
 
     enable_digest_emails = models.BooleanField(default=True)  # type: bool
+    realm_name_in_notifications = models.BooleanField(default=False)  # type: bool
 
     # Old notification field superseded by existence of stream notification
     # settings.
@@ -661,6 +662,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         enable_stream_push_notifications=bool,
         enable_stream_sounds=bool,
         pm_content_in_desktop_notifications=bool,
+        realm_name_in_notifications=bool,
     )
 
     class Meta:
