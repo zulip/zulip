@@ -78,7 +78,7 @@ tasks that are great for first-time contributors. Use
 to get your Zulip development environment set up and to find your first issue. If you have any
 trouble, please speak up in
 [#GSoC](https://chat.zulip.org/#narrow/stream/GSoC) on
-[the Zulip development community server](../chat-zulip-org.html)
+[the Zulip development community server](../contributing/chat-zulip-org.html)
 (use your name as the topic).
 
 # Application tips, and how to be a strong candidate
@@ -124,7 +124,7 @@ application deadline.
 We are more interested in candidates if we see them submitting good
 contributions to Zulip projects, helping other applicants on GitHub
 and on
-[chat.zulip.org](../chat-zulip-org.html),
+[chat.zulip.org](../contributing/chat-zulip-org.html),
 learning from our suggestions,
 [trying to solve their own obstacles and then asking well-formed
 questions](https://blogs.akamai.com/2013/10/you-must-try-and-then-you-must-ask.html),
@@ -167,7 +167,7 @@ mentoring projects.  We usually decide which contributors are
 mentoring which projects based in part on who is a good fit for the
 needs of each student as well as technical expertise.  You can reach
 us via [#GSoC](https://chat.zulip.org/#narrow/stream/GSoC) on
-[the Zulip development community server](../chat-zulip-org.html),
+[the Zulip development community server](../contributing/chat-zulip-org.html),
 (compose a new stream message with your name as the topic).
 
 Zulip operates under group mentorship.  That means you should
@@ -258,7 +258,7 @@ CSS](https://github.com/zulip/zulip/).
   providers, e.g. having built a prototype with
   [the Django Oauth toolkit](https://django-oauth-toolkit.readthedocs.io/en/latest/)
   would be great to demonstrate as part of an application.  The
-  [Zulip integration writing guide](../integration-guide.html)
+  [Zulip integration writing guide](https://zulipchat.com/api/integration-guide)
   and
   [integration documentation](https://chat.zulip.org/integrations/)
   are useful materials for learning about how things currently work,
@@ -323,7 +323,7 @@ CSS](https://github.com/zulip/zulip/).
   at `contrib_bots/` in the main Zulip repository that can be used for
   testing; the design document for the deployment part of this vision
   (likely part 1) is
-  [here](../custom-apps.html).
+  [here](../subsystems/custom-apps.html).
   **Skills recommended**: Python and JavaScript/CSS, plus devops
   skills (Linux deployment, Docker, puppet etc.) are all useful here.
   Experience writing tools using various popular APIs is helpful for
@@ -374,7 +374,7 @@ CSS](https://github.com/zulip/zulip/).
   semi-duplicate code for each feature. **Skills recommended**: A
   good mix of Python/Django and HTML/CSS/JavaScript skill is ideal.
   The system for adding new features is
-  [well documented](../new-feature-tutorial.html).
+  [well documented](../tutorials/new-feature-tutorial.html).
   Expert: Tim Abbott.
 
 - Rebuild the Zulip web UI using a modern reactive layer like vue.js.
@@ -382,7 +382,7 @@ Strategically, we'd start with self-contained, messy pieces (like the
 presence layer), then move on to more complex pieces (like the
 subscriptions page), and finally attach the main UI.  Definitely worth
 reading the vue.js documentation and reading
-[how Zulip's real-time sync works](../events-system.html).
+[how Zulip's real-time sync works](../subsystems/events-system.html).
 **Skills recommended**: Strong JavaScript experience, good
 communication skills and an eye for detail.  We think this would be an
 awesome project, but rewrite projects often introduce lots of bugs, so
@@ -390,7 +390,7 @@ we're interested in particularly careful candidates who have the
 discipline to redo a small component at a time and carefully test for
 regressions.  Good ways to demonstrate qualification for this are
 finding and reporting bugs using
-[Zulip's manual UI testing guide](../manual-testing.html)
+[Zulip's manual UI testing guide](../testing/manual-testing.html)
 and doing
 [refactoring projects](https://github.com/zulip/zulip/labels/area%3A%20refactoring).
 Expert: Tommy Ip, Brock Whittaker, Tim Abbott.
@@ -423,7 +423,7 @@ Expert: Tommy Ip, Brock Whittaker, Tim Abbott.
   features are valuable, systematically debug performance problems,
   etc.  Check out https://chat.zulip.org/stats to see what we've
   implemented so far, and read
-  [our analytics doc](../analytics.html)
+  [our analytics doc](../subsystems/analytics.html)
   to understand how the system works.  **Skills required**: Good
   Django experience, some JavaScript/CSS experience.  Expert: Rishi
   Gupta.
@@ -462,7 +462,7 @@ Expert: Tommy Ip, Brock Whittaker, Tim Abbott.
   anything else).
 
   A possible specific larger project in this space is working on
-  adding [mypy](../mypy.html) stubs
+  adding [mypy](../contributing/mypy.html) stubs
   for Django in mypy to make our type checking more powerful.  Read
   [our mypy blog post](https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/)
   for details on how mypy works and is integrated into zulip.  This
@@ -481,9 +481,9 @@ Expert: Tommy Ip, Brock Whittaker, Tim Abbott.
   to run a Zulip installation with ultra-high availability.  It should
   be possible to change this in a summer!  There's lots of great
   reading in the
-  [Zulip production](../prod-maintain-secure-upgrade.html)
+  [Zulip production](../production/maintain-secure-upgrade.html)
   documentation,
-  [architecture overview](../architecture-overview.html)
+  [architecture overview](../overview/architecture-overview.html)
   and pages linked to from there.  **Skills required**: Python and
   strong DevOps/infrastructure experience; puppet skills are helpful.
   Expert: Tim Abbott.
