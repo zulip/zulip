@@ -631,6 +631,20 @@ exports.by_conversation_and_time_uri = function (message, is_absolute_url) {
         "/near/" + hash_util.encodeHashComponent(message.id);
 };
 
+exports.by_operator_conversation_and_time_uri = function (message) {
+
+    var absolute_url = "";
+    if (message.type === "stream") {
+        return absolute_url + "stream:" +
+            hash_util.encodeHashComponent(message.stream) + " " +
+            "subject:" + hash_util.encodeHashComponent(message.subject) + " " +
+            "near:" + hash_util.encodeHashComponent(message.id);
+    }
+
+    return absolute_url + "pm-with:" +
+        message.reply_to + " near:" + hash_util.encodeHashComponent(message.id);
+};
+
 return exports;
 
 }());
