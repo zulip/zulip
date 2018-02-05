@@ -564,21 +564,19 @@ exports.validate_stream_message_address_info = function (stream_name) {
 
     var response;
 
+    var context = {};
+    context.stream_name = Handlebars.Utils.escapeExpression(stream_name);
     switch (check_unsubscribed_stream_for_send(stream_name,
                                                page_params.narrow_stream !== undefined)) {
     case "does-not-exist":
-        response = "<p>The stream <b>" +
-            Handlebars.Utils.escapeExpression(stream_name) + "</b> does not exist.</p>" +
-            "<p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>";
+        response = i18n.t("<p>The stream <b>__stream_name__</b> does not exist.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>", context);
         compose_error(response, $('#stream'));
         return false;
     case "error":
         compose_error(i18n.t("Error checking subscription"), $("#stream"));
         return false;
     case "not-subscribed":
-        response = "<p>You're not subscribed to the stream <b>" +
-            Handlebars.Utils.escapeExpression(stream_name) + "</b>.</p>" +
-            "<p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>";
+        response = i18n.t("<p>You're not subscribed to the stream <b>__stream_name__</b>.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>", context);
         compose_error(response, $('#stream'));
         return false;
     }
