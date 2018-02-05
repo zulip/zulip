@@ -278,11 +278,6 @@ bot_handler.update_message(dict(
 
 ### bot_handler.storage
 
-**Note: This feature is under development. Permanent storage in the
-  database of a Zulip server is currently only supported for Zulip's embedded
-  bots. For external bots, all data stored with this feature is lost with
-  the termination of a bot.**
-
 A common problem when writing an interactive bot is that you want to
 be able to store a bit of persistent state for the bot (e.g. for an
 RSVP bot, the RSVPs).  For a sufficiently complex bot, you want need
