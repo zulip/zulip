@@ -468,6 +468,56 @@ function get_sent_by_me_suggestions(last, operators) {
     return [];
 }
 
+function get_mentioned_message_suggestions(all_persons, last) {
+    var query = last.operand;
+
+    if (query.charAt(0) !== '@') {
+        return [];
+    }
+
+    query = query.slice(1);
+
+    var persons = _.filter(all_persons, function (person) {
+        return people.person_matches_query(person, query);
+    });
+
+    persons.sort(typeahead_helper.compare_by_pms);
+
+    var mapz = [];
+
+     _.each(persons, function (person) {
+        var mentioned_msg_list = _.filter(current_msg_list._all_items , function (message) {
+        return message_store.is_user_mentioned(message,person);
+        });
+
+
+          _.each(mentioned_msg_list , function (message) {
+            var name = highlight_person(query, person);
+            var date_pre = new XDate(message.timestamp*1000);
+            var date_next = date_pre.clone();
+            var date = "[" + timerender.render_date(date_next,undefined,date_next)[0].getAttribute('title') + "]  \" ";
+
+            var element = $(message.content);
+
+            $(element.find('span')).each (function () {
+                var replacement = $(this).prop('innerHTML');
+                $(this).replaceWith(replacement);
+            });
+
+            var str = element.html();
+
+            var content = date +  str.substring(0,30) + "...  \"   <strong> Mentions:</strong> " + name;
+            var descryp = narrow.by_operator_conversation_and_time_uri(message,true);
+
+            mapz.push({description:content,search_string:Filter.unparse([{operator:descryp , operand:''}])});
+
+        });
+
+    });
+    return mapz.reverse();
+
+}
+
 function get_containing_suggestions(last) {
         if (!(last.operator === 'search' || last.operator === 'has')) {
             return [];
@@ -575,7 +625,13 @@ exports.get_suggestions = function (query) {
     suggestions = get_person_suggestions(persons, last, base_operators, 'group-pm-with');
     attach_suggestions(result, base, suggestions);
 
-    suggestions = get_group_suggestions(persons, last, base_operators);
+    suggestions = get_person_suggestions(persons, last, base_operators, 'group-pm-with');
+    attach_suggestions(result, base, suggestions);
+
+    suggestions = get_mentioned_message_suggestions(persons, last);
+    attach_suggestions(result, base, suggestions);
+
+    suggestions = get_group_suggestions(persons, last,base_operators);
     attach_suggestions(result, base, suggestions);
 
     suggestions = get_topic_suggestions(last, base_operators);
