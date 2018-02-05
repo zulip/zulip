@@ -8,7 +8,7 @@
     "email_changes_disabled": false,
     "deactivated": false,
     "notifications_stream": null,
-    "restricted_to_domain": true,
+    "restricted_to_domain": false,
     "show_digest_email": true,
     "allow_message_editing": true,
     "description": "The Zulip development environment default organization.  It's great for testing!",

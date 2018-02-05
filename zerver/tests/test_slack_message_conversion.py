@@ -86,3 +86,20 @@ class SlackMessageConversion(ZulipTestCase):
         text, mentioned_users, has_link = convert_to_zulip_markdown(message, users, slack_user_map)
         self.assertEqual(text, message)
         self.assertEqual(mentioned_users, [])
+
+    def test_has_link(self) -> None:
+        slack_user_map = {}  # type: Dict[str, int]
+
+        message = '<http://journals.plos.org/plosone/article>'
+        text, mentioned_users, has_link = convert_to_zulip_markdown(message, [], slack_user_map)
+        self.assertEqual(text, 'http://journals.plos.org/plosone/article')
+        self.assertEqual(has_link, True)
+
+        message = '<mailto:foo@foo.com>'
+        text, mentioned_users, has_link = convert_to_zulip_markdown(message, [], slack_user_map)
+        self.assertEqual(text, 'mailto:foo@foo.com')
+        self.assertEqual(has_link, True)
+
+        message = 'random message'
+        text, mentioned_users, has_link = convert_to_zulip_markdown(message, [], slack_user_map)
+        self.assertEqual(has_link, False)

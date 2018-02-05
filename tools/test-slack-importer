@@ -8,16 +8,6 @@ DROP DATABASE IF EXISTS zulip_slack_importer_test;
 CREATE DATABASE zulip_slack_importer_test TEMPLATE zulip_test_template;
 EOF
 
-sudo apt-get install unzip zip
-
 ./manage.py migrate --noinput
-pwd=$(pwd)
-wget https://github.com/houstondatavis/slack-export/archive/master.zip -O /tmp/slack-export-master.zip
-cd /tmp
-unzip -q /tmp/slack-export-master.zip
-cd /tmp/slack-export-master/
-zip -r -q slack-export-master.zip .
-cd $pwd
-./manage.py convert_slack_data /tmp/slack-export-master/slack-export-master.zip "slack-importer-test-realm" --output /tmp/slack_importer_test_data
-rm -rf /tmp/slack-export-master
+./manage.py convert_slack_data ~/zulip/zerver/fixtures/slack_fixtures/test_slack_importer.zip "slack-importer-test-realm" --token ""xoxp-202525716848-302126526821-306710441015-afb69ff5ee9bf51577f88fa621107c9f"" --output /tmp/slack_importer_test_data
 ./manage.py import --import-into-nonempty /tmp/slack_importer_test_data
