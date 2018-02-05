@@ -19,17 +19,6 @@
 
         <div class="input-group">
             <label class="checkbox">
-                <input type="checkbox" name="high_contrast_mode" id="high_contrast_mode"
-                {{#if page_params.high_contrast_mode}}
-                  checked="checked"
-                {{/if}} />
-                <span></span>
-            </label>
-            <label for="high_contrast_mode" class="inline-block">{{t "High contrast mode" }}</label>
-        </div>
-
-        <div class="input-group">
-            <label class="checkbox">
                 <input type="checkbox" name="night_mode" id="night_mode"
                 {{#if page_params.night_mode}}
                   checked="checked"
@@ -37,6 +26,17 @@
                 <span></span>
             </label>
             <label for="night_mode" class="inline-block">{{t "Night mode (experimental)" }}</label>
+        </div>
+
+        <div class="input-group">
+            <label class="checkbox">
+                <input type="checkbox" name="high_contrast_mode" id="high_contrast_mode"
+                {{#if page_params.high_contrast_mode}}
+                  checked="checked"
+                {{/if}} />
+                <span></span>
+            </label>
+            <label for="high_contrast_mode" class="inline-block">{{t "High contrast mode" }}</label>
         </div>
 
         <div class="input-group">
