@@ -14,7 +14,7 @@ from django.core.exceptions import MiddlewareNotUsed
 from django.core.handlers import base
 from django.core.handlers.exception import convert_exception_to_response
 from django.core.handlers.wsgi import WSGIRequest, get_script_name
-from django.urls import set_script_prefix, set_urlconf
+from django.urls import set_script_prefix
 from django.http import HttpRequest, HttpResponse
 from django.utils.module_loading import import_string
 from tornado.wsgi import WSGIContainer
@@ -190,8 +190,8 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
             try:
                 # Setup default url resolver for this thread.
                 urlconf = settings.ROOT_URLCONF
-                set_urlconf(urlconf)
-                resolver = resolvers.RegexURLResolver(r'^/', urlconf)
+                resolvers.set_urlconf(urlconf)
+                resolver = resolvers.URLResolver(r'^/', urlconf)
 
                 response = None
 
@@ -204,8 +204,8 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                 if hasattr(request, "urlconf"):
                     # Reset url resolver with a custom urlconf.
                     urlconf = request.urlconf
-                    set_urlconf(urlconf)
-                    resolver = resolvers.RegexURLResolver(r'^/', urlconf)
+                    resolvers.set_urlconf(urlconf)
+                    resolver = resolvers.URLResolver(r'^/', urlconf)
 
                 ### ADDED BY ZULIP
                 request._resolver = resolver
@@ -298,7 +298,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                 return self.handle_uncaught_exception(request, resolver, exc_info)
         finally:
             # Reset urlconf on the way out for isolation
-            set_urlconf(None)
+            resolvers.set_urlconf(None)
 
         ### ZULIP CHANGE: The remainder of this function was moved
         ### into its own function, just below, so we can call it from
@@ -309,7 +309,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
 
     ### Copied from get_response (above in this file)
     def apply_response_middleware(self, request: HttpRequest, response: HttpResponse,
-                                  resolver: resolvers.RegexURLResolver) -> HttpResponse:
+                                  resolver: resolvers.URLResolver) -> HttpResponse:
         try:
             # Apply response middleware, regardless of the response
             for middleware_method in self._response_middleware:

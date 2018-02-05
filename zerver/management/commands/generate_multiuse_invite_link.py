@@ -43,7 +43,7 @@ class Command(ZulipBaseCommand):
         invite = MultiuseInvite.objects.create(realm=realm, referred_by=referred_by)
 
         if streams:
-            invite.streams = streams
+            invite.streams.set(streams)
             invite.save()
 
         invite_link = create_confirmation_link(invite, realm.host, Confirmation.MULTIUSE_INVITE)
