@@ -1,0 +1,53 @@
+#!/bin/bash
+
+set -e
+
+reset="\033[0m"
+red="\033[31m"
+green="\033[32m"
+yellow="\033[33m"
+cyan="\033[36m"
+white="\033[37m"
+
+verify_integrity() {
+  printf "$cyan> Verifying integrity...$reset\n"
+  curl https://www.zulip.org/dist/releases/SHA256SUMS.txt | grep "$1" > SHA256SUM.txt
+  if sha256sum -c SHA256SUM.txt; then
+    printf "$green> The SHA256SUM of $1 is OK$reset\n"
+  else
+    printf "$red> The SHA256SUM of $1 is not OK. The tarball may have been compromised.$reset\n"
+    exit 1
+  fi
+}
+
+# Step 1: Download the latest release
+cd $(mktemp -d)
+printf "$cyan> Downloading tarball...$reset\n"
+tarball=zulip-server-latest.tar.gz
+url=https://www.zulip.org/dist/releases/$tarball
+wget $url
+verify_integrity $tarball
+tar -xf $tarball
+
+# Step 2: Install Zulip
+sudo ./zulip-server-*/scripts/setup/install --self-signed-cert
+
+# Step 3: Configure outgoing email
+sudo $EDITOR /etc/zulip/settings.py
+
+# Step 4: Test email configuration
+printf "$cyan> Testing email configuration. Please enter an email to send a test email to.$reset\n"
+read -p 'Email: ' $testemail
+printf "$cyan> Sending test email...$reset\n"
+su zulip -c "/home/zulip/deployments/current/manage.py send_test_email $testemail"
+read -p "Did you receive the email successfully? (y/n)" -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    exit 1
+fi
+
+# Step 5: Initialize Zulip database
+su zulip -c '/home/zulip/deployments/current/scripts/setup/initialize-database'
+
+# Step 6: Create a Zulip organization and login
+su zulip -c '/home/zulip/deployments/current/manage.py generate_realm_creation_link'
