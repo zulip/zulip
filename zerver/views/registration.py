@@ -37,7 +37,7 @@ from zerver.views.auth import create_preregistration_user, \
 from zproject.backends import ldap_auth_enabled, password_auth_enabled, ZulipLDAPAuthBackend
 
 from confirmation.models import Confirmation, RealmCreationKey, ConfirmationKeyException, \
-    check_key_is_valid, create_confirmation_link, get_object_from_key, \
+    validate_key, create_confirmation_link, get_object_from_key, \
     render_confirmation_key_error
 
 import logging
@@ -327,16 +327,16 @@ def redirect_to_email_login_url(email: str) -> HttpResponseRedirect:
     return HttpResponseRedirect(redirect_url)
 
 def create_realm(request: HttpRequest, creation_key: Optional[Text]=None) -> HttpResponse:
-    have_valid_key = creation_key is not None and check_key_is_valid(creation_key)
-
+    try:
+        key_record = validate_key(creation_key)
+    except RealmCreationKey.Invalid:
+        return render(request, "zerver/realm_creation_failed.html",
+                      context={'message': _('The organization creation link has expired'
+                                            ' or is not valid.')})
     if not settings.OPEN_REALM_CREATION:
-        if creation_key is None:
+        if key_record is None:
             return render(request, "zerver/realm_creation_failed.html",
                           context={'message': _('New organization creation disabled.')})
-        elif not have_valid_key:
-            return render(request, "zerver/realm_creation_failed.html",
-                          context={'message': _('The organization creation link has expired'
-                                                ' or is not valid.')})
 
     # When settings.OPEN_REALM_CREATION is enabled, anyone can create a new realm,
     # subject to a few restrictions on their email address.
@@ -345,14 +345,22 @@ def create_realm(request: HttpRequest, creation_key: Optional[Text]=None) -> Htt
         if form.is_valid():
             email = form.cleaned_data['email']
             activation_url = prepare_activation_url(email, request, realm_creation=True)
+            if key_record is not None and key_record.presume_email_valid:
+                # The user has a token created from the server command line;
+                # skip confirming the email is theirs, taking their word for it.
+                # This is essential on first install if the admin hasn't stopped
+                # to configure outbound email up front, or it isn't working yet.
+                key_record.delete()
+                return HttpResponseRedirect(activation_url)
+
             try:
                 send_confirm_registration_email(email, activation_url)
             except smtplib.SMTPException as e:
                 logging.error('Error in create_realm: %s' % (str(e),))
                 return HttpResponseRedirect("/config-error/smtp")
 
-            if have_valid_key:
-                RealmCreationKey.objects.get(creation_key=creation_key).delete()
+            if key_record is not None:
+                key_record.delete()
             return HttpResponseRedirect(reverse('send_confirm', kwargs={'email': email}))
     else:
         form = RealmCreationForm()
