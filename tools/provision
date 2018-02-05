@@ -41,12 +41,12 @@ if [ $failed = 1 ]; then
     exit 1
 elif [ "$VIRTUAL_ENV" != "/srv/zulip-py3-venv" ] && [ -z "${TRAVIS}${SKIP_VENV_SHELL_WARNING}" ]; then
     echo -e "$WARNING"
-    echo "WARNING: This shell does not have the Python 3 virtualenv activated."
-    echo "Zulip commands will fail."
+    echo "WARNING: This shell does not have the Zulip Python 3 virtualenv activated."
+    echo "Zulip commands will fail until you activate the virtualenv."
     echo
     echo "To update the shell, run:"
     echo "    source /srv/zulip-py3-venv/bin/activate"
-    echo "or just close this shell and start a new one."
+    echo "or just close this shell and start a new one (with Vagrant, `vagrant ssh`)."
     echo -en "$ENDC"
 fi
 exit 0
