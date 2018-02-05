@@ -943,3 +943,13 @@ button.login-google-button {
         min-height: calc(100vh - 560px);
     }
 }
+
+#login_form .loader {
+    display: none;
+    vertical-align: top;
+    position: relative;
+
+    height: 30px;
+    margin-top: -10px;
+    top: 5px;
+}
