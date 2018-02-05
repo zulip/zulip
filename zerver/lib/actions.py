@@ -50,6 +50,11 @@ from zerver.lib.topic_mutes import (
     add_topic_mute,
     remove_topic_mute,
 )
+from zerver.lib.mute_users import (
+	get_user_mutes,
+	add_user_mute,
+	remove_user_mute,
+)
 from zerver.lib.users import bulk_get_users, check_full_name
 from zerver.lib.user_groups import create_user_group, access_user_group_by_id
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
@@ -4447,3 +4452,13 @@ def check_delete_user_group(user_group_id: int, realm: Realm) -> None:
     user_group = access_user_group_by_id(user_group_id, realm)
     user_group.delete()
     do_send_delete_user_group_event(user_group_id, realm.id)
+
+def do_mute_user(user_profile: UserProfile, muted_user_profile: UserProfile) -> None:
+	add_user_mute(user_profile, muted_user_profile)
+	event = dict(type="muted_users", muted_users=get_user_mutes(user_profile))
+	send_event(event, [user_profile.id])
+
+def do_unmute_user(user_profile: UserProfile, muted_user_profile: UserProfile) -> None:
+	remove_user_mute(user_profile, muted_user_profile)
+	event = dict(type="muted_users", muted_users=get_user_mutes(user_profile))
+	send_event(event, [user_profile.id])

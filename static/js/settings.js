@@ -71,6 +71,7 @@ function _setup_page() {
             "alert-words": i18n.t("Alert words"),
             "uploaded-files": i18n.t("Uploaded files"),
             "muted-topics": i18n.t("Muted topics"),
+            "muted-users":i18n.t("Muted Users"),
             "zulip-labs": i18n.t("Zulip labs"),
             "organization-profile": i18n.t("Organization profile"),
             "organization-settings": i18n.t("Organization settings"),

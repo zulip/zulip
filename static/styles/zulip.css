@@ -109,6 +109,43 @@ p.n-margin {
     stroke: #fff;
 }
 
+#unmute_muted_user_notification {
+    display: none;
+    position: absolute;
+    width: 400px;
+    top: 0px;
+    left: calc(50vw - 220px);
+    padding: 15px;
+
+    background-color: hsl(0, 0%, 98%);
+    border-radius: 5px;
+    box-shadow: 0px 0px 30px hsla(0, 0%, 0%, 0.25);
+    z-index: 110;
+
+    animation-name: pulse;
+    animation-iteration-count: infinite;
+    animation-duration: 2s;
+
+    transition-property: top, bottom;
+    transition-duration: 0.5s;
+}
+
+#unmute_muted_user_notification.show {
+    top: 50px;
+}
+
+#unmute_muted_user_notification h3 {
+    font-size: 16pt;
+    margin-top: 2px;
+}
+
+#unmute_muted_user_notification .exit-me-user {
+    font-size: 30pt;
+    font-weight: 200;
+    margin: 5px 0px 0px 10px;
+    cursor: pointer;
+}
+
 #unmute_muted_topic_notification {
     display: none;
     position: absolute;
