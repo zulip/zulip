@@ -399,7 +399,7 @@ _.each(matches, function (person) {
     assert(rendered);
 }());
 
-(function test_clear_rendered_persons() {
+(function test_clear_rendered_person() {
     var rendered = false;
     global.templates.render = function (template_name, args) {
         assert.equal(template_name, 'typeahead_list_item');
@@ -419,7 +419,7 @@ _.each(matches, function (person) {
     assert.equal(rendered, false);
 
     // Here rendered will be true as it is being rendered again.
-    th.clear_rendered_persons();
+    th.clear_rendered_person(matches[5].user_id);
     assert.equal(th.render_person(matches[5]), 'typeahead-item-stub');
     assert(rendered);
 

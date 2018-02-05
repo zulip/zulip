@@ -295,6 +295,7 @@ exports.set_up = function () {
         $("#settings_page .edit_bot .edit_bot_name").val(old_full_name);
         $("#settings_page .edit_bot .select-form").text("").append(owner_select);
         $("#settings_page .edit_bot .edit-bot-owner select").val(old_owner);
+        $("#settings_page .edit_bot_form").attr("data-bot_id", bot_id);
         $("#settings_page .edit_bot_form").attr("data-email", bot_email);
         $("#settings_page .edit_bot_form").attr("data-type", bot_type);
         $(".edit_bot_email").text(bot_email);
@@ -332,6 +333,7 @@ exports.set_up = function () {
                 errors.hide();
             },
             submitHandler: function () {
+                var bot_id = form.attr('data-bot_id');
                 var email = form.attr('data-email');
                 var type = form.attr('data-type');
                 var full_name = form.find('.edit_bot_name').val();
@@ -366,7 +368,7 @@ exports.set_up = function () {
                         edit_button.show();
                         show_row_again();
                         avatar_widget.clear();
-                        typeahead_helper.clear_rendered_persons();
+                        typeahead_helper.clear_rendered_person(bot_id);
 
                         bot_info.find('.name').text(full_name);
                         if (data.avatar_url) {
