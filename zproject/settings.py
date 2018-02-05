@@ -1170,11 +1170,16 @@ JS_SPECS = {
     'archive': {
         'source_filenames': [
             'js/archive.js',
+            'js/colorspace.js',
+            'js/floating_recipient_bar.js',
             'js/timerender.js',
             'node_modules/handlebars/dist/handlebars.runtime.js',
             'js/templates.js',
             'js/stream_color.js',
+            'js/scroll_bar.js',
             'node_modules/xdate/src/xdate.js',
+            'node_modules/perfect-scrollbar/dist/perfect-scrollbar.js',
+            'third/jquery-throttle-debounce/jquery.ba-throttle-debounce.js',
             'templates/compiled.js',
         ],
         'output_filename': 'min/archive.js'

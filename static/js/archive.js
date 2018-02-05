@@ -91,6 +91,8 @@ exports.initialize = function () {
         var all_senders = $(this).find('.message_sender').has('.inline_profile_picture');
         prev_sender = all_senders.last();
     });
+
+    $('.app').scrollTop($('.app').height());
     all_message_timestamps_to_human_readable();
 };
 
@@ -98,10 +100,44 @@ return exports;
 
 }());
 
+var current_msg_list = {
+    selected_row: function () {
+        return $('.message_row').last();
+    },
+};
+var rows = {
+    get_message_recipient_row: function (message_row) {
+        return $(message_row).parent('.recipient_row');
+    },
+    first_message_in_group: function (message_group) {
+        return $('div.message_row:first', message_group);
+    },
+    id: function (message_row) {
+        return parseFloat(message_row.attr('zid'));
+    },
+};
+
 if (typeof module !== 'undefined') {
+    module.exports.current_msg_list = current_msg_list;
+    module.exports.rows = rows;
     module.exports = archive;
 }
 
+var scroll_timer;
+function scroll_finish() {
+    clearTimeout(scroll_timer);
+    scroll_timer = setTimeout(floating_recipient_bar.update, 100);
+}
+
 $(function () {
+    $.fn.safeOuterHeight = function () {
+        return $(this).outerHeight.apply(this, arguments) || 0;
+    };
+    $.fn.safeOuterWidth = function () {
+        return $(this).outerWidth.apply(this, arguments) || 0;
+    };
+    $('.app').scroll($.throttle(50, function () {
+        scroll_finish();
+    }));
     archive.initialize();
 });
