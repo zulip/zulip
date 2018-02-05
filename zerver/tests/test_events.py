@@ -1194,6 +1194,23 @@ class EventsRegisterTest(ZulipTestCase):
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
+        schema_checker = self.check_events_dict([
+            ('type', equals('realm_user')),
+            ('op', equals('update')),
+            ('person', check_dict_only([
+                ('email', check_string),
+                ('user_id', check_int),
+                ('avatar_url', check_none_or(check_string)),
+                ('avatar_url_medium', check_none_or(check_string)),
+                ('avatar_source', check_string),
+            ])),
+        ])
+        events = self.do_test(
+            lambda: do_change_avatar_fields(self.user_profile, UserProfile.AVATAR_FROM_GRAVATAR),
+        )
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
     def test_change_full_name(self) -> None:
         schema_checker = self.check_events_dict([
             ('type', equals('realm_user')),
