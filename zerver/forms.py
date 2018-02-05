@@ -66,12 +66,12 @@ def check_subdomain_available(subdomain: str) -> None:
         if is_root_domain_available():
             return
         raise ValidationError(error_strings['unavailable'])
-    if len(subdomain) < 3:
-        raise ValidationError(error_strings['too short'])
     if subdomain[0] == '-' or subdomain[-1] == '-':
         raise ValidationError(error_strings['extremal dash'])
     if not re.match('^[a-z0-9-]*$', subdomain):
         raise ValidationError(error_strings['bad character'])
+    if len(subdomain) < 3:
+        raise ValidationError(error_strings['too short'])
     if is_reserved_subdomain(subdomain) or \
        get_realm(subdomain) is not None:
         raise ValidationError(error_strings['unavailable'])

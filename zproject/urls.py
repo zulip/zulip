@@ -31,6 +31,7 @@ import zerver.views.user_groups
 import zerver.views.user_settings
 import zerver.views.muting
 import zerver.views.streams
+import zerver.views.realm
 
 from zerver.lib.rest import rest_dispatch
 
@@ -69,6 +70,9 @@ v1_api_and_json_patterns = [
     # Returns a 204, used by desktop app to verify connectivity status
     url(r'generate_204$', zerver.views.registration.generate_204,
         name='zerver.views.registration.generate_204'),
+
+    url(r'realm/subdomain/(?P<subdomain>\S+)$', zerver.views.realm.check_subdomain_available,
+        name='zerver.views.realm.check_subdomain_available'),
 
     # realm/domains -> zerver.views.realm_domains
     url(r'^realm/domains$', rest_dispatch,
