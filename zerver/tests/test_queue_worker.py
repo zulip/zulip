@@ -128,14 +128,14 @@ class WorkerTest(ZulipTestCase):
         hamlet_info = arg_dict[hamlet.id]
         self.assertEqual(hamlet_info['count'], 2)
         self.assertEqual(
-            {m.content for m in hamlet_info['missed_messages']},
+            {m['message'].content for m in hamlet_info['missed_messages']},
             {'hi hamlet', 'goodbye hamlet'},
         )
 
         othello_info = arg_dict[othello.id]
         self.assertEqual(othello_info['count'], 1)
         self.assertEqual(
-            {m.content for m in othello_info['missed_messages']},
+            {m['message'].content for m in othello_info['missed_messages']},
             {'where art thou, othello?'}
         )
 
