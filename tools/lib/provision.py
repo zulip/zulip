@@ -14,7 +14,7 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 
 sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING, \
-    get_dev_uuid_var_path
+    get_dev_uuid_var_path, FAIL
 from scripts.lib.setup_venv import (
     setup_virtualenv, VENV_DEPENDENCIES, THUMBOR_VENV_DEPENDENCIES
 )
@@ -54,7 +54,7 @@ if is_travis:
     EMOJI_CACHE_PATH = "/home/travis/zulip-emoji-cache"
 
 if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):
-    print("Error: No Zulip git repository present!")
+    print(FAIL + "Error: No Zulip git repository present!" + ENDC)
     print("To setup the Zulip development environment, you should clone the code")
     print("from GitHub, rather than using a Zulip production release tarball.")
     sys.exit(1)
@@ -82,7 +82,8 @@ try:
     )
     os.remove(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink'))
 except OSError as err:
-    print("Error: Unable to create symlinks. Make sure you have permission to create symbolic links.")
+    print(FAIL + "Error: Unable to create symlinks."
+          "Make sure you have permission to create symbolic links." + ENDC)
     print("See this page for more information:")
     print("  https://zulip.readthedocs.io/en/latest/development/setup-vagrant.html#os-symlink-error")
     sys.exit(1)
