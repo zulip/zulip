@@ -278,11 +278,6 @@ bot_handler.update_message(dict(
 
 ### bot_handler.storage
 
-**Note: This feature is under development. Permanent storage in the
-  database of a Zulip server is currently only supported for Zulip's embedded
-  bots. For external bots, all data stored with this feature is lost with
-  the termination of a bot.**
-
 A common problem when writing an interactive bot is that you want to
 be able to store a bit of persistent state for the bot (e.g. for an
 RSVP bot, the RSVPs).  For a sufficiently complex bot, you want need
@@ -469,7 +464,22 @@ following helper method:
         # self.assert_bot_response(...)
 
 `mock_http_conversation(fixture_name)` patches `requests.get` and returns the data specified
-in the file `fixtures/<fixture_name>.py`. For an example, check out the [giphy bot](
+in the file `fixtures/<fixture_name>.json`. Use the following JSON code as a skeleton for new
+fixtures:
+```
+{
+  "request": {
+    "api_url": "http://api.example.com/",
+    "params": {
+    }
+  },
+  "response": {
+  },
+  "response-headers": {
+  }
+}
+```
+For an example, check out the [giphy bot](
 https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots/giphy).
 
 *Tip: You can use [requestb.in](http://requestb.in) or a similar tool to capture payloads from the
