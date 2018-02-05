@@ -220,6 +220,28 @@ exports.reify_message_id = function (opts) {
     });
 };
 
+exports.is_user_mentioned = function is_user_mentioned(message,user) {
+
+    if (message.sender_id !== page_params.user_id) {
+        return false;
+    }
+
+    var regExp = /data\-user\-id\=\"([0-9]+)\"/ig;
+    var matches = message.content.match(regExp);
+
+    if (matches === null || matches.length === 0) {
+    return false;
+    }
+    for (var i = 0; i < matches.length; i+=1) {
+    var str = matches[i];
+    matches[i] = parseInt(str.substring(14 , str.length -1),10);
+
+    if (matches.includes(user.user_id)) {
+        return true;
+    }
+    }
+};
+
 return exports;
 
 }());
