@@ -83,7 +83,7 @@ ZULIP_ADMINISTRATOR = 'zulip-admin@example.com'
 # accessing your server by other hostnames, list them here.
 #
 # Note that these should just be hostnames, without port numbers.
-#ALLOWED_HOSTS = ['zulip-alias.example.com']
+#ALLOWED_HOSTS = ['zulip-alias.example.com', '192.0.2.1']
 
 ### AUTHENTICATION SETTINGS
 #
