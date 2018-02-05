@@ -954,7 +954,7 @@ exports.initialize = function () {
         e.preventDefault();
 
         var video_call_id = util.random_int(100000000000000, 999999999999999);
-        var video_call_link = 'https://meet.jit.si/' +  video_call_id;
+        var video_call_link = 'https://meet.jit.si/zulip' +  video_call_id;
         var video_call_link_text = '[' + _('Click to join video call') + '](' + video_call_link + ')';
         compose_ui.insert_syntax_and_focus(video_call_link_text);
     });

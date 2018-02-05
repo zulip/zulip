@@ -1263,7 +1263,7 @@ function test_with_mock_socket(test_params) {
         handler(event);
 
         // video link ids consist of 15 random digits
-        var video_link_regex = /\[Click to join video call\]\(https:\/\/meet.jit.si\/\d{15}\)/;
+        var video_link_regex = /\[Click to join video call\]\(https:\/\/meet.jit.si\/zulip\d{15}\)/;
         assert(video_link_regex.test(syntax_to_insert));
     }());
 
