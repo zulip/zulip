@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import os
 import sys
-import logging
 import argparse
 import platform
 import subprocess
@@ -14,7 +13,7 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 
 sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING, \
-    get_dev_uuid_var_path
+    get_dev_uuid_var_path, FAIL
 from scripts.lib.setup_venv import (
     setup_virtualenv, VENV_DEPENDENCIES, THUMBOR_VENV_DEPENDENCIES
 )
@@ -92,8 +91,9 @@ if platform.architecture()[0] == '64bit':
 elif platform.architecture()[0] == '32bit':
     arch = "i386"
 else:
-    logging.critical("Only x86 is supported;"
-                     "ping zulip-devel@googlegroups.com if you want another architecture.")
+    print(FAIL + "Only x86 is supported;"
+          "ping zulip-devel@googlegroups.com if you want another architecture." +
+          ENDC)
     sys.exit(1)
 
 # Ideally we wouldn't need to install a dependency here, before we
@@ -102,7 +102,7 @@ subprocess.check_call(["sudo", "apt-get", "install", "-y", "lsb-release"])
 vendor = subprocess_text_output(["lsb_release", "-is"])
 codename = subprocess_text_output(["lsb_release", "-cs"])
 if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor]):
-    logging.critical("Unsupported platform: {} {}".format(vendor, codename))
+    print(FAIL + "Unsupported platform: {} {}".format(vendor, codename) + ENDC)
     sys.exit(1)
 
 POSTGRES_VERSION_MAP = {
