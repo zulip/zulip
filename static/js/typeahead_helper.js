@@ -94,8 +94,8 @@ exports.render_person = function (person) {
     return html;
 };
 
-exports.clear_rendered_persons = function () {
-    rendered.persons.clear();
+exports.clear_rendered_person = function (user_id) {
+    rendered.persons.del(user_id);
 };
 
 exports.render_user_group = function (user_group) {
