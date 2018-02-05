@@ -167,8 +167,10 @@ label {
 }
 
 #uploaded_files_table > tr > td:nth-of-type(1),
+#admin_filters_table > tr > td:nth-of-type(1),
 .upload-file-name {
     width: 30%;
+    word-break: break-all;
 }
 
 td .button {
