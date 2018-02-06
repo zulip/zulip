@@ -142,7 +142,7 @@ def users_to_zerver_userprofile(slack_data_dir: str, realm_id: int, timestamp: A
 
         userprofile = dict(
             enable_desktop_notifications=DESKTOP_NOTIFICATION,
-            is_staff=user.get('is_admin', False),
+            is_staff=False,  # 'staff' is for server administrators, which does't exist in Slack.
             avatar_source=avatar_source,
             is_bot=user.get('is_bot', False),
             avatar_version=1,

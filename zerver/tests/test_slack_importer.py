@@ -111,6 +111,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(len(zerver_userprofile), 3)
         self.assertEqual(zerver_userprofile[0]['id'], 1)
         self.assertEqual(zerver_userprofile[0]['is_realm_admin'], True)
+        self.assertEqual(zerver_userprofile[0]['is_staff'], False)
         self.assertEqual(zerver_userprofile[0]['is_active'], True)
         self.assertEqual(zerver_userprofile[1]['is_staff'], False)
         self.assertEqual(zerver_userprofile[1]['is_bot'], False)
