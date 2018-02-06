@@ -162,7 +162,7 @@ function create_message_object() {
     }
     return message;
 }
-// Export for testing
+
 exports.create_message_object = create_message_object;
 
 function compose_error(error_text, bad_input) {
@@ -176,6 +176,8 @@ function compose_error(error_text, bad_input) {
         bad_input.focus().select();
     }
 }
+
+exports.compose_error = compose_error;
 
 function nonexistent_stream_reply_error() {
     $("#nonexistent_stream_reply_error").show();
@@ -209,6 +211,8 @@ function clear_compose_box() {
     $("#sending-indicator").hide();
     resize.resize_bottom_whitespace();
 }
+
+exports.clear_compose_box = clear_compose_box;
 
 exports.send_message_success = function (local_id, message_id, locally_echoed) {
     if (!locally_echoed) {
@@ -279,102 +283,6 @@ exports.send_message = function send_message(request) {
     }
 };
 
-exports.deferred_message_types = {
-    scheduled: {
-        delivery_type: 'send_later',
-        test: /^\/schedule/,
-        slash_command: '/schedule',
-    },
-    reminders: {
-        delivery_type: 'remind',
-        test: /^\/remind/,
-        slash_command: '/remind',
-    },
-};
-
-function is_deferred_delivery(message_content) {
-    var reminders_test = exports.deferred_message_types.reminders.test;
-    var scheduled_test = exports.deferred_message_types.scheduled.test;
-    return (reminders_test.test(message_content) ||
-            scheduled_test.test(message_content));
-}
-
-function patch_request_for_scheduling(request) {
-    var new_request = request;
-    var raw_message = request.content.split('\n');
-    var command_line = raw_message[0];
-    var message = raw_message.slice(1).join('\n');
-
-    var deferred_message_type = _.filter(exports.deferred_message_types, function (props) {
-        return command_line.match(props.test) !== null;
-    })[0];
-    var command = command_line.match(deferred_message_type.test)[0];
-
-    var deliver_at = command_line.slice(command.length + 1);
-
-    if (message.trim() === '' || deliver_at.trim() === '' ||
-        command_line.slice(command.length, command.length + 1) !== ' ') {
-
-        $("#compose-textarea").attr('disabled', false);
-        if (command_line.slice(command.length, command.length + 1) !== ' ') {
-            compose_error(i18n.t('Invalid slash command. Check if you are missing a space after the command.'), $('#compose-textarea'));
-        } else if (deliver_at.trim() === '') {
-            compose_error(i18n.t('Please specify time for your reminder.'), $('#compose-textarea'));
-        } else {
-            compose_error(i18n.t('Your reminder note is empty!'), $('#compose-textarea'));
-        }
-        return;
-    }
-
-    new_request.content = message;
-    new_request.deliver_at = deliver_at;
-    new_request.delivery_type = deferred_message_type.delivery_type;
-    new_request.tz_guess = moment.tz.guess();
-    return new_request;
-}
-
-exports.schedule_message = function schedule_message(request, success, error) {
-    if (request === undefined) {
-        request = create_message_object();
-    }
-
-    if (request.type === "private") {
-        request.to = JSON.stringify(request.to);
-    } else {
-        request.to = JSON.stringify([request.to]);
-    }
-
-    /* success and error callbacks are kind of a package deal here. When scheduling
-    a message either by means of slash command or from message feed, if we need to do
-    something special on success then we will also need to know if our request errored
-    and do something appropriate. Therefore we just check if success callback is not
-    defined and just assume request to be coming from compose box. This is correct
-    because we won't ever actually have success operate in different context than error. */
-    if (success === undefined) {
-        success = function (data) {
-            notifications.notify_above_composebox('Scheduled your Message to be delivered at: ' + data.deliver_at);
-            $("#compose-textarea").attr('disabled', false);
-            clear_compose_box();
-        };
-        error = function (response) {
-            $("#compose-textarea").attr('disabled', false);
-            compose_error(response, $('#compose-textarea'));
-        };
-        /* We are adding a disable on compose under this block since it actually
-        has its place with the branch of code which does stuff when slash command
-        is incoming from compose_box */
-        $("#compose-textarea").attr('disabled', true);
-    }
-
-    request = patch_request_for_scheduling(request);
-
-    if (request === undefined) {
-        return;
-    }
-
-    transmit.send_message(request, success, error);
-};
-
 exports.enter_with_preview_open = function () {
     exports.clear_preview_area();
     if (page_params.enter_sends) {
@@ -396,8 +304,8 @@ exports.finish = function () {
     }
 
     var message_content = compose_state.message_content();
-    if (is_deferred_delivery(message_content)) {
-        exports.schedule_message();
+    if (reminder.is_deferred_delivery(message_content)) {
+        reminder.schedule_message();
     } else {
         exports.send_message();
     }
@@ -620,7 +528,7 @@ function validate_private_message() {
 exports.validate = function () {
     $("#compose-send-button").attr('disabled', 'disabled').blur();
     var message_content = compose_state.message_content();
-    if (is_deferred_delivery(message_content)) {
+    if (reminder.is_deferred_delivery(message_content)) {
         show_sending_indicator('Scheduling...');
     } else {
         show_sending_indicator();

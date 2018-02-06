@@ -153,6 +153,7 @@
         "invite": false,
         "colorspace": false,
         "reactions": false,
+        "reminder": false,
         "tutorial": false,
         "templates": false,
         "alert_words": false,

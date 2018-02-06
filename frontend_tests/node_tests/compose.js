@@ -46,6 +46,9 @@ set_global('notifications', {
     clear_compose_notifications: noop,
 });
 set_global('subs', {});
+set_global('reminder', {
+    is_deferred_delivery: noop,
+});
 
 // Setting these up so that we can test that links to uploads within messages are
 // automatically converted to server relative links.

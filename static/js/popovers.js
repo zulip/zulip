@@ -349,46 +349,6 @@ exports.toggle_actions_popover = function (element, id) {
     }
 };
 
-function do_set_reminder(msgid, timestamp) {
-    var message = current_msg_list.get(msgid);
-    var link_to_msg = narrow.by_conversation_and_time_uri(message, true);
-    var command = compose.deferred_message_types.reminders.slash_command;
-    var reminder_timestamp = timestamp;
-    var custom_msg = '[this message](' + link_to_msg + ') at ' + reminder_timestamp;
-    var reminder_msg_content = command + ' ' + reminder_timestamp + '\n' + custom_msg;
-    var reminder_message = {
-        type: "private",
-        content: reminder_msg_content,
-        sender_id: page_params.user_id,
-        stream: '',
-        subject: '',
-    };
-    var recipient = page_params.email;
-    var emails = util.extract_pm_recipients(recipient);
-    reminder_message.to = emails;
-    reminder_message.reply_to = recipient;
-    reminder_message.private_message_recipient = recipient;
-    reminder_message.to_user_ids = people.email_list_to_user_ids_string(emails);
-
-    var row = $("[zid='" + msgid + "']");
-
-    function success() {
-        row.find(".alert-msg")
-            .text(i18n.t("Reminder set!"))
-            .css("display", "block")
-            .delay(1000).fadeOut(300);
-    }
-
-    function error() {
-        row.find(".alert-msg")
-            .text(i18n.t("Setting reminder failed!"))
-            .css("display", "block")
-            .delay(1000).fadeOut(300);
-    }
-
-    compose.schedule_message(reminder_message, success, error);
-}
-
 exports.render_actions_remind_popover = function (element, id) {
     popovers.hide_all();
     $(element).closest('.message_row').toggleClass('has_popover has_actions_popover');
@@ -754,7 +714,7 @@ exports.register_click_handlers = function () {
 
     function reminder_click_handler(datestr, e) {
         var id = $(".remind.custom").data('message-id');
-        do_set_reminder(id, datestr);
+        reminder.do_set_reminder_for_message(id, datestr);
         popovers.hide_all();
         e.stopPropagation();
         e.preventDefault();
