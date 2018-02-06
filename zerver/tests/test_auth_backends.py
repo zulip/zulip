@@ -1586,6 +1586,45 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
                 self.assertEqual(result.status_code, 302)
                 self.assertIs(get_session_dict_user(self.client.session), user_profile.id)
 
+    @override_settings(SEND_LOGIN_EMAILS=True)
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',))
+    def test_login_mobile_flow_otp_success(self) -> None:
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
+        mobile_flow_otp = '1234abcd' * 8
+        # Verify that the right thing happens with an invalid-format OTP
+
+        result = self.client_post('/accounts/login/sso/',
+                                  dict(mobile_flow_otp="1234"),
+                                  REMOTE_USER=email,
+                                  HTTP_USER_AGENT = "ZulipAndroid")
+        self.assertIs(get_session_dict_user(self.client.session), None)
+        self.assert_json_error_contains(result, "Invalid OTP", 400)
+
+        result = self.client_post('/accounts/login/sso/',
+                                  dict(mobile_flow_otp="invalido" * 8),
+                                  REMOTE_USER=email,
+                                  HTTP_USER_AGENT = "ZulipAndroid")
+        self.assertIs(get_session_dict_user(self.client.session), None)
+        self.assert_json_error_contains(result, "Invalid OTP", 400)
+
+        result = self.client_post('/accounts/login/sso/',
+                                  dict(mobile_flow_otp=mobile_flow_otp),
+                                  REMOTE_USER=email,
+                                  HTTP_USER_AGENT = "ZulipAndroid")
+        self.assertEqual(result.status_code, 302)
+        redirect_url = result['Location']
+        parsed_url = urllib.parse.urlparse(redirect_url)
+        query_params = urllib.parse.parse_qs(parsed_url.query)
+        self.assertEqual(parsed_url.scheme, 'zulip')
+        self.assertEqual(query_params["realm"], ['http://zulip.testserver'])
+        self.assertEqual(query_params["email"], [self.example_email("hamlet")])
+        encrypted_api_key = query_params["otp_encrypted_api_key"][0]
+        self.assertEqual(self.example_user('hamlet').api_key,
+                         otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('Zulip on Android', mail.outbox[0].body)
+
 class TestJWTLogin(ZulipTestCase):
     """
     JWT uses ZulipDummyBackend.

@@ -178,10 +178,14 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: Optiona
     return HttpResponseRedirect(user_profile.realm.uri)
 
 @log_view_func
-def remote_user_sso(request: HttpRequest) -> HttpResponse:
+@has_request_variables
+def remote_user_sso(request: HttpRequest,
+                    mobile_flow_otp: Optional[str]=REQ(default=None)) -> HttpResponse:
     try:
         remote_user = request.META["REMOTE_USER"]
     except KeyError:
+        # TODO: Arguably the JsonableError values here should be
+        # full-page HTML configuration errors instead.
         raise JsonableError(_("No REMOTE_USER set."))
 
     # Django invokes authenticate methods by matching arguments, and this
@@ -190,12 +194,20 @@ def remote_user_sso(request: HttpRequest) -> HttpResponse:
     # enabled.
     validate_login_email(remote_user_to_email(remote_user))
 
+    # Here we support the mobile flow for REMOTE_USER_BACKEND; we
+    # validate the data format and then pass it through to
+    # login_or_register_remote_user if appropriate.
+    if mobile_flow_otp is not None:
+        if not is_valid_otp(mobile_flow_otp):
+            raise JsonableError(_("Invalid OTP"))
+
     subdomain = get_subdomain(request)
     realm = get_realm(subdomain)
     # Since RemoteUserBackend will return None if Realm is None, we
     # don't need to check whether `get_realm` returned None.
     user_profile = authenticate(remote_user=remote_user, realm=realm)
-    return login_or_register_remote_user(request, remote_user, user_profile)
+    return login_or_register_remote_user(request, remote_user, user_profile,
+                                         mobile_flow_otp=mobile_flow_otp)
 
 @csrf_exempt
 @log_view_func
