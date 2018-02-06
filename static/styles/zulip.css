@@ -2564,9 +2564,14 @@ button.topic_edit_cancel {
     margin: 5px 0px;
     border: none;
     border-left: 3px solid hsl(0, 0%, 93%);
-    height: 70px;
+    height: 80px;
     padding: 5px;
     z-index: 1;
+
+    -moz-osx-font-smoothing: grayscale;
+    font-smoothing: antialiased;
+    -webkit-font-smoothing: antialiased;
+    text-shadow: rgba(0, 0, 0, .01) 0 0 1px;
 }
 
 .message_content .message_embed > * {
@@ -2578,17 +2583,16 @@ button.topic_edit_cancel {
 .message_embed .message_embed_title {
     padding-top: 0px;
     /* to remove the spacing that the font has from the top of the container. */
-    margin-top: -1px;
+    margin-top: -5px;
 
-    font-size: 1em;
-    font-weight: 600;
+    font-size: 1.2em;
     line-height: normal;
 }
 
 .message_embed .message_embed_description {
     position: relative;
-    margin-top: -5px;
     max-width: 500px;
+    margin-top: 3px;
 
     /* to put it below the container gradient. */
     z-index: -1;
@@ -2596,24 +2600,35 @@ button.topic_edit_cancel {
 
 .message_embed .message_embed_image {
     display: inline-block;
-    width: 60px;
-    height: 60px;
+    width: 70px;
+    height: 70px;
     background-size: cover;
     background-position: center;
 }
 
 .message_embed .data-container {
+    position: relative;
     padding: 0px 5px;
     display: inline-block;
     vertical-align: top;
     max-width: calc(100% - 115px);
-    max-height: 70px;
+    max-height: 80px;
     overflow: hidden;
 }
 
 .message_embed .data-container div {
     display: block;
     border: none;
+}
+
+.message_embed .data-container::after {
+    content: " ";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+
+    background: linear-gradient(0deg, #fff, transparent 10%);
 }
 
 @media (max-width: 600px) {
