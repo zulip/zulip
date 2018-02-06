@@ -11,7 +11,7 @@ import markdown
 
 import zerver.lib.api_test_helpers
 
-REGEXP = re.compile(r'\{generate_code_example\|\s*(.+?)\s*\|\s*(.+?)\s*\}')
+REGEXP = re.compile(r'\{generate_code_example\|\s*(.+?)\s*\|\s*(.+?)\s*(\(\s*(.+?)\s*\))?\}')
 
 PYTHON_CLIENT_CONFIG_LINES = """
 #!/usr/bin/env python3
@@ -55,13 +55,18 @@ class APICodeExamplesPreprocessor(Preprocessor):
                 if match:
                     function = match.group(1)
                     key = match.group(2)
+                    argument = match.group(4)
 
                     if key == 'fixture':
-                        text = self.render_fixture(function)
+                        if argument:
+                            text = self.render_fixture(function, name=argument)
+                        else:
+                            text = self.render_fixture(function)
                     elif key == 'example':
-                        text = self.render_code_example(function)
-                    elif key == 'example(admin_config=True)':
-                        text = self.render_code_example(function, admin_config=True)
+                        if argument == 'admin_config=True':
+                            text = self.render_code_example(function, admin_config=True)
+                        else:
+                            text = self.render_code_example(function)
 
                     # The line that contains the directive to include the macro
                     # may be preceded or followed by text or tags, in that case
@@ -77,10 +82,14 @@ class APICodeExamplesPreprocessor(Preprocessor):
                 done = True
         return lines
 
-    def render_fixture(self, function: str) -> List[str]:
+    def render_fixture(self, function: str, name: Optional[str]=None) -> List[str]:
         fixture = []
 
-        fixture_dict = zerver.lib.api_test_helpers.FIXTURES[function]
+        if name:
+            fixture_dict = zerver.lib.api_test_helpers.FIXTURES[function][name]
+        else:
+            fixture_dict = zerver.lib.api_test_helpers.FIXTURES[function]
+
         fixture_json = ujson.dumps(fixture_dict, indent=4, sort_keys=True)
 
         fixture.append('```')
