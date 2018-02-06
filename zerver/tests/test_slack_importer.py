@@ -6,6 +6,7 @@ from zerver.lib.slack_data_to_zulip_data import (
     get_model_id,
     build_zerver_realm,
     get_user_email,
+    get_admin,
     get_user_avatar_source,
     get_user_timezone,
     users_to_zerver_userprofile,
@@ -56,6 +57,16 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(test_zerver_realm_dict['string_id'], realm_subdomain)
         self.assertEqual(test_zerver_realm_dict['name'], realm_subdomain)
         self.assertEqual(test_zerver_realm_dict['date_created'], time)
+
+    def test_get_admin(self) -> None:
+        user_data = [{'is_admin': True, 'is_owner': False, 'is_primary_owner': False},
+                     {'is_admin': True, 'is_owner': True, 'is_primary_owner': False},
+                     {'is_admin': True, 'is_owner': True, 'is_primary_owner': True},
+                     {'is_admin': False, 'is_owner': False, 'is_primary_owner': False}]
+        self.assertEqual(get_admin(user_data[0]), True)
+        self.assertEqual(get_admin(user_data[1]), True)
+        self.assertEqual(get_admin(user_data[2]), True)
+        self.assertEqual(get_admin(user_data[3]), False)
 
     def test_get_avatar_source(self) -> None:
         gravatar_image_url = "https:\/\/secure.gravatar.com\/avatar\/78dc7b2e1bf423df8c82fb2a62c8917d.jpg?s=24&d=https%3A%2F%2Fa.slack-edge.com%2F66f9%2Fimg%2Favatars%2Fava_0016-24.png"
