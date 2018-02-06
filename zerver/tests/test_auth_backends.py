@@ -1320,6 +1320,7 @@ class FetchAuthBackends(ZulipTestCase):
                     ('email', check_bool),
                     ('ldap', check_bool),
                     ('dev', check_bool),
+                    ('remoteuser', check_bool),
                     ('password', check_bool),
                 ])),
                 ('email_auth_enabled', check_bool),
@@ -1353,7 +1354,7 @@ class FetchAuthBackends(ZulipTestCase):
         data = result.json()
         self.assertEqual(set(data.keys()),
                          {'msg', 'password', 'github', 'google', 'email', 'ldap',
-                          'dev', 'result', 'zulip_version'})
+                          'dev', 'result', 'remoteuser', 'zulip_version'})
         for backend in set(data.keys()) - {'msg', 'result', 'zulip_version'}:
             self.assertTrue(isinstance(data[backend], bool))
 
@@ -1371,6 +1372,7 @@ class FetchAuthBackends(ZulipTestCase):
                 'dev': True,
                 'email': False,
                 'ldap': False,
+                'remoteuser': False,
                 'result': 'success',
                 'zulip_version': ZULIP_VERSION,
             })
@@ -1387,6 +1389,7 @@ class FetchAuthBackends(ZulipTestCase):
                     'google': True,
                     'email': False,
                     'ldap': False,
+                    'remoteuser': False,
                     'dev': True,
                     'result': 'success',
                     'zulip_version': ZULIP_VERSION,
@@ -1412,6 +1415,7 @@ class FetchAuthBackends(ZulipTestCase):
                     'google': False,
                     'email': False,
                     'ldap': False,
+                    'remoteuser': False,
                     'dev': True,
                     'result': 'success',
                     'zulip_version': ZULIP_VERSION,
@@ -1433,6 +1437,7 @@ class FetchAuthBackends(ZulipTestCase):
                     'github': False,
                     'google': False,
                     'email': False,
+                    'remoteuser': False,
                     'ldap': False,
                     'dev': True,
                     'result': 'success',
