@@ -93,8 +93,13 @@ class MarkdownDirectoryView(ApiURLView):
 def add_integrations_context(context: Dict[str, Any]) -> None:
     alphabetical_sorted_categories = OrderedDict(sorted(CATEGORIES.items()))
     alphabetical_sorted_integration = OrderedDict(sorted(INTEGRATIONS.items()))
+    enabled_integrations_count = len(list(filter(lambda v: v.is_enabled(), INTEGRATIONS.values())))
+    # Subtract 1 so saying "Over X integrations" is correct. Then,
+    # round down to the nearest multiple of 10.
+    integrations_count_display = ((enabled_integrations_count - 1) // 10) * 10
     context['categories_dict'] = alphabetical_sorted_categories
     context['integrations_dict'] = alphabetical_sorted_integration
+    context['integrations_count_display'] = integrations_count_display
 
     if "html_settings_links" in context and context["html_settings_links"]:
         settings_html = '<a href="../../#settings">Zulip settings page</a>'

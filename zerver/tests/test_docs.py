@@ -101,7 +101,7 @@ class DocPageTest(ZulipTestCase):
     @slow("Tests dozens of endpoints, including all our integrations docs")
     def test_integration_doc_endpoints(self) -> None:
         self._test('/integrations/',
-                   'Over 60 native integrations.',
+                   'Over 80 native integrations.',
                    extra_strings=[
                        'And hundreds more through',
                        'Hubot',
@@ -122,7 +122,7 @@ class DocPageTest(ZulipTestCase):
             self.assertNotIn('support+abcdefg@testserver', str(result.content))
             # if EMAIL_GATEWAY_PATTERN is empty, the main /integrations page should
             # be rendered instead
-            self._test('/integrations/', 'Over 60 native integrations.')
+            self._test('/integrations/', 'Over 80 native integrations.')
 
 
 class IntegrationTest(TestCase):
