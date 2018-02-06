@@ -1,11 +1,13 @@
 {{! Contents of the "message actions" popup }}
 <ul class="nav nav-list actions_popover">
+    {{#if show_edit_option}}
     <li>
         <a href="#" class="popover_edit_message" data-message-id="{{message.id}}">
             {{! Can consider http://fontawesome.io/icon/file-code-o/ when we upgrade to font awesome 4.}}
             <i class="{{#if use_edit_icon}}fa fa-pencil{{else}}fa fa-file-text-o{{/if}}" aria-hidden="true"></i> {{editability_menu_item}}
         </a>
     </li>
+    {{/if}}
 
     <li>
         <a href="#" class="respond_button" data-message-id="{{message.id}}">

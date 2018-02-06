@@ -110,11 +110,19 @@ exports.save = function (row, from_topic_edited_only) {
         // If they didn't change anything, just cancel it.
         message_edit.end(row);
         return;
+    } else if (!topic_changed && !markdown.contains_backend_only_syntax(new_content)) {
+        message.content = new_content;
+        row = current_msg_list.get_row(message_id);
+        message_edit.end(row);
+        row.find(".message_content p").text(new_content);
+        row.find(".edit_content").hide();
+        message.backend_edit_in_flight = true;
     }
     channel.patch({
         url: '/json/messages/' + message.id,
         data: request,
         success: function () {
+            message.backend_edit_in_flight = false;
             if (msg_list === current_msg_list) {
                 row.find(".edit_error").text(i18n.t("Message successfully edited!")).removeClass("alert-error").addClass("alert-success").show();
             }
