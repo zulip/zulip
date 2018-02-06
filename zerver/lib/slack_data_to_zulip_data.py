@@ -125,10 +125,22 @@ def users_to_zerver_userprofile(slack_data_dir: str, realm_id: int, timestamp: A
     added_users = {}
 
     user_id_count = get_model_id(UserProfile, 'zerver_userprofile', total_users)
+
+    # We have only one primary owner in slack, see link
+    # https://get.slack.help/hc/en-us/articles/201912948-Owners-and-Administrators
+    # This is to import the primary owner first from all the users
+    primary_owner_id = user_id_count
+    user_id_count += 1
+
     for user in users:
         slack_user_id = user['id']
         profile = user['profile']
         DESKTOP_NOTIFICATION = True
+
+        if user.get('is_primary_owner', False):
+            user_id = primary_owner_id
+        else:
+            user_id = user_id_count
 
         # email
         email = get_user_email(user, domain_name)
@@ -192,7 +204,7 @@ def users_to_zerver_userprofile(slack_data_dir: str, realm_id: int, timestamp: A
             emojiset="google",
             realm=realm_id,
             # invites_used=0,  # TODO
-            id=user_id_count)
+            id=user_id)
 
         # TODO map the avatar
         # zerver auto-infer the url from Gravatar instead of from a specified
@@ -200,8 +212,10 @@ def users_to_zerver_userprofile(slack_data_dir: str, realm_id: int, timestamp: A
         # profile['image_32'], Slack has 24, 32, 48, 72, 192, 512 size range
 
         zerver_userprofile.append(userprofile)
-        added_users[slack_user_id] = user_id_count
-        user_id_count += 1
+        added_users[slack_user_id] = user_id
+        if not user.get('is_primary_owner', False):
+            user_id_count += 1
+
         print(u"{} -> {}\nCreated\n".format(user['name'], userprofile['email']))
     print('######### IMPORTING USERS FINISHED #########\n')
     return zerver_userprofile, added_users
