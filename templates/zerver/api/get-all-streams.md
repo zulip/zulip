@@ -89,5 +89,3 @@ to use the `include_all_active` parameter:
     'msg':'User not authorized for this query'
 }
 ```
-
-{!invalid-api-key-json-response.md!}

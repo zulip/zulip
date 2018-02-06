@@ -14,7 +14,7 @@ os.chdir(ZULIP_PATH)
 from zulip import Client
 
 from tools.lib.test_server import test_server_running
-from zerver.lib.api_test_helpers import test_the_api
+from zerver.lib.api_test_helpers import test_the_api, test_invalid_api_key
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
 django.setup()
@@ -34,5 +34,14 @@ with test_server_running(external_host='zulipdev.com:9981'):
 
     print("Running API tests...")
     test_the_api(client)
+
+    # Test error payloads
+    client = Client(
+        email=email,
+        api_key='abcedrsdfd',
+        site=site
+    )
+    test_invalid_api_key(client)
+
 
 print("API tests passed!")

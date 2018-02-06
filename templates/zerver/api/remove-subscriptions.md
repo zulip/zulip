@@ -99,5 +99,3 @@ that doesn't exist:
     "result":"error"
 }
 ```
-
-{!invalid-api-key-json-response.md!}

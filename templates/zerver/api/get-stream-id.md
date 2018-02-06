@@ -89,5 +89,3 @@ not provided:
     "code":"REQUEST_VARIABLE_MISSING"
 }
 ```
-
-{!invalid-api-key-json-response.md!}

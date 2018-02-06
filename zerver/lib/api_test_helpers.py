@@ -279,6 +279,13 @@ def update_message(client, message_id):
     assert result['result'] == 'success'
     assert result['raw_content'] == request['content']
 
+def test_invalid_api_key(client_with_invalid_key):
+    # type: (Client) -> None
+    result = client_with_invalid_key.list_subscriptions()
+    fixture = FIXTURES['invalid-api-key']
+    test_against_fixture(result, fixture)
+
+
 TEST_FUNCTIONS = {
     'render-message': render_message,
     'stream-message': stream_message,
@@ -343,5 +350,3 @@ def test_the_api(client):
     test_users(client)
     test_streams(client)
     test_messages(client)
-
-    # print(dir(client))

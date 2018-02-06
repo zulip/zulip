@@ -149,5 +149,3 @@ a private stream and `authorization_errors_fatal` is `False`:
     }
 }
 ```
-
-{!invalid-api-key-json-response.md!}

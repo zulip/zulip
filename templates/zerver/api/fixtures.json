@@ -188,5 +188,9 @@
             "new stream"
         ],
         "result":"success",
+    },
+    "invalid-api-key": {
+        "msg":"Invalid API key",
+        "result":"error"
     }
 }

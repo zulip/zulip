@@ -81,5 +81,3 @@ is not supplied:
     'var_name':'content'
 }
 ```
-
-{!invalid-api-key-json-response.md!}

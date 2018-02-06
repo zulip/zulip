@@ -98,5 +98,3 @@ associated queue has already been deleted:
     'msg':'Bad event queue id: 1515096410:2'
 }
 ```
-
-{!invalid-api-key-json-response.md!}

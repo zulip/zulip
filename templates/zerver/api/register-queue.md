@@ -100,5 +100,3 @@ A typical successful JSON response may look like:
     'msg':''
 }
 ```
-
-{!invalid-api-key-json-response.md!}
