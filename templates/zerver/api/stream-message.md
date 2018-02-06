@@ -111,5 +111,3 @@ A typical failed JSON response for when the target stream does not exist:
     'result':'error'
 }
 ```
-
-{!invalid-api-key-json-response.md!}

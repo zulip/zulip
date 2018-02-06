@@ -87,5 +87,3 @@ edit a particular message:
     'msg':"You don't have permission to edit this message"
 }
 ```
-
-{!invalid-api-key-json-response.md!}

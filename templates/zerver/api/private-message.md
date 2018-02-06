@@ -99,5 +99,3 @@ address is invalid:
     'result':'error'
 }
 ```
-
-{!invalid-api-key-json-response.md!}

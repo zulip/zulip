@@ -87,5 +87,3 @@ This request takes no arguments.
 A typical successful JSON response may look like:
 
 {generate_code_example|get-subscribed-streams|fixture}
-
-{!invalid-api-key-json-response.md!}

@@ -84,5 +84,3 @@ email address already exists in the realm:
     'result':'error'
 }
 ```
-
-{!invalid-api-key-json-response.md!}

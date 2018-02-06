@@ -70,5 +70,3 @@ The rest of the return values are quite self-descriptive.
 A typical successful JSON response may look like:
 
 {generate_code_example|get-profile|fixture}
-
-{!invalid-api-key-json-response.md!}
