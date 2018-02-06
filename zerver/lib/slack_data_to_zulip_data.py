@@ -125,13 +125,28 @@ def users_to_zerver_userprofile(slack_data_dir: str, realm_id: int, timestamp: A
     added_users = {}
 
     user_id_count = get_model_id(UserProfile, 'zerver_userprofile', total_users)
+
+    # We have only one primary owner in slack, see link
+    # https://get.slack.help/hc/en-us/articles/201912948-Owners-and-Administrators
+    # This is to import the primary owner first from all the users
+    primary_owner_id = user_id_count
+    user_id_count += 1
+
     for user in users:
         slack_user_id = user['id']
         profile = user['profile']
         DESKTOP_NOTIFICATION = True
 
+        if user.get('is_primary_owner', False):
+            user_id = primary_owner_id
+        else:
+            user_id = user_id_count
+
         # email
         email = get_user_email(user, domain_name)
+
+        # check if user is the admin
+        realm_admin = get_admin(user)
 
         # avatar
         # ref: https://chat.zulip.org/help/change-your-avatar
@@ -142,7 +157,7 @@ def users_to_zerver_userprofile(slack_data_dir: str, realm_id: int, timestamp: A
 
         userprofile = dict(
             enable_desktop_notifications=DESKTOP_NOTIFICATION,
-            is_staff=user.get('is_admin', False),
+            is_staff=False,  # 'staff' is for server administrators, which does't exist in Slack.
             avatar_source=avatar_source,
             is_bot=user.get('is_bot', False),
             avatar_version=1,
@@ -154,7 +169,7 @@ def users_to_zerver_userprofile(slack_data_dir: str, realm_id: int, timestamp: A
             is_mirror_dummy=False,
             pointer=-1,
             default_events_register_stream=None,
-            is_realm_admin=user.get('is_owner', False),
+            is_realm_admin=realm_admin,
             # invites_granted=0,  # TODO
             enter_sends=True,
             bot_type=1 if user.get('is_bot', False) else None,
@@ -189,7 +204,7 @@ def users_to_zerver_userprofile(slack_data_dir: str, realm_id: int, timestamp: A
             emojiset="google",
             realm=realm_id,
             # invites_used=0,  # TODO
-            id=user_id_count)
+            id=user_id)
 
         # TODO map the avatar
         # zerver auto-infer the url from Gravatar instead of from a specified
@@ -197,8 +212,10 @@ def users_to_zerver_userprofile(slack_data_dir: str, realm_id: int, timestamp: A
         # profile['image_32'], Slack has 24, 32, 48, 72, 192, 512 size range
 
         zerver_userprofile.append(userprofile)
-        added_users[slack_user_id] = user_id_count
-        user_id_count += 1
+        added_users[slack_user_id] = user_id
+        if not user.get('is_primary_owner', False):
+            user_id_count += 1
+
         print(u"{} -> {}\nCreated\n".format(user['name'], userprofile['email']))
     print('######### IMPORTING USERS FINISHED #########\n')
     return zerver_userprofile, added_users
@@ -210,6 +227,15 @@ def get_user_email(user: ZerverFieldsT, domain_name: str) -> str:
     else:
         email = user['profile']['email']
     return email
+
+def get_admin(user: ZerverFieldsT) -> bool:
+    admin = user.get('is_admin', False)
+    owner = user.get('is_owner', False)
+    primary_owner = user.get('is_primary_owner', False)
+
+    if admin or owner or primary_owner:
+        return True
+    return False
 
 def get_user_avatar_source(image_url: str) -> str:
     if 'gravatar.com' in image_url:
