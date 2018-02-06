@@ -1022,6 +1022,35 @@ class DefaultStreamGroupTest(ZulipTestCase):
         result = self.client_delete('/json/default_stream_groups/{}'.format(group_id))
         self.assert_json_error(result, "Default stream group with id '{}' does not exist.".format(group_id))
 
+    def test_invalid_default_stream_group_name(self) -> None:
+        self.login(self.example_email("iago"))
+        user_profile = self.example_user('iago')
+        realm = user_profile.realm
+
+        stream_names = ["stream1", "stream2", "stream3"]
+        description = "This is group1"
+        streams = []
+
+        for stream_name in stream_names:
+            (stream, _) = create_stream_if_needed(realm, stream_name)
+            streams.append(stream)
+
+        result = self.client_post('/json/default_stream_groups/create',
+                                  {"group_name": "", "description": description,
+                                   "stream_names": ujson.dumps(stream_names)})
+        self.assert_json_error(result, "Invalid default stream group name ''")
+
+        result = self.client_post('/json/default_stream_groups/create',
+                                  {"group_name": 'x'*100, "description": description,
+                                   "stream_names": ujson.dumps(stream_names)})
+        self.assert_json_error(result, "Default stream group name too long (limit: {} characters)"
+                               .format((DefaultStreamGroup.MAX_NAME_LENGTH)))
+
+        result = self.client_post('/json/default_stream_groups/create',
+                                  {"group_name": "abc\000", "description": description,
+                                   "stream_names": ujson.dumps(stream_names)})
+        self.assert_json_error(result, "Default stream group name 'abc\000' contains NULL (0x00) characters.")
+
 class SubscriptionPropertiesTest(ZulipTestCase):
     def test_set_stream_color(self) -> None:
         """
