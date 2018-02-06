@@ -160,14 +160,25 @@ def list_subscriptions(client):
 def remove_subscriptions(client):
     # type: (Client) -> None
 
-    result = client.remove_subscriptions(['new stream'])
-    assert result['result'] == 'success'
+    # {code_example|start}
+    # Unsubscribe from the stream "new stream"
+    result = client.remove_subscriptions(
+        ['new stream']
+    )
+    # {code_example|end}
+
+    fixture = FIXTURES['remove-subscriptions']
+    test_against_fixture(result, fixture)
 
     # test it was actually removed
     result = client.list_subscriptions()
     assert result['result'] == 'success'
     streams = [s for s in result['subscriptions'] if s['name'] == 'new stream']
     assert len(streams) == 0
+
+    # TODO: Add example for 'principals' argument when the next zulip package
+    # release is made. The next release supports passing in 'principals' to
+    # remove_subscriptions.
 
 def render_message(client):
     # type: (Client) -> None
@@ -279,6 +290,7 @@ TEST_FUNCTIONS = {
     'create-user': create_user,
     'get-profile': get_profile,
     'add-subscriptions': add_subscriptions,
+    'remove-subscriptions': remove_subscriptions,
 }
 
 # SETUP METHODS FOLLOW
@@ -322,6 +334,7 @@ def test_streams(client):
     get_stream_id(client)
     get_streams(client)
     get_subscribers(client)
+    remove_subscriptions(client)
 
 def test_the_api(client):
     # type: (Client) -> None

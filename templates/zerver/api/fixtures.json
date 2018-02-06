@@ -178,5 +178,21 @@
                 ]
             }
         }
+    },
+    "remove-subscriptions": {
+        "already_subscribed":{
+
+        },
+        "msg":"",
+        "not_subscribed":[
+
+        ],
+        "removed":[
+            "new stream"
+        ],
+        "result":"success",
+        "subscribed":{
+
+        }
     }
 }
