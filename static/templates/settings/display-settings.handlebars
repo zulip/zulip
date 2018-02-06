@@ -1,7 +1,9 @@
 <div id="display-settings" class="settings-section" data-name="display-settings">
-    <div class="alert" id="display-settings-status"></div>
     <form class="display-settings-form">
-        <h3>{{t "Language settings" }}</h3>
+        <!-- this is inline block so that the alert notification can sit beside
+        it. If there's not an alert, don't make it inline-block. -->
+        <h3 class="inline-block">{{t "Language settings" }}</h3>
+        <div class="alert-notification" id="language-settings-status"></div>
 
         <div class="input-group user-name-section">
             <label class="inline-block title">{{t "Default language" }}</label>
@@ -15,7 +17,8 @@
 
         {{ partial "default_language_modal"}}
 
-        <h3>{{t "Display settings" }}</h3>
+        <h3 class="inline-block">{{t "Display settings" }}</h3>
+        <div class="alert-notification" id="display-settings-status"></div>
 
         <div class="input-group">
             <label class="checkbox">
@@ -50,7 +53,8 @@
             <label for="left_side_userlist" class="inline-block">{{t "User list on left sidebar in narrow windows" }}</label>
         </div>
 
-        <h3>{{t "Time settings" }}</h3>
+        <h3 class="inline-block">{{t "Time settings" }}</h3>
+        <div class="alert-notification" id="time-settings-status"></div>
 
         <div class="input-group">
             <label class="checkbox">
@@ -78,7 +82,8 @@
             </select>
         </div>
 
-        <h3 class="light">Emoji style</h3>
+        <h3 class="inline-block light">Emoji style</h3>
+        <div class="alert-notification" id="emoji-settings-status"></div>
 
         <div class="input-group side-padded-container">
             <label class="checkbox">
@@ -112,7 +117,6 @@
                 </label>
                 {{/each}}
             </div>
-            <div id="emojiset_spinner"></div>
         </div>
     </form>
 </div>
