@@ -35,33 +35,7 @@ curl {{ api_url }}/v1/users/me/subscriptions \
 
 <div data-language="python" markdown="1">
 
-```python
-#!/usr/bin/env python
-
-import zulip
-
-# Download ~/zuliprc-dev from your dev server
-client = zulip.Client(config_file="~/zuliprc-dev")
-
-# Subscribe to the streams "Verona" and "Denmark"
-print(client.add_subscriptions(
-    streams=[
-        {'name': 'Verona'},
-        {'name': 'Denmark'}
-    ]
-))
-
-# To subscribe another user to a stream, you may pass in
-# the `principals` argument, like so:
-print(client.add_subscriptions(
-    streams=[
-        {'name': 'Verona'},
-        {'name': 'Denmark'}
-    ],
-    principals=['ZOE@zulip.org']
-))
-
-```
+{generate_code_example|add-subscriptions|example}
 
 </div>
 
@@ -126,21 +100,7 @@ zulip(config).then((client) => {
 
 A typical successful JSON response may look like:
 
-```
-{
-    'msg':'',
-    'result':'success',
-    'already_subscribed':{
-
-    },
-    'subscribed':{
-        'sample-bot@localhost':[
-            'Denmark',
-            'Verona'
-        ]
-    }
-}
-```
+{generate_code_example|add-subscriptions|fixture(without_principals)}
 
 A typical successful JSON response when the user is already subscribed to
 the streams specified:

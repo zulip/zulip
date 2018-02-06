@@ -164,5 +164,19 @@
         "result":"success",
         "short_name":"iago",
         "user_id":5
+    },
+    "add-subscriptions": {
+        "without_principals": {
+            "already_subscribed":{
+
+            },
+            "msg":"",
+            "result":"success",
+            "subscribed":{
+                "iago@zulip.com":[
+                    "new stream"
+                ]
+            }
+        }
     }
 }

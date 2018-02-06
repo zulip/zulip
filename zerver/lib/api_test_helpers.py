@@ -19,14 +19,33 @@ FIXTURES = load_api_fixtures()
 def add_subscriptions(client):
     # type: (Client) -> None
 
-    request = [
-        dict(
-            name='new stream',
-            description='New stream for testing',
-        )
-    ]
-    result = client.add_subscriptions(request)
+    # {code_example|start}
+    # Subscribe to the stream "new stream"
+    result = client.add_subscriptions(
+        streams=[
+            {
+                'name': 'new stream',
+                'description': 'New stream for testing'
+            }
+        ]
+    )
+    # {code_example|end}
+
+    fixture = FIXTURES['add-subscriptions']['without_principals']
+    test_against_fixture(result, fixture)
+
+    # {code_example|start}
+    # To subscribe another user to a stream, you may pass in
+    # the `principals` argument, like so:
+    result = client.add_subscriptions(
+        streams=[
+            {'name': 'new stream', 'description': 'New stream for testing'}
+        ],
+        principals=['newbie@zulip.com']
+    )
+    # {code_example|end}
     assert result['result'] == 'success'
+    assert 'newbie@zulip.com' in result['subscribed']
 
 def create_user(client):
     # type: (Client) -> None
@@ -115,7 +134,7 @@ def get_subscribers(client):
     # type: (Client) -> None
 
     result = client.get_subscribers(stream='new stream')
-    assert result['subscribers'] == ['iago@zulip.com']
+    assert result['subscribers'] == ['iago@zulip.com', 'newbie@zulip.com']
 
 def get_user_agent(client):
     # type: (Client) -> None
@@ -259,6 +278,7 @@ TEST_FUNCTIONS = {
     'get-all-streams': get_streams,
     'create-user': create_user,
     'get-profile': get_profile,
+    'add-subscriptions': add_subscriptions,
 }
 
 # SETUP METHODS FOLLOW
