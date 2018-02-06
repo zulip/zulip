@@ -97,8 +97,8 @@
     position: absolute;
     bottom: 15px;
     right: 15px;
-    width: 80px;
-    height: 35px;
+    max-width: 100px;
+    max-height: 70px;
 
     border: none;
 
@@ -107,6 +107,8 @@
     color: hsl(0, 0%, 100%);
     background-color: hsl(164, 44%, 47%);
     border-radius: 4px;
+    white-space: normal;
+    padding: 7px;
 }
 
 /* arrows */
