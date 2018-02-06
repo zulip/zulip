@@ -58,6 +58,25 @@ class TestMissedMessages(ZulipTestCase):
             self.assertIn(body, self.normalize_string(msg.body))
 
     @patch('zerver.lib.email_mirror.generate_random_token')
+    def _realm_name_in_missed_message_email_subject(self,
+                                                    realm_name_in_notifications: bool,
+                                                    mock_random_token: MagicMock) -> None:
+        tokens = self._get_tokens()
+        mock_random_token.side_effect = tokens
+
+        msg_id = self.send_personal_message(
+            self.example_email('othello'),
+            self.example_email('hamlet'),
+            'Extremely personal message!',
+        )
+        body = 'You and Othello, the Moor of Venice Extremely personal message!'
+        subject = 'Othello, the Moor of Venice sent you a message'
+
+        if realm_name_in_notifications:
+            subject = 'Othello, the Moor of Venice sent you a message in Zulip Dev'
+        self._test_cases(tokens, msg_id, body, subject, False)
+
+    @patch('zerver.lib.email_mirror.generate_random_token')
     def _extra_context_in_missed_stream_messages_mention(self, send_as_user: bool,
                                                          mock_random_token: MagicMock) -> None:
         tokens = self._get_tokens()
@@ -258,6 +277,19 @@ class TestMissedMessages(ZulipTestCase):
         self.assertEqual(len(mail.outbox), 0)
         handle_missedmessage_emails(iago.id, [{'message_id': msg_id}])
         self.assertEqual(len(mail.outbox), 0)
+
+    def test_realm_name_in_notifications(self) -> None:
+        # Test with realm_name_in_notifications for hamlet disabled.
+        self._realm_name_in_missed_message_email_subject(False)
+
+        # Enable realm_name_in_notifications for hamlet and test again.
+        hamlet = self.example_user('hamlet')
+        hamlet.realm_name_in_notifications = True
+        hamlet.save(update_fields=['realm_name_in_notifications'])
+
+        # Empty the test outbox
+        mail.outbox = []
+        self._realm_name_in_missed_message_email_subject(True)
 
     @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
     def test_extra_context_in_missed_stream_messages_as_user(self) -> None:
