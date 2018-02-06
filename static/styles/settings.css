@@ -432,6 +432,34 @@ input[type=checkbox].inline-block {
     margin-right: 8px;
 }
 
+#display-settings-status,
+#time-settings-status,
+#emoji-settings-status,
+#language-settings-status {
+    margin-top: -35px;
+    margin-bottom: 60px;
+}
+
+#display-settings-status {
+    margin-left: 160px;
+}
+
+#time-settings-status {
+    margin-left: 140px;
+}
+
+#emoji-settings-status {
+    margin-left: 110px;
+}
+
+#language-settings-status {
+    margin-left: 190px;
+}
+
+.alert-notification {
+    color: hsl(170, 47%, 54%);
+}
+
 #notification-settings .notification-reminder {
     text-align: left;
 }
