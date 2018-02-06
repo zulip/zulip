@@ -133,6 +133,9 @@ def users_to_zerver_userprofile(slack_data_dir: str, realm_id: int, timestamp: A
         # email
         email = get_user_email(user, domain_name)
 
+        # check if user is the admin
+        realm_admin = get_admin(user)
+
         # avatar
         # ref: https://chat.zulip.org/help/change-your-avatar
         avatar_source = get_user_avatar_source(profile['image_32'])
@@ -154,7 +157,7 @@ def users_to_zerver_userprofile(slack_data_dir: str, realm_id: int, timestamp: A
             is_mirror_dummy=False,
             pointer=-1,
             default_events_register_stream=None,
-            is_realm_admin=user.get('is_owner', False),
+            is_realm_admin=realm_admin,
             # invites_granted=0,  # TODO
             enter_sends=True,
             bot_type=1 if user.get('is_bot', False) else None,
@@ -210,6 +213,15 @@ def get_user_email(user: ZerverFieldsT, domain_name: str) -> str:
     else:
         email = user['profile']['email']
     return email
+
+def get_admin(user: ZerverFieldsT) -> bool:
+    admin = user.get('is_admin', False)
+    owner = user.get('is_owner', False)
+    primary_owner = user.get('is_primary_owner', False)
+
+    if admin or owner or primary_owner:
+        return True
+    return False
 
 def get_user_avatar_source(image_url: str) -> str:
     if 'gravatar.com' in image_url:
