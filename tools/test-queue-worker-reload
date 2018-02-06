@@ -17,7 +17,7 @@ from typing import IO, Text
 # TODO: Convert this to use scripts/lib/queue_workers.py
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 successful_worker_launches = [
-    '[process_queue] 20 queue worker threads were launched',
+    '[process_queue] 19 queue worker threads were launched',
 ]
 
 def check_worker_launch(logfile_name):
