@@ -490,10 +490,11 @@ exports.get_streams_for_admin = function () {
 };
 
 exports.initialize_from_page_params = function () {
-    function populate_subscriptions(subs, subscribed) {
+    function populate_subscriptions(subs, subscribed, previously_subscribed) {
         subs.forEach(function (sub) {
             var stream_name = sub.name;
             sub.subscribed = subscribed;
+            sub.previously_subscribed = previously_subscribed;
 
             exports.create_sub_from_server_data(stream_name, sub);
         });
@@ -501,9 +502,9 @@ exports.initialize_from_page_params = function () {
 
     exports.set_realm_default_streams(page_params.realm_default_streams);
 
-    populate_subscriptions(page_params.subscriptions, true);
-    populate_subscriptions(page_params.unsubscribed, false);
-    populate_subscriptions(page_params.never_subscribed, false);
+    populate_subscriptions(page_params.subscriptions, true, true);
+    populate_subscriptions(page_params.unsubscribed, false, true);
+    populate_subscriptions(page_params.never_subscribed, false, false);
 
     // Migrate the notifications stream from the new API structure to
     // what the frontend expects.
