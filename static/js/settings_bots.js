@@ -278,17 +278,16 @@ exports.set_up = function () {
         var li = $(e.currentTarget).closest('li');
         var bot_id = li.find('.bot_info').attr('data-user_id').valueOf();
         var bot = bot_data.get(bot_id);
-        var edit_bot_form = templates.render('edit_bot', {bot: bot});
-        $("#edit_bot").empty();
-        $("#edit_bot").append(edit_bot_form);
         var users_list = people.get_realm_persons().filter(function (person)  {
             return !person.is_bot;
         });
+        var edit_bot_form = templates.render('edit_bot', {bot: bot,
+                                                          users_list: users_list});
+        $("#edit_bot").empty();
+        $("#edit_bot").append(edit_bot_form);
         var avatar_widget = avatar.build_bot_edit_widget($("#settings_page"));
         var form = $('#settings_page .edit_bot_form');
         var image = li.find(".image");
-        var owner_select = $(templates.render("bot_owner_select", {users_list:users_list}));
-        $("#settings_page .edit_bot .select-form").text("").append(owner_select);
         $("#settings_page .edit_bot .edit-bot-owner select").val(bot.owner);
 
         if (bot.bot_type.toString() === OUTGOING_WEBHOOK_BOT_TYPE) {
