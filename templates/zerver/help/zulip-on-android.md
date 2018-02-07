@@ -31,7 +31,7 @@ then press **Log in**.
 
     ![Login form](/static/images/help/android-log-in.png)
 
-* If you prefer to log in with your Google account, press the **Sign in with Google** button.
+* If you prefer to log in with your Google account, press the **Log in with Google** button.
 
     ![Google button](/static/images/help/android-google-sign-in-button.png)
 

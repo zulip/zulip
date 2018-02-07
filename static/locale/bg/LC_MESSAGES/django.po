@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Boris Yankov <borisyankov@gmail.com>, 2017
 msgid ""
@@ -1015,11 +1015,11 @@ msgid "Download"
 msgstr ""
 
 #: templates/zerver/login.html:27
-msgid "Sign in to Zulip"
+msgid "Log in to Zulip"
 msgstr ""
 
 #: templates/zerver/login.html:35
-msgid "Sign in with SSO"
+msgid "Log in with SSO"
 msgstr ""
 
 #: templates/zerver/login.html:82
@@ -1037,19 +1037,19 @@ msgstr "Парола"
 
 #: templates/zerver/login.html:106
 msgid ""
-"You've already registered with this email address. Please sign in below."
+"You've already registered with this email address. Please log in below."
 msgstr ""
 
 #: templates/zerver/login.html:116
-msgid "Sign in"
+msgid "Log in"
 msgstr "Вход"
 
 #: templates/zerver/login.html:128
-msgid "Sign in with Google"
+msgid "Log in with Google"
 msgstr "Вход с Google"
 
 #: templates/zerver/login.html:136
-msgid "Sign in with GitHub"
+msgid "Log in with GitHub"
 msgstr ""
 
 #: templates/zerver/markdown_help.html:2 templates/zerver/navbar.html:101
@@ -1268,7 +1268,7 @@ msgid "Use %(external_host)s"
 msgstr ""
 
 #: templates/zerver/register.html:145
-msgid "The address you'll use to sign in to your organization."
+msgid "The address you'll use to log in to your organization."
 msgstr ""
 
 #: templates/zerver/register.html:166
