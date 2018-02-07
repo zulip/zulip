@@ -386,14 +386,6 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
-    $('body').on('click', '.user_popover .mention_user', function (e) {
-        var user_id = $(e.target).parents('ul').attr('data-user-id');
-        compose_actions.reply_mentioning_user(user_id, 'sidebar user actions');
-        popovers.hide_user_sidebar_popover();
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
     $('body').on('click', '.sender_info_popover .narrow_to_private_messages', function (e) {
         var user_id = $(e.target).parents('ul').attr('data-user-id');
         var email = people.get_person_from_user_id(user_id).email;
