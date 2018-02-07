@@ -78,6 +78,12 @@ stream_data.subscribed_streams = function () {
     return stream_list;
 };
 
+var hamlet = {
+    email: 'hamlet@zulip.com',
+    user_id: 100,
+    full_name: "King Hamlet",
+};
+
 var othello = {
     email: 'othello@zulip.com',
     user_id: 101,
@@ -580,9 +586,45 @@ global.user_groups.add(backend);
         expected_value = [cordelia, othello];
         assert.deepEqual(actual_value, expected_value);
 
+        var hamburger = {
+            email: 'coolham@zulip.com',
+            user_id: 200,
+            full_name: "Hamburger",
+        };
+        var hammer = {
+            email: 'hammer@zulip.com',
+            user_id: 202,
+            full_name: "Apollo",
+        };
+        var zeus = {
+            email: 'zeus@hamel.com',
+            user_id: 201,
+            full_name: "Zeus",
+        };
+
         fake_this = { completing: 'mention', token: 'ham' };
-        actual_value = options.sorter.call(fake_this, [backend, hamletcharacters]);
+        actual_value = options.sorter.call(fake_this, [hamletcharacters, hamburger]);
+        expected_value = [hamburger, hamletcharacters];
+        assert.deepEqual(actual_value, expected_value);
+
+        fake_this = { completing: 'mention', token: 'ham' };
+        actual_value = options.sorter.call(fake_this, [hamletcharacters, hamlet]);
+        expected_value = [hamletcharacters, hamlet];
+        assert.deepEqual(actual_value, expected_value);
+
+        fake_this = { completing: 'mention', token: 'ham' };
+        actual_value = options.sorter.call(fake_this, [hamletcharacters, backend]);
         expected_value = [hamletcharacters, backend];
+        assert.deepEqual(actual_value, expected_value);
+
+        fake_this = { completing: 'mention', token: 'ham' };
+        actual_value = options.sorter.call(fake_this, [hamletcharacters, zeus]);
+        expected_value = [hamletcharacters, zeus];
+        assert.deepEqual(actual_value, expected_value);
+
+        fake_this = { completing: 'mention', token: 'ham' };
+        actual_value = options.sorter.call(fake_this, [hamletcharacters, hammer]);
+        expected_value = [hamletcharacters, hammer];
         assert.deepEqual(actual_value, expected_value);
 
         fake_this = { completing: 'stream', token: 'de' };
