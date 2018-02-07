@@ -17,7 +17,7 @@ class SolanoHookTests(WebhookTestCase):
         expected_message = (u"Author: solano-ci[bot]@users.noreply.github.com\n"
                             u"Commit: [5f438401eb7cc7268cbc28438bfa70bb99f48a03]"
                             u"(github.com/fazerlicourice7/solano/commit/5f438401eb7cc7268"
-                            u"cbc28438bfa70bb99f48a03)\nBuild status: failed :thumbsdown:\n"
+                            u"cbc28438bfa70bb99f48a03)\nBuild status: failed :thumbs_down:\n"
                             u"[Build Log](https://ci.solanolabs.com:443/reports/3316175)")
 
         self.send_and_test_stream_message('build_001', expected_topic, expected_message,
@@ -30,7 +30,7 @@ class SolanoHookTests(WebhookTestCase):
         expected_topic = u'build update'
         expected_message = (u"Author: Unknown\nCommit: [5d0b92e26448a9e91db794bfed4b8c3556eabc4e]"
                             u"(bitbucket.org/fazerlicourice7/test/commits/5d0b92e26448a9e91db794bfed"
-                            u"4b8c3556eabc4e)\nBuild status: failed :thumbsdown:\n"
+                            u"4b8c3556eabc4e)\nBuild status: failed :thumbs_down:\n"
                             u"[Build Log](https://ci.solanolabs.com:443/reports/3316723)")
 
         self.send_and_test_stream_message('build_002', expected_topic, expected_message,
