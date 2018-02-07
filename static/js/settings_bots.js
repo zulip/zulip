@@ -287,7 +287,6 @@ exports.set_up = function () {
         var avatar_widget = avatar.build_bot_edit_widget($("#settings_page"));
         var form = $('#settings_page .edit_bot_form');
         var image = li.find(".image");
-        var reset_edit_bot = $("#edit_bot .reset_edit_bot");
         var owner_select = $(templates.render("bot_owner_select", {users_list:users_list}));
         $("#settings_page .edit_bot .select-form").text("").append(owner_select);
         $("#settings_page .edit_bot .edit-bot-owner select").val(bot.owner);
@@ -300,12 +299,6 @@ exports.set_up = function () {
         }
 
         avatar_widget.clear();
-
-        reset_edit_bot.click(function (event) {
-            form.find(".edit_bot_name").val(bot.full_name);
-            owner_select.remove();
-            $(this).off(event);
-        });
 
         var errors = form.find('.bot_edit_errors');
 
