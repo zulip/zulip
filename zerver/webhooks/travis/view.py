@@ -38,9 +38,9 @@ def api_travis_webhook(request: HttpRequest, user_profile: UserProfile,
         return json_success()
 
     if message_status in GOOD_STATUSES:
-        emoji = ':thumbsup:'
+        emoji = ':thumbs_up:'
     elif message_status in BAD_STATUSES:
-        emoji = ':thumbsdown:'
+        emoji = ':thumbs_down:'
     else:
         emoji = "(No emoji specified for status '{}'.)".format(message_status)
 

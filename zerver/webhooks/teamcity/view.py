@@ -52,14 +52,14 @@ def api_teamcity_webhook(request: HttpRequest, user_profile: UserProfile,
 
     if build_result == 'success':
         if build_result_delta == 'fixed':
-            status = 'has been fixed! :thumbsup:'
+            status = 'has been fixed! :thumbs_up:'
         else:
-            status = 'was successful! :thumbsup:'
+            status = 'was successful! :thumbs_up:'
     elif build_result == 'failure':
         if build_result_delta == 'broken':
-            status = 'is broken with status %s! :thumbsdown:' % (build_status,)
+            status = 'is broken with status %s! :thumbs_down:' % (build_status,)
         else:
-            status = 'is still broken with status %s! :thumbsdown:' % (build_status,)
+            status = 'is still broken with status %s! :thumbs_down:' % (build_status,)
     elif build_result == 'running':
         status = 'has started.'
     else:
