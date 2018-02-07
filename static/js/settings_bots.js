@@ -274,9 +274,11 @@ exports.set_up = function () {
 
     var image_version = 0;
 
-    var avatar_widget = avatar.build_bot_edit_widget($("#settings_page"));
-
     $("#active_bots_list").on("click", "button.open_edit_bot_form", function (e) {
+        var edit_bot_form = templates.render('edit_bot');
+        $(".edit_bot").empty();
+        $(".edit_bot").append(edit_bot_form);
+        var avatar_widget = avatar.build_bot_edit_widget($("#settings_page"));
         var users_list = people.get_realm_persons().filter(function (person)  {
             return !person.is_bot;
         });
@@ -286,7 +288,7 @@ exports.set_up = function () {
         var image = li.find(".image");
         var bot_info = li;
         var bot_id = bot_info.find('.bot_info').attr('data-user_id').valueOf();
-        var reset_edit_bot = li.find(".reset_edit_bot");
+        var reset_edit_bot = $("#edit_bot .reset_edit_bot");
         var owner_select = $(templates.render("bot_owner_select", {users_list:users_list}));
         var old_full_name = bot_info.find(".name").text();
         var old_owner = bot_data.get(bot_id).owner;

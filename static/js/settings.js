@@ -11,6 +11,7 @@ $("body").ready(function () {
 
     var close_sidebar = function () {
         $sidebar.removeClass("show");
+        $sidebar.find("#edit_bot").empty();
         is_open = false;
     };
 
