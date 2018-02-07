@@ -1050,7 +1050,7 @@ class EventsRegisterTest(ZulipTestCase):
             ])),
         ])
         description = "Backend team to deal with backend code."
-        events = self.do_test(lambda: do_update_user_group_description(backend, description))
+        events = self.do_test(lambda: do_update_user_group_description(othello, backend, description))
         error = user_group_update_checker('events[0]', events[0])
         self.assert_on_error(error)
 

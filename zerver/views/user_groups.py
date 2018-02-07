@@ -42,7 +42,7 @@ def edit_user_group(request: HttpRequest, user_profile: UserProfile,
         result['name'] = _("Name successfully updated.")
 
     if description != user_group.description:
-        do_update_user_group_description(user_group, description)
+        do_update_user_group_description(user_profile, user_group, description)
         result['description'] = _("Description successfully updated.")
 
     return json_success(result)

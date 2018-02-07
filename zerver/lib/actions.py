@@ -4499,9 +4499,16 @@ def do_update_user_group_name(user_group: UserGroup, name: Text) -> None:
     user_group.save(update_fields=['name'])
     do_send_user_group_update_event(user_group, dict(name=name))
 
-def do_update_user_group_description(user_group: UserGroup, description: Text) -> None:
+def do_update_user_group_description(updated_by: UserProfile, user_group: UserGroup,
+                                     description: Text) -> None:
+    extra_data = {"user_group_id": user_group.id, "user_group_name": user_group.name,
+                  "old_description": user_group.description, "new_description": description}
+
     user_group.description = description
     user_group.save(update_fields=['description'])
+    RealmAuditLog.objects.create(realm=user_group.realm, acting_user=updated_by,
+                                 event_time=timezone_now(), extra_data=extra_data,
+                                 event_type="user_group_description_changed")
     do_send_user_group_update_event(user_group, dict(description=description))
 
 def do_update_outgoing_webhook_service(bot_profile, service_interface, service_payload_url):
