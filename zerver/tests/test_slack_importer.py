@@ -32,11 +32,15 @@ from zerver.lib import mdiff
 import ujson
 import json
 
+import logging
 import os
 import mock
 from typing import Any, AnyStr, Dict, List, Optional, Set, Tuple, Text
 
 class SlackImporter(ZulipTestCase):
+    logger = logging.getLogger()
+    # set logger to a higher level to suppress 'logger.INFO' outputs
+    logger.setLevel(logging.WARNING)
 
     @slow('Does id allocation for to be imported objects and resets sequence id')
     def test_get_model_id(self) -> None:

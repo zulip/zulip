@@ -6,6 +6,7 @@ import argparse
 import shutil
 import subprocess
 import re
+import logging
 
 from django.utils.timezone import now as timezone_now
 from typing import Any, Dict, List, Tuple
@@ -118,7 +119,7 @@ def users_to_zerver_userprofile(slack_data_dir: str, realm_id: int, timestamp: A
     2. added_users, which is a dictionary to map from slack user id to zulip
        user id
     """
-    print('######### IMPORTING USERS STARTED #########\n')
+    logging.info('######### IMPORTING USERS STARTED #########\n')
     users = get_data_file(slack_data_dir + '/users.json')
     total_users = len(users)
     zerver_userprofile = []
@@ -216,8 +217,8 @@ def users_to_zerver_userprofile(slack_data_dir: str, realm_id: int, timestamp: A
         if not user.get('is_primary_owner', False):
             user_id_count += 1
 
-        print(u"{} -> {}\nCreated\n".format(user['name'], userprofile['email']))
-    print('######### IMPORTING USERS FINISHED #########\n')
+        logging.info(u"{} -> {}".format(user['name'], userprofile['email']))
+    logging.info('######### IMPORTING USERS FINISHED #########\n')
     return zerver_userprofile, added_users
 
 def get_user_email(user: ZerverFieldsT, domain_name: str) -> str:
@@ -268,7 +269,7 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
     5. zerver_recipient, which is a list of the recipients
     6. added_recipient, which is a dictionary to map from channel name to zulip recipient_id
     """
-    print('######### IMPORTING CHANNELS STARTED #########\n')
+    logging.info('######### IMPORTING CHANNELS STARTED #########\n')
     channels = get_data_file(slack_data_dir + '/channels.json')
 
     added_channels = {}
@@ -352,7 +353,7 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
 
         stream_id_count += 1
         recipient_id_count += 1
-        print(u"{} -> created\n".format(channel['name']))
+        logging.info(u"{} -> created".format(channel['name']))
 
         # TODO map Slack's pins to Zulip's stars
         # There is the security model that Slack's pins are known to the team owner
@@ -378,7 +379,7 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
         subscription_id_count += 1
         recipient_id_count += 1
 
-    print('######### IMPORTING STREAMS FINISHED #########\n')
+    logging.info('######### IMPORTING STREAMS FINISHED #########\n')
     return zerver_defaultstream, zerver_stream, added_channels, zerver_subscription, \
         zerver_recipient, added_recipient
 
@@ -446,7 +447,7 @@ def convert_slack_workspace_messages(slack_data_dir: str, REALM_ID: int, added_u
     zerver_message = []  # type: List[ZerverFieldsT]
     zerver_usermessage = []  # type: List[ZerverFieldsT]
 
-    print('######### IMPORTING MESSAGES STARTED #########\n')
+    logging.info('######### IMPORTING MESSAGES STARTED #########\n')
     # To pre-compute the total number of messages and usermessages
     total_messages = 0
     total_usermessages = 0
@@ -470,7 +471,7 @@ def convert_slack_workspace_messages(slack_data_dir: str, REALM_ID: int, added_u
                                                     id_list)
         zerver_message += zm
         zerver_usermessage += zum
-    print('######### IMPORTING MESSAGES FINISHED #########\n')
+    logging.info('######### IMPORTING MESSAGES FINISHED #########\n')
 
     message_json['zerver_message'] = zerver_message
     message_json['zerver_usermessage'] = zerver_usermessage
@@ -628,8 +629,8 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str) 
     rm_tree(slack_data_dir)
     subprocess.check_call(["tar", "-czf", output_dir + '.tar.gz', output_dir, '-P'])
 
-    print('######### DATA CONVERSION FINISHED #########\n')
-    print("Zulip data dump created at %s" % (output_dir))
+    logging.info('######### DATA CONVERSION FINISHED #########\n')
+    logging.info("Zulip data dump created at %s" % (output_dir))
     sys.exit(0)
 
 def get_data_file(path: str) -> Any:
