@@ -263,27 +263,37 @@ exports.sort_languages = function (matches, query) {
     return results.matches.concat(results.rest);
 };
 
-exports.sort_recipients = function (matches, query, current_stream, current_subject) {
-    var name_results =  util.prefix_sort(query, matches, function (x) { return x.full_name; });
-    var email_results = util.prefix_sort(query, name_results.rest,
-        function (x) { return x.email; });
-
-    var matches_sorted = exports.sort_for_at_mentioning(
-        name_results.matches.concat(email_results.matches),
+exports.sort_recipients = function (users, query, current_stream, current_subject, groups) {
+    var users_name_results =  util.prefix_sort(query, users,
+        function (x) { return x.full_name; });
+    var result = exports.sort_for_at_mentioning(
+        users_name_results.matches,
         current_stream,
         current_subject
     );
+
+    var groups_results;
+    if (groups !== undefined) {
+        groups_results = util.prefix_sort(query, groups, function (x) { return x.name; });
+        result = result.concat(groups_results.matches);
+    }
+
+    var email_results = util.prefix_sort(query, users_name_results.rest,
+        function (x) { return x.email; });
+    result = result.concat(exports.sort_for_at_mentioning(
+        email_results.matches,
+        current_stream,
+        current_subject
+    ));
     var rest_sorted = exports.sort_for_at_mentioning(
         email_results.rest,
         current_stream,
         current_subject
     );
-    return matches_sorted.concat(rest_sorted);
-};
-
-exports.sort_user_groups = function (matches, query) {
-    var results = util.prefix_sort(query, matches, function (x) { return x.name; });
-    return results.matches.concat(results.rest);
+    if (groups !== undefined) {
+        rest_sorted = rest_sorted.concat(groups_results.rest);
+    }
+    return result.concat(rest_sorted);
 };
 
 exports.sort_emojis = function (matches, query) {

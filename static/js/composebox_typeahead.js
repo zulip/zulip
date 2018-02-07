@@ -493,21 +493,20 @@ exports.compose_matches_sorter = function (matches) {
     if (this.completing === 'emoji') {
         return typeahead_helper.sort_emojis(matches, this.token);
     } else if (this.completing === 'mention') {
-        var recipients = [];
+        var users = [];
         var groups = [];
         _.each(matches, function (match) {
             if (user_groups.is_user_group(match)) {
                 groups.push(match);
             } else {
-                recipients.push(match);
+                users.push(match);
             }
         });
 
-        recipients = typeahead_helper.sort_recipients(recipients, this.token,
+        var recipients = typeahead_helper.sort_recipients(users, this.token,
                                                       compose_state.stream_name(),
-                                                      compose_state.subject());
-        groups = typeahead_helper.sort_user_groups(groups, this.token);
-        return recipients.concat(groups);
+                                                      compose_state.subject(), groups);
+        return recipients;
     } else if (this.completing === 'stream') {
         return typeahead_helper.sort_streams(matches, this.token);
     } else if (this.completing === 'syntax') {
