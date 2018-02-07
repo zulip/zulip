@@ -1465,6 +1465,10 @@ function render(template_name, args) {
     assert.equal($(html).find('input').attr('placeholder'), args.value);
 }());
 
+(function edit_bot() {
+    render('edit_bot');
+}());
+
 // By the end of this test, we should have compiled all our templates.  Ideally,
 // we will also have exercised them to some degree, but that's a little trickier
 // to enforce.
