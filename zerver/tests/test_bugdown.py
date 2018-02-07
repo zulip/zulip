@@ -607,19 +607,19 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(converted, '<p>:green_tick:</p>')
 
     def test_unicode_emoji(self) -> None:
-        msg = u'\u2615'  # ☕
+        msg = '\u2615'  # ☕
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, u'<p><span class="emoji emoji-2615" title="coffee">:coffee:</span></p>')
+        self.assertEqual(converted, '<p><span class="emoji emoji-2615" title="coffee">:coffee:</span></p>')
 
-        msg = u'\u2615\u2615'  # ☕☕
+        msg = '\u2615\u2615'  # ☕☕
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, u'<p><span class="emoji emoji-2615" title="coffee">:coffee:</span><span class="emoji emoji-2615" title="coffee">:coffee:</span></p>')
+        self.assertEqual(converted, '<p><span class="emoji emoji-2615" title="coffee">:coffee:</span><span class="emoji emoji-2615" title="coffee">:coffee:</span></p>')
 
     def test_same_markup(self) -> None:
-        msg = u'\u2615'  # ☕
+        msg = '\u2615'  # ☕
         unicode_converted = bugdown_convert(msg)
 
-        msg = u':coffee:'  # ☕☕
+        msg = ':coffee:'  # ☕☕
         converted = bugdown_convert(msg)
         self.assertEqual(converted, unicode_converted)
 
@@ -645,7 +645,7 @@ class BugdownTest(ZulipTestCase):
         converted_subject = bugdown.subject_links(realm.id, msg.subject)
 
         self.assertEqual(converted, '<p>We should fix <a href="https://trac.zulip.net/ticket/224" target="_blank" title="https://trac.zulip.net/ticket/224">#224</a> and <a href="https://trac.zulip.net/ticket/115" target="_blank" title="https://trac.zulip.net/ticket/115">#115</a>, but not issue#124 or #1124z or <a href="https://trac.zulip.net/ticket/16" target="_blank" title="https://trac.zulip.net/ticket/16">trac #15</a> today.</p>')
-        self.assertEqual(converted_subject, [u'https://trac.zulip.net/ticket/444'])
+        self.assertEqual(converted_subject, ['https://trac.zulip.net/ticket/444'])
 
         RealmFilter(realm=realm, pattern=r'#(?P<id>[a-zA-Z]+-[0-9]+)',
                     url_format_string=r'https://trac.zulip.net/ticket/%(id)s').save()
@@ -670,7 +670,7 @@ class BugdownTest(ZulipTestCase):
         zulip_filters = all_filters[realm.id]
         self.assertEqual(len(zulip_filters), 1)
         self.assertEqual(zulip_filters[0],
-                         (u'#(?P<id>[0-9]{2,8})', u'https://trac.zulip.net/ticket/%(id)s', realm_filter.id))
+                         ('#(?P<id>[0-9]{2,8})', 'https://trac.zulip.net/ticket/%(id)s', realm_filter.id))
 
     def test_flush_realm_filter(self) -> None:
         realm = get_realm('zulip')
@@ -714,7 +714,7 @@ class BugdownTest(ZulipTestCase):
         RealmFilter(realm=realm, pattern=r"#(?P<id>[0-9]{2,8})",
                     url_format_string=r"https://trac.zulip.net/ticket/%(id)s").save()
         boring_msg = Message(sender=self.example_user('othello'),
-                             subject=u"no match here")
+                             subject="no match here")
         converted_boring_subject = bugdown.subject_links(realm.id, boring_msg.subject)
         self.assertEqual(converted_boring_subject, [])
 
@@ -992,13 +992,13 @@ class BugdownTest(ZulipTestCase):
 
     def test_stream_unicode(self) -> None:
         realm = get_realm('zulip')
-        uni = Stream.objects.create(name=u'привет', realm=realm)
+        uni = Stream.objects.create(name='привет', realm=realm)
         sender_user_profile = self.example_user('othello')
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
-        content = u"#**привет**"
+        content = "#**привет**"
         self.assertEqual(
             render_markdown(msg, content),
-            u'<p><a class="stream" data-stream-id="{s.id}" href="/#narrow/stream/{url}">#{s.name}</a></p>'.format(
+            '<p><a class="stream" data-stream-id="{s.id}" href="/#narrow/stream/{url}">#{s.name}</a></p>'.format(
                 s=uni,
                 url=urllib.parse.quote(uni.name)
             ))
@@ -1183,7 +1183,7 @@ class BugdownApiTests(ZulipTestCase):
         )
         self.assert_json_success(result)
         self.assertEqual(result.json()['rendered'],
-                         u'<p>That is a <strong>bold</strong> statement</p>')
+                         '<p>That is a <strong>bold</strong> statement</p>')
 
     def test_render_mention_stream_api(self) -> None:
         """Determines whether we're correctly passing the realm context"""
@@ -1196,7 +1196,7 @@ class BugdownApiTests(ZulipTestCase):
         self.assert_json_success(result)
         user_id = self.example_user('hamlet').id
         self.assertEqual(result.json()['rendered'],
-                         u'<p>This mentions <a class="stream" data-stream-id="%s" href="/#narrow/stream/Denmark">#Denmark</a> and <span class="user-mention" data-user-email="%s" data-user-id="%s">@King Hamlet</span>.</p>' % (get_stream("Denmark", get_realm("zulip")).id, self.example_email("hamlet"), user_id))
+                         '<p>This mentions <a class="stream" data-stream-id="%s" href="/#narrow/stream/Denmark">#Denmark</a> and <span class="user-mention" data-user-email="%s" data-user-id="%s">@King Hamlet</span>.</p>' % (get_stream("Denmark", get_realm("zulip")).id, self.example_email("hamlet"), user_id))
 
 class BugdownErrorTests(ZulipTestCase):
     def test_bugdown_error_handling(self) -> None:

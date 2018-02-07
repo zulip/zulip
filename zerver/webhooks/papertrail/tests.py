@@ -9,8 +9,8 @@ class PapertrailHookTests(WebhookTestCase):
 
     # Note: Include a test function per each distinct message condition your integration supports
     def test_short_message(self) -> None:
-        expected_subject = u"logs"
-        expected_message = u'''**"Important stuff"** search found **2** matches - https://papertrailapp.com/searches/42
+        expected_subject = "logs"
+        expected_message = '''**"Important stuff"** search found **2** matches - https://papertrailapp.com/searches/42
 ```
 May 18 20:30:02 abc cron OR server1:
   message body
@@ -23,8 +23,8 @@ May 18 20:30:02 server1 cron OR server1:
                                           content_type="application/x-www-form-urlencoded")
 
     def test_long_message(self) -> None:
-        expected_subject = u"logs"
-        expected_message = u'''**"Important stuff"** search found **5** matches - https://papertrailapp.com/searches/42
+        expected_subject = "logs"
+        expected_message = '''**"Important stuff"** search found **5** matches - https://papertrailapp.com/searches/42
 ```
 May 18 20:30:02 abc cron OR server1:
   message body 1

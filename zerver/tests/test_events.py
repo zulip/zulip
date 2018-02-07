@@ -716,7 +716,7 @@ class EventsRegisterTest(ZulipTestCase):
 
         events = self.do_test(
             lambda: do_update_embedded_data(self.user_profile, message,
-                                            u"embed_content", "<p>embed_content</p>"),
+                                            "embed_content", "<p>embed_content</p>"),
             state_change_expected=False,
         )
         error = schema_checker('events[0]', events[0])
@@ -1228,10 +1228,10 @@ class EventsRegisterTest(ZulipTestCase):
     def do_set_realm_property_test(self, name: str) -> None:
         bool_tests = [True, False, True]  # type: List[bool]
         test_values = dict(
-            default_language=[u'es', u'de', u'en'],
-            description=[u'Realm description', u'New description'],
+            default_language=['es', 'de', 'en'],
+            description=['Realm description', 'New description'],
             message_retention_days=[10, 20],
-            name=[u'Zulip', u'New Name'],
+            name=['Zulip', 'New Name'],
             waiting_period_threshold=[10, 20],
         )  # type: Dict[str, Any]
 
@@ -1405,9 +1405,9 @@ class EventsRegisterTest(ZulipTestCase):
 
         bool_change = [True, False, True]  # type: List[bool]
         test_changes = dict(
-            emojiset = [u'apple', u'twitter'],
-            default_language = [u'es', u'de', u'en'],
-            timezone = [u'US/Mountain', u'US/Samoa', u'Pacific/Galapogos', u'']
+            emojiset = ['apple', 'twitter'],
+            default_language = ['es', 'de', 'en'],
+            timezone = ['US/Mountain', 'US/Samoa', 'Pacific/Galapogos', '']
         )  # type: Dict[str, Any]
 
         property_type = UserProfile.property_types[setting_name]
@@ -1744,7 +1744,7 @@ class EventsRegisterTest(ZulipTestCase):
 
     def test_rename_stream(self) -> None:
         stream = self.make_stream('old_name')
-        new_name = u'stream with a brand new name'
+        new_name = 'stream with a brand new name'
         self.subscribe(self.user_profile, stream.name)
 
         action = lambda: do_rename_stream(stream, new_name)
@@ -1786,7 +1786,7 @@ class EventsRegisterTest(ZulipTestCase):
         self.assert_on_error(error)
 
     def test_subscribe_other_user_never_subscribed(self) -> None:
-        action = lambda: self.subscribe(self.example_user("othello"), u"test_stream")
+        action = lambda: self.subscribe(self.example_user("othello"), "test_stream")
         events = self.do_test(action, num_events=2)
         peer_add_schema_checker = self.check_events_dict([
             ('type', equals('subscription')),
@@ -1916,7 +1916,7 @@ class EventsRegisterTest(ZulipTestCase):
         error = add_schema_checker('events[1]', events[1])
         self.assert_on_error(error)
 
-        action = lambda: do_change_stream_description(stream, u'new description')
+        action = lambda: do_change_stream_description(stream, 'new description')
         events = self.do_test(action,
                               include_subscribers=include_subscribers)
         error = stream_update_schema_checker('events[0]', events[0])
@@ -2772,20 +2772,20 @@ class TestEventsRegisterNarrowDefaults(ZulipTestCase):
     def test_use_passed_narrow_no_default(self) -> None:
         self.user_profile.default_events_register_stream_id = None
         self.user_profile.save()
-        result = _default_narrow(self.user_profile, [[u'stream', u'my_stream']])
-        self.assertEqual(result, [[u'stream', u'my_stream']])
+        result = _default_narrow(self.user_profile, [['stream', 'my_stream']])
+        self.assertEqual(result, [['stream', 'my_stream']])
 
     def test_use_passed_narrow_with_default(self) -> None:
         self.user_profile.default_events_register_stream_id = self.stream.id
         self.user_profile.save()
-        result = _default_narrow(self.user_profile, [[u'stream', u'my_stream']])
-        self.assertEqual(result, [[u'stream', u'my_stream']])
+        result = _default_narrow(self.user_profile, [['stream', 'my_stream']])
+        self.assertEqual(result, [['stream', 'my_stream']])
 
     def test_use_default_if_narrow_is_empty(self) -> None:
         self.user_profile.default_events_register_stream_id = self.stream.id
         self.user_profile.save()
         result = _default_narrow(self.user_profile, [])
-        self.assertEqual(result, [[u'stream', u'Verona']])
+        self.assertEqual(result, [['stream', 'Verona']])
 
     def test_use_narrow_if_default_is_none(self) -> None:
         self.user_profile.default_events_register_stream_id = None

@@ -5,7 +5,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 class PivotalV3HookTests(WebhookTestCase):
     STREAM_NAME = 'pivotal'
-    URL_TEMPLATE = u"/api/v1/external/pivotal?stream={stream}&api_key={api_key}"
+    URL_TEMPLATE = "/api/v1/external/pivotal?stream={stream}&api_key={api_key}"
 
     def test_accepted(self) -> None:
         expected_subject = 'My new Feature story'
@@ -74,7 +74,7 @@ class PivotalV3HookTests(WebhookTestCase):
 
 class PivotalV5HookTests(WebhookTestCase):
     STREAM_NAME = 'pivotal'
-    URL_TEMPLATE = u"/api/v1/external/pivotal?stream={stream}&api_key={api_key}"
+    URL_TEMPLATE = "/api/v1/external/pivotal?stream={stream}&api_key={api_key}"
 
     def test_accepted(self) -> None:
         expected_subject = '#63486316: Story of the Year'

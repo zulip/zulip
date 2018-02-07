@@ -43,10 +43,10 @@ def api_solano_webhook(request: HttpRequest, user_profile: UserProfile,
         emoji = "(No emoji specified for status '%s'.)" % (status,)
 
     template = (
-        u'Author: {}\n'
-        u'Commit: [{}]({})\n'
-        u'Build status: {} {}\n'
-        u'[Build Log]({})')
+        'Author: {}\n'
+        'Commit: [{}]({})\n'
+        'Build status: {} {}\n'
+        '[Build Log]({})')
 
     # If the service is not one of the following, the url is of the repository home, not the individual
     # commit itself.

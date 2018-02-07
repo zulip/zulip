@@ -143,7 +143,7 @@ class WorkerTest(ZulipTestCase):
         fake_client = self.FakeClient()
         data = [
             dict(
-                message=u'\xf3test',
+                message='\xf3test',
                 time=time.time(),
                 rcpt_to=self.example_email('hamlet'),
             ),

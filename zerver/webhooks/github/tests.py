@@ -8,12 +8,12 @@ from zerver.models import Message
 
 class GithubV1HookTests(WebhookTestCase):
     STREAM_NAME = None  # type: Optional[Text]
-    URL_TEMPLATE = u"/api/v1/external/github"
+    URL_TEMPLATE = "/api/v1/external/github"
     FIXTURE_DIR_NAME = 'github'
     SEND_STREAM = False
     BRANCHES = None  # type: Optional[Text]
 
-    push_content = u"""zbenjamin [pushed](https://github.com/zbenjamin/zulip-test/compare/4f9adc4777d5...b95449196980) 3 commits to branch master.
+    push_content = """zbenjamin [pushed](https://github.com/zbenjamin/zulip-test/compare/4f9adc4777d5...b95449196980) 3 commits to branch master.
 
 * Add baz ([48c329a](https://github.com/zbenjamin/zulip-test/commit/48c329a0b68a9a379ff195ee3f1c1f4ab0b2a89e))
 * Baz needs to be longer ([06ebe5f](https://github.com/zbenjamin/zulip-test/commit/06ebe5f472a32f6f31fd2a665f0c7442b69cce72))
@@ -133,7 +133,7 @@ class GithubV1HookTests(WebhookTestCase):
 
 class GithubV2HookTests(WebhookTestCase):
     STREAM_NAME = None  # type: Optional[Text]
-    URL_TEMPLATE = u"/api/v1/external/github"
+    URL_TEMPLATE = "/api/v1/external/github"
     FIXTURE_DIR_NAME = 'github'
     SEND_STREAM = False
     BRANCHES = None  # type: Optional[Text]

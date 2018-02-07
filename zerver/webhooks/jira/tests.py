@@ -5,7 +5,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 class JiraHookTests(WebhookTestCase):
     STREAM_NAME = 'jira'
-    URL_TEMPLATE = u"/api/v1/external/jira?api_key={api_key}"
+    URL_TEMPLATE = "/api/v1/external/jira?api_key={api_key}"
 
     def test_unknown(self) -> None:
         url = self.build_webhook_url()
@@ -46,8 +46,8 @@ class JiraHookTests(WebhookTestCase):
         self.send_and_test_stream_message('created_v2', expected_subject, expected_message)
 
     def test_created_with_unicode(self) -> None:
-            expected_subject = u"BUG-15: New bug with à hook"
-            expected_message = u"""Leo Franchià **created** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) priority Major, assigned to **no one**:
+            expected_subject = "BUG-15: New bug with à hook"
+            expected_message = """Leo Franchià **created** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) priority Major, assigned to **no one**:
 
 > New bug with à hook"""
             self.send_and_test_stream_message('created_with_unicode_v1', expected_subject, expected_message)

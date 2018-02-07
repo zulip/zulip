@@ -28,7 +28,7 @@ class MutedTopicsTests(ZulipTestCase):
         hamlet = self.example_user('hamlet')
         cordelia  = self.example_user('cordelia')
         realm = hamlet.realm
-        stream = get_stream(u'Verona', realm)
+        stream = get_stream('Verona', realm)
         recipient = get_stream_recipient(stream.id)
         topic_name = 'teST topic'
 
@@ -66,9 +66,9 @@ class MutedTopicsTests(ZulipTestCase):
         self.assert_json_success(result)
 
         user = self.example_user('hamlet')
-        self.assertIn([u'Verona', u'Verona3'], get_topic_mutes(user))
+        self.assertIn(['Verona', 'Verona3'], get_topic_mutes(user))
 
-        stream = get_stream(u'Verona', user.realm)
+        stream = get_stream('Verona', user.realm)
         self.assertTrue(topic_is_muted(user, stream.id, 'Verona3'))
         self.assertTrue(topic_is_muted(user, stream.id, 'verona3'))
 
@@ -78,13 +78,13 @@ class MutedTopicsTests(ZulipTestCase):
         self.login(email)
 
         realm = self.user_profile.realm
-        stream = get_stream(u'Verona', realm)
+        stream = get_stream('Verona', realm)
         recipient = get_stream_recipient(stream.id)
         add_topic_mute(
             user_profile=self.user_profile,
             stream_id=stream.id,
             recipient_id=recipient.id,
-            topic_name=u'Verona3',
+            topic_name='Verona3',
         )
 
         url = '/api/v1/users/me/subscriptions/muted_topics'
@@ -93,7 +93,7 @@ class MutedTopicsTests(ZulipTestCase):
 
         self.assert_json_success(result)
         user = self.example_user('hamlet')
-        self.assertNotIn([[u'Verona', u'Verona3']], get_topic_mutes(user))
+        self.assertNotIn([['Verona', 'Verona3']], get_topic_mutes(user))
 
     def test_muted_topic_add_invalid(self) -> None:
         self.user_profile = self.example_user('hamlet')
@@ -101,13 +101,13 @@ class MutedTopicsTests(ZulipTestCase):
         self.login(email)
 
         realm = self.user_profile.realm
-        stream = get_stream(u'Verona', realm)
+        stream = get_stream('Verona', realm)
         recipient = get_stream_recipient(stream.id)
         add_topic_mute(
             user_profile=self.user_profile,
             stream_id=stream.id,
             recipient_id=recipient.id,
-            topic_name=u'Verona3',
+            topic_name='Verona3',
         )
 
         url = '/api/v1/users/me/subscriptions/muted_topics'

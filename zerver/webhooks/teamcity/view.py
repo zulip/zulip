@@ -66,8 +66,8 @@ def api_teamcity_webhook(request: HttpRequest, user_profile: UserProfile,
         status = '(has no message specified for status %s)' % (build_status,)
 
     template = (
-        u'%s build %s %s\n'
-        u'Details: [changes](%s), [build log](%s)')
+        '%s build %s %s\n'
+        'Details: [changes](%s), [build log](%s)')
 
     body = template % (build_name, build_number, status, changes_url, build_url)
     topic = build_name

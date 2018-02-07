@@ -68,7 +68,7 @@ def get_membership_body(payload: Dict[str, Any]) -> Text:
     scope = payload['scope']
     scope_object = payload[scope]
 
-    return u"{} {} [{}]({}) to {} {}".format(
+    return "{} {} [{}]({}) to {} {}".format(
         get_sender_name(payload),
         action,
         member['login'],
@@ -78,7 +78,7 @@ def get_membership_body(payload: Dict[str, Any]) -> Text:
     )
 
 def get_member_body(payload: Dict[str, Any]) -> Text:
-    return u"{} {} [{}]({}) to [{}]({})".format(
+    return "{} {} [{}]({}) to [{}]({})".format(
         get_sender_name(payload),
         payload['action'],
         payload['member']['login'],
@@ -121,25 +121,25 @@ def get_issue_comment_body(payload: Dict[str, Any]) -> Text:
 
 def get_fork_body(payload: Dict[str, Any]) -> Text:
     forkee = payload['forkee']
-    return u"{} forked [{}]({})".format(
+    return "{} forked [{}]({})".format(
         get_sender_name(payload),
         forkee['name'],
         forkee['html_url']
     )
 
 def get_deployment_body(payload: Dict[str, Any]) -> Text:
-    return u'{} created new deployment'.format(
+    return '{} created new deployment'.format(
         get_sender_name(payload),
     )
 
 def get_change_deployment_status_body(payload: Dict[str, Any]) -> Text:
-    return u'Deployment changed status to {}'.format(
+    return 'Deployment changed status to {}'.format(
         payload['deployment_status']['state'],
     )
 
 def get_create_or_delete_body(payload: Dict[str, Any], action: Text) -> Text:
     ref_type = payload['ref_type']
-    return u'{} {} {} {}'.format(
+    return '{} {} {} {}'.format(
         get_sender_name(payload),
         action,
         ref_type,
@@ -150,7 +150,7 @@ def get_commit_comment_body(payload: Dict[str, Any]) -> Text:
     comment = payload['comment']
     comment_url = comment['html_url']
     commit_url = comment_url.split('#', 1)[0]
-    action = u'[commented]({})'.format(comment_url)
+    action = '[commented]({})'.format(comment_url)
     return get_commits_comment_action_message(
         get_sender_name(payload),
         action,
@@ -183,43 +183,43 @@ def get_push_commits_body(payload: Dict[str, Any]) -> Text:
     )
 
 def get_public_body(payload: Dict[str, Any]) -> Text:
-    return u"{} made [the repository]({}) public".format(
+    return "{} made [the repository]({}) public".format(
         get_sender_name(payload),
         payload['repository']['html_url'],
     )
 
 def get_wiki_pages_body(payload: Dict[str, Any]) -> Text:
-    wiki_page_info_template = u"* {action} [{title}]({url})\n"
-    wiki_info = u''
+    wiki_page_info_template = "* {action} [{title}]({url})\n"
+    wiki_info = ''
     for page in payload['pages']:
         wiki_info += wiki_page_info_template.format(
             action=page['action'],
             title=page['title'],
             url=page['html_url'],
         )
-    return u"{}:\n{}".format(get_sender_name(payload), wiki_info.rstrip())
+    return "{}:\n{}".format(get_sender_name(payload), wiki_info.rstrip())
 
 def get_watch_body(payload: Dict[str, Any]) -> Text:
-    return u"{} starred [the repository]({})".format(
+    return "{} starred [the repository]({})".format(
         get_sender_name(payload),
         payload['repository']['html_url']
     )
 
 def get_repository_body(payload: Dict[str, Any]) -> Text:
-    return u"{} {} [the repository]({})".format(
+    return "{} {} [the repository]({})".format(
         get_sender_name(payload),
         payload.get('action'),
         payload['repository']['html_url']
     )
 
 def get_add_team_body(payload: Dict[str, Any]) -> Text:
-    return u"[The repository]({}) was added to team {}".format(
+    return "[The repository]({}) was added to team {}".format(
         payload['repository']['html_url'],
         payload['team']['name']
     )
 
 def get_release_body(payload: Dict[str, Any]) -> Text:
-    return u"{} published [the release]({})".format(
+    return "{} published [the release]({})".format(
         get_sender_name(payload),
         payload['release']['html_url'],
     )
@@ -228,16 +228,16 @@ def get_page_build_body(payload: Dict[str, Any]) -> Text:
     build = payload['build']
     action = build['status']
     if action == 'null':
-        action = u'has yet to be built'
+        action = 'has yet to be built'
     elif action == 'building':
-        action = u'is being building'
+        action = 'is being building'
     elif action == 'errored':
-        action = u'is errored{}'.format(
+        action = 'is errored{}'.format(
             CONTENT_MESSAGE_TEMPLATE.format(message=build['error']['message'])
         )
     else:
-        action = u'is {}'.format(action)
-    return u"Github Pages build, trigerred by {}, {}".format(
+        action = 'is {}'.format(action)
+    return "Github Pages build, trigerred by {}, {}".format(
         payload['build']['pusher']['login'],
         action
     )
@@ -250,7 +250,7 @@ def get_status_body(payload: Dict[str, Any]) -> Text:
         )
     else:
         status = payload['state']
-    return u"[{}]({}) changed its status to {}".format(
+    return "[{}]({}) changed its status to {}".format(
         payload['sha'][:7],  # TODO
         payload['commit']['html_url'],
         status
@@ -315,12 +315,12 @@ def get_subject_based_on_type(payload: Dict[str, Any], event: Text) -> Text:
             title=payload['issue']['title']
         )
     elif event.startswith('deployment'):
-        return u"{} / Deployment on {}".format(
+        return "{} / Deployment on {}".format(
             get_repository_name(payload),
             payload['deployment']['environment']
         )
     elif event == 'membership':
-        return u"{} organization".format(payload['organization']['login'])
+        return "{} organization".format(payload['organization']['login'])
     elif event == 'push_commits':
         return SUBJECT_WITH_BRANCH_TEMPLATE.format(
             repo=get_repository_name(payload),
@@ -387,7 +387,7 @@ def get_event(request: HttpRequest, payload: Dict[str, Any], branches: Text) -> 
             return 'assigned_or_unassigned_pull_request'
         if action == 'closed':
             return 'closed_pull_request'
-        logging.warning(u'Event pull_request with {} action is unsupported'.format(action))
+        logging.warning('Event pull_request with {} action is unsupported'.format(action))
         return None
     if event == 'push':
         if is_commit_push_event(payload):
@@ -400,7 +400,7 @@ def get_event(request: HttpRequest, payload: Dict[str, Any], branches: Text) -> 
             return "push_tags"
     elif event in list(EVENT_FUNCTION_MAPPER.keys()) or event == 'ping':
         return event
-    logging.warning(u'Event {} is unknown and cannot be handled'.format(event))
+    logging.warning('Event {} is unknown and cannot be handled'.format(event))
     return None
 
 def get_body_function_based_on_type(type: str) -> Any:

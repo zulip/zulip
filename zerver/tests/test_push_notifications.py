@@ -247,7 +247,7 @@ class PushNotificationTest(BouncerTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user('hamlet')
-        self.tokens = [u'aaaa', u'bbbb']
+        self.tokens = ['aaaa', 'bbbb']
         for token in self.tokens:
             PushDeviceToken.objects.create(
                 kind=PushDeviceToken.APNS,
@@ -255,7 +255,7 @@ class PushNotificationTest(BouncerTestCase):
                 user=self.user_profile,
                 ios_app_id=settings.ZULIP_IOS_APP_ID)
 
-        self.remote_tokens = [u'cccc']
+        self.remote_tokens = ['cccc']
         for token in self.remote_tokens:
             RemotePushDeviceToken.objects.create(
                 kind=RemotePushDeviceToken.APNS,
@@ -302,7 +302,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         return result
 
     def test_end_to_end(self) -> None:
-        remote_gcm_tokens = [u'dddd']
+        remote_gcm_tokens = ['dddd']
         for token in remote_gcm_tokens:
             RemotePushDeviceToken.objects.create(
                 kind=RemotePushDeviceToken.GCM,
@@ -351,7 +351,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                     "GCM: Sent %s as %s" % (token, message.id))
 
     def test_end_to_end_connection_error(self) -> None:
-        remote_gcm_tokens = [u'dddd']
+        remote_gcm_tokens = ['dddd']
         for token in remote_gcm_tokens:
             RemotePushDeviceToken.objects.create(
                 kind=RemotePushDeviceToken.GCM,
@@ -453,7 +453,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             message=message
         )
 
-        for token in [u'dddd']:
+        for token in ['dddd']:
             PushDeviceToken.objects.create(
                 kind=PushDeviceToken.GCM,
                 token=apn.hex_to_b64(token),
@@ -966,7 +966,7 @@ class GCMTest(PushNotificationTest):
     def setUp(self) -> None:
         super().setUp()
         apn.gcm = gcm.GCM('fake key')
-        self.gcm_tokens = [u'1111', u'2222']
+        self.gcm_tokens = ['1111', '2222']
         for token in self.gcm_tokens:
             PushDeviceToken.objects.create(
                 kind=PushDeviceToken.GCM,
@@ -1036,8 +1036,8 @@ class GCMCanonicalTest(GCMTest):
     def test_pushdevice_not_present(self, mock_send: mock.MagicMock,
                                     mock_warning: mock.MagicMock) -> None:
         res = {}
-        t1 = apn.hex_to_b64(u'1111')
-        t2 = apn.hex_to_b64(u'3333')
+        t1 = apn.hex_to_b64('1111')
+        t2 = apn.hex_to_b64('3333')
         res['canonical'] = {t1: t2}
         mock_send.return_value = res
 
@@ -1046,8 +1046,8 @@ class GCMCanonicalTest(GCMTest):
             return PushDeviceToken.objects.filter(
                 token=token, kind=PushDeviceToken.GCM).count()
 
-        self.assertEqual(get_count(u'1111'), 1)
-        self.assertEqual(get_count(u'3333'), 0)
+        self.assertEqual(get_count('1111'), 1)
+        self.assertEqual(get_count('3333'), 0)
 
         data = self.get_gcm_data()
         apn.send_android_push_notification_to_user(self.user_profile, data)
@@ -1056,16 +1056,16 @@ class GCMCanonicalTest(GCMTest):
                "registered! Updating.")
         mock_warning.assert_called_once_with(msg % (t2, t1))
 
-        self.assertEqual(get_count(u'1111'), 0)
-        self.assertEqual(get_count(u'3333'), 1)
+        self.assertEqual(get_count('1111'), 0)
+        self.assertEqual(get_count('3333'), 1)
 
     @mock.patch('logging.info')
     @mock.patch('gcm.GCM.json_request')
     def test_pushdevice_different(self, mock_send: mock.MagicMock,
                                   mock_info: mock.MagicMock) -> None:
         res = {}
-        old_token = apn.hex_to_b64(u'1111')
-        new_token = apn.hex_to_b64(u'2222')
+        old_token = apn.hex_to_b64('1111')
+        new_token = apn.hex_to_b64('2222')
         res['canonical'] = {old_token: new_token}
         mock_send.return_value = res
 
@@ -1074,23 +1074,23 @@ class GCMCanonicalTest(GCMTest):
             return PushDeviceToken.objects.filter(
                 token=token, kind=PushDeviceToken.GCM).count()
 
-        self.assertEqual(get_count(u'1111'), 1)
-        self.assertEqual(get_count(u'2222'), 1)
+        self.assertEqual(get_count('1111'), 1)
+        self.assertEqual(get_count('2222'), 1)
 
         data = self.get_gcm_data()
         apn.send_android_push_notification_to_user(self.user_profile, data)
         mock_info.assert_called_once_with(
             "GCM: Got canonical ref %s, dropping %s" % (new_token, old_token))
 
-        self.assertEqual(get_count(u'1111'), 0)
-        self.assertEqual(get_count(u'2222'), 1)
+        self.assertEqual(get_count('1111'), 0)
+        self.assertEqual(get_count('2222'), 1)
 
 class GCMNotRegisteredTest(GCMTest):
     @mock.patch('logging.info')
     @mock.patch('gcm.GCM.json_request')
     def test_not_registered(self, mock_send: mock.MagicMock, mock_info: mock.MagicMock) -> None:
         res = {}
-        token = apn.hex_to_b64(u'1111')
+        token = apn.hex_to_b64('1111')
         res['errors'] = {'NotRegistered': [token]}
         mock_send.return_value = res
 
@@ -1099,19 +1099,19 @@ class GCMNotRegisteredTest(GCMTest):
             return PushDeviceToken.objects.filter(
                 token=token, kind=PushDeviceToken.GCM).count()
 
-        self.assertEqual(get_count(u'1111'), 1)
+        self.assertEqual(get_count('1111'), 1)
 
         data = self.get_gcm_data()
         apn.send_android_push_notification_to_user(self.user_profile, data)
         mock_info.assert_called_once_with("GCM: Removing %s" % (token,))
-        self.assertEqual(get_count(u'1111'), 0)
+        self.assertEqual(get_count('1111'), 0)
 
 class GCMFailureTest(GCMTest):
     @mock.patch('logging.warning')
     @mock.patch('gcm.GCM.json_request')
     def test_failure(self, mock_send: mock.MagicMock, mock_warn: mock.MagicMock) -> None:
         res = {}
-        token = apn.hex_to_b64(u'1111')
+        token = apn.hex_to_b64('1111')
         res['errors'] = {'Failed': [token]}
         mock_send.return_value = res
 

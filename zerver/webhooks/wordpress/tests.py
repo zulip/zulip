@@ -9,16 +9,16 @@ class WordPressHookTests(WebhookTestCase):
 
     def test_publish_post(self) -> None:
 
-        expected_topic = u"WordPress Post"
-        expected_message = u"New post published.\n[New Blog Post](http://example.com\n)"
+        expected_topic = "WordPress Post"
+        expected_message = "New post published.\n[New Blog Post](http://example.com\n)"
 
         self.send_and_test_stream_message('publish_post', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
     def test_publish_post_type_not_provided(self) -> None:
 
-        expected_topic = u"WordPress Post"
-        expected_message = u"New post published.\n[New Blog Post](http://example.com\n)"
+        expected_topic = "WordPress Post"
+        expected_message = "New post published.\n[New Blog Post](http://example.com\n)"
 
         self.send_and_test_stream_message('publish_post_type_not_provided',
                                           expected_topic, expected_message,
@@ -27,8 +27,8 @@ class WordPressHookTests(WebhookTestCase):
     def test_publish_post_no_data_provided(self) -> None:
 
         # Note: the fixture includes 'hook=publish_post' because it's always added by HookPress
-        expected_topic = u"WordPress Notification"
-        expected_message = u"New post published.\n" + "[New WordPress Post](WordPress Post URL)"
+        expected_topic = "WordPress Notification"
+        expected_message = "New post published.\n" + "[New WordPress Post](WordPress Post URL)"
 
         self.send_and_test_stream_message('publish_post_no_data_provided',
                                           expected_topic, expected_message,
@@ -36,24 +36,24 @@ class WordPressHookTests(WebhookTestCase):
 
     def test_publish_page(self) -> None:
 
-        expected_topic = u"WordPress Page"
-        expected_message = u"New page published.\n" + "[New Blog Page](http://example.com\n)"
+        expected_topic = "WordPress Page"
+        expected_message = "New page published.\n" + "[New Blog Page](http://example.com\n)"
 
         self.send_and_test_stream_message('publish_page', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
     def test_user_register(self) -> None:
 
-        expected_topic = u"New Blog Users"
-        expected_message = u"New blog user registered.\nName: test_user\nemail: test_user@example.com"
+        expected_topic = "New Blog Users"
+        expected_message = "New blog user registered.\nName: test_user\nemail: test_user@example.com"
 
         self.send_and_test_stream_message('user_register', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
     def test_wp_login(self) -> None:
 
-        expected_topic = u"New Login"
-        expected_message = u"User testuser logged in."
+        expected_topic = "New Login"
+        expected_message = "User testuser logged in."
 
         self.send_and_test_stream_message('wp_login', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
