@@ -185,14 +185,6 @@
     border: 1px solid hsl(0, 0%, 68%);
 }
 
-.stream-row .btn.sub_unsub_button {
-    display: inline-block;
-    min-width: 140px;
-    float: right;
-    margin-top: 9px;
-    margin-right: 10px;
-}
-
 .sub_arrow {
     float: right;
     line-height: 47px;
