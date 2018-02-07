@@ -301,6 +301,32 @@ def update_message(client, message_id):
     assert result['result'] == 'success'
     assert result['raw_content'] == request['content']
 
+def register_queue(client):
+    # type: (Client) -> str
+
+    # {code_example|start}
+    # Register the queue
+    result = client.register()
+    # {code_example|end}
+
+    client.deregister(result['queue_id'])
+    fixture = FIXTURES['register-queue']
+    test_against_fixture(result, fixture, check_if_equal=['msg', 'result'],
+                         check_if_exists=['last_event_id', 'queue_id'])
+
+    # {code_example|start}
+    # You may pass in one or more of the arguments documented below
+    # as keyword arguments, like so:
+    result = client.register(
+        event_types=['messages']
+    )
+    # {code_example|end}
+
+    test_against_fixture(result, fixture, check_if_equal=['msg', 'result'],
+                         check_if_exists=['last_event_id', 'queue_id'])
+
+    return result['queue_id']
+
 def test_invalid_api_key(client_with_invalid_key):
     # type: (Client) -> None
     result = client_with_invalid_key.list_subscriptions()
@@ -321,6 +347,7 @@ TEST_FUNCTIONS = {
     'add-subscriptions': add_subscriptions,
     'remove-subscriptions': remove_subscriptions,
     'get-all-users': get_members,
+    'register-queue': register_queue,
 }
 
 # SETUP METHODS FOLLOW
@@ -366,6 +393,11 @@ def test_streams(client):
     get_subscribers(client)
     remove_subscriptions(client)
 
+def test_queues(client):
+    # type: (Client) -> None
+
+    register_queue(client)
+
 def test_the_api(client):
     # type: (Client) -> None
 
@@ -373,3 +405,4 @@ def test_the_api(client):
     test_users(client)
     test_streams(client)
     test_messages(client)
+    test_queues(client)
