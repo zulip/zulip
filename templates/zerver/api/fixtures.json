@@ -228,5 +228,11 @@
         ],
         "msg":"",
         "result":"success"
+    },
+    "register-queue": {
+        "last_event_id":-1,
+        "msg":"",
+        "queue_id":"1517975029:0",
+        "result":"success"
     }
 }

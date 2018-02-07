@@ -31,23 +31,7 @@ curl {{ api_url }}/v1/register \
 
 <div data-language="python" markdown="1">
 
-```
-#!/usr/bin/env python
-
-import zulip
-
-# Download ~/zuliprc-dev from your dev server
-client = zulip.Client(config_file="~/zuliprc-dev")
-
-# Register the queue
-print(client.register())
-
-# You may pass in one or more of the above arguments as keyword
-# arguments, like so:
-print(client.register(
-    event_types=['messages']
-))
-```
+{generate_code_example|register-queue|example}
 
 </div>
 
@@ -92,11 +76,4 @@ zulip(config).then((client) => {
 
 A typical successful JSON response may look like:
 
-```
-{
-    'last_event_id':-1,
-    'queue_id':'1514938867:1',
-    'result':'success',
-    'msg':''
-}
-```
+{generate_code_example|register-queue|fixture}
