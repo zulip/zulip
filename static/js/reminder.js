@@ -44,7 +44,7 @@ function patch_request_for_scheduling(request) {
         if (command_line.slice(command.length, command.length + 1) !== ' ') {
             compose.compose_error(i18n.t('Invalid slash command. Check if you are missing a space after the command.'), $('#compose-textarea'));
         } else if (deliver_at.trim() === '') {
-            compose.compose_error(i18n.t('Please specify time for your reminder.'), $('#compose-textarea'));
+            compose.compose_error(i18n.t('Please specify a date or time'), $('#compose-textarea'));
         } else {
             compose.compose_error(i18n.t('Your reminder note is empty!'), $('#compose-textarea'));
         }
@@ -97,11 +97,39 @@ exports.schedule_message = function (request) {
 };
 
 exports.do_set_reminder_for_message = function (msgid, timestamp) {
+    var row = $("[zid='" + msgid + "']");
+    function error() {
+        row.find(".alert-msg")
+            .text(i18n.t("Reminder not set!"))
+            .css("display", "block")
+            .css("color", "#b94a48")
+            .delay(1000).fadeOut(300, function () {
+                $(this).css("color", "");
+            });
+    }
+
     var message = current_msg_list.get(msgid);
+
+    if (!message.raw_content) {
+        var msg_list = current_msg_list;
+        channel.get({
+            url: '/json/messages/' + message.id,
+            idempotent: true,
+            success: function (data) {
+                if (current_msg_list === msg_list) {
+                    message.raw_content = data.raw_content;
+                    exports.do_set_reminder_for_message(msgid, timestamp);
+                }
+            },
+            error: error,
+        });
+        return;
+    }
+
     var link_to_msg = narrow.by_conversation_and_time_uri(message, true);
     var command = deferred_message_types.reminders.slash_command;
     var reminder_timestamp = timestamp;
-    var custom_msg = '[this message](' + link_to_msg + ') at ' + reminder_timestamp;
+    var custom_msg = message.raw_content + '\n\n[Link to conversation](' + link_to_msg + ')';
     var reminder_msg_content = command + ' ' + reminder_timestamp + '\n' + custom_msg;
     var reminder_message = {
         type: "private",
@@ -117,18 +145,9 @@ exports.do_set_reminder_for_message = function (msgid, timestamp) {
     reminder_message.private_message_recipient = recipient;
     reminder_message.to_user_ids = people.email_list_to_user_ids_string(emails);
 
-    var row = $("[zid='" + msgid + "']");
-
     function success() {
         row.find(".alert-msg")
             .text(i18n.t("Reminder set!"))
-            .css("display", "block")
-            .delay(1000).fadeOut(300);
-    }
-
-    function error() {
-        row.find(".alert-msg")
-            .text(i18n.t("Setting reminder failed!"))
             .css("display", "block")
             .delay(1000).fadeOut(300);
     }

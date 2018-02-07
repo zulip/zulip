@@ -371,6 +371,7 @@ exports.render_actions_remind_popover = function (element, id) {
         current_flatpickr_instance = $('.remind.custom[data-message-id="'+message.id+'"]').flatpickr({
             enableTime: true,
             clickOpens: false,
+            defaultDate: moment().format(),
             minDate: 'today',
             plugins: [new confirmDatePlugin({})], // eslint-disable-line new-cap, no-undef
         });

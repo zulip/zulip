@@ -44,8 +44,6 @@ Usage: ./manage.py deliver_scheduled_messages
             message.sender = original_sender
         elif delivery_type == ScheduledMessage.REMIND:
             message.sender = get_user(settings.REMINDER_BOT, original_sender.realm)
-            whos_reminding = ('%s asked me to do a reminder about:\n' % (original_sender.full_name))
-            message.content = whos_reminding + message.content
 
         return {'message': message, 'stream': scheduled_message.stream,
                 'realm': scheduled_message.realm}

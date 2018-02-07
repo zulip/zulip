@@ -96,6 +96,10 @@ IGNORED_PHRASES = [
     r"more topics",
     # For consistency with "more topics"
     r"more conversations",
+    # Capital 'i' looks weird in reminders popover
+    r"in 1 hour",
+    r"in 20 minutes",
+    r"in 3 hours",
     # We should probably just delete this string from translations
     r'activation key',
     # this is used as a topic

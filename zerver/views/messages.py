@@ -1123,7 +1123,7 @@ def handle_deferred_message(sender: UserProfile, client: Client,
     try:
         deliver_at = dateparser(defer_until)
     except ValueError:
-        return json_error(_("Invalid timestamp for scheduling message."))
+        return json_error(_("Invalid time format"))
 
     deliver_at_usertz = deliver_at
     if deliver_at_usertz.tzinfo is None:
@@ -1133,7 +1133,7 @@ def handle_deferred_message(sender: UserProfile, client: Client,
     deliver_at = convert_to_UTC(deliver_at_usertz)
 
     if deliver_at <= timezone_now():
-        return json_error(_("Invalid timestamp for scheduling message. Choose a time in future."))
+        return json_error(_("Time must be in the future."))
 
     check_schedule_message(sender, client, message_type_name, message_to,
                            topic_name, message_content, delivery_type,

@@ -1566,7 +1566,7 @@ class ScheduledMessageTest(ZulipTestCase):
 
         result = self.do_schedule_message('stream', 'Verona',
                                           content + ' 1', defer_until_str)
-        self.assert_json_error(result, 'Invalid timestamp for scheduling message. Choose a time in future.')
+        self.assert_json_error(result, 'Time must be in the future.')
 
     def test_invalid_timestamp(self) -> None:
         # Scheduling a message from which timestamp couldn't be parsed
@@ -1576,7 +1576,7 @@ class ScheduledMessageTest(ZulipTestCase):
 
         result = self.do_schedule_message('stream', 'Verona',
                                           content + ' 1', defer_until)
-        self.assert_json_error(result, 'Invalid timestamp for scheduling message.')
+        self.assert_json_error(result, 'Invalid time format')
 
     def test_missing_deliver_at(self) -> None:
         content = "Test message"
