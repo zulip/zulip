@@ -154,6 +154,10 @@ li.active-sub-filter {
     display: block;
 }
 
+.left-sidebar li a.conversation-partners:hover {
+    text-decoration: underline;
+}
+
 #global_filters .global-filter i.icon-vector-home {
     position: relative;
     top: 1px;
@@ -204,6 +208,10 @@ li.active-sub-filter {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.left-sidebar li a.topic-name:hover {
+    text-decoration: underline;
 }
 
 .topic-unread-count,
