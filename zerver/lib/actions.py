@@ -4605,6 +4605,8 @@ def bulk_add_members_to_user_group(added_by: UserProfile, user_group: UserGroup,
     UserGroupMembership.objects.bulk_create(memberships)
 
     send_user_group_update_notification(added_by, user_group.name, user_profiles, "add_members")
+    realm_audit_log_for_user_group_members_update(added_by, user_group, user_profiles,
+                                                  "user_added_to_group")
     user_ids = [up.id for up in user_profiles]
     do_send_user_group_members_update_event('add_members', user_group, user_ids)
 
