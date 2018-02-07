@@ -19,7 +19,7 @@ body.dark-mode #settings_page .right {
     background-color: hsl(212, 28%, 18%);
 }
 
-.message_embed .data-container::after {
+body.dark-mode .message_embed .data-container::after {
     background: linear-gradient(0deg, hsl(212, 28%, 18%), transparent 10%);
 }
 
