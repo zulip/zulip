@@ -101,7 +101,7 @@ class DocPageTest(ZulipTestCase):
     @slow("Tests dozens of endpoints, including all our integrations docs")
     def test_integration_doc_endpoints(self) -> None:
         self._test('/integrations/',
-                   'Over 80 native integrations.',
+                   'native integrations.',
                    extra_strings=[
                        'And hundreds more through',
                        'Hubot',
