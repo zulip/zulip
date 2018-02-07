@@ -13,8 +13,9 @@ from django.db import connection
 from django.utils.timezone import now as timezone_now
 from typing import Any, Dict, List, Tuple
 from zerver.models import UserProfile, Realm, Stream, UserMessage, \
-    Subscription, Message, Recipient, DefaultStream
+    Subscription, Message, Recipient, DefaultStream, Attachment
 from zerver.forms import check_subdomain_available
+from zerver.lib.upload import upload_message_image
 from zerver.lib.slack_message_conversion import convert_to_zulip_markdown, \
     get_user_full_name
 
@@ -465,26 +466,30 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
     # To pre-compute the total number of messages and usermessages
     total_messages = 0
     total_usermessages = 0
+    total_attachments = 0
     for channel in added_channels.keys():
-        tm, tum = get_total_messages_and_usermessages(slack_data_dir, channel,
-                                                      realm['zerver_subscription'],
-                                                      added_recipient)
+        tm, tum, ta = get_total_messages_and_attachments(
+            slack_data_dir, channel, realm['zerver_subscription'],
+            added_recipient)
         total_messages += tm
         total_usermessages += tum
+        total_attachments += ta
     message_id_count = allocate_id(Message, total_messages)
     usermessage_id_count = allocate_id(UserMessage, total_usermessages)
+    attachment_id_count = allocate_id(Attachment, total_attachments)
 
     constants = [slack_data_dir, REALM_ID]
     for channel in added_channels.keys():
         message_id = len(zerver_message) + message_id_count  # For the id of the messages
         usermessage_id = len(zerver_usermessage) + usermessage_id_count
-        id_list = [message_id, usermessage_id]
-        zm, zum = channel_message_to_zerver_message(constants, channel, users,
-                                                    added_users, added_recipient,
-                                                    realm['zerver_subscription'],
-                                                    id_list)
+        attachment_id = len(zerver_attachment) + attachment_id_count
+        id_list = [message_id, usermessage_id, attachment_id]
+        zm, zum, za = channel_message_to_zerver_message(
+            constants, channel, users, added_users, added_recipient,
+            realm['zerver_subscription'], id_list)
         zerver_message += zm
         zerver_usermessage += zum
+        zerver_attachment += za
     logging.info('######### IMPORTING MESSAGES FINISHED #########\n')
 
     message_json['zerver_message'] = zerver_message
@@ -492,17 +497,19 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
 
     return message_json
 
-def get_total_messages_and_usermessages(slack_data_dir: str, channel_name: str,
-                                        zerver_subscription: List[ZerverFieldsT],
-                                        added_recipient: AddedRecipientsT) -> Tuple[int, int]:
+def get_total_messages_and_attachments(slack_data_dir: str, channel_name: str,
+                                       zerver_subscription: List[ZerverFieldsT],
+                                       added_recipient: AddedRecipientsT) -> Tuple[int, int]:
     """
     Returns:
     1. message_id, which is total number of messages
     2. usermessage_id, which is total number of usermessages
+    3. attachment_id, which is total number of attachments
     """
     json_names = os.listdir(slack_data_dir + '/' + channel_name)
     total_messages = 0
     total_usermessages = 0
+    total_attachments = 0
 
     for json_name in json_names:
         messages = get_data_file(slack_data_dir + '/%s/%s' % (channel_name, json_name))
@@ -511,19 +518,22 @@ def get_total_messages_and_usermessages(slack_data_dir: str, channel_name: str,
                 subtype = message['subtype']
                 if subtype in ["channel_join", "channel_leave", "channel_name"]:
                     continue
+                elif subtype == "file_share":
+                    total_attachments += 1
 
             for subscription in zerver_subscription:
                 if subscription['recipient'] == added_recipient[channel_name]:
                     total_usermessages += 1
             total_messages += 1
 
-    return total_messages, total_usermessages
+    return total_messages, total_usermessages, total_attachments
 
 def channel_message_to_zerver_message(constants: List[Any], channel: str,
                                       users: List[ZerverFieldsT], added_users: AddedUsersT,
                                       added_recipient: AddedRecipientsT,
                                       zerver_subscription: List[ZerverFieldsT],
                                       ids: List[int]) -> Tuple[List[ZerverFieldsT],
+                                                               List[ZerverFieldsT],
                                                                List[ZerverFieldsT]]:
     """
     Returns:
@@ -531,23 +541,48 @@ def channel_message_to_zerver_message(constants: List[Any], channel: str,
     2. zerver_usermessage, which is a list of the usermessages
     """
     slack_data_dir, REALM_ID = constants
-    message_id, usermessage_id = ids
+    message_id, usermessage_id, attachment_id = ids
     json_names = os.listdir(slack_data_dir + '/' + channel)
     zerver_message = []
     zerver_usermessage = []  # type: List[ZerverFieldsT]
+    zerver_attachment = []
 
     for json_name in json_names:
         messages = get_data_file(slack_data_dir + '/%s/%s' % (channel, json_name))
         for message in messages:
             has_attachment = False
+            url_private = None
             content, mentioned_users_id, has_link = convert_to_zulip_markdown(message['text'],
                                                                               users,
                                                                               added_users)
             rendered_content = None
+            user = get_message_sending_user(message)
             if 'subtype' in message.keys():
                 subtype = message['subtype']
                 if subtype in ["channel_join", "channel_leave", "channel_name"]:
                     continue
+                elif subtype == "file_share":
+                    has_attachment = True
+                    fileinfo = message['file']
+                    url_private = fileinfo['url_private']
+                    response = requests.get(url_private, stream=True)
+                    attachment_path = upload_message_image(
+                        fileinfo['name'], fileinfo['size'], fileinfo['mimetype'],
+                        response.raw, None, target_realm=target_realm)
+                    content += ' [%s](%s)' % (fileinfo['name'], attachment_path)
+                    del response
+                    zerver_attachment.append(dict(
+                        owner=added_users[user],
+                        messages=[message_id],
+                        id=attachment_id,
+                        size=fileinfo['size'],
+                        create_time=fileinfo['created'],
+                        is_realm_public=True,  # is always strue for stream message
+                        path_id="",  # TODO
+                        realm=1,
+                        file_name=fileinfo['name']
+                    ))
+                    attachment_id += 1
 
             recipient_id = added_recipient[channel]
             # construct message
@@ -561,7 +596,7 @@ def channel_message_to_zerver_message(constants: List[Any], channel: str,
                 has_attachment=has_attachment,  # attachment will be posted in the subsequent message;
                                                 # this is how Slack does it, i.e. less like email
                 edit_history=None,
-                sender=added_users[get_message_sending_user(message)],  # map slack id to zulip id
+                sender=added_users[user],  # map slack id to zulip id
                 content=content,
                 rendered_content=rendered_content,  # slack doesn't cache this
                 recipient=recipient_id,
