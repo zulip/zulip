@@ -1469,6 +1469,16 @@ function render(template_name, args) {
     render('edit_bot');
 }());
 
+(function edit_outgoing_webhook_service() {
+    var args = {
+        service: {base_url: "http://www.foo.bar",
+                  interface: "1"},
+    };
+    var html = render('edit-outgoing-webhook-service', args);
+    assert.equal($(html).find('#edit_service_base_url').attr('value'), args.service.base_url);
+    assert.equal($(html).find('#edit_service_interface').attr('value'), args.service.interface);
+}());
+
 // By the end of this test, we should have compiled all our templates.  Ideally,
 // we will also have exercised them to some degree, but that's a little trickier
 // to enforce.

@@ -294,12 +294,9 @@ exports.set_up = function () {
 
         if (bot.bot_type.toString() === OUTGOING_WEBHOOK_BOT_TYPE) {
             var services = bot_data.get_services(bot_id);
-            $("#settings_page .edit_bot #service_data").show();
-            // Currently, we only support one service per bot.
-            $("#settings_page .edit_bot #edit_service_base_url").val(services[0].base_url);
-            $("#settings_page .edit_bot #edit_service_interface").val(services[0].interface);
-        } else {
-            $("#settings_page .edit_bot #service_data").hide();
+            var outgoing_webhook_service_edit = templates.render("edit-outgoing-webhook-service",
+                                                                 {service: services[0]});
+            $("#service_data").append(outgoing_webhook_service_edit);
         }
 
         avatar_widget.clear();
@@ -332,8 +329,8 @@ exports.set_up = function () {
                 formData.append('bot_owner', bot_owner);
 
                 if (type === OUTGOING_WEBHOOK_BOT_TYPE) {
-                    var service_payload_url = $("#settings_page .edit_bot #edit_service_base_url").val();
-                    var service_interface = $("#settings_page .edit_bot #edit_service_interface :selected").val();
+                    var service_payload_url = $("#edit_service_base_url").val();
+                    var service_interface = $("#edit_service_interface :selected").val();
                     formData.append('service_payload_url', JSON.stringify(service_payload_url));
                     formData.append('service_interface', service_interface);
                 }
