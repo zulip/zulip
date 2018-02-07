@@ -67,14 +67,36 @@ def create_user(client):
 def get_members(client):
     # type: (Client) -> None
 
+    # {code_example|start}
+    # Get all users in the realm
     result = client.get_members()
-    assert result['result'] == 'success'
+    # {code_example|end}
+
+    fixture = FIXTURES['get-all-users']
+    test_against_fixture(result, fixture, check_if_equal=['msg', 'result'],
+                         check_if_exists=['members'])
     members = [m for m in result['members'] if m['email'] == 'newbie@zulip.com']
     assert len(members) == 1
-    iago = members[0]
+    newbie = members[0]
+    assert not newbie['is_admin']
+    assert newbie['full_name'] == 'New User'
 
-    assert not iago['is_admin']
-    assert iago['full_name'] == 'New User'
+    member_fixture = fixture['members'][0]
+    member_result = result['members'][0]
+    test_against_fixture(member_result, member_fixture,
+                         check_if_exists=member_fixture.keys())
+
+    # {code_example|start}
+    # You may pass the `client_gravatar` query parameter as follows:
+    result = client.call_endpoint(
+        url='users?client_gravatar=true',
+        method='GET',
+    )
+    # {code_example|end}
+
+    test_against_fixture(result, fixture, check_if_equal=['msg', 'result'],
+                         check_if_exists=['members'])
+    assert result['members'][0]['avatar_url'] is None
 
 def get_profile(client):
     # type: (Client) -> None
@@ -298,6 +320,7 @@ TEST_FUNCTIONS = {
     'get-profile': get_profile,
     'add-subscriptions': add_subscriptions,
     'remove-subscriptions': remove_subscriptions,
+    'get-all-users': get_members,
 }
 
 # SETUP METHODS FOLLOW
