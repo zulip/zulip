@@ -30,24 +30,7 @@ curl {{ api_url }}/v1/users?client_gravatar=true \
 
 <div data-language="python" markdown="1">
 
-```python
-#!/usr/bin/env python
-
-import zulip
-
-# Download ~/zuliprc-dev from your dev server
-client = zulip.Client(config_file="~/zuliprc-dev")
-
-# Get all users in the realm
-print(client.get_members())
-
-# You may pass the `client_gravatar` query parameter as follows:
-print(client.call_endpoint(
-    url='users?client_gravatar=true',
-    method='GET',
-))
-
-```
+{generate_code_example|get-all-users|example}
 
 </div>
 
@@ -105,52 +88,4 @@ zulip(config).then((client) => {
 
 A typical successful JSON response may look like:
 
-```
-{
-    'msg':'',
-    'members':[
-        {
-            'email':'ZOE@zulip.com',
-            'is_bot':False,
-            'avatar_url':'https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d=identicon&version=1',
-            'full_name':'Zoe',
-            'is_active':True,
-            'is_admin':False,
-            'bot_type':None,
-            'user_id':23
-        },
-        {
-            'email':'AARON@zulip.com',
-            'is_bot':False,
-            'avatar_url':'https://secure.gravatar.com/avatar/818c212b9f8830dfef491b3f7da99a14?d=identicon&version=1',
-            'full_name':'aaron',
-            'is_active':True,
-            'is_admin':False,
-            'bot_type':None,
-            'user_id':22
-        },
-        {
-            'bot_owner':'iago@zulip.com',
-            'email':'sample-bot@localhost',
-            'is_bot':True,
-            'avatar_url':'https://secure.gravatar.com/avatar/0ea4ba8ec99b1fe07f62785a7c584cd3?d=identicon&version=1',
-            'full_name':'sample',
-            'is_active':True,
-            'is_admin':False,
-            'bot_type':1,
-            'user_id':45
-        },
-        {
-            'email':'iago@zulip.com',
-            'is_bot':False,
-            'avatar_url':'https://secure.gravatar.com/avatar/af4f06322c177ef4e1e9b2c424986b54?d=identicon&version=1',
-            'full_name':'Iago',
-            'is_active':True,
-            'is_admin':True,
-            'bot_type':None,
-            'user_id':26
-        }
-    ],
-    'result':'success'
-}
-```
+{generate_code_example|get-all-users|fixture}
