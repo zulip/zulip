@@ -281,25 +281,21 @@ exports.set_up = function () {
         var users_list = people.get_realm_persons().filter(function (person)  {
             return !person.is_bot;
         });
-        var edit_bot_form = templates.render('edit_bot', {bot: bot,
-                                                          users_list: users_list});
         $("#edit_bot").empty();
-        $("#edit_bot").append(edit_bot_form);
+        $("#edit_bot").append(templates.render('edit_bot', {bot: bot,
+                                                            users_list: users_list}));
         var avatar_widget = avatar.build_bot_edit_widget($("#settings_page"));
         var form = $('#settings_page .edit_bot_form');
         var image = li.find(".image");
-        $("#settings_page .edit_bot .edit-bot-owner select").val(bot.owner);
+        var errors = form.find('.bot_edit_errors');
 
+        $("#settings_page .edit_bot .edit-bot-owner select").val(bot.owner);
         if (bot.bot_type.toString() === OUTGOING_WEBHOOK_BOT_TYPE) {
             var services = bot_data.get_services(bot_id);
-            var outgoing_webhook_service_edit = templates.render("edit-outgoing-webhook-service",
-                                                                 {service: services[0]});
-            $("#service_data").append(outgoing_webhook_service_edit);
+            $("#service_data").append(templates.render("edit-outgoing-webhook-service",
+                                                       {service: services[0]}));
         }
-
         avatar_widget.clear();
-
-        var errors = form.find('.bot_edit_errors');
 
         form.validate({
             errorClass: 'text-error',
@@ -310,11 +306,13 @@ exports.set_up = function () {
                 var bot_id = form.attr('data-bot_id');
                 var email = form.attr('data-email');
                 var type = form.attr('data-type');
+
                 var full_name = form.find('.edit_bot_name').val();
                 var bot_owner = form.find('.edit-bot-owner select').val();
                 var file_input = $(".edit_bot").find('.edit_bot_avatar_file_input');
                 var spinner = form.find('.edit_bot_spinner');
                 var edit_button = form.find('.edit_bot_button');
+
                 var formData = new FormData();
                 formData.append('csrfmiddlewaretoken', csrf_token);
                 formData.append('full_name', full_name);
@@ -359,8 +357,6 @@ exports.set_up = function () {
                 });
             },
         });
-
-
     });
 
     $("#active_bots_list").on("click", "a.download_bot_zuliprc", function () {
