@@ -1,13 +1,14 @@
-<form class="edit_bot_form form-horizontal" data-target="edit-bot" data-title="{{t 'Edit bot' }}">
+<form class="edit_bot_form form-horizontal" data-target="edit-bot" data-title="{{t 'Edit bot' }}" data-bot_id="{{bot.bot_id}}"
+    data-email="{{bot.email}}" data-type="{{bot.bot_type}}">
     <div class="bot_edit_errors alert alert-error hide"></div>
     <div class="">
         <label>{{t "Bot email" }}</label>
-        <div class="edit_bot_email"></div>
+        <div class="edit_bot_email">{{bot.email}}</div>
     </div>
     <div class="edit-bot-form-box">
         <div class="">
             <label for="edit_bot_name">{{t "Full name" }}</label>
-            <input id="edit_bot_name" type="text" name="bot_name" class="edit_bot_name required" maxlength=50 />
+            <input id="edit_bot_name" type="text" name="bot_name" class="edit_bot_name required" value="{{bot.full_name}}" maxlength=50 />
             <div><label for="edit_bot_name" generated="true" class="text-error"></label></div>
         </div>
         <div class="edit-bot-owner">
