@@ -180,9 +180,6 @@
         }
     },
     "remove-subscriptions": {
-        "already_subscribed":{
-
-        },
         "msg":"",
         "not_subscribed":[
 
@@ -191,8 +188,5 @@
             "new stream"
         ],
         "result":"success",
-        "subscribed":{
-
-        }
     }
 }
