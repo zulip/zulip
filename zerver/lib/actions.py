@@ -4480,12 +4480,22 @@ ask a group member or an organization adminstrator to add you back."""
             message = message_template.format(group_name=group_name)
             internal_send_private_message(member.realm, get_system_bot(settings.NOTIFICATION_BOT),
                                           member, message)
+def realm_audit_log_for_user_group_creation_or_deletion(acting_user: UserProfile, user_group: UserGroup,
+                                                        event_type: Text) -> None:
+    extra_data = {"user_group_id": user_group.id, "user_group_name": user_group.name,
+                  "user_group_description": user_group.description}
+    RealmAuditLog.objects.create(realm=user_group.realm, acting_user=acting_user,
+                                 event_time=timezone_now(), extra_data=extra_data,
+                                 event_type=event_type)
 
 def check_add_user_group(created_by: UserProfile, name: Text, initial_members: List[UserProfile],
                          description: Text) -> None:
     try:
         user_group = create_user_group(name, initial_members, created_by.realm, description=description)
         send_user_group_update_notification(created_by, user_group.name, initial_members, "add_members")
+        realm_audit_log_for_user_group_creation_or_deletion(created_by, user_group, "user_group_created")
+        realm_audit_log_for_user_group_members_update(created_by, user_group, initial_members,
+                                                      "user_added_to_group")
         do_send_create_user_group_event(user_group, initial_members)
     except django.db.utils.IntegrityError:
         raise JsonableError(_("User group '%s' already exists." % (name,)))
