@@ -1,12 +1,12 @@
 Zulip supports integration with CircleCI and can notify you of
 your build statuses.
 
-{!create-stream.md!}
+1. {!create-stream.md!}
 
-{!create-bot-construct-url.md!}
+2. {!create-bot-construct-url-indented.md!}
 
-Next, modify your `circle.yml` as described
-[here](https://circleci.com/docs/configuration/#notify).
+3. Next, modify your `circle.yml` as described
+   [here](https://circleci.com/docs/configuration/#notify).
 
 {!congrats.md!}
 
