@@ -19,6 +19,14 @@ if Vagrant::VERSION == "1.8.7" then
     end
 end
 
+# Vagrant removed the atlas.hashicorp.com to vagrantcloud.com
+# redirect. The value of DEFAULT_SERVER_URL in Vagrant versions
+# less than 1.9.3 is atlas.hashicorp.com. This breaks the fetching
+# and updating of boxes as they are now stored in 
+# vagrantcloud.com instead of atlas.hashicorp.com. 
+# https://github.com/hashicorp/vagrant/issues/9442
+Vagrant::DEFAULT_SERVER_URL.replace('https://vagrantcloud.com')
+
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # For LXC. VirtualBox hosts use a different box, described below.
