@@ -327,6 +327,18 @@ def register_queue(client):
 
     return result['queue_id']
 
+def deregister_queue(client, queue_id):
+    # type: (Client, str) -> None
+
+    # {code_example|start}
+    # Delete a queue (queue_id is the ID of the queue
+    # to be removed)
+    result = client.deregister(queue_id)
+    # {code_example|end}
+
+    fixture = FIXTURES['delete-queue']
+    test_against_fixture(result, fixture)
+
 def test_invalid_api_key(client_with_invalid_key):
     # type: (Client) -> None
     result = client_with_invalid_key.list_subscriptions()
@@ -348,6 +360,7 @@ TEST_FUNCTIONS = {
     'remove-subscriptions': remove_subscriptions,
     'get-all-users': get_members,
     'register-queue': register_queue,
+    'delete-queue': deregister_queue,
 }
 
 # SETUP METHODS FOLLOW
@@ -396,7 +409,8 @@ def test_streams(client):
 def test_queues(client):
     # type: (Client) -> None
 
-    register_queue(client)
+    queue_id = register_queue(client)
+    deregister_queue(client, queue_id)
 
 def test_the_api(client):
     # type: (Client) -> None
