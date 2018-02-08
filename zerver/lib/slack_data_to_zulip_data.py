@@ -600,6 +600,12 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str, 
     slack_data_dir = slack_zip_file.replace('.zip', '')
     if not os.path.exists(slack_data_dir):
         os.makedirs(slack_data_dir)
+
+    os.makedirs(output_dir, exist_ok=True)
+    # output directory should be empty initially
+    if os.listdir(output_dir):
+        raise Exception('Output directory should be empty!')
+
     subprocess.check_call(['unzip', '-q', slack_zip_file, '-d', slack_data_dir])
     # with zipfile.ZipFile(slack_zip_file, 'r') as zip_ref:
     #     zip_ref.extractall(slack_data_dir)
@@ -639,7 +645,6 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str, 
 
     logging.info('######### DATA CONVERSION FINISHED #########\n')
     logging.info("Zulip data dump created at %s" % (output_dir))
-    sys.exit(0)
 
 def get_data_file(path: str) -> Any:
     data = json.load(open(path))

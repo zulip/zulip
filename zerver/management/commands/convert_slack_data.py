@@ -35,9 +35,6 @@ class Command(BaseCommand):
             output_dir = tempfile.mkdtemp(prefix="/tmp/converted-slack-data-")
         else:
             output_dir = os.path.realpath(output_dir)
-        if os.path.exists(output_dir):
-            shutil.rmtree(output_dir)
-        os.makedirs(output_dir)
 
         realm_name = options['realm_name']
         token = options['token']
