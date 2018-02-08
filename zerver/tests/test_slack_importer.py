@@ -23,22 +23,32 @@ from zerver.lib.slack_data_to_zulip_data import (
     build_zerver_usermessage,
     channel_message_to_zerver_message,
     convert_slack_workspace_messages,
+    do_convert_data,
+)
+from zerver.lib.export import (
+    do_import_realm,
 )
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 from zerver.models import (
     Realm,
+    get_realm,
 )
 from zerver.lib import mdiff
+
 import ujson
 import json
-
 import logging
+import shutil
 import requests
 import os
 import mock
 from typing import Any, AnyStr, Dict, List, Optional, Set, Tuple, Text
+
+def remove_folder(path: str) -> None:
+    if os.path.exists(path):
+        shutil.rmtree(path)
 
 # This method will be used by the mock to replace requests.get
 def mocked_requests_get(*args: List[str], **kwargs: List[str]) -> mock.Mock:
@@ -462,3 +472,29 @@ class SlackImporter(ZulipTestCase):
                                                         realm)
         self.assertEqual(message_json['zerver_message'], zerver_message1 + zerver_message2)
         self.assertEqual(message_json['zerver_usermessage'], zerver_usermessage1 + zerver_usermessage2)
+
+    @mock.patch("zerver.lib.slack_data_to_zulip_data.get_user_data")
+    def test_slack_import_to_existing_database(self, mock_get_user_data: mock.Mock) -> None:
+        test_slack_zip_file = os.path.join(settings.DEPLOY_ROOT, "zerver", "fixtures",
+                                           "slack_fixtures", "test_slack_importer.zip")
+        test_realm_subdomain = 'test-slack-import'
+        output_dir = '/tmp/test-slack-importer-data'
+        token = 'valid-token'
+
+        user_data_fixture = os.path.join(settings.DEPLOY_ROOT, "zerver", "fixtures",
+                                         "slack_fixtures", "user_data.json")
+        mock_get_user_data.return_value = ujson.load(open(user_data_fixture))['members']
+
+        do_convert_data(test_slack_zip_file, test_realm_subdomain, output_dir, token)
+        self.assertTrue(os.path.exists(output_dir))
+        self.assertTrue(os.path.exists(output_dir + '/realm.json'))
+
+        # test import of the converted slack data into an existing database
+        do_import_realm(output_dir)
+        self.assertTrue(get_realm(test_realm_subdomain).name, test_realm_subdomain)
+        Realm.objects.filter(name=test_realm_subdomain).delete()
+
+        remove_folder(output_dir)
+        # remove tar file created in 'do_convert_data' function
+        os.remove(output_dir + '.tar.gz')
+        self.assertFalse(os.path.exists(output_dir))
