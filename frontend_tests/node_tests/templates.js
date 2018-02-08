@@ -1520,6 +1520,20 @@ function render(template_name, args) {
     assert.equal($(html).find("tr").data("topic"), "Verona2");
 }());
 
+(function muted_user_ui_row() {
+    var args = {
+        muted_user_name: 'hamlet',
+    };
+
+    var html = '<table id="muted-users-table">';
+    html += '<tbody>';
+    html += render('muted_user_ui_row', args);
+    html += '</tbody>';
+    html += '</table>';
+
+    assert.equal($(html).find("tr").data("muted-user"), "hamlet");
+}());
+
 (function embedded_bot_config_item() {
     var args = {
         botname: 'giphy',
