@@ -4494,9 +4494,15 @@ def do_send_user_group_update_event(user_group: UserGroup, data: Dict[str, Any])
     event = dict(type="user_group", op='update', group_id=user_group.id, data=data)
     send_event(event, active_user_ids(user_group.realm_id))
 
-def do_update_user_group_name(user_group: UserGroup, name: Text) -> None:
+def do_update_user_group_name(updated_by: UserProfile, user_group: UserGroup, name: Text) -> None:
+    extra_data = {"user_group_id": user_group.id, "user_group_name": user_group.name,
+                  "old_name": user_group.name, "new_name": name}
+
     user_group.name = name
     user_group.save(update_fields=['name'])
+    RealmAuditLog.objects.create(realm=user_group.realm, acting_user=updated_by,
+                                 event_time=timezone_now(), extra_data=extra_data,
+                                 event_type="user_group_name_changed")
     do_send_user_group_update_event(user_group, dict(name=name))
 
 def do_update_user_group_description(updated_by: UserProfile, user_group: UserGroup,

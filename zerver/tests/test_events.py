@@ -1036,7 +1036,7 @@ class EventsRegisterTest(ZulipTestCase):
             ])),
         ])
         backend = UserGroup.objects.get(name='backend')
-        events = self.do_test(lambda: do_update_user_group_name(backend, 'backendteam'))
+        events = self.do_test(lambda: do_update_user_group_name(othello, backend, 'backendteam'))
         error = user_group_update_checker('events[0]', events[0])
         self.assert_on_error(error)
 

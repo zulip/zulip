@@ -38,7 +38,7 @@ def edit_user_group(request: HttpRequest, user_profile: UserProfile,
 
     result = {}
     if name != user_group.name:
-        do_update_user_group_name(user_group, name)
+        do_update_user_group_name(user_profile, user_group, name)
         result['name'] = _("Name successfully updated.")
 
     if description != user_group.description:
