@@ -13,7 +13,7 @@ exports.initialize = function () {
     load_func_dict.set('your-bots', settings_bots.set_up);
     load_func_dict.set('alert-words', alert_words_ui.set_up_alert_words);
     load_func_dict.set('uploaded-files', attachments_ui.set_up_attachments);
-    load_func_dict.set('muted-topics', settings_muting.set_up);
+    load_func_dict.set('muted-users-topics', settings_muting.set_up);
     load_func_dict.set('zulip-labs', settings_lab.set_up);
 };
 
