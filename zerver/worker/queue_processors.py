@@ -43,7 +43,7 @@ from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_servi
 from zerver.models import get_bot_services
 from zulip import Client
 from zulip_bots.lib import extract_query_without_mention
-from zerver.lib.bot_lib import EmbeddedBotHandler, get_bot_handler
+from zerver.lib.bot_lib import EmbeddedBotHandler, get_bot_handler, EmbeddedBotQuitException
 
 import os
 import sys
@@ -529,19 +529,22 @@ class EmbeddedBotWorker(QueueProcessingWorker):
                 logging.error("Error: User %s has bot with invalid embedded bot service %s" % (
                     user_profile_id, service.name))
                 continue
-            if hasattr(bot_handler, 'initialize'):
-                bot_handler.initialize(self.get_bot_api_client(user_profile))
-            if event['trigger'] == 'mention':
-                message['content'] = extract_query_without_mention(
+            try:
+                if hasattr(bot_handler, 'initialize'):
+                        bot_handler.initialize(self.get_bot_api_client(user_profile))
+                if event['trigger'] == 'mention':
+                    message['content'] = extract_query_without_mention(
+                        message=message,
+                        client=self.get_bot_api_client(user_profile),
+                    )
+                    if message['content'] is None:
+                        return
+                bot_handler.handle_message(
                     message=message,
-                    client=self.get_bot_api_client(user_profile),
+                    bot_handler=self.get_bot_api_client(user_profile)
                 )
-                if message['content'] is None:
-                    return
-            bot_handler.handle_message(
-                message=message,
-                bot_handler=self.get_bot_api_client(user_profile)
-            )
+            except EmbeddedBotQuitException as e:
+                logging.warning(str(e))
 
 @assign_queue('deferred_work')
 class DeferredWorker(QueueProcessingWorker):

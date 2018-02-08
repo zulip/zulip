@@ -57,6 +57,9 @@ class StateHandler:
     def contains(self, key: Text) -> bool:
         return is_key_in_bot_storage(self.user_profile, key)
 
+class EmbeddedBotQuitException(Exception):
+    pass
+
 class EmbeddedBotHandler:
     def __init__(self, user_profile: UserProfile) -> None:
         # Only expose a subset of our UserProfile's functionality
@@ -113,3 +116,6 @@ class EmbeddedBotHandler:
             if optional:
                 return dict()
             raise
+
+    def quit(self, message: str= "") -> None:
+        raise EmbeddedBotQuitException(message)

@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from unittest import mock
+from mock import patch
 from typing import Any, Dict, Tuple, Text, Optional
 
+from zerver.lib.bot_lib import EmbeddedBotQuitException
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import UserProfile, Recipient, get_display_recipient
 
@@ -46,6 +48,15 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
                                  content="foo", topic_name="bar")
         last_message = self.get_last_message()
         self.assertEqual(last_message.content, "foo")
+
+    def test_embedded_bot_quit_exception(self) -> None:
+        with patch('zulip_bots.bots.helloworld.helloworld.HelloWorldHandler.handle_message',
+                   side_effect=EmbeddedBotQuitException("I'm quitting!")):
+            with patch('logging.warning') as mock_logging:
+                self.send_stream_message(self.user_profile.email, "Denmark",
+                                         content="@**{}** foo".format(self.bot_profile.full_name),
+                                         topic_name="bar")
+                mock_logging.assert_called_once_with("I'm quitting!")
 
 class TestEmbeddedBotFailures(ZulipTestCase):
     @mock.patch("logging.error")
