@@ -1115,7 +1115,8 @@ JS_SPECS = {
             'js/ui_init.js',
             'js/emoji_picker.js',
             'js/compose_ui.js',
-            'js/panels.js'
+            'js/panels.js',
+            'js/deprecation_ui.js'
         ],
         'output_filename': 'min/app.js'
     },

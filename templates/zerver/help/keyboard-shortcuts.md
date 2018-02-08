@@ -89,7 +89,7 @@ below, and add more to your repertoire as needed.
 
 * **New stream message**: `c` — For starting a new topic in a stream.
 
-* **New private message**: `C`
+* **New private message**: `x`
 
 ### In the compose box
 

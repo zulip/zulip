@@ -60,7 +60,7 @@ casper.then(function () {
 casper.then(function () {
     casper.test.info('Creating Private Message Draft');
     casper.click('body');
-    casper.page.sendEvent('keypress', "C");
+    casper.page.sendEvent('keypress', "x");
     casper.waitUntilVisible('#private-message', function () {
         casper.fill('form#send_message_form', {
             recipient: 'cordelia@zulip.com, hamlet@zulip.com',
@@ -171,7 +171,7 @@ casper.then(function () {
     casper.click('#draft_overlay .exit');
     waitWhileDraftsVisible(function () {
         casper.click('body');
-        casper.page.sendEvent('keypress', "C");
+        casper.page.sendEvent('keypress', "x");
     });
 });
 
