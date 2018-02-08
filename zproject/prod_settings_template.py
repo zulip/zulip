@@ -389,8 +389,10 @@ from django_auth_ldap.config import LDAPSearch, GroupOfNamesType
 AUTH_LDAP_SERVER_URI = ""
 
 # This DN will be used to bind to your server. If unset, anonymous
-# binds are performed.  If set, you need to specify the password as
-# 'auth_ldap_bind_password' in zulip-secrets.conf.
+# binds are performed.
+#
+# If set, you need to specify the password in zulip-secrets.conf ,
+# as 'auth_ldap_bind_password'.
 AUTH_LDAP_BIND_DN = ""
 
 # Specify the search base and the property to filter on that corresponds to the
