@@ -234,5 +234,9 @@
         "msg":"",
         "queue_id":"1517975029:0",
         "result":"success"
+    },
+    "delete-queue": {
+        "msg":"",
+        "result":"success"
     }
 }
