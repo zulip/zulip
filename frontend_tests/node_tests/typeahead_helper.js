@@ -180,19 +180,19 @@ _.each(matches, function (person) {
         sender_id : 7,
         stream_id : 1,
         subject : "Dev Topic",
-        timestamp : _.uniqueId(),
+        id : _.uniqueId(),
     });
     global.recent_senders.process_message_for_senders({
         sender_id : 5,
         stream_id : 1,
         subject : "Dev Topic",
-        timestamp : _.uniqueId(),
+        id : _.uniqueId(),
     });
     global.recent_senders.process_message_for_senders({
         sender_id : 6,
         stream_id : 1,
         subject : "Dev Topic",
-        timestamp : _.uniqueId(),
+        id : _.uniqueId(),
     });
 
     // Typeahead for stream message [query, stream-name, topic-name]
@@ -210,13 +210,13 @@ _.each(matches, function (person) {
         sender_id : 5,
         stream_id : 2,
         subject : "Linux Topic",
-        timestamp : _.uniqueId(),
+        id : _.uniqueId(),
     });
     global.recent_senders.process_message_for_senders({
         sender_id : 7,
         stream_id : 2,
         subject : "Linux Topic",
-        timestamp : _.uniqueId(),
+        id : _.uniqueId(),
     });
 
     // No match

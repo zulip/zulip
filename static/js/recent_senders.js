@@ -10,42 +10,42 @@ exports.process_message_for_senders = function (message) {
 
     // Process most recent sender to topic
     var topic_dict = topic_senders.get(stream_id) || new Dict({fold_case: true});
-    var sender_timestamps = topic_dict.get(message.subject) || new Dict();
-    var old_timestamp = sender_timestamps.get(message.sender_id);
+    var sender_message_ids = topic_dict.get(message.subject) || new Dict();
+    var old_message_id = sender_message_ids.get(message.sender_id);
 
-    if (old_timestamp === undefined || old_timestamp < message.timestamp) {
-        sender_timestamps.set(message.sender_id, message.timestamp);
+    if (old_message_id === undefined || old_message_id < message.id) {
+        sender_message_ids.set(message.sender_id, message.id);
     }
 
-    topic_dict.set(message.subject, sender_timestamps);
+    topic_dict.set(message.subject, sender_message_ids);
     topic_senders.set(stream_id, topic_dict);
 
     // Process most recent sender to whole stream
-    sender_timestamps = stream_senders.get(stream_id) || new Dict();
-    old_timestamp = sender_timestamps.get(message.sender_id);
+    sender_message_ids = stream_senders.get(stream_id) || new Dict();
+    old_message_id = sender_message_ids.get(message.sender_id);
 
-    if (old_timestamp === undefined || old_timestamp < message.timestamp) {
-        sender_timestamps.set(message.sender_id, message.timestamp);
+    if (old_message_id === undefined || old_message_id < message.id) {
+        sender_message_ids.set(message.sender_id, message.id);
     }
 
-    stream_senders.set(stream_id, sender_timestamps);
+    stream_senders.set(stream_id, sender_message_ids);
 };
 
 exports.compare_by_recency = function (user_a, user_b, stream_id, topic) {
     stream_id = stream_id.toString();
 
-    var a_timestamp;
-    var b_timestamp;
+    var a_message_id;
+    var b_message_id;
 
     var topic_dict = topic_senders.get(stream_id);
     if (topic !== undefined && topic_dict !== undefined) {
-        var sender_timestamps = topic_dict.get(topic);
-        if (sender_timestamps !== undefined) {
-            b_timestamp = sender_timestamps.get(user_b.user_id) || Number.NEGATIVE_INFINITY;
-            a_timestamp = sender_timestamps.get(user_a.user_id) || Number.NEGATIVE_INFINITY;
+        var sender_message_ids = topic_dict.get(topic);
+        if (sender_message_ids !== undefined) {
+            b_message_id = sender_message_ids.get(user_b.user_id) || Number.NEGATIVE_INFINITY;
+            a_message_id = sender_message_ids.get(user_a.user_id) || Number.NEGATIVE_INFINITY;
 
-            if (a_timestamp !== b_timestamp) {
-                return b_timestamp - a_timestamp;
+            if (a_message_id !== b_message_id) {
+                return b_message_id - a_message_id;
             }
         }
     }
@@ -53,11 +53,11 @@ exports.compare_by_recency = function (user_a, user_b, stream_id, topic) {
     // Check recency for whole stream as tiebreaker
     var stream_dict = stream_senders.get(stream_id);
     if (stream_dict !== undefined) {
-        b_timestamp = stream_dict.get(user_b.user_id) || Number.NEGATIVE_INFINITY;
-        a_timestamp = stream_dict.get(user_a.user_id) || Number.NEGATIVE_INFINITY;
+        b_message_id = stream_dict.get(user_b.user_id) || Number.NEGATIVE_INFINITY;
+        a_message_id = stream_dict.get(user_a.user_id) || Number.NEGATIVE_INFINITY;
 
-        if (a_timestamp !== b_timestamp) {
-            return b_timestamp - a_timestamp;
+        if (a_message_id !== b_message_id) {
+            return b_message_id - a_message_id;
         }
     }
 
