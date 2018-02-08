@@ -106,6 +106,8 @@
         "channel": false,
         "components": false,
         "message_viewport": false,
+        "muting_user_ui": false,
+        "muting_user": false,
         "upload_widget": false,
         "avatar": false,
         "realm_icon": false,
