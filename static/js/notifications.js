@@ -405,6 +405,13 @@ exports.message_is_notifiable = function (message) {
         return false;
     }
 
+    // @-mentions notifications are muted for a muted user
+    // but @all mentions notifications are not muted
+    if ((message.mentioned_me_directly) &&
+        muting_user.is_user_muted(message.sender_id)) {
+        return false;
+    }
+
     // @-<username> mentions take precedence over muted-ness. Note
     // that @all mentions are still suppressed by muting.
     if (message.mentioned_me_directly) {
@@ -420,6 +427,12 @@ exports.message_is_notifiable = function (message) {
 
     if ((message.type === "stream") &&
         muting.is_topic_muted(message.stream, message.subject)) {
+        return false;
+    }
+
+    // PM's by a muted user should not trigger notifications, group PM's still
+    // trigger notifications.
+    if ((message.type === "private") && message.display_recipient.length === 2 && muting_user.is_user_muted(message.sender_id)) {
         return false;
     }
 

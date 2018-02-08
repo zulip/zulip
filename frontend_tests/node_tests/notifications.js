@@ -1,5 +1,6 @@
 // Dependencies
 zrequire('muting');
+zrequire('muting_user');
 zrequire('stream_data');
 
 set_global('document', {
@@ -12,7 +13,7 @@ set_global('page_params', {
     is_admin: false,
     realm_users: [],
 });
-
+set_global('$', global.make_zjquery());
 zrequire('notifications');
 
 // Not muted streams
@@ -38,11 +39,26 @@ var three = {
     in_home_view: false,
 };
 
+// Muted users
+var hamlet = {
+    id: 1,
+    name: 'hamlet',
+};
+
+// Non-muted users
+var cordelia = {
+    id: 2,
+    name: 'cordelia',
+};
+
 // Add muted topics
 muting.add_muted_topic(one.name, 'topic_one');
 muting.add_muted_topic(one.name, 'topic_three');
 muting.add_muted_topic(three.name, 'topic_five');
 muting.add_muted_topic(three.name, 'topic_seven');
+
+// Add muted users
+muting_user.add_muted_user([hamlet.id, hamlet.name]);
 
 // Subscribe to topic
 stream_data.add_sub('stream_two', two);
@@ -67,6 +83,7 @@ stream_data.add_sub('stream_two', two);
             stream: 'stream_two',
             stream_id: 20,
             subject: 'topic_two',
+            sender_id: cordelia.id,
         }), false);
 
     // Case 2: If the user has already been sent a notificaton about this message,
@@ -84,6 +101,7 @@ stream_data.add_sub('stream_two', two);
             stream: 'stream_two',
             stream_id: 20,
             subject: 'topic_two',
+            sender_id: cordelia.id,
         }), false);
 
     // Case 3: If a message mentions the user directly,
@@ -99,6 +117,7 @@ stream_data.add_sub('stream_two', two);
             stream: 'stream_one',
             stream_id: 10,
             subject: 'topic_three',
+            sender_id: cordelia.id,
         }), true);
 
         // Mentioning should trigger notification in unmuted topic
@@ -112,6 +131,7 @@ stream_data.add_sub('stream_two', two);
             stream: 'stream_two',
             stream_id: 20,
             subject: 'topic_two',
+            sender_id: cordelia.id,
         }), true);
 
     // Case 4: If a message is in a muted stream
@@ -127,6 +147,7 @@ stream_data.add_sub('stream_two', two);
             stream: 'stream_one',
             stream_id: 10,
             subject: 'topic_one',
+            sender_id: cordelia.id,
         }), false);
 
     // Case 5
@@ -144,5 +165,60 @@ stream_data.add_sub('stream_two', two);
             stream: 'stream_two',
             stream_id: 20,
             subject: 'topic_two',
+            sender_id: cordelia.id,
+        }), true);
+    // Case 6
+        // We have muted hamlet and now hamlet sends a @-message to us.
+        assert.equal(notifications.message_is_notifiable({
+            id: 70,
+            content: 'message_number 7',
+            sent_by_me: false,
+            notification_sent: false,
+            mentioned_me_directly: true,
+            type: 'stream',
+            stream: 'stream_two',
+            stream_id: 20,
+            subject: 'topic_two',
+            sender_id: hamlet.id,
+        }), false);
+    // Case 7
+        // Now hamlet sends us a PM.
+        assert.equal(notifications.message_is_notifiable({
+            id: 80,
+            content: 'message number 8',
+            sent_by_me: false,
+            notification_sent: false,
+            mentioned_me_directly: false,
+            type: 'private',
+            display_recipient: [3, hamlet.id],
+            sender_id: hamlet.id,
+        }), false);
+    // Case 8
+        // Now hamlet sends @-mentions all, we should expect to
+        // receive notification.
+        assert.equal(notifications.message_is_notifiable({
+            id: 90,
+            content: 'message_number 9',
+            sent_by_me: false,
+            notification_sent: false,
+            mentioned_me_directly: false,
+            type: 'stream',
+            stream: 'stream_two',
+            stream_id: 20,
+            subject: 'topic_two',
+            sender_id: hamlet.id,
+        }), true);
+    // Case 9
+        // Now hamlet posts a message in a huddle, we should expect to
+        // receive notification.
+        assert.equal(notifications.message_is_notifiable({
+            id: 100,
+            content: 'message number 10',
+            sent_by_me: false,
+            notification_sent: false,
+            mentioned_me_directly: false,
+            type: 'private',
+            display_recipient: [3, hamlet.id, cordelia.id],
+            sender_id: hamlet.id,
         }), true);
 }());
