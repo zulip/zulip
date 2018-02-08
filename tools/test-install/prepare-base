@@ -9,9 +9,11 @@ fi
 RELEASE="$1"
 ARCH=amd64  # TODO: maybe i686 too
 
-# TODO: xenial too
 case "$RELEASE" in
-    trusty) ;;
+    trusty) extra_packages=(python-virtualenv postgresql-9.3)
+        ;;
+    xenial) extra_packages=(virtualenv postgresql-9.5)
+        ;;
     *)
         echo "error: unsupported target release: $RELEASE" >&2
         exit 1
@@ -44,8 +46,8 @@ run apt-get install -y --no-install-recommends \
   hunspell-en-us supervisor libssl-dev yui-compressor puppet \
   gettext libffi-dev libfreetype6-dev libz-dev libjpeg-dev \
   libldap2-dev libmemcached-dev python-dev python-pip \
-  python-virtualenv python-six libxml2-dev libxslt1-dev libpq-dev \
-  postgresql-9.3
+  python-six libxml2-dev libxslt1-dev libpq-dev \
+  "${extra_packages[@]}"
 
 run ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime
 run locale-gen en_US.UTF-8 || true
