@@ -137,6 +137,11 @@ function show_user_info_popover(element, user, message) {
             return;
         }
 
+        var is_muted = muting_user.is_user_muted(user.user_id);
+        var owner = people.my_full_name();
+        var is_not_self = !(owner === user.full_name);
+        var can_mute_user = !is_muted;
+        var can_unmute_user = is_muted;
         var args = {
             user_full_name: user.full_name,
             user_email: user.email,
@@ -152,6 +157,9 @@ function show_user_info_popover(element, user, message) {
             is_active: people.is_active_user_for_popover(user.user_id),
             is_bot: people.get_person_from_user_id(user.user_id).is_bot,
             is_sender_popover: message.sender_id === user.user_id,
+            can_mute_user: can_mute_user,
+            can_unmute_user: can_unmute_user,
+            is_not_self: is_not_self,
         };
 
 
@@ -615,6 +623,30 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
+        // Mute the user
+        $('body').on('click', '.info_popover_actions .sidebar-popover-mute-user', function (e) {
+        var id = $(e.target).parents('ul').attr('data-user-id');
+        var muted_id = Number(id);
+        var muted_name = people.get_person_from_user_id(id).full_name;
+        popovers.hide_message_info_popover();
+        popovers.hide_user_sidebar_popover();
+        muting_user_ui.mute_user([muted_id, muted_name]);
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+        // Unmute the user
+        $('body').on('click', '.info_popover_actions .sidebar-popover-unmute-user', function (e) {
+        var id = $(e.target).parents('ul').attr('data-user-id');
+        var muted_id = Number(id);
+        var muted_name = people.get_person_from_user_id(id).full_name;
+        popovers.hide_message_info_popover();
+        popovers.hide_user_sidebar_popover();
+        muting_user_ui.unmute_user([muted_id, muted_name]);
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
     $('#user_presences').on('click', 'span.arrow', function (e) {
         e.stopPropagation();
 
@@ -636,7 +668,11 @@ exports.register_click_handlers = function () {
 
         var user = people.get_person_from_user_id(user_id);
         var user_email = user.email;
-
+        var is_mute = muting_user.is_user_muted(Number(user_id));
+        var can_mute_user = !is_mute;
+        var can_unmute_user = is_mute;
+        var owner = people.my_full_name();
+        var is_not_self = !(owner === user.full_name);
         var args = {
             user_email: user_email,
             user_full_name: user.full_name,
@@ -650,6 +686,9 @@ exports.register_click_handlers = function () {
             is_active: people.is_active_user_for_popover(user_id),
             is_bot: user.is_bot,
             is_sender_popover: false,
+            can_mute_user: can_mute_user,
+            can_unmute_user: can_unmute_user,
+            is_not_self: is_not_self,
         };
 
         target.popover({
