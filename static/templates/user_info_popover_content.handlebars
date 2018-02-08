@@ -65,4 +65,23 @@
             <i class="icon-vector-bullhorn"></i> {{#tr this}}View messages sent{{/tr}}
         </a>
     </li>
+    <hr />
+    {{#if is_not_self }}
+        {{#if can_mute_user }}
+        <li>
+            <a href="#" class="sidebar-popover-mute-user">
+                <i class="fa fa-eye-slash" aria-hidden="true"></i>
+                {{#tr this}}Mute{{/tr}}
+            </a>
+        </li>
+        {{/if}}
+        {{#if can_unmute_user }}
+        <li>
+            <a href="#" class="sidebar-popover-unmute-user">
+                <i class="fa fa-eye" aria-hidden="true"></i>
+                {{#tr this}}Unmute{{/tr}}
+            </a>
+        </li>
+        {{/if}}
+    {{/if}}
 </ul>
