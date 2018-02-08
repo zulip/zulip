@@ -294,6 +294,7 @@ WEBHOOK_INTEGRATIONS = [
     ),
     WebhookIntegration('dropbox', ['productivity'], display_name='Dropbox'),
     WebhookIntegration('freshdesk', ['customer-support']),
+    WebhookIntegration('front', ['customer-support'], display_name='Front'),
     GithubIntegration(
         'github',
         ['version-control'],
