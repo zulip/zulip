@@ -24,8 +24,26 @@ exports.is_deferred_delivery = function (message_content) {
             scheduled_test.test(message_content);
 };
 
-function patch_request_for_scheduling(request) {
+function patch_request_for_scheduling(request, message_content, deliver_at, delivery_type) {
+    if (request.type === "private") {
+        request.to = JSON.stringify(request.to);
+    } else {
+        request.to = JSON.stringify([request.to]);
+    }
+
     var new_request = request;
+    new_request.content = message_content;
+    new_request.deliver_at = deliver_at;
+    new_request.delivery_type = delivery_type;
+    new_request.tz_guess = moment.tz.guess();
+    return new_request;
+}
+
+exports.schedule_message = function (request) {
+    if (request === undefined) {
+        request = compose.create_message_object();
+    }
+
     var raw_message = request.content.split('\n');
     var command_line = raw_message[0];
     var message = raw_message.slice(1).join('\n');
@@ -51,37 +69,14 @@ function patch_request_for_scheduling(request) {
         return;
     }
 
-    new_request.content = message;
-    new_request.deliver_at = deliver_at;
-    new_request.delivery_type = deferred_message_type.delivery_type;
-    new_request.tz_guess = moment.tz.guess();
-    return new_request;
-}
-
-function do_schedule_message(request, success, error) {
-
-    if (request.type === "private") {
-        request.to = JSON.stringify(request.to);
-    } else {
-        request.to = JSON.stringify([request.to]);
-    }
-
-    request = patch_request_for_scheduling(request);
-
-    if (request === undefined) {
-        return;
-    }
-
-    transmit.send_message(request, success, error);
-}
-
-exports.schedule_message = function (request) {
-    if (request === undefined) {
-        request = compose.create_message_object();
-    }
+    request = patch_request_for_scheduling(
+        request, message, deliver_at, deferred_message_type.delivery_type
+    );
 
     var success = function (data) {
-        notifications.notify_above_composebox('Scheduled your Message to be delivered at: ' + data.deliver_at);
+        if (request.delivery_type === deferred_message_types.scheduled.delivery_type) {
+            notifications.notify_above_composebox('Scheduled your Message to be delivered at: ' + data.deliver_at);
+        }
         $("#compose-textarea").attr('disabled', false);
         compose.clear_compose_box();
     };
@@ -93,7 +88,7 @@ exports.schedule_message = function (request) {
     want slash commands to be blocking in nature. */
     $("#compose-textarea").attr('disabled', true);
 
-    do_schedule_message(request, success, error);
+    transmit.send_message(request, success, error);
 };
 
 exports.do_set_reminder_for_message = function (msgid, timestamp) {
@@ -127,13 +122,9 @@ exports.do_set_reminder_for_message = function (msgid, timestamp) {
     }
 
     var link_to_msg = hash_util.by_conversation_and_time_uri(message);
-    var command = deferred_message_types.reminders.slash_command;
-    var reminder_timestamp = timestamp;
-    var custom_msg = message.raw_content + '\n\n[Link to conversation](' + link_to_msg + ')';
-    var reminder_msg_content = command + ' ' + reminder_timestamp + '\n' + custom_msg;
+    var reminder_msg_content = message.raw_content + '\n\n[Link to conversation](' + link_to_msg + ')';
     var reminder_message = {
         type: "private",
-        content: reminder_msg_content,
         sender_id: page_params.user_id,
         stream: '',
     };
@@ -153,7 +144,11 @@ exports.do_set_reminder_for_message = function (msgid, timestamp) {
             .delay(1000).fadeOut(300);
     }
 
-    do_schedule_message(reminder_message, success, error);
+    reminder_message = patch_request_for_scheduling(
+        reminder_message, reminder_msg_content, timestamp,
+        deferred_message_types.reminders.delivery_type
+    );
+    transmit.send_message(reminder_message, success, error);
 };
 
 return exports;
