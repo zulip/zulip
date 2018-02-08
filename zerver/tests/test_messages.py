@@ -2006,6 +2006,9 @@ class ScheduledMessageTest(ZulipTestCase):
         message = self.last_scheduled_message()
         self.assert_json_success(result)
         self.assertEqual(message.delivery_type, ScheduledMessage.REMIND)
+        message_in_stream = self.get_last_message()
+        self.assertEqual(message_in_stream.content,
+                         self.example_user('hamlet').full_name + ' set a reminder.')
 
         # Scheduling a private message is successful.
         result = self.do_schedule_message('private', self.example_email("othello"),

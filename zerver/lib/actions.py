@@ -99,7 +99,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     realm_filters_for_realm, RealmFilter, stream_name_in_use, \
     get_old_unclaimed_attachments, is_cross_realm_bot_email, \
     Reaction, EmailChangeStatus, CustomProfileField, \
-    custom_profile_fields_for_realm, get_huddle_user_ids, \
+    custom_profile_fields_for_realm, get_huddle_user_ids, get_user, \
     CustomProfileFieldValue, validate_attachment_request, get_system_bot, \
     get_display_recipient_by_id, query_for_ids, get_huddle_recipient, \
     UserGroup, UserGroupMembership, get_default_stream_groups, \
@@ -1996,7 +1996,17 @@ def check_schedule_message(sender: UserProfile, client: Client,
                                        recipient.type_id != sender.id)):
         raise JsonableError(_("Reminders can only be set for streams."))
 
-    return do_schedule_messages([message])[0]
+    scheduled_msg_ids = do_schedule_messages([message])
+
+    if (delivery_type == 'remind' and recipient.type == Recipient.STREAM):
+        reminder_bot = get_user(settings.NOTIFICATION_BOT, sender.realm)
+        reminder_set_message = sender.full_name + ' set a reminder.'
+        feed_reminder_set_msg = check_message(reminder_bot, client, addressee,
+                                              reminder_set_message, realm=realm,
+                                              forwarder_user_profile=forwarder_user_profile)
+        do_send_messages([feed_reminder_set_msg])
+
+    return scheduled_msg_ids[0]
 
 def check_stream_name(stream_name: str) -> None:
     if stream_name.strip() == "":
