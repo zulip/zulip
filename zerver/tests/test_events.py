@@ -51,6 +51,7 @@ from zerver.lib.actions import (
     do_delete_message,
     do_mark_hotspot_as_read,
     do_mute_topic,
+    do_mute_user,
     do_reactivate_user,
     do_regenerate_api_key,
     do_remove_alert_words,
@@ -70,6 +71,7 @@ from zerver.lib.actions import (
     do_set_realm_notifications_stream,
     do_set_realm_signup_notifications_stream,
     do_unmute_topic,
+    do_unmute_user,
     do_update_embedded_data,
     do_update_message,
     do_update_message_flags,
@@ -1172,6 +1174,25 @@ class EventsRegisterTest(ZulipTestCase):
         events = self.do_test(lambda: do_unmute_topic(
             self.user_profile, stream, "topic"))
         error = muted_topics_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_muted_users_events(self) -> None:
+        muted_users_checker = self.check_events_dict([
+            ('type', equals('muted_users')),
+            ('muted_users', check_list(check_dict_only([
+                ('id', check_int),
+                ('name', check_string),
+            ])))
+        ])
+        muted_user_profile = self.example_user('hamlet')
+        events = self.do_test(lambda: do_mute_user(
+            self.user_profile, muted_user_profile))
+        error = muted_users_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        events = self.do_test(lambda: do_unmute_user(
+            self.user_profile, muted_user_profile))
+        error = muted_users_checker('events[0]', events[0])
         self.assert_on_error(error)
 
     def test_change_avatar_fields(self) -> None:
@@ -2751,7 +2772,7 @@ class FetchQueriesTest(ZulipTestCase):
                     client_gravatar=False,
                 )
 
-        self.assert_length(queries, 30)
+        self.assert_length(queries, 31)
 
         expected_counts = dict(
             alert_words=0,
@@ -2762,6 +2783,7 @@ class FetchQueriesTest(ZulipTestCase):
             hotspots=0,
             message=1,
             muted_topics=1,
+            muted_users=1,
             pointer=0,
             presence=3,
             realm=0,

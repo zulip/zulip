@@ -91,6 +91,7 @@ class HomeTest(ZulipTestCase):
             "maxfilesize",
             "message_content_in_email_notifications",
             "muted_topics",
+            "muted_users",
             "narrow",
             "narrow_stream",
             "needs_tutorial",
@@ -189,7 +190,7 @@ class HomeTest(ZulipTestCase):
             with patch('zerver.lib.cache.cache_set') as cache_mock:
                 result = self._get_home_page(stream='Denmark')
 
-        self.assert_length(queries, 44)
+        self.assert_length(queries, 45)
         self.assert_length(cache_mock.call_args_list, 8)
 
         html = result.content.decode('utf-8')
@@ -254,7 +255,7 @@ class HomeTest(ZulipTestCase):
         with queries_captured() as queries2:
             result = self._get_home_page()
 
-        self.assert_length(queries2, 36)
+        self.assert_length(queries2, 37)
 
         # Do a sanity check that our new streams were in the payload.
         html = result.content.decode('utf-8')
