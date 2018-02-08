@@ -166,7 +166,6 @@ def get_user_agent(client):
 
 def list_subscriptions(client):
     # type: (Client) -> None
-
     # {code_example|start}
     # Get all streams that the user is subscribed to
     result = client.list_subscriptions()
@@ -198,9 +197,15 @@ def remove_subscriptions(client):
     streams = [s for s in result['subscriptions'] if s['name'] == 'new stream']
     assert len(streams) == 0
 
-    # TODO: Add example for 'principals' argument when the next zulip package
-    # release is made. The next release supports passing in 'principals' to
-    # remove_subscriptions.
+    # {code_example|start}
+    # Unsubscribe another user from the stream "new stream"
+    result = client.remove_subscriptions(
+        ['new stream'],
+        principals=['newbie@zulip.com']
+    )
+    # {code_example|end}
+
+    test_against_fixture(result, fixture)
 
 def render_message(client):
     # type: (Client) -> None
