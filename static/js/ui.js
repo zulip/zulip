@@ -193,6 +193,27 @@ exports.maybe_show_keyboard_shortcuts = function () {
     ui.show_info_overlay("keyboard-shortcuts");
 };
 
+exports.maybe_show_deprecation_notice = function (key) {
+    var message;
+    if (key === 'C') {
+        message = i18n.t('We\'ve replaced the "C" hotkey with "x" to make this common shortcut easier to trigger.');
+    } else {
+        // should never get here
+        return;
+    }
+
+    var shown_deprecation_notices = JSON.parse(localStorage.getItem('shown_deprecation_notices'));
+    if (shown_deprecation_notices === null) {
+        shown_deprecation_notices = [];
+    }
+    if (shown_deprecation_notices.indexOf(key) === -1) {
+        $('#deprecation-notice-modal').modal('show');
+        $('#deprecation-notice-message').text(message);
+        shown_deprecation_notices.push(key);
+        localStorage.setItem('shown_deprecation_notices', JSON.stringify(shown_deprecation_notices));
+    }
+};
+
 /* EXPERIMENTS */
 
 /* This method allows an advanced user to use the console
