@@ -1131,6 +1131,8 @@ JS_SPECS = {
             'js/settings_filters.js',
             'js/settings_invites.js',
             'js/settings_user_groups.js',
+            'js/muting_user_ui.js',
+            'js/muting_user.js',
             'js/settings.js',
             'js/admin_sections.js',
             'js/admin.js',
