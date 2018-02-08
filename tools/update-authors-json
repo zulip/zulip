@@ -85,6 +85,9 @@ def run_production() -> None:
             if contribs:
                 repos_done.append(name)
                 for contrib in contribs:
+                    if contrib.get('author') is None:
+                        # This happens for users who've deleted their GitHub account.
+                        continue
                     username = contrib.get('author').get('login')
                     contrib_data = {
                         'avatar': contrib.get('author').get('avatar_url'),
