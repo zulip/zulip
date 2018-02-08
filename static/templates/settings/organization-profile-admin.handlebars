@@ -17,6 +17,11 @@
                 <textarea id="id_realm_description" name="realm_description" class="admin-realm-description"
                     maxlength="1000">{{ realm_description }}</textarea>
             </div>
+            <div class="input-group admin-realm">
+                <label for="id_realm_guidelines">{{t "Organization guidelines"}}</label>
+                <textarea id="id_realm_guidelines" name="realm_guidelines" class="admin-realm-guidelines"
+                    maxlength="1000">{{ realm_guidelines }}</textarea>
+            </div>
 
             {{#if is_admin }}
             <div class="input-group organization-submission">

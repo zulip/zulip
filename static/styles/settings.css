@@ -121,6 +121,11 @@ label {
     box-sizing: border-box;
 }
 
+.admin-realm-guidelines {
+    height: 2em;
+    width: 30em;
+}
+
 .padded-container {
     padding: 20px;
 }

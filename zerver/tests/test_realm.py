@@ -391,6 +391,8 @@ class RealmAPITest(ZulipTestCase):
             name=[u'Zulip', u'New Name'],
             waiting_period_threshold=[10, 20],
             bot_creation_policy=[1, 2],
+            guidelines_url=[u'https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html',
+                            u'Guidelines url'],
         )  # type: Dict[str, Any]
         vals = test_values.get(name)
         if Realm.property_types[name] is bool:

@@ -160,6 +160,13 @@
                                 </a>
                             </li>
                             {% endif %}
+                            {% if guidelines_url %}
+                            <li role="presentation">
+                                <a href="{{ guidelines_url }}" target="_blank" class="logout_button" role="menuitem">
+                                    <i class="icon-vector-sitemap"></i> {{ _('Organization guidelines') }}
+                                </a>
+                            </li>
+                            {% endif %}
                             <li role="presentation">
                                 <a href="#logout" class="logout_button" role="menuitem">
                                     <i class="icon-vector-off"></i> {{ _('Log out') }}

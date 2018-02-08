@@ -86,6 +86,14 @@ exports.update_message_retention_days = function () {
     $("#id_realm_message_retention_days").val(page_params.message_retention_days);
 };
 
+exports.update_realm_guidelines = function () {
+    if (!meta.loaded) {
+        return;
+    }
+
+    $('#id_realm_guidelines').val(page_params.realm_guidelines);
+};
+
 exports.populate_auth_methods = function (auth_methods) {
     if (!meta.loaded) {
         return;
@@ -236,6 +244,10 @@ function _set_up() {
         description: {
             type: 'text',
             msg: i18n.t("Description changed!"),
+        },
+        guidelines: {
+            type: 'text',
+            msg: i18n.t("Guidelines changed"),
         },
     };
 
