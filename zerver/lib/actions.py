@@ -2601,6 +2601,9 @@ def check_change_full_name(user_profile: UserProfile, full_name_raw: Text,
     full name, which may differ from what was passed in (because this
     function strips whitespace)."""
     new_full_name = check_full_name(full_name_raw)
+    unique_full_name = make_unique_display_name(user_profile.realm, new_full_name)
+    if new_full_name != unique_full_name:
+        raise JsonableError(_('%s name has already been taken' % (new_full_name,)))
     do_change_full_name(user_profile, new_full_name, acting_user)
     return new_full_name
 
@@ -3923,6 +3926,14 @@ def do_send_confirmation_email(invitee: PreregistrationUser,
 def email_not_system_bot(email: Text) -> None:
     if is_cross_realm_bot_email(email):
         raise ValidationError('%s is an email address reserved for system bots' % (email,))
+
+def make_unique_display_name(target_realm: Realm, full_name: Text) -> Text:
+    full_name_counter = 1
+    full_name_initial = full_name
+    while UserProfile.objects.filter(realm=target_realm).filter(full_name=full_name).exists():
+            full_name = '{0}#{1}'.format(full_name_initial, full_name_counter)
+            full_name_counter += 1
+    return full_name
 
 def validate_email_for_realm(target_realm: Realm, email: Text) -> None:
     try:
