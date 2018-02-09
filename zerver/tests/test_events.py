@@ -14,7 +14,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.models import (
     get_client, get_realm, get_stream_recipient, get_stream, get_user,
     Message, RealmDomain, Recipient, UserMessage, UserPresence, UserProfile,
-    Realm, Subscription, Stream, flush_per_request_caches, UserGroup
+    Realm, Subscription, Stream, flush_per_request_caches, UserGroup, Service,
 )
 
 from zerver.lib.actions import (
@@ -443,10 +443,8 @@ class EventsRegisterTest(ZulipTestCase):
         super().setUp()
         self.user_profile = self.example_user('hamlet')
 
-    def create_bot(self, email: str) -> UserProfile:
-        return do_create_user(email, '123',
-                              get_realm('zulip'), 'Test Bot', 'test',
-                              bot_type=UserProfile.DEFAULT_BOT, bot_owner=self.user_profile)
+    def create_bot(self, email: str, **extras: Any) -> Optional[UserProfile]:
+        return self.create_test_bot(email, self.user_profile, **extras)
 
     def realm_bot_schema(self, field_name: str, check: Validator) -> Validator:
         return self.check_events_dict([
@@ -1539,48 +1537,64 @@ class EventsRegisterTest(ZulipTestCase):
         self.assert_on_error(error)
 
     def test_create_bot(self) -> None:
-        bot_created_checker = self.check_events_dict([
-            ('type', equals('realm_bot')),
-            ('op', equals('add')),
-            ('bot', check_dict_only([
-                ('email', check_string),
-                ('user_id', check_int),
-                ('bot_type', check_int),
-                ('full_name', check_string),
-                ('is_active', check_bool),
-                ('api_key', check_string),
-                ('default_sending_stream', check_none_or(check_string)),
-                ('default_events_register_stream', check_none_or(check_string)),
-                ('default_all_public_streams', check_bool),
-                ('avatar_url', check_string),
-                ('owner', check_string),
-                ('services', check_list(check_dict_only([  # type: ignore  # check_url doesn't completely fit the default validator spec, but is de facto working here.
-                    ('base_url', check_url),
-                    ('interface', check_int),
-                ]))),
-            ])),
-        ])
-        action = lambda: self.create_bot('test-bot@zulip.com')
-        events = self.do_test(action, num_events=2)
-        error = bot_created_checker('events[1]', events[1])
+
+        def get_bot_created_checker(bot_type: str) -> Validator:
+            if bot_type == "GENERIC_BOT":
+                bot_services_count = 0
+            elif bot_type == "OUTGOING_WEBHOOK_BOT":
+                bot_services_count = 1
+            return self.check_events_dict([
+                ('type', equals('realm_bot')),
+                ('op', equals('add')),
+                ('bot', check_dict_only([
+                    ('email', check_string),
+                    ('user_id', check_int),
+                    ('bot_type', check_int),
+                    ('full_name', check_string),
+                    ('is_active', check_bool),
+                    ('api_key', check_string),
+                    ('default_sending_stream', check_none_or(check_string)),
+                    ('default_events_register_stream', check_none_or(check_string)),
+                    ('default_all_public_streams', check_bool),
+                    ('avatar_url', check_string),
+                    ('owner', check_string),
+                    ('services', check_list(check_dict_only([  # type: ignore  # check_url doesn't completely fit the default validator spec, but is de facto working here.
+                        ('base_url', check_url),
+                        ('interface', check_int),
+                    ]), length=bot_services_count)),
+                ])),
+            ])
+        action = lambda: self.create_bot('test')
+        events = self.do_test(action, num_events=3)
+        error = get_bot_created_checker(bot_type="GENERIC_BOT")('events[1]', events[1])
+        self.assert_on_error(error)
+
+        action = lambda: self.create_bot('test_outgoing_webhook',
+                                         payload_url=ujson.dumps('https://foo.bar.com'),
+                                         interface_type=Service.GENERIC,
+                                         bot_type=UserProfile.OUTGOING_WEBHOOK_BOT)
+        events = self.do_test(action, num_events=3)
+        # The third event is the second call of notify_created_bot, which contains additional
+        # data for services (in contrast to the first call).
+        error = get_bot_created_checker(bot_type="OUTGOING_WEBHOOK_BOT")('events[2]', events[2])
         self.assert_on_error(error)
 
     def test_change_bot_full_name(self) -> None:
-        bot = self.create_bot('test-bot@zulip.com')
+        bot = self.create_bot('test')
         action = lambda: do_change_full_name(bot, 'New Bot Name', self.user_profile)
         events = self.do_test(action, num_events=2)
         error = self.realm_bot_schema('full_name', check_string)('events[1]', events[1])
         self.assert_on_error(error)
 
     def test_regenerate_bot_api_key(self) -> None:
-        bot = self.create_bot('test-bot@zulip.com')
+        bot = self.create_bot('test')
         action = lambda: do_regenerate_api_key(bot, self.user_profile)
         events = self.do_test(action)
         error = self.realm_bot_schema('api_key', check_string)('events[0]', events[0])
         self.assert_on_error(error)
 
     def test_change_bot_avatar_source(self) -> None:
-        bot = self.create_bot('test-bot@zulip.com')
+        bot = self.create_bot('test')
         action = lambda: do_change_avatar_fields(bot, bot.AVATAR_FROM_USER)
         events = self.do_test(action, num_events=2)
         error = self.realm_bot_schema('avatar_url', check_string)('events[0]', events[0])
@@ -1604,14 +1618,14 @@ class EventsRegisterTest(ZulipTestCase):
         self.assert_on_error(error)
 
     def test_change_bot_default_all_public_streams(self) -> None:
-        bot = self.create_bot('test-bot@zulip.com')
+        bot = self.create_bot('test')
         action = lambda: do_change_default_all_public_streams(bot, True)
         events = self.do_test(action)
         error = self.realm_bot_schema('default_all_public_streams', check_bool)('events[0]', events[0])
         self.assert_on_error(error)
 
     def test_change_bot_default_sending_stream(self) -> None:
-        bot = self.create_bot('test-bot@zulip.com')
+        bot = self.create_bot('test')
         stream = get_stream("Rome", bot.realm)
 
         action = lambda: do_change_default_sending_stream(bot, stream)
@@ -1625,7 +1639,7 @@ class EventsRegisterTest(ZulipTestCase):
         self.assert_on_error(error)
 
     def test_change_bot_default_events_register_stream(self) -> None:
-        bot = self.create_bot('test-bot@zulip.com')
+        bot = self.create_bot('test')
         stream = get_stream("Rome", bot.realm)
 
         action = lambda: do_change_default_events_register_stream(bot, stream)
@@ -1650,7 +1664,7 @@ class EventsRegisterTest(ZulipTestCase):
         ])
         self.user_profile = self.example_user('iago')
         owner = self.example_user('hamlet')
-        bot = self.create_bot('test-bot@zulip.com')
+        bot = self.create_bot('test')
         action = lambda: do_change_bot_owner(bot, owner, self.user_profile)
         events = self.do_test(action)
         error = change_bot_owner_checker('events[0]', events[0])
@@ -1671,10 +1685,12 @@ class EventsRegisterTest(ZulipTestCase):
             ])),
         ])
         self.user_profile = self.example_user('iago')
-        bot = do_create_user('test-bot@zulip.com', '123', get_realm('zulip'), 'Test Bot', 'test',
-                             bot_type=UserProfile.OUTGOING_WEBHOOK_BOT, bot_owner=self.user_profile)
-        add_service(user_profile=bot, name="test", base_url="http://hostname.domain1.com",
-                    interface=1, token="abced")
+        bot = self.create_test_bot('test', self.user_profile,
+                                   full_name='Test Bot',
+                                   bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
+                                   payload_url=ujson.dumps('http://hostname.domain2.com'),
+                                   interface_type=Service.GENERIC,
+                                   )
         action = lambda: do_update_outgoing_webhook_service(bot, 2, 'http://hostname.domain2.com')
         events = self.do_test(action)
         error = update_outgoing_webhook_service_checker('events[0]', events[0])
@@ -1690,7 +1706,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('user_id', check_int),
             ])),
         ])
-        bot = self.create_bot('foo-bot@zulip.com')
+        bot = self.create_bot('test')
         action = lambda: do_deactivate_user(bot)
         events = self.do_test(action, num_events=2)
         error = bot_deactivate_checker('events[1]', events[1])
@@ -1718,7 +1734,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ]))),
             ])),
         ])
-        bot = self.create_bot('foo-bot@zulip.com')
+        bot = self.create_bot('test')
         do_deactivate_user(bot)
         action = lambda: do_reactivate_user(bot)
         events = self.do_test(action, num_events=2)

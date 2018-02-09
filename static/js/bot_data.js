@@ -76,6 +76,7 @@ var bot_data = (function () {
         _.each(page_params.realm_bots, function (bot) {
             exports.add(bot);
         });
+        delete page_params.realm_bots;
     };
 
     return exports;

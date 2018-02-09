@@ -79,6 +79,11 @@
                         </select>
                     </div>
                     <div id="config_inputbox">
+                        {{#each page_params.realm_embedded_bots as |bot index|}}
+                            {{#each bot.config as |config_value config_key|}}
+                            {{partial "embedded_bot_config_item" "botname" bot.name "key" config_key "value" config_value}}
+                            {{/each}}
+                        {{/each}}
                     </div>
                     <div class="input-group">
                         <div id="bot_avatar_file"></div>

@@ -93,11 +93,6 @@ exports.set_up = function () {
             value: bot.name,
             text: bot.name,
         }));
-        _.each(bot.config, function (value, key) {
-            var rendered_config_item = templates.render('embedded_bot_config_item',
-                {botname: bot.name, key: key, value: value});
-            $('#config_inputbox').append(rendered_config_item);
-        });
     });
     var selected_embedded_bot = 'converter';
     $('#select_service_name').val(selected_embedded_bot); // TODO: Use 'select a bot'.
@@ -159,7 +154,7 @@ exports.set_up = function () {
             } else if (bot_type === EMBEDDED_BOT_TYPE) {
                 formData.append('service_name', service_name);
                 var config_data = {};
-                $("[name*='"+service_name+"'] input").each(function () {
+                $("#config_inputbox [name*='"+service_name+"'] input").each(function () {
                     config_data[$(this).attr('name')] = $(this).val();
                 });
                 formData.append('config_data', JSON.stringify(config_data));

@@ -274,8 +274,10 @@ class TestServiceBotStateHandler(ZulipTestCase):
 class TestServiceBotConfigHandler(ZulipTestCase):
     def setUp(self) -> None:
         self.user_profile = self.example_user("othello")
-        self.bot_profile = self.create_test_bot('embedded-bot@zulip.testserver', self.user_profile, 'Embedded bot',
-                                                'embedded', UserProfile.EMBEDDED_BOT, service_name='helloworld')
+        self.bot_profile = self.create_test_bot('embedded', self.user_profile,
+                                                full_name='Embedded bot',
+                                                bot_type=UserProfile.EMBEDDED_BOT,
+                                                service_name='helloworld')
         self.bot_handler = EmbeddedBotHandler(self.bot_profile)
 
     def test_basic_storage_and_retrieval(self) -> None:
