@@ -20,36 +20,14 @@ args="$(getopt -o '' --long help,self-signed-cert,certbot,hostname:,email:,expre
 eval "set -- $args"
 while true; do
     case "$1" in
-        --help)
-            show_help=1
-            shift
-            ;;
-        --self-signed-cert)
-            SELF_SIGNED_CERT=1
-            shift
-            ;;
-        --certbot)
-            USE_CERTBOT=1
-            shift
-            ;;
-        --hostname)
-            EXTERNAL_HOST="$2"
-            shift
-            shift
-            ;;
-        --email)
-            ZULIP_ADMINISTRATOR="$2"
-            shift
-            shift
-            ;;
+        --help) show_help=1; shift;;
+        --self-signed-cert) SELF_SIGNED_CERT=1; shift;;
+        --certbot) USE_CERTBOT=1; shift;;
+        --hostname) EXTERNAL_HOST="$2"; shift; shift;;
+        --email) ZULIP_ADMINISTRATOR="$2"; shift; shift;;
         --express)  # experimental, not documented
-            EXPRESS_SETUP=1
-            shift
-            ;;
-        --)
-            shift
-            break
-            ;;
+            EXPRESS_SETUP=1; shift;;
+        --) shift; break;;
     esac
 done
 
@@ -119,17 +97,20 @@ ZULIP_PATH="$(realpath $(dirname $0)/../..)"
 
 # Check early for missing SSL certificates
 if [ "$PUPPET_CLASSES" = "zulip::voyager" ] && [ -z "$USE_CERTBOT""$SELF_SIGNED_CERT" ] && { ! [ -e "/etc/ssl/private/zulip.key" ] || ! [ -e "/etc/ssl/certs/zulip.combined-chain.crt" ]; }; then
-   set +x
-   echo
-   echo "Could not find SSL certificates!"
-   for f in "/etc/ssl/private/zulip.key" "/etc/ssl/certs/zulip.combined-chain.crt"; do
-       [ -e "$f" ] || echo " - $f is missing!"
-   done
-   echo "See https://zulip.readthedocs.io/en/latest/production/ssl-certificates.html for help."
-   echo "For non-production testing, try the --self-signed-cert option."
-   echo
-   echo "Once fixed, just rerun scripts/setup/install; it'll pick up from here!"
-   echo
+    set +x
+    echo
+    echo "Could not find SSL certificates!"
+    for f in "/etc/ssl/private/zulip.key" "/etc/ssl/certs/zulip.combined-chain.crt"; do
+        [ -e "$f" ] || echo " - $f is missing!"
+    done
+    cat <<EOF
+
+See https://zulip.readthedocs.io/en/latest/production/ssl-certificates.html for help.
+For non-production testing, try the --self-signed-cert option.
+
+Once fixed, just rerun scripts/setup/install; it'll pick up from here!
+
+EOF
    exit 1
 fi
 
@@ -158,7 +139,11 @@ fi
 # puppet apply
 mkdir -p /etc/zulip
 (
-    echo -e "[machine]\npuppet_classes = $PUPPET_CLASSES\ndeploy_type = $DEPLOYMENT_TYPE";
+    cat <<EOF
+[machine]
+puppet_classes = $PUPPET_CLASSES
+deploy_type = $DEPLOYMENT_TYPE
+EOF
 
     # Note: there are four dpkg-query outputs to consider:
     #
@@ -176,11 +161,19 @@ mkdir -p /etc/zulip
     # (There are more possibilities in the case of dpkg errors.)  Here
     # we are checking for either empty or not-installed.
     if [ -n "$TRAVIS" ] || ! dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null | grep -vq ' not-installed$'; then
-        echo -e "\n[rabbitmq]\nnodename = zulip@localhost"
+        cat <<EOF
+
+[rabbitmq]
+nodename = zulip@localhost
+EOF
     fi
 
     if [ -n "$USE_CERTBOT" ]; then
-        echo -e "\n[certbot]\nauto_renew = yes"
+        cat <<EOF
+
+[certbot]
+auto_renew = yes
+EOF
     fi
 ) > /etc/zulip/zulip.conf
 "$ZULIP_PATH"/scripts/zulip-puppet-apply -f
@@ -211,14 +204,16 @@ if [ "$has_nginx" = 0 ]; then
     # Most common failure mode is certs not having been installed.
     nginx -t || (
         set +x
-        echo
-        echo "Verifying the Zulip nginx configuration failed!"
-        echo
-        echo "This is almost always a problem with your SSL certificates."
-        echo "See https://zulip.readthedocs.io/en/latest/production/ssl-certificates.html for help"
-        echo
-        echo "Once fixed, just rerun scripts/setup/install; it'll pick up from here!"
-        echo
+        cat <<EOF
+
+Verifying the Zulip nginx configuration failed!
+
+This is almost always a problem with your SSL certificates.  See:
+  https://zulip.readthedocs.io/en/latest/production/ssl-certificates.html
+
+Once fixed, just rerun scripts/setup/install; it'll pick up from here!
+
+EOF
         exit 1
     )
     service nginx restart
@@ -248,12 +243,14 @@ fi
 if [ "$has_rabbit" = 0 ]; then
     if ! rabbitmqctl status >/dev/null; then
         set +x
-        echo; echo "RabbitMQ seems to not have started properly after the installation process."
-        echo "Often, this can be caused by misconfigured /etc/hosts in virtualized environments"
-        echo "See https://github.com/zulip/zulip/issues/53#issuecomment-143805121"
-        echo "for more information"
-        echo
-        set -x
+        cat <<EOF
+
+RabbitMQ seems to not have started properly after the installation process.
+Often this is caused by misconfigured /etc/hosts in virtualized environments.
+For more information, see:
+  https://github.com/zulip/zulip/issues/53#issuecomment-143805121
+
+EOF
         exit 1
     fi
     "$ZULIP_PATH"/scripts/setup/configure-rabbitmq
