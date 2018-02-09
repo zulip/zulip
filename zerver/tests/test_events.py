@@ -1075,8 +1075,9 @@ class EventsRegisterTest(ZulipTestCase):
             ('user_ids', check_list(check_int)),
         ])
         hamlet = self.example_user('hamlet')
-        events = self.do_test(lambda: remove_members_from_user_group(backend, [hamlet]))
-        error = user_group_remove_member_checker('events[0]', events[0])
+        events = self.do_test(lambda: remove_members_from_user_group(othello, backend, [hamlet]), num_events=2)
+        self.assertEqual(events[0]["message"]["sender_email"], settings.NOTIFICATION_BOT)
+        error = user_group_remove_member_checker('events[1]', events[1])
         self.assert_on_error(error)
 
         # Test delete event

@@ -91,7 +91,7 @@ def remove_members_from_group_backend(request: HttpRequest, user_profile: UserPr
     if not members:
         return json_success()
 
-    user_profiles = user_ids_to_users(members, user_profile.realm)
+    removed_members = user_ids_to_users(members, user_profile.realm)
     user_group = access_user_group_by_id(user_group_id, user_profile.realm)
-    remove_members_from_user_group(user_group, user_profiles)
+    remove_members_from_user_group(user_profile, user_group, removed_members)
     return json_success()

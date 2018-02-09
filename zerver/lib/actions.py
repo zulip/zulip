@@ -4597,12 +4597,13 @@ def bulk_add_members_to_user_group(added_by: UserProfile, user_group: UserGroup,
     user_ids = [up.id for up in user_profiles]
     do_send_user_group_members_update_event('add_members', user_group, user_ids)
 
-def remove_members_from_user_group(user_group: UserGroup,
+def remove_members_from_user_group(removed_by: UserProfile, user_group: UserGroup,
                                    user_profiles: List[UserProfile]) -> None:
     UserGroupMembership.objects.filter(
         user_group_id=user_group.id,
         user_profile__in=user_profiles).delete()
 
+    send_user_group_update_notification(removed_by, user_group.name, user_profiles, "remove_members")
     user_ids = [up.id for up in user_profiles]
     do_send_user_group_members_update_event('remove_members', user_group, user_ids)
 

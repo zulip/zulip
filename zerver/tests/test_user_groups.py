@@ -255,3 +255,15 @@ management page."""
         self.assertFalse(get_user_messages(self.cordelia))
         # Messages should not be sent to anyone who is not in the group either
         self.assertFalse(get_user_messages(self.iago))
+
+    def test_remove_users(self) -> None:
+        user_group = create_user_group(self.group_name, [self.iago, self.othello, self.cordelia], self.realm)
+        remove_members_from_user_group(self.iago, user_group, [self.othello, self.iago])
+
+        notification_message = """You have been removed from the user group *dumbledore's army*. \
+You can ask ask a group member or an organization adminstrator to add you back."""
+
+        self.assertEqual(most_recent_message(self.othello).content, notification_message)
+        self.assertFalse(get_user_messages(self.iago))
+        self.assertFalse(get_user_messages(self.cordelia))
+        self.assertFalse(get_user_messages(self.hamlet))
