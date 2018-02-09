@@ -77,4 +77,3 @@ openssl req -new -x509 \
 
 chmod 644 "$CERTFILE"
 chmod 640 "$KEYFILE"
-chown zulip:zulip "$KEYFILE"
