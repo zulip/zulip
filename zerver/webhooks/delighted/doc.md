@@ -1,17 +1,20 @@
 Zulip supports integration with Delighted and can notify you
 about updates in feedback responses organized by Delighted.
 
-{!create-stream.md!}
+1. {!create-stream.md!}
 
-{!create-bot-construct-url.md!}
+2. {!create-bot-construct-url-indented.md!}
 
-Go to your Delighted
-[Integrations settings panel](https://delighted.com/integrations/webhooks).
-Under **Send webhook notifications for:**, input the above URL
-with the modifications into the URL textbox and press
-**Save and turn on** to finish.
+3. Go to your Delighted [Integrations settings panel][1].
 
-![](/static/images/integrations/delighted/000.png)
+[1]: https://delighted.com/integrations/webhooks
+
+4. Under **Send webhook notifications for:**, provide the URL
+   constructed above:
+
+    ![](/static/images/integrations/delighted/000.png)
+
+5. Click **Save and turn on**.
 
 {!congrats.md!}
 
