@@ -274,58 +274,28 @@ exports.set_up = function () {
 
     var image_version = 0;
 
-    var avatar_widget = avatar.build_bot_edit_widget($("#settings_page"));
-
     $("#active_bots_list").on("click", "button.open_edit_bot_form", function (e) {
+        var li = $(e.currentTarget).closest('li');
+        var bot_id = li.find('.bot_info').attr('data-user_id').valueOf();
+        var bot = bot_data.get(bot_id);
         var users_list = people.get_realm_persons().filter(function (person)  {
             return !person.is_bot;
         });
-        var li = $(e.currentTarget).closest('li');
-        var edit_div = li.find('div.edit_bot');
+        $("#edit_bot").empty();
+        $("#edit_bot").append(templates.render('edit_bot', {bot: bot,
+                                                            users_list: users_list}));
+        var avatar_widget = avatar.build_bot_edit_widget($("#settings_page"));
         var form = $('#settings_page .edit_bot_form');
         var image = li.find(".image");
-        var bot_info = li;
-        var bot_id = bot_info.find('.bot_info').attr('data-user_id').valueOf();
-        var reset_edit_bot = li.find(".reset_edit_bot");
-        var owner_select = $(templates.render("bot_owner_select", {users_list:users_list}));
-        var old_full_name = bot_info.find(".name").text();
-        var old_owner = bot_data.get(bot_id).owner;
-        var bot_email = bot_data.get(bot_id).email;
-        var bot_type = bot_data.get(bot_id).bot_type;
-        $("#settings_page .edit_bot .edit_bot_name").val(old_full_name);
-        $("#settings_page .edit_bot .select-form").text("").append(owner_select);
-        $("#settings_page .edit_bot .edit-bot-owner select").val(old_owner);
-        $("#settings_page .edit_bot_form").attr("data-bot_id", bot_id);
-        $("#settings_page .edit_bot_form").attr("data-email", bot_email);
-        $("#settings_page .edit_bot_form").attr("data-type", bot_type);
-        $(".edit_bot_email").text(bot_email);
-
-        if (bot_type.toString() === OUTGOING_WEBHOOK_BOT_TYPE) {
-            var services = bot_data.get_services(bot_id);
-            $("#settings_page .edit_bot #service_data").show();
-            // Currently, we only support one service per bot.
-            $("#settings_page .edit_bot #edit_service_base_url").val(services[0].base_url);
-            $("#settings_page .edit_bot #edit_service_interface").val(services[0].interface);
-        } else {
-            $("#settings_page .edit_bot #service_data").hide();
-        }
-
-        avatar_widget.clear();
-
-        function show_row_again() {
-            image.show();
-            bot_info.show();
-            edit_div.hide();
-        }
-
-        reset_edit_bot.click(function (event) {
-            form.find(".edit_bot_name").val(old_full_name);
-            owner_select.remove();
-            show_row_again();
-            $(this).off(event);
-        });
-
         var errors = form.find('.bot_edit_errors');
+
+        $("#settings_page .edit_bot .edit-bot-owner select").val(bot.owner);
+        if (bot.bot_type.toString() === OUTGOING_WEBHOOK_BOT_TYPE) {
+            var services = bot_data.get_services(bot_id);
+            $("#service_data").append(templates.render("edit-outgoing-webhook-service",
+                                                       {service: services[0]}));
+        }
+        avatar_widget.clear();
 
         form.validate({
             errorClass: 'text-error',
@@ -336,18 +306,21 @@ exports.set_up = function () {
                 var bot_id = form.attr('data-bot_id');
                 var email = form.attr('data-email');
                 var type = form.attr('data-type');
+
                 var full_name = form.find('.edit_bot_name').val();
                 var bot_owner = form.find('.edit-bot-owner select').val();
                 var file_input = $(".edit_bot").find('.edit_bot_avatar_file_input');
                 var spinner = form.find('.edit_bot_spinner');
                 var edit_button = form.find('.edit_bot_button');
+
                 var formData = new FormData();
                 formData.append('csrfmiddlewaretoken', csrf_token);
                 formData.append('full_name', full_name);
                 formData.append('bot_owner', bot_owner);
+
                 if (type === OUTGOING_WEBHOOK_BOT_TYPE) {
-                    var service_payload_url = $("#settings_page .edit_bot #edit_service_base_url").val();
-                    var service_interface = $("#settings_page .edit_bot #edit_service_interface :selected").val();
+                    var service_payload_url = $("#edit_service_base_url").val();
+                    var service_interface = $("#edit_service_interface :selected").val();
                     formData.append('service_payload_url', JSON.stringify(service_payload_url));
                     formData.append('service_interface', service_interface);
                 }
@@ -366,11 +339,8 @@ exports.set_up = function () {
                         loading.destroy_indicator(spinner);
                         errors.hide();
                         edit_button.show();
-                        show_row_again();
                         avatar_widget.clear();
                         typeahead_helper.clear_rendered_person(bot_id);
-
-                        bot_info.find('.name').text(full_name);
                         if (data.avatar_url) {
                             // Note that the avatar_url won't actually change on the back end
                             // when the user had a previous uploaded avatar.  Only the content
@@ -387,8 +357,6 @@ exports.set_up = function () {
                 });
             },
         });
-
-
     });
 
     $("#active_bots_list").on("click", "a.download_bot_zuliprc", function () {

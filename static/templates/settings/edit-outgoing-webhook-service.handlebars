@@ -1,0 +1,12 @@
+<div class="">
+    <label for="edit_service_base_url">{{t "Endpoint URL" }}</label>
+    <input id="edit_service_base_url" type="text" name="service_payload_url" class="edit_service_base_url required" value="{{service.base_url}}" maxlength=50 />
+    <div><label for="edit_service_base_url" generated="true" class="text-error"></label></div>
+</div>
+<div class="">
+    <label for="edit_service_interface">{{t "Interface" }}</label>
+    <select id="edit_service_interface" name="service_interface" value="{{service.interface}}">
+        <option value="1">{{t "Generic" }}</option>
+        <option value="2">{{t "Slack's outgoing webhooks" }}</option>
+    </select>
+</div>
