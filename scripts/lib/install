@@ -72,6 +72,11 @@ if [ -n "$USE_CERTBOT" ] \
     usage
 fi
 
+if [ -n "$EXPRESS_SETUP" ] \
+       && { [ -z "$EXTERNAL_HOST" ] || [ -z "$ZULIP_ADMINISTRATOR" ]; }; then
+    usage
+fi
+
 # Do set -x after option parsing is complete
 set -x
 
