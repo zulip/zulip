@@ -30,8 +30,7 @@ GENERIC_KEYWORDS = [
     'zoom-out',
 ]
 
-def raise_error(fn, i, line):
-    # type: (str, int, str) -> None
+def raise_error(fn: str, i: int, line: str) -> None:
     error = '''
         In %s line %d there is the following line of code:
 
@@ -53,21 +52,18 @@ def raise_error(fn, i, line):
         ''' % (fn, i, line, __file__)
     raise Exception(error)
 
-def generic(html_class):
-    # type: (str) -> bool
+def generic(html_class: str) -> bool:
     for kw in GENERIC_KEYWORDS:
         if kw in html_class:
             return True
     return False
 
-def display(fns):
-    # type: (List[str]) -> None
+def display(fns: List[str]) -> None:
     for tup in find(fns):
         # this format is for code generation purposes
         print(' ' * 8 + repr(tup) + ',')
 
-def find(fns):
-    # type: (List[str]) -> List[Tuple[str, str]]
+def find(fns: List[str]) -> List[Tuple[str, str]]:
     encountered = set()  # type: Set[str]
     tups = []  # type: List[Tuple[str, str]]
     for full_fn in fns:

@@ -20,10 +20,8 @@ successful_worker_launches = [
     '[process_queue] 20 queue worker threads were launched',
 ]
 
-def check_worker_launch(logfile_name):
-    # type: (str) -> bool
-    def check(content):
-        # type: (str) -> bool
+def check_worker_launch(logfile_name: str) -> bool:
+    def check(content: str) -> bool:
         flag = True
         for entry in successful_worker_launches:
             flag = flag and entry in content

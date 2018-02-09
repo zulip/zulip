@@ -3,24 +3,20 @@ from typing import Callable, List, Tuple, Union
 ####### Helpers
 
 class Token:
-    def __init__(self, s, line, col):
-        # type: (str, int, int) -> None
+    def __init__(self, s: str, line: int, col: int) -> None:
         self.s = s
         self.line = line
         self.col = col
 
 class CssParserException(Exception):
-    def __init__(self, msg, token):
-        # type: (str, Token) -> None
+    def __init__(self, msg: str, token: Token) -> None:
         self.msg = msg
         self.token = token
 
-    def __str__(self):
-        # type: () -> str
+    def __str__(self) -> str:
         return self.msg
 
-def find_end_brace(tokens, i, end):
-    # type: (List[Token], int, int) -> int
+def find_end_brace(tokens: List[Token], i: int, end: int) -> int:
     depth = 0
     while i < end:
         s = tokens[i].s
@@ -38,8 +34,7 @@ def find_end_brace(tokens, i, end):
 
     return i
 
-def get_whitespace(tokens, i, end):
-    # type: (List[Token], int, int) -> Tuple[int, str]
+def get_whitespace(tokens: List[Token], i: int, end: int) -> Tuple[int, str]:
 
     text = ''
     while (i < end) and ws(tokens[i].s[0]):
@@ -49,11 +44,9 @@ def get_whitespace(tokens, i, end):
 
     return i, text
 
-def get_whitespace_and_comments(tokens, i, end, line=None):
-    # type: (List[Token], int, int, int) -> Tuple[int, str]
+def get_whitespace_and_comments(tokens: List[Token], i: int, end: int, line: int=None) -> Tuple[int, str]:
 
-    def is_fluff_token(token):
-        # type: (Token) -> bool
+    def is_fluff_token(token: Token) -> bool:
         s = token.s
         if ws(s[0]):
             return True
@@ -76,12 +69,10 @@ def get_whitespace_and_comments(tokens, i, end, line=None):
 
     return i, text
 
-def indent_count(s):
-    # type: (str) -> int
+def indent_count(s: str) -> int:
     return len(s) - len(s.lstrip())
 
-def dedent_block(s):
-    # type: (str) -> (str)
+def dedent_block(s: str) -> str:
     s = s.lstrip()
     lines = s.split('\n')
     non_blank_lines = [line for line in lines if line]
@@ -91,8 +82,7 @@ def dedent_block(s):
     lines = [lines[0]] + [line[min_indent:] for line in lines[1:]]
     return '\n'.join(lines)
 
-def indent_block(s):
-    # type: (str) -> (str)
+def indent_block(s: str) -> str:
     lines = s.split('\n')
     lines = [
         '    ' + line if line else ''
@@ -100,15 +90,13 @@ def indent_block(s):
     ]
     return '\n'.join(lines)
 
-def ltrim(s):
-    # type: (str) -> (str)
+def ltrim(s: str) -> str:
     content = s.lstrip()
     padding = s[:-1 * len(content)]
     s = padding.replace(' ', '')[1:] + content
     return s
 
-def rtrim(s):
-    # type: (str) -> (str)
+def rtrim(s: str) -> str:
     content = s.rstrip()
     padding = s[len(content):]
     s = content + padding.replace(' ', '')[:-1]
@@ -117,8 +105,7 @@ def rtrim(s):
 ############### Begin parsing here
 
 
-def parse_sections(tokens, start, end):
-    # type: (List[Token], int, int) -> 'CssSectionList'
+def parse_sections(tokens: List[Token], start: int, end: int) -> 'CssSectionList':
     i = start
     sections = []
     while i < end:
@@ -147,8 +134,8 @@ def parse_sections(tokens, start, end):
     )
     return section_list
 
-def parse_section(tokens, start, end, pre_fluff, post_fluff):
-    # type: (List[Token], int, int, str, str) -> Union['CssNestedSection', 'CssSection']
+def parse_section(tokens: List[Token], start: int, end: int, pre_fluff: str,
+                  post_fluff: str) -> Union['CssNestedSection', 'CssSection']:
     assert not ws(tokens[start].s)
     assert tokens[end-1].s == '}'  # caller should strip trailing fluff
 
@@ -176,8 +163,7 @@ def parse_section(tokens, start, end, pre_fluff, post_fluff):
         )
         return section
 
-def parse_selectors_section(tokens, start, end):
-    # type: (List[Token], int, int) -> Tuple[int, 'CssSelectorList']
+def parse_selectors_section(tokens: List[Token], start: int, end: int) -> Tuple[int, 'CssSelectorList']:
     start, pre_fluff = get_whitespace_and_comments(tokens, start, end)
     assert pre_fluff == ''
     i = start
@@ -189,8 +175,7 @@ def parse_selectors_section(tokens, start, end):
     selector_list = parse_selectors(tokens, start, i)
     return i, selector_list
 
-def parse_selectors(tokens, start, end):
-    # type: (List[Token], int, int) -> 'CssSelectorList'
+def parse_selectors(tokens: List[Token], start: int, end: int) -> 'CssSelectorList':
     i = start
     selectors = []
     while i < end:
@@ -211,8 +196,7 @@ def parse_selectors(tokens, start, end):
     )
     return selector_list
 
-def parse_selector(tokens, start, end):
-    # type: (List[Token], int, int) -> CssSelector
+def parse_selector(tokens: List[Token], start: int, end: int) -> 'CssSelector':
     i, pre_fluff = get_whitespace_and_comments(tokens, start, end)
     levels = []
     last_i = None
@@ -236,8 +220,7 @@ def parse_selector(tokens, start, end):
     )
     return selector
 
-def parse_declaration_block(tokens, start, end):
-    # type: (List[Token], int, int) -> 'CssDeclarationBlock'
+def parse_declaration_block(tokens: List[Token], start: int, end: int) -> 'CssDeclarationBlock':
     assert tokens[start].s == '{'  # caller should strip leading fluff
     assert tokens[end-1].s == '}'  # caller should strip trailing fluff
     i = start + 1
@@ -258,8 +241,7 @@ def parse_declaration_block(tokens, start, end):
     )
     return declaration_block
 
-def parse_declaration(tokens, start, end):
-    # type: (List[Token], int, int) -> 'CssDeclaration'
+def parse_declaration(tokens: List[Token], start: int, end: int) -> 'CssDeclaration':
     i, pre_fluff = get_whitespace_and_comments(tokens, start, end)
 
     if (i >= end) or (tokens[i].s == '}'):
@@ -287,8 +269,7 @@ def parse_declaration(tokens, start, end):
     )
     return declaration
 
-def parse_value(tokens, start, end):
-    # type: (List[Token], int, int) -> 'CssValue'
+def parse_value(tokens: List[Token], start: int, end: int) -> 'CssValue':
     i, pre_fluff = get_whitespace_and_comments(tokens, start, end)
     if i < end:
         value = tokens[i]
@@ -305,27 +286,24 @@ def parse_value(tokens, start, end):
 #### Begin CSS classes here
 
 class CssSectionList:
-    def __init__(self, tokens, sections):
-        # type: (List[Token], List[Union['CssNestedSection', 'CssSection']]) -> None
+    def __init__(self, tokens: List[Token], sections: List[Union['CssNestedSection', 'CssSection']]) -> None:
         self.tokens = tokens
         self.sections = sections
 
-    def text(self):
-        # type: () -> str
+    def text(self) -> str:
         res = '\n\n'.join(section.text().strip() for section in self.sections) + '\n'
         return res
 
 class CssNestedSection:
-    def __init__(self, tokens, selector_list, section_list, pre_fluff, post_fluff):
-        # type: (List[Token], 'CssSelectorList', CssSectionList, str, str) -> None
+    def __init__(self, tokens: List[Token], selector_list: 'CssSelectorList',
+                 section_list: CssSectionList, pre_fluff: str, post_fluff: str) -> None:
         self.tokens = tokens
         self.selector_list = selector_list
         self.section_list = section_list
         self.pre_fluff = pre_fluff
         self.post_fluff = post_fluff
 
-    def text(self):
-        # type: () -> str
+    def text(self) -> str:
         res = ''
         res += ltrim(self.pre_fluff)
         res += self.selector_list.text().strip()
@@ -336,16 +314,15 @@ class CssNestedSection:
         return res
 
 class CssSection:
-    def __init__(self, tokens, selector_list, declaration_block, pre_fluff, post_fluff):
-        # type: (List[Token], 'CssSelectorList', 'CssDeclarationBlock', str, str) -> None
+    def __init__(self, tokens: List[Token], selector_list: 'CssSelectorList',
+                 declaration_block: 'CssDeclarationBlock', pre_fluff: str, post_fluff: str) -> None:
         self.tokens = tokens
         self.selector_list = selector_list
         self.declaration_block = declaration_block
         self.pre_fluff = pre_fluff
         self.post_fluff = post_fluff
 
-    def text(self):
-        # type: () -> str
+    def text(self) -> str:
         res = ''
         res += rtrim(dedent_block(self.pre_fluff))
         if res:
@@ -358,36 +335,30 @@ class CssSection:
         return res
 
 class CssSelectorList:
-    def __init__(self, tokens, selectors):
-        # type: (List[Token], List['CssSelector']) -> None
+    def __init__(self, tokens: List[Token], selectors: List['CssSelector']) -> None:
         self.tokens = tokens
         self.selectors = selectors
 
-    def text(self):
-        # type: () -> str
+    def text(self) -> str:
         return ',\n'.join(sel.text() for sel in self.selectors)
 
 class CssSelector:
-    def __init__(self, tokens, pre_fluff, post_fluff, levels):
-        # type: (List[Token],str, str, List[Token]) -> None
+    def __init__(self, tokens: List[Token], pre_fluff: str, post_fluff: str, levels: List[Token]) -> None:
         self.tokens = tokens
         self.pre_fluff = pre_fluff
         self.post_fluff = post_fluff
         self.levels = levels
 
-    def text(self):
-        # type: () -> str
+    def text(self) -> str:
         res = ' '.join(level.s for level in self.levels)
         return res
 
 class CssDeclarationBlock:
-    def __init__(self, tokens, declarations):
-        # type: (List[Token], List['CssDeclaration']) -> None
+    def __init__(self, tokens: List[Token], declarations: List['CssDeclaration']) -> None:
         self.tokens = tokens
         self.declarations = declarations
 
-    def text(self):
-        # type: () -> str
+    def text(self) -> str:
         res = '{\n'
         for declaration in self.declarations:
             res += '    ' + declaration.text()
@@ -395,8 +366,8 @@ class CssDeclarationBlock:
         return res
 
 class CssDeclaration:
-    def __init__(self, tokens, pre_fluff, post_fluff, css_property, css_value, semicolon):
-        # type: (List[Token], str, str, str, 'CssValue', bool) -> None
+    def __init__(self, tokens: List[Token], pre_fluff: str, post_fluff: str,
+                 css_property: str, css_value: 'CssValue', semicolon: bool) -> None:
         self.tokens = tokens
         self.pre_fluff = pre_fluff
         self.post_fluff = post_fluff
@@ -404,8 +375,7 @@ class CssDeclaration:
         self.css_value = css_value
         self.semicolon = semicolon
 
-    def text(self):
-        # type: () -> str
+    def text(self) -> str:
         res = ''
         res += ltrim(self.pre_fluff).rstrip()
         if res:
@@ -427,35 +397,29 @@ class CssDeclaration:
         return res
 
 class CssValue:
-    def __init__(self, tokens, value, pre_fluff, post_fluff):
-        # type: (List[Token], Token, str, str) -> None
+    def __init__(self, tokens: List[Token], value: Token, pre_fluff: str, post_fluff: str) -> None:
         self.value = value
         self.pre_fluff = pre_fluff
         self.post_fluff = post_fluff
         assert pre_fluff.strip() == ''
 
-    def text(self):
-        # type: () -> str
+    def text(self) -> str:
         return self.pre_fluff + self.value.s + self.post_fluff
 
-def parse(text):
-    # type: (str) -> CssSectionList
+def parse(text: str) -> CssSectionList:
     tokens = tokenize(text)
     section_list = parse_sections(tokens, 0, len(tokens))
     return section_list
 
 #### Begin tokenizer section here
 
-def ws(c):
-    # type: (str) -> bool
+def ws(c: str) -> bool:
     return c in ' \t\n'
 
-def tokenize(text):
-    # type: (str) -> List[Token]
+def tokenize(text: str) -> List[Token]:
 
     class State:
-        def __init__(self):
-            # type: () -> None
+        def __init__(self) -> None:
             self.i = 0
             self.line = 1
             self.col = 1
@@ -463,18 +427,15 @@ def tokenize(text):
     tokens = []
     state = State()
 
-    def add_token(s, state):
-        # type: (str, State) -> None
+    def add_token(s: str, state: State) -> None:
         # deep copy data
         token = Token(s=s, line=state.line, col=state.col)
         tokens.append(token)
 
-    def legal(offset):
-        # type: (int) -> bool
+    def legal(offset: int) -> bool:
         return state.i + offset < len(text)
 
-    def advance(n):
-        # type: (int) -> None
+    def advance(n: int) -> None:
         for _ in range(n):
             state.i += 1
             if state.i >= 0 and text[state.i - 1] == '\n':
@@ -483,12 +444,10 @@ def tokenize(text):
             else:
                 state.col += 1
 
-    def looking_at(s):
-        # type: (str) -> bool
+    def looking_at(s: str) -> bool:
         return text[state.i:state.i+len(s)] == s
 
-    def get_field(terminator):
-        # type: (Callable[[str], bool]) -> str
+    def get_field(terminator: Callable[[str], bool]) -> str:
         offset = 0
         paren_level = 0
         while legal(offset) and (paren_level or not terminator(text[state.i + offset])):

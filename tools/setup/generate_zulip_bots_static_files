@@ -21,8 +21,7 @@ if os.path.isdir(bots_dir):
 
 os.makedirs(bots_dir, exist_ok=True)
 
-def copyfiles(paths):
-    # type: (List[Text]) -> None
+def copyfiles(paths: List[Text]) -> None:
     for src_path in paths:
         bot_name = os.path.basename(os.path.dirname(src_path))
 

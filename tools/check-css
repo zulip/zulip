@@ -9,8 +9,7 @@ import subprocess
 from lib import sanity_check
 sanity_check.check_venv(__file__)
 
-def validate(fn):
-    # type: (str) -> None
+def validate(fn: str) -> None:
     text = open(fn).read()
     section_list = parse(text)
     if text != section_list.text():
@@ -23,8 +22,7 @@ FAIL: {} is being rejected by our finicky linter)
         subprocess.call(['diff', '-u', fn, '/var/tmp/pretty_css.txt'], stderr=subprocess.STDOUT)
         sys.exit(1)
 
-def check_our_files(filenames):
-    # type: (Iterable[str]) -> None
+def check_our_files(filenames: Iterable[str]) -> None:
     for filename in filenames:
         if 'pygments.css' in filename:
             # This just has really strange formatting that our

@@ -29,8 +29,7 @@ import configparser
 import sys
 import os
 
-def update_fts_columns(cursor):
-    # type: (psycopg2.extensions.cursor) -> None
+def update_fts_columns(cursor: psycopg2.extensions.cursor) -> None:
     cursor.execute("SELECT id, message_id FROM fts_update_log;")
     ids = []
     for (id, message_id) in cursor.fetchall():
@@ -47,8 +46,7 @@ def update_fts_columns(cursor):
     cursor.execute("DELETE FROM fts_update_log WHERE id = ANY(%s)", (ids,))
 
 
-def am_master(cursor):
-    # type: (psycopg2.extensions.cursor) -> bool
+def am_master(cursor: psycopg2.extensions.cursor) -> bool:
     cursor.execute("SELECT pg_is_in_recovery()")
     return not cursor.fetchall()[0][0]
 

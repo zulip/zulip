@@ -3,8 +3,7 @@ from typing import Dict, List, Set
 
 from .html_branches import html_branches, HtmlTreeBranch
 
-def show_all_branches(fns):
-    # type: (List[str]) -> None
+def show_all_branches(fns: List[str]) -> None:
     for fn in fns:
         print(fn)
         text = open(fn).read()
@@ -20,8 +19,7 @@ class Grepper:
     HtmlTreeBranch objects.
     '''
 
-    def __init__(self, fns):
-        # type: (List[str]) -> None
+    def __init__(self, fns: List[str]) -> None:
         all_branches = []  # type: List[HtmlTreeBranch]
 
         for fn in fns:
@@ -36,8 +34,7 @@ class Grepper:
 
         self.all_branches = set(all_branches)
 
-    def grep(self, word_set):
-        # type: (Set[str]) -> None
+    def grep(self, word_set: Set[str]) -> None:
 
         words = list(word_set)  # type: List[str]
 
@@ -55,7 +52,6 @@ class Grepper:
             print(branch.staircase_text())
             print('')
 
-def grep(fns, words):
-    # type: (List[str], Set[str]) -> None
+def grep(fns: List[str], words: Set[str]) -> None:
     grepper = Grepper(fns)
     grepper.grep(words)
