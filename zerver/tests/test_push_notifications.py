@@ -1,4 +1,5 @@
 
+from contextlib import contextmanager
 import itertools
 import requests
 import mock
@@ -283,6 +284,13 @@ class PushNotificationTest(BouncerTestCase):
             sending_client=self.sending_client,
         )
 
+    @contextmanager
+    def mock_apns(self) -> mock.MagicMock:
+        mock_apns = mock.Mock()
+        with mock.patch('zerver.lib.push_notifications.get_apns_client') as mock_get:
+            mock_get.return_value = mock_apns
+            yield mock_apns
+
 class HandlePushNotificationTest(PushNotificationTest):
     DEFAULT_SUBDOMAIN = ""
 
@@ -325,7 +333,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                 mock.patch('zerver.lib.push_notifications.requests.request',
                            side_effect=self.bounce_request), \
                 mock.patch('zerver.lib.push_notifications.gcm') as mock_gcm, \
-                mock.patch('zerver.lib.push_notifications._apns_client') as mock_apns, \
+                self.mock_apns() as mock_apns, \
                 mock.patch('logging.info') as mock_info, \
                 mock.patch('logging.warning'):
             apns_devices = [
@@ -557,12 +565,18 @@ class TestAPNs(PushNotificationTest):
         apn.send_apple_push_notification(
             self.user_profile.id, devices, payload_data)
 
-    def test_get_apns_client(self) -> None:
-        """Just a quick check that the initialization code doesn't crash"""
-        get_apns_client()
+    def test_not_configured(self) -> None:
+        with mock.patch('zerver.lib.push_notifications.get_apns_client') as mock_get, \
+                mock.patch('zerver.lib.push_notifications.logging') as mock_logging:
+            mock_get.return_value = None
+            self.send()
+            mock_logging.warning.assert_called_once_with(
+                "APNs: Dropping a notification because nothing configured.  "
+                "Set PUSH_NOTIFICATION_BOUNCER_URL (or APNS_CERT_FILE).")
+            mock_logging.info.assert_not_called()
 
     def test_success(self) -> None:
-        with mock.patch('zerver.lib.push_notifications._apns_client') as mock_apns, \
+        with self.mock_apns() as mock_apns, \
                 mock.patch('zerver.lib.push_notifications.logging') as mock_logging:
             mock_apns.get_notification_result.return_value = 'Success'
             self.send()
@@ -574,7 +588,7 @@ class TestAPNs(PushNotificationTest):
 
     def test_http_retry(self) -> None:
         import hyper
-        with mock.patch('zerver.lib.push_notifications._apns_client') as mock_apns, \
+        with self.mock_apns() as mock_apns, \
                 mock.patch('zerver.lib.push_notifications.logging') as mock_logging:
             mock_apns.get_notification_result.side_effect = itertools.chain(
                 [hyper.http20.exceptions.StreamResetError()],
@@ -590,7 +604,7 @@ class TestAPNs(PushNotificationTest):
 
     def test_http_retry_eventually_fails(self) -> None:
         import hyper
-        with mock.patch('zerver.lib.push_notifications._apns_client') as mock_apns, \
+        with self.mock_apns() as mock_apns, \
                 mock.patch('zerver.lib.push_notifications.logging') as mock_logging:
             mock_apns.get_notification_result.side_effect = itertools.chain(
                 [hyper.http20.exceptions.StreamResetError()],

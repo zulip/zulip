@@ -54,16 +54,20 @@ def hex_to_b64(data: Text) -> bytes:
 # Sending to APNs, for iOS
 #
 
-_apns_client = None  # type: APNsClient
+_apns_client = None  # type: Optional[APNsClient]
+_apns_client_initialized = False
 
 def get_apns_client() -> APNsClient:
-    global _apns_client
-    if _apns_client is None:
+    global _apns_client, _apns_client_initialized
+    if not _apns_client_initialized:
         # NB if called concurrently, this will make excess connections.
         # That's a little sloppy, but harmless unless a server gets
         # hammered with a ton of these all at once after startup.
-        _apns_client = APNsClient(credentials=settings.APNS_CERT_FILE,
-                                  use_sandbox=settings.APNS_SANDBOX)
+        if settings.APNS_CERT_FILE is not None:
+            _apns_client = APNsClient(credentials=settings.APNS_CERT_FILE,
+                                      use_sandbox=settings.APNS_SANDBOX)
+            assert False
+        _apns_client_initialized = True
     return _apns_client
 
 def modernize_apns_payload(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -96,11 +100,15 @@ APNS_MAX_RETRIES = 3
 @statsd_increment("apple_push_notification")
 def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
                                  payload_data: Dict[str, Any]) -> None:
+    client = get_apns_client()
+    if client is None:
+        logging.warning("APNs: Dropping a notification because nothing configured.  "
+                        "Set PUSH_NOTIFICATION_BOUNCER_URL (or APNS_CERT_FILE).")
+        return
     logging.info("APNs: Sending notification for user %d to %d devices",
                  user_id, len(devices))
     payload = APNsPayload(**modernize_apns_payload(payload_data))
     expiration = int(time.time() + 24 * 3600)
-    client = get_apns_client()
     retries_left = APNS_MAX_RETRIES
     for device in devices:
         # TODO obviously this should be made to actually use the async
