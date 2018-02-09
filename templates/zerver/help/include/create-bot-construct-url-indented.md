@@ -9,7 +9,9 @@
     of Zulip. Thus, using an incoming webhook bot lowers the security risk of
     exposing the bot's API key to a third-party service.
 
-    Construct the URL for the {{ integration_display_name }}
+    Fill out the rest of the fields, and click **Create bot**.
+
+    Now, construct the URL for the {{ integration_display_name }}
     bot using the bot's API key and the desired stream name:
 
     {!webhook-url.md!}
