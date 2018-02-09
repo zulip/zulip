@@ -9,6 +9,7 @@ import re
 import logging
 import requests
 
+from django.db import connection
 from django.utils.timezone import now as timezone_now
 from typing import Any, Dict, List, Tuple
 from zerver.models import UserProfile, Realm, Stream, UserMessage, \
@@ -27,23 +28,31 @@ def rm_tree(path: str) -> None:
     if os.path.exists(path):
         shutil.rmtree(path)
 
-def get_model_id(model: Any, table_name: str, sequence_increase_factor: int) -> int:
+def idseq(model_class: Any) -> str:
+    return '{}_id_seq'.format(model_class._meta.db_table)
+
+def get_next_id(model_class: Any) -> int:
+    conn = connection.cursor()
+    sequence = idseq(model_class)
+    conn.execute("select nextval('%s')" % (sequence))
+    row = conn.fetchone()
+    conn.close()
+    return row[0]
+
+def reset_sequence(model_class: Any, value: int) -> None:
+    conn = connection.cursor()
+    sequence = idseq(model_class)
+    conn.execute("ALTER SEQUENCE {} RESTART WITH {};".format(sequence, value))
+
+def allocate_id(model_class: Any, sequence_increase_factor: int) -> int:
     """
     Increases the sequence number for a given table by the amount of objects being
     imported into that table. Hence, this gives a reserved range of ids to import the converted
     slack objects into the tables.
     """
-    if model.objects.all().last():
-        start_id_sequence = model.objects.all().last().id + 1
-    else:
-        start_id_sequence = 1
-
+    start_id_sequence = get_next_id(model_class)
     restart_sequence_id = start_id_sequence + sequence_increase_factor
-    sequence_name = table_name + '_id_seq'
-    increment_id_command = "ALTER SEQUENCE %s RESTART WITH %s" % (sequence_name,
-                                                                  str(restart_sequence_id))
-
-    os.system('echo %s | ./manage.py dbshell' % (increment_id_command))
+    reset_sequence(model_class, restart_sequence_id)
     return start_id_sequence
 
 def slack_workspace_to_realm(REALM_ID: int, user_list: List[ZerverFieldsT],
@@ -128,7 +137,7 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
     zerver_userprofile = []
     added_users = {}
 
-    user_id_count = get_model_id(UserProfile, 'zerver_userprofile', total_users)
+    user_id_count = allocate_id(UserProfile, total_users)
 
     # We have only one primary owner in slack, see link
     # https://get.slack.help/hc/en-us/articles/201912948-Owners-and-Administrators
@@ -292,11 +301,11 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
         for member in channel['members']:
             total_subscription += 1
 
-    stream_id_count = get_model_id(Stream, 'zerver_stream', total_users)
-    subscription_id_count = get_model_id(Subscription, 'zerver_subscription', total_subscription)
-    recipient_id_count = get_model_id(Recipient, 'zerver_recipient', total_recipients)
+    stream_id_count = allocate_id(Stream, total_users)
+    subscription_id_count = allocate_id(Subscription, total_subscription)
+    recipient_id_count = allocate_id(Recipient, total_recipients)
     # corresponding to channels 'general' and 'random'
-    defaultstream_id = get_model_id(DefaultStream, 'zerver_defaultstream', 2)
+    defaultstream_id = allocate_id(DefaultStream, 2)
 
     for channel in channels:
         # slack_channel_id = channel['id']
@@ -461,8 +470,8 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
                                                       added_recipient)
         total_messages += tm
         total_usermessages += tum
-    message_id_count = get_model_id(Message, 'zerver_message', total_messages)
-    usermessage_id_count = get_model_id(UserMessage, 'zerver_usermessage', total_usermessages)
+    message_id_count = allocate_id(Message, total_messages)
+    usermessage_id_count = allocate_id(UserMessage, total_usermessages)
 
     constants = [slack_data_dir, REALM_ID]
     for channel in added_channels.keys():
@@ -613,7 +622,7 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str, 
     script_path = os.path.dirname(os.path.abspath(__file__)) + '/'
     fixtures_path = script_path + '../fixtures/'
 
-    REALM_ID = get_model_id(Realm, 'zerver_realm', 1)
+    REALM_ID = allocate_id(Realm, 1)
 
     user_list = get_user_data(token)
     realm, added_users, added_recipient, added_channels = slack_workspace_to_realm(REALM_ID,

@@ -3,7 +3,9 @@ from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.slack_data_to_zulip_data import (
-    get_model_id,
+    allocate_id,
+    get_next_id,
+    reset_sequence,
     get_user_data,
     build_zerver_realm,
     get_user_email,
@@ -28,7 +30,6 @@ from zerver.lib.test_classes import (
 from zerver.models import (
     Realm,
 )
-from zerver.lib.test_runner import slow
 from zerver.lib import mdiff
 import ujson
 import json
@@ -59,12 +60,14 @@ class SlackImporter(ZulipTestCase):
     # set logger to a higher level to suppress 'logger.INFO' outputs
     logger.setLevel(logging.WARNING)
 
-    @slow('Does id allocation for to be imported objects and resets sequence id')
-    def test_get_model_id(self) -> None:
-        start_id_sequence = get_model_id(Realm, 'zerver_realm', 1)
-        test_id_sequence = Realm.objects.all().last().id + 1
+    @mock.patch("zerver.lib.slack_data_to_zulip_data.get_next_id", return_value=5)
+    def test_allocate_id(self, mock_get_next_id: mock.Mock) -> None:
+        start_id_sequence = allocate_id(Realm, 2)
+        self.assertEqual(start_id_sequence, 5)
 
-        self.assertEqual(start_id_sequence, test_id_sequence)
+    def test_reset_id(self) -> None:
+        reset_sequence(Realm, 20)
+        self.assertEqual(get_next_id(Realm), 20)
 
     @mock.patch('requests.get', side_effect=mocked_requests_get)
     def test_get_user_data(self, mock_get: mock.Mock) -> None:
@@ -113,8 +116,8 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(get_user_timezone(user_timezone_none), "America/New_York")
         self.assertEqual(get_user_timezone(user_no_timezone), "America/New_York")
 
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.get_model_id", return_value=1)
-    def test_users_to_zerver_userprofile(self, mock_get_model_id: mock.Mock) -> None:
+    @mock.patch("zerver.lib.slack_data_to_zulip_data.allocate_id", return_value=1)
+    def test_users_to_zerver_userprofile(self, mock_allocate_id: mock.Mock) -> None:
         user_data = [{"id": "U08RGD1RD",
                       "name": "john",
                       "deleted": False,
@@ -162,8 +165,8 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[0]['enable_desktop_notifications'], True)
         self.assertEqual(zerver_userprofile[2]['bot_type'], 1)
 
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.get_model_id", return_value=1)
-    def test_build_defaultstream(self, mock_get_model_id: mock.Mock) -> None:
+    @mock.patch("zerver.lib.slack_data_to_zulip_data.allocate_id", return_value=1)
+    def test_build_defaultstream(self, mock_allocate_id: mock.Mock) -> None:
         realm_id = 1
         stream_id = 1
         default_channel_general = build_defaultstream('general', realm_id, stream_id, 1)
@@ -213,8 +216,8 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_subscription[1]['pin_to_top'], False)
 
     @mock.patch("zerver.lib.slack_data_to_zulip_data.get_data_file")
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.get_model_id", return_value=1)
-    def test_channels_to_zerver_stream(self, mock_get_model_id: mock.Mock,
+    @mock.patch("zerver.lib.slack_data_to_zulip_data.allocate_id", return_value=1)
+    def test_channels_to_zerver_stream(self, mock_allocate_id: mock.Mock,
                                        mock_get_data_file: mock.Mock) -> None:
 
         added_users = {"U061A1R2R": 1, "U061A3E0G": 8, "U061A5N1G": 7, "U064KUGRJ": 5}
@@ -437,10 +440,10 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[3]['sender'], 24)
 
     @mock.patch("zerver.lib.slack_data_to_zulip_data.channel_message_to_zerver_message")
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.get_model_id", return_value=1)
+    @mock.patch("zerver.lib.slack_data_to_zulip_data.allocate_id", return_value=1)
     @mock.patch("zerver.lib.slack_data_to_zulip_data.get_total_messages_and_usermessages", return_value=[1, 2])
     def test_convert_slack_workspace_messages(self, mock_get_total_messages_and_usermessages: mock.Mock,
-                                              mock_get_model_id: mock.Mock, mock_message: mock.Mock) -> None:
+                                              mock_allocate_id: mock.Mock, mock_message: mock.Mock) -> None:
         added_channels = {'random': 1, 'general': 2}
 
         zerver_message1 = [{'id': 1}]
