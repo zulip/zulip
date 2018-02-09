@@ -120,6 +120,30 @@ exports.topic = function () {
     return undefined;
 };
 
+exports.pm_string = function () {
+    // If you are narrowed to a PM conversation
+    // with users 4, 5, and 99, this will return "4,5,99"
+
+    if (current_filter === undefined) {
+        return;
+    }
+
+    var operands = current_filter.operands("pm-with");
+    if (operands.length !== 1) {
+        return;
+    }
+
+    var emails_string = operands[0];
+
+    if (!emails_string) {
+        return;
+    }
+
+    var user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
+
+    return user_ids_string;
+};
+
 // Are we narrowed to PMs: all PMs or PMs with particular people.
 exports.narrowed_to_pms = function () {
     if (current_filter === undefined) {

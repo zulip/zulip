@@ -212,3 +212,44 @@ function set_filter(operators) {
     assert.equal(narrow_state.stream(), undefined);
 }());
 
+(function test_pm_string() {
+    // This function will return undefined unless we're clearly
+    // narrowed to a specific PM (including huddles) with real
+    // users.
+    narrow_state.set_current_filter(undefined);
+    assert.equal(narrow_state.pm_string(), undefined);
+
+    set_filter([['stream', 'Foo'], ['topic', 'Bar']]);
+    assert.equal(narrow_state.pm_string(), undefined);
+
+    set_filter([['pm-with', '']]);
+    assert.equal(narrow_state.pm_string(), undefined);
+
+    var called = false;
+    blueslip.warn = function (error) {
+        assert.equal(error, 'Unknown emails: bogus@foo.com');
+        called = true;
+    };
+
+    set_filter([['pm-with', 'bogus@foo.com']]);
+    assert.equal(narrow_state.pm_string(), undefined);
+    assert(called);
+
+    var alice = {
+        email: 'alice@foo.com',
+        user_id: 444,
+        full_name: 'Alice',
+    };
+
+    var bob = {
+        email: 'bob@foo.com',
+        user_id: 555,
+        full_name: 'Bob',
+    };
+
+    people.add(alice);
+    people.add(bob);
+
+    set_filter([['pm-with', 'bob@foo.com,alice@foo.com']]);
+    assert.equal(narrow_state.pm_string(), '444,555');
+}());
