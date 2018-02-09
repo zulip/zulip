@@ -293,7 +293,6 @@ DEFAULT_SETTINGS.update({
 
     # Settings for APNS.  Only needed on push.zulipchat.com.
     'APNS_CERT_FILE': None,
-    'APNS_KEY_FILE': None,
     'APNS_SANDBOX': True,
 
     # Limits related to the size of file uploads; last few in MB.
