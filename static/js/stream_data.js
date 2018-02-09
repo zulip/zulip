@@ -159,7 +159,7 @@ exports.get_subscriber_count = function (stream_name) {
 };
 
 exports.render_stream_description = function (sub) {
-    if (sub.description) {
+    if (sub.description !== undefined) {
         sub.rendered_description = marked(sub.description).replace('<p>', '').replace('</p>', '');
     }
 };
