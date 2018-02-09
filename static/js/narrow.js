@@ -362,6 +362,31 @@ exports.narrow_to_next_topic = function () {
 };
 
 
+exports.narrow_to_next_pm_string = function () {
+    var curr_pm = narrow_state.pm_string();
+
+    var next_pm = topic_generator.get_next_unread_pm_string(curr_pm);
+
+    if (!next_pm) {
+        return;
+    }
+
+    // Hopefully someday we can narrow by user_ids_string instead of
+    // mapping back to emails.
+    var pm_with = people.user_ids_string_to_emails_string(next_pm);
+
+    var filter_expr = [
+        {operator: 'pm-with', operand: pm_with},
+    ];
+
+    var opts = {
+        select_first_unread: true,
+    };
+
+    exports.activate(filter_expr, opts);
+};
+
+
 // Activate narrowing with a single operator.
 // This is just for syntactic convenience.
 exports.by = function (operator, operand, opts) {
