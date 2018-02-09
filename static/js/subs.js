@@ -249,13 +249,21 @@ exports.update_settings_for_unsubscribed = function (sub) {
     var active_stream = exports.active_stream();
     if (active_stream !== undefined && active_stream.id === sub.stream_id) {
         stream_edit.rerender_subscribers_list(sub);
+
+        // If user unsubscribed from private stream then user can not subscribe to
+        // stream without invitation. So hide subscribe button.
+        if (!sub.should_display_subscription_button) {
+            settings_button.hide();
+        }
     }
 
-    // If user unsubscribed from private stream then user can not subscribe to
-    // stream without invitation. So hide subscribe button.
-    if (!sub.should_display_subscription_button) {
-        settings_button.hide();
+    // Remove private streams from subscribed streams list.
+    if ($("#subscriptions_table .search-container .tab-switcher .first").hasClass("selected")
+        && sub.invite_only) {
+        var sub_row = $('#subscriptions_table .stream-row[data-stream-id=' + sub.stream_id + ']');
+        sub_row.addClass("notdisplayed");
     }
+
     row_for_stream_id(subs.stream_id).attr("data-temp-view", true);
 };
 
