@@ -50,7 +50,7 @@ def edit_user_group(request: HttpRequest, user_profile: UserProfile,
 @has_request_variables
 def delete_user_group(request: HttpRequest, user_profile: UserProfile,
                       user_group_id: int=REQ(validator=check_int)) -> HttpResponse:
-    check_delete_user_group(user_group_id, user_profile.realm)
+    check_delete_user_group(user_profile, user_group_id)
     return json_success()
 
 @has_request_variables

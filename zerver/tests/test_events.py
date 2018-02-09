@@ -1086,7 +1086,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('op', equals('remove')),
             ('group_id', check_int),
         ])
-        events = self.do_test(lambda: check_delete_user_group(backend.id, backend.realm))
+        events = self.do_test(lambda: check_delete_user_group(othello, backend.id))
         error = user_group_remove_checker('events[0]', events[0])
         self.assert_on_error(error)
 

@@ -16,7 +16,7 @@ from zerver.lib.user_groups import (
     user_groups_in_realm_serialized,
 )
 from zerver.lib.actions import check_add_user_group, bulk_add_members_to_user_group, \
-    remove_members_from_user_group
+    remove_members_from_user_group, check_delete_user_group
 from zerver.lib.test_helpers import most_recent_message, get_user_messages
 
 from zerver.models import UserProfile, UserGroup, get_realm, Realm, \
@@ -266,4 +266,15 @@ You can ask ask a group member or an organization adminstrator to add you back."
         self.assertEqual(most_recent_message(self.othello).content, notification_message)
         self.assertFalse(get_user_messages(self.iago))
         self.assertFalse(get_user_messages(self.cordelia))
+        self.assertFalse(get_user_messages(self.hamlet))
+
+    def test_delete_group(self) -> None:
+        user_group = create_user_group(self.group_name, [self.hamlet, self.othello, self.cordelia], self.realm)
+        check_delete_user_group(self.hamlet, user_group.id)
+
+        notification_message = "A user group you were a part of (dumbledore's army) has been deleted."
+
+        self.assertEqual(most_recent_message(self.othello).content, notification_message)
+        self.assertEqual(most_recent_message(self.cordelia).content, notification_message)
+        self.assertFalse(get_user_messages(self.iago))
         self.assertFalse(get_user_messages(self.hamlet))

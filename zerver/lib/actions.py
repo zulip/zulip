@@ -4613,7 +4613,11 @@ def do_send_delete_user_group_event(user_group_id: int, realm_id: int) -> None:
                  group_id=user_group_id)
     send_event(event, active_user_ids(realm_id))
 
-def check_delete_user_group(user_group_id: int, realm: Realm) -> None:
-    user_group = access_user_group_by_id(user_group_id, realm)
+def check_delete_user_group(deleted_by: UserProfile, user_group_id: int) -> None:
+    user_group = access_user_group_by_id(user_group_id, deleted_by.realm)
+    user_group_members = list(user_group.members.all())
+    user_group_name = user_group.name
+
     user_group.delete()
-    do_send_delete_user_group_event(user_group_id, realm.id)
+    send_user_group_update_notification(deleted_by, user_group_name, user_group_members, "delete_group")
+    do_send_delete_user_group_event(user_group_id, deleted_by.realm.id)
