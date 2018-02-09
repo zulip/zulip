@@ -4586,6 +4586,17 @@ def do_send_user_group_members_update_event(event_name: Text,
                  user_ids=user_ids)
     send_event(event, active_user_ids(user_group.realm_id))
 
+def realm_audit_log_for_user_group_members_update(acting_user: UserProfile,
+                                                  user_group: UserGroup,
+                                                  members: List[UserProfile],
+                                                  event_type: Text) -> None:
+    extra_data = {"user_group_id": user_group.id, "user_group_name": user_group.name}
+    event_time = timezone_now()
+    for member in members:
+        RealmAuditLog.objects.create(realm=member.realm, acting_user=acting_user,
+                                     modified_user=member, event_time=event_time,
+                                     extra_data=extra_data, event_type=event_type)
+
 def bulk_add_members_to_user_group(added_by: UserProfile, user_group: UserGroup,
                                    user_profiles: List[UserProfile]) -> None:
     memberships = [UserGroupMembership(user_group_id=user_group.id,
@@ -4604,6 +4615,8 @@ def remove_members_from_user_group(removed_by: UserProfile, user_group: UserGrou
         user_profile__in=user_profiles).delete()
 
     send_user_group_update_notification(removed_by, user_group.name, user_profiles, "remove_members")
+    realm_audit_log_for_user_group_members_update(removed_by, user_group, user_profiles,
+                                                  "user_removed_from_group")
     user_ids = [up.id for up in user_profiles]
     do_send_user_group_members_update_event('remove_members', user_group, user_ids)
 
