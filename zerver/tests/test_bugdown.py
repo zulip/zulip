@@ -31,6 +31,7 @@ from zerver.models import (
     get_realm,
     get_stream,
     realm_filters_for_realm,
+    MAX_MESSAGE_LENGTH,
     Message,
     Stream,
     Realm,
@@ -1212,6 +1213,14 @@ class BugdownErrorTests(ZulipTestCase):
             # handle i18n properly here on some systems.
             with self.assertRaises(JsonableError):
                 self.send_stream_message(self.example_email("othello"), "Denmark", message)
+
+    def test_ultra_long_rendering(self) -> None:
+        """A message with an ultra-long rendering throws an exception"""
+        msg = u'* a\n' * (MAX_MESSAGE_LENGTH // 5)  # Rendering is >20K characters
+
+        with self.simulated_markdown_failure():
+            with self.assertRaises(bugdown.BugdownRenderingException):
+                bugdown_convert(msg)
 
 
 class BugdownAvatarTestCase(ZulipTestCase):

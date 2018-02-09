@@ -40,6 +40,7 @@ from zerver.lib.url_preview import preview as link_preview
 from zerver.models import (
     all_realm_filters,
     get_active_streams,
+    MAX_MESSAGE_LENGTH,
     Message,
     Realm,
     RealmFilter,
@@ -1962,7 +1963,14 @@ def do_convert(content: Text,
         # Spend at most 5 seconds rendering.
         # Sometimes Python-Markdown is really slow; see
         # https://trac.zulip.net/ticket/345
-        return timeout(5, _md_engine.convert, content)
+        rendered_content = timeout(5, _md_engine.convert, content)
+
+        # Throw an exception if the content is huge; this protects the
+        # rest of the codebase from any bugs where we end up rendering
+        # something huge.
+        if len(rendered_content) > MAX_MESSAGE_LENGTH * 2:
+            raise BugdownRenderingException()
+        return rendered_content
     except Exception:
         cleaned = privacy_clean_markdown(content)
 
