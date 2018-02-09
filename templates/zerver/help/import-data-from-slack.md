@@ -53,3 +53,5 @@ If the users are not from the same organization, you should change your organiza
 - Zulip's "default streams" work slightly differently from Slack's
   "Default channels" -- new users are automatically subscribed, but
   users can still unsusbcribe from them.
+- As user phone number and skype username are not stored in Zulip, they
+  are not preserved during the conversion.
