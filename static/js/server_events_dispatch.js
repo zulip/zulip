@@ -62,6 +62,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             description: settings_org.update_realm_description,
             email_changes_disabled: settings_account.update_email_change_display,
             disallow_disposable_email_addresses: noop,
+            guidelines: settings_org.update_realm_guidelines,
             inline_image_preview: noop,
             inline_url_embed_preview: noop,
             invite_by_admins_only: noop,

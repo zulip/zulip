@@ -11,6 +11,7 @@ from zerver.lib.actions import (
     do_set_realm_property,
     do_deactivate_realm,
     do_deactivate_stream,
+    do_set_realm_guidelines,
 )
 
 from zerver.lib.send_email import send_future_email
@@ -139,6 +140,53 @@ class RealmTest(ZulipTestCase):
         url = '/json/settings'
         result = self.client_patch(url, data)
         self.assert_in_success_response(['"full_name":"New Iago"'], result)
+
+    def test_update_realm_guidelines_url_events(self) -> None:
+        realm = get_realm('zulip')
+        new_guidelines_url = u'https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html'
+        events = []  # type: List[Mapping[str, Any]]
+        with tornado_redirected_to_list(events):
+            do_set_realm_guidelines(realm, new_guidelines_url)
+        event = events[0]['event']
+        self.assertEqual(event, dict(
+            type='realm',
+            op='update',
+            property='guidelines_url',
+            value=new_guidelines_url,
+        ))
+
+    def test_update_realm_guidelines_url(self) -> None:
+        email = self.example_email("iago")
+        self.login(email)
+        realm = get_realm('zulip')
+        new_guidelines_url = u'https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html'
+        data = dict(guidelines_url=ujson.dumps(new_guidelines_url))
+        events = []  # type: List[Mapping[str, Any]]
+        with tornado_redirected_to_list(events):
+            result = self.client_patch('/json/realm', data)
+            self.assert_json_success(result)
+            realm = get_realm('zulip')
+            self.assertEqual(realm.guidelines_url, new_guidelines_url)
+
+        event = events[0]['event']
+        self.assertEqual(event, dict(
+            type='realm',
+            op='update',
+            property='guidelines_url',
+            value=new_guidelines_url,
+        ))
+
+    def test_admin_restrictions_for_changing_realm_guidelines_url(self) -> None:
+        new_guidelines_url = 'New guidelines url'
+
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
+        self.login(email)
+        do_change_is_admin(user_profile, False)
+
+        req = dict(name=ujson.dumps(new_guidelines_url))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_error(result, 'Must be an organization administrator')
 
     def test_do_deactivate_realm_clears_user_realm_cache(self) -> None:
         """The main complicated thing about deactivating realm names is

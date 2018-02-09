@@ -576,6 +576,18 @@ def do_set_realm_authentication_methods(realm: Realm,
     send_event(event, active_user_ids(realm.id))
 
 
+def do_set_realm_guidelines(realm: Realm, guidelines_url: str) -> None:
+    realm.guidelines_url = guidelines_url
+    realm.save(update_fields=['guidelines_url'])
+    event = dict(
+        type="realm",
+        op="update",
+        property="guidelines_url",
+        value=guidelines_url
+    )
+    send_event(event, active_user_ids(realm.id))
+
+
 def do_set_realm_message_editing(realm: Realm,
                                  allow_message_editing: bool,
                                  message_content_edit_limit_seconds: int) -> None:

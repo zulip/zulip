@@ -14,6 +14,7 @@ from zerver.lib.actions import (
     do_set_realm_signup_notifications_stream,
     do_set_realm_property,
     do_deactivate_realm,
+    do_set_realm_guidelines,
 )
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.request import has_request_variables, REQ, JsonableError
@@ -29,6 +30,7 @@ def update_realm(
         request: HttpRequest, user_profile: UserProfile,
         name: Optional[str]=REQ(validator=check_string, default=None),
         description: Optional[str]=REQ(validator=check_string, default=None),
+        guidelines_url: Optional[str]=REQ(validator=check_string, default=None),
         restricted_to_domain: Optional[bool]=REQ(validator=check_bool, default=None),
         disallow_disposable_email_addresses: Optional[bool]=REQ(validator=check_bool, default=None),
         invite_required: Optional[bool]=REQ(validator=check_bool, default=None),
@@ -108,8 +110,14 @@ def update_realm(
                                      message_content_edit_limit_seconds)
         data['allow_message_editing'] = allow_message_editing
         data['message_content_edit_limit_seconds'] = message_content_edit_limit_seconds
-    # Realm.notifications_stream and Realm.signup_notifications_stream are not boolean,
-    # Text or integer field, and thus doesn't fit into the do_set_realm_property framework.
+    # Realm.guidelines_url, Realm.notifications_stream and Realm.signup_notifications_stream are
+    # not boolean, Text or integer field, and thus doesn't fit into the do_set_realm_property framework.
+    if guidelines_url is not None:
+        if realm.guidelines_url is None or (realm.guidelines_url !=
+                                            guidelines_url):
+            do_set_realm_guidelines(realm, guidelines_url)
+            data['guidelines_url'] = guidelines_url
+
     if notifications_stream_id is not None:
         if realm.notifications_stream is None or (realm.notifications_stream.id !=
                                                   notifications_stream_id):

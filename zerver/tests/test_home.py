@@ -125,6 +125,7 @@ class HomeTest(ZulipTestCase):
             "realm_embedded_bots",
             "realm_emoji",
             "realm_filters",
+            "realm_guidelines_url",
             "realm_icon_source",
             "realm_icon_url",
             "realm_inline_image_preview",

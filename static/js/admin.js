@@ -60,6 +60,7 @@ function _setup_page() {
         realm_send_welcome_emails: page_params.realm_send_welcome_emails,
         realm_disallow_disposable_email_addresses:
             page_params.realm_disallow_disposable_email_addresses,
+        realm_guidelines_url: page_params.realm_guidelines_url,
     };
 
     options.bot_creation_policy_values = settings_bots.bot_creation_policy_values;

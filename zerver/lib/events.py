@@ -171,6 +171,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['realm_is_zephyr_mirror_realm'] = realm.is_zephyr_mirror_realm
         state['realm_email_auth_enabled'] = email_auth_enabled(realm)
         state['realm_password_auth_enabled'] = password_auth_enabled(realm)
+        state['realm_guidelines_url'] = realm.guidelines_url
         if realm.notifications_stream and not realm.notifications_stream.deactivated:
             notifications_stream = realm.notifications_stream
             state['realm_notifications_stream_id'] = notifications_stream.id
