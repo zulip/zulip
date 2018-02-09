@@ -40,7 +40,8 @@ VENV_DEPENDENCIES = [
 THUMBOR_VENV_DEPENDENCIES = [
     "libcurl4-openssl-dev",
     "libjpeg-dev",
-    "libjasper-dev",
+    "zlib1g-dev",
+    "libfreetype6-dev",
     "libpng-dev",
     "gifsicle",
 ]
