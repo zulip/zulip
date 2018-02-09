@@ -51,6 +51,12 @@ exports.recent = (function () {
         return recent_private_messages;
     };
 
+    self.get_strings = function () {
+        // returns array of structs with user_ids_string and
+        // timestamp
+        return _.pluck(recent_private_messages, 'user_ids_string');
+    };
+
     return self;
 }());
 

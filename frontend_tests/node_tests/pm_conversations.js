@@ -25,5 +25,7 @@ var pmc = zrequire('pm_conversations');
         {user_ids_string: '1', timestamp: 3001},
         {user_ids_string: '2', timestamp: 2001},
     ]);
+
+    assert.deepEqual(pmc.recent.get_strings(), ['1', '2']);
 }());
 
