@@ -46,7 +46,7 @@ don't require touching the codebase at all. We list a few of them below:
 * [Translating](https://zulip.readthedocs.io/en/latest/translating/translating.html)
   Zulip.
 * [Outreach](#zulip-outreach): Star us on GitHub, upvote us
-  on product comparison sites, or write for the Zulip blog.
+  on product comparison sites, or write for [the Zulip blog](http://blog.zulip.org/).
 
 ## Your first (codebase) contribution
 
@@ -326,8 +326,8 @@ have been using Zulip for a while and want to contribute more.
 about a technical aspect of Zulip can be a great way to spread the word
 about Zulip.
 
-We also occasionally publish longer form articles related to Zulip. Our
-posts typically get tens of thousands of views, and we always have good
-ideas for blog posts that we can outline but don't have time to write. If
-you are an experienced writer or copyeditor, send us a portfolio; we'd love
-to talk!
+We also occasionally [publish](http://blog.zulip.org/) longer form
+articles related to Zulip. Our posts typically get tens of thousands
+of views, and we always have good ideas for blog posts that we can
+outline but don't have time to write. If you are an experienced writer
+or copyeditor, send us a portfolio; we'd love to talk!
