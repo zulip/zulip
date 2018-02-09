@@ -60,20 +60,6 @@ people.add_in_realm(cindy);
 
 global.people.initialize_current_user(me.user_id);
 
-(function test_insert_recent_private_message() {
-    message_store.insert_recent_private_message('1', 1001);
-    message_store.insert_recent_private_message('2', 2001);
-    message_store.insert_recent_private_message('1', 3001);
-
-    // try to backdate user1's timestamp
-    message_store.insert_recent_private_message('1', 555);
-
-    assert.deepEqual(message_store.recent_private_messages, [
-        {user_ids_string: '1', timestamp: 3001},
-        {user_ids_string: '2', timestamp: 2001},
-    ]);
-}());
-
 (function test_add_message_metadata() {
     var message = {
         sender_email: 'me@example.com',
