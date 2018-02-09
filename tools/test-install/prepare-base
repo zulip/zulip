@@ -1,5 +1,5 @@
 #!/bin/bash
-set -ex
+set -e
 
 if [ "$EUID" -ne 0 ]; then
     echo "error: this script must be run as root" >&2
@@ -20,6 +20,10 @@ case "$RELEASE" in
         ;;
 esac
 
+THIS_DIR="$(dirname "$(readlink -f "$0")")"
+
+set -x
+
 CONTAINER_NAME=zulip-install-$RELEASE-base
 
 if ! lxc-info -n "$CONTAINER_NAME" >/dev/null 2>&1; then
@@ -27,6 +31,7 @@ if ! lxc-info -n "$CONTAINER_NAME" >/dev/null 2>&1; then
 fi
 
 lxc-start -n "$CONTAINER_NAME"
+"$THIS_DIR"/lxc-wait -n "$CONTAINER_NAME"
 
 run() {
     lxc-attach -n "$CONTAINER_NAME" -- "$@"

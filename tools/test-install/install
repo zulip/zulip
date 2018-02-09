@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 usage() {
     echo "usage: install -r RELEASE {TARBALL|DIR} [...installer opts..]" >&2
@@ -27,7 +28,7 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-set -ex
+set -x
 
 THIS_DIR="$(dirname "$(readlink -f "$0")")"
 
@@ -69,24 +70,11 @@ mount -t overlay overlay \
 lxc-copy --ephemeral --keepdata -n "$BASE_CONTAINER_NAME" -N "$CONTAINER_NAME" \
          -m bind="$shared_dir"/mnt:/tmp/src/,bind=/srv/zulip/test-install/pip-cache:/root/.cache/pip
 
+"$THIS_DIR"/lxc-wait -n "$CONTAINER_NAME"
+
 run() {
     lxc-attach -n "$CONTAINER_NAME" -- "$@"
 }
-
-# Wait for the container to boot, polling.
-ok=
-for i in {1..60}; do
-    runlevel="$(run runlevel 2>/dev/null)" || { sleep 1; continue; }
-    if [ "$runlevel" != "${0%[0-9]}" ]; then
-        ok=1
-        break
-    fi
-    sleep 1
-done
-if [ -z "ok" ]; then
-    echo "error: timeout waiting for container to boot" >&2
-    exit 1
-fi
 
 run eatmydata -- /tmp/src/zulip-server/scripts/setup/install --self-signed-cert "${INSTALLER_ARGS[@]}"
 

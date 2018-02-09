@@ -1,0 +1,42 @@
+#!/bin/bash
+set -e
+
+usage() {
+    echo "usage: lxc-wait -n CONTAINER" >&2
+    exit 1
+}
+
+args="$(getopt -o +n: --long help,name: -- "$@")"
+eval "set -- $args"
+while true; do
+    case "$1" in
+        --help) usage;;
+        -n|--name) CONTAINER_NAME="$2"; shift; shift;;
+        --) shift; break;;
+        *) usage;;
+    esac
+done
+
+if [ -z "$CONTAINER_NAME" ] || [ "$#" -gt 0 ]; then
+    usage
+fi
+
+if [ "$EUID" -ne 0 ]; then
+    echo "error: this script must be run as root" >&2
+    exit 1
+fi
+
+# We poll.
+for i in {1..60}; do
+    echo "lxc-wait: $CONTAINER_NAME: polling for boot..." >&2
+    runlevel="$(lxc-attach -n "$CONTAINER_NAME" -- runlevel 2>/dev/null)" \
+        || { sleep 1; continue; }
+    if [ "$runlevel" != "${0%[0-9]}" ]; then
+        echo "lxc-wait: $CONTAINER_NAME: booted!" >&2
+        exit 0
+    fi
+    sleep 1
+done
+
+echo "error: timeout waiting for container to boot" >&2
+exit 1
