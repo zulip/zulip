@@ -16,13 +16,13 @@ var rs = zrequire('recent_senders');
     // New stream
     var message1 = {
         stream_id: stream1,
-        timestamp: _.uniqueId(),
+        id: _.uniqueId(),
         subject: topic1,
         sender_id: sender1,
     };
     var message2 = {
         stream_id: stream2,
-        timestamp: _.uniqueId(),
+        id: _.uniqueId(),
         subject: topic1,
         sender_id: sender2,
     };
@@ -45,7 +45,7 @@ var rs = zrequire('recent_senders');
     // New topic
     var message3 = {
         stream_id: stream1,
-        timestamp: _.uniqueId(),
+        id: _.uniqueId(),
         subject: topic2,
         sender_id: sender3,
     };
@@ -57,7 +57,7 @@ var rs = zrequire('recent_senders');
     // New sender
     var message4 = {
         stream_id: stream1,
-        timestamp: _.uniqueId(),
+        id: _.uniqueId(),
         subject: topic1,
         sender_id: sender2,
     };
@@ -69,7 +69,7 @@ var rs = zrequire('recent_senders');
     // More recent message
     var message5 = {
         stream_id: stream1,
-        timestamp: _.uniqueId(),
+        id: _.uniqueId(),
         subject: topic1,
         sender_id: sender1,
     };
@@ -81,19 +81,19 @@ var rs = zrequire('recent_senders');
     // Same stream, but different topics
     var message6 = {
         stream_id: stream3,
-        timestamp: _.uniqueId(),
+        id: _.uniqueId(),
         subject: topic1,
         sender_id: sender1,
     };
     var message7 = {
         stream_id: stream3,
-        timestamp: _.uniqueId(),
+        id: _.uniqueId(),
         subject: topic2,
         sender_id: sender2,
     };
     var message8 = {
         stream_id: stream3,
-        timestamp: _.uniqueId(),
+        id: _.uniqueId(),
         subject: topic3,
         sender_id: sender3,
     };
