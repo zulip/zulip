@@ -20,7 +20,7 @@ args="$(getopt -o '' --long help,self-signed-cert,certbot,hostname:,email:,expre
 eval "set -- $args"
 while true; do
     case "$1" in
-        --help) show_help=1; shift;;
+        --help) usage;;
         --self-signed-cert) SELF_SIGNED_CERT=1; shift;;
         --certbot) USE_CERTBOT=1; shift;;
         --hostname) EXTERNAL_HOST="$2"; shift; shift;;
@@ -35,9 +35,19 @@ if [ "$#" -gt 0 ]; then
     usage
 fi
 
-if [ -n "$show_help" ]; then
-    usage
-fi
+## Options from environment variables.
+#
+# Specify options for apt.
+APT_OPTIONS="${APT_OPTIONS:-}"
+# Install additional packages using apt.
+ADDITIONAL_PACKAGES=${ADDITIONAL_PACKAGES:-}
+# Deployment type is almost always voyager.
+DEPLOYMENT_TYPE="${DEPLOYMENT_TYPE:-voyager}"
+# Comma-separated list of puppet manifests to install.  default is
+# zulip::voyager for an all-in-one system or zulip::dockervoyager for
+# Docker.  Use e.g. zulip::app_frontend for a Zulip frontend server.
+PUPPET_CLASSES="${PUPPET_CLASSES:-zulip::voyager}"
+VIRTUALENV_NEEDED="${VIRTUALENV_NEEDED:-yes}"
 
 if [ -n "$SELF_SIGNED_CERT" ] && [ -n "$USE_CERTBOT" ]; then
     echo "error: --self-signed-cert and --certbot are incompatible" >&2
@@ -60,18 +70,6 @@ set -x
 
 # Force a known locale.  Some packages on PyPI fail to install in some locales.
 export LC_ALL="en_US.UTF-8"
-
-# Specify options for apt.
-APT_OPTIONS="${APT_OPTIONS:-}"
-# Install additional packages using apt.
-ADDITIONAL_PACKAGES=${ADDITIONAL_PACKAGES:-}
-# Deployment type is almost always voyager.
-DEPLOYMENT_TYPE="${DEPLOYMENT_TYPE:-voyager}"
-# Comma-separated list of puppet manifests to install.  default is
-# zulip::voyager for an all-in-one system or zulip::dockervoyager for
-# Docker.  Use e.g. zulip::app_frontend for a Zulip frontend server.
-PUPPET_CLASSES="${PUPPET_CLASSES:-zulip::voyager}"
-VIRTUALENV_NEEDED="${VIRTUALENV_NEEDED:-yes}"
 
 # Check for at least ~1.9GB of RAM before starting installation;
 # otherwise users will find out about insufficient RAM via weird
