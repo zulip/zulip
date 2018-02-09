@@ -1021,8 +1021,7 @@ class EventsRegisterTest(ZulipTestCase):
             ])),
         ])
         othello = self.example_user('othello')
-        zulip = get_realm('zulip')
-        events = self.do_test(lambda: check_add_user_group(zulip, 'backend', [othello],
+        events = self.do_test(lambda: check_add_user_group(othello, 'backend', [othello],
                                                            'Backend team'))
         error = user_group_add_checker('events[0]', events[0])
         self.assert_on_error(error)
@@ -1063,8 +1062,9 @@ class EventsRegisterTest(ZulipTestCase):
             ('user_ids', check_list(check_int)),
         ])
         hamlet = self.example_user('hamlet')
-        events = self.do_test(lambda: bulk_add_members_to_user_group(backend, [hamlet]))
-        error = user_group_add_member_checker('events[0]', events[0])
+        events = self.do_test(lambda: bulk_add_members_to_user_group(othello, backend, [hamlet]), num_events=2)
+        self.assertEqual(events[0]["message"]["sender_email"], settings.NOTIFICATION_BOT)
+        error = user_group_add_member_checker('events[1]', events[1])
         self.assert_on_error(error)
 
         # Test remove members

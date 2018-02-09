@@ -15,8 +15,12 @@ from zerver.lib.user_groups import (
     get_memberships_of_users,
     user_groups_in_realm_serialized,
 )
+from zerver.lib.actions import check_add_user_group, bulk_add_members_to_user_group, \
+    remove_members_from_user_group
+from zerver.lib.test_helpers import most_recent_message, get_user_messages
+
 from zerver.models import UserProfile, UserGroup, get_realm, Realm, \
-    UserGroupMembership
+    UserGroupMembership, Message
 
 class UserGroupTestCase(ZulipTestCase):
     def create_user_group_for_test(self, group_name: Text,
@@ -217,3 +221,37 @@ class UserGroupAPITestCase(ZulipTestCase):
                                   info={})
         msg = 'Nothing to do. Specify at least one of "add" or "delete".'
         self.assert_json_error(result, msg)
+
+class UserGroupNotificationsTest(ZulipTestCase):
+    def setUp(self) -> None:
+        Message.objects.all().delete()
+
+        self.group_name = "dumbledore's army"
+        self.realm = get_realm("zulip")
+
+        self.iago = self.example_user('iago')
+        self.hamlet = self.example_user('hamlet')
+        self.othello = self.example_user('othello')
+        self.cordelia = self.example_user('cordelia')
+        self.prospero = self.example_user('prospero')
+
+    def test_add_users_to_group(self) -> None:
+        members = [self.iago, self.hamlet]
+        check_add_user_group(self.iago, self.group_name, members, "Defence Against the Dark Arts Workshop")
+
+        notification_message = """You have been added to the user group *dumbledore's army*. \
+You can use @*dumbledore's army* to mention everyone in the group. To view the members of the group \
+you can click on the group mention or [open](#organization/user-groups-admin) the user group \
+management page."""
+        self.assertEqual(most_recent_message(self.hamlet).content, notification_message)
+        # Notification message should not be sent to Iago as Iago created the group.
+        self.assertFalse(get_user_messages(self.iago))
+
+        user_group = UserGroup.objects.get(name=self.group_name)
+        bulk_add_members_to_user_group(self.cordelia, user_group, [self.othello, self.prospero])
+
+        self.assertEqual(most_recent_message(self.othello).content, notification_message)
+        self.assertEqual(most_recent_message(self.prospero).content, notification_message)
+        self.assertFalse(get_user_messages(self.cordelia))
+        # Messages should not be sent to anyone who is not in the group either
+        self.assertFalse(get_user_messages(self.iago))

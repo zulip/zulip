@@ -4481,10 +4481,11 @@ ask a group member or an organization adminstrator to add you back."""
             internal_send_private_message(member.realm, get_system_bot(settings.NOTIFICATION_BOT),
                                           member, message)
 
-def check_add_user_group(realm: Realm, name: Text, initial_members: List[UserProfile],
+def check_add_user_group(created_by: UserProfile, name: Text, initial_members: List[UserProfile],
                          description: Text) -> None:
     try:
-        user_group = create_user_group(name, initial_members, realm, description=description)
+        user_group = create_user_group(name, initial_members, created_by.realm, description=description)
+        send_user_group_update_notification(created_by, user_group.name, initial_members, "add_members")
         do_send_create_user_group_event(user_group, initial_members)
     except django.db.utils.IntegrityError:
         raise JsonableError(_("User group '%s' already exists." % (name,)))
@@ -4585,13 +4586,14 @@ def do_send_user_group_members_update_event(event_name: Text,
                  user_ids=user_ids)
     send_event(event, active_user_ids(user_group.realm_id))
 
-def bulk_add_members_to_user_group(user_group: UserGroup,
+def bulk_add_members_to_user_group(added_by: UserProfile, user_group: UserGroup,
                                    user_profiles: List[UserProfile]) -> None:
     memberships = [UserGroupMembership(user_group_id=user_group.id,
                                        user_profile=user_profile)
                    for user_profile in user_profiles]
     UserGroupMembership.objects.bulk_create(memberships)
 
+    send_user_group_update_notification(added_by, user_group.name, user_profiles, "add_members")
     user_ids = [up.id for up in user_profiles]
     do_send_user_group_members_update_event('add_members', user_group, user_ids)
 

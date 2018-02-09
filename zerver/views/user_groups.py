@@ -23,7 +23,7 @@ def add_user_group(request: HttpRequest, user_profile: UserProfile,
                    members: List[int]=REQ(validator=check_list(check_int), default=[]),
                    description: Text=REQ()) -> HttpResponse:
     user_profiles = user_ids_to_users(members, user_profile.realm)
-    check_add_user_group(user_profile.realm, name, user_profiles, description)
+    check_add_user_group(user_profile, name, user_profiles, description)
     return json_success()
 
 @has_request_variables
@@ -76,14 +76,14 @@ def add_members_to_group_backend(request: HttpRequest, user_profile: UserProfile
         return json_success()
 
     user_group = access_user_group_by_id(user_group_id, user_profile.realm)
-    user_profiles = user_ids_to_users(members, user_profile.realm)
+    added_members = user_ids_to_users(members, user_profile.realm)
 
-    existing_member_ids = set(get_memberships_of_users(user_group, user_profiles))
-    for user_profile in user_profiles:
-        if user_profile.id in existing_member_ids:
-            raise JsonableError(_("User %s is already a member of this group" % (user_profile.id,)))
+    existing_member_ids = set(get_memberships_of_users(user_group, added_members))
+    for added_member in added_members:
+        if added_member.id in existing_member_ids:
+            raise JsonableError(_("User %s is already a member of this group" % (added_member.id,)))
 
-    bulk_add_members_to_user_group(user_group, user_profiles)
+    bulk_add_members_to_user_group(user_profile, user_group, added_members)
     return json_success()
 
 def remove_members_from_group_backend(request: HttpRequest, user_profile: UserProfile,
