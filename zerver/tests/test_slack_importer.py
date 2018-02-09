@@ -3,7 +3,10 @@ from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.slack_data_to_zulip_data import (
-    get_model_id,
+    allocate_id,
+    get_next_id,
+    reset_sequence,
+    get_user_data,
     build_zerver_realm,
     get_user_email,
     get_admin,
@@ -20,34 +23,70 @@ from zerver.lib.slack_data_to_zulip_data import (
     build_zerver_usermessage,
     channel_message_to_zerver_message,
     convert_slack_workspace_messages,
+    do_convert_data,
+)
+from zerver.lib.export import (
+    do_import_realm,
 )
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 from zerver.models import (
     Realm,
+    get_realm,
 )
-from zerver.lib.test_runner import slow
 from zerver.lib import mdiff
+
 import ujson
 import json
-
 import logging
+import shutil
+import requests
 import os
 import mock
 from typing import Any, AnyStr, Dict, List, Optional, Set, Tuple, Text
+
+def remove_folder(path: str) -> None:
+    if os.path.exists(path):
+        shutil.rmtree(path)
+
+# This method will be used by the mock to replace requests.get
+def mocked_requests_get(*args: List[str], **kwargs: List[str]) -> mock.Mock:
+    class MockResponse:
+        def __init__(self, json_data: Dict[str, Any], status_code: int) -> None:
+            self.json_data = json_data
+            self.status_code = status_code
+
+        def json(self) -> Dict[str, Any]:
+            return self.json_data
+
+    if args[0] == 'https://slack.com/api/users.list?token=valid-token':
+        return MockResponse({"members": "user_data"}, 200)
+    else:
+        return MockResponse(None, 404)
 
 class SlackImporter(ZulipTestCase):
     logger = logging.getLogger()
     # set logger to a higher level to suppress 'logger.INFO' outputs
     logger.setLevel(logging.WARNING)
 
-    @slow('Does id allocation for to be imported objects and resets sequence id')
-    def test_get_model_id(self) -> None:
-        start_id_sequence = get_model_id(Realm, 'zerver_realm', 1)
-        test_id_sequence = Realm.objects.all().last().id + 1
+    @mock.patch("zerver.lib.slack_data_to_zulip_data.get_next_id", return_value=5)
+    def test_allocate_id(self, mock_get_next_id: mock.Mock) -> None:
+        start_id_sequence = allocate_id(Realm, 2)
+        self.assertEqual(start_id_sequence, 5)
 
-        self.assertEqual(start_id_sequence, test_id_sequence)
+    def test_reset_id(self) -> None:
+        reset_sequence(Realm, 20)
+        self.assertEqual(get_next_id(Realm), 20)
+
+    @mock.patch('requests.get', side_effect=mocked_requests_get)
+    def test_get_user_data(self, mock_get: mock.Mock) -> None:
+        token = 'valid-token'
+        self.assertEqual(get_user_data(token), "user_data")
+        token = 'invalid-token'
+        with self.assertRaises(Exception) as invalid:
+            get_user_data(token)
+        self.assertEqual(invalid.exception.args, ('Enter a valid token!',),)
 
     def test_build_zerver_realm(self) -> None:
         fixtures_path = os.path.dirname(os.path.abspath(__file__)) + '/../fixtures/'
@@ -87,10 +126,8 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(get_user_timezone(user_timezone_none), "America/New_York")
         self.assertEqual(get_user_timezone(user_no_timezone), "America/New_York")
 
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.get_data_file")
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.get_model_id", return_value=1)
-    def test_users_to_zerver_userprofile(self, mock_get_model_id: mock.Mock,
-                                         mock_get_data_file: mock.Mock) -> None:
+    @mock.patch("zerver.lib.slack_data_to_zulip_data.allocate_id", return_value=1)
+    def test_users_to_zerver_userprofile(self, mock_allocate_id: mock.Mock) -> None:
         user_data = [{"id": "U08RGD1RD",
                       "name": "john",
                       "deleted": False,
@@ -113,7 +150,6 @@ class SlackImporter(ZulipTestCase):
                       "deleted": False,
                       "profile": {"image_32": "https:\/\/secure.gravatar.com\/avatar\/random1.png",
                                   "email": "bot1@zulipchat.com"}}]
-        mock_get_data_file.return_value = user_data
 
         # As user with slack_id 'U0CBK5KAT' is the primary owner, that user should be imported first
         # and hence has zulip_id = 1
@@ -122,7 +158,8 @@ class SlackImporter(ZulipTestCase):
                             'U09TYF5Sk': 3}
         slack_data_dir = './random_path'
         timestamp = int(timezone_now().timestamp())
-        zerver_userprofile, added_users = users_to_zerver_userprofile(slack_data_dir, 1, timestamp, 'test_domain')
+        zerver_userprofile, added_users = users_to_zerver_userprofile(slack_data_dir, user_data,
+                                                                      1, timestamp, 'test_domain')
 
         # test that the primary owner should always be imported first
         self.assertDictEqual(added_users, test_added_users)
@@ -138,8 +175,8 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[0]['enable_desktop_notifications'], True)
         self.assertEqual(zerver_userprofile[2]['bot_type'], 1)
 
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.get_model_id", return_value=1)
-    def test_build_defaultstream(self, mock_get_model_id: mock.Mock) -> None:
+    @mock.patch("zerver.lib.slack_data_to_zulip_data.allocate_id", return_value=1)
+    def test_build_defaultstream(self, mock_allocate_id: mock.Mock) -> None:
         realm_id = 1
         stream_id = 1
         default_channel_general = build_defaultstream('general', realm_id, stream_id, 1)
@@ -189,8 +226,8 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_subscription[1]['pin_to_top'], False)
 
     @mock.patch("zerver.lib.slack_data_to_zulip_data.get_data_file")
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.get_model_id", return_value=1)
-    def test_channels_to_zerver_stream(self, mock_get_model_id: mock.Mock,
+    @mock.patch("zerver.lib.slack_data_to_zulip_data.allocate_id", return_value=1)
+    def test_channels_to_zerver_stream(self, mock_allocate_id: mock.Mock,
                                        mock_get_data_file: mock.Mock) -> None:
 
         added_users = {"U061A1R2R": 1, "U061A3E0G": 8, "U061A5N1G": 7, "U064KUGRJ": 5}
@@ -264,7 +301,9 @@ class SlackImporter(ZulipTestCase):
                                       mock_build_zerver_realm: mock.Mock) -> None:
 
         realm_id = 1
+        user_list = []  # type: List[Dict[str, Any]]
         realm, added_users, added_recipient, added_channels = slack_workspace_to_realm(realm_id,
+                                                                                       user_list,
                                                                                        'test-realm',
                                                                                        './fixture',
                                                                                        './random_path')
@@ -371,7 +410,7 @@ class SlackImporter(ZulipTestCase):
                  {"text": "random test", "user": "U061A1R2R",
                   "ts": "1433868669.000012"}]
 
-        mock_get_data_file.side_effect = [user_data, date1, date2]
+        mock_get_data_file.side_effect = [date1, date2]
         added_recipient = {'random': 2}
         constants = ['./random_path', 2]
         ids = [3, 7]
@@ -380,7 +419,8 @@ class SlackImporter(ZulipTestCase):
         zerver_usermessage = []  # type: List[Dict[str, Any]]
         zerver_subscription = []  # type: List[Dict[str, Any]]
         zerver_message, zerver_usermessage = channel_message_to_zerver_message(constants, channel_name,
-                                                                               added_users, added_recipient,
+                                                                               user_data, added_users,
+                                                                               added_recipient,
                                                                                zerver_subscription, ids)
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
@@ -410,24 +450,51 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[3]['sender'], 24)
 
     @mock.patch("zerver.lib.slack_data_to_zulip_data.channel_message_to_zerver_message")
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.get_model_id", return_value=1)
+    @mock.patch("zerver.lib.slack_data_to_zulip_data.allocate_id", return_value=1)
     @mock.patch("zerver.lib.slack_data_to_zulip_data.get_total_messages_and_usermessages", return_value=[1, 2])
     def test_convert_slack_workspace_messages(self, mock_get_total_messages_and_usermessages: mock.Mock,
-                                              mock_get_model_id: mock.Mock, mock_message: mock.Mock) -> None:
+                                              mock_allocate_id: mock.Mock, mock_message: mock.Mock) -> None:
         added_channels = {'random': 1, 'general': 2}
 
         zerver_message1 = [{'id': 1}]
         zerver_message2 = [{'id': 5}]
 
         realm = {'zerver_subscription': []}  # type: Dict[str, Any]
+        user_list = []  # type: List[Dict[str, Any]]
 
         zerver_usermessage1 = [{'id': 3}, {'id': 5}]
         zerver_usermessage2 = [{'id': 6}, {'id': 9}]
 
         mock_message.side_effect = [[zerver_message1, zerver_usermessage1],
                                     [zerver_message2, zerver_usermessage2]]
-        message_json = convert_slack_workspace_messages('./random_path', 2, {},
+        message_json = convert_slack_workspace_messages('./random_path', user_list, 2, {},
                                                         {}, added_channels,
                                                         realm)
         self.assertEqual(message_json['zerver_message'], zerver_message1 + zerver_message2)
         self.assertEqual(message_json['zerver_usermessage'], zerver_usermessage1 + zerver_usermessage2)
+
+    @mock.patch("zerver.lib.slack_data_to_zulip_data.get_user_data")
+    def test_slack_import_to_existing_database(self, mock_get_user_data: mock.Mock) -> None:
+        test_slack_zip_file = os.path.join(settings.DEPLOY_ROOT, "zerver", "fixtures",
+                                           "slack_fixtures", "test_slack_importer.zip")
+        test_realm_subdomain = 'test-slack-import'
+        output_dir = '/tmp/test-slack-importer-data'
+        token = 'valid-token'
+
+        user_data_fixture = os.path.join(settings.DEPLOY_ROOT, "zerver", "fixtures",
+                                         "slack_fixtures", "user_data.json")
+        mock_get_user_data.return_value = ujson.load(open(user_data_fixture))['members']
+
+        do_convert_data(test_slack_zip_file, test_realm_subdomain, output_dir, token)
+        self.assertTrue(os.path.exists(output_dir))
+        self.assertTrue(os.path.exists(output_dir + '/realm.json'))
+
+        # test import of the converted slack data into an existing database
+        do_import_realm(output_dir)
+        self.assertTrue(get_realm(test_realm_subdomain).name, test_realm_subdomain)
+        Realm.objects.filter(name=test_realm_subdomain).delete()
+
+        remove_folder(output_dir)
+        # remove tar file created in 'do_convert_data' function
+        os.remove(output_dir + '.tar.gz')
+        self.assertFalse(os.path.exists(output_dir))
