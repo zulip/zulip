@@ -232,6 +232,29 @@ exports.get_next_topic = function (curr_stream, curr_topic) {
     );
 };
 
+exports._get_pm_gen = function (curr_pm) {
+    var my_pm_strings = pm_conversations.recent.get_strings();
+    var gen = exports.wrap_exclude(my_pm_strings, curr_pm);
+    return gen;
+};
+
+exports._get_unread_pm_gen = function (curr_pm) {
+    var pm_gen = exports._get_pm_gen(curr_pm);
+
+    function has_unread(user_ids_string) {
+        var num_unread = unread.num_unread_for_person(user_ids_string);
+        return num_unread > 0;
+    }
+
+    var gen = exports.filter(pm_gen, has_unread);
+    return gen;
+};
+
+exports.get_next_unread_pm_string = function (curr_pm) {
+    var gen = exports._get_unread_pm_gen(curr_pm);
+    return gen.next();
+};
+
 exports.get_next_stream = function (curr_stream) {
     var my_streams = stream_sort.get_streams();
     var stream_gen = exports.wrap_exclude(my_streams, curr_stream);
