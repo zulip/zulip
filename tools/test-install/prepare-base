@@ -44,7 +44,7 @@ run apt-get update
 # As an optimization, we install a bunch of packages the installer
 # would install for itself.
 run apt-get install -y --no-install-recommends \
-  xvfb parallel netcat unzip zip jq python3-pip wget curl realpath eatmydata \
+  xvfb parallel netcat unzip zip jq python3-pip wget curl eatmydata \
   git crudini openssl ssl-cert \
   build-essential python3-dev \
   closure-compiler memcached rabbitmq-server redis-server \

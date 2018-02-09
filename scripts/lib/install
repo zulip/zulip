@@ -68,6 +68,8 @@ fi
 # Do set -x after option parsing is complete
 set -x
 
+ZULIP_PATH="$(readlink -f $(dirname $0)/../..)"
+
 # Force a known locale.  Some packages on PyPI fail to install in some locales.
 export LC_ALL="en_US.UTF-8"
 
@@ -79,13 +81,6 @@ if [ "$mem_kb" -lt 1900000 ]; then
     echo "Insufficient RAM.  Zulip requires at least 2GB of RAM."
     exit 1
 fi
-
-if ! [ -e /usr/bin/realpath ]; then
-    # realpath is in coreutils on Xenial, but not in Trusty
-    apt-get install -y realpath
-fi
-
-ZULIP_PATH="$(realpath $(dirname $0)/../..)"
 
 # setup-apt-repo does an `apt-get update`
 "$ZULIP_PATH"/scripts/lib/setup-apt-repo
