@@ -2,16 +2,9 @@ Get Beeminder notifications in Zulip whenever you're going to derail from your g
 
 {!create-stream.md!}
 
-{!create-a-bot.md!}
+{!create-bot-construct-url.md!}
 
-Construct the URL for the Beeminder bot using the bot's API key and your Zulip email.
-
-The webhook URL should look like:
-
-`{{api_url}}?api_key=BOT'S_API_KEY&email=foo@example.com`
-
-Modify the parameters of the URL above where `api_key` is the API key of your Zulip bot
-and `email` is your Zulip email.
+{!append-stream-name.md!}
 
 * When creating or editing a goal in Beeminder, you can check the **Make private** option to make sure
 the bot sends you private messages; otherwise, the bot will send messages to a public stream.
