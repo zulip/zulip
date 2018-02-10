@@ -642,6 +642,27 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         bot = self.get_bot()
         self.assertEqual('The Bot of Hamlet', bot['full_name'])
 
+    def test_patch_bot_owner_bad_username(self) -> None:
+        self.login(self.example_email('hamlet'))
+        self.create_bot()
+        self.assert_num_bots_equal(1)
+
+        bot_info = {
+            'bot_owner': '',
+        }
+        result = self.client_patch("/json/bots/hambot-bot@zulip.testserver", bot_info)
+        self.assert_json_error(result, "Failed to change owner, no such user")
+        profile = get_user('hambot-bot@zulip.testserver', get_realm('zulip'))
+        self.assertEqual(profile.bot_owner, self.example_user("hamlet"))
+
+        bot_info = {
+            'bot_owner': 'Invalid name',
+        }
+        result = self.client_patch("/json/bots/hambot-bot@zulip.testserver", bot_info)
+        self.assert_json_error(result, "Failed to change owner, no such user")
+        profile = get_user('hambot-bot@zulip.testserver', get_realm('zulip'))
+        self.assertEqual(profile.bot_owner, self.example_user("hamlet"))
+
     @override_settings(LOCAL_UPLOADS_DIR='var/bot_avatar')
     def test_patch_bot_avatar(self) -> None:
         self.login(self.example_email('hamlet'))
