@@ -56,14 +56,6 @@ class zulip_ops::base {
     source     => 'puppet:///modules/zulip_ops/apt/apt.conf.d/50unattended-upgrades',
   }
 
-  file { '/home/zulip/.ssh/authorized_keys':
-    ensure     => file,
-    require    => File['/home/zulip/.ssh'],
-    mode       => 600,
-    owner      => "zulip",
-    group      => "zulip",
-    source     => 'puppet:///modules/zulip_ops/authorized_keys',
-  }
   file { '/home/zulip/.ssh':
     ensure     => directory,
     require    => User['zulip'],
@@ -115,12 +107,31 @@ class zulip_ops::base {
     require    => User['zulip'],
   }
 
-  file { '/root/.ssh/authorized_keys':
-    ensure     => file,
-    mode       => 600,
-    owner      => "root",
-    group      => "root",
-    source     => 'puppet:///modules/zulip_ops/root_authorized_keys',
+  if $zulip::base::release_name == "xenial" {
+    # TODO: Change this condition to something more coherent.
+    file { '/root/.ssh/authorized_keys':
+      ensure     => file,
+      mode       => 600,
+      owner      => "root",
+      group      => "root",
+      source     => 'puppet:///modules/zulip_ops/root_authorized_keys',
+    }
+    file { '/home/zulip/.ssh/authorized_keys':
+      ensure     => file,
+      require    => File['/home/zulip/.ssh'],
+      mode       => 600,
+      owner      => "zulip",
+      group      => "zulip",
+      source     => 'puppet:///modules/zulip_ops/authorized_keys',
+    }
+    file { '/var/lib/nagios/.ssh/authorized_keys':
+      ensure     => file,
+      require    => File['/var/lib/nagios/.ssh'],
+      mode       => 600,
+      owner      => "nagios",
+      group      => "nagios",
+      source     => 'puppet:///modules/zulip_ops/nagios_authorized_keys',
+    }
   }
 
   if $zulip::base::release_name == "xenial" {
@@ -164,14 +175,6 @@ class zulip_ops::base {
     owner      => "nagios",
     group      => "nagios",
     mode       => 600,
-  }
-  file { '/var/lib/nagios/.ssh/authorized_keys':
-    ensure     => file,
-    require    => File['/var/lib/nagios/.ssh'],
-    mode       => 600,
-    owner      => "nagios",
-    group      => "nagios",
-    source     => 'puppet:///modules/zulip_ops/nagios_authorized_keys',
   }
   file { '/home/nagios':
     ensure => absent,
