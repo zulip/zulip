@@ -152,7 +152,13 @@ exports.set_color = function (stream_id, color) {
 exports.rerender_subscribers_count = function (sub) {
     var id = parseInt(sub.stream_id, 10);
     stream_data.update_subscribers_count(sub);
-    $(".stream-row[data-stream-id='" + id + "'] .subscriber-count-text").text(sub.subscriber_count);
+    if (sub.can_add_subscribers) {
+        $(".stream-row[data-stream-id='" + id + "'] .subscriber-count-text").text(sub.subscriber_count);
+    } else {
+        var sub_count = templates.render("subscription_count", sub);
+        var stream_row = row_for_stream_id(sub.stream_id);
+        stream_row.find('.subscriber-count').expectOne().html(sub_count);
+    }
 };
 
 function add_email_hint(row, email_address_hint_content) {

@@ -11,12 +11,7 @@
         <div class="top-bar">
             <div class="stream-name">{{name}}</div>
             <div class="subscriber-count">
-                {{#if can_add_subscribers}}
-                <i class="icon-vector-user"></i>
-                <span class="subscriber-count-text">{{subscriber_count}}</span>
-                {{else}}
-                <i class="subscriber-count-lock icon-vector-lock"></i>
-                {{/if}}
+                {{partial "subscription_count"}}
             </div>
         </div>
         <div class="description" data-no-description="{{t 'No description.'}}">{{{rendered_description}}}</div>
