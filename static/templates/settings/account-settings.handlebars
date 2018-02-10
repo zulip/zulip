@@ -73,17 +73,17 @@
             </form>
 
             <form class="password-change-form grid">
+                {{#if page_params.realm_email_auth_enabled}}
                 <div class="user-name-section">
                     <label class="inline-block title">{{t "Password" }}</label>
                     <a id="change_password" {{#if page_params.realm_email_auth_enabled}}href="#change_password"{{/if}}>
-                        {{#if page_params.realm_email_auth_enabled}}
                         <div class="input-group inline-block" id="pw_change_link">
                             <button type="button" class="change_password_button small button rounded inline-block" data-dismiss="modal">{{t "********" }}<i class="fa fa-pencil"></i>
                             </button>
                         </div>
-                        {{/if}}
                     </a>
                 </div>
+                {{/if}}
 
                 <div id="change_password_modal" class="modal modal-bg hide" tabindex="-1" role="dialog"
                     aria-labelledby="change_password_modal_label" aria-hidden="true">
