@@ -213,6 +213,11 @@ def main(options):
     # hash the apt dependencies
     sha_sum = hashlib.sha1()
 
+    # if, using docker compose, don't need memcached etc
+    if options.is_compose:
+        COMPOSE_IGNORE_PACKAGES = ['memcached', 'rabbitmq-server', 'rabbitmq-redis-server', ]
+        APT_DEPENDENCIES[codename] = [package for package in UBUNTU_COMMON_APT_DEPENDENCIES if package not in COMPOSE_IGNORE_PACKAGES]
+
     for apt_depedency in APT_DEPENDENCIES[codename]:
         sha_sum.update(apt_depedency.encode('utf8'))
     # hash the content of setup-apt-repo
@@ -270,7 +275,10 @@ def main(options):
     setup_shell_profile('~/.bash_profile')
     setup_shell_profile('~/.zprofile')
 
-    run(["sudo", "cp", REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH])
+    if options.is_compose:
+        pass
+    else:
+        run(["sudo", "cp", REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH])
 
     # create log directory `zulip/var/log`
     run(["mkdir", "-p", LOG_DIR_PATH])
@@ -324,6 +332,14 @@ def main(options):
         django.setup()
 
         from zerver.lib.test_fixtures import is_template_database_current
+
+        # change settings for docker compose
+        from django.conf import settings
+        if options.is_compose:
+            settings.RABBITMQ_HOST = 'zulip-rabbitmq'
+            settings.RABBITMQ_USERNAME = 'zulip',
+            settings.REDIS_HOST = 'zulip-redis'
+            settings.REMOTE_POSTGRES_HOST = 'zulip-postgres'
 
         try:
             from zerver.lib.queue import SimpleQueueClient
@@ -406,6 +422,11 @@ if __name__ == "__main__":
                         dest='is_docker',
                         default=False,
                         help="Provision for Docker.")
+
+    parser.add_argument('--compose', action='store_true',
+                        dest='is_compose',
+                        default=False,
+                        help="Provision for Docker Compose.")
 
     options = parser.parse_args()
     sys.exit(main(options))

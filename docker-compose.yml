@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  zulip:
+    build:
+      context: .
+      dockerfile: Dockerfile-dev
+    ports:
+      - "9991:9991"
+    volumes:
+      - ".:/srv/zulip"
+    command: /srv/zulip/tools/start-compose
+    depends_on:
+      - zulip-postgres
+      - zulip-memcached
+      - zulip-rabbitmq
+      - zulip-redis
+
+  zulip-postgres:
+    image: postgres:9.5
+
+  zulip-memcached:
+   image: memcached
+
+  zulip-rabbitmq:
+    image: rabbitmq:3.5.5
+
+  zulip-redis:
+    image: redis
