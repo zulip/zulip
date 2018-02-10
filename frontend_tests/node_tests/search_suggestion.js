@@ -14,6 +14,11 @@ var bob = {
     user_id: 42,
 };
 
+var me = {
+    email: 'me@example.com',
+    full_name: 'My Name',
+    user_id: 999,
+};
 
 function init() {
     people.init();
@@ -743,6 +748,7 @@ init();
 
     var suggestions = search.get_suggestions(query);
 
+
     var expected = [
         "te",
         "pm-with:bob@zulip.com", // bob térry
@@ -904,4 +910,119 @@ init();
         "stream:office",
     ];
     assert.deepEqual(suggestions.strings, expected);
+}());
+
+
+(function test_mentioned_message_suggestions() {
+    var query = '@te';
+
+    // Using the Complete Jquery module here as The zjquery does
+    // not have getAttribute function as of now.
+    var jsdom = require("jsdom");
+    var window = jsdom.jsdom().defaultView;
+    global.$ = require('jquery')(window);
+    set_global('document', null);
+
+    // requirements to create a current_msg_list which is used to
+    // get mentioned message suggestions.
+    zrequire('util');
+    zrequire('muting');
+    zrequire('MessageListView', 'js/message_list_view');
+    var MessageList = zrequire('message_list').MessageList;
+    zrequire('message_store');
+
+    set_global('i18n', global.stub_i18n);
+
+    // initializing page_params that are further called by message_store
+    // inside the mentioned_message function of search_suggestions.
+    set_global('page_params', {
+        realm_allow_message_editing: true,
+        is_admin: true,
+        user_id : 999,
+    });
+
+    zrequire('XDate','xdate');
+    zrequire('timerender');
+    zrequire('narrow');
+    zrequire('hash_util');
+
+    global.stream_data.subscribed_streams = function () {
+        return [];
+    };
+
+    global.narrow_state.stream = function () {
+        return;
+    };
+
+    var ted = {
+        email: 'ted@zulip.com',
+        user_id: 201,
+        full_name: 'Ted Smith',
+    };
+
+    var bob = {
+        email: 'bob@zulip.com',
+        user_id: 202,
+        full_name: 'Bob Térry',
+    };
+
+    var alice = {
+        email: 'alice@zulip.com',
+        user_id: 203,
+        full_name: 'Alice Ignore',
+    };
+    people.add(ted);
+    people.add(bob);
+    people.add(alice);
+
+
+    topic_data.reset();
+
+    var table;
+    var filter = {};
+
+    var list = new MessageList(table, filter);
+
+    var messages = [
+        {
+        id: 701,
+        sender_id: me.user_id,
+        type: 'private',
+        timestamp: 1555091573,
+        reply_to: 'ted@zulip.com',
+        content:"<p><span class=\"user-mention\" data-user-email=\"ted@zulip.com\" data-user-id=\"201\">@Ted Smith</span>  is mentioned.</p>",
+        },
+        {
+        id: 702,
+        sender_id: me.user_id,
+        type: 'private',
+        timestamp: 1555091573,
+        reply_to: 'ted@zulip.com',
+        content:"<p><span class=\"user-mention\" data-user-email=\"bob@example.com\" data-user-id=\"202\">@Bob Terry</span>  is mentioned.</p>",
+        },
+    ];
+
+    list.append(messages,true);
+
+    set_global('current_msg_list', list);
+
+    var suggestions = search.get_suggestions(query);
+
+    console.log(suggestions);
+
+    var expected = [
+        "@te",
+        "pm-with:ted@zulip.com near:701:",
+        "pm-with:ted@zulip.com near:702:",
+    ];
+
+    assert.deepEqual(suggestions.strings, expected);
+    function describe(q) {
+        return suggestions.lookup_table[q].description;
+    }
+    assert.equal(describe('pm-with:ted@zulip.com near:701:'),
+        '[Friday, April 12, 2019]  " @Ted Smith  is mentioned....  "   <strong> Mentions:</strong> <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;');
+    assert.equal(describe('pm-with:ted@zulip.com near:702:'),
+        '[Friday, April 12, 2019]  " @Bob Terry  is mentioned....  "   <strong> Mentions:</strong> Bob Térry &lt;bob@zulip.com&gt;');
+
 }());
