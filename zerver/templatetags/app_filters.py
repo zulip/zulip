@@ -65,11 +65,11 @@ docs_without_macros = [
     "webhook-walkthrough.md",
 ]
 
-@register.filter(name='render_markdown_path', is_safe=True)
 # Much of the time, render_markdown_path is called with hashable
 # arguments, so this decorator is effective even though it only caches
 # the results when called if none of the arguments are unhashable.
 @ignore_unhashable_lru_cache(512)
+@register.filter(name='render_markdown_path', is_safe=True)
 def render_markdown_path(markdown_file_path, context=None):
     # type: (str, Optional[Dict[Any, Any]]) -> str
     """Given a path to a markdown file, return the rendered html.
