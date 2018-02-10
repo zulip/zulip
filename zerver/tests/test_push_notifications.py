@@ -565,6 +565,12 @@ class TestAPNs(PushNotificationTest):
         apn.send_apple_push_notification(
             self.user_profile.id, devices, payload_data)
 
+    def test_get_apns_client(self) -> None:
+        with self.settings(APNS_CERT_FILE='/foo.pem'), \
+                mock.patch('zerver.lib.push_notifications.APNsClient') as mock_client:
+            client = get_apns_client()
+            self.assertEqual(mock_client.return_value, client)
+
     def test_not_configured(self) -> None:
         with mock.patch('zerver.lib.push_notifications.get_apns_client') as mock_get, \
                 mock.patch('zerver.lib.push_notifications.logging') as mock_logging:
