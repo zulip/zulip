@@ -81,6 +81,10 @@ class zulip_ops::base {
     mode       => 644,
   }
 
+  service { 'ssh':
+    ensure     => running,
+  }
+
   if $zulip::base::release_name == "xenial" {
     # Our custom sshd_config uses options that don't exist on trusty.
     file { '/etc/ssh/sshd_config':
@@ -90,12 +94,8 @@ class zulip_ops::base {
       owner      => 'root',
       group      => 'root',
       mode       => 644,
+      notify     => Service['ssh'],
     }
-  }
-
-  service { 'ssh':
-    ensure     => running,
-    subscribe  => File['/etc/ssh/sshd_config'],
   }
 
   file { '/root/.emacs':
