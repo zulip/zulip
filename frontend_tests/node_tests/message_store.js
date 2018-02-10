@@ -25,6 +25,7 @@ set_global('recent_senders', {
 set_global('page_params', {
     realm_allow_message_editing: true,
     is_admin: true,
+    user_id : 101,
 });
 
 set_global('blueslip', {});
@@ -254,5 +255,29 @@ global.people.initialize_current_user(me.user_id);
         assert.equal(msg_id.old, 401);
         assert.equal(msg_id.new, 402);
     });
+
+}());
+
+(function test_is_user_mentioned() {
+    var message = {
+        sender_id: me.user_id,
+        content:"<p><span class=\"user-mention\" data-user-email=\"bob@example.com\" data-user-id=\"103\">@Bob</span>  is mentioned.</p>",
+    };
+    var check_case_one = message_store.is_user_mentioned(message,bob);
+    assert.equal(check_case_one,true);
+
+    var message_two = {
+        sender_id:1000,
+    };
+
+    var check_case_two = message_store.is_user_mentioned(message_two,bob);
+    assert.equal(check_case_two,false);
+
+    var message_three = {
+        sender_id:101,
+        content:"abcdefg",
+    };
+    var check_case_three = message_store.is_user_mentioned(message_three,alice);
+    assert.equal(check_case_three,false);
 
 }());
