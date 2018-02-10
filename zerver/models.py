@@ -1447,31 +1447,6 @@ def active_user_ids(realm_id: int) -> List[int]:
 def get_bot_dicts_in_realm(realm: Realm) -> List[Dict[str, Any]]:
     return UserProfile.objects.filter(realm=realm, is_bot=True).values(*bot_dict_fields)
 
-def get_owned_bot_dicts(user_profile: UserProfile,
-                        include_all_realm_bots_if_admin: bool=True) -> List[Dict[str, Any]]:
-    if user_profile.is_realm_admin and include_all_realm_bots_if_admin:
-        result = get_bot_dicts_in_realm(user_profile.realm)
-    else:
-        result = UserProfile.objects.filter(realm=user_profile.realm, is_bot=True,
-                                            bot_owner=user_profile).values(*bot_dict_fields)
-    # TODO: Remove this import cycle
-    from zerver.lib.avatar import avatar_url_from_dict
-
-    return [{'email': botdict['email'],
-             'user_id': botdict['id'],
-             'full_name': botdict['full_name'],
-             'bot_type': botdict['bot_type'],
-             'is_active': botdict['is_active'],
-             'api_key': botdict['api_key'],
-             'default_sending_stream': botdict['default_sending_stream__name'],
-             'default_events_register_stream': botdict['default_events_register_stream__name'],
-             'default_all_public_streams': botdict['default_all_public_streams'],
-             'owner': botdict['bot_owner__email'],
-             'avatar_url': avatar_url_from_dict(botdict),
-             'services': get_service_dicts_for_bots(botdict['id']),
-             }
-            for botdict in result]
-
 def is_cross_realm_bot_email(email: Text) -> bool:
     return email.lower() in settings.CROSS_REALM_BOT_EMAILS
 
@@ -1927,26 +1902,6 @@ def get_realm_outgoing_webhook_services_name(realm: Realm) -> List[Any]:
 
 def get_bot_services(user_profile_id: str) -> List[Service]:
     return list(Service.objects.filter(user_profile__id=user_profile_id))
-
-def get_service_dicts_for_bots(user_profile_id: str) -> List[Dict[str, Any]]:
-    user_profile = get_user_profile_by_id(user_profile_id)
-    services = get_bot_services(user_profile_id)
-    service_dicts = []  # type: List[Dict[Text, Any]]
-    if user_profile.bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
-        service_dicts = [{'base_url': service.base_url,
-                          'interface': service.interface,
-                          }
-                         for service in services]
-    elif user_profile.bot_type == UserProfile.EMBEDDED_BOT:
-        from zerver.lib.bot_config import get_bot_config, ConfigError
-        try:
-            service_dicts = [{'config_data': get_bot_config(user_profile),
-                              'service_name': services[0].name
-                              }]
-        # A ConfigError just means that there are no config entries for user_profile.
-        except ConfigError:
-            pass
-    return service_dicts
 
 def get_service_profile(user_profile_id: str, service_name: str) -> Service:
     return Service.objects.get(user_profile__id=user_profile_id, name=service_name)

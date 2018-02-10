@@ -21,7 +21,12 @@ from zerver.lib.addressee import (
     Addressee,
     user_profiles_from_unvalidated_emails,
 )
+from zerver.lib.bot_config import (
+    ConfigError,
+    get_bot_config,
+)
 from zerver.lib.cache import (
+    bot_dict_fields,
     delete_user_profile_caches,
     to_dict_cache_key_id,
 )
@@ -64,18 +69,17 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     email_allowed_for_realm, email_to_username, display_recipient_cache_key, \
     get_user, get_stream_cache_key, \
     UserActivityInterval, active_user_ids, get_active_streams, \
-    realm_filters_for_realm, RealmFilter, \
-    get_owned_bot_dicts, stream_name_in_use, \
+    realm_filters_for_realm, RealmFilter, stream_name_in_use, \
     get_old_unclaimed_attachments, is_cross_realm_bot_email, \
     Reaction, EmailChangeStatus, CustomProfileField, \
     custom_profile_fields_for_realm, get_huddle_user_ids, \
     CustomProfileFieldValue, validate_attachment_request, get_system_bot, \
     get_display_recipient_by_id, query_for_ids, get_huddle_recipient, \
     UserGroup, UserGroupMembership, get_default_stream_groups, \
-    get_service_dicts_for_bots, get_bot_services
+    get_bot_services, get_bot_dicts_in_realm
 
 from zerver.lib.alert_words import alert_words_in_realm
-from zerver.lib.avatar import avatar_url
+from zerver.lib.avatar import avatar_url, avatar_url_from_dict
 from zerver.lib.stream_recipient import StreamRecipientMap
 
 from django.db import transaction, IntegrityError, connection
@@ -4424,6 +4428,47 @@ def do_update_outgoing_webhook_service(bot_profile, service_interface, service_p
                              ),
                     ),
                bot_owner_user_ids(bot_profile))
+
+def get_service_dicts_for_bots(user_profile_id: str) -> List[Dict[str, Any]]:
+    user_profile = get_user_profile_by_id(user_profile_id)
+    services = get_bot_services(user_profile_id)
+    service_dicts = []  # type: List[Dict[Text, Any]]
+    if user_profile.bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
+        service_dicts = [{'base_url': service.base_url,
+                          'interface': service.interface,
+                          }
+                         for service in services]
+    elif user_profile.bot_type == UserProfile.EMBEDDED_BOT:
+        try:
+            service_dicts = [{'config_data': get_bot_config(user_profile),
+                              'service_name': services[0].name
+                              }]
+        # A ConfigError just means that there are no config entries for user_profile.
+        except ConfigError:
+            pass
+    return service_dicts
+
+def get_owned_bot_dicts(user_profile: UserProfile,
+                        include_all_realm_bots_if_admin: bool=True) -> List[Dict[str, Any]]:
+    if user_profile.is_realm_admin and include_all_realm_bots_if_admin:
+        result = get_bot_dicts_in_realm(user_profile.realm)
+    else:
+        result = UserProfile.objects.filter(realm=user_profile.realm, is_bot=True,
+                                            bot_owner=user_profile).values(*bot_dict_fields)
+    return [{'email': botdict['email'],
+             'user_id': botdict['id'],
+             'full_name': botdict['full_name'],
+             'bot_type': botdict['bot_type'],
+             'is_active': botdict['is_active'],
+             'api_key': botdict['api_key'],
+             'default_sending_stream': botdict['default_sending_stream__name'],
+             'default_events_register_stream': botdict['default_events_register_stream__name'],
+             'default_all_public_streams': botdict['default_all_public_streams'],
+             'owner': botdict['bot_owner__email'],
+             'avatar_url': avatar_url_from_dict(botdict),
+             'services': get_service_dicts_for_bots(botdict['id']),
+             }
+            for botdict in result]
 
 def do_send_user_group_members_update_event(event_name: Text,
                                             user_group: UserGroup,
