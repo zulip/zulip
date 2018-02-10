@@ -101,6 +101,14 @@ def common_get_active_user(email: str, realm: Realm,
         return None
     return user_profile
 
+def get_number_online_users():
+    return_data = {}
+    realm = get_realm(get_subdomain(request))
+    if not realm.invite_required and not realm.restricted_to_domain:
+        return_data['number_users'] = UserProfile.objects.filter(realm_id=realm_id, 
+                                                            deactivated=False).count()
+    return HttpResponse(json.dumps(return_data), content_type="application/json")
+
 class ZulipAuthMixin:
     def get_user(self, user_profile_id: int) -> Optional[UserProfile]:
         """ Get a UserProfile object from the user_profile_id. """

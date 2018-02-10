@@ -15,6 +15,7 @@ largest and fastest growing open source group chat project.
 [![docs](https://readthedocs.org/projects/zulip/badge/?version=latest)](https://zulip.readthedocs.io/en/latest/)
 [![Zulip chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://chat.zulip.org)
 [![Twitter](https://img.shields.io/badge/twitter-@zulip-blue.svg?style=flat)](https://twitter.com/zulip)
+[![community](https://img.shields.io/badge/dynamic/json.svg?label=Community&colorB=%23FFA500&prefix=&suffix=online%20users&query=$.number_users&uri=https%3A%2F%2Fchat.zulip.org%2Fbadge%2Fusers)](https://chat.zulip.org/#)
 
 [mypy-coverage]: https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/
 
