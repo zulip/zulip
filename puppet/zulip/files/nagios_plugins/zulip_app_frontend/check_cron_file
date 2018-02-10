@@ -9,8 +9,7 @@ import time
 if False:
     from typing import Tuple
 
-def nagios_from_file(results_file, max_time_diff=60 * 2):
-    # type: (str) -> Tuple[int, str]
+def nagios_from_file(results_file: str, max_time_diff: int=60 * 2) -> 'Tuple[int, str]':
     """Returns a nagios-appropriate string and return code obtained by
     parsing the desired file on disk. The file on disk should be of format
 
