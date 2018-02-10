@@ -1,6 +1,7 @@
 
 from functools import wraps
 
+from django.utils.lru_cache import lru_cache
 from django.core.cache import cache as djcache
 from django.core.cache import caches
 from django.conf import settings
@@ -454,3 +455,47 @@ def to_dict_cache_key(message):
 def flush_message(sender: Any, **kwargs: Any) -> None:
     message = kwargs['instance']
     cache_delete(to_dict_cache_key_id(message.id))
+
+DECORATOR = Callable[[Callable[..., Any]], Callable[..., Any]]
+
+def ignore_unhashable_lru_cache(maxsize: int=128, typed: bool=False) -> DECORATOR:
+    """
+    This is a wrapper over lru_cache function. It adds following features on
+    top of lru_cache:
+
+        * It will not cache result of functions with unhashable arguments.
+        * It will clear cache whenever zerver.lib.cache.KEY_PREFIX changes.
+    """
+    internal_decorator = lru_cache(maxsize=maxsize, typed=typed)
+
+    def decorator(user_function: Callable[..., Any]) -> Callable[..., Any]:
+        cache_enabled_user_function = internal_decorator(user_function)
+
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
+            if not hasattr(cache_enabled_user_function, 'key_prefix'):
+                cache_enabled_user_function.key_prefix = KEY_PREFIX
+
+            if cache_enabled_user_function.key_prefix != KEY_PREFIX:
+                # Clear cache when cache.KEY_PREFIX changes. This is used in
+                # tests.
+                cache_enabled_user_function.cache_clear()
+                cache_enabled_user_function.key_prefix = KEY_PREFIX
+
+            try:
+                return cache_enabled_user_function(*args, **kwargs)
+            except TypeError:
+                # args or kwargs contains an element which is unhashable. In
+                # this case we don't cache the result.
+                pass
+
+            # Deliberately calling this function from outside of exception
+            # handler to get a more descriptive traceback. Otherise traceback
+            # can include the exception from cached_enabled_user_function as
+            # well.
+            return user_function(*args, **kwargs)
+
+        setattr(wrapper, 'cache_info', cache_enabled_user_function.cache_info)
+        setattr(wrapper, 'cache_clear', cache_enabled_user_function.cache_clear)
+        return wrapper
+
+    return decorator

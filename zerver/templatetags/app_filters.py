@@ -9,12 +9,12 @@ import markdown.extensions.toc
 import markdown_include.include
 from django.conf import settings
 from django.template import Library, engines, loader
-from django.utils.lru_cache import lru_cache
 from django.utils.safestring import mark_safe
 
 import zerver.lib.bugdown.fenced_code
 import zerver.lib.bugdown.api_arguments_table_generator
 import zerver.lib.bugdown.api_code_examples
+from zerver.lib.cache import ignore_unhashable_lru_cache
 
 register = Library()
 
@@ -65,7 +65,11 @@ docs_without_macros = [
     "webhook-walkthrough.md",
 ]
 
+# In majority of the cases, ignore_unhashable_lru_cache has hashable arguments,
+# so this decorator is effective even if it doesn't apply caching when the
+# function has unhashable arguments.
 @register.filter(name='render_markdown_path', is_safe=True)
+@ignore_unhashable_lru_cache(512)
 def render_markdown_path(markdown_file_path, context=None):
     # type: (str, Optional[Dict[Any, Any]]) -> str
     """Given a path to a markdown file, return the rendered html.
