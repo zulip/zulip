@@ -10,6 +10,9 @@ To view the image in full size, click on the thumbnail preview of the image.
 Clicking it will open a lightbox modal with varying options depending on the
 media type.
 
+!!! tip ""
+    You can also view an image by pressing `v` on a selected message.
+
 ![full-size](/static/images/help/full-size.png)
 
 Images can be opened in new tabs by clicking the **Open** button at the top
