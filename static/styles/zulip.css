@@ -2248,6 +2248,10 @@ button.topic_edit_cancel {
     display: none;
 }
 
+#invite_status_message {
+    margin-top: 6px;
+}
+
 #invite-user #invite-user-label {
     font-size: 1em;
     font-weight: 700;

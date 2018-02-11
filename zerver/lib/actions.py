@@ -3945,9 +3945,12 @@ def validate_email_for_realm(target_realm: Realm, email: Text) -> None:
         # Mirror dummy users to be activated must be inactive
         if existing_user_profile.is_active:
             raise AssertionError("Mirror dummy user is already active!")
+    elif not existing_user_profile.is_active:
+        raise ValidationError('%s already has an account that has been deactivated' % (email,),
+                              code='Account has been deactivated.')
     else:
         # Other users should not already exist at all.
-        raise ValidationError('%s already has an account' % (email,))
+        raise ValidationError('%s already has an account' % (email,), code='Already has an account.')
 
 def validate_email(user_profile: UserProfile, email: Text) -> Tuple[Optional[str], Optional[str]]:
     try:
@@ -3960,19 +3963,20 @@ def validate_email(user_profile: UserProfile, email: Text) -> Tuple[Optional[str
 
     try:
         validate_email_for_realm(user_profile.realm, email)
-    except ValidationError:
-        return None, _("Already has an account.")
-
+    except ValidationError as e:
+        return None, _(e.code)
     return None, None
 
 class InvitationError(JsonableError):
     code = ErrorCode.INVITATION_FAILED
-    data_fields = ['errors', 'sent_invitations']
+    data_fields = ['errors', 'sent_invitations', 'activation_msg_type']
 
-    def __init__(self, msg: Text, errors: List[Tuple[Text, str]], sent_invitations: bool) -> None:
+    def __init__(self, msg: Text, errors: List[Tuple[Text, str]],
+                 sent_invitations: bool, activation_msg_type: Text = '') -> None:
         self._msg = msg  # type: Text
         self.errors = errors  # type: List[Tuple[Text, str]]
         self.sent_invitations = sent_invitations  # type: bool
+        self.activation_msg_type = activation_msg_type  # type: Text
 
 def estimate_recent_invites(realm: Realm, *, days: int) -> int:
     '''An upper bound on the number of invites sent in the last `days` days'''
@@ -4006,6 +4010,7 @@ def do_invite_users(user_profile: UserProfile,
     validated_emails = []  # type: List[Text]
     errors = []  # type: List[Tuple[Text, str]]
     skipped = []  # type: List[Tuple[Text, str]]
+    deactivated = False  # type: bool
     for email in invitee_emails:
         if email == '':
             continue
@@ -4016,16 +4021,25 @@ def do_invite_users(user_profile: UserProfile,
             errors.append((email, email_error))
         elif email_skipped:
             skipped.append((email, email_skipped))
+            if 'deactivated' in email_skipped:
+                deactivated = True
+
+    activation_msg_type = ''
+    if deactivated:
+        if user_profile.is_realm_admin:
+            activation_msg_type = 'admin'
+        else:
+            activation_msg_type = 'non-admin'
 
     if errors:
         raise InvitationError(
             _("Some emails did not validate, so we didn't send any invitations."),
-            errors + skipped, sent_invitations=False)
+            errors + skipped, sent_invitations=False, activation_msg_type=activation_msg_type)
 
     if skipped and len(skipped) == len(invitee_emails):
         # All e-mails were skipped, so we didn't actually invite anyone.
         raise InvitationError(_("We weren't able to invite anyone."),
-                              skipped, sent_invitations=False)
+                              skipped, sent_invitations=False, activation_msg_type=activation_msg_type)
 
     # We do this here rather than in the invite queue processor since this
     # is used for rate limiting invitations, rather than keeping track of
@@ -4051,7 +4065,7 @@ def do_invite_users(user_profile: UserProfile,
         raise InvitationError(_("Some of those addresses are already using Zulip, "
                                 "so we didn't send them an invitation. We did send "
                                 "invitations to everyone else!"),
-                              skipped, sent_invitations=True)
+                              skipped, sent_invitations=True, activation_msg_type=activation_msg_type)
 
 def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
     days_to_activate = getattr(settings, 'ACCOUNT_ACTIVATION_DAYS', 7)
