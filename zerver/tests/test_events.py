@@ -631,6 +631,7 @@ class EventsRegisterTest(ZulipTestCase):
                     ('stream_id', check_int),
                     ('subject', check_string),
                     ('subject_links', check_list(None)),
+                    ('submessages', check_list(None)),
                     ('timestamp', check_int),
                     ('type', check_string),
                 ])),

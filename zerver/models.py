@@ -22,7 +22,7 @@ from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     display_recipient_cache_key, cache_delete, active_user_ids_cache_key, \
     get_stream_cache_key, realm_user_dicts_cache_key, \
     bot_dicts_in_realm_cache_key, realm_user_dict_fields, \
-    bot_dict_fields, flush_message, bot_profile_cache_key
+    bot_dict_fields, flush_message, flush_submessage, bot_profile_cache_key
 from zerver.lib.utils import make_safe_digest, generate_random_token
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
@@ -1230,6 +1230,8 @@ class SubMessage(models.Model):
         query = SubMessage.objects.filter(message_id__in=needed_ids).values(*fields)
         query = query.order_by('message_id', 'id')
         return list(query)
+
+post_save.connect(flush_submessage, sender=SubMessage)
 
 class Reaction(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile

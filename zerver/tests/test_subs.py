@@ -1747,7 +1747,7 @@ class SubscriptionAPITest(ZulipTestCase):
                     streams_to_sub,
                     dict(principals=ujson.dumps([user1.email, user2.email])),
                 )
-        self.assert_length(queries, 41)
+        self.assert_length(queries, 42)
 
         self.assert_length(events, 7)
         for ev in [x for x in events if x['event']['type'] not in ('message', 'stream')]:

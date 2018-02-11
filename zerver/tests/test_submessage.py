@@ -1,6 +1,11 @@
 from zerver.lib.test_classes import ZulipTestCase
 
+from zerver.lib.message import (
+    MessageDict,
+)
+
 from zerver.models import (
+    Message,
     SubMessage,
 )
 
@@ -57,3 +62,9 @@ class TestBasics(ZulipTestCase):
         ]
 
         self.assertEqual(get_raw_rows(), expected_data)
+
+        message = Message.objects.get(id=message_id)
+        message_json = MessageDict.wide_dict(message)
+        rows = message_json['submessages']
+        rows.sort(key=lambda r: r['message_id'])
+        self.assertEqual(rows, expected_data)
