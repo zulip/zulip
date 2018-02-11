@@ -101,8 +101,16 @@ exports.initialize = function () {
     // more work to re-order everything and make them private.
     $('#search_exit').on('click', exports.clear_search);
 
-    var query = $('#search_query');
-    query.on('focus', exports.focus_search)
+        var window_focus;
+
+        $(window).focus(function () {
+            window_focus = true;
+        }).blur(function () {
+            window_focus = false;
+        });
+
+        var query = $('#search_query');
+        query.on('focus', exports.focus_search)
          .on('blur' , function () {
 
         // The search query box is a visual cue as to
@@ -118,11 +126,16 @@ exports.initialize = function () {
         // The workaround is to check 100ms later -- long
         // enough for the search to have gone through, but
         // short enough that the user won't notice (though
-        // really it would be OK if they did).
+        // really  would be OK if they did).
+        //
+        // Do change the value of compose box IF and ONLY IF user
+        // has active window.
 
         setTimeout(function () {
             var search_string = narrow_state.search_string();
-            query.val(search_string);
+            if (window_focus) {
+                query.val(search_string);
+            }
             exports.update_button_visibility();
         }, 100);
     });
