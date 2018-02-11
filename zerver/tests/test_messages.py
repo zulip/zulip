@@ -623,7 +623,7 @@ class StreamMessagesTest(ZulipTestCase):
                 body=content,
             )
 
-        self.assert_length(queries, 13)
+        self.assert_length(queries, 14)
 
     def test_stream_message_dict(self) -> None:
         user_profile = self.example_user('iago')
@@ -867,7 +867,7 @@ class MessageDictTest(ZulipTestCase):
         # slower.
         error_msg = "Number of ids: {}. Time delay: {}".format(num_ids, delay)
         self.assertTrue(delay < 0.0015 * num_ids, error_msg)
-        self.assert_length(queries, 6)
+        self.assert_length(queries, 7)
         self.assertEqual(len(rows), num_ids)
 
     def test_applying_markdown(self) -> None:
