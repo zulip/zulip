@@ -1213,6 +1213,24 @@ def get_context_for_message(message):
 
 post_save.connect(flush_message, sender=Message)
 
+class SubMessage(models.Model):
+    # We can send little text messages that are associated with a regular
+    # Zulip message.  These can be used for experimental widgets like embedded
+    # games, surveys, mini threads, etc.  These are designed to pretty
+    # generic in purpose.
+
+    message = models.ForeignKey(Message, on_delete=CASCADE)  # type: Message
+    sender = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
+    msg_type = models.TextField()
+    content = models.TextField()
+
+    @staticmethod
+    def get_raw_db_rows(needed_ids: List[int]) -> List[Dict[str, Any]]:
+        fields = ['id', 'message_id', 'sender_id', 'msg_type', 'content']
+        query = SubMessage.objects.filter(message_id__in=needed_ids).values(*fields)
+        query = query.order_by('message_id', 'id')
+        return list(query)
+
 class Reaction(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
     message = models.ForeignKey(Message, on_delete=CASCADE)  # type: Message
