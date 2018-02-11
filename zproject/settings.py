@@ -819,7 +819,10 @@ PIPELINE = {
         # If you add a style here, please update stylesheets()
         # in frontend_tests/zjsunit/output.js as needed.
         'activity': {
-            'source_filenames': ('styles/activity.css',),
+            'source_filenames': (
+                'styles/activity.css',
+                'third/thirdparty-fonts.css',
+            ),
             'output_filename': 'min/activity.css'
         },
         'stats': {
