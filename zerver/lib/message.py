@@ -37,6 +37,7 @@ from zerver.models import (
     Realm,
     Recipient,
     Stream,
+    SubMessage,
     Subscription,
     UserProfile,
     UserMessage,
@@ -120,6 +121,20 @@ def sew_messages_and_reactions(messages: List[Dict[str, Any]],
 
     return list(converted_messages.values())
 
+
+def sew_messages_and_submessages(messages: List[Dict[str, Any]],
+                                 submessages: List[Dict[str, Any]]) -> None:
+    # This is super similar to sew_messages_and_reactions.
+    for message in messages:
+        message['submessages'] = []
+
+    message_dict = {message['id']: message for message in messages}
+
+    for submessage in submessages:
+        message_id = submessage['message_id']
+        if message_id in message_dict:
+            message = message_dict[message_id]
+            message['submessages'].append(submessage)
 
 def extract_message_dict(message_bytes: bytes) -> Dict[str, Any]:
     return ujson.loads(zlib.decompress(message_bytes).decode("utf-8"))
@@ -205,7 +220,8 @@ class MessageDict:
             recipient_id = message.recipient.id,
             recipient_type = message.recipient.type,
             recipient_type_id = message.recipient.type_id,
-            reactions = Reaction.get_raw_db_rows([message.id])
+            reactions = Reaction.get_raw_db_rows([message.id]),
+            submessages = SubMessage.get_raw_db_rows([message.id]),
         )
 
     @staticmethod
@@ -229,11 +245,10 @@ class MessageDict:
             'sender__realm_id',
         ]
         messages = Message.objects.filter(id__in=needed_ids).values(*fields)
-        """Adding one-many or Many-Many relationship in values results in N X
-        results.
 
-        Link: https://docs.djangoproject.com/en/1.8/ref/models/querysets/#values
-        """
+        submessages = SubMessage.get_raw_db_rows(needed_ids)
+        sew_messages_and_submessages(messages, submessages)
+
         reactions = Reaction.get_raw_db_rows(needed_ids)
         return sew_messages_and_reactions(messages, reactions)
 
@@ -259,7 +274,8 @@ class MessageDict:
             recipient_id = row['recipient_id'],
             recipient_type = row['recipient__type'],
             recipient_type_id = row['recipient__type_id'],
-            reactions=row['reactions']
+            reactions=row['reactions'],
+            submessages=row['submessages'],
         )
 
     @staticmethod
@@ -279,9 +295,10 @@ class MessageDict:
             recipient_id,
             recipient_type,
             recipient_type_id,
-            reactions
+            reactions,
+            submessages,
     ):
-        # type: (Optional[Message], int, Optional[datetime.datetime], Optional[Text], Text, Text, datetime.datetime, Optional[Text], Optional[int], int, int, Text, int, int, int, List[Dict[str, Any]]) -> Dict[str, Any]
+        # type: (Optional[Message], int, Optional[datetime.datetime], Optional[Text], Text, Text, datetime.datetime, Optional[Text], Optional[int], int, int, Text, int, int, int, List[Dict[str, Any]], List[Dict[str, Any]]) -> Dict[str, Any]
 
         obj = dict(
             id                = message_id,
@@ -344,6 +361,7 @@ class MessageDict:
 
         obj['reactions'] = [ReactionDict.build_dict_from_raw_db_row(reaction)
                             for reaction in reactions]
+        obj['submessages'] = submessages
         return obj
 
     @staticmethod
