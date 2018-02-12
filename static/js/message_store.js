@@ -3,8 +3,6 @@ var message_store = (function () {
 var exports = {};
 var stored_messages = {};
 
-exports.recent_private_messages = [];
-
 exports.get = function get(message_id) {
     return stored_messages[message_id];
 };
@@ -55,40 +53,8 @@ exports.process_message_for_recent_private_messages = function (message) {
 
     var user_ids_string = user_ids.join(',');
 
-    exports.insert_recent_private_message(user_ids_string, message.timestamp);
+    pm_conversations.recent.insert(user_ids_string, message.timestamp);
 };
-
-exports.insert_recent_private_message = (function () {
-    var recent_timestamps = new Dict({fold_case: true}); // key is user_ids_string
-
-    return function (user_ids_string, timestamp) {
-        var conversation = recent_timestamps.get(user_ids_string);
-
-        if (conversation === undefined) {
-            // This is a new user, so create a new object.
-            conversation = {
-                user_ids_string: user_ids_string,
-                timestamp: timestamp,
-            };
-            recent_timestamps.set(user_ids_string, conversation);
-
-            // Optimistically insert the new message at the front, since that
-            // is usually where it belongs, but we'll re-sort.
-            exports.recent_private_messages.unshift(conversation);
-        } else {
-            if (conversation.timestamp >= timestamp) {
-                return; // don't backdate our conversation
-            }
-
-            // update our timestamp
-            conversation.timestamp = timestamp;
-        }
-
-        exports.recent_private_messages.sort(function (a, b) {
-            return b.timestamp - a.timestamp;
-        });
-    };
-}());
 
 exports.set_message_booleans = function (message) {
     var flags = message.flags || [];

@@ -1,4 +1,7 @@
 set_global('blueslip', {});
+set_global('pm_conversations', {
+    recent: {},
+});
 
 zrequire('muting');
 zrequire('unread');
@@ -303,4 +306,30 @@ function is_odd(i) { return i % 2 === 1; }
         stream: 'muted',
         topic: 'ms-topic1',
     });
+}());
+
+(function test_get_next_unread_pm_string() {
+    pm_conversations.recent.get_strings = function () {
+        return ['1', 'read', '2,3', '4', 'unk'];
+    };
+
+    unread.num_unread_for_person = function (user_ids_string) {
+        if (user_ids_string === 'unk') {
+            return undefined;
+        }
+
+        if (user_ids_string === 'read') {
+            return 0;
+        }
+
+        return 5; // random non-zero value
+    };
+
+    assert.equal(tg.get_next_unread_pm_string(), '1');
+    assert.equal(tg.get_next_unread_pm_string('4'), '1');
+    assert.equal(tg.get_next_unread_pm_string('unk'), '1');
+    assert.equal(tg.get_next_unread_pm_string('4'), '1');
+    assert.equal(tg.get_next_unread_pm_string('1'), '2,3');
+    assert.equal(tg.get_next_unread_pm_string('read'), '2,3');
+    assert.equal(tg.get_next_unread_pm_string('2,3'), '4');
 }());

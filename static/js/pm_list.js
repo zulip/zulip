@@ -81,7 +81,7 @@ exports.close = function () {
 
 exports._build_private_messages_list = function (active_conversation, max_private_messages) {
 
-    var private_messages = message_store.recent_private_messages || [];
+    var private_messages = pm_conversations.recent.get();
     var display_messages = [];
     var hiding_messages = false;
 
