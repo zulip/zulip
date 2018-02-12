@@ -200,7 +200,9 @@ def install_apt_deps():
     # type: () -> None
     # setup-apt-repo does an `apt-get update`
     run(["sudo", "./scripts/lib/setup-apt-repo"])
-    run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + APT_DEPENDENCIES[codename])
+    # By doing list -> set -> list conversion we remove duplicates.
+    deps_to_install = list(set(APT_DEPENDENCIES[codename]))
+    run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + deps_to_install)
 
 def main(options):
     # type: (Any) -> int
