@@ -178,7 +178,7 @@ environment:
 
 ```
 sudo apt-get -y purge vagrant && \
-wget https://releases.hashicorp.com/vagrant/1.8.6/vagrant_1.8.6_x86_64.deb && \
+wget https://releases.hashicorp.com/vagrant/2.0.2/vagrant_2.0.2_x86_64.deb && \
 sudo dpkg -i vagrant*.deb && \
 sudo apt-get -y install build-essential git ruby lxc lxc-templates cgroup-lite redir && \
 vagrant plugin install vagrant-lxc && \
