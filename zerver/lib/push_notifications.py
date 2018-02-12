@@ -498,6 +498,17 @@ def get_gcm_payload(user_profile: UserProfile, message: Message) -> Dict[str, An
     })
     return data
 
+def push_notification_enabled() -> Dict[str, Any]:
+    data = {
+        'push_bouncer': False,
+        'android': False,
+        'ios': False,
+    }
+    data['push_bouncer'] = settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
+    data['ios'] = all(p is not None for p in [settings.ZULIP_ORG_ID, settings.ZULIP_ORG_KEY])
+    data['android'] = settings.ANDROID_GCM_API_KEY is not None
+    return data
+
 @statsd_increment("push_notifications")
 def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any]) -> None:
     """

@@ -1315,6 +1315,7 @@ class FetchAuthBackends(ZulipTestCase):
                                  subdomain="")
         self.assert_json_success(result)
         data = result.json()
+        print(data)
         schema_checker = check_dict_only([
             ('authentication_methods', check_dict_only([
                 ('google', check_bool),
@@ -1328,6 +1329,7 @@ class FetchAuthBackends(ZulipTestCase):
             ('require_email_format_usernames', check_bool),
             ('realm_uri', check_string),
             ('zulip_version', check_string),
+            ('push_notification_bouncer_enabled', check_bool),
             ('msg', check_string),
             ('result', check_string),
         ])
@@ -1351,6 +1353,7 @@ class FetchAuthBackends(ZulipTestCase):
                 ('require_email_format_usernames', check_bool),
                 ('realm_uri', check_string),
                 ('zulip_version', check_string),
+                ('push_notification_bouncer_enabled', check_bool),
                 ('msg', check_string),
                 ('result', check_string),
             ])
@@ -1369,6 +1372,7 @@ class FetchAuthBackends(ZulipTestCase):
             ('realm_icon', check_string),
             ('email_auth_enabled', check_bool),
             ('require_email_format_usernames', check_bool),
+            ('push_notification_bouncer_enabled', check_bool),
             ('authentication_methods', check_dict_only([
                 ('google', check_bool),
                 ('github', check_bool),

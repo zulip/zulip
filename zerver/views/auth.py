@@ -25,6 +25,7 @@ from zerver.context_processors import zulip_default_context, get_realm_from_requ
 from zerver.forms import HomepageForm, OurAuthenticationForm, \
     WRONG_SUBDOMAIN_ERROR, ZulipPasswordResetForm
 from zerver.lib.mobile_auth_otp import is_valid_otp, otp_encrypt_api_key
+from zerver.lib.push_notifications import push_notification_enabled
 from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
@@ -713,6 +714,7 @@ def api_get_server_settings(request: HttpRequest) -> HttpResponse:
     result = dict(
         authentication_methods=get_auth_backends_data(request),
         zulip_version=ZULIP_VERSION,
+        push_notification_bouncer_enabled=all(push_notification_enabled().values()),
     )
     context = zulip_default_context(request)
     # IMPORTANT NOTE:
