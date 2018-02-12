@@ -10,7 +10,7 @@ end
 if Vagrant::VERSION == "1.8.7" then
     path = `which curl`
     if path.include?('/opt/vagrant/embedded/bin/curl') then
-        puts "In Vagrant 1.8.7, curl is broken. Please use Vagrant 1.8.6 "\
+        puts "In Vagrant 1.8.7, curl is broken. Please use Vagrant 2.0.2 "\
              "or run 'sudo rm -f /opt/vagrant/embedded/bin/curl' to fix the "\
              "issue before provisioning. See "\
              "https://github.com/mitchellh/vagrant/issues/7997 "\
