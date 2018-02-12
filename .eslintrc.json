@@ -155,6 +155,7 @@
         "unread_ops": false,
         "upload": false,
         "user_events": false,
+        "submessage": false,
         "Plotly": false,
         "emoji_codes": false,
         "drafts": false,

@@ -444,6 +444,11 @@ MessageListView.prototype = {
             var id = rows.id(row);
             message_edit.maybe_show_edit(row, id);
 
+            submessage.process_submessages({
+                row: row,
+                message_id: id,
+            });
+
             var e = $.Event('message_rendered.zulip', {target: row});
             try {
                 $(document).trigger(e);
