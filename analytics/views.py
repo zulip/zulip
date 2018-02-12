@@ -398,7 +398,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     cursor.close()
 
     # Fetch all the realm administrator users
-    realm_admins = defaultdict(list)
+    realm_admins = defaultdict(list)  # type: Dict[str, List[str]]
     for up in UserProfile.objects.select_related("realm").filter(
         is_realm_admin=True,
         is_active=True
