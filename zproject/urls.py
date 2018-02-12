@@ -174,6 +174,10 @@ v1_api_and_json_patterns = [
     url(r'users/me/subscriptions/(?P<stream_id>\d+)$', rest_dispatch,
         {'PATCH': 'zerver.views.streams.update_subscriptions_property'}),
 
+    url(r'^submessage$',
+        rest_dispatch,
+        {'POST': 'zerver.views.submessage.process_submessage'}),
+
     # New endpoint for handling reactions.
     url(r'^messages/(?P<message_id>[0-9]+)/reactions$',
         rest_dispatch,
