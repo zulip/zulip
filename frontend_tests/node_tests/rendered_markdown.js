@@ -1,7 +1,9 @@
 const rm = zrequire('rendered_markdown');
+set_global('moment', zrequire('moment', 'moment-timezone'));
 zrequire('people');
 zrequire('user_groups');
 zrequire('stream_data');
+zrequire('timerender');
 set_global('$', global.make_zjquery());
 
 set_global('rtl', {
@@ -66,6 +68,7 @@ const get_content_element = () => {
     $content.set_find_results('.user-group-mention', $array([]));
     $content.set_find_results('a.stream', $array([]));
     $content.set_find_results('a.stream-topic', $array([]));
+    $content.set_find_results('span.timestamp', $array([]));
     $content.set_find_results('.emoji', $array([]));
     return $content;
 };
@@ -150,6 +153,31 @@ run_test('stream-links', () => {
     // Final asserts
     assert.equal($stream.text(), `#${stream.name}`);
     assert.equal($stream_topic.text(), `#${stream.name} > topic name`);
+});
+
+run_test('timestamp', () => {
+    // Setup
+    const $content = get_content_element();
+    const $timestamp = $.create('timestamp(valid)');
+    $timestamp.attr('data-timestamp', 1);
+    const $timestamp_invalid = $.create('timestamp(invalid)');
+    $timestamp.addClass('timestamp');
+    $timestamp_invalid.addClass('timestamp');
+    $content.set_find_results('span.timestamp', $array([$timestamp, $timestamp_invalid]));
+
+    // Initial asserts
+    assert.equal($timestamp.text(), 'never-been-set');
+    assert.equal($timestamp_invalid.text(), 'never-been-set');
+
+    rm.update_elements($content);
+
+    // Final asserts
+    assert($timestamp.hasClass('timestamp'));
+    assert(!$timestamp_invalid.hasClass('timestamp'));
+    assert.equal($timestamp.text(), 'Thu, Jan 1 1970, 12:00 AM');
+    assert.equal($timestamp.attr('title'), "This time is in your timezone. Original text was 'never-been-set'.");
+    assert.equal($timestamp_invalid.text(), 'never-been-set');
+    assert.equal($timestamp_invalid.attr('title'), 'Could not parse timestamp.');
 });
 
 run_test('emoji', () => {
