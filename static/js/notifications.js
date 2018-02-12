@@ -383,7 +383,7 @@ exports.close_notification = function (message) {
     });
 };
 
-function message_is_notifiable(message) {
+exports.message_is_notifiable = function (message) {
     // Independent of the user's notification settings, are there
     // properties of the message that unconditionally mean we
     // shouldn't notify about it.
@@ -419,7 +419,7 @@ function message_is_notifiable(message) {
     // Everything else is on the table; next filter based on notification
     // settings.
     return true;
-}
+};
 
 function should_send_desktop_notification(message) {
     // For streams, send if desktop notifications are enabled for this
@@ -492,7 +492,7 @@ exports.request_desktop_notifications_permission = function () {
 
 exports.received_messages = function (messages) {
     _.each(messages, function (message) {
-        if (!message_is_notifiable(message)) {
+        if (!exports.message_is_notifiable(message)) {
             return;
         }
         if (!unread.message_unread(message)) {
