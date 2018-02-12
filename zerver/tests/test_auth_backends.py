@@ -6,7 +6,7 @@ from django.test import override_settings
 from django_auth_ldap.backend import _LDAPUser
 from django.contrib.auth import authenticate
 from django.test.client import RequestFactory
-from typing import Any, Callable, Dict, List, Optional, Text
+from typing import Any, Callable, Dict, List, Optional, Text, Tuple
 from builtins import object
 from oauth2client.crypt import AppIdentityError
 from django.core import signing
@@ -28,7 +28,7 @@ from zerver.lib.actions import (
 )
 from zerver.lib.mobile_auth_otp import otp_decrypt_api_key
 from zerver.lib.validator import validate_login_email, \
-    check_bool, check_dict_only, check_string
+    check_bool, check_dict_only, check_string, Validator
 from zerver.lib.request import JsonableError
 from zerver.lib.initial_password import initial_password
 from zerver.lib.sessions import get_session_dict_user
@@ -1311,40 +1311,15 @@ class FetchAuthBackends(ZulipTestCase):
             raise AssertionError(error)
 
     def test_get_server_settings(self) -> None:
-        result = self.client_get("/api/v1/server_settings",
-                                 subdomain="")
-        self.assert_json_success(result)
-        data = result.json()
-        schema_checker = check_dict_only([
-            ('authentication_methods', check_dict_only([
-                ('google', check_bool),
-                ('github', check_bool),
-                ('email', check_bool),
-                ('ldap', check_bool),
-                ('dev', check_bool),
-                ('password', check_bool),
-            ])),
-            ('email_auth_enabled', check_bool),
-            ('require_email_format_usernames', check_bool),
-            ('realm_uri', check_string),
-            ('zulip_version', check_string),
-            ('msg', check_string),
-            ('result', check_string),
-        ])
-        self.assert_on_error(schema_checker("data", data))
-
-        with self.settings(ROOT_DOMAIN_LANDING_PAGE=False):
-            result = self.client_get("/api/v1/server_settings",
-                                     subdomain="")
+        def check_result(result: HttpResponse, extra_fields: List[Tuple[str, Validator]]=[]) -> None:
             self.assert_json_success(result)
-            data = result.json()
-            schema_checker = check_dict_only([
+            checker = check_dict_only([
                 ('authentication_methods', check_dict_only([
                     ('google', check_bool),
                     ('github', check_bool),
-                    ('dev', check_bool),
                     ('email', check_bool),
                     ('ldap', check_bool),
+                    ('dev', check_bool),
                     ('password', check_bool),
                 ])),
                 ('email_auth_enabled', check_bool),
@@ -1353,34 +1328,23 @@ class FetchAuthBackends(ZulipTestCase):
                 ('zulip_version', check_string),
                 ('msg', check_string),
                 ('result', check_string),
-            ])
-            self.assert_on_error(schema_checker("data", data))
+            ] + extra_fields)
+            self.assert_on_error(checker("data", result.json()))
+
+        result = self.client_get("/api/v1/server_settings", subdomain="")
+        check_result(result)
 
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=False):
-            result = self.client_get("/api/v1/server_settings",
-                                     subdomain="zulip")
-        self.assert_json_success(result)
-        data = result.json()
-        with_realm_schema_checker = check_dict_only([
-            ('zulip_version', check_string),
-            ('realm_uri', check_string),
+            result = self.client_get("/api/v1/server_settings", subdomain="")
+        check_result(result)
+
+        with self.settings(ROOT_DOMAIN_LANDING_PAGE=False):
+            result = self.client_get("/api/v1/server_settings", subdomain="zulip")
+        check_result(result, [
             ('realm_name', check_string),
             ('realm_description', check_string),
             ('realm_icon', check_string),
-            ('email_auth_enabled', check_bool),
-            ('require_email_format_usernames', check_bool),
-            ('authentication_methods', check_dict_only([
-                ('google', check_bool),
-                ('github', check_bool),
-                ('dev', check_bool),
-                ('email', check_bool),
-                ('ldap', check_bool),
-                ('password', check_bool),
-            ])),
-            ('msg', check_string),
-            ('result', check_string),
         ])
-        self.assert_on_error(with_realm_schema_checker("data", data))
 
     def test_fetch_auth_backend_format(self) -> None:
         result = self.client_get("/api/v1/get_auth_backends")
