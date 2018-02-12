@@ -25,7 +25,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
 from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
     check_stream_name, check_stream_name_available, filter_stream_authorization, \
-    list_to_streams, access_stream_for_delete, access_default_stream_group_by_id
+    list_to_streams, access_stream_for_delete_or_update, access_default_stream_group_by_id
 from zerver.lib.validator import check_string, check_int, check_list, check_dict, \
     check_bool, check_variable_type
 from zerver.models import UserProfile, Stream, Realm, Subscription, \
@@ -61,7 +61,7 @@ def principal_to_user_profile(agent: UserProfile, principal: Text) -> UserProfil
 def deactivate_stream_backend(request: HttpRequest,
                               user_profile: UserProfile,
                               stream_id: int) -> HttpResponse:
-    stream = access_stream_for_delete(user_profile, stream_id)
+    stream = access_stream_for_delete_or_update(user_profile, stream_id)
     do_deactivate_stream(stream)
     return json_success()
 
@@ -148,8 +148,9 @@ def update_stream_backend(
         is_private: Optional[bool]=REQ(validator=check_bool, default=None),
         new_name: Optional[Text]=REQ(validator=check_string, default=None),
 ) -> HttpResponse:
-    (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
-
+    # We allow realm administrators to to update the stream name and
+    # description even for private streams.
+    stream = access_stream_for_delete_or_update(user_profile, stream_id)
     if description is not None:
         do_change_stream_description(stream, description)
     if new_name is not None:
@@ -161,7 +162,11 @@ def update_stream_backend(
             # are only changing the casing of the stream name).
             check_stream_name_available(user_profile.realm, new_name)
         do_rename_stream(stream, new_name)
+
+    # But we require even realm administrators to be actually
+    # subscribed to make a private stream public.
     if is_private is not None:
+        (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
         do_change_stream_invite_only(stream, is_private)
     return json_success()
 

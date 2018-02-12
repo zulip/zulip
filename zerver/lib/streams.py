@@ -10,11 +10,11 @@ from zerver.models import UserProfile, Stream, Subscription, \
     Realm, Recipient, bulk_get_recipients, get_stream_recipient, get_stream, \
     bulk_get_streams, get_realm_stream, DefaultStreamGroup
 
-def access_stream_for_delete(user_profile: UserProfile, stream_id: int) -> Stream:
+def access_stream_for_delete_or_update(user_profile: UserProfile, stream_id: int) -> Stream:
 
     # We should only ever use this for realm admins, who are allowed
-    # to delete all streams on their realm, even private streams to
-    # which they are not subscribed.  We do an assert here, because
+    # to delete or update all streams on their realm, even private streams
+    # to which they are not subscribed.  We do an assert here, because
     # all callers should have the require_realm_admin decorator.
     assert(user_profile.is_realm_admin)
 

@@ -101,14 +101,20 @@ strength allowed is controlled by two settings in
   without joining the stream.
 
 * A private ("invite-only") stream is hidden from users who are not
-  subscribed to the stream.  Users who are not members of a private
-  stream cannot read messages on the stream, send messages to the
-  stream, or join the stream, even if they are a Zulip realm
-  administrator.  Users can join private streams only when they are
-  invited.  However, any member of a private stream can invite other
-  users to the stream.  When a new user joins a private stream, they
-  can see future messages sent to the stream, but they do not receive
-  access to the stream's message history.
+  subscribed to the stream.
+  * Users who are not members of a private stream cannot read messages
+    on the stream, send messages to the stream, or join the stream,
+    even if they are a Zulip organization administrator.
+  * Any member of a private stream can add other users to the stream.
+    This is the only way that one can join a private stream (even
+    organization administrators cannot join a private stream without
+    being added by an existing member).
+  * When a new user joins a private stream, they can see future
+    messages sent to the stream, but they do not receive access to the
+    stream's message history.
+  * Organization administrators can do some basic management of
+    private streams that they are not subscribed to: Changing the
+    stream name and setting its description.
 
 * Zulip supports editing the content and topics of messages that have
   already been sent. As a general philosophy, our policies provide
