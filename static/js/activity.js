@@ -352,6 +352,12 @@ exports.build_user_sidebar = function () {
 
     resize.resize_page_components();
 
+    // Highlight top user when searching
+    $('#user_presences li.user_sidebar_entry.highlighted_user').removeClass('highlighted_user');
+    if (exports.searching()) {
+        var all_streams = $('#user_presences li.user_sidebar_entry.narrow-filter');
+        stream_list.highlight_first(all_streams, 'highlighted_user');
+    }
     return user_info; // for testing
 };
 
@@ -543,7 +549,17 @@ exports.clear_and_hide_search = function () {
     }
     filter.blur();
     $('#user-list .input-append').addClass('notdisplayed');
+    // Undo highlighting
+    $('#user_presences li.user_sidebar_entry.highlighted_user').removeClass('highlighted_user');
 };
+
+function highlight_first_user() {
+    if ($('#user_presences li.user_sidebar_entry.narrow-filter.highlighted_user').length === 0) {
+        // Highlight
+        var all_streams = $('#user_presences li.user_sidebar_entry.narrow-filter');
+        stream_list.highlight_first(all_streams, 'highlighted_user');
+    }
+}
 
 exports.initiate_search = function () {
     var filter = $('.user-list-filter').expectOne();
@@ -558,6 +574,7 @@ exports.initiate_search = function () {
         }
     }
     filter.focus();
+    highlight_first_user();
 };
 
 exports.toggle_filter_displayed = function () {
@@ -568,28 +585,36 @@ exports.toggle_filter_displayed = function () {
     }
 };
 
-function maybe_select_person(e) {
-    if (e.keyCode === 13) {
-        // Enter key was pressed
+function keydown_enter_key() {
+    // Is there at least one user?
+    if ($('#user_presences li.user_sidebar_entry.narrow-filter').length > 0) {
+        // There must be a 'highlighted_user' user
+        var select_user = $('#user_presences li.user_sidebar_entry.narrow-filter.highlighted_user')
+                            .expectOne().attr('data-user-id');
 
-        // Prevent a newline from being entered into the soon-to-be-opened composebox
-        e.preventDefault();
-        e.stopPropagation();
+        var email = people.get_person_from_user_id(select_user).email;
+        narrow.by('pm-with', email, {select_first_unread: true, trigger: 'user sidebar'});
+        compose_actions.start('private', {  trigger: 'sidebar enter key',
+                                            private_message_recipient: email});
 
-        var topPerson = $('#user_presences li.user_sidebar_entry').first().attr('data-user-id');
-        var user_list = meta.$user_list_filter;
-        var search_term = user_list.expectOne().val().trim();
-        if ((topPerson !== undefined) && (search_term !== '')) {
-            // undefined if there are no results
-            var email = people.get_person_from_user_id(topPerson).email;
-            narrow.by('pm-with', email, {select_first_unread: true, trigger: 'user sidebar'});
-            compose_actions.start('private', {
-                trigger: 'sidebar enter key',
-                private_message_recipient: email});
-        }
         // Clear the user filter
         exports.clear_and_hide_search();
     }
+}
+
+function keydown_user_filter(e) {
+    stream_list.keydown_filter(e, '#user_presences li.user_sidebar_entry.narrow-filter',
+                               $('#user_presences'), 'highlighted_user', keydown_enter_key);
+}
+
+function focus_user_filter(e) {
+    highlight_first_user();
+    e.stopPropagation();
+}
+
+function focusout_user_filter() {
+    // Undo highlighting
+    $('#user_presences li.user_sidebar_entry.highlighted_user').removeClass('highlighted_user');
 }
 
 exports.get_filtered_and_sorted_user_ids = function () {
@@ -615,11 +640,10 @@ exports.set_user_list_filter = function () {
 
 exports.set_user_list_filter_handlers = function () {
     meta.$user_list_filter.expectOne()
-        .on('click', function (e) {
-            e.stopPropagation();
-        })
+        .on('click', focus_user_filter)
         .on('input', update_users_for_search)
-        .on('keydown', maybe_select_person);
+        .on('keydown', keydown_user_filter)
+        .on('blur', focusout_user_filter);
 };
 
 exports.get_filter_text = function () {
