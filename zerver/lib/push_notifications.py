@@ -69,6 +69,10 @@ def get_apns_client() -> APNsClient:
         _apns_client_initialized = True
     return _apns_client
 
+def apns_enabled() -> bool:
+    client = get_apns_client()
+    return client is not None
+
 def modernize_apns_payload(data: Dict[str, Any]) -> Dict[str, Any]:
     '''Take a payload in an unknown Zulip version's format, and return in current format.'''
     # TODO this isn't super robust as is -- if a buggy remote server
@@ -147,6 +151,9 @@ if settings.ANDROID_GCM_API_KEY:  # nocoverage
     gcm = GCM(settings.ANDROID_GCM_API_KEY)
 else:
     gcm = None
+
+def gcm_enabled() -> bool:  # nocoverage
+    return gcm is not None
 
 def send_android_push_notification_to_user(user_profile: UserProfile, data: Dict[str, Any]) -> None:
     devices = list(PushDeviceToken.objects.filter(user=user_profile,
@@ -386,6 +393,22 @@ def remove_push_device_token(user_profile: UserProfile, token_str: bytes, kind: 
 #
 # Push notifications in general
 #
+
+def push_notifications_enabled() -> bool:
+    '''True just if this server has configured a way to send push notifications.'''
+    if (uses_notification_bouncer()
+            and settings.ZULIP_ORG_KEY is not None
+            and settings.ZULIP_ORG_ID is not None):  # nocoverage
+        # We have the needed configuration to send push notifications through
+        # the bouncer.  Better yet would be to confirm that this config actually
+        # works -- e.g., that we have ever successfully sent to the bouncer --
+        # but this is a good start.
+        return True
+    if apns_enabled() and gcm_enabled():  # nocoverage
+        # We have the needed configuration to send through APNs and GCM directly
+        # (i.e., we are the bouncer, presumably.)  Again, assume it actually works.
+        return True
+    return False
 
 def get_alert_from_message(message: Message) -> Text:
     """

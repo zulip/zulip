@@ -566,6 +566,8 @@ class TestAPNs(PushNotificationTest):
             self.user_profile.id, devices, payload_data)
 
     def test_get_apns_client(self) -> None:
+        import zerver.lib.push_notifications
+        zerver.lib.push_notifications._apns_client_initialized = False
         with self.settings(APNS_CERT_FILE='/foo.pem'), \
                 mock.patch('zerver.lib.push_notifications.APNsClient') as mock_client:
             client = get_apns_client()
