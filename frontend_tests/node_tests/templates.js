@@ -786,6 +786,26 @@ function render(template_name, args) {
     assert.equal(input.text().trim(), "devel");
 }());
 
+(function listening_bot_presence_rows() {
+    var args = {
+        bots: [
+            {
+                name: "helloworld",
+            },
+            {
+                name: "reminder",
+            },
+        ],
+    };
+
+    var html = render('listening_bot_presence_rows', args);
+
+    global.write_handlebars_output("listening_bot_presence_rows", html);
+
+    var first_bot_displayed_name = $(html).find(".bot-name").filter(":first");
+    assert.equal(first_bot_displayed_name.text(), 'helloworld Bot');
+}());
+
 (function single_message() {
     var message =  {
         msg: {

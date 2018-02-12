@@ -105,6 +105,8 @@ v1_api_and_json_patterns = [
     url(r'^realm/profile_fields/(?P<field_id>\d+)$', rest_dispatch,
         {'PATCH': 'zerver.views.custom_profile_fields.update_realm_custom_profile_field',
          'DELETE': 'zerver.views.custom_profile_fields.delete_realm_custom_profile_field'}),
+    url(r'^realm/mark_bot_listening$', rest_dispatch,
+        {'POST': 'zerver.views.realm.mark_bot_listening'}),
 
     # users -> zerver.views.users
     #

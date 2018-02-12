@@ -158,6 +158,13 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['realm_is_zephyr_mirror_realm'] = realm.is_zephyr_mirror_realm
         state['realm_email_auth_enabled'] = email_auth_enabled(realm)
         state['realm_password_auth_enabled'] = password_auth_enabled(realm)
+
+        listening_bots_str = getattr(user_profile.realm, 'listening_bots_str')
+        if listening_bots_str:
+            state['realm_listening_bots'] = listening_bots_str.split(',')
+        else:
+            state['realm_listening_bots'] = []
+
         if realm.notifications_stream and not realm.notifications_stream.deactivated:
             notifications_stream = realm.notifications_stream
             state['realm_notifications_stream_id'] = notifications_stream.id
@@ -431,6 +438,13 @@ def apply_event(state: Dict[str, Any],
             if (field in ['realm_create_stream_by_admins_only',
                           'realm_waiting_period_threshold']) and 'can_create_streams' in state:
                 state['can_create_streams'] = user_profile.can_create_streams()
+
+            if event['property'] == 'listening_bots_str':
+                listening_bots_str = event['value']
+                if listening_bots_str:
+                    state['realm_listening_bots'] = listening_bots_str.split(',')
+                else:
+                    state['realm_listening_bots'] = []
         elif event['op'] == "update_dict":
             for key, value in event['data'].items():
                 state['realm_' + key] = value

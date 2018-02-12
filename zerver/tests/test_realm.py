@@ -11,6 +11,7 @@ from zerver.lib.actions import (
     do_set_realm_property,
     do_deactivate_realm,
     do_deactivate_stream,
+    do_mark_bot_listening,
 )
 
 from zerver.lib.send_email import send_future_email
@@ -267,6 +268,33 @@ class RealmTest(ZulipTestCase):
         realm = get_realm('zulip')
         self.assertNotEqual(realm.default_language, invalid_lang)
 
+    def test_mark_bot_listening(self) -> None:
+        email = self.example_email("hamlet")
+        self.login(email)
+
+        data = {'bot_name': 'helloworld', 'is_listening': 'true'}
+        response = self.client_post('/json/realm/mark_bot_listening', info=data)
+        self.assert_json_success(response)
+        realm = get_realm('zulip')
+        self.assertEqual(realm.listening_bots_str, 'helloworld')
+
+        data = {'bot_name': 'chess', 'is_listening': 'true'}
+        response = self.client_post('/json/realm/mark_bot_listening', info=data)
+        self.assert_json_success(response)
+        realm = get_realm('zulip')
+        self.assertEqual(realm.listening_bots_str, 'helloworld,chess')
+
+        data = {'bot_name': 'helloworld', 'is_listening': 'false'}
+        response = self.client_post('/json/realm/mark_bot_listening', info=data)
+        self.assert_json_success(response)
+        realm = get_realm('zulip')
+        self.assertEqual(realm.listening_bots_str, 'chess')
+
+        data = {'bot_name': 'chess', 'is_listening': 'false'}
+        response = self.client_post('/json/realm/mark_bot_listening', info=data)
+        self.assert_json_success(response)
+        realm = get_realm('zulip')
+        self.assertEqual(realm.listening_bots_str, '')
 
 class RealmAPITest(ZulipTestCase):
 
@@ -301,6 +329,7 @@ class RealmAPITest(ZulipTestCase):
             message_retention_days=[10, 20],
             name=[u'Zulip', u'New Name'],
             waiting_period_threshold=[10, 20],
+            listening_bots_str=[u'', u'helloworld'],
         )  # type: Dict[str, Any]
         vals = test_values.get(name)
         if Realm.property_types[name] is bool:

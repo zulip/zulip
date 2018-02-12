@@ -332,6 +332,12 @@ exports.insert_user_into_list = function (user_id) {
     compose_fade.update_one_user_row(elt);
 };
 
+function convert_to_bot_object(bot_name) {
+    return {
+        name: bot_name,
+    };
+}
+
 exports.build_user_sidebar = function () {
     if (page_params.realm_presence_disabled) {
         return;
@@ -346,6 +352,11 @@ exports.build_user_sidebar = function () {
     });
     var html = templates.render('user_presence_rows', {users: user_info});
     $('#user_presences').html(html);
+
+    var listening_bots = _.map(page_params.realm_listening_bots, convert_to_bot_object);
+    var listening_bots_html = templates.render('listening_bot_presence_rows',
+                                               {bots: listening_bots});
+    $('#listening_bot_presences').html(listening_bots_html);
 
     // Update user fading, if necessary.
     compose_fade.update_faded_users();
