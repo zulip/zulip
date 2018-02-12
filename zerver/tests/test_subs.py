@@ -401,6 +401,29 @@ class StreamAdminTest(ZulipTestCase):
                                    {'new_name': ujson.dumps('stream_name2')})
         self.assert_json_error(result, 'Must be an organization administrator')
 
+    def test_realm_admin_can_update_unsub_private_stream(self) -> None:
+        iago = self.example_user('iago')
+        self.login(iago.email)
+        result = self.common_subscribe_to_streams(iago.email, ["private_stream"],
+                                                  dict(principals=ujson.dumps([self.example_email("hamlet")])),
+                                                  invite_only=True)
+        self.assert_json_success(result)
+
+        stream_id = get_stream('private_stream', iago.realm).id
+        result = self.client_patch('/json/streams/%d' % (stream_id,),
+                                   {'new_name': ujson.dumps('new_private_stream')})
+        self.assert_json_success(result)
+
+        result = self.client_patch('/json/streams/%d' % (stream_id,),
+                                   {'new_description': ujson.dumps('new description')})
+        self.assert_json_success(result)
+
+        # But can not change stream type.
+        result = self.client_patch('/json/streams/%d' % (stream_id,),
+                                   {'stream_name': ujson.dumps('private_stream'),
+                                    'is_private': ujson.dumps(True)})
+        self.assert_json_error(result, "Invalid stream id")
+
     def test_change_stream_description(self) -> None:
         user_profile = self.example_user('hamlet')
         email = user_profile.email

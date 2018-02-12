@@ -194,10 +194,9 @@ exports.render_stream_description = function (sub) {
 
 exports.update_calculated_fields = function (sub) {
     sub.is_admin = page_params.is_admin;
-    // Admin can change stream name/description either stream is public or
-    // stream is private and admin is subscribed to private stream.
-    sub.can_change_name_description = page_params.is_admin &&
-                                     (!sub.invite_only || (sub.invite_only && sub.subscribed));
+    // Admin can change any stream's name & description either stream is public or
+    // private, subscribed or unsubscribed.
+    sub.can_change_name_description = page_params.is_admin;
     // If stream is public then any user can subscribe. If stream is private then only
     // subscribed users can unsubscribe.
     sub.should_display_subscription_button = !sub.invite_only || sub.subscribed;
