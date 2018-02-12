@@ -1,31 +1,30 @@
-import os
-import ujson
-from typing import Any
 import mock
+import os
+from typing import Any
+import ujson
 
-from stripe import util
+import stripe
 from stripe.api_resources.list_object import ListObject
-from stripe.error import InvalidRequestError, CardError
 
+from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Realm, UserProfile
 from zilencer.lib.stripe import StripeError, save_stripe_token, catch_stripe_errors
 from zilencer.models import Customer
-from zerver.lib.test_classes import ZulipTestCase
 
 fixture_data_file = open(os.path.join(os.path.dirname(__file__), '../fixtures/stripe.json'), 'r')
-fixture_data = ujson.loads('\n'.join(fixture_data_file.readlines()))
+fixture_data = ujson.load(fixture_data_file)
 
 def mock_list_sources(*args: Any, **kwargs: Any) -> ListObject:
-    return util.convert_to_stripe_object(fixture_data["list_sources"])
+    return stripe.util.convert_to_stripe_object(fixture_data["list_sources"])
 
 def mock_create_source(*args: Any, **kwargs: Any) -> ListObject:
-    return util.convert_to_stripe_object(fixture_data["create_source"])
+    return stripe.util.convert_to_stripe_object(fixture_data["create_source"])
 
 def mock_create_customer(*args: Any, **kwargs: Any) -> ListObject:
-    return util.convert_to_stripe_object(fixture_data["create_customer"])
+    return stripe.util.convert_to_stripe_object(fixture_data["create_customer"])
 
 def mock_retrieve_customer(*args: Any, **kwargs: Any) -> ListObject:
-    return util.convert_to_stripe_object(fixture_data["retrieve_customer"])
+    return stripe.util.convert_to_stripe_object(fixture_data["retrieve_customer"])
 
 class StripeTest(ZulipTestCase):
     def setUp(self) -> None:
@@ -41,8 +40,9 @@ class StripeTest(ZulipTestCase):
     @mock.patch("stripe.Customer.retrieve", side_effect=mock_retrieve_customer)
     @mock.patch("stripe.api_resources.card.Card.save")
     @mock.patch("stripe.api_resources.customer.Customer.save")
-    def test_save_stripe_token(self, mock_save_customer: mock.Mock, mock_save_card: mock.Mock, mock_retrieve_customer: mock.Mock,
-                               mock_create_customer: mock.Mock, mock_list_sources: mock.Mock, mock_create_source: mock.Mock,
+    def test_save_stripe_token(self, mock_save_customer: mock.Mock, mock_save_card: mock.Mock,
+                               mock_retrieve_customer: mock.Mock, mock_create_customer: mock.Mock,
+                               mock_list_sources: mock.Mock, mock_create_source: mock.Mock,
                                mock_billing_logger_info: mock.Mock) -> None:
         self.assertFalse(Customer.objects.filter(realm=self.realm))
         number_of_cards = save_stripe_token(self.user, self.token)
@@ -70,31 +70,26 @@ class StripeTest(ZulipTestCase):
     def test_errors(self, mock_billing_logger_error: mock.Mock) -> None:
         @catch_stripe_errors
         def raise_invalid_request_error() -> None:
-            raise InvalidRequestError("Request req_oJU621i6H6X4Ez: No such token: bad_token", None)
-
-        error_message = "Something went wrong. Please try again or email us at zulip-admin@example.com"
-        with self.assertRaisesRegex(StripeError, error_message):
+            raise stripe.error.InvalidRequestError("Request req_oJU621i6H6X4Ez: No such token: x",
+                                                   None)
+        with self.assertRaisesRegex(StripeError, "Something went wrong. Please try again or "):
             raise_invalid_request_error()
         mock_billing_logger_error.assert_called()
 
         @catch_stripe_errors
         def raise_card_error() -> None:
             error_message = "The card number is not a valid credit card number."
-            json_body = {
-                "error": {
-                    "message": error_message
-                }
-            }
-            raise CardError(error_message, "number", "invalid_number", json_body=json_body)
-
-        with self.assertRaisesRegex(StripeError, "The card number is not a valid credit card number."):
+            json_body = {"error": {"message": error_message}}
+            raise stripe.error.CardError(error_message, "number", "invalid_number",
+                                         json_body=json_body)
+        with self.assertRaisesRegex(StripeError,
+                                    "The card number is not a valid credit card number."):
             raise_card_error()
         mock_billing_logger_error.assert_called()
 
         @catch_stripe_errors
         def raise_exception() -> None:
             raise Exception
-
         with self.assertRaises(Exception):
             raise_exception()
         mock_billing_logger_error.assert_called()
@@ -108,7 +103,8 @@ class StripeTest(ZulipTestCase):
 
         self.login(self.example_email("hamlet"))
         result = self.client_get("/billing/")
-        message = "You should be an administrator of the organization {} to view this page.".format(self.realm.name)
+        message = ("You should be an administrator of the organization {} to view this page."
+                   .format(self.realm.name))
         self.assert_in_success_response([message], result)
         self.assert_not_in_success_response(["stripe_publishable_key"], result)
 
