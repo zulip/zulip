@@ -477,6 +477,11 @@ on a dark background, and don't change the dark labels dark either. */
         }
     }
 
+    .timestamp {
+        background: hsla(0, 0%, 0%, 0.2);
+        box-shadow: 0px 0px 0px 1px hsla(0, 0%, 0%, 0.4);
+    }
+
     .tip {
         color: inherit;
         background-color: hsla(46, 28%, 38%, 0.27);

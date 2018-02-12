@@ -137,6 +137,22 @@ exports.update_elements = (content) => {
         }
     });
 
+    content.find('span.timestamp').each(function () {
+        // Populate each timestamp span with mentioned time
+        // in user's local timezone.
+        const timestamp = moment.unix($(this).attr('data-timestamp'));
+        if (timestamp.isValid() && $(this).attr('data-timestamp') !== null) {
+            const text = $(this).text();
+            const rendered_time = timerender.render_markdown_timestamp(timestamp,
+                                                                       null, text);
+            $(this).text(rendered_time.text);
+            $(this).attr('title', rendered_time.title);
+        } else {
+            $(this).removeClass('timestamp');
+            $(this).attr('title', 'Could not parse timestamp.');
+        }
+    });
+
     // Display emoji (including realm emoji) as text if
     // page_params.emojiset is 'text'.
     if (page_params.emojiset === 'text') {
