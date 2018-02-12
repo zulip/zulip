@@ -3,9 +3,7 @@ from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.slack_data_to_zulip_data import (
-    allocate_id,
-    get_next_id,
-    reset_sequence,
+    allocate_ids,
     get_user_data,
     build_zerver_realm,
     get_user_email,
@@ -70,14 +68,9 @@ class SlackImporter(ZulipTestCase):
     # set logger to a higher level to suppress 'logger.INFO' outputs
     logger.setLevel(logging.WARNING)
 
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.get_next_id", return_value=5)
-    def test_allocate_id(self, mock_get_next_id: mock.Mock) -> None:
-        start_id_sequence = allocate_id(Realm, 2)
-        self.assertEqual(start_id_sequence, 5)
-
-    def test_reset_id(self) -> None:
-        reset_sequence(Realm, 20)
-        self.assertEqual(get_next_id(Realm), 20)
+    def test_allocate_ids(self) -> None:
+        start_id_sequence = allocate_ids(Realm, 3)
+        self.assertEqual(len(start_id_sequence), 3)
 
     @mock.patch('requests.get', side_effect=mocked_requests_get)
     def test_get_user_data(self, mock_get: mock.Mock) -> None:
@@ -126,8 +119,9 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(get_user_timezone(user_timezone_none), "America/New_York")
         self.assertEqual(get_user_timezone(user_no_timezone), "America/New_York")
 
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.allocate_id", return_value=1)
-    def test_users_to_zerver_userprofile(self, mock_allocate_id: mock.Mock) -> None:
+    @mock.patch("zerver.lib.slack_data_to_zulip_data.allocate_ids",
+                return_value=[1, 2, 3])
+    def test_users_to_zerver_userprofile(self, mock_allocate_ids: mock.Mock) -> None:
         user_data = [{"id": "U08RGD1RD",
                       "name": "john",
                       "deleted": False,
@@ -175,8 +169,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[0]['enable_desktop_notifications'], True)
         self.assertEqual(zerver_userprofile[2]['bot_type'], 1)
 
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.allocate_id", return_value=1)
-    def test_build_defaultstream(self, mock_allocate_id: mock.Mock) -> None:
+    def test_build_defaultstream(self) -> None:
         realm_id = 1
         stream_id = 1
         default_channel_general = build_defaultstream('general', realm_id, stream_id, 1)
@@ -206,15 +199,16 @@ class SlackImporter(ZulipTestCase):
     def test_build_subscription(self) -> None:
         channel_members = ["U061A1R2R", "U061A3E0G", "U061A5N1G", "U064KUGRJ"]
         added_users = {"U061A1R2R": 1, "U061A3E0G": 8, "U061A5N1G": 7, "U064KUGRJ": 5}
-        subscription_id = 7
+        subscription_id_count = 0
+        subscription_id_list = [7, 8, 9, 10]
         recipient_id = 12
         zerver_subscription = []  # type: List[Dict[str, Any]]
         zerver_subscription, final_subscription_id = build_subscription(channel_members,
                                                                         zerver_subscription,
                                                                         recipient_id,
                                                                         added_users,
-                                                                        subscription_id)
-        self.assertEqual(final_subscription_id, 7 + len(channel_members))
+                                                                        subscription_id_list,
+                                                                        subscription_id_count)
         # sanity checks
         self.assertEqual(zerver_subscription[0]['recipient'], 12)
         self.assertEqual(zerver_subscription[0]['id'], 7)
@@ -226,8 +220,8 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_subscription[1]['pin_to_top'], False)
 
     @mock.patch("zerver.lib.slack_data_to_zulip_data.get_data_file")
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.allocate_id", return_value=1)
-    def test_channels_to_zerver_stream(self, mock_allocate_id: mock.Mock,
+    @mock.patch("zerver.lib.slack_data_to_zulip_data.allocate_ids")
+    def test_channels_to_zerver_stream(self, mock_allocate_ids: mock.Mock,
                                        mock_get_data_file: mock.Mock) -> None:
 
         added_users = {"U061A1R2R": 1, "U061A3E0G": 8, "U061A5N1G": 7, "U064KUGRJ": 5}
@@ -246,6 +240,10 @@ class SlackImporter(ZulipTestCase):
                          'is_general': False, 'members': ['U061A3E0G'], 'is_archived': False,
                          'topic': {'value': ''}, 'purpose': {'value': ''}}]
         mock_get_data_file.return_value = channel_data
+        mock_allocate_ids.side_effect = [[1, 2, 3],  # For stream
+                                         [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],  # For subscription
+                                         [1, 2, 3, 4, 5, 6, 7],  # For recipient
+                                         [1, 2]]  # For defaultstream
 
         channel_to_zerver_stream_output = channels_to_zerver_stream('./random_path', realm_id, added_users,
                                                                     zerver_userprofile)
@@ -358,7 +356,8 @@ class SlackImporter(ZulipTestCase):
 
     def test_build_zerver_message(self) -> None:
         zerver_usermessage = []  # type: List[Dict[str, Any]]
-        usermessage_id = 6
+        usermessage_id_count = 0
+        usermessage_id_list = [6, 7, 8, 9]
         zerver_subscription = [{'recipient': 2, 'user_profile': 7},
                                {'recipient': 4, 'user_profile': 12},
                                {'recipient': 2, 'user_profile': 16},
@@ -369,12 +368,13 @@ class SlackImporter(ZulipTestCase):
         message_id = 9
 
         test_zerver_usermessage, test_usermessage_id = build_zerver_usermessage(zerver_usermessage,
-                                                                                usermessage_id,
+                                                                                usermessage_id_count,
+                                                                                usermessage_id_list,
                                                                                 zerver_subscription,
                                                                                 recipient_id,
                                                                                 mentioned_users_id,
                                                                                 message_id)
-        self.assertEqual(test_usermessage_id, 10)
+        self.assertEqual(test_usermessage_id, 4)
 
         self.assertEqual(test_zerver_usermessage[0]['flags_mask'], 1)
         self.assertEqual(test_zerver_usermessage[0]['message'], message_id)
@@ -413,7 +413,7 @@ class SlackImporter(ZulipTestCase):
         mock_get_data_file.side_effect = [date1, date2]
         added_recipient = {'random': 2}
         constants = ['./random_path', 2]
-        ids = [3, 7]
+        ids = [0, 0, [3, 4, 5, 6, 7], []]
         channel_name = 'random'
 
         zerver_usermessage = []  # type: List[Dict[str, Any]]
@@ -450,10 +450,10 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[3]['sender'], 24)
 
     @mock.patch("zerver.lib.slack_data_to_zulip_data.channel_message_to_zerver_message")
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.allocate_id", return_value=1)
+    @mock.patch("zerver.lib.slack_data_to_zulip_data.allocate_ids")
     @mock.patch("zerver.lib.slack_data_to_zulip_data.get_total_messages_and_usermessages", return_value=[1, 2])
     def test_convert_slack_workspace_messages(self, mock_get_total_messages_and_usermessages: mock.Mock,
-                                              mock_allocate_id: mock.Mock, mock_message: mock.Mock) -> None:
+                                              mock_allocate_ids: mock.Mock, mock_message: mock.Mock) -> None:
         added_channels = {'random': 1, 'general': 2}
 
         zerver_message1 = [{'id': 1}]
