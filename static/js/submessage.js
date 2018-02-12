@@ -15,7 +15,6 @@ exports.get_message_events = function (message) {
         return;
     }
 
-    // The server should sort messages for us, but this is defensive.
     message.submessages.sort(function (m1, m2) {
         return parseInt(m1.id, 10) - parseInt(m2.id, 10);
     });
@@ -45,11 +44,45 @@ exports.process_submessages = function (in_opts) {
     }
 
     blueslip.info('submessages found for message id: ' + message_id);
+
+    var row = in_opts.row;
+
+    // Right now, our only use of submessages is widgets.
+
+    var widget_type = events[0].data;
+
+    if (widget_type === undefined) {
+        return;
+    }
+
+    var post_to_server = exports.make_server_callback(message_id);
+
+    widgetize.activate({
+        widget_type: widget_type,
+        events: events,
+        row: row,
+        message: message,
+        post_to_server: post_to_server,
+    });
 };
 
 
 exports.handle_event = function (event) {
     blueslip.info('handle submessage: ' + JSON.stringify(event));
+
+    // Right now, our only use of submessages is widgets.
+    var msg_type = event.msg_type;
+
+    if (msg_type !== 'widget') {
+        blueslip.warn('unknown msg_type: ' + msg_type);
+        return;
+    }
+
+    widgetize.handle_event({
+        sender_id: event.sender_id,
+        message_id: event.message_id,
+        data: event.data,
+    });
 };
 
 exports.make_server_callback = function (message_id) {

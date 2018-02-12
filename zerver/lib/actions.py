@@ -1180,6 +1180,22 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
             if Message.content_has_attachment(message['message'].content):
                 do_claim_attachments(message['message'])
 
+        # HACK! turn on widget features
+        for message in messages:
+            content = message['message'].content
+            sender_id = message['message'].sender_id
+            message_id = message['message'].id
+
+            if content in ['/poll', '/tictactoe']:
+                submessage = SubMessage(
+                    sender_id=sender_id,
+                    message_id=message_id,
+                    msg_type='widget',
+                    content=ujson.dumps(content[1:]),
+                )
+                submessage.save()
+                message['submessages'] = SubMessage.get_raw_db_rows([message_id])
+
     for message in messages:
         # Deliver events to the real-time push system, as well as
         # enqueuing any additional processing triggered by the message.

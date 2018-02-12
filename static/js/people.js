@@ -242,6 +242,19 @@ exports.email_list_to_user_ids_string = function (emails) {
     return user_ids.join(',');
 };
 
+exports.safe_full_names = function (user_ids) {
+    var names = _.map(user_ids, function (user_id) {
+        var person = people_by_user_id_dict.get(user_id);
+        if (person) {
+            return person.full_name;
+        }
+    });
+
+    names = _.filter(names);
+
+    return names.join(', ');
+};
+
 exports.get_full_name = function (user_id) {
     return people_by_user_id_dict.get(user_id).full_name;
 };

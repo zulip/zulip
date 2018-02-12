@@ -1009,6 +1009,7 @@ JS_SPECS = {
             'js/top_left_corner.js',
             'js/stream_list.js',
             'js/filter.js',
+            'js/widgetize.js',
             'js/submessage.js',
             'js/message_list_view.js',
             'js/message_list.js',
