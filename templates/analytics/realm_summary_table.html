@@ -1,3 +1,4 @@
+
 <h2 style="text-align: center;">{{ num_active_sites }} active sites</h2>
 
 <p id="utctime" style="text-align: center;"></p>
@@ -18,13 +19,14 @@
     <li><strong>DAT</strong> (Daily Active Time) - total user-activity time in last 24hr</li>
     <li><strong>Human message</strong> - message sent by non-bot user, and not with known-bot client</li>
 </ul>
-
+-
 <table class="table summary-table sortable table-striped table-bordered">
 
     <thead class="activity_head">
         <tr>
             <th>Realm</th>
             <th>Created (green if ≤12wk)</th>
+            <th><i class="fa fa-envelope" aria-hidden="true"></i></th>
             <th>DAU</th>
             <th>WAU</th>
             <th>Total users</th>
@@ -48,6 +50,12 @@
                 class="good" {% else %}
                 class="neutral" {% endif %} >
                 {{ row.date_created_day }}
+            </td>
+
+            <td class="number">
+                <a class="clipboard" data-clipboard-text="{{ row.emails }}">
+                    <i class="fa fa-envelope" aria-hidden="true"></i>
+                </a>
             </td>
 
             <td class="number">
@@ -88,3 +96,6 @@
     </tbody>
 
 </table>
+<script type="text/javascript">
+    new Clipboard('.clipboard');
+</script>
