@@ -84,7 +84,8 @@
 }
 
 #global_filters li:hover,
-#stream_filters li:hover {
+#stream_filters li:hover,
+#stream_filters li.highlighted_stream {
     background-color: hsl(93, 19%, 88%);
 }
 

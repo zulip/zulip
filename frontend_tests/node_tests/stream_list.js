@@ -20,6 +20,7 @@ var return_false = function () { return false; };
 var return_true = function () { return true; };
 
 set_global('topic_list', {});
+set_global('overlays', {});
 
 (function test_create_sidebar_row() {
     // Make a couple calls to create_sidebar_row() and make sure they
@@ -272,6 +273,141 @@ function initialize_stream_data() {
     stream_list.handle_narrow_activated(filter);
     assert(!$("ul.filters li").hasClass('active-filter'));
     assert($('<cars sidebar row html>').hasClass('active-filter'));
+}());
+
+var keydown_handler = $('.stream-list-filter').get_on_handler('keydown');
+
+(function test_arrow_navigation() {
+
+    stream_list.build_stream_list();
+    initialize_stream_data();
+
+    var stream_order = ['devel', 'Rome', 'test',
+                        '-divider-', 'announce','Denmark',
+                        '-divider-','cars'];
+    var stream_count = 8;
+
+    // Mock the jquery is func
+    $('.stream-list-filter').is = function (sel) {
+        if (sel === ':focus') {
+            return $('.stream-list-filter').is_focused();
+        }
+    };
+
+    // Mock the jquery first func
+    $('#stream_filters li.narrow-filter').first = function () {
+        return $('#stream_filters li[data-stream-name="' + stream_order[0] + '"]');
+    };
+    $('#stream_filters li.narrow-filter').last = function () {
+        return $('#stream_filters li[data-stream-name="' + stream_order[stream_count - 1] + '"]');
+    };
+
+    var sel_index = 0;
+    // Returns which element is highlighted
+    $('#stream_filters li.narrow-filter.highlighted_stream')
+        .expectOne().data = function () {
+            // Return random id (is further not used)
+            return 1;
+        };
+
+    // Returns element before highlighted one
+    $('#stream_filters li.narrow-filter.highlighted_stream')
+        .expectOne().prev = function () {
+            if (sel_index === 0) {
+                // Top, no prev element
+                return $('div.no_stream');
+            } else if (sel_index === 3 || sel_index === 6) {
+                return $('div.divider');
+            }
+            return $('#stream_filters li[data-stream-name="'
+                        + stream_order[sel_index-1] + '"]');
+        };
+
+    // Returns element after highlighted one
+    $('#stream_filters li.narrow-filter.highlighted_stream')
+        .expectOne().next = function () {
+            if (sel_index === stream_count - 1) {
+                // Bottom, no next element
+                return $('div.no_stream');
+            } else if (sel_index === 3 || sel_index === 6) {
+                return $('div.divider');
+            }
+            return $('#stream_filters li[data-stream-name="'
+                        + stream_order[sel_index + 1] + '"]');
+        };
+
+    for (var i = 0; i < stream_count; i = i + 1) {
+        if (i === 3 || i === 6) {
+            $('#stream_filters li[data-stream-name="' + stream_order[i] + '"]')
+                .is = return_false;
+        } else {
+            $('#stream_filters li[data-stream-name="' + stream_order[i] + '"]')
+                .is = return_true;
+        }
+    }
+
+    $('div.no_stream').is = return_false;
+    $('div.divider').is = return_false;
+
+    $('#stream_filters li.narrow-filter').length = stream_count;
+
+    // up
+    var e = {
+        keyCode: 38,
+        stopPropagation: function () {},
+        preventDefault: function () {},
+    };
+
+    keydown_handler(e);
+    // Now the last element is highlighted
+    sel_index = stream_count - 1;
+    keydown_handler(e);
+    sel_index = sel_index - 1;
+
+    // down
+    e = {
+        keyCode: 40,
+        stopPropagation: function () {},
+        preventDefault: function () {},
+    };
+    keydown_handler(e);
+    sel_index = sel_index + 1;
+    keydown_handler(e);
+}());
+
+(function test_enter_press() {
+    var e = {
+        keyCode: 13,
+        stopPropagation: function () {},
+        preventDefault: function () {},
+    };
+
+    overlays.is_active = return_false;
+    narrow_state.active = return_false;
+    stream_data.get_sub_by_id = function () {
+        return 'name';
+    };
+    narrow.by = noop;
+    stream_list.clear_and_hide_search = noop;
+
+    // Enter text and narrow users
+    $(".stream-list-filter").expectOne().val('');
+
+    keydown_handler(e);
+}());
+
+(function test_focusout_user_filter() {
+    var e = { };
+    var click_handler = $('.stream-list-filter').get_on_handler('focusout');
+    click_handler(e);
+}());
+
+(function test_focus_user_filter() {
+    var e = {
+        stopPropagation: function () {},
+    };
+    var click_handler = $('.stream-list-filter').get_on_handler('click');
+    click_handler(e);
 }());
 
 (function test_sort_streams() {
