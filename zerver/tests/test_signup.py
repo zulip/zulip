@@ -2446,44 +2446,26 @@ class LoginOrAskForRegistrationTestCase(ZulipTestCase):
         email = 'new@zulip.com'
         user_profile = None  # type: Optional[UserProfile]
         full_name = 'New User'
-        invalid_subdomain = False
         result = login_or_register_remote_user(
-            request,
-            email,
-            user_profile,
-            full_name=full_name,
-            invalid_subdomain=invalid_subdomain)
+            request=request,
+            remote_username=email,
+            user_profile=user_profile,
+            full_name=full_name)
         self.assert_in_response('No account found for',
                                 result)
         self.assert_in_response('new@zulip.com. Would you like to register instead?',
                                 result)
-
-    def test_invalid_subdomain(self) -> None:
-        request = HostRequestMock()
-        email = 'new@zulip.com'
-        user_profile = None  # type: Optional[UserProfile]
-        full_name = 'New User'
-        invalid_subdomain = True
-        result = login_or_register_remote_user(
-            request,
-            email,
-            user_profile,
-            full_name=full_name,
-            invalid_subdomain=invalid_subdomain)
-        self.assert_in_success_response(['Would you like to register instead?'], result)
 
     def test_invalid_email(self) -> None:
         request = HostRequestMock()
         email = None  # type: Optional[Text]
         user_profile = None  # type: Optional[UserProfile]
         full_name = 'New User'
-        invalid_subdomain = False
         response = login_or_register_remote_user(
-            request,
-            email,
-            user_profile,
-            full_name=full_name,
-            invalid_subdomain=invalid_subdomain)
+            request=request,
+            remote_username=email,
+            user_profile=user_profile,
+            full_name=full_name)
         self.assert_in_response('Please click the following button if '
                                 'you wish to register', response)
 
@@ -2493,14 +2475,12 @@ class LoginOrAskForRegistrationTestCase(ZulipTestCase):
         user_profile = self.example_user('hamlet')
         user_profile.backend = 'zproject.backends.GitHubAuthBackend'
         full_name = 'Hamlet'
-        invalid_subdomain = False
 
         response = login_or_register_remote_user(
-            request,
-            user_profile.email,
-            user_profile,
-            full_name=full_name,
-            invalid_subdomain=invalid_subdomain)
+            request=request,
+            remote_username=user_profile.email,
+            user_profile=user_profile,
+            full_name=full_name)
         user_id = get_session_dict_user(getattr(request, 'session'))
         self.assertEqual(user_id, user_profile.id)
         self.assertEqual(response.status_code, 302)

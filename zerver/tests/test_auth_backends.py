@@ -2118,20 +2118,6 @@ class LoginEmailValidatorTestCase(ZulipTestCase):
         with self.assertRaises(JsonableError):
             validate_login_email(u'hamlet')
 
-class LoginOrRegisterRemoteUserTestCase(ZulipTestCase):
-    def test_invalid_subdomain(self) -> None:
-        full_name = 'Hamlet'
-        invalid_subdomain = True
-        user_profile = self.example_user('hamlet')
-        request = POSTRequestMock({}, user_profile)
-        response = login_or_register_remote_user(
-            request,
-            self.example_email('hamlet'),
-            user_profile,
-            full_name=full_name,
-            invalid_subdomain=invalid_subdomain)
-        self.assertIn('/accounts/login/?subdomain=1', response.url)
-
 class LDAPBackendTest(ZulipTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_non_existing_realm(self) -> None:
