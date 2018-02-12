@@ -180,6 +180,9 @@ DEFAULT_SETTINGS = {
     'REMOTE_POSTGRES_HOST': '',
     'REMOTE_POSTGRES_SSLMODE': '',
     'THUMBOR_HOST': '',
+    'SENDFILE_BACKEND': 'sendfile.backends.nginx',
+    'SENDFILE_ROOT': '/home/zulip/uploads/files',
+    'SENDFILE_URL': '/serve_uploads',
 
     # ToS/Privacy templates
     'PRIVACY_POLICY': None,

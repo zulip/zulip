@@ -12,12 +12,6 @@ server {
     ssl_certificate /etc/ssl/certs/zulip.combined-chain.crt;
     ssl_certificate_key /etc/ssl/private/zulip.key;
 
-    location /user_uploads {
-        add_header X-Content-Type-Options nosniff;
-        include /etc/nginx/zulip-include/uploads.types;
-        alias /home/zulip/uploads/files;
-    }
-
     location /user_avatars {
         add_header X-Content-Type-Options nosniff;
         include /etc/nginx/zulip-include/uploads.types;
@@ -30,4 +24,5 @@ server {
 
     include /etc/nginx/zulip-include/certbot;
     include /etc/nginx/zulip-include/app;
+    include /etc/nginx/zulip-include/uploads.route;
 }

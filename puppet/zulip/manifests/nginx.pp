@@ -14,6 +14,29 @@ class zulip::nginx {
     notify => Service["nginx"],
   }
 
+  # Nginx versions 1.4.6 and older do not support quoted URLs with the
+  # X-Accel-Redirect / "sendfile" feature, which are required for
+  # unicode support in filenames.  As a result, we use the fancier
+  # django-sendfile behavior only when a sufficiently current version
+  # of nginx is present (e.g.. Xenial).  Older versions (e.g. Trusty)
+  # retain the older, less secure, file upload behavior; we expect
+  # that this will stop being relevant when we drop Trusty support
+  # from Zulip altogether, no later than when Trusty reaches EOL in 2019.
+  $uploads_route = $zulip::base::release_name ? {
+    'trusty' => 'puppet:///modules/zulip/nginx/zulip-include-maybe/uploads-route.direct',
+    default  => 'puppet:///modules/zulip/nginx/zulip-include-maybe/uploads-route.internal',
+  }
+
+  file { "/etc/nginx/zulip-include/uploads.route":
+    require => Package["nginx-full"],
+    ensure => file,
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    notify => Service["nginx"],
+    source => $uploads_route,
+  }
+
   file { "/etc/nginx/nginx.conf":
     require => Package["nginx-full"],
     ensure => file,
