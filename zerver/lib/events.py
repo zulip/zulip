@@ -534,6 +534,9 @@ def apply_event(state: Dict[str, Any],
     elif event['type'] == "reaction":
         # The client will get the message with the reactions directly
         pass
+    elif event['type'] == "submessage":
+        # The client will get submessages with their messages
+        pass
     elif event['type'] == 'typing':
         # Typing notification events are transient and thus ignored
         pass

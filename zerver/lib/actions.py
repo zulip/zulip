@@ -53,7 +53,7 @@ from zerver.lib.topic_mutes import (
 from zerver.lib.users import bulk_get_users, check_full_name
 from zerver.lib.user_groups import create_user_group, access_user_group_by_id
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
-    RealmDomain, \
+    RealmDomain, SubMessage, \
     Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, \
     UserHotspot, ScheduledMessage, \
     Client, DefaultStream, DefaultStreamGroup, UserPresence, PushDeviceToken, \
@@ -1366,6 +1366,32 @@ def bulk_insert_ums(ums: List[UserMessageLite]) -> None:
 
     with connection.cursor() as cursor:
         cursor.execute(query)
+
+def do_add_submessage(sender_id: int,
+                      message_id: int,
+                      msg_type: str,
+                      content: str,
+                      data: Any,
+                      ) -> None:
+    submessage = SubMessage(
+        sender_id=sender_id,
+        message_id=message_id,
+        msg_type=msg_type,
+        content=content,
+    )
+    submessage.save()
+
+    event = dict(
+        type="submessage",
+        msg_type=msg_type,
+        message_id=message_id,
+        sender_id=sender_id,
+        data=data,
+    )
+    ums = UserMessage.objects.filter(message_id=message_id)
+    target_user_ids = [um.user_profile_id for um in ums]
+
+    send_event(event, target_user_ids)
 
 def notify_reaction_update(user_profile: UserProfile, message: Message,
                            reaction: Reaction, op: Text) -> None:

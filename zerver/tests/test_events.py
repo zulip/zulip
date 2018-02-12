@@ -30,6 +30,7 @@ from zerver.lib.actions import (
     do_add_realm_domain,
     do_add_realm_filter,
     do_add_streams_to_default_stream_group,
+    do_add_submessage,
     do_change_avatar_fields,
     do_change_bot_owner,
     do_change_default_all_public_streams,
@@ -856,6 +857,34 @@ class EventsRegisterTest(ZulipTestCase):
         events = self.do_test(
             lambda: do_add_reaction(
                 self.user_profile, message, "tada", "1f389", "unicode_emoji"),
+            state_change_expected=False,
+        )
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_add_submessage(self) -> None:
+        schema_checker = self.check_events_dict([
+            ('type', equals('submessage')),
+            ('message_id', check_int),
+            ('sender_id', check_int),
+            ('msg_type', check_string),
+            ('data', check_string),
+        ])
+
+        cordelia = self.example_user('cordelia')
+        stream_name = 'Verona'
+        message_id = self.send_stream_message(
+            sender_email=cordelia.email,
+            stream_name=stream_name,
+        )
+        events = self.do_test(
+            lambda: do_add_submessage(
+                sender_id=cordelia.id,
+                message_id=message_id,
+                msg_type='whatever',
+                content='"stuff"',
+                data='stuff',
+            ),
             state_change_expected=False,
         )
         error = schema_checker('events[0]', events[0])
