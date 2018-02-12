@@ -3,6 +3,7 @@ set_global('page_params', {
     twenty_four_hour_time: true,
 });
 set_global('XDate', zrequire('XDate', 'xdate'));
+set_global('moment', zrequire('moment', 'moment-timezone'));
 zrequire('timerender');
 
 run_test('render_now_returns_today', () => {
@@ -288,4 +289,84 @@ run_test('set_full_datetime', () => {
     time_str = timerender.stringify_time(time);
     expected = '1:55 PM';
     assert.equal(expected, time_str);
+});
+
+run_test('render_markdown_timestamp', () => {
+    let target;
+    let current;
+
+    // ------ SET 1 ------
+
+    page_params.twenty_four_hour_time = false;
+    moment.tz.setDefault("UTC");
+
+    // Render all time details precisely (generic case).
+    target = moment(1549979707000); // Tuesday 2019-02-12T13:55:07+00:00
+    current = moment(1549958107000); // Tuesday 2019-02-12T07:55:07+00:00
+    assert.equal(timerender.render_markdown_timestamp(target, current).text, 'Tue, Feb 12, 1:55:07 PM');
+
+    // Ignore seconds.
+    target = moment(1549979700000); // Tuesday 2019-02-12T13:55:00+00:00
+    current = moment(1549958107000); // Tuesday 2019-02-12T07:55:07+00:00
+    assert.equal(timerender.render_markdown_timestamp(target, current).text, 'Tue, Feb 12, 1:55 PM');
+
+    // Ignore minutes and seconds
+    target = moment(1531486800000); // Friday 2018-07-13T13:00:00+00:00
+    current = moment(1531909397313); // Wednesday 2018-07-18T10:23:17+00:00
+    assert.equal(timerender.render_markdown_timestamp(target, current).text, 'Fri, Jul 13, 1 PM');
+
+    // Render year if different from current year.
+    target = moment(1531486800000); // Friday 2018-07-13T13:00:00+00:00
+    current = moment(1549958107000); // Tuesday 2019-02-12T07:55:07+00:00
+    assert.equal(timerender.render_markdown_timestamp(target, current).text, 'Fri, Jul 13 2018, 1 PM');
+
+    // ------ SET 2 ------
+
+    page_params.twenty_four_hour_time = true;
+    moment.tz.setDefault("UTC");
+
+    // Render all time details precisely (generic case).
+    target = moment(1549979707000); // Tuesday 2019-02-12T13:55:07+00:00
+    current = moment(1549958107000); // Tuesday 2019-02-12T07:55:07+00:00
+    assert.equal(timerender.render_markdown_timestamp(target, current).text, 'Tue, Feb 12, 13:55:07');
+
+    // Ignore seconds.
+    target = moment(1549979700000); // Tuesday 2019-02-12T13:55:00+00:00
+    current = moment(1549958107000); // Tuesday 2019-02-12T07:55:07+00:00
+    assert.equal(timerender.render_markdown_timestamp(target, current).text, 'Tue, Feb 12, 13:55');
+
+    // Ignore minutes and seconds
+    target = moment(1531486800000); // Friday 2018-07-13T13:00:00+00:00
+    current = moment(1531909397313); // Wednesday 2018-07-18T10:23:17+00:00
+    assert.equal(timerender.render_markdown_timestamp(target, current).text, 'Fri, Jul 13, 13:00');
+
+    // Render year if different from current year.
+    target = moment(1531486800000); // Friday 2018-07-13T13:00:00+00:00
+    current = moment(1549958107000); // Tuesday 2019-02-12T07:55:07+00:00
+    assert.equal(timerender.render_markdown_timestamp(target, current).text, 'Fri, Jul 13 2018, 13:00');
+
+    // ------ SET 3 ------
+
+    page_params.twenty_four_hour_time = false;
+    moment.tz.setDefault('Asia/Kolkata');  // UTC Offset: +05:30
+
+    // Render all time details precisely (generic case).
+    target = moment(1549979707000); // Tuesday 2019-02-12T13:55:07+00:00
+    current = moment(1549958107000); // Tuesday 2019-02-12T07:55:07+00:00
+    assert.equal(timerender.render_markdown_timestamp(target, current).text, 'Tue, Feb 12, 7:25:07 PM');
+
+    // Ignore seconds.
+    target = moment(1549979700000); // Tuesday 2019-02-12T13:55:00+00:00
+    current = moment(1549958107000); // Tuesday 2019-02-12T07:55:07+00:00
+    assert.equal(timerender.render_markdown_timestamp(target, current).text, 'Tue, Feb 12, 7:25 PM');
+
+    // Ignore minutes and seconds
+    target = moment(1531488600000); // Friday 22018-07-13T13:30:00+00:00
+    current = moment(1531909397313); // Wednesday 2018-07-18T10:23:17+00:00
+    assert.equal(timerender.render_markdown_timestamp(target, current).text, 'Fri, Jul 13, 7 PM');
+
+    // Render year if different from current year.
+    target = moment(1531486800000); // Friday 2018-07-13T13:00:00+00:00
+    current = moment(1549958107000); // Tuesday 2019-02-12T07:55:07+00:00
+    assert.equal(timerender.render_markdown_timestamp(target, current).text, 'Fri, Jul 13 2018, 6:30 PM');
 });

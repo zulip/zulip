@@ -164,6 +164,40 @@ exports.render_date = function (time, time_above, today) {
     return node;
 };
 
+// Renders the timestamp returned by the !time() markdown syntax.
+exports.render_markdown_timestamp = function (time, now, text) {
+    now = now || moment();
+    if (page_params.timezone) {
+        now = now.tz(page_params.timezone);
+        time = time.tz(page_params.timezone);
+    }
+    let timestring = time.format('ddd, MMM D');
+    if (now.year() !== time.year()) {
+        timestring += time.format(' YYYY');
+    }
+    timestring += ',';
+    const military_time = page_params.twenty_four_hour_time;
+    if (military_time) {
+        timestring += time.format(' HH');
+    } else {
+        timestring += time.format(' h');
+    }
+    if (military_time || time.minutes() !== 0 || time.seconds() !== 0) {
+        timestring += time.format(':mm');
+    }
+    if (time.seconds() !== 0) {
+        timestring += time.format(":ss");
+    }
+    if (!military_time) {
+        timestring += time.format(" A");
+    }
+    const titlestring = "This time is in your timezone. Original text was '" + text + "'.";
+    return {
+        text: timestring,
+        title: titlestring,
+    };
+};
+
 // This isn't expected to be called externally except manually for
 // testing purposes.
 exports.update_timestamps = function () {

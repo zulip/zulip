@@ -619,6 +619,21 @@ MessageListView.prototype = {
             }
         });
 
+        content.find('span.timestamp').each(function (index, elem) {
+            // Populate each timestamp span with mentioned time
+            // in user's local timezone.
+            const timestamp = moment.unix($(this).attr('value'));
+            if (timestamp.isValid() && $(this).attr('value') !== null) {
+                const text = $(this).text();
+                const rendered_time = timerender.render_markdown_timestamp(timestamp,
+                                                                           null, text);
+                $(this).text(rendered_time.text);
+                $(this).attr('title', rendered_time.title);
+            } else {
+                elem.classList.remove('timestamp');
+                elem.setAttribute('title', 'Could not parse timestamp.');
+            }
+        });
         // Display emoji (including realm emoji) as text if
         // page_params.emojiset is 'text'.
         if (page_params.emojiset === 'text') {
