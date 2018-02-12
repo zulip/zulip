@@ -947,6 +947,7 @@ JS_SPECS = {
             'js/top_left_corner.js',
             'js/stream_list.js',
             'js/filter.js',
+            'js/submessage.js',
             'js/fetch_status.js',
             'js/message_list_data.js',
             'js/message_list_view.js',
