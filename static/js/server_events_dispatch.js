@@ -104,9 +104,12 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             page_params.realm_icon_url = event.data.icon_url;
             page_params.realm_icon_source = event.data.icon_source;
             realm_icon.rerender();
+        } else if (event.op === 'update_dict' && event.property === 'logo') {
+            page_params.realm_logo_url = event.data.logo_url;
+            page_params.realm_logo_source = event.data.logo_source;
+            realm_logo.rerender();
         } else if (event.op === 'deactivated') {
             window.location.href = "/accounts/deactivated/";
-        }
 
         break;
 
