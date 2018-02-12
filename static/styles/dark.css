@@ -201,7 +201,8 @@ body.dark-mode #global_filters li:hover,
 body.dark-mode #stream_filters li:hover,
 body.dark-mode #stream_filters li.highlighted_stream,
 body.dark-mode #group-pms li:hover,
-body.dark-mode #user_presences li:hover {
+body.dark-mode #user_presences li:hover,
+body.dark-mode #user_presences li.highlighted_user {
     background-color: hsla(136, 25%, 73%, 0.2);
 }
 
