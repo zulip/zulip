@@ -244,6 +244,8 @@ exports.process_from_server = function process_from_server(messages) {
         // the backend.
         client_message.timestamp = message.timestamp;
 
+        client_message.submessages = message.submessages;
+
         msgs_to_rerender.push(client_message);
         delete waiting_for_ack[client_message.id];
     });
