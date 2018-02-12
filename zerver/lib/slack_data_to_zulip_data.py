@@ -44,7 +44,7 @@ def reset_sequence(model_class: Any, value: int) -> None:
     sequence = idseq(model_class)
     conn.execute("ALTER SEQUENCE {} RESTART WITH {};".format(sequence, value))
 
-def allocate_id(model_class: Any, sequence_increase_factor: int) -> int:
+def allocate_ids(model_class: Any, sequence_increase_factor: int) -> List[int]:
     """
     Increases the sequence number for a given table by the amount of objects being
     imported into that table. Hence, this gives a reserved range of ids to import the converted
@@ -53,7 +53,7 @@ def allocate_id(model_class: Any, sequence_increase_factor: int) -> int:
     start_id_sequence = get_next_id(model_class)
     restart_sequence_id = start_id_sequence + sequence_increase_factor
     reset_sequence(model_class, restart_sequence_id)
-    return start_id_sequence
+    return list(range(start_id_sequence ,restart_sequence_id))
 
 def slack_workspace_to_realm(REALM_ID: int, user_list: List[ZerverFieldsT],
                              realm_subdomain: str, fixtures_path: str,
@@ -137,11 +137,12 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
     zerver_userprofile = []
     added_users = {}
 
-    user_id_count = allocate_id(UserProfile, total_users)
+    user_id_list = allocate_ids(UserProfile, total_users)
 
     # We have only one primary owner in slack, see link
     # https://get.slack.help/hc/en-us/articles/201912948-Owners-and-Administrators
     # This is to import the primary owner first from all the users
+    user_id_count = 0
     primary_owner_id = user_id_count
     user_id_count += 1
 
@@ -151,9 +152,9 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
         DESKTOP_NOTIFICATION = True
 
         if user.get('is_primary_owner', False):
-            user_id = primary_owner_id
+            user_id = user_id_list[primary_owner_id]
         else:
-            user_id = user_id_count
+            user_id = user_id_list[user_id_count]
 
         # email
         email = get_user_email(user, domain_name)
@@ -302,11 +303,13 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
         for member in channel['members']:
             total_subscription += 1
 
-    stream_id_count = allocate_id(Stream, total_users)
-    subscription_id_count = allocate_id(Subscription, total_subscription)
-    recipient_id_count = allocate_id(Recipient, total_recipients)
+    stream_id_list = allocate_ids(Stream, total_users)
+    subscription_id_list = allocate_ids(Subscription, total_subscription)
+    recipient_id_list = allocate_ids(Recipient, total_recipients)
     # corresponding to channels 'general' and 'random'
-    defaultstream_id = allocate_id(DefaultStream, 2)
+    defaultstream_id_list = allocate_ids(DefaultStream, 2)
+
+    stream_id_count = subscription_id_count = recipient_id_count = defaultstream_id = 0
 
     for channel in channels:
         # slack_channel_id = channel['id']
@@ -316,6 +319,8 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
         # purpose.creator, purpose.last_set fields are not preserved.
         description = "topic: {}\npurpose: {}".format(channel["topic"]["value"],
                                                       channel["purpose"]["value"])
+        stream_id = stream_id_list[stream_id_count]
+        recipient_id = recipient_id_list[recipient_id_count]
 
         # construct the stream object and append it to zerver_stream
         stream = dict(
@@ -325,36 +330,37 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
             description=description,
             invite_only=not channel["is_general"],
             date_created=float(channel["created"]),
-            id=stream_id_count)
+            id=stream_id)
 
         # construct defaultstream object
         # slack has the default channel 'general', where every user is subscribed
-        defaultstream = build_defaultstream(channel['name'], realm_id, stream_id_count,
-                                            defaultstream_id)
+        defaultstream = build_defaultstream(channel['name'], realm_id, stream_id,
+                                            defaultstream_id_list[defaultstream_id])
         if (defaultstream):
             zerver_defaultstream.append(defaultstream)
             defaultstream_id += 1
 
         zerver_stream.append(stream)
-        added_channels[stream['name']] = stream_id_count
+        added_channels[stream['name']] = stream_id
 
         # construct the recipient object and append it to zerver_recipient
         # type 1: private
         # type 2: stream
         # type 3: huddle
         recipient = dict(
-            type_id=stream_id_count,
-            id=recipient_id_count,
+            type_id=stream_id,
+            id=recipient_id,
             type=2)
         zerver_recipient.append(recipient)
-        added_recipient[stream['name']] = recipient_id_count
+        added_recipient[stream['name']] = recipient_id
         # TOODO add recipients for private message and huddles
 
         # construct the subscription object and append it to zerver_subscription
         zerver_subscription, subscription_id_count = build_subscription(channel['members'],
                                                                         zerver_subscription,
-                                                                        recipient_id_count,
+                                                                        recipient_id,
                                                                         added_users,
+                                                                        subscription_id_list,
                                                                         subscription_id_count)
         # TOODO add zerver_subscription which correspond to
         # huddles type recipient
@@ -385,8 +391,11 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
         zulip_user_id = user['id']
         # this maps the recipients and subscriptions
         # related to private messages
-        recipient, sub = build_pm_recipient_sub_from_user(zulip_user_id, recipient_id_count,
-                                                          subscription_id_count)
+        recipient_id = recipient_id_list[recipient_id_count]
+        subscription_id = subscription_id_list[subscription_id_count]
+
+        recipient, sub = build_pm_recipient_sub_from_user(zulip_user_id, recipient_id,
+                                                          subscription_id)
         zerver_recipient.append(recipient)
         zerver_subscription.append(sub)
         subscription_id_count += 1
@@ -429,8 +438,10 @@ def build_pm_recipient_sub_from_user(zulip_user_id: int, recipient_id: int,
 
 def build_subscription(channel_members: List[str], zerver_subscription: List[ZerverFieldsT],
                        recipient_id: int, added_users: AddedUsersT,
-                       subscription_id: int) -> Tuple[List[ZerverFieldsT], int]:
+                       subscription_id_list: List[int],
+                       subscription_id_count: int) -> Tuple[List[ZerverFieldsT], int]:
     for member in channel_members:
+        subscription_id = subscription_id_list[subscription_id_count]
         sub = dict(
             recipient=recipient_id,
             notifications=False,
@@ -445,8 +456,8 @@ def build_subscription(channel_members: List[str], zerver_subscription: List[Zer
         # proof :  https://github.com/zulip/zulip/blob/master/zerver/views/messages.py#L240 &
         # https://github.com/zulip/zulip/blob/master/zerver/views/messages.py#L324
         zerver_subscription.append(sub)
-        subscription_id += 1
-    return zerver_subscription, subscription_id
+        subscription_id_count += 1
+    return zerver_subscription, subscription_id_count
 
 def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFieldsT], REALM_ID: int,
                                      added_users: AddedUsersT, added_recipient: AddedRecipientsT,
@@ -471,14 +482,16 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
                                                       added_recipient)
         total_messages += tm
         total_usermessages += tum
-    message_id_count = allocate_id(Message, total_messages)
-    usermessage_id_count = allocate_id(UserMessage, total_usermessages)
+    message_id_list = allocate_ids(Message, total_messages)
+    usermessage_id_list = allocate_ids(UserMessage, total_usermessages)
+
+    message_id_count = usermessage_id_count = 0
 
     constants = [slack_data_dir, REALM_ID]
     for channel in added_channels.keys():
         message_id = len(zerver_message) + message_id_count  # For the id of the messages
         usermessage_id = len(zerver_usermessage) + usermessage_id_count
-        id_list = [message_id, usermessage_id]
+        id_list = [message_id, usermessage_id, message_id_list, usermessage_id_list]
         zm, zum = channel_message_to_zerver_message(constants, channel, users,
                                                     added_users, added_recipient,
                                                     realm['zerver_subscription'],
@@ -523,7 +536,7 @@ def channel_message_to_zerver_message(constants: List[Any], channel: str,
                                       users: List[ZerverFieldsT], added_users: AddedUsersT,
                                       added_recipient: AddedRecipientsT,
                                       zerver_subscription: List[ZerverFieldsT],
-                                      ids: List[int]) -> Tuple[List[ZerverFieldsT],
+                                      ids: List[Any]) -> Tuple[List[ZerverFieldsT],
                                                                List[ZerverFieldsT]]:
     """
     Returns:
@@ -531,7 +544,7 @@ def channel_message_to_zerver_message(constants: List[Any], channel: str,
     2. zerver_usermessage, which is a list of the usermessages
     """
     slack_data_dir, REALM_ID = constants
-    message_id, usermessage_id = ids
+    message_id_count, usermessage_id_count, message_id_list, usermessage_id_list = ids
     json_names = os.listdir(slack_data_dir + '/' + channel)
     zerver_message = []
     zerver_usermessage = []  # type: List[ZerverFieldsT]
@@ -550,6 +563,7 @@ def channel_message_to_zerver_message(constants: List[Any], channel: str,
                     continue
 
             recipient_id = added_recipient[channel]
+            message_id = message_id_list[message_id_count]
             # construct message
             zulip_message = dict(
                 sending_client=1,
@@ -570,13 +584,11 @@ def channel_message_to_zerver_message(constants: List[Any], channel: str,
             zerver_message.append(zulip_message)
 
             # construct usermessages
-            zerver_usermessage, usermessage_id = build_zerver_usermessage(zerver_usermessage,
-                                                                          usermessage_id,
-                                                                          zerver_subscription,
-                                                                          recipient_id,
-                                                                          mentioned_users_id,
-                                                                          message_id)
-            message_id += 1
+            zerver_usermessage, usermessage_id_count = build_zerver_usermessage(
+                zerver_usermessage, usermessage_id_count, usermessage_id_list,
+                zerver_subscription, recipient_id, mentioned_users_id, message_id)
+
+            message_id_count += 1
     return zerver_message, zerver_usermessage
 
 def get_message_sending_user(message: ZerverFieldsT) -> str:
@@ -586,7 +598,8 @@ def get_message_sending_user(message: ZerverFieldsT) -> str:
         user = message['user']
     return user
 
-def build_zerver_usermessage(zerver_usermessage: List[ZerverFieldsT], usermessage_id: int,
+def build_zerver_usermessage(zerver_usermessage: List[ZerverFieldsT], usermessage_id_count: int,
+                             usermessage_id_list: List[int],
                              zerver_subscription: List[ZerverFieldsT], recipient_id: int,
                              mentioned_users_id: List[int],
                              message_id: int) -> Tuple[List[ZerverFieldsT], int]:
@@ -598,12 +611,12 @@ def build_zerver_usermessage(zerver_usermessage: List[ZerverFieldsT], usermessag
 
             usermessage = dict(
                 user_profile=subscription['user_profile'],
-                id=usermessage_id,
+                id=usermessage_id_list[usermessage_id_count],
                 flags_mask=flags_mask,
                 message=message_id)
-            usermessage_id += 1
+            usermessage_id_count += 1
             zerver_usermessage.append(usermessage)
-    return zerver_usermessage, usermessage_id
+    return zerver_usermessage, usermessage_id_count
 
 def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str, token: str) -> None:
     check_subdomain_available(realm_subdomain)
@@ -623,7 +636,7 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str, 
     script_path = os.path.dirname(os.path.abspath(__file__)) + '/'
     fixtures_path = script_path + '../fixtures/'
 
-    REALM_ID = allocate_id(Realm, 1)
+    REALM_ID = allocate_ids(Realm, 1)[0]
 
     user_list = get_user_data(token)
     realm, added_users, added_recipient, added_channels = slack_workspace_to_realm(REALM_ID,
