@@ -77,13 +77,14 @@ isort==4.3.4
 jedi==0.11.0              # via ipython
 jinja2==2.10
 jmespath==0.9.3           # via boto3, botocore
+jsondiff==1.1.1           # via moto
 jsonpickle==0.9.5         # via aws-xray-sdk
 lxml==4.1.1
 markdown-include==0.5.1
 markdown==2.6.11
 markupsafe==1.0
 mock==2.0.0
-moto==1.1.24
+moto==1.2.0
 mypy==0.560
 mypy_extensions==0.3.0
 ndg-httpsclient==0.4.3
