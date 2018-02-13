@@ -38,15 +38,13 @@
                 </p>
                 {% if register_link_disabled %}
                 {% elif only_sso %}
-                <a href="{{ url('login-sso') }}">
-                    <button href="" class="download-button" type="button"
-                            name="button">{{ _('Log in now!') }}</button>
-                </a>
+                <div>
+                    <a href="{{ url('login-sso') }}" class="download-button button no-style">{{ _('Log in now!') }}</a>
+                </div>
                 {% else %}
-                <a href="{{ url('register') }}">
-                    <button href="" class="download-button" type="button"
-                            name="button">{{ _('Sign up now!') }}</button>
-                </a>
+                <div>
+                    <a href="{{ url('register') }}" class="download-button button no-style">{{ _('Sign up now!') }}</a>
+                </div>
                 {% endif %}
                 <!-- we want this to be il-block so we'll put a <br> above so it's on
                 the next line.
@@ -607,15 +605,13 @@
         <h1>Experience Zulip today!</h1>
         {% if register_link_disabled %}
         {% elif only_sso %}
-        <a href="{{ url('login-sso') }}">
-            <button href="" type="button"
-                    name="button">{{ _('Log in now!') }}</button>
-        </a>
+        <div>
+            <a href="{{ url('login-sso') }}" class="button no-style">{{ _('Log in now!') }}</a>
+        </div>
         {% else %}
-        <a href="{{ url('register') }}">
-            <button href="" type="button"
-                    name="button">{{ _('Sign up now!') }}</button>
-        </a>
+        <div>
+            <a href="{{ url('register') }}" class="button no-style">{{ _('Sign up now!') }}</a>
+        </div>
         {% endif %}
         <div class="zulip-octopus"></div>
     </div>

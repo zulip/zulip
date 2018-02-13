@@ -820,19 +820,19 @@ nav ul li.active::after {
     text-shadow: 0px 0px 5px rgba(10, 66, 51, 0.3), 0px 0px 20px rgba(255,255,255,0.2);
 }
 
-.portico-landing.hello .hero header a {
+.portico-landing.hello .hero header div {
     display: block;
     margin: 20px auto 0px auto;
     text-align: center;
 }
 
-.portico-landing.hello .hero header button {
+.portico-landing.hello .hero header a.button {
     margin-top: 0px;
     padding: 12px 20px;
 
     background: #fff;
     border: 2px solid #fff;
-
+    border-radius: 5px;
     font-size: 1.2em;
     font-weight: 500;
     color: #679f81;
@@ -842,11 +842,11 @@ nav ul li.active::after {
     transition: all 0.2s ease;
 }
 
-.portico-landing.hello .hero header button:hover {
+.portico-landing.hello .hero header a.button:hover {
     box-shadow: 0px 3px 10px rgba(255,255,255,0.2);
 }
 
-.portico-landing.hello .hero header button:active {
+.portico-landing.hello .hero header a.button:active {
     box-shadow: 0px 3px 20px rgba(255,255,255,0.5);
 }
 
@@ -1580,21 +1580,26 @@ nav ul li.active::after {
 
 }
 
-.portico-landing.hello .call-to-action-bottom button {
+.portico-landing.hello .call-to-action-bottom div {
     display: block;
-    margin: 20px auto 0 auto;
-    padding: 11px 25px 11px 25px;
+    text-align: center;
+}
 
+.portico-landing.hello .call-to-action-bottom a.button {
+    display: inline-block;
+    margin: 20px auto 0 auto;
+    padding: 9px 23px 9px 23px;
     font-size: 1.2rem;
     color: hsl(220, 15%, 66%);
 
     border: 1px solid hsl(220, 15%, 66%);
+    border-radius: 4px;
     background: transparent;
 
     transition: all 0.2s ease;
 }
 
-.portico-landing.hello .call-to-action-bottom button:hover {
+.portico-landing.hello .call-to-action-bottom a.button:hover {
     color: hsl(219, 23%, 33%);
     border: 1px solid hsl(220, 15%, 20%);
 }
