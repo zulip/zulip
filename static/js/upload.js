@@ -21,26 +21,27 @@ function clear_out_file_list(jq_file_list) {
     //    $("#file_input").val("");
 }
 
-exports.uploadStarted = function () {
-    $("#compose-send-button").attr("disabled", "");
-    $("#compose-send-status").addClass("alert-info").show();
-    $(".compose-send-status-close").one('click', compose.abort_xhr);
-    $("#compose-error-msg").html($("<p>").text(i18n.t("Uploading…"))
-        .after('<div class="progress progress-striped active">' +
-            '<div class="bar" id="compose-upload-bar" style="width: 00%;"></div>' +
-            '</div>'));
-};
+exports.options = function () {
+    var uploadStarted = function () {
+        $("#compose-send-button").attr("disabled", "");
+        $("#compose-send-status").addClass("alert-info").show();
+        $(".compose-send-status-close").one('click', compose.abort_xhr);
+        $("#compose-error-msg").html($("<p>").text(i18n.t("Uploading…"))
+            .after('<div class="progress progress-striped active">' +
+                   '<div class="bar" id="compose-upload-bar" style="width: 00%;"></div>' +
+                   '</div>'));
+    };
 
-exports.progressUpdated = function (i, file, progress) {
-    $("#compose-upload-bar").width(progress + "%");
-};
+    var progressUpdated = function (i, file, progress) {
+        $("#compose-upload-bar").width(progress + "%");
+    };
 
-exports.uploadError = function (error_code, server_response, file) {
-    var msg;
-    $("#compose-send-status").addClass("alert-error")
-        .removeClass("alert-info");
-    $("#compose-send-button").prop("disabled", false);
-    switch (error_code) {
+    var uploadError = function (error_code, server_response, file) {
+        var msg;
+        $("#compose-send-status").addClass("alert-error")
+            .removeClass("alert-info");
+        $("#compose-send-button").prop("disabled", false);
+        switch (error_code) {
         case 'BrowserNotSupported':
             msg = i18n.t("File upload is not yet available for your browser.");
             break;
@@ -64,46 +65,44 @@ exports.uploadError = function (error_code, server_response, file) {
         default:
             msg = i18n.t("An unknown error occurred.");
             break;
-    }
-    $("#compose-error-msg").text(msg);
-};
+        }
+        $("#compose-error-msg").text(msg);
+    };
 
-exports.uploadFinished = function (i, file, response) {
-    if (response.uri === undefined) {
-        return;
-    }
-    var textbox = $("#compose-textarea");
-    var split_uri = response.uri.split("/");
-    var filename = split_uri[split_uri.length - 1];
-    // Urgh, yet another hack to make sure we're "composing"
-    // when text gets added into the composebox.
-    if (!compose_state.composing()) {
-        compose_actions.start('stream');
-    }
+    var uploadFinished = function (i, file, response) {
+        if (response.uri === undefined) {
+            return;
+        }
+        var textbox = $("#compose-textarea");
+        var split_uri = response.uri.split("/");
+        var filename = split_uri[split_uri.length - 1];
+        // Urgh, yet another hack to make sure we're "composing"
+        // when text gets added into the composebox.
+        if (!compose_state.composing()) {
+            compose_actions.start('stream');
+        }
 
-    var uri = make_upload_absolute(response.uri);
+        var uri = make_upload_absolute(response.uri);
 
-    if (i === -1) {
-        // This is a paste, so there's no filename. Show the image directly
-        textbox.val(textbox.val() + "[pasted image](" + uri + ") ");
-    } else {
-        // This is a dropped file, so make the filename a link to the image
-        textbox.val(textbox.val() + "[" + filename + "](" + uri + ")" + " ");
-    }
-    compose_ui.autosize_textarea();
-    $("#compose-send-button").prop("disabled", false);
-    $("#compose-send-status").removeClass("alert-info")
-        .hide();
+        if (i === -1) {
+            // This is a paste, so there's no filename. Show the image directly
+            textbox.val(textbox.val() + "[pasted image](" + uri + ") ");
+        } else {
+            // This is a dropped file, so make the filename a link to the image
+            textbox.val(textbox.val() + "[" + filename + "](" + uri + ")" + " ");
+        }
+        compose_ui.autosize_textarea();
+        $("#compose-send-button").prop("disabled", false);
+        $("#compose-send-status").removeClass("alert-info").hide();
 
-    // In order to upload the same file twice in a row, we need to clear out
-    // the #file_input element, so that the next time we use the file dialog,
-    // an actual change event is fired.  This is extracted to a function
-    // to abstract away some IE hacks.
-    clear_out_file_list($("#file_input"));
-};
+        // In order to upload the same file twice in a row, we need to clear out
+        // the #file_input element, so that the next time we use the file dialog,
+        // an actual change event is fired.  This is extracted to a function
+        // to abstract away some IE hacks.
+        clear_out_file_list($("#file_input"));
+    };
 
-exports.initialize = function () {
-    $("#compose").filedrop({
+    return {
         url: "/json/user_uploads",
         fallback_id: "file_input",
         paramname: "file",
@@ -113,10 +112,10 @@ exports.initialize = function () {
             csrfmiddlewaretoken: csrf_token,
         },
         raw_droppable: ['text/uri-list', 'text/plain'],
-        drop: exports.uploadStarted,
-        progressUpdated: exports.progressUpdated,
-        error: exports.uploadError,
-        uploadFinished: exports.uploadFinished,
+        drop: uploadStarted,
+        progressUpdated: progressUpdated,
+        error: uploadError,
+        uploadFinished: uploadFinished,
         rawDrop: function (contents) {
             var textbox = $("#compose-textarea");
             if (!compose_state.composing()) {
@@ -125,7 +124,13 @@ exports.initialize = function () {
             textbox.val(textbox.val() + contents);
             compose_ui.autosize_textarea();
         },
-    });
+    };
+};
+
+exports.initialize = function () {
+    $("#compose").filedrop(
+        exports.options()
+    );
 };
 
 return exports;

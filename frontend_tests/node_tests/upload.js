@@ -16,6 +16,8 @@ zrequire('compose_state');
 zrequire('compose');
 zrequire('upload');
 
+var upload_opts = upload.options();
+
 (function test_upload_started() {
     $("#compose-send-button").prop('disabled', false);
     $("#compose-send-status").removeClass("alert-info").hide();
@@ -32,7 +34,7 @@ zrequire('upload');
         return 'fake-html';
     };
 
-    upload.uploadStarted();
+    upload_opts.drop();
 
     assert.equal($("#compose-send-button").attr("disabled"), '');
     assert($("#compose-send-status").hasClass("alert-info"));
@@ -47,7 +49,7 @@ zrequire('upload');
         assert.equal(width_percent, '39%');
         width_update_checked = true;
     };
-    upload.progressUpdated(1, '', 39);
+    upload_opts.progressUpdated(1, '', 39);
     assert(width_update_checked);
 }());
 
@@ -68,7 +70,7 @@ zrequire('upload');
 
     function test(err, msg, server_response=null, file={}) {
         setup_test();
-        upload.uploadError(err, server_response, file);
+        upload_opts.error(err, server_response, file);
         assert_side_effects(msg);
     }
 
@@ -125,7 +127,7 @@ zrequire('upload');
         }
 
         setup();
-        upload.uploadFinished(i, {}, response);
+        upload_opts.uploadFinished(i, {}, response);
         assert_side_effects();
     }
 
