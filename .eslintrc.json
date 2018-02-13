@@ -165,6 +165,7 @@
         "emoji_picker": false,
         "hotspots": false,
         "compose_ui": false,
+        "tabs": false,
         "common": false,
         "panels": false
     },

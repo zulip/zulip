@@ -76,7 +76,7 @@ exports.activate = function (raw_operators, opts) {
     }
 
     notifications.redraw_title();
-
+    tabs.set_current_operators(operators);
     blueslip.debug("Narrowed", {operators: _.map(operators,
                                                  function (e) { return e.operator; }),
                                 trigger: opts ? opts.trigger : undefined,
@@ -440,6 +440,7 @@ exports.deactivate = function () {
         return;
     }
     unnarrow_times = {start_time: new Date()};
+    tabs.set_current_operators([]);
     blueslip.debug("Unnarrowed");
 
     if (ui.actively_scrolling()) {

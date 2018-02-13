@@ -1129,6 +1129,7 @@ JS_SPECS = {
             'js/typing_events.js',
             'js/ui_init.js',
             'js/emoji_picker.js',
+            'js/tabs.js',
             'js/compose_ui.js',
             'js/panels.js',
             'js/settings_ui.js'
