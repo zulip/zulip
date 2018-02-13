@@ -1028,7 +1028,9 @@ exports.initialize = function () {
     });
 
     $("#compose").filedrop(
-        upload.options()
+        upload.options({
+            mode: 'compose',
+        })
     );
 
     if (page_params.narrow !== undefined) {
