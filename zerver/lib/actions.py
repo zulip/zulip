@@ -55,7 +55,7 @@ from zerver.lib.user_groups import create_user_group, access_user_group_by_id
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
     RealmDomain, \
     Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, \
-    UserHotspot, ScheduledMessage, \
+    UserHotspot, MultiuseInvite, ScheduledMessage, \
     Client, DefaultStream, DefaultStreamGroup, UserPresence, PushDeviceToken, \
     ScheduledEmail, MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_personal_recipient, get_huddle, \
@@ -4072,6 +4072,15 @@ def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
                             invited_as_admin=invitee.invited_as_admin))
 
     return invites
+
+def do_create_multiuse_invite_link(referred_by: UserProfile, streams: Optional[List[Stream]]=[]) -> str:
+    realm = referred_by.realm
+    invite = MultiuseInvite.objects.create(realm=realm, referred_by=referred_by)
+    if streams:
+        invite.streams = streams
+        invite.save()
+
+    return create_confirmation_link(invite, realm.host, Confirmation.MULTIUSE_INVITE)
 
 def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
     email = prereg_user.email
