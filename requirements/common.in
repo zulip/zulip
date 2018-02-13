@@ -95,7 +95,7 @@ oauthlib==2.0.6
 ndg-httpsclient==0.4.3
 
 # Needed to access rabbitmq
-pika==0.11.0
+pika==0.11.2
 
 # Needed to access our database
 psycopg2==2.7.3.2
