@@ -425,6 +425,9 @@ a .icon-vector-flip-vertical:before {
 .icon-vector-user:before {
   content: "\f007";
 }
+.icon-vector-user-times:before {
+  content: "\f235";
+}
 .icon-vector-film:before {
   content: "\f008";
 }
