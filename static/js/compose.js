@@ -1027,7 +1027,9 @@ exports.initialize = function () {
         Dropbox.choose(options);
     });
 
-    upload.initialize();
+    $("#compose").filedrop(
+        upload.options()
+    );
 
     if (page_params.narrow !== undefined) {
         if (page_params.narrow_topic !== undefined) {

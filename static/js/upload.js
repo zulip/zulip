@@ -127,12 +127,6 @@ exports.options = function () {
     };
 };
 
-exports.initialize = function () {
-    $("#compose").filedrop(
-        exports.options()
-    );
-};
-
 return exports;
 }());
 
