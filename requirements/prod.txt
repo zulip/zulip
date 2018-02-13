@@ -24,7 +24,7 @@ cchardet==2.1.1
 certifi==2017.7.27.1
 cffi==1.11.4
 chardet==3.0.4
-cryptography==2.1.2
+cryptography==2.1.4
 cssselect==1.0.1          # via premailer
 cssutils==1.0.2           # via premailer
 decorator==4.1.2          # via ipython, traitlets
