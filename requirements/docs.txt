@@ -8,7 +8,7 @@
 # For details, see requirements/README.md .
 #
 alabaster==0.7.10
-babel==2.5.1
+babel==2.5.3
 certifi==2017.11.5        # via requests
 chardet==3.0.4            # via requests
 commonmark==0.5.4

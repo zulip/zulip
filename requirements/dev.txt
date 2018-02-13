@@ -20,7 +20,7 @@ asn1crypto==0.23.0        # via cryptography
 attrs==17.3.0             # via automat, service-identity
 automat==0.6.0            # via twisted
 aws-xray-sdk==0.94        # via moto
-babel==2.5.1
+babel==2.5.3
 backports-abc==0.5
 backports.ssl-match-hostname==3.5.0.1
 beautifulsoup4==4.6.0
