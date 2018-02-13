@@ -1946,6 +1946,21 @@ nav a .no-style {
     letter-spacing: normal;
 }
 
+#tab-indicator {
+    z-index: 2;
+    padding-top: 0px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    float: right;
+    letter-spacing: normal;
+    height: 33px;
+    font-size: 20px;
+    padding-top: 7px;
+    padding-left: 4px;
+    padding-right: 4px;
+    border-right: 1px solid hsl(0, 0%, 87.8%);
+}
+
 div.floating_recipient {
     border-collapse: separate;
     width: 100%;

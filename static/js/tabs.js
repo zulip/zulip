@@ -21,6 +21,7 @@ exports.activate = function (index) {
     }
     current_tab_index = index;
     narrow.activate(all_tabs[index].operators);
+    exports.update_indicator();
     return true;
 };
 
@@ -51,6 +52,7 @@ exports.new = function (from_index) {
     var new_tab = Object.assign({}, all_tabs[from_index]);
     all_tabs.splice(from_index + 1, 0, new_tab);
     current_tab_index = from_index + 1;
+    exports.update_indicator();
 };
 
 exports.close = function (index) {
@@ -59,20 +61,38 @@ exports.close = function (index) {
         return false;
     }
     if (all_tabs[current_tab_index-1]) {
-        current_tab_index--;
+        current_tab_index = current_tab_index - 1;
     } else {
         current_tab_index = 0;
     }
-    return all_tabs.splice(index, 1);
+    all_tabs.splice(index, 1);
+    exports.activate(current_tab_index);
+    return true;
 };
 
 exports.get = function () {
     return all_tabs;
 };
 
+exports.get_current_index = function () {
+    return current_tab_index;
+};
+
 exports._print = function () {
     blueslip.debug("All Tabs", all_tabs);
     blueslip.debug("Current Tab", all_tabs[current_tab_index]);
+};
+
+exports.update_indicator = function () {
+    var indicator = $('#tab-indicator');
+    if (all_tabs.length > 1) {
+        indicator.removeClass('notdisplayed');
+    } else {
+        indicator.addClass('notdisplayed');
+    }
+    var text = current_tab_index + 1;
+    text += "/" + all_tabs.length;
+    indicator.html(text);
 };
 
 return exports;
