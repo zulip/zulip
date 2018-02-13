@@ -91,6 +91,7 @@ ndg-httpsclient==0.4.3
 oauth2client==4.1.2
 oauthlib==2.0.6
 ordereddict==1.1          # via gitlint
+packaging==16.8           # via sphinx
 parsel==1.2.0             # via scrapy
 parso==0.1.0              # via jedi
 pbr==3.1.1                # via mock
@@ -121,6 +122,7 @@ pyldap==2.4.37
 pylibmc==1.5.2
 pyoembed==0.1.2
 pyopenssl==17.3.0         # via ndg-httpsclient, scrapy, service-identity
+pyparsing==2.2.0          # via packaging
 pysocks==1.6.7            # via twilio
 python-dateutil==2.6.1
 python-digitalocean==1.12
@@ -151,7 +153,7 @@ social-auth-core==1.5.0   # via social-auth-app-django
 sockjs-tornado==1.0.3
 sourcemap==0.2.1
 sphinx-rtd-theme==0.2.4
-sphinx==1.6.5
+sphinx==1.7.0
 sphinxcontrib-websupport==1.0.1  # via sphinx
 sqlalchemy==1.1.14
 statsd==3.2.1             # via django-statsd-mozilla
