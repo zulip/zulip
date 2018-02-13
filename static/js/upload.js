@@ -10,17 +10,6 @@ function make_upload_absolute(uri) {
     return uri;
 }
 
-// This function resets an input type="file".  Pass in the
-// jquery object.
-function clear_out_file_list(jq_file_list) {
-    if (compose.clone_file_input !== undefined) {
-        jq_file_list.replaceWith(compose.clone_file_input.clone(true));
-    }
-    // Hack explanation:
-    // IE won't let you do this (untested, but so says StackOverflow):
-    //    $("#file_input").val("");
-}
-
 // Show the upload button only if the browser supports it.
 exports.feature_check = function (upload_button) {
     if (window.XMLHttpRequest && (new XMLHttpRequest()).upload) {
@@ -126,10 +115,14 @@ exports.options = function (config) {
         send_status.removeClass("alert-info").hide();
 
         // In order to upload the same file twice in a row, we need to clear out
-        // the #file_input element, so that the next time we use the file dialog,
-        // an actual change event is fired.  This is extracted to a function
-        // to abstract away some IE hacks.
-        clear_out_file_list($("#" + file_input));
+        // the file input element, so that the next time we use the file dialog,
+        // an actual change event is fired. IE doesn't allow .val('') so we
+        // need to clone it. (Taken from the jQuery form plugin)
+        if (/MSIE/.test(navigator.userAgent)) {
+            $('#' + file_input).replaceWith($('#' + file_input).clone(true));
+        } else {
+            $('#' + file_input).val('');
+        }
     };
 
     return {
