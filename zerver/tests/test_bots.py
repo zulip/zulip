@@ -6,7 +6,7 @@ import ujson
 from django.core import mail
 from django.http import HttpResponse
 from django.test import override_settings
-from mock import patch
+from mock import patch, MagicMock
 from typing import Any, Dict, List, Mapping
 
 from zerver.lib.actions import do_change_stream_invite_only, do_deactivate_user
@@ -23,6 +23,8 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.bot_lib import get_bot_handler
+
+from zulip_bots.custom_exceptions import ConfigValidationError
 
 class BotTest(ZulipTestCase, UploadSerializeMixin):
     def assert_num_bots_equal(self, count: int) -> None:
@@ -1056,7 +1058,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         service_payload_url = ujson.loads(result.content)['service_payload_url']
         self.assertEqual(service_payload_url, "http://foo.bar2.com")
 
-    def test_patch_bot_config_data(self) -> None:
+    @patch('zulip_bots.bots.giphy.giphy.GiphyHandler.validate_config')
+    def test_patch_bot_config_data(self, mock_validate_config: MagicMock) -> None:
         self.create_test_bot('test', self.example_user("hamlet"),
                              full_name=u'Bot with config data',
                              bot_type=UserProfile.EMBEDDED_BOT,
@@ -1065,7 +1068,6 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         bot_info = {'config_data': ujson.dumps({'key': '87654321'})}
         result = self.client_patch("/json/bots/test-bot@zulip.testserver", bot_info)
         self.assert_json_success(result)
-
         config_data = ujson.loads(result.content)['config_data']
         self.assertEqual(config_data, ujson.loads(bot_info['config_data']))
 
@@ -1189,6 +1191,20 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                              config_data=ujson.dumps({'invalid': ['config', 'value']}),
                              assert_json_error_msg='config_data contains a value that is not a string',
                              **extras)
+
+        # Test to create embedded bot with an incorrect config value
+        incorrect_bot_config_info = {'key': 'incorrect key'}
+        bot_info = {
+            'full_name': 'Embedded test bot',
+            'short_name': 'embeddedservicebot3',
+            'bot_type': UserProfile.EMBEDDED_BOT,
+            'service_name': 'giphy',
+            'config_data': ujson.dumps(incorrect_bot_config_info)
+        }
+        bot_info.update(extras)
+        with patch('zulip_bots.bots.giphy.giphy.GiphyHandler.validate_config', side_effect=ConfigValidationError):
+            result = self.client_post("/json/bots", bot_info)
+        self.assert_json_error(result, 'Invalid configuration data!')
 
     def test_is_cross_realm_bot_email(self) -> None:
         self.assertTrue(is_cross_realm_bot_email("notification-bot@zulip.com"))
