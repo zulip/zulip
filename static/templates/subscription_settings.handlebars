@@ -39,6 +39,7 @@
             {{#if can_change_subscription_type}}
             <a class="change-stream-privacy" data-is-private="{{#if can_make_public }}true{{else}}false{{/if}}">[{{t "Change" }}]</a>
             {{/if}}
+            {{#if invite_only}}{{#unless is_admin}}<i title="{{t 'Only admins can make stream public, if admin is not subscribed to stream then, add an admin, the admin can make the stream public, and then the admin can unsubscribe'}}" class="icon-vector-question-sign change-stream-type-hint"></i>{{/unless}}{{/if}}
         </div>
         <div class="regular_subscription_settings collapse {{#subscribed}}in{{/subscribed}}">
             <div class="subscription-config">
