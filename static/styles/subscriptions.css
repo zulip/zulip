@@ -785,9 +785,11 @@ form#add_new_subscription {
     margin-left: -3px;
 }
 
+#subscription_overlay .stream-header .deactivate,
 #subscription_overlay .stream-header .subscribe-button {
     float: right;
     margin-top: -5px;
+    margin-right: 5px;
 }
 
 #subscription_overlay .stream-header .button-group {
@@ -990,6 +992,7 @@ form#add_new_subscription {
         vertical-align: top;
     }
 
+    #subscription_overlay .stream-header .deactivate,
     #subscription_overlay .stream-header .subscribe-button {
         margin-top: -7px;
     }
