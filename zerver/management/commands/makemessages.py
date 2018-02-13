@@ -82,15 +82,22 @@ class Command(makemessages.Command):
 
     def handle(self, *args: Any, **options: Any) -> None:
         self.handle_django_locales(*args, **options)
-        self.handle_frontend_locales(*args, **options)
+        self.handle_frontend_locales(**options)
 
-    def handle_frontend_locales(self, *args: Any, **options: Any) -> None:
-        self.frontend_source = options.get('frontend_source')
-        self.frontend_output = options.get('frontend_output')
-        self.frontend_namespace = options.get('frontend_namespace')
-        self.frontend_locale = options.get('locale')
-        self.frontend_exclude = options.get('exclude')
-        self.frontend_all = options.get('all')
+    def handle_frontend_locales(self, *,
+                                frontend_source: str,
+                                frontend_output: str,
+                                frontend_namespace: str,
+                                locale: List[str],
+                                exclude: List[str],
+                                all: bool,
+                                **options: Any) -> None:
+        self.frontend_source = frontend_source
+        self.frontend_output = frontend_output
+        self.frontend_namespace = frontend_namespace
+        self.frontend_locale = locale
+        self.frontend_exclude = exclude
+        self.frontend_all = all
 
         translation_strings = self.get_translation_strings()
         self.write_translation_strings(translation_strings)
