@@ -32,6 +32,26 @@
     outline: none;
 }
 
+.pill-container.notmem {
+    cursor: not-allowed;
+    border: none;
+}
+
+.pill-container.notmem .pill {
+    padding-right: 4px;
+    cursor: not-allowed;
+}
+
+.pill-container.notmem .pill:focus {
+    color: inherit;
+    border: 1px solid hsla(0, 0%, 0%, 0.15);
+    background: hsla(0, 0%, 0%, 0.07);
+}
+
+.pill-container.notmem .pill .exit {
+    display: none;
+}
+
 .pill-container .input {
     display: inline-block;
     padding: 2px 4px;

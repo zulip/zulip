@@ -942,6 +942,10 @@ input[type=checkbox].inline-block {
     word-break: break-all;
 }
 
+#user-groups .ntm {
+    cursor: not-allowed;
+}
+
 #user-groups .user-group span[contenteditable]:empty::before {
     opacity: 0.5;
     display: inline-block;
@@ -949,7 +953,7 @@ input[type=checkbox].inline-block {
 }
 
 #user-groups .user-group span[contenteditable]:focus,
-#user-groups .user-group span[contenteditable]:hover {
+#user-groups .user-group span[contenteditable="true"]:hover {
     border-bottom: 1px solid hsl(0, 0%, 80%);
     outline: none;
 }
@@ -961,6 +965,15 @@ input[type=checkbox].inline-block {
 
 #user-groups .user-group h4 > .button {
     vertical-align: 1px;
+}
+
+#user-groups .ntm h4 > .button {
+    cursor: not-allowed;
+    display: none;
+}
+
+#user-groups .ntm h4 > .button:hover {
+    border-color: hsl(4, 56%, 82%);
 }
 
 #user-groups .save-status {
