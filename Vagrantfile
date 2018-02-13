@@ -19,6 +19,41 @@ if Vagrant::VERSION == "1.8.7" then
     end
 end
 
+# Workaround: the lxc-config in vagrant-lxc is incompatible with changes in
+# LXC 2.1.0, found in Ubuntu 17.10 artful.  LXC 2.1.1 (in 18.04 LTS bionic)
+# ignores the old config key, so this will only be needed for artful.
+#
+# vagrant-lxc upstream has an attempted fix:
+#   https://github.com/fgrehm/vagrant-lxc/issues/445
+# but it didn't work in our testing.  This is a temporary issue, so we just
+# hack in a fix: we patch the skeleton `lxc-config` file right in the
+# distribution of the vagrant-lxc "box" we use.  If the user doesn't yet
+# have the box (e.g. on first setup), Vagrant would download it but too
+# late for us to patch it like this; so we prompt them to explicitly add it
+# first and then rerun.
+if ['up', 'provision'].include? ARGV[0]
+  LXC_VERSION = `lxc-ls --version`.strip unless defined? LXC_VERSION
+  if LXC_VERSION == "2.1.0"
+    lxc_config_file = ENV['HOME'] + "/.vagrant.d/boxes/fgrehm-VAGRANTSLASH-trusty64-lxc/1.2.0/lxc/lxc-config"
+    if File.file?(lxc_config_file)
+      lines = File.readlines(lxc_config_file)
+      deprecated_line = "lxc.pivotdir = lxc_putold\n"
+      if lines[1] == deprecated_line
+        lines[1] = "# #{deprecated_line}"
+        File.open(lxc_config_file, 'w') do |f|
+          f.puts(lines)
+        end
+      end
+    else
+      puts 'You are running LXC 2.1.0, and fgrehm/trusty64-lxc box is incompatible '\
+           "with it by default. First add the box by doing:\n"\
+           "  vagrant box add  https://vagrantcloud.com/fgrehm/trusty64-lxc\n"\
+           'Once this command succeeds, do "vagrant up" again.'
+      exit
+    end
+  end
+end
+
 # Workaround: Vagrant removed the atlas.hashicorp.com to
 # vagrantcloud.com redirect in February 2018. The value of
 # DEFAULT_SERVER_URL in Vagrant versions less than 1.9.3 is
