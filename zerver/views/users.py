@@ -173,8 +173,16 @@ def patch_bot_backend(
     if full_name is not None:
         check_change_full_name(bot, full_name, user_profile)
     if bot_owner is not None:
-        owner = get_user(bot_owner, user_profile.realm)
+        try:
+            owner = get_user(bot_owner, user_profile.realm)
+        except UserProfile.DoesNotExist:
+            return json_error(_('Failed to change owner, no such user'))
+        if not owner.is_active:
+            return json_error(_('Failed to change owner, user is deactivated'))
+        if owner.is_bot:
+            return json_error(_('Failed to change owner, bots can not be admin'))
         do_change_bot_owner(bot, owner, user_profile)
+
     if default_sending_stream is not None:
         if default_sending_stream == "":
             stream = None  # type: Optional[Stream]
