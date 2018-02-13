@@ -202,7 +202,7 @@ There are several pieces of data that you might want to back up:
 * The postgres database.  That you can back up like any postgres
 database; we have some example tooling for doing that incrementally
 into S3 using [wal-e](https://github.com/wal-e/wal-e) in
-`puppet/zulip_internal/manifests/postgres_common.pp` (that's what we
+`puppet/zulip_ops/manifests/postgres_common.pp` (that's what we
 use for zulip.com's database backups).  Note that this module isn't
 part of the Zulip server releases since it's part of the zulip.com
 configuration (see <https://github.com/zulip/zulip/issues/293>
@@ -267,7 +267,7 @@ installation from one server to another.
 We recommend running a disaster recovery after you setup backups to
 confirm that your backups are working; you may also want to monitor
 that they are up to date using the Nagios plugin at:
-`puppet/zulip_internal/files/nagios_plugins/check_postgres_backup`.
+`puppet/zulip_ops/files/nagios_plugins/check_postgres_backup`.
 
 Contributions to more fully automate this process or make this section
 of the guide much more explicit and detailed are very welcome!
@@ -278,9 +278,9 @@ of the guide much more explicit and detailed are very welcome!
 Zulip has database configuration for using Postgres streaming
 replication; you can see the configuration in these files:
 
-* `puppet/zulip_internal/manifests/postgres_slave.pp`
-* `puppet/zulip_internal/manifests/postgres_master.pp`
-* `puppet/zulip_internal/files/postgresql/*`
+* `puppet/zulip_ops/manifests/postgres_slave.pp`
+* `puppet/zulip_ops/manifests/postgres_master.pp`
+* `puppet/zulip_ops/files/postgresql/*`
 
 Contribution of a step-by-step guide for setting this up (and moving
 this configuration to be available in the main `puppet/zulip/` tree)
@@ -289,7 +289,7 @@ would be very welcome!
 ## Monitoring
 
 The complete Nagios configuration (sans secret keys) used to
-monitor zulip.com is available under `puppet/zulip_internal` in the
+monitor zulip.com is available under `puppet/zulip_ops` in the
 Zulip Git repository (those files are not installed in the release
 tarballs).
 

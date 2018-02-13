@@ -37,7 +37,7 @@ Copyright: 2011, Krzysztof Wilczynski
  2011, Puppet Labs Inc
 License: Apache-2.0
 
-File: puppet/zulip_internal/files/mediawiki/Auth_remoteuser.php
+File: puppet/zulip_ops/files/mediawiki/Auth_remoteuser.php
 Copyright: 2006 Otheus Shelling
  2007 Rusty Burchfield
  2009 James Kinsman
@@ -59,12 +59,12 @@ Files: puppet/zulip/files/nagios_plugins/zulip_nagios_server/check_website_respo
 Copyright: 2011 Chris Freeman
 License: GPL-2.0
 
-Files: puppet/zulip_internal/files/trac/cgi-bin/
+Files: puppet/zulip_ops/files/trac/cgi-bin/
 Copyright: 2003-2009 Edgewall Software
  2003-2004 Jonas Borgström <jonas@edgewall.com>
 License: BSD-3-Clause
 
-Files: puppet/zulip_internal/files/zulip-ec2-configure-interfaces
+Files: puppet/zulip_ops/files/zulip-ec2-configure-interfaces
 Copyright: 2013-2017, Dropbox, Inc., Kandra Labs, Inc., and contributors
 License: Expat
 
