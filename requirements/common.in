@@ -100,8 +100,8 @@ pika==0.11.2
 # Needed to access our database
 psycopg2==2.7.3.2
 
-pyasn1==0.3.7
-pyasn1-modules==0.1.5
+pyasn1==0.4.2
+pyasn1-modules==0.2.1
 pycrypto==2.6.1
 
 # Needed for memcached usage

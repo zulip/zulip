@@ -108,8 +108,8 @@ psycopg2==2.7.3.2
 ptyprocess==0.5.2         # via pexpect
 py3dns==3.1.0
 pyaml==17.10.0            # via moto
-pyasn1-modules==0.1.5
-pyasn1==0.3.7
+pyasn1-modules==0.2.1
+pyasn1==0.4.2
 pycodestyle==2.3.1
 pycparser==2.18           # via cffi
 pycrypto==2.6.1
