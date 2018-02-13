@@ -44,6 +44,6 @@ transifex-client==0.12.4
 python-digitalocean==1.12
 
 # Needed for updating the locked pip dependencies
-pip-tools==1.10.1
+pip-tools==1.11.0
 
 -r mypy.in
