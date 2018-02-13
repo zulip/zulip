@@ -111,7 +111,7 @@ pylibmc==1.5.2
 python-dateutil==2.6.1
 
 # Needed for timezone work
-pytz==2017.2
+pytz==2018.3
 
 # Needed for redis
 redis==2.10.6

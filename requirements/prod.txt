@@ -91,7 +91,7 @@ python-dateutil==2.6.1
 python-gcm==0.4
 python-twitter==3.3
 python3-openid==3.1.0     # via social-auth-core
-pytz==2017.2
+pytz==2018.3
 qrcode==4.0.4             # via django-two-factor-auth
 redis==2.10.6
 regex==2017.11.9

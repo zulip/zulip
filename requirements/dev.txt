@@ -127,7 +127,7 @@ python-digitalocean==1.12
 python-gcm==0.4
 python-twitter==3.3
 python3-openid==3.1.0     # via social-auth-core
-pytz==2017.2
+pytz==2018.3
 pyyaml==3.12              # via pyaml
 qrcode==4.0.4             # via django-two-factor-auth
 queuelib==1.4.2           # via scrapy
