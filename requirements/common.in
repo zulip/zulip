@@ -133,7 +133,7 @@ sourcemap==0.2.1
 tornado==4.5.2
 
 # Needed for Python static typing
-typing==3.6.2
+typing==3.6.4
 
 # Fast JSON parser
 -e git+https://github.com/zulip/ultrajson@70ac02bec#egg=ujson==1.35+git

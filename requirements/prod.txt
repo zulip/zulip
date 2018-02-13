@@ -111,7 +111,7 @@ stripe==1.77.2
 tornado==4.5.2
 traitlets==4.3.2          # via ipython
 twilio==6.9.0
-typing==3.6.2
+typing==3.6.4
 uritemplate==3.0.0
 urllib3==1.22             # via requests
 uwsgi==2.0.14

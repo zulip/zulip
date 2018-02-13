@@ -30,4 +30,4 @@ tc-aws==6.0.3
 thumbor==6.3.2
 tornado-botocore==1.2.0   # via tc-aws
 tornado==4.5.2            # via thumbor, tornado-botocore
-typing==3.6.2
+typing==3.6.4
