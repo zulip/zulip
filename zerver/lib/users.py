@@ -8,6 +8,8 @@ from zerver.lib.request import JsonableError
 from zerver.models import UserProfile, Service, Realm, \
     get_user_profile_by_id
 
+from zulip_bots.custom_exceptions import ConfigValidationError
+
 def check_full_name(full_name_raw: Text) -> Text:
     full_name = full_name_raw.strip()
     if len(full_name) > UserProfile.MAX_NAME_LENGTH:
@@ -23,6 +25,20 @@ def check_short_name(short_name_raw: Text) -> Text:
     if len(short_name) == 0:
         raise JsonableError(_("Bad name or username"))
     return short_name
+
+def check_valid_bot_config(service_name: str, config_data: Dict[str, str]) -> None:
+    try:
+        from zerver.lib.bot_lib import get_bot_handler
+        bot_handler = get_bot_handler(service_name)
+        if hasattr(bot_handler, 'validate_config'):
+            bot_handler.validate_config(config_data)
+    except ConfigValidationError:
+        # The exception provides a specific error message, but that
+        # message is not tagged translatable, because it is
+        # triggered in the external zulip_bots package.
+        # TODO: Think of some clever way to provide a more specific
+        # error message.
+        raise JsonableError(_("Invalid configuration data!"))
 
 def check_valid_bot_type(user_profile: UserProfile, bot_type: int) -> None:
     if bot_type not in user_profile.allowed_bot_types:
