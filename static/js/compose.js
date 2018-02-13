@@ -741,11 +741,7 @@ exports.initialize = function () {
 
     resize.watch_manual_resize("#compose-textarea");
 
-    // Run a feature test and decide whether to display
-    // the "Attach files" button
-    if (window.XMLHttpRequest && (new XMLHttpRequest()).upload) {
-        $("#compose #attach_files").removeClass("notdisplayed");
-    }
+    upload.feature_check($("#compose #attach_files"));
 
     // Lazy load the Dropbox script, since it can slow our page load
     // otherwise, and isn't enabled for all users. Also, this Dropbox

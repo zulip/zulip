@@ -21,6 +21,13 @@ function clear_out_file_list(jq_file_list) {
     //    $("#file_input").val("");
 }
 
+// Show the upload button only if the browser supports it.
+exports.feature_check = function (upload_button) {
+    if (window.XMLHttpRequest && (new XMLHttpRequest()).upload) {
+        upload_button.removeClass("notdisplayed");
+    }
+};
+
 exports.options = function (config) {
     var textarea;
     var send_button;
