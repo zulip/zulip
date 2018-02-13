@@ -86,7 +86,11 @@ var keypress_mappings = {
     80: {name: 'narrow_private', message_view_only: true}, // 'P'
     82: {name: 'respond_to_author', message_view_only: true}, // 'R'
     83: {name: 'narrow_by_subject', message_view_only: true}, //'S'
+    84: {name: 'new_tab', message_view_only: true}, //'T'
     86: {name: 'view_selected_stream', message_view_only: false}, //'V'
+    87: {name: 'close_tab', message_view_only: true}, //'W'
+    88: {name: 'next_tab', message_view_only: true}, // 'X'
+    90: {name: 'previous_tab', message_view_only: true}, // 'Z'
     99: {name: 'compose', message_view_only: true}, // 'c'
     100: {name: 'open_drafts', message_view_only: true}, // 'd'
     103: {name: 'gear_menu', message_view_only: true}, // 'g'
@@ -674,6 +678,18 @@ exports.process_hotkey = function (e, hotkey) {
         case 'vim_page_down':
         case 'spacebar':
             navigate.page_down();
+            return true;
+        case 'new_tab':
+            tabs.new();
+            return true;
+        case 'close_tab':
+            tabs.close();
+            return true;
+        case 'previous_tab':
+            tabs.previous();
+            return true;
+        case 'next_tab':
+            tabs.next();
             return true;
     }
 
