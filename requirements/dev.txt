@@ -80,7 +80,7 @@ jmespath==0.9.3           # via boto3, botocore
 jsonpickle==0.9.5         # via aws-xray-sdk
 lxml==4.1.1
 markdown-include==0.5.1
-markdown==2.6.9
+markdown==2.6.11
 markupsafe==1.0
 mock==2.0.0
 moto==1.1.24
