@@ -15,6 +15,35 @@ from typing import Any, Dict, List
 # Emojisets that we currently support.
 EMOJISETS = ['apple', 'emojione', 'google', 'twitter']
 
+# Some image files in the old emoji farm had a different name than in the new emoji
+# farm. `remapped_emojis` is a map that contains a mapping of their name in the old
+# emoji farm to their name in the new emoji farm.
+remapped_emojis = {
+    "0023": "0023-20e3",    # Hash
+    "0030": "0030-20e3",    # Zero
+    "0031": "0031-20e3",    # One
+    "0032": "0032-20e3",    # Two
+    "0033": "0033-20e3",    # Three
+    "0034": "0034-20e3",    # Four
+    "0035": "0035-20e3",    # Five
+    "0036": "0036-20e3",    # Six
+    "0037": "0037-20e3",    # Seven
+    "0038": "0038-20e3",    # Eight
+    "0039": "0039-20e3",    # Nine
+    "1f1e8": "1f1e8-1f1f3", # cn
+    "1f1e9": "1f1e9-1f1ea", # de
+    "1f1ea": "1f1ea-1f1f8", # es
+    "1f1eb": "1f1eb-1f1f7", # fr
+    "1f1ee": "1f1ee-1f1f9", # it
+    "1f1ef": "1f1ef-1f1f5", # jp
+    "1f1f0": "1f1f0-1f1f7", # kr
+    "1f1f7": "1f1f7-1f1fa", # ru
+    "1f1ec": "1f1ec-1f1e7", # uk
+    "1f1fa": "1f1fa-1f1f8", # us
+    "1f48f": "1f469-200d-2764-200d-1f48b-200d-1f468",    # Couple kiss
+    "1f491": "1f469-200d-2764-200d-1f468",  # Couple with heart
+}
+
 # the corresponding code point will be set to exactly these names as a
 # final pass, overriding any other rules.  This is useful for cases
 # where the two names are very different, users might reasonably type
@@ -203,6 +232,18 @@ def google_color_bug(names):
     return [name for name in names if
             name[:5] == 'black' or name[:5] == 'white' or name in miscolored_names]
 
+def get_emoji_codepoint(emoji_dict: Dict[str, Any]) -> str:
+    # Starting from version 4.0.0, `emoji_datasource` package has started to
+    # add an emoji presentation variation selector for certain emojis which
+    # have defined variation sequences. Since in informal environments(like
+    # texting and chat), it is more appropriate for an emoji to have a colorful
+    # display so until emoji characters have a text presentation selector, it
+    # should have a colorful display. Hence we can continue using emoji characters
+    # without appending emoji presentation selector.
+    # (http://unicode.org/reports/tr51/index.html#Presentation_Style)
+    codepoint = emoji_dict["non_qualified"] or emoji_dict["unified"]
+    return codepoint.lower()
+
 def emoji_names_for_picker(emoji_map):
     # type: (Dict[str, str]) -> List[str]
     codepoint_to_names = defaultdict(list)  # type: Dict[str, List[str]]
@@ -235,7 +276,7 @@ def generate_emoji_catalog(emoji_data):
         if not emoji_is_universal(emoji):
             continue
         category = emoji["category"]
-        codepoint = emoji["unified"].lower()
+        codepoint = get_emoji_codepoint(emoji)
         sort_order[codepoint] = emoji["sort_order"]
         if category in emoji_catalog:
             emoji_catalog[category].append(codepoint)
@@ -275,7 +316,7 @@ def emoji_can_be_included(emoji_dict, unified_reactions_codepoints):
     # `unified_reactions.json` dataset, until we completely switch to iamcal dataset.
     if emoji_dict["short_name"] == "fried_egg":
         return False
-    codepoint = emoji_dict["unified"].lower()
+    codepoint = get_emoji_codepoint(emoji_dict)
     if '-' not in codepoint and emoji_dict["category"] != "Skin Tones" and \
             emoji_is_universal(emoji_dict) and codepoint not in unified_reactions_codepoints:
         return True
@@ -302,7 +343,7 @@ def get_extended_name_to_codepoint(name_to_codepoint, new_emoji_dicts):
     extended_name_to_codepoint = name_to_codepoint.copy()
     for emoji_dict in new_emoji_dicts:
         emoji_name = emoji_dict["short_name"]
-        codepoint = emoji_dict["unified"].lower()
+        codepoint = get_emoji_codepoint(emoji_dict)
         extended_name_to_codepoint[emoji_name] = codepoint
     return extended_name_to_codepoint
 
@@ -311,6 +352,6 @@ def get_extended_codepoint_to_name(codepoint_to_name, new_emoji_dicts):
     extended_codepoint_to_name = codepoint_to_name.copy()
     for emoji_dict in new_emoji_dicts:
         emoji_name = emoji_dict["short_name"]
-        codepoint = emoji_dict["unified"].lower()
+        codepoint = get_emoji_codepoint(emoji_dict)
         extended_codepoint_to_name[codepoint] = emoji_name
     return extended_codepoint_to_name
