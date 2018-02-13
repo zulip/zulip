@@ -180,7 +180,7 @@ pyldap==2.4.37
 social-auth-app-django==2.1.0
 
 # Needed for messages' rendered content parsing in push notifications.
-lxml==4.1.0
+lxml==4.1.1
 
 # Needed for 2-factor authentication
 django-two-factor-auth==1.7.0

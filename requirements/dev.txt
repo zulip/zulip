@@ -78,7 +78,7 @@ jedi==0.11.0              # via ipython
 jinja2==2.10
 jmespath==0.9.3           # via boto3, botocore
 jsonpickle==0.9.5         # via aws-xray-sdk
-lxml==4.1.0
+lxml==4.1.1
 markdown-include==0.5.1
 markdown==2.6.9
 markupsafe==1.0
