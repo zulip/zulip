@@ -19,6 +19,9 @@ function message_unhover() {
 }
 
 function message_hover(message_row) {
+
+    message_edit.on_change();
+
     var message;
 
     var id = parseInt(message_row.attr("zid"), 10);
