@@ -187,4 +187,4 @@ django-two-factor-auth==1.7.0
 twilio==6.9.0
 
 # Needed for processing payments (in zilencer)
-stripe==1.77.0
+stripe==1.77.2
