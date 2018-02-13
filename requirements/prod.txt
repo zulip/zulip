@@ -13,7 +13,7 @@ git+https://github.com/zulip/virtualenv-clone.git@44e831da39ffb6b9bb5c7d103d98ba
 git+https://github.com/zulip/python-zulip-api.git@0.4.1#egg=zulip==0.4.1_git&subdirectory=zulip
 git+https://github.com/zulip/python-zulip-api.git@0.4.1#egg=zulip_bots==0.4.1+git&subdirectory=zulip_bots
 apns2==0.3.0
-argon2-cffi==16.3.0
+argon2-cffi==18.1.0
 asn1crypto==0.23.0        # via cryptography
 babel==2.5.1              # via django-phonenumber-field
 backports-abc==0.5
