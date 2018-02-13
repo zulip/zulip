@@ -410,7 +410,7 @@ LDAP_EMAIL_ATTR = None  # type: Optional[str]
 
 # This map defines how to populate attributes of a Zulip user from LDAP.
 AUTH_LDAP_USER_ATTR_MAP = {
-    # Populate the Django user's name from the LDAP directory.
+    # full_name is required; common values include "cn" or "displayName".
     "full_name": "cn",
 }
 
