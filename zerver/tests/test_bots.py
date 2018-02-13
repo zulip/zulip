@@ -9,7 +9,7 @@ from django.test import override_settings
 from mock import patch
 from typing import Any, Dict, List, Mapping
 
-from zerver.lib.actions import do_change_stream_invite_only
+from zerver.lib.actions import do_change_stream_invite_only, do_deactivate_user
 from zerver.lib.bot_config import get_bot_config
 from zerver.models import get_realm, get_stream, \
     Realm, Stream, UserProfile, get_user, get_bot_services, Service, \
@@ -660,6 +660,44 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         }
         result = self.client_patch("/json/bots/hambot-bot@zulip.testserver", bot_info)
         self.assert_json_error(result, "Failed to change owner, no such user")
+        profile = get_user('hambot-bot@zulip.testserver', get_realm('zulip'))
+        self.assertEqual(profile.bot_owner, self.example_user("hamlet"))
+
+    def test_patch_bot_owner_deactivated(self) -> None:
+        self.login(self.example_email('hamlet'))
+        self.create_bot()
+        self.assert_num_bots_equal(1)
+
+        target_user_profile = self.example_user("othello")
+        do_deactivate_user(target_user_profile)
+        target_user_profile = self.example_user('othello')
+        self.assertFalse(target_user_profile.is_active)
+        bot_info = {
+            'bot_owner': self.example_email('othello'),
+        }
+
+        result = self.client_patch("/json/bots/hambot-bot@zulip.testserver", bot_info)
+        self.assert_json_error(result, "Failed to change owner, user is deactivated")
+        profile = get_user('hambot-bot@zulip.testserver', get_realm('zulip'))
+        self.assertEqual(profile.bot_owner, self.example_user("hamlet"))
+
+    def test_patch_bot_owner_a_bot(self) -> None:
+        self.login(self.example_email('hamlet'))
+        self.create_bot()
+        self.assert_num_bots_equal(1)
+
+        bot_info = {
+            'full_name': u'Another Bot of Hamlet',
+            'short_name': u'hamelbot',
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        bot_info = {
+            'bot_owner': 'hamelbot-bot@zulip.testserver',
+        }
+        result = self.client_patch("/json/bots/hambot-bot@zulip.testserver", bot_info)
+        self.assert_json_error(result, "Failed to change owner, bots can't own other bots")
         profile = get_user('hambot-bot@zulip.testserver', get_realm('zulip'))
         self.assertEqual(profile.bot_owner, self.example_user("hamlet"))
 

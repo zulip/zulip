@@ -177,6 +177,10 @@ def patch_bot_backend(
             owner = get_user(bot_owner, user_profile.realm)
         except UserProfile.DoesNotExist:
             return json_error(_('Failed to change owner, no such user'))
+        if not owner.is_active:
+            return json_error(_('Failed to change owner, user is deactivated'))
+        if owner.is_bot:
+            return json_error(_("Failed to change owner, bots can't own other bots"))
         do_change_bot_owner(bot, owner, user_profile)
 
     if default_sending_stream is not None:
