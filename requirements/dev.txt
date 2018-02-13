@@ -73,7 +73,7 @@ imagesize==0.7.1
 incremental==17.5.0       # via twisted
 ipython-genutils==0.2.0   # via traitlets
 ipython==6.2.1
-isort==4.2.15
+isort==4.3.4
 jedi==0.11.0              # via ipython
 jinja2==2.9.6
 jmespath==0.9.3           # via boto3, botocore

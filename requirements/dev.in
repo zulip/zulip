@@ -20,7 +20,7 @@ coverage==4.5.1
 fakeldap==0.6.1
 
 # For sorting imports
-isort==4.2.15
+isort==4.3.4
 
 # for pep8 linter
 pycodestyle==2.3.1
