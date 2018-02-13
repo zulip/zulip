@@ -9,6 +9,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
 from django.db.models import F, Max
 from django.utils.timezone import now as timezone_now
+from django.utils.timezone import timedelta as timezone_timedelta
 
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, \
     do_change_is_admin, do_send_messages
@@ -509,7 +510,28 @@ def send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any],
             message.subject = stream.name + Text(random.randint(1, 3))
             saved_data['subject'] = message.subject
 
-        message.pub_date = timezone_now()
+        # Distrubutes 80% of messages starting from 5 days ago,
+        # Rest of messages distributed past 15 hours. Distribution of
+        # messages past 15 hours is closer than distribution of past 5 days.
+        if num_messages < .80 * tot_messages:
+            spoofed_date = timezone_now() - timezone_timedelta(days = 5)
+            hours_skipped = (num_messages // 2) * 2
+            if num_messages % 2 == 1:
+                # Randomly add an additional hour
+                hours_skipped += random.randint(0, 1)
+        else:
+            spoofed_date = timezone_now() - timezone_timedelta(hours = 15)
+            hours_skipped = (num_messages - int(.80 * tot_messages)) // 2
+
+        if num_messages % 2 == 0:
+            spoofed_minute = random.randint(0, 29)
+        else:
+            spoofed_minute = random.randint(30, 59)
+
+        spoofed_date += timezone_timedelta(hours = hours_skipped)
+        spoofed_date = spoofed_date.replace(minute = spoofed_minute)
+        message.pub_date = spoofed_date
+
         # We disable USING_RABBITMQ here, so that deferred work is
         # executed in do_send_message_messages, rather than being
         # queued.  This is important, because otherwise, if run-dev.py
