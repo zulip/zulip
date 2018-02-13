@@ -100,7 +100,7 @@ pickleshare==0.7.4        # via ipython
 pika==0.11.2
 pillow==5.0.0
 pip-tools==1.11.0
-polib==1.0.8
+polib==1.1.0
 premailer==3.1.1
 prompt-toolkit==1.0.15    # via ipython
 psutil==5.4.1             # via mypy

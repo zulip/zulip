@@ -152,7 +152,7 @@ apns2==0.3.0
 python-twitter==3.3
 
 # To parse po files
-polib==1.0.8
+polib==1.1.0
 
 # Needed for cloning virtual environments
 -e git+https://github.com/zulip/virtualenv-clone.git@44e831da39ffb6b9bb5c7d103d98babccdca0456#egg=virtualenv-clone==0.2.6.zulip1
