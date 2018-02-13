@@ -11,7 +11,7 @@ moto==1.2.0
 Twisted==17.9.0
 
 # Needed for documentation links test
-Scrapy==1.4.0
+Scrapy==1.5.0
 
 # Needed to compute test coverage
 coverage==4.5.1

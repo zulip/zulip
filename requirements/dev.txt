@@ -138,7 +138,7 @@ requests-oauthlib==0.8.0
 requests==2.18.4          # via aws-xray-sdk, docker, moto, premailer, pyoembed, python-digitalocean, python-gcm, python-twitter, requests-oauthlib, social-auth-core, sphinx, stripe, twilio
 rsa==3.4.2
 s3transfer==0.1.11        # via boto3
-scrapy==1.4.0
+scrapy==1.5.0
 service-identity==17.0.0  # via scrapy
 sh==1.11                  # via gitlint
 simplegeneric==0.8.1      # via ipython
