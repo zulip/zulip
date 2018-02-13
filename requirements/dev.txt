@@ -75,7 +75,7 @@ ipython-genutils==0.2.0   # via traitlets
 ipython==6.2.1
 isort==4.3.4
 jedi==0.11.0              # via ipython
-jinja2==2.9.6
+jinja2==2.10
 jmespath==0.9.3           # via boto3, botocore
 jsonpickle==0.9.5         # via aws-xray-sdk
 lxml==4.1.0

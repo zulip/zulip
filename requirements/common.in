@@ -9,7 +9,7 @@ Django==1.11.6
 mypy_extensions==0.3.0
 
 # Needed for rendering backend templates
-Jinja2==2.9.6
+Jinja2==2.10
 
 # Needed for markdown processing
 Markdown==2.6.9
