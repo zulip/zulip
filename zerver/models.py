@@ -2111,6 +2111,8 @@ class Subscription(models.Model):
     color: str = models.CharField(max_length=10, default=DEFAULT_STREAM_COLOR)
     pin_to_top: bool = models.BooleanField(default=False)
 
+    is_stream_admin: bool = models.BooleanField(default=False)
+
     # These fields are stream-level overrides for the user's default
     # configuration for notification, configured in UserProfile.  The
     # default, None, means we just inherit the user-level default.
@@ -2150,6 +2152,7 @@ class Subscription(models.Model):
         "email_notifications",
         "push_notifications",
         "wildcard_mentions_notify",
+        "is_stream_admin"
     ]
 
 @cache_with_key(user_profile_by_id_cache_key, timeout=3600*24*7)

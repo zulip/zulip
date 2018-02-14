@@ -2178,6 +2178,10 @@ paths:
                               should be inherited from the user-level default
                               setting, wildcard_mentions_notify, for
                               this stream.
+                          is_stream_admin:
+                            type: boolean
+                            description: |
+                              A boolean specifying whether user is stream admin or not.
                           push_notifications:
                             type: boolean
                             nullable: true
