@@ -41,7 +41,7 @@ django-webpack-loader==0.5.0
 django==1.11.6
 docopt==0.6.2
 gitdb==0.6.4
-google-api-python-client==1.6.4
+google-api-python-client==1.6.5
 h2==2.6.2                 # via hyper
 hpack==3.0.0              # via h2
 html2text==2018.1.9
