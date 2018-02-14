@@ -158,7 +158,8 @@ body.dark-mode .informational-overlays .overlay-content {
 }
 
 body.dark-mode .dropdown .dropdown-menu,
-body.dark-mode .popover {
+body.dark-mode .popover,
+body.dark-mode .popover-title {
     background: hsl(212, 32%, 14%);
 }
 
