@@ -387,6 +387,18 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         }
         settings_user_groups.reload();
         break;
+
+    case 'attachments':
+        if (event.op === 'add') {
+            page_params.attachments.push(event.attachment);
+        } else if (event.op === 'remove') {
+            page_params.attachments = page_params.attachments.filter(function (a) {
+                return a.id !== event.attachment.id;
+            });
+        }
+        attachments_ui.update_attachments_ui(event.attachment, event.op);
+        break;
+
     }
 };
 

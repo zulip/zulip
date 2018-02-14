@@ -78,6 +78,7 @@ from zerver.lib.actions import (
     do_update_user_presence,
     log_event,
     lookup_default_stream_groups,
+    notify_attachment_update,
     notify_realm_custom_profile_fields,
     check_add_user_group,
     do_update_user_group_name,
@@ -109,6 +110,8 @@ from zerver.lib.validator import (
     check_bool, check_dict, check_dict_only, check_float, check_int, check_list, check_string,
     equals, check_none_or, Validator, check_url
 )
+from zerver.lib.upload import upload_backend, attachment_url_to_path_id
+from zerver.lib.attachments import access_attachment_by_path_id
 
 from zerver.views.events_register import _default_all_public_streams, _default_narrow
 from zerver.views.users import add_service
@@ -1999,6 +2002,33 @@ class EventsRegisterTest(ZulipTestCase):
         )
         result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False)
         self.assertEqual(result['max_message_id'], -1)
+
+    def test_notify_attachment_update(self) -> None:
+        schema_checker = self.check_events_dict([
+            ('type', equals('attachments')),
+            ('op', equals('add')),
+            ('attachment', check_dict_only([
+                ('id', check_int),
+                ('name', check_string),
+                ('size', check_int),
+                ('path_id', check_string),
+                ('create_time', check_float),
+                ('messages', check_list(check_dict_only([
+                    ('id', check_int),
+                    ('name', check_string),
+                ]))),
+            ])),
+        ])
+        uri = upload_backend.upload_message_image("test_file", 21, 'text/plain',
+                                                  b'00000000000000000000', self.user_profile)
+        path_id = attachment_url_to_path_id(uri)
+        attachment = access_attachment_by_path_id(self.user_profile, path_id)
+        events = self.do_test(
+            lambda: notify_attachment_update(self.user_profile, "add", attachment),
+            state_change_expected=False,
+        )
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
 
 class FetchInitialStateDataTest(ZulipTestCase):
     # Non-admin users don't have access to all bots

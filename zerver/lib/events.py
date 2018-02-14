@@ -593,6 +593,9 @@ def apply_event(state: Dict[str, Any],
         elif event['op'] == 'remove':
             state['realm_user_groups'] = [ug for ug in state['realm_user_groups']
                                           if ug['id'] != event['group_id']]
+    elif event['type'] == "attachments":
+        if event['op'] == 'add' or event['op'] == 'remove':
+            state['attachments'] = user_attachments(user_profile)
     else:
         raise AssertionError("Unexpected event type %s" % (event['type'],))
 

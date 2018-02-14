@@ -78,21 +78,24 @@ exports.set_up_attachments = function () {
         return -1;
     });
 
-
-
     ui.set_up_scrollbar(uploaded_files_table.closest(".progressive-table-wrapper"));
 
-    uploaded_files_table.empty();
-    _.each(attachments, function (attachment) {
-        var row = templates.render('uploaded_files_list', { attachment: attachment });
-        uploaded_files_table.append(row);
-    });
-
-    $('#uploaded_files_table').on('click', '.remove-attachment', function (e) {
-        var row = $(e.target).closest(".uploaded_file_row");
-        row.remove();
+    $('#uploaded_files_table').on('click', '.remove-attachment', function () {
         delete_attachments($(this).data('attachment'));
     });
+};
+
+exports.update_attachments_ui = function (attachment, op) {
+    if (op === "remove") {
+        $("#uploaded_files_table tr[data-attachment='" + attachment.id + "']").remove();
+    } else if (op === "add") {
+        attachment.create_time_str = timerender.render_now(new XDate(attachment.create_time))
+                                               .time_str;
+        attachment.size_str = exports.bytes_to_size(attachment.size);
+        var $row = templates.render("uploaded_files_list", { attachment: attachment });
+        $("#uploaded_files_table").append($row);
+    }
+    ui.set_up_scrollbar($("#uploaded_files_table").closest(".progressive-table-wrapper"));
 };
 
 return exports;
