@@ -9,7 +9,8 @@ function zephyr_stream_name_match(message, operand) {
     if (m !== null && m[1] !== undefined) {
         base_stream_name = m[1];
     }
-    var related_regexp = new RegExp(/^(un)*/.source + util.escape_regexp(base_stream_name) + /(\.d)*$/.source, 'i');
+    var pattern = /^(un)*/.source + util.escape_regexp(base_stream_name) + /(\.d)*$/.source;
+    var related_regexp = new RegExp(pattern, 'i');
     return related_regexp.test(message.stream);
 }
 
@@ -28,7 +29,8 @@ function zephyr_topic_name_match(message, operand) {
         || base_topic.toLowerCase() === '(instance "")') {
         related_regexp = /^(|personal|\(instance ""\))(\.d)*$/i;
     } else {
-        related_regexp = new RegExp(/^/.source + util.escape_regexp(base_topic) + /(\.d)*$/.source, 'i');
+        var pattern = /^/.source + util.escape_regexp(base_topic) + /(\.d)*$/.source;
+        related_regexp = new RegExp(pattern, 'i');
     }
 
     return related_regexp.test(message.subject);
