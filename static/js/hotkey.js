@@ -19,6 +19,13 @@ var actions_dropdown_hotkeys = [
 // we'll do in cases where they have the exact same semantics.
 // DON'T FORGET: update keyboard_shortcuts.html
 
+// The `message_view_only` property is a convenient and performant way
+// to express a common case of which hotkeys do something in which
+// views.  It is set for hotkeys (like `*`) that only have an effect
+// in the main message view with a selected message.
+// `message_view_only` hotkeys, as a group, are not processed if any
+// overlays are open (e.g. settings, streams, etc.).
+
 var keydown_shift_mappings = {
     // these can be triggered by shift + key only
     9: {name: 'shift_tab', message_view_only: false}, // tab
