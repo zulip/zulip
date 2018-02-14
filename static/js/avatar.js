@@ -62,8 +62,7 @@ exports.build_user_avatar_widget = function (upload_function) {
               $("#user_avatar_delete_button").hide();
               // Need to clear input because of a small edge case
               // where you try to upload the same image you just deleted.
-              var file_input = $("#user_avatar_file_input");
-              file_input.replaceWith(file_input.clone(true));
+              get_file_input().val('');
             },
         });
     });
