@@ -92,7 +92,7 @@ oauthlib==2.0.6
 
 # Enhanced HTTPS support for httplib and urllib2 using PyOpenSSL
 # Needed by requests to send https request to some sites.
-ndg-httpsclient==0.4.3
+ndg-httpsclient==0.4.4
 
 # Needed to access rabbitmq
 pika==0.11.2

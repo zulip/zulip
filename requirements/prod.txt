@@ -60,7 +60,7 @@ markdown==2.6.11
 markupsafe==1.0
 mock==2.0.0
 mypy_extensions==0.3.0
-ndg-httpsclient==0.4.3
+ndg-httpsclient==0.4.4
 oauth2client==4.1.2
 oauthlib==2.0.6
 parso==0.1.0              # via jedi
