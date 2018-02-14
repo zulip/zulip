@@ -2085,7 +2085,11 @@ def validate_user_access_to_subscribers_helper(user_profile: Optional[UserProfil
     if user_profile.realm.is_zephyr_mirror_realm and not stream_dict["invite_only"]:
         raise JsonableError(_("Subscriber data is not available for this stream"))
 
-    if (stream_dict["invite_only"] and not check_user_subscribed()):
+    # Organization administrators can view subscribers for all streams.
+    if user_profile.is_realm_admin:
+        return
+
+    if (stream_dict["invite_only"] and not check_user_subscribed() ):
         raise JsonableError(_("Unable to retrieve subscribers for invite-only stream"))
 
 def bulk_get_subscriber_user_ids(stream_dicts: Iterable[Mapping[str, Any]],
@@ -2241,7 +2245,13 @@ def get_peer_user_ids_for_stream_change(stream: Stream,
 
     if stream.invite_only:
         # PRIVATE STREAMS
-        return set(subscribed_user_ids) - set(altered_user_ids)
+        # Realm admins can access all private stream subscribers. Send them an
+        # event even if they aren't subscribed to stream.
+        realm_admin_ids = [user.id for user in stream.realm.get_admin_users()]
+        user_ids_to_notify = []
+        user_ids_to_notify.extend(realm_admin_ids)
+        user_ids_to_notify.extend(subscribed_user_ids)
+        return set(user_ids_to_notify) - set(altered_user_ids)
 
     else:
         # PUBLIC STREAMS
