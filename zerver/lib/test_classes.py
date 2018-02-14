@@ -437,6 +437,13 @@ class ZulipTestCase(TestCase):
 
         return [subscription.user_profile for subscription in subscriptions]
 
+    def admin_subscribers_of_stream(self, stream_name: Text, realm: Realm) -> List[UserProfile]:
+        stream = Stream.objects.get(name=stream_name, realm=realm)
+        recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
+        admin_subscriptions = Subscription.objects.filter(recipient=recipient, active=True, is_admin=True)
+
+        return [admin_subscription.user_profile for admin_subscription in admin_subscriptions]
+
     def assert_url_serves_contents_of_file(self, url: str, result: bytes) -> None:
         response = self.client_get(url)
         data = b"".join(response.streaming_content)
@@ -550,9 +557,11 @@ class ZulipTestCase(TestCase):
     # Subscribe to a stream by making an API request
     def common_subscribe_to_streams(self, email: Text, streams: Iterable[Text],
                                     extra_post_data: Dict[str, Any]={}, invite_only: bool=False,
+                                    stream_admins: List[int]=[],
                                     **kwargs: Any) -> HttpResponse:
         post_data = {'subscriptions': ujson.dumps([{"name": stream} for stream in streams]),
-                     'invite_only': ujson.dumps(invite_only)}
+                     'invite_only': ujson.dumps(invite_only),
+                     'stream_admin_ids': ujson.dumps(stream_admins)}
         post_data.update(extra_post_data)
         kwargs['realm'] = kwargs.get('subdomain', 'zulip')
         result = self.api_post(email, "/api/v1/users/me/subscriptions", post_data, **kwargs)

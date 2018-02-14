@@ -39,6 +39,15 @@ def get_stream_subscriptions_for_users(user_profiles):
         recipient__type=Recipient.STREAM,
     )
 
+def get_admin_subscriptions_for_stream_id(stream_id):
+    # type: (int) -> QuerySet[Subscription]
+    return Subscription.objects.filter(
+        recipient__type=Recipient.STREAM,
+        recipient__type_id=stream_id,
+        active=True,
+        is_admin=True,
+    )
+
 SubInfo = TypedDict('SubInfo', {
     'sub': Subscription,
     'stream': Stream,
@@ -73,4 +82,9 @@ def get_bulk_stream_subscriber_info(
 def num_subscribers_for_stream_id(stream_id: int) -> int:
     return get_active_subscriptions_for_stream_id(stream_id).filter(
         user_profile__is_active=True,
+    ).count()
+
+def num_realm_admin_subscribers_for_stream_id(stream_id: int) -> int:
+    return get_active_subscriptions_for_stream_id(stream_id).filter(
+        user_profile__is_realm_admin=True,
     ).count()

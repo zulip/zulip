@@ -21,16 +21,18 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
     do_create_default_stream_group, do_add_streams_to_default_stream_group, \
     do_remove_streams_from_default_stream_group, do_remove_default_stream_group, \
     do_change_default_stream_group_description, do_change_default_stream_group_name, \
-    prep_stream_welcome_message
+    prep_stream_welcome_message, do_update_stream_admin_subscriptions, \
+    get_admin_subscriber_emails
 from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
     check_stream_name, check_stream_name_available, filter_stream_authorization, \
-    list_to_streams, access_stream_for_delete, access_default_stream_group_by_id
+    list_to_streams, access_stream_for_delete, access_default_stream_group_by_id, \
+    access_stream_for_admin_actions, restrict_private_stream_without_admin
 from zerver.lib.validator import check_string, check_int, check_list, check_dict, \
     check_bool, check_variable_type
 from zerver.models import UserProfile, Stream, Realm, Subscription, \
     Recipient, get_recipient, get_stream, \
-    get_system_bot, get_user
+    get_system_bot, get_user, get_user_profile_by_id, get_stream_recipient
 
 from collections import defaultdict
 import ujson
@@ -49,7 +51,7 @@ class PrincipalError(JsonableError):
         # type: () -> Text
         return _("User not authorized to execute queries on behalf of '{principal}'")
 
-def principal_to_user_profile(agent, principal):
+def user_email_to_user_profile(agent, principal):
     # type: (UserProfile, Text) -> UserProfile
     try:
         return get_user(principal, agent.realm)
@@ -59,6 +61,12 @@ def principal_to_user_profile(agent, principal):
         # something a little more clever and check the domain part of the
         # principal to maybe give a better error message
         raise PrincipalError(principal)
+
+def user_id_to_user_profile(user_id: int) -> UserProfile:
+    try:
+        return get_user_profile_by_id(user_id)
+    except UserProfile.DoesNotExist:
+        raise JsonableError(_("Invalid user id"))
 
 @require_realm_admin
 def deactivate_stream_backend(request, user_profile, stream_id):
@@ -139,7 +147,6 @@ def remove_default_stream(request, user_profile, stream_name=REQ()):
     do_remove_default_stream(stream)
     return json_success()
 
-@require_realm_admin
 @has_request_variables
 def update_stream_backend(
         request: HttpRequest, user_profile: UserProfile,
@@ -149,6 +156,8 @@ def update_stream_backend(
         new_name: Optional[Text]=REQ(validator=check_string, default=None),
 ) -> HttpResponse:
     (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
+
+    access_stream_for_admin_actions(user_profile, stream, sub)
 
     if description is not None:
         do_change_stream_description(stream, description)
@@ -163,6 +172,7 @@ def update_stream_backend(
         do_rename_stream(stream, new_name)
     if is_private is not None:
         do_change_stream_invite_only(stream, is_private)
+
     return json_success()
 
 def list_subscriptions_backend(request, user_profile):
@@ -217,10 +227,6 @@ def remove_subscriptions_backend(
 
     removing_someone_else = principals and \
         set(principals) != set((user_profile.email,))
-    if removing_someone_else and not user_profile.is_realm_admin:
-        # You can only unsubscribe other people from a stream if you are a realm
-        # admin.
-        return json_error(_("This action requires administrative rights"))
 
     streams_as_dict = []
     for stream_name in streams_raw:
@@ -229,17 +235,36 @@ def remove_subscriptions_backend(
     streams, __ = list_to_streams(streams_as_dict, user_profile)
 
     for stream in streams:
-        if removing_someone_else and stream.invite_only and \
-                not subscribed_to_stream(user_profile, stream.id):
-            # Even as an admin, you can't remove other people from an
-            # invite-only stream you're not on.
-            return json_error(_("Cannot administer invite-only streams this way"))
+        # If you are removing someone else, either you should be a stream admin
+        # or org admin.
+        if removing_someone_else:
+            try:
+                recipient = get_stream_recipient(stream.id)
+                sub = Subscription.objects.get(user_profile=user_profile,
+                                               recipient=recipient,
+                                               active=True)
+            except Subscription.DoesNotExist:
+                sub = None
+            access_stream_for_admin_actions(user_profile, stream, sub)
 
     if principals:
-        people_to_unsub = set(principal_to_user_profile(
+        people_to_unsub = set(user_email_to_user_profile(
             user_profile, principal) for principal in principals)
     else:
         people_to_unsub = set([user_profile])
+
+    for stream in streams:
+        # Restrict private stream without stream and realm admin
+        if stream.invite_only:
+            # Find realm admins, who will be unsubscribed from stream
+            realm_admin_to_unsub = set([user for user in people_to_unsub if user.is_realm_admin])
+            # Find stream admins, who will be unsubscribed from stream
+            stream_admin_to_unsub = set(get_admin_subscriber_emails(stream, user_profile)) & set(
+                [user.email for user in people_to_unsub])
+            restrict_private_stream_without_admin(stream, user_profile,
+                                                  num_realm_admin_will_be_removed=len(realm_admin_to_unsub),
+                                                  num_stream_admin_will_be_removed=len(stream_admin_to_unsub)
+                                                  )
 
     result = dict(removed=[], not_subscribed=[])  # type: Dict[str, List[Text]]
     (removed, not_subscribed) = bulk_remove_subscriptions(people_to_unsub, streams,
@@ -291,8 +316,10 @@ def add_subscriptions_backend(
         invite_only: bool=REQ(validator=check_bool, default=False),
         announce: bool=REQ(validator=check_bool, default=False),
         principals: List[Text]=REQ(validator=check_list(check_string), default=[]),
+        stream_admin_ids: List[int]=REQ(validator=check_list(check_int), default=[]),
         authorization_errors_fatal: bool=REQ(validator=check_bool, default=True),
 ) -> HttpResponse:
+
     stream_dicts = []
     for stream_dict in streams_raw:
         stream_dict_copy = {}  # type: Dict[str, Any]
@@ -318,12 +345,38 @@ def add_subscriptions_backend(
     if len(principals) > 0:
         if user_profile.realm.is_zephyr_mirror_realm and not all(stream.invite_only for stream in streams):
             return json_error(_("You can only invite other Zephyr mirroring users to invite-only streams."))
-        subscribers = set(principal_to_user_profile(user_profile, principal) for principal in principals)
+        subscribers = set(user_email_to_user_profile(user_profile, principal) for principal in principals)
     else:
         subscribers = set([user_profile])
 
+    for stream in created_streams:
+        # You can not create private stream without stream admin.
+        if stream.invite_only and len(stream_admin_ids) == 0:
+                return json_error(_("Private stream must require at least one admin."))
+
+    if len(stream_admin_ids) > 0:
+        stream_admins = set(
+            [user_id_to_user_profile(admin_id) for admin_id in stream_admin_ids])
+    else:
+        stream_admins = set()
+
+    # Check if stream admin subscribed to stream or not.
+    stream_ids = set([stream.id for stream in streams])
+    for stream_admin in stream_admins:
+        # If stream admin is not already subscribed to stream and not included
+        # in subscribers list, raise an error.
+        admin_subscribed_streams = do_get_streams(stream_admin, include_default=True)
+        admin_subscribed_stream_ids = set([admin_subscribed_stream['stream_id']
+                                          for admin_subscribed_stream in admin_subscribed_streams])
+        if stream_admin not in subscribers and not admin_subscribed_stream_ids.issubset(stream_ids):
+            return json_error(_("Stream admin '%s' must subscribe to stream.") % (stream_admin.email))
+
     (subscribed, already_subscribed) = bulk_add_subscriptions(streams, subscribers,
                                                               acting_user=user_profile)
+
+    # Add stream admins.
+    for stream in streams:
+        do_update_stream_admin_subscriptions(stream, list(stream_admins), True)
 
     # We can assume unique emails here for now, but we should eventually
     # convert this function to be more id-centric.
@@ -431,6 +484,81 @@ def get_streams_backend(request: HttpRequest, user_profile: UserProfile,
                              include_all_active=include_all_active,
                              include_default=include_default)
     return json_success({"streams": streams})
+
+@has_request_variables
+def get_admin_subscribers_backend(request: HttpRequest, user_profile: UserProfile,
+                                  stream_id: int=REQ('stream',
+                                                     converter=to_non_negative_int)) -> HttpResponse:
+    (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
+    admin_subscribers = get_admin_subscriber_emails(stream, user_profile)
+
+    return json_success({'admin_subscribers': admin_subscribers})
+
+@has_request_variables
+def add_admin_subscriber_backend(request: HttpRequest, user_profile: UserProfile,
+                                 stream_id: int=REQ('stream', converter=to_non_negative_int),
+                                 new_stream_admin_ids: List[int]=REQ(validator=check_list(check_int),
+                                                                     default=[]),
+                                 ) -> HttpResponse:
+    # Check if request user can access stream
+    (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
+    # Check if request user have the rights to perform admin actions
+    access_stream_for_admin_actions(user_profile, stream, sub)
+    for new_stream_admin_id in new_stream_admin_ids:
+        new_stream_admin = user_id_to_user_profile(new_stream_admin_id)
+        try:
+            recipient = get_stream_recipient(stream.id)
+            new_stream_admin_sub = Subscription.objects.get(user_profile=new_stream_admin,
+                                                            recipient=recipient,
+                                                            active=True)
+        except Subscription.DoesNotExist:
+            new_stream_admin_sub = None
+
+        if new_stream_admin_sub is None:
+            return json_error(_("Stream admin must subscribe to stream."))
+        if new_stream_admin_sub.is_admin:
+            return json_error(_("User '%s' is already stream admin.") % (new_stream_admin.email))
+
+    new_stream_admins = [user_id_to_user_profile(new_stream_admin_id)
+                         for new_stream_admin_id in new_stream_admin_ids]
+    do_update_stream_admin_subscriptions(stream, new_stream_admins, True)
+    admin_subscribers = get_admin_subscriber_emails(stream, user_profile)
+    return json_success({'admin_subscribers': admin_subscribers})
+
+@has_request_variables
+def remove_admin_subscriber_backend(request: HttpRequest, user_profile: UserProfile,
+                                    stream_id: int=REQ('stream', converter=to_non_negative_int),
+                                    stream_admin_ids: List[int]=REQ(validator=check_list(check_int),
+                                                                    default=[])
+                                    ) -> HttpResponse:
+    # Check if request user can access stream
+    (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
+    # Check if request user have the rights to perform admin actions
+    access_stream_for_admin_actions(user_profile, stream, sub)
+
+    # Restrict private stream without stream and realm admin
+    if stream.invite_only:
+        restrict_private_stream_without_admin(stream, user_profile,
+                                              num_stream_admin_will_be_removed=len(stream_admin_ids))
+
+    for stream_admin_id in stream_admin_ids:
+        stream_admin = user_id_to_user_profile(stream_admin_id)
+        # Check if stream admin can access stream
+        (stream, recipient, stream_admin_sub) = access_stream_by_id(stream_admin, stream_id)
+
+        if stream_admin_sub is None:
+            return json_error(_("User '%s' is already not a stream admin.") % (stream_admin.email))
+        if not stream_admin_sub.is_admin:
+            return json_error(_("User '%s' is already not a stream admin.") % (stream_admin.email))
+        if stream_admin.is_realm_admin:
+            return json_error(_("Realm admin `%s` is by default stream admin. Can't be removed.") %
+                               (stream_admin.email))
+
+    stream_admins = [user_id_to_user_profile(stream_admin_id)
+                     for stream_admin_id in stream_admin_ids]
+    do_update_stream_admin_subscriptions(stream, stream_admins, False)
+    admin_subscribers = get_admin_subscriber_emails(stream, user_profile)
+    return json_success({'admin_subscribers': admin_subscribers})
 
 @has_request_variables
 def get_topics_backend(request: HttpRequest, user_profile: UserProfile,

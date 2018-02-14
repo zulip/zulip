@@ -4,11 +4,15 @@ from typing import Any, Iterable, List, Mapping, Set, Text, Tuple
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
-from zerver.lib.actions import check_stream_name, create_streams_if_needed
+from zerver.lib.actions import check_stream_name, create_streams_if_needed, \
+    get_admin_subscriber_emails
 from zerver.lib.request import JsonableError
 from zerver.models import UserProfile, Stream, Subscription, \
     Realm, Recipient, bulk_get_recipients, get_stream_recipient, get_stream, \
     bulk_get_streams, get_realm_stream, DefaultStreamGroup
+from zerver.lib.stream_subscription import (
+    num_realm_admin_subscribers_for_stream_id,
+)
 
 def access_stream_for_delete(user_profile: UserProfile, stream_id: int) -> Stream:
 
@@ -76,6 +80,24 @@ def access_stream_by_id(user_profile: UserProfile,
                                             require_active=require_active)
     return (stream, recipient, sub)
 
+def access_stream_for_admin_actions(user_profile: UserProfile, stream: Stream,
+                                    sub: Subscription) -> None:
+    is_public_stream = not stream.invite_only
+    is_user_subscribed = (sub is not None)
+
+    if not is_user_subscribed:
+        # If user is not subscribed then only realm admin can modify only public streams.
+        if not user_profile.is_realm_admin:
+            raise JsonableError(_("Invalid stream id"))
+        # Even as an realm admin, you can't remove other people from an
+        # invite-only stream you're not on.
+        if not is_public_stream:
+            raise JsonableError(_("Cannot administer unsubscribed invite-only streams this way."))
+    else:
+        # If a realm admin is subscribed to a stream, they get admin powers for that stream.
+        if not (user_profile.is_realm_admin or sub.is_admin):
+            raise JsonableError(_("This action requires administrative rights."))
+
 def check_stream_name_available(realm: Realm, name: Text) -> None:
     check_stream_name(name)
     try:
@@ -114,6 +136,25 @@ def access_stream_for_unmute_topic(user_profile: UserProfile, stream_name: Text,
     except Stream.DoesNotExist:
         raise JsonableError(error)
     return stream
+
+def restrict_private_stream_without_admin(stream: Stream, user_profile: UserProfile,
+                                          num_stream_admin_will_be_removed: int=0,
+                                          num_realm_admin_will_be_removed: int=0) -> None:
+    # It automatically validate zero subscribers to private stream.
+    if stream.invite_only:
+        num_stream_admin_subscribers = len(get_admin_subscriber_emails(stream, user_profile))
+        num_realm_admin_subscribers = num_realm_admin_subscribers_for_stream_id(stream.id)
+
+        # Can't remove realm admin if there is no stream admin to private stream and
+        # no other subscribed realm admin
+        # Can't remove if user is last stream admin and there is no subscribed realm admin.
+        if (num_stream_admin_subscribers == 0 and
+                num_realm_admin_subscribers == num_realm_admin_will_be_removed) or \
+           (num_stream_admin_subscribers == num_stream_admin_will_be_removed and
+                num_realm_admin_subscribers == 0) or \
+           (num_stream_admin_subscribers == num_stream_admin_will_be_removed and
+                num_realm_admin_subscribers == num_realm_admin_will_be_removed):
+            raise JsonableError(_("Private stream must require at least one admin."))
 
 def is_public_stream_by_name(stream_name: Text, realm: Realm) -> bool:
     """Determine whether a stream is public, so that

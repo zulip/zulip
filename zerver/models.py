@@ -1381,6 +1381,7 @@ class Subscription(models.Model):
     recipient = models.ForeignKey(Recipient, on_delete=CASCADE)  # type: Recipient
     active = models.BooleanField(default=True)  # type: bool
     in_home_view = models.NullBooleanField(default=True)  # type: Optional[bool]
+    is_admin = models.BooleanField(default=False)  # type: bool
 
     DEFAULT_STREAM_COLOR = u"#c2c2c2"
     color = models.CharField(max_length=10, default=DEFAULT_STREAM_COLOR)  # type: Text
@@ -1416,6 +1417,11 @@ def get_user_profile_by_api_key(api_key: Text) -> UserProfile:
 @cache_with_key(user_profile_cache_key, timeout=3600*24*7)
 def get_user(email: Text, realm: Realm) -> UserProfile:
     return UserProfile.objects.select_related().get(email__iexact=email.strip(), realm=realm)
+
+@cache_with_key(user_profile_cache_key, timeout=3600*24*7)
+def get_stream_admins(stream_id: int, realm: Realm) -> List[int]:
+    recipient = get_stream_recipient(stream_id)
+    return Subscription.objects.select_related().get(is_admin=True, recipient=recipient)
 
 def get_user_including_cross_realm(email: Text, realm: Optional[Realm]=None) -> UserProfile:
     if is_cross_realm_bot_email(email):

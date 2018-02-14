@@ -39,6 +39,7 @@ from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
     get_active_subscriptions_for_stream_ids,
+    get_admin_subscriptions_for_stream_id,
     get_bulk_stream_subscriber_info,
     get_stream_subscriptions_for_user,
     get_stream_subscriptions_for_users,
@@ -2147,6 +2148,13 @@ def get_subscribers(stream: Stream,
     subscriptions = get_subscribers_query(stream, requesting_user).select_related()
     return [subscription.user_profile for subscription in subscriptions]
 
+def get_admin_subscriber_emails(stream: Stream,
+                                requesting_user: Optional[UserProfile]=None) -> List[Text]:
+    validate_user_access_to_subscribers(requesting_user, stream)
+    admin_subscriptions_query = get_admin_subscriptions_for_stream_id(stream.id)
+    admin_subscriptions = admin_subscriptions_query.values('user_profile__email')
+    return [admin_subscription['user_profile__email'] for admin_subscription in admin_subscriptions]
+
 def get_subscriber_emails(stream: Stream,
                           requesting_user: Optional[UserProfile]=None) -> List[Text]:
     subscriptions_query = get_subscribers_query(stream, requesting_user)
@@ -2456,7 +2464,7 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
         occupied_streams_before = list(get_occupied_streams(our_realm))
         Subscription.objects.filter(
             id__in=sub_ids_to_deactivate,
-        ) .update(active=False)
+        ) .update(active=False, is_admin=False)
         occupied_streams_after = list(get_occupied_streams(our_realm))
 
     # Log Subscription Activities in RealmAuditLog
@@ -3355,6 +3363,26 @@ def do_update_message_flags(user_profile: UserProfile,
 
     statsd.incr("flags.%s.%s" % (flag, operation), count)
     return count
+
+def do_update_stream_admin_subscriptions(stream: Stream, stream_admins: List[UserProfile],
+                                         value: bool) -> None:
+    for stream_admin in stream_admins:
+        if not subscribed_to_stream(stream_admin, stream.id):
+            raise JsonableError(_("User '%s' not subscribed to stream '%s'.") % (stream_admin.email,
+                                                                                 stream.name))
+    recipient = get_stream_recipient(stream.id)
+    for stream_admin in stream_admins:
+        try:
+            stream_admin_sub = Subscription.objects.get(user_profile=stream_admin,
+                                                        recipient=recipient,
+                                                        active=True)
+        except Subscription.DoesNotExist:
+            # This excpetion will never raise, cause we do check this condition above.
+            raise JsonableError(_("User '%s' not subscribed to stream '%s'.") % (stream_admin.email,
+                                                                                 stream.name))
+        # Realm admins have by default all stream admins rights, so don't need to add them as stream admin.
+        if not stream_admin.is_realm_admin:
+            do_change_subscription_property(stream_admin, stream_admin_sub, stream, "is_admin", value)
 
 def subscribed_to_stream(user_profile: UserProfile, stream_id: int) -> bool:
     try:
