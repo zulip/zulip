@@ -19,6 +19,9 @@ var actions_dropdown_hotkeys = [
 // we'll do in cases where they have the exact same semantics.
 // DON'T FORGET: update keyboard_shortcuts.html
 
+// message_view_only is a boolean which is true if the keyboard 
+// shortcut works only when the message view is in focus
+
 var keydown_shift_mappings = {
     // these can be triggered by shift + key only
     9: {name: 'shift_tab', message_view_only: false}, // tab
