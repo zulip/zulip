@@ -187,4 +187,9 @@ function scrollToHash(container) {
     });
 
     render_code_sections();
+
+    // Finally, make sure if we loaded a window with a hash, we scroll
+    // to the right place.
+    var container = $(".markdown")[0];
+    scrollToHash(container);
 }());
