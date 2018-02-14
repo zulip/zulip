@@ -47,7 +47,9 @@
         var elem = document.createElement('div');
         var style = elem.style;
         style.cssText = 'background-color:rgba(0,0,0,.5)';
-        return contains(style.backgroundColor, 'rgba') || contains(style.backgroundColor, 'hsla');
+        var rgba = contains(style.backgroundColor, 'rgba');
+        var hsla = contains(style.backgroundColor, 'hsla');
+        return rgba || hsla;
     })(),
     replaceInput = [
         "<div class='sp-replacer'>",
@@ -58,7 +60,7 @@
     markup = (function () {
 
         // IE does not support gradients with multiple stops, so we need to simulate
-        //  that for the rainbow slider with 8 divs that each have a single gradient
+        // that for the rainbow slider with 8 divs that each have a single gradient
         var gradientFix = "";
         if (IE) {
             for (var i = 1; i <= 6; i++) {
@@ -106,11 +108,26 @@
         var html = [];
         for (var i = 0; i < p.length; i++) {
             var tiny = tinycolor(p[i]);
-            var c = tiny.toHsl().l < .5 ? "sp-thumb-el sp-thumb-dark" : "sp-thumb-el sp-thumb-light";
+            var c;
+            if (tiny.toHsl().l < .5) {
+                c = "sp-thumb-el sp-thumb-dark";
+            } else {
+                c = "sp-thumb-el sp-thumb-light";
+            }
             c += (tinycolor.equals(color, p[i])) ? " sp-thumb-active" : "";
 
-            var swatchStyle = rgbaSupport ? ("background-color:" + tiny.toRgbString()) : "filter:" + tiny.toFilter();
-            html.push('<span title="' + tiny.toHexString() + '" data-color="' + tiny.toRgbString() + '" class="' + c + '"><span class="sp-thumb-inner" style="' + swatchStyle + ';" /></span>');
+            var swatchStyle;
+            if (rgbaSupport) {
+                swatchStyle = ("background-color:" + tiny.toRgbString());
+            } else {
+                swatchStyle = "filter:" + tiny.toFilter();
+            }
+            var p = '<span title="' + tiny.toHexString();
+            p += '" data-color="' + tiny.toRgbString();
+            p += '" class="' + c;
+            p += '"><span class="sp-thumb-inner" style="' + swatchStyle;
+            p += ';" /></span>';
+            html.push(p);
         }
         return "<div class='sp-cf " + className + "'>" + html.join('') + "</div>";
     };
@@ -241,7 +258,8 @@
                 }
             });
 
-            // Prevent clicks from bubbling up to document.  This would cause it to be hidden.
+            // Prevent clicks from bubbling up to document.
+            //This would cause it to be hidden.
             container.click(stopPropagation);
 
             // Handle user typed input
@@ -249,7 +267,8 @@
             textInput.on("paste", function () {
                 setTimeout(setFromTextInput, 1);
             });
-            textInput.keydown(function (e) { if (e.keyCode == 13) { setFromTextInput(); } });
+            textInput.keydown(function (e) { 
+                if (e.keyCode == 13) { setFromTextInput(); } });
 
             cancelButton.on("click.spectrum", function (e) {
                 e.stopPropagation();
@@ -292,7 +311,7 @@
 
                 // In case color was black - update the preview UI and set the format
                 // since the set function will not run (default color is black).
-                updateUI();
+                updateUI(); 
                 currentPreferredFormat = preferredFormat || tinycolor(initialColor).format;
 
                 addColorToSelectionPalette(initialColor);
@@ -320,9 +339,15 @@
                 return false;
             }
 
-            var paletteEvent = IE ? "mousedown.spectrum" : "click.spectrum touchstart.spectrum";
+            var paletteEvent;
+            if (IE) {
+                paletteEvent = "mousedown.spectrum";
+            } else {
+                paletteEvent = "click.spectrum touchstart.spectrum";
+            }
             paletteContainer.on(paletteEvent, ".sp-thumb-el", palletElementClick);
-            initialColorContainer.on(paletteEvent, ".sp-thumb-el:nth-child(1)", { ignore: true }, palletElementClick);
+            var a = ".sp-thumb-el:nth-child(1)";
+            initialColorContainer.on(paletteEvent, a, { ignore: true }, palletElementClick);
         }
         function addColorToSelectionPalette(color) {
             if (showSelectionPalette) {
@@ -365,11 +390,13 @@
             var currentColor = get();
 
             var html = $.map(paletteArray, function (palette, i) {
-                return paletteTemplate(palette, currentColor, "sp-palette-row sp-palette-row-" + i);
+                var a = "sp-palette-row sp-palette-row-" + i;
+                return paletteTemplate(palette, currentColor, a);
             });
 
             if (selectionPalette) {
-                html.push(paletteTemplate(getUniqueSelectionPalette(), currentColor, "sp-palette-row sp-palette-row-selection"));
+                var b = "sp-palette-row sp-palette-row-selection";
+                html.push(paletteTemplate(getUniqueSelectionPalette(), currentColor, b));
             }
 
             paletteContainer.html(html.join(""));
@@ -378,7 +405,8 @@
             if (showInitial) {
                 var initial = colorOnShow;
                 var current = get();
-                initialColorContainer.html(paletteTemplate([initial, current], current, "sp-palette-row-initial"));
+                var c = "sp-palette-row-initial";
+                initialColorContainer.html(paletteTemplate([initial, current], current, c));
             }
         }
         function dragStart() {
@@ -485,7 +513,9 @@
         }
 
         function get() {
-            return tinycolor.fromRatio({ h: currentHue, s: currentSaturation, v: currentValue, a: Math.round(currentAlpha * 100) / 100 });
+            var val = Math.round(currentAlpha * 100) / 100;
+            return tinycolor.fromRatio({ 
+                h: currentHue, s: currentSaturation, v: currentValue, a: val});
         }
 
         function isValid() {
@@ -537,7 +567,8 @@
                 var gradient = "linear-gradient(left, " + realAlpha + ", " + realHex + ")";
 
                 if (IE) {
-                    alphaSliderInner.css("filter", tinycolor(realAlpha).toFilter({ gradientType: 1 }, realHex));
+                    var f = tinycolor(realAlpha).toFilter({ gradientType: 1 }, realHex);
+                    alphaSliderInner.css("filter", f);
                 }
                 else {
                     alphaSliderInner.css("background", "-webkit-" + gradient);
@@ -570,7 +601,8 @@
             var s = currentSaturation;
             var v = currentValue;
 
-            // Where to show the little circle in that displays your current selected color
+            // Where to show the little circle in that displays your
+            // current selected color
             var dragX = s * dragWidth;
             var dragY = dragHeight - (v * dragHeight);
             dragX = Math.max(
@@ -662,7 +694,8 @@
     }
 
     /**
-    * checkOffset - get the offset below/above and left/right element depending on screen position
+    * checkOffset - get the offset below/above and left/right element
+    * depending on screen position.
     * Thanks https://github.com/jquery/jquery-ui/blob/master/ui/jquery.ui.datepicker.js
     */
     function getOffset(picker, input) {
@@ -857,7 +890,8 @@
 
     $.fn.spectrum.processNativeColorInputs = function () {
         var colorInput = $("<input type='color' value='#ffffff' />")[0];
-        var supportsColor = colorInput.type === "color" && colorInput.value != "#ffffff";
+        var notWhite = colorInput.value != "#ffffff";
+        var supportsColor = colorInput.type === "color" && notWhite;
 
         if (!supportsColor) {
             $("input[type=color]").spectrum({
@@ -888,7 +922,8 @@
             }
 
             var rgb = inputToRGB(color);
-            var r = rgb.r, g = rgb.g, b = rgb.b, a = parseFloat(rgb.a), format = rgb.format;
+            var r = rgb.r, g = rgb.g, b = rgb.b, a = parseFloat(rgb.a);
+            var format = rgb.format;
 
             return {
                 ok: rgb.ok,
@@ -901,7 +936,9 @@
                 },
                 toHsvString: function () {
                     var hsv = rgbToHsv(r, g, b);
-                    var h = mathRound(hsv.h * 360), s = mathRound(hsv.s * 100), v = mathRound(hsv.v * 100);
+                    var h = mathRound(hsv.h * 360);
+                    var s = mathRound(hsv.s * 100);
+                    var v = mathRound(hsv.v * 100);
                     return (a == 1) ?
                   "hsv(" + h + ", " + s + "%, " + v + "%)" :
                   "hsva(" + h + ", " + s + "%, " + v + "%, " + a + ")";
@@ -912,7 +949,9 @@
                 },
                 toHslString: function () {
                     var hsl = rgbToHsl(r, g, b);
-                    var h = mathRound(hsl.h * 360), s = mathRound(hsl.s * 100), l = mathRound(hsl.l * 100);
+                    var h = mathRound(hsl.h * 360);
+                    var s = mathRound(hsl.s * 100);
+                    var l = mathRound(hsl.l * 100);
                     return (a == 1) ?
                   "hsl(" + h + ", " + s + "%, " + l + "%)" :
                   "hsla(" + h + ", " + s + "%, " + l + "%, " + a + ")";
@@ -927,9 +966,12 @@
                     return { r: mathRound(r), g: mathRound(g), b: mathRound(b), a: a };
                 },
                 toRgbString: function () {
+                    var roundr = mathRound(r);
+                    var roundg = mathRound(g);
+                    var roundb = mathRound(b);
                     return (a == 1) ?
-                  "rgb(" + mathRound(r) + ", " + mathRound(g) + ", " + mathRound(b) + ")" :
-                  "rgba(" + mathRound(r) + ", " + mathRound(g) + ", " + mathRound(b) + ", " + a + ")";
+                  "rgb(" + roundr + ", " + roundg + ", " + roundb + ")" :
+                  "rgba(" + roundr + ", " + roundg + ", " + roundb + ", " + a + ")";
                 },
                 toName: function () {
                     return hexNames[rgbToHex(r, g, b)] || false;
@@ -946,7 +988,10 @@
                         secondAlphaHex = Math.round(parseFloat(s.alpha) * 255).toString(16);
                     }
 
-                    return "progid:DXImageTransform.Microsoft.gradient("+gradientType+"startColorstr=#" + pad2(alphaHex) + hex + ",endColorstr=#" + pad2(secondAlphaHex) + secondHex + ")";
+                    var ret = "progid:DXImageTransform.Microsoft.gradient(" + gradientType;
+                    ret += "startColorstr=#" + pad2(alphaHex) + hex;
+                    ret += ",endColorstr=#" + pad2(secondAlphaHex) + secondHex + ")";
+                    return ret;
                 },
                 toString: function (format) {
                     format = format || this.format;
@@ -1017,23 +1062,31 @@
             }
 
             if (typeof color == "object") {
-                if (color.hasOwnProperty("r") && color.hasOwnProperty("g") && color.hasOwnProperty("b")) {
+                var hasprop_r = color.hasOwnProperty("r");
+                var hasprop_g = color.hasOwnProperty("g");
+                var hasprop_b = color.hasOwnProperty("b");
+                var hasprop_h = color.hasOwnProperty("h");
+                var hasprop_s = color.hasOwnProperty("s");
+                var hasprop_v = color.hasOwnProperty("v");
+                var hasprop_l = color.hasOwnProperty("l");
+                var hasprop_a = color.hasOwnProperty("a");
+                if (hasprop_r && hasprop_g && hasprop_b) {
                     rgb = rgbToRgb(color.r, color.g, color.b);
                     ok = true;
                     format = "rgb";
                 }
-                else if (color.hasOwnProperty("h") && color.hasOwnProperty("s") && color.hasOwnProperty("v")) {
+                else if (hasprop_h && hasprop_s && hasprop_v) {
                     rgb = hsvToRgb(color.h, color.s, color.v);
                     ok = true;
                     format = "hsv";
                 }
-                else if (color.hasOwnProperty("h") && color.hasOwnProperty("s") && color.hasOwnProperty("l")) {
+                else if (hasprop_h && hasprop_s && hasprop_l) {
                     var rgb = hslToRgb(color.h, color.s, color.l);
                     ok = true;
                     format = "hsl";
                 }
 
-                if (color.hasOwnProperty("a")) {
+                if (hasprop_a) {
                     a = color.a;
                 }
             }
@@ -1044,9 +1097,11 @@
 
 
             // Don't let the range of [0,255] come back in [0,1].
-            // Potentially lose a little bit of precision here, but will fix issues where
-            // .5 gets interpreted as half of the total, instead of half of 1.
-            // If it was supposed to be 128, this was already taken care of in the conversion function
+            // Potentially lose a little bit of precision here, but will fix
+            // issues where .5 gets interpreted as half of the total,
+            // instead of half of 1.
+            // If it was supposed to be 128, 
+            // this was already taken care of in the conversion function
             if (rgb.r < 1) { rgb.r = mathRound(rgb.r); }
             if (rgb.g < 1) { rgb.g = mathRound(rgb.g); }
             if (rgb.b < 1) { rgb.b = mathRound(rgb.b); }
@@ -1115,7 +1170,8 @@
 
         // `hslToRgb`
         // Converts an HSL color value to RGB.
-        // *Assumes:* h is contained in [0, 1] or [0, 360] and s and l are contained [0, 1] or [0, 100]
+        // *Assumes:* h is contained in [0, 1] or [0, 360] and s and l are 
+        // contained in [0, 1] or [0, 100]
         // *Returns:* { r, g, b } in the set [0, 255]
         function hslToRgb(h, s, l) {
             var r, g, b;
@@ -1179,7 +1235,8 @@
 
         // `hsvToRgb`
         // Converts an HSV color value to RGB.
-        // *Assumes:* h is contained in [0, 1] or [0, 360] and s and v are contained in [0, 1] or [0, 100]
+        // *Assumes:* h is contained in [0, 1] or [0, 360] and s and v are
+        // contained in [0, 1] or [0, 100]
         // *Returns:* { r, g, b } in the set [0, 255]
         function hsvToRgb(h, s, v) {
             var r, g, b;
@@ -1214,7 +1271,10 @@
             ];
 
             // Return a 3 character hex if possible
-            if (!force6Char && hex[0].charAt(0) == hex[0].charAt(1) && hex[1].charAt(0) == hex[1].charAt(1) && hex[2].charAt(0) == hex[2].charAt(1)) {
+            var c1 = hex[0].charAt(0) == hex[0].charAt(1);
+            var c2 = hex[1].charAt(0) == hex[1].charAt(1);
+            var c3 = hex[2].charAt(0) == hex[2].charAt(1);
+            if (!force6Char && c1 && c2 && c3) {
                 return hex[0].charAt(0) + hex[1].charAt(0) + hex[2].charAt(0);
             }
 
@@ -1552,7 +1612,8 @@
             return parseInt(val, 16);
         }
 
-        // Need to handle 1.0 as 100%, since once it is a number, there is no difference between it and 1
+        // Need to handle 1.0 as 100%, since once it is a number,
+        // there is no difference between it and 1
         // <http://stackoverflow.com/questions/7422072/javascript-how-to-detect-number-as-a-decimal-including-1-0>
         function isOnePointZero(n) {
             return typeof n == "string" && n.indexOf('.') != -1 && parseFloat(n) === 1;
@@ -1576,14 +1637,16 @@
             // <http://www.w3.org/TR/css3-values/#number-value>
             var CSS_NUMBER = "[-\\+]?\\d*\\.\\d+%?";
 
-            // Allow positive/negative integer/number.  Don't capture the either/or, just the entire outcome.
+            // Allow positive/negative integer/number.
+            // Don't capture the either/or, just the entire outcome.
             var CSS_UNIT = "(?:" + CSS_NUMBER + ")|(?:" + CSS_INTEGER + ")";
 
             // Actual matching.
             // Parentheses and commas are optional, but not required.
             // Whitespace can take the place of commas or opening paren
-            var PERMISSIVE_MATCH3 = "[\\s|\\(]+(" + CSS_UNIT + ")[,|\\s]+(" + CSS_UNIT + ")[,|\\s]+(" + CSS_UNIT + ")\\s*\\)?";
-            var PERMISSIVE_MATCH4 = "[\\s|\\(]+(" + CSS_UNIT + ")[,|\\s]+(" + CSS_UNIT + ")[,|\\s]+(" + CSS_UNIT + ")[,|\\s]+(" + CSS_UNIT + ")\\s*\\)?";
+            var p = "[\\s|\\(]+(" + CSS_UNIT + ")[,|\\s]+(" + CSS_UNIT + ")[,|\\s]+(" + CSS_UNIT;
+            var PERMISSIVE_MATCH3 = p + ")\\s*\\)?";
+            var PERMISSIVE_MATCH4 = p + ")[,|\\s]+(" + CSS_UNIT + ")\\s*\\)?";
 
             return {
                 rgb: new RegExp("rgb" + PERMISSIVE_MATCH3),
