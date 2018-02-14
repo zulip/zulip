@@ -69,6 +69,15 @@ function render_code_sections() {
     }
 }
 
+function scrollToHash(container) {
+    var hash = window.location.hash;
+    if (hash !== '') {
+        container.scrollTop = $(hash).position().top - $('.markdown .content').position().top;
+    } else {
+        container.scrollTop = 0;
+    }
+}
+
 (function () {
     var html_map = {};
     var loading = {
@@ -117,6 +126,7 @@ function render_code_sections() {
             $(".markdown .content").html(html_map[path]);
             Ps.update(container);
             render_code_sections();
+            scrollToHash(container);
         } else {
             loading.name = path;
 
@@ -125,10 +135,10 @@ function render_code_sections() {
                 $(".markdown .content").html(html_map[path]);
                 loading.name = null;
                 Ps.update(container);
+                scrollToHash(container);
             });
         }
 
-        container.scrollTop = 0;
         $(".sidebar").removeClass("show");
 
         e.preventDefault();
