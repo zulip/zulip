@@ -1,0 +1,4 @@
+./frontend_tests/zjsunit/output.js:    data += '<link href="../../static/third/bootstrap-notify/css/bootstrap-notify.css" rel="stylesheet">\n';
+./frontend_tests/zjsunit/output.js:        data += '<style type="text/css">body {width: 500px; margin: auto; overflow: scroll}</style>\n';
+./frontend_tests/zjsunit/zjquery.js:                    assert.equal(typeof(handler), 'function', 'An handler function expected here.');
+
