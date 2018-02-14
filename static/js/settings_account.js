@@ -182,6 +182,7 @@ exports.set_up = function () {
                 ui_report.error(i18n.t("Failed"), xhr, change_password_info);
             },
         });
+    });
 
     function show_reset_email_loader() {
         var spinner_elem = $(".loading_indicator_spinner");
