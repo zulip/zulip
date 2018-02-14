@@ -24,7 +24,7 @@ function get_email_of_subscribers(subscribers) {
 }
 
 exports.rerender_subscribers_list = function (sub) {
-    if (!sub.can_add_subscribers) {
+    if (!sub.can_access_subscribers) {
         $(".subscriber_list_settings_container").hide();
     } else {
         var emails = get_email_of_subscribers(sub.subscribers);

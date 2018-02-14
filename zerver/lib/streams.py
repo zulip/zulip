@@ -29,9 +29,12 @@ def access_stream_for_delete_or_update(user_profile: UserProfile, stream_id: int
 
     return stream
 
+# Only set allow_realm_admin flag to True when you want to allow realm admin to
+# access unsubscribed private stream content.
 def access_stream_common(user_profile: UserProfile, stream: Stream,
                          error: Text,
-                         require_active: bool=True) -> Tuple[Recipient, Subscription]:
+                         require_active: bool=True,
+                         allow_realm_admin: bool=False) -> Tuple[Recipient, Subscription]:
     """Common function for backend code where the target use attempts to
     access the target stream, returning all the data fetched along the
     way.  If that user does not have permission to access that stream,
@@ -55,8 +58,11 @@ def access_stream_common(user_profile: UserProfile, stream: Stream,
     if stream.is_public():
         return (recipient, sub)
 
+    # In some special cases i.e. getting list of subscribers, unsubsribe user from stream,
+    # update stream name and description, we do allow realm admin to access stream even
+    # if they don't subscribed to private stream.
     # Or if you are subscribed to the stream, you can access it.
-    if sub is not None:
+    if (sub is not None or (user_profile.is_realm_admin and allow_realm_admin)):
         return (recipient, sub)
 
     # Otherwise it is a private stream and you're not on it, so throw
@@ -65,7 +71,8 @@ def access_stream_common(user_profile: UserProfile, stream: Stream,
 
 def access_stream_by_id(user_profile: UserProfile,
                         stream_id: int,
-                        require_active: bool=True) -> Tuple[Stream, Recipient, Subscription]:
+                        require_active: bool=True,
+                        allow_realm_admin: bool=False) -> Tuple[Stream, Recipient, Subscription]:
     error = _("Invalid stream id")
     try:
         stream = Stream.objects.get(id=stream_id)
@@ -73,7 +80,8 @@ def access_stream_by_id(user_profile: UserProfile,
         raise JsonableError(error)
 
     (recipient, sub) = access_stream_common(user_profile, stream, error,
-                                            require_active=require_active)
+                                            require_active=require_active,
+                                            allow_realm_admin=allow_realm_admin)
     return (stream, recipient, sub)
 
 def check_stream_name_available(realm: Realm, name: Text) -> None:
