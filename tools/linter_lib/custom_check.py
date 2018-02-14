@@ -230,6 +230,18 @@ def build_custom_checkers(by_lang):
          'description': "`Use $(f) rather than `$(document).ready(f)`",
          'good_lines': ['$(function () {foo();}'],
          'bad_lines': ['$(document).ready(function () {foo();}']},
+        {'pattern': '[$][.](get|post|patch|delete|ajax)[(]',
+         'description': "Use channel module for AJAX calls",
+         'exclude': set([
+             # Internal modules can do direct network calls
+             'static/js/blueslip.js',
+             'static/js/channel.js',
+             # External modules that don't include channel.js
+             'static/js/stats/',
+             'static/js/portico/',
+         ]),
+         'good_lines': ['channel.get(...)'],
+         'bad_lines': ['$.get()', '$.post()', '$.ajax()']},
         {'pattern': 'style ?=',
          'description': "Avoid using the `style=` attribute; we prefer styling in CSS files",
          'exclude': set([
