@@ -421,13 +421,18 @@ class ZulipTestCase(TestCase):
             body=content,
         )
 
-    def get_messages(self, anchor: int=1, num_before: int=100, num_after: int=100,
-                     use_first_unread_anchor: bool=False) -> List[Dict[str, Any]]:
+    def get_messages_response(self, anchor: int=1, num_before: int=100, num_after: int=100,
+                              use_first_unread_anchor: bool=False) -> Dict[str, List[Dict[str, Any]]]:
         post_params = {"anchor": anchor, "num_before": num_before,
                        "num_after": num_after,
                        "use_first_unread_anchor": ujson.dumps(use_first_unread_anchor)}
         result = self.client_get("/json/messages", dict(post_params))
         data = result.json()
+        return data
+
+    def get_messages(self, anchor: int=1, num_before: int=100, num_after: int=100,
+                     use_first_unread_anchor: bool=False) -> List[Dict[str, Any]]:
+        data = self.get_messages_response(anchor, num_before, num_after, use_first_unread_anchor)
         return data['messages']
 
     def users_subscribed_to_stream(self, stream_name: Text, realm: Realm) -> List[UserProfile]:

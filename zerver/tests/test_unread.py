@@ -111,9 +111,10 @@ class PointerTest(ZulipTestCase):
 
         # If we call get_messages with use_first_unread_anchor=True, we
         # should get the message we just sent
-        messages = self.get_messages(
+        messages_response = self.get_messages_response(
             anchor=0, num_before=0, num_after=1, use_first_unread_anchor=True)
-        self.assertEqual(messages[0]['id'], new_message_id)
+        self.assertEqual(messages_response['messages'][0]['id'], new_message_id)
+        self.assertEqual(messages_response['anchor'], new_message_id)
 
         # We want to get the message_id of an arbitrar old message. We can
         # call get_messages with use_first_unread_anchor=False and simply
@@ -144,9 +145,10 @@ class PointerTest(ZulipTestCase):
 
         # Now if we call get_messages with use_first_unread_anchor=True,
         # we should get the old message we just set to unread
-        messages = self.get_messages(
+        messages_response = self.get_messages_response(
             anchor=0, num_before=0, num_after=1, use_first_unread_anchor=True)
-        self.assertEqual(messages[0]['id'], old_message_id)
+        self.assertEqual(messages_response['messages'][0]['id'], old_message_id)
+        self.assertEqual(messages_response['anchor'], old_message_id)
 
         # Let's update the pointer to be *after* this old unread message (but
         # still on or before the new unread message we just sent)
@@ -165,9 +167,10 @@ class PointerTest(ZulipTestCase):
         # Now if we call get_messages with use_first_unread_anchor=True,
         # we should not get the old unread message (because it's before the
         # pointer), and instead should get the newly sent unread message
-        messages = self.get_messages(
+        messages_response = self.get_messages_response(
             anchor=0, num_before=0, num_after=1, use_first_unread_anchor=True)
-        self.assertEqual(messages[0]['id'], new_message_id)
+        self.assertEqual(messages_response['messages'][0]['id'], new_message_id)
+        self.assertEqual(messages_response['anchor'], new_message_id)
 
     def test_visible_messages_use_first_unread_anchor(self) -> None:
         self.login(self.example_email("hamlet"))
@@ -179,19 +182,22 @@ class PointerTest(ZulipTestCase):
         new_message_id = self.send_stream_message(self.example_email("othello"), "Verona",
                                                   "test")
 
-        messages = self.get_messages(
+        messages_response = self.get_messages_response(
             anchor=0, num_before=0, num_after=1, use_first_unread_anchor=True)
-        self.assertEqual(messages[0]['id'], new_message_id)
+        self.assertEqual(messages_response['messages'][0]['id'], new_message_id)
+        self.assertEqual(messages_response['anchor'], new_message_id)
 
         with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=new_message_id):
-            messages = self.get_messages(
+            messages_response = self.get_messages_response(
                 anchor=0, num_before=0, num_after=1, use_first_unread_anchor=True)
-        self.assertEqual(messages[0]['id'], new_message_id)
+        self.assertEqual(messages_response['messages'][0]['id'], new_message_id)
+        self.assertEqual(messages_response['anchor'], new_message_id)
 
         with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=new_message_id + 1):
-            messages = self.get_messages(
+            messages_reponse = self.get_messages_response(
                 anchor=0, num_before=0, num_after=1, use_first_unread_anchor=True)
-        self.assert_length(messages, 0)
+        self.assert_length(messages_reponse['messages'], 0)
+        self.assertIn('anchor', messages_reponse)
 
         with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=new_message_id - 1):
             messages = self.get_messages(
