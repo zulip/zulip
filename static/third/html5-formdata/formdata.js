@@ -22,11 +22,13 @@
             // file upload
             if (field[1].name) {
                 var file = field[1];
-                body += "Content-Disposition: form-data; name=\""+ field[0] +"\"; filename=\""+ file.name +"\"\r\n";
+                body += "Content-Disposition: form-data; name=\""+ field[0];
+                body += "\"; filename=\""+ file.name +"\"\r\n";
                 body += "Content-Type: "+ file.type +"\r\n\r\n";
                 body += file.getAsBinary() + "\r\n";
             } else {
-                body += "Content-Disposition: form-data; name=\""+ field[0] +"\";\r\n\r\n";
+                body += "Content-Disposition: form-data; name=\"";
+                body += field[0] +"\";\r\n\r\n";
                 body += field[1] + "\r\n";
             }
         });
