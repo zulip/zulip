@@ -161,7 +161,7 @@ stripe==1.77.2
 tblib==1.3.2
 tornado==4.5.3
 traitlets==4.3.2          # via ipython
-transifex-client==0.12.4
+transifex-client==0.12.5
 twilio==6.9.0
 twisted==17.9.0
 typed-ast==1.1.0          # via mypy

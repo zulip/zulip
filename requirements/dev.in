@@ -38,7 +38,7 @@ gitlint==0.9.0
 snakeviz==0.4.2
 
 # Needed to sync translations from transifex
-transifex-client==0.12.4
+transifex-client==0.12.5
 
 # Needed for creating digital ocean droplets
 python-digitalocean==1.12
