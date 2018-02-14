@@ -2,6 +2,13 @@ var attachments_ui = (function () {
 
 var exports = {};
 
+function reset_upload_status() {
+    setTimeout(function () {
+        $('#delete-upload-status').hide().text('')
+                                  .removeClass('alert-error alert-success');
+    }, 3000);
+}
+
 function delete_attachments(attachment) {
     var status = $('#delete-upload-status');
     channel.del({
@@ -9,9 +16,11 @@ function delete_attachments(attachment) {
         idempotent: true,
         error: function (xhr) {
             ui_report.error(i18n.t("Failed"), xhr, status);
+            reset_upload_status();
         },
         success: function () {
             ui_report.success(i18n.t("Attachment deleted"), status);
+            reset_upload_status();
         },
     });
 }
