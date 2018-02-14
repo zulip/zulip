@@ -8,3 +8,5 @@ Next, on your {{ settings_html|safe }},
 The API key for an incoming webhook bot cannot be used to read messages out
 of Zulip. Thus, using an incoming webhook bot lowers the security risk of
 exposing the bot's API key to a third-party service.
+
+Fill out the rest of the fields, and click **Create bot**.
