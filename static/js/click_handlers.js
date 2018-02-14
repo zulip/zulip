@@ -55,8 +55,10 @@ $(function () {
     // MESSAGE CLICKING
 
     function is_clickable_message_element(target) {
-        return target.is("a") || target.is("img.message_inline_image") || target.is("img.twitter-avatar") ||
-            target.is("div.message_length_controller") || target.is("textarea") || target.is("input") ||
+        return target.is("a") || target.is("img.message_inline_image") || 
+            target.is("img.twitter-avatar") ||
+            target.is("div.message_length_controller") || 
+            target.is("textarea") || target.is("input") ||
             target.is("i.edit_content_button") ||
             (target.is(".highlight") && target.parent().is("a"));
     }
@@ -180,7 +182,8 @@ $(function () {
         e.preventDefault();
         var stream = stream_data.get_sub_by_id($(this).attr('data-stream-id'));
         if (stream) {
-            window.location.href = '/#narrow/stream/' + hash_util.encodeHashComponent(stream.name);
+            var hash = hash_util.encodeHashComponent(stream.name);
+            window.location.href = '/#narrow/stream/' + hash;
             return;
         }
         window.location.href = $(this).attr('href');
@@ -350,7 +353,8 @@ $(function () {
     });
 
     $("#subscriptions_table").on("click", ".exit, #subscription_overlay", function (e) {
-        if ($(e.target).is(".exit, .exit-sign, #subscription_overlay, #subscription_overlay > .flex")) {
+        var str = ".exit, .exit-sign, #subscription_overlay, #subscription_overlay > .flex";
+        if ($(e.target).is(str)) {
             subs.close();
         }
     });
@@ -381,7 +385,8 @@ $(function () {
     // MISC
 
     (function () {
-        var sel = ["#group-pm-list", "#stream_filters", "#global_filters", "#user_presences"].join(", ");
+        var array = ["#group-pm-list", "#stream_filters", "#global_filters", "#user_presences"];
+        var sel = array.join(", ");
 
         $(sel).on("click", "a", function () {
             this.blur();
@@ -698,7 +703,8 @@ $(function () {
         }
 
         // Dismiss popovers if the user has clicked outside them
-        if ($('.popover-inner, .emoji-info-popover, .app-main [class^="column-"].expanded').has(e.target).length === 0) {
+        var c = '.popover-inner, .emoji-info-popover, .app-main [class^="column-"].expanded';
+        if ($(c).has(e.target).length === 0) {
             popovers.hide_all();
         }
 

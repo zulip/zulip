@@ -100,7 +100,11 @@ sorttable = {
             this.removeChild(document.getElementById('sorttable_sortfwdind'));
             sortrevind = document.createElement('span');
             sortrevind.id = "sorttable_sortrevind";
-            sortrevind.innerHTML = stIsIE ? '&nbsp<font face="webdings">5</font>' : '&nbsp;&#x25B4;';
+            if (stIsIE) {
+                sortrevind.innerHTML = '&nbsp<font face="webdings">5</font>';
+            } else {
+                sortrevind.innerHTML = '&nbsp;&#x25B4;';
+            }
             this.appendChild(sortrevind);
             return;
           }
@@ -113,7 +117,8 @@ sorttable = {
             this.removeChild(document.getElementById('sorttable_sortrevind'));
             sortfwdind = document.createElement('span');
             sortfwdind.id = "sorttable_sortfwdind";
-            sortfwdind.innerHTML = stIsIE ? '&nbsp<font face="webdings">6</font>' : '&nbsp;&#x25BE;';
+            sortfwdind.innerHTML = stIsIE ? 
+                '&nbsp<font face="webdings">6</font>' : '&nbsp;&#x25BE;';
             this.appendChild(sortfwdind);
             return;
           }
@@ -134,7 +139,8 @@ sorttable = {
           this.className += ' sorttable_sorted';
           sortfwdind = document.createElement('span');
           sortfwdind.id = "sorttable_sortfwdind";
-          sortfwdind.innerHTML = stIsIE ? '&nbsp<font face="webdings">6</font>' : '&nbsp;&#x25BE;';
+          sortfwdind.innerHTML = stIsIE ? 
+              '&nbsp<font face="webdings">6</font>' : '&nbsp;&#x25BE;';
           this.appendChild(sortfwdind);
 
 	        // build an array to sort. This is a Schwartzian transform thing,
@@ -144,8 +150,10 @@ sorttable = {
 	        row_array = [];
 	        col = this.sorttable_columnindex;
 	        rows = this.sorttable_tbody.rows;
+                var l;
 	        for (var j=0; j<rows.length; j++) {
-	          row_array[row_array.length] = [sorttable.getInnerText(rows[j].cells[col]), rows[j]];
+                  l = row_array.length;
+	          row_array[l] = [sorttable.getInnerText(rows[j].cells[col]), rows[j]];
 	        }
 	        /* If you want a stable sort, uncomment the following line */
 	        //sorttable.shaker_sort(row_array, this.sorttable_sortfunction);
@@ -413,7 +421,8 @@ function removeEvent(element, type, handler) {
 function handleEvent(event) {
 	var returnValue = true;
 	// grab the event object (IE uses a global event object)
-	event = event || fixEvent(((this.ownerDocument || this.document || this).parentWindow || window).event);
+	event = event || 
+            fixEvent(((this.ownerDocument || this.document || this).parentWindow || window).event);
 	// get a reference to the hash table of event handlers
 	var handlers = this.events[event.type];
 	// execute each event handler
