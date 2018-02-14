@@ -263,22 +263,31 @@ function stream_home_view_clicked(e) {
     }
 }
 
-exports.set_stream_property = function (sub, property, value) {
-    // TODO: Fix backend so it takes a stream id.
-    var sub_data = {stream_id: sub.stream_id, property: property, value: value};
+exports.bulk_set_stream_property = function (sub_data) {
     return channel.post({
         url: '/json/users/me/subscriptions/properties',
-        data: {subscription_data: JSON.stringify([sub_data])},
-        timeout:  10*1000,
+        data: {subscription_data: JSON.stringify(sub_data)},
+        timeout: 10*1000,
     });
 };
 
+exports.set_stream_property = function (sub, property, value) {
+    var sub_data = {stream_id: sub.stream_id, property: property, value: value};
+    exports.bulk_set_stream_property([sub_data]);
+};
+
 exports.set_notification_setting_for_all_streams = function (notification_type, new_setting) {
+    var sub_data = [];
     _.each(stream_data.subscribed_subs(), function (sub) {
         if (sub[notification_type] !== new_setting) {
-            exports.set_stream_property(sub, notification_type, new_setting);
+            sub_data.push({
+                stream_id: sub.stream_id,
+                property: notification_type,
+                value: new_setting,
+            });
         }
     });
+    exports.bulk_set_stream_property(sub_data);
 };
 
 function redraw_privacy_related_stuff(sub_row, sub) {
