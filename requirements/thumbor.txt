@@ -11,7 +11,7 @@ argparse==1.4.0           # via thumbor
 backports-abc==0.5
 backports.ssl-match-hostname==3.5.0.1
 botocore==1.5.95          # via tornado-botocore
-certifi==2016.9.26
+certifi==2018.1.18
 derpconf==0.8.1           # via thumbor
 docutils==0.14            # via botocore
 futures==3.1.1            # via thumbor
