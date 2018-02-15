@@ -207,7 +207,7 @@ exports.report_emojiset_change = function () {
         $("#emoji-spritesheet").attr('href', sprite_css_href);
         emoji_success();
     };
-    sprite.src = "/static/generated/emoji/sheet_" + page_params.emojiset + "_32.png";
+    sprite.src = "/static/generated/emoji/sheet_" + page_params.emojiset + "_64_indexed.png";
 };
 
 function _update_page() {

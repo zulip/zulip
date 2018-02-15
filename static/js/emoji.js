@@ -73,7 +73,7 @@ exports.initialize = function initialize() {
     // Load the sprite image in the background so that the browser
     // can cache it for later use.
     var sprite = new Image();
-    sprite.src = '/static/generated/emoji/sheet_' + page_params.emojiset + '_32.png';
+    sprite.src = '/static/generated/emoji/sheet_' + page_params.emojiset + '_64_indexed.png';
 };
 
 exports.build_emoji_upload_widget = function () {

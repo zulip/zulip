@@ -48,7 +48,7 @@ div.emoji,
 span.emoji
 {
     display: inline-block;
-    background-image: url('sheet_%(emojiset)s_32.png');
+    background-image: url('sheet_%(emojiset)s_64_indexed.png');
     -webkit-background-size: 5200%%;
     -moz-background-size: 5200%%;
     background-size: 5200%%;
@@ -130,8 +130,9 @@ def setup_emoji_farm(cache_path, emoji_map, emoji_data):
         run(['cp', '-RPp', zulip_image, target_emoji_farm], shell=True)
 
         # Copy spritesheets.
-        input_sprite_sheet = os.path.join(EMOJI_DATA_PATH, 'img', emojiset, 'sheets', '32.png')
-        output_sprite_sheet = os.path.join(cache_path, 'sheet_%s_32.png' % (emojiset,))
+        src_emoji_package = os.path.join(NODE_MODULES_PATH, 'emoji-datasource-' + emojiset)
+        input_sprite_sheet = os.path.join(src_emoji_package, 'img', emojiset, 'sheets-256', '64.png')
+        output_sprite_sheet = os.path.join(cache_path, 'sheet_%s_64_indexed.png' % (emojiset,))
         run(['cp', input_sprite_sheet, output_sprite_sheet])
 
     generate_sprite_css_files(cache_path, emoji_map, emoji_data)
