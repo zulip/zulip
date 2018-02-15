@@ -401,6 +401,11 @@ function render(template_name, args) {
 
 }());
 
+(function all_messages_sidebar_actions() {
+    var html = render('all_messages_sidebar_actions');
+    global.write_handlebars_output("all_messages_sidebar_actions", html);
+}());
+
 (function announce_stream_docs() {
     var html = render('announce_stream_docs');
     global.write_handlebars_output("announce_stream_docs", html);

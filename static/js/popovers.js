@@ -779,6 +779,7 @@ exports.hide_all = function () {
     emoji_picker.hide_emoji_popover();
     stream_popover.hide_stream_popover();
     stream_popover.hide_topic_popover();
+    stream_popover.hide_all_messages_popover();
     popovers.hide_user_sidebar_popover();
     popovers.hide_userlist_sidebar();
     stream_popover.restore_stream_list_size();
