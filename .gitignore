@@ -70,3 +70,4 @@ zulip.kdev4
 ## Miscellaneous
 # (Ideally this section is empty.)
 zthumbor/thumbor_local_settings.py
+.transifexrc
