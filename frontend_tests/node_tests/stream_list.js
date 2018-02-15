@@ -59,7 +59,7 @@ set_global('overlays', {});
 
         global.templates.render = function (template_name, data) {
             assert.equal(template_name, 'stream_sidebar_row');
-            assert.equal(data.uri, '#narrow/stream/devel');
+            assert.equal(data.uri, '#narrow/stream/100-devel');
             return '<devel sidebar row>';
         };
 
@@ -78,7 +78,7 @@ set_global('overlays', {});
 
         global.templates.render = function (template_name, data) {
             assert.equal(template_name, 'stream_sidebar_row');
-            assert.equal(data.uri, '#narrow/stream/social');
+            assert.equal(data.uri, '#narrow/stream/200-social');
             return '<social sidebar row>';
         };
 

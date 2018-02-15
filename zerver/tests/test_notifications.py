@@ -19,6 +19,8 @@ from zerver.lib.message import access_message
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.send_email import FromAddress
 from zerver.models import (
+    get_realm,
+    get_stream,
     Recipient,
     UserMessage,
     UserProfile,
@@ -396,7 +398,9 @@ class TestMissedMessages(ZulipTestCase):
         msg_id = self.send_personal_message(
             self.example_email('othello'), self.example_email('hamlet'),
             'Come and join us in #**Verona**.')
-        body = '<a class="stream" data-stream-id="5" href="http://zulip.testserver/#narrow/stream/Verona">#Verona</a'
+        stream_id = get_stream('Verona', get_realm('zulip')).id
+        href = "http://zulip.testserver/#narrow/stream/{stream_id}-Verona".format(stream_id=stream_id)
+        body = '<a class="stream" data-stream-id="5" href="{href}">#Verona</a'.format(href=href)
         subject = 'Othello, the Moor of Venice sent you a message'
         self._test_cases(tokens, msg_id, body, subject, send_as_user=False, verify_html_body=True)
 
