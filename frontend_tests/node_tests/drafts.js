@@ -145,3 +145,29 @@ var draft_2 = {
 
     drafts.initialize();
 }());
+
+(function test_remove_old_drafts() {
+    var draft_3 = {
+        stream: "stream",
+        subject: "topic",
+        type: "stream",
+        content: "Test Stream Message",
+        updatedAt: Date.now(),
+    };
+    var draft_4 = {
+        private_message_recipient: "aaron@zulip.com",
+        reply_to: "aaron@zulip.com",
+        type: "private",
+        content: "Test Private Message",
+        updatedAt: new Date().setDate(-30),
+    };
+    var draft_model = drafts.draft_model;
+    var ls = localstorage();
+    localStorage.clear();
+    var data = {id3: draft_3, id4: draft_4};
+    ls.set("drafts", data);
+    assert.deepEqual(draft_model.get(), data);
+
+    drafts.remove_old_drafts();
+    assert.deepEqual(draft_model.get(), {id3: draft_3});
+}());
