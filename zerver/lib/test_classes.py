@@ -723,7 +723,12 @@ class ZulipTestCase(TestCase):
             from_stream_creation = False
         except Stream.DoesNotExist:
             stream, from_stream_creation = create_stream_if_needed(user_profile.realm, stream_name)
-        bulk_add_subscriptions([stream], [user_profile], from_stream_creation=from_stream_creation)
+        stream_admin_map = None
+        if from_stream_creation:
+            stream_admin_map = {user_profile.id: [stream]}
+
+        bulk_add_subscriptions([stream], [user_profile], from_stream_creation=from_stream_creation,
+                               stream_admin_map=stream_admin_map)
         return stream
 
     def unsubscribe(self, user_profile: UserProfile, stream_name: str) -> None:

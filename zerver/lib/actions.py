@@ -2734,7 +2734,8 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
                            users: Iterable[UserProfile],
                            color_map: Optional[Dict[str, str]]=None,
                            from_stream_creation: bool=False,
-                           acting_user: Optional[UserProfile]=None) -> SubT:
+                           acting_user: Optional[UserProfile]=None,
+                           stream_admin_map: Optional[Dict[int, List[Stream]]]=None) -> SubT:
     users = list(users)
 
     recipients_map: Dict[int, int] = {stream.id: stream.recipient_id for stream in streams}
@@ -2777,8 +2778,13 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
         else:
             color = pick_color(user_profile, subs_by_user[user_profile.id])
 
+        is_stream_admin = False
+        if stream_admin_map is not None:
+            if user_profile.id in stream_admin_map and stream in stream_admin_map[user_profile.id]:
+                is_stream_admin = True
+
         sub_to_add = Subscription(user_profile=user_profile, active=True,
-                                  color=color, recipient_id=recipient_id)
+                                  color=color, recipient_id=recipient_id, is_stream_admin=is_stream_admin)
         subs_by_user[user_profile.id].append(sub_to_add)
         subs_to_add.append((sub_to_add, stream))
 

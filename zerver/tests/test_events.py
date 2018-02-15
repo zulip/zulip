@@ -2522,6 +2522,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('stream_post_policy', check_int_in(Stream.STREAM_POST_POLICY_TYPES)),
             ('is_muted', check_bool),
             ('in_home_view', check_bool),
+            ('is_stream_admin', check_bool),
             ('name', check_string),
             ('audible_notifications', check_none_or(check_bool)),
             ('email_notifications', check_none_or(check_bool)),

@@ -2581,6 +2581,39 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(add_peer_event['event']['op'], 'peer_add')
         self.assertEqual(add_peer_event['event']['user_id'], user_profile.id)
 
+    def test_set_stream_admin_on_stream_creation(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        stream_public = "public"
+        stream_private = "private"
+
+        # Make acting user a stream admin of newly created stream automatically
+        result = self.common_subscribe_to_streams(hamlet, [stream_public, stream_private],
+                                                  {"principals": ujson.dumps([hamlet.email,
+                                                                              cordelia.email])})
+        self.assert_json_success(result)
+
+        sub_hamlet = get_subscription(stream_public, hamlet)
+        self.assertTrue(sub_hamlet.is_stream_admin)
+        sub_hamlet = get_subscription(stream_private, hamlet)
+        self.assertTrue(sub_hamlet.is_stream_admin)
+
+        # Only acting user can be stream admin.
+        sub_cordelia = get_subscription(stream_private, cordelia)
+        self.assertFalse(sub_cordelia.is_stream_admin)
+
+        # Stream admin is set only on newly created streams.
+        stream_new = "new stream"
+        stream_old = "existing stream"
+        self.make_stream(stream_old)
+        self.common_subscribe_to_streams(hamlet, [stream_old, stream_new],
+                                         {"principals": ujson.dumps([hamlet.email,
+                                                                     cordelia.email])})
+        sub_hamlet = get_subscription(stream_old, hamlet)
+        self.assertFalse(sub_hamlet.is_stream_admin)
+        sub_hamlet = get_subscription(stream_new, hamlet)
+        self.assertTrue(sub_hamlet.is_stream_admin)
+
     def test_private_stream_subscription(self) -> None:
         realm = get_realm("zulip")
 

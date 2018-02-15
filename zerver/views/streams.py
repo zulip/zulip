@@ -383,8 +383,13 @@ def add_subscriptions_backend(
     else:
         subscribers = {user_profile}
 
+    stream_admin_map = None
+    if created_streams:
+        stream_admin_map = {user_profile.id: created_streams}
+
     (subscribed, already_subscribed) = bulk_add_subscriptions(streams, subscribers,
-                                                              acting_user=user_profile, color_map=color_map)
+                                                              acting_user=user_profile, color_map=color_map,
+                                                              stream_admin_map=stream_admin_map)
 
     # We can assume unique emails here for now, but we should eventually
     # convert this function to be more id-centric.
