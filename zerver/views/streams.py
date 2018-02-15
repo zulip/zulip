@@ -30,7 +30,7 @@ from zerver.lib.validator import check_string, check_int, check_list, check_dict
     check_bool, check_variable_type
 from zerver.models import UserProfile, Stream, Realm, Subscription, \
     Recipient, get_recipient, get_stream, \
-    get_system_bot, get_user
+    get_system_bot, get_user, get_stream_recipient
 
 from collections import defaultdict
 import ujson
@@ -324,6 +324,19 @@ def add_subscriptions_backend(
 
     (subscribed, already_subscribed) = bulk_add_subscriptions(streams, subscribers,
                                                               acting_user=user_profile)
+
+    # Make acting user a stream admin, if acting user subscribed to newly created streams.
+    if user_profile.email in principals:
+        for stream in created_streams:
+            recipient = get_stream_recipient(stream.id)
+            try:
+                sub = Subscription.objects.get(user_profile=user_profile,
+                                               recipient=recipient)
+            except Subscription.DoesNotExist:
+                # If user is present in principals, then user should be subscribed to stream. But
+                # in case if not then just pass.
+                pass  # nocoverage
+            do_change_subscription_property(user_profile, sub, stream, "is_stream_admin", True)
 
     # We can assume unique emails here for now, but we should eventually
     # convert this function to be more id-centric.
