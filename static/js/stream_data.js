@@ -97,6 +97,37 @@ exports.get_sub_by_name = function (name) {
     return subs_by_stream_id.get(stream_id);
 };
 
+exports.name_to_slug = function (name) {
+    var stream_id = exports.get_stream_id(name);
+
+    if (!stream_id) {
+        return name;
+    }
+
+    // The name part of the URL doesn't really matter, so we try to
+    // make it pretty.
+    name = name.replace(' ', '-');
+
+    return stream_id + '-' + name;
+};
+
+exports.slug_to_name = function (slug) {
+    var m = /^([\d]+)-/.exec(slug);
+    if (m) {
+        var stream_id = m[1];
+        var sub = subs_by_stream_id.get(stream_id);
+        if (sub) {
+            return sub.name;
+        }
+        // if nothing was found above, we try to match on the stream
+        // name in the somewhat unlikely event they had a historical
+        // link to a stream like 4-horsemen
+    }
+
+    return slug;
+};
+
+
 exports.delete_sub = function (stream_id) {
     var sub = subs_by_stream_id.get(stream_id);
     if (!sub) {

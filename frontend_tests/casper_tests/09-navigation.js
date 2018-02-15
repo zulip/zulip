@@ -58,14 +58,24 @@ function then_navigate_to_subscriptions() {
 // Take a navigation tour of the app.
 // Entries are (click target, tab that should be active after clicking).
 then_navigate_to_settings();
-then_navigate_to('narrow/stream/Verona', 'home');
-then_navigate_to('home', 'home');
-then_navigate_to_subscriptions();
-then_navigate_to('', 'home');
-then_navigate_to_settings();
-then_navigate_to('narrow/is/private', 'home');
-then_navigate_to_subscriptions();
-then_navigate_to('narrow/stream/Verona', 'home');
+
+var verona_narrow;
+casper.then(function () {
+    var verona_id = casper.evaluate(function () {
+        return stream_data.get_stream_id('Verona');
+    });
+    verona_narrow = 'narrow/stream/' + verona_id + '-Verona';
+    casper.test.info(verona_narrow);
+
+    then_navigate_to(verona_narrow, 'home');
+    then_navigate_to('home', 'home');
+    then_navigate_to_subscriptions();
+    then_navigate_to('', 'home');
+    then_navigate_to_settings();
+    then_navigate_to('narrow/is/private', 'home');
+    then_navigate_to_subscriptions();
+    then_navigate_to(verona_narrow, 'home');
+});
 
 var initial_page_load_time;
 var hash;

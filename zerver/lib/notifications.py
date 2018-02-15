@@ -48,6 +48,11 @@ def hash_util_encode(string: Text) -> Text:
     return urllib.parse.quote(
         string.encode("utf-8"), safe=b"").replace(".", "%2E").replace("%", ".")
 
+def encode_stream(stream_id: int, stream_name: Text) -> Text:
+    # We encode streams for urls as something like 99-Verona.
+    stream_name = stream_name.replace(' ', '-')
+    return str(stream_id) + '-' + hash_util_encode(stream_name)
+
 def pm_narrow_url(realm: Realm, participants: List[Text]) -> Text:
     participants.sort()
     base_url = "%s/#narrow/pm-with/" % (realm.uri,)
