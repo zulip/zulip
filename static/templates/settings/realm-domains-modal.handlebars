@@ -15,13 +15,19 @@
             <tfoot>
                 <tr id="add-realm-domain-widget">
                     <td><input type="text" class="new-realm-domain" placeholder="acme.com"></input></td>
-                    <td><input type="checkbox" class="new-realm-domain-allow-subdomains"></input></td>
+                    <td>
+                        <label class="checkbox">
+                            <input type="checkbox" class="new-realm-domain-allow-subdomains" />
+                            <span></span>
+                        </label>
+                    </td>
                     <td><button type="button" class="button sea-green small rounded" id="submit-add-realm-domain">{{t "Add" }}</button></td>
                 </tr>
             </tfoot>
         </table>
     </div>
     <div class="modal-footer centered-footer">
-        <div class="alert realm_domains_info"></div>
+        <div class="realm_domains_info"></div>
+        <button class="new-style button rounded" data-dismiss="modal">{{t "Close" }}</button>
     </div>
 </div>
