@@ -1,4 +1,4 @@
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Text
 
 class TemplateParserException(Exception):
     def __init__(self, message):
@@ -112,7 +112,7 @@ def tokenize(text):
 
                 if is_special_html_tag(s, tag):
                     kind = 'html_special'
-                elif s.endswith('/>'):
+                elif is_self_closing_html_tag(s, tag):
                     kind = 'html_singleton'
                 else:
                     kind = 'html_start'
@@ -271,6 +271,24 @@ def validate(fn=None, text=None, check_indent=True):
 def is_special_html_tag(s, tag):
     # type: (str, str) -> bool
     return tag in ['link', 'meta', '!DOCTYPE']
+
+def is_self_closing_html_tag(s: Text, tag: Text) -> bool:
+    self_closing_tag = tag in [
+        'area',
+        'base',
+        'br',
+        'col',
+        'embed',
+        'hr',
+        'img',
+        'input',
+        'param',
+        'source',
+        'track',
+        'wbr',
+    ]
+    singleton_tag = s.endswith('/>')
+    return self_closing_tag or singleton_tag
 
 def is_django_block_tag(tag):
     # type: (str) -> bool
