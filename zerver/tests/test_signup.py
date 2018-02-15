@@ -122,33 +122,30 @@ class RedirectAndLogIntoSubdomainTestCase(ZulipTestCase):
                                     'is_signup': True})
 
 class DeactivationNoticeTestCase(ZulipTestCase):
-    def test_redirection_for_deactivated_realm(self) -> None:
+    def test_deactivation_notice(self):
+        def test_redirect(url: str, expected_status_code: int, url_contains_string: str=None, body_contains_string: str=None):
+            """Check that getting the url returns the expected status code and url/body contains specified string"""
+            result = self.client_get(url)
+            self.assertEqual(result.status_code, expected_status_code)
+            if(url_contains_string is not None):
+                self.assertIn(url_contains_string, result.url)
+            if(body_contains_string is not None):
+                self.assertIn(body_contains_string, result.content.decode())
+
+        # Realm is active
+        test_redirect('/register/', 200)
+        test_redirect('/login/', 200)
+        test_redirect('/accounts/deactivated/', 302, 'login')
+
+        # Deactivate realm
         realm = get_realm("zulip")
         realm.deactivated = True
         realm.save(update_fields=["deactivated"])
 
-        for url in ('/register/', '/login/'):
-            result = self.client_get(url)
-            self.assertEqual(result.status_code, 302)
-            self.assertIn('deactivated', result.url)
-
-    def test_redirection_for_active_realm(self) -> None:
-        for url in ('/register/', '/login/'):
-            result = self.client_get(url)
-            self.assertEqual(result.status_code, 200)
-
-    def test_deactivation_notice_when_realm_is_active(self) -> None:
-        result = self.client_get('/accounts/deactivated/')
-        self.assertEqual(result.status_code, 302)
-        self.assertIn('login', result.url)
-
-    def test_deactivation_notice_when_deactivated(self) -> None:
-        realm = get_realm("zulip")
-        realm.deactivated = True
-        realm.save(update_fields=["deactivated"])
-
-        result = self.client_get('/accounts/deactivated/')
-        self.assertIn("Zulip Dev, has been deactivated.", result.content.decode())
+        # Realm is deactivated
+        test_redirect('/register/', 302, 'deactivated')
+        test_redirect('/login/', 302, 'deactivated')
+        test_redirect('/accounts/deactivated/', 200, body_contains_string='Zulip Dev, has been deactivated.')
 
 class AddNewUserHistoryTest(ZulipTestCase):
     def test_add_new_user_history_race(self) -> None:
