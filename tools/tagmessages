@@ -2,13 +2,20 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+import configparser
+from hashlib import md5
 import os
 
-from hashlib import md5
 import polib
 
-username = 'transifex_username'
-password = 'transifex_password'
+THIS_DIR = os.path.dirname(os.path.realpath(__file__))
+config = configparser.RawConfigParser()
+config.read(os.path.join(THIS_DIR, '../.transifexrc'))
+login = '{}:{}'.format(config.get('https://www.transifex.com', 'username'),
+                       config.get('https://www.transifex.com', 'password'))
+
+project_slug = 'zulip-test'  # HACK hardcode
+
 tools_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.dirname(tools_dir)
 # Choose any translation file for processing all strings.
@@ -18,7 +25,7 @@ for entry in po:
     if tag:
         keys = [entry.msgid, entry.msgctxt or '']
         msg_hash = md5(':'.join(keys).encode('utf-8')).hexdigest()
-        curl_call = 'curl -i -L --user {}:{} -X PUT -H "Content-Type: application/json" ' \
-                    '--data \'{{"tags": ["{}"]}}\' https://www.transifex.com/api/2/project/zulip/resource' \
-                    '/djangopo/source/{}'.format(username, password, tag, msg_hash)
+        curl_call = 'curl -i -L --user {} -X PUT -H "Content-Type: application/json" ' \
+                    '--data \'{{"tags": ["{}"]}}\' https://www.transifex.com/api/2/project/{}/resource' \
+                    '/djangopo/source/{}'.format(login, tag, project_slug, msg_hash)
         os.system(curl_call)
