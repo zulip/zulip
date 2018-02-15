@@ -599,6 +599,8 @@ if settings.DEVELOPMENT:
 urlpatterns = i18n_patterns(*i18n_urls) + urls + legacy_urls
 
 def handler400(request: HttpRequest, exception: Exception) -> HttpResponse:
+    # (This workaround should become obsolete with Django 2.1; the
+    #  issue was fixed upstream in commit 7ec0fdf62 on 2018-02-14.)
     #
     # This behaves exactly like the default Django implementation in
     # the case where you haven't made a template "400.html", which we
