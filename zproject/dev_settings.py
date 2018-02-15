@@ -78,4 +78,3 @@ TWO_FACTOR_SMS_GATEWAY = 'two_factor.gateways.fake.Fake'
 
 # Make sendfile use django to serve files in development
 SENDFILE_BACKEND = 'sendfile.backends.development'
-SENDFILE_ROOT = os.path.join(LOCAL_UPLOADS_DIR, 'files')
