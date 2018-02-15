@@ -103,6 +103,8 @@ exports.set_up = function () {
     $('#config_inputbox').children().hide();
     $("[name*='"+selected_embedded_bot+"']").show();
 
+    $('#bot_type_'+BOT_TYPES.GENERIC+'_radio').prop('checked', true);
+
     $('#download_flaskbotrc').click(function () {
         var OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
         var content = "";
@@ -135,7 +137,7 @@ exports.set_up = function () {
             $('#bot_table_error').hide();
         },
         submitHandler: function () {
-            var bot_type = $('#create_bot_type :selected').val();
+            var bot_type = $('input[type=radio][name=bot_type]:checked').val();
             var full_name = $('#create_bot_name').val();
             var short_name = $('#create_bot_short_name').val() || $('#create_bot_short_name').text();
             var payload_url = $('#create_payload_url').val();
@@ -199,8 +201,8 @@ exports.set_up = function () {
         },
     });
 
-    $("#create_bot_type").on("change", function () {
-        var bot_type = $('#create_bot_type :selected').val();
+    $("input[type=radio][name=bot_type]").on("change", function () {
+        var bot_type = $('input[type=radio][name=bot_type]:checked').val();
         // For "generic bot" or "incoming webhook" both these fields need not be displayed.
         $('#service_name_list').hide();
         $('#select_service_name').removeClass('required');

@@ -34,13 +34,14 @@
                             <i class="icon-vector-question-sign settings-info-icon bot_type_tooltip" data-toggle="tooltip"
                              title='{{t "Incoming webhooks can only send messages." }}'></i>
                         </label>
-                        <select name="bot_type" id="create_bot_type">
-                            {{#each page_params.bot_types}}
-                                {{#if this.allowed}}
-                                <option value="{{this.type_id}}">{{this.name}}</option>
-                                {{/if}}
-                            {{/each}}
-                        </select>
+                        {{#each page_params.bot_types}}
+                            {{#if this.allowed}}
+                            <label class="radio">
+                                <input type="radio" id="bot_type_{{this.type_id}}_radio" name="bot_type" value="{{this.type_id}}" />
+                                {{this.name}}
+                            </label>
+                            {{/if}}
+                        {{/each}}
                     </div>
                     <div class="input-group">
                         <label for="create_bot_name">{{t "Full name" }}</label>
