@@ -1084,6 +1084,22 @@ def url_filename(url: Text) -> Text:
     else:
         return url
 
+def youtube_title(id: Text) -> Text:
+    page = requests.get("https://www.youtube.com/watch?v="+id).text
+    title = str(page).split('<title>')[1].split('</title>')[0]
+    return title
+
+def url_youtubetitle(url: Text) -> Text:
+    """Extract the title if a URL is a youtube video, or return the original URL"""
+    youtube_re = r'^((?:https?://)?(?:youtu\.be/|(?:\w+\.)?youtube(?:-nocookie)?\.com/)' + \
+                 r'(?:(?:(?:v|embed)/)|(?:(?:watch(?:_popup)?(?:\.php)?)?(?:\?|#!?)(?:.+&)?v=)))' + \
+                 r'?([0-9A-Za-z_-]+)(?(1).+)?$'
+    match = re.match(youtube_re, url)
+    if match:
+        return youtube_title(match.group(2))
+    else:
+        return url
+
 def fixup_link(link: markdown.util.etree.Element, target_blank: bool=True) -> None:
     """Set certain attributes we want on every link."""
     if target_blank:
@@ -1161,6 +1177,7 @@ def url_to_a(url: Text, text: Optional[Text]=None) -> Union[Element, Text]:
 
     a.set('href', href)
     a.text = text
+    a.text = url_youtubetitle(a.text)
     fixup_link(a, target_blank)
     return a
 
