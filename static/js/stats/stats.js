@@ -499,8 +499,11 @@ function populate_messages_sent_by_client(data) {
         draw_plot();
     });
 
-    // handle links with @href started with '#' only
-    $(document).on('click', 'a[href^="#"]', function (e) {
+}
+
+$(document).on('click', 'a[href^="#"]', function (e) {
+        // prevent standard hash navigation (avoid blinking in IE)
+        e.preventDefault();
         // target element id
         var id = $(this).attr('href');
         // target element
@@ -508,12 +511,9 @@ function populate_messages_sent_by_client(data) {
         if ($id.length === 0) {
             return;
         }
-        // prevent standard hash navigation (avoid blinking in IE)
-        e.preventDefault();
         var pos = $id.offset().top+$('.page-content')[0].scrollTop-50;
-        $('.page-content').animate({scrollTop: pos + "px"}, 500);
+        $('html, body').animate({scrollTop: pos}, 500);
     });
-}
 
 $.get({
     url: '/json/analytics/chart_data',

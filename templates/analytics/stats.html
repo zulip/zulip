@@ -11,6 +11,17 @@
     {{ render_bundle('stats') }}
     {% stylesheet 'stats' %}
 
+    <div class="sidebar">
+        <nav class="nav">
+            <p class="nav-subtitle">Messages Sent</p>
+            <a href="#div_messages_sent_over_time" class="nav-link">Messages Sent Over Time</a>
+            <a href="#pie_messages_sent_by_client" class="nav-link">Messages Sent by Client</a>
+            <a href="#pie_messages_sent_by_type" class="nav-link">Messages Sent by Recipient Type</a>
+            <p class="nav-subtitle">Users</p>
+            <a href="#id_number_of_users" class="nav-link">Number of Users</a>
+        </nav>
+    </div>
+
     <div class="page-content">
         <div id="id_stats_errors" class="alert alert-error"></div>
         <div class="center-charts">
@@ -18,26 +29,28 @@
 
             <div class="left">
                 <div class="chart-container">
-                    <h1>{{ _("Messages sent over time") }}</h1>
-                    <div class="button-container">
-                        <label>{{ _("Aggregation") }}</label>
-                        <div class="buttons">
-                            <button class="button" type="button" id='daily_button'>{{ _("Daily") }} </button>
-                            <button class="button" type="button" id='weekly_button'>{{ _("Weekly") }} </button>
-                            <button class="button" type="button" id='cumulative_button'>{{ _("Cumulative") }} </button>
+                    <div id="div_messages_sent_over_time">
+                        <h1>{{ _("Messages sent over time") }}</h1>
+                        <div class="button-container">
+                            <label>{{ _("Aggregation") }}</label>
+                            <div class="buttons">
+                                <button class="button" type="button" id='daily_button'>{{ _("Daily") }} </button>
+                                <button class="button" type="button" id='weekly_button'>{{ _("Weekly") }} </button>
+                                <button class="button" type="button" id='cumulative_button'>{{ _("Cumulative") }} </button>
+                            </div>
                         </div>
-                    </div>
-                    <div id="id_messages_sent_over_time">
-                        <div class="spinner"></div>
-                    </div>
-                    <div id="hoverinfo">
-                        <span id="hover_date"></span>
-                        <span id="hover_me">{{ _("Me") }}:</span>
-                        <span id="hover_me_value"></span>
-                        <b id="hover_human">{{ _("Humans") }}:</b>
-                        <span id="hover_human_value"></span>
-                        <b id="hover_bot">{{ _("Bots") }}:</b>
-                        <span id="hover_bot_value"></span>
+                        <div id="id_messages_sent_over_time">
+                            <div class="spinner"></div>
+                        </div>
+                        <div id="hoverinfo">
+                            <span id="hover_date"></span>
+                            <span id="hover_me">{{ _("Me") }}:</span>
+                            <span id="hover_me_value"></span>
+                            <b id="hover_human">{{ _("Humans") }}:</b>
+                            <span id="hover_human_value"></span>
+                            <b id="hover_bot">{{ _("Bots") }}:</b>
+                            <span id="hover_bot_value"></span>
+                        </div>
                     </div>
                 </div>
 

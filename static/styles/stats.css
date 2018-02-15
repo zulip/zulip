@@ -1,7 +1,8 @@
-.app-main {
+.app {
     padding: 0;
     width: auto;
     max-width: none;
+    position: relative;
 }
 
 body {
@@ -13,6 +14,53 @@ body {
 
 p {
     margin-bottom: 0px;
+}
+
+.page-content {
+    width: calc(100% - 270px - 10px);
+    overflow: auto;
+    display: inline-block;
+    vertical-align: top;
+    position: relative;
+    margin-left: 275px;
+}
+
+.sidebar {
+    width: 270px;
+    height: 100%;
+    z-index: 2;
+    display: inline-block;
+    vertical-align: top;
+    border-right: 1px solid #eee;
+    position: fixed;
+}
+
+.nav {
+    margin-left: 20px;
+}
+
+.nav-subtitle {
+    font-size: 20px;
+    font-weight: 300;
+    margin-top: 40px;
+    margin-bottom: 7px;
+}
+
+.nav-link {
+    display: block;
+    font-size: 16px;
+    margin-left: 25px;
+}
+
+@media (max-width: 1100px) {
+    .sidebar {
+        display: none;
+    }
+
+    .page-content {
+        width: 100%;
+        margin: auto;
+    }
 }
 
 .svg-container {
