@@ -75,3 +75,6 @@ EMAIL_HOST_USER = ""
 # Two factor authentication: Use the fake backend for development.
 TWO_FACTOR_CALL_GATEWAY = 'two_factor.gateways.fake.Fake'
 TWO_FACTOR_SMS_GATEWAY = 'two_factor.gateways.fake.Fake'
+
+# Make sendfile use django to serve files in development
+SENDFILE_BACKEND = 'sendfile.backends.development'

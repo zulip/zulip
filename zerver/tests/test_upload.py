@@ -30,7 +30,7 @@ from zerver.lib.actions import (
     internal_send_private_message,
 )
 
-from zerver.views.upload import upload_file_backend
+from zerver.views.upload import upload_file_backend, serve_local
 
 import urllib
 from PIL import Image
@@ -47,7 +47,9 @@ import datetime
 import requests
 import base64
 from datetime import timedelta
+from django.http import HttpRequest
 from django.utils.timezone import now as timezone_now
+from sendfile import _get_sendfile
 
 from typing import Any, Callable, Text
 
@@ -537,6 +539,27 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             data = b"".join(response.streaming_content)
             self.assertEqual(b"zulip!", data)
             self.logout()
+
+    def test_serve_local(self) -> None:
+        def check_xsend_links(name: Text, name_str_for_test: Text) -> None:
+            with self.settings(SENDFILE_BACKEND='sendfile.backends.nginx'):
+                _get_sendfile.clear()  # To clearout cached version of backend from djangosendfile
+                self.login(self.example_email("hamlet"))
+                fp = StringIO("zulip!")
+                fp.name = name
+                result = self.client_post("/json/user_uploads", {'file': fp})
+                uri = result.json()['uri']
+                fp_path_id = re.sub('/user_uploads/', '', uri)
+                fp_path = os.path.split(fp_path_id)[0]
+                response = self.client_get(uri)
+                _get_sendfile.clear()
+                test_upload_dir = os.path.split(settings.LOCAL_UPLOADS_DIR)[1]
+                self.assertEqual(response['X-Accel-Redirect'],
+                                 '/serve_uploads/../../'  + test_upload_dir +
+                                 '/files/' + fp_path + '/' + name_str_for_test)
+
+        check_xsend_links('zulip.txt', 'zulip.txt')
+        check_xsend_links('áéБД.txt', '%C3%A1%C3%A9%D0%91%D0%94.txt')
 
     def tearDown(self) -> None:
         destroy_uploads()

@@ -188,3 +188,6 @@ twilio==6.10.3
 
 # Needed for processing payments (in zilencer)
 stripe==1.77.2
+
+# Needed for serving uploaded files from nginx but perform auth checks in django.
+django-sendfile==0.3.11

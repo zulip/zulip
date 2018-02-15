@@ -180,6 +180,7 @@ DEFAULT_SETTINGS = {
     'REMOTE_POSTGRES_HOST': '',
     'REMOTE_POSTGRES_SSLMODE': '',
     'THUMBOR_HOST': '',
+    'SENDFILE_BACKEND': None,
 
     # ToS/Privacy templates
     'PRIVACY_POLICY': None,
@@ -669,6 +670,12 @@ if "NAGIOS_BOT_HOST" not in vars():
 
 S3_KEY = get_secret("s3_key")
 S3_SECRET_KEY = get_secret("s3_secret_key")
+
+if LOCAL_UPLOADS_DIR is not None:
+    if SENDFILE_BACKEND is None:
+        SENDFILE_BACKEND = 'sendfile.backends.nginx'
+    SENDFILE_ROOT = os.path.join(LOCAL_UPLOADS_DIR, "files")
+    SENDFILE_URL = '/serve_uploads'
 
 # GCM tokens are IP-whitelisted; if we deploy to additional
 # servers you will need to explicitly add their IPs here:
