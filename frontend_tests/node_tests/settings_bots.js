@@ -113,6 +113,14 @@ function test_create_bot_type_input_box_toggle(f) {
         };
         return mock_children;
     };
+    $('#bot_type_2_radio').closest = function () {
+        var mock_label = {
+            prop: function () {
+                return;
+            },
+        };
+        return mock_label;
+    };
     global.compile_template('embedded_bot_config_item');
     avatar.build_bot_create_widget = function () {};
     avatar.build_bot_edit_widget = function () {};

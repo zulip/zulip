@@ -31,8 +31,6 @@
                     <div class="input-group">
                         <label for="bot_type">
                             {{t "Bot type" }}
-                            <i class="icon-vector-question-sign settings-info-icon bot_type_tooltip" data-toggle="tooltip"
-                             title='{{t "Incoming webhooks can only send messages." }}'></i>
                         </label>
                         {{#each page_params.bot_types}}
                             {{#if this.allowed}}

@@ -3,6 +3,7 @@ var settings_bots = (function () {
 var exports = {};
 
 var BOT_TYPES = Object.freeze({GENERIC: '1',
+                               INCOMING_WEBHOOK: '2',
                                OUTGOING_WEBHOOK: '3',
                                EMBEDDED: '4'});
 
@@ -104,6 +105,8 @@ exports.set_up = function () {
     $("[name*='"+selected_embedded_bot+"']").show();
 
     $('#bot_type_'+BOT_TYPES.GENERIC+'_radio').prop('checked', true);
+    $('#bot_type_'+BOT_TYPES.INCOMING_WEBHOOK+'_radio').closest('label')
+        .prop('title', "Incoming webhooks can only send messages.");
 
     $('#download_flaskbotrc').click(function () {
         var OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
