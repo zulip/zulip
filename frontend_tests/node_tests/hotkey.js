@@ -98,6 +98,7 @@ function stubbing(func_name_to_stub, test_function) {
     assert.equal(map_press(106).name, 'vim_down'); // j
 
     assert.equal(map_down(219, false, true).name, 'escape');
+    assert.equal(map_down(75, false, true).name, 'search');
 
     // More negative tests.
     assert.equal(map_down(47), undefined);

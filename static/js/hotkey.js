@@ -48,6 +48,7 @@ var keydown_unshift_mappings = {
 };
 
 var keydown_ctrl_mappings = {
+    75: {name: 'search', message_view_only: false}, // 'K'
     219: {name: 'escape', message_view_only: false}, // '['
 };
 
