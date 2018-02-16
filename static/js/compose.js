@@ -740,7 +740,8 @@ exports.initialize_pills = function () {
 
     exports.pills.private_message_recipient.onPillCreate(function (value, reject) {
         var match = _.find(realm_people, function (person) {
-            return person.email === value;
+            /* this is because Zulip does not care about the case sensitivity of emails. */
+            return person.email.toLowerCase() === value.toLowerCase();
         });
 
         // if there is no match, reject, but only if the realm is also not a

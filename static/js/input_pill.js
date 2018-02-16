@@ -104,6 +104,9 @@ var input_pill = function ($parent) {
         // this appends a pill to the end of the container but before the
         // input block.
         appendPill: function (value, optionalKey) {
+            if (value.length === 0) {
+              return;
+            }
             if (value.match(",")) {
                 funcs.insertManyPills(value);
                 return false;
