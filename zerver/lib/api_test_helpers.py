@@ -291,6 +291,18 @@ def private_message(client):
     assert result['result'] == 'success'
     assert result['raw_content'] == request['content']
 
+def test_private_message_invalid_recipient(client):
+    # type: (Client) -> None
+    request = {
+        "type": "private",
+        "to": "eeshan@zulip.com",
+        "content": "I come not, friends, to steal away your hearts."
+    }
+    result = client.send_message(request)
+
+    fixture = FIXTURES['invalid-pm-recipient-error']
+    test_against_fixture(result, fixture)
+
 def update_message(client, message_id):
     # type: (Client, int) -> None
 
@@ -408,6 +420,7 @@ def test_messages(client):
     private_message(client)
 
     test_nonexistent_stream_error(client)
+    test_private_message_invalid_recipient(client)
 
 def test_users(client):
     # type: (Client) -> None

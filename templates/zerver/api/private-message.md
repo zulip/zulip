@@ -92,10 +92,4 @@ A typical successful JSON response may look like:
 A typical failed JSON response for when the recipient's email
 address is invalid:
 
-```
-{
-    'code':'BAD_REQUEST',
-    'msg':"Invalid email 'hamlet@example.com'",
-    'result':'error'
-}
-```
+{generate_code_example|invalid-pm-recipient-error|fixture}
