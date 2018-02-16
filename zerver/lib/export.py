@@ -16,6 +16,7 @@ import shutil
 import subprocess
 import tempfile
 from zerver.lib.avatar_hash import user_avatar_hash, user_avatar_path_from_ids
+from zerver.lib.upload import S3UploadBackend, LocalUploadBackend
 from zerver.lib.create_user import random_api_key
 from zerver.lib.bulk_create import bulk_create_users
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
@@ -1323,7 +1324,20 @@ def import_uploads_local(import_dir: Path, processing_avatars: bool=False) -> No
             subprocess.check_call(["mkdir", "-p", os.path.dirname(file_path)])
         shutil.copy(orig_file_path, file_path)
 
+    if processing_avatars:
+        # Ensure that we have medium-size avatar images for every
+        # avatar.  TODO: This implementation is hacky, both in that it
+        # does get_user_profile_by_id for each user, and in that it
+        # might be better to require the export to just have these.
+        upload_backend = LocalUploadBackend()
+        for record in records:
+            if record['s3_path'].endswith('.original'):
+                user_profile = get_user_profile_by_id(record['user_profile_id'])
+                # If medium sized avatar does not exist, this creates it using the original image
+                upload_backend.ensure_medium_avatar_image(user_profile=user_profile)
+
 def import_uploads_s3(bucket_name: str, import_dir: Path, processing_avatars: bool=False) -> None:
+    upload_backend = S3UploadBackend()
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
     bucket = conn.get_bucket(bucket_name, validate=True)
 
@@ -1357,6 +1371,14 @@ def import_uploads_s3(bucket_name: str, import_dir: Path, processing_avatars: bo
         headers = {'Content-Type': record['content_type']}
 
         key.set_contents_from_filename(os.path.join(import_dir, record['path']), headers=headers)
+
+        if processing_avatars:
+            # TODO: Ideally, we'd do this in a separate pass, after
+            # all the avatars have been uploaded, since we may end up
+            # unnecssarily resizing images just before the medium-size
+            # image in the export is uploaded.  See the local uplods
+            # code path for more notes.
+            upload_backend.ensure_medium_avatar_image(user_profile=user_profile)
 
 def import_uploads(import_dir: Path, processing_avatars: bool=False) -> None:
     if processing_avatars:
