@@ -56,7 +56,8 @@ exports.process_read_messages_event = function (message_ids) {
 };
 
 
-// Takes a list of messages and marks them as read
+// Takes a list of messages and marks them as read.
+// Skips any messages that are already marked as read.
 exports.mark_messages_as_read = function (messages, options) {
     options = options || {};
 
