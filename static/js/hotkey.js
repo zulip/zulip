@@ -94,6 +94,7 @@ var keypress_mappings = {
     106: {name: 'vim_down', message_view_only: true}, // 'j'
     107: {name: 'vim_up', message_view_only: true}, // 'k'
     110: {name: 'n_key', message_view_only: false}, // 'n'
+    112: {name: 'p_key', message_view_only: false}, // 'p'
     113: {name: 'query_streams', message_view_only: false}, // 'q'
     114: {name: 'reply_message', message_view_only: true}, // 'r'
     115: {name: 'narrow_by_recipient', message_view_only: true}, // 's'
@@ -629,6 +630,9 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
         case 'n_key':
             narrow.narrow_to_next_topic();
+            return true;
+        case 'p_key':
+            narrow.narrow_to_next_pm_string();
             return true;
         case 'open_drafts':
             drafts.launch();
