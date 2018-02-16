@@ -760,6 +760,10 @@ exports.initialize_pills = function () {
             value: value,
         };
     });
+
+    exports.pills.private_message_recipient.onCopyReturn(function (data) {
+      return people.get_person_from_user_id(data.key).email;
+    });
 };
 
 exports.initialize = function () {

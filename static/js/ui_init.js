@@ -265,7 +265,8 @@ $(function () {
     message_fetch.initialize();
     emoji.initialize();
     markdown.initialize(); // Must happen after emoji.initialize()
-    composebox_typeahead.initialize();
+    compose.initialize();
+    composebox_typeahead.initialize(); // Must happen after compose.initialize()
     search.initialize();
     tutorial.initialize();
     notifications.initialize();
@@ -281,7 +282,6 @@ $(function () {
     stream_list.initialize();
     drafts.initialize();
     sent_messages.initialize();
-    compose.initialize();
     hotspots.initialize();
     ui.initialize();
     panels.initialize();
