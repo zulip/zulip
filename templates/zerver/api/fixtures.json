@@ -254,5 +254,10 @@
         "msg":"Missing 'content' argument",
         "result":"error",
         "var_name":"content"
+    },
+    "update-message-edit-permission-error": {
+        "code":"BAD_REQUEST",
+        "msg":"You don't have permission to edit this message",
+        "result":"error"
     }
 }

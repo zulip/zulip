@@ -80,10 +80,4 @@ A typical successful JSON response may look like:
 A typical JSON response for when one doesn't have the permission to
 edit a particular message:
 
-```
-{
-    'code':'BAD_REQUEST',
-    'result':'error',
-    'msg':"You don't have permission to edit this message"
-}
-```
+{generate_code_example|update-message-edit-permission-error|fixture}

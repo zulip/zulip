@@ -331,6 +331,25 @@ def update_message(client, message_id):
     assert result['result'] == 'success'
     assert result['raw_content'] == request['content']
 
+def test_update_message_edit_permission_error(client, nonadmin_client):
+    # type: (Client, Client) -> None
+    request = {
+        "type": "stream",
+        "to": "Denmark",
+        "subject": "Castle",
+        "content": "Something is rotten in the state of Denmark."
+    }
+    result = client.send_message(request)
+
+    request = {
+        "message_id": result["id"],
+        "content": "New content"
+    }
+    result = nonadmin_client.update_message(request)
+
+    fixture = FIXTURES['update-message-edit-permission-error']
+    test_against_fixture(result, fixture)
+
 def register_queue(client):
     # type: (Client) -> str
 
