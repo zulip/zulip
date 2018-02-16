@@ -8,7 +8,6 @@ from zerver.lib.slack_data_to_zulip_data import (
     build_zerver_realm,
     get_user_email,
     get_admin,
-    get_user_avatar_source,
     get_user_timezone,
     users_to_zerver_userprofile,
     build_defaultstream,
@@ -104,12 +103,6 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(get_admin(user_data[2]), True)
         self.assertEqual(get_admin(user_data[3]), False)
 
-    def test_get_avatar_source(self) -> None:
-        gravatar_image_url = "https:\/\/secure.gravatar.com\/avatar\/78dc7b2e1bf423df8c82fb2a62c8917d.jpg?s=24&d=https%3A%2F%2Fa.slack-edge.com%2F66f9%2Fimg%2Favatars%2Fava_0016-24.png"
-        uploaded_avatar_url = "https:\/\/avatars.slack-edge.com\/2015-06-12\/6314338625_3c7c62301a2d61b4a756_24.jpg"
-        self.assertEqual(get_user_avatar_source(gravatar_image_url), 'G')
-        self.assertEqual(get_user_avatar_source(uploaded_avatar_url), 'U')
-
     def test_get_timezone(self) -> None:
         user_chicago_timezone = {"tz": "America\/Chicago"}
         user_timezone_none = {"tz": None}
@@ -168,6 +161,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[0]['is_bot'], False)
         self.assertEqual(zerver_userprofile[0]['enable_desktop_notifications'], True)
         self.assertEqual(zerver_userprofile[2]['bot_type'], 1)
+        self.assertEqual(zerver_userprofile[2]['avatar_source'], 'U')
 
     def test_build_defaultstream(self) -> None:
         realm_id = 1
