@@ -336,6 +336,15 @@ input[type=checkbox] + .inline-block {
     margin-left: 10px;
 }
 
+.allow-subdomains,
+.new-realm-domain-allow-subdomains {
+    margin: 0 !important;
+}
+
+.realm_domains_info {
+    margin-bottom: 0px;
+}
+
 .admin-realm-form h3 {
     margin-bottom: 0px;
 }

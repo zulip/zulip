@@ -515,7 +515,7 @@ def build_custom_checkers(by_lang):
          'exclude_line': [('templates/zerver/register.html', 'placeholder="acme"'),
                           ('templates/zerver/register.html', 'placeholder="Acme or Aκμή"'),
                           ('static/templates/settings/realm-domains-modal.handlebars',
-                           '<td><input type="text" class="new-realm-domain" placeholder="acme.com"></td>'),
+                           '<td><input type="text" class="new-realm-domain" placeholder="acme.com" /></td>'),
                           ("static/templates/user-groups-admin.handlebars",
                            '<input type="text" name="name" id="user_group_name" placeholder="hamletcharacters" />')],
          'exclude': set(["static/templates/settings/emoji-settings-admin.handlebars",

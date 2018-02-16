@@ -689,7 +689,7 @@ function _set_up() {
     $("#realm_domains_table").on("click", ".delete_realm_domain", function () {
         var domain = $(this).parents("tr").find(".domain").text();
         var url = "/json/realm/domains/" + domain;
-        var realm_domains_info = $("#realm_domains_modal").find(".realm_domains_info");
+        var realm_domains_info = $(".realm_domains_info");
 
         channel.del({
             url: url,
@@ -703,7 +703,7 @@ function _set_up() {
     });
 
     $("#submit-add-realm-domain").click(function () {
-        var realm_domains_info = $("#realm_domains_modal").find(".realm_domains_info");
+        var realm_domains_info = $(".realm_domains_info");
         var widget = $("#add-realm-domain-widget");
         var domain = widget.find(".new-realm-domain").val();
         var allow_subdomains = widget.find(".new-realm-domain-allow-subdomains").prop("checked");
@@ -728,7 +728,7 @@ function _set_up() {
 
     $("#realm_domains_table").on("change", ".allow-subdomains", function (e) {
         e.stopPropagation();
-        var realm_domains_info = $("#realm_domains_modal").find(".realm_domains_info");
+        var realm_domains_info = $(".realm_domains_info");
         var domain = $(this).parents("tr").find(".domain").text();
         var allow_subdomains = $(this).prop('checked');
         var url = '/json/realm/domains/' + domain;
