@@ -790,6 +790,7 @@ exports.hide_all = function () {
             $o.$tip.remove();
         }
     });
+    list_of_popovers = [];
 };
 
 exports.set_userlist_placement = function (placement) {
