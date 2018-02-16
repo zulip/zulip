@@ -8,4 +8,6 @@ EXCLUDED_FILES = [
     # newlines; there's nothing other than trailing newlines we'd be
     # checking for in these anyway.
     "static/locale",
+    # service worker needs some a console.error statement and that all
+    "templates/zerver/service_worker/zulip_sw.js"
 ]

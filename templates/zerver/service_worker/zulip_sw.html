@@ -1,0 +1,10 @@
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/zulip-sw.js', { scope: '/' })
+    .catch(function (err) {
+      console.error('[zulip-sw]', err);
+    });
+  });
+}
+</script>
