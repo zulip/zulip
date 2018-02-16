@@ -67,6 +67,18 @@ if you're working on new database migrations.  To do this, run:
   above. Afterwards, re-run the `init*-db` and the
   `do-destroy-rebuild*-database` scripts.
 
+- Or, when running the test suite, if you get an error involving Git that looks like this:
+
+  ```
+      commit_messages| An error occurred while executing '/usr/bin/git rev-list --max-count=-1 upstream/master..HEAD': b"fatal: ambiguous argument 'upstream/master..HEAD': unknown revision or path not in the working tree.\nUse '--' to separate paths from revisions, like this:\n'git <command> [<revision>...] -- [<file>...]'"
+  ```
+
+  ... then you may need to connect the Zulip upstream repository with the following commands.
+
+  ```
+    git remote add -f upstream https://github.com/zulip/zulip.git
+  ```
+
 - When building the development environment using Vagrant and the LXC
   provider, if you encounter permissions errors, you may need to
   `chown -R 1000:$(whoami) /path/to/zulip` on the host before running

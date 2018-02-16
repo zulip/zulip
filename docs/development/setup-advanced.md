@@ -8,9 +8,13 @@ Contents:
 
 ## Installing directly on Ubuntu
 
-Start by [cloning your fork of the zulip repository][zulip-rtd-git-cloning]:
+Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
+and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
 
-`git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git`
+```
+git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git
+git remote add -f upstream https://github.com/zulip/zulip.git
+```
 
 If you'd like to install a Zulip development environment on a computer
 that's already running Ubuntu 16.04 Xenial or Ubuntu 14.04 Trusty, you
@@ -62,9 +66,13 @@ Install the following non-Python dependencies:
 
 #### Using the official Ubuntu repositories, PGroonga PPA and `tsearch-extras` deb package:
 
-Start by [cloning your fork of the zulip repository][zulip-rtd-git-cloning]:
+Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
+and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
 
-`git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git`
+```
+git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git
+git remote add -f upstream https://github.com/zulip/zulip.git
+```
 
 ```
 sudo apt-get install closure-compiler libfreetype6-dev libffi-dev \
@@ -121,9 +129,13 @@ Now continue with the [All Systems](#all-systems) instructions below.
 
 [zulip-ppa]: https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+packages
 
-Start by [cloning your fork of the zulip repository][zulip-rtd-git-cloning]:
+Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
+and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
 
-`git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git`
+```
+git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git
+git remote add -f upstream https://github.com/zulip/zulip.git
+```
 
 ```
 sudo add-apt-repository ppa:tabbott/zulip
@@ -142,9 +154,13 @@ Now continue with the [All Systems](#all-systems) instructions below.
 These instructions are experimental and may have bugs; patches
 welcome!
 
-Start by [cloning your fork of the zulip repository][zulip-rtd-git-cloning]:
+Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
+and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
 
-`git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git`
+```
+git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git
+git remote add -f upstream https://github.com/zulip/zulip.git
+```
 
 ```
 sudo dnf install libffi-devel memcached rabbitmq-server \
@@ -160,9 +176,13 @@ Now continue with the [Common to Fedora/CentOS](#common-to-fedora-centos-instruc
 These instructions are experimental and may have bugs; patches
 welcome!
 
-Start by [cloning your fork of the zulip repository][zulip-rtd-git-cloning]:
+Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
+and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
 
-`git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git`
+```
+git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git
+git remote add -f upstream https://github.com/zulip/zulip.git
+```
 
 ```
 # Add user zulip to the system (not necessary if you configured zulip
@@ -219,9 +239,13 @@ Now continue with the [Common to Fedora/CentOS](#common-to-fedora-centos-instruc
 These instructions are experimental and may have bugs; patches
 welcome!
 
-Start by [cloning your fork of the zulip repository][zulip-rtd-git-cloning]:
+Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
+and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
 
-`git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git`
+```
+git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git
+git remote add -f upstream https://github.com/zulip/zulip.git
+```
 
 ```
 doas pkg_add sudo bash gcc postgresql-server redis rabbitmq \
@@ -254,9 +278,13 @@ Finally continue with the [All Systems](#all-systems) instructions below.
 
 ### Common to Fedora/CentOS instructions
 
-Start by [cloning your fork of the zulip repository][zulip-rtd-git-cloning]:
+Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
+and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
 
-`git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git`
+```
+git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git
+git remote add -f upstream https://github.com/zulip/zulip.git
+```
 
 ```
 # Build and install postgres tsearch-extras module
@@ -375,9 +403,13 @@ proxy in the environment as follows:
 
 ## Using Docker (experimental)
 
-Start by [cloning your fork of the zulip repository][zulip-rtd-git-cloning]:
+Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
+and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
 
-`git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git`
+```
+git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git
+git remote add -f upstream https://github.com/zulip/zulip.git
+```
 
 The docker instructions for development are experimental, so they may
 have bugs.  If you try them and run into any issues, please report
@@ -474,3 +506,4 @@ the Vagrant workflow and less documented; please contribute to this
 guide and the Docker tooling if you are using Docker to develop Zulip!
 
 [zulip-rtd-git-cloning]: ../git/cloning.html#step-1b-clone-to-your-machine
+[zulip-rtd-git-connect]: ../git/cloning.html#step-1c-connect-your-fork-to-zulip-upstream
