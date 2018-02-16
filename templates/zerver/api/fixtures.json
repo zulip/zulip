@@ -270,9 +270,17 @@
         "queue_id":"1517975029:0",
         "result":"success"
     },
-    "delete-queue": {
-        "msg":"",
-        "result":"success"
+    "delete-queue":{
+        "successful_response": {
+            "msg":"",
+            "result":"success"
+        },
+        "bad_event_queue_id_error": {
+            "code":"BAD_EVENT_QUEUE_ID",
+            "msg":"Bad event queue id: 1518820930:1",
+            "queue_id":"1518820930:1",
+            "result":"error"
+        }
     },
     "nonexistent-stream-error": {
         "code":"BAD_REQUEST",

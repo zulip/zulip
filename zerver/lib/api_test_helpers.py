@@ -445,8 +445,14 @@ def deregister_queue(client, queue_id):
     result = client.deregister(queue_id)
     # {code_example|end}
 
-    fixture = FIXTURES['delete-queue']
+    fixture = FIXTURES['delete-queue']['successful_response']
     test_against_fixture(result, fixture)
+
+    # Test "BAD_EVENT_QUEUE_ID" error
+    result = client.deregister(queue_id)
+    fixture = FIXTURES['delete-queue']['bad_event_queue_id_error']
+    test_against_fixture(result, fixture, check_if_equal=['code', 'result'],
+                         check_if_exists=['queue_id', 'msg'])
 
 def test_invalid_api_key(client_with_invalid_key):
     # type: (Client) -> None
