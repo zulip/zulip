@@ -152,6 +152,13 @@ def get_streams(client):
                          check_if_exists=['streams'])
     assert len(result['streams']) == 4
 
+def test_user_not_authorized_error(nonadmin_client):
+    # type: (Client) -> None
+    result = nonadmin_client.get_streams(include_all_active=True)
+
+    fixture = FIXTURES['user-not-authorized-error']
+    test_against_fixture(result, fixture)
+
 def get_subscribers(client):
     # type: (Client) -> None
 

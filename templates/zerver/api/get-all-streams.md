@@ -82,10 +82,4 @@ A typical successful JSON response may look like:
 An example of a JSON response for when the user is not authorized
 to use the `include_all_active` parameter:
 
-```
-{
-    'code':'BAD_REQUEST',
-    'result':'error',
-    'msg':'User not authorized for this query'
-}
-```
+{generate_code_example|user-not-authorized-error|fixture}

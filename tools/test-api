@@ -14,8 +14,9 @@ os.chdir(ZULIP_PATH)
 from zulip import Client
 
 from tools.lib.test_server import test_server_running
-from zerver.lib.api_test_helpers import test_the_api, test_invalid_api_key
-from zerver.lib.api_test_helpers import test_update_message_edit_permission_error
+from zerver.lib.api_test_helpers import test_the_api, test_invalid_api_key, \
+    test_update_message_edit_permission_error, \
+    test_user_not_authorized_error
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
 django.setup()
@@ -48,6 +49,7 @@ with test_server_running(external_host='zulipdev.com:9981'):
 
     # Run tests that require non-admin client
     test_update_message_edit_permission_error(client, nonadmin_client)
+    test_user_not_authorized_error(nonadmin_client)
 
     # Test error payloads
     client = Client(
