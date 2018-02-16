@@ -139,7 +139,6 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
 
     for user in users:
         slack_user_id = user['id']
-        profile = user['profile']
         DESKTOP_NOTIFICATION = True
 
         if user.get('is_primary_owner', False):
@@ -153,17 +152,13 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
         # check if user is the admin
         realm_admin = get_admin(user)
 
-        # avatar
-        # ref: https://chat.zulip.org/help/change-your-avatar
-        avatar_source = get_user_avatar_source(profile['image_32'])
-
         # timezone
         timezone = get_user_timezone(user)
 
         userprofile = dict(
             enable_desktop_notifications=DESKTOP_NOTIFICATION,
             is_staff=False,  # 'staff' is for server administrators, which don't exist in Slack.
-            avatar_source=avatar_source,
+            avatar_source='U',
             is_bot=user.get('is_bot', False),
             avatar_version=1,
             default_desktop_notifications=True,
@@ -242,14 +237,6 @@ def get_admin(user: ZerverFieldsT) -> bool:
     if admin or owner or primary_owner:
         return True
     return False
-
-def get_user_avatar_source(image_url: str) -> str:
-    if 'gravatar.com' in image_url:
-        # use the avatar from gravatar
-        avatar_source = 'G'
-    else:
-        avatar_source = 'U'
-    return avatar_source
 
 def get_user_timezone(user: ZerverFieldsT) -> str:
     _default_timezone = "America/New_York"
