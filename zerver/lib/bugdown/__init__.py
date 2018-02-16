@@ -828,10 +828,17 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if len(found_urls) == 0 or len(found_urls) > 5:
             return
 
+        processed_urls = []  # type: List[str]
         rendered_tweet_count = 0
 
         for found_url in found_urls:
             (url, text) = found_url.result
+
+            if url not in processed_urls:
+                processed_urls.append(url)
+            else:
+                continue
+
             dropbox_image = self.dropbox_image(url)
 
             if dropbox_image is not None:
