@@ -108,7 +108,13 @@ def create_user(client):
     result = client.create_user(request)
     # {code_example|end}
 
-    fixture = FIXTURES['create-user']
+    fixture = FIXTURES['create-user']['successful_response']
+    test_against_fixture(result, fixture)
+
+    # Test "Email already used error"
+    result = client.create_user(request)
+
+    fixture = FIXTURES['create-user']['email_already_used_error']
     test_against_fixture(result, fixture)
 
 def get_members(client):
