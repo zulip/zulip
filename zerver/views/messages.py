@@ -759,6 +759,8 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
     ret = {'messages': message_list,
            "result": "success",
            "msg": ""}
+    if use_first_unread_anchor:
+        ret['anchor'] = anchor
     return json_success(ret)
 
 @has_request_variables
