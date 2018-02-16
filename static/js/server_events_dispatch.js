@@ -183,6 +183,10 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             settings_streams.update_default_streams_table();
         } else if (event.op === 'create') {
             stream_data.create_streams(event.streams);
+            _.each(event.streams, function (stream) {
+                var sub = stream_data.get_sub_by_id(stream.stream_id);
+                subs.add_sub_to_table(sub);
+            });
         } else if (event.op === 'delete') {
             _.each(event.streams, function (stream) {
                 var was_subscribed = stream_data.get_sub_by_id(stream.stream_id).subscribed;

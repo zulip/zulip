@@ -178,7 +178,7 @@ function add_email_hint(row, email_address_hint_content) {
 // server_events code flow not having a good way to associate with
 // this request.  These should be appended to the top of the list so
 // they are more visible.
-function add_sub_to_table(sub) {
+exports.add_sub_to_table = function (sub) {
     stream_data.update_calculated_fields(sub);
     var html = templates.render('subscription', sub);
     var settings_html = templates.render('subscription_settings', sub);
@@ -197,7 +197,7 @@ function add_sub_to_table(sub) {
         $(".stream-row[data-stream-id='" + stream_data.get_sub(created_stream).stream_id + "']").click();
         stream_create.reset_created_stream();
     }
-}
+};
 
 exports.remove_stream = function (stream_id) {
     // It is possible that row is empty when we deactivate a
@@ -218,7 +218,7 @@ exports.update_settings_for_subscribed = function (sub) {
 
         stream_edit.add_me_to_member_list(sub);
     } else {
-        add_sub_to_table(sub);
+        exports.add_sub_to_table(sub);
     }
 
     var active_stream = exports.active_stream();
