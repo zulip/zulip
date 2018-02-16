@@ -79,20 +79,18 @@
 }
 
 .compose_table .pm_recipient {
-    margin-right: 20px;
+    margin: 0px 20px 0px 10px;
     display: flex;
 }
 
-.compose_table #private-message .you_text {
+.compose_table #private-message .to_text {
     width: 65px;
-    background: hsl(0, 0%, 27%);
-    color: hsl(0, 0%, 100%);
-    display: flex;
-    align-content: center;
-    vertical-align: center;
+    vertical-align: top;
+
+    font-weight: 600;
 }
 
-.compose_table #private-message .you_text span {
+.compose_table #private-message .to_text span {
     display: flex;
     align-items: center;
 }

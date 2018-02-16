@@ -66,9 +66,13 @@
 .pm_recipient .pill-container {
     position: relative;
     width: 100%;
+    padding: 0px 2px;
 
-    border-top-left-radius: 0px;
-    border-bottom-left-radius: 0px;
+    /* this is because the pills have a margin-bottom of 2px, so we want to negate
+       the height of the bottom row. */
+    margin: -1px 0px;
+
+    border: none;
 }
 
 .pm_recipient .pill-container .pill {
@@ -85,6 +89,16 @@
 
 .pm_recipient .pill-container .input {
     height: 20px;
+}
+
+.pm_recipient .pill-container .input:empty::before {
+    content: attr(data-no-recipients-text);
+    opacity: 0.5;
+}
+
+.pm_recipient .pill-container .pill + .input:empty::before {
+    content: attr(data-some-recipients-text);
+    opacity: 0.5;
 }
 
 @keyframes shake {
