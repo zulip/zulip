@@ -28,6 +28,7 @@ from zerver.models import (
     get_realm,
     Recipient,
     Stream,
+    Subscription,
 )
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib import push_notifications as apn
@@ -679,7 +680,10 @@ class TestGetAlertFromMessage(PushNotificationTest):
 
 class TestGetAPNsPayload(PushNotificationTest):
     def test_get_apns_payload(self) -> None:
-        message = self.get_message(Recipient.HUDDLE)
+        message_id = self.send_huddle_message(
+            self.sender.email,
+            [self.example_email('othello'), self.example_email('cordelia')])
+        message = Message.objects.get(id=message_id)
         message.trigger = 'private_message'
         payload = apn.get_apns_payload(message)
         expected = {
@@ -692,6 +696,10 @@ class TestGetAPNsPayload(PushNotificationTest):
                 'zulip': {
                     'message_ids': [message.id],
                     'recipient_type': 'private',
+                    'pm_users': ','.join(
+                        str(s.user_profile_id)
+                        for s in Subscription.objects.filter(
+                            recipient=message.recipient)),
                     'sender_email': 'hamlet@zulip.com',
                     'sender_id': 4,
                     'server': settings.EXTERNAL_HOST,
@@ -731,7 +739,10 @@ class TestGetAPNsPayload(PushNotificationTest):
 
     @override_settings(PUSH_NOTIFICATION_REDACT_CONTENT = True)
     def test_get_apns_payload_redacted_content(self) -> None:
-        message = self.get_message(Recipient.HUDDLE)
+        message_id = self.send_huddle_message(
+            self.sender.email,
+            [self.example_email('othello'), self.example_email('cordelia')])
+        message = Message.objects.get(id=message_id)
         message.trigger = 'private_message'
         payload = apn.get_apns_payload(message)
         expected = {
@@ -744,6 +755,10 @@ class TestGetAPNsPayload(PushNotificationTest):
                 'zulip': {
                     'message_ids': [message.id],
                     'recipient_type': 'private',
+                    'pm_users': ','.join(
+                        str(s.user_profile_id)
+                        for s in Subscription.objects.filter(
+                            recipient=message.recipient)),
                     'sender_email': self.example_email("hamlet"),
                     'sender_id': 4,
                     'server': settings.EXTERNAL_HOST,
