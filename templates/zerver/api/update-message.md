@@ -27,7 +27,7 @@ curl -X "PATCH" {{ api_url }}/v1/messages/<msg_id> \
 
 <div data-language="python" markdown="1">
 
-{generate_code_example|update-message|example}
+{generate_code_example(python)|update-message|example}
 
 </div>
 

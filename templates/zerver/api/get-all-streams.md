@@ -31,7 +31,7 @@ curl {{ api_url }}/v1/streams?include_public=false \
 
 <div data-language="python" markdown="1">
 
-{generate_code_example|get-all-streams|example}
+{generate_code_example(python)|get-all-streams|example}
 
 </div>
 

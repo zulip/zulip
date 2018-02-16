@@ -25,7 +25,7 @@ curl {{ api_url }}/v1/users/me \
 
 <div data-language="python" markdown="1">
 
-{generate_code_example|get-profile|example}
+{generate_code_example(python)|get-profile|example}
 
 </div>
 
