@@ -69,15 +69,3 @@ zulip(config).then((client) => {
 A typical successful JSON response may look like:
 
 {generate_code_example|render-message|fixture}
-
-A typical JSON response for when the required argument `content`
-is not supplied:
-
-```
-{
-    'code':'REQUEST_VARIABLE_MISSING',
-    'result':'error',
-    'msg':"Missing 'content' argument",
-    'var_name':'content'
-}
-```

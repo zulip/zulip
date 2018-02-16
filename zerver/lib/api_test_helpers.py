@@ -375,6 +375,12 @@ def test_invalid_api_key(client_with_invalid_key):
     fixture = FIXTURES['invalid-api-key']
     test_against_fixture(result, fixture)
 
+def test_missing_request_argument(client):
+    # type: (Client) -> None
+    result = client.render_message({})
+
+    fixture = FIXTURES['missing-request-argument-error']
+    test_against_fixture(result, fixture)
 
 TEST_FUNCTIONS = {
     'render-message': render_message,
@@ -449,6 +455,10 @@ def test_queues(client):
     queue_id = register_queue(client)
     deregister_queue(client, queue_id)
 
+def test_errors(client):
+    # type: (Client) -> None
+    test_missing_request_argument(client)
+
 def test_the_api(client):
     # type: (Client) -> None
 
@@ -457,3 +467,4 @@ def test_the_api(client):
     test_streams(client)
     test_messages(client)
     test_queues(client)
+    test_errors(client)

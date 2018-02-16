@@ -77,15 +77,3 @@ exist:
     'result':'error'
 }
 ```
-
-An example of a JSON response for when the `stream` query parameter is
-not provided:
-
-```
-{
-    "msg":"Missing 'stream' argument",
-    "result":"error",
-    "var_name":"stream",
-    "code":"REQUEST_VARIABLE_MISSING"
-}
-```

@@ -248,5 +248,11 @@
         "code":"BAD_REQUEST",
         "msg":"Invalid email 'eeshan@zulip.com'",
         "result":"error"
+    },
+    "missing-request-argument-error": {
+        "code":"REQUEST_VARIABLE_MISSING",
+        "msg":"Missing 'content' argument",
+        "result":"error",
+        "var_name":"content"
     }
 }
