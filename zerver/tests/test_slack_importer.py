@@ -162,11 +162,12 @@ class SlackImporter(ZulipTestCase):
                             'U09TYF5Sk': 3}
         slack_data_dir = './random_path'
         timestamp = int(timezone_now().timestamp())
-        zerver_userprofile, added_users = users_to_zerver_userprofile(slack_data_dir, user_data,
-                                                                      1, timestamp, 'test_domain')
+        zerver_userprofile, avatar_list, added_users = users_to_zerver_userprofile(
+            slack_data_dir, user_data, 1, timestamp, 'test_domain')
 
         # test that the primary owner should always be imported first
         self.assertDictEqual(added_users, test_added_users)
+        self.assertEqual(len(avatar_list), 3)
 
         self.assertEqual(zerver_userprofile[1]['id'], test_added_users['U0CBK5KAT'])
         self.assertEqual(len(zerver_userprofile), 3)
@@ -307,7 +308,7 @@ class SlackImporter(ZulipTestCase):
 
     @mock.patch("zerver.lib.slack_data_to_zulip_data.build_zerver_realm", return_value=[{}])
     @mock.patch("zerver.lib.slack_data_to_zulip_data.users_to_zerver_userprofile",
-                return_value=[[], {}])
+                return_value=[[], [], {}])
     @mock.patch("zerver.lib.slack_data_to_zulip_data.channels_to_zerver_stream",
                 return_value=[[], [], {}, [], [], {}])
     def test_slack_workspace_to_realm(self, mock_channels_to_zerver_stream: mock.Mock,
@@ -317,17 +318,15 @@ class SlackImporter(ZulipTestCase):
         realm_id = 1
         user_list = []  # type: List[Dict[str, Any]]
         with self.settings(EXTERNAL_HOST='testdomain'):
-            realm, added_users, added_recipient, added_channels = slack_workspace_to_realm(realm_id,
-                                                                                           user_list,
-                                                                                           'test-realm',
-                                                                                           './fixture',
-                                                                                           './random_path')
+            realm, added_users, added_recipient, added_channels, avatar_list = slack_workspace_to_realm(
+                realm_id, user_list, 'test-realm', './fixtures', './random_path')
         test_zerver_realmdomain = [{'realm': realm_id, 'allow_subdomains': False,
                                     'domain': 'testdomain', 'id': realm_id}]
         # Functioning already tests in helper functions
         self.assertEqual(added_users, {})
         self.assertEqual(added_channels, {})
         self.assertEqual(added_recipient, {})
+        self.assertEqual(avatar_list, [])
 
         zerver_realmdomain = realm['zerver_realmdomain']
         self.assertListEqual(zerver_realmdomain, test_zerver_realmdomain)
@@ -493,8 +492,12 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(message_json['zerver_message'], zerver_message1 + zerver_message2)
         self.assertEqual(message_json['zerver_usermessage'], zerver_usermessage1 + zerver_usermessage2)
 
+    @mock.patch("zerver.lib.slack_data_to_zulip_data.build_avatar_url")
+    @mock.patch("zerver.lib.slack_data_to_zulip_data.build_avatar", return_value = [])
     @mock.patch("zerver.lib.slack_data_to_zulip_data.get_user_data")
-    def test_slack_import_to_existing_database(self, mock_get_user_data: mock.Mock) -> None:
+    def test_slack_import_to_existing_database(self, mock_get_user_data: mock.Mock,
+                                               mock_build_avatar_url: mock.Mock,
+                                               mock_build_avatar: mock.Mock) -> None:
         test_slack_zip_file = os.path.join(settings.DEPLOY_ROOT, "zerver", "fixtures",
                                            "slack_fixtures", "test_slack_importer.zip")
         test_realm_subdomain = 'test-slack-import'

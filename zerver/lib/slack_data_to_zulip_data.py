@@ -50,13 +50,15 @@ def allocate_ids(model_class: Any, count: int) -> List[int]:
 def slack_workspace_to_realm(REALM_ID: int, user_list: List[ZerverFieldsT],
                              realm_subdomain: str, fixtures_path: str,
                              slack_data_dir: str) -> Tuple[ZerverFieldsT, AddedUsersT,
-                                                           AddedRecipientsT, AddedChannelsT]:
+                                                           AddedRecipientsT, AddedChannelsT,
+                                                           List[ZerverFieldsT]]:
     """
     Returns:
     1. realm, Converted Realm data
     2. added_users, which is a dictionary to map from slack user id to zulip user id
     3. added_recipient, which is a dictionary to map from channel name to zulip recipient_id
     4. added_channels, which is a dictionary to map from channel name to zulip stream_id
+    5. avatars, which is list to map avatars to zulip avatar records.json
     """
     DOMAIN_NAME = settings.EXTERNAL_HOST
     NOW = float(timezone_now().timestamp())
@@ -80,11 +82,8 @@ def slack_workspace_to_realm(REALM_ID: int, user_list: List[ZerverFieldsT],
                  zerver_realmfilter=[],
                  zerver_realmemoji=[])
 
-    zerver_userprofile, added_users = users_to_zerver_userprofile(slack_data_dir,
-                                                                  user_list,
-                                                                  REALM_ID,
-                                                                  int(NOW),
-                                                                  DOMAIN_NAME)
+    zerver_userprofile, avatars, added_users = users_to_zerver_userprofile(
+        slack_data_dir, user_list, REALM_ID, int(NOW), DOMAIN_NAME)
     channels_to_zerver_stream_fields = channels_to_zerver_stream(slack_data_dir,
                                                                  REALM_ID,
                                                                  added_users,
@@ -100,7 +99,7 @@ def slack_workspace_to_realm(REALM_ID: int, user_list: List[ZerverFieldsT],
     added_channels = channels_to_zerver_stream_fields[2]
     added_recipient = channels_to_zerver_stream_fields[5]
 
-    return realm, added_users, added_recipient, added_channels
+    return realm, added_users, added_recipient, added_channels, avatars
 
 def build_zerver_realm(fixtures_path: str, REALM_ID: int, realm_subdomain: str,
                        time: float) -> List[ZerverFieldsT]:
@@ -116,11 +115,13 @@ def build_zerver_realm(fixtures_path: str, REALM_ID: int, realm_subdomain: str,
 
 def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT], realm_id: int,
                                 timestamp: Any, domain_name: str) -> Tuple[List[ZerverFieldsT],
+                                                                           List[ZerverFieldsT],
                                                                            AddedUsersT]:
     """
     Returns:
     1. zerver_userprofile, which is a list of user profile
-    2. added_users, which is a dictionary to map from slack user id to zulip
+    2. avatar_list, which is list to map avatars to zulip avatard records.json
+    3. added_users, which is a dictionary to map from slack user id to zulip
        user id
     """
     logging.info('######### IMPORTING USERS STARTED #########\n')
@@ -226,7 +227,7 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
 
         logging.info(u"{} -> {}".format(user['name'], userprofile['email']))
     logging.info('######### IMPORTING USERS FINISHED #########\n')
-    return zerver_userprofile, added_users
+    return zerver_userprofile, avatar_list, added_users
 
 def get_user_email(user: ZerverFieldsT, domain_name: str) -> str:
     if 'email' not in user['profile']:
@@ -652,11 +653,9 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str, 
     REALM_ID = allocate_ids(Realm, 1)[0]
 
     user_list = get_user_data(token)
-    realm, added_users, added_recipient, added_channels = slack_workspace_to_realm(REALM_ID,
-                                                                                   user_list,
-                                                                                   realm_subdomain,
-                                                                                   fixtures_path,
-                                                                                   slack_data_dir)
+    realm, added_users, added_recipient, added_channels, avatar_list = slack_workspace_to_realm(
+        REALM_ID, user_list, realm_subdomain, fixtures_path, slack_data_dir)
+
     message_json = convert_slack_workspace_messages(slack_data_dir, user_list, REALM_ID,
                                                     added_users, added_recipient, added_channels,
                                                     realm)
