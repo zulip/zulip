@@ -190,6 +190,23 @@
 
             }
         },
+        "unauthorized_errors_fatal_false": {
+            "already_subscribed":{
+
+            },
+            "msg":"",
+            "result":"success",
+            "subscribed":{
+
+            },
+            "unauthorized":[
+                "private_stream"
+            ]
+        },
+        "unauthorized_errors_fatal_true": {
+            "msg":"Unable to access stream (private_stream).",
+            "result":"error"
+        }
     },
     "remove-subscriptions": {
         "msg":"",

@@ -110,28 +110,9 @@ the streams specified:
 A typical response for when the requesting user does not have access to
 a private stream and `authorization_errors_fatal` is `True`:
 
-```
-{
-    "msg":"Unable to access stream (yaar).",
-    "result":"error"
-}
-```
+{generate_code_example|add-subscriptions|fixture(unauthorized_errors_fatal_true)}
 
 A typical response for when the requesting user does not have access to
 a private stream and `authorization_errors_fatal` is `False`:
 
-```
-{
-    "unauthorized":[
-        "yaar"
-    ],
-    "subscribed":{
-
-    },
-    "msg":"",
-    "result":"success",
-    "already_subscribed":{
-
-    }
-}
-```
+{generate_code_example|add-subscriptions|fixture(unauthorized_errors_fatal_false)}

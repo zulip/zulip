@@ -59,6 +59,41 @@ def test_add_subscriptions_already_subscribed(client):
     fixture = FIXTURES['add-subscriptions']['already_subscribed']
     test_against_fixture(result, fixture)
 
+def test_authorization_errors_fatal(client, nonadmin_client):
+    # type: (Client, Client) -> None
+    client.add_subscriptions(
+        streams=[
+            {'name': 'private_stream'}
+        ],
+    )
+
+    stream_id = client.get_stream_id('private_stream')['stream_id']
+    client.call_endpoint(
+        'streams/{}'.format(stream_id),
+        method='PATCH',
+        request={'is_private': True}
+    )
+
+    result = nonadmin_client.add_subscriptions(
+        streams=[
+            {'name': 'private_stream'}
+        ],
+        authorization_errors_fatal=False,
+    )
+
+    fixture = FIXTURES['add-subscriptions']['unauthorized_errors_fatal_false']
+    test_against_fixture(result, fixture)
+
+    result = nonadmin_client.add_subscriptions(
+        streams=[
+            {'name': 'private_stream'}
+        ],
+        authorization_errors_fatal=True,
+    )
+
+    fixture = FIXTURES['add-subscriptions']['unauthorized_errors_fatal_true']
+    test_against_fixture(result, fixture)
+
 def create_user(client):
     # type: (Client) -> None
 
