@@ -25,7 +25,7 @@ curl -X "DELETE" {{ api_url }}/v1/events \
 
 <div data-language="python" markdown="1">
 
-{generate_code_example|delete-queue|example}
+{generate_code_example(python)|delete-queue|example}
 
 </div>
 

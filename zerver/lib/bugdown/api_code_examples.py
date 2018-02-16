@@ -11,9 +11,10 @@ import markdown
 
 import zerver.lib.api_test_helpers
 
-REGEXP = re.compile(r'\{generate_code_example\|\s*(.+?)\s*\|\s*(.+?)\s*(\(\s*(.+?)\s*\))?\}')
+MACRO_REGEXP = re.compile(r'\{generate_code_example(\(\s*(.+?)\s*\))*\|\s*(.+?)\s*\|\s*(.+?)\s*(\(\s*(.+?)\s*\))?\}')
+CODE_EXAMPLE_REGEX = re.compile(r'\# \{code_example\|\s*(.+?)\s*\}')
 
-PYTHON_CLIENT_CONFIG_LINES = """
+PYTHON_CLIENT_CONFIG = """
 #!/usr/bin/env python3
 
 import zulip
@@ -33,6 +34,57 @@ client = zulip.Client(config_file="~/zuliprc-admin")
 
 """
 
+def extract_python_code_example(source: List[str], snippet: List[str]) -> List[str]:
+    start = -1
+    end = -1
+    for line in source:
+        match = CODE_EXAMPLE_REGEX.search(line)
+        if match:
+            if match.group(1) == 'start':
+                start = source.index(line)
+            elif match.group(1) == 'end':
+                end = source.index(line)
+                break
+
+    if (start == -1 and end == -1):
+        return snippet
+
+    snippet.extend(source[start + 1: end])
+    snippet.append('    print(result)')
+    snippet.append('\n')
+    source = source[end + 1:]
+    return extract_python_code_example(source, snippet)
+
+def render_python_code_example(function: str, admin_config: Optional[bool]=False) -> List[str]:
+    method = zerver.lib.api_test_helpers.TEST_FUNCTIONS[function]
+    function_source_lines = inspect.getsourcelines(method)[0]
+
+    if admin_config:
+        config = PYTHON_CLIENT_ADMIN_CONFIG.splitlines()
+    else:
+        config = PYTHON_CLIENT_CONFIG.splitlines()
+
+    snippet = extract_python_code_example(function_source_lines, [])
+
+    code_example = []
+    code_example.append('```python')
+    code_example.extend(config)
+
+    for line in snippet:
+        # Remove one level of indentation and strip newlines
+        code_example.append(line[4:].rstrip())
+
+    code_example.append('```')
+
+    return code_example
+
+SUPPORTED_LANGUAGES = {
+    'python': {
+        'client_config': PYTHON_CLIENT_CONFIG,
+        'admin_config': PYTHON_CLIENT_ADMIN_CONFIG,
+        'render': render_python_code_example,
+    }
+}  # type: Dict[str, Any]
 
 class APICodeExamplesGenerator(Extension):
     def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
@@ -50,12 +102,13 @@ class APICodeExamplesPreprocessor(Preprocessor):
         while not done:
             for line in lines:
                 loc = lines.index(line)
-                match = REGEXP.search(line)
+                match = MACRO_REGEXP.search(line)
 
                 if match:
-                    function = match.group(1)
-                    key = match.group(2)
-                    argument = match.group(4)
+                    language = match.group(2)
+                    function = match.group(3)
+                    key = match.group(4)
+                    argument = match.group(6)
 
                     if key == 'fixture':
                         if argument:
@@ -64,15 +117,15 @@ class APICodeExamplesPreprocessor(Preprocessor):
                             text = self.render_fixture(function)
                     elif key == 'example':
                         if argument == 'admin_config=True':
-                            text = self.render_code_example(function, admin_config=True)
+                            text = SUPPORTED_LANGUAGES[language]['render'](function, admin_config=True)
                         else:
-                            text = self.render_code_example(function)
+                            text = SUPPORTED_LANGUAGES[language]['render'](function)
 
                     # The line that contains the directive to include the macro
                     # may be preceded or followed by text or tags, in that case
                     # we need to make sure that any preceding or following text
                     # stays the same.
-                    line_split = REGEXP.split(line, maxsplit=0)
+                    line_split = MACRO_REGEXP.split(line, maxsplit=0)
                     preceding = line_split[0]
                     following = line_split[-1]
                     text = [preceding] + text + [following]
@@ -97,53 +150,6 @@ class APICodeExamplesPreprocessor(Preprocessor):
         fixture.append('```')
 
         return fixture
-
-    def render_code_example(self, function: str, admin_config: Optional[bool]=False) -> List[str]:
-        method = zerver.lib.api_test_helpers.TEST_FUNCTIONS[function]
-        function_source_lines = inspect.getsourcelines(method)[0]
-
-        if admin_config:
-            config = PYTHON_CLIENT_ADMIN_CONFIG.splitlines()
-        else:
-            config = PYTHON_CLIENT_CONFIG_LINES.splitlines()
-
-        snippet = self.extractCodeExample(function_source_lines, [])
-
-        code_example = []
-        code_example.append('```python')
-        code_example.extend(config)
-
-        for line in snippet:
-            # Remove one level of indentation and strip newlines
-            code_example.append(line[4:].rstrip())
-
-        code_example.append('```')
-
-        return code_example
-
-    def extractCodeExample(self, source: List[str], snippet: List[str]) -> List[str]:
-        ce_regex = re.compile(r'\# \{code_example\|\s*(.+?)\s*\}')
-
-        start = -1
-        end = -1
-        for line in source:
-            match = ce_regex.search(line)
-            if match:
-                if match.group(1) == 'start':
-                    start = source.index(line)
-                elif match.group(1) == 'end':
-                    end = source.index(line)
-                    break
-
-        if (start == -1 and end == -1):
-            return snippet
-
-        snippet.extend(source[start + 1: end])
-        snippet.append('    print(result)')
-        snippet.append('\n')
-        source = source[end + 1:]
-        return self.extractCodeExample(source, snippet)
-
 
 def makeExtension(*args: Any, **kwargs: str) -> APICodeExamplesGenerator:
     return APICodeExamplesGenerator(kwargs)

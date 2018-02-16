@@ -35,7 +35,7 @@ curl {{ api_url }}/v1/users/me/subscriptions \
 
 <div data-language="python" markdown="1">
 
-{generate_code_example|add-subscriptions|example}
+{generate_code_example(python)|add-subscriptions|example}
 
 </div>
 

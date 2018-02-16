@@ -25,7 +25,7 @@ curl {{ api_url }}/v1/messages/render \
 
 <div data-language="python" markdown="1">
 
-{generate_code_example|render-message|example}
+{generate_code_example(python)|render-message|example}
 
 </div>
 
