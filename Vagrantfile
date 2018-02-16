@@ -31,8 +31,8 @@ end
 # have the box (e.g. on first setup), Vagrant would download it but too
 # late for us to patch it like this; so we prompt them to explicitly add it
 # first and then rerun.
-if Vagrant::Util::Platform.linux?
-  if ['up', 'provision'].include? ARGV[0]
+if ['up', 'provision'].include? ARGV[0]
+  if command? "lxc-ls"
     LXC_VERSION = `lxc-ls --version`.strip unless defined? LXC_VERSION
     if LXC_VERSION == "2.1.0"
       lxc_config_file = ENV['HOME'] + "/.vagrant.d/boxes/fgrehm-VAGRANTSLASH-trusty64-lxc/1.2.0/lxc/lxc-config"
