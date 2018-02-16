@@ -379,6 +379,18 @@ def add_push_device_token(user_profile: UserProfile,
     logger.info("Registering push device: %d %r %d %r",
                 user_profile.id, token_str, kind, ios_app_id)
 
+    try:
+        with transaction.atomic():
+            PushDeviceToken.objects.create(
+                user_id=user_profile.id,
+                kind=kind,
+                token=token_str,
+                ios_app_id=ios_app_id,
+                # last_updated is to be renamed to date_created.
+                last_updated=timezone_now())
+    except IntegrityError:
+        pass
+
     # If we're sending things to the push notification bouncer
     # register this user with them here
     if uses_notification_bouncer():
@@ -396,18 +408,6 @@ def add_push_device_token(user_profile: UserProfile,
         # Calls zilencer.views.register_remote_push_device
         send_to_push_bouncer('POST', 'register', post_data)
         return
-
-    try:
-        with transaction.atomic():
-            PushDeviceToken.objects.create(
-                user_id=user_profile.id,
-                kind=kind,
-                token=token_str,
-                ios_app_id=ios_app_id,
-                # last_updated is to be renamed to date_created.
-                last_updated=timezone_now())
-    except IntegrityError:
-        pass
 
 def remove_push_device_token(user_profile: UserProfile, token_str: bytes, kind: int) -> None:
 
