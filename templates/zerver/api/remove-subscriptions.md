@@ -89,13 +89,6 @@ A typical successful JSON response may look like:
 
 {generate_code_example|remove-subscriptions|fixture}
 
-A typical JSON response for when you try to unsubscribe from a stream
-that doesn't exist:
+A typical failed JSON response for when the target stream does not exist:
 
-```
-{
-    "msg":"Stream(s) (Denmarkk) do not exist",
-    "code":"BAD_REQUEST",
-    "result":"error"
-}
-```
+{generate_code_example|nonexistent-stream-error|fixture}

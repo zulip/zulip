@@ -104,10 +104,4 @@ A typical successful JSON response may look like:
 
 A typical failed JSON response for when the target stream does not exist:
 
-```
-{
-    'code':'BAD_REQUEST',
-    'msg':"Stream 'Denmarkk' does not exist",
-    'result':'error'
-}
-```
+{generate_code_example|nonexistent-stream-error|fixture}

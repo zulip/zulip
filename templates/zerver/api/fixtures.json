@@ -238,5 +238,10 @@
     "delete-queue": {
         "msg":"",
         "result":"success"
+    },
+    "nonexistent-stream-error": {
+        "code":"BAD_REQUEST",
+        "msg":"Stream 'nonexistent_stream' does not exist",
+        "result":"error"
     }
 }
