@@ -26,7 +26,7 @@ import ujson
 from zerver.decorator import statsd_increment
 from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.exceptions import ErrorCode, JsonableError
-from zerver.lib.message import access_message
+from zerver.lib.message import access_message, huddle_users
 from zerver.lib.queue import retry_event
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import generate_random_token
@@ -479,11 +479,14 @@ def get_common_payload(message: Message) -> Dict[str, Any]:
     data['sender_id'] = message.sender.id
     data['sender_email'] = message.sender.email
 
-    if message.is_stream_message():
+    if message.recipient.type == Recipient.STREAM:
         data['recipient_type'] = "stream"
         data['stream'] = get_display_recipient(message.recipient)
         data['topic'] = message.subject
-    else:
+    elif message.recipient.type == Recipient.HUDDLE:
+        data['recipient_type'] = "private"
+        data['pm_users'] = huddle_users(message.recipient.id)
+    else:  # Recipient.PERSONAL
         data['recipient_type'] = "private"
 
     return data
