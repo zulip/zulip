@@ -248,7 +248,7 @@ exports.activate = function (raw_operators, opts) {
     $('#search_query').val(Filter.unparse(operators));
     search.update_button_visibility();
 
-    compose_actions.on_narrow();
+    compose_actions.on_narrow(opts);
 
     var current_filter = narrow_state.get_current_filter();
 
@@ -361,8 +361,8 @@ exports.narrow_to_next_topic = function () {
     exports.activate(filter_expr, opts);
 };
 
-
 exports.narrow_to_next_pm_string = function () {
+
     var curr_pm = narrow_state.pm_string();
 
     var next_pm = topic_generator.get_next_unread_pm_string(curr_pm);
@@ -379,8 +379,10 @@ exports.narrow_to_next_pm_string = function () {
         {operator: 'pm-with', operand: pm_with},
     ];
 
+    // force_close parameter is true to not auto open compose_box
     var opts = {
         select_first_unread: true,
+        force_close: true,
     };
 
     exports.activate(filter_expr, opts);

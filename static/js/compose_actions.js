@@ -384,7 +384,17 @@ exports.quote_and_reply = function (opts) {
     });
 };
 
-exports.on_narrow = function () {
+exports.on_narrow = function (opts) {
+    // We use force_close when jumping between PM narrows with the "p" key,
+    // so that we don't have an open compose box that makes it difficult
+    // to cycle quickly through unread messages.
+    if (opts.force_close) {
+        // This closes the compose box if it was already open, and it is
+        // basically a noop otherwise.
+        exports.cancel();
+        return;
+    }
+
     if (narrow_state.narrowed_by_topic_reply()) {
         exports.on_topic_narrow();
         return;
