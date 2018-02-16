@@ -15,6 +15,7 @@ var input_pill = function ($parent) {
         pills: [],
         $parent: $parent,
         $input: $parent.find(".input"),
+        copyReturnFunction: function (data) { return data.value; },
         getKeyFunction: function () {},
         validation: function () {},
         lastUpdated: null,
@@ -110,6 +111,7 @@ var input_pill = function ($parent) {
             if (!payload) {
                 return false;
             }
+
             var $pill = this.createPillElement(payload);
 
             store.$input.before($pill);
@@ -214,6 +216,12 @@ var input_pill = function ($parent) {
                     value: pill.value,
                     key: pill.key,
                 };
+            });
+        },
+
+        getByID: function (id) {
+            return _.find(store.pills, function (pill) {
+                return pill.id === id;
             });
         },
 
@@ -379,6 +387,13 @@ var input_pill = function ($parent) {
                 $(this).find(".input").focus();
             }
         });
+
+        store.$parent.on("copy", ".pill", function (e) {
+            var id = store.$parent.find(":focus").data("id");
+            var data = funcs.getByID(id);
+            e.originalEvent.clipboardData.setData("text/plain", store.copyReturnFunction(data));
+            e.preventDefault();
+        });
     }());
 
     // the external, user-accessible prototype.
@@ -399,6 +414,12 @@ var input_pill = function ($parent) {
 
         onPillRemove: function (callback) {
             store.removePillFunction = callback;
+        },
+
+        // this is for when a user copies a pill, you can choose in here what
+        // value to return.
+        onCopyReturn: function (callback) {
+            store.copyReturnFunction = callback;
         },
 
         validate: function (callback) {
