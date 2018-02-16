@@ -47,6 +47,18 @@ def add_subscriptions(client):
     assert result['result'] == 'success'
     assert 'newbie@zulip.com' in result['subscribed']
 
+def test_add_subscriptions_already_subscribed(client):
+    # type: (Client) -> None
+    result = client.add_subscriptions(
+        streams=[
+            {'name': 'new stream', 'description': 'New stream for testing'}
+        ],
+        principals=['newbie@zulip.com']
+    )
+
+    fixture = FIXTURES['add-subscriptions']['already_subscribed']
+    test_against_fixture(result, fixture)
+
 def create_user(client):
     # type: (Client) -> None
 
@@ -465,6 +477,7 @@ def test_streams(client):
     # type: (Client) -> None
 
     add_subscriptions(client)
+    test_add_subscriptions_already_subscribed(client)
     list_subscriptions(client)
     get_stream_id(client)
     get_streams(client)

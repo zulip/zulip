@@ -177,7 +177,19 @@
                     "new stream"
                 ]
             }
-        }
+        },
+        "already_subscribed": {
+            "already_subscribed":{
+                "newbie@zulip.com":[
+                    "new stream"
+                ]
+            },
+            "msg":"",
+            "result":"success",
+            "subscribed":{
+
+            }
+        },
     },
     "remove-subscriptions": {
         "msg":"",
