@@ -7,6 +7,8 @@ from zerver.lib.slack_data_to_zulip_data import (
     get_user_data,
     build_zerver_realm,
     get_user_email,
+    build_avatar_url,
+    build_avatar,
     get_admin,
     get_user_timezone,
     users_to_zerver_userprofile,
@@ -93,6 +95,18 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(test_zerver_realm_dict['name'], realm_subdomain)
         self.assertEqual(test_zerver_realm_dict['date_created'], time)
 
+    def test_user_avatars(self) -> None:
+        avatar_url = "https://ca.slack-edge.com/{}-{}-{}".format('T5YFFM2QY', 'U6006P1CN',
+                                                                 'gd41c3c33cbe')
+        self.assertEqual(build_avatar_url('U6006P1CN', 'T5YFFM2QY', 'gd41c3c33cbe'), avatar_url)
+
+        avatar_list = []  # type: List[Dict[str, Any]]
+        timestamp = int(timezone_now().timestamp())
+        test_avatar_list = build_avatar(1, 1, 'email', avatar_url, timestamp, avatar_list)
+        self.assertEqual(test_avatar_list[0]['path'], avatar_url)
+        self.assertEqual(test_avatar_list[0]['s3_path'], '')
+        self.assertEqual(test_avatar_list[0]['user_profile_id'], 1)
+
     def test_get_admin(self) -> None:
         user_data = [{'is_admin': True, 'is_owner': False, 'is_primary_owner': False},
                      {'is_admin': True, 'is_owner': True, 'is_primary_owner': False},
@@ -116,11 +130,13 @@ class SlackImporter(ZulipTestCase):
                 return_value=[1, 2, 3])
     def test_users_to_zerver_userprofile(self, mock_allocate_ids: mock.Mock) -> None:
         user_data = [{"id": "U08RGD1RD",
+                      "team_id": "T5YFFM2QY",
                       "name": "john",
                       "deleted": False,
                       "real_name": "John Doe",
-                      "profile": {"image_32": "", "email": "jon@gmail.com"}},
+                      "profile": {"image_32": "", "email": "jon@gmail.com", "avatar_hash": "hash"}},
                      {"id": "U0CBK5KAT",
+                      "team_id": "T5YFFM2QY",
                       "is_admin": True,
                       "is_bot": False,
                       "is_owner": True,
@@ -129,14 +145,15 @@ class SlackImporter(ZulipTestCase):
                       "real_name": "Jane Doe",
                       "deleted": False,
                       "profile": {"image_32": "https:\/\/secure.gravatar.com\/avatar\/random.png",
-                                  "email": "jane@foo.com"}},
+                                  "email": "jane@foo.com", "avatar_hash": "hash"}},
                      {"id": "U09TYF5Sk",
+                      "team_id": "T5YFFM2QY",
                       "name": "Bot",
                       "real_name": "Bot",
                       "is_bot": True,
                       "deleted": False,
                       "profile": {"image_32": "https:\/\/secure.gravatar.com\/avatar\/random1.png",
-                                  "email": "bot1@zulipchat.com"}}]
+                                  "email": "bot1@zulipchat.com", "avatar_hash": "hash"}}]
 
         # As user with slack_id 'U0CBK5KAT' is the primary owner, that user should be imported first
         # and hence has zulip_id = 1
