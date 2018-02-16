@@ -255,7 +255,13 @@ function process_notification(notification) {
     // Convert the content to plain text, replacing emoji with their alt text
     content = $('<div/>').html(message.content);
     ui.replace_emoji_with_text(content);
-    content = content.text();
+
+    // Prevent empty notification when message contains only an image
+    if (content.text() === '' && content.children().first().hasClass("message_inline_image")) {
+        content = title + " sent you an image";
+    } else {
+        content = content.text();
+    }
 
     if (message.is_me_message) {
         content = message.sender_full_name + content.slice(3);
