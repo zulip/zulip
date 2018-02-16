@@ -30,7 +30,7 @@ curl {{ api_url }}/v1/users?client_gravatar=true \
 
 <div data-language="python" markdown="1">
 
-{generate_code_example|get-all-users|example}
+{generate_code_example(python)|get-all-users|example}
 
 </div>
 

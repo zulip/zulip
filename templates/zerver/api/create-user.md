@@ -31,7 +31,7 @@ curl {{ api_url }}/v1/users \
 
 <div data-language="python" markdown="1">
 
-{generate_code_example|create-user|example(admin_config=True)}
+{generate_code_example(python)|create-user|example(admin_config=True)}
 
 </div>
 

@@ -36,7 +36,7 @@ administrative privileges.
 
 <div data-language="python" markdown="1">
 
-{generate_code_example|remove-subscriptions|example}
+{generate_code_example(python)|remove-subscriptions|example}
 
 </div>
 

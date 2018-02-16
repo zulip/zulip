@@ -413,7 +413,11 @@ def test_streams(client):
 
 def test_queues(client):
     # type: (Client) -> None
-
+    # Note that the example for api/get-events-from-queue is not tested.
+    # Since, methods such as client.get_events() or client.call_on_each_message
+    # are blocking calls and since the event queue backend is already
+    # thoroughly tested in zerver/tests/test_event_queue.py, it is not worth
+    # the effort to come up with asynchronous logic for testing those here.
     queue_id = register_queue(client)
     deregister_queue(client, queue_id)
 

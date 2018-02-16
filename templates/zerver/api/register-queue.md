@@ -31,7 +31,7 @@ curl {{ api_url }}/v1/register \
 
 <div data-language="python" markdown="1">
 
-{generate_code_example|register-queue|example}
+{generate_code_example(python)|register-queue|example}
 
 </div>
 
