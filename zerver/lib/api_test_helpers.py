@@ -467,6 +467,13 @@ def test_missing_request_argument(client):
     fixture = FIXTURES['missing-request-argument-error']
     test_against_fixture(result, fixture)
 
+def test_invalid_stream_error(client):
+    # type: (Client) -> None
+    result = client.get_stream_id('nonexistent')
+
+    fixture = FIXTURES['invalid-stream-error']
+    test_against_fixture(result, fixture)
+
 TEST_FUNCTIONS = {
     'render-message': render_message,
     'stream-message': stream_message,
@@ -544,6 +551,7 @@ def test_queues(client):
 def test_errors(client):
     # type: (Client) -> None
     test_missing_request_argument(client)
+    test_invalid_stream_error(client)
 
 def test_the_api(client):
     # type: (Client) -> None

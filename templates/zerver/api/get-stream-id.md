@@ -70,10 +70,4 @@ A typical successful JSON response may look like:
 An example of a JSON response for when the supplied stream does not
 exist:
 
-```
-{
-    'code':'BAD_REQUEST',
-    'msg':"Invalid stream name 'nonexistent'",
-    'result':'error'
-}
-```
+{generate_code_example|invalid-stream-error|fixture}
