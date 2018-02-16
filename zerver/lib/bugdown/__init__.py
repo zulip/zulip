@@ -1011,13 +1011,21 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def run(self, root: Element) -> None:
         # Get all URLs from the blob
         found_urls = walk_tree_with_family(root, self.get_url_data)
-        if len(found_urls) == 0 or len(found_urls) > self.INLINE_PREVIEW_LIMIT_PER_MESSAGE:
+        unique_urls = {found_url.result[0] for found_url in found_urls}
+        if len(found_urls) == 0 or len(unique_urls) > self.INLINE_PREVIEW_LIMIT_PER_MESSAGE:
             return
 
+        processed_urls = set()  # type: Set[str]
         rendered_tweet_count = 0
 
         for found_url in found_urls:
             (url, text) = found_url.result
+
+            if url not in processed_urls:
+                processed_urls.add(url)
+            else:
+                continue
+
             if not self.is_absolute_url(url):
                 if self.is_image(url):
                     self.handle_image_inlining(root, found_url)
