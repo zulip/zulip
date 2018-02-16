@@ -229,7 +229,9 @@ body {
     background-color: hsl(152, 40%, 42%);
 
     /* Extend highlight to entire width of sidebar, not just link area */
-    width: calc(100% + 20px);
+    /* This has been changed from "+" to "- -" because of issue #8403.
+       If the issue has been fixed, please change this back to "+" again. */
+    width: calc(100% - -20px);
     margin-left: -40px;
     padding-left: 40px;
 }
