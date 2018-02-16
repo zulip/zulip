@@ -848,13 +848,28 @@ with_overrides(function (override) {
     });
 });
 
+// mark_message_as_read requires message_store and these dependencies.
+zrequire('unread_ops');
+zrequire('unread');
+set_global('message_store', {});
+
 with_overrides(function (override) {
     // delete_message
     var event = event_fixtures.delete_message;
+    message_store.get = function (msg_id) {
+        return {id: msg_id, reactions: []};
+    };
+
     global.with_stub(function (stub) {
         override('ui.remove_message', stub.f);
         dispatch(event);
         var args = stub.get_args('message_id');
         assert_same(args.message_id, 1337);
+    });
+    global.with_stub(function (stub) {
+        override('unread_ops.mark_message_as_read', stub.f);
+        dispatch(event);
+        var args = stub.get_args('message');
+        assert_same(args.message.id, 1337);
     });
 });
