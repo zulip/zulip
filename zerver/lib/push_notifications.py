@@ -277,12 +277,14 @@ def uses_notification_bouncer() -> bool:
     return settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
 
 def send_notifications_to_bouncer(user_profile_id: int,
-                                  apns_payload: Dict[str, Any],
-                                  gcm_payload: Dict[str, Any]) -> None:
+                                  apns_payload: 'BouncerPayload',
+                                  gcm_payload: 'BouncerPayload',
+                                  encrypted: bool=False) -> None:
     post_data = {
         'user_id': user_profile_id,
         'apns_payload': apns_payload,
         'gcm_payload': gcm_payload,
+        'encrypted': encrypted,
     }
     # Calls zilencer.views.remote_server_notify_push
     send_json_to_push_bouncer('POST', 'notify', post_data)
@@ -410,6 +412,7 @@ def add_push_device_token(user_profile: UserProfile,
             'user_id': user_profile.id,
             'token': token_str,
             'token_kind': kind,
+            'encrypted': encrypt_notifications
         }
 
         if kind == PushDeviceToken.APNS:
@@ -712,6 +715,34 @@ def separate_devices(devices: DeviceList) -> DevicesByKind:
 
     return encrypted, non_encrypted
 
+EncryptedPayload = List[Tuple[bytes, Dict[str, Any]]]
+BouncerPayload = Union[Dict[str, Any], EncryptedPayload]
+
+def try_send_notifications_to_bouncer(user_profile_id: int,
+                                      missed_message: Dict[str, Any],
+                                      apns_payload: BouncerPayload,
+                                      gcm_payload: BouncerPayload,
+                                      encrypted: bool=False) -> None:
+    try:
+        send_notifications_to_bouncer(user_profile_id,
+                                      apns_payload,
+                                      gcm_payload,
+                                      encrypted=encrypted)
+    except requests.ConnectionError:
+        def failure_processor(event: Dict[str, Any]) -> None:
+            logger.warning(
+                "Maximum retries exceeded for trigger:%s event:push_notification" % (
+                    event['user_profile_id']))
+        retry_event('missedmessage_mobile_notifications', missed_message,
+                    failure_processor)
+
+def prepare_encrypted_payload(data: EncryptedData) -> EncryptedPayload:
+    payload = []
+    for device, content in data:
+        payload.append((device.token, content))
+
+    return payload
+
 @statsd_increment("push_notifications")
 def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any]) -> None:
     """
@@ -786,17 +817,20 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     logging.info("Sending push notification to user %s" % (user_profile_id,))
 
     if uses_notification_bouncer():
-        try:
-            send_notifications_to_bouncer(user_profile_id,
-                                          apns_payload,
-                                          gcm_payload)
-        except requests.ConnectionError:
-            def failure_processor(event: Dict[str, Any]) -> None:
-                logger.warning(
-                    "Maximum retries exceeded for trigger:%s event:push_notification" % (
-                        event['user_profile_id']))
-            retry_event('missedmessage_mobile_notifications', missed_message,
-                        failure_processor)
+        if android_devices or apple_devices:
+            try_send_notifications_to_bouncer(user_profile_id,
+                                              missed_message,
+                                              apns_payload,
+                                              gcm_payload)
+
+        if encrypted_android_devices or encrypted_apple_devices:
+            encrypted_apns_payload = prepare_encrypted_payload(encrypted_apns_data)
+            encrypted_gcm_payload = prepare_encrypted_payload(encrypted_gcm_data)
+            try_send_notifications_to_bouncer(user_profile_id,
+                                              missed_message,
+                                              encrypted_apns_payload,
+                                              encrypted_gcm_payload,
+                                              encrypted=True)
         return
 
     if android_devices:

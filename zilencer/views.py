@@ -4,6 +4,8 @@ import logging
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email, URLValidator
 from django.db import IntegrityError, transaction
+from typing import Any, Dict, List, Optional, Union, cast
+
 from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
 from django.utils.translation import ugettext as _, ugettext as err_
@@ -12,7 +14,8 @@ from django.views.decorators.csrf import csrf_exempt
 from zerver.decorator import require_post, InvalidZulipServerKeyError
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import send_android_push_notification, \
-    send_apple_push_notification
+    send_apple_push_notification, send_android_encrypted_push_notification, \
+    send_apple_encrypted_push_notification, EncryptedPayload, EncryptedData
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_int, check_string, \
@@ -31,6 +34,16 @@ def validate_bouncer_token_request(entity: Union[UserProfile, RemoteZulipServer]
         raise JsonableError(err_("Invalid token type"))
     validate_entity(entity)
     validate_token(token, kind)
+
+def prepare_encrypted_data(devices: List[RemotePushDeviceToken],
+                           payload: EncryptedPayload) -> EncryptedData:
+    device_map = {d.token: d for d in devices}
+    encrypted_data = []
+    for token, data in payload:
+        if token in device_map:
+            encrypted_data.append((device_map[token], data))
+
+    return encrypted_data
 
 @csrf_exempt
 @require_post
@@ -79,6 +92,7 @@ def register_remote_server(
 def register_remote_push_device(request: HttpRequest, entity: Union[UserProfile, RemoteZulipServer],
                                 user_id: int=REQ(), token: bytes=REQ(),
                                 token_kind: int=REQ(validator=check_int),
+                                encrypted: bool=REQ(default=False),
                                 ios_app_id: Optional[str]=None) -> HttpResponse:
     validate_bouncer_token_request(entity, token, token_kind)
     server = cast(RemoteZulipServer, entity)
@@ -90,6 +104,7 @@ def register_remote_push_device(request: HttpRequest, entity: Union[UserProfile,
                 server=server,
                 kind=token_kind,
                 token=token,
+                encrypted=encrypted,
                 ios_app_id=ios_app_id,
                 # last_updated is to be renamed to date_created.
                 last_updated=timezone.now())
@@ -124,6 +139,7 @@ def remote_server_notify_push(request: HttpRequest, entity: Union[UserProfile, R
     user_id = payload['user_id']
     gcm_payload = payload['gcm_payload']
     apns_payload = payload['apns_payload']
+    encrypted = payload['encrypted']
 
     android_devices = list(RemotePushDeviceToken.objects.filter(
         user_id=user_id,
@@ -137,10 +153,24 @@ def remote_server_notify_push(request: HttpRequest, entity: Union[UserProfile, R
         server=server
     ))
 
+    if encrypted:
+        android_data = prepare_encrypted_data(android_devices, gcm_payload)
+        apple_data = prepare_encrypted_data(apple_devices, apns_payload)
+
+        if android_data:
+            send_android_encrypted_push_notification(android_data)
+
+        if apple_data:
+            send_apple_encrypted_push_notification(user_id, apple_data)
+
+        return json_success()
+
     if android_devices:
+        android_devices = [d for d in android_devices if not d.encrypted]
         send_android_push_notification(android_devices, gcm_payload, remote=True)
 
     if apple_devices:
+        apple_devices = [d for d in apple_devices if not d.encrypted]
         send_apple_push_notification(user_id, apple_devices, apns_payload, remote=True)
 
     return json_success()

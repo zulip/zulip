@@ -184,6 +184,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
         for endpoint, method in endpoints:
             payload = self.get_generic_payload(method)
+            payload['encrypted'] = True
 
             # Verify correct results are success
             result = self.api_post(self.server_uuid, endpoint, payload)
@@ -191,6 +192,10 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
             remote_tokens = RemotePushDeviceToken.objects.filter(token=payload['token'])
             token_count = 1 if method == 'register' else 0
+            if token_count:
+                remote_token = list(remote_tokens)[0]
+                self.assertTrue(remote_token.encrypted)
+
             self.assertEqual(len(remote_tokens), token_count)
 
             # Try adding/removing tokens that are too big...
@@ -231,7 +236,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         ]
 
         # Test error handling
-        for endpoint, _, kind in endpoints:
+        for endpoint, token, kind in endpoints:
             # Try adding/removing tokens that are too big...
             broken_token = "a" * 5000  # too big
             result = self.client_post(endpoint, {'token': broken_token,
@@ -250,6 +255,23 @@ class PushBouncerNotificationTest(BouncerTestCase):
                                         subdomain="zulip")
             self.assert_json_error(result, 'Token does not exist')
 
+            # Test when token exists in bouncer but not in local server
+            RemotePushDeviceToken.objects.create(
+                kind=kind,
+                token=token,
+                user_id=user.id,
+                server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
+            )
+            self.assertEqual(RemotePushDeviceToken.objects.all().count(), 1)
+
+            result = self.client_delete(endpoint, {'token': token,
+                                                   'token_kind': kind,
+                                                   'user_id': user.id},
+                                        subdomain="zulip")
+            self.assert_json_success(result)
+            self.assertEqual(PushDeviceToken.objects.all().count(), 0)
+            self.assertEqual(RemotePushDeviceToken.objects.all().count(), 0)
+
         # Add tokens
         for endpoint, token, kind in endpoints:
             # Test that we can push twice
@@ -263,13 +285,18 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
             tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id, token=token,
                                                                server=server))
+            push_device_tokens = list(PushDeviceToken.objects.filter(user_id=user.id,
+                                                                     token=token))
             self.assertEqual(len(tokens), 1)
+            self.assertEqual(len(push_device_tokens), 1)
             self.assertEqual(tokens[0].token, token)
+            self.assertEqual(push_device_tokens[0].token, token)
 
         # User should have tokens for both devices now.
         tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id,
                                                            server=server))
         self.assertEqual(len(tokens), 2)
+        self.assertEqual(PushDeviceToken.objects.filter(user_id=user.id).count(), 2)
 
         # Remove tokens
         for endpoint, token, kind in endpoints:
@@ -279,7 +306,10 @@ class PushBouncerNotificationTest(BouncerTestCase):
             self.assert_json_success(result)
             tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id, token=token,
                                                                server=server))
+            push_device_token_count = PushDeviceToken.objects.filter(
+                user_id=user.id, token=token).count()
             self.assertEqual(len(tokens), 0)
+            self.assertEqual(push_device_token_count, 0)
 
 class PushNotificationTest(BouncerTestCase):
     def setUp(self) -> None:
@@ -359,6 +389,23 @@ class HandlePushNotificationTest(PushNotificationTest):
                 server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
             )
 
+        remote_gcm_tokens = [u'eeee']
+        for token in remote_gcm_tokens:
+            PushDeviceToken.objects.create(
+                kind=PushDeviceToken.GCM,
+                token=apn.hex_to_b64(token),
+                user=self.user_profile,
+                notification_encryption_key=encryption.generate_encryption_key()
+            )
+
+            RemotePushDeviceToken.objects.create(
+                kind=RemotePushDeviceToken.GCM,
+                token=apn.hex_to_b64(token),
+                user_id=self.user_profile.id,
+                encrypted=True,
+                server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
+            )
+
         message = self.get_message(Recipient.PERSONAL, type_id=1)
         UserMessage.objects.create(
             user_profile=self.user_profile,
@@ -369,7 +416,8 @@ class HandlePushNotificationTest(PushNotificationTest):
             'message_id': message.id,
             'trigger': 'private_message',
         }
-        with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=''), \
+        with self.settings(PUSH_NOTIFICATION_BOUNCER_URL='',
+                           PUSH_NOTIFICATION_ENCRYPTION=True), \
                 mock.patch('zerver.lib.push_notifications.requests.request',
                            side_effect=self.bounce_request), \
                 mock.patch('zerver.lib.push_notifications.gcm') as mock_gcm, \
@@ -386,8 +434,13 @@ class HandlePushNotificationTest(PushNotificationTest):
                 for device in RemotePushDeviceToken.objects.filter(
                     kind=PushDeviceToken.GCM)
             ]
-            mock_gcm.json_request.return_value = {
-                'success': {gcm_devices[0][2]: message.id}}
+            mock_gcm.json_request.side_effect = [
+                # TODO: Investigate why this gets called 4 times.
+                {'success': {gcm_devices[0][2]: message.id}},
+                {'success': {gcm_devices[1][2]: message.id}},
+                {'success': {gcm_devices[1][2]: message.id}},
+                {'success': {gcm_devices[1][2]: message.id}},
+            ]
             mock_apns.get_notification_result.return_value = 'Success'
             apn.handle_push_notification(self.user_profile.id, missed_message)
             for _, _, token in apns_devices:
@@ -407,7 +460,8 @@ class HandlePushNotificationTest(PushNotificationTest):
                     (token, "Unregistered"))
             self.assertEqual(RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.APNS).count(), 0)
 
-    def test_end_to_end_connection_error(self) -> None:
+    @mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value = True)
+    def test_end_to_end_connection_error(self, mock_push_notifications: mock.MagicMock) -> None:
         remote_gcm_tokens = [u'dddd']
         for token in remote_gcm_tokens:
             RemotePushDeviceToken.objects.create(
@@ -541,11 +595,20 @@ class HandlePushNotificationTest(PushNotificationTest):
             message=message
         )
 
+        token = apn.hex_to_b64(u'eeee')
+        PushDeviceToken.objects.create(
+            kind=PushDeviceToken.GCM,
+            token=token,
+            user=user_profile,
+            notification_encryption_key=encryption.generate_encryption_key()
+        )
+
         missed_message = {
             'message_id': message.id,
             'trigger': 'private_message',
         }
-        with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=True), \
+        with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=True,
+                           PUSH_NOTIFICATION_ENCRYPTION=True), \
                 mock.patch('zerver.lib.push_notifications.get_apns_payload',
                            return_value={'apns': True}), \
                 mock.patch('zerver.lib.push_notifications.get_gcm_payload',
@@ -557,10 +620,18 @@ class HandlePushNotificationTest(PushNotificationTest):
                 mock.patch('zerver.lib.push_notifications'
                            '.send_notifications_to_bouncer') as mock_send:
             apn.handle_push_notification(user_profile.id, missed_message)
-            mock_send.assert_called_with(user_profile.id,
-                                         {'apns': True},
-                                         {'gcm': True},
-                                         )
+            mock_send.assert_any_call(user_profile.id,
+                                      {'apns': True},
+                                      {'gcm': True},
+                                      encrypted=False,
+                                      )
+
+            mock_send.assert_any_call(user_profile.id,
+                                      [],
+                                      [(token.decode('ascii'), {'gcm_encrypted': True})],
+                                      encrypted=True,
+                                      )
+            self.assertEqual(mock_send.call_count, 2)
 
     def test_non_bouncer_push(self) -> None:
         message = self.get_message(Recipient.PERSONAL, type_id=1)
@@ -1212,6 +1283,7 @@ class TestSendNotificationsToBouncer(ZulipTestCase):
             'user_id': 1,
             'apns_payload': {'apns': True},
             'gcm_payload': {'gcm': True},
+            'encrypted': False,
         }
         mock_send.assert_called_with('POST',
                                      'notify',
