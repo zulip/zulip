@@ -45,7 +45,7 @@ below, and add more to your repertoire as needed.
 
 ## Navigation
 
-* **Search messages**: `/`
+* **Search messages**: `/` or `Ctrl+k`
 
 * **Search streams**: `q`
 
