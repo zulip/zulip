@@ -1,72 +1,107 @@
 # -*- coding: utf-8 -*-
+from confirmation import settings as confirmation_settings
+from confirmation.models import (
+    Confirmation,
+    ConfirmationKeyException,
+    confirmation_url,
+    create_confirmation_link,
+    generate_key,
+    get_object_from_key,
+    MultiuseInvite
+)
+
 import datetime
+
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
+from django.core import mail
 from django.http import HttpResponse
 from django.test import TestCase, override_settings
 from django.utils.timezone import now as timezone_now
 
-from mock import patch, MagicMock
-from zerver.lib.test_helpers import MockLDAP
+from mock import (
+    MagicMock,
+    patch
+)
+import re
+import smtplib
+from typing import (
+    Any,
+    Dict,
+    List,
+    Optional,
+    Text
+)
+import ujson
+import urllib
 
-from confirmation.models import Confirmation, create_confirmation_link, MultiuseInvite, \
-    generate_key, confirmation_url, get_object_from_key, ConfirmationKeyException
-from confirmation import settings as confirmation_settings
-
-from zerver.forms import HomepageForm, WRONG_SUBDOMAIN_ERROR
-from zerver.lib.actions import do_change_password
-from zerver.views.auth import login_or_register_remote_user, \
-    redirect_and_log_into_subdomain
-from zerver.views.invite import get_invitee_emails_set
-from zerver.views.registration import confirmation_key, \
-    send_confirm_registration_email
-
-from zerver.models import (
-    get_realm, get_user, get_stream_recipient,
-    PreregistrationUser, Realm, RealmDomain, Recipient, Message,
-    ScheduledEmail, UserProfile, UserMessage,
-    Stream, Subscription, flush_per_request_caches
+from zerver.context_processors import common_context
+from zerver.forms import (
+    HomepageForm,
+    WRONG_SUBDOMAIN_ERROR
 )
 from zerver.lib.actions import (
-    set_default_streams,
-    do_change_is_admin,
-    get_stream,
-    do_create_realm,
-    do_create_default_stream_group,
+    add_new_user_history,
     do_add_default_stream,
-)
-from zerver.lib.send_email import send_email, send_future_email, FromAddress
-from zerver.lib.initial_password import initial_password
-from zerver.lib.actions import (
+    do_change_is_admin,
+    do_create_default_stream_group,
     do_deactivate_realm,
     do_deactivate_user,
     do_set_realm_property,
-    add_new_user_history,
+    get_stream,
+    set_default_streams,
 )
-from zerver.lib.mobile_auth_otp import xor_hex_strings, ascii_to_hex, \
-    otp_encrypt_api_key, is_valid_otp, hex_to_ascii, otp_decrypt_api_key
-from zerver.lib.notifications import enqueue_welcome_emails, \
+from zerver.lib.initial_password import initial_password
+from zerver.lib.mobile_auth_otp import (
+    ascii_to_hex,
+    hex_to_ascii,
+    is_valid_otp,
+    otp_decrypt_api_key,
+    otp_encrypt_api_key,
+    xor_hex_strings
+)
+from zerver.lib.notifications import (
+    enqueue_welcome_emails,
     one_click_unsubscribe_link
-from zerver.lib.subdomains import is_root_domain_available
-from zerver.lib.test_helpers import find_key_by_email, queries_captured, \
-    HostRequestMock, load_subdomain_token
-from zerver.lib.test_classes import (
-    ZulipTestCase,
 )
-from zerver.lib.test_runner import slow
+from zerver.lib.send_email import (
+    FromAddress,
+    send_email,
+    send_future_email
+)
 from zerver.lib.sessions import get_session_dict_user
-from zerver.context_processors import common_context
+from zerver.lib.subdomains import is_root_domain_available
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import (
+    find_key_by_email,
+    HostRequestMock,
+    load_subdomain_token,
+    queries_captured
+)
+from zerver.lib.test_helpers import MockLDAP
+from zerver.models import (
+    flush_per_request_caches,
+    get_realm,
+    get_stream_recipient,
+    get_user,
+    PreregistrationUser,
+    Realm,
+    Recipient,
+    Message,
+    ScheduledEmail,
+    Stream,
+    Subscription,
+    UserProfile,
+    UserMessage
+)
+from zerver.views.auth import (
+    login_or_register_remote_user,
+    redirect_and_log_into_subdomain
+)
+from zerver.views.invite import get_invitee_emails_set
+from zerver.views.registration import confirmation_key
 
-from collections import defaultdict
-import re
-import smtplib
-import ujson
-
-from typing import Any, Dict, List, Optional, Set, Text
-
-import urllib
-import os
 
 class RedirectAndLogIntoSubdomainTestCase(ZulipTestCase):
     def test_cookie_data(self) -> None:
@@ -162,11 +197,10 @@ class PasswordResetTest(ZulipTestCase):
         self.assert_in_response("Check your email to finish the process.", result)
 
         # Check that the password reset email is from a noreply address.
-        from django.core.mail import outbox
-        from_email = outbox[0].from_email
+        from_email = mail.outbox[0].from_email
         self.assertIn("Zulip Account Security", from_email)
         self.assertIn(FromAddress.NOREPLY, from_email)
-        self.assertIn("Psst. Word on the street is that you", outbox[0].body)
+        self.assertIn("Psst. Word on the street is that you", mail.outbox[0].body)
 
         # Visit the password reset link.
         password_reset_url = self.get_confirmation_url_from_outbox(
@@ -206,15 +240,12 @@ class PasswordResetTest(ZulipTestCase):
         self.assert_in_response("Check your email to finish the process.", result)
 
         # Check that the password reset email is from a noreply address.
-        from django.core.mail import outbox
-        from_email = outbox[0].from_email
+        from_email = mail.outbox[0].from_email
         self.assertIn("Zulip Account Security", from_email)
         self.assertIn(FromAddress.NOREPLY, from_email)
 
-        self.assertIn('Someone (possibly you) requested a password',
-                      outbox[0].body)
-        self.assertNotIn('does have an active account in the zulip.testserver',
-                         outbox[0].body)
+        self.assertIn('Someone (possibly you) requested a password', mail.outbox[0].body)
+        self.assertNotIn('does have an active account in the zulip.testserver', mail.outbox[0].body)
 
     def test_wrong_subdomain(self) -> None:
         email = self.example_email("hamlet")
@@ -232,9 +263,8 @@ class PasswordResetTest(ZulipTestCase):
 
         self.assert_in_response("Check your email to finish the process.", result)
 
-        from django.core.mail import outbox
-        self.assertEqual(len(outbox), 1)
-        message = outbox.pop()
+        self.assertEqual(len(mail.outbox), 1)
+        message = mail.outbox.pop()
         self.assertIn(FromAddress.NOREPLY, message.from_email)
         self.assertIn('Someone (possibly you) requested a password',
                       message.body)
@@ -253,9 +283,7 @@ class PasswordResetTest(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
         self.assert_in_success_response(["There is no Zulip organization hosted at this subdomain."],
                                         result)
-
-        from django.core.mail import outbox
-        self.assertEqual(len(outbox), 0)
+        self.assertEqual(len(mail.outbox), 0)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
                                                 'zproject.backends.ZulipDummyBackend'))
@@ -274,8 +302,7 @@ class PasswordResetTest(ZulipTestCase):
 
         self.assert_in_response("Check your email to finish the process.", result)
 
-        from django.core.mail import outbox
-        self.assertEqual(len(outbox), 0)
+        self.assertEqual(len(mail.outbox), 0)
 
     def test_redirect_endpoints(self) -> None:
         '''
@@ -447,17 +474,16 @@ class LoginTest(ZulipTestCase):
 class InviteUserBase(ZulipTestCase):
     def check_sent_emails(self, correct_recipients: List[Text],
                           custom_from_name: Optional[str]=None) -> None:
-        from django.core.mail import outbox
-        self.assertEqual(len(outbox), len(correct_recipients))
-        email_recipients = [email.recipients()[0] for email in outbox]
+        self.assertEqual(len(mail.outbox), len(correct_recipients))
+        email_recipients = [email.recipients()[0] for email in mail.outbox]
         self.assertEqual(sorted(email_recipients), sorted(correct_recipients))
-        if len(outbox) == 0:
+        if len(mail.outbox) == 0:
             return
 
         if custom_from_name is not None:
-            self.assertIn(custom_from_name, outbox[0].from_email)
+            self.assertIn(custom_from_name, mail.outbox[0].from_email)
 
-        self.assertIn(FromAddress.NOREPLY, outbox[0].from_email)
+        self.assertIn(FromAddress.NOREPLY, mail.outbox[0].from_email)
 
     def invite(self, users: Text, streams: List[Text], body: str='',
                invite_as_admin: str="false") -> HttpResponse:
@@ -807,8 +833,6 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.assert_json_success(self.invite(invitee, [stream_name]))
 
     def test_invitation_reminder_email(self) -> None:
-        from django.core.mail import outbox
-
         # All users belong to zulip realm
         referrer_user = 'hamlet'
         current_user_email = self.example_email(referrer_user)
@@ -836,11 +860,11 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         email_jobs_to_deliver = ScheduledEmail.objects.filter(
             scheduled_timestamp__lte=timezone_now())
         self.assertEqual(len(email_jobs_to_deliver), 1)
-        email_count = len(outbox)
+        email_count = len(mail.outbox)
         for job in email_jobs_to_deliver:
             send_email(**ujson.loads(job.data))
-        self.assertEqual(len(outbox), email_count + 1)
-        self.assertIn(FromAddress.NOREPLY, outbox[-1].from_email)
+        self.assertEqual(len(mail.outbox), email_count + 1)
+        self.assertIn(FromAddress.NOREPLY, mail.outbox[-1].from_email)
 
         # Now verify that signing up clears invite_reminder emails
         email_jobs_to_deliver = ScheduledEmail.objects.filter(
@@ -953,8 +977,7 @@ class InvitationsTestCase(InviteUserBase):
 
         # Verify and then clear from the outbox the original invite email
         self.check_sent_emails([invitee], custom_from_name="Zulip")
-        from django.core.mail import outbox
-        outbox.pop()
+        mail.outbox.pop()
 
         # Verify that the scheduled email exists.
         scheduledemail_filter = ScheduledEmail.objects.filter(
@@ -1054,8 +1077,7 @@ class MultiuseInviteTest(ZulipTestCase):
         result = self.submit_reg_form_for_user(email, password)
         self.assertEqual(result.status_code, 302)
 
-        from django.core.mail import outbox
-        outbox.pop()
+        mail.outbox.pop()
 
     def test_valid_multiuse_link(self) -> None:
         email1 = self.nonreg_email("test")
@@ -1490,8 +1512,8 @@ class UserSignUpTest(ZulipTestCase):
         user_profile = self.nonreg_user('newguy')
         self.assertEqual(user_profile.default_language, realm.default_language)
         self.assertEqual(user_profile.timezone, timezone)
-        from django.core.mail import outbox
-        outbox.pop()
+
+        mail.outbox.pop()
 
     def test_signup_already_active(self) -> None:
         """
@@ -1837,8 +1859,7 @@ class UserSignUpTest(ZulipTestCase):
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
         # Visit the confirmation link.
-        from django.core.mail import outbox
-        for message in reversed(outbox):
+        for message in reversed(mail.outbox):
             if email in message.to:
                 confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + "(\S+)>")
                 confirmation_url = confirmation_link_pattern.search(
@@ -2123,8 +2144,7 @@ class UserSignUpTest(ZulipTestCase):
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
         # Visit the confirmation link.
-        from django.core.mail import outbox
-        for message in reversed(outbox):
+        for message in reversed(mail.outbox):
             if email in message.to:
                 confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + "(\S+)>")
                 confirmation_url = confirmation_link_pattern.search(
@@ -2183,8 +2203,7 @@ class UserSignUpTest(ZulipTestCase):
         result = self.client_get(result["Location"], subdomain="zephyr")
         self.assert_in_response("Check your email so we can get started.", result)
         # Visit the confirmation link.
-        from django.core.mail import outbox
-        for message in reversed(outbox):
+        for message in reversed(mail.outbox):
             if email in message.to:
                 confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + "(\S+)>")
                 confirmation_url = confirmation_link_pattern.search(
@@ -2326,9 +2345,8 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertIn("Emails sent! You will only receive emails", content)
         self.assertIn(self.example_email("iago"), content)
         self.assertIn(self.example_email("cordelia"), content)
-        from django.core.mail import outbox
         # 3 = 1 + 2 -- Cordelia gets an email each for the "zulip" and "lear" realms.
-        self.assertEqual(len(outbox), 3)
+        self.assertEqual(len(mail.outbox), 3)
 
     def test_find_team_ignore_invalid_email(self) -> None:
         result = self.client_post('/accounts/find/',
@@ -2340,16 +2358,14 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertIn("Emails sent! You will only receive emails", content)
         self.assertIn(self.example_email("iago"), content)
         self.assertIn("invalid_email@", content)
-        from django.core.mail import outbox
-        self.assertEqual(len(outbox), 1)
+        self.assertEqual(len(mail.outbox), 1)
 
     def test_find_team_reject_invalid_email(self) -> None:
         result = self.client_post('/accounts/find/',
                                   dict(emails="invalid_string"))
         self.assertEqual(result.status_code, 200)
         self.assertIn(b"Enter a valid email", result.content)
-        from django.core.mail import outbox
-        self.assertEqual(len(outbox), 0)
+        self.assertEqual(len(mail.outbox), 0)
 
         # Just for coverage on perhaps-unnecessary validation code.
         result = self.client_get('/accounts/find/?emails=invalid')
@@ -2360,16 +2376,14 @@ class TestFindMyTeam(ZulipTestCase):
         result = self.client_post('/accounts/find/', data)
         self.assertIn('This field is required', result.content.decode('utf8'))
         self.assertEqual(result.status_code, 200)
-        from django.core.mail import outbox
-        self.assertEqual(len(outbox), 0)
+        self.assertEqual(len(mail.outbox), 0)
 
     def test_find_team_one_email(self) -> None:
         data = {'emails': self.example_email("hamlet")}
         result = self.client_post('/accounts/find/', data)
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result.url, '/accounts/find/?emails=hamlet%40zulip.com')
-        from django.core.mail import outbox
-        self.assertEqual(len(outbox), 1)
+        self.assertEqual(len(mail.outbox), 1)
 
     def test_find_team_deactivated_user(self) -> None:
         do_deactivate_user(self.example_user("hamlet"))
@@ -2377,8 +2391,7 @@ class TestFindMyTeam(ZulipTestCase):
         result = self.client_post('/accounts/find/', data)
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result.url, '/accounts/find/?emails=hamlet%40zulip.com')
-        from django.core.mail import outbox
-        self.assertEqual(len(outbox), 0)
+        self.assertEqual(len(mail.outbox), 0)
 
     def test_find_team_deactivated_realm(self) -> None:
         do_deactivate_realm(get_realm("zulip"))
@@ -2386,24 +2399,21 @@ class TestFindMyTeam(ZulipTestCase):
         result = self.client_post('/accounts/find/', data)
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result.url, '/accounts/find/?emails=hamlet%40zulip.com')
-        from django.core.mail import outbox
-        self.assertEqual(len(outbox), 0)
+        self.assertEqual(len(mail.outbox), 0)
 
     def test_find_team_bot_email(self) -> None:
         data = {'emails': self.example_email("webhook_bot")}
         result = self.client_post('/accounts/find/', data)
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result.url, '/accounts/find/?emails=webhook-bot%40zulip.com')
-        from django.core.mail import outbox
-        self.assertEqual(len(outbox), 0)
+        self.assertEqual(len(mail.outbox), 0)
 
     def test_find_team_more_than_ten_emails(self) -> None:
         data = {'emails': ','.join(['hamlet-{}@zulip.com'.format(i) for i in range(11)])}
         result = self.client_post('/accounts/find/', data)
         self.assertEqual(result.status_code, 200)
         self.assertIn("Please enter at most 10", result.content.decode('utf8'))
-        from django.core.mail import outbox
-        self.assertEqual(len(outbox), 0)
+        self.assertEqual(len(mail.outbox), 0)
 
 class ConfirmationKeyTest(ZulipTestCase):
     def test_confirmation_key(self) -> None:
