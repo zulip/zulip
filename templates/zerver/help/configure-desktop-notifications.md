@@ -7,10 +7,12 @@ sent while Zulip is offscreen.
 {!settings.md!}
 
     * If you want desktop notifications for each new message from a stream,
-check the **Desktop notifications** option under **Stream messages**.
+check the **Visual desktop notifications** option and/or **Audible desktop
+notifications** under **Stream messages**.
 
     * If you want desktop notifications only for private messages and @-mentions,
-check the **Desktop notifications** option under **Private messages and @-mentions**.
+check the **Visual desktop notifications** option and/or **Audible desktop
+notifications** option under **Private messages and @-mentions**.
 
 {!save-changes.md!} notification settings.
 

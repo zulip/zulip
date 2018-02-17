@@ -87,7 +87,6 @@
 * [Mute or unmute a topic](/help/mute-a-topic)
 * [Set notifications for a single stream](/help/set-notifications-for-a-single-stream)
 * [Desktop notifications](/help/configure-desktop-notifications)
-* [Audible notifications](/help/configure-audible-notifications)
 * [Email notifications](/help/configure-email-notifications)
 * [Mobile notifications](/help/configure-mobile-notifications)
 * [Digest emails](/help/configure-email-digest-notifications)
