@@ -114,9 +114,7 @@
 # Zulip administration
 
 ## Organization basics
-* [Change your organization name](/help/change-your-organizations-name)
-* [Change your organization description](/help/change-your-organizations-description)
-* [Change your organization avatar](/help/change-your-organizations-avatar)
+* [Create your organization's profile](/help/create-your-organization-profile)
 * [Update your organization's settings](/help/change-your-organization-settings)
 * [Link to your Zulip from the web](/help/join-zulip-chat-badge)
 * [Import data from Slack](/help/import-data-from-slack)
