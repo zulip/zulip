@@ -1929,6 +1929,19 @@ div.floating_recipient {
     top: 50px;
 }
 
+#floating_recipient_bar .app-main {
+    background: transparent;
+}
+
+#floating_recipient_bar .app-main .recipient-bar-main {
+    background: #fff;
+    border-bottom-left-radius: 4px;
+}
+
+.floating_recipient .stream_label {
+    border-bottom-left-radius: 4px;
+}
+
 .recipient_row.sticky {
     margin-top: 22px;
 }
