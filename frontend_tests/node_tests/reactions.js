@@ -1,5 +1,6 @@
 set_global('document', 'document-stub');
 set_global('$', global.make_zjquery());
+set_global('i18n', global.stub_i18n);
 
 zrequire('people');
 zrequire('reactions');
@@ -168,7 +169,7 @@ set_global('current_msg_list', {
          title: 'Cali reacted with :frown:',
          emoji_alt_code: false,
          class: 'message_reaction',
-         label: 1,
+         label: 'Cali',
       },
       {
          emoji_name: 'inactive_realm_emoji',
@@ -182,7 +183,7 @@ set_global('current_msg_list', {
          is_realm_emoji: true,
          url: 'TBD',
          class: 'message_reaction reacted',
-         label: 1,
+         label: i18n.t("You"),
       },
       {
          emoji_name: 'smile',
@@ -285,8 +286,14 @@ set_global('current_msg_list', {
 
     reaction_element.set_find_results('.message_reaction_label', label_element);
 
+    reactions.set_label(reaction_element, [5, 6]);
+    assert.equal(label_element.html(), '2');
+
     reactions.set_label(reaction_element, [5]);
-    assert.equal(label_element.html(), 1);
+    assert.equal(label_element.html(), i18n.t("You"));
+
+    reactions.set_label(reaction_element, [7]);
+    assert.equal(label_element.html(), 'Cali');
 }());
 
 (function test_get_reaction_section() {
@@ -400,7 +407,7 @@ set_global('current_msg_list', {
 
     reactions.remove_reaction(bob_event);
     assert(title_set);
-    assert.equal(label_element.html(), 1);
+    assert.equal(label_element.html(), i18n.t("You"));
 
     var current_emojis = reactions.get_emojis_used_by_user_for_message_id(1001);
     assert.deepEqual(current_emojis, ['smile', 'inactive_realm_emoji', '8ball']);

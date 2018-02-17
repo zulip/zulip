@@ -150,7 +150,12 @@ function full_name(user_id) {
 
 function get_label(user_list) {
     var count = user_list.length;
-    return count;
+    if (count > 1) {
+        return count;
+    } else if (user_list.indexOf(page_params.user_id) !== -1) {
+        return i18n.t("You");
+    }
+    return people.get_person_from_user_id(user_list[0]).full_name;
 }
 
 function generate_title(emoji_name, user_ids) {
