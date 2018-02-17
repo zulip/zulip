@@ -257,11 +257,9 @@ function process_notification(notification) {
     ui.replace_emoji_with_text(content);
 
     // Prevent empty notification when message contains only an image
-    if (content.text() === '' && content.children().first().hasClass("message_inline_image")) {
-        content = title + " sent you an image";
-    } else {
-        content = content.text();
-    }
+    content = (content.text() === '' && content.children().first().hasClass("message_inline_image"))
+            ? title + " sent you an image"
+            : content.text();
 
     if (message.is_me_message) {
         content = message.sender_full_name + content.slice(3);
