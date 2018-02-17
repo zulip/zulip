@@ -39,14 +39,14 @@ also customize their stream settings; they can:
 
 If enabled by the organization administrators, users can
 [create](/help/create-a-stream) streams and
-[invite](/help/add-or-invite-someone-to-a-stream) other users to a stream.
+[invite](/help/add-or-remove-users-from-a-stream) other users to a stream.
 
 Only organization administrators can modify a stream; they can:
 
 * [rename a stream](/help/rename-a-stream)
 * [delete a stream](/help/delete-a-stream)
 * [change the description of a stream](/help/change-the-stream-description)
-* [remove users from a stream](/help/remove-someone-from-a-stream)
+* [remove users from a stream](/help/add-or-remove-users-from-a-stream#remove-someone-from-a-stream)
 * [change the privacy of a stream](/help/change-the-privacy-of-a-stream)
 
 ## About topics
