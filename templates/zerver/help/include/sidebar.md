@@ -147,7 +147,7 @@
 * [View all bots in your organization](/help/view-all-bots-in-your-organization)
 
 ## Stream management
-* [Delete a stream](/help/delete-a-stream)
+* [Delete or archive a stream](/help/delete-a-stream)
 * [Set default streams for new users](/help/set-default-streams-for-new-users)
 * [Rename a stream](/help/rename-a-stream)
 * [Change a stream's description](/help/change-the-stream-description)
