@@ -91,6 +91,7 @@
 * [Mobile notifications](/help/configure-mobile-notifications)
 * [Digest emails](/help/configure-email-digest-notifications)
 * [Add an alert word](/help/add-an-alert-word)
+* [Notify everyone on a stream](/help/notify-everyone-on-a-stream)
 
 ## Tools & customization
 * [Bots and integrations](/help/add-a-bot-or-integration)
