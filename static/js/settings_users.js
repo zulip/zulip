@@ -153,7 +153,7 @@ function populate_users(realm_people_data) {
                     activity_rendered = $("<span></span>").text(i18n.t("Never"));
                 }
             } else {
-                activity_rendered = $("<span></span>").text(i18n.t("Unknown"));
+                activity_rendered = $("<span></span>").text("*");
             }
 
             var $row = $(templates.render("admin_user_list", {user: item, can_modify: page_params.is_admin}));
