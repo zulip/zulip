@@ -18,6 +18,7 @@ from zerver.models import UserProfile, Realm, Stream, UserMessage, \
 from zerver.forms import check_subdomain_available
 from zerver.lib.slack_message_conversion import convert_to_zulip_markdown, \
     get_user_full_name
+from zerver.lib.avatar_hash import user_avatar_path_from_ids
 
 # stubs
 ZerverFieldsT = Dict[str, Any]
@@ -660,6 +661,12 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str, 
                                                     added_users, added_recipient, added_channels,
                                                     realm)
 
+    avatar_folder = os.path.join(output_dir, 'avatars')
+    avatar_realm_folder = os.path.join(avatar_folder, str(REALM_ID))
+
+    os.makedirs(avatar_realm_folder, exist_ok=True)
+    avatar_records = process_avatars(avatar_list, avatar_folder, REALM_ID)
+
     zerver_attachment = []  # type: List[ZerverFieldsT]
     attachment = {"zerver_attachment": zerver_attachment}
 
@@ -668,7 +675,7 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str, 
     # IO message.json
     create_converted_data_files(message_json, output_dir, '/messages-000001.json', False)
     # IO avatar records
-    create_converted_data_files([], output_dir, '/avatars/records.json', True)
+    create_converted_data_files(avatar_records, output_dir, '/avatars/records.json', False)
     # IO uploads TODO
     create_converted_data_files([], output_dir, '/uploads/records.json', True)
     # IO attachments
@@ -680,6 +687,45 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str, 
 
     logging.info('######### DATA CONVERSION FINISHED #########\n')
     logging.info("Zulip data dump created at %s" % (output_dir))
+
+def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str,
+                    realm_id: int) -> List[ZerverFieldsT]:
+    """
+    This function gets the avatar of size 512 px and saves it in the
+    user's avatar directory with both the extensions
+    '.png' and '.original'
+    """
+    logging.info('######### GETTING AVATARS #########\n')
+    avatar_original_list = []
+    for avatar in avatar_list:
+        avatar_hash = user_avatar_path_from_ids(avatar['user_profile_id'], realm_id)
+        slack_avatar_url = avatar['path']
+        avatar_original = dict(avatar)
+
+        image_path = ('%s/%s.png' % (avatar_dir, avatar_hash))
+        original_image_path = ('%s/%s.original' % (avatar_dir, avatar_hash))
+
+        # Fetch the avatars from the url
+        get_avatar(slack_avatar_url, image_path, original_image_path)
+        image_size = os.stat(image_path).st_size
+
+        avatar['path'] = image_path
+        avatar['s3_path'] = image_path
+        avatar['size'] = image_size
+
+        avatar_original['path'] = original_image_path
+        avatar_original['s3_path'] = original_image_path
+        avatar_original['size'] = image_size
+        avatar_original_list.append(avatar_original)
+    logging.info('######### GETTING AVATARS FINISHED #########\n')
+    return avatar_list + avatar_original_list
+
+def get_avatar(slack_avatar_url: str, image_path: str, original_image_path: str) -> None:
+    # get avatar of size 512
+    response = requests.get(slack_avatar_url + '-512', stream=True)
+    with open(image_path, 'wb') as image_file:
+        shutil.copyfileobj(response.raw, image_file)
+    shutil.copy(image_path, original_image_path)
 
 def get_data_file(path: str) -> Any:
     data = json.load(open(path))
