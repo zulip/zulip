@@ -3,27 +3,16 @@ your build statuses.
 
 1. {!create-stream.md!}
 
-2. {!create-bot-construct-url-indented.md!}
+1. {!create-bot-construct-url-indented.md!}
 
-3. Next, for your project, go to **Project Settings**, click on
-   **Notifications**. The URL for the **Notifications** page should
-   look like the following:
+1. Next, on your project's webpage, click on **Project Settings** in
+   the top right corner. Click on the **Notifications** tab, and click on
+   the **+ New Notification** button. Select **Webhook**.
 
-    `https://codeship.com/projects/PROJECT_ID/configure_notifications`
-
-    where `PROJECT_ID` is the ID of your project in Codeship.
-
-4. Click on the **+ New Notification** button.
-
-5. In the **Webhook URL** field, provide the URL constructed above:
-
-    ![](/static/images/integrations/codeship/001.png)
-
-    You may also supply an optional description or a specific branch
-    you would like to be notified about.
-
-6. Click **Save**.
+1. Set **Webhook URL** to the URL created above. You may also supply
+   an optional description or a specific branch you would like to be
+   notified about. Click **Save**.
 
 {!congrats.md!}
 
-![](/static/images/integrations/codeship/002.png)
+![](/static/images/integrations/codeship/001.png)
