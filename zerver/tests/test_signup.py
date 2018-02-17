@@ -2441,51 +2441,38 @@ class MobileAuthOTPTest(ZulipTestCase):
         self.assertEqual(decryped, hamlet.api_key)
 
 class LoginOrAskForRegistrationTestCase(ZulipTestCase):
-    def test_confirm(self) -> None:
+    def remote_user(self, invalid_subdomain, email='new@zulip.com') -> None:
         request = HostRequestMock()
-        email = 'new@zulip.com'
         user_profile = None  # type: Optional[UserProfile]
         full_name = 'New User'
-        invalid_subdomain = False
+        invalid_subdomain = invalid_subdomain
         result = login_or_register_remote_user(
             request,
             email,
             user_profile,
             full_name=full_name,
             invalid_subdomain=invalid_subdomain)
+        return result
+
+    def test_confirm(self) -> None:
+        invalid_subdomain = False
+        result = self.remote_user(invalid_subdomain)
         self.assert_in_response('No account found for',
                                 result)
         self.assert_in_response('new@zulip.com. Would you like to register instead?',
                                 result)
 
     def test_invalid_subdomain(self) -> None:
-        request = HostRequestMock()
-        email = 'new@zulip.com'
-        user_profile = None  # type: Optional[UserProfile]
-        full_name = 'New User'
         invalid_subdomain = True
-        result = login_or_register_remote_user(
-            request,
-            email,
-            user_profile,
-            full_name=full_name,
-            invalid_subdomain=invalid_subdomain)
+        result = self.remote_user(invalid_subdomain)
         self.assert_in_success_response(['Would you like to register instead?'], result)
 
     def test_invalid_email(self) -> None:
-        request = HostRequestMock()
         email = None  # type: Optional[Text]
-        user_profile = None  # type: Optional[UserProfile]
-        full_name = 'New User'
         invalid_subdomain = False
-        response = login_or_register_remote_user(
-            request,
-            email,
-            user_profile,
-            full_name=full_name,
-            invalid_subdomain=invalid_subdomain)
+        result = self.remote_user(invalid_subdomain, email)
         self.assert_in_response('Please click the following button if '
-                                'you wish to register', response)
+                                'you wish to register', result)
 
     def test_login_under_subdomains(self) -> None:
         request = HostRequestMock()
