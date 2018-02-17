@@ -1,19 +1,21 @@
 Zulip supports both SVN and Git notifications from Beanstalk.
 
-1. First, create the stream `commits` and subscribe all
-   interested parties to this stream.
+1. {!create-stream.md!}
 
-2. Next, in the Beanstalk web application, go to the **Setup** page
-   and choose the **Integrations** tab.
+1. {!create-a-bot-indented.md!}
 
-3. Choose the **Webhooks** integration from the list presented.
+   {!webhook-url-with-bot-email-indented.md!}
+   {!git-append-branches.md!}
 
-4. {!webhook-url-with-bot-email-indented.md!}
+1. Next, on your repository's webpage, click on the **Settings**
+   tab. Click on the **Integrations** tab, scroll down and click on
+   **Modular Webhooks**. Click on the **Add a webhook** button.
 
-5. {!git-append-branches.md!}
-
-    ![](/static/images/integrations/beanstalk/001.png)
+1. Set **Name** to a name of your choice, such as `Zulip`.
+   Set **URL** to the URL you created above. Under
+   **Select webhook triggers**, check the events that you would
+   like to receive notifications for, and click **Activate**.
 
 {!congrats.md!}
 
-![](/static/images/integrations/beanstalk/002.png)
+![](/static/images/integrations/beanstalk/001.png)

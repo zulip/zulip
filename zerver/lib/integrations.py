@@ -263,7 +263,7 @@ EMBEDDED_BOTS = [
 WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('airbrake', ['monitoring']),
     WebhookIntegration('appfollow', ['customer-support'], display_name='AppFollow'),
-    WebhookIntegration('beanstalk', ['version-control']),
+    WebhookIntegration('beanstalk', ['version-control'], stream_name='commits'),
     WebhookIntegration('basecamp', ['project-management']),
     WebhookIntegration('beeminder', ['misc'], display_name='Beeminder'),
     WebhookIntegration(
