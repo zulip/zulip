@@ -3,6 +3,9 @@ set_global('i18n', global.stub_i18n);
 
 set_global('page_params', {
 });
+set_global('navigator', {
+    userAgent: '',
+});
 
 set_global('document', {
     getElementById: function () { return $('#compose-textarea'); },
@@ -294,74 +297,125 @@ people.add(bob);
     };
     $('#compose-textarea').caret = noop;
 
-    // Test bold: ctrl/cmd + b.
-    input_text = "Anything bold.";
-    $("#compose-textarea").val(input_text);
-    compose_value = $("#compose-textarea").val();
-    // Select "bold" word in compose box.
-    selected_word = "bold";
-    range_start = compose_value.search(selected_word);
-    range_length = selected_word.length;
-    event.keyCode = 66;
-    event.metaKey = false;
-    event.ctrlKey = true;
-    compose.handle_keydown(event);
-    assert.equal("Anything **bold**.", $('#compose-textarea').val());
-    // Test if no text is selected.
-    // Change cursor to first position.
-    range_start = 0;
-    range_length = 0;
-    compose.handle_keydown(event);
-    assert.equal("****Anything **bold**.", $('#compose-textarea').val());
+    function test_i_typed(isCtrl, isCmd) {
+        // Test 'i' is typed correctly.
+        $("#compose-textarea").val('i');
+        event.keyCode = undefined;
+        event.which = 73;
+        event.metaKey = isCmd;
+        event.ctrlKey = isCtrl;
+        compose.handle_keydown(event);
+        assert.equal("i", $('#compose-textarea').val());
+    }
 
-    // Test 'i' is typed correctly.
-    $("#compose-textarea").val('i');
-    event.keyCode = undefined;
-    event.which = 73;
-    event.metaKey = false;
-    event.ctrlKey = false;
-    compose.handle_keydown(event);
-    assert.equal("i", $('#compose-textarea').val());
-    // Test italic: ctrl/cmd + i.
-    input_text = "Anything italic";
-    $("#compose-textarea").val(input_text);
-    $("#compose-textarea").val(input_text);
-    compose_value = $("#compose-textarea").val();
-    // Select "italic" word in compose box.
-    selected_word = "italic";
-    range_start = compose_value.search(selected_word);
-    range_length = selected_word.length;
-    event.keyCode = undefined;
-    event.which = 73;
-    event.metaKey = true;
-    event.ctrlKey = false;
-    compose.handle_keydown(event);
-    assert.equal("Anything *italic*", $('#compose-textarea').val());
-    // Test if no text is selected.
-    range_length = 0;
-    // Change cursor to first position.
-    range_start = 0;
-    compose.handle_keydown(event);
-    assert.equal("**Anything *italic*", $('#compose-textarea').val());
+    function all_markdown_test(isCtrl, isCmd) {
+        input_text = "Any text.";
+        $("#compose-textarea").val(input_text);
+        compose_value = $("#compose-textarea").val();
+        // Select "text" word in compose box.
+        selected_word = "text";
+        range_start = compose_value.search(selected_word);
+        range_length = selected_word.length;
 
-    // Test link insertion: ctrl/cmd + l.
-    input_text = "Any link.";
-    $("#compose-textarea").val(input_text);
-    compose_value = $("#compose-textarea").val();
-    // Select "link" word in compose box.
-    selected_word = "link";
-    range_start = compose_value.search(selected_word);
-    range_length = selected_word.length;
-    event.keyCode = 76;
-    event.which = undefined;
-    event.ctrlKey = true;
-    event.shiftKey = true;
-    compose.handle_keydown(event);
-    assert.equal("Any [link](url).", $('#compose-textarea').val());
-    // Test if exec command is not enabled in browser.
-    queryCommandEnabled = false;
-    compose.handle_keydown(event);
+        // Test bold:
+        // Mac env = cmd+b
+        // Windows/Linux = ctrl+b
+        event.keyCode = 66;
+        event.ctrlKey = isCtrl;
+        event.metaKey = isCmd;
+        compose.handle_keydown(event);
+        assert.equal("Any **text**.", $('#compose-textarea').val());
+        // Test if no text is selected.
+        range_start = 0;
+        // Change cursor to first position.
+        range_length = 0;
+        compose.handle_keydown(event);
+        assert.equal("****Any **text**.", $('#compose-textarea').val());
 
+        // Test italic:
+        // Mac = cmd+i
+        // Windows/Linux = ctrl+i
+        $("#compose-textarea").val(input_text);
+        range_start = compose_value.search(selected_word);
+        range_length = selected_word.length;
+        event.keyCode = 73;
+        event.shiftKey = false;
+        compose.handle_keydown(event);
+        assert.equal("Any *text*.", $('#compose-textarea').val());
+        // Test if no text is selected.
+        range_length = 0;
+        // Change cursor to first position.
+        range_start = 0;
+        compose.handle_keydown(event);
+        assert.equal("**Any *text*.", $('#compose-textarea').val());
+
+        // Test link insertion:
+        // Mac = cmd+shift+l
+        // Windows/Linux = ctrl+shift+l
+        $("#compose-textarea").val(input_text);
+        range_start = compose_value.search(selected_word);
+        range_length = selected_word.length;
+        event.keyCode = 76;
+        event.which = undefined;
+        event.shiftKey = true;
+        compose.handle_keydown(event);
+        assert.equal("Any [text](url).", $('#compose-textarea').val());
+        // Test if exec command is not enabled in browser.
+        queryCommandEnabled = false;
+        compose.handle_keydown(event);
+    }
+
+    // This function cross tests the cmd/ctrl + markdown shortcuts in
+    // Mac and Linux/Windows environments.  So in short, this tests
+    // that e.g. Cmd+B should be ignored on Linux/Windows and Ctrl+B
+    // should be ignored on Mac.
+    function os_specific_markdown_test(isCtrl, isCmd) {
+        input_text = "Any text.";
+        $("#compose-textarea").val(input_text);
+        compose_value = $("#compose-textarea").val();
+        selected_word = "text";
+        range_start = compose_value.search(selected_word);
+        range_length = selected_word.length;
+        event.metaKey = isCmd;
+        event.ctrlKey = isCtrl;
+
+        event.keyCode = 66;
+        compose.handle_keydown(event);
+        assert.equal(input_text, $('#compose-textarea').val());
+
+        event.keyCode = 73;
+        event.shiftKey = false;
+        compose.handle_keydown(event);
+        assert.equal(input_text, $('#compose-textarea').val());
+
+        event.keyCode = 76;
+        event.shiftKey = true;
+        compose.handle_keydown(event);
+        assert.equal(input_text, $('#compose-textarea').val());
+    }
+
+    // These keyboard shortcuts differ as to what key one should use
+    // on MacOS vs. other platforms: Cmd (Mac) vs. Ctrl (non-Mac).
+
+    // Default (Linux/Windows) userAgent tests:
+    test_i_typed(false, false);
+    // Check all the ctrl + markdown shortcuts work correctly
+    all_markdown_test(true, false);
+    // The Cmd + markdown shortcuts should do nothing on Linux/Windows
+    os_specific_markdown_test(false, true);
+
+    // Setting following userAgent to test in mac env
+    global.navigator.userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36";
+
+    // Mac userAgent tests:
+    test_i_typed(false, false);
+    // The ctrl + markdown shortcuts should do nothing on mac
+    os_specific_markdown_test(true, false);
+    // Check all the Cmd + markdown shortcuts work correctly
+    all_markdown_test(false, true);
+
+    // Reset userAgent
+    global.navigator.userAgent = "";
 }());
 
 (function test_send_message_success() {
