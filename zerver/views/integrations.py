@@ -31,6 +31,7 @@ def add_api_uri_context(context: Dict[str, Any], request: HttpRequest) -> None:
     api_url_scheme_relative = display_host + "/api"
     api_url = settings.EXTERNAL_URI_SCHEME + api_url_scheme_relative
 
+    context['external_uri_scheme'] = settings.EXTERNAL_URI_SCHEME
     context['api_url'] = api_url
     context['api_url_scheme_relative'] = api_url_scheme_relative
     context["html_settings_links"] = html_settings_links
