@@ -32,7 +32,7 @@
         {{#unless is_me}}
         <li>
             <a href="#" class="{{ private_message_class }}">
-                <i class="fa fa-envelope" aria-hidden="true"></i> {{#tr this}}Send private message{{/tr}} (R)
+                <i class="fa fa-envelope" aria-hidden="true"></i> {{#tr this}}Send private message{{/tr}} {{#if is_sender}}(R){{/if}}
             </a>
         </li>
         {{/unless}}
@@ -47,7 +47,7 @@
     {{#unless is_me}}
     <li>
         <a class="mention_user">
-            <i class="fa fa-at" aria-hidden="true"></i> {{#tr this}}Reply mentioning user{{/tr}} (@)
+            <i class="fa fa-at" aria-hidden="true"></i> {{#tr this}}Reply mentioning user{{/tr}} {{#if is_sender}}(@){{/if}}
         </a>
     </li>
     {{/unless}}

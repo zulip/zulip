@@ -120,6 +120,7 @@ function show_user_info_popover(element, user, message) {
             is_me: people.is_current_user(user.email),
             is_active: people.is_active_user_for_popover(user.user_id),
             is_bot: people.get_person_from_user_id(user.user_id).is_bot,
+            is_sender: message.sender_id === user.user_id,
         };
 
 
@@ -637,6 +638,7 @@ exports.register_click_handlers = function () {
             private_message_class: "compose_private_message",
             is_active: people.is_active_user_for_popover(user_id),
             is_bot: user.is_bot,
+            is_sender: false,
         };
 
         target.popover({
