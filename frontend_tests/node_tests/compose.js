@@ -340,8 +340,8 @@ people.add(bob);
     range_length = selected_word.length;
     event.keyCode = undefined;
     event.which = 73;
-    event.metaKey = true;
-    event.ctrlKey = false;
+    event.metaKey = false;
+    event.ctrlKey = true;
     compose.handle_keydown(event);
     assert.equal("Anything *italic*", $('#compose-textarea').val());
     // Test if no text is selected.
