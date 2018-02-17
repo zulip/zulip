@@ -136,8 +136,6 @@ body.dark-mode .compose_table .recipient_box:focus {
     border-color: hsla(0, 0%, 0%, 0.9);
 }
 
-body.dark-mode .message-header-contents,
-body.dark-mode .message_header_private_message .message-header-contents,
 body.dark-mode #tab_list li.active {
     background: hsla(0, 0%, 0%, 0.2);
 }
