@@ -57,7 +57,6 @@
 * [Share a message or conversation](/help/share-a-message-or-conversation)
 * [Advanced search](/help/search-for-messages)
 * [View a message's edit history](/help/view-a-messages-edit-history)
-* [View messages containing files or links](/help/view-messages-containing-files-or-links)
 * [Reading by stream or topic](/help/reading-messages-by-stream-or-topic)
 * [Private messages and group PMs](/help/view-your-pms-and-group-pms)
 
