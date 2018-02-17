@@ -48,7 +48,7 @@
     position: relative;
 }
 
-.message_reactions .message_reaction_count {
+.message_reactions .message_reaction_label {
     position: relative;
     top: 4px;
     font-size: 0.8em;
@@ -59,7 +59,7 @@
     line-height: 1em;
 }
 
-.message_reactions .reaction_button .message_reaction_count {
+.message_reactions .reaction_button .message_reaction_label {
     top: 0.5px;
 }
 
@@ -124,13 +124,13 @@
     color: hsl(200, 100%, 40%);
 }
 
-.message_reactions .reaction_button .message_reaction_count {
+.message_reactions .reaction_button .message_reaction_label {
     font-size: 1.1em;
     color: hsl(0, 0%, 33%);
     margin-left: 3px;
 }
 
-.message_reactions .reaction_button:hover .message_reaction_count {
+.message_reactions .reaction_button:hover .message_reaction_label {
     color: hsl(200, 100%, 40%);
 }
 

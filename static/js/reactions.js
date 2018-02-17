@@ -148,6 +148,11 @@ function full_name(user_id) {
     return people.get_person_from_user_id(user_id).full_name;
 }
 
+function get_label(user_list) {
+    var count = user_list.length;
+    return count;
+}
+
 function generate_title(emoji_name, user_ids) {
     var i = user_ids.indexOf(page_params.user_id);
     if (i !== -1) {
@@ -181,9 +186,9 @@ exports.get_add_reaction_button = function (message_id) {
     return add_button;
 };
 
-exports.set_reaction_count = function (reaction, count) {
-    var count_element = reaction.find('.message_reaction_count');
-    count_element.html(count);
+exports.set_label = function (reaction, user_list) {
+    var label_element = reaction.find('.message_reaction_label');
+    label_element.html(get_label(user_list));
 };
 
 exports.add_reaction = function (event) {
@@ -238,7 +243,7 @@ exports.view.update_existing_reaction = function (opts) {
     var local_id = exports.get_local_reaction_id(opts);
     var reaction = exports.find_reaction(message_id, local_id);
 
-    exports.set_reaction_count(reaction, user_list.length);
+    exports.set_label(reaction, user_list);
 
     var new_title = generate_title(emoji_name, user_list);
     reaction.prop('title', new_title);
@@ -277,6 +282,7 @@ exports.view.insert_new_reaction = function (opts) {
     context.title = new_title;
     context.local_id = exports.get_local_reaction_id(opts);
     context.emoji_alt_code = (page_params.emojiset === 'text');
+    context.label = get_label(user_list);
 
     if (opts.user_id === page_params.user_id) {
         context.class = "message_reaction reacted";
@@ -363,7 +369,7 @@ exports.view.remove_reaction = function (opts) {
     var new_title = generate_title(emoji_name, user_list);
     reaction.prop('title', new_title);
 
-    exports.set_reaction_count(reaction, user_list.length);
+    exports.set_label(reaction, user_list);
 
     if (user_id === page_params.user_id) {
         reaction.removeClass("reacted");
@@ -407,6 +413,7 @@ exports.get_message_reactions = function (message) {
         reaction.count = reaction.user_ids.length;
         reaction.title = generate_title(reaction.emoji_name, reaction.user_ids);
         reaction.emoji_alt_code = (page_params.emojiset === 'text');
+        reaction.label = get_label(reaction.user_ids);
 
         if (reaction.reaction_type !== 'unicode_emoji') {
             reaction.is_realm_emoji = true;

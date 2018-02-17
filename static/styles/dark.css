@@ -55,7 +55,7 @@ body.dark-mode .popover a {
 body.dark-mode .dark_background a,
 body.dark-mode a.dark_background:hover,
 body.dark-mode .dark_background,
-body.dark-mode .message_reactions .message_reaction_count,
+body.dark-mode .message_reactions .message_reaction_label,
 body.dark-mode .message_reactions .reaction_button i,
 body.dark-mode .message_reactions:hover .message_reaction + .reaction_button {
     color: inherit !important;
