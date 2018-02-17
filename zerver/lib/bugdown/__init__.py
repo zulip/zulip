@@ -1526,6 +1526,12 @@ class Bugdown(markdown.Extension):
             BacktickPattern(r'(?:(?<!\\)((?:\\{2})+)(?=`+)|(?<!\\)(`+)(.+?)(?<!`)\3(?!`))'),
             "_begin")
 
+        md.inlinePatterns.add(
+            'strong_em',
+            markdown.inlinepatterns.DoubleTagPattern(
+                r'(\*\*\*)(?!\s+)([^\*^\n]+)(?<!\s)\*\*\*', 'strong,em'),
+            '>backtick')
+
         # Custom bold syntax: **foo** but not __foo__
         md.inlinePatterns.add('strong',
                               markdown.inlinepatterns.SimpleTagPattern(r'(\*\*)([^\n]+?)\2', 'strong'),

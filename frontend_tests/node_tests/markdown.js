@@ -213,6 +213,7 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
         {input: 'hello', expected: '<p>hello</p>'},
         {input: 'hello there', expected: '<p>hello there</p>'},
         {input: 'hello **bold** for you', expected: '<p>hello <strong>bold</strong> for you</p>'},
+        {input: 'hello ***foo*** for you', expected: '<p>hello <strong><em>foo</em></strong> for you</p>'},
         {input: '__hello__', expected: '<p>__hello__</p>'},
         {input: '\n```\nfenced code\n```\n\nand then after\n',
          expected: '<div class="codehilite"><pre><span></span>fenced code\n</pre></div>\n\n\n<p>and then after</p>'},

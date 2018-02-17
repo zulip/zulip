@@ -228,6 +228,12 @@
       "text_content": "foo"
     },
     {
+      "name": "star_strong_em",
+      "input": "***foo***",
+      "expected_output": "<p><strong><em>foo</em></strong></p>",
+      "text_content": "foo"
+    },
+    {
       "name": "numbered_list",
       "input": "1. A\n 2. B",
       "expected_output": "<p>1. A<br>\n 2. B</p>",
