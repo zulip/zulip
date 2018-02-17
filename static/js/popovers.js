@@ -197,11 +197,7 @@ function show_user_group_info_popover(element, group, message) {
             trigger: "manual",
         });
         elt.popover("show");
-        $('.nav.nav-list.member-list').perfectScrollbar({
-            suppressScrollX: true,
-            useKeyboard: false,
-            wheelSpeed: 0.5,
-        });
+        ui.set_up_scrollbar($('.group-info-popover .member-list'));
         current_message_info_popover_elem = elt;
     }
 }
