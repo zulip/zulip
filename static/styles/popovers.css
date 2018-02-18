@@ -105,6 +105,7 @@ ul.remind_me_popover .remind_icon {
 }
 
 .group-info-popover .member-list {
+    position: relative;
     max-height: 300px;
     overflow-y: auto;
     list-style: none;
