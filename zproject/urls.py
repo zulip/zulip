@@ -106,6 +106,10 @@ v1_api_and_json_patterns = [
         {'PATCH': 'zerver.views.custom_profile_fields.update_realm_custom_profile_field',
          'DELETE': 'zerver.views.custom_profile_fields.delete_realm_custom_profile_field'}),
 
+    # realm/deactivate -> zerver.views.deactivate_realm
+    url(r'^realm/deactivate$', rest_dispatch,
+        {'POST': 'zerver.views.realm.deactivate_realm'}),
+
     # users -> zerver.views.users
     #
     # Since some of these endpoints do something different if used on
