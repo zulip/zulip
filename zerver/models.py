@@ -150,6 +150,7 @@ class Realm(models.Model):
     name_changes_disabled = models.BooleanField(default=False)  # type: bool
     email_changes_disabled = models.BooleanField(default=False)  # type: bool
     description = models.TextField(null=True)  # type: Optional[Text]
+    send_welcome_emails = models.BooleanField(default=True)  # type: bool
 
     allow_message_deleting = models.BooleanField(default=False)  # type: bool
     allow_message_editing = models.BooleanField(default=True)  # type: bool
@@ -196,6 +197,7 @@ class Realm(models.Model):
         name=Text,
         name_changes_disabled=bool,
         restricted_to_domain=bool,
+        send_welcome_emails=bool,
         waiting_period_threshold=int,
     )  # type: Dict[str, Union[type, Tuple[type, ...]]]
 

@@ -49,7 +49,8 @@ def update_realm(
         authentication_methods: Optional[Dict[Any, Any]]=REQ(validator=check_dict([]), default=None),
         notifications_stream_id: Optional[int]=REQ(validator=check_int, default=None),
         signup_notifications_stream_id: Optional[int]=REQ(validator=check_int, default=None),
-        message_retention_days: Optional[int]=REQ(converter=to_not_negative_int_or_none, default=None)
+        message_retention_days: Optional[int]=REQ(converter=to_not_negative_int_or_none, default=None),
+        send_welcome_emails: Optional[bool]=REQ(validator=check_bool, default=None)
 ) -> HttpResponse:
     realm = user_profile.realm
 

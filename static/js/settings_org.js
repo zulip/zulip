@@ -281,6 +281,11 @@ function _set_up() {
                 type: 'text',
                 msg: i18n.t("Default language changed!"),
             },
+            send_welcome_emails: {
+                type: 'bool',
+                checked_msg: i18n.t("Send emails to new users explaining how to use Zulip!"),
+                unchecked_msg: i18n.t("Don't send emails to new users explaining how to use Zulip!"),
+            },
             allow_message_deleting: {
                 type: 'bool',
                 checked_msg: i18n.t("Users can delete their messages!"),

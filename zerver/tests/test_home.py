@@ -141,6 +141,7 @@ class HomeTest(ZulipTestCase):
             "realm_password_auth_enabled",
             "realm_presence_disabled",
             "realm_restricted_to_domain",
+            "realm_send_welcome_emails",
             "realm_show_digest_email",
             "realm_signup_notifications_stream_id",
             "realm_uri",
