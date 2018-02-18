@@ -48,7 +48,7 @@ people.add(bob);
                     return 'social';
                 },
             };
-        case '#subject':
+        case '#topic':
             return {
                 val: function () {
                     return 'lunch';

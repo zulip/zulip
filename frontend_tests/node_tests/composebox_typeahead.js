@@ -342,7 +342,7 @@ global.user_groups.add(backend);
     };
 
     var subject_typeahead_called = false;
-    $('#subject').typeahead = function (options) {
+    $('#topic').typeahead = function (options) {
         // options.source()
         ct.add_topic('Sweden', 'furniture');
         ct.add_topic('Sweden', 'kronor');
@@ -672,7 +672,7 @@ global.user_groups.add(backend);
     var noop = function () {};
 
     $("#stream").select(noop);
-    $("#subject").select(noop);
+    $("#topic").select(noop);
     $("#private_message_recipient").select(noop);
 
     ct.initialize();
@@ -686,7 +686,7 @@ global.user_groups.add(backend);
         preventDefault: noop,
     };
 
-    $('#subject').data = function () {
+    $('#topic').data = function () {
         return { typeahead: { shown: true }};
     };
     $('form#send_message_form').keydown(event);
@@ -694,7 +694,7 @@ global.user_groups.add(backend);
     var stub_typeahead_hidden = function () {
         return { typeahead: { shown: false }};
     };
-    $('#subject').data = stub_typeahead_hidden;
+    $('#topic').data = stub_typeahead_hidden;
     $('#stream').data = stub_typeahead_hidden;
     $('#private_message_recipient').data = stub_typeahead_hidden;
     $('#compose-textarea').data = stub_typeahead_hidden;
@@ -768,7 +768,7 @@ global.user_groups.add(backend);
         preventDefault: noop,
     };
     // We execute .keydown() in order to make nextFocus !== false
-    $('#subject').data = function () {
+    $('#topic').data = function () {
         return { typeahead: { shown: true }};
     };
     $('form#send_message_form').keydown(event);
