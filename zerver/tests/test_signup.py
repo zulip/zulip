@@ -1037,7 +1037,7 @@ class InviteeEmailsParserTests(TestCase):
         expected_set = {self.email1, self.email2, self.email3}
         self.assertEqual(get_invitee_emails_set(emails_raw), expected_set)
 
-class MultiuseInviteTest(ZulipTestCase):
+class MultiuseInviteTestCase(ZulipTestCase):
     def setUp(self) -> None:
         self.realm = get_realm('zulip')
         self.realm.invite_required = True
