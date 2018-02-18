@@ -200,7 +200,7 @@ people.add(bob);
     compose_state.stream_name('Denmark');
     global.page_params.realm_mandatory_topics = true;
     compose_state.subject('');
-    $("#subject").select(noop);
+    $("#topic").select(noop);
     assert(!compose.validate());
     assert.equal($('#compose-error-msg').html(), i18n.t('Please specify a topic'));
 }());
@@ -894,7 +894,7 @@ function test_with_mock_socket(test_params) {
 }());
 
 (function test_update_fade() {
-    var selector = '#stream,#subject,#private_message_recipient';
+    var selector = '#stream,#topic,#private_message_recipient';
     var keyup_handler_func = $(selector).get_on_handler('keyup');
 
     var set_focused_recipient_checked = false;
@@ -1416,7 +1416,7 @@ function test_with_mock_socket(test_params) {
 
     var page = {
         '#stream': 'social',
-        '#subject': 'lunch',
+        '#topic': 'lunch',
         '#compose-textarea': 'burrito',
         '#private_message_recipient': 'alice@example.com,    bob@example.com',
     };

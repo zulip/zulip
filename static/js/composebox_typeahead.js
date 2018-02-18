@@ -89,7 +89,7 @@ function handle_keydown(e) {
     var code = e.keyCode || e.which;
 
     if (code === 13 || (code === 9 && !e.shiftKey)) { // Enter key or tab key
-        if (e.target.id === "stream" || e.target.id === "subject" || e.target.id === "private_message_recipient") {
+        if (e.target.id === "stream" || e.target.id === "topic" || e.target.id === "private_message_recipient") {
             // For enter, prevent the form from submitting
             // For tab, prevent the focus from changing again
             e.preventDefault();
@@ -101,8 +101,8 @@ function handle_keydown(e) {
         }
 
         if (e.target.id === "stream") {
-            nextFocus = "subject";
-        } else if (e.target.id === "subject") {
+            nextFocus = "topic";
+        } else if (e.target.id === "topic") {
             if (code === 13) {
                 e.preventDefault();
             }
@@ -118,9 +118,8 @@ function handle_keydown(e) {
         } else {
             nextFocus = false;
         }
-
         // If no typeaheads are shown...
-        if (!($("#subject").data().typeahead.shown ||
+        if (!($("#topic").data().typeahead.shown ||
               $("#stream").data().typeahead.shown ||
               $("#private_message_recipient").data().typeahead.shown ||
               $("#compose-textarea").data().typeahead.shown)) {
@@ -538,7 +537,7 @@ exports.initialize_compose_typeahead = function (selector) {
 
 exports.initialize = function () {
     select_on_focus("stream");
-    select_on_focus("subject");
+    select_on_focus("topic");
     select_on_focus("private_message_recipient");
 
     // These handlers are at the "form" level so that they are called after typeahead
@@ -587,7 +586,7 @@ exports.initialize = function () {
         },
     });
 
-    $("#subject").typeahead({
+    $("#topic").typeahead({
         source: function () {
             var stream_name = $("#stream").val();
             return exports.topics_seen_for(stream_name);

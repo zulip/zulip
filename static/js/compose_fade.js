@@ -22,7 +22,7 @@ exports.set_focused_recipient = function (msg_type) {
 
     if (focused_recipient.type === "stream") {
         var stream_name = $('#stream').val();
-        focused_recipient.subject = $('#subject').val();
+        focused_recipient.subject = $('#topic').val();
         focused_recipient.stream = stream_name;
         var sub = stream_data.get_sub(stream_name);
         if (sub) {

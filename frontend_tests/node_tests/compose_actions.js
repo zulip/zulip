@@ -108,7 +108,7 @@ function assert_hidden(sel) {
     assert_hidden('#private-message');
 
     assert.equal($('#stream').val(), 'stream1');
-    assert.equal($('#subject').val(), 'topic1');
+    assert.equal($('#topic').val(), 'topic1');
     assert.equal(compose_state.get_message_type(), 'stream');
     assert(compose_state.composing());
 
