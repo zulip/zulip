@@ -1,8 +1,7 @@
 # Default configuration for a Zulip app frontend
 class zulip::app_frontend {
   include zulip::app_frontend_base
-  # For a single-server setup, run analytics on that server
-  include zulip::analytics
+  include zulip::app_frontend_once
 
   file { "/etc/nginx/sites-available/zulip-enterprise":
     require => Package["nginx-full"],
