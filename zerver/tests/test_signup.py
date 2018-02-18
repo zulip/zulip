@@ -1134,7 +1134,11 @@ class MultiuseInviteTestCase(ZulipTestCase):
         self.check_user_able_to_register(email2, invite_link)
         self.check_user_subscribed_only_to_streams(name2, streams)
 
-class EmailUnsubscribeTests(ZulipTestCase):
+class EmailUnsubscribeTestCase(ZulipTestCase):
+    def get_unsub_link_response(self, user, email_type) -> HttpResponse:
+        unsubscribe_link = one_click_unsubscribe_link(user, email_type)
+        return self.client_get(urllib.parse.urlparse(unsubscribe_link).path)
+
     def test_error_unsubscribe(self) -> None:
 
         # An invalid unsubscribe token "test123" produces an error.
@@ -1142,9 +1146,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         self.assert_in_response('Unknown email unsubscribe request', result)
 
         # An unknown message type "fake" produces an error.
-        user_profile = self.example_user('hamlet')
-        unsubscribe_link = one_click_unsubscribe_link(user_profile, "fake")
-        result = self.client_get(urllib.parse.urlparse(unsubscribe_link).path)
+        result = self.get_unsub_link_response(self.example_user('hamlet'), 'fake')
         self.assert_in_response('Unknown email unsubscribe request', result)
 
     def test_missedmessage_unsubscribe(self) -> None:
@@ -1153,36 +1155,32 @@ class EmailUnsubscribeTests(ZulipTestCase):
         e-mails that you can click even when logged out to update your
         email notification settings.
         """
-        user_profile = self.example_user('hamlet')
-        user_profile.enable_offline_email_notifications = True
-        user_profile.save()
+        user = self.example_user('hamlet')
 
-        unsubscribe_link = one_click_unsubscribe_link(user_profile,
-                                                      "missed_messages")
-        result = self.client_get(urllib.parse.urlparse(unsubscribe_link).path)
+        # Simulate unsubscribing from the missed message e-mails.
+        result = self.get_unsub_link_response(user, 'missed_messages')
 
         self.assertEqual(result.status_code, 200)
 
-        user_profile.refresh_from_db()
-        self.assertFalse(user_profile.enable_offline_email_notifications)
+        user.refresh_from_db()
+        self.assertFalse(user.enable_offline_email_notifications)
 
     def test_welcome_unsubscribe(self) -> None:
         """
         We provide one-click unsubscribe links in welcome e-mails that you can
         click even when logged out to stop receiving them.
         """
-        user_profile = self.example_user('hamlet')
+        user = self.example_user('hamlet')
         # Simulate a new user signing up, which enqueues 2 welcome e-mails.
-        enqueue_welcome_emails(user_profile)
-        self.assertEqual(2, ScheduledEmail.objects.filter(user=user_profile).count())
+        enqueue_welcome_emails(user)
+        self.assertEqual(2, ScheduledEmail.objects.filter(user=user).count())
 
         # Simulate unsubscribing from the welcome e-mails.
-        unsubscribe_link = one_click_unsubscribe_link(user_profile, "welcome")
-        result = self.client_get(urllib.parse.urlparse(unsubscribe_link).path)
+        result = self.get_unsub_link_response(user, 'welcome')
 
         # The welcome email jobs are no longer scheduled.
         self.assertEqual(result.status_code, 200)
-        self.assertEqual(0, ScheduledEmail.objects.filter(user=user_profile).count())
+        self.assertEqual(0, ScheduledEmail.objects.filter(user=user).count())
 
     def test_digest_unsubscribe(self) -> None:
         """
@@ -1200,17 +1198,15 @@ class EmailUnsubscribeTests(ZulipTestCase):
                    'new_users': [], 'new_streams': {'plain': []}, 'unsubscribe_link': ''}
         send_future_email('zerver/emails/digest', user_profile.realm,
                           to_user_id=user_profile.id, context=context)
-
         self.assertEqual(1, ScheduledEmail.objects.filter(user=user_profile).count())
 
         # Simulate unsubscribing from digest e-mails.
-        unsubscribe_link = one_click_unsubscribe_link(user_profile, "digest")
-        result = self.client_get(urllib.parse.urlparse(unsubscribe_link).path)
+        result = self.get_unsub_link_response(user_profile, 'digest')
 
         # The setting is toggled off, and scheduled jobs have been removed.
         self.assertEqual(result.status_code, 200)
-        # Circumvent user_profile caching.
 
+        # Circumvent user_profile caching.
         user_profile.refresh_from_db()
         self.assertFalse(user_profile.enable_digest_emails)
         self.assertEqual(0, ScheduledEmail.objects.filter(user=user_profile).count())
