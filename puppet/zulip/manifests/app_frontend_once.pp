@@ -1,6 +1,7 @@
-# Default configuration for a Zulip app frontend
-# This should only be enabled on exactly 1 Zulip server in a cluster.
-class zulip::analytics {
+# Cron jobs and other tools that should run on only one Zulip server
+# in a cluster.
+
+class zulip::app_frontend_once {
   file { "/etc/cron.d/update-analytics-counts":
     ensure => file,
     owner  => "root",
