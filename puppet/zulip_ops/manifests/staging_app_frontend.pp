@@ -17,14 +17,4 @@ class zulip_ops::staging_app_frontend {
     target => '/etc/nginx/sites-available/zulip-staging',
     notify => Service["nginx"],
   }
-  file { "/etc/cron.d/clearsessions":
-    ensure => file,
-    owner  => "root",
-    group  => "root",
-    mode => 644,
-    source => "puppet:///modules/zulip_ops/cron.d/clearsessions",
-  }
-
-  # Staging has our Apple Push Notifications Service private key at
-  # /etc/ssl/django-private/apns-dev.pem
 }
