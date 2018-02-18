@@ -1011,7 +1011,7 @@ class InvitationsTestCase(InviteUserBase):
         error_result = self.client_delete('/json/invites/' + str(prereg_user.id))
         self.assert_json_error(error_result, "No such invitation")
 
-class InviteeEmailsParserTests(TestCase):
+class InviteeEmailsParserTestCase(TestCase):
     def setUp(self) -> None:
         self.email1 = "email1@zulip.com"
         self.email2 = "email2@zulip.com"
