@@ -156,6 +156,20 @@ set -o pipefail
 # something that we don't want to happen when running provision in a
 # development environment not using Vagrant.
 
+# Set the MOTD on the system to have Zulip instructions
+sudo rm -f /etc/update-motd.d/*
+sudo bash -c 'cat << EndOfMessage > /etc/motd
+Welcome to the Zulip development environment!  Popular commands:
+* tools/provision - Update the development environment
+* tools/run-dev.py - Run the development server
+* tools/lint - Run the linter (quick and catches many problmes)
+* tools/test-* - Run tests (use --help to learn about options)
+
+Read https://zulip.readthedocs.io/en/latest/testing.html to learn
+how to run individual test suites so that you can get a fast debug cycle.
+
+EndOfMessage'
+
 # If the host is running SELinux remount the /sys/fs/selinux directory as read only,
 # needed for apt-get to work.
 if [ -d "/sys/fs/selinux" ]; then
