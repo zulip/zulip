@@ -993,6 +993,9 @@ christie@xenial:~
 $ sudo patch --directory /usr/lib/ruby/vendor_ruby/vagrant < vagrant-plugin.patch
 patching file bundler.rb
 ```
+#### VT-X unavailability error
+
+Users who are unable to do "vagrant up" due to a VT-X unavailability error need to disable "Hyper-V" to get it to work.
 
 #### Permissions errors when running the test suite in LXC
 
