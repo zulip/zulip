@@ -31,29 +31,23 @@ def rm_tree(path: str) -> None:
 def idseq(model_class: Any) -> str:
     return '{}_id_seq'.format(model_class._meta.db_table)
 
-def get_next_id(model_class: Any) -> int:
-    conn = connection.cursor()
-    sequence = idseq(model_class)
-    conn.execute("select nextval('%s')" % (sequence))
-    row = conn.fetchone()
-    conn.close()
-    return row[0]
-
-def reset_sequence(model_class: Any, value: int) -> None:
-    conn = connection.cursor()
-    sequence = idseq(model_class)
-    conn.execute("ALTER SEQUENCE {} RESTART WITH {};".format(sequence, value))
-
-def allocate_ids(model_class: Any, sequence_increase_factor: int) -> List[int]:
+def allocate_ids(model_class: Any, count: int) -> List[int]:
     """
     Increases the sequence number for a given table by the amount of objects being
     imported into that table. Hence, this gives a reserved range of ids to import the converted
     slack objects into the tables.
     """
-    start_id_sequence = get_next_id(model_class)
-    restart_sequence_id = start_id_sequence + sequence_increase_factor
-    reset_sequence(model_class, restart_sequence_id)
-    return list(range(start_id_sequence ,restart_sequence_id))
+    conn = connection.cursor()
+    sequence = idseq(model_class)
+    conn.execute("select nextval('%s') from generate_series(1,%s)" %
+                 (sequence, str(count)))
+    query = conn.fetchall()  # A Tuple is returned here
+    conn.close()
+    id_list = []
+    # convert Tuple to List
+    for object_id in query:
+        id_list.append(object_id[0])
+    return id_list
 
 def slack_workspace_to_realm(REALM_ID: int, user_list: List[ZerverFieldsT],
                              realm_subdomain: str, fixtures_path: str,

@@ -200,7 +200,7 @@ class SlackImporter(ZulipTestCase):
         channel_members = ["U061A1R2R", "U061A3E0G", "U061A5N1G", "U064KUGRJ"]
         added_users = {"U061A1R2R": 1, "U061A3E0G": 8, "U061A5N1G": 7, "U064KUGRJ": 5}
         subscription_id_count = 0
-        subscription_id_list = [7, 8, 9, 10]
+        subscription_id_list = [7, 8, 9, 23]
         recipient_id = 12
         zerver_subscription = []  # type: List[Dict[str, Any]]
         zerver_subscription, final_subscription_id = build_subscription(channel_members,
@@ -214,7 +214,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_subscription[0]['id'], 7)
         self.assertEqual(zerver_subscription[0]['user_profile'], added_users[channel_members[0]])
         self.assertEqual(zerver_subscription[2]['user_profile'], added_users[channel_members[2]])
-        self.assertEqual(zerver_subscription[3]['id'], 10)
+        self.assertEqual(zerver_subscription[3]['id'], 23)
         self.assertEqual(zerver_subscription[1]['recipient'],
                          zerver_subscription[3]['recipient'])
         self.assertEqual(zerver_subscription[1]['pin_to_top'], False)
@@ -357,7 +357,7 @@ class SlackImporter(ZulipTestCase):
     def test_build_zerver_message(self) -> None:
         zerver_usermessage = []  # type: List[Dict[str, Any]]
         usermessage_id_count = 0
-        usermessage_id_list = [6, 7, 8, 9]
+        usermessage_id_list = [3, 7, 8, 11]
         zerver_subscription = [{'recipient': 2, 'user_profile': 7},
                                {'recipient': 4, 'user_profile': 12},
                                {'recipient': 2, 'user_profile': 16},
@@ -377,11 +377,12 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(test_usermessage_id, 4)
 
         self.assertEqual(test_zerver_usermessage[0]['flags_mask'], 1)
+        self.assertEqual(test_zerver_usermessage[0]['id'], 3)
         self.assertEqual(test_zerver_usermessage[0]['message'], message_id)
         self.assertEqual(test_zerver_usermessage[1]['user_profile'],
                          zerver_subscription[2]['user_profile'])
         self.assertEqual(test_zerver_usermessage[1]['flags_mask'], 9)
-        self.assertEqual(test_zerver_usermessage[3]['id'], 9)
+        self.assertEqual(test_zerver_usermessage[3]['id'], 11)
         self.assertEqual(test_zerver_usermessage[3]['message'], message_id)
 
     @mock.patch("os.listdir", return_value = ['2015-08-08.json', '2016-01-15.json'])
