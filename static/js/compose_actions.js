@@ -219,7 +219,6 @@ exports.start = function (msg_type, opts) {
 
     // Show either stream/topic fields or "You and" field.
     show_box(msg_type, opts);
-
     exports.complete_starting_tasks(msg_type, opts);
 };
 

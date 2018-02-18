@@ -593,7 +593,7 @@ function validate_stream_message() {
     if (page_params.realm_mandatory_topics) {
         var topic = compose_state.subject();
         if (topic === "") {
-            compose_error(i18n.t("Please specify a topic"), $("#subject"));
+            compose_error(i18n.t("Please specify a topic"), $("#topic"));
             return false;
         }
     }
@@ -730,8 +730,8 @@ exports.handle_keydown = function (event) {
 };
 
 exports.initialize = function () {
-    $('#stream,#subject,#private_message_recipient').on('keyup', update_fade);
-    $('#stream,#subject,#private_message_recipient').on('change', update_fade);
+    $('#stream,#topic,#private_message_recipient').on('keyup', update_fade);
+    $('#stream,#topic,#private_message_recipient').on('change', update_fade);
     $('#compose-textarea').on('keydown', exports.handle_keydown);
 
     $("#compose form").on("submit", function (e) {
