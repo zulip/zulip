@@ -2444,36 +2444,29 @@ class MobileAuthOTPTest(ZulipTestCase):
         self.assertEqual(decryped, hamlet.api_key)
 
 class LoginOrAskForRegistrationTestCase(ZulipTestCase):
-    def remote_user(self, invalid_subdomain, email='new@zulip.com') -> None:
+    def remote_user(self, invalid_subdomain, email='new@zulip.com') -> HttpResponse:
         request = HostRequestMock()
         user_profile = None  # type: Optional[UserProfile]
-        full_name = 'New User'
-        invalid_subdomain = invalid_subdomain
-        result = login_or_register_remote_user(
+        return login_or_register_remote_user(
             request,
             email,
             user_profile,
-            full_name=full_name,
+            full_name='New User',
             invalid_subdomain=invalid_subdomain)
-        return result
 
     def test_confirm(self) -> None:
-        invalid_subdomain = False
-        result = self.remote_user(invalid_subdomain)
+        result = self.remote_user(False)
         self.assert_in_response('No account found for',
                                 result)
         self.assert_in_response('new@zulip.com. Would you like to register instead?',
                                 result)
 
     def test_invalid_subdomain(self) -> None:
-        invalid_subdomain = True
-        result = self.remote_user(invalid_subdomain)
+        result = self.remote_user(True)
         self.assert_in_success_response(['Would you like to register instead?'], result)
 
     def test_invalid_email(self) -> None:
-        email = None  # type: Optional[Text]
-        invalid_subdomain = False
-        result = self.remote_user(invalid_subdomain, email)
+        result = self.remote_user(False, None)
         self.assert_in_response('Please click the following button if '
                                 'you wish to register', result)
 
@@ -2482,15 +2475,14 @@ class LoginOrAskForRegistrationTestCase(ZulipTestCase):
         setattr(request, 'session', self.client.session)
         user_profile = self.example_user('hamlet')
         user_profile.backend = 'zproject.backends.GitHubAuthBackend'
-        full_name = 'Hamlet'
-        invalid_subdomain = False
 
         response = login_or_register_remote_user(
             request,
             user_profile.email,
             user_profile,
-            full_name=full_name,
-            invalid_subdomain=invalid_subdomain)
+            full_name='Hamlet',
+            invalid_subdomain=False)
+
         user_id = get_session_dict_user(getattr(request, 'session'))
         self.assertEqual(user_id, user_profile.id)
         self.assertEqual(response.status_code, 302)
