@@ -26,15 +26,6 @@ class zulip::app_frontend {
     notify => Service["nginx"],
   }
 
-  # Trigger daily digest e-mails
-  file { "/etc/cron.d/send-digest-emails":
-    ensure => file,
-    owner  => "root",
-    group  => "root",
-    mode => 644,
-    source => "puppet:///modules/zulip/cron.d/send-digest-emails",
-  }
-
   # Trigger 2x a day certbot renew
   file { "/etc/cron.d/certbot-renew":
     ensure => file,
@@ -51,21 +42,5 @@ class zulip::app_frontend {
     group  => "root",
     mode => 644,
     source => "puppet:///modules/zulip/cron.d/restart-zulip",
-  }
-
-  file { "/etc/cron.d/soft-deactivate-users":
-    ensure => file,
-    owner  => "root",
-    group  => "root",
-    mode => 644,
-    source => "puppet:///modules/zulip/cron.d/soft-deactivate-users",
-  }
-
-  file { "/etc/cron.d/calculate-first-visible-message-id":
-    ensure => file,
-    owner  => "root",
-    group  => "root",
-    mode => 644,
-    source => "puppet:///modules/zulip/cron.d/calculate-first-visible-message-id",
   }
 }
