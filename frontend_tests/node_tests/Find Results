@@ -1,0 +1,187 @@
+Searching 244 files for "compose_state.topic"
+
+/Users/Eyrun/zulip/static/js/compose.js:
+  127  function create_message_object() {
+  128      // Topics are optional, and we provide a placeholder if one isn't given.
+  129:     var topic = compose_state.topic();
+  130      if (topic === "") {
+  131          topic = compose.empty_topic_placeholder();
+  ...
+  592
+  593      if (page_params.realm_mandatory_topics) {
+  594:         var topic = compose_state.topic();
+  595          if (topic === "") {
+  596              compose_error(i18n.t("Please specify a topic"), $("#subject"));
+
+/Users/Eyrun/zulip/static/js/compose_actions.js:
+  177              ((msg_type === "stream" &&
+  178                opts.stream === compose_state.stream_name() &&
+  179:               opts.subject === compose_state.topic()) ||
+  180               (msg_type === "private" &&
+  181                opts.private_message_recipient === compose_state.recipient()));
+  ...
+  205
+  206      compose_state.stream_name(opts.stream);
+  207:     compose_state.topic(opts.subject);
+  208
+  209      // Set the recipients with a space after each comma, so it looks nice.
+  ...
+  232          compose_fade.clear_compose();
+  233          if (page_params.narrow_topic !== undefined) {
+  234:             compose_state.topic(page_params.narrow_topic);
+  235          } else {
+  236:             compose_state.topic("");
+  237          }
+  238          return;
+  ...
+  346      }
+  347
+  348:     if (compose_state.topic()) {
+  349          // If the user has filled in a subject, we have
+  350          // a risk of a mix, and we can't reliably guess
+  ...
+  362      // See #3300 for context--a couple users specifically asked
+  363      // for this convenience.
+  364:     compose_state.topic(narrow_state.topic());
+  365      $('#compose-textarea').focus().select();
+  366  };
+
+/Users/Eyrun/zulip/static/js/composebox_typeahead.js:
+  506          var recipients = typeahead_helper.sort_recipients(users, this.token,
+  507                                                        compose_state.stream_name(),
+  508:                                                       compose_state.topic(), groups);
+  509          return recipients;
+  510      } else if (this.completing === 'stream') {
+
+/Users/Eyrun/zulip/static/js/drafts.js:
+   82      } else {
+   83          message.stream = compose_state.stream_name();
+   84:         message.subject = compose_state.topic();
+   85      }
+   86      return message;
+
+/Users/Eyrun/zulip/static/js/message_events.js:
+  157              if (going_forward_change && stream_name && compose_stream_name) {
+  158                  if (stream_name.toLowerCase() === compose_stream_name.toLowerCase()) {
+  159:                     if (event.orig_subject === compose_state.topic()) {
+  160:                         compose_state.topic(event.subject);
+  161                      }
+  162                  }
+
+/Users/Eyrun/zulip/static/js/reload.js:
+   40              url += "+msg_type=stream";
+   41              url += "+stream=" + encodeURIComponent(compose_state.stream_name());
+   42:             url += "+subject=" + encodeURIComponent(compose_state.topic());
+   43          } else if (msg_type === 'private') {
+   44              url += "+msg_type=private";
+
+/Users/Eyrun/zulip/frontend_tests/node_tests/compose.js:
+  200      compose_state.stream_name('Denmark');
+  201      global.page_params.realm_mandatory_topics = true;
+  202:     compose_state.topic('');
+  203      $("#subject").select(noop);
+  204      assert(!compose.validate());
+  ...
+  423      (function test_message_send_success_codepath() {
+  424          stub_state = initialize_state_stub_dict();
+  425:         compose_state.topic('');
+  426          compose_state.set_message_type('private');
+  427          page_params.user_id = 101;
+
+/Users/Eyrun/zulip/frontend_tests/node_tests/drafts.js:
+  114              return draft.stream;
+  115          };
+  116:         global.compose_state.topic = function () {
+  117              return draft.subject;
+  118          };
+
+16 matches across 8 files
+
+
+
+
+Searching 244 files for "compose_state.subject"
+
+/Users/Eyrun/zulip/static/js/compose.js:
+  127  function create_message_object() {
+  128      // Subjects are optional, and we provide a placeholder if one isn't given.
+  129:     var subject = compose_state.subject();
+  130      if (subject === "") {
+  131          subject = compose.empty_topic_placeholder();
+  ...
+  592
+  593      if (page_params.realm_mandatory_topics) {
+  594:         var topic = compose_state.subject();
+  595          if (topic === "") {
+  596              compose_error(i18n.t("Please specify a topic"), $("#subject"));
+
+/Users/Eyrun/zulip/static/js/compose_actions.js:
+  177              ((msg_type === "stream" &&
+  178                opts.stream === compose_state.stream_name() &&
+  179:               opts.subject === compose_state.subject()) ||
+  180               (msg_type === "private" &&
+  181                opts.private_message_recipient === compose_state.recipient()));
+  ...
+  205
+  206      compose_state.stream_name(opts.stream);
+  207:     compose_state.subject(opts.subject);
+  208
+  209      // Set the recipients with a space after each comma, so it looks nice.
+  ...
+  232          compose_fade.clear_compose();
+  233          if (page_params.narrow_topic !== undefined) {
+  234:             compose_state.subject(page_params.narrow_topic);
+  235          } else {
+  236:             compose_state.subject("");
+  237          }
+  238          return;
+  ...
+  346      }
+  347
+  348:     if (compose_state.subject()) {
+  349          // If the user has filled in a subject, we have
+  350          // a risk of a mix, and we can't reliably guess
+  ...
+  362      // See #3300 for context--a couple users specifically asked
+  363      // for this convenience.
+  364:     compose_state.subject(narrow_state.topic());
+  365      $('#compose-textarea').focus().select();
+  366  };
+
+/Users/Eyrun/zulip/static/js/composebox_typeahead.js:
+  506          var recipients = typeahead_helper.sort_recipients(users, this.token,
+  507                                                        compose_state.stream_name(),
+  508:                                                       compose_state.subject(), groups);
+  509          return recipients;
+  510      } else if (this.completing === 'stream') {
+
+/Users/Eyrun/zulip/static/js/drafts.js:
+   82      } else {
+   83          message.stream = compose_state.stream_name();
+   84:         message.subject = compose_state.subject();
+   85      }
+   86      return message;
+
+/Users/Eyrun/zulip/static/js/message_events.js:
+  157              if (going_forward_change && stream_name && compose_stream_name) {
+  158                  if (stream_name.toLowerCase() === compose_stream_name.toLowerCase()) {
+  159:                     if (event.orig_subject === compose_state.subject()) {
+  160:                         compose_state.subject(event.subject);
+  161                      }
+  162                  }
+
+/Users/Eyrun/zulip/static/js/reload.js:
+   40              url += "+msg_type=stream";
+   41              url += "+stream=" + encodeURIComponent(compose_state.stream_name());
+   42:             url += "+subject=" + encodeURIComponent(compose_state.subject());
+   43          } else if (msg_type === 'private') {
+   44              url += "+msg_type=private";
+
+/Users/Eyrun/zulip/frontend_tests/node_tests/drafts.js:
+  114              return draft.stream;
+  115          };
+  116:         global.compose_state.subject = function () {
+  117              return draft.subject;
+  118          };
+
+14 matches across 7 files

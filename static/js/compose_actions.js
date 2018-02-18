@@ -176,7 +176,7 @@ function same_recipient_as_before(msg_type, opts) {
     return (compose_state.get_message_type() === msg_type) &&
             ((msg_type === "stream" &&
               opts.stream === compose_state.stream_name() &&
-              opts.subject === compose_state.subject()) ||
+              opts.subject === compose_state.topic()) ||
              (msg_type === "private" &&
               opts.private_message_recipient === compose_state.recipient()));
 }
@@ -204,7 +204,7 @@ exports.start = function (msg_type, opts) {
     }
 
     compose_state.stream_name(opts.stream);
-    compose_state.subject(opts.subject);
+    compose_state.topic(opts.subject);
 
     // Set the recipients with a space after each comma, so it looks nice.
     compose_state.recipient(opts.private_message_recipient.replace(/,\s*/g, ", "));
@@ -230,9 +230,9 @@ exports.cancel = function () {
         // at least clear the subject and unfade.
         compose_fade.clear_compose();
         if (page_params.narrow_topic !== undefined) {
-            compose_state.subject(page_params.narrow_topic);
+            compose_state.topic(page_params.narrow_topic);
         } else {
-            compose_state.subject("");
+            compose_state.topic("");
         }
         return;
     }
@@ -344,7 +344,7 @@ exports.on_topic_narrow = function () {
         return;
     }
 
-    if (compose_state.subject()) {
+    if (compose_state.topic()) {
         // If the user has filled in a subject, we have
         // a risk of a mix, and we can't reliably guess
         // whether the old topic is appropriate (otherwise,
@@ -360,7 +360,7 @@ exports.on_topic_narrow = function () {
     // stream filled in, and we just need to update the topic.
     // See #3300 for context--a couple users specifically asked
     // for this convenience.
-    compose_state.subject(narrow_state.topic());
+    compose_state.topic(narrow_state.topic());
     $('#compose-textarea').focus().select();
 };
 
