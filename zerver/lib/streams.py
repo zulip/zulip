@@ -63,6 +63,24 @@ def access_stream_common(user_profile: UserProfile, stream: Stream,
     # an error.
     raise JsonableError(error)
 
+def access_stream_for_admin_actions(user_profile: UserProfile, stream: Stream,
+                                    sub: Subscription) -> None:
+    is_public_stream = not stream.invite_only
+    is_user_subscribed = (sub is not None)
+
+    if not is_user_subscribed:
+        # If user is not subscribed then only realm admin can modify, public streams only.
+        if not user_profile.is_realm_admin:
+            raise JsonableError(_("Invalid stream id"))
+        # Even as an realm admin, you can't access invite-only streams you're not subscribed to.
+        if not is_public_stream:
+            raise JsonableError(_("Cannot administer unsubscribed invite-only streams this way."))
+    else:
+        # If a realm admin is subscribed to a stream, they get admin powers for that stream.
+        # Or you should be stream admin to access stream for admin actions.
+        if not (user_profile.is_realm_admin or sub.is_stream_admin):
+            raise JsonableError(_("This action requires administrative rights."))
+
 def access_stream_by_id(user_profile: UserProfile,
                         stream_id: int,
                         require_active: bool=True) -> Tuple[Stream, Recipient, Subscription]:
