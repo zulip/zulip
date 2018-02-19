@@ -384,7 +384,6 @@ class LoginTest(ZulipTestCase):
         result = self.client_post('/accounts/home/', {'email': email},
                                   subdomain="zulip")
         self.assertEqual(result.status_code, 302)
-        print(result.url)
         self.assertNotIn('deactivated', result.url)
 
         realm = get_realm("zulip")
@@ -882,7 +881,6 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         conf.save()
 
         target_url = '/' + url.split('/', 3)[3]
-        print(target_url)
         result = self.client_get(target_url)
         self.assert_in_success_response(["Whoops. The confirmation link has expired "
                                          "or been deactivated."], result)
