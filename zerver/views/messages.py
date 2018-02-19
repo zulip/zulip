@@ -1006,7 +1006,7 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
     if (delivery_type == 'send_later' or delivery_type == 'remind') and defer_until is None:
         return json_error(_("Missing deliver_at in a request for delayed message delivery"))
 
-    if delivery_type == 'send_later' or delivery_type == 'remind' and defer_until:
+    if (delivery_type == 'send_later' or delivery_type == 'remind') and defer_until is not None:
         return handle_deferred_message(sender, client, message_type_name,
                                        message_to, topic_name, message_content,
                                        delivery_type, defer_until, tz_guess,
