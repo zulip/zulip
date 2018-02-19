@@ -17,7 +17,7 @@ def ticket_started_body(payload: Dict[str, Any]) -> Text:
     body += u"\n```quote\n**[Ticket #{number}: {title}]({app_url})**\n{summary}\n```"
     return body.format(**payload)
 
-def ticket_assigned_body(payload: Dict[str, Any]) -> Text:
+def ticket_assigned_body(payload: Dict[str, Any]) -> Optional[Text]:
     # Take the state, assignee, and assigned group from the payload.
     state = payload['state']
     assignee = payload['assignee']
@@ -80,7 +80,7 @@ def note_added_body(payload: Dict[str, Any]) -> Text:
 def api_groove_webhook(request: HttpRequest, user_profile: UserProfile,
                        payload: Dict[str, Any]=REQ(argument_type='body'),
                        stream: Text=REQ(default='groove'),
-                       topic: Optional[Text]=REQ(default='notifications')) -> HttpResponse:
+                       topic: Text=REQ(default='notifications')) -> HttpResponse:
     try:
         # The event identifier is stored in the X_GROOVE_EVENT header.
         event = request.META['X_GROOVE_EVENT']

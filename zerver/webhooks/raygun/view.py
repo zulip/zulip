@@ -16,7 +16,7 @@ import time
 def api_raygun_webhook(request: HttpRequest, user_profile: UserProfile,
                        payload: Dict[str, Any] = REQ(argument_type='body'),
                        stream: Text = REQ(default='raygun'),
-                       topic: Optional[Text] = REQ(default='test')) -> HttpResponse:
+                       topic: Text = REQ(default='test')) -> HttpResponse:
     # The payload contains 'event' key. This 'event' key has a value of either
     # 'error_notification' or 'error_activity'. 'error_notification' happens
     # when an error is caught in an application, where as 'error_activity'
