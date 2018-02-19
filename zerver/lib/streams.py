@@ -385,7 +385,8 @@ def filter_stream_authorization(user_profile: UserProfile,
 
 def list_to_streams(streams_raw: Iterable[Mapping[str, Any]],
                     user_profile: UserProfile,
-                    autocreate: bool=False) -> Tuple[List[Stream], List[Stream]]:
+                    autocreate: bool=False,
+                    requires_admin_access: bool=False) -> Tuple[List[Stream], List[Stream]]:
     """Converts list of dicts to a list of Streams, validating input in the process
 
     For each stream name, we validate it to ensure it meets our
@@ -412,6 +413,19 @@ def list_to_streams(streams_raw: Iterable[Mapping[str, Any]],
     existing_streams: List[Stream] = []
     missing_stream_dicts: List[Mapping[str, Any]] = []
     existing_stream_map = bulk_get_streams(user_profile.realm, stream_set)
+
+    if requires_admin_access:
+        existing_stream_ids = [stream.id for stream in existing_stream_map.values()]
+        subs = Subscription.objects.filter(user_profile=user_profile,
+                                           recipient__type=Recipient.STREAM,
+                                           recipient__type_id__in=existing_stream_ids,
+                                           active=True)
+        sub_dict_by_stream_ids = {sub.recipient.type_id: sub for sub in subs}
+        for stream in existing_stream_map.values():
+            sub = None
+            if stream.id in sub_dict_by_stream_ids:
+                sub = sub_dict_by_stream_ids[stream.id]
+            access_stream_for_delete_or_update(user_profile, stream, sub)
 
     for stream_dict in streams_raw:
         stream_name = stream_dict["name"]

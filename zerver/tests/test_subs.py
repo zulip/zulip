@@ -1091,12 +1091,13 @@ class StreamAdminTest(ZulipTestCase):
         self.delete_stream(priv_stream)
 
     def attempt_unsubscribe_of_principal(self, query_count: int, target_users: List[UserProfile],
-                                         is_admin: bool=False, is_subbed: bool=True, invite_only: bool=False,
+                                         is_realm_admin: bool=False, is_stream_admin: bool=False,
+                                         is_subbed: bool=True, invite_only: bool=False,
                                          target_users_subbed: bool=True, using_legacy_emails: bool=False,
                                          other_sub_users: Optional[List[UserProfile]]=None) -> HttpResponse:
 
         # Set up the main user, who is in most cases an admin.
-        if is_admin:
+        if is_realm_admin:
             user_profile = self.example_user('iago')
         else:
             user_profile = self.example_user('hamlet')
@@ -1105,7 +1106,7 @@ class StreamAdminTest(ZulipTestCase):
 
         # Set up the stream.
         stream_name = "hümbüǵ"
-        self.make_stream(stream_name, invite_only=invite_only)
+        stream = self.make_stream(stream_name, invite_only=invite_only)
 
         # Set up the principal to be unsubscribed.
         principals = []
@@ -1118,9 +1119,15 @@ class StreamAdminTest(ZulipTestCase):
         # Subscribe the admin and/or principal as specified in the flags.
         if is_subbed:
             self.subscribe(user_profile, stream_name)
+
+        if is_stream_admin:
+            sub = get_subscription(stream_name, user_profile)
+            do_change_subscription_property(user_profile, sub, stream, 'is_stream_admin', True)
+
         if target_users_subbed:
             for user in target_users:
                 self.subscribe(user, stream_name)
+
         if other_sub_users:
             for user in other_sub_users:
                 self.subscribe(user, stream_name)
@@ -1145,78 +1152,101 @@ class StreamAdminTest(ZulipTestCase):
         If you're not an admin, you can't remove other people from streams.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=3, target_users=[self.example_user('cordelia')], is_admin=False, is_subbed=True,
-            invite_only=False, target_users_subbed=True)
+            query_count=6, target_users=[self.example_user('cordelia')], is_realm_admin=False,
+            is_stream_admin=False, is_subbed=True, invite_only=False, target_users_subbed=True)
         self.assert_json_error(
-            result, "This action requires administrative rights")
+            result, "This action requires administrative rights.")
 
-    def test_admin_remove_others_from_public_stream(self) -> None:
+    def test_stream_admin_remove_others_from_public_stream(self) -> None:
         """
-        If you're an admin, you can remove people from public streams, even
-        those you aren't on.
+        If you're a stream admin, you can remove people from public streams.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=21, target_users=[self.example_user('cordelia')], is_admin=True, is_subbed=True,
-            invite_only=False, target_users_subbed=True)
+            query_count=23, target_users=[self.example_user('cordelia')], is_stream_admin=True,
+            is_subbed=True, invite_only=False, target_users_subbed=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
         self.assertEqual(len(json["not_removed"]), 0)
 
-    def test_admin_remove_multiple_users_from_stream(self) -> None:
+    def test_stream_admin_remove_others_from_private_stream(self) -> None:
+        """
+        If you're a stream admin, you can remove people from private streams.
+        """
+        result = self.attempt_unsubscribe_of_principal(
+            query_count=23, target_users=[self.example_user('cordelia')], is_stream_admin=True,
+            is_subbed=True, invite_only=True, target_users_subbed=True)
+        json = self.assert_json_success(result)
+        self.assertEqual(len(json["removed"]), 1)
+        self.assertEqual(len(json["not_removed"]), 0)
+
+    def test_realm_admin_remove_others_from_unsubbed_public_stream(self) -> None:
+        """
+        If you're an org admin, you can remove people from public streams, even
+        those you aren't on.
+        """
+        result = self.attempt_unsubscribe_of_principal(
+            query_count=23, target_users=[self.example_user('cordelia')], is_realm_admin=True,
+            is_subbed=True, invite_only=False, target_users_subbed=True)
+        json = self.assert_json_success(result)
+        self.assertEqual(len(json["removed"]), 1)
+        self.assertEqual(len(json["not_removed"]), 0)
+
+    def test_realm_admin_remove_multiple_users_from_stream(self) -> None:
         """
         If you're an admin, you can remove multiple users from a stream,
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=30, target_users=[self.example_user('cordelia'), self.example_user('prospero')],
-            is_admin=True, is_subbed=True, invite_only=False, target_users_subbed=True)
+            query_count=32, target_users=[self.example_user('cordelia'), self.example_user('prospero')],
+            is_realm_admin=True, is_subbed=True, invite_only=False, target_users_subbed=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 2)
         self.assertEqual(len(json["not_removed"]), 0)
 
-    def test_admin_remove_others_from_subbed_private_stream(self) -> None:
+    def test_realm_admin_remove_others_from_subbed_private_stream(self) -> None:
         """
         If you're an admin, you can remove other people from private streams you
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=21, target_users=[self.example_user('cordelia')], is_admin=True, is_subbed=True,
-            invite_only=True, target_users_subbed=True)
+            query_count=23, target_users=[self.example_user('cordelia')], is_realm_admin=True,
+            is_subbed=True, invite_only=True, target_users_subbed=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
         self.assertEqual(len(json["not_removed"]), 0)
 
-    def test_admin_remove_others_from_unsubbed_private_stream(self) -> None:
+    def test_realm_admin_remove_others_from_unsubbed_private_stream(self) -> None:
         """
         If you're an admin, you can remove people from private
         streams you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=21, target_users=[self.example_user('cordelia')], is_admin=True, is_subbed=False,
-            invite_only=True, target_users_subbed=True, other_sub_users=[self.example_user("othello")])
+            query_count=22, target_users=[self.example_user('cordelia')], is_realm_admin=True,
+            is_subbed=False, invite_only=True, target_users_subbed=True,
+            other_sub_users=[self.example_user("othello")])
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
         self.assertEqual(len(json["not_removed"]), 0)
 
     def test_cant_remove_others_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=3, is_admin=False, is_subbed=True, invite_only=False,
-            target_users=[self.example_user('cordelia')], target_users_subbed=True,
-            using_legacy_emails=True)
+            query_count=6, target_users=[self.example_user('cordelia')], is_realm_admin=False,
+            is_subbed=True, invite_only=False, target_users_subbed=True, using_legacy_emails=True)
         self.assert_json_error(
-            result, "This action requires administrative rights")
+            result, "This action requires administrative rights.")
 
     def test_admin_remove_others_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=21, target_users=[self.example_user('cordelia')], is_admin=True, is_subbed=True,
-            invite_only=False, target_users_subbed=True, using_legacy_emails=True)
+            query_count=23, target_users=[self.example_user('cordelia')], is_realm_admin=True,
+            is_subbed=True, invite_only=False, target_users_subbed=True, using_legacy_emails=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
         self.assertEqual(len(json["not_removed"]), 0)
 
     def test_admin_remove_multiple_users_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=30, target_users=[self.example_user('cordelia'), self.example_user('prospero')],
-            is_admin=True, is_subbed=True, invite_only=False, target_users_subbed=True, using_legacy_emails=True)
+            query_count=32, target_users=[self.example_user('cordelia'), self.example_user('prospero')],
+            is_realm_admin=True, is_subbed=True, invite_only=False, target_users_subbed=True,
+            using_legacy_emails=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 2)
         self.assertEqual(len(json["not_removed"]), 0)
@@ -1353,8 +1383,8 @@ class StreamAdminTest(ZulipTestCase):
         fails gracefully.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=11, target_users=[self.example_user('cordelia')], is_admin=True, is_subbed=False,
-            invite_only=False, target_users_subbed=False)
+            query_count=12, target_users=[self.example_user('cordelia')], is_realm_admin=True,
+            is_subbed=False, invite_only=False, target_users_subbed=False)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 0)
         self.assertEqual(len(json["not_removed"]), 1)

@@ -284,16 +284,11 @@ def remove_subscriptions_backend(
 
     removing_someone_else = check_if_removing_someone_else(user_profile, principals)
 
-    if removing_someone_else and not user_profile.is_realm_admin:
-        # You can only unsubscribe other people from a stream if you are a realm
-        # admin (whether the stream is public or private).
-        return json_error(_("This action requires administrative rights"))
-
     streams_as_dict = []
     for stream_name in streams_raw:
         streams_as_dict.append({"name": stream_name.strip()})
 
-    streams, __ = list_to_streams(streams_as_dict, user_profile)
+    streams, __ = list_to_streams(streams_as_dict, user_profile, requires_admin_access=removing_someone_else)
 
     if principals:
         people_to_unsub = {principal_to_user_profile(
