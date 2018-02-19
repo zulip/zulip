@@ -904,7 +904,7 @@ class InviteUserTestCase(InviteUserBase):
                                          "or been deactivated."], result)
 
 class InvitationsTestCase(InviteUserBase):
-    def test_successful_get_open_invitations(self) -> None:
+    def test_get_open_invitations(self) -> None:
         """
         A GET call to /json/invites returns all unexpired invitations.
         """
@@ -932,7 +932,15 @@ class InvitationsTestCase(InviteUserBase):
         self.assert_in_success_response(["TestOne@zulip.com"], result)
         self.assert_not_in_success_response(["TestTwo@zulip.com", "TestThree@zulip.com"], result)
 
-    def test_successful_delete_invitation(self) -> None:
+    def _verify_scheduled_invitation_email_to(self, email: str, number_of_emails: int) -> ScheduledEmail:
+        # Verify that scheduled email(s) exists for user and return it.
+        scheduledemail_filter = ScheduledEmail.objects.filter(
+            address=email, type=ScheduledEmail.INVITATION_REMINDER)
+        self.assertEqual(scheduledemail_filter.count(), number_of_emails)
+        return scheduledemail_filter
+
+    def test_delete_invitation(self) -> None:
+
         """
         A DELETE call to /json/invites/<ID> should delete the invite and
         any scheduled invitation reminder emails.
@@ -941,21 +949,18 @@ class InvitationsTestCase(InviteUserBase):
         response = self._invite([invitee], user="iago")
         self._check_successful_invite([invitee], response)
         prereg_user = PreregistrationUser.objects.get(email=invitee)
+        self._verify_scheduled_invitation_email_to("DeleteMe@zulip.com", 1)
 
-        # Verify that the scheduled email exists.
-        ScheduledEmail.objects.get(address__iexact=invitee,
-                                   type=ScheduledEmail.INVITATION_REMINDER)
-
+        # Delete invitation
         result = self.client_delete('/json/invites/' + str(prereg_user.id))
         self.assertEqual(result.status_code, 200)
+
+        # Check that invitation and reminder emails are gone
         error_result = self.client_delete('/json/invites/' + str(prereg_user.id))
         self.assert_json_error(error_result, "No such invitation")
+        self._verify_scheduled_invitation_email_to("DeleteMe@zulip.com", 0)
 
-        self.assertRaises(ScheduledEmail.DoesNotExist,
-                          lambda: ScheduledEmail.objects.get(address__iexact=invitee,
-                                                             type=ScheduledEmail.INVITATION_REMINDER))
-
-    def test_successful_resend_invitation(self) -> None:
+    def test_resend_invitation(self) -> None:
         """
         A POST call to /json/invites/<ID>/resend should send an invitation reminder email
         and delete any scheduled invitation reminder email.
@@ -968,26 +973,23 @@ class InvitationsTestCase(InviteUserBase):
         # Clear from the outbox the original invite email
         mail.outbox.pop()
 
-        # Verify that the scheduled email exists.
-        scheduledemail_filter = ScheduledEmail.objects.filter(
-            address=invitee, type=ScheduledEmail.INVITATION_REMINDER)
-        self.assertEqual(scheduledemail_filter.count(), 1)
-        original_timestamp = scheduledemail_filter.values_list('scheduled_timestamp', flat=True)
+        scheduled_emails = self._verify_scheduled_invitation_email_to("resend_me@zulip.com", 1)
+        original_timestamp = scheduled_emails.values_list('scheduled_timestamp', flat=True)
 
         # Resend invite
         result = self.client_post('/json/invites/' + str(prereg_user.id) + '/resend')
-        self.assertEqual(ScheduledEmail.objects.filter(
-            address=invitee, type=ScheduledEmail.INVITATION_REMINDER).count(), 1)
+        self.assertEqual(result.status_code, 200)
 
         # Check that we have exactly one scheduled email, and that it is different
-        self.assertEqual(scheduledemail_filter.count(), 1)
+        scheduled_emails = self._verify_scheduled_invitation_email_to("resend_me@zulip.com", 1)
         self.assertNotEqual(original_timestamp,
-                            scheduledemail_filter.values_list('scheduled_timestamp', flat=True))
+                            scheduled_emails.values_list('scheduled_timestamp', flat=True))
 
-        self.assertEqual(result.status_code, 200)
+        # Check that we cannot resend to a user that doesn't exist
         error_result = self.client_post('/json/invites/' + str(9999) + '/resend')
         self.assert_json_error(error_result, "No such invitation")
 
+        # Check that the resent email is in the outbox
         self._check_sent_emails([invitee], custom_from_name="Zulip")
 
     def test_accessing_invites_in_another_realm(self) -> None:
