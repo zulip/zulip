@@ -167,9 +167,9 @@ function handleStream(streamName) {
     if (stream === undefined) {
         return undefined;
     }
+    var href = window.location.origin + '/#narrow/stream/' + hash_util.encode_stream_name(stream.name);
     return '<a class="stream" data-stream-id="' + stream.stream_id + '" ' +
-        'href="' + window.location.origin + '/#narrow/stream/' +
-        hash_util.encodeHashComponent(stream.name) + '"' +
+        'href="' + href + '"' +
         '>' + '#' + stream.name + '</a>';
 
 }

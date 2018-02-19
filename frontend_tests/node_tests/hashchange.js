@@ -1,6 +1,7 @@
 zrequire('people');
 zrequire('hash_util');
 zrequire('hashchange');
+zrequire('stream_data');
 
 (function test_operators_round_trip() {
     var operators;
@@ -33,6 +34,21 @@ zrequire('hashchange');
         {operator: 'topic', operand: 'visual c++', negated: true},
     ]);
 
+    // test new encodings, where we have a stream id
+    var florida_stream = {
+        name: 'Florida, USA',
+        stream_id: 987,
+    };
+    stream_data.add_sub(florida_stream.name, florida_stream);
+    operators = [
+        {operator: 'stream', operand: 'Florida, USA'},
+    ];
+    hash = hashchange.operators_to_hash(operators);
+    assert.equal(hash, '#narrow/stream/987-Florida.2C-USA');
+    narrow = hashchange.parse_narrow(hash.split('/'));
+    assert.deepEqual(narrow, [
+        {operator: 'stream', operand: 'Florida, USA', negated: false},
+    ]);
 }());
 
 (function test_people_slugs() {

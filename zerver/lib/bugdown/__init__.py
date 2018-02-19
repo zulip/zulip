@@ -34,6 +34,7 @@ from zerver.lib.bugdown.fenced_code import FENCE_RE
 from zerver.lib.camo import get_camo_url
 from zerver.lib.mention import possible_mentions, \
     possible_user_group_mentions, extract_user_group
+from zerver.lib.notifications import encode_stream
 from zerver.lib.timeout import timeout, TimeoutExpired
 from zerver.lib.cache import cache_with_key, NotFoundInCache
 from zerver.lib.url_preview import preview as link_preview
@@ -1432,8 +1433,8 @@ class StreamPattern(VerbosePattern):
             # href here and instead having the browser auto-add the
             # href when it processes a message with one of these, to
             # provide more clarity to API clients.
-            el.set('href', '/#narrow/stream/{stream_name}'.format(
-                stream_name=urllib.parse.quote(name)))
+            stream_url = encode_stream(stream['id'], name)
+            el.set('href', '/#narrow/stream/{stream_url}'.format(stream_url=stream_url))
             el.text = '#{stream_name}'.format(stream_name=name)
             return el
         return None

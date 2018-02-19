@@ -967,7 +967,7 @@ class BugdownTest(ZulipTestCase):
         content = "#**Denmark**"
         self.assertEqual(
             render_markdown(msg, content),
-            '<p><a class="stream" data-stream-id="{d.id}" href="/#narrow/stream/Denmark">#{d.name}</a></p>'.format(
+            '<p><a class="stream" data-stream-id="{d.id}" href="/#narrow/stream/{d.id}-Denmark">#{d.name}</a></p>'.format(
                 d=denmark
             ))
 
@@ -982,10 +982,10 @@ class BugdownTest(ZulipTestCase):
                          '<p>Look to '
                          '<a class="stream" '
                          'data-stream-id="{denmark.id}" '
-                         'href="/#narrow/stream/Denmark">#{denmark.name}</a> and '
+                         'href="/#narrow/stream/{denmark.id}-Denmark">#{denmark.name}</a> and '
                          '<a class="stream" '
                          'data-stream-id="{scotland.id}" '
-                         'href="/#narrow/stream/Scotland">#{scotland.name}</a>, '
+                         'href="/#narrow/stream/{scotland.id}-Scotland">#{scotland.name}</a>, '
                          'there something</p>'.format(denmark=denmark, scotland=scotland))
 
     def test_stream_case_sensitivity(self) -> None:
@@ -996,7 +996,7 @@ class BugdownTest(ZulipTestCase):
         content = "#**CaseSens**"
         self.assertEqual(
             render_markdown(msg, content),
-            '<p><a class="stream" data-stream-id="{s.id}" href="/#narrow/stream/{s.name}">#{s.name}</a></p>'.format(
+            '<p><a class="stream" data-stream-id="{s.id}" href="/#narrow/stream/{s.id}-{s.name}">#{s.name}</a></p>'.format(
                 s=case_sens
             ))
 
@@ -1029,11 +1029,15 @@ class BugdownTest(ZulipTestCase):
         sender_user_profile = self.example_user('othello')
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         content = u"#**привет**"
+        quoted_name = '.D0.BF.D1.80.D0.B8.D0.B2.D0.B5.D1.82'
+        href = '/#narrow/stream/{stream_id}-{quoted_name}'.format(
+            stream_id=uni.id,
+            quoted_name=quoted_name)
         self.assertEqual(
             render_markdown(msg, content),
-            u'<p><a class="stream" data-stream-id="{s.id}" href="/#narrow/stream/{url}">#{s.name}</a></p>'.format(
+            u'<p><a class="stream" data-stream-id="{s.id}" href="{href}">#{s.name}</a></p>'.format(
                 s=uni,
-                url=urllib.parse.quote(uni.name)
+                href=href,
             ))
 
     def test_stream_invalid(self) -> None:
@@ -1188,22 +1192,22 @@ class BugdownTest(ZulipTestCase):
         realm = get_realm("zulip")
         sender_user_profile = self.example_user('othello')
         message = Message(sender=sender_user_profile, sending_client=get_client("test"))
-        msg = "http://zulip.testserver/#narrow/stream/hello"
+        msg = "http://zulip.testserver/#narrow/stream/999-hello"
 
         self.assertEqual(
             bugdown.convert(msg, message_realm=realm, message=message),
-            '<p><a href="#narrow/stream/hello" title="#narrow/stream/hello">http://zulip.testserver/#narrow/stream/hello</a></p>'
+            '<p><a href="#narrow/stream/999-hello" title="#narrow/stream/999-hello">http://zulip.testserver/#narrow/stream/999-hello</a></p>'
         )
 
     def test_md_relative_link(self) -> None:
         realm = get_realm("zulip")
         sender_user_profile = self.example_user('othello')
         message = Message(sender=sender_user_profile, sending_client=get_client("test"))
-        msg = "[hello](http://zulip.testserver/#narrow/stream/hello)"
+        msg = "[hello](http://zulip.testserver/#narrow/stream/999-hello)"
 
         self.assertEqual(
             bugdown.convert(msg, message_realm=realm, message=message),
-            '<p><a href="#narrow/stream/hello" title="#narrow/stream/hello">hello</a></p>'
+            '<p><a href="#narrow/stream/999-hello" title="#narrow/stream/999-hello">hello</a></p>'
         )
 
 class BugdownApiTests(ZulipTestCase):
@@ -1228,8 +1232,9 @@ class BugdownApiTests(ZulipTestCase):
         )
         self.assert_json_success(result)
         user_id = self.example_user('hamlet').id
+        stream_id = get_stream('Denmark', get_realm('zulip')).id
         self.assertEqual(result.json()['rendered'],
-                         u'<p>This mentions <a class="stream" data-stream-id="%s" href="/#narrow/stream/Denmark">#Denmark</a> and <span class="user-mention" data-user-email="%s" data-user-id="%s">@King Hamlet</span>.</p>' % (get_stream("Denmark", get_realm("zulip")).id, self.example_email("hamlet"), user_id))
+                         u'<p>This mentions <a class="stream" data-stream-id="%s" href="/#narrow/stream/%s-Denmark">#Denmark</a> and <span class="user-mention" data-user-email="%s" data-user-id="%s">@King Hamlet</span>.</p>' % (stream_id, stream_id, self.example_email("hamlet"), user_id))
 
 class BugdownErrorTests(ZulipTestCase):
     def test_bugdown_error_handling(self) -> None:

@@ -19,6 +19,18 @@ exports.encode_operand = function (operator, operand) {
         }
     }
 
+    if ((operator === 'stream')) {
+        return exports.encode_stream_name(operand);
+    }
+
+    return exports.encodeHashComponent(operand);
+};
+
+exports.encode_stream_name = function (operand) {
+    // stream_data prefixes the stream id, but it does not do the
+    // URI encoding piece
+    operand = stream_data.name_to_slug(operand);
+
     return exports.encodeHashComponent(operand);
 };
 
@@ -34,7 +46,13 @@ exports.decode_operand = function (operator, operand) {
         }
     }
 
-    return exports.decodeHashComponent(operand);
+    operand = exports.decodeHashComponent(operand);
+
+    if (operator === 'stream') {
+        return stream_data.slug_to_name(operand);
+    }
+
+    return operand;
 };
 
 return exports;
