@@ -504,7 +504,7 @@ exports.compose_matches_sorter = function (matches) {
 
         var recipients = typeahead_helper.sort_recipients(users, this.token,
                                                       compose_state.stream_name(),
-                                                      compose_state.subject(), groups);
+                                                      compose_state.topic(), groups);
         return recipients;
     } else if (this.completing === 'stream') {
         return typeahead_helper.sort_streams(matches, this.token);

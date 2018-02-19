@@ -156,8 +156,8 @@ exports.update_messages = function update_messages(events) {
 
             if (going_forward_change && stream_name && compose_stream_name) {
                 if (stream_name.toLowerCase() === compose_stream_name.toLowerCase()) {
-                    if (event.orig_subject === compose_state.subject()) {
-                        compose_state.subject(event.subject);
+                    if (event.orig_subject === compose_state.topic()) {
+                        compose_state.topic(event.subject);
                     }
                 }
             }
