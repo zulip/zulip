@@ -175,7 +175,7 @@ class Realm(models.Model):
     max_invites = models.IntegerField(default=DEFAULT_MAX_INVITES)  # type: int
     message_visibility_limit = models.IntegerField(null=True)  # type: int
     # See upload_quota_bytes; don't interpret upload_quota_gb directly.
-    upload_quota_gb = models.IntegerField(null=True)  # type: int
+    upload_quota_gb = models.IntegerField(null=True)  # type: Optional[int]
 
     # Define the types of the various automatically managed properties
     property_types = dict(
