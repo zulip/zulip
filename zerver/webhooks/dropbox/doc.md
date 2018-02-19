@@ -1,17 +1,19 @@
-{!create-stream.md!}
+Get Dropbox notifications in Zulip!
 
-{!create-bot-construct-url.md!}
+1. {!create-stream.md!}
 
-{!append-topic.md!}
+1. {!create-bot-construct-url-indented.md!}
+   {!append-topic.md!}
 
-Next, log into your account on [Dropbox](https://www.dropbox.com), go
-[there](https://www.dropbox.com/developers/apps) and click **Create app**.
-Follow the steps, and in **Webhooks** section add the webhook address you created above.
-Click **Add** button. The status of the webhook should say **Enabled**.
-In **Generated access token** section click **Generate** button.
+1. Go to your [Dropbox apps page](https://www.dropbox.com/developers/apps).
+   Click on **Create app** near the top-right corner, and follow the on-screen
+   instructions to create an app. Once you've created the app, you will be
+   redirected to the **Settings** tab for your app. Scroll down to the
+   **Webhooks** section.
 
-![](/static/images/integrations/dropbox/001.png)
+1. Set **Webhook URIs** to the URL you created above and click **Add**.
+   The status of the webhook should say **Enabled**.
 
 {!congrats.md!}
 
-![](/static/images/integrations/dropbox/002.png)
+![](/static/images/integrations/dropbox/001.png)
