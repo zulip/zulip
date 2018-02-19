@@ -212,6 +212,7 @@ class BugdownMiscTest(ZulipTestCase):
         self.assertEqual(mention_data.get_user_ids(), {hamlet.id, cordelia.id})
 
         user = mention_data.get_user('king hamLET')
+        assert(user is not None)
         self.assertEqual(user['email'], hamlet.email)
 
 class BugdownTest(ZulipTestCase):
