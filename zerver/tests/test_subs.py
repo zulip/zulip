@@ -46,7 +46,7 @@ from zerver.models import (
 
 from zerver.lib.actions import (
     do_add_default_stream, do_change_is_admin, do_set_realm_property,
-    do_create_realm, do_remove_default_stream,
+    do_create_realm, do_remove_default_stream, do_change_subscription_property,
     gather_subscriptions_helper, bulk_add_subscriptions, bulk_remove_subscriptions,
     gather_subscriptions, get_default_streams_for_realm, get_realm, get_stream,
     get_user, set_default_streams, check_stream_name,
@@ -158,30 +158,39 @@ class StreamAdminTest(ZulipTestCase):
         user_profile = self.example_user('hamlet')
         email = user_profile.email
         self.login(email)
-        self.make_stream('private_stream', invite_only=True)
+        self.make_stream('private_stream_1', invite_only=True)
+        self.make_stream('private_stream_2', invite_only=True)
 
         do_change_is_admin(user_profile, True)
         params = {
-            'stream_name': ujson.dumps('private_stream'),
+            'stream_name': ujson.dumps('private_stream_1'),
             'is_private': ujson.dumps(False)
         }
-        stream_id = get_stream('private_stream', user_profile.realm).id
+        stream_id = get_stream('private_stream_1', user_profile.realm).id
+
+        # Org admin can not change unsubscribed private stream type.
         result = self.client_patch("/json/streams/%d" % (stream_id,), params)
         self.assert_json_error(result, 'Invalid stream id')
 
-        stream = self.subscribe(user_profile, 'private_stream')
+        stream = self.subscribe(user_profile, 'private_stream_1')
         self.assertFalse(stream.is_in_zephyr_realm)
 
-        do_change_is_admin(user_profile, True)
-        params = {
-            'stream_name': ujson.dumps('private_stream'),
-            'is_private': ujson.dumps(False)
-        }
+        # Org admin subscribed to private stream can change stream type.
+        result = self.client_patch("/json/streams/%d" % (stream_id,), params)
+        self.assert_json_success(result)
+
+        do_change_is_admin(user_profile, False)
+        stream = self.subscribe(user_profile, 'private_stream_2')
+        sub = get_subscription('private_stream_2', user_profile)
+        do_change_subscription_property(user_profile, sub, stream, 'is_stream_admin', True)
+        stream_id = get_stream('private_stream_2', user_profile.realm).id
+
+        # Stream admin(don't have to be org admin) can change stream type.
         result = self.client_patch("/json/streams/%d" % (stream_id,), params)
         self.assert_json_success(result)
 
         realm = user_profile.realm
-        stream = get_stream('private_stream', realm)
+        stream = get_stream('private_stream_2', realm)
         self.assertFalse(stream.invite_only)
 
     def test_make_stream_private(self) -> None:
@@ -189,17 +198,47 @@ class StreamAdminTest(ZulipTestCase):
         email = user_profile.email
         self.login(email)
         realm = user_profile.realm
-        self.make_stream('public_stream', realm=realm)
+        self.make_stream('public_stream_1', realm=realm)
 
-        do_change_is_admin(user_profile, True)
         params = {
-            'stream_name': ujson.dumps('public_stream'),
+            'stream_name': ujson.dumps('public_stream_1'),
             'is_private': ujson.dumps(True)
         }
-        stream_id = get_stream('public_stream', realm).id
+        stream_id = get_stream('public_stream_1', realm).id
+
+        # Normal unsubscribed user can't change public stream type.
+        result = self.client_patch("/json/streams/%d" % (stream_id,), params)
+        self.assert_json_error(result, 'Invalid stream id')
+
+        # Normal subscribed user can't change public stream type.
+        stream = self.subscribe(user_profile, 'public_stream_1')
+        result = self.client_patch("/json/streams/%d" % (stream_id,), params)
+        self.assert_json_error(result, 'This action requires administrative rights.')
+
+        # Unsubscribed org admin can change public stream type.
+        do_change_is_admin(user_profile, True)
         result = self.client_patch("/json/streams/%d" % (stream_id,), params)
         self.assert_json_success(result)
-        stream = get_stream('public_stream', realm)
+
+        stream = get_stream('public_stream_1', realm)
+        self.assertTrue(stream.invite_only)
+
+        do_change_is_admin(user_profile, False)
+        self.make_stream('public_stream_2', realm=realm)
+        params = {
+            'stream_name': ujson.dumps('public_stream_2'),
+            'is_private': ujson.dumps(True)
+        }
+        stream_id = get_stream('public_stream_2', realm).id
+
+        # Stream admin(doesn't have to be org admin) can change public stream type.
+        stream = self.subscribe(user_profile, 'public_stream_2')
+        sub = get_subscription('public_stream_2', user_profile)
+        do_change_subscription_property(user_profile, sub, stream, 'is_stream_admin', True)
+        result = self.client_patch("/json/streams/%d" % (stream_id,), params)
+        self.assert_json_success(result)
+
+        stream = get_stream('public_stream_2', realm)
         self.assertTrue(stream.invite_only)
 
     def test_deactivate_stream_backend(self) -> None:
@@ -390,16 +429,73 @@ class StreamAdminTest(ZulipTestCase):
         stream_name_mixed_exists = get_stream(u'français name', realm)
         self.assertTrue(stream_name_mixed_exists)
 
-    def test_rename_stream_requires_realm_admin(self) -> None:
+    def test_rename_public_stream_requires_admin(self) -> None:
         user_profile = self.example_user('hamlet')
         email = user_profile.email
         self.login(email)
         self.make_stream('stream_name1')
-
         stream_id = get_stream('stream_name1', user_profile.realm).id
+
+        # Unsubscribed org admin can.
+        do_change_is_admin(user_profile, True)
         result = self.client_patch('/json/streams/%d' % (stream_id,),
                                    {'new_name': ujson.dumps('stream_name2')})
-        self.assert_json_error(result, 'Must be a realm administrator')
+        self.assert_json_success(result)
+
+        # Not every subscribed user can rename.
+        do_change_is_admin(user_profile, False)
+        stream = self.subscribe(user_profile, 'stream_name2')
+        result = self.client_patch('/json/streams/%d' % (stream_id,),
+                                   {'new_name': ujson.dumps('stream_name3')})
+        self.assert_json_error(result, 'This action requires administrative rights.')
+
+        # Stream admin can rename. (don't have to be org admin)
+        sub = get_subscription('stream_name2', user_profile)
+        do_change_subscription_property(user_profile, sub, stream, 'is_stream_admin', True)
+        result = self.client_patch('/json/streams/%d' % (stream_id,),
+                                   {'new_name': ujson.dumps('stream_name3')})
+        self.assert_json_success(result)
+
+        # Org admin can rename. (don't have to be stream admin)
+        do_change_is_admin(user_profile, True)
+        do_change_subscription_property(user_profile, sub, stream, 'is_stream_admin', False)
+        result = self.client_patch('/json/streams/%d' % (stream_id,),
+                                   {'new_name': ujson.dumps('stream_name4')})
+        self.assert_json_success(result)
+
+    def test_rename_private_stream_requires_admin(self) -> None:
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
+        self.login(email)
+        self.make_stream('stream_name1', invite_only=True)
+        stream_id = get_stream('stream_name1', user_profile.realm).id
+
+        # Unsubscribed org admin can not.
+        do_change_is_admin(user_profile, True)
+        result = self.client_patch('/json/streams/%d' % (stream_id,),
+                                   {'new_name': ujson.dumps('stream_name2')})
+        self.assert_json_error(result, "Invalid stream id")
+
+        # Not every subscribed user can rename.
+        do_change_is_admin(user_profile, False)
+        stream = self.subscribe(user_profile, 'stream_name1')
+        result = self.client_patch('/json/streams/%d' % (stream_id,),
+                                   {'new_name': ujson.dumps('stream_name2')})
+        self.assert_json_error(result, 'This action requires administrative rights.')
+
+        # Stream admin can rename. (don't have to be org admin)
+        sub = get_subscription('stream_name1', user_profile)
+        do_change_subscription_property(user_profile, sub, stream, 'is_stream_admin', True)
+        result = self.client_patch('/json/streams/%d' % (stream_id,),
+                                   {'new_name': ujson.dumps('stream_name2')})
+        self.assert_json_success(result)
+
+        # Org admin can rename. (don't have to be stream admin)
+        do_change_is_admin(user_profile, True)
+        do_change_subscription_property(user_profile, sub, stream, 'is_stream_admin', False)
+        result = self.client_patch('/json/streams/%d' % (stream_id,),
+                                   {'new_name': ujson.dumps('stream_name3')})
+        self.assert_json_success(result)
 
     def test_change_stream_description(self) -> None:
         user_profile = self.example_user('hamlet')
@@ -436,18 +532,60 @@ class StreamAdminTest(ZulipTestCase):
 
         self.assertEqual('Test description', stream.description)
 
-    def test_change_stream_description_requires_realm_admin(self) -> None:
+    def test_change_public_stream_description_requires_admin(self) -> None:
         user_profile = self.example_user('hamlet')
         email = user_profile.email
         self.login(email)
-
-        self.subscribe(user_profile, 'stream_name1')
-        do_change_is_admin(user_profile, False)
-
+        self.make_stream('stream_name1')
         stream_id = get_stream('stream_name1', user_profile.realm).id
+
+        # Unsubscribed org admin can.
+        do_change_is_admin(user_profile, True)
         result = self.client_patch('/json/streams/%d' % (stream_id,),
-                                   {'description': ujson.dumps('Test description')})
-        self.assert_json_error(result, 'Must be a realm administrator')
+                                   {'description': ujson.dumps('Test description by unsub org admin')})
+        self.assert_json_success(result)
+
+        # Stream admin can rename. (don't have to be an org admin)
+        stream = self.subscribe(user_profile, 'stream_name1')
+        sub = get_subscription('stream_name1', user_profile)
+        do_change_subscription_property(user_profile, sub, stream, 'is_stream_admin', True)
+        result = self.client_patch('/json/streams/%d' % (stream_id,),
+                                   {'description': ujson.dumps('Test description by stream admin')})
+        self.assert_json_success(result)
+
+    def test_change_private_stream_description_requires_admin(self) -> None:
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
+        self.login(email)
+        self.make_stream('stream_name1', invite_only=True)
+        stream_id = get_stream('stream_name1', user_profile.realm).id
+
+        # Unsubscribed org admin can not.
+        do_change_is_admin(user_profile, True)
+        result = self.client_patch('/json/streams/%d' % (stream_id,),
+                                   {'description': ujson.dumps('Test description by unsub org admin')})
+        self.assert_json_error(result, "Invalid stream id")
+
+        # Not every subscribed user can rename.
+        do_change_is_admin(user_profile, False)
+        stream = self.subscribe(user_profile, 'stream_name1')
+        result = self.client_patch('/json/streams/%d' % (stream_id,),
+                                   {'description': ujson.dumps('Test description by normal sub user')})
+        self.assert_json_error(result, 'This action requires administrative rights.')
+
+        # Stream admin can rename. (don't have to be org admin)
+        sub = get_subscription('stream_name1', user_profile)
+        do_change_subscription_property(user_profile, sub, stream, 'is_stream_admin', True)
+        result = self.client_patch('/json/streams/%d' % (stream_id,),
+                                   {'description': ujson.dumps('Test description by stream admin')})
+        self.assert_json_success(result)
+
+        # Org admin can rename. (don't have to be stream admin)
+        do_change_is_admin(user_profile, True)
+        do_change_subscription_property(user_profile, sub, stream, 'is_stream_admin', False)
+        result = self.client_patch('/json/streams/%d' % (stream_id,),
+                                   {'description': ujson.dumps('Test description by sub org admin')})
+        self.assert_json_success(result)
 
     def set_up_stream_for_deletion(self, stream_name: str, invite_only: bool=False,
                                    subscribed: bool=True) -> Stream:

@@ -25,7 +25,8 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
 from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
     check_stream_name, check_stream_name_available, filter_stream_authorization, \
-    list_to_streams, access_stream_for_delete, access_default_stream_group_by_id
+    list_to_streams, access_stream_for_delete, access_default_stream_group_by_id, \
+    access_stream_for_admin_actions
 from zerver.lib.validator import check_string, check_int, check_list, check_dict, \
     check_bool, check_variable_type
 from zerver.models import UserProfile, Stream, Realm, Subscription, \
@@ -139,7 +140,6 @@ def remove_default_stream(request, user_profile, stream_name=REQ()):
     do_remove_default_stream(stream)
     return json_success()
 
-@require_realm_admin
 @has_request_variables
 def update_stream_backend(
         request: HttpRequest, user_profile: UserProfile,
@@ -149,6 +149,7 @@ def update_stream_backend(
         new_name: Optional[Text]=REQ(validator=check_string, default=None),
 ) -> HttpResponse:
     (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
+    access_stream_for_admin_actions(user_profile, stream, sub)
 
     if description is not None:
         do_change_stream_description(stream, description)
