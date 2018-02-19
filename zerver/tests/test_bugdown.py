@@ -1192,22 +1192,22 @@ class BugdownTest(ZulipTestCase):
         realm = get_realm("zulip")
         sender_user_profile = self.example_user('othello')
         message = Message(sender=sender_user_profile, sending_client=get_client("test"))
-        msg = "http://zulip.testserver/#narrow/stream/hello"
+        msg = "http://zulip.testserver/#narrow/stream/999-hello"
 
         self.assertEqual(
             bugdown.convert(msg, message_realm=realm, message=message),
-            '<p><a href="#narrow/stream/hello" title="#narrow/stream/hello">http://zulip.testserver/#narrow/stream/hello</a></p>'
+            '<p><a href="#narrow/stream/999-hello" title="#narrow/stream/999-hello">http://zulip.testserver/#narrow/stream/999-hello</a></p>'
         )
 
     def test_md_relative_link(self) -> None:
         realm = get_realm("zulip")
         sender_user_profile = self.example_user('othello')
         message = Message(sender=sender_user_profile, sending_client=get_client("test"))
-        msg = "[hello](http://zulip.testserver/#narrow/stream/hello)"
+        msg = "[hello](http://zulip.testserver/#narrow/stream/999-hello)"
 
         self.assertEqual(
             bugdown.convert(msg, message_realm=realm, message=message),
-            '<p><a href="#narrow/stream/hello" title="#narrow/stream/hello">hello</a></p>'
+            '<p><a href="#narrow/stream/999-hello" title="#narrow/stream/999-hello">hello</a></p>'
         )
 
 class BugdownApiTests(ZulipTestCase):
