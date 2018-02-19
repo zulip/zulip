@@ -36,7 +36,7 @@ You now have a running Zulip install!
 * Read [our advice on helping your community][realm-admin-docs] make
   the most of Zulip.
 
-* [Customize Zulip](customize.html) to your needs.
+* [Customize Zulip](settings.html) by configuring the server-level settings.
 
 * Read about Zulip's support for backups, monitoring, and
   other [important production considerations](../production/maintain-secure-upgrade.html).
