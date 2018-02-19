@@ -18,6 +18,7 @@ from django.contrib.auth.views import (login, password_reset_done,
 
 import zerver.tornado.views
 import zerver.views
+import zerver.views.realm
 import zerver.views.auth
 import zerver.views.compatibility
 import zerver.views.home
@@ -492,6 +493,10 @@ i18n_urls = [
 
 # Make a copy of i18n_urls so that they appear without prefix for english
 urls = list(i18n_urls)
+
+v1_api_and_json_patterns += [
+    url(r'^check_subdomain/(?P<realm_str>.*)$', zerver.views.realm.check_realm, name='zerver.views.check_realm'),
+]
 
 # Include the dual-use patterns twice
 urls += [

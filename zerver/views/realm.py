@@ -1,6 +1,6 @@
 
 from typing import Any, Dict, Optional, List, Text
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from zerver.decorator import require_realm_admin, to_non_negative_int, to_not_negative_int_or_none
@@ -18,7 +18,40 @@ from zerver.lib.response import json_success, json_error
 from zerver.lib.validator import check_string, check_dict, check_bool, check_int
 from zerver.lib.streams import access_stream_by_id
 from zerver.models import Realm, UserProfile
+from zerver.lib.name_restrictions import is_reserved_subdomain, is_disposable_domain
+from zerver.models import get_realm
 
+
+def check_realm(request, realm_str):
+    error_strings = {
+        'too short': _("Organization name needs to have length 3 or greater."),
+        'extremal dash': _("Organization name cannot start or end with a '-'."),
+        'bad character': _("Organization name can only have lowercase letters, numbers, and '-'s."),
+        'unavailable': _("Organization name unavailable. Please choose a different one."),
+        'invalid': _("Please enter a valid email address."),
+        'disposable': _("Please use your real email address.")
+    }
+
+    if "@" not in realm_str:
+        return JsonResponse({"message": error_strings['invalid']})
+    realm_str = realm_str.split('@')[1]
+    if is_disposable_domain(realm_str):
+        return JsonResponse({"message": error_strings['disposable']})
+    # subdomain
+    if "." not in realm_str:
+        return JsonResponse({"message": error_strings['invalid']})
+    realm_str = realm_str.split('.')[0]
+    # if not realm_str:
+    #     return JsonResponse({"message": error_strings['invalid']})
+    if len(realm_str) < 3:
+        return JsonResponse({"message": error_strings['too short']})
+    if realm_str[0] == '-' or realm_str[-1] == '-':
+        return JsonResponse({"message": error_strings['extremal dash']})
+    if not re.match('^[a-z0-9-]*$', realm_str):
+        return JsonResponse({"message": error_strings['bad character']})
+    if is_reserved_subdomain(realm_str) or get_realm(realm_str) is not None:
+        return JsonResponse({"message": error_strings['unavailable']})
+    return JsonResponse({"message": "OK"})
 
 @require_realm_admin
 @has_request_variables
