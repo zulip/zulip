@@ -554,13 +554,13 @@ function render(template_name, args) {
         note: "You sent a message to a muted topic.",
         link_text: "Narrow to here",
         link_msg_id: "99",
-        link_class: "compose_notification_narrow_by_subject",
+        link_class: "compose_notification_narrow_by_topic",
     };
     var html = '<div  id="out-of-view-notification" class="notification-alert">';
     html += render('compose_notification', args);
     html += '</div>';
     global.write_handlebars_output("compose_notification", html);
-    var a = $(html).find("a.compose_notification_narrow_by_subject");
+    var a = $(html).find("a.compose_notification_narrow_by_topic");
     assert.equal(a.text(), "Narrow to here");
 }());
 
@@ -879,7 +879,7 @@ function render(template_name, args) {
     var last_message_html = $(html).next('.recipient_row').find('div.messagebox:last .message_content').html().trim();
     assert.equal(last_message_html, 'This is message <span class="highlight">two</span>.');
 
-    var highlighted_subject_word = $(html).find('a.narrows_by_subject .highlight').text();
+    var highlighted_subject_word = $(html).find('a.narrows_by_topic .highlight').text();
     assert.equal(highlighted_subject_word, 'two');
 
     global.write_handlebars_output("message_group", html);

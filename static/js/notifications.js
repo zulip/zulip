@@ -338,7 +338,7 @@ function process_notification(notification) {
         notification_object.onclick = function () {
             notification_object.cancel();
             if (feature_flags.clicking_notification_causes_narrow) {
-                narrow.by_subject(message.id, {trigger: 'notification'});
+                narrow.by_topic(message.id, {trigger: 'notification'});
             }
             window.focus();
         };
@@ -359,7 +359,7 @@ function process_notification(notification) {
                     // by calling `window.focus()` as well as don't need to clear the
                     // notification since it is the default behavior in Firefox.
                     if (feature_flags.clicking_notification_causes_narrow) {
-                        narrow.by_subject(message.id, {trigger: 'notification'});
+                        narrow.by_topic(message.id, {trigger: 'notification'});
                     }
                 };
             } else {
@@ -581,7 +581,7 @@ exports.notify_local_mixes = function (messages) {
         }
 
         var link_msg_id = message.id;
-        var link_class = "compose_notification_narrow_by_subject";
+        var link_class = "compose_notification_narrow_by_topic";
         var link_text = "Narrow to " + get_message_header(message);
 
         exports.notify_above_composebox(reason, link_class, link_msg_id, link_text);
@@ -596,7 +596,7 @@ exports.notify_messages_outside_current_search = function (messages) {
             return;
         }
         exports.notify_above_composebox("Sent! Your recent message is outside the current search.",
-                                        "compose_notification_narrow_by_subject",
+                                        "compose_notification_narrow_by_topic",
                                         message.id,
                                         "Narrow to " + get_message_header(message));
     });
@@ -634,9 +634,9 @@ exports.reify_message_id = function (opts) {
 };
 
 exports.register_click_handlers = function () {
-    $('#out-of-view-notification').on('click', '.compose_notification_narrow_by_subject', function (e) {
+    $('#out-of-view-notification').on('click', '.compose_notification_narrow_by_topic', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
-        narrow.by_subject(msgid, {trigger: 'compose_notification'});
+        narrow.by_topic(msgid, {trigger: 'compose_notification'});
         e.stopPropagation();
         e.preventDefault();
     });
