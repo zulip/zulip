@@ -156,6 +156,25 @@ set -o pipefail
 # something that we don't want to happen when running provision in a
 # development environment not using Vagrant.
 
+# Only show /etc/motd and nothing else on vagrant ssh
+sudo rm -f /etc/update-motd.d/*
+#To avoid double message when user does vagrant provision again
+sudo rm -f /etc/motd
+
+# Set MOTD message to our custom message
+sudo bash -c 'cat << EndOfMessage >> /etc/motd
+
+Welcome to the Zulip development environment!  Popular commands:
+* tools/run-dev.py - Run the development server
+* tools/provision - Update the development environment
+* tools/lint - Run the linter (quick and catches many problmes)
+* tools/test-all - Run all tests (relatively slow)
+
+Read http://zulip.readthedocs.io/en/latest/testing.html to learn \
+how to run individual test suites so that you can get a fast debug cycle.
+
+EndOfMessage'
+
 # If the host is running SELinux remount the /sys/fs/selinux directory as read only,
 # needed for apt-get to work.
 if [ -d "/sys/fs/selinux" ]; then
