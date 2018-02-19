@@ -210,6 +210,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertEqual(result['default_sending_stream'], 'Denmark')
 
         profile = get_user(email, realm)
+        assert(profile.default_sending_stream is not None)
         self.assertEqual(profile.default_sending_stream.name, 'Denmark')
 
     def test_add_bot_with_default_sending_stream_not_subscribed(self) -> None:
@@ -222,6 +223,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertEqual(result['default_sending_stream'], 'Rome')
 
         profile = get_user(email, realm)
+        assert(profile.default_sending_stream is not None)
         self.assertEqual(profile.default_sending_stream.name, 'Rome')
 
     def test_bot_add_subscription(self) -> None:
@@ -286,6 +288,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         email = 'hambot-bot@zulip.testserver'
         realm = get_realm('zulip')
         profile = get_user(email, realm)
+        assert(profile.default_sending_stream is not None)
         self.assertEqual(profile.default_sending_stream.name, 'Denmark')
 
         event = [e for e in events if e['event']['type'] == 'realm_bot'][0]
@@ -336,6 +339,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertEqual(result['default_events_register_stream'], 'Denmark')
 
         profile = get_user(bot_email, bot_realm)
+        assert(profile.default_events_register_stream is not None)
         self.assertEqual(profile.default_events_register_stream.name, 'Denmark')
 
     def test_add_bot_with_default_events_register_stream_private_allowed(self) -> None:
@@ -354,6 +358,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         bot_email = 'hambot-bot@zulip.testserver'
         bot_realm = get_realm('zulip')
         bot_profile = get_user(bot_email, bot_realm)
+        assert(bot_profile.default_events_register_stream is not None)
         self.assertEqual(bot_profile.default_events_register_stream.name, 'Denmark')
 
         event = [e for e in events if e['event']['type'] == 'realm_bot'][0]
