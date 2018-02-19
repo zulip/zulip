@@ -24,12 +24,13 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
 from zerver.lib.response import json_success, json_error
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
     check_stream_name, check_stream_name_available, filter_stream_authorization, \
-    list_to_streams, access_stream_for_delete_or_update, access_default_stream_group_by_id
+    list_to_streams, access_stream_for_delete_or_update, access_default_stream_group_by_id, \
+    get_stream_by_id
 from zerver.lib.topic import get_topic_history_for_stream, messages_for_topic
 from zerver.lib.validator import check_string, check_int, check_list, check_dict, \
     check_bool, check_variable_type, check_capped_string, check_color, check_dict_only, \
     check_int_in, to_non_negative_int
-from zerver.models import UserProfile, Stream, Realm, UserMessage, \
+from zerver.models import UserProfile, Stream, Realm, UserMessage, Subscription, \
     get_system_bot, get_active_user, get_active_user_profile_by_id_in_realm
 
 from collections import defaultdict
@@ -73,11 +74,17 @@ def check_if_removing_someone_else(user_profile: UserProfile,
     else:
         return principals[0] != user_profile.email
 
-@require_realm_admin
 def deactivate_stream_backend(request: HttpRequest,
                               user_profile: UserProfile,
                               stream_id: int) -> HttpResponse:
-    stream = access_stream_for_delete_or_update(user_profile, stream_id)
+    stream = get_stream_by_id(stream_id)
+    try:
+        sub = Subscription.objects.get(user_profile=user_profile, recipient=stream.recipient,
+                                       active=True)
+    except Subscription.DoesNotExist:
+        sub = None
+    access_stream_for_delete_or_update(user_profile, stream, sub)
+
     do_deactivate_stream(stream)
     return json_success()
 
@@ -159,7 +166,6 @@ def remove_default_stream(request: HttpRequest,
     do_remove_default_stream(stream)
     return json_success()
 
-@require_realm_admin
 @has_request_variables
 def update_stream_backend(
         request: HttpRequest, user_profile: UserProfile,
@@ -175,7 +181,14 @@ def update_stream_backend(
 ) -> HttpResponse:
     # We allow realm administrators to to update the stream name and
     # description even for private streams.
-    stream = access_stream_for_delete_or_update(user_profile, stream_id)
+    stream = get_stream_by_id(stream_id)
+    try:
+        sub = Subscription.objects.get(user_profile=user_profile, recipient=stream.recipient,
+                                       active=True)
+    except Subscription.DoesNotExist:
+        sub = None
+    access_stream_for_delete_or_update(user_profile, stream, sub)
+
     if description is not None:
         if '\n' in description:
             # We don't allow newline characters in stream descriptions.

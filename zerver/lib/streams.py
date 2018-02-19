@@ -178,23 +178,21 @@ def check_for_exactly_one_stream_arg(stream_id: Optional[int], stream: Optional[
     if stream_id is not None and stream is not None:
         raise JsonableError(_("Please choose one: 'stream' or 'stream_id'."))
 
-def access_stream_for_delete_or_update(user_profile: UserProfile, stream_id: int) -> Stream:
+def access_stream_for_delete_or_update(user_profile: UserProfile, stream: Stream,
+                                       sub: Optional[Subscription]) -> None:
     # We should only ever use this for realm admins, who are allowed
     # to delete or update all streams on their realm, even private streams
-    # to which they are not subscribed.  We do an assert here, because
-    # all callers should have the require_realm_admin decorator.
-    assert(user_profile.is_realm_admin)
-
-    error = _("Invalid stream id")
-    try:
-        stream = Stream.objects.get(id=stream_id)
-    except Stream.DoesNotExist:
-        raise JsonableError(error)
-
+    # to which they are not subscribed.
     if stream.realm_id != user_profile.realm_id:
-        raise JsonableError(error)
+        raise JsonableError(_("Invalid stream id"))
 
-    return stream
+    if user_profile.is_realm_admin:
+        return
+
+    if sub is not None and sub.is_stream_admin:
+        return
+
+    raise JsonableError(_("This action requires administrative rights."))
 
 # Only set allow_realm_admin flag to True when you want to allow realm admin to
 # access unsubscribed private stream content.
