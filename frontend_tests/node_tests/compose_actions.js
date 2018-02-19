@@ -205,14 +205,14 @@ function assert_hidden(sel) {
         private_message_recipient: 'bob@example.com'}), 'compose-textarea');
     assert.equal(get_focus_area('stream', {}), 'stream');
     assert.equal(get_focus_area('stream', {stream: 'fun'}),
-                 'subject');
+                 'topic');
     assert.equal(get_focus_area('stream', {stream: 'fun',
                                            subject: 'more'}),
                  'compose-textarea');
     assert.equal(get_focus_area('stream', {stream: 'fun',
                                            subject: 'more',
                                            trigger: 'new topic button'}),
-                 'subject');
+                 'topic');
 }());
 
 (function test_focus_in_empty_compose() {
