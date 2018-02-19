@@ -110,6 +110,7 @@ exports.populate_auth_methods = function (auth_methods) {
         // Don't prepend a tip to custom emoji settings page. We handle it separately.
         $(".organization-box").find(".settings-section:not(.can-edit)")
             .not("#emoji-settings")
+            .not("#user-groups-admin")
             .prepend(tip_box);
     }
 };
