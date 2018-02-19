@@ -411,7 +411,9 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         # The size of StringIO("zulip!") is 6 bytes. Setting the size of
         # d1_attachment to realm.upload_quota_bytes() - 11 should allow
         # us to upload only one more attachment.
-        d1_attachment.size = realm.upload_quota_bytes() - 11
+        quota = realm.upload_quota_bytes()
+        assert(quota is not None)
+        d1_attachment.size = quota - 11
         d1_attachment.save(update_fields=['size'])
 
         d2 = StringIO("zulip!")
