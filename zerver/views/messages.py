@@ -358,13 +358,15 @@ class NarrowBuilder:
     def _by_search_pgroonga(self, query: Query, operand: str,
                             maybe_negate: ConditionTransform) -> Query:
         match_positions_character = func.pgroonga.match_positions_character
+        query_escape = func.pgroonga.query_escape
         query_extract_keywords = func.pgroonga.query_extract_keywords
-        keywords = query_extract_keywords(operand)
+        escaped = query_escape(operand)
+        keywords = query_extract_keywords(escaped)
         query = query.column(match_positions_character(column("rendered_content"),
                                                        keywords).label("content_matches"))
         query = query.column(match_positions_character(column("subject"),
                                                        keywords).label("subject_matches"))
-        condition = column("search_pgroonga").op("@@")(operand)
+        condition = column("search_pgroonga").op("@@")(escaped)
         return query.where(maybe_negate(condition))
 
     def _by_search_tsearch(self, query: Query, operand: str,
