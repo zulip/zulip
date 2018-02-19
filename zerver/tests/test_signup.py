@@ -469,59 +469,100 @@ class LoginTest(ZulipTestCase):
         self.assertEqual(response["Location"], "http://zulip.testserver")
 
 class InviteUserBase(ZulipTestCase):
-    def check_sent_emails(self, correct_recipients: List[Text],
+    def _check_sent_emails(self, correct_recipients: List[Text],
                           custom_from_name: Optional[str]=None) -> None:
+        """
+        Checks if the outbox contains mails to the invitees.
+
+        correct_recipients should be the list of email strings of invitees.
+
+        custom_from_name should be used if a custom from name should be present in the send mails
+        """
         self.assertEqual(len(mail.outbox), len(correct_recipients))
         email_recipients = [email.recipients()[0] for email in mail.outbox]
         self.assertEqual(sorted(email_recipients), sorted(correct_recipients))
-        if len(mail.outbox) == 0:
-            return
+        if not len(mail.outbox) == 0:
+            if custom_from_name is not None:
+                self.assertIn(custom_from_name, mail.outbox[0].from_email)
+            self.assertIn(FromAddress.NOREPLY, mail.outbox[0].from_email)
 
-        if custom_from_name is not None:
-            self.assertIn(custom_from_name, mail.outbox[0].from_email)
+    def _get_invitees(self, invitees_names: List[Text]) -> List[Text]:
+        # Returns the array of non registered email addresses for invitees
+        return [self.nonreg_email(invitee) for invitee in invitees_names]
 
-        self.assertIn(FromAddress.NOREPLY, mail.outbox[0].from_email)
-
-    def invite(self, users: Text, streams: List[Text], body: str='',
-               invite_as_admin: str="false") -> HttpResponse:
+    def _invite(self, invitees: List[Text], user: Text = "hamlet", streams: List[Text] = ["Denmark"],
+               invitees_format: Text="{0}", invite_as_admin: str="false") -> HttpResponse:
         """
-        Invites the specified users to Zulip with the specified streams.
+        Invites the specified invitees to Zulip with the specified streams.
 
-        users should be a string containing the users to invite, comma or
-            newline separated.
+        user should be username from which the invite is sent
+
+        invitees should be a list of strings containing the users emails to invite
 
         streams should be a list of strings.
-        """
 
+        invitees_format should be a string containing placeholders for each provided invitee.
+        Two comma separated invitees can for example have format "{0}, {1}"
+        """
+        self.login(self.example_email(user))
+        invitees_emails = invitees_format.format(*invitees)
         return self.client_post("/json/invites",
-                                {"invitee_emails": users,
+                                {"invitee_emails": invitees_emails,
                                  "stream": streams,
                                  "invite_as_admin": invite_as_admin})
 
-class InviteUserTest(InviteUserBase):
+    def _check_successful_invite(self, invitees: [Text], response: HttpResponse,
+                                custom_from_name: Optional[str]=None) -> None:
+        """
+        Checks if request was successful, the emails to send contain a key to confirm, and whether the
+        emails have been sent.
+
+        invitees should be a list of strings containing the users emails to invite
+
+        response should be the HttpResponse obtained from the request.
+
+        custom_from_name should be used if a custom from name should be checked in _check_sent_emails
+        """
+        self.assert_json_success(response)
+
+        for invitee in invitees:
+            self.assertTrue(find_key_by_email(invitee))
+
+        self._check_sent_emails(invitees, custom_from_name=custom_from_name)
+
+    def _check_unsuccessful_invite(self, response: HttpResponse, expected_error_msg: Text):
+        """
+        Checks if request resulted in an expected error and that no emails have been sent.
+
+        response should be the HttpResponse obtained from the request.
+
+        expected_error_msg should be a string containg the error which is expected
+        """
+        self.assert_json_error(response, expected_error_msg)
+        self._check_sent_emails([])
+
+class InviteUserTestCase(InviteUserBase):
     def test_successful_invite_user(self) -> None:
         """
         A call to /json/invites with valid parameters causes an invitation
         email to be sent.
         """
-        self.login(self.example_email("hamlet"))
-        invitee = "alice-test@zulip.com"
-        self.assert_json_success(self.invite(invitee, ["Denmark"]))
-        self.assertTrue(find_key_by_email(invitee))
-        self.check_sent_emails([invitee], custom_from_name="Hamlet")
+        invitees = self._get_invitees(["alice"])
+        response = self._invite(invitees)
+        self._check_successful_invite(invitees, response, custom_from_name="Hamlet")
 
     def test_successful_invite_user_as_admin_from_admin_account(self) -> None:
         """
         Test that a new user invited to a stream receives some initial
         history but only from public streams.
         """
-        self.login(self.example_email('iago'))
-        invitee = self.nonreg_email('alice')
-        self.assert_json_success(self.invite(invitee, ["Denmark"], invite_as_admin="true"))
-        self.assertTrue(find_key_by_email(invitee))
+        invitees_names = ["alice"]
+        invitees = self._get_invitees(invitees_names)
+        response = self._invite(invitees, user="iago", invite_as_admin="true")
+        self._check_successful_invite(invitees, response)
 
-        self.submit_reg_form_for_user(invitee, "password")
-        invitee_profile = self.nonreg_user('alice')
+        self.submit_reg_form_for_user(invitees[0], "password")
+        invitee_profile = self.nonreg_user(invitees_names[0])
         self.assertTrue(invitee_profile.is_realm_admin)
 
     def test_invite_user_as_admin_from_normal_account(self) -> None:
@@ -529,58 +570,42 @@ class InviteUserTest(InviteUserBase):
         Test that a new user invited to a stream receives some initial
         history but only from public streams.
         """
-        self.login(self.example_email('hamlet'))
-        invitee = self.nonreg_email('alice')
-        response = self.invite(invitee, ["Denmark"], invite_as_admin="true")
-        self.assert_json_error(response, "Must be a realm administrator")
+        response = self._invite(self._get_invitees(["alice"]), invite_as_admin="true")
+        self._check_unsuccessful_invite(response, "Must be a realm administrator")
 
     def test_successful_invite_user_with_name(self) -> None:
         """
         A call to /json/invites with valid parameters causes an invitation
         email to be sent.
         """
-        self.login(self.example_email("hamlet"))
-        email = "alice-test@zulip.com"
-        invitee = "Alice Test <{}>".format(email)
-        self.assert_json_success(self.invite(invitee, ["Denmark"]))
-        self.assertTrue(find_key_by_email(email))
-        self.check_sent_emails([email], custom_from_name="Hamlet")
+        invitees = self._get_invitees(["alice"])
+        response = self._invite(invitees, invitees_format="Alice Test <{0}>")
+        self._check_successful_invite(invitees, response, custom_from_name="Hamlet")
 
     def test_successful_invite_user_with_name_and_normal_one(self) -> None:
         """
         A call to /json/invites with valid parameters causes an invitation
         email to be sent.
         """
-        self.login(self.example_email("hamlet"))
-        email = "alice-test@zulip.com"
-        email2 = "bob-test@zulip.com"
-        invitee = "Alice Test <{}>, {}".format(email, email2)
-        self.assert_json_success(self.invite(invitee, ["Denmark"]))
-        self.assertTrue(find_key_by_email(email))
-        self.assertTrue(find_key_by_email(email2))
-        self.check_sent_emails([email, email2], custom_from_name="Hamlet")
+        invitees = self._get_invitees(["alice", "bob"])
+        response = self._invite(invitees, invitees_format="Alice Test <{0}>, {1}")
+        self._check_successful_invite(invitees, response, custom_from_name="Hamlet")
 
     def test_require_realm_admin(self) -> None:
         """
         The invite_by_admins_only realm setting works properly.
         """
-        realm = get_realm('zulip')
+        realm = self.DEFAULT_REALM
         realm.invite_by_admins_only = True
         realm.save()
 
-        self.login("hamlet@zulip.com")
-        email = "alice-test@zulip.com"
-        email2 = "bob-test@zulip.com"
-        invitee = "Alice Test <{}>, {}".format(email, email2)
-        self.assert_json_error(self.invite(invitee, ["Denmark"]),
-                               "Must be a realm administrator")
+        invitees = self._get_invitees(["alice", "bob"])
+        response = self._invite(invitees, invitees_format="Alice Test <{0}>, {1}")
+        self._check_unsuccessful_invite(response, "Must be a realm administrator")
 
         # Now verify an administrator can do it
-        self.login("iago@zulip.com")
-        self.assert_json_success(self.invite(invitee, ["Denmark"]))
-        self.assertTrue(find_key_by_email(email))
-        self.assertTrue(find_key_by_email(email2))
-        self.check_sent_emails([email, email2])
+        response = self._invite(invitees, user="iago", invitees_format="Alice Test <{0}>, {1}")
+        self._check_successful_invite(invitees, response)
 
     def test_successful_invite_user_with_notifications_stream(self) -> None:
         """
@@ -593,13 +618,11 @@ class InviteUserTest(InviteUserBase):
         realm.notifications_stream_id = notifications_stream.id
         realm.save()
 
-        self.login(self.example_email("hamlet"))
-        invitee = 'alice-test@zulip.com'
-        self.assert_json_success(self.invite(invitee, ['Denmark']))
-        self.assertTrue(find_key_by_email(invitee))
-        self.check_sent_emails([invitee])
+        invitees = self._get_invitees(["alice"])
+        response = self._invite(invitees)
+        self._check_successful_invite(invitees, response)
 
-        prereg_user = PreregistrationUser.objects.get(email=invitee)
+        prereg_user = PreregistrationUser.objects.get(email=invitees[0])
         stream_ids = [stream.id for stream in prereg_user.streams.all()]
         self.assertTrue(notifications_stream.id in stream_ids)
 
@@ -608,7 +631,6 @@ class InviteUserTest(InviteUserBase):
         Test that a new user invited to a stream receives some initial
         history but only from public streams.
         """
-        self.login(self.example_email('hamlet'))
         user_profile = self.example_user('hamlet')
         private_stream_name = "Secret"
         self.make_stream(private_stream_name, invite_only=True)
@@ -625,11 +647,12 @@ class InviteUserTest(InviteUserBase):
             topic_name="Secret topic",
             content="Secret message",
         )
-        invitee = self.nonreg_email('alice')
-        self.assert_json_success(self.invite(invitee, [private_stream_name, "Denmark"]))
-        self.assertTrue(find_key_by_email(invitee))
 
-        self.submit_reg_form_for_user(invitee, "password")
+        invitees = self._get_invitees(["alice"])
+        response = self._invite(invitees, streams=[private_stream_name, "Denmark"])
+        self._check_successful_invite(invitees, response)
+
+        self.submit_reg_form_for_user(invitees[0], "password")
         invitee_profile = self.nonreg_user('alice')
         invitee_msg_ids = [um.message_id for um in
                            UserMessage.objects.filter(user_profile=invitee_profile)]
@@ -655,32 +678,27 @@ class InviteUserTest(InviteUserBase):
         """
         Invites multiple users with a variety of delimiters.
         """
-        self.login(self.example_email("hamlet"))
+        invitees = ["bob-test@zulip.com", "carol-test@zulip.com", "dave-test@zulip.com", "earl-test@zulip.com"]
+
         # Intentionally use a weird string.
-        self.assert_json_success(self.invite(
-            """bob-test@zulip.com,     carol-test@zulip.com,
-            dave-test@zulip.com
+        invitees_format = """{0},     {1},
+            {2}
 
 
-earl-test@zulip.com""", ["Denmark"]))
-        for user in ("bob", "carol", "dave", "earl"):
-            self.assertTrue(find_key_by_email("%s-test@zulip.com" % (user,)))
-        self.check_sent_emails(["bob-test@zulip.com", "carol-test@zulip.com",
-                                "dave-test@zulip.com", "earl-test@zulip.com"])
+{3}"""
+        response = self._invite(invitees, invitees_format=invitees_format)
+        self._check_successful_invite(invitees, response)
 
     def test_invite_too_many_users(self) -> None:
         # Only a light test of this pathway; e.g. doesn't test that
         # the limit gets reset after 24 hours
-        self.login(self.example_email("iago"))
-        self.client_post("/json/invites",
-                         {"invitee_emails": "1@zulip.com, 2@zulip.com",
-                          "stream": ["Denmark"]}),
+        self._invite(self._get_invitees(["alice", "bob"]), user="iago", invitees_format="{0}, {1}")
 
-        self.assert_json_error(
-            self.client_post("/json/invites",
-                             {"invitee_emails": ", ".join(
-                                 [str(i) for i in range(get_realm("zulip").max_invites - 1)]),
-                              "stream": ["Denmark"]}),
+        invitees = [str(i) + "@zulip.com" for i in range(self.DEFAULT_REALM.max_invites - 1)]
+        invitees_format = ", ".join(["{" + str(i) + "}" for i in range(self.DEFAULT_REALM.max_invites - 1)])
+
+        response = self._invite(invitees, user="iago", invitees_format=invitees_format)
+        self.assert_json_error(response,
             "You do not have enough remaining invites. "
             "Please contact zulip-admin@example.com to have your limit raised. "
             "No invitations were sent.")
@@ -689,62 +707,51 @@ earl-test@zulip.com""", ["Denmark"]))
         """
         Tests inviting with various missing or invalid parameters.
         """
+        # Missing stream
         self.login(self.example_email("hamlet"))
-        self.assert_json_error(
-            self.client_post("/json/invites",
-                             {"invitee_emails": "foo@zulip.com"}),
-            "You must specify at least one stream for invitees to join.")
+        response = self.client_post("/json/invites", {
+            "invitee_emails": "foo@zulip.com"
+        })
+        self._check_unsuccessful_invite(response, "You must specify at least one stream for invitees to join.")
 
-        for address in ("noatsign.com", "outsideyourdomain@example.net"):
-            self.assert_json_error(
-                self.invite(address, ["Denmark"]),
-                "Some emails did not validate, so we didn't send any invitations.")
-        self.check_sent_emails([])
+        # Wrong email formatting
+        expected_error_msg = "Some emails did not validate, so we didn't send any invitations."
+        self._check_unsuccessful_invite(self._invite(["noatsign.com"]), expected_error_msg)
+        self._check_unsuccessful_invite(self._invite(["outsideyourdomain@example.net"]), expected_error_msg)
 
-        self.assert_json_error(
-            self.invite("", ["Denmark"]),
-            "You must specify at least one email address.")
-        self.check_sent_emails([])
+        # Missing invitee
+        self._check_unsuccessful_invite(self._invite([""]), "You must specify at least one email address.")
 
     def test_invalid_stream(self) -> None:
         """
         Tests inviting to a non-existent stream.
         """
-        self.login(self.example_email("hamlet"))
-        self.assert_json_error(self.invite("iago-test@zulip.com", ["NotARealStream"]),
-                               "Stream does not exist: NotARealStream. No invites were sent.")
-        self.check_sent_emails([])
+        response = self._invite(self._get_invitees(["alice"]), streams=["NotARealStream"])
+        self._check_unsuccessful_invite(response, "Stream does not exist: NotARealStream. No invites were sent.")
 
     def test_invite_existing_user(self) -> None:
         """
         If you invite an address already using Zulip, no invitation is sent.
         """
-        self.login(self.example_email("hamlet"))
-        self.assert_json_error(
-            self.client_post("/json/invites",
-                             {"invitee_emails": self.example_email("hamlet"),
-                              "stream": ["Denmark"]}),
-            "We weren't able to invite anyone.")
+        response = self._invite([self.example_email("hamlet")])
+        self._check_unsuccessful_invite(response, "We weren't able to invite anyone.")
         self.assertRaises(PreregistrationUser.DoesNotExist,
                           lambda: PreregistrationUser.objects.get(
                               email=self.example_email("hamlet")))
-        self.check_sent_emails([])
 
     def test_invite_some_existing_some_new(self) -> None:
         """
         If you invite a mix of already existing and new users, invitations are
         only sent to the new users.
         """
-        self.login(self.example_email("hamlet"))
         existing = [self.example_email("hamlet"), u"othello@zulip.com"]
         new = [u"foo-test@zulip.com", u"bar-test@zulip.com"]
 
-        result = self.client_post("/json/invites",
-                                  {"invitee_emails": "\n".join(existing + new),
-                                   "stream": ["Denmark"]})
-        self.assert_json_error(result,
-                               "Some of those addresses are already using Zulip, \
-so we didn't send them an invitation. We did send invitations to everyone else!")
+        response = self._invite(existing + new, invitees_format="{0}\n{1}\n{2}\n{3}")
+
+        self.assert_json_error(response,
+                               "Some of those addresses are already using Zulip, "
+                               "so we didn't send them an invitation. We did send invitations to everyone else!")
 
         # We only created accounts for the new users.
         for email in existing:
@@ -755,7 +762,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             self.assertTrue(PreregistrationUser.objects.get(email=email))
 
         # We only sent emails to the new users.
-        self.check_sent_emails(new)
+        self._check_sent_emails(new)
 
         prereg_user = PreregistrationUser.objects.get(email='foo-test@zulip.com')
         self.assertEqual(prereg_user.email, 'foo-test@zulip.com')
@@ -765,31 +772,25 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         In a realm with `restricted_to_domain = True`, you can't invite people
         with a different domain from that of the realm or your e-mail address.
         """
-        zulip_realm = get_realm("zulip")
+        zulip_realm = self.DEFAULT_REALM
         zulip_realm.restricted_to_domain = True
         zulip_realm.save()
 
-        self.login(self.example_email("hamlet"))
-        external_address = "foo@example.com"
-
-        self.assert_json_error(
-            self.invite(external_address, ["Denmark"]),
-            "Some emails did not validate, so we didn't send any invitations.")
+        response = self._invite(["foo@example.com"])
+        self._check_unsuccessful_invite(response, "Some emails did not validate, so we didn't send any invitations.")
 
     def test_invite_outside_domain_in_open_realm(self) -> None:
         """
         In a realm with `restricted_to_domain = False`, you can invite people
         with a different domain from that of the realm or your e-mail address.
         """
-        zulip_realm = get_realm("zulip")
+        zulip_realm = self.DEFAULT_REALM
         zulip_realm.restricted_to_domain = False
         zulip_realm.save()
 
-        self.login(self.example_email("hamlet"))
-        external_address = "foo@example.com"
-
-        self.assert_json_success(self.invite(external_address, ["Denmark"]))
-        self.check_sent_emails([external_address])
+        invitees = ["foo@example.com"]
+        response = self._invite(invitees)
+        self._check_successful_invite(invitees, response)
 
     def test_invite_outside_domain_before_closing(self) -> None:
         """
@@ -798,15 +799,13 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         changes to true, the invitation should succeed but the invitee's signup
         attempt should fail.
         """
-        zulip_realm = get_realm("zulip")
+        zulip_realm = self.DEFAULT_REALM
         zulip_realm.restricted_to_domain = False
         zulip_realm.save()
 
-        self.login(self.example_email("hamlet"))
-        external_address = "foo@example.com"
-
-        self.assert_json_success(self.invite(external_address, ["Denmark"]))
-        self.check_sent_emails([external_address])
+        invitees = ["foo@example.com"]
+        response = self._invite(invitees)
+        self._check_successful_invite(invitees, response)
 
         zulip_realm.restricted_to_domain = True
         zulip_realm.save()
@@ -819,29 +818,25 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         """
         Inviting someone to streams with non-ASCII characters succeeds.
         """
-        self.login(self.example_email("hamlet"))
-        invitee = "alice-test@zulip.com"
-
+        invitees = self._get_invitees(["alice"])
         stream_name = u"hÃ¼mbÃ¼Çµ"
 
         # Make sure we're subscribed before inviting someone.
         self.subscribe(self.example_user("hamlet"), stream_name)
 
-        self.assert_json_success(self.invite(invitee, [stream_name]))
+        response = self._invite(invitees, streams=[stream_name])
+        self._check_successful_invite(invitees, response)
 
     def test_invitation_reminder_email(self) -> None:
         # All users belong to zulip realm
-        referrer_user = 'hamlet'
-        current_user_email = self.example_email(referrer_user)
-        self.login(current_user_email)
-        invitee_email = self.nonreg_email('alice')
-        self.assert_json_success(self.invite(invitee_email, ["Denmark"]))
-        self.assertTrue(find_key_by_email(invitee_email))
-        self.check_sent_emails([invitee_email])
+        invitees = self._get_invitees(["alice"])
+        response = self._invite(invitees)
+        self._check_successful_invite(invitees, response)
 
-        data = {"email": invitee_email, "referrer_email": current_user_email}
+        current_user_email = self.example_email("hamlet")
+        data = {"email": invitees[0], "referrer_email": current_user_email}
         invitee = PreregistrationUser.objects.get(email=data["email"])
-        referrer = self.example_user(referrer_user)
+        referrer = self.example_user("hamlet")
         link = create_confirmation_link(invitee, referrer.realm.host, Confirmation.INVITATION)
         context = common_context(referrer)
         context.update({
@@ -868,7 +863,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             scheduled_timestamp__lte=timezone_now(), type=ScheduledEmail.INVITATION_REMINDER)
         self.assertEqual(len(email_jobs_to_deliver), 1)
 
-        self.register(invitee_email, "test")
+        self.register(invitees[0], "test")
         email_jobs_to_deliver = ScheduledEmail.objects.filter(
             scheduled_timestamp__lte=timezone_now(), type=ScheduledEmail.INVITATION_REMINDER)
         self.assertEqual(len(email_jobs_to_deliver), 0)
@@ -942,10 +937,9 @@ class InvitationsTestCase(InviteUserBase):
         A DELETE call to /json/invites/<ID> should delete the invite and
         any scheduled invitation reminder emails.
         """
-        self.login(self.example_email("iago"))
-
         invitee = "DeleteMe@zulip.com"
-        self.assert_json_success(self.invite(invitee, ['Denmark']))
+        response = self._invite([invitee], user="iago")
+        self._check_successful_invite([invitee], response)
         prereg_user = PreregistrationUser.objects.get(email=invitee)
 
         # Verify that the scheduled email exists.
@@ -966,14 +960,12 @@ class InvitationsTestCase(InviteUserBase):
         A POST call to /json/invites/<ID>/resend should send an invitation reminder email
         and delete any scheduled invitation reminder email.
         """
-        self.login(self.example_email("iago"))
         invitee = "resend_me@zulip.com"
-
-        self.assert_json_success(self.invite(invitee, ['Denmark']))
+        response = self._invite([invitee], user="iago")
+        self._check_successful_invite([invitee], response, custom_from_name="Zulip")
         prereg_user = PreregistrationUser.objects.get(email=invitee)
 
-        # Verify and then clear from the outbox the original invite email
-        self.check_sent_emails([invitee], custom_from_name="Zulip")
+        # Clear from the outbox the original invite email
         mail.outbox.pop()
 
         # Verify that the scheduled email exists.
@@ -996,7 +988,7 @@ class InvitationsTestCase(InviteUserBase):
         error_result = self.client_post('/json/invites/' + str(9999) + '/resend')
         self.assert_json_error(error_result, "No such invitation")
 
-        self.check_sent_emails([invitee], custom_from_name="Zulip")
+        self._check_sent_emails([invitee], custom_from_name="Zulip")
 
     def test_accessing_invites_in_another_realm(self) -> None:
         invitor = UserProfile.objects.exclude(realm=get_realm('zulip')).first()
