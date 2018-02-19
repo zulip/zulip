@@ -9,6 +9,10 @@ from typing import Optional
 # Developer documentation on the Zulip settings system is available at:
 #   https://zulip.readthedocs.io/en/latest/subsystems/settings.html
 #
+# After making changes, be seure to restart the server. See
+# https://zulip.readthedocs.io/en/latest/production/customize.html for more
+# information.
+
 ### MANDATORY SETTINGS
 #
 # These settings MUST be set in production. In a development environment,
