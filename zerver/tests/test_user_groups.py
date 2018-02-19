@@ -119,8 +119,7 @@ class UserGroupAPITestCase(ZulipTestCase):
             'description': 'Support team',
         }
         self.client_post('/json/user_groups/create', info=params)
-        user_group = UserGroup.objects.first()
-
+        user_group = UserGroup.objects.get(name='support')
         # Test success
         params = {
             'name': 'help',
@@ -140,6 +139,29 @@ class UserGroupAPITestCase(ZulipTestCase):
         result = self.client_patch('/json/user_groups/1111', info=params)
         self.assert_json_error(result, "Invalid user group")
 
+        self.logout()
+        # Test when user not a member of user group tries to modify it
+        cordelia = self.example_user('cordelia')
+        self.login(cordelia.email)
+        params = {
+            'name': 'help',
+            'description': 'Troubleshooting',
+        }
+        result = self.client_patch('/json/user_groups/{}'.format(user_group.id), info=params)
+        self.assert_json_error(result, "Only group members and organization administrators can administer this group.")
+
+        self.logout()
+        # Test when organization admin tries to modify group
+        iago = self.example_user('iago')
+        self.login(iago.email)
+        params = {
+            'name': 'help',
+            'description': 'Troubleshooting',
+        }
+        result = self.client_patch('/json/user_groups/{}'.format(user_group.id), info=params)
+        self.assert_json_success(result)
+        self.assertEqual(result.json()['description'], 'Description successfully updated.')
+
     def test_user_group_delete(self) -> None:
         hamlet = self.example_user('hamlet')
         self.login(self.example_email("hamlet"))
@@ -150,7 +172,6 @@ class UserGroupAPITestCase(ZulipTestCase):
         }
         self.client_post('/json/user_groups/create', info=params)
         user_group = UserGroup.objects.get(name='support')
-
         # Test success
         self.assertEqual(UserGroup.objects.count(), 2)
         self.assertEqual(UserGroupMembership.objects.count(), 3)
@@ -163,6 +184,33 @@ class UserGroupAPITestCase(ZulipTestCase):
         result = self.client_delete('/json/user_groups/1111')
         self.assert_json_error(result, "Invalid user group")
 
+        # Test when user not a member of user group tries to delete it
+        params = {
+            'name': 'Development',
+            'members': ujson.dumps([hamlet.id]),
+            'description': 'Development team',
+        }
+        self.client_post('/json/user_groups/create', info=params)
+        user_group = UserGroup.objects.get(name='Development')
+        self.assertEqual(UserGroup.objects.count(), 2)
+        self.logout()
+        cordelia = self.example_user('cordelia')
+        self.login(cordelia.email)
+
+        result = self.client_delete('/json/user_groups/{}'.format(user_group.id))
+        self.assert_json_error(result, "Only group members and organization administrators can administer this group.")
+        self.assertEqual(UserGroup.objects.count(), 2)
+
+        self.logout()
+        # Test when organization admin tries to delete group
+        iago = self.example_user('iago')
+        self.login(iago.email)
+
+        result = self.client_delete('/json/user_groups/{}'.format(user_group.id))
+        self.assert_json_success(result)
+        self.assertEqual(UserGroup.objects.count(), 1)
+        self.assertEqual(UserGroupMembership.objects.count(), 2)
+
     def test_update_members_of_user_group(self) -> None:
         hamlet = self.example_user('hamlet')
         self.login(self.example_email("hamlet"))
@@ -172,10 +220,10 @@ class UserGroupAPITestCase(ZulipTestCase):
             'description': 'Support team',
         }
         self.client_post('/json/user_groups/create', info=params)
-        user_group = UserGroup.objects.first()
-
+        user_group = UserGroup.objects.get(name='support')
         # Test add members
         self.assertEqual(UserGroupMembership.objects.count(), 3)
+
         othello = self.example_user('othello')
         add = [othello.id]
         params = {'add': ujson.dumps(add)}
@@ -194,26 +242,74 @@ class UserGroupAPITestCase(ZulipTestCase):
         members = get_memberships_of_users(user_group, [hamlet, othello])
         self.assertEqual(len(members), 2)
 
-        # Test remove members
-        params = {'delete': ujson.dumps([hamlet.id, othello.id])}
+        self.logout()
+        # Test when user not a member of user group tries to add members to it
+        cordelia = self.example_user('cordelia')
+        self.login(cordelia.email)
+        add = [cordelia.id]
+        params = {'add': ujson.dumps(add)}
         result = self.client_post('/json/user_groups/{}/members'.format(user_group.id),
                                   info=params)
-        self.assert_json_success(result)
-        self.assertEqual(UserGroupMembership.objects.count(), 2)
-        members = get_memberships_of_users(user_group, [hamlet, othello])
-        self.assertEqual(len(members), 0)
+        self.assert_json_error(result, "Only group members and organization administrators can administer this group.")
+        self.assertEqual(UserGroupMembership.objects.count(), 4)
 
-        # Test remove a member that's already removed; arguably we should make this an error.
-        params = {'delete': ujson.dumps([hamlet.id, othello.id])}
+        self.logout()
+        # Test when organization admin tries to add members to group
+        iago = self.example_user('iago')
+        self.login(iago.email)
+        aaron = self.example_user('aaron')
+        add = [aaron.id]
+        params = {'add': ujson.dumps(add)}
         result = self.client_post('/json/user_groups/{}/members'.format(user_group.id),
                                   info=params)
         self.assert_json_success(result)
-        self.assertEqual(UserGroupMembership.objects.count(), 2)
-        members = get_memberships_of_users(user_group, [hamlet, othello])
-        self.assertEqual(len(members), 0)
+        self.assertEqual(UserGroupMembership.objects.count(), 5)
+        members = get_memberships_of_users(user_group, [hamlet, othello, aaron])
+        self.assertEqual(len(members), 3)
+
+        # For normal testing we again login with hamlet
+        self.logout()
+        self.login(hamlet.email)
+        # Test remove members
+        params = {'delete': ujson.dumps([othello.id])}
+        result = self.client_post('/json/user_groups/{}/members'.format(user_group.id),
+                                  info=params)
+        self.assert_json_success(result)
+        self.assertEqual(UserGroupMembership.objects.count(), 4)
+        members = get_memberships_of_users(user_group, [hamlet, othello, aaron])
+        self.assertEqual(len(members), 2)
+
+        # Test remove a member that's already removed
+        params = {'delete': ujson.dumps([othello.id])}
+        result = self.client_post('/json/user_groups/{}/members'.format(user_group.id),
+                                  info=params)
+        self.assert_json_error(result, "There is no member '6' in this user group")
+        self.assertEqual(UserGroupMembership.objects.count(), 4)
+        members = get_memberships_of_users(user_group, [hamlet, othello, aaron])
+        self.assertEqual(len(members), 2)
 
         # Test when nothing is provided
         result = self.client_post('/json/user_groups/{}/members'.format(user_group.id),
                                   info={})
         msg = 'Nothing to do. Specify at least one of "add" or "delete".'
         self.assert_json_error(result, msg)
+
+        # Test when user not a member of user group tries to remove members
+        self.logout()
+        self.login(cordelia.email)
+        params = {'delete': ujson.dumps([hamlet.id])}
+        result = self.client_post('/json/user_groups/{}/members'.format(user_group.id),
+                                  info=params)
+        self.assert_json_error(result, "Only group members and organization administrators can administer this group.")
+        self.assertEqual(UserGroupMembership.objects.count(), 4)
+
+        self.logout()
+        # Test when organization admin tries to remove members from group
+        iago = self.example_user('iago')
+        self.login(iago.email)
+        result = self.client_post('/json/user_groups/{}/members'.format(user_group.id),
+                                  info=params)
+        self.assert_json_success(result)
+        self.assertEqual(UserGroupMembership.objects.count(), 3)
+        members = get_memberships_of_users(user_group, [hamlet, othello, aaron])
+        self.assertEqual(len(members), 1)

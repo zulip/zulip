@@ -13,7 +13,7 @@ from zerver.lib.response import json_success, json_error
 from zerver.lib.users import user_ids_to_users
 from zerver.lib.validator import check_list, check_string, check_int, \
     check_short_string
-from zerver.lib.user_groups import access_user_group_by_id, get_memberships_of_users
+from zerver.lib.user_groups import access_user_group_by_id, get_memberships_of_users, get_user_group_members
 from zerver.models import UserProfile, UserGroup, UserGroupMembership
 from zerver.views.streams import compose_views, FuncKwargPair
 
@@ -34,7 +34,7 @@ def edit_user_group(request: HttpRequest, user_profile: UserProfile,
     if not (name or description):
         return json_error(_("No new data supplied"))
 
-    user_group = access_user_group_by_id(user_group_id, realm=user_profile.realm)
+    user_group = access_user_group_by_id(user_group_id, user_profile)
 
     result = {}
     if name != user_group.name:
@@ -50,7 +50,8 @@ def edit_user_group(request: HttpRequest, user_profile: UserProfile,
 @has_request_variables
 def delete_user_group(request: HttpRequest, user_profile: UserProfile,
                       user_group_id: int=REQ(validator=check_int)) -> HttpResponse:
-    check_delete_user_group(user_group_id, user_profile.realm)
+
+    check_delete_user_group(user_group_id, user_profile)
     return json_success()
 
 @has_request_variables
@@ -75,10 +76,10 @@ def add_members_to_group_backend(request: HttpRequest, user_profile: UserProfile
     if not members:
         return json_success()
 
-    user_group = access_user_group_by_id(user_group_id, user_profile.realm)
+    user_group = access_user_group_by_id(user_group_id, user_profile)
     user_profiles = user_ids_to_users(members, user_profile.realm)
-
     existing_member_ids = set(get_memberships_of_users(user_group, user_profiles))
+
     for user_profile in user_profiles:
         if user_profile.id in existing_member_ids:
             raise JsonableError(_("User %s is already a member of this group" % (user_profile.id,)))
@@ -92,6 +93,11 @@ def remove_members_from_group_backend(request: HttpRequest, user_profile: UserPr
         return json_success()
 
     user_profiles = user_ids_to_users(members, user_profile.realm)
-    user_group = access_user_group_by_id(user_group_id, user_profile.realm)
+    user_group = access_user_group_by_id(user_group_id, user_profile)
+    group_member_ids = get_user_group_members(user_group)
+    for member in members:
+        if (member not in group_member_ids):
+            raise JsonableError(_("There is no member '%s' in this user group" % (member,)))
+
     remove_members_from_user_group(user_group, user_profiles)
     return json_success()
