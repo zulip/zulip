@@ -122,8 +122,9 @@ class RedirectAndLogIntoSubdomainTestCase(ZulipTestCase):
                                     'is_signup': True})
 
 class DeactivationNoticeTestCase(ZulipTestCase):
-    def test_deactivation_notice(self):
-        def test_redirect(url: str, expected_status_code: int, url_contains_string: str=None, body_contains_string: str=None):
+    def test_deactivation_notice(self) -> None:
+        def test_redirect(url: str, expected_status_code: int, url_contains_string: str=None,
+                          body_contains_string: str=None) -> None:
             """Check that getting the url returns the expected status code and url/body contains specified string"""
             result = self.client_get(url)
             self.assertEqual(result.status_code, expected_status_code)
@@ -506,12 +507,12 @@ class InviteUserBase(ZulipTestCase):
         """
         self.login(self.example_email(user))
         invitees_emails = invitees_format.format(*invitees)
-        return self.client_post("/json/invites",
-                                {"invitee_emails": invitees_emails,
-                                 "stream": streams,
-                                 "invite_as_admin": invite_as_admin})
+        return self.client_post("/json/invites", {
+                                "invitee_emails": invitees_emails,
+                                "stream": streams,
+                                "invite_as_admin": invite_as_admin})
 
-    def _check_successful_invite(self, invitees: [Text], response: HttpResponse,
+    def _check_successful_invite(self, invitees: List[str], response: HttpResponse,
                                  custom_from_name: Optional[str]=None) -> None:
         """
         Checks if request was successful, the emails to send contain a key to confirm, and whether the
@@ -530,7 +531,7 @@ class InviteUserBase(ZulipTestCase):
 
         self._check_sent_emails(invitees, custom_from_name=custom_from_name)
 
-    def _check_unsuccessful_invite(self, response: HttpResponse, expected_error_msg: Text):
+    def _check_unsuccessful_invite(self, response: HttpResponse, expected_error_msg: Text) -> None:
         """
         Checks if request resulted in an expected error and that no emails have been sent.
 
@@ -1129,7 +1130,7 @@ class MultiuseInviteTestCase(ZulipTestCase):
         self.check_user_subscribed_only_to_streams(name2, streams)
 
 class EmailUnsubscribeTestCase(ZulipTestCase):
-    def get_unsub_link_response(self, user, email_type) -> HttpResponse:
+    def get_unsub_link_response(self, user: UserProfile, email_type: str) -> HttpResponse:
         unsubscribe_link = one_click_unsubscribe_link(user, email_type)
         return self.client_get(urllib.parse.urlparse(unsubscribe_link).path)
 
@@ -2291,7 +2292,7 @@ class TestLoginPage(ZulipTestCase):
 
 class FindMyTeamTestCase(ZulipTestCase):
     def _check_successful_find_team(self, expected_content: Text, emails: List[Text]=[],
-                                    emails_sent: int=0):
+                                    emails_sent: int=0) -> None:
         """
         Checks if request responses with expected content and admin email addresses are present.
 
@@ -2319,7 +2320,7 @@ class FindMyTeamTestCase(ZulipTestCase):
         self.assertEqual(len(mail.outbox), emails_sent)
 
     def _check_unsuccessful_find_team(self, expected_error: Text="",
-                                      emails: List[Text]=[], emails_sent: int=0):
+                                      emails: List[Text]=[], emails_sent: int=0) -> None:
         """
         Checks if request responses with expected error.
 
@@ -2420,7 +2421,7 @@ class MobileAuthOTPTest(ZulipTestCase):
         self.assertEqual(decryped, hamlet.api_key)
 
 class LoginOrAskForRegistrationTestCase(ZulipTestCase):
-    def remote_user(self, invalid_subdomain, email='new@zulip.com') -> HttpResponse:
+    def remote_user(self, invalid_subdomain: bool, email: str='new@zulip.com') -> HttpResponse:
         request = HostRequestMock()
         user_profile = None  # type: Optional[UserProfile]
         return login_or_register_remote_user(
