@@ -55,6 +55,7 @@ enforce_fully_covered = {
     'static/js/stream_sort.js',
     'static/js/topic_data.js',
     'static/js/topic_generator.js',
+    'static/js/transmit.js',
     'static/js/typeahead_helper.js',
     'static/js/typing_data.js',
     'static/js/typing_status.js',

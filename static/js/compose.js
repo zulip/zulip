@@ -188,46 +188,6 @@ function nonexistent_stream_reply_error() {
 
 exports.nonexistent_stream_reply_error = nonexistent_stream_reply_error;
 
-function send_message_ajax(request, success, error) {
-    channel.post({
-        url: '/json/messages',
-        data: request,
-        success: success,
-        error: function (xhr, error_type) {
-            if (error_type !== 'timeout' && reload.is_pending()) {
-                // The error might be due to the server changing
-                reload.initiate({immediate: true,
-                                 save_pointer: true,
-                                 save_narrow: true,
-                                 save_compose: true,
-                                 send_after_reload: true});
-                return;
-            }
-
-            var response = channel.xhr_error_message("Error sending message", xhr);
-            error(response);
-        },
-    });
-}
-
-var socket;
-if (page_params.use_websockets) {
-    socket = new Socket("/sockjs");
-}
-// For debugging.  The socket will eventually move out of this file anyway.
-exports._socket = socket;
-
-function send_message_socket(request, success, error) {
-    request.socket_user_agent = navigator.userAgent;
-    socket.send(request, success, function (type, resp) {
-        var err_msg = "Error sending message";
-        if (type === 'response') {
-            err_msg += ": " + resp.msg;
-        }
-        error(err_msg);
-    });
-}
-
 function clear_compose_box() {
     $("#compose-textarea").val('').focus();
     drafts.delete_draft_after_send();
@@ -244,24 +204,6 @@ exports.send_message_success = function (local_id, message_id, locally_echoed) {
     }
 
     echo.reify_message_id(local_id, message_id);
-};
-
-exports.transmit_message = function (request, on_success, error) {
-
-    function success(data) {
-        // Call back to our callers to do things like closing the compose
-        // box and turning off spinners and reifying locally echoed messages.
-        on_success(data);
-
-        // Once everything is done, get ready to report times to the server.
-        sent_messages.report_server_ack(request.local_id);
-    }
-
-    if (page_params.use_websockets) {
-        send_message_socket(request, success, error);
-    } else {
-        send_message_ajax(request, success, error);
-    }
 };
 
 exports.send_message = function send_message(request) {
@@ -317,7 +259,7 @@ exports.send_message = function send_message(request) {
         echo.message_send_error(local_id, response);
     }
 
-    exports.transmit_message(request, success, error);
+    transmit.send_message(request, success, error);
     server_events.assert_get_events_running("Restarting get_events because it was not running during send");
 
     if (locally_echoed) {
@@ -418,7 +360,7 @@ exports.schedule_message = function schedule_message(request, success, error) {
        return;
     }
 
-    exports.transmit_message(request, success, error);
+    transmit.send_message(request, success, error);
 };
 
 exports.enter_with_preview_open = function () {
