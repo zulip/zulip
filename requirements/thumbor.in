@@ -1,5 +1,5 @@
 tc-aws==6.0.3
-thumbor==6.3.2
+thumbor==6.4.1
 typing==3.6.4
 
 # Below dependencies should ideally have been added to thumbor.txt by the
