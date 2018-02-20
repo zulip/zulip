@@ -1205,37 +1205,88 @@ class EmailUnsubscribeTestCase(ZulipTestCase):
         self.assertFalse(user_profile.enable_digest_emails)
         self.assertEqual(0, ScheduledEmail.objects.filter(user=user_profile).count())
 
-class RealmCreationTest(ZulipTestCase):
-    @override_settings(OPEN_REALM_CREATION=True)
-    def check_able_to_create_realm(self, email: str) -> None:
+class RealmCreationTestCase(ZulipTestCase):
+    def request_create_realm_email(self, email: str, expected_status_code: int=302,
+                                   response: str="Check your email so we can get started.",
+                                   open_realm_creation_setting: bool=True) -> None:
+        """
+        Request a realm creation mail from the server and check response.
+        """
+        with self.settings(OPEN_REALM_CREATION=open_realm_creation_setting):
+            # Create new realm with the email
+            result = self.client_post('/create_realm/', {'email': email})
+            self.assertEqual(result.status_code, expected_status_code)
+
+            if "Location" in result:
+                self.assertTrue(result["Location"].endswith(
+                    "/accounts/send_confirm/%s" % (email,)))
+                result = self.client_get(result["Location"])
+            self.assert_in_response(response, result)
+
+    def visit_confirmation_link(self, email: str) -> None:
+        # Visit the confirmation link.
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url)
+        self.assertEqual(result.status_code, 200)
+
+    def submit_create_realm_form(self, email: str, password: str,
+                                      realm_subdomain: str="zuliptest", realm_name: str="Zulip Test",
+                                      expected_response: str=None,
+                                      root_domain_landing_page_setting: bool=False,
+                                      realm_in_root_domain: str=None,
+                                      expected_location_header: str=None,
+                                      ** kwargs: Any) -> None:
+        """
+        Submit the create realm form and check response.
+        """
+        with self.settings(ROOT_DOMAIN_LANDING_PAGE=root_domain_landing_page_setting):
+            result = self.submit_reg_form_for_user(email, password,
+                                                   realm_subdomain=realm_subdomain,
+                                                   realm_name=realm_name,
+                                                   realm_in_root_domain=realm_in_root_domain,
+                                                   kwargs=kwargs)
+
+            # Check response from server
+            if expected_response is not None:
+                self.assert_in_response(expected_response, result)
+            else:
+                self.assertEqual(result.status_code, 302)
+                if expected_location_header is not None:
+                    self.assertTrue(result["Location"].startswith(expected_location_header))
+                else:
+                    self.assertTrue(result["Location"].startswith('http://' + realm_subdomain +
+                                                                  '.testserver/accounts/login/subdomain/'))
+
+    def check_create_realm(self, email: str, realm_name: str="Zulip Test", ** kwargs: Any) -> None:
+        """
+        Creates a realm through simulating the realm creation setup and then checks that the
+        realm is set up properly.
+        """
         password = "test"
         string_id = "zuliptest"
         realm = get_realm(string_id)
         # Make sure the realm does not exist
         self.assertIsNone(realm)
 
-        # Create new realm with the email
-        result = self.client_post('/create_realm/', {'email': email})
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(
-            "/accounts/send_confirm/%s" % (email,)))
-        result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
+        # Create new realm with email
+        self.request_create_realm_email(email)
 
-        # Visit the confirmation link.
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        result = self.client_get(confirmation_url)
-        self.assertEqual(result.status_code, 200)
+        # Visit the confirmation link
+        self.visit_confirmation_link(email)
 
-        result = self.submit_reg_form_for_user(email, password, realm_subdomain=string_id)
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].startswith('http://zuliptest.testserver/accounts/login/subdomain/'))
+        # Submit create realm form
+        self.submit_create_realm_form(email, password, string_id, realm_name, kwargs=kwargs)
 
         # Make sure the realm is created
         realm = get_realm(string_id)
         self.assertIsNotNone(realm)
         self.assertEqual(realm.string_id, string_id)
         self.assertEqual(get_user(email, realm).realm, realm)
+
+        # In case of a realm with subdomain
+        if realm_name is not None:
+            self.assertEqual(realm.name, realm_name)
+            self.assertEqual(realm.subdomain, string_id)
 
         # Check defaults
         self.assertEqual(realm.org_type, Realm.CORPORATE)
@@ -1256,83 +1307,35 @@ class RealmCreationTest(ZulipTestCase):
             self.assertIn(text, messages[0].content)
 
     def test_create_realm_non_existing_email(self) -> None:
-        self.check_able_to_create_realm("user1@test.com")
+        self.check_create_realm(email="user1@test.com")
 
     def test_create_realm_existing_email(self) -> None:
-        self.check_able_to_create_realm("hamlet@zulip.com")
+        self.check_create_realm(email="hamlet@zulip.com")
 
     def test_create_realm_as_system_bot(self) -> None:
-        result = self.client_post('/create_realm/', {'email': 'notification-bot@zulip.com'})
-        self.assertEqual(result.status_code, 200)
-        self.assert_in_response('notification-bot@zulip.com is an email address reserved', result)
+        self.request_create_realm_email('notification-bot@zulip.com', 200,
+                                        'notification-bot@zulip.com is an email address reserved')
 
     def test_create_realm_no_creation_key(self) -> None:
         """
         Trying to create a realm without a creation_key should fail when
         OPEN_REALM_CREATION is false.
         """
-        email = "user1@test.com"
+        self.request_create_realm_email("user1@test.com", 200, 'New organization creation disabled.', False)
 
-        with self.settings(OPEN_REALM_CREATION=False):
-            # Create new realm with the email, but no creation key.
-            result = self.client_post('/create_realm/', {'email': email})
-            self.assertEqual(result.status_code, 200)
-            self.assert_in_response('New organization creation disabled.', result)
-
-    @override_settings(OPEN_REALM_CREATION=True)
     def test_create_realm_with_subdomain(self) -> None:
-        password = "test"
-        string_id = "zuliptest"
-        email = "user1@test.com"
-        realm_name = "Test"
+        self.check_create_realm(email="user1@test.com", realm_name="Test", HTTP_HOST="zuliptest.testserver")
 
-        # Make sure the realm does not exist
-        self.assertIsNone(get_realm(string_id))
-
-        # Create new realm with the email
-        result = self.client_post('/create_realm/', {'email': email})
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(
-            "/accounts/send_confirm/%s" % (email,)))
-        result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
-
-        # Visit the confirmation link.
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        result = self.client_get(confirmation_url)
-        self.assertEqual(result.status_code, 200)
-
-        result = self.submit_reg_form_for_user(email, password,
-                                               realm_subdomain = string_id,
-                                               realm_name=realm_name,
-                                               # Pass HTTP_HOST for the target subdomain
-                                               HTTP_HOST=string_id + ".testserver")
-        self.assertEqual(result.status_code, 302)
-
-        # Make sure the realm is created
-        realm = get_realm(string_id)
-        self.assertIsNotNone(realm)
-        self.assertEqual(realm.string_id, string_id)
-        self.assertEqual(get_user(email, realm).realm, realm)
-
-        self.assertEqual(realm.name, realm_name)
-        self.assertEqual(realm.subdomain, string_id)
-
-    @override_settings(OPEN_REALM_CREATION=True)
     def test_mailinator_signup(self) -> None:
-        result = self.client_post('/create_realm/', {'email': "hi@mailinator.com"})
-        self.assert_in_response('Please use your real email address.', result)
+        self.request_create_realm_email("hi@mailinator.com", 200, 'Please use your real email address.')
 
-    @override_settings(OPEN_REALM_CREATION=True)
     def test_subdomain_restrictions(self) -> None:
         password = "test"
         email = "user1@test.com"
         realm_name = "Test"
 
-        result = self.client_post('/create_realm/', {'email': email})
-        self.client_get(result["Location"])
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        self.client_get(confirmation_url)
+        self.request_create_realm_email(email)
+        self.visit_confirmation_link(email)
 
         errors = {'id': "length 3 or greater",
                   '-id': "cannot start or end with a",
@@ -1344,69 +1347,37 @@ class RealmCreationTest(ZulipTestCase):
                   'abouts': "unavailable",
                   'zephyr': "unavailable"}
         for string_id, error_msg in errors.items():
-            result = self.submit_reg_form_for_user(email, password,
-                                                   realm_subdomain = string_id,
-                                                   realm_name = realm_name)
-            self.assert_in_response(error_msg, result)
+             self.submit_create_realm_form(email, password, expected_response=error_msg,
+                                                realm_subdomain=string_id, realm_name=realm_name)
 
         # test valid subdomain
-        result = self.submit_reg_form_for_user(email, password,
-                                               realm_subdomain = 'a-0',
-                                               realm_name = realm_name)
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(result.url.startswith('http://a-0.testserver/accounts/login/subdomain/'))
+        self.submit_create_realm_form(email, password, 'a-0', realm_name)
 
-    @override_settings(OPEN_REALM_CREATION=True)
     def test_subdomain_restrictions_root_domain(self) -> None:
         password = "test"
         email = "user1@test.com"
         realm_name = "Test"
 
-        result = self.client_post('/create_realm/', {'email': email})
-        self.client_get(result["Location"])
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        self.client_get(confirmation_url)
-
+        self.request_create_realm_email(email)
+        self.visit_confirmation_link(email)
         # test root domain will fail with ROOT_DOMAIN_LANDING_PAGE
-        with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
-            result = self.submit_reg_form_for_user(email, password,
-                                                   realm_subdomain = '',
-                                                   realm_name = realm_name)
-            self.assert_in_response('unavailable', result)
-
+        self.submit_create_realm_form(email,password, '', realm_name, 'unavailable', True)
         # test valid use of root domain
-        result = self.submit_reg_form_for_user(email, password,
-                                               realm_subdomain = '',
-                                               realm_name = realm_name)
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(result.url.startswith('http://testserver/accounts/login/subdomain/'))
+        self.submit_create_realm_form(email, password, '', realm_name,
+                                      expected_location_header='http://testserver/accounts/login/subdomain/')
 
-    @override_settings(OPEN_REALM_CREATION=True)
     def test_subdomain_restrictions_root_domain_option(self) -> None:
         password = "test"
         email = "user1@test.com"
         realm_name = "Test"
 
-        result = self.client_post('/create_realm/', {'email': email})
-        self.client_get(result["Location"])
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        self.client_get(confirmation_url)
-
+        self.request_create_realm_email(email)
+        self.visit_confirmation_link(email)
         # test root domain will fail with ROOT_DOMAIN_LANDING_PAGE
-        with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
-            result = self.submit_reg_form_for_user(email, password,
-                                                   realm_subdomain = 'abcdef',
-                                                   realm_in_root_domain = 'true',
-                                                   realm_name = realm_name)
-            self.assert_in_response('unavailable', result)
-
+        self.submit_create_realm_form(email, password, 'abcdef', realm_name, 'unavailable', True, 'true')
         # test valid use of root domain
-        result = self.submit_reg_form_for_user(email, password,
-                                               realm_subdomain = 'abcdef',
-                                               realm_in_root_domain = 'true',
-                                               realm_name = realm_name)
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(result.url.startswith('http://testserver/accounts/login/subdomain/'))
+        self.submit_create_realm_form(email, password, 'abcdef', realm_name, realm_in_root_domain='true',
+                                      expected_location_header='http://testserver/accounts/login/subdomain/')
 
     def test_is_root_domain_available(self) -> None:
         self.assertTrue(is_root_domain_available())
