@@ -373,7 +373,6 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('zendesk', ['customer-support']),
     WebhookIntegration('gci', ['misc'], display_name='Google Code-in',
                        stream_name='gci'),
-    WebhookIntegration('facebook', ['communication'], display_name='Facebook')
 ]  # type: List[WebhookIntegration]
 
 INTEGRATIONS = {
