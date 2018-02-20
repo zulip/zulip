@@ -244,7 +244,7 @@ MessageListView.prototype = {
                     message_container.stream_url =
                         narrow.by_stream_uri(message_container.msg.stream);
                     message_container.topic_url =
-                        narrow.by_stream_subject_uri(message_container.msg.stream,
+                        narrow.by_stream_topic_uri(message_container.msg.stream,
                                                      message_container.msg.subject);
                 } else {
                     message_container.pm_with_url =

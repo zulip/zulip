@@ -393,7 +393,7 @@ exports.by = function (operator, operand, opts) {
     exports.activate([{operator: operator, operand: operand}], opts);
 };
 
-exports.by_subject = function (target_id, opts) {
+exports.by_topic = function (target_id, opts) {
     // don't use current_msg_list as it won't work for muted messages or for out-of-narrow links
     var original = message_store.get(target_id);
     if (original.type !== 'stream') {
@@ -620,9 +620,9 @@ exports.by_stream_uri = function (stream) {
     return "#narrow/stream/" + hash_util.encodeHashComponent(stream);
 };
 
-exports.by_stream_subject_uri = function (stream, subject) {
+exports.by_stream_topic_uri = function (stream, topic) {
     return "#narrow/stream/" + hash_util.encodeHashComponent(stream) +
-           "/subject/" + hash_util.encodeHashComponent(subject);
+           "/subject/" + hash_util.encodeHashComponent(topic);
 };
 
 exports.by_message_uri = function (message_id) {
