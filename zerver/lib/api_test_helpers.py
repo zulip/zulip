@@ -229,7 +229,7 @@ def stream_message(client):
     request = {
         "type": "stream",
         "to": "Denmark",
-        "subject": "Castle",
+        "topic": "Castle",
         "content": "Something is rotten in the state of Denmark."
     }
     result = client.send_message(request)
