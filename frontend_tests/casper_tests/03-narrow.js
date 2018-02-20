@@ -11,16 +11,16 @@ casper.then(function () {
 });
 
 common.then_send_many([
-    { stream:  'Verona', subject: 'frontend test',
+    { stream:  'Verona', topic: 'frontend test',
       content: 'test message A' },
 
-    { stream:  'Verona', subject: 'frontend test',
+    { stream:  'Verona', topic: 'frontend test',
       content: 'test message B' },
 
-    { stream:  'Verona', subject: 'other subject',
+    { stream:  'Verona', topic: 'other topic',
       content: 'test message C' },
 
-    { stream:  'Denmark', subject: 'frontend test',
+    { stream:  'Denmark', topic: 'frontend test',
       content: 'other message' },
 
     { recipient: 'cordelia@zulip.com, hamlet@zulip.com',
@@ -32,7 +32,7 @@ common.then_send_many([
     { recipient: 'cordelia@zulip.com',
       content:   'personal C' },
 
-    { stream:  'Verona', subject: 'frontend test',
+    { stream:  'Verona', topic: 'frontend test',
       content: 'test message D' },
 
     { recipient: 'cordelia@zulip.com, hamlet@zulip.com',
@@ -66,7 +66,7 @@ function expect_stream() {
         casper.waitUntilVisible('#zfilt', function () {
             common.expected_messages('zfilt', [
                 'Verona > frontend test',
-                'Verona > other subject',
+                'Verona > other topic',
                 'Verona > frontend test',
             ], [
                 '<p>test message A</p>',
@@ -78,7 +78,7 @@ function expect_stream() {
     });
 }
 
-function expect_stream_subject() {
+function expect_stream_topic() {
     casper.then(function () {
         casper.waitUntilVisible('#zfilt', function () {
             common.expected_messages('zfilt', [
@@ -92,7 +92,7 @@ function expect_stream_subject() {
     });
 }
 
-function expect_subject() {
+function expect_topic() {
     casper.then(function () {
         casper.waitUntilVisible('#zfilt', function () {
             common.expected_messages('zfilt', [
@@ -218,11 +218,11 @@ un_narrow();
 expect_home();
 
 casper.then(function () {
-    casper.test.info('Narrowing by clicking subject');
+    casper.test.info('Narrowing by clicking topic');
     casper.click('*[title="Narrow to stream \\"Verona\\", topic \\"frontend test\\""]');
 });
 
-expect_stream_subject();
+expect_stream_topic();
 
 casper.then(check_narrow_title('frontend test - Zulip Dev - Zulip'));
 
@@ -263,13 +263,13 @@ search_and_check('Cordelia', 'Private', expect_1on1,
 search_and_check('stream:Verona', '', expect_stream,
                  'Verona - Zulip Dev - Zulip');
 
-search_and_check('stream:Verona subject:frontend+test', '', expect_stream_subject,
+search_and_check('stream:Verona topic:frontend+test', '', expect_stream_topic,
                  'frontend test - Zulip Dev - Zulip');
 
-search_and_check('stream:Verona topic:frontend+test', '', expect_stream_subject,
+search_and_check('stream:Verona topic:frontend+test', '', expect_stream_topic,
                  'frontend test - Zulip Dev - Zulip');
 
-search_and_check('subject:frontend+test', '', expect_subject,
+search_and_check('topic:frontend+test', '', expect_topic,
                  'home - Zulip Dev - Zulip');
 
 search_silent_user('sender:emailgateway@zulip.com', '');

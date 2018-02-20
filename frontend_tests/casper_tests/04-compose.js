@@ -17,7 +17,7 @@ casper.then(function () {
 // Send a message to try replying to
 common.then_send_many([
     { stream: 'Verona',
-      subject: 'Reply test',
+      topic: 'Reply test',
       content: "We reply to this message",
     },
     { recipient: "cordelia@zulip.com",
@@ -42,7 +42,7 @@ casper.then(function () {
 casper.then(function () {
     casper.waitUntilVisible('#compose', function () {
         casper.test.assertVisible('#stream-message', 'Stream input box visible');
-        common.check_form('#send_message_form', {stream: '', subject: ''}, "Stream empty on new compose");
+        common.check_form('#send_message_form', {stream: '', topic: ''}, "Stream empty on new compose");
         casper.click('body');
         casper.page.sendEvent('keypress', "C");
     });
@@ -58,9 +58,9 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible('#stream-message', function () {
-        common.check_form('#send_message_form', {stream: '', subject: ''}, "Stream empty on new compose");
+        common.check_form('#send_message_form', {stream: '', topic: ''}, "Stream empty on new compose");
 
-        // Check that when you reply to a message it pre-populates the stream and subject fields
+        // Check that when you reply to a message it pre-populates the stream and topic fields
         casper.click('body');
     });
 });
@@ -73,7 +73,7 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible('#stream-message', function () {
-        common.check_form('#send_message_form', {stream: "Verona", subject: "Reply test"}, "Stream populated after reply by click");
+        common.check_form('#send_message_form', {stream: "Verona", topic: "Reply test"}, "Stream populated after reply by click");
         // Or recipient field
         casper.click('body');
         casper.clickLabel("And reply to this message");
@@ -92,7 +92,7 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible('#stream-message', function () {
-        common.check_form('#send_message_form', {stream: "Verona", subject: "Reply test"}, "Stream populated after reply with `r`");
+        common.check_form('#send_message_form', {stream: "Verona", topic: "Reply test"}, "Stream populated after reply with `r`");
 
         // Test "closing" the compose box
         casper.click('body');

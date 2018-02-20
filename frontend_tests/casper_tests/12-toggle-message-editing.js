@@ -41,12 +41,12 @@ var content2 = 'admin: edit test message 2';
 // send two messages
 common.then_send_message('stream', {
     stream:  'Verona',
-    subject: 'edits',
+    topic: 'edits',
     content: content1,
 });
 common.then_send_message('stream', {
     stream:  'Verona',
-    subject: 'edits',
+    topic: 'edits',
     content: content2,
 });
 

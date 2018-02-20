@@ -339,7 +339,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
             "request": {
                 "client": "website",
                 "type": "private",
-                "subject": "(no topic)",
+                "topic": "(no topic)",
                 "stream": "",
                 "private_message_recipient": self.example_email('othello'),
                 "content": "hello",
@@ -373,7 +373,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
             "request": {
                 "client": "website",
                 "type": "stream",
-                "subject": "Stream message",
+                "topic": "Stream message",
                 "stream": "Denmark",
                 "private_message_recipient": "",
                 "content": "hello",
@@ -407,7 +407,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
             "request": {
                 "client": "website",
                 "type": "stream",
-                "subject": "Stream message",
+                "topic": "Stream message",
                 "stream": "Denmark",
                 "private_message_recipient": "",
                 "content": "hello",

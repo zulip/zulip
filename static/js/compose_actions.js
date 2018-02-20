@@ -202,7 +202,6 @@ exports.start = function (msg_type, opts) {
         // Clear the compose box if the existing message is to a different recipient
         clear_box();
     }
-
     compose_state.stream_name(opts.stream);
     compose_state.topic(opts.topic);
 
@@ -289,7 +288,7 @@ exports.respond_to_message = function (opts) {
     var topic = '';
     if (message.type === "stream") {
         stream = message.stream;
-        topic = message.subject;
+        topic = message.topic;
     }
 
     var pm_recipient = message.reply_to;

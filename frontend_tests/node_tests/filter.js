@@ -228,16 +228,16 @@ function make_sub(name, stream_id) {
     make_sub('Foo', stream_id);
     var predicate = get_predicate([['stream', 'Foo'], ['topic', 'Bar']]);
 
-    assert(predicate({type: 'stream', stream_id: stream_id, subject: 'bar'}));
-    assert(!predicate({type: 'stream', stream_id: stream_id, subject: 'whatever'}));
+    assert(predicate({type: 'stream', stream_id: stream_id, topic: 'bar'}));
+    assert(!predicate({type: 'stream', stream_id: stream_id, topic: 'whatever'}));
     assert(!predicate({type: 'stream', stream_id: 9999999}));
     assert(!predicate({type: 'private'}));
 
     // For old streams that we are no longer subscribed to, we may not have
     // a sub, but these should still match by stream name.
     predicate = get_predicate([['stream', 'old-Stream'], ['topic', 'Bar']]);
-    assert(predicate({type: 'stream', stream: 'Old-stream', subject: 'bar'}));
-    assert(!predicate({type: 'stream', stream: 'no-match', subject: 'whatever'}));
+    assert(predicate({type: 'stream', stream: 'Old-stream', topic: 'bar'}));
+    assert(!predicate({type: 'stream', stream: 'no-match', topic: 'whatever'}));
 
     predicate = get_predicate([['search', 'emoji']]);
     assert(predicate({}));
@@ -284,8 +284,8 @@ function make_sub(name, stream_id) {
     assert(!predicate({id: 6}));
 
     predicate = get_predicate([['id', 5], ['topic', 'lunch']]);
-    assert(predicate({type: 'stream', id: 5, subject: 'lunch'}));
-    assert(!predicate({type: 'stream', id: 5, subject: 'dinner'}));
+    assert(predicate({type: 'stream', id: 5, topic: 'lunch'}));
+    assert(!predicate({type: 'stream', id: 5, topic: 'dinner'}));
 
     predicate = get_predicate([['sender', 'Joe@example.com']]);
     assert(predicate({sender_id: joe.user_id}));

@@ -38,7 +38,7 @@ set_global('timerender', {
             status_message: false,
             type: 'stream',
             stream: 'Test Stream 1',
-            subject: 'Test Subject 1',
+            topic: 'Test topic 1',
             sender_email: 'test@example.com',
             timestamp: _.uniqueId(),
         });
@@ -97,7 +97,7 @@ set_global('timerender', {
         assert_message_list_equal(result.rerender_messages, []);
     }());
 
-    (function test_append_message_same_subject() {
+    (function test_append_message_same_topic() {
 
         var message1 = build_message_context();
         var message_group1 = build_message_group([
@@ -122,14 +122,14 @@ set_global('timerender', {
         assert_message_list_equal(result.rerender_messages, [message1]);
     }());
 
-    (function test_append_message_diffrent_subject() {
+    (function test_append_message_diffrent_topic() {
 
         var message1 = build_message_context();
         var message_group1 = build_message_group([
             message1,
         ]);
 
-        var message2 = build_message_context({subject: 'Test subject 2'});
+        var message2 = build_message_context({topic: 'Test topic 2'});
         var message_group2 = build_message_group([
             message2,
         ]);
@@ -200,7 +200,7 @@ set_global('timerender', {
         assert_message_list_equal(result.rerender_messages, []);
     }());
 
-    (function test_append_message_same_subject_me_message() {
+    (function test_append_message_same_topic_me_message() {
 
         var message1 = build_message_context();
         var message_group1 = build_message_group([
@@ -227,7 +227,7 @@ set_global('timerender', {
     }());
 
 
-    (function test_prepend_message_same_subject() {
+    (function test_prepend_message_same_topic() {
 
         var message1 = build_message_context();
         var message_group1 = build_message_group([
@@ -253,14 +253,14 @@ set_global('timerender', {
         assert_message_list_equal(result.rerender_messages, []);
     }());
 
-    (function test_prepend_message_diffrent_subject() {
+    (function test_prepend_message_diffrent_topic() {
 
         var message1 = build_message_context();
         var message_group1 = build_message_group([
             message1,
         ]);
 
-        var message2 = build_message_context({subject: 'Test Subject 2'});
+        var message2 = build_message_context({topic: 'Test topic 2'});
         var message_group2 = build_message_group([
             message2,
         ]);

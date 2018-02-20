@@ -106,7 +106,7 @@ function message_matches_search_term(message, operator, operand) {
         if (page_params.realm_is_zephyr_mirror_realm) {
             return zephyr_topic_name_match(message, operand);
         }
-        return (message.subject.toLowerCase() === operand);
+        return (message.topic.toLowerCase() === operand);
 
 
     case 'sender':

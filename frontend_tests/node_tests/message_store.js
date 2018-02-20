@@ -83,10 +83,10 @@ global.people.initialize_current_user(me.user_id);
     var retrieved_message = message_store.get(2067);
     assert.equal(retrieved_message, message);
 
-    // access cached previous message, and test match subject/content
+    // access cached previous message, and test match topic/content
     message = {
         id: 2067,
-        match_subject: "subject foo",
+        match_subject: "topic foo",
         match_content: "bar content",
     };
     message = message_store.add_message_metadata(message);
@@ -94,7 +94,7 @@ global.people.initialize_current_user(me.user_id);
     assert.equal(message.reply_to, 'bob@example.com,cindy@example.com');
     assert.equal(message.to_user_ids, '103,104');
     assert.equal(message.display_reply_to, 'Bob, Cindy');
-    assert.equal(message.match_subject, 'subject foo');
+    assert.equal(message.match_subject, 'topic foo');
     assert.equal(message.match_content, 'bar content');
 
     message = {
@@ -104,22 +104,21 @@ global.people.initialize_current_user(me.user_id);
         display_recipient: [me, cindy],
         stream: 'Zoolippy',
         topic: 'cool thing',
-        subject: 'the_subject',
         id: 2068,
     };
 
     // test stream properties
     with_overrides(function (override) {
         override('compose.empty_topic_placeholder', function () {
-            return 'the_subject';
+            return 'the_topic';
         });
         global.with_stub(function (stub) {
             set_global('composebox_typeahead', {add_topic: stub.f});
             message_store.set_message_booleans(message);
             message_store.add_message_metadata(message);
-            var typeahead_added = stub.get_args('stream', 'subject');
+            var typeahead_added = stub.get_args('stream', 'topic');
             assert.deepEqual(typeahead_added.stream, [me, cindy]);
-            assert.equal(message.subject, typeahead_added.subject);
+            assert.equal(message.topic, typeahead_added.topic);
         });
 
         assert.deepEqual(message.stream, [me, cindy]);

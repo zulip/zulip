@@ -405,7 +405,7 @@ exports.by_topic = function (target_id, opts) {
     unread_ops.mark_message_as_read(original);
     var search_terms = [
         {operator: 'stream', operand: original.stream},
-        {operator: 'topic', operand: original.subject},
+        {operator: 'topic', operand: original.topic ? original.topic : original.subject},
     ];
     opts = _.defaults({}, opts, {then_select_id: target_id});
     exports.activate(search_terms, opts);

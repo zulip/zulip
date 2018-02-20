@@ -35,13 +35,13 @@ casper.then(function () {
 // Send some messages.
 
 common.then_send_many([
-    { stream:  'Verona', subject: 'frontend test',
+    { stream:  'Verona', topic: 'frontend test',
       content: 'test verona A' },
 
-    { stream:  'Verona', subject: 'frontend test',
+    { stream:  'Verona', topic: 'frontend test',
       content: 'test verona B' },
 
-    { stream:  'Verona', subject: 'other subject',
+    { stream:  'Verona', topic: 'other subject',
       content: 'test verona C' },
 
     { recipient: 'cordelia@zulip.com, hamlet@zulip.com',
@@ -72,7 +72,7 @@ common.wait_for_receive(function () {
 });
 
 common.then_send_many([
-    { stream:  'Verona', subject: 'frontend test',
+    { stream:  'Verona', topic: 'frontend test',
       content: 'test verona D' },
 
     { recipient: 'cordelia@zulip.com, hamlet@zulip.com',

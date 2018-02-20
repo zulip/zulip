@@ -50,7 +50,7 @@ casper.then(function () {
     casper.waitUntilVisible('#stream-message', function () {
         casper.fill('form#send_message_form', {
             stream: 'all',
-            subject: 'tests',
+            topic: 'tests',
             content: 'Test Stream Message',
         }, false);
         casper.click("#compose_close");
@@ -108,7 +108,7 @@ casper.then(function () {
         casper.test.assertNotVisible('#preview_message_area', 'Preview Was Hidden');
         common.check_form('form#send_message_form', {
             stream: 'all',
-            subject: 'tests',
+            topic: 'tests',
             content: 'Test Stream Message',
         }, "Stream message box filled with draft content");
         casper.test.assertSelectorHasText('title', 'tests - Zulip Dev - Zulip', 'Narrowed to topic');
@@ -119,7 +119,7 @@ casper.then(function () {
     casper.test.info('Editing Stream Message Draft');
     casper.fill('form#send_message_form', {
         stream: 'all',
-        subject: 'tests',
+        topic: 'tests',
         content: 'Updated Stream Message',
     }, false);
     casper.click("#compose_close");

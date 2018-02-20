@@ -437,7 +437,7 @@ people.add(bob);
               sender_id: 101,
               queue_id: undefined,
               stream: '',
-              subject: '',
+              topic: '',
               to: '["alice@example.com"]',
               reply_to: 'alice@example.com',
               private_message_recipient: 'alice@example.com',
@@ -1440,7 +1440,7 @@ function test_with_mock_socket(test_params) {
 
     var message = compose.create_message_object();
     assert.equal(message.to, 'social');
-    assert.equal(message.subject, 'lunch');
+    assert.equal(message.topic, 'lunch');
     assert.equal(message.content, 'burrito');
 
     global.compose_state.get_message_type = function () {

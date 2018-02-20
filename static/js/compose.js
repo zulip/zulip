@@ -139,7 +139,7 @@ function create_message_object() {
         sender_id: page_params.user_id,
         queue_id: page_params.queue_id,
         stream: '',
-        subject: '',
+        topic: '',
     };
 
     if (message.type === "private") {
@@ -158,7 +158,7 @@ function create_message_object() {
         if (sub) {
             message.stream_id = sub.stream_id;
         }
-        message.subject = topic;
+        message.topic = topic;
     }
     return message;
 }

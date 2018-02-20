@@ -104,12 +104,12 @@ function set_topic_edit_properties(group, message) {
 function populate_group_from_message_container(group, message_container) {
     group.is_stream = message_container.msg.is_stream;
     group.is_private = message_container.msg.is_private;
-
     if (group.is_stream) {
         group.background_color = stream_data.get_color(message_container.msg.stream);
         group.color_class = stream_color.get_color_class(group.background_color);
         group.invite_only = stream_data.get_invite_only(message_container.msg.stream);
-        group.subject = message_container.msg.subject;
+        group.subject = message_container.msg.subject ? message_container.msg.subject
+          : message_container.msg.topic ;
         group.match_subject = message_container.msg.match_subject;
         group.stream_url = message_container.stream_url;
         group.topic_url = message_container.topic_url;
@@ -245,7 +245,7 @@ MessageListView.prototype = {
                         narrow.by_stream_uri(message_container.msg.stream);
                     message_container.topic_url =
                         narrow.by_stream_topic_uri(message_container.msg.stream,
-                                                     message_container.msg.subject);
+                                                     message_container.msg.topic);
                 } else {
                     message_container.pm_with_url =
                         message_container.msg.pm_with_url;

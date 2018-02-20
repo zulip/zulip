@@ -19,7 +19,7 @@ function then_edit_last_message() {
 
 common.then_send_message('stream', {
     stream:  'Verona',
-    subject: 'edits',
+    topic: 'edits',
     content: 'test editing',
 });
 
@@ -46,7 +46,7 @@ casper.waitWhileVisible("textarea.message_edit_content", function () {
 
 common.then_send_message('stream', {
     stream:  'Verona',
-    subject: 'edits',
+    topic: 'edits',
     content: '/me test editing one line with me',
 });
 

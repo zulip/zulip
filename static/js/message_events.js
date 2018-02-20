@@ -193,7 +193,7 @@ exports.update_messages = function update_messages(events) {
                 // must be called before we update msg.subject
                 topic_data.remove_message({
                     stream_id: msg.stream_id,
-                    topic_name: msg.subject,
+                    topic_name: msg.topic,
                 });
 
                 // Update the unread counts; again, this must be called

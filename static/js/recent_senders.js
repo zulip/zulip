@@ -10,14 +10,14 @@ exports.process_message_for_senders = function (message) {
 
     // Process most recent sender to topic
     var topic_dict = topic_senders.get(stream_id) || new Dict({fold_case: true});
-    var sender_message_ids = topic_dict.get(message.subject) || new Dict();
+    var sender_message_ids = topic_dict.get(message.topic.toLowerCase()) || new Dict();
     var old_message_id = sender_message_ids.get(message.sender_id);
 
     if (old_message_id === undefined || old_message_id < message.id) {
         sender_message_ids.set(message.sender_id, message.id);
     }
 
-    topic_dict.set(message.subject, sender_message_ids);
+    topic_dict.set(message.topic, sender_message_ids);
     topic_senders.set(stream_id, topic_dict);
 
     // Process most recent sender to whole stream

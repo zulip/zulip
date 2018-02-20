@@ -63,12 +63,12 @@ zrequire('util');
 
 (function test_same_recipient() {
     assert(util.same_recipient(
-        {type: 'stream', stream_id: 101, subject: 'Bar'},
-        {type: 'stream', stream_id: 101, subject: 'bar'}));
+        {type: 'stream', stream_id: 101, topic: 'Bar'},
+        {type: 'stream', stream_id: 101, topic: 'bar'}));
 
     assert(!util.same_recipient(
-        {type: 'stream', stream_id: 101, subject: 'Bar'},
-        {type: 'stream', stream_id: 102, subject: 'whatever'}));
+        {type: 'stream', stream_id: 101, topic: 'Bar'},
+        {type: 'stream', stream_id: 102, topic: 'whatever'}));
 
     assert(util.same_recipient(
         {type: 'private', to_user_ids: '101,102'},
@@ -79,7 +79,7 @@ zrequire('util');
         {type: 'private', to_user_ids: '103'}));
 
     assert(!util.same_recipient(
-        {type: 'stream', stream_id: 101, subject: 'Bar'},
+        {type: 'stream', stream_id: 101, topic: 'Bar'},
         {type: 'private'}));
 
     assert(!util.same_recipient(

@@ -673,7 +673,7 @@ class StreamMessagesTest(ZulipTestCase):
                                                            "to": "Verona",
                                                            "sender": self.example_email("cordelia"),
                                                            "client": "test suite",
-                                                           "subject": "announcement",
+                                                           "topic": "announcement",
                                                            "content": "Everyone knows Iago rules",
                                                            "forged": "true"})
         self.assert_json_success(result)
@@ -682,7 +682,7 @@ class StreamMessagesTest(ZulipTestCase):
                                                            "to": "Verona",
                                                            "sender": self.example_email("cordelia"),
                                                            "client": "test suite",
-                                                           "subject": "announcement",
+                                                           "topic": "announcement",
                                                            "content": "Everyone knows Iago rules",
                                                            "forged": "true"})
         self.assert_json_error(result, "User not authorized for this query")
@@ -907,7 +907,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "to": "Verona",
                                                      "client": "test suite",
                                                      "content": "Test message",
-                                                     "subject": "Test subject"})
+                                                     "topic": "Test subject"})
         self.assert_json_success(result)
 
     def test_api_message_to_self(self) -> None:
@@ -919,7 +919,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                            "to": "Verona",
                                                            "client": "test suite",
                                                            "content": "Test message",
-                                                           "subject": "Test subject"})
+                                                           "topic": "Test subject"})
         self.assert_json_success(result)
 
     def test_api_message_with_default_to(self) -> None:
@@ -934,7 +934,7 @@ class MessagePOSTTest(ZulipTestCase):
         result = self.api_post(email, "/api/v1/messages", {"type": "stream",
                                                            "client": "test suite",
                                                            "content": "Test message no to",
-                                                           "subject": "Test subject"})
+                                                           "topic": "Test subject"})
         self.assert_json_success(result)
 
         sent_message = self.get_last_message()
@@ -950,7 +950,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "to": "nonexistent_stream",
                                                      "client": "test suite",
                                                      "content": "Test message",
-                                                     "subject": "Test subject"})
+                                                     "topic": "Test subject"})
         self.assert_json_error(result, "Stream 'nonexistent_stream' does not exist")
 
     def test_message_to_nonexistent_stream_with_bad_characters(self) -> None:
@@ -963,7 +963,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "to": """&<"'><non-existent>""",
                                                      "client": "test suite",
                                                      "content": "Test message",
-                                                     "subject": "Test subject"})
+                                                     "topic": "Test subject"})
         self.assert_json_error(result, "Stream '&amp;&lt;&quot;&#39;&gt;&lt;non-existent&gt;' does not exist")
 
     def test_personal_message(self) -> None:
@@ -1058,7 +1058,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "to": "Verona",
                                                      "client": "test suite",
                                                      "content": "Test message",
-                                                     "subject": ""})
+                                                     "topic": ""})
         self.assert_json_error(result, "Topic can't be empty")
 
     def test_missing_topic(self) -> None:
@@ -1081,7 +1081,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "to": "Verona",
                                                      "client": "test suite",
                                                      "content": "Test message",
-                                                     "subject": "Test subject"})
+                                                     "topic": "Test subject"})
         self.assert_json_error(result, "Invalid message type")
 
     def test_private_message_without_recipients(self) -> None:
@@ -1163,7 +1163,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         self.login(self.example_email("hamlet"))
         post_data = {"type": "stream", "to": "Verona", "client": "test suite",
-                     "content": u"  I like null bytes \x00 in my content", "subject": "Test subject"}
+                     "content": u"  I like null bytes \x00 in my content", "topic": "Test subject"}
         result = self.client_post("/json/messages", post_data)
         self.assert_json_error(result, "Message must not contain null bytes")
 
@@ -1173,7 +1173,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         self.login(self.example_email("hamlet"))
         post_data = {"type": "stream", "to": "Verona", "client": "test suite",
-                     "content": "  I like whitespace at the end! \n\n \n", "subject": "Test subject"}
+                     "content": "  I like whitespace at the end! \n\n \n", "topic": "Test subject"}
         result = self.client_post("/json/messages", post_data)
         self.assert_json_success(result)
         sent_message = self.get_last_message()
@@ -1187,7 +1187,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.login(self.example_email("hamlet"))
         long_message = "A" * (MAX_MESSAGE_LENGTH + 1)
         post_data = {"type": "stream", "to": "Verona", "client": "test suite",
-                     "content": long_message, "subject": "Test subject"}
+                     "content": long_message, "topic": "Test subject"}
         result = self.client_post("/json/messages", post_data)
         self.assert_json_success(result)
 
@@ -1203,7 +1203,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.login(self.example_email("hamlet"))
         long_topic = "A" * (MAX_SUBJECT_LENGTH + 1)
         post_data = {"type": "stream", "to": "Verona", "client": "test suite",
-                     "content": "test content", "subject": long_topic}
+                     "content": "test content", "topic": long_topic}
         result = self.client_post("/json/messages", post_data)
         self.assert_json_success(result)
 
@@ -1217,7 +1217,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "to": "Verona",
                                                      "client": "test suite",
                                                      "content": "Test message",
-                                                     "subject": "Test subject",
+                                                     "topic": "Test subject",
                                                      "forged": True})
         self.assert_json_error(result, "User not authorized for this query")
 
@@ -1227,7 +1227,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "to": "Verona",
                                                      "client": "test suite",
                                                      "content": "Test message",
-                                                     "subject": "Test subject",
+                                                     "topic": "Test subject",
                                                      "realm_str": "mit"})
         self.assert_json_error(result, "User not authorized for this query")
 
@@ -1242,7 +1242,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "to": "Verona",
                                                      "client": "test suite",
                                                      "content": "Test message",
-                                                     "subject": "Test subject",
+                                                     "topic": "Test subject",
                                                      "realm_str": "non-existing"})
         user.is_api_super_user = False
         user.save()
@@ -1317,7 +1317,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                            "sender": "irc-user@irc.zulip.com",
                                                            "content": "Test message",
                                                            "client": "irc_mirror",
-                                                           "subject": "from irc",
+                                                           "topic": "from irc",
                                                            "to": "IRCLand"})
         self.assert_json_success(result)
 
@@ -1340,7 +1340,7 @@ class ScheduledMessageTest(ZulipTestCase):
                    "to": to,
                    "client": "test suite",
                    "content": msg,
-                   "subject": subject,
+                   "topic": subject,
                    "realm_str": realm_str,
                    "delivery_type": delivery_type,
                    "tz_guess": tz_guess}

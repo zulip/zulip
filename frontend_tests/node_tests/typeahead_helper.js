@@ -179,19 +179,19 @@ _.each(matches, function (person) {
     global.recent_senders.process_message_for_senders({
         sender_id : 7,
         stream_id : 1,
-        subject : "Dev Topic",
+        topic : "Dev Topic",
         id : _.uniqueId(),
     });
     global.recent_senders.process_message_for_senders({
         sender_id : 5,
         stream_id : 1,
-        subject : "Dev Topic",
+        topic : "Dev Topic",
         id : _.uniqueId(),
     });
     global.recent_senders.process_message_for_senders({
         sender_id : 6,
         stream_id : 1,
-        subject : "Dev Topic",
+        topic : "Dev Topic",
         id : _.uniqueId(),
     });
 
@@ -209,13 +209,13 @@ _.each(matches, function (person) {
     global.recent_senders.process_message_for_senders({
         sender_id : 5,
         stream_id : 2,
-        subject : "Linux Topic",
+        topic : "Linux Topic",
         id : _.uniqueId(),
     });
     global.recent_senders.process_message_for_senders({
         sender_id : 7,
         stream_id : 2,
-        subject : "Linux Topic",
+        topic : "Linux Topic",
         id : _.uniqueId(),
     });
 
