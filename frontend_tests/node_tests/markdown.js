@@ -497,3 +497,46 @@ run_test('katex_throws_unexpected_exceptions', () => {
     assert(blueslip.get_test_logs('error').length, 1);
     blueslip.clear_test_data();
 });
+
+run_test('auto_renumber_lists', () => {
+    var test_cases = [{
+        input: [
+            { type: 'paragraph', text: '1. A\n1. B' },
+            { type: 'blockquote_start' },
+            { type: 'paragraph', text: '1. A\n1. B' },
+            { type: 'blockquote_end' },
+            { type: 'paragraph', text: '1. A\n1. B' },
+        ],
+        expected: [
+            { type: 'paragraph', text: '1. A\n2. B' },
+            { type: 'blockquote_start' },
+            { type: 'paragraph', text: '1. A\n1. B' },
+            { type: 'blockquote_end' },
+            { type: 'paragraph', text: '1. A\n2. B' },
+        ],
+    }, {
+        input: [
+            { type: 'blockquote_start' },
+            { type: 'blockquote_start' },
+            { type: 'paragraph', text: 'A' },
+            { type: 'blockquote_end' },
+            { type: 'paragraph', text: '1. A\n1. B' },
+            { type: 'blockquote_end' },
+            { type: 'paragraph', text: '1. A\n1. B' },
+        ],
+        expected: [
+            { type: 'blockquote_start' },
+            { type: 'blockquote_start' },
+            { type: 'paragraph', text: 'A' },
+            { type: 'blockquote_end' },
+            { type: 'paragraph', text: '1. A\n1. B' },
+            { type: 'blockquote_end' },
+            { type: 'paragraph', text: '1. A\n2. B' },
+        ],
+    }];
+
+    test_cases.forEach(function (test_case) {
+        marked.autoRenumberLists(test_case.input);
+        assert.deepEqual(test_case.input, test_case.expected);
+    });
+});

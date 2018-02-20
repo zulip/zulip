@@ -1235,62 +1235,91 @@ class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
                 inserts += 1
         return copy
 
-class AutoNumberOListPreprocessor(markdown.preprocessors.Preprocessor):
-    """ Finds a sequence of lines numbered by the same number"""
-    RE = re.compile(r'^([ ]*)(\d+)\.[ ]+(.*)')
-    TAB_LENGTH = 2
+class AutoNumberListsProcessor(markdown.treeprocessors.Treeprocessor):
+    """ Looks for ordered lists with the same number for each item
+        and changes them to incrementing ones."""
 
-    def run(self, lines: List[str]) -> List[str]:
+    RE = re.compile(r'^([ ]*)(\d+)(\.[ ]+.*)')
+
+    def run(self, root: Element) -> None:
+        self.renumber_children(root)
+
+    def renumber_children(self, root: Element) -> None:
+        to_renumber = []  # List[Element]
+
+        if root.tag == 'li' and root.text:
+            # in some cases where root is a multiline bulleted list item,
+            # root.text contains the first line and the rest is in paragraphs
+            to_renumber.append(root)
+
+        for child in root:
+            if child.tag == 'p':
+                to_renumber.append(child)
+            elif child.tag == 'ul':
+                for li in child:
+                    self.renumber_children(li)
+            elif to_renumber:
+                self.renumber_elements(to_renumber)
+                to_renumber = []
+
+        if to_renumber:
+            self.renumber_elements(to_renumber)
+
+    def renumber_elements(self, elements: List[Element]) -> None:
+        lines = []  # type: List[str]
+        line_numbers = [0]
+
+        for element in elements:
+            lines.extend(element.text.split('\n'))
+            line_numbers.append(len(lines))
+
+        new_lines = self.renumber_lines(lines)
+
+        for i in range(len(elements)):
+            elements[i].text = '\n'.join(new_lines[line_numbers[i]:line_numbers[i+1]])
+
+    def renumber_lines(self, lines: List[str]) -> List[str]:
         new_lines = []  # type: List[str]
         current_list = []  # type: List[Match[str]]
-        current_indent = 0
+        current_lines = []  # type: List[str]
+
+        # whether the current list will be renumbered and from what number
+        is_auto = (False, '')
 
         for line in lines:
             m = self.RE.match(line)
 
-            # Remember if this line is a continuation of already started list
-            is_next_item = (m and current_list
-                            and current_indent == len(m.group(1)) // self.TAB_LENGTH)
+            if m:
+                # List item
+                is_auto = (not current_list
+                           or (is_auto[0] and is_auto[1] == m.group(2)), m.group(2))
+                current_list.append(m)
+                current_lines.append(line)
 
-            if not is_next_item:
+            if not m and current_list:
                 # There is no more items in the list we were processing
-                new_lines.extend(self.renumber(current_list))
+                new_lines.extend(self.renumber_list(current_list) if is_auto[0] else current_lines)
                 current_list = []
+                current_lines = []
 
             if not m:
-                # Ordinary line
                 new_lines.append(line)
-            elif is_next_item:
-                # Another list item
-                current_list.append(m)
-            else:
-                # First list item
-                current_list = [m]
-                current_indent = len(m.group(1)) // self.TAB_LENGTH
 
-        new_lines.extend(self.renumber(current_list))
+        if current_list:
+            # Last list reaches end of paragraph
+            new_lines.extend(self.renumber_list(current_list) if is_auto[0] else current_lines)
 
         return new_lines
 
-    def renumber(self, mlist: List[Match[str]]) -> List[str]:
+    def renumber_list(self, mlist: List[Match[str]]) -> List[str]:
         if not mlist:
             return []
 
-        start_number = int(mlist[0].group(2))
-
-        # Change numbers only if every one is the same
-        change_numbers = True
-        for m in mlist:
-            if int(m.group(2)) != start_number:
-                change_numbers = False
-                break
-
         lines = []  # type: List[str]
-        counter = start_number
+        counter = int(mlist[0].group(2))
 
         for m in mlist:
-            number = str(counter) if change_numbers else m.group(2)
-            lines.append('%s%s. %s' % (m.group(1), number, m.group(3)))
+            lines.append('%s%s%s' % (m.group(1), str(counter), m.group(3)))
             counter += 1
 
         return lines
@@ -1619,11 +1648,7 @@ class Bugdown(markdown.Extension):
         md.preprocessors.add('hanging_ulists',
                              BugdownUListPreprocessor(md),
                              "_begin")
-
-        md.preprocessors.add('auto_number_olist',
-                             AutoNumberOListPreprocessor(md),
-                             "_begin")
-
+        md.treeprocessors.add("auto_number_lists", AutoNumberListsProcessor(md), "<inline")
         md.treeprocessors.add("inline_interesting_links", InlineInterestingLinkProcessor(md, self), "_end")
 
         if settings.CAMO_URI:

@@ -136,8 +136,111 @@ Lexer.prototype.lex = function(src) {
     .replace(/\u00a0/g, ' ')
     .replace(/\u2424/g, '\n');
 
-  return this.token(src, true);
+  var tokens = this.token(src, true);
+  autoRenumberLists(tokens);
+  return tokens;
 };
+
+var autoRenumberLists = (function () {
+  // Looks for ordered lists with the same number for each item
+  // and changes them to incrementing ones.
+
+  var re = /^( *)(\d+)(\. +.*)/;
+
+  function extendArray(arr, arr2) {
+    Array.prototype.push.apply(arr, arr2);
+  }
+
+  function renumberList(mlist) {
+    if (!mlist.length) {
+      return [];
+    }
+
+    var startNumber = parseInt(mlist[0][2], 10);
+
+    return mlist.map(function (m, i) {
+      return m[1] + (startNumber+i).toString() + m[3];
+    });
+  }
+
+  function renumberTokens(tokens) {
+    var lines = [];
+    var lineNumbers = [0];
+
+    tokens.forEach(function (token, i) {
+      extendArray(lines, token.text.split('\n'));
+      lineNumbers.push(lines.length);
+    });
+
+    var newLines = renumberLines(lines);
+
+    tokens.forEach(function (token, i) {
+      token.text = newLines.slice(lineNumbers[i], lineNumbers[i+1]).join('\n');
+    });
+  }
+
+  function renumberLines(lines) {
+    var newLines = [];
+    var currentList = [];
+    var currentLines = [];
+
+    // whether the current list will be renumbered and from what number
+    var isAuto = [false, ''];
+
+    lines.forEach(function (line) {
+      var m = line.match(re);
+
+      if (m) {
+        isAuto = [!currentList.length || (isAuto[0] && isAuto[1] === m[2]), m[2]];
+        currentList.push(m);
+        currentLines.push(line);
+      }
+
+      if (!m && currentList.length) {
+        extendArray(newLines, isAuto[0] ? renumberList(currentList) : currentLines);
+        currentList = [];
+        currentLines = [];
+      }
+
+      if (!m) {
+        newLines.push(line);
+      }
+    });
+
+    if (currentList.length > 0) {
+      // Last list reaches end of paragraph
+      extendArray(newLines, isAuto[0] ? renumberList(currentList) : currentLines);
+    }
+
+    return newLines;
+  }
+
+  return function (tokens) {
+    var toRenumber = [];
+    var blockquoteLevel = 0;
+
+    tokens.forEach(function (token) {
+      if (blockquoteLevel === 0 && (token.type === 'paragraph' || token.type === 'text')) {
+        toRenumber.push(token);
+      } else if (token.type !== 'space') {
+        if (toRenumber.length > 0) {
+          renumberTokens(toRenumber);
+          toRenumber = [];
+        }
+
+        if (token.type === 'blockquote_start') {
+          blockquoteLevel++;
+        } else if (token.type === 'blockquote_end') {
+          blockquoteLevel--;
+        }
+      }
+    });
+
+    if (toRenumber.length > 0) {
+      renumberTokens(toRenumber);
+    }
+  };
+}());
 
 var htmlStashCounter = 0;
 var htmlStashTemplate = "klzzwxhzsd:";
@@ -1493,6 +1596,8 @@ marked.inlineLexer = InlineLexer.output;
 marked.parse = marked;
 
 marked.stashHtml = stashHtml;
+
+marked.autoRenumberLists = autoRenumberLists;
 
 if (typeof module !== 'undefined' && typeof exports === 'object') {
   module.exports = marked;

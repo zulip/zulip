@@ -268,6 +268,50 @@
       "text_content": "1. A\n3. B\n 2. C\n1. D"
     },
     {
+      "name": "auto_renumbered_list_paragraphs",
+      "input": "1. A\n1. B\n\n1. A\n1. B",
+      "expected_output": "<p>1. A<br>\n2. B</p>\n<p>3. A<br>\n4. B</p>",
+      "text_content": "1. A\n2. B\n3. A\n4. B"
+    },
+    {
+      "name": "auto_renumbered_list_separate",
+      "input": "1. A\n1. B\nC\n1. A\n1. B",
+      "expected_output": "<p>1. A<br>\n2. B<br>\nC<br>\n1. A<br>\n2. B</p>",
+      "text_content": "1. A\n2. B\nC\n1. A\n2. B"
+    },
+    {
+      "name": "auto_renumbered_list_code",
+      "input": "1. A\n1. B\n\n```\n1. A\n1. B\n```\n\n1. A\n1. B",
+      "expected_output": "<p>1. A<br>\n2. B</p>\n<div class=\"codehilite\"><pre><span></span>1. A\n1. B\n</pre></div>\n\n\n<p>1. A<br>\n2. B</p>",
+      "text_content": "1. A\n2. B\n1. A\n1. B\n\n\n\n1. A\n2. B"
+    },
+    {
+      "name": "auto_renumbered_list_blockquote",
+      "input": "1. A\n1. B\n\n> 1. A\n> 1. B\n\n1. A\n1. B",
+      "expected_output": "<p>1. A<br>\n2. B</p>\n<blockquote>\n<p>1. A<br>\n1. B</p>\n</blockquote>\n<p>1. A<br>\n2. B</p>",
+      "text_content": "1. A\n2. B\n> 1. A\n> 1. B\n\n1. A\n2. B"
+    },
+    {
+      "name": "auto_renumbered_list_nested_blockquote",
+      "input": "> > A\n>\n> 1. A\n> 1. B\n\n1. A\n1. B",
+      "expected_output": "<blockquote>\n<blockquote>\n<p>A</p>\n</blockquote>\n<p>1. A<br>\n1. B</p>\n</blockquote>\n<p>1. A<br>\n2. B</p>",
+      "text_content": "> > A\n> 1. A\n> 1. B\n\n1. A\n2. B"
+    },
+    {
+      "name": "auto_renumbered_list_inside_ulist",
+      "input": "* 1. A\n  1. B",
+      "expected_output": "<ul>\n<li>1. A<p>2. B</p>\n</li>\n</ul>",
+      "marked_expected_output": "<ul>\n<li>1. A<br>\n2. B</li>\n</ul>",
+      "text_content": "\n1. A2. B\n\n"
+    },
+    {
+      "name": "auto_renumbered_list_inside_ulist_separate",
+      "input": "* 1. A\n  1. B\n\n  1. C\n1. D",
+      "expected_output": "<ul>\n<li>\n<p>1. A</p>\n<p>2. B</p>\n<p>3. C<br>\n4. D</p>\n</li>\n</ul>",
+      "marked_expected_output": "<ul>\n<li><p>1. A<br>\n2. B</p>\n<p>3. C<br>\n4. D</p>\n</li>\n</ul>",
+      "text_content": "\n\n1. A\n2. B\n3. C\n4. D\n\n"
+    },
+    {
       "name": "linkify_interference",
       "input": "link: xx, x xxxxx xx xxxx xx\n\n[xxxxx #xx](http://xxxxxxxxx:xxxx/xxx/xxxxxx%xxxxxx/xx/):**xxxxxxx**\n\nxxxxxxx xxxxx xxxx xxxxx:\n`xxxxxx`: xxxxxxx\n`xxxxxx`: xxxxx\n`xxxxxx`: xxxxx xxxxx",
       "expected_output": "<p>link: xx, x xxxxx xx xxxx xx</p>\n<p><a href=\"http://xxxxxxxxx:xxxx/xxx/xxxxxx%xxxxxx/xx/\" target=\"_blank\" title=\"http://xxxxxxxxx:xxxx/xxx/xxxxxx%xxxxxx/xx/\">xxxxx #xx</a>:<strong>xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxxxxxx<br>\n<code>xxxxxx</code>: xxxxx<br>\n<code>xxxxxx</code>: xxxxx xxxxx</p>",
