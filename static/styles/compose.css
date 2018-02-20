@@ -93,6 +93,9 @@
 .compose_table #private-message .to_text span {
     display: flex;
     align-items: center;
+
+    position: relative;
+    top: -1px;
 }
 
 .compose_table #compose-lock-icon {
