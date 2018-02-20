@@ -619,7 +619,10 @@ exports.handle_keydown = function (event) {
     var isItalic = code === 73 && !event.shiftKey;
     var isLink = code === 76 && event.shiftKey;
 
-    if ((isBold || isItalic || isLink) && (event.ctrlKey || event.metaKey)) {
+    // detect command and ctrl key
+    var isCmdOrCtrl = /Mac/i.test(navigator.userAgent) ? event.metaKey : event.ctrlKey;
+
+    if ((isBold || isItalic || isLink) && isCmdOrCtrl) {
         function add_markdown(markdown) {
             var textarea = $("#compose-textarea");
             var range = textarea.range();
