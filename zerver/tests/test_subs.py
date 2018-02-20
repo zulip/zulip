@@ -589,7 +589,8 @@ class StreamAdminTest(ZulipTestCase):
 
     def attempt_unsubscribe_of_principal(self, query_count: int, is_admin: bool=False,
                                          is_subbed: bool=True, invite_only: bool=False,
-                                         other_user_subbed: bool=True) -> HttpResponse:
+                                         other_user_subbed: bool=True,
+                                         other_sub_users: List[UserProfile]=None) -> HttpResponse:
 
         # Set up the main user, who is in most cases an admin.
         user_profile = self.example_user('hamlet')
@@ -611,6 +612,9 @@ class StreamAdminTest(ZulipTestCase):
             self.subscribe(user_profile, stream_name)
         if other_user_subbed:
             self.subscribe(other_user_profile, stream_name)
+        if other_sub_users:
+            for user in other_sub_users:
+                self.subscribe(user, stream_name)
 
         with queries_captured() as queries:
             result = self.client_delete(
@@ -654,7 +658,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=22, is_admin=True, is_subbed=True, invite_only=True,
+            query_count=21, is_admin=True, is_subbed=True, invite_only=True,
             other_user_subbed=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
@@ -662,13 +666,15 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_admin_remove_others_from_unsubbed_private_stream(self) -> None:
         """
-        Even if you're an admin, you can't remove people from private
+        If you're an admin, you can remove people from private
         streams you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=5, is_admin=True, is_subbed=False, invite_only=True,
-            other_user_subbed=True)
-        self.assert_json_error(result, "Cannot administer invite-only streams this way")
+            query_count=21, is_admin=True, is_subbed=False, invite_only=True,
+            other_user_subbed=True, other_sub_users=[self.example_user("hamlet")])
+        json = self.assert_json_success(result)
+        self.assertEqual(len(json["removed"]), 1)
+        self.assertEqual(len(json["not_subscribed"]), 0)
 
     def test_create_stream_by_admins_only_setting(self) -> None:
         """
