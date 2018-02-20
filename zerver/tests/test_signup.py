@@ -127,9 +127,9 @@ class DeactivationNoticeTestCase(ZulipTestCase):
             """Check that getting the url returns the expected status code and url/body contains specified string"""
             result = self.client_get(url)
             self.assertEqual(result.status_code, expected_status_code)
-            if(url_contains_string is not None):
+            if url_contains_string is not None:
                 self.assertIn(url_contains_string, result.url)
-            if(body_contains_string is not None):
+            if body_contains_string is not None:
                 self.assertIn(body_contains_string, result.content.decode())
 
         # Realm is active
@@ -470,7 +470,7 @@ class LoginTest(ZulipTestCase):
 
 class InviteUserBase(ZulipTestCase):
     def _check_sent_emails(self, correct_recipients: List[Text],
-                          custom_from_name: Optional[str]=None) -> None:
+                           custom_from_name: Optional[str]=None) -> None:
         """
         Checks if the outbox contains mails to the invitees.
 
@@ -491,7 +491,7 @@ class InviteUserBase(ZulipTestCase):
         return [self.nonreg_email(invitee) for invitee in invitees_names]
 
     def _invite(self, invitees: List[Text], user: Text = "hamlet", streams: List[Text] = ["Denmark"],
-               invitees_format: Text="{0}", invite_as_admin: str="false") -> HttpResponse:
+                invitees_format: Text="{0}", invite_as_admin: str="false") -> HttpResponse:
         """
         Invites the specified invitees to Zulip with the specified streams.
 
@@ -512,7 +512,7 @@ class InviteUserBase(ZulipTestCase):
                                  "invite_as_admin": invite_as_admin})
 
     def _check_successful_invite(self, invitees: [Text], response: HttpResponse,
-                                custom_from_name: Optional[str]=None) -> None:
+                                 custom_from_name: Optional[str]=None) -> None:
         """
         Checks if request was successful, the emails to send contain a key to confirm, and whether the
         emails have been sent.
@@ -699,9 +699,9 @@ class InviteUserTestCase(InviteUserBase):
 
         response = self._invite(invitees, user="iago", invitees_format=invitees_format)
         self.assert_json_error(response,
-            "You do not have enough remaining invites. "
-            "Please contact zulip-admin@example.com to have your limit raised. "
-            "No invitations were sent.")
+                               "You do not have enough remaining invites. "
+                               "Please contact zulip-admin@example.com to have your limit raised. "
+                               "No invitations were sent.")
 
     def test_missing_or_invalid_params(self) -> None:
         """
@@ -1230,12 +1230,12 @@ class RealmCreationTestCase(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
 
     def submit_create_realm_form(self, email: str, password: str,
-                                      realm_subdomain: str="zuliptest", realm_name: str="Zulip Test",
-                                      expected_response: str=None,
-                                      root_domain_landing_page_setting: bool=False,
-                                      realm_in_root_domain: str=None,
-                                      expected_location_header: str=None,
-                                      ** kwargs: Any) -> None:
+                                 realm_subdomain: str="zuliptest", realm_name: str="Zulip Test",
+                                 expected_response: str=None,
+                                 root_domain_landing_page_setting: bool=False,
+                                 realm_in_root_domain: str=None,
+                                 expected_location_header: str=None,
+                                 ** kwargs: Any) -> None:
         """
         Submit the create realm form and check response.
         """
@@ -1347,8 +1347,8 @@ class RealmCreationTestCase(ZulipTestCase):
                   'abouts': "unavailable",
                   'zephyr': "unavailable"}
         for string_id, error_msg in errors.items():
-             self.submit_create_realm_form(email, password, expected_response=error_msg,
-                                                realm_subdomain=string_id, realm_name=realm_name)
+            self.submit_create_realm_form(email, password, expected_response=error_msg,
+                                          realm_subdomain=string_id, realm_name=realm_name)
 
         # test valid subdomain
         self.submit_create_realm_form(email, password, 'a-0', realm_name)
@@ -1361,7 +1361,8 @@ class RealmCreationTestCase(ZulipTestCase):
         self.request_create_realm_email(email)
         self.visit_confirmation_link(email)
         # test root domain will fail with ROOT_DOMAIN_LANDING_PAGE
-        self.submit_create_realm_form(email,password, '', realm_name, 'unavailable', True)
+        self.submit_create_realm_form(email, password, '', realm_name, 'unavailable', True)
+        self.submit_create_realm_form(email, password, '', realm_name, 'unavailable', True)
         # test valid use of root domain
         self.submit_create_realm_form(email, password, '', realm_name,
                                       expected_location_header='http://testserver/accounts/login/subdomain/')
