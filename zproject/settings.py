@@ -1033,6 +1033,7 @@ JS_SPECS = {
             'js/sent_messages.js',
             'js/compose_state.js',
             'js/compose_actions.js',
+            'js/transmit.js',
             'js/compose.js',
             'js/upload.js',
             'js/stream_color.js',
