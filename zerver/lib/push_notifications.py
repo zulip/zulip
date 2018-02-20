@@ -374,7 +374,7 @@ def add_push_device_token(user_profile: UserProfile,
 def remove_push_device_token(user_profile: UserProfile, token_str: bytes, kind: int) -> None:
 
     # If we're sending things to the push notification bouncer
-    # register this user with them here
+    # unregister this user with them here
     if uses_notification_bouncer():
         # TODO: Make this a remove item
         post_data = {
