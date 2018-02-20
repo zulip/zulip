@@ -142,7 +142,7 @@ exports.initialize = function reload__initialize() {
 
         // TODO: preserve focus
         compose_actions.start(vars.msg_type, {stream: vars.stream || '',
-                                      subject: vars.subject || '',
+                                      topic: vars.subject || '',
                                       private_message_recipient: vars.recipient || '',
                                       content: vars.msg || ''});
         if (send_now) {

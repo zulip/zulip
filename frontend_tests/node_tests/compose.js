@@ -816,7 +816,7 @@ function test_raw_file_drop(raw_drop_func) {
         page_params.narrow_topic = 'testing';
 
         reset_jquery();
-        set_up_compose_start_mock({subject: 'testing'});
+        set_up_compose_start_mock({topic: 'testing'});
 
         compose.initialize();
 

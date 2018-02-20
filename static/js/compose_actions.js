@@ -31,7 +31,7 @@ function hide_box() {
 
 function get_focus_area(msg_type, opts) {
     // Set focus to "Topic" when narrowed to a stream+topic and "New topic" button clicked.
-    if (msg_type === 'stream' && opts.stream && ! opts.subject) {
+    if (msg_type === 'stream' && opts.stream && ! opts.topic) {
         return 'topic';
     } else if ((msg_type === 'stream' && opts.stream)
                || (msg_type === 'private' && opts.private_message_recipient)) {
@@ -160,7 +160,7 @@ function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
     var default_opts = {
         message_type:     msg_type,
         stream:           '',
-        subject:          '',
+        topic:          '',
         private_message_recipient: '',
         trigger:          'unknown',
     };
@@ -176,7 +176,7 @@ function same_recipient_as_before(msg_type, opts) {
     return (compose_state.get_message_type() === msg_type) &&
             ((msg_type === "stream" &&
               opts.stream === compose_state.stream_name() &&
-              opts.subject === compose_state.topic()) ||
+              opts.topic === compose_state.topic()) ||
              (msg_type === "private" &&
               opts.private_message_recipient === compose_state.recipient()));
 }
@@ -194,7 +194,7 @@ exports.start = function (msg_type, opts) {
     // If we are invoked by a compose hotkey (c or C), do not assume that we know
     // what the message's topic or PM recipient should be.
     if (opts.trigger === "compose_hotkey") {
-        opts.subject = '';
+        opts.topic = '';
         opts.private_message_recipient = '';
     }
 
@@ -204,7 +204,7 @@ exports.start = function (msg_type, opts) {
     }
 
     compose_state.stream_name(opts.stream);
-    compose_state.topic(opts.subject);
+    compose_state.topic(opts.topic);
 
     // Set the recipients with a space after each comma, so it looks nice.
     compose_state.recipient(opts.private_message_recipient.replace(/,\s*/g, ", "));
@@ -308,7 +308,7 @@ exports.respond_to_message = function (opts) {
     } else {
         msg_type = message.type;
     }
-    exports.start(msg_type, {stream: stream, subject: topic,
+    exports.start(msg_type, {stream: stream, topic: topic,
                              private_message_recipient: pm_recipient,
                              replying_to_message: message,
                              trigger: opts.trigger});

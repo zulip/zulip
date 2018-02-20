@@ -97,7 +97,7 @@ function assert_hidden(sel) {
     global.narrow_state.set_compose_defaults = function () {
         var opts = {};
         opts.stream = 'stream1';
-        opts.subject = 'topic1';
+        opts.topic = 'topic1';
         return opts;
     };
 
@@ -207,10 +207,10 @@ function assert_hidden(sel) {
     assert.equal(get_focus_area('stream', {stream: 'fun'}),
                  'topic');
     assert.equal(get_focus_area('stream', {stream: 'fun',
-                                           subject: 'more'}),
+                                           topic: 'more'}),
                  'compose-textarea');
     assert.equal(get_focus_area('stream', {stream: 'fun',
-                                           subject: 'more',
+                                           topic: 'more',
                                            trigger: 'new topic button'}),
                  'topic');
 }());

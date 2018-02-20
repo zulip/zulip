@@ -85,7 +85,7 @@ exports.set_compose_defaults = function () {
     }
 
     if (single.has('topic')) {
-        opts.subject = single.get('topic');
+        opts.topic = single.get('topic');
     }
 
     if (single.has('pm-with')) {
