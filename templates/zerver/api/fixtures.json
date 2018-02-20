@@ -307,5 +307,10 @@
         "code":"BAD_REQUEST",
         "msg":"User not authorized for this query",
         "result":"error"
+    },
+    "invalid-stream-error": {
+        "code":"BAD_REQUEST",
+        "msg":"Invalid stream name 'nonexistent'",
+        "result":"error"
     }
 }
