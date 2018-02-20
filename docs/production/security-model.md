@@ -114,7 +114,8 @@ strength allowed is controlled by two settings in
     stream's message history.
   * Organization administrators can do some basic management of
     private streams that they are not subscribed to: Changing the
-    stream name and description, and viewing the current subscribers.
+    stream name and description, viewing the current subscribers, and
+    removing subscribers.
 
 * Zulip supports editing the content and topics of messages that have
   already been sent. As a general philosophy, our policies provide
