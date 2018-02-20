@@ -2,15 +2,14 @@ set_global('$', global.make_zjquery());
 set_global('i18n', global.stub_i18n);
 
 set_global('page_params', {
-    use_websockets: true,
 });
 
-set_global('navigator', {});
 set_global('document', {
     getElementById: function () { return $('#compose-textarea'); },
     execCommand: function () { return false; },
     location: {},
 });
+set_global('transmit', {});
 set_global('channel', {});
 set_global('templates', {});
 
@@ -27,17 +26,12 @@ set_global('feature_flags', {
     resize_bottom_whitespace: noop,
 });
 set_global('echo', {});
-set_global('socket', {});
-set_global('Socket', function () {
-    return global.socket;
-});
 set_global('stream_edit', {});
 set_global('markdown', {});
 set_global('loading', {});
 
 set_global('sent_messages', {
     start_tracking_message: noop,
-    report_server_ack: noop,
 });
 set_global('notifications', {
     notify_above_composebox: noop,
@@ -58,7 +52,6 @@ zrequire('compose_state');
 zrequire('people');
 zrequire('compose');
 zrequire('upload');
-page_params.use_websockets = false;
 
 var me = {
     email: 'me@example.com',
@@ -404,7 +397,7 @@ people.add(bob);
     function initialize_state_stub_dict() {
         stub_state = {};
         stub_state.local_id_counter = 0;
-        stub_state.send_msg_ajax_post_called = 0;
+        stub_state.send_msg_called = 0;
         stub_state.get_events_running_called = 0;
         stub_state.reify_message_id_checked = 0;
         return stub_state;
@@ -430,7 +423,7 @@ people.add(bob);
             stub_state.local_id_counter += 1;
             return stub_state.local_id_counter;
         };
-        channel.post = function (payload) {
+        transmit.send_message = function (payload, success) {
             var single_msg = {
               type: 'private',
               content: '[foobar](/user_uploads/123456)',
@@ -445,12 +438,10 @@ people.add(bob);
               local_id: 1,
               locally_echoed: true,
             };
-            assert.equal(payload.url, '/json/messages');
-            assert.equal(_.keys(payload.data).length, 12);
-            assert.deepEqual(payload.data, single_msg);
-            payload.data.id = stub_state.local_id_counter;
-            payload.success(payload.data);
-            stub_state.send_msg_ajax_post_called += 1;
+            assert.deepEqual(payload, single_msg);
+            payload.id = stub_state.local_id_counter;
+            success(payload);
+            stub_state.send_msg_called += 1;
         };
         echo.reify_message_id = function (local_id, message_id) {
             assert.equal(typeof(local_id), 'number');
@@ -473,7 +464,7 @@ people.add(bob);
             local_id_counter: 1,
             get_events_running_called: 1,
             reify_message_id_checked: 1,
-            send_msg_ajax_post_called: 1,
+            send_msg_called: 1,
         };
         assert.deepEqual(stub_state, state);
         assert.equal($("#compose-textarea").val(), '');
@@ -483,52 +474,14 @@ people.add(bob);
         assert(!$("#sending-indicator").visible());
     }());
 
-    (function test_error_code_path_when_error_type_not_timeout() {
-        stub_state = initialize_state_stub_dict();
-        compose_state.set_message_type('stream');
-        var server_error_triggered = false;
-        channel.post = function (payload) {
-            payload.error('500', 'Internal Server Error');
-            stub_state.send_msg_ajax_post_called += 1;
-            server_error_triggered = true;
-        };
-        var reload_initiate_triggered = false;
-        global.reload = {
-            is_pending: function () { return true; },
-            initiate: function () {
-                reload_initiate_triggered = true;
-            },
-        };
-
-        compose.send_message();
-
-        var state = {
-            local_id_counter: 1,
-            get_events_running_called: 1,
-            reify_message_id_checked: 0,
-            send_msg_ajax_post_called: 1,
-        };
-        assert.deepEqual(stub_state, state);
-        assert(server_error_triggered);
-        assert(reload_initiate_triggered);
-    }());
-
     // This is the additional setup which is common to both the tests below.
-    var server_error_triggered = false;
-    var reload_initiate_triggered = false;
-    channel.post = function (payload) {
-        payload.error('408', 'timeout');
-        stub_state.send_msg_ajax_post_called += 1;
-        server_error_triggered = true;
+    transmit.send_message = function (payload, success, error) {
+        stub_state.send_msg_called += 1;
+        error('Error sending message: Server says 408');
     };
-    var xhr_error_msg_checked = false;
-    channel.xhr_error_message = function (error, xhr) {
-        assert.equal(error, 'Error sending message');
-        assert.equal(xhr, '408');
-        xhr_error_msg_checked = true;
-        return 'Error sending message: Server says 408';
-    };
-    var echo_error_msg_checked = false;
+
+    var echo_error_msg_checked;
+
     echo.message_send_error = function (local_id, error_response) {
         assert.equal(local_id, 1);
         assert.equal(error_response, 'Error sending message: Server says 408');
@@ -545,12 +498,9 @@ people.add(bob);
             local_id_counter: 1,
             get_events_running_called: 1,
             reify_message_id_checked: 0,
-            send_msg_ajax_post_called: 1,
+            send_msg_called: 1,
         };
         assert.deepEqual(stub_state, state);
-        assert(server_error_triggered);
-        assert(!reload_initiate_triggered);
-        assert(xhr_error_msg_checked);
         assert(echo_error_msg_checked);
     }());
 
@@ -563,9 +513,6 @@ people.add(bob);
         $("#sending-indicator").show();
         $("#compose-textarea").select(noop);
         echo_error_msg_checked = false;
-        xhr_error_msg_checked = false;
-        server_error_triggered = false;
-        reload_initiate_triggered = false;
         echo.try_deliver_locally = function () {
             return;
         };
@@ -580,12 +527,9 @@ people.add(bob);
             local_id_counter: 0,
             get_events_running_called: 1,
             reify_message_id_checked: 0,
-            send_msg_ajax_post_called: 1,
+            send_msg_called: 1,
         };
         assert.deepEqual(stub_state, state);
-        assert(server_error_triggered);
-        assert(!reload_initiate_triggered);
-        assert(xhr_error_msg_checked);
         assert(!echo_error_msg_checked);
         assert.equal($("#compose-send-button").prop('disabled'), false);
         assert.equal($('#compose-error-msg').html(),
@@ -600,6 +544,7 @@ people.add(bob);
 
 (function test_enter_with_preview_open() {
     // Test sending a message with content.
+    compose_state.set_message_type('stream');
     $("#compose-textarea").val('message me');
     $("#compose-textarea").hide();
     $("#undo_markdown_preview").show();
@@ -822,75 +767,6 @@ function test_raw_file_drop(raw_drop_func) {
 
         assert(compose_actions_start_checked);
     }());
-}());
-
-function test_with_mock_socket(test_params) {
-    var socket_send_called;
-    var send_args = {};
-
-    global.socket.send = function (request, success, error) {
-        global.socket.send = undefined;
-        socket_send_called = true;
-
-        // Save off args for check_send_args callback.
-        send_args.request = request;
-        send_args.success = success;
-        send_args.error = error;
-    };
-
-    // Run the actual code here.
-    test_params.run_code();
-
-    assert(socket_send_called);
-    test_params.check_send_args(send_args);
-}
-
-(function test_transmit_message() {
-    page_params.use_websockets = true;
-    global.navigator.userAgent = 'unittest_transmit_message';
-
-    // Our request is mostly unimportant, except that the
-    // socket_user_agent field will be added.
-    var request = {foo: 'bar'};
-
-    var success_func_checked = false;
-    var success = function () {
-        success_func_checked = true;
-    };
-
-    // Our error function gets wrapped, so we set up a real
-    // function to test the wrapping mechanism.
-    var error_func_checked = false;
-    var error = function (error_msg) {
-        assert.equal(error_msg, 'Error sending message: simulated_error');
-        error_func_checked = true;
-    };
-
-    test_with_mock_socket({
-        run_code: function () {
-            compose.transmit_message(request, success, error);
-        },
-        check_send_args: function (send_args) {
-            // The real code patches new data on the request, rather
-            // than making a copy, so we test both that it didn't
-            // clone the object and that it did add a field.
-            assert.equal(send_args.request, request);
-            assert.deepEqual(send_args.request, {
-                foo: 'bar',
-                socket_user_agent: 'unittest_transmit_message',
-            });
-
-            send_args.success({});
-            assert(success_func_checked);
-
-            // Our error function does get wrapped, so we test by
-            // using socket.send's error callback, which should
-            // invoke our test error function via a wrapper
-            // function in the real code.
-            send_args.error('response', {msg: 'simulated_error'});
-            assert(error_func_checked);
-        },
-    });
 }());
 
 (function test_update_fade() {
