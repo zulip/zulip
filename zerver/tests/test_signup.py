@@ -2317,90 +2317,100 @@ class TestLoginPage(ZulipTestCase):
             result = self.client_get("/en/login/")
             self.assertEqual(result.status_code, 200)
 
-class TestFindMyTeam(ZulipTestCase):
-    def test_template(self) -> None:
-        result = self.client_get('/accounts/find/')
-        self.assertIn("Find your Zulip accounts", result.content.decode('utf8'))
+class FindMyTeamTestCase(ZulipTestCase):
+    def _check_successful_find_team(self, expected_content: Text, emails: List[Text]=[],
+                                    emails_sent: int=0):
+        """
+        Checks if request responses with expected content and admin email addresses are present.
 
-    def test_result(self) -> None:
-        result = self.client_post('/accounts/find/',
-                                  dict(emails="iago@zulip.com,cordelia@zulip.com"))
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "/accounts/find/?emails=iago%40zulip.com%2Ccordelia%40zulip.com")
-        result = self.client_get(result.url)
-        content = result.content.decode('utf8')
-        self.assertIn("Emails sent! You will only receive emails", content)
-        self.assertIn(self.example_email("iago"), content)
-        self.assertIn(self.example_email("cordelia"), content)
+        expected_content should be String that is expected to be included in the responses content.
+
+        emails should be a List of email addresses to send emails to
+
+        emails_sent should be the number of mails that should be in the outbox
+        """
+        url = "/accounts/find/"
+        if not len(emails) == 0:
+            data = {"emails": ",".join(emails)}
+            result = self.client_post(url, data)
+            self.assertEqual(result.status_code, 302)
+            url += "?" + urllib.parse.urlencode(data)
+            self.assertEqual(result.url, url)
+
+        result = self.client_get(url)
+        content = result.content.decode("utf8")
+
+        self.assertIn(expected_content, content)
+        for email in emails:
+            self.assertIn(email, content)
+
+        self.assertEqual(len(mail.outbox), emails_sent)
+
+    def _check_unsuccessful_find_team(self, expected_error: Text="",
+                                      emails: List[Text]=[], emails_sent: int=0):
+        """
+        Checks if request responses with expected error.
+
+        expexted_status_code should be the status code expected in the response
+
+        expected_error should be String that is expected to be included in the responses content.
+
+        emails should be a List of email addresses to send emails to
+
+        emails_sent should be the number of mails that should be in the outbox
+        """
+        url = "/accounts/find/"
+        data = {"emails": ",".join(emails)}
+        result = self.client_post(url, data)
+
+        if len(expected_error) == 0:
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, url + "?" + urllib.parse.urlencode(data))
+        else:
+            self.assertEqual(result.status_code, 200)
+            self.assertIn(expected_error, result.content.decode("utf8"))
+
+        self.assertEqual(len(mail.outbox), emails_sent)
+
+    def test_find_team_template(self) -> None:
+        self._check_successful_find_team("Find your Zulip accounts")
+
+    def test_find_team_result(self) -> None:
         # 3 = 1 + 2 -- Cordelia gets an email each for the "zulip" and "lear" realms.
-        self.assertEqual(len(mail.outbox), 3)
+        self._check_successful_find_team("Emails sent! You will only receive emails",
+                                         [self.example_email(name) for name in ["iago", "cordelia"]], 3)
 
     def test_find_team_ignore_invalid_email(self) -> None:
-        result = self.client_post('/accounts/find/',
-                                  dict(emails="iago@zulip.com,invalid_email@zulip.com"))
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "/accounts/find/?emails=iago%40zulip.com%2Cinvalid_email%40zulip.com")
-        result = self.client_get(result.url)
-        content = result.content.decode('utf8')
-        self.assertIn("Emails sent! You will only receive emails", content)
-        self.assertIn(self.example_email("iago"), content)
-        self.assertIn("invalid_email@", content)
-        self.assertEqual(len(mail.outbox), 1)
+        self._check_successful_find_team("Emails sent! You will only receive emails",
+                                         [self.example_email("iago"), "invalid_email@zulip.com"], 1)
 
     def test_find_team_reject_invalid_email(self) -> None:
-        result = self.client_post('/accounts/find/',
-                                  dict(emails="invalid_string"))
-        self.assertEqual(result.status_code, 200)
-        self.assertIn(b"Enter a valid email", result.content)
-        self.assertEqual(len(mail.outbox), 0)
+        self._check_unsuccessful_find_team("Enter a valid email", ["invalid_string"])
 
         # Just for coverage on perhaps-unnecessary validation code.
         result = self.client_get('/accounts/find/?emails=invalid')
         self.assertEqual(result.status_code, 200)
 
     def test_find_team_zero_emails(self) -> None:
-        data = {'emails': ''}
-        result = self.client_post('/accounts/find/', data)
-        self.assertIn('This field is required', result.content.decode('utf8'))
-        self.assertEqual(result.status_code, 200)
-        self.assertEqual(len(mail.outbox), 0)
+        self._check_unsuccessful_find_team("This field is required", [""])
 
     def test_find_team_one_email(self) -> None:
-        data = {'emails': self.example_email("hamlet")}
-        result = self.client_post('/accounts/find/', data)
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, '/accounts/find/?emails=hamlet%40zulip.com')
-        self.assertEqual(len(mail.outbox), 1)
+        self._check_unsuccessful_find_team(emails=[self.example_email("hamlet")], emails_sent=1)
 
     def test_find_team_deactivated_user(self) -> None:
         do_deactivate_user(self.example_user("hamlet"))
-        data = {'emails': self.example_email("hamlet")}
-        result = self.client_post('/accounts/find/', data)
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, '/accounts/find/?emails=hamlet%40zulip.com')
-        self.assertEqual(len(mail.outbox), 0)
+        self._check_unsuccessful_find_team(emails=[self.example_email("hamlet")])
 
     def test_find_team_deactivated_realm(self) -> None:
         do_deactivate_realm(get_realm("zulip"))
-        data = {'emails': self.example_email("hamlet")}
-        result = self.client_post('/accounts/find/', data)
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, '/accounts/find/?emails=hamlet%40zulip.com')
-        self.assertEqual(len(mail.outbox), 0)
+        self._check_unsuccessful_find_team(emails=[self.example_email("hamlet")])
 
     def test_find_team_bot_email(self) -> None:
-        data = {'emails': self.example_email("webhook_bot")}
-        result = self.client_post('/accounts/find/', data)
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, '/accounts/find/?emails=webhook-bot%40zulip.com')
-        self.assertEqual(len(mail.outbox), 0)
+        self._check_unsuccessful_find_team(emails=[self.example_email("webhook_bot")])
 
     def test_find_team_more_than_ten_emails(self) -> None:
-        data = {'emails': ','.join(['hamlet-{}@zulip.com'.format(i) for i in range(11)])}
-        result = self.client_post('/accounts/find/', data)
-        self.assertEqual(result.status_code, 200)
-        self.assertIn("Please enter at most 10", result.content.decode('utf8'))
-        self.assertEqual(len(mail.outbox), 0)
+        self._check_unsuccessful_find_team("Please enter at most 10",
+                                           ['hamlet-{}@zulip.com'.format(i) for i in range(11)])
 
 class ConfirmationKeyTest(ZulipTestCase):
     def test_confirmation_key(self) -> None:
