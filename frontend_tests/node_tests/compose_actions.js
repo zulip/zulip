@@ -31,6 +31,18 @@ var reply_with_mention = compose_actions.reply_with_mention;
 
 var compose_state = global.compose_state;
 
+compose_state.recipient = (function () {
+    var recipient;
+
+    return function (arg) {
+        if (arg === undefined) {
+            return recipient;
+        }
+
+        recipient = arg;
+    };
+}());
+
 set_global('reload', {
     is_in_progress: return_false,
 });
@@ -129,14 +141,23 @@ function assert_hidden(sel) {
     assert_hidden('#stream-message');
     assert_visible('#private-message');
 
-    assert.equal($('#private_message_recipient').val(), 'foo@example.com');
+    assert.equal(compose_state.recipient(), 'foo@example.com');
     assert.equal($('#compose-textarea').val(), 'hello');
     assert.equal(compose_state.get_message_type(), 'private');
     assert(compose_state.composing());
 
     // Cancel compose.
+    var pill_cleared;
+
+    compose.pills.private_message_recipient = {
+        clear: function () {
+            pill_cleared = true;
+        },
+    };
+
     assert_hidden('#compose_controls');
     cancel();
+    assert(pill_cleared);
     assert_visible('#compose_controls');
     assert_hidden('#private-message');
     assert(!compose_state.composing());
@@ -162,7 +183,7 @@ function assert_hidden(sel) {
     };
 
     respond_to_message(opts);
-    assert.equal($('#private_message_recipient').val(), 'alice@example.com');
+    assert.equal(compose_state.recipient(), 'alice@example.com');
 
     // Test stream
     msg = {

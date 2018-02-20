@@ -39,11 +39,6 @@ exports.topics_seen_for = function (stream) {
     return [];
 };
 
-function get_last_recipient_in_pm(query_string) {
-    var recipients = util.extract_pm_recipients(query_string);
-    return recipients[recipients.length-1];
-}
-
 function query_matches_language(query, lang) {
     query = query.toLowerCase();
     return lang.indexOf(query) !== -1;
@@ -606,6 +601,12 @@ exports.initialize = function () {
         },
     });
 
+    // this is because the pills aren't live when this code is executed, so
+    // we fetch the object live.
+    var pm_pill = function () {
+        return compose.pills.private_message_recipient;
+    };
+
     $("#private_message_recipient").typeahead({
         source: people.get_realm_persons, // This is a function.
         items: 5,
@@ -615,34 +616,17 @@ exports.initialize = function () {
             return typeahead_helper.render_person(item);
         },
         matcher: function (item) {
-            var current_recipient = get_last_recipient_in_pm(this.query);
-            // If you type just a comma, there won't be any recipients.
-            if (!current_recipient) {
-                return false;
-            }
-            var recipients = util.extract_pm_recipients(this.query);
-            if (recipients.indexOf(item.email) > -1) {
-                return false;
-            }
-
-            return query_matches_person(current_recipient, item);
+            return query_matches_person(this.query, item) &&
+                   pm_pill().keys().indexOf(item.user_id) === -1;
         },
         sorter: function (matches) {
             // var current_stream = compose_state.stream_name();
             return typeahead_helper.sort_recipientbox_typeahead(
                 this.query, matches, "");
         },
-        updater: function (item, event) {
-            var previous_recipients = typeahead_helper.get_cleaned_pm_recipients(this.query);
-            previous_recipients.pop();
-            previous_recipients = previous_recipients.join(", ");
-            if (previous_recipients.length !== 0) {
-                previous_recipients += ", ";
-            }
-            if (event && event.type === 'click') {
-                ui_util.focus_on('private_message_recipient');
-            }
-            return previous_recipients + item.email + ", ";
+        updater: function (item) {
+            pm_pill().pill.append(item.full_name, item.user_id);
+            pm_pill().clear_text();
         },
         stopAdvance: true, // Do not advance to the next field on a tab or enter
     });

@@ -45,7 +45,16 @@ exports.subject         = get_or_set('subject');
 // We can't trim leading whitespace in `compose_textarea` because
 // of the indented syntax for multi-line code blocks.
 exports.message_content = get_or_set('compose-textarea', true);
-exports.recipient       = get_or_set('private_message_recipient');
+exports.recipient = function (value) {
+    if (typeof value === "string") {
+        compose.pills.private_message_recipient.clear();
+        compose.pills.private_message_recipient.pill.append(value);
+    } else {
+        return compose.pills.private_message_recipient.keys().map(function (id) {
+            return people.get_person_from_user_id(id).email;
+        }).join(",");
+    }
+};
 
 exports.has_message_content = function () {
     return exports.message_content() !== "";
