@@ -411,6 +411,17 @@ def add_push_device_token(user_profile: UserProfile,
 
 def remove_push_device_token(user_profile: UserProfile, token_str: bytes, kind: int) -> None:
 
+    try:
+        token = PushDeviceToken.objects.get(token=token_str, kind=kind, user=user_profile)
+        token.delete()
+    except PushDeviceToken.DoesNotExist:
+        # If we are using bouncer, don't raise the exception. It will be raised
+        # by the code below eventually. This should take care of the transitory
+        # period where a device is registered with the bouncer but not with
+        # this server.
+        if not uses_notification_bouncer():
+            raise JsonableError(_("Token does not exist"))
+
     # If we're sending things to the push notification bouncer
     # unregister this user with them here
     if uses_notification_bouncer():
@@ -423,13 +434,6 @@ def remove_push_device_token(user_profile: UserProfile, token_str: bytes, kind: 
         }
         # Calls zilencer.views.unregister_remote_push_device
         send_to_push_bouncer("POST", "unregister", post_data)
-        return
-
-    try:
-        token = PushDeviceToken.objects.get(token=token_str, kind=kind, user=user_profile)
-        token.delete()
-    except PushDeviceToken.DoesNotExist:
-        raise JsonableError(_("Token does not exist"))
 
 #
 # Push notifications in general
