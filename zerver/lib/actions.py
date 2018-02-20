@@ -1186,7 +1186,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
             sender_id = message['message'].sender_id
             message_id = message['message'].id
 
-            if content in ['/poll', '/tictactoe']:
+            if content in ['/poll', '/tictactoe', '/trivia']:
                 submessage = SubMessage(
                     sender_id=sender_id,
                     message_id=message_id,

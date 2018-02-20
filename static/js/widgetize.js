@@ -315,6 +315,156 @@ widgets.poll = (function () {
     return cls;
 }());
 
+var trivia_data_holder = function () {
+    var self = {};
+
+    self.has_answered = {};
+    self.correctly_answered = false;
+    self.msg = "";
+
+    self.trivia_question = {};
+    var correct_answer;
+
+    self.set_trivia_ques = function (result) {
+        var data = result.results[0];
+
+        var question = data.question;
+        // Decode special html characters 
+        correct_answer = $("<div/>").html(data.correct_answer).text();
+
+        var options = data.incorrect_answers;
+        options.push(correct_answer);
+
+        self.trivia_question  =  {
+            question : question,
+            options : _.shuffle(options),
+            correct_answer :  correct_answer,
+        };
+    };
+
+    self.promise = $.ajax({
+            url: "https://opentdb.com/api.php?amount=1&type=multiple",
+        });
+
+    self.handle = {
+        option_click: {
+            outbound: function (option) {
+                var event = {
+                    type: 'option_click',
+                    option: option,
+                    trivia_question : self.trivia_question,
+                    correct_answer : correct_answer,
+                };
+                return event;
+            },
+
+            inbound: function (sender_id, data) {
+                self.trivia_question = data.trivia_question;
+                correct_answer = data.correct_answer;
+                if (data.option === correct_answer && !_.has(self.has_answered,sender_id)) {
+                    self.correctly_answered = true;
+                    self.msg = "Correct Answer: " + people.get_full_name(sender_id);
+                } else {
+                    self.correctly_answered = false;
+                    self.msg = "Wrong Answer: " + people.get_full_name(sender_id);
+                }
+                self.has_answered[sender_id] = true;
+            },
+        },
+        set_question: {
+            outbound: function () {
+                var event = {
+                    type: 'set_question',
+                    trivia_question: self.trivia_question,
+                    correct_answer: correct_answer,
+                };
+                return event;
+            },
+            inbound: function (sender_id, data) {
+                self.trivia_question = data.trivia_question;
+                correct_answer = data.correct_answer;
+            },
+        },
+    };
+
+    self.handle_event = function (sender_id, data) {
+        var type = data.type;
+        if (self.handle[type]) {
+            self.handle[type].inbound(sender_id, data);
+        }
+    };
+
+    return self;
+};
+
+widgets.trivia = (function () {
+    var cls = {};
+
+    cls.activate = function (opts) {
+        var self = {};
+
+        var elem = opts.elem;
+        var callback = opts.callback;
+
+        var trivia_data = trivia_data_holder();
+
+        function render() {
+            if (trivia_data.correctly_answered) {
+                elem.html(trivia_data.msg);
+            } else {
+                if (_.isEmpty(trivia_data.trivia_question)) {
+                    elem.html("Loading...");
+                    trivia_data.promise.done(function (result) {
+                        // two time check is required as the function is
+                        // called at a different time than the previous
+                        // check was performed.
+                        if (_.isEmpty(trivia_data.trivia_question)) {
+                            trivia_data.set_trivia_ques(result);
+                            var html = templates.render('trivia-widget', trivia_data.trivia_question);
+                            elem.html(html);
+                            var data = trivia_data.handle.set_question.outbound();
+                            callback(data);
+                            elem.find("button.trivia-option").on('click', function (e) {
+                                e.stopPropagation();
+                                var option = e.target.innerHTML;
+                                var data = trivia_data.handle.option_click.outbound(option);
+                                callback(data);
+                            });
+                        }
+                    });
+                } else {
+                    var html = templates.render('trivia-widget', trivia_data.trivia_question);
+                    elem.html(html);
+
+                    elem.find("button.trivia-option").on('click', function (e) {
+                        e.stopPropagation();
+                        var option = e.target.innerHTML;
+                        var data = trivia_data.handle.option_click.outbound(option);
+                        callback(data);
+                    });
+                }
+            }
+            var sender_id = people.my_current_user_id();
+            var has_answered = trivia_data.has_answered[sender_id];
+            if (has_answered) {
+                elem.find('p.trivia-msg').html(trivia_data.msg);
+            }
+        }
+
+        self.handle_events = function (events) {
+            _.each(events, function (event) {
+                trivia_data.handle_event(event.sender_id, event.data);
+            });
+            render();
+        };
+        render();
+
+        return self;
+    };
+
+    return cls;
+}());
+
 exports.activate = function (in_opts) {
     var widget_type = in_opts.widget_type;
     var events = in_opts.events;
