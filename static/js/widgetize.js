@@ -37,7 +37,12 @@ var tictactoe_data_holder = function () {
                 (square_values[line[2]] === token));
         }
 
-        return _.any(lines, line_won);
+        var board = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+        function filled(i) {
+            return square_values[i];
+        }
+
+        return _.any(lines, line_won) || _.all(board, filled);
     }
 
     self.get_widget_data = function () {
@@ -55,7 +60,8 @@ var tictactoe_data_holder = function () {
             [square(7), square(8), square(9)],
         ];
 
-        var move_status = waiting? "Wait..." : "Go ahead!";
+        var token = (num_filled % 2 === 0) ? 'X' : 'O';
+        var move_status = token + "'s turn";
 
         if (game_over) {
             move_status = "Game over!";
