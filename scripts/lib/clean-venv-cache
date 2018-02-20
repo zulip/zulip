@@ -4,6 +4,8 @@ import os
 import sys
 
 if False:
+    # Typing module isn't always available when this is run on older
+    # Python 3.4 (Trusty).
     from typing import Set, Text
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -23,12 +25,16 @@ def get_caches_in_use(threshold_days):
     setups_to_check = set([ZULIP_PATH, ])
     caches_in_use = set()
 
+    def add_current_venv_cache(venv_name: str) -> None:
+        CACHE_SYMLINK = os.path.join(os.path.dirname(ZULIP_PATH), venv_name)
+        CURRENT_CACHE = os.path.dirname(os.path.realpath(CACHE_SYMLINK))
+        caches_in_use.add(CURRENT_CACHE)
+
     if ENV == "prod":
         setups_to_check |= get_recent_deployments(threshold_days)
     if ENV == "dev":
-        CACHE_SYMLINK = os.path.join(os.path.dirname(ZULIP_PATH), "zulip-py3-venv")
-        CURRENT_CACHE = os.path.dirname(os.path.realpath(CACHE_SYMLINK))
-        caches_in_use.add(CURRENT_CACHE)
+        add_current_venv_cache("zulip-py3-venv")
+        add_current_venv_cache("zulip-thumbor-venv")
 
     for path in setups_to_check:
         reqs_dir = os.path.join(path, "requirements")
