@@ -4887,7 +4887,7 @@ def do_invite_users(user_profile: UserProfile,
     notify_invites_changed(user_profile)
 
 def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
-    days_to_activate = getattr(settings, 'ACCOUNT_ACTIVATION_DAYS', 7)
+    days_to_activate = settings.INVITATION_LINK_VALIDITY_DAYS
     active_value = getattr(confirmation_settings, 'STATUS_ACTIVE', 1)
 
     lowest_datetime = timezone_now() - datetime.timedelta(days=days_to_activate)
