@@ -1255,7 +1255,7 @@ class InvitationsTestCase(InviteUserBase):
         A GET call to /json/invites returns all unexpired invitations.
         """
 
-        days_to_activate = getattr(settings, 'ACCOUNT_ACTIVATION_DAYS', "Wrong")
+        days_to_activate = getattr(settings, 'INVITATION_LINK_VALIDITY_DAYS', "Wrong")
         active_value = getattr(confirmation_settings, 'STATUS_ACTIVE', "Wrong")
         self.assertNotEqual(days_to_activate, "Wrong")
         self.assertNotEqual(active_value, "Wrong")

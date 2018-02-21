@@ -1267,8 +1267,6 @@ LOGGING = {
     }
 }
 
-ACCOUNT_ACTIVATION_DAYS = 7
-
 LOGIN_REDIRECT_URL = '/'
 
 # Client-side polling timeout for get_events, in milliseconds.
