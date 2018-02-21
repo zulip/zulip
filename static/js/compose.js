@@ -670,7 +670,7 @@ exports.handle_keydown = function (event) {
             }
         }
         if (isLink) {
-            // ctrl + l: Insert a link to selected text
+            // ctrl + l + shift: Insert a link to selected text
             add_markdown("[" + range.text + "](url)");
             var position = textarea.caret();
             var txt = document.getElementById("compose-textarea");
