@@ -2,7 +2,6 @@
     "message_retention_days": null,
     "inline_image_preview": true,
     "name_changes_disabled": false,
-    "string_id": "zulip",
     "icon_version": 1,
     "waiting_period_threshold": 0,
     "email_changes_disabled": false,
