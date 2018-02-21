@@ -1497,16 +1497,16 @@ class TestDevAuthBackend(ZulipTestCase):
         email = self.example_email("hamlet")
         data = {'direct_email': email}
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',)):
-            with self.assertRaisesRegex(Exception, 'Direct login not supported.'):
-                with mock.patch('django.core.handlers.exception.logger'):
-                    self.client_post('/accounts/login/local/', data)
+            with mock.patch('django.core.handlers.exception.logger'):
+                response = self.client_post('/accounts/login/local/', data)
+                self.assertRedirects(response, reverse('dev_not_supported'))
 
     def test_login_failure_due_to_nonexistent_user(self) -> None:
         email = 'nonexisting@zulip.com'
         data = {'direct_email': email}
-        with self.assertRaisesRegex(Exception, 'User cannot login'):
-            with mock.patch('django.core.handlers.exception.logger'):
-                self.client_post('/accounts/login/local/', data)
+        with mock.patch('django.core.handlers.exception.logger'):
+            response = self.client_post('/accounts/login/local/', data)
+            self.assertRedirects(response, reverse('dev_not_supported'))
 
 class TestZulipRemoteUserBackend(ZulipTestCase):
     def test_login_success(self) -> None:
