@@ -50,6 +50,9 @@ DEFAULT_EMOJI_SIZE = 64
 # "file name" is the original filename provided by the user run
 # through a sanitization function.
 
+class RealmUploadQuotaError(JsonableError):
+    code = ErrorCode.REALM_UPLOAD_QUOTA
+
 attachment_url_re = re.compile('[/\-]user[\-_]uploads[/\.-].*?(?=[ )]|\Z)')
 
 def attachment_url_to_path_id(attachment_url: Text) -> Text:
@@ -181,21 +184,19 @@ def upload_image_to_s3(
 
     key.set_contents_from_string(contents, headers=headers)  # type: ignore # https://github.com/python/typeshed/issues/1552
 
-def get_total_uploads_size_for_user(user: UserProfile) -> int:
-    uploads = Attachment.objects.filter(owner=user)
-    total_quota = uploads.aggregate(Sum('size'))['size__sum']
+def currently_used_upload_space(realm: Realm) -> int:
+    used_space = Attachment.objects.filter(realm=realm).aggregate(Sum('size'))['size__sum']
+    if used_space is None:
+        return 0
+    return used_space
 
-    # In case user has no uploads
-    if (total_quota is None):
-        total_quota = 0
-    return total_quota
-
-def within_upload_quota(user: UserProfile, uploaded_file_size: int) -> bool:
-    total_quota = get_total_uploads_size_for_user(user)
-    if (total_quota + uploaded_file_size > user.quota):
-        return False
-    else:
-        return True
+def check_upload_within_quota(realm: Realm, uploaded_file_size: int) -> None:
+    upload_quota = realm.upload_quota_bytes()
+    if upload_quota is None:
+        return
+    used_space = currently_used_upload_space(realm)
+    if (used_space + uploaded_file_size) > upload_quota:
+        raise RealmUploadQuotaError(_("Upload would exceed your organization's upload quota."))
 
 def get_file_info(request: HttpRequest, user_file: File) -> Tuple[Text, int, Optional[Text]]:
 
@@ -312,7 +313,7 @@ class S3UploadBackend(ZulipUploadBackend):
         bucket = settings.S3_AVATAR_BUCKET
         medium_suffix = "-medium.png" if medium else ""
         # ?x=x allows templates to append additional parameters with &s
-        return u"https://%s.s3.amazonaws.com/%s%s?x=x" % (bucket, hash_key, medium_suffix)
+        return "https://%s.s3.amazonaws.com/%s%s?x=x" % (bucket, hash_key, medium_suffix)
 
     def upload_realm_icon_image(self, icon_file: File, user_profile: UserProfile) -> None:
         content_type = guess_type(icon_file.name)[0]
@@ -342,7 +343,7 @@ class S3UploadBackend(ZulipUploadBackend):
     def get_realm_icon_url(self, realm_id: int, version: int) -> Text:
         bucket = settings.S3_AVATAR_BUCKET
         # ?x=x allows templates to append additional parameters with &s
-        return u"https://%s.s3.amazonaws.com/%s/realm/icon.png?version=%s" % (bucket, realm_id, version)
+        return "https://%s.s3.amazonaws.com/%s/realm/icon.png?version=%s" % (bucket, realm_id, version)
 
     def ensure_medium_avatar_image(self, user_profile: UserProfile) -> None:
         file_path = user_avatar_path(user_profile)
@@ -393,7 +394,7 @@ class S3UploadBackend(ZulipUploadBackend):
         bucket = settings.S3_AVATAR_BUCKET
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(realm_id=realm_id,
                                                         emoji_file_name=emoji_file_name)
-        return u"https://%s.s3.amazonaws.com/%s" % (bucket, emoji_path)
+        return "https://%s.s3.amazonaws.com/%s" % (bucket, emoji_path)
 
 
 ### Local
@@ -455,7 +456,7 @@ class LocalUploadBackend(ZulipUploadBackend):
     def get_avatar_url(self, hash_key: Text, medium: bool=False) -> Text:
         # ?x=x allows templates to append additional parameters with &s
         medium_suffix = "-medium" if medium else ""
-        return u"/user_avatars/%s%s.png?x=x" % (hash_key, medium_suffix)
+        return "/user_avatars/%s%s.png?x=x" % (hash_key, medium_suffix)
 
     def upload_realm_icon_image(self, icon_file: File, user_profile: UserProfile) -> None:
         upload_path = os.path.join('avatars', str(user_profile.realm.id), 'realm')
@@ -471,7 +472,7 @@ class LocalUploadBackend(ZulipUploadBackend):
 
     def get_realm_icon_url(self, realm_id: int, version: int) -> Text:
         # ?x=x allows templates to append additional parameters with &s
-        return u"/user_avatars/%s/realm/icon.png?version=%s" % (realm_id, version)
+        return "/user_avatars/%s/realm/icon.png?version=%s" % (realm_id, version)
 
     def ensure_medium_avatar_image(self, user_profile: UserProfile) -> None:
         file_path = user_avatar_path(user_profile)
@@ -505,7 +506,7 @@ class LocalUploadBackend(ZulipUploadBackend):
 
     def get_emoji_url(self, emoji_file_name: Text, realm_id: int) -> Text:
         return os.path.join(
-            u"/user_avatars",
+            "/user_avatars",
             RealmEmoji.PATH_ID_TEMPLATE.format(realm_id=realm_id, emoji_file_name=emoji_file_name))
 
 # Common and wrappers

@@ -1,6 +1,7 @@
 
 import datetime
 import os
+import re
 import ujson
 
 from django.http import HttpResponse
@@ -134,6 +135,7 @@ class HomeTest(ZulipTestCase):
             "realm_message_retention_days",
             "realm_name",
             "realm_name_changes_disabled",
+            "realm_name_in_notifications",
             "realm_non_active_users",
             "realm_notifications_stream_id",
             "realm_password_auth_enabled",
@@ -153,13 +155,12 @@ class HomeTest(ZulipTestCase):
             "subscriptions",
             "test_suite",
             "timezone",
-            "total_uploads_size",
             "twenty_four_hour_time",
             "unread_msgs",
             "unsubscribed",
-            "upload_quota",
             "use_websockets",
             "user_id",
+            "warn_no_email",
             "zulip_version",
         ]
 
@@ -184,7 +185,7 @@ class HomeTest(ZulipTestCase):
             with patch('zerver.lib.cache.cache_set') as cache_mock:
                 result = self._get_home_page(stream='Denmark')
 
-        self.assert_length(queries, 42)
+        self.assert_length(queries, 41)
         self.assert_length(cache_mock.call_args_list, 7)
 
         html = result.content.decode('utf-8')
@@ -249,7 +250,7 @@ class HomeTest(ZulipTestCase):
         with queries_captured() as queries2:
             result = self._get_home_page()
 
-        self.assert_length(queries2, 35)
+        self.assert_length(queries2, 34)
 
         # Do a sanity check that our new streams were in the payload.
         html = result.content.decode('utf-8')
@@ -265,7 +266,7 @@ class HomeTest(ZulipTestCase):
     def _get_page_params(self, result: HttpResponse) -> Dict[str, Any]:
         html = result.content.decode('utf-8')
         lines = html.split('\n')
-        page_params_line = [l for l in lines if l.startswith('var page_params')][0]
+        page_params_line = [l for l in lines if re.match('^\s*var page_params', l)][0]
         page_params_json = page_params_line.split(' = ')[1].rstrip(';')
         page_params = ujson.loads(page_params_json)
         return page_params

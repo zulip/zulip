@@ -27,7 +27,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             {{ csrf_input }}
 
             <section class="user-registration">
-                {% if realm_name %}
+                {% if realm_name and not creating_new_team %}
                 <img class="avatar inline-block" src="{{ realm_icon }}" alt="" />
                 <div class="info-box inline-block">
                     <div class="organization-name">{{ realm_name }}</div>
@@ -208,37 +208,6 @@ if ($('.team_subdomain_error_server').text() === '') {
 }
 
 $("#timezone").val(moment.tz.guess());
-
-$('#id_team_subdomain').on('input', function (e) {
-    // preserve selection range, to be set after setting the text
-    var start = e.target.selectionStart,
-        end = e.target.selectionEnd;
-
-    // toggle displaying server-side / client-side errors; messages
-    // from only one of the two should be showing at any time.
-    $('.team_subdomain_error_server').text('').css('display', 'none');
-
-    var autocorrected = e.target.value
-        .toLowerCase()
-        .replace(/[_|\s]/g, '-');
-
-    e.target.value = autocorrected;
-
-    if (e.target.value.charAt(0) === '-' ||
-        e.target.value.charAt(e.target.value.length - 1) === '-') {
-        $('#id_team_subdomain_error_client')
-            .text(i18n.t("Cannot start or end with a '-'"))
-            .css('display', 'block');
-    } else if (/[^0-9a-z\-]/.test(e.target.value)) {
-        $('#id_team_subdomain_error_client')
-            .text(i18n.t("Can only use letters a-z, numbers 0-9, and '-'s."))
-            .css('display', 'block');
-    } else {
-        $('#id_team_subdomain_error_client').text('').css('display', 'none');
-    }
-
-    e.target.setSelectionRange(start, end);
-});
 </script>
 
 {% endblock %}

@@ -6,9 +6,12 @@ PNG, JPEG, etc.).
 
 ![preview](/static/images/help/image-preview.png)
 
-To view the image in full size, click on the thumbnail preview of the image.
-Clicking it will open a lightbox modal with varying options depending on the
-media type.
+To view the image in full size, click on the thumbnail preview of the
+image.  Clicking it will open the image nice and large, with varying
+options depending on the media type.
+
+!!! tip ""
+    You can also access this view by pressing `v` with the message selected.
 
 ![full-size](/static/images/help/full-size.png)
 

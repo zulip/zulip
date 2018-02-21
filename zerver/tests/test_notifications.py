@@ -19,6 +19,8 @@ from zerver.lib.message import access_message
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.send_email import FromAddress
 from zerver.models import (
+    get_realm,
+    get_stream,
     Recipient,
     UserMessage,
     UserProfile,
@@ -56,6 +58,25 @@ class TestMissedMessages(ZulipTestCase):
             self.assertIn(body, self.normalize_string(msg.alternatives[0][0]))
         else:
             self.assertIn(body, self.normalize_string(msg.body))
+
+    @patch('zerver.lib.email_mirror.generate_random_token')
+    def _realm_name_in_missed_message_email_subject(self,
+                                                    realm_name_in_notifications: bool,
+                                                    mock_random_token: MagicMock) -> None:
+        tokens = self._get_tokens()
+        mock_random_token.side_effect = tokens
+
+        msg_id = self.send_personal_message(
+            self.example_email('othello'),
+            self.example_email('hamlet'),
+            'Extremely personal message!',
+        )
+        body = 'You and Othello, the Moor of Venice Extremely personal message!'
+        subject = 'Othello, the Moor of Venice sent you a message'
+
+        if realm_name_in_notifications:
+            subject = 'Othello, the Moor of Venice sent you a message in Zulip Dev'
+        self._test_cases(tokens, msg_id, body, subject, False)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
     def _extra_context_in_missed_stream_messages_mention(self, send_as_user: bool,
@@ -259,6 +280,19 @@ class TestMissedMessages(ZulipTestCase):
         handle_missedmessage_emails(iago.id, [{'message_id': msg_id}])
         self.assertEqual(len(mail.outbox), 0)
 
+    def test_realm_name_in_notifications(self) -> None:
+        # Test with realm_name_in_notifications for hamlet disabled.
+        self._realm_name_in_missed_message_email_subject(False)
+
+        # Enable realm_name_in_notifications for hamlet and test again.
+        hamlet = self.example_user('hamlet')
+        hamlet.realm_name_in_notifications = True
+        hamlet.save(update_fields=['realm_name_in_notifications'])
+
+        # Empty the test outbox
+        mail.outbox = []
+        self._realm_name_in_missed_message_email_subject(True)
+
     @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
     def test_extra_context_in_missed_stream_messages_as_user(self) -> None:
         self._extra_context_in_missed_stream_messages_mention(True)
@@ -364,7 +398,9 @@ class TestMissedMessages(ZulipTestCase):
         msg_id = self.send_personal_message(
             self.example_email('othello'), self.example_email('hamlet'),
             'Come and join us in #**Verona**.')
-        body = '<a class="stream" data-stream-id="5" href="http://zulip.testserver/#narrow/stream/Verona">#Verona</a'
+        stream_id = get_stream('Verona', get_realm('zulip')).id
+        href = "http://zulip.testserver/#narrow/stream/{stream_id}-Verona".format(stream_id=stream_id)
+        body = '<a class="stream" data-stream-id="5" href="{href}">#Verona</a'.format(href=href)
         subject = 'Othello, the Moor of Venice sent you a message'
         self._test_cases(tokens, msg_id, body, subject, send_as_user=False, verify_html_body=True)
 
@@ -446,6 +482,18 @@ class TestMissedMessages(ZulipTestCase):
         actual_output = relative_to_full_url("http://example.com", test_data)
         expected_output = '<div><p>See this <a href="http://example.com/user_uploads/1/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg" target="_blank" ' +  \
                           'title="avatar_103.jpeg">avatar_103.jpeg</a>.</p></div>'
+        self.assertEqual(actual_output, expected_output)
+
+        # A message containing only an inline image URL preview, we do
+        # somewhat more extensive surgery.
+        test_data = '<div class="message_inline_image"><a href="https://www.google.com/images/srpr/logo4w.png" ' + \
+                    'target="_blank" title="https://www.google.com/images/srpr/logo4w.png">' + \
+                    '<img data-original="/thumbnail/https%3A//www.google.com/images/srpr/logo4w.png?size=0x0" ' + \
+                    'src="/thumbnail/https%3A//www.google.com/images/srpr/logo4w.png?size=0x100"></a></div>'
+        actual_output = relative_to_full_url("http://example.com", test_data)
+        expected_output = '<p><a href="https://www.google.com/images/srpr/logo4w.png" ' + \
+                          'target="_blank" title="https://www.google.com/images/srpr/logo4w.png">' + \
+                          'https://www.google.com/images/srpr/logo4w.png</a></p>'
         self.assertEqual(actual_output, expected_output)
 
     def test_fix_emoji(self) -> None:

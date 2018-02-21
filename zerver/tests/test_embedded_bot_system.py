@@ -1,16 +1,23 @@
 # -*- coding: utf-8 -*-
 
 from unittest import mock
+from mock import patch
 from typing import Any, Dict, Tuple, Text, Optional
 
+from zerver.lib.bot_lib import EmbeddedBotQuitException
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import UserProfile, Recipient, get_display_recipient
+
+import ujson
 
 class TestEmbeddedBotMessaging(ZulipTestCase):
     def setUp(self) -> None:
         self.user_profile = self.example_user("othello")
-        self.bot_profile = self.create_test_bot('embedded-bot@zulip.testserver', self.user_profile, 'Embedded bot',
-                                                'embedded', UserProfile.EMBEDDED_BOT, service_name='helloworld')
+        self.bot_profile = self.create_test_bot('embedded', self.user_profile,
+                                                full_name='Embedded bot',
+                                                bot_type=UserProfile.EMBEDDED_BOT,
+                                                service_name='helloworld',
+                                                config_data=ujson.dumps({'foo': 'bar'}))
 
     def test_pm_to_embedded_bot(self) -> None:
         self.send_personal_message(self.user_profile.email, self.bot_profile.email,
@@ -42,15 +49,21 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
         last_message = self.get_last_message()
         self.assertEqual(last_message.content, "foo")
 
+    def test_embedded_bot_quit_exception(self) -> None:
+        with patch('zulip_bots.bots.helloworld.helloworld.HelloWorldHandler.handle_message',
+                   side_effect=EmbeddedBotQuitException("I'm quitting!")):
+            with patch('logging.warning') as mock_logging:
+                self.send_stream_message(self.user_profile.email, "Denmark",
+                                         content="@**{}** foo".format(self.bot_profile.full_name),
+                                         topic_name="bar")
+                mock_logging.assert_called_once_with("I'm quitting!")
+
 class TestEmbeddedBotFailures(ZulipTestCase):
     @mock.patch("logging.error")
     def test_invalid_embedded_bot_service(self, logging_error_mock: mock.Mock) -> None:
         user_profile = self.example_user("othello")
-        bot_profile = self.create_test_bot('embedded-bot@zulip.testserver', user_profile, 'Embedded bot',
-                                           'embedded', UserProfile.EMBEDDED_BOT, service_name='nonexistent_service')
-        mention_bot_message = "@**{}** foo".format(bot_profile.full_name)
-        self.send_stream_message(user_profile.email, "Denmark",
-                                 content=mention_bot_message,
-                                 topic_name="bar")
-        last_message = self.get_last_message()
-        self.assertEqual(last_message.content, mention_bot_message)
+        self.create_test_bot(short_name='embedded', user_profile=user_profile,
+                             assert_json_error_msg="Invalid embedded bot name.",
+                             full_name='Embedded bot',
+                             bot_type=UserProfile.EMBEDDED_BOT,
+                             service_name='nonexistent_service')

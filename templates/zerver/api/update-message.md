@@ -27,21 +27,7 @@ curl -X "PATCH" {{ api_url }}/v1/messages/<msg_id> \
 
 <div data-language="python" markdown="1">
 
-```python
-#!/usr/bin/env python
-
-import zulip
-
-# Download ~/zuliprc-dev from your dev server
-client = zulip.Client(config_file="~/zuliprc-dev")
-
-# Edit a message
-print(client.update_message({
-    "message_id": 131,
-    "content": "New content"
-}))
-
-```
+{generate_code_example(python)|update-message|example}
 
 </div>
 
@@ -89,22 +75,9 @@ You only have permission to edit a message if:
 
 A typical successful JSON response may look like:
 
-```
-{
-    'msg':'',
-    'result':'success'
-}
-```
+{generate_code_example|update-message|fixture}
 
 A typical JSON response for when one doesn't have the permission to
 edit a particular message:
 
-```
-{
-    'code':'BAD_REQUEST',
-    'result':'error',
-    'msg':"You don't have permission to edit this message"
-}
-```
-
-{!invalid-api-key-json-response.md!}
+{generate_code_example|update-message-edit-permission-error|fixture}

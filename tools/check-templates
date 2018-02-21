@@ -99,10 +99,6 @@ def check_html_templates(templates, all_dups):
             # These use various whitespace-dependent formatting that
             # prevent cleaning them.
             'templates/corporate/zephyr-mirror.html',
-            'templates/zerver/api.html',
-            'templates/zerver/api_endpoints.html',
-            # These just need to be reindented
-            'templates/zerver/login.html',
             # Can't clean this because of `preserve_spaces`
             'templates/zerver/markdown_help.html',
         ]
@@ -110,17 +106,12 @@ def check_html_templates(templates, all_dups):
 
     # Ignore these files since these have not been cleaned yet :/
     IGNORE_FILES = [
-        'static/html/5xx.html',
-        'templates/analytics/activity.html',
-        'templates/analytics/stats.html',
+        # zephyr-mirror.html has some whitespace-dependent formatting
+        # for code blocks that prevent cleaning it.  Might make sense
+        # to convert it to a /help/ markdown article.
         'templates/corporate/zephyr-mirror.html',
-        'templates/zerver/compose.html',
-        'templates/zerver/hello.html',
-        'templates/zerver/index.html',
-        'templates/zerver/keyboard_shortcuts.html',
-        'templates/zerver/login.html',
+        # Can't clean this because of `preserve_spaces`
         'templates/zerver/markdown_help.html',
-        'templates/zerver/navbar.html',
     ]
     # TODO: Clean these files
     for fn in templates:

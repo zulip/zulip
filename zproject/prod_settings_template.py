@@ -1,9 +1,13 @@
 from typing import Optional
 
-# Zulip Settings intended to be set by a system administrator.
+# Zulip server-level Settings (to be set by the system administrator).
 #
-# See https://zulip.readthedocs.io/en/latest/subsystems/settings.html for
-# detailed technical documentation on the Zulip settings system.
+# Remember to restart the server after changes here!  Documentation at:
+#
+#   https://zulip.readthedocs.io/en/latest/production/settings.html
+#
+# Developer documentation on the Zulip settings system is available at:
+#   https://zulip.readthedocs.io/en/latest/subsystems/settings.html
 #
 ### MANDATORY SETTINGS
 #
@@ -83,7 +87,7 @@ ZULIP_ADMINISTRATOR = 'zulip-admin@example.com'
 # accessing your server by other hostnames, list them here.
 #
 # Note that these should just be hostnames, without port numbers.
-#ALLOWED_HOSTS = ['zulip-alias.example.com']
+#ALLOWED_HOSTS = ['zulip-alias.example.com', '192.0.2.1']
 
 ### AUTHENTICATION SETTINGS
 #
@@ -389,8 +393,10 @@ from django_auth_ldap.config import LDAPSearch, GroupOfNamesType
 AUTH_LDAP_SERVER_URI = ""
 
 # This DN will be used to bind to your server. If unset, anonymous
-# binds are performed.  If set, you need to specify the password as
-# 'auth_ldap_bind_password' in zulip-secrets.conf.
+# binds are performed.
+#
+# If set, you need to specify the password in zulip-secrets.conf ,
+# as 'auth_ldap_bind_password'.
 AUTH_LDAP_BIND_DN = ""
 
 # Specify the search base and the property to filter on that corresponds to the
@@ -408,7 +414,7 @@ LDAP_EMAIL_ATTR = None  # type: Optional[str]
 
 # This map defines how to populate attributes of a Zulip user from LDAP.
 AUTH_LDAP_USER_ATTR_MAP = {
-    # Populate the Django user's name from the LDAP directory.
+    # full_name is required; common values include "cn" or "displayName".
     "full_name": "cn",
 }
 

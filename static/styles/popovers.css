@@ -96,6 +96,30 @@ ul.remind_me_popover .remind_icon {
     width: 240px;
 }
 
+.group-info-popover .group-info {
+    text-align: center;
+}
+
+.group-info-popover .group-info .group-name {
+    font-weight: bold;
+}
+
+.group-info-popover .member-list {
+    position: relative;
+    max-height: 300px;
+    overflow-y: auto;
+    list-style: none;
+    margin-left: 0;
+}
+
+.group-info-popover .member-list .bot {
+    color: hsl(180, 5%, 74%);
+    vertical-align: top;
+    width: 20px;
+    padding-top: 3.5px;
+    text-align: center;
+}
+
 .user_popover .popover-title {
     padding: 0;
 }

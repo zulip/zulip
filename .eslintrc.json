@@ -65,6 +65,7 @@
         "typing_data": false,
         "typing_status": false,
         "sent_messages": false,
+        "transmit": false,
         "compose": false,
         "compose_actions": false,
         "compose_state": false,
@@ -164,7 +165,7 @@
         "hotspots": false,
         "compose_ui": false,
         "common": false,
-        "desktop_notifications_panel": false
+        "panels": false
     },
     "rules": {
         "array-callback-return": "error",

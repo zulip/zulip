@@ -11,6 +11,7 @@ $("body").ready(function () {
 
     var close_sidebar = function () {
         $sidebar.removeClass("show");
+        $sidebar.find("#edit_bot").empty();
         is_open = false;
     };
 
@@ -104,8 +105,6 @@ function _setup_page() {
         zuliprc: 'zuliprc',
         flaskbotrc: 'flaskbotrc',
         timezones: moment.tz.names(),
-        upload_quota: attachments_ui.bytes_to_size(page_params.upload_quota),
-        total_uploads_size: attachments_ui.bytes_to_size(page_params.total_uploads_size),
     });
 
     $(".settings-box").html(settings_tab);

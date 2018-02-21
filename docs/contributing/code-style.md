@@ -217,7 +217,7 @@ code a lot uglier, in which case it's fine to go up to 120 or so.
 When calling a function with an anonymous function as an argument, use
 this style:
 
-    $.get('foo', function (data) {
+    my_function('foo', function (data) {
         var x = ...;
         // ...
     });

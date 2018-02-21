@@ -5,23 +5,22 @@ webhooks used by the Bitbucket SAAS service.
 For the old-style Bitbucket webhooks used by Bitbucket Enterprise,
 click [here](./bitbucket).
 
-{!create-stream.md!}
+1. {!create-stream.md!}
 
-The integration will use the default stream `bitbucket` if
-no stream is supplied in the hook; you still need to create
-the stream even if you are using this default.
+1. {!create-bot-construct-url-indented.md!}
 
-{!create-bot-construct-url.md!}
+   {!git-webhook-url-with-branches-indented.md!}
 
-{!git-webhook-url-with-branches.md!}
+1. From your repository's web page, go to the **Settings**
+   page and choose **Webhooks** on the left-hand side.
+   Click **Add webhook**.
 
-Next, from your repository's web page, go to the **Settings**
-page and choose **Webhooks** on the left-hand side.
+1. Set **URL** to the URL you created above. Remember to check the
+   **active** checkbox.
 
-Click **Add webhook**, set **URL** to the URL you created above.
-Remember to click the **'active'** checkbox.
+    ![](/static/images/integrations/bitbucket2/001.png)
 
-Click **Save**.
+1. Click **Save**.
 
 {!congrats.md!}
 

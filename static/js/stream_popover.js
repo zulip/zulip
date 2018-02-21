@@ -6,6 +6,7 @@ var exports = {};
 // module.  Both are popped up from the left sidebar.
 var current_stream_sidebar_elem;
 var current_topic_sidebar_elem;
+var all_messages_sidebar_elem;
 
 exports.stream_popped = function () {
     return current_stream_sidebar_elem !== undefined;
@@ -13,6 +14,10 @@ exports.stream_popped = function () {
 
 exports.topic_popped = function () {
     return current_topic_sidebar_elem !== undefined;
+};
+
+exports.all_messages_popped = function () {
+    return all_messages_sidebar_elem !== undefined;
 };
 
 exports.hide_stream_popover = function () {
@@ -26,6 +31,13 @@ exports.hide_topic_popover = function () {
     if (exports.topic_popped()) {
         $(current_topic_sidebar_elem).popover("destroy");
         current_topic_sidebar_elem = undefined;
+    }
+};
+
+exports.hide_all_messages_popover = function () {
+    if (exports.all_messages_popped()) {
+        $(all_messages_sidebar_elem).popover("destroy");
+        all_messages_sidebar_elem = undefined;
     }
 };
 
@@ -154,12 +166,43 @@ function build_topic_popover(e) {
     e.stopPropagation();
 }
 
+function build_all_messages_popover(e) {
+    var elt = e.target;
+
+    if (exports.all_messages_popped()
+        && all_messages_sidebar_elem === elt) {
+        exports.hide_all_messages_popover();
+        e.stopPropagation();
+        return;
+    }
+
+    popovers.hide_all();
+
+    var content = templates.render(
+        'all_messages_sidebar_actions'
+    );
+
+    $(elt).popover({
+        content: content,
+        trigger: "manual",
+        fixed: true,
+    });
+
+    $(elt).popover("show");
+    all_messages_sidebar_elem = elt;
+    e.stopPropagation();
+
+}
+
 exports.register_click_handlers = function () {
     $('#stream_filters').on('click',
         '.stream-sidebar-arrow', build_stream_popover);
 
     $('#stream_filters').on('click',
         '.topic-sidebar-arrow', build_topic_popover);
+
+    $('#global_filters').on('click',
+        '.stream-sidebar-arrow', build_all_messages_popover);
 
     exports.register_stream_handlers();
     exports.register_topic_handlers();
@@ -205,11 +248,18 @@ exports.register_stream_handlers = function () {
         e.stopPropagation();
     });
 
-    // Mark all messages as read
+    // Mark all messages in stream as read
     $('body').on('click', '.mark_stream_as_read', function (e) {
         var sub = stream_popover_sub(e);
         exports.hide_stream_popover();
         unread_ops.mark_stream_as_read(sub.stream_id);
+        e.stopPropagation();
+    });
+
+    // Mark all messages as read
+    $('body').on('click', '#mark_all_messages_as_read', function (e) {
+        exports.hide_all_messages_popover();
+        pointer.fast_forward_pointer();
         e.stopPropagation();
     });
 

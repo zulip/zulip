@@ -34,12 +34,14 @@ from zerver.lib.bugdown.fenced_code import FENCE_RE
 from zerver.lib.camo import get_camo_url
 from zerver.lib.mention import possible_mentions, \
     possible_user_group_mentions, extract_user_group
+from zerver.lib.notifications import encode_stream
 from zerver.lib.timeout import timeout, TimeoutExpired
 from zerver.lib.cache import cache_with_key, NotFoundInCache
 from zerver.lib.url_preview import preview as link_preview
 from zerver.models import (
     all_realm_filters,
     get_active_streams,
+    MAX_MESSAGE_LENGTH,
     Message,
     Realm,
     RealmFilter,
@@ -1361,9 +1363,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
             if match.startswith("**") and match.endswith("**"):
                 name = match[2:-2]
             else:
-                if not mention.user_mention_matches_wildcard(match):
-                    return None
-                name = match
+                return None
 
             wildcard = mention.user_mention_matches_wildcard(name)
             user = db_data['mention_data'].get_user(name)
@@ -1433,8 +1433,8 @@ class StreamPattern(VerbosePattern):
             # href here and instead having the browser auto-add the
             # href when it processes a message with one of these, to
             # provide more clarity to API clients.
-            el.set('href', '/#narrow/stream/{stream_name}'.format(
-                stream_name=urllib.parse.quote(name)))
+            stream_url = encode_stream(stream['id'], name)
+            el.set('href', '/#narrow/stream/{stream_url}'.format(stream_url=stream_url))
             el.text = '#{stream_name}'.format(stream_name=name)
             return el
         return None
@@ -1962,7 +1962,14 @@ def do_convert(content: Text,
         # Spend at most 5 seconds rendering.
         # Sometimes Python-Markdown is really slow; see
         # https://trac.zulip.net/ticket/345
-        return timeout(5, _md_engine.convert, content)
+        rendered_content = timeout(5, _md_engine.convert, content)
+
+        # Throw an exception if the content is huge; this protects the
+        # rest of the codebase from any bugs where we end up rendering
+        # something huge.
+        if len(rendered_content) > MAX_MESSAGE_LENGTH * 2:
+            raise BugdownRenderingException()
+        return rendered_content
     except Exception:
         cleaned = privacy_clean_markdown(content)
 

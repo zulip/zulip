@@ -1,21 +1,16 @@
 #!/usr/bin/env python3
 
-
 import os
-import sys
-import time
 import signal
 import subprocess
+import sys
+import time
 from typing import Tuple
 
-# check for the venv
 from lib import sanity_check
 sanity_check.check_venv(__file__)
-from typing import IO
-
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
-
 
 def start_server(logfile_name: str) -> Tuple[bool, str]:
     failure = True
@@ -35,64 +30,25 @@ def start_server(logfile_name: str) -> Tuple[bool, str]:
 
     return failure, ''.join(datalog)
 
-
-def test_nagios(nagios_logfile):
-    # type: (IO[str]) -> bool
-    ZULIP_DIR = os.path.join(TOOLS_DIR, '..')
-    API_DIR = os.path.join(ZULIP_DIR, 'api')
-    os.chdir(API_DIR)
-    subprocess.call(['./setup.py', 'install'])
-    PUPPET_DIR = os.path.join(ZULIP_DIR, 'puppet')
-    os.chdir(ZULIP_DIR)
-    my_env = os.environ.copy()
-    my_env['PYTHONPATH'] = ZULIP_DIR
-    args = [
-        os.path.join(PUPPET_DIR,
-                     'zulip/files/nagios_plugins/zulip_app_frontend/check_send_receive_time'),
-        '--nagios',
-        '--site=http://127.0.0.1:9991',
-    ]
-    result = subprocess.check_output(args, env=my_env, universal_newlines=True,
-                                     stderr=nagios_logfile)
-
-    if result.startswith("OK:"):
-        return True
-
-    print(result)
-    return False
-
-
 if __name__ == '__main__':
     print("Testing development server start!")
 
     logfile_name = '/tmp/run-dev-output'
-    logfile = open(logfile_name, 'wb', buffering=0)
-    # nagios_logfile = open('/tmp/test-nagios-output', 'w+')
-
-    args = ["{}/run-dev.py".format(TOOLS_DIR)]
-    STDOUT = subprocess.STDOUT
-    run_dev = subprocess.Popen(args, stdout=logfile, stderr=STDOUT)
-
-    try:
+    with open(logfile_name, 'wb', buffering=0) as logfile:
+        run_dev = subprocess.Popen(
+            [os.path.join(TOOLS_DIR, "run-dev.py")],
+            stdout=logfile, stderr=subprocess.STDOUT)
         failure, log = start_server(logfile_name)
-        # We have moved API to a separate repo. `test_nagios` and
-        # `check_send_receive_time` need to be updated.
-        # failure = failure or not test_nagios(nagios_logfile)
-    finally:
-        logfile.close()
-        # nagios_log = close_and_get_content(nagios_logfile)
 
     run_dev.send_signal(signal.SIGINT)
     run_dev.wait()
 
-    if not failure and 'Traceback' in log:  # + ' ' + nagios_log:
+    if 'Traceback' in log:
         failure = True
 
     if failure:
         print("Development server is not working properly:")
         print(log)
-        # print("check_send_receive_time output:")
-        # print(nagios_log)
         sys.exit(1)
     else:
         print("Development server is working properly.")

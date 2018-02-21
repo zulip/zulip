@@ -48,19 +48,25 @@ def hash_util_encode(string: Text) -> Text:
     return urllib.parse.quote(
         string.encode("utf-8"), safe=b"").replace(".", "%2E").replace("%", ".")
 
+def encode_stream(stream_id: int, stream_name: Text) -> Text:
+    # We encode streams for urls as something like 99-Verona.
+    stream_name = stream_name.replace(' ', '-')
+    return str(stream_id) + '-' + hash_util_encode(stream_name)
+
 def pm_narrow_url(realm: Realm, participants: List[Text]) -> Text:
     participants.sort()
-    base_url = u"%s/#narrow/pm-with/" % (realm.uri,)
+    base_url = "%s/#narrow/pm-with/" % (realm.uri,)
     return base_url + hash_util_encode(",".join(participants))
 
-def stream_narrow_url(realm: Realm, stream: Text) -> Text:
-    base_url = u"%s/#narrow/stream/" % (realm.uri,)
-    return base_url + hash_util_encode(stream)
+def stream_narrow_url(realm: Realm, stream: Stream) -> Text:
+    base_url = "%s/#narrow/stream/" % (realm.uri,)
+    return base_url + encode_stream(stream.id, stream.name)
 
-def topic_narrow_url(realm: Realm, stream: Text, topic: Text) -> Text:
-    base_url = u"%s/#narrow/stream/" % (realm.uri,)
-    return u"%s%s/topic/%s" % (base_url, hash_util_encode(stream),
-                               hash_util_encode(topic))
+def topic_narrow_url(realm: Realm, stream: Stream, topic: Text) -> Text:
+    base_url = "%s/#narrow/stream/" % (realm.uri,)
+    return "%s%s/topic/%s" % (base_url,
+                              encode_stream(stream.id, stream.name),
+                              hash_util_encode(topic))
 
 def relative_to_full_url(base_url: Text, content: Text) -> Text:
     # Convert relative URLs to absolute URLs.
@@ -89,6 +95,18 @@ def relative_to_full_url(base_url: Text, content: Text) -> Text:
     inline_image_containers = fragment.find_class("message_inline_image")
     for container in inline_image_containers:
         container.drop_tree()
+
+    # The previous block handles most inline images, but for messages
+    # where the entire markdown input was just the URL of an image
+    # (i.e. the entire body is a message_inline_image object), the
+    # entire message body will be that image element; here, we need a
+    # more drastic edit to the content.
+    if fragment.get('class') == 'message_inline_image':
+        content_template = '<p><a href="%s" target="_blank" title="%s">%s</a></p>'
+        image_link = fragment.find('a').get('href')
+        image_title = fragment.find('a').get('title')
+        new_content = (content_template % (image_link, image_title, image_link))
+        fragment = lxml.html.fromstring(new_content)
 
     fragment.make_links_absolute(base_url)
     content = lxml.html.tostring(fragment).decode("utf-8")
@@ -175,26 +193,26 @@ def build_message_list(user_profile: UserProfile, messages: List[Message]) -> Li
                 'content': [build_message_payload(message)]}
 
     def message_header(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
-        disp_recipient = get_display_recipient(message.recipient)
         if message.recipient.type == Recipient.PERSONAL:
-            header = u"You and %s" % (message.sender.full_name,)
+            header = "You and %s" % (message.sender.full_name,)
             html_link = pm_narrow_url(user_profile.realm, [message.sender.email])
-            header_html = u"<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
+            header_html = "<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
         elif message.recipient.type == Recipient.HUDDLE:
+            disp_recipient = get_display_recipient(message.recipient)
             assert not isinstance(disp_recipient, Text)
             other_recipients = [r['full_name'] for r in disp_recipient
                                 if r['email'] != user_profile.email]
-            header = u"You and %s" % (", ".join(other_recipients),)
+            header = "You and %s" % (", ".join(other_recipients),)
             html_link = pm_narrow_url(user_profile.realm, [r["email"] for r in disp_recipient
                                       if r["email"] != user_profile.email])
-            header_html = u"<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
+            header_html = "<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
         else:
-            assert isinstance(disp_recipient, Text)
-            header = u"%s > %s" % (disp_recipient, message.topic_name())
-            stream_link = stream_narrow_url(user_profile.realm, disp_recipient)
-            topic_link = topic_narrow_url(user_profile.realm, disp_recipient, message.subject)
-            header_html = u"<a href='%s'>%s</a> > <a href='%s'>%s</a>" % (
-                stream_link, disp_recipient, topic_link, message.subject)
+            stream = Stream.objects.only('id', 'name').get(id=message.recipient.type_id)
+            header = "%s > %s" % (stream.name, message.topic_name())
+            stream_link = stream_narrow_url(user_profile.realm, stream)
+            topic_link = topic_narrow_url(user_profile.realm, stream, message.subject)
+            header_html = "<a href='%s'>%s</a> > <a href='%s'>%s</a>" % (
+                stream_link, stream.name, topic_link, message.subject)
         return {"plain": header,
                 "html": header_html,
                 "stream_message": message.recipient.type_name() == "stream"}
@@ -285,6 +303,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
         'message_count': message_count,
         'mention': missed_messages[0].is_stream_message(),
         'unsubscribe_link': unsubscribe_link,
+        'realm_name_in_notifications': user_profile.realm_name_in_notifications,
     })
 
     # If this setting (email mirroring integration) is enabled, only then
@@ -317,14 +336,14 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
                             if r['id'] != user_profile.id]
         context.update({'group_pm': True})
         if len(other_recipients) == 2:
-            huddle_display_name = u"%s" % (" and ".join(other_recipients))
+            huddle_display_name = "%s" % (" and ".join(other_recipients))
             context.update({'huddle_display_name': huddle_display_name})
         elif len(other_recipients) == 3:
-            huddle_display_name = u"%s, %s, and %s" % (
+            huddle_display_name = "%s, %s, and %s" % (
                 other_recipients[0], other_recipients[1], other_recipients[2])
             context.update({'huddle_display_name': huddle_display_name})
         else:
-            huddle_display_name = u"%s, and %s others" % (
+            huddle_display_name = "%s, and %s others" % (
                 ', '.join(other_recipients[:2]), len(other_recipients) - 2)
             context.update({'huddle_display_name': huddle_display_name})
     elif (missed_messages[0].recipient.type == Recipient.PERSONAL):
@@ -449,7 +468,7 @@ def enqueue_welcome_emails(user: UserProfile) -> None:
     context.update({
         'unsubscribe_link': unsubscribe_link,
         'organization_setup_advice_link':
-        user.realm.uri + '%s/help/getting-your-organization-started-with-zulip',
+        user.realm.uri + '/help/getting-your-organization-started-with-zulip',
         'is_realm_admin': user.is_realm_admin,
     })
     send_future_email(
@@ -481,5 +500,5 @@ def convert_html_to_markdown(html: Text) -> Text:
     # ugly. Run a regex over the resulting description, turning links of the
     # form `![](http://foo.com/image.png?12345)` into
     # `[image.png](http://foo.com/image.png)`.
-    return re.sub(u"!\\[\\]\\((\\S*)/(\\S*)\\?(\\S*)\\)",
-                  u"[\\2](\\1/\\2)", markdown)
+    return re.sub("!\\[\\]\\((\\S*)/(\\S*)\\?(\\S*)\\)",
+                  "[\\2](\\1/\\2)", markdown)

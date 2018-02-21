@@ -169,8 +169,9 @@ def json_change_notify_settings(
         enable_offline_push_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
         enable_online_push_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
         enable_digest_emails: Optional[bool]=REQ(validator=check_bool, default=None),
-        pm_content_in_desktop_notifications: Optional[bool]=REQ(validator=check_bool, default=None)
-) -> HttpResponse:
+        pm_content_in_desktop_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
+        realm_name_in_notifications: Optional[bool]=REQ(validator=check_bool, default=None)) \
+        -> HttpResponse:
     result = {}
 
     # Stream notification settings.

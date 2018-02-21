@@ -4,7 +4,7 @@ import pathlib
 from typing import Dict, List, Optional, TypeVar, Any, Text
 from django.conf import settings
 from django.conf.urls import url
-from django.core.urlresolvers import LocaleRegexProvider
+from django.urls.resolvers import LocaleRegexProvider
 from django.utils.module_loading import import_string
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
@@ -326,6 +326,7 @@ WEBHOOK_INTEGRATIONS = [
         function='zerver.webhooks.ifttt.view.api_iftt_app_webhook',
         display_name='IFTTT'
     ),
+    WebhookIntegration('insping', ['monitoring'], display_name='Insping'),
     WebhookIntegration('intercom', ['customer-support'], display_name='Intercom'),
     WebhookIntegration('jira', ['project-management'], display_name='JIRA'),
     WebhookIntegration('librato', ['monitoring']),
@@ -349,6 +350,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('slack', ['communication']),
     WebhookIntegration('solano', ['continuous-integration'], display_name='Solano Labs'),
     WebhookIntegration('splunk', ['monitoring'], display_name='Splunk'),
+    WebhookIntegration('statuspage', ['customer-support'], display_name='Statuspage'),
     WebhookIntegration('stripe', ['financial'], display_name='Stripe'),
     WebhookIntegration('taiga', ['project-management']),
     WebhookIntegration('teamcity', ['continuous-integration']),
@@ -368,6 +370,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('gci', ['misc'], display_name='Google Code-in',
                        stream_name='gci'),
     WebhookIntegration('runscope', ['monitoring']),
+    WebhookIntegration('facebook', ['communication'], display_name='Facebook')
 ]  # type: List[WebhookIntegration]
 
 INTEGRATIONS = {

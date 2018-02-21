@@ -47,7 +47,7 @@ proxy](#specifying-a-proxy) if you need a proxy to access the internet.)
 
 - **All**: 2GB available RAM, Active broadband internet connection, [GitHub account][set-up-git].
 - **macOS**: macOS (10.11 El Capitan or 10.12 Sierra recommended),
-  Git, VirtualBox (version [5.1.8][vbox-dl-macos]
+  Git, VirtualBox (version [5.2.6][vbox-dl-macos]
   recommended -- we find it's more stable than more recent versions),
   [Vagrant][vagrant-dl-macos].
 - **Ubuntu**: 14.04 64-bit or 16.04 64-bit, Git, [Vagrant][vagrant-dl-deb], lxc.
@@ -82,8 +82,8 @@ Jump to:
 
 #### macOS
 
-1. Install [Vagrant][vagrant-dl-macos] (1.8.4-1.8.6, do not use 1.8.7).
-2. Install [VirtualBox][vbox-dl-macos] (5.1.8).
+1. Install [Vagrant][vagrant-dl-macos] (2.0.2).
+2. Install [VirtualBox][vbox-dl-macos] (5.2.6).
 
 (For a non-free option, but better performance, you can also use [VMWare
 Fusion][vmware-fusion-dl] with the [VMWare Fusion Vagrant
@@ -100,7 +100,7 @@ after which you can jump to [Step 2: Get Zulip Code](#step-2-get-zulip-code):
 
 ```
 sudo apt-get -y purge vagrant && \
-wget https://releases.hashicorp.com/vagrant/1.8.6/vagrant_1.8.6_x86_64.deb && \
+wget https://releases.hashicorp.com/vagrant/2.0.2/vagrant_2.0.2_x86_64.deb && \
 sudo dpkg -i vagrant*.deb && \
 sudo apt-get -y install build-essential git ruby lxc lxc-templates cgroup-lite redir && \
 vagrant plugin install vagrant-lxc && \
@@ -122,11 +122,11 @@ christie@ubuntu-desktop:~
 $ sudo apt-get purge vagrant
 ```
 
-Now download and install the .deb package for [Vagrant 1.8.6][vagrant-dl-deb]:
+Now download and install the .deb package for [Vagrant 2.0.2][vagrant-dl-deb]:
 
 ```
 christie@ubuntu-desktop:~
-$ wget https://releases.hashicorp.com/vagrant/1.8.6/vagrant_1.8.6_x86_64.deb
+$ wget https://releases.hashicorp.com/vagrant/2.0.2/vagrant_2.0.2_x86_64.deb
 
 christie@ubuntu-desktop:~
 $ sudo dpkg -i vagrant*.deb
@@ -187,7 +187,7 @@ paste the following into your terminal after which you can jump to
 
 ```
 sudo apt-get -y purge vagrant && \
-wget https://releases.hashicorp.com/vagrant/1.8.6/vagrant_1.8.6_x86_64.deb && \
+wget https://releases.hashicorp.com/vagrant/2.0.2/vagrant_2.0.2_x86_64.deb && \
 sudo dpkg -i vagrant*.deb && \
 sudo apt-get -y install build-essential git ruby lxc redir && \
 vagrant plugin install vagrant-lxc && \
@@ -205,8 +205,8 @@ sudo apt-get install build-essential git ruby lxc redir
 #### Windows 10
 
 1. Install [Git for Windows][git-bash], which installs *Git BASH*.
-2. Install [VirtualBox][vbox-dl] (version >= 5.1.6 but < 5.2).
-3. Install [Vagrant][vagrant-dl-win] (version 1.8.4-1.8.6, do not use 1.8.7).
+2. Install [VirtualBox][vbox-dl] (version == 5.2.6).
+3. Install [Vagrant][vagrant-dl-win] (version 2.0.2, do not use 1.8.7).
 
 (Note: While *Git BASH* is recommended, you may also use [Cygwin][cygwin-dl].
 If you do, make sure to **install default required packages** along with
@@ -663,8 +663,8 @@ macOS.
 On **macOS** this error is most likely to occur with Vagrant version 1.8.7 and
 is a [known issue](https://github.com/mitchellh/vagrant/issues/7997).
 
-The solution is to downgrade Vagrant to version 1.8.6 ([available
-here](https://releases.hashicorp.com/vagrant/1.8.6/)), or to use your system's
+The solution is to downgrade Vagrant to version 2.0.2 ([available
+here](https://releases.hashicorp.com/vagrant/2.0.2/)), or to use your system's
 version of `curl` instead of the one that ships with Vagrant:
 
 ```
@@ -993,6 +993,9 @@ christie@xenial:~
 $ sudo patch --directory /usr/lib/ruby/vendor_ruby/vagrant < vagrant-plugin.patch
 patching file bundler.rb
 ```
+#### VT-X unavailability error
+
+Users who are unable to do "vagrant up" due to a VT-X unavailability error need to disable "Hyper-V" to get it to work.
 
 #### Permissions errors when running the test suite in LXC
 
@@ -1049,12 +1052,12 @@ for the IP address that means any IP address can connect to your development ser
 
 [cygwin-dl]: http://cygwin.com/
 [vagrant-dl]: https://www.vagrantup.com/downloads.html
-[vagrant-dl-win]: https://releases.hashicorp.com/vagrant/1.8.6/vagrant_1.8.6.msi
-[vagrant-dl-macos]: https://releases.hashicorp.com/vagrant/1.8.6/vagrant_1.8.6.dmg
-[vagrant-dl-deb]: https://releases.hashicorp.com/vagrant/1.8.6/vagrant_1.8.6_x86_64.deb
+[vagrant-dl-win]: https://releases.hashicorp.com/vagrant/2.0.2/vagrant_2.0.2_x86_64.msi
+[vagrant-dl-macos]: https://releases.hashicorp.com/vagrant/2.0.2/vagrant_2.0.2_x86_64.dmg
+[vagrant-dl-deb]: https://releases.hashicorp.com/vagrant/2.0.2/vagrant_2.0.2_x86_64.deb
 [vagrant-lxc]: https://github.com/fgrehm/vagrant-lxc
 [vbox-dl]: https://www.virtualbox.org/wiki/Downloads
-[vbox-dl-macos]: http://download.virtualbox.org/virtualbox/5.1.8/VirtualBox-5.1.8-111374-OSX.dmg
+[vbox-dl-macos]: https://download.virtualbox.org/virtualbox/5.2.6/VirtualBox-5.2.6-120293-OSX.dmg
 [vmware-fusion-dl]: http://www.vmware.com/products/fusion.html
 [vagrant-vmware-fusion-dl]: https://www.vagrantup.com/vmware/
 [avoiding-sudo]: https://github.com/fgrehm/vagrant-lxc#avoiding-sudo-passwords

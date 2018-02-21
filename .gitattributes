@@ -10,3 +10,4 @@
 *.png binary
 *.otf binary
 *.tif binary
+yarn.lock binary

@@ -67,11 +67,28 @@ function user_last_seen_time_status(user_id) {
     return timerender.last_seen_status_from_date(last_active_date.clone());
 }
 
+function calculate_info_popover_placement(size, elt) {
+  var ypos = elt.offset().top;
+
+  if (!((ypos + (size / 2) < message_viewport.height()) &&
+      (ypos > (size / 2)))) {
+      if (((ypos + size) < message_viewport.height())) {
+          return 'bottom';
+      } else if (ypos > size) {
+          return 'top';
+      }
+  }
+}
+
+// exporting for testability
+exports._test_calculate_info_popover_placement = calculate_info_popover_placement;
+
 // element is the target element to pop off of
 // user is the user whose profile to show
 // message is the message containing it, which should be selected
 function show_user_info_popover(element, user, message) {
     var last_popover_elem = current_message_info_popover_elem;
+    var popover_size = 428; // hardcoded pixel height of the popover
     popovers.hide_all();
     if (last_popover_elem !== undefined
         && last_popover_elem.get()[0] === element) {
@@ -100,25 +117,15 @@ function show_user_info_popover(element, user, message) {
             sent_by_uri: narrow.by_sender_uri(user.email),
             narrowed: narrow_state.active(),
             private_message_class: "respond_personal_button",
+            is_me: people.is_current_user(user.email),
             is_active: people.is_active_user_for_popover(user.user_id),
             is_bot: people.get_person_from_user_id(user.user_id).is_bot,
+            is_sender_popover: message.sender_id === user.user_id,
         };
 
-        var ypos = elt.offset().top;
-        var popover_size = 428;
-        var placement = "right";
-
-        if (!((ypos + (popover_size / 2) < message_viewport.height()) &&
-            (ypos > (popover_size / 2)))) {
-            if (((ypos + popover_size) < message_viewport.height())) {
-                placement = "bottom";
-            } else if (ypos > popover_size) {
-                placement = "top";
-            }
-        }
 
         elt.popover({
-            placement: placement,
+            placement: calculate_info_popover_placement(popover_size, elt),
             template: templates.render('user_info_popover', {class: "message-info-popover"}),
             title: templates.render('user_info_popover_title',
                                     {user_avatar: "avatar/" + user.email}),
@@ -129,6 +136,69 @@ function show_user_info_popover(element, user, message) {
 
         load_medium_avatar(user, $(".popover-avatar"));
 
+        current_message_info_popover_elem = elt;
+    }
+}
+
+function fetch_group_members(member_ids) {
+    return member_ids
+        .map(function (m) {
+            return people.get_person_from_user_id(m);
+        })
+        .filter(function (m) {
+            return m !== undefined;
+        })
+        .map(function (p) {
+            return Object.assign({}, p, {
+                presence_status: presence.get_status(p.user_id),
+                is_active: people.is_active_user_for_popover(p.user_id),
+                user_last_seen_time_status: user_last_seen_time_status(p.user_id),
+            });
+        });
+}
+
+function sort_group_members(members) {
+    return members
+        .sort(function (a, b) {
+              return a.full_name.localeCompare(b.full_name);
+        });
+}
+
+// exporting these functions for testing purposes
+exports._test_fetch_group_members = fetch_group_members;
+exports._test_sort_group_members = sort_group_members;
+
+// element is the target element to pop off of
+// user is the user whose profile to show
+// message is the message containing it, which should be selected
+function show_user_group_info_popover(element, group, message) {
+    var last_popover_elem = current_message_info_popover_elem;
+    // hardcoded pixel height of the popover
+    // note that the actual size varies (in group size), but this is about as big as it gets
+    var popover_size = 390;
+    popovers.hide_all();
+    if (last_popover_elem !== undefined
+        && last_popover_elem.get()[0] === element) {
+        // We want it to be the case that a user can dismiss a popover
+        // by clicking on the same element that caused the popover.
+        return;
+    }
+    current_msg_list.select_id(message.id);
+    var elt = $(element);
+    if (elt.data('popover') === undefined) {
+        var args = {
+            group_name: group.name,
+            group_description: group.description,
+            members: sort_group_members(fetch_group_members(group.members)),
+        };
+        elt.popover({
+            placement: calculate_info_popover_placement(popover_size, elt),
+            template: templates.render('user_group_info_popover', {class: "message-info-popover"}),
+            content: templates.render('user_group_info_popover_content', args),
+            trigger: "manual",
+        });
+        elt.popover("show");
+        ui.set_up_scrollbar($('.group-info-popover .member-list'));
         current_message_info_popover_elem = elt;
     }
 }
@@ -438,12 +508,28 @@ exports.register_click_handlers = function () {
     });
 
     $("#main_div").on("click", ".user-mention", function (e) {
+        var id = $(this).attr('data-user-id');
+        if (id === '*') {
+            return;
+        }
         var row = $(this).closest(".message_row");
         e.stopPropagation();
         var message = current_msg_list.get(rows.id(row));
-        var id = $(this).attr('data-user-id');
         var user = people.get_person_from_user_id(id);
         show_user_info_popover(this, user, message);
+    });
+
+    $("#main_div").on("click", ".user-group-mention", function (e) {
+        var id = $(this).attr('data-user-group-id');
+        var row = $(this).closest(".message_row");
+        e.stopPropagation();
+        var message = current_msg_list.get(rows.id(row));
+        var group = user_groups.get_user_group_from_id(id);
+        if (group === undefined) {
+            blueslip.error('Unable to find user group in message' + message.sender_id);
+        } else {
+            show_user_group_info_popover(this, group, message);
+        }
     });
 
     $('body').on('click', '.user_popover .narrow_to_private_messages', function (e) {
@@ -548,6 +634,7 @@ exports.register_click_handlers = function () {
             private_message_class: "compose_private_message",
             is_active: people.is_active_user_for_popover(user_id),
             is_bot: user.is_bot,
+            is_sender_popover: false,
         };
 
         target.popover({
@@ -577,22 +664,12 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.respond_button', function (e) {
-        var textarea = $("#compose-textarea");
-        var msgid = $(e.currentTarget).data("message-id");
-
-        compose_actions.respond_to_message({trigger: 'popover respond'});
-        channel.get({
-            url: '/json/messages/' + msgid,
-            idempotent: true,
-            success: function (data) {
-                if (textarea.val() === "") {
-                    textarea.val("```quote\n" + data.raw_content +"\n```\n");
-                } else {
-                    textarea.val(textarea.val() + "\n```quote\n" + data.raw_content +"\n```\n");
-                }
-                $("#compose-textarea").trigger("autosize.resize");
-            },
-        });
+        // Arguably, we should fetch the message ID to respond to from
+        // e.target, but that should always be the current selected
+        // message in the current message list (and
+        // compose_actions.respond_to_message doesn't take a message
+        // argument).
+        compose_actions.quote_and_reply({trigger: 'popover respond'});
         popovers.hide_actions_popover();
         e.stopPropagation();
         e.preventDefault();
@@ -786,6 +863,7 @@ exports.hide_all = function () {
     emoji_picker.hide_emoji_popover();
     stream_popover.hide_stream_popover();
     stream_popover.hide_topic_popover();
+    stream_popover.hide_all_messages_popover();
     popovers.hide_user_sidebar_popover();
     popovers.hide_userlist_sidebar();
     stream_popover.restore_stream_list_size();
@@ -796,6 +874,7 @@ exports.hide_all = function () {
             $o.$tip.remove();
         }
     });
+    list_of_popovers = [];
 };
 
 exports.set_userlist_placement = function (placement) {

@@ -116,7 +116,7 @@ body {
 .app.help {
     position: fixed;
     width: 100vw;
-    height: calc(100vh - 64px);
+    height: calc(100vh - 59px);
     left: 0px;
 
     box-shadow: 0px -20px 50px rgba(0, 0, 0, 0.04);
@@ -131,7 +131,7 @@ body {
     position: fixed;
     z-index: 1;
     /* 100vh - navbar - paddingTop - paddingBottom - bottomNav */
-    height: calc(100vh - 64px - 10px - 10px);
+    height: calc(100vh - 59px - 10px - 10px);
     padding: 10px 20px 10px 20px;
 
     border-right: 1px solid hsl(219, 10%, 97%);
@@ -229,7 +229,9 @@ body {
     background-color: hsl(152, 40%, 42%);
 
     /* Extend highlight to entire width of sidebar, not just link area */
-    width: calc(100% + 20px);
+    /* This has been changed from "+" to "- -" because of issue #8403.
+       If the issue has been fixed, please change this back to "+" again. */
+    width: calc(100% - -20px);
     margin-left: -40px;
     padding-left: 40px;
 }
@@ -600,7 +602,7 @@ input.text-error {
 /* -- end new footer -- */
 
 .header {
-    padding: 20px 0 15px;
+    padding: 15px 0;
 }
 
 .header-main .logo {
@@ -731,7 +733,6 @@ input.text-error {
     border: 1px solid rgba(0,0,0,0.2);
     border-radius: 4px;
     font-weight: 400;
-    padding: 4px;
     cursor: pointer;
 }
 
@@ -1493,7 +1494,7 @@ input.new-organization-button {
     width: calc(100vw - 340px - 30px);
     padding: 0px 30px 0px 30px;
 
-    height: calc(100vh - 64px);
+    height: calc(100vh - 59px);
     font-weight: 400;
     font-size: 1rem;
     line-height: 1.5;
@@ -1749,7 +1750,7 @@ input.new-organization-button {
 @media (max-width: 1000px) {
     .app.help .markdown {
         width: calc(100vw - 50px);
-        height: calc(100vh - 64px);
+        height: calc(100vh - 59px);
         left: 50px;
         padding: 0px;
     }
@@ -1783,7 +1784,6 @@ input.new-organization-button {
     .app.help .sidebar.show {
         padding-right: 20px;
         transform: translateX(280px);
-        overflow: auto !important;
     }
 
     .app.help .sidebar.show + .hamburger {

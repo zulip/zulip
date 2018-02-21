@@ -7,46 +7,46 @@ EMPTY_SHA = '0000000000000000000000000000000000000000'
 
 COMMITS_LIMIT = 20
 COMMIT_ROW_TEMPLATE = '* {commit_msg} ([{commit_short_sha}]({commit_url}))\n'
-COMMITS_MORE_THAN_LIMIT_TEMPLATE = u"[and {commits_number} more commit(s)]"
-COMMIT_OR_COMMITS = u"commit{}"
+COMMITS_MORE_THAN_LIMIT_TEMPLATE = "[and {commits_number} more commit(s)]"
+COMMIT_OR_COMMITS = "commit{}"
 
-PUSH_PUSHED_TEXT_WITH_URL = u"[pushed]({compare_url}) {number_of_commits} {commit_or_commits}"
-PUSH_PUSHED_TEXT_WITHOUT_URL = u"pushed {number_of_commits} {commit_or_commits}"
+PUSH_PUSHED_TEXT_WITH_URL = "[pushed]({compare_url}) {number_of_commits} {commit_or_commits}"
+PUSH_PUSHED_TEXT_WITHOUT_URL = "pushed {number_of_commits} {commit_or_commits}"
 
 PUSH_COMMITS_BASE = '{user_name} {pushed_text} to branch {branch_name}.'
-PUSH_COMMITS_MESSAGE_TEMPLATE_WITH_COMMITTERS = PUSH_COMMITS_BASE + u""" {committers_details}.
+PUSH_COMMITS_MESSAGE_TEMPLATE_WITH_COMMITTERS = PUSH_COMMITS_BASE + """ {committers_details}.
 
 {commits_data}
 """
-PUSH_COMMITS_MESSAGE_TEMPLATE_WITHOUT_COMMITTERS = PUSH_COMMITS_BASE + u"""
+PUSH_COMMITS_MESSAGE_TEMPLATE_WITHOUT_COMMITTERS = PUSH_COMMITS_BASE + """
 
 {commits_data}
 """
-PUSH_DELETE_BRANCH_MESSAGE_TEMPLATE = u"{user_name} [deleted]({compare_url}) the branch {branch_name}."
-PUSH_LOCAL_BRANCH_WITHOUT_COMMITS_MESSAGE_TEMPLATE = (u"{user_name} [pushed]({compare_url}) "
+PUSH_DELETE_BRANCH_MESSAGE_TEMPLATE = "{user_name} [deleted]({compare_url}) the branch {branch_name}."
+PUSH_LOCAL_BRANCH_WITHOUT_COMMITS_MESSAGE_TEMPLATE = ("{user_name} [pushed]({compare_url}) "
                                                       "the branch {branch_name}.")
-PUSH_COMMITS_MESSAGE_EXTENSION = u"Commits by {}"
+PUSH_COMMITS_MESSAGE_EXTENSION = "Commits by {}"
 PUSH_COMMITTERS_LIMIT_INFO = 3
 
-FORCE_PUSH_COMMITS_MESSAGE_TEMPLATE = (u"{user_name} [force pushed]({url}) "
+FORCE_PUSH_COMMITS_MESSAGE_TEMPLATE = ("{user_name} [force pushed]({url}) "
                                        "to branch {branch_name}. Head is now {head}")
-CREATE_BRANCH_MESSAGE_TEMPLATE = u"{user_name} created [{branch_name}]({url}) branch"
-REMOVE_BRANCH_MESSAGE_TEMPLATE = u"{user_name} deleted branch {branch_name}"
+CREATE_BRANCH_MESSAGE_TEMPLATE = "{user_name} created [{branch_name}]({url}) branch"
+REMOVE_BRANCH_MESSAGE_TEMPLATE = "{user_name} deleted branch {branch_name}"
 
-PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE = u"{user_name} {action} [{type}{id}]({url})"
-PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE = u"(assigned to {assignee})"
-PULL_REQUEST_BRANCH_INFO_TEMPLATE = u"\nfrom `{target}` to `{base}`"
+PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE = "{user_name} {action} [{type}{id}]({url})"
+PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE = "(assigned to {assignee})"
+PULL_REQUEST_BRANCH_INFO_TEMPLATE = "\nfrom `{target}` to `{base}`"
 
-SETUP_MESSAGE_TEMPLATE = u"{integration} webhook has been successfully configured"
-SETUP_MESSAGE_USER_PART = u" by {user_name}"
+SETUP_MESSAGE_TEMPLATE = "{integration} webhook has been successfully configured"
+SETUP_MESSAGE_USER_PART = " by {user_name}"
 
-CONTENT_MESSAGE_TEMPLATE = u"\n~~~ quote\n{message}\n~~~"
+CONTENT_MESSAGE_TEMPLATE = "\n~~~ quote\n{message}\n~~~"
 
-COMMITS_COMMENT_MESSAGE_TEMPLATE = u"{user_name} {action} on [{sha}]({url})"
+COMMITS_COMMENT_MESSAGE_TEMPLATE = "{user_name} {action} on [{sha}]({url})"
 
-PUSH_TAGS_MESSAGE_TEMPLATE = u"""{user_name} {action} tag {tag}"""
-TAG_WITH_URL_TEMPLATE = u"[{tag_name}]({tag_url})"
-TAG_WITHOUT_URL_TEMPLATE = u"{tag_name}"
+PUSH_TAGS_MESSAGE_TEMPLATE = """{user_name} {action} tag {tag}"""
+TAG_WITH_URL_TEMPLATE = "[{tag_name}]({tag_url})"
+TAG_WITHOUT_URL_TEMPLATE = "{tag_name}"
 
 
 def get_push_commits_event_message(user_name: Text, compare_url: Optional[Text],

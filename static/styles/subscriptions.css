@@ -717,7 +717,7 @@ form#add_new_subscription {
     line-height: 1.5;
 }
 
-#subscription_overlay .stream-description:empty:after,
+#subscription_overlay .stream-description .stream-description-editable:empty:after,
 .stream-row .sub-info-box .description:empty:after {
     content: attr(data-no-description);
     font-style: italic;

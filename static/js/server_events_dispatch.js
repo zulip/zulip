@@ -103,6 +103,8 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             page_params.realm_icon_url = event.data.icon_url;
             page_params.realm_icon_source = event.data.icon_source;
             realm_icon.rerender();
+        } else if (event.op === 'deactivated') {
+            window.location.href = "/accounts/deactivated/";
         }
 
         break;
@@ -356,6 +358,11 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
 
     case 'delete_message':
         var msg_id = event.message_id;
+        var message = message_store.get(msg_id);
+        // message is passed to unread.get_unread_messages,
+        // which returns all the unread messages out of a given list.
+        // So double marking something as read would not occur
+        unread_ops.mark_message_as_read(message);
         ui.remove_message(msg_id);
         break;
 

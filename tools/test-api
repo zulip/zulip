@@ -14,7 +14,9 @@ os.chdir(ZULIP_PATH)
 from zulip import Client
 
 from tools.lib.test_server import test_server_running
-from tools.lib.api_tests import test_the_api
+from zerver.lib.api_test_helpers import test_the_api, test_invalid_api_key, \
+    test_update_message_edit_permission_error, \
+    test_user_not_authorized_error, test_authorization_errors_fatal
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
 django.setup()
@@ -34,5 +36,29 @@ with test_server_running(external_host='zulipdev.com:9981'):
 
     print("Running API tests...")
     test_the_api(client)
+
+    email = 'newbie@zulip.com'  # newbie is not an admin
+    realm = get_realm("zulip")
+    api_key = get_user(email, realm).api_key
+    site = 'http://zulip.zulipdev.com:9981'
+    nonadmin_client = Client(
+        email=email,
+        api_key=api_key,
+        site=site
+    )
+
+    # Run tests that require non-admin client
+    test_update_message_edit_permission_error(client, nonadmin_client)
+    test_user_not_authorized_error(nonadmin_client)
+    test_authorization_errors_fatal(client, nonadmin_client)
+
+    # Test error payloads
+    client = Client(
+        email=email,
+        api_key='abcedrsdfd',
+        site=site
+    )
+    test_invalid_api_key(client)
+
 
 print("API tests passed!")

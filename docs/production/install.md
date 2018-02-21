@@ -78,7 +78,7 @@ dependencies from the PyPI and NPM repositories.
   If you'd prefer to acquire an SSL certificate yourself in any other
   way, it's easy to [provide it to Zulip][doc-ssl-manual].
 
-[doc-settings]: ../production/customize.html
+[doc-settings]: ../production/settings.html
 [doc-certbot]: ../production/ssl-certificates.html#certbot-recommended
 [doc-ssl-manual]: ../production/ssl-certificates.html#manual-install
 
@@ -178,7 +178,7 @@ to get important announcements for Zulip server administrators about
 new releases, security issues, etc.
 * [Follow Zulip on Twitter](https://twitter.com/zulip) to get Zulip news.
 * [Learn how to setup your new Zulip organization][realm-admin-docs].
-* [Learn how further configure your Zulip server](customize.html).
+* [Learn how configure your Zulip server settings](settings.html).
 * [Learn about maintaining a production Zulip server](../production/maintain-secure-upgrade.html).
 
 ## Troubleshooting

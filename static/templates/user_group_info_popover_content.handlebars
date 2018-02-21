@@ -1,0 +1,30 @@
+{{! Contents of the "user group info" popup }}
+<div class="group-info">
+    <div class="group-name"> {{group_name}} </div>
+    <div class="group-description">
+        {{group_description}}
+    </div>
+</div>
+<hr>
+<ul class="nav nav-list member-list">
+    {{#each members}}
+    <li class="user_{{presence_status}}">
+        {{#if is_active }}
+            {{#if is_bot}}
+            <i class="zulip-icon bot" aria-hidden="true"></i>
+            {{else}}
+            <span class="user-status-indicator popover_user_presence" title="{{user_last_seen_time_status}}"></span>
+            {{/if}}
+        {{/if}}
+        <span>{{full_name}}</span>
+    </li>
+    {{/each}}
+</ul>
+<ul class="nav nav-list">
+    <li>
+        <a href="#organization/user-groups-admin">
+            <i class="icon-vector-cog"></i>
+            {{t 'Manage user groups' }}
+        </a>
+    </li>
+</ul>

@@ -179,8 +179,8 @@ class NarrowBuilder:
         Escape user input to place in a regex
 
         Python's re.escape escapes unicode characters in a way which postgres
-        fails on, u'\u03bb' to u'\\\u03bb'. This function will correctly escape
-        them for postgres, u'\u03bb' to u'\\u03bb'.
+        fails on, '\u03bb' to '\\\u03bb'. This function will correctly escape
+        them for postgres, '\u03bb' to '\\u03bb'.
         """
         s = list(pattern)
         for i, c in enumerate(s):
@@ -398,8 +398,8 @@ class NarrowBuilder:
 # whereas the offsets from tsearch_extras are in bytes, so we
 # have to account for both cases in the logic below.
 def highlight_string(text: Text, locs: Iterable[Tuple[int, int]]) -> Text:
-    highlight_start = u'<span class="highlight">'
-    highlight_stop = u'</span>'
+    highlight_start = '<span class="highlight">'
+    highlight_stop = '</span>'
     pos = 0
     result = ''
     in_tag = False
@@ -759,6 +759,8 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
     ret = {'messages': message_list,
            "result": "success",
            "msg": ""}
+    if use_first_unread_anchor:
+        ret['anchor'] = anchor
     return json_success(ret)
 
 @has_request_variables
@@ -948,7 +950,8 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
                          message_type_name: Text=REQ('type'),
                          message_to: List[Text]=REQ('to', converter=extract_recipients, default=[]),
                          forged: bool=REQ(default=False),
-                         topic_name: Optional[Text]=REQ('subject', lambda x: x.strip(), None),
+                         topic_name: Optional[Text]= REQ('subject',
+                                                         converter=lambda x: x.strip(), default=None),
                          message_content: Text=REQ('content'),
                          realm_str: Optional[Text]=REQ('realm_str', default=None),
                          local_id: Optional[Text]=REQ(default=None),
@@ -1003,7 +1006,7 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
     if (delivery_type == 'send_later' or delivery_type == 'remind') and defer_until is None:
         return json_error(_("Missing deliver_at in a request for delayed message delivery"))
 
-    if delivery_type == 'send_later' or delivery_type == 'remind' and defer_until:
+    if (delivery_type == 'send_later' or delivery_type == 'remind') and defer_until is not None:
         return handle_deferred_message(sender, client, message_type_name,
                                        message_to, topic_name, message_content,
                                        delivery_type, defer_until, tz_guess,

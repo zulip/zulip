@@ -482,7 +482,6 @@ exports.change_state = (function () {
         if (hash.arguments.length > 0) {
             // if in #streams/new form.
             if (hash.arguments[0] === "new") {
-                components.toggle.lookup("stream-filter-toggle").goto("all-streams");
                 exports.new_stream_clicked();
             } else if (hash.arguments[0] === "all") {
                 components.toggle.lookup("stream-filter-toggle").goto("all-streams");
@@ -617,7 +616,7 @@ exports.view_stream = function () {
     var active_data = get_active_data();
     var row_data = get_row_data(active_data.row);
     if (row_data) {
-        window.location.hash = '#narrow/stream/' + row_data.object.name;
+        window.location.hash = '#narrow/stream/' + hash_util.encode_stream_name(row_data.object.name);
     }
 };
 
@@ -699,6 +698,9 @@ $(function () {
     $("#subscriptions_table").on("click", ".create_stream_button", function (e) {
         e.preventDefault();
         exports.new_stream_clicked();
+        // this will change the hash which will attempt to retrigger the create
+        // stream code, so we prevent this once.
+        exports.change_state.prevent_once();
     });
 
     $(".subscriptions").on("click", "[data-dismiss]", function (e) {

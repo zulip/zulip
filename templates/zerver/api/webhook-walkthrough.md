@@ -226,8 +226,8 @@ class HelloWorldHookTests(WebhookTestCase):
 
     # Note: Include a test function per each distinct message condition your integration supports
     def test_hello_message(self) -> None:
-        expected_subject = u"Hello World";
-        expected_message = u"Hello! I am happy to be here! :smile: \nThe Wikipedia featured article for today is **[Marilyn Monroe](https://en.wikipedia.org/wiki/Marilyn_Monroe)**";
+        expected_subject = "Hello World";
+        expected_message = "Hello! I am happy to be here! :smile: \nThe Wikipedia featured article for today is **[Marilyn Monroe](https://en.wikipedia.org/wiki/Marilyn_Monroe)**";
 
         # use fixture named helloworld_hello
         self.send_and_test_stream_message('hello', expected_subject, expected_message,
@@ -267,8 +267,8 @@ class called something like `test_goodbye_message`:
 
 ```
     def test_goodbye_message(self) -> None:
-        expected_subject = u"Hello World";
-        expected_message = u"Hello! I am happy to be here! :smile:\nThe Wikipedia featured article for today is **[Goodbye](https://en.wikipedia.org/wiki/Goodbye)**";
+        expected_subject = "Hello World";
+        expected_message = "Hello! I am happy to be here! :smile:\nThe Wikipedia featured article for today is **[Goodbye](https://en.wikipedia.org/wiki/Goodbye)**";
 
         # use fixture named helloworld_goodbye
         self.send_and_test_stream_message('goodbye', expected_subject, expected_message,
@@ -486,12 +486,12 @@ class QuerytestHookTests(WebhookTestCase):
 
     def test_querytest_test_one(self) -> None:
         # construct the URL used for this test
-        self.TOPIC = u"Query Test"
+        self.TOPIC = "Query Test"
         self.url = self.build_webhook_url(topic=self.TOPIC)
 
         # define the expected message contents
-        expected_subject = u"Query Test"
-        expected_message = u"This is a test of custom query parameters."
+        expected_subject = "Query Test"
+        expected_message = "This is a test of custom query parameters."
 
         self.send_and_test_stream_message('test_one', expected_subject, expected_message,
                                           content_type="application/x-www-form-urlencoded")

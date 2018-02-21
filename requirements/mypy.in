@@ -5,4 +5,4 @@
 mypy==0.560
 
 # Include typing explicitly, since it's needed on Python 3.4
-typing==3.6.2
+typing==3.6.4

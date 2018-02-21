@@ -64,8 +64,8 @@ assert.equal(bot_data.get(314).full_name, 'Outgoing webhook');
         bot = bot_data.get(43);
         assert.equal('Bot 1', bot.full_name);
         bot_data.update(43, {full_name: 'New Bot 1',
-                                           services: [{interface: 2,
-                                                       base_url: 'http://baz.com'}]});
+                             services: [{interface: 2,
+                                         base_url: 'http://baz.com'}]});
         bot = bot_data.get(43);
         services = bot_data.get_services(43);
         assert.equal('New Bot 1', bot.full_name);

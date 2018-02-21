@@ -20,7 +20,7 @@ from zerver.views.auth import login_or_register_remote_user, \
     redirect_and_log_into_subdomain
 from zerver.views.invite import get_invitee_emails_set
 from zerver.views.registration import confirmation_key, \
-    send_registration_completion_email
+    send_confirm_registration_email
 
 from zerver.models import (
     get_realm, get_user, get_stream_recipient,
@@ -384,7 +384,6 @@ class LoginTest(ZulipTestCase):
         result = self.client_post('/accounts/home/', {'email': email},
                                   subdomain="zulip")
         self.assertEqual(result.status_code, 302)
-        print(result.url)
         self.assertNotIn('deactivated', result.url)
 
         realm = get_realm("zulip")
@@ -882,7 +881,6 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         conf.save()
 
         target_url = '/' + url.split('/', 3)[3]
-        print(target_url)
         result = self.client_get(target_url)
         self.assert_in_success_response(["Whoops. The confirmation link has expired "
                                          "or been deactivated."], result)
@@ -1408,6 +1406,17 @@ class RealmCreationTest(ZulipTestCase):
         realm.save()
         self.assertFalse(is_root_domain_available())
 
+    def test_subdomain_check_api(self) -> None:
+        result = self.client_get("/json/realm/subdomain/zulip")
+        self.assert_in_success_response(["Subdomain unavailable. Please choose a different one."], result)
+
+        result = self.client_get("/json/realm/subdomain/zu_lip")
+        self.assert_in_success_response(["Subdomain can only have lowercase letters, numbers, and \'-\'s."], result)
+
+        result = self.client_get("/json/realm/subdomain/hufflepuff")
+        self.assert_in_success_response(["available"], result)
+        self.assert_not_in_success_response(["unavailable"], result)
+
 class UserSignUpTest(ZulipTestCase):
 
     def _assert_redirected_to(self, result: HttpResponse, url: Text) -> None:
@@ -1421,7 +1430,7 @@ class UserSignUpTest(ZulipTestCase):
         email = self.nonreg_email('newguy')
 
         smtp_mock = patch(
-            'zerver.views.registration.send_registration_completion_email',
+            'zerver.views.registration.send_confirm_registration_email',
             side_effect=smtplib.SMTPException('uh oh')
         )
 
@@ -1444,7 +1453,7 @@ class UserSignUpTest(ZulipTestCase):
         email = self.nonreg_email('newguy')
 
         smtp_mock = patch(
-            'zerver.views.registration.send_registration_completion_email',
+            'zerver.views.registration.send_confirm_registration_email',
             side_effect=smtplib.SMTPException('uh oh')
         )
 

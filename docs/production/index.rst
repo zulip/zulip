@@ -9,7 +9,7 @@ Zulip in Production
    requirements
    Installing a production server <install>
    troubleshooting
-   customize
+   settings
    mobile-push-notifications
    maintain-secure-upgrade
    security-model

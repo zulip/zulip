@@ -180,19 +180,19 @@ _.each(matches, function (person) {
         sender_id : 7,
         stream_id : 1,
         subject : "Dev Topic",
-        timestamp : _.uniqueId(),
+        id : _.uniqueId(),
     });
     global.recent_senders.process_message_for_senders({
         sender_id : 5,
         stream_id : 1,
         subject : "Dev Topic",
-        timestamp : _.uniqueId(),
+        id : _.uniqueId(),
     });
     global.recent_senders.process_message_for_senders({
         sender_id : 6,
         stream_id : 1,
         subject : "Dev Topic",
-        timestamp : _.uniqueId(),
+        id : _.uniqueId(),
     });
 
     // Typeahead for stream message [query, stream-name, topic-name]
@@ -210,13 +210,13 @@ _.each(matches, function (person) {
         sender_id : 5,
         stream_id : 2,
         subject : "Linux Topic",
-        timestamp : _.uniqueId(),
+        id : _.uniqueId(),
     });
     global.recent_senders.process_message_for_senders({
         sender_id : 7,
         stream_id : 2,
         subject : "Linux Topic",
-        timestamp : _.uniqueId(),
+        id : _.uniqueId(),
     });
 
     // No match
@@ -399,7 +399,7 @@ _.each(matches, function (person) {
     assert(rendered);
 }());
 
-(function test_clear_rendered_persons() {
+(function test_clear_rendered_person() {
     var rendered = false;
     global.templates.render = function (template_name, args) {
         assert.equal(template_name, 'typeahead_list_item');
@@ -419,7 +419,7 @@ _.each(matches, function (person) {
     assert.equal(rendered, false);
 
     // Here rendered will be true as it is being rendered again.
-    th.clear_rendered_persons();
+    th.clear_rendered_person(matches[5].user_id);
     assert.equal(th.render_person(matches[5]), 'typeahead-item-stub');
     assert(rendered);
 

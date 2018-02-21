@@ -85,6 +85,8 @@ below, and add more to your repertoire as needed.
 
 * **Reply only to author**: `R`
 
+* **Quote and reply to message**: `>`
+
 * **New stream message**: `c` — For starting a new topic in a stream.
 
 * **New private message**: `C`

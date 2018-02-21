@@ -3,12 +3,12 @@
 #
 version: 2
 jobs:
-  build:
+  "trusty-python-3.4":
     docker:
-      # This is built from tools/circleci/images/Dockerfile .
-      - image: gregprice/circleci:trusty-python-3.test
+      # This is built from tools/circleci/images/trusty/Dockerfile .
+      - image: gregprice/circleci:trusty-python-4.test
 
-    working_directory: ~/repo
+    working_directory: ~/zulip
 
     steps:
       - checkout
@@ -21,20 +21,16 @@ jobs:
               sudo chown -R circleci "${dirs[@]}"
       - restore_cache:
           keys:
-          - v1-node-base2
-          - v1-node-base1
+          - v1-npm-base.trusty.1
       - restore_cache:
           keys:
-          - v1-venv-base2
-          - v1-venv-base1
+          - v1-venv-base.trusty.1
 
       - run:
           name: install dependencies
           command: |
             # Install moreutils so we can use `ts` and `mispipe` in the following.
             sudo apt-get install -y moreutils
-
-            # TODO: Install and use codecov.
 
             # CircleCI sets the following in Git config at clone time:
             #   url.ssh://git@github.com.insteadOf https://github.com
@@ -54,11 +50,11 @@ jobs:
       - save_cache:
           paths:
             - /srv/zulip-npm-cache
-          key: v1-node-base2
+          key: v1-npm-base.trusty.1
       - save_cache:
           paths:
             - /srv/zulip-venv-cache
-          key: v1-venv-base2
+          key: v1-venv-base.trusty.1
       # TODO: in Travis we also cache ~/zulip-emoji-cache, ~/node, ~/misc
 
       # The moment of truth!  Run the tests.
@@ -75,9 +71,73 @@ jobs:
             . /srv/zulip-py3-venv/bin/activate
             mispipe ./tools/travis/frontend ts
 
+      -  run:
+          name: upload coverage report
+          command: |
+            . /srv/zulip-py3-venv/bin/activate
+            pip install codecov && codecov \
+              || echo "Error in uploading coverage reports to codecov.io."
+
       # - store_artifacts:  # TODO
       #     path: var/casper/
       #     # also /tmp/zulip-test-event-log/
       #     destination: test-reports
 
-      # TODO: notify zulipbot
+  "xenial-python-3.5":
+    docker:
+      # This is built from tools/circleci/images/xenial/Dockerfile .
+      - image: gregprice/circleci:xenial-python-3.test
+
+    working_directory: ~/zulip
+
+    steps:
+      - checkout
+
+      - run:
+          name: create cache directories
+          command: |
+              dirs=(/srv/zulip-{npm,venv}-cache)
+              sudo mkdir -p "${dirs[@]}"
+              sudo chown -R circleci "${dirs[@]}"
+      - restore_cache:
+          keys:
+          - v1-npm-base.xenial.1
+      - restore_cache:
+          keys:
+          - v1-venv-base.xenial.1
+
+      - run:
+          name: install dependencies
+          command: |
+            sudo apt-get install -y moreutils
+            rm -f /home/circleci/.gitconfig
+            mispipe "tools/travis/setup-backend" ts
+
+      - save_cache:
+          paths:
+            - /srv/zulip-npm-cache
+          key: v1-npm-base.xenial.1
+      - save_cache:
+          paths:
+            - /srv/zulip-venv-cache
+          key: v1-venv-base.xenial.1
+
+      - run:
+          name: run backend tests
+          command: |
+            . /srv/zulip-py3-venv/bin/activate
+            mispipe ./tools/travis/backend ts
+
+      -  run:
+          name: upload coverage report
+          command: |
+            . /srv/zulip-py3-venv/bin/activate
+            pip install codecov && codecov \
+              || echo "Error in uploading coverage reports to codecov.io."
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - "trusty-python-3.4"
+      - "xenial-python-3.5"

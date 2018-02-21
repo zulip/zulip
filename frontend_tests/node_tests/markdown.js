@@ -241,9 +241,9 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
         {input: 'These #* #*** are also not mentions',
          expected: '<p>These #* #*** are also not mentions</p>'},
         {input: 'This is a #**Denmark** stream link',
-         expected: '<p>This is a <a class="stream" data-stream-id="1" href="http://zulip.zulipdev.com/#narrow/stream/Denmark">#Denmark</a> stream link</p>'},
+         expected: '<p>This is a <a class="stream" data-stream-id="1" href="http://zulip.zulipdev.com/#narrow/stream/1-Denmark">#Denmark</a> stream link</p>'},
         {input: 'This is #**Denmark** and #**social** stream links',
-         expected: '<p>This is <a class="stream" data-stream-id="1" href="http://zulip.zulipdev.com/#narrow/stream/Denmark">#Denmark</a> and <a class="stream" data-stream-id="2" href="http://zulip.zulipdev.com/#narrow/stream/social">#social</a> stream links</p>'},
+         expected: '<p>This is <a class="stream" data-stream-id="1" href="http://zulip.zulipdev.com/#narrow/stream/1-Denmark">#Denmark</a> and <a class="stream" data-stream-id="2" href="http://zulip.zulipdev.com/#narrow/stream/2-social">#social</a> stream links</p>'},
         {input: 'And this is a #**wrong** stream link',
          expected: '<p>And this is a #**wrong** stream link</p>'},
         {input: 'mmm...:burrito:s',
@@ -272,7 +272,7 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
         {input: 'Test *italic*',
          expected: '<p>Test <em>italic</em></p>'},
         {input: 'T\n#**Denmark**',
-         expected: '<p>T<br>\n<a class="stream" data-stream-id="1" href="http://zulip.zulipdev.com/#narrow/stream/Denmark">#Denmark</a></p>'},
+         expected: '<p>T<br>\n<a class="stream" data-stream-id="1" href="http://zulip.zulipdev.com/#narrow/stream/1-Denmark">#Denmark</a></p>'},
         {input: 'T\n@**Cordelia Lear**',
           expected: '<p>T<br>\n<span class="user-mention" data-user-id="101">@Cordelia Lear</span></p>'},
         {input: 'T\n@hamletcharacters',
@@ -368,9 +368,19 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
     input = "test @all";
     message = {subject: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    assert.equal(message.mentioned, true);
+    assert.equal(message.mentioned, false);
+
+    input = "test @everyone";
+    message = {subject: "No links here", raw_content: input};
+    markdown.apply_markdown(message);
+    assert.equal(message.mentioned, false);
 
     input = "test @any";
+    message = {subject: "No links here", raw_content: input};
+    markdown.apply_markdown(message);
+    assert.equal(message.mentioned, false);
+
+    input = "test @alleycat.com";
     message = {subject: "No links here", raw_content: input};
     markdown.apply_markdown(message);
     assert.equal(message.mentioned, false);
@@ -381,6 +391,11 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
     assert.equal(message.mentioned, true);
 
     input = "test @*backend*";
+    message = {subject: "No links here", raw_content: input};
+    markdown.apply_markdown(message);
+    assert.equal(message.mentioned, false);
+
+    input = "test @**invalid_user**";
     message = {subject: "No links here", raw_content: input};
     markdown.apply_markdown(message);
     assert.equal(message.mentioned, false);

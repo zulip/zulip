@@ -267,6 +267,28 @@ class RealmTest(ZulipTestCase):
         realm = get_realm('zulip')
         self.assertNotEqual(realm.default_language, invalid_lang)
 
+    def test_deactivate_realm_by_admin(self) -> None:
+        email = self.example_email('iago')
+        self.login(email)
+        realm = get_realm('zulip')
+        self.assertFalse(realm.deactivated)
+
+        result = self.client_post('/json/realm/deactivate')
+        self.assert_json_success(result)
+        realm = get_realm('zulip')
+        self.assertTrue(realm.deactivated)
+
+    def test_deactivate_realm_by_non_admin(self) -> None:
+        email = self.example_email('hamlet')
+        self.login(email)
+        realm = get_realm('zulip')
+        self.assertFalse(realm.deactivated)
+
+        result = self.client_post('/json/realm/deactivate')
+        self.assert_json_error(result, "Must be a realm administrator")
+        realm = get_realm('zulip')
+        self.assertFalse(realm.deactivated)
+
 
 class RealmAPITest(ZulipTestCase):
 

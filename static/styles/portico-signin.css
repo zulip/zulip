@@ -8,7 +8,7 @@ html {
     align-items: center;
     justify-content: center;
 
-    min-height: calc(100vh - 407px);
+    min-height: calc(100vh - 402px);
 }
 
 .m-10 {
@@ -942,4 +942,14 @@ button.login-google-button {
     .flex {
         min-height: calc(100vh - 560px);
     }
+}
+
+#login_form .loader {
+    display: none;
+    vertical-align: top;
+    position: relative;
+
+    height: 30px;
+    margin-top: -10px;
+    top: 5px;
 }

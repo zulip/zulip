@@ -9,7 +9,7 @@ from django.test import override_settings
 from mock import patch
 from typing import Any, Dict, List, Mapping
 
-from zerver.lib.actions import do_change_stream_invite_only
+from zerver.lib.actions import do_change_stream_invite_only, do_deactivate_user
 from zerver.lib.bot_config import get_bot_config
 from zerver.models import get_realm, get_stream, \
     Realm, Stream, UserProfile, get_user, get_bot_services, Service, \
@@ -210,6 +210,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertEqual(result['default_sending_stream'], 'Denmark')
 
         profile = get_user(email, realm)
+        assert(profile.default_sending_stream is not None)
         self.assertEqual(profile.default_sending_stream.name, 'Denmark')
 
     def test_add_bot_with_default_sending_stream_not_subscribed(self) -> None:
@@ -222,6 +223,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertEqual(result['default_sending_stream'], 'Rome')
 
         profile = get_user(email, realm)
+        assert(profile.default_sending_stream is not None)
         self.assertEqual(profile.default_sending_stream.name, 'Rome')
 
     def test_bot_add_subscription(self) -> None:
@@ -286,6 +288,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         email = 'hambot-bot@zulip.testserver'
         realm = get_realm('zulip')
         profile = get_user(email, realm)
+        assert(profile.default_sending_stream is not None)
         self.assertEqual(profile.default_sending_stream.name, 'Denmark')
 
         event = [e for e in events if e['event']['type'] == 'realm_bot'][0]
@@ -336,6 +339,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertEqual(result['default_events_register_stream'], 'Denmark')
 
         profile = get_user(bot_email, bot_realm)
+        assert(profile.default_events_register_stream is not None)
         self.assertEqual(profile.default_events_register_stream.name, 'Denmark')
 
     def test_add_bot_with_default_events_register_stream_private_allowed(self) -> None:
@@ -354,6 +358,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         bot_email = 'hambot-bot@zulip.testserver'
         bot_realm = get_realm('zulip')
         bot_profile = get_user(bot_email, bot_realm)
+        assert(bot_profile.default_events_register_stream is not None)
         self.assertEqual(bot_profile.default_events_register_stream.name, 'Denmark')
 
         event = [e for e in events if e['event']['type'] == 'realm_bot'][0]
@@ -425,6 +430,39 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_delete("/json/bots/bogus-bot@zulip.com")
         self.assert_json_error(result, 'No such bot')
         self.assert_num_bots_equal(1)
+
+    def test_deactivate_bot_with_owner_deactivation(self) -> None:
+        email = self.example_email("hamlet")
+        user = self.example_user('hamlet')
+        self.login(email)
+
+        bot_info = {
+            'full_name': u'The Bot of Hamlet',
+            'short_name': u'hambot',
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        bot_info = {
+            'full_name': u'The Another Bot of Hamlet',
+            'short_name': u'hambot-another',
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        all_bots = UserProfile.objects.filter(is_bot=True, bot_owner=user, is_active=True)
+        bots = [bot for bot in all_bots]
+        self.assertEqual(len(bots), 2)
+
+        result = self.client_delete('/json/users/me')
+        self.assert_json_success(result)
+        user = self.example_user('hamlet')
+        self.assertFalse(user.is_active)
+
+        self.login(self.example_email("iago"))
+        all_bots = UserProfile.objects.filter(is_bot=True, bot_owner=user, is_active=True)
+        bots = [bot for bot in all_bots]
+        self.assertEqual(len(bots), 0)
 
     def test_bot_deactivation_attacks(self) -> None:
         """You cannot deactivate somebody else's bot."""
@@ -608,6 +646,65 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login(self.example_email('othello'))
         bot = self.get_bot()
         self.assertEqual('The Bot of Hamlet', bot['full_name'])
+
+    def test_patch_bot_owner_bad_username(self) -> None:
+        self.login(self.example_email('hamlet'))
+        self.create_bot()
+        self.assert_num_bots_equal(1)
+
+        bot_info = {
+            'bot_owner': '',
+        }
+        result = self.client_patch("/json/bots/hambot-bot@zulip.testserver", bot_info)
+        self.assert_json_error(result, "Failed to change owner, no such user")
+        profile = get_user('hambot-bot@zulip.testserver', get_realm('zulip'))
+        self.assertEqual(profile.bot_owner, self.example_user("hamlet"))
+
+        bot_info = {
+            'bot_owner': 'Invalid name',
+        }
+        result = self.client_patch("/json/bots/hambot-bot@zulip.testserver", bot_info)
+        self.assert_json_error(result, "Failed to change owner, no such user")
+        profile = get_user('hambot-bot@zulip.testserver', get_realm('zulip'))
+        self.assertEqual(profile.bot_owner, self.example_user("hamlet"))
+
+    def test_patch_bot_owner_deactivated(self) -> None:
+        self.login(self.example_email('hamlet'))
+        self.create_bot()
+        self.assert_num_bots_equal(1)
+
+        target_user_profile = self.example_user("othello")
+        do_deactivate_user(target_user_profile)
+        target_user_profile = self.example_user('othello')
+        self.assertFalse(target_user_profile.is_active)
+        bot_info = {
+            'bot_owner': self.example_email('othello'),
+        }
+
+        result = self.client_patch("/json/bots/hambot-bot@zulip.testserver", bot_info)
+        self.assert_json_error(result, "Failed to change owner, user is deactivated")
+        profile = get_user('hambot-bot@zulip.testserver', get_realm('zulip'))
+        self.assertEqual(profile.bot_owner, self.example_user("hamlet"))
+
+    def test_patch_bot_owner_a_bot(self) -> None:
+        self.login(self.example_email('hamlet'))
+        self.create_bot()
+        self.assert_num_bots_equal(1)
+
+        bot_info = {
+            'full_name': u'Another Bot of Hamlet',
+            'short_name': u'hamelbot',
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        bot_info = {
+            'bot_owner': 'hamelbot-bot@zulip.testserver',
+        }
+        result = self.client_patch("/json/bots/hambot-bot@zulip.testserver", bot_info)
+        self.assert_json_error(result, "Failed to change owner, bots can't own other bots")
+        profile = get_user('hambot-bot@zulip.testserver', get_realm('zulip'))
+        self.assertEqual(profile.bot_owner, self.example_user("hamlet"))
 
     @override_settings(LOCAL_UPLOADS_DIR='var/bot_avatar')
     def test_patch_bot_avatar(self) -> None:

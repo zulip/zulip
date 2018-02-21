@@ -18,7 +18,7 @@ class RemoteZulipServer(models.Model):
 
 # Variant of PushDeviceToken for a remote server.
 class RemotePushDeviceToken(AbstractPushDeviceToken):
-    server = models.ForeignKey(RemoteZulipServer)  # type: RemoteZulipServer
+    server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)  # type: RemoteZulipServer
     # The user id on the remote server for this device device this is
     user_id = models.BigIntegerField(db_index=True)  # type: int
     token = models.CharField(max_length=4096, db_index=True)  # type: bytes
@@ -28,4 +28,4 @@ class RemotePushDeviceToken(AbstractPushDeviceToken):
 
 class Customer(models.Model):
     stripe_customer_id = models.CharField(max_length=255, unique=True)
-    realm = models.OneToOneField(Realm)
+    realm = models.OneToOneField(Realm, on_delete=models.CASCADE)

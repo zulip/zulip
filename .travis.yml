@@ -49,13 +49,8 @@ matrix:
     # We only get 4 jobs running at a time, so we try to make the first few
     # the most likely to break.
     - python: "3.4"
-      env: TEST_SUITE=frontend
-    - python: "3.4"
-      env: TEST_SUITE=backend
-    - python: "3.4"
       env: TEST_SUITE=production
-    - python: "3.5"
-      env: TEST_SUITE=backend
+    # Other suites moved to CircleCI -- see .circleci/.
 sudo: required
 addons:
   artifacts:
@@ -70,9 +65,3 @@ addons:
       - moreutils
 after_success:
   - codecov
-notifications:
-  webhooks:
-    urls:
-      - https://zulip.org/zulipbot/travis
-    on_success: always
-    on_failure: always

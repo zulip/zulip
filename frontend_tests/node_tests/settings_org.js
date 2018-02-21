@@ -108,12 +108,7 @@ function simulate_realm_domains_table() {
 }
 
 function test_realms_domain_modal(add_realm_domain) {
-    var info = $.create('domains-info-stub');
-
-    $('#realm_domains_modal').set_find_results(
-        '.realm_domains_info',
-        info
-    );
+    var info = $('.realm_domains_info');
 
     $('#add-realm-domain-widget').set_find_results(
         '.new-realm-domain',
@@ -410,7 +405,7 @@ function test_change_allow_subdomains(change_allow_subdomains) {
         stopPropagation: noop,
     };
 
-    var info = $.create('realm-domain-info-stub');
+    var info = $('.realm_domains_info');
     var domain = 'example.com';
     var allow = true;
 
@@ -422,11 +417,6 @@ function test_change_allow_subdomains(change_allow_subdomains) {
         success_callback = req.success;
         error_callback = req.error;
     };
-
-    $('#realm_domains_modal').set_find_results(
-        '.realm_domains_info',
-        info
-    );
 
     var domain_obj = $.create('domain object');
     domain_obj.text(domain);

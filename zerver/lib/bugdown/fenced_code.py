@@ -85,7 +85,7 @@ from zerver.lib.tex import render_tex
 from typing import Any, Dict, Iterable, List, MutableSequence, Optional, Tuple, Union, Text
 
 # Global vars
-FENCE_RE = re.compile(u"""
+FENCE_RE = re.compile("""
     # ~~~ or ```
     (?P<fence>
         ^(?:~{3,}|`{3,})

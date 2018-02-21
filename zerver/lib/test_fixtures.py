@@ -40,13 +40,13 @@ def get_migration_status(**options: Any) -> str:
         if module_has_submodule(app_config.module, "management"):
             import_module('.management', app_config.name)
 
-    app_labels = [options['app_label']] if options.get('app_label') else None
+    app_label = options['app_label'] if options.get('app_label') else None
     db = options.get('database', DEFAULT_DB_ALIAS)
     out = StringIO()
     call_command(
         'showmigrations',
         '--list',
-        app_labels=app_labels,
+        app_label=app_label,
         database=db,
         no_color=options.get('no_color', False),
         settings=options.get('settings', os.environ['DJANGO_SETTINGS_MODULE']),

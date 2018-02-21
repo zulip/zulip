@@ -263,7 +263,7 @@ exports.resize_page_components = function () {
     activity.update_scrollbar.users();
     activity.update_scrollbar.group_pms();
 
-    desktop_notifications_panel.resize_app();
+    panels.resize_app();
 };
 
 var _old_width = $(window).width();

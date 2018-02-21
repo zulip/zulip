@@ -6,6 +6,17 @@
     var now = moment('{{ now }}');
     $('#utctime')[0].innerHTML = moment.utc(now).format('YYYY-MM-DD HH:mm') + 'Z';
     $('#localtime')[0].innerHTML = '(' + now.format('YYYY-MM-DD HH:mm ZZ') + ')';
+    $(document).ready(function() {
+        $('a.envelope-link').click(function() {
+            var temp = $(document.createElement('input'));
+            $("body").append(temp);
+            temp.val($(this).data("value")).select();
+            document.execCommand("copy");
+            temp.remove();
+            $(this).fadeOut(250);
+            $(this).fadeIn(1000);
+        });
+    });
 </script>
 
 <ul>
@@ -13,6 +24,7 @@
     <li>sites are listed if ≥1 users active in last 2 weeks</li>
     <li><strong>user</strong> - registered user, not deactivated, not a bot</li>
     <li><strong>active (user)</strong> - sent a message, or advanced the pointer (reading messages doesn't count unless advances the pointer)</li>
+    <li><strong><th><i class="fa fa-envelope"></i></th></strong> - copies realm admin emails to clipboard</li>
     <li><strong>DAU</strong> (Daily Active Users) - users active in last 24hr</li>
     <li><strong>WAU</strong> (Weekly Active Users) - users active in last 7 * 24hr</li>
     <li><strong>DAT</strong> (Daily Active Time) - total user-activity time in last 24hr</li>
@@ -25,6 +37,7 @@
         <tr>
             <th>Realm</th>
             <th>Created (green if ≤12wk)</th>
+            <th><i class="fa fa-envelope"></i></th>
             <th>DAU</th>
             <th>WAU</th>
             <th>Total users</th>
@@ -48,6 +61,14 @@
                 class="good" {% else %}
                 class="neutral" {% endif %} >
                 {{ row.date_created_day }}
+            </td>
+
+            <td class="envelope">
+                {% if not loop.last %}
+                <a class="envelope-link" data-value="{{ row.realm_admin_email }}">
+                    <i class="fa fa-envelope"></i>
+                </a>
+                {% endif %}
             </td>
 
             <td class="number">

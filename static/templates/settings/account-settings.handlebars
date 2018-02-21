@@ -3,7 +3,7 @@
     <div class="account-settings-form">
         <div class="inline-block">
             <form class="email-change-form grid">
-                <h3 class="light">{{t "User settings" }}</h3>
+                <h3>{{t "User settings" }}</h3>
                 <div class="input-group user-name-section">
                     <label class="inline-block title">{{t "Email" }}</label>
                     <a id="change_email" {{#unless page_params.realm_email_changes_disabled}}href="#change_email"{{/unless}}>
@@ -13,14 +13,11 @@
                             <i class="fa fa-pencil"></i>
                         </button>
                     </a>
-                    <i class="icon-vector-question-sign change_email_tooltip" {{#unless page_params.realm_email_changes_disabled}}style="display:none" {{/unless}} data-toggle="tooltip"
+                    <i class="icon-vector-question-sign change_email_tooltip settings-info-icon" {{#unless page_params.realm_email_changes_disabled}}style="display:none" {{/unless}} data-toggle="tooltip"
                     title="{{t 'Changing email addresses has been disabled by your Zulip organization administrators. Contact an administrator for help.' }}"></i>
                 </div>
 
-                <i class="icon-vector-question-sign settings-info-icon change_email_tooltip" {{#unless page_params.realm_email_changes_disabled}}style="display:none" {{/unless}} data-toggle="tooltip"
-                title="{{t 'Changing email addresses has been disabled by your Zulip organization administrators. Contact an administrator for help.' }}"></i>
-
-                <div id="change_email_modal" class="modal hide" tabindex="-1" role="dialog"
+                <div id="change_email_modal" class="modal modal-bg hide" tabindex="-1" role="dialog"
                     aria-labelledby="change_email_modal_label" aria-hidden="true">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
@@ -32,26 +29,63 @@
                             <input type="text" name="email" value="{{ page_params.email }}" autocomplete="off" spellcheck="false" autofocus="autofocus"/>
                         </div>
                     </div>
+                    <div class="alert change_email_info"></div>
                     <div class="modal-footer">
+                        <button class="button white rounded" type="button" data-dismiss="modal">{{t "Cancel" }}</button>
                         <button id='change_email_button' class="button rounded sea-green" data-dismiss="modal">{{t "Change" }}</button>
-                        <button class="button white rounded" data-dismiss="modal">{{t "Cancel" }}</button>
+                    </div>
+                </div>
+            </form>
+
+            <form class="form-horizontal full-name-change-form">
+                <div class="inline-block grid user-name-parent">
+                    <div class="user-name-section inline-block">
+                        <label for="full_name" class="inline-block title">{{t "Full name" }}</label>
+                        <a id="change_full_name" {{#if page_params.realm_name_changes_disabled}}href="#change_name" {{/if}}>
+                            <button type="button" class="button small white rounded inline-block" id="full_name"{{#if page_params.realm_name_changes_disabled}} disabled="disabled"{{/if}}>
+                                <span id="full_name_value">{{page_params.full_name}}</span>
+                                <i class="fa fa-pencil"></i>
+                            </button>
+                        </a>
+                        <i class="icon-vector-question-sign change_name_tooltip settings-info-icon" data-toggle="tooltip"
+                        {{#unless page_params.realm_name_changes_disabled}}style="display:none" {{/unless}}
+                        title="{{t 'Changing your name has been disabled by your Zulip organization administrators. Contact an administrator for help.' }}"/>
+                    </div>
+                    <div id="change_full_name_modal" class="modal modal-bg hide" tabindex="-1" role="dialog"
+                        aria-labelledby="change_full_name_modal_label" aria-hidden="true">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
+                            <h3 id="change_full_name_modal_label">{{t "Change full name" }}</h3>
+                        </div>
+                        <div class="modal-body">
+                            <div class="input-group full_name_change_container">
+                                <label for="email">{{t "New full name" }}</label>
+                                <input type="text" name="full_name" value="{{ page_params.full_name }}" autocomplete="off" spellcheck="false" autofocus="autofocus"/>
+                            </div>
+                        </div>
+                        <div class="alert change_full_name_info"></div>
+                        <div class="modal-footer">
+                            <button class="button white rounded" type="button" data-dismiss="modal">{{t "Cancel" }}</button>
+                            <button id='change_full_name_button' class="button rounded sea-green" data-dismiss="modal">{{t "Change" }}</button>
+                        </div>
                     </div>
                 </div>
             </form>
 
             <form class="password-change-form grid">
-                <div class="input-group user-name-section">
+                <div class="user-name-section">
                     <label class="inline-block title">{{t "Password" }}</label>
                     <a id="change_password" {{#if page_params.realm_email_auth_enabled}}href="#change_password"{{/if}}>
                         {{#if page_params.realm_email_auth_enabled}}
                         <div class="input-group inline-block" id="pw_change_link">
-                            <button type="button" class="change_password_button button rounded inline-block input-size" data-dismiss="modal">{{t "Change password" }}</button>
+                            <button type="button" class="change_password_button small button rounded inline-block" data-dismiss="modal">{{t "********" }}<i class="fa fa-pencil"></i>
+                            </button>
                         </div>
                         {{/if}}
                     </a>
                 </div>
 
-                <div id="change_password_modal" class="modal hide" tabindex="-1" role="dialog"
+                <div id="change_password_modal" class="modal modal-bg hide" tabindex="-1" role="dialog"
                     aria-labelledby="change_password_modal_label" aria-hidden="true">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
@@ -77,43 +111,24 @@
                     </div>
                     <div class="alert change_password_info"></div>
                     <div class="modal-footer">
-                        <button class="button white rounded" data-dismiss="modal">{{t "Cancel" }}</button>
-                        <button id='change_password_button' class="button rounded sea-green" data-dismiss="modal">{{t "Change" }}</button>
+                        <button class="button white rounded" type="button" data-dismiss="modal">{{t "Cancel" }}</button>
+                        <button id='change_password_button' class="button rounded sea-green">{{t "Change" }}</button>
                     </div>
                 </div>
             </form>
 
-            <form class="form-horizontal your-account-settings">
-                <div class="inline-block grid user-name-parent">
-                    <div class="user-name-section inline-block">
-                        <div class="input-group" id="name_change_container">
-                            <label for="full_name" class="inline-block title">{{t "Full name" }}</label>
-                            <input type="text" name="full_name" id="full_name" class="w-200 inline-block" value="{{ page_params.full_name }}" {{#if page_params.realm_name_changes_disabled}}disabled="disabled" {{/if}}/>
-                            <i class="icon-vector-question-sign change_name_tooltip" data-toggle="tooltip"
-                            {{#unless page_params.realm_name_changes_disabled}}style="display:none" {{/unless}}
-                            title="{{t 'Changing your name has been disabled by your Zulip organization administrators. Contact an administrator for help.' }}"/>
-                            <div class="warning"></div>
-                        </div>
-
-                        <div class="input-group no-border">
-                            <label for="" class="inline-block"></label>
-                            <button type="submit" class="button rounded w-200 sea-green input-size" name="change_settings">
-                                {{t 'Save changes'}}
-                            </button>
-                        </div>
-                        <div class="input-group">
-                            <label for="" class="inline-block"></label>
-                            <button type="submit" class="button rounded w-200 btn-danger input-size" id="user_deactivate_account_button">
-                                {{t 'Deactivate account' }}
-                            </button>
-                        </div>
-                    </div>
+            <form class="deactivate_account grid">
+                <div class="input-group">
+                    <label for="" class="inline-block"></label>
+                    <button type="submit" class="button rounded w-200 btn-danger input-size" id="user_deactivate_account_button">
+                        {{t 'Deactivate account' }}
+                    </button>
                 </div>
             </form>
         </div>
 
         <div class="inline-block user-avatar-section">
-            <h3 class="light">{{t "User avatar" }}</h3>
+            <h3>{{t "User avatar" }}</h3>
 
             <div class="inline-block">
                 <img id="user-settings-avatar" src="{{ page_params.avatar_url_medium }}" />
@@ -132,7 +147,7 @@
         </div>
         <div class="clear-float"></div>
 
-        <div id="deactivate_self_modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="deactivation_self_modal_label" aria-hidden="true">
+        <div id="deactivate_self_modal" class="modal modal-bg hide fade" tabindex="-1" role="dialog" aria-labelledby="deactivation_self_modal_label" aria-hidden="true">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
                 <h3 id="deactivation_self_modal_label">{{t "Deactivate your account" }} </h3>
@@ -150,7 +165,7 @@
         <hr class="settings_separator" />
 
         <div class="form-horizontal" id="api_key_button_box">
-            <h3 class="light">{{t "API key" }}</h3>
+            <h3>{{t "API key" }}</h3>
 
             <div class="input-group">
                 <p class="api-key-note">

@@ -1,9 +1,5 @@
 set_global('$', global.make_zjquery());
 
-set_global('message_store', {
-    recent_private_messages: new global.Array(),
-});
-
 set_global('narrow_state', {});
 set_global('resize', {
     resize_stream_filters_container: function () {},
@@ -24,6 +20,7 @@ zrequire('narrow');
 zrequire('Handlebars', 'handlebars');
 zrequire('templates');
 zrequire('people');
+zrequire('pm_conversations');
 zrequire('pm_list');
 
 var alice = {
@@ -70,9 +67,9 @@ global.people.initialize_current_user(me.user_id);
     var active_conversation_2 = 'me@zulip.com,alice@zulip.com';
     var max_conversations = 5;
 
-    var conversations = {user_ids_string: '101,102',
-                         timestamp: 0 };
-    global.message_store.recent_private_messages.push(conversations);
+    var user_ids_string = '101,102';
+    var timestamp = 0;
+    pm_conversations.recent.insert(user_ids_string, timestamp);
 
     global.unread.num_unread_for_person = function () {
         return 1;

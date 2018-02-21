@@ -942,7 +942,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
         default_stream_groups = get_default_stream_groups(realm)
         self.assert_length(default_stream_groups, 1)
         self.assertEqual(default_stream_groups[0].name, group_name)
-        self.assertEqual(list(default_stream_groups[0].streams.all()), streams)
+        self.assertEqual(list(default_stream_groups[0].streams.all().order_by('name')), streams)
 
         result = self.client_patch("/json/default_stream_groups/{}/streams".format(group_id),
                                    {"op": "add", "stream_names": ujson.dumps(new_stream_names)})
@@ -965,7 +965,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
         default_stream_groups = get_default_stream_groups(realm)
         self.assert_length(default_stream_groups, 1)
         self.assertEqual(default_stream_groups[0].name, group_name)
-        self.assertEqual(list(default_stream_groups[0].streams.all()), streams)
+        self.assertEqual(list(default_stream_groups[0].streams.all().order_by('name')), streams)
 
         result = self.client_patch("/json/default_stream_groups/{}/streams".format(group_id),
                                    {"op": "remove", "stream_names": ujson.dumps(new_stream_names)})
@@ -1021,6 +1021,35 @@ class DefaultStreamGroupTest(ZulipTestCase):
 
         result = self.client_delete('/json/default_stream_groups/{}'.format(group_id))
         self.assert_json_error(result, "Default stream group with id '{}' does not exist.".format(group_id))
+
+    def test_invalid_default_stream_group_name(self) -> None:
+        self.login(self.example_email("iago"))
+        user_profile = self.example_user('iago')
+        realm = user_profile.realm
+
+        stream_names = ["stream1", "stream2", "stream3"]
+        description = "This is group1"
+        streams = []
+
+        for stream_name in stream_names:
+            (stream, _) = create_stream_if_needed(realm, stream_name)
+            streams.append(stream)
+
+        result = self.client_post('/json/default_stream_groups/create',
+                                  {"group_name": "", "description": description,
+                                   "stream_names": ujson.dumps(stream_names)})
+        self.assert_json_error(result, "Invalid default stream group name ''")
+
+        result = self.client_post('/json/default_stream_groups/create',
+                                  {"group_name": 'x'*100, "description": description,
+                                   "stream_names": ujson.dumps(stream_names)})
+        self.assert_json_error(result, "Default stream group name too long (limit: {} characters)"
+                               .format((DefaultStreamGroup.MAX_NAME_LENGTH)))
+
+        result = self.client_post('/json/default_stream_groups/create',
+                                  {"group_name": "abc\000", "description": description,
+                                   "stream_names": ujson.dumps(stream_names)})
+        self.assert_json_error(result, "Default stream group name 'abc\000' contains NULL (0x00) characters.")
 
 class SubscriptionPropertiesTest(ZulipTestCase):
     def test_set_stream_color(self) -> None:
@@ -1340,18 +1369,6 @@ class SubscriptionRestApiTest(ZulipTestCase):
         self.assert_json_error(result,
                                "Stream name too long (limit: 60 characters).")
 
-    def test_stream_name_has_invalid_characters(self) -> None:
-        email = self.example_email('hamlet')
-        self.login(email)
-
-        stream_name = "a*"
-        request = {
-            'delete': ujson.dumps([stream_name])
-        }
-        result = self.api_patch(email, "/api/v1/users/me/subscriptions", request)
-        self.assert_json_error(result,
-                               "Invalid characters in stream name (disallowed characters: *, @, `, #).")
-
     def test_stream_name_contains_null(self) -> None:
         email = self.example_email('hamlet')
         self.login(email)
@@ -1602,8 +1619,8 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(msg.recipient.type, Recipient.STREAM)
         self.assertEqual(msg.sender_id, self.notification_bot().id)
         stream_id = Stream.objects.latest('id').id
-        expected_rendered_msg = '<p>%s just created a new stream <a class="stream" data-stream-id="%d" href="/#narrow/stream/%s">#%s</a>.</p>' % (
-            user.full_name, stream_id, invite_streams[0], invite_streams[0])
+        expected_rendered_msg = '<p>%s just created a new stream <a class="stream" data-stream-id="%d" href="/#narrow/stream/%s-%s">#%s</a>.</p>' % (
+            user.full_name, stream_id, stream_id, invite_streams[0], invite_streams[0])
         self.assertEqual(msg.rendered_content, expected_rendered_msg)
 
     def test_successful_subscriptions_notifies_with_escaping(self) -> None:

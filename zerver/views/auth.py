@@ -6,7 +6,7 @@ from django.contrib.auth import authenticate, get_backends
 from django.contrib.auth.views import login as django_login_page, \
     logout_then_login as django_logout_then_login
 from django.contrib.auth.views import password_reset as django_password_reset
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from zerver.decorator import authenticated_json_post_view, require_post, \
     process_client, do_login, log_view_func
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, \
@@ -25,6 +25,7 @@ from zerver.context_processors import zulip_default_context, get_realm_from_requ
 from zerver.forms import HomepageForm, OurAuthenticationForm, \
     WRONG_SUBDOMAIN_ERROR, ZulipPasswordResetForm
 from zerver.lib.mobile_auth_otp import is_valid_otp, otp_encrypt_api_key
+from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
@@ -371,7 +372,7 @@ def finish_google_oauth2(request: HttpRequest) -> HttpResponse:
         full_name = body['name']['formatted']
     except KeyError:
         # Only google+ users have a formatted name. I am ignoring i18n here.
-        full_name = u'{} {}'.format(
+        full_name = '{} {}'.format(
             body['name']['givenName'], body['name']['familyName']
         )
     for email in body['emails']:
@@ -567,13 +568,13 @@ def dev_direct_login(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     if (not dev_auth_enabled()) or settings.PRODUCTION:
         # This check is probably not required, since authenticate would fail without
         # an enabled DevAuthBackend.
-        raise Exception('Direct login not supported.')
+        return HttpResponseRedirect(reverse('dev_not_supported'))
     email = request.POST['direct_email']
     subdomain = get_subdomain(request)
     realm = get_realm(subdomain)
     user_profile = authenticate(dev_auth_username=email, realm=realm)
     if user_profile is None:
-        raise Exception("User cannot login")
+        return HttpResponseRedirect(reverse('dev_not_supported'))
     do_login(request, user_profile)
     return HttpResponseRedirect(user_profile.realm.uri)
 
@@ -713,6 +714,7 @@ def api_get_server_settings(request: HttpRequest) -> HttpResponse:
     result = dict(
         authentication_methods=get_auth_backends_data(request),
         zulip_version=ZULIP_VERSION,
+        push_notifications_enabled=push_notifications_enabled(),
     )
     context = zulip_default_context(request)
     # IMPORTANT NOTE:

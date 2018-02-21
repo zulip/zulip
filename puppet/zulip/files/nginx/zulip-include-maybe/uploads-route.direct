@@ -1,0 +1,5 @@
+location /user_uploads {
+    add_header X-Content-Type-Options nosniff;
+    include /etc/nginx/zulip-include/uploads.types;
+    alias /home/zulip/uploads/files;
+}

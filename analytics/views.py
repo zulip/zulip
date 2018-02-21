@@ -11,7 +11,7 @@ from typing import Any, Callable, Dict, List, \
 
 import pytz
 from django.conf import settings
-from django.core import urlresolvers
+from django.urls import reverse
 from django.db import connection
 from django.db.models import Sum
 from django.db.models.query import QuerySet
@@ -33,7 +33,7 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import ceiling_to_day, \
     ceiling_to_hour, convert_to_UTC, timestamp_to_datetime
-from zerver.models import Client, Realm, \
+from zerver.models import Client, get_realm, Realm, \
     UserActivity, UserActivityInterval, UserProfile
 
 @zulip_login_required
@@ -397,11 +397,20 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     rows = dictfetchall(cursor)
     cursor.close()
 
+    # Fetch all the realm administrator users
+    realm_admins = defaultdict(list)  # type: Dict[str, List[str]]
+    for up in UserProfile.objects.select_related("realm").filter(
+        is_realm_admin=True,
+        is_active=True
+    ):
+        realm_admins[up.realm.string_id].append(up.email)
+
     for row in rows:
         row['date_created_day'] = row['date_created'].strftime('%Y-%m-%d')
         row['age_days'] = int((now - row['date_created']).total_seconds()
                               / 86400)
         row['is_new'] = row['age_days'] < 12 * 7
+        row['realm_admin_email'] = ', '.join(realm_admins[row['string_id']])
 
     # get messages sent per day
     counts = get_realm_day_counts()
@@ -448,6 +457,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     rows.append(dict(
         string_id='Total',
         date_created_day='',
+        realm_admin_email='',
         dau_count=total_dau_count,
         user_profile_count=total_user_profile_count,
         bot_count=total_bot_count,
@@ -881,13 +891,13 @@ def format_date_for_activity_reports(date: Optional[datetime]) -> str:
 
 def user_activity_link(email: str) -> mark_safe:
     url_name = 'analytics.views.get_user_activity'
-    url = urlresolvers.reverse(url_name, kwargs=dict(email=email))
+    url = reverse(url_name, kwargs=dict(email=email))
     email_link = '<a href="%s">%s</a>' % (url, email)
     return mark_safe(email_link)
 
 def realm_activity_link(realm_str: str) -> mark_safe:
     url_name = 'analytics.views.get_realm_activity'
-    url = urlresolvers.reverse(url_name, kwargs=dict(realm_str=realm_str))
+    url = reverse(url_name, kwargs=dict(realm_str=realm_str))
     realm_link = '<a href="%s">%s</a>' % (url, realm_str)
     return mark_safe(realm_link)
 

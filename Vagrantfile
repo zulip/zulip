@@ -10,7 +10,7 @@ end
 if Vagrant::VERSION == "1.8.7" then
     path = `which curl`
     if path.include?('/opt/vagrant/embedded/bin/curl') then
-        puts "In Vagrant 1.8.7, curl is broken. Please use Vagrant 1.8.6 "\
+        puts "In Vagrant 1.8.7, curl is broken. Please use Vagrant 2.0.2 "\
              "or run 'sudo rm -f /opt/vagrant/embedded/bin/curl' to fix the "\
              "issue before provisioning. See "\
              "https://github.com/mitchellh/vagrant/issues/7997 "\
@@ -18,6 +18,51 @@ if Vagrant::VERSION == "1.8.7" then
         exit
     end
 end
+
+# Workaround: the lxc-config in vagrant-lxc is incompatible with changes in
+# LXC 2.1.0, found in Ubuntu 17.10 artful.  LXC 2.1.1 (in 18.04 LTS bionic)
+# ignores the old config key, so this will only be needed for artful.
+#
+# vagrant-lxc upstream has an attempted fix:
+#   https://github.com/fgrehm/vagrant-lxc/issues/445
+# but it didn't work in our testing.  This is a temporary issue, so we just
+# hack in a fix: we patch the skeleton `lxc-config` file right in the
+# distribution of the vagrant-lxc "box" we use.  If the user doesn't yet
+# have the box (e.g. on first setup), Vagrant would download it but too
+# late for us to patch it like this; so we prompt them to explicitly add it
+# first and then rerun.
+if ['up', 'provision'].include? ARGV[0]
+  if command? "lxc-ls"
+    LXC_VERSION = `lxc-ls --version`.strip unless defined? LXC_VERSION
+    if LXC_VERSION == "2.1.0"
+      lxc_config_file = ENV['HOME'] + "/.vagrant.d/boxes/fgrehm-VAGRANTSLASH-trusty64-lxc/1.2.0/lxc/lxc-config"
+      if File.file?(lxc_config_file)
+        lines = File.readlines(lxc_config_file)
+        deprecated_line = "lxc.pivotdir = lxc_putold\n"
+        if lines[1] == deprecated_line
+          lines[1] = "# #{deprecated_line}"
+          File.open(lxc_config_file, 'w') do |f|
+            f.puts(lines)
+          end
+        end
+      else
+        puts 'You are running LXC 2.1.0, and fgrehm/trusty64-lxc box is incompatible '\
+            "with it by default. First add the box by doing:\n"\
+            "  vagrant box add  https://vagrantcloud.com/fgrehm/trusty64-lxc\n"\
+            'Once this command succeeds, do "vagrant up" again.'
+        exit
+      end
+    end
+  end
+end
+
+# Workaround: Vagrant removed the atlas.hashicorp.com to
+# vagrantcloud.com redirect in February 2018. The value of
+# DEFAULT_SERVER_URL in Vagrant versions less than 1.9.3 is
+# atlas.hashicorp.com, which means that removal broke the fetching and
+# updating of boxes (since the old URL doesn't work).  See
+# https://github.com/hashicorp/vagrant/issues/9442
+Vagrant::DEFAULT_SERVER_URL.replace('https://vagrantcloud.com')
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
@@ -110,6 +155,20 @@ set -o pipefail
 # Code should go here, rather than tools/provision, only if it is
 # something that we don't want to happen when running provision in a
 # development environment not using Vagrant.
+
+# Set the MOTD on the system to have Zulip instructions
+sudo rm -f /etc/update-motd.d/*
+sudo bash -c 'cat << EndOfMessage > /etc/motd
+Welcome to the Zulip development environment!  Popular commands:
+* tools/provision - Update the development environment
+* tools/run-dev.py - Run the development server
+* tools/lint - Run the linter (quick and catches many problmes)
+* tools/test-* - Run tests (use --help to learn about options)
+
+Read https://zulip.readthedocs.io/en/latest/testing.html to learn
+how to run individual test suites so that you can get a fast debug cycle.
+
+EndOfMessage'
 
 # If the host is running SELinux remount the /sys/fs/selinux directory as read only,
 # needed for apt-get to work.

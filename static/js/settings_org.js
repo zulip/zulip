@@ -47,7 +47,11 @@ exports.populate_realm_domains = function (realm_domains) {
     $("#id_realm_restricted_to_domain").prop("checked", page_params.realm_restricted_to_domain);
     if (domains.length === 0) {
         domains = i18n.t("None");
-        $("#id_realm_restricted_to_domain").prop("disabled", true);
+        $("#id_realm_restricted_to_domain").attr("data-toggle", "modal");
+        $("#id_realm_restricted_to_domain").attr("href", "#realm_domains_modal");
+    }
+    if (domains !== "None") {
+        $("#id_realm_restricted_to_domain").attr("data-toggle", "none");
     }
     $("#realm_restricted_to_domains_label").text(i18n.t("Restrict new users to the following email domains: __domains__", {domains: domains}));
 
@@ -685,7 +689,7 @@ function _set_up() {
     $("#realm_domains_table").on("click", ".delete_realm_domain", function () {
         var domain = $(this).parents("tr").find(".domain").text();
         var url = "/json/realm/domains/" + domain;
-        var realm_domains_info = $("#realm_domains_modal").find(".realm_domains_info");
+        var realm_domains_info = $(".realm_domains_info");
 
         channel.del({
             url: url,
@@ -699,7 +703,7 @@ function _set_up() {
     });
 
     $("#submit-add-realm-domain").click(function () {
-        var realm_domains_info = $("#realm_domains_modal").find(".realm_domains_info");
+        var realm_domains_info = $(".realm_domains_info");
         var widget = $("#add-realm-domain-widget");
         var domain = widget.find(".new-realm-domain").val();
         var allow_subdomains = widget.find(".new-realm-domain-allow-subdomains").prop("checked");
@@ -714,7 +718,6 @@ function _set_up() {
             success: function () {
                 $("#add-realm-domain-widget .new-realm-domain").val("");
                 $("#add-realm-domain-widget .new-realm-domain-allow-subdomains").prop("checked", false);
-                $("#id_realm_restricted_to_domain").prop("disabled", false);
                 ui_report.success(i18n.t("Added successfully!"), realm_domains_info);
             },
             error: function (xhr) {
@@ -725,7 +728,7 @@ function _set_up() {
 
     $("#realm_domains_table").on("change", ".allow-subdomains", function (e) {
         e.stopPropagation();
-        var realm_domains_info = $("#realm_domains_modal").find(".realm_domains_info");
+        var realm_domains_info = $(".realm_domains_info");
         var domain = $(this).parents("tr").find(".domain").text();
         var allow_subdomains = $(this).prop('checked');
         var url = '/json/realm/domains/' + domain;
@@ -867,6 +870,28 @@ function _set_up() {
 
     }
     realm_icon.build_realm_icon_widget(upload_realm_icon);
+
+    $('#deactivate_realm_button').on('click', function (e) {
+        if (!overlays.is_modal_open()) {
+            e.preventDefault();
+            e.stopPropagation();
+            overlays.open_modal('deactivate-realm-modal');
+        }
+    });
+
+    $('#do_deactivate_realm_button').on('click', function () {
+        if (overlays.is_modal_open()) {
+            overlays.close_modal('deactivate-realm-modal');
+        }
+        channel.post({
+            url:'/json/realm/deactivate',
+            error: function (xhr) {
+                ui_report.error(
+                    i18n.t("Failed"), xhr, $('#admin-realm-deactivation-status').expectOne()
+                );
+            },
+        });
+    });
 
 }
 exports.set_up = function () {

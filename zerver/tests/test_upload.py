@@ -30,7 +30,7 @@ from zerver.lib.actions import (
     internal_send_private_message,
 )
 
-from zerver.views.upload import upload_file_backend
+from zerver.views.upload import upload_file_backend, serve_local
 
 import urllib
 from PIL import Image
@@ -47,7 +47,9 @@ import datetime
 import requests
 import base64
 from datetime import timedelta
+from django.http import HttpRequest
 from django.utils.timezone import now as timezone_now
+from sendfile import _get_sendfile
 
 from typing import Any, Callable, Text
 
@@ -389,9 +391,9 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             result = self.client_post("/json/user_uploads", {'f1': fp})
             assert sanitize_name(expected) in result.json()['uri']
 
-    def test_upload_size_quote(self) -> None:
+    def test_realm_quota(self) -> None:
         """
-        User quote for uploading should not be exceeded
+        Realm quota for uploading should not be exceeded.
         """
         self.login(self.example_email("hamlet"))
 
@@ -402,11 +404,17 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         d1_attachment = Attachment.objects.get(path_id = d1_path_id)
         self.assert_json_success(result)
 
-        """
-        Below we set size quota to the limit without 1 upload(1GB - 11 bytes).
-        """
-        d1_attachment.size = UserProfile.DEFAULT_UPLOADS_QUOTA - 11
-        d1_attachment.save()
+        realm = get_realm("zulip")
+        realm.upload_quota_gb = 1
+        realm.save(update_fields=['upload_quota_gb'])
+
+        # The size of StringIO("zulip!") is 6 bytes. Setting the size of
+        # d1_attachment to realm.upload_quota_bytes() - 11 should allow
+        # us to upload only one more attachment.
+        quota = realm.upload_quota_bytes()
+        assert(quota is not None)
+        d1_attachment.size = quota - 11
+        d1_attachment.save(update_fields=['size'])
 
         d2 = StringIO("zulip!")
         d2.name = "dummy_2.txt"
@@ -416,7 +424,12 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         d3 = StringIO("zulip!")
         d3.name = "dummy_3.txt"
         result = self.client_post("/json/user_uploads", {'file': d3})
-        self.assert_json_error(result, "Upload would exceed your maximum quota.")
+        self.assert_json_error(result, "Upload would exceed your organization's upload quota.")
+
+        realm.upload_quota_gb = None
+        realm.save(update_fields=['upload_quota_gb'])
+        result = self.client_post("/json/user_uploads", {'file': d3})
+        self.assert_json_success(result)
 
     def test_cross_realm_file_access(self) -> None:
 
@@ -528,6 +541,27 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             data = b"".join(response.streaming_content)
             self.assertEqual(b"zulip!", data)
             self.logout()
+
+    def test_serve_local(self) -> None:
+        def check_xsend_links(name: Text, name_str_for_test: Text) -> None:
+            with self.settings(SENDFILE_BACKEND='sendfile.backends.nginx'):
+                _get_sendfile.clear()  # To clearout cached version of backend from djangosendfile
+                self.login(self.example_email("hamlet"))
+                fp = StringIO("zulip!")
+                fp.name = name
+                result = self.client_post("/json/user_uploads", {'file': fp})
+                uri = result.json()['uri']
+                fp_path_id = re.sub('/user_uploads/', '', uri)
+                fp_path = os.path.split(fp_path_id)[0]
+                response = self.client_get(uri)
+                _get_sendfile.clear()
+                test_upload_dir = os.path.split(settings.LOCAL_UPLOADS_DIR)[1]
+                self.assertEqual(response['X-Accel-Redirect'],
+                                 '/serve_uploads/../../'  + test_upload_dir +
+                                 '/files/' + fp_path + '/' + name_str_for_test)
+
+        check_xsend_links('zulip.txt', 'zulip.txt')
+        check_xsend_links('áéБД.txt', '%C3%A1%C3%A9%D0%91%D0%94.txt')
 
     def tearDown(self) -> None:
         destroy_uploads()

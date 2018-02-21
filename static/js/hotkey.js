@@ -19,6 +19,13 @@ var actions_dropdown_hotkeys = [
 // we'll do in cases where they have the exact same semantics.
 // DON'T FORGET: update keyboard_shortcuts.html
 
+// The `message_view_only` property is a convenient and performant way
+// to express a common case of which hotkeys do something in which
+// views.  It is set for hotkeys (like `*`) that only have an effect
+// in the main message view with a selected message.
+// `message_view_only` hotkeys, as a group, are not processed if any
+// overlays are open (e.g. settings, streams, etc.).
+
 var keydown_shift_mappings = {
     // these can be triggered by shift + key only
     9: {name: 'shift_tab', message_view_only: false}, // tab
@@ -66,6 +73,7 @@ var keypress_mappings = {
     45: {name: 'toggle_message_collapse', message_view_only: true}, // '-'
     47: {name: 'search', message_view_only: false}, // '/'
     58: {name: 'toggle_reactions_popover', message_view_only: true}, // ':'
+    62: {name: 'compose_quote_reply', message_view_only: true}, // '>'
     63: {name: 'show_shortcuts', message_view_only: false}, // '?'
     64: {name: 'compose_reply_with_mention', message_view_only: true}, // '@'
     65: {name: 'stream_cycle_backward', message_view_only: true}, // 'A'
@@ -702,6 +710,9 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
         case 'toggle_message_collapse':
             condense.toggle_collapse(msg);
+            return true;
+        case 'compose_quote_reply': // > : respond to selected message with quote
+            compose_actions.quote_and_reply({trigger: 'hotkey'});
             return true;
     }
 

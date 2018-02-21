@@ -26,22 +26,9 @@ curl {{ api_url }}/v1/messages \
 </div>
 
 <div data-language="python" markdown="1">
-```python
-#!/usr/bin/env python
 
-import zulip
+{generate_code_example(python)|private-message|example}
 
-# Download ~/zuliprc-dev from your dev server
-client = zulip.Client(config_file="~/zuliprc-dev")
-
-# Send a private message
-client.send_message({
-    "type": "private",
-    "to": "hamlet@example.com",
-    "content": "I come not, friends, to steal away your hearts."
-})
-
-```
 </div>
 
 <div data-language="zulip-send" markdown="1"> You can use `zulip-send`
@@ -98,17 +85,11 @@ zulip(config).then((client) => {
 
 #### Example response
 
-{!successful-api-send-message-json-response.md!}
+A typical successful JSON response may look like:
+
+{generate_code_example|private-message|fixture}
 
 A typical failed JSON response for when the recipient's email
 address is invalid:
 
-```
-{
-    'code':'BAD_REQUEST',
-    'msg':"Invalid email 'hamlet@example.com'",
-    'result':'error'
-}
-```
-
-{!invalid-api-key-json-response.md!}
+{generate_code_example|invalid-pm-recipient-error|fixture}

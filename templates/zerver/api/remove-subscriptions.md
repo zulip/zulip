@@ -36,25 +36,7 @@ administrative privileges.
 
 <div data-language="python" markdown="1">
 
-```python
-#!/usr/bin/env python
-
-import zulip
-
-# Download ~/zuliprc-dev from your dev server
-client = zulip.Client(config_file="~/zuliprc-dev")
-
-# Unsubscribe from the stream "Denmark"
-print(client.remove_subscriptions(
-    ['Denmark']
-))
-
-# Unsubscribe Zoe from the stream "Denmark"
-print(client.remove_subscriptions(
-    ['Denmark'],
-    principals=['ZOE@zulip.com']
-))
-```
+{generate_code_example(python)|remove-subscriptions|example}
 
 </div>
 
@@ -105,28 +87,8 @@ zulip(config).then((client) => {
 
 A typical successful JSON response may look like:
 
-```
-{
-    "result":"success",
-    "not_subscribed":[
+{generate_code_example|remove-subscriptions|fixture}
 
-    ],
-    "msg":"",
-    "removed":[
-        "Denmark"
-    ]
-}
-```
+A typical failed JSON response for when the target stream does not exist:
 
-A typical JSON response for when you try to unsubscribe from a stream
-that doesn't exist:
-
-```
-{
-    "msg":"Stream(s) (Denmarkk) do not exist",
-    "code":"BAD_REQUEST",
-    "result":"error"
-}
-```
-
-{!invalid-api-key-json-response.md!}
+{generate_code_example|nonexistent-stream-error|fixture}

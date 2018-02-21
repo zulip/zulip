@@ -362,6 +362,31 @@ exports.narrow_to_next_topic = function () {
 };
 
 
+exports.narrow_to_next_pm_string = function () {
+    var curr_pm = narrow_state.pm_string();
+
+    var next_pm = topic_generator.get_next_unread_pm_string(curr_pm);
+
+    if (!next_pm) {
+        return;
+    }
+
+    // Hopefully someday we can narrow by user_ids_string instead of
+    // mapping back to emails.
+    var pm_with = people.user_ids_string_to_emails_string(next_pm);
+
+    var filter_expr = [
+        {operator: 'pm-with', operand: pm_with},
+    ];
+
+    var opts = {
+        select_first_unread: true,
+    };
+
+    exports.activate(filter_expr, opts);
+};
+
+
 // Activate narrowing with a single operator.
 // This is just for syntactic convenience.
 exports.by = function (operator, operand, opts) {
@@ -592,11 +617,11 @@ exports.by_sender_uri = function (reply_to) {
 };
 
 exports.by_stream_uri = function (stream) {
-    return "#narrow/stream/" + hash_util.encodeHashComponent(stream);
+    return "#narrow/stream/" + hash_util.encode_stream_name(stream);
 };
 
 exports.by_stream_subject_uri = function (stream, subject) {
-    return "#narrow/stream/" + hash_util.encodeHashComponent(stream) +
+    return "#narrow/stream/" + hash_util.encode_stream_name(stream) +
            "/subject/" + hash_util.encodeHashComponent(subject);
 };
 
@@ -616,7 +641,7 @@ exports.by_conversation_and_time_uri = function (message, is_absolute_url) {
     }
     if (message.type === "stream") {
         return absolute_url + "#narrow/stream/" +
-            hash_util.encodeHashComponent(message.stream) +
+            hash_util.encode_stream_name(message.stream) +
             "/subject/" + hash_util.encodeHashComponent(message.subject) +
             "/near/" + hash_util.encodeHashComponent(message.id);
     }

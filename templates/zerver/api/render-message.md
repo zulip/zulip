@@ -24,17 +24,9 @@ curl {{ api_url }}/v1/messages/render \
 </div>
 
 <div data-language="python" markdown="1">
-```python
-#!/usr/bin/env python
 
-import zulip
+{generate_code_example(python)|render-message|example}
 
-# Download ~/zuliprc-dev from your dev server
-client = zulip.Client(config_file="~/zuliprc-dev")
-
-# Render a message
-print(client.render_message({"content": "**foo**"}))
-```
 </div>
 
 <div data-language="javascript" markdown="1">
@@ -76,24 +68,4 @@ zulip(config).then((client) => {
 
 A typical successful JSON response may look like:
 
-```
-{
-    'result':'success',
-    'msg':'',
-    'rendered':'<p><strong>foo</strong></p>'
-}
-```
-
-A typical JSON response for when the required argument `content`
-is not supplied:
-
-```
-{
-    'code':'REQUEST_VARIABLE_MISSING',
-    'result':'error',
-    'msg':"Missing 'content' argument",
-    'var_name':'content'
-}
-```
-
-{!invalid-api-key-json-response.md!}
+{generate_code_example|render-message|fixture}

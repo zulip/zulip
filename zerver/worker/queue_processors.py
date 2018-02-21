@@ -1,6 +1,7 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/queuing.html
 from typing import Any, Callable, Dict, List, Mapping, Optional, cast
 
+import copy
 import signal
 from functools import wraps
 
@@ -42,7 +43,7 @@ from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_servi
 from zerver.models import get_bot_services
 from zulip import Client
 from zulip_bots.lib import extract_query_without_mention
-from zerver.lib.bot_lib import EmbeddedBotHandler, get_bot_handler
+from zerver.lib.bot_lib import EmbeddedBotHandler, get_bot_handler, EmbeddedBotQuitException
 
 import os
 import sys
@@ -112,11 +113,10 @@ def retry_send_email_failures(func):
         # type: (QueueProcessingWorker, Dict[str, Any]) -> None
         try:
             func(worker, data)
-        except (smtplib.SMTPServerDisconnected, socket.gaierror):
-
+        except (smtplib.SMTPServerDisconnected, socket.gaierror, EmailNotDeliveredException):
             def on_failure(event):
                 # type: (Dict[str, Any]) -> None
-                logging.exception("Event {} failed".format(event['id']))
+                logging.exception("Event {} failed".format(event))
 
             retry_event(worker.queue_name, data, on_failure)
 
@@ -145,7 +145,7 @@ class QueueProcessingWorker:
                 os.mkdir(settings.QUEUE_ERROR_DIR)  # nocoverage
             fname = '%s.errors' % (self.queue_name,)
             fn = os.path.join(settings.QUEUE_ERROR_DIR, fname)
-            line = u'%s\t%s\n' % (time.asctime(), ujson.dumps(data))
+            line = '%s\t%s\n' % (time.asctime(), ujson.dumps(data))
             lock_fn = fn + '.lock'
             with lockfile(lock_fn):
                 with open(fn, 'ab') as f:
@@ -299,13 +299,14 @@ class MissedMessageWorker(LoopQueueProcessingWorker):
 @assign_queue('email_senders')
 class EmailSendingWorker(QueueProcessingWorker):
     @retry_send_email_failures
-    def consume(self, data):
-        # type: (Dict[str, Any]) -> None
-        try:
-            send_email_from_dict(data)
-        except EmailNotDeliveredException:
-            # TODO: Do something smarter here ..
-            pass
+    def consume(self, event: Dict[str, Any]) -> None:
+        # Copy the event, so that we don't pass the `failed_tries'
+        # data to send_email_from_dict (which neither takes that
+        # argument nor needs that data).
+        copied_event = copy.deepcopy(event)
+        if 'failed_tries' in copied_event:
+            del copied_event['failed_tries']
+        send_email_from_dict(copied_event)
 
 @assign_queue('missedmessage_email_senders')
 class MissedMessageSendingWorker(EmailSendingWorker):
@@ -528,19 +529,22 @@ class EmbeddedBotWorker(QueueProcessingWorker):
                 logging.error("Error: User %s has bot with invalid embedded bot service %s" % (
                     user_profile_id, service.name))
                 continue
-            if hasattr(bot_handler, 'initialize'):
-                bot_handler.initialize(self.get_bot_api_client(user_profile))
-            if event['trigger'] == 'mention':
-                message['content'] = extract_query_without_mention(
+            try:
+                if hasattr(bot_handler, 'initialize'):
+                        bot_handler.initialize(self.get_bot_api_client(user_profile))
+                if event['trigger'] == 'mention':
+                    message['content'] = extract_query_without_mention(
+                        message=message,
+                        client=self.get_bot_api_client(user_profile),
+                    )
+                    if message['content'] is None:
+                        return
+                bot_handler.handle_message(
                     message=message,
-                    client=self.get_bot_api_client(user_profile),
+                    bot_handler=self.get_bot_api_client(user_profile)
                 )
-                if message['content'] is None:
-                    return
-            bot_handler.handle_message(
-                message=message,
-                bot_handler=self.get_bot_api_client(user_profile)
-            )
+            except EmbeddedBotQuitException as e:
+                logging.warning(str(e))
 
 @assign_queue('deferred_work')
 class DeferredWorker(QueueProcessingWorker):

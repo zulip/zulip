@@ -251,13 +251,10 @@ exports.on_load_success = function (realm_people_data) {
         channel.del({
             url: '/json/users/' + encodeURIComponent(email),
             error: function (xhr) {
-                if (xhr.status.toString().charAt(0) === "4") {
-                    meta.current_deactivate_user_modal_row.find("button").closest("td").html(
-                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
-                    );
-                } else {
-                    meta.current_deactivate_user_modal_row.find("button").text(i18n.t("Failed!"));
-                }
+                var status = $("#organization-status").expectOne();
+                ui_report.error(i18n.t("Failed"), xhr, status);
+                var button = meta.current_deactivate_user_modal_row.find("button.deactivate");
+                button.text(i18n.t("Deactivate"));
             },
             success: function () {
                 var button = meta.current_deactivate_user_modal_row.find("button.deactivate");
@@ -347,7 +344,7 @@ exports.on_load_success = function (realm_people_data) {
                 button.text(i18n.t("Remove admin"));
             },
             error: function (xhr) {
-                var status = row.find(".admin-user-status");
+                var status = $("#organization-status").expectOne();
                 ui_report.error(i18n.t("Failed"), xhr, status);
             },
         });
@@ -378,7 +375,7 @@ exports.on_load_success = function (realm_people_data) {
                 button.text(i18n.t("Make admin"));
             },
             error: function (xhr) {
-                var status = row.find(".admin-user-status");
+                var status = $("#organization-status").expectOne();
                 ui_report.error(i18n.t("Failed"), xhr, status);
             },
         });
@@ -407,7 +404,8 @@ exports.on_load_success = function (realm_people_data) {
             form_row.find(".edit_bot_owner_container").append(owner_select);
         }
 
-        // Show user form.
+        // Show user form and set the full name value in input field.
+        full_name.val(person.full_name);
         user_row.hide();
         form_row.show();
 
@@ -436,8 +434,8 @@ exports.on_load_success = function (realm_people_data) {
                 success: function () {
                     ui_report.success(i18n.t('Updated successfully!'), admin_status);
                 },
-                error: function () {
-                    ui_report.error(i18n.t('Failed'), admin_status);
+                error: function (xhr) {
+                    ui_report.error(i18n.t('Failed'), xhr, admin_status);
                 },
             });
         });

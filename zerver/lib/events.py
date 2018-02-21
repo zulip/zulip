@@ -36,7 +36,6 @@ from zerver.lib.actions import (
     get_status_dict, streams_to_dicts_sorted,
     default_stream_groups_to_dicts_sorted
 )
-from zerver.lib.upload import get_total_uploads_size_for_user
 from zerver.lib.user_groups import user_groups_in_realm_serialized
 from zerver.tornado.event_queue import request_event_queue, get_user_events
 from zerver.models import Client, Message, Realm, UserPresence, UserProfile, \
@@ -116,12 +115,6 @@ def fetch_initial_state_data(user_profile: UserProfile,
     if want('attachments'):
         state['attachments'] = user_attachments(user_profile)
 
-    if want('upload_quota'):
-        state['upload_quota'] = user_profile.quota
-
-    if want('total_uploads_size'):
-        state['total_uploads_size'] = get_total_uploads_size_for_user(user_profile)
-
     if want('hotspots'):
         state['hotspots'] = get_next_hotspots(user_profile)
 
@@ -194,17 +187,23 @@ def fetch_initial_state_data(user_profile: UserProfile,
             realm_id=user_profile.realm_id,
             client_gravatar=client_gravatar,
         )
+
+        # For the user's own avatar URL, we force
+        # client_gravatar=False, since that saves some unnecessary
+        # client-side code for handing medium-size avatars.  See #8253
+        # for details.
         state['avatar_source'] = user_profile.avatar_source
         state['avatar_url_medium'] = avatar_url(
             user_profile,
             medium=True,
-            client_gravatar=client_gravatar,
+            client_gravatar=False,
         )
         state['avatar_url'] = avatar_url(
             user_profile,
             medium=False,
-            client_gravatar=client_gravatar,
+            client_gravatar=False,
         )
+
         state['can_create_streams'] = user_profile.can_create_streams()
         state['cross_realm_bots'] = list(get_cross_realm_dicts())
         state['is_admin'] = user_profile.is_realm_admin
@@ -353,6 +352,12 @@ def apply_event(state: Dict[str, Any],
                         state['realm_bots'] = []
                     if not was_admin and now_admin:
                         state['realm_bots'] = get_owned_bot_dicts(user_profile)
+
+            if client_gravatar and 'avatar_url' in person:
+                # Respect the client_gravatar setting in the `users` data.
+                if 'gravatar.com' in person['avatar_url']:
+                    person['avatar_url'] = None
+                    person['avatar_url_medium'] = None
 
             if person_user_id in state['raw_users']:
                 p = state['raw_users'][person_user_id]

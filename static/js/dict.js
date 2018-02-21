@@ -1,5 +1,9 @@
 /* Constructs a new Dict object.
  *
+ * This module primarily exists to support the fold_case option,
+ * because so many string keys in Zulip are case-insensitive (emails,
+ * stream names, topics, etc.).
+ *
  * Dict(opt) -> the new Dict will be empty
  *
  * Available options:

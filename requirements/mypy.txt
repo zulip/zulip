@@ -10,4 +10,4 @@
 mypy==0.560
 psutil==5.4.1             # via mypy
 typed-ast==1.1.0          # via mypy
-typing==3.6.2
+typing==3.6.4

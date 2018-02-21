@@ -2,7 +2,7 @@ from contextlib import contextmanager
 from typing import (cast, Any, Callable, Dict, Iterable, Iterator, List, Mapping, Optional,
                     Sized, Tuple, Union, Text)
 
-from django.core.urlresolvers import resolve
+from django.urls import resolve
 from django.conf import settings
 from django.test import TestCase
 from django.test.client import (
@@ -245,16 +245,23 @@ class ZulipTestCase(TestCase):
     def notification_bot(self) -> UserProfile:
         return get_user('notification-bot@zulip.com', get_realm('zulip'))
 
-    def create_test_bot(self, email: Text, user_profile: UserProfile, full_name: Text,
-                        short_name: Text, bot_type: int, service_name: str=None) -> UserProfile:
-        bot_profile = do_create_user(email=email, password='', realm=user_profile.realm,
-                                     full_name=full_name, short_name=short_name,
-                                     bot_type=bot_type, bot_owner=user_profile)
-        if bot_type in (UserProfile.OUTGOING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
-            add_service(name=service_name, user_profile=bot_profile,
-                        base_url='', interface=Service.GENERIC,
-                        token='abcdef')
-        return bot_profile
+    def create_test_bot(self, short_name: Text, user_profile: UserProfile,
+                        assert_json_error_msg: Text=None, **extras: Any) -> Optional[UserProfile]:
+        self.login(user_profile.email)
+        bot_info = {
+            'short_name': short_name,
+            'full_name': 'Foo Bot',
+        }
+        bot_info.update(extras)
+        result = self.client_post("/json/bots", bot_info)
+        if assert_json_error_msg is not None:
+            self.assert_json_error(result, assert_json_error_msg)
+            return None
+        else:
+            self.assert_json_success(result)
+            bot_email = '{}-bot@zulip.testserver'.format(short_name)
+            bot_profile = get_user(bot_email, self.user_profile.realm)
+            return bot_profile
 
     def login_with_return(self, email: Text, password: Optional[Text]=None,
                           **kwargs: Any) -> HttpResponse:
@@ -414,13 +421,18 @@ class ZulipTestCase(TestCase):
             body=content,
         )
 
-    def get_messages(self, anchor: int=1, num_before: int=100, num_after: int=100,
-                     use_first_unread_anchor: bool=False) -> List[Dict[str, Any]]:
+    def get_messages_response(self, anchor: int=1, num_before: int=100, num_after: int=100,
+                              use_first_unread_anchor: bool=False) -> Dict[str, List[Dict[str, Any]]]:
         post_params = {"anchor": anchor, "num_before": num_before,
                        "num_after": num_after,
                        "use_first_unread_anchor": ujson.dumps(use_first_unread_anchor)}
         result = self.client_get("/json/messages", dict(post_params))
         data = result.json()
+        return data
+
+    def get_messages(self, anchor: int=1, num_before: int=100, num_after: int=100,
+                     use_first_unread_anchor: bool=False) -> List[Dict[str, Any]]:
+        data = self.get_messages_response(anchor, num_before, num_after, use_first_unread_anchor)
         return data['messages']
 
     def users_subscribed_to_stream(self, stream_name: Text, realm: Realm) -> List[UserProfile]:

@@ -174,6 +174,8 @@ class Realm(models.Model):
     DEFAULT_MAX_INVITES = 100
     max_invites = models.IntegerField(default=DEFAULT_MAX_INVITES)  # type: int
     message_visibility_limit = models.IntegerField(null=True)  # type: int
+    # See upload_quota_bytes; don't interpret upload_quota_gb directly.
+    upload_quota_gb = models.IntegerField(null=True)  # type: Optional[int]
 
     # Define the types of the various automatically managed properties
     property_types = dict(
@@ -231,7 +233,7 @@ class Realm(models.Model):
         return "<Realm: %s %s>" % (self.string_id, self.id)
 
     @cache_with_key(get_realm_emoji_cache_key, timeout=3600*24*7)
-    def get_emoji(self) -> Dict[Text, Optional[Dict[str, Iterable[Text]]]]:
+    def get_emoji(self) -> Dict[Text, Dict[str, Iterable[Text]]]:
         return get_realm_emoji_uncached(self)
 
     def get_admin_users(self) -> Sequence['UserProfile']:
@@ -256,6 +258,13 @@ class Realm(models.Model):
         if self.signup_notifications_stream is not None and not self.signup_notifications_stream.deactivated:
             return self.signup_notifications_stream
         return None
+
+    def upload_quota_bytes(self) -> Optional[int]:
+        if self.upload_quota_gb is None:
+            return None
+        # We describe the quota to users in "GB" or "gigabytes", but actually apply
+        # it as gibibytes (GiB) to be a bit more generous in case of confusion.
+        return self.upload_quota_gb << 30
 
     @property
     def subdomain(self) -> Text:
@@ -522,7 +531,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     MAX_NAME_LENGTH = 100
     MIN_NAME_LENGTH = 2
     API_KEY_LENGTH = 32
-    NAME_INVALID_CHARS = ['*', '`', '>', '"', '@', '#']
+    NAME_INVALID_CHARS = ['*', '`', '>', '"', '@']
 
     # Our custom site-specific fields
     full_name = models.CharField(max_length=MAX_NAME_LENGTH)  # type: Text
@@ -552,6 +561,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     enable_online_push_notifications = models.BooleanField(default=False)  # type: bool
 
     enable_digest_emails = models.BooleanField(default=True)  # type: bool
+    realm_name_in_notifications = models.BooleanField(default=False)  # type: bool
 
     # Old notification field superseded by existence of stream notification
     # settings.
@@ -609,10 +619,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     alert_words = models.TextField(default=u'[]')  # type: Text # json-serialized list of strings
 
     objects = UserManager()  # type: UserManager
-
-    DEFAULT_UPLOADS_QUOTA = 1024*1024*1024
-
-    quota = models.IntegerField(default=DEFAULT_UPLOADS_QUOTA)  # type: int
     # The maximum length of a timezone in pytz.all_timezones is 32.
     # Setting max_length=40 is a safe choice.
     # In Django, the convention is to use empty string instead of Null
@@ -656,6 +662,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         enable_stream_push_notifications=bool,
         enable_stream_sounds=bool,
         pm_content_in_desktop_notifications=bool,
+        realm_name_in_notifications=bool,
     )
 
     class Meta:
@@ -751,15 +758,15 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 class UserGroup(models.Model):
     name = models.CharField(max_length=100)
     members = models.ManyToManyField(UserProfile, through='UserGroupMembership')
-    realm = models.ForeignKey(Realm)
+    realm = models.ForeignKey(Realm, on_delete=CASCADE)
     description = models.CharField(max_length=1024, default=u'')  # type: Text
 
     class Meta:
         unique_together = (('realm', 'name'),)
 
 class UserGroupMembership(models.Model):
-    user_group = models.ForeignKey(UserGroup)
-    user_profile = models.ForeignKey(UserProfile)
+    user_group = models.ForeignKey(UserGroup, on_delete=CASCADE)
+    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
 
     class Meta:
         unique_together = (('user_group', 'user_profile'),)
@@ -857,8 +864,6 @@ def generate_email_token_for_stream() -> str:
 
 class Stream(models.Model):
     MAX_NAME_LENGTH = 60
-    # Keep in sync with stream_create.js
-    NAME_INVALID_CHARS = ['*', '@', '`', '#']
     name = models.CharField(max_length=MAX_NAME_LENGTH, db_index=True)  # type: Text
     realm = models.ForeignKey(Realm, db_index=True, on_delete=CASCADE)  # type: Realm
     invite_only = models.NullBooleanField(default=False)  # type: Optional[bool]

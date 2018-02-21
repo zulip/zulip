@@ -129,5 +129,3 @@ problems and how to resolve them:
   not have the correct HTTP Host header, Django rejects it and logs the
   attempt. For more on this issue, see the [Django release notes on Host header
   poisoning](https://www.djangoproject.com/weblog/2013/feb/19/security/#s-issue-host-header-poisoning)
-
-Next: [Making your Zulip instance awesome.](customize.html)

@@ -9,11 +9,12 @@ import markdown.extensions.toc
 import markdown_include.include
 from django.conf import settings
 from django.template import Library, engines, loader
-from django.utils.lru_cache import lru_cache
 from django.utils.safestring import mark_safe
 
 import zerver.lib.bugdown.fenced_code
 import zerver.lib.bugdown.api_arguments_table_generator
+import zerver.lib.bugdown.api_code_examples
+from zerver.lib.cache import ignore_unhashable_lru_cache
 
 register = Library()
 
@@ -64,6 +65,10 @@ docs_without_macros = [
     "webhook-walkthrough.md",
 ]
 
+# Much of the time, render_markdown_path is called with hashable
+# arguments, so this decorator is effective even though it only caches
+# the results when called if none of the arguments are unhashable.
+@ignore_unhashable_lru_cache(512)
 @register.filter(name='render_markdown_path', is_safe=True)
 def render_markdown_path(markdown_file_path, context=None):
     # type: (str, Optional[Dict[Any, Any]]) -> str
@@ -86,6 +91,7 @@ def render_markdown_path(markdown_file_path, context=None):
             zerver.lib.bugdown.fenced_code.makeExtension(),
             zerver.lib.bugdown.api_arguments_table_generator.makeExtension(
                 base_path='templates/zerver/api/'),
+            zerver.lib.bugdown.api_code_examples.makeExtension(),
         ]
     if md_macro_extension is None:
         md_macro_extension = markdown_include.include.makeExtension(

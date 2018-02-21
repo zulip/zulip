@@ -401,6 +401,11 @@ function render(template_name, args) {
 
 }());
 
+(function all_messages_sidebar_actions() {
+    var html = render('all_messages_sidebar_actions');
+    global.write_handlebars_output("all_messages_sidebar_actions", html);
+}());
+
 (function announce_stream_docs() {
     var html = render('announce_stream_docs');
     global.write_handlebars_output("announce_stream_docs", html);
@@ -1006,6 +1011,7 @@ function render(template_name, args) {
         enable_offline_push_notifications: true, enable_online_push_notifications: true,
         enable_digest_emails: true,
         default_desktop_notifications: true,
+        realm_name_in_notifications: true,
     };
     var page_params = $.extend(page_param_checkbox_options, {
         full_name: "Alyssa P. Hacker", password_auth_enabled: true,
@@ -1018,7 +1024,8 @@ function render(template_name, args) {
                         "enable_sounds", "enable_offline_push_notifications",
                         "enable_online_push_notifications",
                         "enable_digest_emails",
-                        "default_desktop_notifications"];
+                        "default_desktop_notifications",
+                        "realm_name_in_notifications"];
 
     // Render with all booleans set to true.
     var html = render('settings_tab', {page_params: page_params});
@@ -1343,6 +1350,53 @@ function render(template_name, args) {
 
 }());
 
+(function user_group_info_popover() {
+    var html = render('user_group_info_popover');
+    global.write_handlebars_output("user_group_info_popover", html);
+
+    $(html).hasClass('popover message-info-popover group-info-popover');
+}());
+
+(function user_group_info_popover_content() {
+    var args = {
+        group_name: 'groupName',
+        group_description: 'groupDescription',
+        members: [
+            {
+                presence_status: 'active',
+                full_name: 'Active Alice',
+                user_last_seen_time_status: 'time',
+                is_bot: false,
+            },
+            {
+                presence_status: 'offline',
+                full_name: 'Bot Bob',
+                user_last_seen_time_status: 'time',
+                is_bot: true,
+            },
+            {
+                presence_status: 'offline',
+                full_name: 'Inactive Imogen',
+                user_last_seen_time_status: 'time',
+                is_bot: false,
+            },
+        ],
+    };
+
+    var html = render('user_group_info_popover_content', args);
+    global.write_handlebars_output("user_group_info_popover_content", html);
+
+    var allUsers = $(html).find("li");
+    assert.equal(allUsers[0].classList.contains("user_active"), true);
+    assert.equal(allUsers[2].classList.contains("user_offline"), true);
+    assert.equal($(allUsers[0]).text().trim(), 'Active Alice');
+    assert.equal($(allUsers[1]).text().trim(), 'Bot Bob');
+    assert.equal($(allUsers[2]).text().trim(), 'Inactive Imogen');
+
+    assert.equal($(html).find('.group-name').text().trim(), 'groupName');
+    assert.equal($(html).find('.group-description').text().trim(), 'groupDescription');
+}());
+
 (function user_info_popover() {
     var html = render('user_info_popover', {class: 'message-info-popover'});
     global.write_handlebars_output("user_info_popover", html);
@@ -1461,6 +1515,20 @@ function render(template_name, args) {
     assert.equal($(html).attr('id'), args.botname+'_'+args.key);
     assert.equal($(html).find('label').text(), args.key);
     assert.equal($(html).find('input').attr('placeholder'), args.value);
+}());
+
+(function edit_bot() {
+    render('edit_bot');
+}());
+
+(function edit_outgoing_webhook_service() {
+    var args = {
+        service: {base_url: "http://www.foo.bar",
+                  interface: "1"},
+    };
+    var html = render('edit-outgoing-webhook-service', args);
+    assert.equal($(html).find('#edit_service_base_url').attr('value'), args.service.base_url);
+    assert.equal($(html).find('#edit_service_interface').attr('value'), args.service.interface);
 }());
 
 // By the end of this test, we should have compiled all our templates.  Ideally,

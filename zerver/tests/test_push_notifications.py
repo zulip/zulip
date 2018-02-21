@@ -1,4 +1,5 @@
 
+from contextlib import contextmanager
 import itertools
 import requests
 import mock
@@ -27,6 +28,7 @@ from zerver.models import (
     get_realm,
     Recipient,
     Stream,
+    Subscription,
 )
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib import push_notifications as apn
@@ -283,6 +285,13 @@ class PushNotificationTest(BouncerTestCase):
             sending_client=self.sending_client,
         )
 
+    @contextmanager
+    def mock_apns(self) -> mock.MagicMock:
+        mock_apns = mock.Mock()
+        with mock.patch('zerver.lib.push_notifications.get_apns_client') as mock_get:
+            mock_get.return_value = mock_apns
+            yield mock_apns
+
 class HandlePushNotificationTest(PushNotificationTest):
     DEFAULT_SUBDOMAIN = ""
 
@@ -325,7 +334,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                 mock.patch('zerver.lib.push_notifications.requests.request',
                            side_effect=self.bounce_request), \
                 mock.patch('zerver.lib.push_notifications.gcm') as mock_gcm, \
-                mock.patch('zerver.lib.push_notifications._apns_client') as mock_apns, \
+                self.mock_apns() as mock_apns, \
                 mock.patch('logging.info') as mock_info, \
                 mock.patch('logging.warning'):
             apns_devices = [
@@ -558,11 +567,25 @@ class TestAPNs(PushNotificationTest):
             self.user_profile.id, devices, payload_data)
 
     def test_get_apns_client(self) -> None:
-        """Just a quick check that the initialization code doesn't crash"""
-        get_apns_client()
+        import zerver.lib.push_notifications
+        zerver.lib.push_notifications._apns_client_initialized = False
+        with self.settings(APNS_CERT_FILE='/foo.pem'), \
+                mock.patch('zerver.lib.push_notifications.APNsClient') as mock_client:
+            client = get_apns_client()
+            self.assertEqual(mock_client.return_value, client)
+
+    def test_not_configured(self) -> None:
+        with mock.patch('zerver.lib.push_notifications.get_apns_client') as mock_get, \
+                mock.patch('zerver.lib.push_notifications.logging') as mock_logging:
+            mock_get.return_value = None
+            self.send()
+            mock_logging.warning.assert_called_once_with(
+                "APNs: Dropping a notification because nothing configured.  "
+                "Set PUSH_NOTIFICATION_BOUNCER_URL (or APNS_CERT_FILE).")
+            mock_logging.info.assert_not_called()
 
     def test_success(self) -> None:
-        with mock.patch('zerver.lib.push_notifications._apns_client') as mock_apns, \
+        with self.mock_apns() as mock_apns, \
                 mock.patch('zerver.lib.push_notifications.logging') as mock_logging:
             mock_apns.get_notification_result.return_value = 'Success'
             self.send()
@@ -574,7 +597,7 @@ class TestAPNs(PushNotificationTest):
 
     def test_http_retry(self) -> None:
         import hyper
-        with mock.patch('zerver.lib.push_notifications._apns_client') as mock_apns, \
+        with self.mock_apns() as mock_apns, \
                 mock.patch('zerver.lib.push_notifications.logging') as mock_logging:
             mock_apns.get_notification_result.side_effect = itertools.chain(
                 [hyper.http20.exceptions.StreamResetError()],
@@ -590,7 +613,7 @@ class TestAPNs(PushNotificationTest):
 
     def test_http_retry_eventually_fails(self) -> None:
         import hyper
-        with mock.patch('zerver.lib.push_notifications._apns_client') as mock_apns, \
+        with self.mock_apns() as mock_apns, \
                 mock.patch('zerver.lib.push_notifications.logging') as mock_logging:
             mock_apns.get_notification_result.side_effect = itertools.chain(
                 [hyper.http20.exceptions.StreamResetError()],
@@ -657,7 +680,10 @@ class TestGetAlertFromMessage(PushNotificationTest):
 
 class TestGetAPNsPayload(PushNotificationTest):
     def test_get_apns_payload(self) -> None:
-        message = self.get_message(Recipient.HUDDLE)
+        message_id = self.send_huddle_message(
+            self.sender.email,
+            [self.example_email('othello'), self.example_email('cordelia')])
+        message = Message.objects.get(id=message_id)
         message.trigger = 'private_message'
         payload = apn.get_apns_payload(message)
         expected = {
@@ -670,6 +696,10 @@ class TestGetAPNsPayload(PushNotificationTest):
                 'zulip': {
                     'message_ids': [message.id],
                     'recipient_type': 'private',
+                    'pm_users': ','.join(
+                        str(s.user_profile_id)
+                        for s in Subscription.objects.filter(
+                            recipient=message.recipient)),
                     'sender_email': 'hamlet@zulip.com',
                     'sender_id': 4,
                     'server': settings.EXTERNAL_HOST,
@@ -709,7 +739,10 @@ class TestGetAPNsPayload(PushNotificationTest):
 
     @override_settings(PUSH_NOTIFICATION_REDACT_CONTENT = True)
     def test_get_apns_payload_redacted_content(self) -> None:
-        message = self.get_message(Recipient.HUDDLE)
+        message_id = self.send_huddle_message(
+            self.sender.email,
+            [self.example_email('othello'), self.example_email('cordelia')])
+        message = Message.objects.get(id=message_id)
         message.trigger = 'private_message'
         payload = apn.get_apns_payload(message)
         expected = {
@@ -722,6 +755,10 @@ class TestGetAPNsPayload(PushNotificationTest):
                 'zulip': {
                     'message_ids': [message.id],
                     'recipient_type': 'private',
+                    'pm_users': ','.join(
+                        str(s.user_profile_id)
+                        for s in Subscription.objects.filter(
+                            recipient=message.recipient)),
                     'sender_email': self.example_email("hamlet"),
                     'sender_id': 4,
                     'server': settings.EXTERNAL_HOST,

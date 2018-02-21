@@ -55,7 +55,7 @@ from zerver.lib.user_groups import create_user_group, access_user_group_by_id
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
     RealmDomain, \
     Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, \
-    UserHotspot, ScheduledMessage, \
+    UserHotspot, MultiuseInvite, ScheduledMessage, \
     Client, DefaultStream, DefaultStreamGroup, UserPresence, PushDeviceToken, \
     ScheduledEmail, MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_personal_recipient, get_huddle, \
@@ -439,7 +439,7 @@ def create_users(realm: Realm, name_list: Iterable[Tuple[Text, Text]], bot_type:
 def do_create_user(email: Text, password: Optional[Text], realm: Realm, full_name: Text,
                    short_name: Text, is_realm_admin: bool=False, bot_type: Optional[int]=None,
                    bot_owner: Optional[UserProfile]=None, tos_version: Optional[Text]=None,
-                   timezone: Text=u"", avatar_source: Text=UserProfile.AVATAR_FROM_GRAVATAR,
+                   timezone: Text="", avatar_source: Text=UserProfile.AVATAR_FROM_GRAVATAR,
                    default_sending_stream: Optional[Stream]=None,
                    default_events_register_stream: Optional[Stream]=None,
                    default_all_public_streams: bool=None,
@@ -606,6 +606,10 @@ def do_deactivate_realm(realm: Realm) -> None:
         # bumped to the login screen, where they'll get a realm deactivation
         # notice when they try to log in.
         delete_user_sessions(user)
+
+    event = dict(type="realm", op="deactivated",
+                 realm_id=realm.id)
+    send_event(event, active_user_ids(realm.id))
 
 def do_reactivate_realm(realm: Realm) -> None:
     realm.deactivated = False
@@ -840,12 +844,6 @@ def get_recipient_info(recipient: Recipient,
                        sender_id: int,
                        stream_topic: Optional[StreamTopicTarget],
                        possibly_mentioned_user_ids: Optional[Set[int]]=None) -> RecipientInfoResult:
-    if recipient.type == Recipient.STREAM:
-        # Anybody calling us w/r/t a stream message needs to supply
-        # stream_topic.  We may eventually want to have different versions
-        # of this function for different message types.
-        assert(stream_topic is not None)
-
     stream_push_user_ids = set()  # type: Set[int]
 
     if recipient.type == Recipient.PERSONAL:
@@ -855,6 +853,11 @@ def get_recipient_info(recipient: Recipient,
         assert(len(message_to_user_ids) in [1, 2])
 
     elif recipient.type == Recipient.STREAM:
+        # Anybody calling us w/r/t a stream message needs to supply
+        # stream_topic.  We may eventually want to have different versions
+        # of this function for different message types.
+        assert(stream_topic is not None)
+
         subscription_rows = stream_topic.get_active_subscriptions().values(
             'user_profile_id',
             'push_notifications',
@@ -1090,7 +1093,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
             stream_topic = StreamTopicTarget(
                 stream_id=stream_id,
                 topic_name=message['message'].topic_name()
-            )
+            )  # type: Optional[StreamTopicTarget]
         else:
             stream_topic = None
 
@@ -1718,9 +1721,6 @@ def check_stream_name(stream_name: Text) -> None:
         raise JsonableError(_("Invalid stream name '%s'" % (stream_name)))
     if len(stream_name) > Stream.MAX_NAME_LENGTH:
         raise JsonableError(_("Stream name too long (limit: %s characters)." % (Stream.MAX_NAME_LENGTH)))
-    if set(stream_name).intersection(Stream.NAME_INVALID_CHARS):
-        raise JsonableError(_("Invalid characters in stream name (disallowed characters: %s)."
-                            % ((', ').join(Stream.NAME_INVALID_CHARS))))
     for i in stream_name:
         if ord(i) == 0:
             raise JsonableError(_("Stream name '%s' contains NULL (0x00) characters." % (stream_name)))
@@ -1814,11 +1814,6 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
         check_stream_name(stream_name)
 
         topic_name = addressee.topic()
-        if topic_name is None:
-            raise JsonableError(_("Missing topic"))
-        topic_name = topic_name.strip()
-        if topic_name == "":
-            raise JsonableError(_("Topic can't be empty"))
         topic_name = truncate_topic(topic_name)
 
         try:
@@ -1921,7 +1916,7 @@ def _internal_prep_message(realm: Realm,
         return check_message(sender, get_client("Internal"), addressee,
                              content, realm=realm)
     except JsonableError as e:
-        logging.exception(u"Error queueing internal message by %s: %s" % (sender.email, e))
+        logging.exception("Error queueing internal message by %s: %s" % (sender.email, e))
 
     return None
 
@@ -2585,7 +2580,7 @@ def do_change_password(user_profile: UserProfile, password: Text, commit: bool=T
                                  event_time=event_time)
 
 def do_change_full_name(user_profile: UserProfile, full_name: Text,
-                        acting_user: UserProfile) -> None:
+                        acting_user: Optional[UserProfile]) -> None:
     old_name = user_profile.full_name
     user_profile.full_name = full_name
     user_profile.save(update_fields=["full_name"])
@@ -3575,7 +3570,7 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
             stream_topic = StreamTopicTarget(
                 stream_id=stream_id,
                 topic_name=new_topic_name,
-            )
+            )  # type: Optional[StreamTopicTarget]
         else:
             stream_topic = None
 
@@ -3924,7 +3919,7 @@ def do_send_confirmation_email(invitee: PreregistrationUser,
     activation_url = create_confirmation_link(invitee, referrer.realm.host, Confirmation.INVITATION)
     context = {'referrer': referrer, 'activate_url': activation_url,
                'referrer_realm_name': referrer.realm.name}
-    from_name = u"%s (via Zulip)" % (referrer.full_name,)
+    from_name = "%s (via Zulip)" % (referrer.full_name,)
     send_email('zerver/emails/invitation', to_email=invitee.email, from_name=from_name,
                from_address=FromAddress.NOREPLY, context=context)
 
@@ -4080,6 +4075,15 @@ def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
                             invited_as_admin=invitee.invited_as_admin))
 
     return invites
+
+def do_create_multiuse_invite_link(referred_by: UserProfile, streams: Optional[List[Stream]]=[]) -> str:
+    realm = referred_by.realm
+    invite = MultiuseInvite.objects.create(realm=realm, referred_by=referred_by)
+    if streams:
+        invite.streams = streams
+        invite.save()
+
+    return create_confirmation_link(invite, realm.host, Confirmation.MULTIUSE_INVITE)
 
 def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
     email = prereg_user.email

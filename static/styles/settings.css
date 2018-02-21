@@ -109,7 +109,8 @@ label {
     box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
 }
 
-#change_email_modal {
+#change_email_modal,
+#change_full_name_modal {
     width: 460px;
 }
 
@@ -166,8 +167,10 @@ label {
 }
 
 #uploaded_files_table > tr > td:nth-of-type(1),
+#admin_filters_table > tr > td:nth-of-type(1),
 .upload-file-name {
     width: 30%;
+    word-break: break-all;
 }
 
 td .button {
@@ -331,6 +334,15 @@ td .button {
 .admin-restricted-to-domain input[type=checkbox] + .inline,
 input[type=checkbox] + .inline-block {
     margin-left: 10px;
+}
+
+.allow-subdomains,
+.new-realm-domain-allow-subdomains {
+    margin: 0 !important;
+}
+
+.realm_domains_info {
+    margin-bottom: 0px;
 }
 
 .admin-realm-form h3 {
@@ -931,6 +943,12 @@ input[type=checkbox].inline-block {
     opacity: 0.6;
 }
 
+#settings_page h3 {
+    font-size: 1.5em;
+    font-weight: normal;
+    line-height: 1.5;
+}
+
 #settings_page .settings-header.mobile {
     display: none;
     border-bottom: 1px solid hsl(0, 0%, 86%);
@@ -1096,12 +1114,19 @@ input[type=checkbox].inline-block {
     width: auto;
 }
 
-#settings_page #change_password_modal .change_password_info {
+#settings_page #change_password_modal .change_password_info,
+#settings_page #change_email_modal .change_email_info,
+#settings_page #change_full_name_modal .change_full_name_info {
     margin: 10px;
 }
 
 #deactivation_user_modal.fade.in {
     top: calc(50% - 120px);
+}
+
+.modal.fade.in {
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 #id_realm_create_stream_permission {
@@ -1117,7 +1142,8 @@ input[type=checkbox].inline-block {
     margin-bottom: 5px;
 }
 
-#deactivate_self_modal {
+#deactivate_self_modal,
+#deactivate-realm-modal {
     box-shadow: 0px 0px 75px hsla(0, 0%, 0%, 0.5);
     outline: 10000px solid hsla(0, 0%, 0%, 0.3);
     border: none;
@@ -1370,4 +1396,13 @@ thead .actions {
 .invited-as-admin {
     opacity: 0.5;
     margin-left: 2px;
+}
+
+@-moz-document url-prefix() {
+    #settings_page select {
+        -moz-appearance: none;
+        background: url('../images/dropdown.png') right / 20px;
+        background-repeat: no-repeat;
+        padding-right: 20px;
+    }
 }

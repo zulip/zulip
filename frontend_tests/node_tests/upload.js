@@ -16,6 +16,8 @@ zrequire('compose_state');
 zrequire('compose');
 zrequire('upload');
 
+var upload_opts = upload.options({ mode: "compose" });
+
 (function test_upload_started() {
     $("#compose-send-button").prop('disabled', false);
     $("#compose-send-status").removeClass("alert-info").hide();
@@ -32,7 +34,7 @@ zrequire('upload');
         return 'fake-html';
     };
 
-    upload.uploadStarted();
+    upload_opts.drop();
 
     assert.equal($("#compose-send-button").attr("disabled"), '');
     assert($("#compose-send-status").hasClass("alert-info"));
@@ -47,7 +49,7 @@ zrequire('upload');
         assert.equal(width_percent, '39%');
         width_update_checked = true;
     };
-    upload.progressUpdated(1, '', 39);
+    upload_opts.progressUpdated(1, '', 39);
     assert(width_update_checked);
 }());
 
@@ -59,28 +61,17 @@ zrequire('upload');
         $("#compose-error-msg").text('');
     }
 
-    function assert_side_effects(msg, check_html=false) {
+    function assert_side_effects(msg) {
         assert($("#compose-send-status").hasClass("alert-error"));
         assert(!$("#compose-send-status").hasClass("alert-info"));
         assert.equal($("#compose-send-button").prop("disabled"), false);
-        if (check_html) {
-            assert.equal($("#compose-error-msg").html(), msg);
-        } else {
-            assert.equal($("#compose-error-msg").text(), msg);
-        }
+        assert.equal($("#compose-error-msg").text(), msg);
     }
 
-    function test(err, file, msg) {
+    function test(err, msg, server_response=null, file={}) {
         setup_test();
-        upload.uploadError(err, file);
-        // The text function and html function in zjquery is not in sync
-        // with each other. QuotaExceeded changes html while all other errors
-        // changes body.
-        if (err === 'QuotaExceeded') {
-            assert_side_effects(msg, true);
-        } else {
-            assert_side_effects(msg);
-        }
+        upload_opts.error(err, server_response, file);
+        assert_side_effects(msg);
     }
 
     var msg_prefix = 'translated: ';
@@ -88,17 +79,14 @@ zrequire('upload');
     var msg_2 = 'Unable to upload that many files at once.';
     var msg_3 = '"foobar.txt" was too large; the maximum file size is 25MiB.';
     var msg_4 = 'Sorry, the file was too large.';
-    var msg_5 = 'Upload would exceed your maximum quota. You can delete old attachments to ' +
-                'free up space. <a href="#settings/uploaded-files">translated: Click here</a>';
+    var msg_5 = 'An unknown error occurred.';
 
-    var msg_6 = 'An unknown error occurred.';
-
-    test('BrowserNotSupported', {}, msg_prefix + msg_1);
-    test('TooManyFiles', {}, msg_prefix + msg_2);
-    test('FileTooLarge', {name: 'foobar.txt'}, msg_prefix + msg_3);
-    test('REQUEST ENTITY TOO LARGE', {}, msg_prefix + msg_4);
-    test('QuotaExceeded', {}, msg_prefix + msg_5);
-    test('Do-not-match-any-case', {}, msg_prefix + msg_6);
+    test('BrowserNotSupported', msg_prefix + msg_1);
+    test('TooManyFiles', msg_prefix + msg_2);
+    test('FileTooLarge', msg_prefix + msg_3, null, {name: 'foobar.txt'});
+    test(413, msg_prefix + msg_4);
+    test(400, 'ちょっと…', {msg: 'ちょっと…'});
+    test('Do-not-match-any-case', msg_prefix + msg_5);
 }());
 
 (function test_upload_finish() {
@@ -139,7 +127,7 @@ zrequire('upload');
         }
 
         setup();
-        upload.uploadFinished(i, {}, response);
+        upload_opts.uploadFinished(i, {}, response);
         assert_side_effects();
     }
 

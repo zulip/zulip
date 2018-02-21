@@ -56,11 +56,6 @@ $(function () {
         },
     });
 
-    $("#login_form").validate({
-        errorClass: "text-error",
-        wrapper: "div",
-    });
-
     $(".register-page #email, .login-page-container #id_username").on('focusout keydown', function (e) {
         // check if it is the "focusout" or if it is a keydown, then check if
         // the keycode was the one for "enter" (13).
@@ -76,5 +71,42 @@ $(function () {
 
     $("#realm_in_root_domain").change(function () {
         show_subdomain_section($(this).is(":checked"));
+    });
+
+    $("#login_form").validate({
+        errorClass: "text-error",
+        wrapper: "div",
+        submitHandler: function (form) {
+            $("#login_form").find('.loader').css('display', 'inline-block');
+            $("#login_form").find("button .text").hide();
+
+            form.submit();
+        },
+        invalidHandler: function () {
+            // this removes all previous errors that were put on screen
+            // by the server.
+            $("#login_form .alert.alert-error").remove();
+        },
+    });
+
+    function check_subdomain_avilable(subdomain) {
+        var url = "/json/realm/subdomain/" + subdomain;
+        $.get(url, function (response) {
+            if (response.msg !== "available") {
+                $("#id_team_subdomain_error_client").html(response.msg);
+                $("#id_team_subdomain_error_client").show();
+            }
+        });
+    }
+
+    var timer;
+    $('#id_team_subdomain').on("keydown", function () {
+        $('.team_subdomain_error_server').text('').css('display', 'none');
+        $("#id_team_subdomain_error_client").css('display', 'none');
+        clearTimeout(timer);
+    });
+    $('#id_team_subdomain').on("keyup", function () {
+        clearTimeout(timer);
+        timer = setTimeout(check_subdomain_avilable, 250, $('#id_team_subdomain').val());
     });
 });

@@ -31,6 +31,7 @@ import zerver.views.user_groups
 import zerver.views.user_settings
 import zerver.views.muting
 import zerver.views.streams
+import zerver.views.realm
 
 from zerver.lib.rest import rest_dispatch
 
@@ -70,6 +71,9 @@ v1_api_and_json_patterns = [
     url(r'generate_204$', zerver.views.registration.generate_204,
         name='zerver.views.registration.generate_204'),
 
+    url(r'realm/subdomain/(?P<subdomain>\S+)$', zerver.views.realm.check_subdomain_available,
+        name='zerver.views.realm.check_subdomain_available'),
+
     # realm/domains -> zerver.views.realm_domains
     url(r'^realm/domains$', rest_dispatch,
         {'GET': 'zerver.views.realm_domains.list_realm_domains',
@@ -105,6 +109,10 @@ v1_api_and_json_patterns = [
     url(r'^realm/profile_fields/(?P<field_id>\d+)$', rest_dispatch,
         {'PATCH': 'zerver.views.custom_profile_fields.update_realm_custom_profile_field',
          'DELETE': 'zerver.views.custom_profile_fields.delete_realm_custom_profile_field'}),
+
+    # realm/deactivate -> zerver.views.deactivate_realm
+    url(r'^realm/deactivate$', rest_dispatch,
+        {'POST': 'zerver.views.realm.deactivate_realm'}),
 
     # users -> zerver.views.users
     #
@@ -484,6 +492,10 @@ i18n_urls = [
         template_name='zerver/config_error.html',),
         {'ldap_error_realm_is_none': True},
         name='ldap_error_realm_is_none'),
+    url(r'^config-error/dev$', TemplateView.as_view(
+        template_name='zerver/config_error.html',),
+        {'dev_not_supported_error': True},
+        name='dev_not_supported'),
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english
@@ -599,6 +611,8 @@ if settings.DEVELOPMENT:
 urlpatterns = i18n_patterns(*i18n_urls) + urls + legacy_urls
 
 def handler400(request: HttpRequest, exception: Exception) -> HttpResponse:
+    # (This workaround should become obsolete with Django 2.1; the
+    #  issue was fixed upstream in commit 7ec0fdf62 on 2018-02-14.)
     #
     # This behaves exactly like the default Django implementation in
     # the case where you haven't made a template "400.html", which we

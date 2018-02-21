@@ -308,9 +308,51 @@ casper.then(function () {
 });
 
 casper.waitWhileSelector('#streams_list .input-append.notdisplayed', function () {
-    casper.test.assertExists('#stream_filters [data-stream-name="Denmark"]', 'Original stream list contains Denmark');
-    casper.test.assertExists('#stream_filters [data-stream-name="Scotland"]', 'Original stream list contains Scotland');
-    casper.test.assertExists('#stream_filters [data-stream-name="Verona"]', 'Original stream list contains Verona');
+    casper.test.assertExists('#stream_filters [data-stream-name="Denmark"]',
+                             'Original stream list contains Denmark');
+    casper.test.assertExists('#stream_filters [data-stream-name="Scotland"]',
+                             'Original stream list contains Scotland');
+    casper.test.assertExists('#stream_filters [data-stream-name="Verona"]',
+                             'Original stream list contains Verona');
+});
+
+// Enter the search box and test highlighted suggestion navigation
+casper.then(function () {
+    casper.evaluate(function () {
+        $('.stream-list-filter').expectOne()
+            .focus()
+            .trigger($.Event('click'));
+    });
+});
+
+casper.waitForSelector('#stream_filters .highlighted_stream', function () {
+    casper.test.info('Suggestion highlighting - initial situation');
+    casper.test.assertExist('#stream_filters [data-stream-name="Denmark"].highlighted_stream',
+                            'Stream Denmark is highlighted');
+    casper.test.assertDoesntExist('#stream_filters [data-stream-name="Scotland"].highlighted_stream',
+                                  'Stream Scotland is not highlighted');
+    casper.test.assertDoesntExist('#stream_filters [data-stream-name="Verona"].highlighted_stream',
+                                  'Stream Verona is not highlighted');
+});
+
+// Use arrow keys to navigate through suggestions
+casper.then(function () {
+    // Down: Denmark -> Scotland
+    casper.sendKeys('.stream-list-filter', casper.page.event.key.Down, {keepFocus: true});
+    // Up: Scotland -> Denmark
+    casper.sendKeys('.stream-list-filter', casper.page.event.key.Up, {keepFocus: true});
+    // Up: Denmark -> Verona
+    casper.sendKeys('.stream-list-filter', casper.page.event.key.Up, {keepFocus: true});
+});
+
+casper.waitForSelector('#stream_filters [data-stream-name="Verona"].highlighted_stream', function () {
+    casper.test.info('Suggestion highlighting - after arrow key navigation');
+    casper.test.assertDoesntExist('#stream_filters [data-stream-name="Denmark"].highlighted_stream',
+                                  'Stream Denmark is not highlighted');
+    casper.test.assertDoesntExist('#stream_filters [data-stream-name="Scotland"].highlighted_stream',
+                                  'Stream Scotland is not highlighted');
+    casper.test.assertExist('#stream_filters [data-stream-name="Verona"].highlighted_stream',
+                            'Stream Verona is highlighted');
 });
 
 // We search for the beginning of "Verona", not case sensitive
@@ -319,21 +361,28 @@ casper.then(function () {
         $('.stream-list-filter').expectOne()
             .focus()
             .val('ver')
-            .trigger($.Event('input'));
+            .trigger($.Event('input'))
+            .trigger($.Event('click'));
     });
 });
 
 // There will be no race condition between these two waits because we
 // expect them to happen in parallel.
 casper.waitWhileVisible('#stream_filters [data-stream-name="Denmark"]', function () {
-    casper.test.assertDoesntExist('#stream_filters [data-stream-name="Denmark"]', 'Filtered stream list does not contain Denmark');
+    casper.test.info('Search term entered');
+    casper.test.assertDoesntExist('#stream_filters [data-stream-name="Denmark"]',
+                                  'Filtered stream list does not contain Denmark');
 });
 casper.waitWhileVisible('#stream_filters [data-stream-name="Scotland"]', function () {
-    casper.test.assertDoesntExist('#stream_filters [data-stream-name="Scotland"]', 'Filtered stream list does not contain Scotland');
+    casper.test.assertDoesntExist('#stream_filters [data-stream-name="Scotland"]',
+                                  'Filtered stream list does not contain Scotland');
 });
 
 casper.then(function () {
-    casper.test.assertExists('#stream_filters [data-stream-name="Verona"]', 'Filtered stream list does contain Verona');
+    casper.test.assertExists('#stream_filters [data-stream-name="Verona"]',
+                             'Filtered stream list does contain Verona');
+    casper.test.assertExists('#stream_filters [data-stream-name="Verona"].highlighted_stream',
+                             'Stream Verona is highlighted');
 });
 
 // Clearing the list should give us back all the streams in the list
@@ -349,23 +398,95 @@ casper.then(function () {
 // There will be no race condition between these waits because we
 // expect them to happen in parallel.
 casper.waitUntilVisible('#stream_filters [data-stream-name="Denmark"]', function () {
-    casper.test.assertExists('#stream_filters [data-stream-name="Denmark"]', 'Restored stream list contains Denmark');
+    casper.test.assertExists('#stream_filters [data-stream-name="Denmark"]',
+                             'Restored stream list contains Denmark');
 });
 casper.waitUntilVisible('#stream_filters [data-stream-name="Scotland"]', function () {
-    casper.test.assertExists('#stream_filters [data-stream-name="Denmark"]', 'Restored stream list contains Scotland');
+    casper.test.assertExists('#stream_filters [data-stream-name="Denmark"]',
+                             'Restored stream list contains Scotland');
 });
 casper.waitUntilVisible('#stream_filters [data-stream-name="Verona"]', function () {
-    casper.test.assertExists('#stream_filters [data-stream-name="Denmark"]', 'Restored stream list contains Verona');
+    casper.test.assertExists('#stream_filters [data-stream-name="Denmark"]',
+                             'Restored stream list contains Verona');
 });
 
 
 casper.thenClick('#streams_header .sidebar-title');
 
 casper.waitForSelector('.input-append.notdisplayed', function () {
-    casper.test.assertExists('.input-append.notdisplayed', 'Stream filter box not visible after second click');
+    casper.test.assertExists('.input-append.notdisplayed',
+                             'Stream filter box not visible after second click');
+});
+
+// We search for the beginning of "Verona", not case sensitive
+casper.then(function () {
+    casper.evaluate(function () {
+        $('.stream-list-filter').expectOne()
+            .focus()
+            .val('ver')
+            .trigger($.Event('input'));
+    });
+});
+
+casper.waitWhileVisible('#stream_filters [data-stream-name="Denmark"]', function () {
+    // Clicking the narrowed list should clear the search
+    casper.click('#stream_filters [data-stream-name="Verona"] a');
+    expect_stream();
+    casper.test.assertEquals(casper.fetchText('.stream-list-filter'), '', 'Clicking on a stream clears the search');
 });
 
 un_narrow();
+
+// User search at the right sidebar
+casper.then(function () {
+    casper.test.info('Search users using right sidebar');
+    casper.test.assertExists('#user_presences li [data-name="Cordelia Lear"]',
+                             'User Cordelia Lear exists');
+    casper.test.assertExists('#user_presences li [data-name="King Hamlet"]',
+                             'User King Hamlet exists');
+    casper.test.assertExists('#user_presences li [data-name="aaron"]',
+                             'User aaron exists');
+});
+
+// Enter the search box and test selected suggestion navigation
+// Click on search icon
+casper.then(function () {
+    casper.evaluate(function () {
+        $('#user_filter_icon').expectOne()
+            .focus()
+            .trigger($.Event('click'));
+    });
+});
+
+casper.waitForSelector('#user_presences .highlighted_user', function () {
+    casper.test.info('Suggestion highlighting - initial situation');
+    casper.test.assertExist('#user_presences li.highlighted_user [data-name="Cordelia Lear"]',
+                            'User Cordelia Lear is selected');
+    casper.test.assertDoesntExist('#user_presences li.highlighted_user [data-name="King Hamlet"]',
+                                  'User King Hamlet is not selected');
+    casper.test.assertDoesntExist('#user_presences li.highlighted_user [data-name="aaron"]',
+                                  'User aaron is not selected');
+});
+
+// Use arrow keys to navigate through suggestions
+casper.then(function () {
+    // Down: Cordelia -> Hamlet
+    casper.sendKeys('.user-list-filter', casper.page.event.key.Down, {keepFocus: true});
+    // Up: Hamlet -> Cordelia
+    casper.sendKeys('.user-list-filter', casper.page.event.key.Up, {keepFocus: true});
+    // Up: Cordelia -> aaron
+    casper.sendKeys('.user-list-filter', casper.page.event.key.Up, {keepFocus: true});
+});
+
+casper.waitForSelector('#user_presences li.highlighted_user [data-name="aaron"]', function () {
+    casper.test.info('Suggestion highlighting - after arrow key navigation');
+    casper.test.assertDoesntExist('#user_presences li.highlighted_user [data-name="Cordelia Lear"]',
+        'User Cordelia Lear not is selected');
+    casper.test.assertDoesntExist('#user_presences li.highlighted_user [data-name="King Hamlet"]',
+        'User King Hamlet is not selected');
+    casper.test.assertExist('#user_presences li.highlighted_user [data-name="aaron"]',
+        'User aaron is selected');
+});
 
 common.then_log_out();
 

@@ -862,7 +862,7 @@ def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
         bucket_list = bucket.list(prefix="%s/" % (realm.id,))
 
     if settings.EMAIL_GATEWAY_BOT is not None:
-        email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT)
+        email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT)  # type: Optional[UserProfile]
     else:
         email_gateway_bot = None
 
@@ -1390,7 +1390,7 @@ def import_uploads(import_dir: Path, processing_avatars: bool=False) -> None:
 # Because the Python object => JSON conversion process is not fully
 # faithful, we have to use a set of fixers (e.g. on DateTime objects
 # and Foreign Keys) to do the import correctly.
-def do_import_realm(import_dir: Path) -> Any:
+def do_import_realm(import_dir: Path) -> Realm:
     logging.info("Importing realm dump %s" % (import_dir,))
     if not os.path.exists(import_dir):
         raise Exception("Missing import directory!")

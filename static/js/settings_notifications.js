@@ -13,6 +13,7 @@ var notification_settings = [
     "enable_stream_push_notifications",
     "enable_stream_sounds",
     "pm_content_in_desktop_notifications",
+    "realm_name_in_notifications",
 ];
 
 function maybe_bulk_update_stream_notification_setting(notification_checkbox,
@@ -36,7 +37,7 @@ exports.set_up = function () {
     notify_settings_status.hide();
 
     if (!page_params.realm_show_digest_email) {
-        $("#other_notifications").hide();
+        $("#digest_container").hide();
     }
 
     _.each(notification_settings, function (setting) {

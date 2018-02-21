@@ -101,7 +101,7 @@ class DocPageTest(ZulipTestCase):
     @slow("Tests dozens of endpoints, including all our integrations docs")
     def test_integration_doc_endpoints(self) -> None:
         self._test('/integrations/',
-                   'Over 60 native integrations.',
+                   'native integrations.',
                    extra_strings=[
                        'And hundreds more through',
                        'Hubot',
@@ -112,6 +112,17 @@ class DocPageTest(ZulipTestCase):
         for integration in INTEGRATIONS.keys():
             url = '/integrations/doc-html/{}'.format(integration)
             self._test(url, '')
+
+    def test_email_integration(self) -> None:
+        self._test('/integrations/doc-html/email',
+                   'support+abcdefg@testserver')
+
+        with self.settings(EMAIL_GATEWAY_PATTERN=''):
+            result = self.client_get('integrations/doc-html/email', subdomain='zulip')
+            self.assertNotIn('support+abcdefg@testserver', str(result.content))
+            # if EMAIL_GATEWAY_PATTERN is empty, the main /integrations page should
+            # be rendered instead
+            self._test('/integrations/', 'native integrations.')
 
 
 class IntegrationTest(TestCase):
@@ -219,3 +230,8 @@ class ConfigErrorTest(ZulipTestCase):
         result = self.client_get("/config-error/smtp")
         self.assertEqual(result.status_code, 200)
         self.assert_in_success_response(["email configuration"], result)
+
+    def test_dev_direct_production_error(self) -> None:
+        result = self.client_get("/config-error/dev")
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(["DevAuthBackend"], result)

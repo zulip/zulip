@@ -200,27 +200,53 @@ strength allowed is controlled by two settings in
 
 ## User-uploaded content
 
-* Zulip supports user-uploaded files; ideally they should be hosted
+* Zulip supports user-uploaded files.  Ideally they should be hosted
   from a separate domain from the main Zulip server to protect against
-  various same-domain attacks (e.g. zulip-user-content.example.com)
-  using the S3 integration.
+  various same-domain attacks (e.g. zulip-user-content.example.com).
 
-  The URLs of user-uploaded files are secret; if you are using the
-  "local file upload" integration, anyone with the URL of an uploaded
-  file can access the file.  This means the local uploads integration
-  is vulnerable to a subtle attack where if a user clicks on a link in
-  a secret .PDF or .HTML file that had been uploaded to Zulip, access
-  to the file might be leaked to the other server via the Referrer
-  header (see [the "Uploads world readable" issue on
-  GitHub](https://github.com/zulip/zulip/issues/320)).
+  We support two ways of hosting them: the basic `LOCAL_UPLOADS_DIR`
+  file storage backend, where they are stored in a directory on the
+  Zulip server's filesystem, and the S3 backend, where the files are
+  stored in Amazon S3.  It would not be difficult to add additional
+  supported backends should there be a need; see
+  `zerver/lib/upload.py` for the full interface.
 
-  The Zulip S3 file upload integration is relatively safe against that
-  attack, because the URLs of files presented to users don't host the
-  content.  Instead, the S3 integration checks the user has a valid
-  Zulip session in the relevant realm, and if so then redirects the
-  browser to a one-time S3 URL that expires a short time later.
-  Keeping the URL secret is still important to avoid other users in
-  the Zulip realm from being able to access the file.
+  For both backends, the URLs used to access uploaded files are long,
+  random strings, providing one layer of security against unauthorized
+  users accessing files uploaded in Zulip (an authorized user would
+  need to share the URL with an unauthorized user in order for the
+  file to be accessed by the unauthorized user; and of course, any
+  such authorized user could have just downloaded and sent the file
+  instead of the URL, so this is arguably the best protection
+  possible).  However, to help protect against consequences accidental
+  sharing of URLs to restricted files (e.g. by forwarding a
+  missed-message email or leaks involving the Referer header), we
+  provide additional layers of protection in both backends as well.
+
+  In the Zulip S3 backend, the random URLs to access files that are
+  presented to users don't actually host the content.  Instead, the S3
+  backend verifies that the user has a valid Zulip session in the
+  relevant realm (and that has access to a Zulip message linking to
+  the file), and if so, then redirects the browser to a temporary S3
+  URL for the file that expires a short time later.  In this way,
+  possessing a URL to a secret file in Zulip does not provide
+  unauthorized users with access to that file.
+
+  We have a similar protection for the `LOCAL_UPLOADS_DIR` backend,
+  that is currently only available in Ubuntu Xenial (this is the one
+  place in Zulip where behavior is currently different between Ubuntu
+  Trusty and Ubuntu Xenial).  On Ubuntu Xenial, every access to an
+  uploaded file has access control verified verified (confirming that
+  the browser is logged into a Zulip account that has received the
+  uploaded file in question).
+
+  On Ubuntu Trusty, because the older version of `nginx` available
+  there doesn't have proper Unicode support for the `X-Accel-Redirect`
+  feature, the `LOCAL_UPLOADS_DIR` backend only has the single layer
+  of security described at the beginning of this section (long,
+  randomly generated secret URLs).  This could be fixed with further
+  engineering, but given the upcoming end-of-life of Ubuntu Trusty, we
+  have no plans to do that further work.
 
 * Zulip supports using the Camo image proxy to proxy content like
   inline image previews that can be inserted into the Zulip message

@@ -26,7 +26,7 @@ import ujson
 from zerver.decorator import statsd_increment
 from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.exceptions import ErrorCode, JsonableError
-from zerver.lib.message import access_message
+from zerver.lib.message import access_message, huddle_users
 from zerver.lib.queue import retry_event
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import generate_random_token
@@ -54,17 +54,24 @@ def hex_to_b64(data: Text) -> bytes:
 # Sending to APNs, for iOS
 #
 
-_apns_client = None  # type: APNsClient
+_apns_client = None  # type: Optional[APNsClient]
+_apns_client_initialized = False
 
 def get_apns_client() -> APNsClient:
-    global _apns_client
-    if _apns_client is None:
+    global _apns_client, _apns_client_initialized
+    if not _apns_client_initialized:
         # NB if called concurrently, this will make excess connections.
         # That's a little sloppy, but harmless unless a server gets
         # hammered with a ton of these all at once after startup.
-        _apns_client = APNsClient(credentials=settings.APNS_CERT_FILE,
-                                  use_sandbox=settings.APNS_SANDBOX)
+        if settings.APNS_CERT_FILE is not None:
+            _apns_client = APNsClient(credentials=settings.APNS_CERT_FILE,
+                                      use_sandbox=settings.APNS_SANDBOX)
+        _apns_client_initialized = True
     return _apns_client
+
+def apns_enabled() -> bool:
+    client = get_apns_client()
+    return client is not None
 
 def modernize_apns_payload(data: Dict[str, Any]) -> Dict[str, Any]:
     '''Take a payload in an unknown Zulip version's format, and return in current format.'''
@@ -96,11 +103,15 @@ APNS_MAX_RETRIES = 3
 @statsd_increment("apple_push_notification")
 def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
                                  payload_data: Dict[str, Any]) -> None:
+    client = get_apns_client()
+    if client is None:
+        logging.warning("APNs: Dropping a notification because nothing configured.  "
+                        "Set PUSH_NOTIFICATION_BOUNCER_URL (or APNS_CERT_FILE).")
+        return
     logging.info("APNs: Sending notification for user %d to %d devices",
                  user_id, len(devices))
     payload = APNsPayload(**modernize_apns_payload(payload_data))
     expiration = int(time.time() + 24 * 3600)
-    client = get_apns_client()
     retries_left = APNS_MAX_RETRIES
     for device in devices:
         # TODO obviously this should be made to actually use the async
@@ -140,6 +151,9 @@ if settings.ANDROID_GCM_API_KEY:  # nocoverage
     gcm = GCM(settings.ANDROID_GCM_API_KEY)
 else:
     gcm = None
+
+def gcm_enabled() -> bool:  # nocoverage
+    return gcm is not None
 
 def send_android_push_notification_to_user(user_profile: UserProfile, data: Dict[str, Any]) -> None:
     devices = list(PushDeviceToken.objects.filter(user=user_profile,
@@ -380,6 +394,22 @@ def remove_push_device_token(user_profile: UserProfile, token_str: bytes, kind: 
 # Push notifications in general
 #
 
+def push_notifications_enabled() -> bool:
+    '''True just if this server has configured a way to send push notifications.'''
+    if (uses_notification_bouncer()
+            and settings.ZULIP_ORG_KEY is not None
+            and settings.ZULIP_ORG_ID is not None):  # nocoverage
+        # We have the needed configuration to send push notifications through
+        # the bouncer.  Better yet would be to confirm that this config actually
+        # works -- e.g., that we have ever successfully sent to the bouncer --
+        # but this is a good start.
+        return True
+    if apns_enabled() and gcm_enabled():  # nocoverage
+        # We have the needed configuration to send through APNs and GCM directly
+        # (i.e., we are the bouncer, presumably.)  Again, assume it actually works.
+        return True
+    return False
+
 def get_alert_from_message(message: Message) -> Text:
     """
     Determine what alert string to display based on the missed messages.
@@ -449,11 +479,14 @@ def get_common_payload(message: Message) -> Dict[str, Any]:
     data['sender_id'] = message.sender.id
     data['sender_email'] = message.sender.email
 
-    if message.is_stream_message():
+    if message.recipient.type == Recipient.STREAM:
         data['recipient_type'] = "stream"
         data['stream'] = get_display_recipient(message.recipient)
         data['topic'] = message.subject
-    else:
+    elif message.recipient.type == Recipient.HUDDLE:
+        data['recipient_type'] = "private"
+        data['pm_users'] = huddle_users(message.recipient.id)
+    else:  # Recipient.PERSONAL
         data['recipient_type'] = "private"
 
     return data

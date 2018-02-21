@@ -20,6 +20,7 @@
 /locale/en
 /locale/language_options.json
 /locale/language_name_map.json
+/locale/*/mobile.json
 
 # Legacy emoji data directory
 /third/emoji-data

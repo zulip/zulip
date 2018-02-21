@@ -25,8 +25,8 @@
                 <a href="{{preview_url}}" class="button small rounded" id="preview-stream-button" role="button" title="{{t 'View stream'}} (V)">{{t "View stream"}}</a>
             </div>
         </div>
-        <div class="stream-description" data-no-description="{{t 'No description.' }}">
-            <span class="stream-description-editable editable-section">{{{rendered_description}}}</span>
+        <div class="stream-description">
+            <span class="stream-description-editable editable-section description" data-no-description="{{t 'No description.' }}">{{{rendered_description}}}</span>
             {{#if can_change_name_description}}
             <span class="editable" data-make-editable=".stream-description-editable"></span>
             <span class="checkmark" data-finish-editing=".stream-description-editable">✓</span>
@@ -121,7 +121,7 @@
                 <table class="subscriber-list"></table>
                 {{else}}
                 <div class="hide-subscriber-list">
-                    {{t "You can not access private stream subscribers, which you aren't subscribed." }}
+                    {{t "This stream is private, so you can't see who is subscribed." }}
                 </div>
                 {{/if}}
             </div>

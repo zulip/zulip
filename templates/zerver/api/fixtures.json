@@ -1,0 +1,316 @@
+{
+    "render-message":{
+        "msg":"",
+        "rendered":"<p><strong>foo<\/strong><\/p>",
+        "result":"success"
+    },
+    "stream-message": {
+        "msg":"",
+        "id":134,
+        "result":"success"
+    },
+    "private-message": {
+        "msg":"",
+        "id":134,
+        "result":"success"
+    },
+    "update-message": {
+        "msg":"",
+        "result":"success"
+    },
+    "get-stream-id": {
+        "stream_id":15,
+        "result":"success",
+        "msg":""
+    },
+    "get-subscribed-streams": {
+        "msg":"",
+        "result":"success",
+        "subscriptions":[
+            {
+                "audible_notifications":true,
+                "color":"#e79ab5",
+                "description":"A Scandinavian country",
+                "desktop_notifications":true,
+                "email_address":"Denmark+187b4125ed36d6af8b5d03ef4f65c0cf@zulipdev.com:9981",
+                "in_home_view":true,
+                "invite_only":false,
+                "name":"Denmark",
+                "pin_to_top":false,
+                "push_notifications":false,
+                "stream_id":1,
+                "subscribers":[
+                    "ZOE@zulip.com",
+                    "hamlet@zulip.com",
+                    "iago@zulip.com",
+                    "othello@zulip.com",
+                    "prospero@zulip.com"
+                ]
+            },
+            {
+                "audible_notifications":true,
+                "color":"#e79ab5",
+                "description":"Located in the United Kingdom",
+                "desktop_notifications":true,
+                "email_address":"Scotland+f5786390183e60a1ccb18374f9d05649@zulipdev.com:9981",
+                "in_home_view":true,
+                "invite_only":false,
+                "name":"Scotland",
+                "pin_to_top":false,
+                "push_notifications":false,
+                "stream_id":3,
+                "subscribers":[
+                    "ZOE@zulip.com",
+                    "iago@zulip.com",
+                    "othello@zulip.com",
+                    "prospero@zulip.com"
+                ]
+            },
+            {
+                "audible_notifications":true,
+                "color":"#e79ab5",
+                "description":"A city in Italy",
+                "desktop_notifications":true,
+                "email_address":"Verona+faaa92dc82cf143174ddc098a1c832ef@zulipdev.com:9981",
+                "in_home_view":true,
+                "invite_only":false,
+                "name":"Verona",
+                "pin_to_top":false,
+                "push_notifications":false,
+                "stream_id":5,
+                "subscribers":[
+                    "AARON@zulip.com",
+                    "ZOE@zulip.com",
+                    "cordelia@zulip.com",
+                    "hamlet@zulip.com",
+                    "iago@zulip.com",
+                    "othello@zulip.com",
+                    "prospero@zulip.com"
+                ]
+            },
+            {
+                "audible_notifications":false,
+                "color":"#76ce90",
+                "description":"New stream for testing",
+                "desktop_notifications":false,
+                "email_address":"new%0032stream+e1917b4fc733268e91fcc57cf79a9249@zulipdev.com:9981",
+                "in_home_view":true,
+                "invite_only":false,
+                "name":"new stream",
+                "pin_to_top":false,
+                "push_notifications":false,
+                "stream_id":6,
+                "subscribers":[
+                    "iago@zulip.com"
+                ]
+            }
+        ]
+    },
+    "get-all-streams": {
+        "msg":"",
+        "result":"success",
+        "streams":[
+            {
+                "description":"A Scandinavian country",
+                "invite_only":false,
+                "name":"Denmark",
+                "stream_id":1
+            },
+            {
+                "description":"Yet another Italian city",
+                "invite_only":false,
+                "name":"Rome",
+                "stream_id":2
+            },
+            {
+                "description":"Located in the United Kingdom",
+                "invite_only":false,
+                "name":"Scotland",
+                "stream_id":3
+            },
+            {
+                "description":"A northeastern Italian city",
+                "invite_only":false,
+                "name":"Venice",
+                "stream_id":4
+            },
+            {
+                "description":"A city in Italy",
+                "invite_only":false,
+                "name":"Verona",
+                "stream_id":5
+            },
+            {
+                "description":"New stream for testing",
+                "invite_only":false,
+                "name":"new stream",
+                "stream_id":6
+            }
+        ]
+    },
+    "create-user": {
+        "successful_response": {
+            "msg":"",
+            "result":"success"
+        },
+        "email_already_used_error": {
+            "msg": "Email 'newbie@zulip.com' already in use",
+            "result": "error"
+        }
+    },
+    "get-profile": {
+        "client_id":"74c768b081076fdb3c4326256c17467e",
+        "email":"iago@zulip.com",
+        "full_name":"Iago",
+        "is_admin":true,
+        "is_bot":false,
+        "max_message_id":30,
+        "msg":"",
+        "pointer":-1,
+        "result":"success",
+        "short_name":"iago",
+        "user_id":5
+    },
+    "add-subscriptions": {
+        "without_principals": {
+            "already_subscribed":{
+
+            },
+            "msg":"",
+            "result":"success",
+            "subscribed":{
+                "iago@zulip.com":[
+                    "new stream"
+                ]
+            }
+        },
+        "already_subscribed": {
+            "already_subscribed":{
+                "newbie@zulip.com":[
+                    "new stream"
+                ]
+            },
+            "msg":"",
+            "result":"success",
+            "subscribed":{
+
+            }
+        },
+        "unauthorized_errors_fatal_false": {
+            "already_subscribed":{
+
+            },
+            "msg":"",
+            "result":"success",
+            "subscribed":{
+
+            },
+            "unauthorized":[
+                "private_stream"
+            ]
+        },
+        "unauthorized_errors_fatal_true": {
+            "msg":"Unable to access stream (private_stream).",
+            "result":"error"
+        }
+    },
+    "remove-subscriptions": {
+        "msg":"",
+        "not_subscribed":[
+
+        ],
+        "removed":[
+            "new stream"
+        ],
+        "result":"success",
+    },
+    "invalid-api-key": {
+        "msg":"Invalid API key",
+        "result":"error"
+    },
+    "get-all-users": {
+        "members":[
+            {
+                "avatar_url":"https:\/\/secure.gravatar.com\/avatar\/818c212b9f8830dfef491b3f7da99a14?d=identicon&version=1",
+                "bot_type":null,
+                "email":"AARON@zulip.com",
+                "full_name":"aaron",
+                "is_active":true,
+                "is_admin":false,
+                "is_bot":false,
+                "user_id":1
+            },
+            {
+                "avatar_url":"https:\/\/secure.gravatar.com\/avatar\/77c3871a68c8d70356156029fd0a4999?d=identicon&version=1",
+                "bot_type":null,
+                "email":"cordelia@zulip.com",
+                "full_name":"Cordelia Lear",
+                "is_active":true,
+                "is_admin":false,
+                "is_bot":false,
+                "user_id":3
+            },
+            {
+                "avatar_url":"https:\/\/secure.gravatar.com\/avatar\/0cbf08f3a355995fa2ec542246e35123?d=identicon&version=1",
+                "bot_type":null,
+                "email":"newbie@zulip.com",
+                "full_name":"New User",
+                "is_active":true,
+                "is_admin":false,
+                "is_bot":false,
+                "user_id":24
+            }
+        ],
+        "msg":"",
+        "result":"success"
+    },
+    "register-queue": {
+        "last_event_id":-1,
+        "msg":"",
+        "queue_id":"1517975029:0",
+        "result":"success"
+    },
+    "delete-queue":{
+        "successful_response": {
+            "msg":"",
+            "result":"success"
+        },
+        "bad_event_queue_id_error": {
+            "code":"BAD_EVENT_QUEUE_ID",
+            "msg":"Bad event queue id: 1518820930:1",
+            "queue_id":"1518820930:1",
+            "result":"error"
+        }
+    },
+    "nonexistent-stream-error": {
+        "code":"BAD_REQUEST",
+        "msg":"Stream 'nonexistent_stream' does not exist",
+        "result":"error"
+    },
+    "invalid-pm-recipient-error": {
+        "code":"BAD_REQUEST",
+        "msg":"Invalid email 'eeshan@zulip.com'",
+        "result":"error"
+    },
+    "missing-request-argument-error": {
+        "code":"REQUEST_VARIABLE_MISSING",
+        "msg":"Missing 'content' argument",
+        "result":"error",
+        "var_name":"content"
+    },
+    "update-message-edit-permission-error": {
+        "code":"BAD_REQUEST",
+        "msg":"You don't have permission to edit this message",
+        "result":"error"
+    },
+    "user-not-authorized-error": {
+        "code":"BAD_REQUEST",
+        "msg":"User not authorized for this query",
+        "result":"error"
+    },
+    "invalid-stream-error": {
+        "code":"BAD_REQUEST",
+        "msg":"Invalid stream name 'nonexistent'",
+        "result":"error"
+    }
+}

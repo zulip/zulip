@@ -88,6 +88,7 @@ if not python_files:
 extra_args = ["--check-untyped-defs",
               "--follow-imports=silent",
               "--scripts-are-modules",
+              "--show-traceback",
               "-i", "--cache-dir=var/mypy-cache",
               "--disallow-any-generics"]
 if args.linecoverage_report:

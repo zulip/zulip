@@ -30,6 +30,7 @@ set_global('compose', {
 
 set_global('settings_account', {
     update_email: function () {},
+    update_full_name: function () {},
 });
 
 set_global('message_live_update', {

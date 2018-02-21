@@ -37,6 +37,7 @@ zrequire('util');
 zrequire('presence');
 zrequire('people');
 zrequire('activity');
+zrequire('stream_list');
 
 set_global('blueslip', {
     log: function () {},
@@ -271,7 +272,31 @@ presence.presence_info[me.user_id] = { status: activity.ACTIVE };
 
 activity.set_user_list_filter();
 
+var user_order = [fred.user_id, jill.user_id, norbert.user_id,
+                     zoe.user_id, alice.user_id, mark.user_id];
+var user_count = 6;
+
+// Mock the jquery is func
+$('.user-list-filter').is = function (sel) {
+    if (sel === ':focus') {
+        return $('.user-list-filter').is_focused();
+    }
+};
+
+// Mock the jquery first func
+$('#user_presences li.user_sidebar_entry.narrow-filter').first = function () {
+    return $('li.user_sidebar_entry[data-user-id="' + user_order[0] + '"]');
+};
+$('#user_presences li.user_sidebar_entry.narrow-filter').last = function () {
+    return $('li.user_sidebar_entry[data-user-id="' + user_order[user_count - 1] + '"]');
+};
+
 (function test_presence_list_full_update() {
+    // No element is selected
+    $('#user_presences li.user_sidebar_entry.narrow-filter.highlighted_user').length = 0;
+    $('.user-list-filter').focus();
+
+    $('#user_presences li.user_sidebar_entry.narrow-filter');
     var users = activity.build_user_sidebar();
     assert.deepEqual(users, [{
             name: 'Fred Flintstone',
@@ -373,35 +398,90 @@ activity.set_user_list_filter();
     assert.equal(value.text(), '');
 }());
 
-// Mock the jquery is func
-$('.user-list-filter').is = function (sel) {
-    if (sel === ':focus') {
-        return $('.user-list-filter').is_focused();
-    }
-};
+(function test_key_input() {
+    var sel_index = 0;
+    // Returns which element is selected
+    $('#user_presences li.user_sidebar_entry.narrow-filter.highlighted_user')
+        .expectOne().attr = function () {
+            return user_order[sel_index];
+        };
 
-(function test_maybe_select_person() {
+    // Returns element before selected one
+    $('#user_presences li.user_sidebar_entry.narrow-filter.highlighted_user')
+        .expectOne().prev = function () {
+            if (sel_index === 0) {
+                // Top, no prev element
+                return $('div.no_user');
+            }
+            return $('li.user_sidebar_entry[data-user-id="' + user_order[sel_index-1] + '"]');
+        };
+
+    // Returns element after selected one
+    $('#user_presences li.user_sidebar_entry.narrow-filter.highlighted_user')
+        .expectOne().next = function () {
+            if (sel_index === user_count - 1) {
+                // Bottom, no next element
+                return $('div.no_user');
+            }
+            return $('li.user_sidebar_entry[data-user-id="' + user_order[sel_index + 1] + '"]');
+        };
+
+    $('li.user_sidebar_entry[data-user-id="' + fred.user_id + '"]').is = function () {
+            return true;
+    };
+    $('li.user_sidebar_entry[data-user-id="' + mark.user_id + '"]').is = function () {
+            return true;
+    };
+    $('li.user_sidebar_entry[data-user-id="' + alice.user_id + '"]').is = function () {
+            return true;
+    };
+    $('div.no_user').is = function () {
+        return false;
+    };
+
+    $('#user_presences li.user_sidebar_entry.narrow-filter').length = user_count;
+
+    activity.set_user_list_filter_handlers();
+
+    // Disable scrolling into place
+    stream_list.scroll_element_into_container = function () {};
+    // up
     var e = {
+        keyCode: 38,
+        stopPropagation: function () {},
+        preventDefault: function () {},
+    };
+    var keydown_handler = $('.user-list-filter').get_on_handler('keydown');
+    keydown_handler(e);
+    // Now the last element is selected
+    sel_index = user_count - 1;
+    keydown_handler(e);
+    sel_index = sel_index - 1;
+
+    // down
+    e = {
+        keyCode: 40,
+        stopPropagation: function () {},
+        preventDefault: function () {},
+    };
+    keydown_handler(e);
+    sel_index = sel_index + 1;
+    keydown_handler(e);
+
+    e = {
         keyCode: 13,
         stopPropagation: function () {},
         preventDefault: function () {},
     };
-    $('#user_presences li.user_sidebar_entry').first = function () {
-        return {
-            attr: function (attr) {
-                assert.equal(attr, 'data-user-id');
-                return 1;
-            },
-        };
-    };
+
+    // Enter text and narrow users
     $(".user-list-filter").expectOne().val('ali');
     narrow.by = function (method, email) {
       assert.equal(email, 'alice@zulip.com');
     };
     compose_actions.start = function () {};
+    sel_index = 4;
 
-    activity.set_user_list_filter_handlers();
-    var keydown_handler = $('.user-list-filter').get_on_handler('keydown');
     keydown_handler(e);
 }());
 
@@ -410,6 +490,12 @@ $('.user-list-filter').is = function (sel) {
         stopPropagation: function () {},
     };
     var click_handler = $('.user-list-filter').get_on_handler('click');
+    click_handler(e);
+}());
+
+(function test_focusout_user_filter() {
+    var e = { };
+    var click_handler = $('.user-list-filter').get_on_handler('blur');
     click_handler(e);
 }());
 

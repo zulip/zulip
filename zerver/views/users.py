@@ -173,8 +173,16 @@ def patch_bot_backend(
     if full_name is not None:
         check_change_full_name(bot, full_name, user_profile)
     if bot_owner is not None:
-        owner = get_user(bot_owner, user_profile.realm)
+        try:
+            owner = get_user(bot_owner, user_profile.realm)
+        except UserProfile.DoesNotExist:
+            return json_error(_('Failed to change owner, no such user'))
+        if not owner.is_active:
+            return json_error(_('Failed to change owner, user is deactivated'))
+        if owner.is_bot:
+            return json_error(_("Failed to change owner, bots can't own other bots"))
         do_change_bot_owner(bot, owner, user_profile)
+
     if default_sending_stream is not None:
         if default_sending_stream == "":
             stream = None  # type: Optional[Stream]
@@ -255,8 +263,8 @@ def add_bot_backend(
         bot_type: int=REQ(validator=check_int, default=UserProfile.DEFAULT_BOT),
         payload_url: Optional[Text]=REQ(validator=check_url, default=""),
         service_name: Optional[Text]=REQ(default=None),
-        config_data: Optional[Dict[Text, Text]]=REQ(default=None,
-                                                    validator=check_dict(value_validator=check_string)),
+        config_data: Dict[Text, Text]=REQ(default={},
+                                          validator=check_dict(value_validator=check_string)),
         interface_type: int=REQ(validator=check_int, default=Service.GENERIC),
         default_sending_stream_name: Optional[Text]=REQ('default_sending_stream', default=None),
         default_events_register_stream_name: Optional[Text]=REQ('default_events_register_stream',

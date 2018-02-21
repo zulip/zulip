@@ -10,6 +10,11 @@ from zerver.models import Realm, UserProfile, Message, Reaction, get_system_bot
 from typing import Any, Dict, List, Mapping, Text
 
 def setup_realm_internal_bots(realm: Realm) -> None:
+    """Create this realm's internal bots.
+
+    This function is idempotent; it does nothing for a bot that
+    already exists.
+    """
     internal_bots = [(bot['name'], bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,))
                      for bot in settings.REALM_INTERNAL_BOTS]
     create_users(realm, internal_bots, bot_type=UserProfile.DEFAULT_BOT)

@@ -28,23 +28,9 @@ curl {{ api_url }}/v1/messages \
 </div>
 
 <div data-language="python" markdown="1">
-```python
-#!/usr/bin/env python
 
-import zulip
+{generate_code_example(python)|stream-message|example}
 
-# Download ~/zuliprc-dev from your dev server
-client = zulip.Client(config_file="~/zuliprc-dev")
-
-# Send a stream message
-client.send_message({
-    "type": "stream",
-    "to": "Denmark",
-    "subject": "Castle",
-    "content": "Something is rotten in the state of Denmark."
-})
-
-```
 </div>
 
 <div data-language="zulip-send" markdown="1"> You can use `zulip-send`
@@ -112,17 +98,10 @@ zulip(config).then((client) => {
 * `id`: The ID of the newly created message
 
 #### Example response
+A typical successful JSON response may look like:
 
-{!successful-api-send-message-json-response.md!}
+{generate_code_example|stream-message|fixture}
 
 A typical failed JSON response for when the target stream does not exist:
 
-```
-{
-    'code':'BAD_REQUEST',
-    'msg':"Stream 'Denmarkk' does not exist",
-    'result':'error'
-}
-```
-
-{!invalid-api-key-json-response.md!}
+{generate_code_example|nonexistent-stream-error|fixture}

@@ -13,8 +13,7 @@ CHECK_MESSAGE = "Fix the corresponding rule in `tools/linter_lib/custom_check.py
 
 class TestCustomRules(TestCase):
 
-    def setUp(self):
-        # type: () -> None
+    def setUp(self) -> None:
         self.all_rules = []  # type: List[Dict[str, Any]]
         with patch('tools.linter_lib.custom_check.custom_check_file', return_value=False) as mock_custom_check_file:
             by_lang = dict.fromkeys(['py', 'js', 'sh', 'css', 'handlebars', 'html',
@@ -27,8 +26,7 @@ class TestCustomRules(TestCase):
                 rule_set = call_args[0][2]
                 self.all_rules.extend(rule_set)
 
-    def test_paths_in_rules(self):
-        # type: () -> None
+    def test_paths_in_rules(self) -> None:
         """Verifies that the paths mentioned in linter rules actually exist"""
         for rule in self.all_rules:
             for path in rule.get('exclude', {}):
@@ -47,8 +45,7 @@ class TestCustomRules(TestCase):
                     self.assertTrue(path.endswith('/'),
                                     "The path '{}' should end with '/'. {}".format(path, CHECK_MESSAGE))
 
-    def test_rule_patterns(self):
-        # type: () -> None
+    def test_rule_patterns(self) -> None:
         """Verifies that the search regex specified in a custom rule actually matches
            the expectation and doesn't throw false positives."""
         for rule in self.all_rules:

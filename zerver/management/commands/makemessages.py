@@ -56,6 +56,8 @@ regexes = ['{{#tr .*?}}([\s\S]*?){{/tr}}',  # '.' doesn't match '\n' by default
            'i18n\.t\("([^\"]*?)"\)',
            'i18n\.t\("(.*?)",\s*.*?[^,]\)',
            ]
+tags = [('err_', "error"),
+        ]
 
 frontend_compiled_regexes = [re.compile(regex) for regex in regexes]
 multiline_js_comment = re.compile("/\*.*?\*/", re.DOTALL)
@@ -68,8 +70,12 @@ def strip_whitespaces(src: Text) -> Text:
 
 class Command(makemessages.Command):
 
+    xgettext_options = makemessages.Command.xgettext_options
+    for func, tag in tags:
+        xgettext_options += ['--keyword={}:1,"{}"'.format(func, tag)]
+
     def add_arguments(self, parser: ArgumentParser) -> None:
-        super().add_arguments(parser)
+        super(Command, self).add_arguments(parser)
         parser.add_argument('--frontend-source', type=str,
                             default='static/templates',
                             help='Name of the Handlebars template directory')
@@ -82,15 +88,22 @@ class Command(makemessages.Command):
 
     def handle(self, *args: Any, **options: Any) -> None:
         self.handle_django_locales(*args, **options)
-        self.handle_frontend_locales(*args, **options)
+        self.handle_frontend_locales(**options)
 
-    def handle_frontend_locales(self, *args: Any, **options: Any) -> None:
-        self.frontend_source = options.get('frontend_source')
-        self.frontend_output = options.get('frontend_output')
-        self.frontend_namespace = options.get('frontend_namespace')
-        self.frontend_locale = options.get('locale')
-        self.frontend_exclude = options.get('exclude')
-        self.frontend_all = options.get('all')
+    def handle_frontend_locales(self, *,
+                                frontend_source: str,
+                                frontend_output: str,
+                                frontend_namespace: str,
+                                locale: List[str],
+                                exclude: List[str],
+                                all: bool,
+                                **options: Any) -> None:
+        self.frontend_source = frontend_source
+        self.frontend_output = frontend_output
+        self.frontend_namespace = frontend_namespace
+        self.frontend_locale = locale
+        self.frontend_exclude = exclude
+        self.frontend_all = all
 
         translation_strings = self.get_translation_strings()
         self.write_translation_strings(translation_strings)

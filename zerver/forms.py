@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.forms import SetPasswordForm, AuthenticationForm, \
     PasswordResetForm
 from django.core.exceptions import ValidationError
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.core.validators import validate_email
 from django.db.models.query import QuerySet
 from django.utils.translation import ugettext as _
@@ -66,12 +66,12 @@ def check_subdomain_available(subdomain: str) -> None:
         if is_root_domain_available():
             return
         raise ValidationError(error_strings['unavailable'])
-    if len(subdomain) < 3:
-        raise ValidationError(error_strings['too short'])
     if subdomain[0] == '-' or subdomain[-1] == '-':
         raise ValidationError(error_strings['extremal dash'])
     if not re.match('^[a-z0-9-]*$', subdomain):
         raise ValidationError(error_strings['bad character'])
+    if len(subdomain) < 3:
+        raise ValidationError(error_strings['too short'])
     if is_reserved_subdomain(subdomain) or \
        get_realm(subdomain) is not None:
         raise ValidationError(error_strings['unavailable'])
@@ -204,7 +204,7 @@ class ZulipPasswordResetForm(PasswordResetForm):
             logging.info("Password reset attempted for %s even though password auth is disabled." % (email,))
             return
 
-        user = None
+        user = None  # type: Optional[UserProfile]
         try:
             user = get_user(email, realm)
         except UserProfile.DoesNotExist:
@@ -217,7 +217,7 @@ class ZulipPasswordResetForm(PasswordResetForm):
 
         if user is not None:
             token = token_generator.make_token(user)
-            uid = urlsafe_base64_encode(force_bytes(user.id))
+            uid = urlsafe_base64_encode(force_bytes(user.id)).decode('ascii')
             endpoint = reverse('django.contrib.auth.views.password_reset_confirm',
                                kwargs=dict(uidb64=uid, token=token))
 

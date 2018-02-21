@@ -19,6 +19,10 @@ body.dark-mode #settings_page .right {
     background-color: hsl(212, 28%, 18%);
 }
 
+body.dark-mode .message_embed .data-container::after {
+    background: linear-gradient(0deg, hsl(212, 28%, 18%), transparent 10%);
+}
+
 body.dark-mode .column-left .left-sidebar,
 body.dark-mode #settings_page .form-sidebar,
 body.dark-mode .column-right .right-sidebar {
@@ -76,12 +80,18 @@ body.dark-mode .stream-row .sub-info-box .top-bar .message-count {
 body.dark-mode .new-style .button,
 body.dark-mode input[type="text"],
 body.dark-mode input[type="email"],
+body.dark-mode input[type="password"],
 body.dark-mode textarea,
 body.dark-mode .new-style .tab-switcher .ind-tab:not(.selected),
 body.dark-mode select {
     background-color: hsla(0, 0%, 0%, 0.2);
     border-color: hsla(0, 0%, 0%, 0.6);
     color: inherit;
+}
+
+body.dark-mode select option {
+    background-color: hsl(212, 28%, 18%);
+    color: hsl(236, 33%, 90%);
 }
 
 body.dark-mode .new-style .button.no-style {
@@ -148,8 +158,13 @@ body.dark-mode .informational-overlays .overlay-content {
 }
 
 body.dark-mode .dropdown .dropdown-menu,
-body.dark-mode .popover {
+body.dark-mode .popover,
+body.dark-mode .popover-title {
     background: hsl(212, 32%, 14%);
+}
+
+body.dark-mode .dropdown-menu a {
+    color: inherit;
 }
 
 body.dark-mode .dropdown .dropdown-menu li.divider,
@@ -185,8 +200,10 @@ body.dark-mode li.active-sub-filter {
 
 body.dark-mode #global_filters li:hover,
 body.dark-mode #stream_filters li:hover,
+body.dark-mode #stream_filters li.highlighted_stream,
 body.dark-mode #group-pms li:hover,
-body.dark-mode #user_presences li:hover {
+body.dark-mode #user_presences li:hover,
+body.dark-mode #user_presences li.highlighted_user {
     background-color: hsla(136, 25%, 73%, 0.2);
 }
 
@@ -218,8 +235,7 @@ body.dark-mode #settings_page .sidebar .tab-container,
 body.dark-mode .table-striped tbody tr:nth-child(odd) td,
 body.dark-mode .table-striped tbody tr:nth-child(odd) th,
 body.dark-mode .modal-footer,
-body.dark-mode #invite-user .modal-header,
-body.dark-mode #bankruptcy .modal-header {
+body.dark-mode .modal-bg .modal-header {
     border-color: hsla(0, 0%, 0%, 0.2);
     background-color: hsla(0, 0%, 0%, 0.2);
 }
@@ -367,4 +383,10 @@ body.dark-mode .empty-star:hover {
 
 body.dark-mode #out-of-view-notification {
     border: 1px solid 1px solid hsl(144, 45%, 62%);
+}
+
+@-moz-document url-prefix() {
+    body.dark-mode #settings_page select {
+        background-color: hsla(0, 0%, 0%, 0.2);
+    }
 }

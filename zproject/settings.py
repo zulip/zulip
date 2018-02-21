@@ -179,6 +179,8 @@ DEFAULT_SETTINGS = {
     'REDIS_PORT': 6379,
     'REMOTE_POSTGRES_HOST': '',
     'REMOTE_POSTGRES_SSLMODE': '',
+    'THUMBOR_HOST': '',
+    'SENDFILE_BACKEND': None,
 
     # ToS/Privacy templates
     'PRIVACY_POLICY': None,
@@ -292,7 +294,6 @@ DEFAULT_SETTINGS.update({
 
     # Settings for APNS.  Only needed on push.zulipchat.com.
     'APNS_CERT_FILE': None,
-    'APNS_KEY_FILE': None,
     'APNS_SANDBOX': True,
 
     # Limits related to the size of file uploads; last few in MB.
@@ -611,7 +612,7 @@ CACHES = {
 ########################################################################
 
 RATE_LIMITING_RULES = [
-    (60, 100),  # 100 requests max every minute
+    (60, 200),  # 200 requests max every minute
 ]
 DEBUG_RATE_LIMITING = DEBUG
 REDIS_PASSWORD = get_secret('redis_password')
@@ -669,6 +670,12 @@ if "NAGIOS_BOT_HOST" not in vars():
 
 S3_KEY = get_secret("s3_key")
 S3_SECRET_KEY = get_secret("s3_secret_key")
+
+if LOCAL_UPLOADS_DIR is not None:
+    if SENDFILE_BACKEND is None:
+        SENDFILE_BACKEND = 'sendfile.backends.nginx'
+    SENDFILE_ROOT = os.path.join(LOCAL_UPLOADS_DIR, "files")
+    SENDFILE_URL = '/serve_uploads'
 
 # GCM tokens are IP-whitelisted; if we deploy to additional
 # servers you will need to explicitly add their IPs here:
@@ -818,7 +825,10 @@ PIPELINE = {
         # If you add a style here, please update stylesheets()
         # in frontend_tests/zjsunit/output.js as needed.
         'activity': {
-            'source_filenames': ('styles/activity.css',),
+            'source_filenames': (
+                'styles/activity.css',
+                'third/thirdparty-fonts.css',
+            ),
             'output_filename': 'min/activity.css'
         },
         'stats': {
@@ -1023,6 +1033,7 @@ JS_SPECS = {
             'js/sent_messages.js',
             'js/compose_state.js',
             'js/compose_actions.js',
+            'js/transmit.js',
             'js/compose.js',
             'js/upload.js',
             'js/stream_color.js',
@@ -1114,7 +1125,7 @@ JS_SPECS = {
             'js/ui_init.js',
             'js/emoji_picker.js',
             'js/compose_ui.js',
-            'js/desktop_notifications_panel.js'
+            'js/panels.js'
         ],
         'output_filename': 'min/app.js'
     },
