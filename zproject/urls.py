@@ -492,6 +492,10 @@ i18n_urls = [
         template_name='zerver/config_error.html',),
         {'ldap_error_realm_is_none': True},
         name='ldap_error_realm_is_none'),
+    url(r'^config-error/dev$', TemplateView.as_view(
+        template_name='zerver/config_error.html',),
+        {'dev_not_supported_error': True},
+        name='dev_not_supported'),
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english
