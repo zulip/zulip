@@ -7,6 +7,8 @@
 #
 # For details, see requirements/README.md .
 #
+--no-binary psycopg2
+
 git+https://github.com/zulip/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#egg=talon==1.2.10.zulip1
 git+https://github.com/zulip/ultrajson@70ac02bec#egg=ujson==1.35+git
 git+https://github.com/zulip/virtualenv-clone.git@44e831da39ffb6b9bb5c7d103d98babccdca0456#egg=virtualenv-clone==0.2.6.zulip1
@@ -74,7 +76,7 @@ pillow==5.0.0
 polib==1.1.0
 premailer==3.1.1
 prompt-toolkit==1.0.15    # via ipython
-psycopg2==2.7.3.2
+psycopg2==2.7.4
 ptyprocess==0.5.2         # via pexpect
 py3dns==3.1.0
 pyasn1-modules==0.2.1
