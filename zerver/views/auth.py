@@ -568,7 +568,7 @@ def dev_direct_login(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     if (not dev_auth_enabled()) or settings.PRODUCTION:
         # This check is probably not required, since authenticate would fail without
         # an enabled DevAuthBackend.
-        raise Exception('Direct login not supported.')
+        return HttpResponseRedirect(reverse('dev_not_supported'))
     email = request.POST['direct_email']
     subdomain = get_subdomain(request)
     realm = get_realm(subdomain)
