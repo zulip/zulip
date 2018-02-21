@@ -9,6 +9,7 @@ import re
 import logging
 import requests
 
+from django.conf import settings
 from django.db import connection
 from django.utils.timezone import now as timezone_now
 from typing import Any, Dict, List, Tuple
@@ -57,8 +58,7 @@ def slack_workspace_to_realm(REALM_ID: int, user_list: List[ZerverFieldsT],
     3. added_recipient, which is a dictionary to map from channel name to zulip recipient_id
     4. added_channels, which is a dictionary to map from channel name to zulip stream_id
     """
-    # TODO fetch realm config from zulip config
-    DOMAIN_NAME = "zulipchat.com"
+    DOMAIN_NAME = settings.EXTERNAL_HOST
     NOW = float(timezone_now().timestamp())
 
     zerver_realm = build_zerver_realm(fixtures_path, REALM_ID, realm_subdomain, NOW)
