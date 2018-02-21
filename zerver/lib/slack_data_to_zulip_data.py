@@ -294,7 +294,7 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
         for member in channel['members']:
             total_subscription += 1
 
-    stream_id_list = allocate_ids(Stream, total_users)
+    stream_id_list = allocate_ids(Stream, total_channels)
     subscription_id_list = allocate_ids(Subscription, total_subscription)
     recipient_id_list = allocate_ids(Recipient, total_recipients)
     # corresponding to channels 'general' and 'random'
