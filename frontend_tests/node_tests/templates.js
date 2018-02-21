@@ -577,6 +577,20 @@ function render(template_name, args) {
     global.write_handlebars_output("compose_stream_alert", html);
 }());
 
+(function deactivate_stream_modal() {
+    var args = {
+        stream_name: "Public stream",
+    };
+    var html = render('deactivation-stream-modal', args);
+    global.write_handlebars_output("deactivation-stream-modal", html);
+
+    var modal_header = $(html).find("#deactivation_stream_modal_label");
+    assert.equal(modal_header.text(), "translated: Delete stream " + args.stream_name);
+
+    var button = $(html).find("#do_deactivate_stream_button");
+    assert.equal(button.text(), "translated: Yes, delete this stream");
+}());
+
 (function dev_env_email_access() {
     var html = render('dev_env_email_access');
     global.write_handlebars_output("dev_env_email_access", html);

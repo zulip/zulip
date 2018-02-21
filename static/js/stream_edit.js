@@ -595,9 +595,8 @@ $(function () {
             return;
         }
         var stream_name = stream_data.maybe_get_stream_name(stream_id);
-        var deactivate_stream_modal = templates.render("deactivation-stream-modal");
+        var deactivate_stream_modal = templates.render("deactivation-stream-modal", {stream_name: stream_name});
         $(".subscription_settings").append(deactivate_stream_modal);
-        $("#deactivation_stream_modal .stream_name").text(stream_name);
         overlays.open_modal('deactivation_stream_modal');
     });
 
