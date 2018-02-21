@@ -327,7 +327,7 @@ class NarrowBuilderTest(ZulipTestCase):
         if params is not None:
             actual_params = query.compile().params
             self.assertEqual(actual_params, params)
-        self.assertTrue(where_clause in str(query))
+        self.assertIn(where_clause, str(query))
 
     def _build_query(self, term: Dict[str, Any]) -> Query:
         return self.builder.add_term(self.raw_query, term)
