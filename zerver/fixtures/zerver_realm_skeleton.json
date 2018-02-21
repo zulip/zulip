@@ -10,7 +10,7 @@
     "restricted_to_domain": false,
     "show_digest_email": true,
     "allow_message_editing": true,
-    "description": "The Zulip development environment default organization.  It's great for testing!",
+    "description": "Organization imported from Slack!",
     "default_language": "en",
     "icon_source": "G",
     "invite_required": false,
