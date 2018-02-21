@@ -8,6 +8,14 @@ import localstorage from './localstorage';
 
 window.i18n = i18next;
 
+// Add those keys in this list which are received from the backend
+// and are translated by calling i18n.t function on variables. For example,
+// i18n.t(receivedFromBackend);
+var toBeTranslated = [  // eslint-disable-line no-unused-vars
+    // The Emoji type name for the "text" emojiset choice
+    i18n.t('Plain text'),
+];
+
 function loadPath(languages) {
     var language = languages[0];
     if (language.indexOf('-') >= 0) {
