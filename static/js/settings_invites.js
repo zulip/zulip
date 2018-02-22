@@ -21,19 +21,27 @@ function populate_invites(invites_data) {
     }
     var invites_table = $("#admin_invites_table").expectOne();
 
-    list_render(invites_table, invites_data.invites, {
-        name: "admin_invites_list",
-        modifier: function (item) {
-            item.invited = timerender.absolute_time(item.invited * 1000);
-            return templates.render("admin_invites_list", { invite: item });
-        },
-        filter: {
-            element: invites_table.closest(".settings-section").find(".search"),
-            callback: function (item, value) {
-                return item.email.toLowerCase().indexOf(value) >= 0;
+    var admin_invites_list = list_render.get("admin_invites_list");
+
+    if (admin_invites_list) {
+        admin_invites_list.data(invites_data.invites);
+        admin_invites_list.set_container(invites_table);
+        admin_invites_list.render();
+    } else {
+        list_render(invites_table, invites_data.invites, {
+            name: "admin_invites_list",
+            modifier: function (item) {
+                item.invited = timerender.absolute_time(item.invited * 1000);
+                return templates.render("admin_invites_list", { invite: item });
             },
-        },
-    }).init();
+            filter: {
+                element: invites_table.closest(".settings-section").find(".search"),
+                callback: function (item, value) {
+                    return item.email.toLowerCase().indexOf(value) >= 0;
+                },
+            },
+        }).init();
+    }
 
     loading.destroy_indicator($('#admin_page_invites_loading_indicator'));
 }
