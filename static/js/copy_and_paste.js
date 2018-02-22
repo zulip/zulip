@@ -156,6 +156,26 @@ exports.paste_handler_converter = function (paste_html) {
                     return '*' + content + '*';
                 },
             },
+            {
+                // Checks for raw links without custom text or title.
+                filter: function (node) {
+                    return node.nodeName === "A" &&
+                      node.href === node.innerHTML &&
+                      node.href === node.title;
+                },
+                replacement: function (content) {
+                    return content;
+                },
+            },
+            {
+                // Checks for escaped ordered list syntax.
+                filter: function (node) {
+                    return /(\d+)\\\. /.test(node.innerHTML);
+                },
+                replacement: function (content) {
+                    return content.replace(/(\d+)\\\. /g, '$1. ');
+                },
+            },
         ],
     };
     var markdown_html = toMarkdown(paste_html, converters);
@@ -173,7 +193,7 @@ exports.paste_handler = function (event) {
     var clipboardData = event.originalEvent.clipboardData;
 
     var paste_html = clipboardData.getData('text/html');
-    if (paste_html && page_params.development) {
+    if (paste_html && page_params.development_environment) {
         event.preventDefault();
         var text = exports.paste_handler_converter(paste_html);
         compose_ui.insert_syntax_and_focus(text);
