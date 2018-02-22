@@ -3934,16 +3934,8 @@ def email_not_system_bot(email: Text) -> None:
         raise ValidationError('%s is an email address reserved for system bots' % (email,))
 
 def validate_email_for_realm(target_realm: Realm, email: Text) -> None:
-    try:
-        # Registering with a system bot's email is not allowed...
-        email_not_system_bot(email)
-    except ValidationError:
-        # ... unless this is the first user with that email.  This
-        # should be impossible in production, because these users are
-        # created by initialize_voyager_db, but it happens in a test's
-        # setup.  (This would be a good wrinkle to clean up.)
-        if UserProfile.objects.filter(email__iexact=email).exists():
-            raise
+    # Registering with a system bot's email is not allowed...
+    email_not_system_bot(email)
 
     try:
         existing_user_profile = get_user(email, target_realm)
