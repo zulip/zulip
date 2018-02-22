@@ -266,13 +266,13 @@ class AuthBackendTest(ZulipTestCase):
         with mock.patch('django_auth_ldap.backend._LDAPUser._authenticate_user_dn',
                         side_effect=_LDAPUser.AuthenticationFailed("Failed")), (
             mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements')), (
-            mock.patch('django_auth_ldap.backend._LDAPUser._get_user_attrs',
+            mock.patch('django_auth_ldap.backend._LDAPUser.attrs',
                        return_value=dict(full_name=['Hamlet']))):
             self.assertIsNone(backend.authenticate(email, password, realm=get_realm("zulip")))
 
         with mock.patch('django_auth_ldap.backend._LDAPUser._authenticate_user_dn'), (
             mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements')), (
-            mock.patch('django_auth_ldap.backend._LDAPUser._get_user_attrs',
+            mock.patch('django_auth_ldap.backend._LDAPUser.attrs',
                        return_value=dict(full_name=['Hamlet']))):
             self.verify_backend(backend,
                                 bad_kwargs=dict(username=username,
