@@ -11,7 +11,7 @@ from pathlib import Path
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
-ZULIP_PATH = str(Path(__file__).parent.parent.parent.absolute())
+ZULIP_PATH = str(Path(__file__).absolute().parent.parent.parent)
 sys.path.append(ZULIP_PATH)
 
 from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING, \
