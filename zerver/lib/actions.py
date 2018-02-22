@@ -2300,6 +2300,12 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
     # Log Subscription Activities in RealmAuditLog
     event_time = timezone_now()
     event_last_message_id = Message.objects.aggregate(Max('id'))['id__max']
+    if event_last_message_id is None:
+        # During initial realm creation, there might be 0 messages in
+        # the database; in that case, the `aggregate` query returns
+        # None.  Since we want an int for "beginning of time", use -1.
+        event_last_message_id = -1
+
     all_subscription_logs = []  # type: (List[RealmAuditLog])
     for (sub, stream) in subs_to_add:
         all_subscription_logs.append(RealmAuditLog(realm=sub.user_profile.realm,
