@@ -7,12 +7,13 @@ import platform
 import subprocess
 import glob
 import hashlib
+from pathlib import Path
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
-ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
+ZULIP_PATH = str(Path(__file__).parent.parent.parent.absolute())
 sys.path.append(ZULIP_PATH)
+
 from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING, \
     get_dev_uuid_var_path, FAIL
 from scripts.lib.setup_venv import (
@@ -21,8 +22,10 @@ from scripts.lib.setup_venv import (
 from scripts.lib.node_cache import setup_node_modules, NODE_MODULES_CACHE_PATH
 
 from version import PROVISION_VERSION
-if False:
+try:
     from typing import Any
+except ImportError:
+    pass
 
 
 SUPPORTED_PLATFORMS = {
