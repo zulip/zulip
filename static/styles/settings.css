@@ -1381,6 +1381,13 @@ thead .actions {
     width: 100%;
 }
 
+.inactive-users-text {
+    font-style: italic;
+    color: hsl(0, 0%, 66%);
+    position: fixed;
+    bottom: 0;
+}
+
 #payload_url_inputbox input[type=text] {
     width: 340px;
 }
