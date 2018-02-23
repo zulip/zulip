@@ -945,6 +945,7 @@ JS_SPECS = {
             'js/stream_list.js',
             'js/filter.js',
             'js/voting_widget.js',
+            'js/tictactoe_widget.js',
             'js/widgetize.js',
             'js/submessage.js',
             'js/fetch_status.js',
