@@ -4,6 +4,8 @@ var exports = {};
 
 var widgets = {};
 
+widgets.poll = voting_widget;
+
 exports.activate = function (in_opts) {
     var widget_type = in_opts.widget_type;
     var extra_data = in_opts.extra_data;

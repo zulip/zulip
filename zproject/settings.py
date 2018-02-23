@@ -944,6 +944,7 @@ JS_SPECS = {
             'js/top_left_corner.js',
             'js/stream_list.js',
             'js/filter.js',
+            'js/voting_widget.js',
             'js/widgetize.js',
             'js/submessage.js',
             'js/fetch_status.js',
