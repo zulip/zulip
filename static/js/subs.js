@@ -112,6 +112,15 @@ exports.is_subscribed_stream_tab_active = function () {
     return subscribed_only;
 };
 
+exports.update_is_stream_admin = function (sub, value) {
+    sub.is_stream_admin = value;
+    stream_data.update_calculated_fields(sub);
+    const node = $(".stream-row[data-stream-id='" + sub.stream_id + "']");
+    if (node.hasClass("active")) {
+        stream_edit.show_settings_for(node);
+    }
+};
+
 exports.update_stream_name = function (sub, new_name) {
     const old_name = sub.name;
 

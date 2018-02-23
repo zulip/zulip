@@ -157,6 +157,17 @@ run_test('update_property', () => {
             assert.equal(args.val, stream_data.stream_post_policy_values.admins.code);
         });
     });
+
+    // Test is_stream_admin change event
+    with_overrides(function (override) {
+        global.with_stub(function (stub) {
+            override('subs.update_is_stream_admin', stub.f);
+            stream_events.update_property(1, 'is_stream_admin', true);
+            const args = stub.get_args('sub', 'val');
+            assert.equal(args.sub.stream_id, 1);
+            assert.equal(args.val, true);
+        });
+    });
 });
 
 run_test('marked_subscribed', () => {
