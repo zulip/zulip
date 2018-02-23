@@ -48,14 +48,14 @@ SUPPORTED_PLATFORMS = {
 }
 
 
-def _travis_codename():
+def _travis_codename() -> str:
     with open('/etc/lsb-release') as f:
         generator = (l.split('=') for l in f)
         for (k, v) in generator:
             if k.strip() == 'DISTRIB_CODENAME':
                 return v.strip()
 
-def _codename():
+def _codename() -> str:
     if is_travis:
         return _travis_codename()
     dist, version, codename = platform.linux_distribution()
