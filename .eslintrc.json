@@ -173,6 +173,7 @@
         "user_events": false,
         "voting_widget": false,
         "tictactoe_widget": false,
+        "form_letter": false,
         "widgetize": false,
         "submessage": false,
         "Plotly": false,
