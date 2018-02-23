@@ -74,8 +74,9 @@ def check_prerequisites():
     # check .git
     if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):
         print(FAIL + "Error: No Zulip git repository present!" + ENDC)
-        print("To setup the Zulip development environment, you should clone the code")
-        print("from GitHub, rather than using a Zulip production release tarball.")
+        print("To setup the Zulip development environment, you should clone "
+              "the code from GitHub, rather than using a Zulip production "
+              "release tarball.")
         sys.exit(1)
 
     # Check the RAM on the user's system, and throw an effort if <1.5GB.
@@ -83,7 +84,7 @@ def check_prerequisites():
     # generally more annoying to debug.
     if ram_gb < 1.5:
         print("You have insufficient RAM (%d GB) to run the Zulip development "
-             "environment." % round(ram_gb, 2))
+              "environment." % round(ram_gb, 2))
         print("We recommend at least 2 GB of RAM, and require at least 1.5 GB.")
         sys.exit(1)
 
