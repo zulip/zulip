@@ -79,7 +79,8 @@
         "./static/styles/media.scss",
         "./static/styles/typing_notifications.scss",
         "./static/styles/hotspots.scss",
-        "./static/styles/night_mode.scss"
+        "./static/styles/night_mode.scss",
+        "./static/styles/widgets.scss"
     ],
     "archive-styles": [
         "./node_modules/katex/dist/katex.css",
