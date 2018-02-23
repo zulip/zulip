@@ -70,6 +70,23 @@ def check_platform():
                          "architecture.")
         sys.exit(1)
 
+def test_symlink():
+    try:
+        if os.path.exists(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink')):
+            os.remove(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink'))
+        os.symlink(
+            os.path.join(ZULIP_PATH, 'README.md'),
+            os.path.join(VAR_DIR_PATH, 'zulip-test-symlink')
+        )
+        os.remove(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink'))
+    except OSError as err:
+        print(FAIL + "Error: Unable to create symlinks."
+              "Make sure you have permission to create symbolic links." + ENDC)
+        print("See this page for more information:")
+        print("  https://zulip.readthedocs.io/en/latest/development/setup-vagrant.html#os-symlink-error")
+        sys.exit(1)
+
+
 def check_prerequisites():
     # check .git
     if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):
@@ -91,23 +108,11 @@ def check_prerequisites():
 
     # check x86/64 platform
     check_platform()
+    # test symlink permissions
+    test_symlink()
 
-try:
-    UUID_VAR_PATH = get_dev_uuid_var_path(create_if_missing=True)
-    run(["mkdir", "-p", UUID_VAR_PATH])
-    if os.path.exists(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink')):
-        os.remove(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink'))
-    os.symlink(
-        os.path.join(ZULIP_PATH, 'README.md'),
-        os.path.join(VAR_DIR_PATH, 'zulip-test-symlink')
-    )
-    os.remove(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink'))
-except OSError as err:
-    print(FAIL + "Error: Unable to create symlinks."
-          "Make sure you have permission to create symbolic links." + ENDC)
-    print("See this page for more information:")
-    print("  https://zulip.readthedocs.io/en/latest/development/setup-vagrant.html#os-symlink-error")
-    sys.exit(1)
+UUID_VAR_PATH = get_dev_uuid_var_path(create_if_missing=True)
+run(["mkdir", "-p", UUID_VAR_PATH])
 
 
 def vendor_codename():
@@ -216,9 +221,9 @@ def setup_shell_profile(shell_profile):
 
 def install_apt_deps():
     # type: () -> None
-    # setup-apt-repo does an `apt-get update`
+    # setup Zulip-specific apt repos, and run `apt-get update`
     run(["sudo", "./scripts/lib/setup-apt-repo"])
-    # By doing list -> set -> list conversion we remove duplicates.
+    # remove duplicates.
     deps_to_install = list(set(APT_DEPENDENCIES[codename]))
     run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + deps_to_install)
 
@@ -359,25 +364,17 @@ def really_deploy():
     run(["./manage.py", "create_realm_internal_bots"])
 
 
-def main(options):
-    # type: (Any) -> int
-
-    check_prerequisites()
-
-    # change to the root of Zulip, since yarn and management commands expect to
-    # be run from the root of the project.
-    os.chdir(ZULIP_PATH)
-
-    # setup-apt-repo does an `apt-get update`
+def calculate_apt_progress_signature():
     # hash the apt dependencies
     sha_sum = hashlib.sha1()
-
+    # FIXME: add \n to avoid name collision
     for apt_depedency in APT_DEPENDENCIES[codename]:
         sha_sum.update(apt_depedency.encode('utf8'))
     # hash the content of setup-apt-repo
     sha_sum.update(open('scripts/lib/setup-apt-repo', 'rb').read())
-
     new_apt_dependencies_hash = sha_sum.hexdigest()
+
+    # get last dependency signature
     last_apt_dependencies_hash = None
     apt_hash_file_path = os.path.join(UUID_VAR_PATH, "apt_dependencies_hash")
     try:
@@ -386,8 +383,12 @@ def main(options):
     except IOError:
         run(['touch', apt_hash_file_path])
         hash_file = open(apt_hash_file_path, 'r+')
+    return hash_file, new_hash, old_hash
 
-    if (new_apt_dependencies_hash != last_apt_dependencies_hash):
+
+def resume_apt_install():
+    hash_file, new_hash, old_hash = calculate_apt_progress_signature()
+    if (new_hash != old_hash):
         try:
             install_apt_deps()
         except subprocess.CalledProcessError:
@@ -400,10 +401,20 @@ def main(options):
             # recover automatically.
             run(['sudo', 'apt-get', 'update'])
             install_apt_deps()
-        hash_file.write(new_apt_dependencies_hash)
+        hash_file.write(new_hash)
     else:
         print("No changes to apt dependencies, so skipping apt operations.")
 
+
+def main(options):
+    # type: (Any) -> int
+
+    check_prerequisites()
+
+    # change to the root of Zulip, since yarn and management commands expect to
+    # be run from the root of the project.
+    os.chdir(ZULIP_PATH)
+    resume_apt_install()
     install_node_modules()
 
     # Import tools/setup_venv.py instead of running it so that we get an
@@ -431,6 +442,7 @@ def main(options):
         restart_ci_services()
     elif options.is_docker:
         restart_docker_services()
+
     if not options.is_production_travis:
         # instead of building a tarball, we deploy Zulip
         really_deploy()
@@ -438,11 +450,10 @@ def main(options):
     run(["scripts/lib/clean-unused-caches"])
 
     version_file = os.path.join(UUID_VAR_PATH, 'provision_version')
-    print('writing to %s\n' % (version_file,))
+    print('writing to %s\n' % version_file)
     open(version_file, 'w').write(PROVISION_VERSION + '\n')
 
-    print()
-    print(OKBLUE + "Zulip development environment setup succeeded!" + ENDC)
+    print('\n' + OKBLUE + 'Zulip development environment setup succeeded!' + ENDC)
     return 0
 
 if __name__ == "__main__":
