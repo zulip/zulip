@@ -372,14 +372,14 @@ def calculate_apt_progress_signature():
         sha_sum.update(apt_depedency.encode('utf8'))
     # hash the content of setup-apt-repo
     sha_sum.update(open('scripts/lib/setup-apt-repo', 'rb').read())
-    new_apt_dependencies_hash = sha_sum.hexdigest()
+    new_hash = sha_sum.hexdigest()
 
     # get last dependency signature
-    last_apt_dependencies_hash = None
+    old_hash = None
     apt_hash_file_path = os.path.join(UUID_VAR_PATH, "apt_dependencies_hash")
     try:
         hash_file = open(apt_hash_file_path, 'r+')
-        last_apt_dependencies_hash = hash_file.read()
+        old_hash = hash_file.read()
     except IOError:
         run(['touch', apt_hash_file_path])
         hash_file = open(apt_hash_file_path, 'r+')
