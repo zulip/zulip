@@ -59,7 +59,7 @@ class Versions:
 
     _dist, _version, CODENAME = platform.linux_distribution()
     if CODENAME not in SUPPORTED_PLATFORMS.get(_dist, ()):
-        logging.critical("Unsupported distro: %r" % (_dist, _version, CODENAME))
+        logging.critical("Unsupported distro: %r" % ((_dist, _version, CODENAME),))
         raise RuntimeError()
     POSTGRES = POSTGRES_MAP[CODENAME]
 
