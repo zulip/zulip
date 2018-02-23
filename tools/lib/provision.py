@@ -9,7 +9,10 @@ import glob
 import hashlib
 from pathlib import Path
 
-from typing import Any, Tuple
+try:
+    from typing import Any, Tuple
+except ImportError:
+    pass
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
