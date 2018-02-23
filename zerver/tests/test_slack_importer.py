@@ -178,7 +178,6 @@ class SlackImporter(ZulipTestCase):
         default_channel_general = build_defaultstream('random', realm_id, stream_id, 1)
         test_default_channel = {'stream': 1, 'realm': 1, 'id': 1}
         self.assertDictEqual(test_default_channel, default_channel_general)
-        self.assertIsNone(build_defaultstream('randd', 1, 1, 1))
 
     def test_build_pm_recipient_sub_from_user(self) -> None:
         zulip_user_id = 3
@@ -232,17 +231,21 @@ class SlackImporter(ZulipTestCase):
                          'is_general': False, 'members': ['U061A1R2R', 'U061A5N1G'],
                          'is_archived': True, 'topic': {'value': 'random'},
                          'purpose': {'value': 'no purpose'}},
-                        {'id': "C061A0YJG", 'name': 'general1', 'created': '1433559319',
+                        {'id': "C061A0YJG", 'name': 'general', 'created': '1433559319',
                          'is_general': False, 'is_archived': False,
                          'members': ['U061A1R2R', 'U061A5N1G', 'U064KUGRJ'],
+                         'topic': {'value': 'general'}, 'purpose': {'value': 'general'}},
+                        {'id': "C061A0YJP", 'name': 'general1', 'created': '1433559319',
+                         'is_general': False, 'is_archived': False,
+                         'members': ['U061A1R2R'],
                          'topic': {'value': 'general channel'}, 'purpose': {'value': 'For everyone'}},
                         {'id': "C061A0HJG", 'name': 'feedback', 'created': '1433558359',
                          'is_general': False, 'members': ['U061A3E0G'], 'is_archived': False,
                          'topic': {'value': ''}, 'purpose': {'value': ''}}]
         mock_get_data_file.return_value = channel_data
-        mock_allocate_ids.side_effect = [[1, 2, 3],  # For stream
-                                         [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],  # For subscription
-                                         [1, 2, 3, 4, 5, 6, 7],  # For recipient
+        mock_allocate_ids.side_effect = [[1, 2, 3, 4],  # For stream
+                                         [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],  # For subscription
+                                         [1, 2, 3, 4, 5, 6, 7, 8],  # For recipient
                                          [1, 2]]  # For defaultstream
 
         channel_to_zerver_stream_output = channels_to_zerver_stream('./random_path', realm_id, added_users,
@@ -254,11 +257,12 @@ class SlackImporter(ZulipTestCase):
         zerver_recipient = channel_to_zerver_stream_output[4]
         added_recipient = channel_to_zerver_stream_output[5]
 
-        test_added_channels = {'random': 1, 'general1': 2, 'feedback': 3}
-        test_added_recipient = {'random': 1, 'general1': 2, 'feedback': 3}
+        test_added_channels = {'feedback': 4, 'general': 2, 'general1': 3, 'random': 1}
+        test_added_recipient = {'feedback': 4, 'general': 2, 'general1': 3, 'random': 1}
 
         # zerver defaultstream already tested in helper functions
-        self.assertEqual(zerver_defaultstream, [{'id': 1, 'realm': 3, 'stream': 1}])
+        self.assertEqual(zerver_defaultstream, [{'id': 1, 'realm': 3, 'stream': 1},
+                                                {'id': 2, 'realm': 3, 'stream': 2}])
 
         self.assertDictEqual(test_added_channels, added_channels)
         self.assertDictEqual(test_added_recipient, added_recipient)
@@ -270,14 +274,15 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_subscription[5]['recipient'], 3)
         # subscription for users
         self.assertEqual(zerver_subscription[6]['recipient'], 4)
-        self.assertEqual(zerver_subscription[7]['user_profile'], 8)
+        self.assertEqual(zerver_subscription[7]['user_profile'], 1)
 
         # recipients for stream
         self.assertEqual(zerver_recipient[1]['id'], zerver_subscription[3]['recipient'])
         self.assertEqual(zerver_recipient[2]['type_id'], zerver_stream[2]['id'])
         self.assertEqual(zerver_recipient[0]['type'], 2)
         # recipients for users (already tested in helped function)
-        self.assertEqual(zerver_recipient[3]['type'], 1)
+        self.assertEqual(zerver_recipient[3]['type'], 2)
+        self.assertEqual(zerver_recipient[4]['type'], 1)
 
         # stream mapping
         self.assertEqual(zerver_stream[0]['name'], channel_data[0]['name'])

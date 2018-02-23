@@ -297,7 +297,7 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
     stream_id_list = allocate_ids(Stream, total_channels)
     subscription_id_list = allocate_ids(Subscription, total_subscription)
     recipient_id_list = allocate_ids(Recipient, total_recipients)
-    # corresponding to channels 'general' and 'random'
+    # corresponding to channels 'general' and 'random' which are slack specific
     defaultstream_id_list = allocate_ids(DefaultStream, 2)
 
     stream_id_count = subscription_id_count = recipient_id_count = defaultstream_id = 0
@@ -324,10 +324,12 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
             id=stream_id)
 
         # construct defaultstream object
-        # slack has the default channel 'general', where every user is subscribed
-        defaultstream = build_defaultstream(channel['name'], realm_id, stream_id,
-                                            defaultstream_id_list[defaultstream_id])
-        if (defaultstream):
+        # slack has the default channel 'general' and 'random'
+        # where every user is subscribed
+        default_channels = ['general', 'random']  # Slack specific
+        if channel['name'] in default_channels:
+            defaultstream = build_defaultstream(channel['name'], realm_id, stream_id,
+                                                defaultstream_id_list[defaultstream_id])
             zerver_defaultstream.append(defaultstream)
             defaultstream_id += 1
 
@@ -398,13 +400,11 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
 
 def build_defaultstream(channel_name: str, realm_id: int, stream_id: int,
                         defaultstream_id: int) -> ZerverFieldsT:
-    if channel_name == "general" or channel_name == "random":  # Slack specific
-        defaultstream = dict(
-            stream=stream_id,
-            realm=realm_id,
-            id=defaultstream_id)
-        return defaultstream
-    return None
+    defaultstream = dict(
+        stream=stream_id,
+        realm=realm_id,
+        id=defaultstream_id)
+    return defaultstream
 
 def build_pm_recipient_sub_from_user(zulip_user_id: int, recipient_id: int,
                                      subscription_id: int) -> Tuple[ZerverFieldsT,
