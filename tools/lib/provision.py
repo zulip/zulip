@@ -49,7 +49,7 @@ SUPPORTED_PLATFORMS = {
 
 
 def _travis_codename():
-    with open('/etx/lsb-release') as f:
+    with open('/etc/lsb-release') as f:
         generator = (l.split('=') for l in f)
         for (k, v) in generator:
             if k.strip() == 'DISTRIB_CODENAME':
