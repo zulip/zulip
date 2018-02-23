@@ -10,7 +10,7 @@ import hashlib
 from pathlib import Path
 
 class DummyType(object):
-    def __getitem__(self, key):
+    def __getitem__(self, key):  # type: ignore # 3.4
         return self
 
 try:
@@ -45,6 +45,9 @@ SUPPORTED_PLATFORMS = {
         # "zesty",
     ],
 }
+
+class Paths:
+    pass
 
 VENV_PATH = "/srv/zulip-py3-venv"
 VAR_DIR_PATH = os.path.join(ZULIP_PATH, 'var')
