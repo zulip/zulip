@@ -78,6 +78,26 @@ function scrollToHash(container) {
     }
 }
 
+function sidebarOverflow() {
+    return ($('.sidebar').prop('scrollHeight') > $('.sidebar').prop('offsetHeight'));
+}
+
+function scrollBarDisplayUpdate() {
+    if ($(window).width() <= 1000) {
+        if ($(".sidebar").hasClass("show") && sidebarOverflow()) {
+            $(".ps__scrollbar-y-rail").css('display', 'block');
+        } else {
+            $(".ps__scrollbar-y-rail").css('display', 'none');
+        }
+    } else {    // window width > 1000
+        if (sidebarOverflow()) {
+            $(".ps__scrollbar-y-rail").css('display', 'block');
+        } else {
+            $(".ps__scrollbar-y-rail").css('display', 'none');
+        }
+    }
+}
+
 (function () {
     var html_map = {};
     var loading = {
@@ -102,6 +122,7 @@ function scrollToHash(container) {
                 Ps.update($(".markdown")[0]);
             });
         }
+        setTimeout(scrollBarDisplayUpdate, 250);
     });
 
     $(".sidebar a").click(function (e) {
@@ -141,6 +162,7 @@ function scrollToHash(container) {
 
         $(".sidebar").removeClass("show");
 
+        scrollBarDisplayUpdate();
         e.preventDefault();
     });
 
@@ -169,6 +191,7 @@ function scrollToHash(container) {
 
     window.onresize = function () {
         Ps.update($(".markdown")[0]);
+        scrollBarDisplayUpdate();
     };
 
     window.addEventListener("popstate", function () {
@@ -178,6 +201,7 @@ function scrollToHash(container) {
 
     $(".hamburger").click(function () {
         $(".sidebar").toggleClass("show");
+        scrollBarDisplayUpdate();
     });
 
     $(".markdown").click(function () {
