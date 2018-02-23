@@ -88,6 +88,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import avatar_url, avatar_url_from_dict
 from zerver.lib.stream_recipient import StreamRecipientMap
+from zerver.lib.widget import enable_widgets_for_message
 
 from django.db import transaction, IntegrityError, connection
 from django.db.models import F, Q, Max, Sum
@@ -1237,6 +1238,9 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
         for message in messages:
             if Message.content_has_attachment(message['message'].content):
                 do_claim_attachments(message['message'])
+
+        for message in messages:
+            enable_widgets_for_message(message)
 
     for message in messages:
         # Deliver events to the real-time push system, as well as
