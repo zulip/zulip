@@ -63,6 +63,52 @@ exports.send_message = function (request, on_success, error) {
     }
 };
 
+exports.reply_message = function (opts) {
+    var message = opts.message;
+    var content = opts.content;
+
+    function success() {
+        // TODO
+    }
+
+    function error() {
+        // TODO
+    }
+
+    var locally_echoed = false;
+    var local_id = sent_messages.get_new_local_id();
+
+    // TODO: move to transmit.js
+    var reply = {
+        sender_id: page_params.user_id,
+        queue_id: page_params.queue_id,
+        local_id: local_id,
+    };
+
+    sent_messages.start_tracking_message({
+        local_id: local_id,
+        locally_echoed: locally_echoed,
+    });
+
+    if (message.type === 'stream') {
+        var stream = message.stream;
+
+        var mention = '@**' + message.sender_full_name + '**';
+
+        content = mention + ' ' + content;
+
+        reply.type = 'stream';
+        reply.to  = stream;
+        reply.content = content;
+        reply.subject = message.subject;
+
+        transmit.send_message(reply, success, error);
+        return;
+    }
+
+    blueslip.error('unknown message type: ' + message.type);
+};
+
 return exports;
 }());
 
