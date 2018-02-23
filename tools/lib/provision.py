@@ -58,12 +58,12 @@ if is_travis:
     # In Travis CI, we don't have root access
     EMOJI_CACHE_PATH = "/home/travis/zulip-emoji-cache"
 
-def ram_size_gb():
+def ram_size_gb():  # type: () -> float
     with open("/proc/meminfo") as meminfo:
         ram_size = meminfo.readlines()[0].strip().split(" ")[-2]
     return float(ram_size) / 1024.0 / 1024.0
 
-def check_platform():
+def check_platform():  # type: () -> str
     if platform.architecture()[0] == '64bit':
         return 'amd64'
     elif platform.architecture()[0] == '32bit':
@@ -74,7 +74,7 @@ def check_platform():
                          "architecture.")
         sys.exit(1)
 
-def test_symlink():
+def test_symlink():  # type: () -> ()
     try:
         if os.path.exists(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink')):
             os.remove(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink'))
@@ -91,7 +91,7 @@ def test_symlink():
         sys.exit(1)
 
 
-def check_prerequisites():
+def check_prerequisites():  # type: () -> ()
     # check .git
     if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):
         print(FAIL + "Error: No Zulip git repository present!" + ENDC)
@@ -119,7 +119,7 @@ UUID_VAR_PATH = get_dev_uuid_var_path(create_if_missing=True)
 run(["mkdir", "-p", UUID_VAR_PATH])
 
 
-def vendor_codename():
+def vendor_codename():  # type: () -> (str, str)
     # Get vendor name and codename
     # Ideally we wouldn't need to install a dependency here, before we
     # know the codename.
@@ -232,7 +232,7 @@ def install_apt_deps():
     run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + deps_to_install)
 
 
-def install_node_modules():
+def install_node_modules():  # type: () -> None
     """Here we install node and the modules."""
     run(["sudo", "scripts/lib/install-node"])
 
@@ -251,7 +251,7 @@ def install_node_modules():
         setup_node_modules()
 
 
-def make_directories():
+def make_directories():  # type: () -> None
     # create log directory `zulip/var/log`
     run(["mkdir", "-p", LOG_DIR_PATH])
     # create upload directory `var/uploads`
@@ -266,7 +266,7 @@ def make_directories():
     run(["mkdir", "-p", NODE_TEST_COVERAGE_DIR_PATH])
 
 
-def build_emoji():
+def build_emoji():  # type: () -> None
     """Build emoji."""
     # `build_emoji` script requires `emoji-datasource` package which we install
     # via npm and hence it should be executed after we are done installing npm
@@ -277,13 +277,13 @@ def build_emoji():
     run(["tools/setup/emoji/build_emoji"])
 
 
-def restart_ci_services():
+def restart_ci_services():  # type: () -> None
     run(["sudo", "service", "rabbitmq-server", "restart"])
     run(["sudo", "service", "redis-server", "restart"])
     run(["sudo", "service", "memcached", "restart"])
     run(["sudo", "service", "postgresql", "restart"])
 
-def restart_docker_services():
+def restart_docker_services():  # type: () -> None
     run(["sudo", "service", "rabbitmq-server", "restart"])
     run(["sudo", "pg_dropcluster", "--stop", POSTGRES_VERSION, "main"])
     run(["sudo", "pg_createcluster", "-e", "utf8", "--start", POSTGRES_VERSION, "main"])
@@ -291,7 +291,7 @@ def restart_docker_services():
     run(["sudo", "service", "memcached", "restart"])
 
 
-def configure_rabbit_mq():
+def configure_rabbit_mq():  # type: () -> None
     try:
         from zerver.lib.queue import SimpleQueueClient
         SimpleQueueClient()
@@ -305,7 +305,7 @@ def configure_rabbit_mq():
         print("RabbitMQ is already configured.")
 
 
-def rebuild_database():
+def rebuild_database():  # type: () -> None
     # Need to set up Django before using is_template_database_current
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
     import django
@@ -330,7 +330,7 @@ def rebuild_database():
         print("No need to regenerate the test DB.")
 
 
-def compile_translations():
+def compile_translations():  # type: () -> None
     # Consider updating generated translations data: both `.mo`
     # files and `language-options.json`.
     sha1sum = hashlib.sha1()
@@ -356,7 +356,7 @@ def compile_translations():
         print("No need to run `manage.py compilemessages`.")
 
 
-def really_deploy():
+def really_deploy():  # type: () -> None
     # The following block is skipped for the production Travis
     # suite, because that suite doesn't make use of these elements
     # of the development environment (it just uses the development
@@ -368,7 +368,7 @@ def really_deploy():
     run(["./manage.py", "create_realm_internal_bots"])
 
 
-def calculate_apt_progress_signature():
+def calculate_apt_progress_signature():  # type: () -> (Any, Any, Any)
     # hash the apt dependencies
     sha_sum = hashlib.sha1()
     # FIXME: add \n to avoid name collision
@@ -390,7 +390,7 @@ def calculate_apt_progress_signature():
     return hash_file, new_hash, old_hash
 
 
-def resume_apt_install():
+def resume_apt_install():  # type: () -> None
     hash_file, new_hash, old_hash = calculate_apt_progress_signature()
     if new_hash != old_hash:
         try:
