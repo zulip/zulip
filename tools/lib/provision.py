@@ -82,6 +82,7 @@ def check_prerequisites():
     # Check the RAM on the user's system, and throw an effort if <1.5GB.
     # This avoids users getting segfaults running `pip install` that are
     # generally more annoying to debug.
+    ram_gb = ram_size_gb()
     if ram_gb < 1.5:
         print("You have insufficient RAM (%d GB) to run the Zulip development "
               "environment." % round(ram_gb, 2))
