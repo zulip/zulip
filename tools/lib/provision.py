@@ -7,13 +7,12 @@ import platform
 import subprocess
 import glob
 import hashlib
-from pathlib import Path
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
-ZULIP_PATH = str(Path(__file__).absolute().parent.parent.parent)
-sys.path.append(ZULIP_PATH)
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING, \
     get_dev_uuid_var_path, FAIL
 from scripts.lib.setup_venv import (
@@ -22,10 +21,8 @@ from scripts.lib.setup_venv import (
 from scripts.lib.node_cache import setup_node_modules, NODE_MODULES_CACHE_PATH
 
 from version import PROVISION_VERSION
-try:
+if False:
     from typing import Any
-except ImportError:
-    pass
 
 
 SUPPORTED_PLATFORMS = {
@@ -100,6 +97,7 @@ else:
                      "ping zulip-devel@googlegroups.com if you want another architecture.")
     sys.exit(1)
 
+# Get vendor name and codename
 # Ideally we wouldn't need to install a dependency here, before we
 # know the codename.
 subprocess.check_call(["sudo", "apt-get", "install", "-y", "lsb-release"])
@@ -210,8 +208,8 @@ def install_apt_deps():
 def main(options):
     # type: (Any) -> int
 
-    # yarn and management commands expect to be run from the root of the
-    # project.
+    # change to the root of Zulip, since yarn and management commands expect to
+    # be run from the root of the project.
     os.chdir(ZULIP_PATH)
 
     # setup-apt-repo does an `apt-get update`
@@ -283,13 +281,14 @@ def main(options):
     run(["mkdir", "-p", UPLOAD_DIR_PATH])
     # create test upload directory `var/test_upload`
     run(["mkdir", "-p", TEST_UPLOAD_DIR_PATH])
-    # create coverage directory`var/coverage`
+    # create coverage directory `var/coverage`
     run(["mkdir", "-p", COVERAGE_DIR_PATH])
-    # create linecoverage directory`var/linecoverage-report`
+    # create linecoverage directory `var/linecoverage-report`
     run(["mkdir", "-p", LINECOVERAGE_DIR_PATH])
-    # create linecoverage directory`var/node-coverage`
+    # create linecoverage directory `var/node-coverage`
     run(["mkdir", "-p", NODE_TEST_COVERAGE_DIR_PATH])
 
+    # build emoji
     # `build_emoji` script requires `emoji-datasource` package which we install
     # via npm and hence it should be executed after we are done installing npm
     # packages.
