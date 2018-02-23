@@ -16,8 +16,8 @@ class DummyType(object):
 try:
     from typing import Any, Tuple
 except ImportError:
-    Any = DummyType()  # type: ignore
-    Tuple = DummyType()  # type: ignore
+    Any = DummyType()  # type: ignore # 3.4
+    Tuple = DummyType()  # type: ignore # 3.4
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
