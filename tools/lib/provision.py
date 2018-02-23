@@ -450,7 +450,7 @@ def main(options):
     run(["scripts/lib/clean-unused-caches"])
 
     version_file = os.path.join(UUID_VAR_PATH, 'provision_version')
-    print('writing to %s\n' % version_file)
+    print('writing to ' + version_file)
     open(version_file, 'w').write(PROVISION_VERSION + '\n')
 
     print('\n' + OKBLUE + 'Zulip development environment setup succeeded!' + ENDC)

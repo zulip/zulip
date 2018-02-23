@@ -22,7 +22,7 @@ LOG_PATH="../var/log/provision.log"
 
 echo "PROVISIONING STARTING." >> $LOG_PATH
 
-# set PYTHONUNBUFFERED flag, whichis important to ensure that
+# set PYTHONUNBUFFERED flag, which is important to ensuring that
 # tracebacks don't get lost far above where they should be in the output.
 export PYTHONUNBUFFERED=1
 # run the provision Python script
