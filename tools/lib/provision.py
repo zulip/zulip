@@ -9,11 +9,15 @@ import glob
 import hashlib
 from pathlib import Path
 
+class DummyType(object):
+    def __getitem__(self, key):
+        return self
+
 try:
     from typing import Any, Tuple
 except ImportError:
-    Any = None
-    Tuple = None
+    Any = DummyType()  # type: ignore
+    Tuple = DummyType()  # type: ignore
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
