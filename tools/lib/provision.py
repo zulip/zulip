@@ -57,11 +57,11 @@ class Versions:
         'zesty': '9.6',
     }
 
-    dist, version, codename = platform.linux_distribution()
-    if not codename in SUPPORTED_PLATFORMS.get(dist, ()):
-        logging.critical("Unsupported distro: %r" % (dist, version, codename))
+    _dist, _version, CODENAME = platform.linux_distribution()
+    if not CODENAME in SUPPORTED_PLATFORMS.get(_dist, ()):
+        logging.critical("Unsupported distro: %r" % (_dist, _version, CODENAME))
         raise RuntimeError()
-    POSTGRES = POSTGRES_MAP[codename]
+    POSTGRES = POSTGRES_MAP[CODENAME]
 
 
 class Paths:
@@ -113,8 +113,8 @@ class Deps:
     ]
     UBUNTU_COMMON = _UBUNTU_COMMON + VENV + THUMBOR_VENV
 
-    APT = {
-        'stretch': UBUNTU_COMMON + [
+    _APT_MAP = {
+        'stretch': [
             "postgresql-9.6",
             # tsearch-extras removed because there's no apt repository hosting it for Debian.
             # "postgresql-9.6-tsearch-extras",
@@ -124,23 +124,24 @@ class Deps:
             # platform there.
             "virtualenv",
         ],
-        'trusty': UBUNTU_COMMON + [
+        'trusty': [
             "postgresql-9.3",
             "postgresql-9.3-tsearch-extras",
             "postgresql-9.3-pgroonga",
         ],
-        'xenial': UBUNTU_COMMON + [
+        'xenial': [
             "postgresql-9.5",
             "postgresql-9.5-tsearch-extras",
             "postgresql-9.5-pgroonga",
             "virtualenv",  # see comment on stretch
         ],
-        'zesty': UBUNTU_COMMON + [
+        'zesty': [
             "postgresql-9.6",
             "postgresql-9.6-pgroonga",
             "virtualenv",  # see comment on stretch
         ],
     }
+    APT = _APT_MAP[Versions.CODENAME] + UBUNTU_COMMON
 
 
 def ram_size_gb() -> float:
@@ -232,7 +233,7 @@ def install_apt_deps() -> None:
     # setup Zulip-specific apt repos, and run `apt-get update`
     run(["sudo", "./scripts/lib/setup-apt-repo"])
     # remove duplicates.
-    dep_list = sorted(set(Deps.APT[codename]))
+    dep_list = sorted(set(Deps.APT))
     run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + dep_list)
 
 
@@ -377,7 +378,7 @@ def _calculate_apt_progress_signature() -> Tuple[Any, Any, Any]:
     # hash the apt dependencies
     sha_sum = hashlib.sha1()
     # FIXME: add \n to avoid name collision
-    for apt_depedency in Deps.APT[codename]:
+    for apt_depedency in Deps.APT:
         sha_sum.update(apt_depedency.encode('utf8'))
     # hash the content of setup-apt-repo
     sha_sum.update(open('scripts/lib/setup-apt-repo', 'rb').read())
