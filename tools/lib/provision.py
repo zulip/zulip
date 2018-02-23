@@ -5,7 +5,7 @@ import logging
 import argparse
 import platform
 from subprocess import CalledProcessError
-import glob
+from glob import glob
 import hashlib
 from pathlib import Path
 
@@ -59,7 +59,7 @@ class Versions:
     if not codename in SUPPORTED_PLATFORMS.get(dist, ()):
         logging.critical("Unsupported distro: %r" % (dist, version, codename))
         raise RuntimeError()
-    POSTGRES = POSTGRES_VERSION_MAP[codename]
+    POSTGRES = POSTGRES_MAP[codename]
 
 
 class Paths:
@@ -67,7 +67,7 @@ class Paths:
     NODE_MODULES_CACHE = NODE_MODULES_CACHE_PATH
 
     VENV = '/srv/zulip-py3-venv'
-    EMOJI_CACHE = "/srv/zulip-emoji-cache"
+    EMOJI_CACHE = '/srv/zulip-emoji-cache'
 
     VAR = ZULIP + '/var'
     LOG = VAR + '/log'
@@ -256,7 +256,7 @@ def make_directories() -> None:
     run(["mkdir", "-p", Paths.COVERAGE])
     # create linecoverage directory `zulip/var/linecoverage-report`
     run(["mkdir", "-p", Paths.LINECOVERAGE])
-    # create node coverage directory `zulip_var/node-coverage`
+    # create node coverage directory `zulip/var/node-coverage`
     run(["mkdir", "-p", Paths.NODE_COVERAGE])
 
 
@@ -329,22 +329,23 @@ def compile_translations() -> None:
     # files and `language-options.json`.
     sha1sum = hashlib.sha1()
     paths = ['zerver/management/commands/compilemessages.py']
-    paths += glob.glob('static/locale/*/LC_MESSAGES/*.po')
-    paths += glob.glob('static/locale/*/translations.json')
+    paths += glob('static/locale/*/LC_MESSAGES/*.po')
+    paths += glob('static/locale/*/translations.json')
 
+    # FIXME: where are the file boundaries?
     for path in paths:
         with open(path, 'rb') as file_to_hash:
             sha1sum.update(file_to_hash.read())
 
     compilemessages_hash_path = os.path.join(UUID_VAR_PATH, "last_compilemessages_hash")
-    new_compilemessages_hash = sha1sum.hexdigest()
+    new_hash = sha1sum.hexdigest()
     run(['touch', compilemessages_hash_path])
     with open(compilemessages_hash_path, 'r') as hash_file:
-        last_compilemessages_hash = hash_file.read()
+        old_hash = hash_file.read()
 
-    if options.is_force or (new_compilemessages_hash != last_compilemessages_hash):
+    if options.is_force or (new_hash != old_hash):
         with open(compilemessages_hash_path, 'w') as hash_file:
-            hash_file.write(new_compilemessages_hash)
+            hash_file.write(new_hash)
         run(["./manage.py", "compilemessages"])
     else:
         print("No need to run `manage.py compilemessages`.")
@@ -362,7 +363,7 @@ def really_deploy() -> None:
     run(["./manage.py", "create_realm_internal_bots"])
 
 
-def calculate_apt_progress_signature() -> Tuple[Any, Any, Any]:
+def _calculate_apt_progress_signature() -> Tuple[Any, Any, Any]:
     # hash the apt dependencies
     sha_sum = hashlib.sha1()
     # FIXME: add \n to avoid name collision
@@ -385,7 +386,7 @@ def calculate_apt_progress_signature() -> Tuple[Any, Any, Any]:
 
 
 def resume_apt_install() -> None:
-    hash_file, new_hash, old_hash = calculate_apt_progress_signature()
+    hash_file, new_hash, old_hash = _calculate_apt_progress_signature()
     if new_hash != old_hash:
         try:
             install_apt_deps()
