@@ -16,6 +16,12 @@ var me = {
     timezone: 'US/Pacific',
 };
 
+var isaac = {
+    email: 'isaac@example.com',
+    user_id: 32,
+    full_name: 'Isaac Newton',
+};
+
 function initialize() {
     people.init();
     people.add(me);
@@ -36,14 +42,10 @@ run_test('basics', () => {
 
     var full_name = 'Isaac Newton';
     var email = 'isaac@example.com';
-    var isaac = {
-        email: email,
-        user_id: 32,
-        full_name: full_name,
-    };
 
     assert(!people.is_known_user_id(32));
     people.add(isaac);
+
     assert(people.is_known_user_id(32));
     assert.equal(people.get_realm_count(), 0);
 
@@ -118,6 +120,11 @@ run_test('pm_lookup_key', () => {
 run_test('get_recipients', () => {
     assert.equal(people.get_recipients('30'), 'Me Myself');
     assert.equal(people.get_recipients('30,32'), 'Isaac Newton');
+});
+
+run_test('safe_full_names', () => {
+    var names = people.safe_full_names([me.user_id, isaac.user_id]);
+    assert.equal(names, 'Me Myself, Isaac Newton');
 });
 
 run_test('my_custom_profile_data', () => {
