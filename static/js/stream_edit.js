@@ -72,11 +72,11 @@ exports.show_stream_row = function (node, show_settings) {
     }
 };
 
-function format_member_list_elem(email) {
+function format_member_list_elem(email, can_remove_others) {
     var person = people.get_by_email(email);
     return templates.render('stream_member_list_entry',
                             {name: person.full_name, email: email,
-                             displaying_for_admin: page_params.is_admin});
+                             can_remove_others: can_remove_others});
 }
 
 function get_subscriber_list(sub_row) {
@@ -98,7 +98,9 @@ exports.update_stream_description = function (sub) {
 
 exports.prepend_subscriber = function (sub_row, email) {
     var list = get_subscriber_list(sub_row);
-    list.prepend(format_member_list_elem(email));
+    var stream_id = sub_row.data("stream-id");
+    var sub = stream_data.get_sub_by_id(stream_id);
+    list.prepend(format_member_list_elem(email, sub.can_perform_admin_actions));
 };
 
 exports.invite_user_to_stream = function (user_email, sub, success, failure) {
@@ -174,7 +176,7 @@ function show_subscription_settings(sub_row) {
     list_render(list, emails.sort(), {
         name: "stream_subscribers/" + stream_id,
         modifier: function (item) {
-            return format_member_list_elem(item);
+            return format_member_list_elem(item, sub.can_perform_admin_actions);
         },
         filter: {
             element: $("[data-stream-id='" + stream_id + "'] .search"),

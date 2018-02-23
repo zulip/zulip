@@ -1102,7 +1102,7 @@ function render(template_name, args) {
     // Now, as admin.
     html = render('stream_member_list_entry',
                   {name: "King Hamlet", email: "hamlet@zulip.com",
-                   displaying_for_admin: true});
+                   can_remove_others: true});
     _.each(everyone_items, function (item) {
         assert.equal($(html).find("." + item).length, 1);
     });

@@ -1,7 +1,7 @@
 <tr data-subscriber-email="{{email}}">
     <td class="subscriber-name">{{name}}</td>
     <td class="subscriber-email">{{email}}</td>
-    {{#if displaying_for_admin}}
+    {{#if can_remove_others}}
     <td class="unsubscribe">
         <div class="subscriber_list_remove">
             <form class="form-inline remove-subscriber-form">
