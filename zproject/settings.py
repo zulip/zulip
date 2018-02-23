@@ -958,6 +958,7 @@ JS_SPECS = {
             'js/filter.js',
             'js/voting_widget.js',
             'js/tictactoe_widget.js',
+            'js/zform.js',
             'js/widgetize.js',
             'js/submessage.js',
             'js/fetch_status.js',
