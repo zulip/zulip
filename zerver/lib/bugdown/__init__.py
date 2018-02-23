@@ -452,6 +452,7 @@ class BacktickPattern(markdown.inlinepatterns.Pattern):
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     TWITTER_MAX_IMAGE_HEIGHT = 400
     TWITTER_MAX_TO_PREVIEW = 3
+    INLINE_PREVIEW_LIMIT_PER_MESSAGE = 5
 
     def __init__(self, md: markdown.Markdown, bugdown: 'Bugdown') -> None:
         # Passing in bugdown for access to config to check if realm is zulip.com
@@ -825,8 +826,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         # Get all URLs from the blob
         found_urls = walk_tree_with_family(root, self.get_url_data)
 
-        # If there are more than 5 URLs in the message, don't do inline previews
-        if len(found_urls) == 0 or len(found_urls) > 5:
+        if len(found_urls) == 0 or len(found_urls) > self.INLINE_PREVIEW_LIMIT_PER_MESSAGE:
             return
 
         rendered_tweet_count = 0
