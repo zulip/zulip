@@ -54,6 +54,7 @@ def _travis_codename() -> str:
         for (k, v) in generator:
             if k.strip() == 'DISTRIB_CODENAME':
                 return v.strip()
+    return ''
 
 def _codename() -> str:
     if is_travis:
@@ -353,6 +354,8 @@ def compile_translations() -> None:
     # files and `language-options.json`.
     sha1sum = hashlib.sha1()
     paths = ['zerver/management/commands/compilemessages.py']
+    # FIXME: glob is in arbitrary order
+    # FIXME: where are the string boundaries?
     paths += glob('static/locale/*/LC_MESSAGES/*.po')
     paths += glob('static/locale/*/translations.json')
 
