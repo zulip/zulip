@@ -197,15 +197,16 @@ exports.render_stream_description = function (sub) {
 
 exports.update_calculated_fields = function (sub) {
     sub.is_admin = page_params.is_admin;
-    // Admin can change stream name/description either stream is public or
-    // stream is private and admin is subscribed to private stream.
-    sub.can_change_name_description = page_params.is_admin &&
-                                     (!sub.invite_only || (sub.invite_only && sub.subscribed));
+    // User can perform stream admin actions either user is subscribed stream admin
+    // OR user is org admin and stream public OR user is org admin subscriber of private stream.
+    sub.can_perform_admin_actions = (page_params.is_admin && (!sub.invite_only || sub.subscribed))
+                                    || (sub.is_stream_admin && sub.subscribed);
+    sub.can_change_name_description = sub.can_perform_admin_actions;
     // If stream is public then any user can subscribe. If stream is private then only
     // subscribed users can unsubscribe.
     sub.should_display_subscription_button = !sub.invite_only || sub.subscribed;
-    sub.can_make_public = page_params.is_admin && sub.invite_only && sub.subscribed;
-    sub.can_make_private = page_params.is_admin && !sub.invite_only;
+    sub.can_make_public = sub.can_perform_admin_actions && sub.invite_only;
+    sub.can_make_private = sub.can_perform_admin_actions && !sub.invite_only;
     sub.can_change_subscription_type = sub.can_make_public || sub.can_make_private;
     // User can access subscribers as well as add other users to stream
     // if sub.can_add_subscribers is true.
@@ -421,6 +422,7 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
         newly_subscribed: false,
         in_home_view: true,
         invite_only: false,
+        is_stream_admin: false,
         desktop_notifications: page_params.enable_stream_desktop_notifications,
         audible_notifications: page_params.enable_stream_sounds,
         push_notifications: page_params.enable_stream_push_notifications,

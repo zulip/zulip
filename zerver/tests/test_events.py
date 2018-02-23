@@ -1828,6 +1828,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('email_address', check_string),
             ('invite_only', check_bool),
             ('in_home_view', check_bool),
+            ('is_stream_admin', check_bool),
             ('name', check_string),
             ('desktop_notifications', check_bool),
             ('push_notifications', check_bool),

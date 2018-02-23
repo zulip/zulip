@@ -3724,7 +3724,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
                                 include_subscribers: bool=True) -> SubHelperT:
     sub_dicts = get_stream_subscriptions_for_user(user_profile).values(
         "recipient_id", "in_home_view", "color", "desktop_notifications",
-        "audible_notifications", "push_notifications", "active", "pin_to_top"
+        "audible_notifications", "push_notifications", "active", "pin_to_top", "is_stream_admin",
     ).order_by("recipient_id")
 
     sub_dicts = list(sub_dicts)
@@ -3793,6 +3793,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
         stream_dict = {'name': stream["name"],
                        'in_home_view': sub["in_home_view"],
                        'invite_only': stream["invite_only"],
+                       'is_stream_admin': sub["is_stream_admin"],
                        'color': sub["color"],
                        'desktop_notifications': sub["desktop_notifications"],
                        'audible_notifications': sub["audible_notifications"],
