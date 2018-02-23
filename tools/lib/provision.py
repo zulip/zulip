@@ -58,7 +58,7 @@ class Versions:
     }
 
     _dist, _version, CODENAME = platform.linux_distribution()
-    if CODENAME not in SUPPORTED_PLATFORMS.get(_dist, ()):
+    if not is_travis and CODENAME not in SUPPORTED_PLATFORMS.get(_dist, ()):
         logging.critical("Unsupported distro: %r" % ((_dist, _version, CODENAME),))
         raise RuntimeError()
     POSTGRES = POSTGRES_MAP[CODENAME]
@@ -227,6 +227,7 @@ def setup_shell_profile(shell_profile: str) -> None:
 
     source_activate_command = "source " + os.path.join(Paths.VENV, "bin", "activate")
     write_command(source_activate_command)
+    # FIXME: hard-coded path
     write_command('cd /srv/zulip')
 
 def install_apt_deps() -> None:
