@@ -443,9 +443,11 @@ exports.receives_notifications = function (stream_name, notification_name) {
 
 exports.update_calculated_fields = function (sub) {
     sub.is_admin = page_params.is_admin;
-    // Admin can change any stream's name & description either stream is public or
-    // private, subscribed or unsubscribed.
-    sub.can_change_name_description = page_params.is_admin;
+    // User can perform stream admin actions only when user is stream admin
+    // or org admin.
+    sub.can_perform_admin_actions = page_params.is_admin || sub.is_stream_admin;
+    sub.can_change_name_description = sub.can_perform_admin_actions;
+    sub.can_delete_stream = sub.can_perform_admin_actions;
     // If stream is public then any user can subscribe. If stream is private then only
     // subscribed users can unsubscribe.
     // Guest users can't subscribe themselves to any stream.
@@ -453,7 +455,7 @@ exports.update_calculated_fields = function (sub) {
         !page_params.is_guest && !sub.invite_only;
     sub.should_display_preview_button = sub.subscribed || !sub.invite_only ||
                                         sub.previously_subscribed;
-    sub.can_change_stream_permissions = page_params.is_admin && (
+    sub.can_change_stream_permissions = sub.can_perform_admin_actions && (
         !sub.invite_only || sub.subscribed);
     // User can add other users to stream if stream is public or user is subscribed to stream.
     // Guest users can't access subscribers of any(public or private) non-subscribed streams.
@@ -713,6 +715,7 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
         newly_subscribed: false,
         is_muted: false,
         invite_only: false,
+        is_stream_admin: false,
         desktop_notifications: page_params.enable_stream_desktop_notifications,
         audible_notifications: page_params.enable_stream_audible_notifications,
         push_notifications: page_params.enable_stream_push_notifications,
