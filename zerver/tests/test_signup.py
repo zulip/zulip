@@ -312,7 +312,9 @@ class LoginTest(ZulipTestCase):
         self.assertIsNone(get_session_dict_user(self.client.session))
 
     def test_login_bad_password(self) -> None:
-        self.login(self.example_email("hamlet"), password="wrongpassword", fails=True)
+        email = self.example_email("hamlet")
+        result = self.login_with_return(email, password="wrongpassword")
+        self.assert_in_success_response([email], result)
         self.assertIsNone(get_session_dict_user(self.client.session))
 
     def test_login_nonexist_user(self) -> None:

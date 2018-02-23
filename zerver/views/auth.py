@@ -546,6 +546,9 @@ def login_page(request: HttpRequest, **kwargs: Any) -> HttpResponse:
             # only if it actually exists.
             return HttpResponseRedirect(realm.uri)
 
+    if 'username' in request.POST:
+        extra_context['email'] = request.POST['username']
+
     try:
         template_response = django_login_page(
             request, authentication_form=OurAuthenticationForm,
