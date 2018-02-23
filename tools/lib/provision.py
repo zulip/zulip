@@ -58,7 +58,7 @@ class Versions:
     }
 
     _dist, _version, CODENAME = platform.linux_distribution()
-    if not CODENAME in SUPPORTED_PLATFORMS.get(_dist, ()):
+    if CODENAME not in SUPPORTED_PLATFORMS.get(_dist, ()):
         logging.critical("Unsupported distro: %r" % (_dist, _version, CODENAME))
         raise RuntimeError()
     POSTGRES = POSTGRES_MAP[CODENAME]
@@ -207,7 +207,7 @@ UUID_VAR_PATH = get_dev_uuid_var_path(create_if_missing=True)
 run(["mkdir", "-p", UUID_VAR_PATH])
 
 
-LOUD = dict(_out=sys.stdout, _err=sys.stderr)
+# LOUD = dict(_out=sys.stdout, _err=sys.stderr)
 
 user_id = os.getuid()
 
@@ -421,6 +421,7 @@ def main(options: Any) -> int:
     # change to the root of Zulip, since yarn and management commands expect to
     # be run from the root of the project.
     os.chdir(Paths.ZULIP)
+    make_directories()
     resume_apt_install()
     install_node_modules()
 
@@ -433,8 +434,6 @@ def main(options: Any) -> int:
     setup_shell_profile('~/.zprofile')
 
     run(["sudo", "cp", Paths.REPO_STOPWORDS, Paths.TSEARCH_STOPWORDS])
-
-    make_directories()
     build_emoji()
 
     # copy over static files from the zulip_bots package
