@@ -12,7 +12,8 @@ from pathlib import Path
 try:
     from typing import Any, Tuple
 except ImportError:
-    pass
+    Any = None
+    Tuple = None
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
