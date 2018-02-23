@@ -157,7 +157,7 @@ def check_platform() -> None:
 def test_symlink() -> None:
     try:
         test_symlink_path = os.path.join(Paths.VAR, 'zulip-test-symlink')
-        if os.path.exists(test_symlnk_path):
+        if os.path.exists(test_symlink_path):
             os.remove(test_symlink_path)
         os.symlink(os.path.join(Paths.ZULIP, 'README.md'), test_symlink_path)
         os.remove(test_symlink_path)
