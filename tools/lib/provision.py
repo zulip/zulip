@@ -8,10 +8,8 @@ import subprocess
 import glob
 import hashlib
 from pathlib import Path
-try:
-    from typing import Any
-except ImportError:
-    pass
+
+from typing import Any, Tuple
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
@@ -58,12 +56,13 @@ if is_travis:
     # In Travis CI, we don't have root access
     EMOJI_CACHE_PATH = "/home/travis/zulip-emoji-cache"
 
-def ram_size_gb():  # type: () -> float
+
+def ram_size_gb() -> float:
     with open("/proc/meminfo") as meminfo:
         ram_size = meminfo.readlines()[0].strip().split(" ")[-2]
     return float(ram_size) / 1024.0 / 1024.0
 
-def check_platform():  # type: () -> str
+def check_platform() -> str:
     if platform.architecture()[0] == '64bit':
         return 'amd64'
     elif platform.architecture()[0] == '32bit':
@@ -74,7 +73,7 @@ def check_platform():  # type: () -> str
                          "architecture.")
         sys.exit(1)
 
-def test_symlink():  # type: () -> ()
+def test_symlink() -> None:
     try:
         if os.path.exists(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink')):
             os.remove(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink'))
@@ -91,7 +90,7 @@ def test_symlink():  # type: () -> ()
         sys.exit(1)
 
 
-def check_prerequisites():  # type: () -> ()
+def check_prerequisites() -> None:
     # check .git
     if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):
         print(FAIL + "Error: No Zulip git repository present!" + ENDC)
@@ -119,7 +118,7 @@ UUID_VAR_PATH = get_dev_uuid_var_path(create_if_missing=True)
 run(["mkdir", "-p", UUID_VAR_PATH])
 
 
-def vendor_codename():  # type: () -> (str, str)
+def vendor_codename() -> Tuple[str, str]:
     # Get vendor name and codename
     # Ideally we wouldn't need to install a dependency here, before we
     # know the codename.
@@ -203,12 +202,10 @@ LOUD = dict(_out=sys.stdout, _err=sys.stderr)
 
 user_id = os.getuid()
 
-def setup_shell_profile(shell_profile):
-    # type: (str) -> None
+def setup_shell_profile(shell_profile: str) -> None:
     shell_profile_path = os.path.expanduser(shell_profile)
 
-    def write_command(command):
-        # type: (str) -> None
+    def write_command(command: str) -> None:
         if os.path.exists(shell_profile_path):
             with open(shell_profile_path, 'r') as shell_profile_file:
                 lines = [line.strip() for line in shell_profile_file.readlines()]
@@ -223,8 +220,7 @@ def setup_shell_profile(shell_profile):
     write_command(source_activate_command)
     write_command('cd /srv/zulip')
 
-def install_apt_deps():
-    # type: () -> None
+def install_apt_deps() -> None:
     # setup Zulip-specific apt repos, and run `apt-get update`
     run(["sudo", "./scripts/lib/setup-apt-repo"])
     # remove duplicates.
@@ -232,7 +228,7 @@ def install_apt_deps():
     run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + deps_to_install)
 
 
-def install_node_modules():  # type: () -> None
+def install_node_modules() -> None:
     """Here we install node and the modules."""
     run(["sudo", "scripts/lib/install-node"])
 
@@ -251,7 +247,7 @@ def install_node_modules():  # type: () -> None
         setup_node_modules()
 
 
-def make_directories():  # type: () -> None
+def make_directories() -> None:
     # create log directory `zulip/var/log`
     run(["mkdir", "-p", LOG_DIR_PATH])
     # create upload directory `var/uploads`
@@ -266,7 +262,7 @@ def make_directories():  # type: () -> None
     run(["mkdir", "-p", NODE_TEST_COVERAGE_DIR_PATH])
 
 
-def build_emoji():  # type: () -> None
+def build_emoji() -> None:
     """Build emoji."""
     # `build_emoji` script requires `emoji-datasource` package which we install
     # via npm and hence it should be executed after we are done installing npm
@@ -277,13 +273,13 @@ def build_emoji():  # type: () -> None
     run(["tools/setup/emoji/build_emoji"])
 
 
-def restart_ci_services():  # type: () -> None
+def restart_ci_services() -> None:
     run(["sudo", "service", "rabbitmq-server", "restart"])
     run(["sudo", "service", "redis-server", "restart"])
     run(["sudo", "service", "memcached", "restart"])
     run(["sudo", "service", "postgresql", "restart"])
 
-def restart_docker_services():  # type: () -> None
+def restart_docker_services() -> None:
     run(["sudo", "service", "rabbitmq-server", "restart"])
     run(["sudo", "pg_dropcluster", "--stop", POSTGRES_VERSION, "main"])
     run(["sudo", "pg_createcluster", "-e", "utf8", "--start", POSTGRES_VERSION, "main"])
@@ -291,7 +287,7 @@ def restart_docker_services():  # type: () -> None
     run(["sudo", "service", "memcached", "restart"])
 
 
-def configure_rabbit_mq():  # type: () -> None
+def configure_rabbit_mq() -> None:
     try:
         from zerver.lib.queue import SimpleQueueClient
         SimpleQueueClient()
@@ -305,7 +301,7 @@ def configure_rabbit_mq():  # type: () -> None
         print("RabbitMQ is already configured.")
 
 
-def rebuild_database():  # type: () -> None
+def rebuild_database() -> None:
     # Need to set up Django before using is_template_database_current
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
     import django
@@ -330,7 +326,7 @@ def rebuild_database():  # type: () -> None
         print("No need to regenerate the test DB.")
 
 
-def compile_translations():  # type: () -> None
+def compile_translations() -> None:
     # Consider updating generated translations data: both `.mo`
     # files and `language-options.json`.
     sha1sum = hashlib.sha1()
@@ -356,7 +352,7 @@ def compile_translations():  # type: () -> None
         print("No need to run `manage.py compilemessages`.")
 
 
-def really_deploy():  # type: () -> None
+def really_deploy() -> None:
     # The following block is skipped for the production Travis
     # suite, because that suite doesn't make use of these elements
     # of the development environment (it just uses the development
@@ -368,7 +364,7 @@ def really_deploy():  # type: () -> None
     run(["./manage.py", "create_realm_internal_bots"])
 
 
-def calculate_apt_progress_signature():  # type: () -> (Any, Any, Any)
+def calculate_apt_progress_signature() -> Tuple[Any, Any, Any]:
     # hash the apt dependencies
     sha_sum = hashlib.sha1()
     # FIXME: add \n to avoid name collision
@@ -390,7 +386,7 @@ def calculate_apt_progress_signature():  # type: () -> (Any, Any, Any)
     return hash_file, new_hash, old_hash
 
 
-def resume_apt_install():  # type: () -> None
+def resume_apt_install() -> None:
     hash_file, new_hash, old_hash = calculate_apt_progress_signature()
     if new_hash != old_hash:
         try:
@@ -410,11 +406,8 @@ def resume_apt_install():  # type: () -> None
         print("No changes to apt dependencies, so skipping apt operations.")
 
 
-def main(options):
-    # type: (Any) -> int
-
+def main(options: Any) -> int:
     check_prerequisites()
-
     # change to the root of Zulip, since yarn and management commands expect to
     # be run from the root of the project.
     os.chdir(ZULIP_PATH)
