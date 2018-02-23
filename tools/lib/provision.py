@@ -60,7 +60,7 @@ def _codename():
         return _travis_codename()
     dist, version, codename = platform.linux_distribution()
     if codename not in SUPPORTED_PLATFORMS.get(dist, ()):
-        logging.critical("Unsupported distro: %r" % ((dist, version, CODENAME),))
+        logging.critical("Unsupported distro: " + repr((dist, version, codename)))
         raise RuntimeError()
     return codename
 
