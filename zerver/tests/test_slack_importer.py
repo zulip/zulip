@@ -409,6 +409,8 @@ class SlackImporter(ZulipTestCase):
                   "ts": "1437868294.000006", "has_image": True},
                  {"text": "random", "user": "U061A5N1G",
                   "ts": "1439868294.000006"},
+                 {"text": "without a user", "user": None,  # this message will be ignored as it has no user
+                  "ts": "1239868294.000006"},
                  {"text": "<http://journals.plos.org/plosone/article>", "user": "U061A1R2R",
                   "ts": "1463868370.000008"}]  # type: List[Dict[str, Any]]
 

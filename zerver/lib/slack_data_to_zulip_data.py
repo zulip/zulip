@@ -543,6 +543,13 @@ def channel_message_to_zerver_message(constants: List[Any], channel: str,
     for json_name in json_names:
         messages = get_data_file(slack_data_dir + '/%s/%s' % (channel, json_name))
         for message in messages:
+
+            user = get_message_sending_user(message)
+            if not user:
+                # Ignore messages without user names
+                # These are Sometimes produced by slack
+                continue
+
             has_attachment = False
             content, mentioned_users_id, has_link = convert_to_zulip_markdown(message['text'],
                                                                               users,
@@ -566,7 +573,7 @@ def channel_message_to_zerver_message(constants: List[Any], channel: str,
                 has_attachment=has_attachment,  # attachment will be posted in the subsequent message;
                                                 # this is how Slack does it, i.e. less like email
                 edit_history=None,
-                sender=added_users[get_message_sending_user(message)],  # map slack id to zulip id
+                sender=added_users[user],  # map slack id to zulip id
                 content=content,
                 rendered_content=rendered_content,  # slack doesn't cache this
                 recipient=recipient_id,
@@ -586,7 +593,7 @@ def get_message_sending_user(message: ZerverFieldsT) -> str:
     try:
         user = message.get('user', message['file']['user'])
     except KeyError:
-        user = message['user']
+        user = message.get('user')
     return user
 
 def build_zerver_usermessage(zerver_usermessage: List[ZerverFieldsT], usermessage_id_count: int,
