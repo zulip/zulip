@@ -47,20 +47,32 @@ SUPPORTED_PLATFORMS = {
     ],
 }
 
+
+def _travis_codename():
+    with open('/etx/lsb-release') as f:
+        generator = (l.split('=') for l in f)
+        for (k, v) in generator:
+            if k.strip() == 'DISTRIB_CODENAME':
+                return v.strip()
+
+def _codename():
+    if is_travis:
+        return _travis_codename.__func__()
+    dist, version, codename = platform.linux_distribution()
+    if codename not in SUPPORTED_PLATFORMS.get(_dist, ()):
+        logging.critical("Unsupported distro: %r" % ((_dist, _version, CODENAME),))
+        raise RuntimeError()
+    return codename
+
 class Versions:
     PROVISION = version.PROVISION_VERSION
-
     POSTGRES_MAP = {
         'stretch': '9.6',
         'trusty': '9.3',
         'xenial': '9.5',
         'zesty': '9.6',
     }
-
-    _dist, _version, CODENAME = platform.linux_distribution()
-    if not is_travis and CODENAME not in SUPPORTED_PLATFORMS.get(_dist, ()):
-        logging.critical("Unsupported distro: %r" % ((_dist, _version, CODENAME),))
-        raise RuntimeError()
+    CODENAME = _codename()
     POSTGRES = POSTGRES_MAP[CODENAME]
 
 
