@@ -8,6 +8,10 @@ import subprocess
 import glob
 import hashlib
 from pathlib import Path
+try:
+    from typing import Any
+except ImportError:
+    pass
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
@@ -388,7 +392,7 @@ def calculate_apt_progress_signature():
 
 def resume_apt_install():
     hash_file, new_hash, old_hash = calculate_apt_progress_signature()
-    if (new_hash != old_hash):
+    if new_hash != old_hash:
         try:
             install_apt_deps()
         except subprocess.CalledProcessError:
