@@ -955,6 +955,7 @@ JS_SPECS = {
             'js/compose_fade.js',
             'js/fenced_code.js',
             'js/markdown.js',
+            'js/local_message.js',
             'js/echo.js',
             'js/socket.js',
             'js/sent_messages.js',

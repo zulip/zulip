@@ -158,6 +158,7 @@
         "alert_words": false,
         "fenced_code": false,
         "markdown": false,
+        "local_message": false,
         "echo": false,
         "localstorage": false,
         "localStorage": false,
