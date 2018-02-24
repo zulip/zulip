@@ -170,8 +170,18 @@ Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
 
 #### Debian
 
-The setup for Debian 9.0 "stretch" is just like [for Ubuntu 16.04](#ubuntu),
-with two differences.
+The setup for Debian 9.0 "stretch" is very similar to that for
+[for Ubuntu 16.04](#ubuntu).  There are a few small differences:
+
+**Apt package list**.  In "2. Install remaining dependencies", the
+command to install the dependencies is
+
+```
+sudo apt-get install build-essential git ruby lxc redir
+```
+
+One you've finished installing dependencies, you need to complete an
+additional step:
 
 **Setup LXC networking**.  Debian's packages do not ship any default
 network setup for LXC containers. So, you will have to setup
@@ -192,14 +202,6 @@ sudo dpkg -i vagrant*.deb && \
 sudo apt-get -y install build-essential git ruby lxc redir && \
 vagrant plugin install vagrant-lxc && \
 vagrant lxc sudoers
-```
-
-For a step-by-step explanation, follow the [Ubuntu instructions above](#ubuntu),
-with the following difference: in "2. Install remaining dependencies", the
-command is
-
-```
-sudo apt-get install build-essential git ruby lxc redir
 ```
 
 #### Windows 10
