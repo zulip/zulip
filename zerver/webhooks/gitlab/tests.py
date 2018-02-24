@@ -341,6 +341,39 @@ class GitlabHookTests(WebhookTestCase):
             HTTP_X_GITLAB_EVENT="Job Hook"
         )
 
+    def test_build_created_event_message_legacy_event_name(self) -> None:
+        expected_subject = u"my-awesome-project / master"
+        expected_message = u"Build job_name from test stage was created."
+
+        self.send_and_test_stream_message(
+            'build_created',
+            expected_subject,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Build Hook"
+        )
+
+    def test_build_started_event_message_legacy_event_name(self) -> None:
+        expected_subject = u"my-awesome-project / master"
+        expected_message = u"Build job_name from test stage started."
+
+        self.send_and_test_stream_message(
+            'build_started',
+            expected_subject,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Build Hook"
+        )
+
+    def test_build_succeeded_event_message_legacy_event_name(self) -> None:
+        expected_subject = u"my-awesome-project / master"
+        expected_message = u"Build job_name from test stage changed status to success."
+
+        self.send_and_test_stream_message(
+            'build_succeeded',
+            expected_subject,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Build Hook"
+        )
+
     def test_pipeline_succeeded_event_message(self) -> None:
         expected_subject = u"my-awesome-project / master"
         expected_message = u"Pipeline changed status to success with build(s):\n* job_name2 - success\n* job_name - success."
