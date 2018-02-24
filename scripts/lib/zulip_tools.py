@@ -102,22 +102,26 @@ if __name__ == '__main__':
 
 def get_dev_uuid_var_path(create_if_missing=False):
     # type: (bool) -> str
+
+    # UUID file path
     zulip_path = os.path.realpath(os.path.dirname(os.path.dirname(
         os.path.dirname(os.path.realpath(__file__)))))
     uuid_file = os.path.join(os.path.realpath(os.path.dirname(zulip_path)), ".zulip-dev-uuid")
+    
     if os.path.exists(uuid_file):
         with open(uuid_file) as f:
             zulip_uuid = f.read().strip()
     else:
-        if create_if_missing:
-            zulip_uuid = str(uuid.uuid4())
-            # We need sudo here, since the path will be under /srv/ in the
-            # development environment.
-            subprocess.check_call(["sudo", "/bin/bash", "-c",
-                                   "echo %s > %s" % (zulip_uuid, uuid_file)])
-        else:
-            raise RuntimeError("Missing UUID file; please run tools/provision!")
+        if not create_if_missing:
+            raise RuntimeError('Missing UUID file; please run ./tools/provision')
+        
+        zulip_uuid = str(uuid.uuid4())
+        # We need sudo here, since the path will be under /srv/ in the
+        # development environment.
+        subprocess.check_call(["sudo", "/bin/bash", "-c",
+                               "echo %s > %s" % (zulip_uuid, uuid_file)])
 
+    # make UUID directory
     result_path = os.path.join(zulip_path, "var", zulip_uuid)
     os.makedirs(result_path, exist_ok=True)
     return result_path
