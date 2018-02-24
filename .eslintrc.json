@@ -160,6 +160,7 @@
         "markdown": false,
         "local_message": false,
         "echo": false,
+        "zgram": false,
         "localstorage": false,
         "localStorage": false,
         "current_msg_list": true,

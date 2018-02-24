@@ -297,6 +297,18 @@ exports.respond_to_message = function (opts) {
         return;
     }
 
+    var pm_recipient;
+
+    if (message.zgram) {
+
+        pm_recipient = people.get_person_from_user_id(message.sender_id).email;
+        var start_options = {
+            private_message_recipient: pm_recipient,
+        };
+        exports.start('private', start_options);
+        return;
+    }
+
     unread_ops.notify_server_message_read(message);
 
     var stream = '';
@@ -306,7 +318,7 @@ exports.respond_to_message = function (opts) {
         subject = message.subject;
     }
 
-    var pm_recipient = message.reply_to;
+    pm_recipient = message.reply_to;
     if (message.type === "private") {
         if (opts.reply_type === "personal") {
             // reply_to for private messages is everyone involved, so for

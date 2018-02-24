@@ -664,6 +664,7 @@ def build_custom_checkers(by_lang):
              'static/templates/draft.handlebars',
              'static/templates/subscription.handlebars',
              'static/templates/single_message.handlebars',
+             'static/templates/zgram.handlebars',
 
              # Old-style email templates need to use inline style
              # attributes; it should be possible to clean these up
