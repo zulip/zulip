@@ -10,11 +10,19 @@
     {{ render_bundle('translations') }}
     {{ render_bundle('stats') }}
     {% stylesheet 'stats' %}
-
+    
     <div class="page-content">
         <div id="id_stats_errors" class="alert alert-error"></div>
         <div class="center-charts">
             <h1 class="analytics-page-header">{% trans %}Zulip analytics for {{ realm_name }}{% endtrans %}</h1>
+            <div id="overlay">
+                <div id="insufficient_data">
+                    <p>
+                        Not enough data<br />
+                        Please check back in a couple of days.
+                    </p>
+                </div>            
+            </div>
 
             <div class="left">
                 <div class="chart-container">
@@ -100,7 +108,7 @@
             <br />
             <span class="docs_link"><a href="/help/analytics">{{ _("Analytics documentation") }}</a></span>
         </div>
-    </div>
+        </div>
 
 </div>
 {% endblock %}

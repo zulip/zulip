@@ -72,6 +72,15 @@ $(function () {
     });
 });
 
+function get_days_of_data(data) {
+    return ((data.end_times[data.end_times.length-1] - data.end_times[0])/(24*60*60));
+}
+
+function show_insufficient_data_message() {
+    $("#overlay").css("display", "block");
+    return;
+}
+
 function populate_messages_sent_over_time(data) {
     if (data.end_times.length === 0) {
         // TODO: do something nicer here
@@ -297,8 +306,13 @@ $.get({
     data: {chart_name: 'messages_sent_over_time', min_length: '10'},
     idempotent: true,
     success: function (data) {
-        populate_messages_sent_over_time(data);
-        update_last_full_update(data.end_times);
+        if (get_days_of_data(data) <= 3) {
+            show_insufficient_data_message();
+        }
+        else {
+            populate_messages_sent_over_time(data);
+            update_last_full_update(data.end_times);
+        }
     },
     error: function (xhr) {
         $('#id_stats_errors').show().text(JSON.parse(xhr.responseText).msg);
