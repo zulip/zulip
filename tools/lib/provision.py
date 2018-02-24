@@ -86,7 +86,7 @@ class Versions:
 
 
 class Paths:
-    UUID: Any = None
+    UUID = '?'
     ZULIP = _zulip_path
     NODE_MODULES_CACHE = NODE_MODULES_CACHE_PATH
 
