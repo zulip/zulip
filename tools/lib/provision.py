@@ -176,7 +176,7 @@ class ProgressFile:
 
     @singledispatch
     def update(self, item: Any) -> None:
-        raise TypeError()
+        raise TypeError('Not expecting ' + repr(item.__class__))
 
     @update.register(bytes)
     def update_bytes(self, item: bytes) -> None:
