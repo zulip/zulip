@@ -216,8 +216,12 @@ def remote_user_sso(request: HttpRequest,
     # Since RemoteUserBackend will return None if Realm is None, we
     # don't need to check whether `get_realm` returned None.
     user_profile = authenticate(remote_user=remote_user, realm=realm)
+
+    redirect_to = request.GET.get('next', '')
+
     return login_or_register_remote_user(request, remote_user, user_profile,
-                                         mobile_flow_otp=mobile_flow_otp)
+                                         mobile_flow_otp=mobile_flow_otp,
+                                         redirect_to=redirect_to)
 
 @csrf_exempt
 @log_view_func
