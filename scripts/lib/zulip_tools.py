@@ -107,14 +107,14 @@ def get_dev_uuid_var_path(create_if_missing=False):
     zulip_path = os.path.realpath(os.path.dirname(os.path.dirname(
         os.path.dirname(os.path.realpath(__file__)))))
     uuid_file = os.path.join(os.path.realpath(os.path.dirname(zulip_path)), ".zulip-dev-uuid")
-    
+
     if os.path.exists(uuid_file):
         with open(uuid_file) as f:
             zulip_uuid = f.read().strip()
     else:
         if not create_if_missing:
             raise RuntimeError('Missing UUID file; please run ./tools/provision')
-        
+
         zulip_uuid = str(uuid.uuid4())
         # We need sudo here, since the path will be under /srv/ in the
         # development environment.

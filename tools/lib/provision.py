@@ -5,21 +5,25 @@ import logging
 import argparse
 import platform
 import hashlib
+import struct
 from subprocess import CalledProcessError
 from glob import glob
 from pathlib import Path
 from contextlib import contextmanager
+from functools import singledispatch
 
 class DummyType(object):
     def __getitem__(self, key):  # type: ignore # 3.4
         return self
 
 try:
-    from typing import Any, Tuple, Iterator
+    from typing import Any, Tuple, Iterable, Iterator, Optional
 except ImportError:
     Any = DummyType()  # type: ignore # 3.4
     Tuple = DummyType()  # type: ignore # 3.4
+    Iterable = DummyType()  # type: ignore # 3.4
     Iterator = DummyType()  # type: ignore # 3.4
+    Optional = DummyType()  # type: ignore # 3.4
 
 _zulip_path = str(Path(__file__).absolute().parent.parent.parent)
 sys.path.append(_zulip_path)
@@ -155,6 +159,56 @@ class Deps:
         ],
     }
     APT = _APT_MAP[Versions.CODENAME] + UBUNTU_COMMON
+
+
+class ProgressFile:
+    def __init__(self, path: str) -> None:
+        with open(path, 'rb') as f:
+            self.old_digest = f.readline().strip()
+        self._path = path
+        self._hasher = hashlib.sha512()
+
+    @singledispatch
+    def update(self, item: Any) -> None:
+        raise TypeError()
+
+    @update.register(bytes)
+    def update_bytes(self, item: bytes) -> None:
+        header = b'b' + struct.pack('>Q', len(item))
+        self._hasher.update(header)
+        self._hasher.update(bytes)
+
+    @update.register(list)
+    @update.register(tuple)
+    def update_paths(self, item: Iterable[str]) -> None:
+        header = b'l' + struct.pack('>Q', len(item))
+        self._hasher.update(header)
+        for s in item:
+            self.update.dispatch(bytes)(s.encode('utf-8'))
+
+    def _binary_hexdigest(self) -> bytes:
+        return self._hasher.hexdigest().encode('utf-8')
+
+    def compare_digest(self) -> Optional[bytes]:
+        # Note: don't do this in serious programs.
+        # Always use constant time function `hmac.compare_digest`
+        new_digest = self._binary_hexdigest()
+        if self.old_digest != new_digest:
+            return new_digest
+        else:
+            return None
+
+    def _save_digest(self) -> None:
+        new_digest = self.compare_digest()
+        if new_digest:
+            with open(self._path, 'wb') as f:
+                f.write(new_digest)
+
+    def __enter__(self) -> Any:
+        return self
+
+    def __exit__(self) -> None:
+        self._save_digest()
 
 
 def ram_size_gb() -> float:
