@@ -185,7 +185,6 @@ class ProgressFile:
         self._hasher.update(item)
 
     @update.register(list)
-    @update.register(tuple)
     def update_paths(self, item: Any) -> None:
         header = b'l' + struct.pack('>Q', len(item))
         self._hasher.update(header)
