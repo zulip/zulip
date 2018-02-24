@@ -39,48 +39,6 @@ function resend_message(message, row) {
     transmit.send_message(message, on_success, on_error);
 }
 
-function truncate_precision(float) {
-    return parseFloat(float.toFixed(3));
-}
-
-var get_next_local_id = (function () {
-
-    var already_used = {};
-
-    return function () {
-        var local_id_increment = 0.01;
-        var latest = page_params.max_message_id;
-        if (typeof message_list.all !== 'undefined' && message_list.all.last() !== undefined) {
-            latest = message_list.all.last().id;
-        }
-        latest = Math.max(0, latest);
-        var next_local_id = truncate_precision(latest + local_id_increment);
-
-        if (already_used[next_local_id]) {
-            // If our id is already used, it is probably an edge case like we had
-            // to abort a very recent message.
-            blueslip.warn("We don't reuse ids for local echo.");
-            return;
-        }
-
-        if (next_local_id % 1 > local_id_increment * 5) {
-            blueslip.warn("Turning off local echo for this message to let host catch up");
-            return;
-        }
-
-        if (next_local_id % 1 === 0) {
-            // The logic to stop at 0.05 should prevent us from ever wrapping around
-            // to the next integer.
-            blueslip.error("Programming error");
-            return;
-        }
-
-        already_used[next_local_id] = true;
-
-        return next_local_id;
-    };
-}());
-
 function insert_local_message(message_request, local_id) {
     // Shallow clone of message request object that is turned into something suitable
     // for zulip.js:add_message
@@ -100,7 +58,7 @@ function insert_local_message(message_request, local_id) {
     message.sender_email = people.my_current_email();
     message.sender_full_name = people.my_full_name();
     message.avatar_url = page_params.avatar_url;
-    message.timestamp = new XDate().getTime() / 1000;
+    message.timestamp = local_message.now();
     message.local_id = local_id;
     message.locally_echoed = true;
     message.id = message.local_id;
@@ -130,10 +88,8 @@ function insert_local_message(message_request, local_id) {
         });
     }
 
-    // It is a little bit funny to go through the message_events
-    // codepath, but it's sort of the idea behind local echo that
-    // we are simulating server events before they actually arrive.
-    message_events.insert_new_messages([message], true);
+    local_message.insert_message(message);
+
     return message.local_id;
 }
 
@@ -146,7 +102,7 @@ exports.try_deliver_locally = function try_deliver_locally(message_request) {
         return;
     }
 
-    var next_local_id = get_next_local_id();
+    var next_local_id = local_message.get_next_id();
 
     if (!next_local_id) {
         // This can happen for legit reasons.
