@@ -10,7 +10,6 @@ from subprocess import CalledProcessError
 from glob import glob
 from pathlib import Path
 from contextlib import contextmanager
-from functools import singledispatch
 
 class DummyType(object):
     def __getitem__(self, key):  # type: ignore # 3.4
@@ -18,7 +17,7 @@ class DummyType(object):
 
 try:
     from typing import (
-        Any, Tuple, Iterable, Iterator, Optional, Union, Sized
+        Any, Tuple, Iterable, Iterator, Optional, Union, Sized, Callable
     )
 except ImportError:
     Any = DummyType()  # type: ignore # 3.4
@@ -28,6 +27,7 @@ except ImportError:
     Optional = DummyType()  # type: ignore # 3.4
     Union = DummyType()  # type: ignore # 3.4
     Sized = DummyType()  # type: ignore # 3.4
+    Callable = DummyType()
 
 _zulip_path = str(Path(__file__).absolute().parent.parent.parent)
 sys.path.append(_zulip_path)
@@ -174,18 +174,18 @@ class ProgressFile:
         self._path = path
         self._hasher = hashlib.sha512()
 
-    @singledispatch
     def update(self, item: Any) -> None:
-        raise TypeError('Not expecting ' + repr(item.__class__))
+        if isinstance(item, bytes):
+            self._update_bytes(item)
+        else:
+            self._update_paths(item)
 
-    @update.register(bytes)
-    def update_bytes(self, item: bytes) -> None:
+    def _update_bytes(self, item: bytes) -> None:
         header = b'b' + struct.pack('>Q', len(item))
         self._hasher.update(header)
         self._hasher.update(item)
 
-    @update.register(list)
-    def update_paths(self, item: Any) -> None:
+    def _update_paths(self, item: Any) -> None:
         header = b'l' + struct.pack('>Q', len(item))
         self._hasher.update(header)
         for s in item:
