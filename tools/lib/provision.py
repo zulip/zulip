@@ -17,7 +17,7 @@ class DummyType(object):
 
 try:
     from typing import (
-        Any, Tuple, Iterable, Iterator, Optional, Union, Sized, Callable
+        Any, Tuple, Iterable, Iterator, Optional
     )
 except ImportError:
     Any = DummyType()  # type: ignore # 3.4
@@ -25,9 +25,6 @@ except ImportError:
     Iterable = DummyType()  # type: ignore # 3.4
     Iterator = DummyType()  # type: ignore # 3.4
     Optional = DummyType()  # type: ignore # 3.4
-    Union = DummyType()  # type: ignore # 3.4
-    Sized = DummyType()  # type: ignore # 3.4
-    Callable = DummyType()
 
 _zulip_path = str(Path(__file__).absolute().parent.parent.parent)
 sys.path.append(_zulip_path)
@@ -189,7 +186,7 @@ class ProgressFile:
         header = b'l' + struct.pack('>Q', len(item))
         self._hasher.update(header)
         for s in item:
-            self.update.dispatch(bytes)(s.encode('utf-8'))
+            self._update_bytes(s.encode('utf-8'))
 
     def _binary_hexdigest(self) -> bytes:
         return self._hasher.hexdigest().encode('utf-8')
