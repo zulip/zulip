@@ -173,6 +173,12 @@ Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
 The setup for Debian 9.0 "stretch" is just like [for Ubuntu 16.04](#ubuntu),
 with two differences.
 
+**Install LXC**
+Install LXC by running:
+```
+sudo apt install lxc
+```
+
 **Setup LXC networking**.  Debian's packages do not ship any default
 network setup for LXC containers. So, you will have to setup
 networking for `lxc` containers yourself by
