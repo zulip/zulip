@@ -191,7 +191,7 @@ class ProgressFile:
     def _binary_hexdigest(self) -> bytes:
         return self._hasher.hexdigest().encode('utf-8')
 
-    def compare_digest(self) -> Optional[bytes]:
+    def digest_changed(self) -> Optional[bytes]:
         # Note: don't do this in serious programs.
         # Always use constant time function `hmac.compare_digest`
         new_digest = self._binary_hexdigest()
@@ -201,7 +201,7 @@ class ProgressFile:
             return None
 
     def _save_digest(self) -> None:
-        new_digest = self.compare_digest()
+        new_digest = self.digest_changed()
         if new_digest:
             with open(self._path, 'wb') as f:
                 f.write(new_digest)
@@ -417,7 +417,7 @@ def compile_translations() -> None:
             with open(path, 'rb') as file_to_hash:
                 progress.update(file_to_hash.read())
 
-        if options.is_force or progress.compare_digest():
+        if options.is_force or progress.digest_changed():
             run(["./manage.py", "compilemessages"])
         else:
             print('Skipped translation compiling (Not Modified)')
@@ -441,7 +441,7 @@ def resume_apt_install() -> None:
         with open('scripts/lib/setup-apt-repo', 'rb') as script:
             progress.update(script.read())
 
-        if progress.compare_digest():
+        if progress.digest_changed():
             try:
                 install_apt_deps()
             except CalledProcessError:
