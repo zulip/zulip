@@ -1697,6 +1697,21 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn('Zulip on Android', mail.outbox[0].body)
 
+    def test_redirect_to(self) -> None:
+        def test_with_redirect_to_param_set_as_next(next: Text='') -> HttpResponse:
+            user_profile = self.example_user('hamlet')
+            email = user_profile.email
+            with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
+                result = self.client_post('/accounts/login/sso/?next=' + next, REMOTE_USER=email)
+            return result
+
+        res = test_with_redirect_to_param_set_as_next()
+        self.assertEqual('http://zulip.testserver', res.url)
+        res = test_with_redirect_to_param_set_as_next('/user_uploads/image_path')
+        self.assertEqual('http://zulip.testserver/user_uploads/image_path', res.url)
+        res = test_with_redirect_to_param_set_as_next('narrow/stream/7-test-here')
+        self.assertEqual('http://zulip.testserver/#narrow/stream/7-test-here', res.url)
+
 class TestJWTLogin(ZulipTestCase):
     """
     JWT uses ZulipDummyBackend.

@@ -32,7 +32,7 @@
                     {# SSO users don't have a password. #}
 
                     <div class="login-sso">
-                        <a href="/accounts/login/sso" class="btn btn-large btn-primary">{{ _('Log in with SSO') }}</a>
+                        <a id="sso-login" href="/accounts/login/sso/?next={{ next }}" class="btn btn-large btn-primary">{{ _('Log in with SSO') }}</a>
                     </div>
 
                 {% else %}
@@ -164,6 +164,7 @@
         $("#login_form").attr('action', email_formaction + '/' + window.location.hash);
         $("#google_login_form input[name='next']").attr('value', '/' + window.location.hash);
         $("#social_login_form input[name='next']").attr('value', '/' + window.location.hash);
+        $("#sso-login").attr('href', $("#sso-login").attr('href') + window.location.hash.slice(1));
     }
     </script>
 
