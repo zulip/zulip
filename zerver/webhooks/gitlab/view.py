@@ -262,6 +262,7 @@ EVENT_FUNCTION_MAPPER = {
     'Wiki Page Hook create': partial(get_wiki_page_event_body, action='created'),
     'Wiki Page Hook update': partial(get_wiki_page_event_body, action='updated'),
     'Job Hook': get_build_hook_event_body,
+    'Build Hook': get_build_hook_event_body,
     'Pipeline Hook': get_pipeline_event_body,
 }
 
@@ -286,7 +287,7 @@ def get_body_based_on_event(event: str) -> Any:
 def get_subject_based_on_event(event: str, payload: Dict[str, Any]) -> Text:
     if event == 'Push Hook':
         return u"{} / {}".format(get_repo_name(payload), get_branch_name(payload))
-    elif event == 'Job Hook':
+    elif event == 'Job Hook' or event == 'Build Hook':
         return u"{} / {}".format(payload['repository'].get('name'), get_branch_name(payload))
     elif event == 'Pipeline Hook':
         return u"{} / {}".format(
