@@ -316,7 +316,7 @@ class GitlabHookTests(WebhookTestCase):
             'build_created',
             expected_subject,
             expected_message,
-            HTTP_X_GITLAB_EVENT="Build Hook"
+            HTTP_X_GITLAB_EVENT="Job Hook"
         )
 
     def test_build_started_event_message(self) -> None:
@@ -327,7 +327,7 @@ class GitlabHookTests(WebhookTestCase):
             'build_started',
             expected_subject,
             expected_message,
-            HTTP_X_GITLAB_EVENT="Build Hook"
+            HTTP_X_GITLAB_EVENT="Job Hook"
         )
 
     def test_build_succeeded_event_message(self) -> None:
@@ -338,7 +338,7 @@ class GitlabHookTests(WebhookTestCase):
             'build_succeeded',
             expected_subject,
             expected_message,
-            HTTP_X_GITLAB_EVENT="Build Hook"
+            HTTP_X_GITLAB_EVENT="Job Hook"
         )
 
     def test_pipeline_succeeded_event_message(self) -> None:
