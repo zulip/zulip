@@ -17,13 +17,17 @@ class DummyType(object):
         return self
 
 try:
-    from typing import Any, Tuple, Iterable, Iterator, Optional
+    from typing import (
+        Any, Tuple, Iterable, Iterator, Optional, Union, Sized
+    )
 except ImportError:
     Any = DummyType()  # type: ignore # 3.4
     Tuple = DummyType()  # type: ignore # 3.4
     Iterable = DummyType()  # type: ignore # 3.4
     Iterator = DummyType()  # type: ignore # 3.4
     Optional = DummyType()  # type: ignore # 3.4
+    Union = DummyType()  # type: ignore # 3.4
+    Sized = DummyType()  # type: ignore # 3.4
 
 _zulip_path = str(Path(__file__).absolute().parent.parent.parent)
 sys.path.append(_zulip_path)
@@ -82,6 +86,7 @@ class Versions:
 
 
 class Paths:
+    UUID: Any = None
     ZULIP = _zulip_path
     NODE_MODULES_CACHE = NODE_MODULES_CACHE_PATH
 
@@ -163,6 +168,7 @@ class Deps:
 
 class ProgressFile:
     def __init__(self, path: str) -> None:
+        Path(path).touch()
         with open(path, 'rb') as f:
             self.old_digest = f.readline().strip()
         self._path = path
@@ -176,11 +182,11 @@ class ProgressFile:
     def update_bytes(self, item: bytes) -> None:
         header = b'b' + struct.pack('>Q', len(item))
         self._hasher.update(header)
-        self._hasher.update(bytes)
+        self._hasher.update(item)
 
     @update.register(list)
     @update.register(tuple)
-    def update_paths(self, item: Iterable[str]) -> None:
+    def update_paths(self, item: Any) -> None:
         header = b'l' + struct.pack('>Q', len(item))
         self._hasher.update(header)
         for s in item:
@@ -207,8 +213,9 @@ class ProgressFile:
     def __enter__(self) -> Any:
         return self
 
-    def __exit__(self) -> None:
-        self._save_digest()
+    def __exit__(self, type: Any, value: Any, traceback: Any) -> None:
+        if type is None:
+            self._save_digest()
 
 
 def ram_size_gb() -> float:
@@ -403,30 +410,21 @@ def rebuild_database() -> None:
 def compile_translations() -> None:
     # Consider updating generated translations data: both `.mo`
     # files and `language-options.json`.
-    sha1sum = hashlib.sha1()
     paths = ['zerver/management/commands/compilemessages.py']
-    # FIXME: glob is in arbitrary order
-    # FIXME: where are the string boundaries?
     paths += glob('static/locale/*/LC_MESSAGES/*.po')
     paths += glob('static/locale/*/translations.json')
+    paths.sort()
 
-    # FIXME: where are the file boundaries?
-    for path in paths:
-        with open(path, 'rb') as file_to_hash:
-            sha1sum.update(file_to_hash.read())
+    with ProgressFile(Paths.UUID + '/last_compilemessages_hash') as progress:
+        progress.update(paths)
+        for path in paths:
+            with open(path, 'rb') as file_to_hash:
+                progress.update(file_to_hash.read())
 
-    compilemessages_hash_path = os.path.join(Paths.UUID, "last_compilemessages_hash")
-    new_hash = sha1sum.hexdigest()
-    Path(compilemessages_hash_path).touch()
-    with open(compilemessages_hash_path, 'r') as hash_file:
-        old_hash = hash_file.read()
-
-    if options.is_force or (new_hash != old_hash):
-        with open(compilemessages_hash_path, 'w') as hash_file:
-            hash_file.write(new_hash)
-        run(["./manage.py", "compilemessages"])
-    else:
-        print("No need to run `manage.py compilemessages`.")
+        if options.is_force or progress.compare_digest():
+            run(["./manage.py", "compilemessages"])
+        else:
+            print('Skipped translation compiling (Not Modified)')
 
 
 def really_deploy() -> None:
@@ -441,46 +439,21 @@ def really_deploy() -> None:
     run(["./manage.py", "create_realm_internal_bots"])
 
 
-def _calculate_apt_progress_signature() -> Tuple[Any, Any, Any]:
-    # hash the apt dependencies
-    sha_sum = hashlib.sha1()
-    # FIXME: add \n to avoid name collision
-    for apt_depedency in Deps.APT:
-        sha_sum.update(apt_depedency.encode('utf8'))
-    # hash the content of setup-apt-repo
-    sha_sum.update(open('scripts/lib/setup-apt-repo', 'rb').read())
-    new_hash = sha_sum.hexdigest()
-
-    # get last dependency signature
-    old_hash = None
-    apt_hash_file_path = os.path.join(Paths.UUID, "apt_dependencies_hash")
-    try:
-        hash_file = open(apt_hash_file_path, 'r+')
-        old_hash = hash_file.read()
-    except IOError:
-        Path(apt_hash_file_path).touch()
-        hash_file = open(apt_hash_file_path, 'r+')
-    return hash_file, new_hash, old_hash
-
-
 def resume_apt_install() -> None:
-    hash_file, new_hash, old_hash = _calculate_apt_progress_signature()
-    if new_hash != old_hash:
-        try:
-            install_apt_deps()
-        except CalledProcessError:
-            # Might be a failure due to network connection issues. Retrying...
-            print(WARNING + "`apt-get -y install` failed while installing dependencies; retrying..." + ENDC)
-            # Since a common failure mode is for the caching in
-            # `setup-apt-repo` to optimize the fast code path to skip
-            # running `apt-get update` when the target apt repository
-            # is out of date, we run it explicitly here so that we
-            # recover automatically.
-            run(['sudo', 'apt-get', 'update'])
-            install_apt_deps()
-        hash_file.write(new_hash)
-    else:
-        print("No changes to apt dependencies, so skipping apt operations.")
+    with ProgressFile(Paths.UUID + '/apt_dependencies_hash') as progress:
+        progress.update(Deps.APT)
+        with open('scripts/lib/setup-apt-repo', 'rb') as script:
+            progress.update(script.read())
+
+        if progress.compare_digest():
+            try:
+                install_apt_deps()
+            except CalledProcessError:
+                print(WARNING + 'apt install failed; retrying...' + ENDC)
+                run(['sudo', 'apt-get', 'update'])
+                install_apt_deps()
+        else:
+            print('No need to install more deps (Not Modified)')
 
 
 def main(options: Any) -> int:
