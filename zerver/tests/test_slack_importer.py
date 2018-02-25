@@ -410,11 +410,8 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(test_zerver_usermessage[3]['id'], 11)
         self.assertEqual(test_zerver_usermessage[3]['message'], message_id)
 
-    @mock.patch("os.listdir", return_value = ['2015-08-08.json', '2016-01-15.json'])
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.get_data_file")
     @mock.patch("zerver.lib.slack_data_to_zulip_data.build_zerver_usermessage", return_value = [[], 2])
-    def test_channel_message_to_zerver_message(self, mock_build_zerver_usermessage: mock.Mock,
-                                               mock_get_data_file: mock.Mock, mock_listdir: mock.Mock) -> None:
+    def test_channel_message_to_zerver_message(self, mock_build_zerver_usermessage: mock.Mock) -> None:
 
         user_data = [{"id": "U066MTL5U", "name": "john doe", "deleted": False, "real_name": "John"},
                      {"id": "U061A5N1G", "name": "jane doe", "deleted": False, "real_name": "Jane"},
@@ -422,33 +419,27 @@ class SlackImporter(ZulipTestCase):
 
         added_users = {"U066MTL5U": 5, "U061A5N1G": 24, "U061A1R2R": 43}
 
-        date1 = [{"text": "<@U066MTL5U> has joined the channel", "subtype": "channel_join",
-                  "user": "U066MTL5U", "ts": "1434139102.000002"},
-                 {"text": "<@U061A5N1G>: hey!", "user": "U061A1R2R",
-                  "ts": "1437868294.000006", "has_image": True},
-                 {"text": "random", "user": "U061A5N1G",
-                  "ts": "1439868294.000006"},
-                 {"text": "without a user", "user": None,  # this message will be ignored as it has no user
-                  "ts": "1239868294.000006"},
-                 {"text": "<http://journals.plos.org/plosone/article>", "user": "U061A1R2R",
-                  "ts": "1463868370.000008"}]  # type: List[Dict[str, Any]]
+        all_messages = [{"text": "<@U066MTL5U> has joined the channel", "subtype": "channel_join",
+                         "user": "U066MTL5U", "ts": "1434139102.000002", "channel_name": "random"},
+                        {"text": "<@U061A5N1G>: hey!", "user": "U061A1R2R",
+                         "ts": "1437868294.000006", "has_image": True, "channel_name": "random"},
+                        {"text": "random", "user": "U061A5N1G",
+                         "ts": "1439868294.000006", "channel_name": "random"},
+                        {"text": "without a user", "user": None,  # this message will be ignored as it has no user
+                         "ts": "1239868294.000006", "channel_name": "general"},
+                        {"text": "<http://journals.plos.org/plosone/article>", "user": "U061A1R2R",
+                         "ts": "1463868370.000008", "channel_name": "general"},
+                        {"text": "test message 2", "user": "U061A5N1G",
+                         "ts": "1433868549.000010", "channel_name": "general"},
+                        {"text": "random test", "user": "U061A1R2R",
+                         "ts": "1433868669.000012", "channel_name": "general"}]  # type: List[Dict[str, Any]]
 
-        date2 = [{"text": "test message 2", "user": "U061A5N1G",
-                  "ts": "1433868549.000010"},
-                 {"text": "random test", "user": "U061A1R2R",
-                  "ts": "1433868669.000012"}]
-
-        mock_get_data_file.side_effect = [date1, date2]
-        added_recipient = {'random': 2}
-        constants = ['./random_path', 2]
-        ids = [0, 0, [3, 4, 5, 6, 7], []]
-        channel_name = 'random'
+        added_recipient = {'random': 2, 'general': 1}
+        ids = [[3, 4, 5, 6, 7], []]
 
         zerver_usermessage = []  # type: List[Dict[str, Any]]
         zerver_subscription = []  # type: List[Dict[str, Any]]
-        all_messages = []  # type: List[Dict[str,Any]]
-        zerver_message, zerver_usermessage = channel_message_to_zerver_message(constants, channel_name,
-                                                                               user_data, added_users,
+        zerver_message, zerver_usermessage = channel_message_to_zerver_message(1, user_data, added_users,
                                                                                added_recipient,
                                                                                all_messages,
                                                                                zerver_subscription, ids)
@@ -464,16 +455,16 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[2]['has_link'], True)
 
         self.assertEqual(zerver_message[3]['subject'], 'from slack')
-        self.assertEqual(zerver_message[4]['recipient'], added_recipient[channel_name])
+        self.assertEqual(zerver_message[4]['recipient'], added_recipient['general'])
         self.assertEqual(zerver_message[2]['subject'], 'from slack')
-        self.assertEqual(zerver_message[1]['recipient'], added_recipient[channel_name])
+        self.assertEqual(zerver_message[1]['recipient'], added_recipient['random'])
 
         self.assertEqual(zerver_message[1]['id'], 4)
         self.assertEqual(zerver_message[4]['id'], 7)
 
         self.assertIsNone(zerver_message[3]['rendered_content'])
-        self.assertEqual(zerver_message[0]['has_image'], date1[1]['has_image'])
-        self.assertEqual(zerver_message[0]['pub_date'], float(date1[1]['ts']))
+        self.assertEqual(zerver_message[0]['has_image'], all_messages[1]['has_image'])
+        self.assertEqual(zerver_message[0]['pub_date'], float(all_messages[1]['ts']))
         self.assertEqual(zerver_message[2]['rendered_content_version'], 1)
 
         self.assertEqual(zerver_message[0]['sender'], 43)
@@ -482,28 +473,24 @@ class SlackImporter(ZulipTestCase):
     @mock.patch("zerver.lib.slack_data_to_zulip_data.channel_message_to_zerver_message")
     @mock.patch("zerver.lib.slack_data_to_zulip_data.allocate_ids")
     @mock.patch("zerver.lib.slack_data_to_zulip_data.get_all_messages")
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.get_total_messages_and_usermessages", return_value=[1, 2])
+    @mock.patch("zerver.lib.slack_data_to_zulip_data.get_total_messages_and_usermessages", return_value=[2, 4])
     def test_convert_slack_workspace_messages(self, mock_get_total_messages_and_usermessages: mock.Mock,
                                               mock_get_all_messages: mock.Mock, mock_allocate_ids: mock.Mock,
                                               mock_message: mock.Mock) -> None:
         added_channels = {'random': 1, 'general': 2}
-
-        zerver_message1 = [{'id': 1}]
-        zerver_message2 = [{'id': 5}]
+        zerver_message = [{'id': 1}, {'id': 5}]
 
         realm = {'zerver_subscription': []}  # type: Dict[str, Any]
         user_list = []  # type: List[Dict[str, Any]]
 
-        zerver_usermessage1 = [{'id': 3}, {'id': 5}]
-        zerver_usermessage2 = [{'id': 6}, {'id': 9}]
+        zerver_usermessage = [{'id': 3}, {'id': 5}, {'id': 6}, {'id': 9}]
 
-        mock_message.side_effect = [[zerver_message1, zerver_usermessage1],
-                                    [zerver_message2, zerver_usermessage2]]
+        mock_message.side_effect = [[zerver_message, zerver_usermessage]]
         message_json = convert_slack_workspace_messages('./random_path', user_list, 2, {},
                                                         {}, added_channels,
                                                         realm)
-        self.assertEqual(message_json['zerver_message'], zerver_message1 + zerver_message2)
-        self.assertEqual(message_json['zerver_usermessage'], zerver_usermessage1 + zerver_usermessage2)
+        self.assertEqual(message_json['zerver_message'], zerver_message)
+        self.assertEqual(message_json['zerver_usermessage'], zerver_usermessage)
 
     @mock.patch("zerver.lib.slack_data_to_zulip_data.build_avatar_url")
     @mock.patch("zerver.lib.slack_data_to_zulip_data.build_avatar", return_value = [])
