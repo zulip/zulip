@@ -537,8 +537,7 @@ class EmbeddedBotWorker(QueueProcessingWorker):
                         message=message,
                         client=self.get_bot_api_client(user_profile),
                     )
-                    if message['content'] is None:
-                        return
+                    assert message['content'] is not None
                 bot_handler.handle_message(
                     message=message,
                     bot_handler=self.get_bot_api_client(user_profile)
