@@ -46,9 +46,9 @@ proxy](#specifying-a-proxy) if you need a proxy to access the internet.)
 
 
 - **All**: 2GB available RAM, Active broadband internet connection, [GitHub account][set-up-git].
-- **macOS**: macOS (10.11 El Capitan or 10.12 Sierra recommended),
-  Git, VirtualBox (version [5.2.6][vbox-dl-macos]
-  recommended -- we find it's more stable than more recent versions),
+- **macOS**: macOS (10.11 El Capitan or newer recommended), Git,
+  VirtualBox (version [5.2.6][vbox-dl-macos] recommended -- we find
+  it's more stable than more recent versions),
   [Vagrant][vagrant-dl-macos].
 - **Ubuntu**: 14.04 64-bit or 16.04 64-bit, Git, [Vagrant][vagrant-dl-deb], lxc.
   - or **Debian**: 9.0 "stretch" 64-bit
@@ -82,6 +82,10 @@ Jump to:
 
 #### macOS
 
+0. If you are running MacOS High Sierra, make sure you are not running
+   a version with a
+   [buggy NFS implementation](#importerror-no-module-named-on-macos-during-vagrant-provisioning).
+   Versions 10.13.2 and above have the bug fixed.
 1. Install [Vagrant][vagrant-dl-macos] (2.0.2).
 2. Install [VirtualBox][vbox-dl-macos] (5.2.6).
 
@@ -993,6 +997,51 @@ Users who are unable to do "vagrant up" due to a VT-X unavailability error need 
 #### Permissions errors when running the test suite in LXC
 
 See ["Possible testing issues"](../testing/testing.html#possible-testing-issues).
+
+#### ImportError: No module named '...' on MacOS during Vagrant provisioning
+
+If you see following error (or similar) when you try to provision
+Vagrant environment by `vagrant provision` (or during first run
+`vagrant up`):
+
+```
+    default: ImportError: No module named 'zerver.lib.emoji'
+    default: Error running a subcommand of ./lib/provision.py: tools/do-destroy-rebuild-database
+    default: Actual error output for the subcommand is just above this.
+    default: Traceback (most recent call last):
+    default:   File "./lib/provision.py", line 413, in <module>
+    default:     sys.exit(main(options))
+    default:   File "./lib/provision.py", line 349, in main
+    default:     run(["tools/do-destroy-rebuild-database"])
+    default:   File "/srv/zulip/scripts/lib/zulip_tools.py", line 163, in run
+    default:     subprocess.check_call(args, **kwargs)
+    default:   File "/usr/lib/python3.4/subprocess.py", line 561, in check_call
+    default:     raise CalledProcessError(retcode, cmd)
+    default: subprocess.CalledProcessError: Command '['tools/do-destroy-rebuild-database']' returned non-zero exit status 1
+    default:
+    default: Provisioning failed!
+    default: * Look at the traceback(s) above to find more about the errors.
+    default: * Resolve the errors or get help on chat.
+    default: * If you can fix this yourself, you can re-run tools/provision at any time.
+    default: * Logs are here: zulip/var/log/provision.log
+    default:
+The SSH command responded with a non-zero exit status. Vagrant
+assumes that this means the command failed. The output for this command
+should be in the log above. Please read the output to determine what
+went wrong.
+```
+
+This error is caused by a bug in the MacOS NFS file syncing
+implementation (Zulip uses Vagrant's NFS feature for syncing files on
+MacOS).  In early versions of MacOS High Sierra, files present in the
+directory on the host machine would appear to not be present in the
+Vagrant guest (e.g. in the exception above, `zerver/lib/emoji.py` is
+missing).  This bug is fixed in MacOS High Sierra 10.13.2 and above,
+so the fix is to upgrade to a version of MacOS with a working NFS
+implementation.
+
+You can read more about this
+[here](https://github.com/hashicorp/vagrant/issues/8788).
 
 ### Specifying a proxy
 
