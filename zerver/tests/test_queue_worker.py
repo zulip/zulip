@@ -227,6 +227,52 @@ class WorkerTest(ZulipTestCase):
 
         self.assertEqual(data['failed_tries'], 4)
 
+    def test_signups_worker_existing_member(self) -> None:
+        fake_client = self.FakeClient()
+
+        user_id = self.example_user('hamlet').id
+        data = {'user_id': user_id,
+                'id': 'test_missed',
+                'email_address': 'foo@bar.baz'}
+        fake_client.queue.append(('signups', data))
+
+        fake_response = MagicMock()
+        fake_response.status_code = 400
+        fake_response.text = ujson.dumps({'title': 'Member Exists'})
+        with simulated_queue_client(lambda: fake_client):
+            worker = queue_processors.SignupWorker()
+            worker.setup()
+            with patch('zerver.worker.queue_processors.requests.post',
+                       return_value=fake_response), \
+                    self.settings(MAILCHIMP_API_KEY='one-two',
+                                  PRODUCTION=True,
+                                  ZULIP_FRIENDS_LIST_ID='id'):
+                with patch('logging.warning') as logging_warning_mock:
+                    worker.start()
+                    logging_warning_mock.assert_called_once_with(
+                        "Attempted to sign up already existing email to list: foo@bar.baz")
+
+    def test_signups_bad_request(self) -> None:
+        fake_client = self.FakeClient()
+
+        user_id = self.example_user('hamlet').id
+        data = {'user_id': user_id, 'id': 'test_missed'}
+        fake_client.queue.append(('signups', data))
+
+        fake_response = MagicMock()
+        fake_response.status_code = 444  # Any non-400 bad request code.
+        fake_response.text = ujson.dumps({'title': 'Member Exists'})
+        with simulated_queue_client(lambda: fake_client):
+            worker = queue_processors.SignupWorker()
+            worker.setup()
+            with patch('zerver.worker.queue_processors.requests.post',
+                       return_value=fake_response), \
+                    self.settings(MAILCHIMP_API_KEY='one-two',
+                                  PRODUCTION=True,
+                                  ZULIP_FRIENDS_LIST_ID='id'):
+                    worker.start()
+                    fake_response.raise_for_status.assert_called_once()
+
     def test_invites_worker(self) -> None:
         fake_client = self.FakeClient()
         invitor = self.example_user('iago')
