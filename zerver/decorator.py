@@ -260,6 +260,33 @@ def access_user_by_api_key(request: HttpRequest, api_key: Text, email: Optional[
 
     return user_profile
 
+def log_exception_to_webhook_logger(request: HttpRequest, user_profile: UserProfile) -> None:
+    if request.content_type == 'application/json':
+        try:
+            request_body = ujson.dumps(ujson.loads(request.body), indent=4)
+        except ValueError:
+            request_body = str(request.body)
+    else:
+        request_body = str(request.body)
+    message = """
+user: {email} ({realm})
+client: {client_name}
+URL: {path_info}
+content_type: {content_type}
+body:
+
+{body}
+    """.format(
+        email=user_profile.email,
+        realm=user_profile.realm.string_id,
+        client_name=request.client.name,
+        body=request_body,
+        path_info=request.META.get('PATH_INFO', None),
+        content_type=request.content_type,
+    )
+    message = message.strip(' ')
+    webhook_logger.exception(message)
+
 # Use this for webhook views that don't get an email passed in.
 WrappedViewFuncT = Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]
 def api_key_only_webhook_view(client_name: Text) -> WrappedViewFuncT:
@@ -279,30 +306,7 @@ def api_key_only_webhook_view(client_name: Text) -> WrappedViewFuncT:
             try:
                 return view_func(request, user_profile, *args, **kwargs)
             except Exception as err:
-                if request.content_type == 'application/json':
-                    try:
-                        request_body = ujson.dumps(ujson.loads(request.body), indent=4)
-                    except ValueError:
-                        request_body = str(request.body)
-                else:
-                    request_body = str(request.body)
-                message = """
-user: {email} ({realm})
-client: {client_name}
-URL: {path_info}
-content_type: {content_type}
-body:
-
-{body}
-                """.format(
-                    email=user_profile.email,
-                    realm=user_profile.realm.string_id,
-                    client_name=request.client.name,
-                    body=request_body,
-                    path_info=request.META.get('PATH_INFO', None),
-                    content_type=request.content_type,
-                )
-                webhook_logger.exception(message)
+                log_exception_to_webhook_logger(request, user_profile)
                 raise err
 
         return _wrapped_func_arguments

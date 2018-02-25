@@ -284,6 +284,7 @@ body:
 
 {body}
                 """
+            message = message.strip(' ')
             mock_exception.assert_called_with(message.format(
                 email=webhook_bot_email,
                 realm=webhook_bot_realm.string_id,
