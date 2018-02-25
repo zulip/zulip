@@ -392,6 +392,41 @@ class TornadoTestCase(WebSocketBaseTestCase):
         yield self.close(ws)
 
     @gen_test
+    def test_sending_stream_message_from_electron(self) -> Generator[str, Any, None]:
+        user_profile = self.example_user('hamlet')
+        cookies = self._get_cookies(user_profile)
+        cookie_header = self.get_cookie_header(cookies)
+        queue_events_data = self._get_queue_events_data(user_profile.email)
+        ws = yield self.ws_connect('/sockjs/366/v8nw22qe/websocket', cookie_header=cookie_header)
+        yield ws.read_message()
+        yield self._websocket_auth(ws, queue_events_data, cookies)
+        request_id = ':'.join((queue_events_data['response']['queue_id'], '1'))
+        user_message = {
+            "req_id": request_id,
+            "type": "request",
+            "request": {
+                "client": "website",
+                "type": "stream",
+                "subject": "Stream message",
+                "stream": "Denmark",
+                "private_message_recipient": "",
+                "content": "hello",
+                "sender_id": user_profile.id,
+                "queue_id": queue_events_data['response']['queue_id'],
+                "to": ujson.dumps(["Denmark"]),
+                "reply_to": self.example_email('hamlet'),
+                "local_id": -1,
+                "socket_user_agent": "ZulipElectron/1.5.0"
+            }
+        }
+        user_message_str = ujson.dumps(user_message)
+        ws.write_message(ujson.dumps([user_message_str]))
+        ack_resp = yield ws.read_message()
+        msg_resp = yield ws.read_message()
+        self._check_message_sending(request_id, ack_resp, msg_resp, user_profile, queue_events_data)
+        yield self.close(ws)
+
+    @gen_test
     def test_sending_message_error(self) -> Any:
         user_profile = self.example_user('hamlet')
         cookies = self._get_cookies(user_profile)
