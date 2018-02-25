@@ -48,7 +48,7 @@ def allocate_ids(model_class: Any, count: int) -> List[int]:
     # convert List[Tuple[int]] to List[int]
     return [item[0] for item in query]
 
-def slack_workspace_to_realm(realm_id: int, user_list: List[ZerverFieldsT],
+def slack_workspace_to_realm(domain_name: str, realm_id: int, user_list: List[ZerverFieldsT],
                              realm_subdomain: str, fixtures_path: str,
                              slack_data_dir: str) -> Tuple[ZerverFieldsT, AddedUsersT,
                                                            AddedRecipientsT, AddedChannelsT,
@@ -61,7 +61,6 @@ def slack_workspace_to_realm(realm_id: int, user_list: List[ZerverFieldsT],
     4. added_channels, which is a dictionary to map from channel name to zulip stream_id
     5. avatars, which is list to map avatars to zulip avatar records.json
     """
-    DOMAIN_NAME = settings.EXTERNAL_HOST
     NOW = float(timezone_now().timestamp())
 
     zerver_realm = build_zerver_realm(fixtures_path, realm_id, realm_subdomain, NOW)
@@ -73,7 +72,7 @@ def slack_workspace_to_realm(realm_id: int, user_list: List[ZerverFieldsT],
                  zerver_userprofile_mirrordummy=[],
                  zerver_realmdomain=[{"realm": realm_id,
                                       "allow_subdomains": False,
-                                      "domain": DOMAIN_NAME,
+                                      "domain": domain_name,
                                       "id": realm_id}],
                  zerver_useractivity=[],
                  zerver_realm=zerver_realm,
@@ -84,7 +83,7 @@ def slack_workspace_to_realm(realm_id: int, user_list: List[ZerverFieldsT],
                  zerver_realmemoji=[])
 
     zerver_userprofile, avatars, added_users = users_to_zerver_userprofile(
-        slack_data_dir, user_list, realm_id, int(NOW), DOMAIN_NAME)
+        slack_data_dir, user_list, realm_id, int(NOW), domain_name)
     channels_to_zerver_stream_fields = channels_to_zerver_stream(slack_data_dir,
                                                                  realm_id,
                                                                  added_users,
@@ -630,6 +629,9 @@ def build_zerver_usermessage(zerver_usermessage: List[ZerverFieldsT], usermessag
 
 def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str, token: str) -> None:
     check_subdomain_available(realm_subdomain)
+
+    domain_name = settings.EXTERNAL_HOST
+
     slack_data_dir = slack_zip_file.replace('.zip', '')
     if not os.path.exists(slack_data_dir):
         os.makedirs(slack_data_dir)
@@ -650,7 +652,7 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str, 
 
     user_list = get_user_data(token)
     realm, added_users, added_recipient, added_channels, avatar_list = slack_workspace_to_realm(
-        realm_id, user_list, realm_subdomain, fixtures_path, slack_data_dir)
+        domain_name, realm_id, user_list, realm_subdomain, fixtures_path, slack_data_dir)
 
     message_json = convert_slack_workspace_messages(slack_data_dir, user_list, realm_id,
                                                     added_users, added_recipient, added_channels,

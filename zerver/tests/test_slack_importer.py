@@ -330,9 +330,8 @@ class SlackImporter(ZulipTestCase):
 
         realm_id = 1
         user_list = []  # type: List[Dict[str, Any]]
-        with self.settings(EXTERNAL_HOST='testdomain'):
-            realm, added_users, added_recipient, added_channels, avatar_list = slack_workspace_to_realm(
-                realm_id, user_list, 'test-realm', './fixtures', './random_path')
+        realm, added_users, added_recipient, added_channels, avatar_list = slack_workspace_to_realm(
+            'testdomain', realm_id, user_list, 'test-realm', './fixtures', './random_path')
         test_zerver_realmdomain = [{'realm': realm_id, 'allow_subdomains': False,
                                     'domain': 'testdomain', 'id': realm_id}]
         # Functioning already tests in helper functions
