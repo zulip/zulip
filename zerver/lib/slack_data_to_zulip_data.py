@@ -481,6 +481,10 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
     zerver_usermessage = []  # type: List[ZerverFieldsT]
     all_messages = get_all_messages(slack_data_dir, added_channels)
 
+    # we sort the messages according to the timestamp to show messages with
+    # the proper date order
+    all_messages = sorted(all_messages, key=lambda message: message['ts'])
+
     logging.info('######### IMPORTING MESSAGES STARTED #########\n')
 
     # To pre-compute the total number of messages and usermessages
