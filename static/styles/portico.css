@@ -1169,7 +1169,7 @@ input#zulipbot:checked ~ #tab-zulipbot {
 .login-form {
     margin: auto;
     /* plus input padding. */
-    width: calc(300px + 28px);
+    width: calc(300px - -28px);
     margin-bottom: 10px;
 }
 
@@ -1696,7 +1696,7 @@ input.new-organization-button {
     margin-top: -240px;
     height: auto;
     width: calc(100% - 40px);
-    max-width: calc(768px + 20px);
+    max-width: calc(768px - -20px);
 }
 
 .error_page {
