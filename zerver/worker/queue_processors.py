@@ -322,7 +322,7 @@ class MissedMessageSendingWorker(EmailSendingWorker):  # nocoverage
     pass
 
 @assign_queue('missedmessage_mobile_notifications')
-class PushNotificationsWorker(QueueProcessingWorker):
+class PushNotificationsWorker(QueueProcessingWorker):  # nocoverage
     def consume(self, data):
         # type: (Mapping[str, Any]) -> None
         handle_push_notification(data['user_profile_id'], data)
@@ -430,7 +430,7 @@ class MessageSenderWorker(QueueProcessingWorker):
                            respond_send_message)
 
 @assign_queue('digest_emails')
-class DigestWorker(QueueProcessingWorker):
+class DigestWorker(QueueProcessingWorker):  # nocoverage
     # Who gets a digest is entirely determined by the enqueue_digest_emails
     # management command, not here.
     def consume(self, event):
