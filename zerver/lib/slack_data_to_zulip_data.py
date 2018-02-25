@@ -490,20 +490,11 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
     message_id_list = allocate_ids(Message, total_messages)
     usermessage_id_list = allocate_ids(UserMessage, total_usermessages)
 
-    message_id_count = usermessage_id_count = 0
+    id_list = [message_id_list, usermessage_id_list]
+    zerver_message, zerver_usermessage = channel_message_to_zerver_message(
+        REALM_ID, users, added_users, added_recipient, all_messages,
+        realm['zerver_subscription'], id_list)
 
-    constants = [slack_data_dir, REALM_ID]
-    for channel in added_channels.keys():
-        message_id = len(zerver_message) + message_id_count  # For the id of the messages
-        usermessage_id = len(zerver_usermessage) + usermessage_id_count
-        id_list = [message_id, usermessage_id, message_id_list, usermessage_id_list]
-        zm, zum = channel_message_to_zerver_message(constants, channel, users,
-                                                    added_users, added_recipient,
-                                                    all_messages,
-                                                    realm['zerver_subscription'],
-                                                    id_list)
-        zerver_message += zm
-        zerver_usermessage += zum
     logging.info('######### IMPORTING MESSAGES FINISHED #########\n')
 
     message_json['zerver_message'] = zerver_message
@@ -549,8 +540,8 @@ def get_total_messages_and_usermessages(zerver_subscription: List[ZerverFieldsT]
 
     return total_messages, total_usermessages
 
-def channel_message_to_zerver_message(constants: List[Any], channel: str,
-                                      users: List[ZerverFieldsT], added_users: AddedUsersT,
+def channel_message_to_zerver_message(REALM_ID: int, users: List[ZerverFieldsT],
+                                      added_users: AddedUsersT,
                                       added_recipient: AddedRecipientsT,
                                       all_messages: List[ZerverFieldsT],
                                       zerver_subscription: List[ZerverFieldsT],
@@ -561,59 +552,55 @@ def channel_message_to_zerver_message(constants: List[Any], channel: str,
     1. zerver_message, which is a list of the messages
     2. zerver_usermessage, which is a list of the usermessages
     """
-    slack_data_dir, REALM_ID = constants
-    message_id_count, usermessage_id_count, message_id_list, usermessage_id_list = ids
-    json_names = os.listdir(slack_data_dir + '/' + channel)
+    message_id_count = usermessage_id_count = 0
+    message_id_list, usermessage_id_list = ids
     zerver_message = []
     zerver_usermessage = []  # type: List[ZerverFieldsT]
 
-    for json_name in json_names:
-        messages = get_data_file(slack_data_dir + '/%s/%s' % (channel, json_name))
-        for message in messages:
+    for message in all_messages:
+        user = get_message_sending_user(message)
+        if not user:
+            # Ignore messages without user names
+            # These are Sometimes produced by slack
+            continue
 
-            user = get_message_sending_user(message)
-            if not user:
-                # Ignore messages without user names
-                # These are Sometimes produced by slack
+        has_attachment = False
+        content, mentioned_users_id, has_link = convert_to_zulip_markdown(message['text'],
+                                                                          users,
+                                                                          added_users)
+        rendered_content = None
+        if 'subtype' in message.keys():
+            subtype = message['subtype']
+            if subtype in ["channel_join", "channel_leave", "channel_name"]:
                 continue
 
-            has_attachment = False
-            content, mentioned_users_id, has_link = convert_to_zulip_markdown(message['text'],
-                                                                              users,
-                                                                              added_users)
-            rendered_content = None
-            if 'subtype' in message.keys():
-                subtype = message['subtype']
-                if subtype in ["channel_join", "channel_leave", "channel_name"]:
-                    continue
+        recipient_id = added_recipient[message['channel_name']]
+        message_id = message_id_list[message_id_count]
+        # construct message
+        zulip_message = dict(
+            sending_client=1,
+            rendered_content_version=1,  # This is Zulip-specific
+            has_image=message.get('has_image', False),
+            subject='from slack',  # This is Zulip-specific
+            pub_date=float(message['ts']),
+            id=message_id,
+            has_attachment=has_attachment,  # attachment will be posted in the subsequent message;
+                                            # this is how Slack does it, i.e. less like email
+            edit_history=None,
+            sender=added_users[user],  # map slack id to zulip id
+            content=content,
+            rendered_content=rendered_content,  # slack doesn't cache this
+            recipient=recipient_id,
+            last_edit_time=None,
+            has_link=has_link)
+        zerver_message.append(zulip_message)
 
-            recipient_id = added_recipient[channel]
-            message_id = message_id_list[message_id_count]
-            # construct message
-            zulip_message = dict(
-                sending_client=1,
-                rendered_content_version=1,  # This is Zulip-specific
-                has_image=message.get('has_image', False),
-                subject='from slack',  # This is Zulip-specific
-                pub_date=float(message['ts']),
-                id=message_id,
-                has_attachment=has_attachment,  # attachment will be posted in the subsequent message;
-                                                # this is how Slack does it, i.e. less like email
-                edit_history=None,
-                sender=added_users[user],  # map slack id to zulip id
-                content=content,
-                rendered_content=rendered_content,  # slack doesn't cache this
-                recipient=recipient_id,
-                last_edit_time=None,
-                has_link=has_link)
-            zerver_message.append(zulip_message)
+        # construct usermessages
+        zerver_usermessage, usermessage_id_count = build_zerver_usermessage(
+            zerver_usermessage, usermessage_id_count, usermessage_id_list,
+            zerver_subscription, recipient_id, mentioned_users_id, message_id)
 
-            # construct usermessages
-            zerver_usermessage, usermessage_id_count = build_zerver_usermessage(
-                zerver_usermessage, usermessage_id_count, usermessage_id_list,
-                zerver_subscription, recipient_id, mentioned_users_id, message_id)
-
-            message_id_count += 1
+        message_id_count += 1
     return zerver_message, zerver_usermessage
 
 def get_message_sending_user(message: ZerverFieldsT) -> str:
