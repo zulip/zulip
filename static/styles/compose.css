@@ -336,7 +336,7 @@ input.recipient_box {
 }
 
 #subject.recipient_box {
-    width: calc(20% + 14px);
+    width: calc(20% - -14px);
     min-width: 140px;
     max-width: 165px;
 }

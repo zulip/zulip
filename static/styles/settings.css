@@ -526,7 +526,7 @@ input[type=checkbox].inline-block {
 }
 
 .add-new-filter-box button {
-    margin-left: calc(10em + 20px) !important;
+    margin-left: calc(10em - -20px) !important;
 }
 
 .grey-box .wrapper {

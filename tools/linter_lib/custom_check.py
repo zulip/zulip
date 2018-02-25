@@ -461,6 +461,10 @@ def build_custom_checkers(by_lang):
                         ' to set -x|set -e'},
     ] + whitespace_rules[0:1]  # type: RuleList
     css_rules = cast(RuleList, [
+        {'pattern': 'calc\([^+]+\+[^+]+\)',
+         'description': "Avoid using calc with '+' operator. See #8403 : in CSS.",
+         'good_lines': ["width: calc(20% - -14px);"],
+         'bad_lines': ["width: calc(20% + 14px);"]},
         {'pattern': '^[^:]*:\S[^:]*;$',
          'description': "Missing whitespace after : in CSS",
          'good_lines': ["background-color: white;", "text-size: 16px;"],
