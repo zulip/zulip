@@ -1,4 +1,6 @@
 from typing import Dict, Any, Optional, Iterable
+from io import StringIO
+
 import os
 import ujson
 
@@ -454,6 +456,25 @@ def deregister_queue(client, queue_id):
     test_against_fixture(result, fixture, check_if_equal=['code', 'result'],
                          check_if_exists=['queue_id', 'msg'])
 
+def upload_file(client):
+    # type: (Client) -> None
+    fp = StringIO("zulip")
+    fp.name = "zulip.txt"
+
+    # {code_example|start}
+    # Upload a file
+    # (Make sure that 'fp' is a file object)
+    result = client.call_endpoint(
+        'user_uploads',
+        method='POST',
+        files=[fp]
+    )
+    # {code_example|end}
+
+    fixture = FIXTURES['upload-file']
+    test_against_fixture(result, fixture, check_if_equal=['msg', 'result'],
+                         check_if_exists=['uri'])
+
 def test_invalid_api_key(client_with_invalid_key):
     # type: (Client) -> None
     result = client_with_invalid_key.list_subscriptions()
@@ -489,6 +510,7 @@ TEST_FUNCTIONS = {
     'get-all-users': get_members,
     'register-queue': register_queue,
     'delete-queue': deregister_queue,
+    'upload-file': upload_file,
 }
 
 # SETUP METHODS FOLLOW
@@ -526,6 +548,7 @@ def test_users(client):
     create_user(client)
     get_members(client)
     get_profile(client)
+    upload_file(client)
 
 def test_streams(client):
     # type: (Client) -> None

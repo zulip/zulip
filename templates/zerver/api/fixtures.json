@@ -312,5 +312,10 @@
         "code":"BAD_REQUEST",
         "msg":"Invalid stream name 'nonexistent'",
         "result":"error"
+    },
+    "upload-file": {
+        "msg":"",
+        "result":"success",
+        "uri":"\/user_uploads\/1\/4e\/m2A3MSqFnWRLUf9SaPzQ0Up_\/zulip.txt"
     }
 }
