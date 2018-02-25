@@ -18,7 +18,9 @@ var consts = {
 function process_result(data, opts) {
     var messages = data.messages;
 
-    $('#connection-error').removeClass("show");
+    if (!($('#connection-error').hasClass('get-events-error'))) {
+        ui_report.hide_error($("#connection-error"));
+    }
 
     if (messages.length === 0 && current_msg_list === message_list.narrowed &&
         message_list.narrowed.empty()) {
