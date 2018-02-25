@@ -162,10 +162,17 @@ exports.redraw_title = function () {
         favicon.set(current_favicon);
     }
 
+    // window.bridge is for the legacy QT desktop app; we'll likely
+    // remove this code soon.
     if (window.bridge !== undefined) {
         // We don't use 'n' because we want the exact count. The bridge handles
         // which icon to show.
         window.bridge.updateCount(new_message_count);
+    }
+
+    // Notify the current desktop app's UI about the new unread count.
+    if (window.electron_bridge !== undefined) {
+        window.electron_bridge.send_event('total_unread_count', new_message_count);
     }
 };
 
