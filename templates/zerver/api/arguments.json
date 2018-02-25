@@ -278,5 +278,13 @@
             "required":"Optional",
             "example":"['ZOE@zulip.com']"
         }
+    ],
+    "upload-file.md":[
+        {
+            "argument":"file",
+            "description": "File to be uploaded.",
+            "required":"Required",
+            "example":"See code examples above."
+        }
     ]
 }
