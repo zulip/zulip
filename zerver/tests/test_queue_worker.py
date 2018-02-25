@@ -293,11 +293,6 @@ class WorkerTest(ZulipTestCase):
                     raise Exception('Worker task not performing as expected!')
                 processed.append(data["type"])
 
-            def _log_problem(self) -> None:
-
-                # keep the tests quiet
-                pass
-
         fake_client = self.FakeClient()
         for msg in ['good', 'fine', 'unexpected behaviour', 'back to normal']:
             fake_client.queue.append(('unreliable_worker', {'type': msg}))
@@ -311,7 +306,10 @@ class WorkerTest(ZulipTestCase):
         with simulated_queue_client(lambda: fake_client):
             worker = UnreliableWorker()
             worker.setup()
-            worker.start()
+            with patch('logging.exception') as logging_exception_mock:
+                worker.start()
+                logging_exception_mock.assert_called_once_with(
+                    "Problem handling data on queue unreliable_worker")
 
         self.assertEqual(processed, ['good', 'fine', 'back to normal'])
         line = open(fn).readline().strip()
