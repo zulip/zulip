@@ -1132,25 +1132,24 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
 
-    def test_create_embedded_bot(self, **extras: Any) -> None:
-        user_profile = self.example_user("hamlet")
-        bot_config_info = {'key': 'value'}
-        bot_info = {
-            'full_name': 'Embedded test bot',
-            'bot_type': UserProfile.EMBEDDED_BOT,
-            'service_name': 'followup',
-            'config_data': ujson.dumps(bot_config_info),
-        }
-        bot_info.update(extras)
-        # Test to create embedded bot with correct service_name and disabled embedded bots.
+    def test_create_embedded_bot_with_disabled_embedded_bots(self, **extras: Any) -> None:
         with self.settings(EMBEDDED_BOTS_ENABLED=False):
-            self.create_test_bot(short_name='embeddedservicebot', user_profile=user_profile,
+            self.create_test_bot(short_name='embeddedservicebot',
+                                 user_profile=self.example_user("hamlet"),
+                                 bot_type=UserProfile.EMBEDDED_BOT,
+                                 service_name='followup',
+                                 config_data=ujson.dumps({'key': 'value'}),
                                  assert_json_error_msg='Embedded bots are not enabled.',
-                                 **bot_info)
+                                 **extras)
 
-        # Test to create embedded bot with correct service_name and enabled embedded bots.
-        self.create_test_bot(short_name='embeddedservicebot', **bot_info, user_profile=user_profile)
-
+    def test_create_embedded_bot(self, **extras: Any) -> None:
+        bot_config_info = {'key': 'value'}
+        self.create_test_bot(short_name='embeddedservicebot',
+                             user_profile=self.example_user("hamlet"),
+                             bot_type=UserProfile.EMBEDDED_BOT,
+                             service_name='followup',
+                             config_data=ujson.dumps(bot_config_info),
+                             **extras)
         bot_email = "embeddedservicebot-bot@zulip.testserver"
         bot_realm = get_realm('zulip')
         bot = get_user(bot_email, bot_realm)
@@ -1162,19 +1161,21 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertEqual(service.name, "followup")
         self.assertEqual(service.user_profile, bot)
 
-        # Test to create embedded bot with incorrect service_name
-        bot_info.update({'service_name': 'not_existing_service'})
-        self.create_test_bot(short_name='embeddedservicebot', user_profile=user_profile,
+    def test_create_embedded_bot_with_incorrect_service_name(self, **extras: Any) -> None:
+        self.create_test_bot(short_name='embeddedservicebot',
+                             user_profile=self.example_user("hamlet"),
+                             bot_type=UserProfile.EMBEDDED_BOT,
+                             service_name='not_existing_service',
                              assert_json_error_msg='Invalid embedded bot name.',
-                             **bot_info)
+                             **extras)
 
-        # Test to create embedded bot with an invalid config value
-        malformatted_bot_config_info = {'foo': ['bar', 'baz']}
-        bot_info.update({'service_name': 'followup',
-                         'config_data': ujson.dumps(malformatted_bot_config_info)})
-        self.create_test_bot(short_name='embeddedservicebot', user_profile=user_profile,
+    def test_create_embedded_bot_with_invalid_config_value(self, **extras: Any) -> None:
+        self.create_test_bot(short_name='embeddedservicebot',
+                             user_profile=self.example_user("hamlet"),
+                             service_name='followup',
+                             config_data=ujson.dumps({'invalid': ['config', 'value']}),
                              assert_json_error_msg='config_data contains a value that is not a string',
-                             **bot_info)
+                             **extras)
 
     def test_is_cross_realm_bot_email(self) -> None:
         self.assertTrue(is_cross_realm_bot_email("notification-bot@zulip.com"))
