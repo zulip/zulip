@@ -3,7 +3,7 @@ set_global('document', 'document-stub');
 
 zrequire('message_fetch');
 
-var noop = function () {};
+var noop = () => {};
 
 set_global('MessageListView', function () { return {}; });
 
@@ -17,7 +17,9 @@ set_global('page_params', {
     have_initial_messages: true,
     pointer: 444,
 });
-
+set_global('ui_report', {
+    hide_error: noop,
+});
 set_global('activity', {});
 set_global('channel', {});
 set_global('document', 'document-stub');
