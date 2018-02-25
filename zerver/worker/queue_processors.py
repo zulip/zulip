@@ -167,7 +167,7 @@ class QueueProcessingWorker:
         self.q.register_json_consumer(self.queue_name, self.consume_wrapper)
         self.q.start_consuming()
 
-    def stop(self):
+    def stop(self):  # nocoverage
         # type: () -> None
         self.q.stop_consuming()
 
