@@ -482,16 +482,11 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
     all_messages = get_all_messages(slack_data_dir, added_channels)
 
     logging.info('######### IMPORTING MESSAGES STARTED #########\n')
-    # To pre-compute the total number of messages and usermessages
 
-    total_messages = 0
-    total_usermessages = 0
-    for channel in added_channels.keys():
-        tm, tum = get_total_messages_and_usermessages(slack_data_dir, channel,
-                                                      realm['zerver_subscription'],
-                                                      added_recipient, all_messages)
-        total_messages += tm
-        total_usermessages += tum
+    # To pre-compute the total number of messages and usermessages
+    total_messages, total_usermessages = get_total_messages_and_usermessages(
+        realm['zerver_subscription'], added_recipient, all_messages)
+
     message_id_list = allocate_ids(Message, total_messages)
     usermessage_id_list = allocate_ids(UserMessage, total_usermessages)
 
@@ -530,8 +525,7 @@ def get_all_messages(slack_data_dir: str, added_channels: AddedChannelsT) -> Lis
             all_messages += messages
     return all_messages
 
-def get_total_messages_and_usermessages(slack_data_dir: str, channel_name: str,
-                                        zerver_subscription: List[ZerverFieldsT],
+def get_total_messages_and_usermessages(zerver_subscription: List[ZerverFieldsT],
                                         added_recipient: AddedRecipientsT,
                                         all_messages: List[ZerverFieldsT]) -> Tuple[int, int]:
     """
@@ -539,22 +533,19 @@ def get_total_messages_and_usermessages(slack_data_dir: str, channel_name: str,
     1. message_id, which is total number of messages
     2. usermessage_id, which is total number of usermessages
     """
-    json_names = os.listdir(slack_data_dir + '/' + channel_name)
     total_messages = 0
     total_usermessages = 0
 
-    for json_name in json_names:
-        messages = get_data_file(slack_data_dir + '/%s/%s' % (channel_name, json_name))
-        for message in messages:
-            if 'subtype' in message.keys():
-                subtype = message['subtype']
-                if subtype in ["channel_join", "channel_leave", "channel_name"]:
-                    continue
+    for message in all_messages:
+        if 'subtype' in message.keys():
+            subtype = message['subtype']
+            if subtype in ["channel_join", "channel_leave", "channel_name"]:
+                continue
 
-            for subscription in zerver_subscription:
-                if subscription['recipient'] == added_recipient[channel_name]:
-                    total_usermessages += 1
-            total_messages += 1
+        for subscription in zerver_subscription:
+            if subscription['recipient'] == added_recipient[message['channel_name']]:
+                total_usermessages += 1
+        total_messages += 1
 
     return total_messages, total_usermessages
 

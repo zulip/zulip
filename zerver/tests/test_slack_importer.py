@@ -349,32 +349,25 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(realm['zerver_userprofile'], [])
         self.assertEqual(realm['zerver_realm'], [{}])
 
-    @mock.patch("os.listdir", return_value = ['2015-08-08.json', '2016-01-15.json'])
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.get_data_file")
-    def test_get_total_messages_and_usermessages(self, mock_get_data_file: mock.Mock,
-                                                 mock_list_dir: mock.Mock) -> None:
+    def test_get_total_messages_and_usermessages(self) -> None:
+        messages = [{"text": "<@U8VAHEVUY> has joined the channel", "subtype": "channel_join",
+                     "channel_name": "random"},
+                    {"text": "message", "channel_name": "random"},
+                    {"text": "random", "channel_name": "random"},
+                    {"text": "test messsage", "channel_name": "general"},
+                    {"text": "test message 2", "subtype": "channel_leave", "channel_name": "general"},
+                    {"text": "random test", "channel_name": "general"},
+                    {"text": "message", "subtype": "channel_name", "channel_name": "general"}]
 
-        date1 = [{"text": "<@U8VAHEVUY> has joined the channel", "subtype": "channel_join"},
-                 {"text": "message"},
-                 {"text": "random"},
-                 {"text": "test messsage"}]
-        date2 = [{"text": "test message 2", "subtype": "channel_leave"},
-                 {"text": "random test"},
-                 {"text": "message", "subtype": "channel_name"}]
-        mock_get_data_file.side_effect = [date1, date2]
-
-        added_recipient = {'random': 2}
+        added_recipient = {'random': 2, 'general': 4}
         zerver_subscription = [{'recipient': 2}, {'recipient': 4}, {'recipient': 2}]
-        all_messages = []  # type: List[Dict[str, Any]]
 
-        total_messages, total_usermessages = get_total_messages_and_usermessages('./path',
-                                                                                 'random',
-                                                                                 zerver_subscription,
+        total_messages, total_usermessages = get_total_messages_and_usermessages(zerver_subscription,
                                                                                  added_recipient,
-                                                                                 all_messages)
+                                                                                 messages)
         # subtype: channel_join, channel_leave are filtered out
         self.assertEqual(total_messages, 4)
-        self.assertEqual(total_usermessages, 8)
+        self.assertEqual(total_usermessages, 6)
 
     def test_get_message_sending_user(self) -> None:
         message_with_file = {'subtype': 'file', 'type': 'message',
