@@ -319,7 +319,9 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
             name=channel["name"],
             deactivated=channel["is_archived"],
             description=description,
-            invite_only=not channel["is_general"],
+            invite_only=False,  # TODO: private channels are not
+                                # exported with Slack's standard plan;
+                                # so this field is always false
             date_created=float(channel["created"]),
             id=stream_id)
 
