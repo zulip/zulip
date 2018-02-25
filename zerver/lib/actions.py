@@ -1277,7 +1277,6 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
                 queue_json_publish(
                     'feedback_messages',
                     wide_message_dict,
-                    lambda x: None
                 )
 
         if message['message'].recipient.type == Recipient.PERSONAL:
