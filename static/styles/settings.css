@@ -116,7 +116,7 @@ label {
 
 .admin-realm-description {
     height: 16em;
-    width: 36em;
+    width: 100%;
 }
 
 .padded-container {
@@ -342,6 +342,10 @@ input[type=checkbox] + .inline-block {
 
 .organization-settings-parent div:first-of-type {
     margin-top: 10px;
+}
+
+.organization-settings-parent {
+    width: 98%;
 }
 
 .organization-submission {
