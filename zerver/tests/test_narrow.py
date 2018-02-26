@@ -219,12 +219,20 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(term, 'WHERE id != :param_1')
 
     def test_add_term_using_group_pm_operator_and_not_the_same_user_as_operand(self) -> None:
+        # Test wtihout any such group PM threads existing
         term = dict(operator='group-pm-with', operand=self.example_email("othello"))
         with mock.patch("sqlalchemy.util.warn") as mock_warn:
             self._do_add_term_test(term, 'WHERE recipient_id != recipient_id')
 
             # SQLalchemy warns because this query is a tautology.
             mock_warn.assert_called_once()
+
+        # Test with at least one such group PM thread existing
+        self.send_huddle_message(self.user_profile.email, [self.example_email("othello"),
+                                                           self.example_email("cordelia")])
+
+        term = dict(operator='group-pm-with', operand=self.example_email("othello"))
+        self._do_add_term_test(term, 'WHERE recipient_id IN (:recipient_id_1)')
 
     def test_add_term_using_group_pm_operator_not_the_same_user_as_operand_and_negated(
             self) -> None:  # NEGATED
