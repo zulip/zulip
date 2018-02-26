@@ -8,6 +8,7 @@ import subprocess
 import re
 import logging
 import requests
+import random
 
 from django.conf import settings
 from django.db import connection
@@ -19,6 +20,7 @@ from zerver.forms import check_subdomain_available
 from zerver.lib.slack_message_conversion import convert_to_zulip_markdown, \
     get_user_full_name
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
+from zerver.lib.upload import random_name, sanitize_name
 
 # stubs
 ZerverFieldsT = Dict[str, Any]
@@ -464,7 +466,7 @@ def build_subscription(channel_members: List[str], zerver_subscription: List[Zer
 def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFieldsT], realm_id: int,
                                      added_users: AddedUsersT, added_recipient: AddedRecipientsT,
                                      added_channels: AddedChannelsT,
-                                     realm: ZerverFieldsT) -> ZerverFieldsT:
+                                     realm: ZerverFieldsT, domain_name: str) -> ZerverFieldsT:
     """
     Returns:
     1. message.json, Converted messages
@@ -491,7 +493,7 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
     id_list = [message_id_list, usermessage_id_list]
     zerver_message, zerver_usermessage = channel_message_to_zerver_message(
         realm_id, users, added_users, added_recipient, all_messages,
-        realm['zerver_subscription'], id_list)
+        realm['zerver_subscription'], domain_name, id_list)
 
     logging.info('######### IMPORTING MESSAGES FINISHED #########\n')
 
@@ -543,6 +545,7 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
                                       added_recipient: AddedRecipientsT,
                                       all_messages: List[ZerverFieldsT],
                                       zerver_subscription: List[ZerverFieldsT],
+                                      domain_name: str,
                                       ids: List[Any]) -> Tuple[List[ZerverFieldsT],
                                                                List[ZerverFieldsT]]:
     """
@@ -554,6 +557,7 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
     message_id_list, usermessage_id_list = ids
     zerver_message = []
     zerver_usermessage = []  # type: List[ZerverFieldsT]
+    uploads_list = []  # type: List[ZerverFieldsT]
 
     for message in all_messages:
         user = get_message_sending_user(message)
@@ -562,7 +566,7 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
             # These are Sometimes produced by slack
             continue
 
-        has_attachment = False
+        has_attachment = has_image = False
         content, mentioned_users_id, has_link = convert_to_zulip_markdown(message['text'],
                                                                           users,
                                                                           added_users)
@@ -572,13 +576,29 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
             if subtype in ["channel_join", "channel_leave", "channel_name"]:
                 continue
 
+            # For attachments
+            elif subtype == "file_share":
+                fileinfo = message['file']
+
+                has_attachment = has_link = True
+                has_image = True if 'image' in fileinfo['mimetype'] else False
+
+                file_user = [iterate_user for iterate_user in users if message['user'] == user]
+                file_user_email = get_user_email(file_user[0], domain_name)
+
+                s3_path, content = get_attachment_path_and_content(fileinfo, realm_id)
+
+                # construct attachments
+                build_uploads(added_users[user], realm_id, file_user_email, fileinfo, s3_path,
+                              uploads_list)
+
         recipient_id = added_recipient[message['channel_name']]
         message_id = message_id_list[message_id_count]
         # construct message
         zulip_message = dict(
             sending_client=1,
             rendered_content_version=1,  # This is Zulip-specific
-            has_image=message.get('has_image', False),
+            has_image=has_image,
             subject='from slack',  # This is Zulip-specific
             pub_date=float(message['ts']),
             id=message_id,
@@ -600,6 +620,41 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
 
         message_id_count += 1
     return zerver_message, zerver_usermessage
+
+def get_attachment_path_and_content(fileinfo: ZerverFieldsT, realm_id: int) -> Tuple[str,
+                                                                                     str]:
+    # Should be kept in sync with its equivalent in zerver/lib/uploads in the function
+    # 'upload_message_image'
+    s3_path = "/".join([
+        str(realm_id),
+        format(random.randint(0, 255), 'x'),
+        random_name(18),
+        sanitize_name(fileinfo['name'])
+    ])
+    attachment_path = ('/user_uploads/%s' % (s3_path))
+
+    # change the default upload message: 'uploaded this file: <file_name>' in Slack
+    # to '<file_comment> <file_name>'
+    if fileinfo['comments_count'] != 0:
+        file_comment = fileinfo['initial_comment'].get("comment", '')
+    else:
+        file_comment = ''
+    content = '%s [%s](%s)' % (file_comment, fileinfo['name'], attachment_path)
+
+    return s3_path, content
+
+def build_uploads(user_id: int, realm_id: int, email: str, fileinfo: ZerverFieldsT, s3_path: str,
+                  uploads_list: List[ZerverFieldsT]) -> None:
+    upload = dict(
+        path=fileinfo['url_private'],  # Save slack's url here, which is used later while processing
+        realm_id=realm_id,
+        content_type=None,
+        user_profile_id=user_id,
+        last_modified=fileinfo['timestamp'],
+        user_profile_email=email,
+        s3_path=s3_path,
+        size=fileinfo['size'])
+    uploads_list.append(upload)
 
 def get_message_sending_user(message: ZerverFieldsT) -> str:
     try:
@@ -656,7 +711,7 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str, 
 
     message_json = convert_slack_workspace_messages(slack_data_dir, user_list, realm_id,
                                                     added_users, added_recipient, added_channels,
-                                                    realm)
+                                                    realm, domain_name)
 
     avatar_folder = os.path.join(output_dir, 'avatars')
     avatar_realm_folder = os.path.join(avatar_folder, str(realm_id))
