@@ -487,12 +487,14 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(message_json['zerver_message'], zerver_message)
         self.assertEqual(message_json['zerver_usermessage'], zerver_usermessage)
 
+    @mock.patch("zerver.lib.slack_data_to_zulip_data.process_uploads", return_value = [])
     @mock.patch("zerver.lib.slack_data_to_zulip_data.build_avatar_url")
     @mock.patch("zerver.lib.slack_data_to_zulip_data.build_avatar")
     @mock.patch("zerver.lib.slack_data_to_zulip_data.get_user_data")
     def test_slack_import_to_existing_database(self, mock_get_user_data: mock.Mock,
                                                mock_build_avatar_url: mock.Mock,
-                                               mock_build_avatar: mock.Mock) -> None:
+                                               mock_build_avatar: mock.Mock,
+                                               mock_process_uploads: mock.Mock) -> None:
         test_slack_dir = os.path.join(settings.DEPLOY_ROOT, "zerver", "fixtures",
                                       "slack_fixtures")
         test_slack_zip_file = os.path.join(test_slack_dir, "test_slack_importer.zip")
