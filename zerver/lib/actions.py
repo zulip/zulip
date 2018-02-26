@@ -1990,6 +1990,12 @@ def check_schedule_message(sender: UserProfile, client: Client,
                             forwarder_user_profile=forwarder_user_profile)
     message['deliver_at'] = deliver_at
     message['delivery_type'] = delivery_type
+
+    recipient = message['message'].recipient
+    if (delivery_type == 'remind' and (recipient.type != Recipient.STREAM and
+                                       recipient.type_id != sender.id)):
+        raise JsonableError(_("Reminders can only be set for streams."))
+
     return do_schedule_messages([message])[0]
 
 def check_stream_name(stream_name: str) -> None:
