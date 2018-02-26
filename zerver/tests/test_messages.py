@@ -2016,20 +2016,29 @@ class ScheduledMessageTest(ZulipTestCase):
         self.assertEqual(message.scheduled_timestamp, convert_to_UTC(defer_until))
         self.assertEqual(message.delivery_type, ScheduledMessage.SEND_LATER)
 
+        # Setting a reminder in PM's to other users causes a error.
         result = self.do_schedule_message('private', self.example_email("othello"),
                                           content + ' 4', defer_until_str,
                                           delivery_type='remind')
+        self.assert_json_error(result, 'Reminders can only be set for streams.')
+
+        # Setting a reminder in PM's to ourself is successful.
+        # Required by reminders from message actions popover caret feature.
+        result = self.do_schedule_message('private', self.example_email("hamlet"),
+                                          content + ' 5', defer_until_str,
+                                          delivery_type='remind')
         message = self.last_scheduled_message()
         self.assert_json_success(result)
+        self.assertEqual(message.content, 'Test message 5')
         self.assertEqual(message.delivery_type, ScheduledMessage.REMIND)
 
         # Scheduling a message while guessing timezone.
         tz_guess = 'Asia/Kolkata'
-        result = self.do_schedule_message('stream', 'Verona', content + ' 5',
+        result = self.do_schedule_message('stream', 'Verona', content + ' 6',
                                           defer_until_str, tz_guess=tz_guess)
         message = self.last_scheduled_message()
         self.assert_json_success(result)
-        self.assertEqual(message.content, 'Test message 5')
+        self.assertEqual(message.content, 'Test message 6')
         local_tz = get_timezone(tz_guess)
         # Since mypy is not able to recognize localize and normalize as attributes of tzinfo we use ignore.
         utz_defer_until = local_tz.normalize(local_tz.localize(defer_until))  # type: ignore # Reason in comment on previous line.
@@ -2043,10 +2052,10 @@ class ScheduledMessageTest(ZulipTestCase):
         user.timezone = 'US/Pacific'
         user.save(update_fields=['timezone'])
         result = self.do_schedule_message('stream', 'Verona',
-                                          content + ' 6', defer_until_str)
+                                          content + ' 7', defer_until_str)
         message = self.last_scheduled_message()
         self.assert_json_success(result)
-        self.assertEqual(message.content, 'Test message 6')
+        self.assertEqual(message.content, 'Test message 7')
         local_tz = get_timezone(user.timezone)
         # Since mypy is not able to recognize localize and normalize as attributes of tzinfo we use ignore.
         utz_defer_until = local_tz.normalize(local_tz.localize(defer_until))  # type: ignore # Reason in comment on previous line.
