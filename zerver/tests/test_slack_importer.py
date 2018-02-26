@@ -432,15 +432,15 @@ class SlackImporter(ZulipTestCase):
 
         zerver_usermessage = []  # type: List[Dict[str, Any]]
         zerver_subscription = []  # type: List[Dict[str, Any]]
-        zerver_message, zerver_usermessage = channel_message_to_zerver_message(1, user_data, added_users,
-                                                                               added_recipient,
-                                                                               all_messages,
-                                                                               zerver_subscription,
-                                                                               'domain', ids)
+        zerver_message, zerver_usermessage, uploads = channel_message_to_zerver_message(
+            1, user_data, added_users, added_recipient, all_messages, zerver_subscription,
+            'domain', ids)
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
         self.assertEqual(len(zerver_message), 5)
+
+        self.assertEqual(uploads, [])
 
         # Message conversion already tested in tests.test_slack_message_conversion
         self.assertEqual(zerver_message[0]['content'], '@**Jane**: hey!')
@@ -479,10 +479,9 @@ class SlackImporter(ZulipTestCase):
 
         zerver_usermessage = [{'id': 3}, {'id': 5}, {'id': 6}, {'id': 9}]
 
-        mock_message.side_effect = [[zerver_message, zerver_usermessage]]
-        message_json = convert_slack_workspace_messages('./random_path', user_list, 2, {},
-                                                        {}, added_channels,
-                                                        realm, 'domain')
+        mock_message.side_effect = [[zerver_message, zerver_usermessage, []]]
+        message_json, uploads = convert_slack_workspace_messages(
+            './random_path', user_list, 2, {}, {}, added_channels, realm, 'domain')
         self.assertEqual(message_json['zerver_message'], zerver_message)
         self.assertEqual(message_json['zerver_usermessage'], zerver_usermessage)
 
