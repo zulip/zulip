@@ -34,7 +34,7 @@ jsonpickle==0.9.5         # via aws-xray-sdk, python-digitalocean
 moto==1.2.0
 ordereddict==1.1          # via gitlint
 parsel==1.2.0             # via scrapy
-pip-compile-multi==1.1.11
+pip-compile-multi==1.1.12
 pip-tools==1.11.0         # via pip-compile-multi
 pyaml==17.10.0            # via moto
 pycodestyle==2.3.1
