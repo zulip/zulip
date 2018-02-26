@@ -435,7 +435,8 @@ class SlackImporter(ZulipTestCase):
         zerver_message, zerver_usermessage = channel_message_to_zerver_message(1, user_data, added_users,
                                                                                added_recipient,
                                                                                all_messages,
-                                                                               zerver_subscription, ids)
+                                                                               zerver_subscription,
+                                                                               'domain', ids)
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
@@ -456,7 +457,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[4]['id'], 7)
 
         self.assertIsNone(zerver_message[3]['rendered_content'])
-        self.assertEqual(zerver_message[0]['has_image'], all_messages[1]['has_image'])
+        self.assertEqual(zerver_message[0]['has_image'], False)
         self.assertEqual(zerver_message[0]['pub_date'], float(all_messages[1]['ts']))
         self.assertEqual(zerver_message[2]['rendered_content_version'], 1)
 
@@ -481,7 +482,7 @@ class SlackImporter(ZulipTestCase):
         mock_message.side_effect = [[zerver_message, zerver_usermessage]]
         message_json = convert_slack_workspace_messages('./random_path', user_list, 2, {},
                                                         {}, added_channels,
-                                                        realm)
+                                                        realm, 'domain')
         self.assertEqual(message_json['zerver_message'], zerver_message)
         self.assertEqual(message_json['zerver_usermessage'], zerver_usermessage)
 
