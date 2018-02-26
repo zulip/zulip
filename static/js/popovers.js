@@ -564,8 +564,7 @@ exports.register_click_handlers = function () {
         var user_id = $(e.target).parents('ul').attr('data-user-id');
         compose_actions.start('stream', {trigger: 'sidebar user actions'});
         var name = people.get_person_from_user_id(user_id).full_name;
-        var textarea = $("#compose-textarea");
-        textarea.val('@**' + name + '** ');
+        compose_ui.insert_syntax_and_focus('@**' + name + '**');
         popovers.hide_user_sidebar_popover();
         e.stopPropagation();
         e.preventDefault();
@@ -593,8 +592,7 @@ exports.register_click_handlers = function () {
         compose_actions.respond_to_message({trigger: 'user sidebar popover'});
         var user_id = $(e.target).parents('ul').attr('data-user-id');
         var name = people.get_person_from_user_id(user_id).full_name;
-        var textarea = $("#compose-textarea");
-        textarea.val('@**' + name + '** ');
+        compose_ui.insert_syntax_and_focus('@**' + name + '**');
         popovers.hide_message_info_popover();
         e.stopPropagation();
         e.preventDefault();
