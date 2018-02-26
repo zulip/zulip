@@ -123,6 +123,14 @@ initialize();
     assert.equal(people.get_recipients('30,32'), 'Isaac Newton');
 }());
 
+(function test_my_custom_profile_data() {
+    var person = people.get_by_email(me.email);
+    person.profile_data = {3: 'My address', 4: 'My phone number'};
+    assert.equal(people.my_custom_profile_data(3), 'My address');
+    assert.equal(people.my_custom_profile_data(4), 'My phone number');
+    assert.equal(people.my_custom_profile_data(undefined), undefined);
+}());
+
 (function test_user_timezone() {
     var expected_pref = {
         timezone: 'US/Pacific',
