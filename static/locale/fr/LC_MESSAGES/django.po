@@ -13,6 +13,7 @@
 # Reid Barton <rwbarton@gmail.com>, 2015
 # Sulian Lanteri <sulian.lanteri@gmail.com>, 2017
 # yvan karmouta <yvan.karmouta@gmail.com>, 2017
+# Laurent Hubert <lau.hub@gmail.com>, 2018
 msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
@@ -44,7 +45,7 @@ msgstr "Aucune donnée d'analyse disponible. Veuillez contacter votre administra
 #: templates/analytics/stats.html:17
 #, python-format
 msgid "Zulip analytics for %(realm_name)s"
-msgstr ""
+msgstr "Statistiques Zulip pour %(realm_name)s"
 
 #: templates/analytics/stats.html:21
 msgid "Messages sent over time"
@@ -127,7 +128,7 @@ msgstr "Une mise à jour complète de tous les graphiques a lieu une fois par jo
 
 #: templates/analytics/stats.html:101
 msgid "Analytics documentation"
-msgstr ""
+msgstr "Documentation des statistiques"
 
 #: templates/confirmation/confirm_email_change.html:8
 msgid "Email changed!"
@@ -866,11 +867,11 @@ msgstr "Restreindre au sujet suivant non lu"
 
 #: templates/zerver/keyboard_shortcuts.html:115
 msgid "Cycle between stream narrows"
-msgstr ""
+msgstr "Passer d'un canal à l'autre"
 
 #: templates/zerver/keyboard_shortcuts.html:119
 msgid "Narrow to all unmuted messages"
-msgstr ""
+msgstr "Restreindre aux messages muets"
 
 #: templates/zerver/keyboard_shortcuts.html:125
 msgid "Message actions"
@@ -1855,7 +1856,7 @@ msgstr "Permission insuffisante"
 #: zerver/lib/actions.py:2968
 #, python-format
 msgid "Invalid default stream group %s"
-msgstr "Nom de canal de par défaut invalide"
+msgstr "Groupe de canal par défaut invalide (%s)"
 
 #: zerver/lib/actions.py:3024
 #, python-format
@@ -2334,19 +2335,19 @@ msgstr "Clé d'authentification pour ce sous-domaine introuvable."
 
 #: zerver/views/auth.py:212
 msgid "No JSON web token passed in request"
-msgstr ""
+msgstr "Aucun token web JSON passé dans la requête"
 
 #: zerver/views/auth.py:214
 msgid "Bad JSON web token"
-msgstr ""
+msgstr "Token web JSON incorrect"
 
 #: zerver/views/auth.py:218
 msgid "No user specified in JSON web token claims"
-msgstr ""
+msgstr "Aucun utilisateur spécifié dans les déclarations de token web JSON"
 
 #: zerver/views/auth.py:221
 msgid "No realm specified in JSON web token claims"
-msgstr ""
+msgstr "Aucun domaine spécifié dans les déclarations de token web JSON"
 
 #: zerver/views/auth.py:227
 msgid "Wrong subdomain"
@@ -2443,7 +2444,7 @@ msgstr "Cette invitation ne correspond à rien"
 #: zerver/views/messages.py:61
 #, python-brace-format
 msgid "Invalid narrow operator: {desc}"
-msgstr ""
+msgstr "Opérateur de restriction invalide: {desc}"
 
 #: zerver/views/messages.py:811
 #, python-format
@@ -2522,7 +2523,7 @@ msgstr "Statut invalide: %s"
 
 #: zerver/views/push_notifications.py:21
 msgid "Empty or invalid length token"
-msgstr ""
+msgstr "Token vide ou de longueur invalide"
 
 #: zerver/views/push_notifications.py:27
 msgid "Invalid APNS token"
@@ -2608,11 +2609,11 @@ msgstr "L'utilisateur n'est pas autorisé à exécuter des demandes au nom de '{
 
 #: zerver/views/streams.py:97
 msgid "You must pass \"new_description\" or \"new_group_name\"."
-msgstr ""
+msgstr "Vous devez saisir \"nouvelle_description\" ou \"nouveau_nom_de_groupe\""
 
 #: zerver/views/streams.py:123
 msgid "Invalid value for \"op\". Specify one of \"add\" or \"remove\"."
-msgstr ""
+msgstr "Valeur invalide pour \"op\". Saisir \"ajouter\" ou \"supprimer\"."
 
 #: zerver/views/streams.py:158
 msgid "Stream already has that name!"
@@ -2628,7 +2629,7 @@ msgstr "Cette action demande des droits d'administration"
 
 #: zerver/views/streams.py:236
 msgid "Cannot administer invite-only streams this way"
-msgstr ""
+msgstr "Impossible d'administrer de cette manière les canaux \"invité seul\""
 
 #: zerver/views/streams.py:314
 #, python-format
@@ -2638,7 +2639,7 @@ msgstr "Incapable d'accéder au canal (%s)."
 #: zerver/views/streams.py:320
 msgid ""
 "You can only invite other Zephyr mirroring users to invite-only streams."
-msgstr ""
+msgstr "Vous pouvez seulement inviter les utilisateurs miroir de Zephyr mirroring aux canaux \"invité seul\"."
 
 #: zerver/views/streams.py:520
 #, python-format
@@ -2677,16 +2678,16 @@ msgstr "Aucune nouvelle donnée fournie."
 
 #: zerver/views/user_groups.py:42
 msgid "Name successfully updated."
-msgstr ""
+msgstr "Nom mis à jour."
 
 #: zerver/views/user_groups.py:46
 msgid "Description successfully updated."
-msgstr ""
+msgstr "Description mise à jour."
 
 #: zerver/views/user_groups.py:84
 #, python-format
 msgid "User %s is already a member of this group"
-msgstr ""
+msgstr "L'utilisateur %s est déjà membre de ce groupe"
 
 #: zerver/views/user_settings.py:41 zerver/views/user_settings.py:107
 msgid "Email address changes are disabled in this organization."
@@ -2712,7 +2713,7 @@ msgstr "Fuseau horaire '%s' invalide"
 #: zerver/views/user_settings.py:150
 #, python-format
 msgid "Invalid emojiset '%s'"
-msgstr ""
+msgstr "Set d'émoticônes invalide '%s'"
 
 #: zerver/views/user_settings.py:192
 msgid "You must upload exactly one avatar."
@@ -2732,11 +2733,11 @@ msgstr "Impossible de supprimer le seul administrateur de l'organisation"
 
 #: zerver/views/users.py:267
 msgid "Embedded bots are not enabled."
-msgstr ""
+msgstr "Les robots intégrés ne sont pas activés."
 
 #: zerver/views/users.py:269
 msgid "Invalid embedded bot name."
-msgstr ""
+msgstr "Nom de robot intégré invalide."
 
 #: zerver/views/users.py:276
 msgid "Username already in use"
@@ -2766,7 +2767,7 @@ msgstr "Cache Kerberos invalide"
 
 #: zerver/views/zephyr.py:54
 msgid "We were unable to setup mirroring for you"
-msgstr ""
+msgstr "Nous ne pouvons pas configurer le miroir pour vous"
 
 #: zerver/webhooks/freshdesk/view.py:123
 #, python-format
@@ -2775,15 +2776,15 @@ msgstr "Clef %s manquante dans le JSON"
 
 #: zerver/webhooks/gogs/view.py:95
 msgid "Invalid event \"{}\" in request headers"
-msgstr ""
+msgstr "Evénement invalide \"{}\" dans l'entête de la requête"
 
 #: zerver/webhooks/groove/view.py:89
 msgid "Missing event header"
-msgstr ""
+msgstr "Entête d'événement manquant"
 
 #: zerver/webhooks/groove/view.py:97
 msgid "Missing required data"
-msgstr ""
+msgstr "Donnée obligatoire manquante"
 
 #: zerver/webhooks/ifttt/view.py:20 zerver/webhooks/zapier/view.py:20
 msgid "Subject can't be empty"
@@ -2795,7 +2796,7 @@ msgstr "Le contenu ne peut être vide"
 
 #: zerver/webhooks/jira/view.py:246
 msgid "Event is not given by JIRA"
-msgstr ""
+msgstr "Evénément non fourni par JIRA"
 
 #: zerver/webhooks/librato/view.py:155
 msgid "Malformed JSON input"
@@ -2824,7 +2825,7 @@ msgstr "Message de Slack"
 
 #: zerver/webhooks/stripe/view.py:170
 msgid "We don't support {} event"
-msgstr ""
+msgstr "Support d'événement {} indisponible"
 
 #: zerver/webhooks/transifex/view.py:26
 msgid "Transifex wrong request"
@@ -2842,11 +2843,11 @@ msgstr ""
 
 #: zerver/webhooks/wordpress/view.py:40
 msgid "Unknown WordPress webhook action: "
-msgstr ""
+msgstr "Action de Webhook Wordpress inconnue: "
 
 #: zilencer/views.py:44
 msgid "Must validate with valid Zulip server API key"
-msgstr ""
+msgstr "Vous devez valider avec une clef d'API valide pour le serveur Zulip"
 
 #: zilencer/views.py:49
 msgid "Invalid token type"
@@ -2856,9 +2857,9 @@ msgstr "Type de jeton invalide"
 #, python-format
 msgid ""
 "You should be an administrator of the organization %s to view this page."
-msgstr ""
+msgstr "Vous devriez être administrateur de l'organisation %s pour pouvoir afficher cette page."
 
 #: zilencer/views.py:185
 #, python-format
 msgid "Something went wrong. Please try again or email us at %s."
-msgstr ""
+msgstr "Il y a eu un problème. Ré-essayez ou envoyer un message à %s."
