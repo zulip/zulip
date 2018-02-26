@@ -762,6 +762,9 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str, 
     os.makedirs(avatar_realm_folder, exist_ok=True)
     avatar_records = process_avatars(avatar_list, avatar_folder, realm_id)
 
+    uploads_folder = os.path.join(output_dir, 'uploads')
+    os.makedirs(os.path.join(uploads_folder, str(realm_id)), exist_ok=True)
+    uploads_records = process_uploads(uploads_list, uploads_folder)
     attachment = {"zerver_attachment": zerver_attachment}
 
     # IO realm.json
@@ -771,7 +774,7 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str, 
     # IO avatar records
     create_converted_data_files(avatar_records, output_dir, '/avatars/records.json', False)
     # IO uploads TODO
-    create_converted_data_files([], output_dir, '/uploads/records.json', True)
+    create_converted_data_files(uploads_records, output_dir, '/uploads/records.json', False)
     # IO attachments
     create_converted_data_files(attachment, output_dir, '/attachment.json', False)
 
@@ -820,6 +823,25 @@ def get_avatar(slack_avatar_url: str, image_path: str, original_image_path: str)
     with open(image_path, 'wb') as image_file:
         shutil.copyfileobj(response.raw, image_file)
     shutil.copy(image_path, original_image_path)
+
+def process_uploads(upload_list: List[ZerverFieldsT], upload_dir: str) -> List[ZerverFieldsT]:
+    """
+    This function gets the uploads and saves it in the realm's upload directory
+    """
+    logging.info('######### GETTING ATTACHMENTS #########\n')
+    for upload in upload_list:
+        upload_url = upload['path']
+        upload_s3_path = upload['s3_path']
+
+        upload_path = os.path.join(upload_dir, upload_s3_path)
+        response = requests.get(upload_url, stream=True)
+        os.makedirs(os.path.dirname(upload_path), exist_ok=True)
+        with open(upload_path, 'wb') as upload_file:
+            shutil.copyfileobj(response.raw, upload_file)
+
+        upload['path'] = upload_s3_path
+    logging.info('######### GETTING ATTACHMENTS FINISHED #########\n')
+    return upload_list
 
 def get_data_file(path: str) -> Any:
     data = json.load(open(path))
