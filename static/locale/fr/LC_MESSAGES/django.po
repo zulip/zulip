@@ -563,7 +563,7 @@ msgid ""
 "            here for you right now. I'm sure someone will eventually send\n"
 "            you one.\n"
 "            "
-msgstr "\n            Disons-que... il n'y a aucun message pour vous pour l'instant. Je suis certain que quelqu'un vous en enverra un bientôt.\n"
+msgstr "\n            Disons-que... il n'y a aucun message pour vous pour l'instant. Je suis certain que quelqu'un vous en enverra un bientôt.\n            "
 
 #: templates/zerver/home.html:24
 msgid ""
@@ -2034,11 +2034,11 @@ msgstr "Type de paramètre invalide"
 
 #: zerver/lib/events.py:612
 msgid "Could not allocate event queue"
-msgstr ""
+msgstr "Impossible d'allouer la file d'attente des événements"
 
 #: zerver/lib/integrations.py:36
 msgid "Integration frameworks"
-msgstr ""
+msgstr "Frameworks d'intégration"
 
 #: zerver/lib/integrations.py:37
 msgid "Continuous integration"
@@ -2062,7 +2062,7 @@ msgstr "Financier"
 
 #: zerver/lib/integrations.py:42
 msgid "HR"
-msgstr ""
+msgstr "Ressources Humaines"
 
 #: zerver/lib/integrations.py:43
 msgid "Marketing"
@@ -2099,12 +2099,12 @@ msgstr "Opérateur %s non supporté."
 
 #: zerver/lib/push_notifications.py:283
 msgid "Received 500 from push notification bouncer"
-msgstr ""
+msgstr "Erreur 500 lors de la notification push"
 
 #: zerver/lib/push_notifications.py:291
 #, python-format
 msgid "Push notifications bouncer error: %s"
-msgstr ""
+msgstr "Erreur de notification push: %s"
 
 #: zerver/lib/push_notifications.py:377 zilencer/views.py:90
 msgid "Token does not exist"
@@ -2131,11 +2131,11 @@ msgstr "Type d'argument invalide"
 #: zerver/lib/request.py:162
 #, python-format
 msgid "Argument \"%s\" is not valid JSON."
-msgstr ""
+msgstr "L'argument \"%s\" est invalide (JSON)."
 
 #: zerver/lib/rest.py:112 zerver/lib/rest.py:115
 msgid "Not logged in: API authentication or user session required"
-msgstr ""
+msgstr "Non connecté: session utilisateur ou clef d'authentification API nécessaire"
 
 #: zerver/lib/streams.py:21 zerver/lib/streams.py:69
 msgid "Invalid stream id"
@@ -2158,11 +2158,11 @@ msgstr "Le(s) canal(aux) (%s) n'existe(nt) pas"
 #: zerver/lib/streams.py:228
 #, python-format
 msgid "Default stream group with id '%s' does not exist."
-msgstr ""
+msgstr "Le groupe par défaut avec l'identifiant '%s' n'existe pas."
 
 #: zerver/lib/upload.py:102
 msgid "Animated emoji must have the same width and height."
-msgstr ""
+msgstr "Les émoticônes animées doivent avoir des longueurs et largeurs identiques."
 
 #: zerver/lib/upload.py:105
 msgid "Animated emoji can't be larger than 64px in width or height."
@@ -2170,7 +2170,7 @@ msgstr "L'emoji animé ne peut être plus large que 64px en largeur et hauteur"
 
 #: zerver/lib/user_groups.py:14
 msgid "Invalid user group"
-msgstr ""
+msgstr "Groupe d'utilisateur invalide"
 
 #: zerver/lib/users.py:14
 msgid "Name too long!"
@@ -2199,7 +2199,7 @@ msgstr "Type d'interface invalide"
 #: zerver/lib/users.py:87 zerver/lib/users.py:89
 #, python-format
 msgid "Invalid user ID: %s"
-msgstr ""
+msgstr "Identifiant utilisateur invalide: %s"
 
 #: zerver/lib/validator.py:39 zerver/lib/validator.py:44
 #, python-format
@@ -2239,7 +2239,7 @@ msgstr "%(container)s doit avoir exactement %(length)s éléments"
 #: zerver/lib/validator.py:98
 #, python-format
 msgid "%s is not a dict"
-msgstr ""
+msgstr "%s n'est pas un 'dict'"
 
 #: zerver/lib/validator.py:102
 #, python-format
@@ -2254,7 +2254,7 @@ msgstr "Arguments inattendus: %s"
 #: zerver/lib/validator.py:140
 #, python-format
 msgid "%s is not an allowed_type"
-msgstr ""
+msgstr "%s n'est pas un type autorisé (allowed_type)"
 
 #: zerver/lib/validator.py:146
 #, python-format
@@ -2276,7 +2276,7 @@ msgstr "L'utilisation de l'API a dépassé la limite"
 
 #: zerver/models.py:1219
 msgid "Unicode emoji"
-msgstr ""
+msgstr "Emoticône unicode"
 
 #: zerver/models.py:1220
 msgid "Realm emoji"
@@ -2284,7 +2284,7 @@ msgstr "Emoji de domaine"
 
 #: zerver/models.py:1221
 msgid "Zulip extra emoji"
-msgstr ""
+msgstr "Emoticônes supplémentaires pour Zulip"
 
 #: zerver/tornado/event_queue.py:504 zerver/tornado/socket.py:130
 msgid "Missing 'queue_id' argument"
@@ -2301,7 +2301,7 @@ msgstr "Vous n'êtes pas autorisé à avoir les évènements de cette queue"
 #: zerver/tornado/exceptions.py:16
 #, python-brace-format
 msgid "Bad event queue id: {queue_id}"
-msgstr ""
+msgstr "Identifiant de file d'attente d'événement incorrect: {queue_id}"
 
 #: zerver/tornado/socket.py:119
 msgid "Unknown or missing session"
@@ -2374,11 +2374,11 @@ msgstr "Cet utilisateur n'est pas inscrit."
 
 #: zerver/views/auth.py:653
 msgid "Password auth is disabled in your team."
-msgstr ""
+msgstr "L'authentification par mot de passe est désactivé pour votre équipe."
 
 #: zerver/views/auth.py:659
 msgid "This user is not registered; do so from a browser."
-msgstr ""
+msgstr "Cet utilisateur n'est pas enregistré. Réessayez depuis un navigateur."
 
 #: zerver/views/auth.py:661 zerver/views/auth.py:742
 msgid "Your username or password is incorrect."
@@ -2438,7 +2438,7 @@ msgstr "Le canal n'existe pas: %s. Aucune invitation n'a été envoyé."
 #: zerver/views/invite.py:77 zerver/views/invite.py:80
 #: zerver/views/invite.py:92 zerver/views/invite.py:95
 msgid "No such invitation"
-msgstr ""
+msgstr "Cette invitation ne correspond à rien"
 
 #: zerver/views/messages.py:61
 #, python-brace-format
@@ -2461,15 +2461,15 @@ msgstr "Envoyeur manquant"
 
 #: zerver/views/messages.py:956
 msgid "Invalid mirrored message"
-msgstr ""
+msgstr "Message miroir invalide"
 
 #: zerver/views/messages.py:958
 msgid "Invalid mirrored realm"
-msgstr ""
+msgstr "Domaine miroir invalide"
 
 #: zerver/views/messages.py:1015
 msgid "Message edit history is disabled in this organization"
-msgstr ""
+msgstr "L'édition de l'historique des messages est désactivé pour cette organisation"
 
 #: zerver/views/messages.py:1032
 msgid "Your organization has turned off message editing"
@@ -2530,11 +2530,11 @@ msgstr ""
 
 #: zerver/views/reactions.py:37
 msgid "Reaction already exists."
-msgstr ""
+msgstr "La réaction existe déjà."
 
 #: zerver/views/reactions.py:85
 msgid "Reaction doesn't exist."
-msgstr ""
+msgstr "La réaction n'existe pas."
 
 #: zerver/views/reactions.py:114
 msgid "Reaction already exists"
