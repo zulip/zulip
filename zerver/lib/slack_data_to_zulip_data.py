@@ -475,11 +475,13 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
                                      added_users: AddedUsersT, added_recipient: AddedRecipientsT,
                                      added_channels: AddedChannelsT, realm: ZerverFieldsT,
                                      domain_name: str) -> Tuple[ZerverFieldsT,
+                                                                List[ZerverFieldsT],
                                                                 List[ZerverFieldsT]]:
     """
     Returns:
     1. message.json, Converted messages
     2. uploads, which is a list of uploads to be mapped in uploads records.json
+    3. attachment, which is a list of the attachments
     """
     # now for message.json
     message_json = {}
@@ -502,7 +504,7 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
     attachment_id_list = allocate_ids(UserMessage, total_attachments)
 
     id_list = [message_id_list, usermessage_id_list, attachment_id_list]
-    zerver_message, zerver_usermessage, uploads = channel_message_to_zerver_message(
+    zerver_message, zerver_usermessage, attachment, uploads = channel_message_to_zerver_message(
         realm_id, users, added_users, added_recipient, all_messages,
         realm['zerver_subscription'], domain_name, id_list)
 
@@ -511,7 +513,7 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
     message_json['zerver_message'] = zerver_message
     message_json['zerver_usermessage'] = zerver_usermessage
 
-    return message_json, uploads
+    return message_json, uploads, attachment
 
 def get_all_messages(slack_data_dir: str, added_channels: AddedChannelsT) -> List[ZerverFieldsT]:
     all_messages = []  # type: List[ZerverFieldsT]
@@ -562,12 +564,14 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
                                       domain_name: str,
                                       ids: List[Any]) -> Tuple[List[ZerverFieldsT],
                                                                List[ZerverFieldsT],
+                                                               List[ZerverFieldsT],
                                                                List[ZerverFieldsT]]:
     """
     Returns:
     1. zerver_message, which is a list of the messages
     2. zerver_usermessage, which is a list of the usermessages
-    3. uploads_list, which is a list of uploads to be mapped in uploads records.json
+    3. zerver_attachment, which is a list of the attachments
+    4. uploads_list, which is a list of uploads to be mapped in uploads records.json
     """
     message_id_count = usermessage_id_count = attachment_id_count = 0
     message_id_list, usermessage_id_list, attachment_id_list = ids
@@ -643,7 +647,7 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
             zerver_subscription, recipient_id, mentioned_users_id, message_id)
 
         message_id_count += 1
-    return zerver_message, zerver_usermessage, uploads_list
+    return zerver_message, zerver_usermessage, zerver_attachment, uploads_list
 
 def get_attachment_path_and_content(fileinfo: ZerverFieldsT, realm_id: int) -> Tuple[str,
                                                                                      str]:
@@ -748,7 +752,7 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str, 
     realm, added_users, added_recipient, added_channels, avatar_list = slack_workspace_to_realm(
         domain_name, realm_id, user_list, realm_subdomain, fixtures_path, slack_data_dir)
 
-    message_json, uploads_list = convert_slack_workspace_messages(
+    message_json, uploads_list, zerver_attachment = convert_slack_workspace_messages(
         slack_data_dir, user_list, realm_id, added_users, added_recipient, added_channels,
         realm, domain_name)
 
@@ -758,7 +762,6 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str, 
     os.makedirs(avatar_realm_folder, exist_ok=True)
     avatar_records = process_avatars(avatar_list, avatar_folder, realm_id)
 
-    zerver_attachment = []  # type: List[ZerverFieldsT]
     attachment = {"zerver_attachment": zerver_attachment}
 
     # IO realm.json
