@@ -16,7 +16,7 @@ from django.db import connection
 from django.utils.timezone import now as timezone_now
 from typing import Any, Dict, List, Tuple
 from zerver.models import UserProfile, Realm, Stream, UserMessage, \
-    Subscription, Message, Recipient, DefaultStream
+    Subscription, Message, Recipient, DefaultStream, Attachment
 from zerver.forms import check_subdomain_available
 from zerver.lib.slack_message_conversion import convert_to_zulip_markdown, \
     get_user_full_name
@@ -492,13 +492,14 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
     logging.info('######### IMPORTING MESSAGES STARTED #########\n')
 
     # To pre-compute the total number of messages and usermessages
-    total_messages, total_usermessages = get_total_messages_and_usermessages(
+    total_messages, total_usermessages, total_attachments = get_total_messages_and_attachments(
         realm['zerver_subscription'], added_recipient, all_messages)
 
     message_id_list = allocate_ids(Message, total_messages)
     usermessage_id_list = allocate_ids(UserMessage, total_usermessages)
+    attachment_id_list = allocate_ids(UserMessage, total_attachments)
 
-    id_list = [message_id_list, usermessage_id_list]
+    id_list = [message_id_list, usermessage_id_list, attachment_id_list]
     zerver_message, zerver_usermessage = channel_message_to_zerver_message(
         realm_id, users, added_users, added_recipient, all_messages,
         realm['zerver_subscription'], domain_name, id_list)
@@ -524,29 +525,32 @@ def get_all_messages(slack_data_dir: str, added_channels: AddedChannelsT) -> Lis
             all_messages += messages
     return all_messages
 
-def get_total_messages_and_usermessages(zerver_subscription: List[ZerverFieldsT],
-                                        added_recipient: AddedRecipientsT,
-                                        all_messages: List[ZerverFieldsT]) -> Tuple[int, int]:
+def get_total_messages_and_attachments(zerver_subscription: List[ZerverFieldsT],
+                                       added_recipient: AddedRecipientsT,
+                                       all_messages: List[ZerverFieldsT]) -> Tuple[int, int,
+                                                                                   int]:
     """
     Returns:
     1. message_id, which is total number of messages
     2. usermessage_id, which is total number of usermessages
+    3. attachment_id, which is total number of attachments
     """
-    total_messages = 0
-    total_usermessages = 0
+    total_messages = total_usermessages = total_attachments = 0
 
     for message in all_messages:
         if 'subtype' in message.keys():
             subtype = message['subtype']
             if subtype in ["channel_join", "channel_leave", "channel_name"]:
                 continue
+            elif subtype  == "file_share":
+                total_attachments += 1
 
         for subscription in zerver_subscription:
             if subscription['recipient'] == added_recipient[message['channel_name']]:
                 total_usermessages += 1
         total_messages += 1
 
-    return total_messages, total_usermessages
+    return total_messages, total_usermessages, total_attachments
 
 def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
                                       added_users: AddedUsersT,
@@ -561,11 +565,12 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
     1. zerver_message, which is a list of the messages
     2. zerver_usermessage, which is a list of the usermessages
     """
-    message_id_count = usermessage_id_count = 0
-    message_id_list, usermessage_id_list = ids
+    message_id_count = usermessage_id_count = attachment_id_count = 0
+    message_id_list, usermessage_id_list, attachment_id_list = ids
     zerver_message = []
     zerver_usermessage = []  # type: List[ZerverFieldsT]
     uploads_list = []  # type: List[ZerverFieldsT]
+    zerver_attachment = []  # type: List[ZerverFieldsT]
 
     for message in all_messages:
         user = get_message_sending_user(message)
@@ -579,6 +584,10 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
                                                                           users,
                                                                           added_users)
         rendered_content = None
+
+        recipient_id = added_recipient[message['channel_name']]
+        message_id = message_id_list[message_id_count]
+
         if 'subtype' in message.keys():
             subtype = message['subtype']
             if subtype in ["channel_join", "channel_leave", "channel_name"]:
@@ -600,8 +609,11 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
                 build_uploads(added_users[user], realm_id, file_user_email, fileinfo, s3_path,
                               uploads_list)
 
-        recipient_id = added_recipient[message['channel_name']]
-        message_id = message_id_list[message_id_count]
+                attachment_id = attachment_id_list[attachment_id_count]
+                build_zerver_attachment(realm_id, message_id, attachment_id, added_users[user],
+                                        fileinfo, s3_path, zerver_attachment)
+                attachment_id_count += 1
+
         # construct message
         zulip_message = dict(
             sending_client=1,
@@ -663,6 +675,21 @@ def build_uploads(user_id: int, realm_id: int, email: str, fileinfo: ZerverField
         s3_path=s3_path,
         size=fileinfo['size'])
     uploads_list.append(upload)
+
+def build_zerver_attachment(realm_id: int, message_id: int, attachment_id: int,
+                            user_id: int, fileinfo: ZerverFieldsT, s3_path: str,
+                            zerver_attachment: List[ZerverFieldsT]) -> None:
+    attachment = dict(
+        owner=user_id,
+        messages=[message_id],
+        id=attachment_id,
+        size=fileinfo['size'],
+        create_time=fileinfo['created'],
+        is_realm_public=True,  # is always true for stream message
+        path_id=s3_path,
+        realm=realm_id,
+        file_name=fileinfo['name'])
+    zerver_attachment.append(attachment)
 
 def get_message_sending_user(message: ZerverFieldsT) -> str:
     try:

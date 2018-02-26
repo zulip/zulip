@@ -18,7 +18,7 @@ from zerver.lib.slack_data_to_zulip_data import (
     build_subscription,
     channels_to_zerver_stream,
     slack_workspace_to_realm,
-    get_total_messages_and_usermessages,
+    get_total_messages_and_attachments,
     get_message_sending_user,
     build_zerver_usermessage,
     channel_message_to_zerver_message,
@@ -346,10 +346,10 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(realm['zerver_userprofile'], [])
         self.assertEqual(realm['zerver_realm'], [{}])
 
-    def test_get_total_messages_and_usermessages(self) -> None:
+    def test_get_total_messages_and_attachments(self) -> None:
         messages = [{"text": "<@U8VAHEVUY> has joined the channel", "subtype": "channel_join",
                      "channel_name": "random"},
-                    {"text": "message", "channel_name": "random"},
+                    {"text": "message", "channel_name": "random", "subtype": "file_share"},
                     {"text": "random", "channel_name": "random"},
                     {"text": "test messsage", "channel_name": "general"},
                     {"text": "test message 2", "subtype": "channel_leave", "channel_name": "general"},
@@ -359,11 +359,11 @@ class SlackImporter(ZulipTestCase):
         added_recipient = {'random': 2, 'general': 4}
         zerver_subscription = [{'recipient': 2}, {'recipient': 4}, {'recipient': 2}]
 
-        total_messages, total_usermessages = get_total_messages_and_usermessages(zerver_subscription,
-                                                                                 added_recipient,
-                                                                                 messages)
+        total_messages, total_usermessages, total_attachments = get_total_messages_and_attachments(
+            zerver_subscription, added_recipient, messages)
         # subtype: channel_join, channel_leave are filtered out
         self.assertEqual(total_messages, 4)
+        self.assertEqual(total_attachments, 1)
         self.assertEqual(total_usermessages, 6)
 
     def test_get_message_sending_user(self) -> None:
@@ -428,7 +428,7 @@ class SlackImporter(ZulipTestCase):
                          "ts": "1433868669.000012", "channel_name": "general"}]  # type: List[Dict[str, Any]]
 
         added_recipient = {'random': 2, 'general': 1}
-        ids = [[3, 4, 5, 6, 7], []]
+        ids = [[3, 4, 5, 6, 7], [], []]
 
         zerver_usermessage = []  # type: List[Dict[str, Any]]
         zerver_subscription = []  # type: List[Dict[str, Any]]
@@ -467,8 +467,8 @@ class SlackImporter(ZulipTestCase):
     @mock.patch("zerver.lib.slack_data_to_zulip_data.channel_message_to_zerver_message")
     @mock.patch("zerver.lib.slack_data_to_zulip_data.allocate_ids")
     @mock.patch("zerver.lib.slack_data_to_zulip_data.get_all_messages")
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.get_total_messages_and_usermessages", return_value=[2, 4])
-    def test_convert_slack_workspace_messages(self, mock_get_total_messages_and_usermessages: mock.Mock,
+    @mock.patch("zerver.lib.slack_data_to_zulip_data.get_total_messages_and_attachments", return_value=[2, 4, 1])
+    def test_convert_slack_workspace_messages(self, mock_get_total_messages_and_attachments: mock.Mock,
                                               mock_get_all_messages: mock.Mock, mock_allocate_ids: mock.Mock,
                                               mock_message: mock.Mock) -> None:
         added_channels = {'random': 1, 'general': 2}
