@@ -579,6 +579,14 @@ function render(template_name, args) {
     global.write_handlebars_output("compose_stream_alert", html);
 }());
 
+(function custom_user_profile_field() {
+    var args = {field_name: "GitHub user name", field_id: 2, field_value: "@GitHub", field_type: "text"};
+    var html = render('custom-user-profile-field', args);
+    assert.equal($(html).find('input').attr('id'), 2);
+    assert.equal($(html).find('input').val(), "@GitHub");
+    global.write_handlebars_output("custom-user-profile-field", html);
+}());
+
 (function deactivate_stream_modal() {
     var args = {
         stream_name: "Public stream",
