@@ -310,6 +310,20 @@ exports.set_up = function () {
         $("#deactivate_self_modal").modal("show");
     });
 
+    $(".custom_user_field input, .custom_user_field textarea").on('change', function () {
+        var fields = [];
+        var value = $(this).val();
+        var spinner = $("#custom-field-status").expectOne();
+        loading.make_indicator(spinner, {text: 'Saving ...'});
+        if ($(this).attr("type") === "number") {
+            value = parseInt(value, 10);
+        }
+        fields.push({id: parseInt($(this).attr("id"), 10), value: value});
+
+        settings_ui.do_settings_change(channel.patch, "/json/users/me/profile_data",
+                                       {data: JSON.stringify(fields)}, spinner);
+    });
+
     $("#do_deactivate_self_button").on('click',function () {
         $("#do_deactivate_self_button .loader").css('display', 'inline-block');
         $("#do_deactivate_self_button span").hide();
