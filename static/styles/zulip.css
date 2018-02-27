@@ -2527,6 +2527,7 @@ button.topic_edit_cancel {
     vertical-align: text-bottom;
 }
 
+.topic-mention,
 .user-group-mention,
 .user-mention {
     background: hsl(0, 0%, 93%);

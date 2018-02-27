@@ -1134,6 +1134,14 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
             members = message['mention_data'].get_group_members(group_id)
             message['message'].mentions_user_ids.update(members)
 
+        # Add members of the mentioned topics into `mentions_user_ids`.
+        mention_data = message['mention_data']
+        for topic in message['message'].mentions_topics:
+            recipient_id = message['message'].recipient_id
+            mention_data = message['mention_data']
+            members = mention_data.get_topic_participants(recipient_id, topic)
+            message['message'].mentions_user_ids.update(members)
+
         '''
         Once we have the actual list of mentioned ids from message
         rendering, we can patch in "default bots" (aka normal bots)

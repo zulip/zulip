@@ -518,6 +518,7 @@ def render_markdown(message: Message,
         message.mentions_wildcard = False
         message.mentions_user_ids = set()
         message.mentions_user_group_ids = set()
+        message.mentions_topics = set()
         message.alert_words = set()
         message.links_for_preview = set()
 

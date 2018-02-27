@@ -12,7 +12,8 @@ from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.camo import get_camo_url
 from zerver.lib.create_user import create_user
 from zerver.lib.emoji import get_emoji_url
-from zerver.lib.mention import possible_mentions, possible_user_group_mentions
+from zerver.lib.mention import possible_mentions, possible_user_group_mentions, \
+    possible_topic_mentions
 from zerver.lib.message import render_markdown
 from zerver.lib.request import (
     JsonableError,
@@ -29,6 +30,8 @@ from zerver.models import (
     flush_realm_filter,
     get_client,
     get_realm,
+    get_realm_stream,
+    get_recipient,
     get_stream,
     realm_filters_for_realm,
     MAX_MESSAGE_LENGTH,
@@ -960,6 +963,84 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(render_markdown(msg, content),
                          '<p>Hey @<em>Nonexistent group</em></p>')
         self.assertEqual(msg.mentions_user_group_ids, set())
+
+    def test_topic_mention_single(self) -> None:
+        sender_user_profile = self.example_user('othello')
+        user_profile = self.example_user('hamlet')
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        verona = get_realm_stream("Verona", get_realm('zulip').id)
+        msg.recipient = get_recipient(Recipient.STREAM, verona.id)
+        user_id = user_profile.id
+
+        content = "@**King Hamlet** @***Verona1***"
+        self.assertEqual(render_markdown(msg, content),
+                         '<p><span class="user-mention" '
+                         'data-user-email="%s" '
+                         'data-user-id="%s">'
+                         '@King Hamlet</span> '
+                         '<span class="topic-mention" '
+                         'data-topic="Verona1">'
+                         '@Verona1</span></p>' % (self.example_email("hamlet"),
+                                                  user_id))
+        self.assertEqual(msg.mentions_user_ids, set([user_profile.id]))
+        self.assertEqual(msg.mentions_topics, set(['Verona1']))
+
+    def test_possible_topic_mentions(self) -> None:
+        def assert_mentions(content: Text, topics: Set[Text]) -> None:
+            self.assertEqual(possible_topic_mentions(content), topics)
+
+        assert_mentions('', set())
+        assert_mentions('boring', set())
+        assert_mentions('@**all**', set())
+        assert_mentions('@*all*', set())
+        assert_mentions('smush@*steve*smush', set())
+
+        assert_mentions(
+            '@*support* Hello @***Verona1*** and @**Cordelia Lear**\n'
+            '@**Foo van Barson** @**all**', {'Verona1'}
+        )
+
+        assert_mentions(
+            'Attention @***verona1***, @***verona2*** and @*backend*\ngroups.',
+            {'verona1', 'verona2'}
+        )
+
+    def test_topic_mention_multiple(self) -> None:
+        sender_user_profile = self.example_user('othello')
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        verona = get_realm_stream("Verona", get_realm('zulip').id)
+        msg.recipient = get_recipient(Recipient.STREAM, verona.id)
+
+        content = "@***verona1*** and @***verona2***, check this out"
+        self.assertEqual(render_markdown(msg, content),
+                         '<p>'
+                         '<span class="topic-mention" '
+                         'data-topic="verona1">'
+                         '@verona1</span> '
+                         'and '
+                         '<span class="topic-mention" '
+                         'data-topic="verona2">'
+                         '@verona2</span>, '
+                         'check this out'
+                         '</p>')
+
+        self.assertEqual(msg.mentions_topics, set(['verona1', 'verona2']))
+
+    def test_topic_mention_invalid(self) -> None:
+        sender_user_profile = self.example_user('othello')
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        verona = get_realm_stream("Verona", get_realm('zulip').id)
+        msg.recipient = get_recipient(Recipient.STREAM, verona.id)
+
+        content = "Hey @***Denmark1***"
+        self.assertEqual(render_markdown(msg, content),
+                         '<p>Hey @<strong>*Denmark1</strong>*</p>')
+        self.assertEqual(msg.mentions_topics, set())
+
+        content = "Hey @***non existing topic***"
+        self.assertEqual(render_markdown(msg, content),
+                         '<p>Hey @<strong>*non existing topic</strong>*</p>')
+        self.assertEqual(msg.mentions_topics, set())
 
     def test_stream_single(self) -> None:
         denmark = get_stream('Denmark', get_realm('zulip'))

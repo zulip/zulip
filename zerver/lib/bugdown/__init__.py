@@ -33,7 +33,8 @@ from zerver.lib.bugdown import fenced_code
 from zerver.lib.bugdown.fenced_code import FENCE_RE
 from zerver.lib.camo import get_camo_url
 from zerver.lib.mention import possible_mentions, \
-    possible_user_group_mentions, extract_user_group
+    possible_user_group_mentions, extract_user_group, \
+    possible_topic_mentions
 from zerver.lib.notifications import encode_stream
 from zerver.lib.timeout import timeout, TimeoutExpired
 from zerver.lib.cache import cache_with_key, NotFoundInCache
@@ -1389,6 +1390,29 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
             return el
         return None
 
+class TopicMentionPattern(markdown.inlinepatterns.Pattern):
+    def handleMatch(self, m: Match[Text]) -> Optional[Element]:
+        match = m.group(2)
+
+        if current_message and db_data is not None:
+            if match.startswith("***") and match.endswith("***"):
+                topic = match[3:-3]
+            else:
+                return None
+
+            recipient_id = current_message.recipient_id
+            if db_data['mention_data'].is_valid_topic(recipient_id, topic):
+                current_message.mentions_topics.add(topic)
+            else:
+                return None
+
+            el = markdown.util.etree.Element("span")
+            el.set('class', 'topic-mention')
+            el.set('data-topic', topic)
+            el.text = "@%s" % (topic,)
+            return el
+        return None
+
 class UserGroupMentionPattern(markdown.inlinepatterns.Pattern):
     def handleMatch(self, m: Match[Text]) -> Optional[Element]:
         match = m.group(2)
@@ -1571,6 +1595,9 @@ class Bugdown(markdown.Extension):
         md.inlinePatterns.add('usermention', UserMentionPattern(mention.find_mentions), '>backtick')
         md.inlinePatterns.add('usergroupmention',
                               UserGroupMentionPattern(mention.user_group_mentions),
+                              '>backtick')
+        md.inlinePatterns.add('topicmention',
+                              TopicMentionPattern(mention.topic_mentions),
                               '>backtick')
         md.inlinePatterns.add('stream', StreamPattern(STREAM_LINK_REGEX), '>backtick')
         md.inlinePatterns.add(
@@ -1808,6 +1835,33 @@ def get_full_name_info(realm_id: int, full_names: Set[Text]) -> Dict[Text, FullN
     }
     return dct
 
+TopicInfo = Dict[int, Dict[str, Set[int]]]
+
+def get_topic_info(realm_id: int, topics: Set[str]) -> TopicInfo:
+    if not topics:
+        return dict()
+
+    q_list = {
+        Q(subject__iexact=topic)
+        for topic in topics
+    }
+
+    rows = Message.objects.filter(
+        sender__realm_id=realm_id
+    ).filter(
+        functools.reduce(lambda a, b: a | b, q_list)
+    ).distinct(
+        'sender_id',
+        'subject',
+        'recipient_id'
+    ).values_list('sender_id', 'subject', 'recipient_id')
+
+    info = defaultdict(lambda: defaultdict(set))  # type: TopicInfo
+    for sender_id, topic, recipient_id in rows:
+        info[recipient_id][topic.lower()].add(sender_id)
+
+    return info
+
 class MentionData:
     def __init__(self, realm_id: int, content: Text) -> None:
         full_names = possible_mentions(content)
@@ -1827,6 +1881,10 @@ class MentionData:
             user_profile_id = info['user_profile_id']
             self.user_group_members[group_id].append(user_profile_id)
 
+        # Get stream topics
+        possible_topics = possible_topic_mentions(content)
+        self.topic_info = get_topic_info(realm_id, possible_topics)
+
     def get_user(self, name: Text) -> Optional[FullNameInfo]:
         return self.full_name_info.get(name.lower(), None)
 
@@ -1844,6 +1902,12 @@ class MentionData:
 
     def get_group_members(self, user_group_id: int) -> List[int]:
         return self.user_group_members.get(user_group_id, [])
+
+    def is_valid_topic(self, recipient_id: int, topic: str) -> bool:
+        return topic.lower() in self.topic_info[recipient_id]
+
+    def get_topic_participants(self, recipient_id: int, topic: str) -> Set[int]:
+        return self.topic_info[recipient_id][topic.lower()]
 
 def get_user_group_name_info(realm_id: int, user_group_names: Set[Text]) -> Dict[Text, UserGroup]:
     if not user_group_names:

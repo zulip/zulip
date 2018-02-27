@@ -7,6 +7,7 @@ import re
 # sequences after @
 find_mentions = r'(?<![^\s\'\"\(,:<])@(\*\*[^\*]+\*\*|all|everyone)'
 user_group_mentions = r'(?<![^\s\'\"\(,:<])@(\*[^\*]+\*)'
+topic_mentions = r'(?<![^\s\'\"\(,:<])@(\*\*\*[^\*]+\*\*\*)'
 
 wildcards = ['all', 'everyone']
 
@@ -35,3 +36,10 @@ def extract_user_group(matched_text: Text) -> Text:
 def possible_user_group_mentions(content: Text) -> Set[Text]:
     matches = re.findall(user_group_mentions, content)
     return {extract_user_group(match) for match in matches}
+
+def extract_topic(matched_text: str) -> str:
+    return matched_text[3:-3]
+
+def possible_topic_mentions(content: str) -> Set[str]:
+    matches = re.findall(topic_mentions, content)
+    return {extract_topic(match) for match in matches}
