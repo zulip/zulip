@@ -552,7 +552,9 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.user_popover .mention_user', function (e) {
-        compose_actions.start('stream', {trigger: 'sidebar user actions'});
+        if (!compose_state.composing()) {
+            compose_actions.start('stream', {trigger: 'sidebar user actions'});
+        }
         var user_id = $(e.target).parents('ul').attr('data-user-id');
         var name = people.get_person_from_user_id(user_id).full_name;
         compose_ui.insert_syntax_and_focus('@**' + name + '**');
@@ -562,7 +564,9 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.message-info-popover .mention_user', function (e) {
-        compose_actions.respond_to_message({trigger: 'user sidebar popover'});
+        if (!compose_state.composing()) {
+            compose_actions.respond_to_message({trigger: 'user sidebar popover'});
+        }
         var user_id = $(e.target).parents('ul').attr('data-user-id');
         var name = people.get_person_from_user_id(user_id).full_name;
         compose_ui.insert_syntax_and_focus('@**' + name + '**');
