@@ -31,7 +31,7 @@ from zerver.lib.message import (
 from zerver.lib.response import json_success, json_error
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import access_stream_by_id, can_access_stream_history_by_name
-from zerver.lib.timestamp import datetime_to_timestamp, convert_to_UTC
+from zerver.lib.timestamp import datetime_to_timestamp, convert_to_UTC, parse_generic_time
 from zerver.lib.timezone import get_timezone
 from zerver.lib.topic import (
     topic_column_sa,
@@ -1182,7 +1182,9 @@ def handle_deferred_message(sender: UserProfile, client: Client,
     try:
         deliver_at = dateparser(defer_until)
     except ValueError:
-        return json_error(_("Invalid time format"))
+        deliver_at = parse_generic_time(defer_until)
+        if not deliver_at:
+            return json_error(_("Invalid time format"))
 
     deliver_at_usertz = deliver_at
     if deliver_at_usertz.tzinfo is None:
