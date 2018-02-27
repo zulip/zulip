@@ -384,7 +384,13 @@ exports.quote_and_reply = function (opts) {
     });
 };
 
-exports.on_narrow = function () {
+exports.on_narrow = function (opts) {
+    // If force_close is an option do not open compose box to better use navigation
+    if (opts.force_close) {
+        exports.cancel();
+        return;
+    }
+
     if (narrow_state.narrowed_by_topic_reply()) {
         exports.on_topic_narrow();
         return;
