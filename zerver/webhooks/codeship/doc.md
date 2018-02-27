@@ -5,7 +5,7 @@ your build statuses.
 
 1. {!create-bot-construct-url-indented.md!}
 
-1. Next, on your project's webpage, click on **Project Settings** in
+1. On your project's webpage, click on **Project Settings** in
    the top right corner. Click on the **Notifications** tab, and click on
    the **+ New Notification** button. Select **Webhook**.
 

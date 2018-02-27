@@ -10,7 +10,7 @@ click [here](./bitbucket).
 1. {!create-bot-construct-url-indented.md!}
    {!git-webhook-url-with-branches-indented.md!}
 
-1. On your repository's web page, click on **Settings**. Choose
+1. On your repository's web page, click on **Settings**. Select
    **Webhooks**, and click **Add webhook**.
 
 1. Set **URL** to the URL you created above. Set **Title** to a title of your
