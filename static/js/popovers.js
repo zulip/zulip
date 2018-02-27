@@ -532,37 +532,28 @@ exports.register_click_handlers = function () {
         }
     });
 
-    $('body').on('click', '.user_popover .narrow_to_private_messages', function (e) {
+
+    $('body').on('click', '.info_popover_actions .narrow_to_private_messages', function (e) {
         var user_id = $(e.target).parents('ul').attr('data-user-id');
         var email = people.get_person_from_user_id(user_id).email;
-
-        popovers.hide_user_sidebar_popover();
+        popovers.hide_message_info_popover();
         narrow.by('pm-with', email, {select_first_unread: true, trigger: 'user sidebar popover'});
         e.stopPropagation();
+        e.preventDefault();
     });
 
-    $('body').on('click', '.user_popover .narrow_to_messages_sent', function (e) {
+    $('body').on('click', '.info_popover_actions .narrow_to_messages_sent', function (e) {
         var user_id = $(e.target).parents('ul').attr('data-user-id');
         var email = people.get_person_from_user_id(user_id).email;
-
-        popovers.hide_user_sidebar_popover();
+        popovers.hide_message_info_popover();
         narrow.by('sender', email, {select_first_unread: true, trigger: 'user sidebar popover'});
-        e.stopPropagation();
-    });
-
-    $('body').on('click', '.user_popover .compose_private_message', function (e) {
-        var user_id = $(e.target).parents('ul').attr('data-user-id');
-        var email = people.get_person_from_user_id(user_id).email;
-        popovers.hide_user_sidebar_popover();
-
-        compose_actions.start('private', {private_message_recipient: email, trigger: 'sidebar user actions'});
         e.stopPropagation();
         e.preventDefault();
     });
 
     $('body').on('click', '.user_popover .mention_user', function (e) {
-        var user_id = $(e.target).parents('ul').attr('data-user-id');
         compose_actions.start('stream', {trigger: 'sidebar user actions'});
+        var user_id = $(e.target).parents('ul').attr('data-user-id');
         var name = people.get_person_from_user_id(user_id).full_name;
         var textarea = $("#compose-textarea");
         textarea.val('@**' + name + '** ');
@@ -571,25 +562,7 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
-    $('body').on('click', '.sender_info_popover .narrow_to_private_messages', function (e) {
-        var user_id = $(e.target).parents('ul').attr('data-user-id');
-        var email = people.get_person_from_user_id(user_id).email;
-        narrow.by('pm-with', email, {select_first_unread: true, trigger: 'user sidebar popover'});
-        popovers.hide_message_info_popover();
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
-    $('body').on('click', '.sender_info_popover .narrow_to_messages_sent', function (e) {
-        var user_id = $(e.target).parents('ul').attr('data-user-id');
-        var email = people.get_person_from_user_id(user_id).email;
-        narrow.by('sender', email, {select_first_unread: true, trigger: 'user sidebar popover'});
-        popovers.hide_message_info_popover();
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
-    $('body').on('click', '.sender_info_popover .mention_user', function (e) {
+    $('body').on('click', '.message-info-popover .mention_user', function (e) {
         compose_actions.respond_to_message({trigger: 'user sidebar popover'});
         var user_id = $(e.target).parents('ul').attr('data-user-id');
         var name = people.get_person_from_user_id(user_id).full_name;
@@ -731,7 +704,7 @@ exports.register_click_handlers = function () {
         reminder_click_handler(datestr, e);
     });
 
-    $('body').on('click', '.respond_personal_button', function (e) {
+    $('body').on('click', '.respond_personal_button, .compose_private_message', function (e) {
         var user_id = $(e.target).parents('ul').attr('data-user-id');
         var email = people.get_person_from_user_id(user_id).email;
         compose_actions.start('private', {
