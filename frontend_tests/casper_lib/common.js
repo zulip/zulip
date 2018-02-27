@@ -216,7 +216,7 @@ exports.then_send_message = function (type, params) {
         if (type === "stream") {
             casper.page.sendEvent('keypress', "c");
         } else if (type === "private") {
-            casper.page.sendEvent('keypress', "C");
+            casper.page.sendEvent('keypress', "x");
         } else {
             casper.test.assertTrue(false, "send_message got valid message type");
         }

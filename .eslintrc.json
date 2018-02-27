@@ -165,7 +165,8 @@
         "hotspots": false,
         "compose_ui": false,
         "common": false,
-        "panels": false
+        "panels": false,
+        "deprecation_ui": false
     },
     "rules": {
         "array-callback-return": "error",

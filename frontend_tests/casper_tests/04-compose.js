@@ -44,7 +44,7 @@ casper.then(function () {
         casper.test.assertVisible('#stream-message', 'Stream input box visible');
         common.check_form('#send_message_form', {stream: '', subject: ''}, "Stream empty on new compose");
         casper.click('body');
-        casper.page.sendEvent('keypress', "C");
+        casper.page.sendEvent('keypress', "x");
     });
 });
 
@@ -102,7 +102,7 @@ casper.then(function () {
 casper.then(function () {
     casper.waitWhileVisible('#stream-message', function () {
         casper.test.assertNotVisible('#stream-message', 'Close stream compose box');
-        casper.page.sendEvent('keypress', "C");
+        casper.page.sendEvent('keypress', "x");
         casper.click('body');
     });
 });
