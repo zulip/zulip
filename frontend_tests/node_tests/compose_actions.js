@@ -190,12 +190,17 @@ function assert_hidden(sel) {
     };
     stub_selected_message(msg);
 
+    var syntax_to_insert;
+    compose_ui.insert_syntax_and_focus = function (syntax) {
+        syntax_to_insert = syntax;
+    };
+
     var opts = {
     };
 
     reply_with_mention(opts);
     assert.equal($('#stream').val(), 'devel');
-    assert.equal($('#compose-textarea').val(), '@**Bob Roberts** ');
+    assert.equal(syntax_to_insert, '@**Bob Roberts**');
     assert(compose_state.has_message_content());
 }());
 
