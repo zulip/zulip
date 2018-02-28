@@ -46,6 +46,7 @@ class zulip::base {
              'error_reports',
              'feedback_messages',
              'invites',
+             'missedmessage_email_senders',
              'email_senders',
              'missedmessage_emails',
              'missedmessage_mobile_notifications',
