@@ -181,6 +181,7 @@ function insert_hotspot_into_DOM(hotspot) {
         '<div class="hotspot-icon" id="hotspot_' + hotspot.name + '_icon">' +
             '<span class="dot"></span>' +
             '<span class="pulse"></span>' +
+            '<div class="bounce"><span class="bounce-icon">?</span></div>' +
         '</div>';
 
     setTimeout(function () {
