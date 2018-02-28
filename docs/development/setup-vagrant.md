@@ -170,39 +170,30 @@ Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
 
 #### Debian
 
-The setup for Debian 9.0 "stretch" is very similar to that for
-[for Ubuntu 16.04](#ubuntu).  There are a few small differences:
+The setup for Debian 9.0 "stretch" is very similar to that
+[for Ubuntu 16.04 above](#ubuntu).  Follow those instructions,
+except with the following differences:
 
 **Apt package list**.  In "2. Install remaining dependencies", the
-command to install the dependencies is
+command to install the dependencies is a bit shorter:
 
 ```
-sudo apt-get install build-essential git ruby lxc redir
+christie@ubuntu-desktop:~
+$ sudo apt-get install build-essential git ruby lxc redir
 ```
 
-One you've finished installing dependencies, you need to complete an
-additional step:
-
-**Setup LXC networking**.  Debian's packages do not ship any default
-network setup for LXC containers. So, you will have to setup
-networking for `lxc` containers yourself by
+**Set up LXC networking**.  After completing "2. Install remaining
+dependencies", you will have to set up networking for LXC containers,
+because Debian's packaging for LXC does not ship any default
+network setup for them.  You can do this by
 [following the steps][lxc-networking-quickstart] outlined in
 [Debian's LXC docs](https://wiki.debian.org/LXC#network_setup).
 
 [lxc-networking-quickstart]: https://wiki.debian.org/LXC#Minimal_changes_to_set_up_networking_for_LXC_for_Debian_.2BIBw-stretch.2BIB0_.28testing.29
 
-**Setup Vagrant with LXC**. If you're in a hurry, you can copy and
-paste the following into your terminal after which you can jump to
-[Step 2: Get Zulip Code](#step-2-get-zulip-code):
-
-```
-sudo apt-get -y purge vagrant && \
-wget https://releases.hashicorp.com/vagrant/2.0.2/vagrant_2.0.2_x86_64.deb && \
-sudo dpkg -i vagrant*.deb && \
-sudo apt-get -y install build-essential git ruby lxc redir && \
-vagrant plugin install vagrant-lxc && \
-vagrant lxc sudoers
-```
+Then return to the next step in the Ubuntu instructions above.  After
+finishing those steps, you will be ready for
+[Step 2: Get Zulip Code](#step-2-get-zulip-code).
 
 #### Windows 10
 
