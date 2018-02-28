@@ -4,16 +4,6 @@ var exports = {};
 
 var selected_streams;
 
-function hide_message_show_edit_streams() {
-    $("#default_stream_message").hide();
-    $("#edit_streams").show();
-}
-
-function show_message_hide_edit_streams() {
-    $("#default_stream_message").show();
-    $("#edit_streams").hide();
-}
-
 function update_subscription_input() {
     // TODO: If we were more clever, we would only do this if the
     // stream list has actually changed; that way, the settings of the
@@ -41,7 +31,7 @@ function update_subscription_input() {
     selected_streams = default_streams.slice();
 
     var pill_container = $("#edit_streams");
-    pill_container.html('<input id="add_invite_stream_input" class="input" placeholder= "Add stream..." />');
+    pill_container.html('<input id="add_invite_stream_input" class="input" placeholder= "Add or edit" />');
     var pills = input_pill(pill_container);
 
     $("#edit_streams .pill").remove();
@@ -85,17 +75,6 @@ function update_subscription_input() {
         $(this).attr('size', Math.max(14, $(this).val().length));
     });
 
-    if (default_streams.length !== 0) {
-        $('#edit_streams_button').on('click', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            hide_message_show_edit_streams();
-        });
-        show_message_hide_edit_streams();
-        $('#default_streams').text(default_streams.map(function (s) {return '#' + s;}).join(", "));
-    } else {
-        hide_message_show_edit_streams();
-    }
 }
 
 function reset_error_messages() {

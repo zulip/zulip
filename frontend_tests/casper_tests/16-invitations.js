@@ -24,7 +24,6 @@ casper.then(function () {
 casper.waitUntilVisible('#invite_user_form', function () {
     casper.fill('form#invite_user_form', {invitee_emails: 'foo@zulip.com'});
     casper.click('input[name="invite_as_admin"] ~ span');
-    casper.click('#edit_streams_button');
     casper.test.assertVisible("#add_invite_stream_input", "Stream input visible");
     common.select_item_via_typeahead('#add_invite_stream_input', 'D', 'Denmark');
 });
