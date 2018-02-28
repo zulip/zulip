@@ -11,8 +11,9 @@ from django.utils.timezone import now as timezone_now
 from zerver.lib.context_managers import lockfile
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.management import sleep_forever
-from zerver.models import ScheduledMessage, Message, get_user_by_delivery_email
-from zerver.lib.actions import do_send_messages
+from zerver.models import Recipient, ScheduledMessage, Stream, Message, get_user, \
+    UserProfile, get_user_by_delivery_email, get_system_bot, get_huddle_user_ids
+from zerver.lib.actions import do_send_messages, internal_send_private_message
 from zerver.lib.addressee import Addressee
 
 ## Setup ##
@@ -30,6 +31,52 @@ on all but one machine to make the command have no effect.)
 
 Usage: ./manage.py deliver_scheduled_messages
 """
+
+    def should_deliver(self, message: ScheduledMessage) -> bool:
+        original_sender = message.sender
+        if not original_sender.is_active:
+            return False
+
+        def tell_original_sender(error_msg: str) -> None:
+            if not original_sender.is_active:
+                return
+
+            content = error_msg + (":\n```quote\n%s\n```" % (message.content))
+            if message.delivery_type == ScheduledMessage.SEND_LATER:
+                content = content % ("scheduled message")
+                alert_deliverer = get_system_bot(settings.NOTIFICATION_BOT)
+            elif message.delivery_type == ScheduledMessage.REMIND:
+                content = content % ("reminder message")
+                alert_deliverer = get_user(settings.REMINDER_BOT, original_sender.realm)
+            internal_send_private_message(original_sender.realm, alert_deliverer,
+                                          original_sender, content)
+
+        recipient = message.recipient
+        generic_err_msg = ("Hi there! Just wanted to let you know that we "
+                           "could not deliver your %s (quoted below) because ")
+        if recipient.type == Recipient.STREAM:
+            stream = list(Stream.objects.filter(id=recipient.type_id))[0]
+            if stream.deactivated:
+                err_msg = generic_err_msg + ("the recipient stream %s "
+                                             "was deleted." % (stream.name.split(':')[1]))
+                tell_original_sender(err_msg)
+                return False
+        elif recipient.type == Recipient.PERSONAL:
+            recipient_user = list(UserProfile.objects.filter(id=recipient.type_id))[0]
+            if not recipient_user.is_active:
+                err_msg = generic_err_msg + ("the recipient user %s "
+                                             "was deactivated." % (recipient_user.full_name))
+                tell_original_sender(err_msg)
+                return False
+        elif recipient.type == Recipient.HUDDLE:
+            huddle_user_ids = get_huddle_user_ids(recipient)
+            active_user_ids_count = UserProfile.objects.filter(
+                id__in=huddle_user_ids, is_active=True).count()
+            if len(huddle_user_ids) != active_user_ids_count:
+                err_msg = generic_err_msg + "one or more users in the recipient huddle were deactivated."
+                tell_original_sender(err_msg)
+                return False
+        return True
 
     def construct_message(self, scheduled_message: ScheduledMessage) -> Dict[str, Any]:
         message = Message()
@@ -66,7 +113,8 @@ Usage: ./manage.py deliver_scheduled_messages
                 if messages_to_deliver:
                     for message in messages_to_deliver:
                         with transaction.atomic():
-                            do_send_messages([self.construct_message(message)])
+                            if self.should_deliver(message):
+                                do_send_messages([self.construct_message(message)])
                             message.delivered = True
                             message.save(update_fields=['delivered'])
 
