@@ -43,6 +43,32 @@
     }
 }
 
+.hotspot-icon .bounce {
+    -moz-animation: bounce 0.75s infinite;
+    -webkit-animation: bounce 0.75s infinite;
+    animation: bounce 0.75s infinite;
+}
+
+.hotspot-icon .bounce .bounce-icon {
+    position: absolute;
+    left: -5px;
+    bottom: 3px;
+    transform: rotate(7deg);
+    color: hsl(215, 47%, 50%);
+    font-size: 2.75em;
+    font-weight: 600;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        -webkit-transform: translateY(0px);
+    }
+
+    50% {
+        -webkit-transform: translateY(4px);
+    }
+}
+
 /* popover */
 .hotspot.overlay {
     z-index: 104;
