@@ -517,7 +517,7 @@ def build_custom_checkers(by_lang):
                           ('static/templates/settings/realm-domains-modal.handlebars',
                            '<td><input type="text" class="new-realm-domain" placeholder="acme.com" /></td>'),
                           ("static/templates/user-groups-admin.handlebars",
-                           '<input type="text" name="name" id="user_group_name" placeholder="hamletcharacters" />')],
+                           '<input type="text" name="name" id="user_group_name" maxlength="100" placeholder="hamletcharacters" />')],
          'exclude': set(["static/templates/settings/emoji-settings-admin.handlebars",
                          "static/templates/settings/realm-filter-settings-admin.handlebars",
                          "static/templates/settings/bot-settings.handlebars",
