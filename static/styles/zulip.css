@@ -2331,14 +2331,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
     margin-top: 5px;
 }
 
-#invite-user #default_stream_message {
-    margin-top: 5px;
-}
-
-#invite-user #edit_streams_button {
-    padding-left: 7px;
-}
-
 #invite-user #add_invite_stream_input {
     display: inline-block;
     padding: 0px 5px;
