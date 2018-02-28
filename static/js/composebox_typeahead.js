@@ -210,24 +210,6 @@ function handle_keyup(e) {
     }
 }
 
-// http://stackoverflow.com/questions/3380458/looking-for-a-better-workaround-to-chrome-select-on-focus-bug
-function select_on_focus(field_id) {
-    // A select event appears to trigger a focus event under certain
-    // conditions in Chrome so we need to protect against infinite
-    // recursion.
-    var in_handler = false;
-    $("#" + field_id).focus(function () {
-        if (in_handler) {
-            return;
-        }
-        in_handler = true;
-        $("#" + field_id).select().one('mouseup', function (e) {
-            e.preventDefault();
-        });
-        in_handler = false;
-    });
-}
-
 exports.split_at_cursor = function (query, input) {
     var cursor = input.caret();
     return [query.slice(0, cursor), query.slice(cursor)];
@@ -537,10 +519,6 @@ exports.initialize_compose_typeahead = function (selector) {
 };
 
 exports.initialize = function () {
-    select_on_focus("stream");
-    select_on_focus("subject");
-    select_on_focus("private_message_recipient");
-
     // These handlers are at the "form" level so that they are called after typeahead
     $("form#send_message_form").keydown(handle_keydown);
     $("form#send_message_form").keyup(handle_keyup);

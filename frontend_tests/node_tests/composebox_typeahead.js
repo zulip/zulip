@@ -780,21 +780,6 @@ global.user_groups.add(backend);
     event.keyCode = 42;
     $('form#send_message_form').keyup(event);
 
-    // select_on_focus()
-    var focus_handler_called = false;
-    var stream_one_called = false;
-    $('#stream').focus = function (f) {
-        // This .one() function emulates the possible infinite recursion that
-        // in_handler tries to avoid.
-        $('#stream').one = function (event, handler) {
-            handler({ preventDefault: noop });
-            f();  // This time in_handler will already be true.
-            stream_one_called = true;
-        };
-        f();  // Here in_handler is false.
-        focus_handler_called = true;
-    };
-
     $("#compose-send-button").fadeOut = noop;
     $("#compose-send-button").fadeIn = noop;
     var channel_post_called = false;
@@ -822,8 +807,7 @@ global.user_groups.add(backend);
     assert(pm_recipient_blur_called);
     assert(channel_post_called);
     assert(compose_textarea_typeahead_called);
-    assert(focus_handler_called);
-    assert(stream_one_called);
+
 }());
 
 (function test_begins_typeahead() {
