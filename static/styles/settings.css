@@ -406,6 +406,7 @@ input[type=checkbox].inline-block {
     #settings .settings-section .new-bot-form,
     #settings .settings-section .new-alert-word-form,
     #filter-settings .new-filter-form,
+    #profile-field-settings .new-profile-field-form,
     #settings .settings-section .notification-settings-form,
     #settings .settings-section .display-settings-form,
     #settings .settings-section .edit-bot-form-box {
@@ -417,6 +418,7 @@ input[type=checkbox].inline-block {
     #settings .settings-section .new-bot-form .control-label,
     #settings .settings-section .new-alert-word-form .control-label,
     #filter-settings .new-filter-form .control-label,
+    #profile-field-settings .new-profile-field-form .control-label,
     #settings .settings-section .edit-bot-form-box .control-label {
         display: block;
         width: 120px;
@@ -432,6 +434,7 @@ input[type=checkbox].inline-block {
     #settings .settings-section .new-bot-form .controls,
     #settings .settings-section .new-alert-word-form button,
     #filter-settings .new-filter-form .controls,
+    #profile-field-settings .new-profile-field-form .controls,
     #settings .settings-section .edit-bot-form-box .controls {
         margin: auto;
         text-align: center;
@@ -525,6 +528,7 @@ input[type=checkbox].inline-block {
     color: hsl(0, 0%, 66%);
 }
 
+.add-new-profile-field-box button,
 .add-new-filter-box button {
     margin-left: calc(10em + 20px) !important;
 }
@@ -533,10 +537,12 @@ input[type=checkbox].inline-block {
     margin: 10px 0px;
 }
 
+.admin_profile_fields_table,
 .admin_filters_table {
     margin-top: 20px;
 }
 
+#admin-profile-field-name-status,
 #admin-filter-pattern-status,
 #admin-filter-format-status {
     margin: 20px 0 0 0;
@@ -716,6 +722,7 @@ input[type=checkbox].inline-block {
 #get_api_key_box .control-label,
 .admin-emoji-form .control-label,
 .admin-filter-form .control-label,
+.admin-profile-field-form .control-label,
 .edit_bot_form .control-label {
     width: 10em;
     text-align: right;

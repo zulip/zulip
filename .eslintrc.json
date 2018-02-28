@@ -57,6 +57,7 @@
         "settings_filters": false,
         "settings_invites": false,
         "settings_user_groups": false,
+        "settings_profile_fields": false,
         "settings": false,
         "resize": false,
         "loading": false,

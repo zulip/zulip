@@ -20,6 +20,8 @@ exports.show_or_hide_menu_item = function () {
             .find("input:not(.search), button, select").attr("disabled", true);
         $(".organization-box [data-name='filter-settings']")
             .find("input, button, select").attr("disabled", true);
+        $(".organization-box [data-name='profile-field-settings']")
+            .find("input, button, select").attr("disabled", true);
         $(".control-label-disabled").css("color", "#333333");
     }
 };
@@ -59,6 +61,7 @@ function _setup_page() {
         realm_icon_source: page_params.realm_icon_source,
         realm_icon_url: page_params.realm_icon_url,
         realm_mandatory_topics: page_params.realm_mandatory_topics,
+        custom_profile_field_types: page_params.custom_profile_field_types,
     };
 
     var admin_tab = templates.render('admin_tab', options);

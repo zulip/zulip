@@ -1,0 +1,46 @@
+<div id="profile-field-settings" class="settings-section" data-name="profile-field-settings">
+    <div class="admin-table-wrapper">
+        <div class="alert" id="admin-profile-field-status"></div>
+        <p>
+            {{#tr this}}
+            Configure custom profile fields that can be used to add custom
+            information by users.
+            {{/tr}}
+        </p>
+
+        <table class="table table-condensed table-striped admin_profile_fields_table">
+            <tbody id="admin_profile_fields_table">
+                <th>{{t "Name" }}</th>
+                <th>{{t "Field type" }}</th>
+                {{#if is_admin}}
+                <th class="actions">{{t "Actions" }}</th>
+                {{/if}}
+            </tbody>
+        </table>
+    </div>
+    {{#if is_admin}}
+    <form class="form-horizontal admin-profile-field-form">
+        <div class="add-new-profile-field-box grey-box">
+            <div class="new-profile-field-form wrapper">
+                <div class="settings-section-title new-profile-field-section-title">{{t "Add a new profile field" }}</div>
+                <div class="control-group">
+                    <label for="profile_field_name" class="control-label">{{t "Field name" }}</label>
+                    <input type="text" id="profile_field_name" name="name" />
+                    <div class="alert" id="admin-profile-field-name-status"></div>
+                </div>
+                <div class="control-group">
+                    <label for="profile_field_type" class="control-label">{{t "Field type" }}</label>
+                    <select id="profile_field_type" name="field_type">
+                        {{#each custom_profile_field_types}}
+                        <option value='{{this.[0]}}'>{{this.[1]}}</option>
+                        {{/each}}
+                    </select>
+                </div>
+                <button type="submit" class="button rounded sea-green">
+                    {{t 'Add profile field' }}
+                </button>
+            </div>
+        </div>
+    </form>
+    {{/if}}
+</div>

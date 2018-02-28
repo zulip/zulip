@@ -910,6 +910,7 @@ class EventsRegisterTest(ZulipTestCase):
     def test_custom_profile_fields_events(self) -> None:
         schema_checker = self.check_events_dict([
             ('type', equals('custom_profile_fields')),
+            ('opt', equals('add')),
             ('fields', check_list(check_dict_only([
                 ('type', check_int),
                 ('name', check_string),
@@ -918,7 +919,7 @@ class EventsRegisterTest(ZulipTestCase):
 
         events = self.do_test(
             lambda: notify_realm_custom_profile_fields(
-                self.user_profile.realm),
+                self.user_profile.realm, 'add'),
             state_change_expected=False,
         )
         error = schema_checker('events[0]', events[0])
