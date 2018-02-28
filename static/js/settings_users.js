@@ -202,9 +202,9 @@ function populate_users(realm_people_data) {
 }
 
 exports.set_up = function () {
-    loading.make_indicator($('#admin_page_users_loading_indicator'));
-    loading.make_indicator($('#admin_page_bots_loading_indicator'));
-    loading.make_indicator($('#admin_page_deactivated_users_loading_indicator'));
+    loading.make_indicator($('#admin_page_users_loading_indicator'), {text: 'Loading...'});
+    loading.make_indicator($('#admin_page_bots_loading_indicator'), {text: 'Loading...'});
+    loading.make_indicator($('#admin_page_deactivated_users_loading_indicator'), {text: 'Loading...'});
 
     // Populate users and bots tables
     channel.get({

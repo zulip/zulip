@@ -2030,8 +2030,8 @@ div.floating_recipient {
 }
 
 .settings-section .loading_indicator_spinner {
-    width: 20%;
-    height: 20px;
+    width: 30%;
+    height: 30px;
     margin-top: 7px;
     vertical-align: middle;
     display: inline-block;
