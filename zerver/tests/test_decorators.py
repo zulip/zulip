@@ -29,6 +29,7 @@ from zerver.lib.request import \
     RequestVariableConversionError
 from zerver.decorator import (
     api_key_only_webhook_view,
+    authenticated_api_view,
     authenticate_notify, cachify,
     get_client_name, internal_notify_view, is_local_addr,
     rate_limit, validate_api_key, logged_in_and_active,
@@ -323,6 +324,47 @@ body:
         with self.assertRaisesRegex(JsonableError, "Realm for account has been deactivated"):
             my_webhook(request)
 
+    def test_authenticated_api_view_logging(self) -> None:
+        @authenticated_api_view(is_webhook=True)
+        def my_webhook_raises_exception(request: HttpRequest, user_profile: UserProfile) -> None:
+            raise Exception("raised by webhook function")
+
+        webhook_bot_email = 'webhook-bot@zulip.com'
+        webhook_bot_realm = get_realm('zulip')
+        webhook_bot = get_user(webhook_bot_email, webhook_bot_realm)
+        webhook_bot_api_key = webhook_bot.api_key
+
+        request = HostRequestMock()
+        request.method = 'POST'
+        request.POST['api_key'] = webhook_bot_api_key
+        request.POST['email'] = webhook_bot_email
+        request.host = "zulip.testserver"
+
+        with mock.patch('zerver.decorator.webhook_logger.exception') as mock_exception:
+            with self.assertRaisesRegex(Exception, "raised by webhook function"):
+                request.body = '{}'
+                request.POST['payload'] = '{}'
+                request.content_type = 'text/plain'
+                my_webhook_raises_exception(request)
+
+            message = """
+user: {email} ({realm})
+client: {client_name}
+URL: {path_info}
+content_type: {content_type}
+body:
+
+{body}
+                """
+            message = message.strip(' ')
+            mock_exception.assert_called_with(message.format(
+                email=webhook_bot_email,
+                realm=webhook_bot_realm.string_id,
+                client_name='Unspecified',
+                path_info=request.META.get('PATH_INFO'),
+                content_type=request.content_type,
+                body=request.body,
+            ))
 
 class RateLimitTestCase(TestCase):
     def errors_disallowed(self) -> mock:
