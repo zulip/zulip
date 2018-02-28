@@ -1742,9 +1742,14 @@ input.new-organization-button {
 
 .error_page .lead {
     color: #39a688;
-    font-size: 40px;
+    font-size: 35px;
     margin-bottom: 20px;
     line-height: normal;
+}
+
+.hourglass-img {
+    width: initial !important;
+    margin-bottom: 25px !important;
 }
 
 @media (max-width: 1000px) {
