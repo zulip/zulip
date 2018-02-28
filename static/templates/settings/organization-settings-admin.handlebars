@@ -3,6 +3,7 @@
         <div class="alert" id="admin-realm-notifications-stream-status"></div>
         <div class="alert" id="admin-realm-signup-notifications-stream-status"></div>
         <div class="alert" id="admin-realm-default-language-status"></div>
+        <div class="alert" id="admin-realm-send-welcome-emails-status"></div>
 
         <div class="alert" id="admin-realm-inline-image-preview-status"></div>
         <div class="alert" id="admin-realm-inline-url-embed-preview-status"></div>
@@ -132,6 +133,16 @@
                     <option value='{{this.code}}'>{{this.name}}</option>
                     {{/each}}
                 </select>
+            </div>
+            <div class="input-group">
+                <label class="checkbox">
+                    <input type="checkbox" id="id_realm_send_welcome_emails" name="realm_send_welcome_emails"
+                           {{#if realm_send_welcome_emails}}checked="checked"{{/if}} />
+                    <span></span>
+                </label>
+                <label for="id_realm_send_welcome_emails" id="id_realm_send_welcome_emails_label" class="inline-block">
+                    {{t "Send emails introducing Zulip to new users" }}
+                </label>
             </div>
             {{#if is_admin }}
             <div class="input-group organization-submission">

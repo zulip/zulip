@@ -59,6 +59,7 @@ function _setup_page() {
         realm_icon_source: page_params.realm_icon_source,
         realm_icon_url: page_params.realm_icon_url,
         realm_mandatory_topics: page_params.realm_mandatory_topics,
+        realm_send_welcome_emails: page_params.realm_send_welcome_emails,
     };
 
     var admin_tab = templates.render('admin_tab', options);

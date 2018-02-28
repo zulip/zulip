@@ -363,7 +363,8 @@ def process_new_human_user(user_profile: UserProfile,
         PreregistrationUser.objects.filter(email__iexact=user_profile.email).update(status=0)
 
     notify_new_user(user_profile)
-    enqueue_welcome_emails(user_profile)
+    if user_profile.realm.send_welcome_emails:
+        enqueue_welcome_emails(user_profile)
 
     # We have an import loop here; it's intentional, because we want
     # to keep all the onboarding code in zerver/lib/onboarding.py.
