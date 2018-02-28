@@ -1204,7 +1204,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertIsNone(realm)
 
         # Create new realm with the email
-        result = self.client_post('/create_realm/', {'email': email})
+        result = self.client_post('/new/', {'email': email})
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
             "/accounts/send_confirm/%s" % (email,)))
@@ -1251,7 +1251,7 @@ class RealmCreationTest(ZulipTestCase):
         self.check_able_to_create_realm("hamlet@zulip.com")
 
     def test_create_realm_as_system_bot(self) -> None:
-        result = self.client_post('/create_realm/', {'email': 'notification-bot@zulip.com'})
+        result = self.client_post('/new/', {'email': 'notification-bot@zulip.com'})
         self.assertEqual(result.status_code, 200)
         self.assert_in_response('notification-bot@zulip.com is an email address reserved', result)
 
@@ -1264,7 +1264,7 @@ class RealmCreationTest(ZulipTestCase):
 
         with self.settings(OPEN_REALM_CREATION=False):
             # Create new realm with the email, but no creation key.
-            result = self.client_post('/create_realm/', {'email': email})
+            result = self.client_post('/new/', {'email': email})
             self.assertEqual(result.status_code, 200)
             self.assert_in_response('New organization creation disabled.', result)
 
@@ -1279,7 +1279,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertIsNone(get_realm(string_id))
 
         # Create new realm with the email
-        result = self.client_post('/create_realm/', {'email': email})
+        result = self.client_post('/new/', {'email': email})
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
             "/accounts/send_confirm/%s" % (email,)))
@@ -1309,7 +1309,7 @@ class RealmCreationTest(ZulipTestCase):
 
     @override_settings(OPEN_REALM_CREATION=True)
     def test_mailinator_signup(self) -> None:
-        result = self.client_post('/create_realm/', {'email': "hi@mailinator.com"})
+        result = self.client_post('/new/', {'email': "hi@mailinator.com"})
         self.assert_in_response('Please use your real email address.', result)
 
     @override_settings(OPEN_REALM_CREATION=True)
@@ -1318,7 +1318,7 @@ class RealmCreationTest(ZulipTestCase):
         email = "user1@test.com"
         realm_name = "Test"
 
-        result = self.client_post('/create_realm/', {'email': email})
+        result = self.client_post('/new/', {'email': email})
         self.client_get(result["Location"])
         confirmation_url = self.get_confirmation_url_from_outbox(email)
         self.client_get(confirmation_url)
@@ -1351,7 +1351,7 @@ class RealmCreationTest(ZulipTestCase):
         email = "user1@test.com"
         realm_name = "Test"
 
-        result = self.client_post('/create_realm/', {'email': email})
+        result = self.client_post('/new/', {'email': email})
         self.client_get(result["Location"])
         confirmation_url = self.get_confirmation_url_from_outbox(email)
         self.client_get(confirmation_url)
@@ -1376,7 +1376,7 @@ class RealmCreationTest(ZulipTestCase):
         email = "user1@test.com"
         realm_name = "Test"
 
-        result = self.client_post('/create_realm/', {'email': email})
+        result = self.client_post('/new/', {'email': email})
         self.client_get(result["Location"])
         confirmation_url = self.get_confirmation_url_from_outbox(email)
         self.client_get(confirmation_url)
@@ -1460,7 +1460,7 @@ class UserSignUpTest(ZulipTestCase):
         error_mock = patch('logging.error')
 
         with smtp_mock, error_mock as err:
-            result = self.client_post('/create_realm/', {'email': email})
+            result = self.client_post('/new/', {'email': email})
 
         self._assert_redirected_to(result, '/config-error/smtp')
 
