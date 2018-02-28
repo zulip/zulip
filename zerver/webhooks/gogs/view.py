@@ -64,7 +64,7 @@ def format_pull_request_event(payload: Dict[str, Any]) -> Text:
 def api_gogs_webhook(request: HttpRequest, user_profile: UserProfile,
                      payload: Dict[str, Any]=REQ(argument_type='body'),
                      stream: Text=REQ(default='commits'),
-                     branches: Optional[Text]=REQ(default=None)) -> HttpResponse:
+                     branches: Optional[Text]=REQ(default=None, type=str)) -> HttpResponse:
 
     repo = payload['repository']['name']
     event = request.META['HTTP_X_GOGS_EVENT']

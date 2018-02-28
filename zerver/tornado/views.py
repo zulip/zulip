@@ -37,13 +37,14 @@ def cleanup_event_queue(request: HttpRequest, user_profile: UserProfile,
 @asynchronous
 @has_request_variables
 def get_events_backend(request: HttpRequest, user_profile: UserProfile, handler: BaseHandler,
-                       user_client: Optional[Client]=REQ(converter=get_client, default=None),
+                       user_client: Optional[Client]=REQ(converter=get_client, default=None, type=Client),
                        last_event_id: Optional[int]=REQ(converter=int, default=None),
-                       queue_id: Optional[List[Text]]=REQ(default=None),
+                       queue_id: Optional[List[Text]]=REQ(default=None, type=List[str]),
                        apply_markdown: bool=REQ(default=False, validator=check_bool),
                        client_gravatar: bool=REQ(default=False, validator=check_bool),
                        all_public_streams: bool=REQ(default=False, validator=check_bool),
-                       event_types: Optional[Text]=REQ(default=None, validator=check_list(check_string)),
+                       event_types: Optional[Text]=REQ(default=None, validator=check_list(check_string),
+                                                       type=str),
                        dont_block: bool=REQ(default=False, validator=check_bool),
                        narrow: Iterable[Sequence[Text]]=REQ(default=[], validator=check_list(None)),
                        lifespan_secs: int=REQ(default=0, converter=int)

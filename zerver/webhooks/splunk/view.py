@@ -16,7 +16,7 @@ from zerver.models import MAX_SUBJECT_LENGTH, UserProfile
 def api_splunk_webhook(request: HttpRequest, user_profile: UserProfile,
                        payload: Dict[str, Any]=REQ(argument_type='body'),
                        stream: Text=REQ(default='splunk'),
-                       topic: Optional[Text]=REQ(default=None)) -> HttpResponse:
+                       topic: Optional[Text]=REQ(default=None, type=str)) -> HttpResponse:
 
     # use default values if expected data is not provided
     search_name = payload.get('search_name', 'Missing search_name')
@@ -28,9 +28,11 @@ def api_splunk_webhook(request: HttpRequest, user_profile: UserProfile,
     # if no topic provided, use search name but truncate if too long
     if topic is None:
         if len(search_name) >= MAX_SUBJECT_LENGTH:
-            topic = "{}...".format(search_name[:(MAX_SUBJECT_LENGTH - 3)])
+            msg_topic = "{}...".format(search_name[:(MAX_SUBJECT_LENGTH - 3)])
         else:
-            topic = search_name
+            msg_topic = search_name
+    else:
+        msg_topic = topic
 
     # construct the message body
     body = "Splunk alert from saved search"
@@ -40,6 +42,6 @@ def api_splunk_webhook(request: HttpRequest, user_profile: UserProfile,
                                  host = host, source = source, raw = raw)
 
     # send the message
-    check_send_stream_message(user_profile, request.client, stream, topic, body)
+    check_send_stream_message(user_profile, request.client, stream, msg_topic, body)
 
     return json_success()

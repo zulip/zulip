@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
@@ -43,7 +43,7 @@ def ready_payload(signatories: List[Dict[str, Any]],
 def api_hellosign_webhook(request: HttpRequest, user_profile: UserProfile,
                           payload: Dict[str, Dict[str, Any]]=REQ(argument_type='body'),
                           stream: str=REQ(default='hellosign'),
-                          topic: str=REQ(default=None)) -> HttpResponse:
+                          topic: Optional[str]=REQ(default=None, type=str)) -> HttpResponse:
     model_payload = ready_payload(payload['signature_request']['signatures'], payload)
     body = format_body(payload['signature_request']['signatures'], model_payload)
     topic = topic or model_payload['contract_title']

@@ -432,8 +432,8 @@ def authenticated_api_view(is_webhook: bool=False) -> WrappedViewFuncT:
         @has_request_variables
         @wraps(view_func)
         def _wrapped_func_arguments(request: HttpRequest, email: Text=REQ(),
-                                    api_key: Optional[Text]=REQ(default=None),
-                                    api_key_legacy: Optional[Text]=REQ('api-key', default=None),
+                                    api_key: Optional[Text]=REQ(default=None, type=str),
+                                    api_key_legacy: Optional[Text]=REQ('api-key', default=None, type=str),
                                     *args: Any, **kwargs: Any) -> HttpResponse:
             if api_key is None:
                 api_key = api_key_legacy

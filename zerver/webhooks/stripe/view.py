@@ -17,7 +17,7 @@ from zerver.models import UserProfile
 def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
                        payload: Dict[str, Any]=REQ(argument_type='body'),
                        stream: Text=REQ(default='test'),
-                       topic: Optional[Text]=REQ(default=None)) -> HttpResponse:
+                       topic: Optional[Text]=REQ(default=None, type=str)) -> HttpResponse:
     body = None
     event_type = payload["type"]
     data_object = payload["data"]["object"]
@@ -169,6 +169,7 @@ def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
     if body is None:
         return json_error(_("We don't support {} event".format(event_type)))
 
+    assert(topic is not None)  # Should be ensured by tests above
     check_send_stream_message(user_profile, request.client, stream, topic, body)
 
     return json_success()

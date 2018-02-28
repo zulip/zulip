@@ -1838,9 +1838,9 @@ class CustomProfileField(models.Model):
         (FLOAT, u'Float', check_float, float),
         (SHORT_TEXT, u'Short Text', check_short_string, str),
         (LONG_TEXT, u'Long Text', check_string, str),
-    ]  # type: List[Tuple[int, Text, Callable[[str, Any], str], Callable[[Any], Any]]]
+    ]  # type: List[Tuple[int, Text, Callable[[str, Any], Optional[str]], Callable[[Any], Any]]]
 
-    FIELD_VALIDATORS = {item[0]: item[2] for item in FIELD_TYPE_DATA}  # type: Dict[int, Callable[[str, Any], str]]
+    FIELD_VALIDATORS = {item[0]: item[2] for item in FIELD_TYPE_DATA}  # type: Dict[int, Callable[[str, Any], Optional[str]]]
     FIELD_CONVERTERS = {item[0]: item[3] for item in FIELD_TYPE_DATA}  # type: Dict[int, Callable[[Any], Any]]
     FIELD_TYPE_CHOICES = [(item[0], item[1]) for item in FIELD_TYPE_DATA]  # type: List[Tuple[int, Text]]
 

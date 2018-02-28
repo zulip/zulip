@@ -1033,7 +1033,7 @@ def get_service_bot_events(sender: UserProfile, service_bot_tuples: List[Tuple[i
 
     return event_dict
 
-def do_schedule_messages(messages: Sequence[Optional[MutableMapping[str, Any]]]) -> List[int]:
+def do_schedule_messages(messages: Sequence[MutableMapping[str, Any]]) -> List[int]:
     scheduled_messages = []  # type: List[ScheduledMessage]
 
     for message in messages:
@@ -3287,7 +3287,7 @@ def do_mark_all_as_read(user_profile: UserProfile) -> int:
     return count
 
 def do_mark_stream_messages_as_read(user_profile: UserProfile,
-                                    stream: Optional[Stream],
+                                    stream: Stream,
                                     topic_name: Optional[Text]=None) -> int:
     log_statsd_event('mark_stream_as_read')
 
@@ -3503,7 +3503,7 @@ def do_update_embedded_data(user_profile: UserProfile,
 @transaction.atomic
 def do_update_message(user_profile: UserProfile, message: Message, topic_name: Optional[Text],
                       propagate_mode: str, content: Optional[Text],
-                      rendered_content: Optional[Text], prior_mention_user_ids: Set[int],
+                      rendered_content: Text, prior_mention_user_ids: Set[int],
                       mention_user_ids: Set[int]) -> int:
     event = {'type': 'update_message',
              # TODO: We probably want to remove the 'sender' field

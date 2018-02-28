@@ -16,7 +16,7 @@ BODY_TEMPLATE = '[{website_name}]({website_url}) has {user_num} visitors online.
 def api_gosquared_webhook(request: HttpRequest, user_profile: UserProfile,
                           payload: Dict[str, Dict[str, Any]]=REQ(argument_type='body'),
                           stream: Text=REQ(default='gosquared'),
-                          topic: Text=REQ(default=None)) -> HttpResponse:
+                          topic: Optional[Text]=REQ(default=None, type=str)) -> HttpResponse:
     domain_name = payload['siteDetails']['domain']
     user_num = payload['concurrents']
     user_acc = payload['siteDetails']['acct']

@@ -327,12 +327,14 @@ class ZulipTestCase(TestCase):
     def get_confirmation_url_from_outbox(self, email_address: Text, *,
                                          url_pattern: Text=None) -> Text:
         from django.core.mail import outbox
-        if url_pattern is None:
+        if url_pattern is not None:
+            url_pattern_to_use = url_pattern
+        else:
             # This is a bit of a crude heuristic, but good enough for most tests.
-            url_pattern = settings.EXTERNAL_HOST + "(\S+)>"
+            url_pattern_to_use = settings.EXTERNAL_HOST + "(\S+)>"
         for message in reversed(outbox):
             if email_address in message.to:
-                return re.search(url_pattern, message.body).groups()[0]
+                return re.search(url_pattern_to_use, message.body).groups()[0]
         else:
             raise AssertionError("Couldn't find a confirmation email.")
 
@@ -660,6 +662,7 @@ class WebhookTestCase(ZulipTestCase):
         return msg
 
     def build_webhook_url(self, *args: Any, **kwargs: Any) -> Text:
+        assert(self.URL_TEMPLATE is not None)
         url = self.URL_TEMPLATE
         if url.find("api_key") >= 0:
             api_key = self.test_user.api_key
@@ -685,6 +688,7 @@ class WebhookTestCase(ZulipTestCase):
     def get_body(self, fixture_name: Text) -> Union[Text, Dict[str, Text]]:
         """Can be implemented either as returning a dictionary containing the
         post parameters or as string containing the body of the request."""
+        assert(self.FIXTURE_DIR_NAME is not None)
         return ujson.dumps(ujson.loads(self.fixture_data(self.FIXTURE_DIR_NAME, fixture_name)))
 
     def do_test_subject(self, msg: Message, expected_subject: Optional[Text]) -> None:

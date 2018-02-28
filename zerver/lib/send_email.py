@@ -118,7 +118,7 @@ def send_future_email(template_prefix: str, realm: Realm, to_user_id: Optional[i
         assert(UserProfile.objects.filter(id=to_user_id, realm=realm).exists())
         to_field = {'user_id': to_user_id}  # type: Dict[str, Any]
     else:
-        to_field = {'address': parseaddr(to_email)[1]}
+        to_field = {'address': parseaddr(to_email)[1]}  # type: ignore  # typeshed issue? (accepts None)
 
     ScheduledEmail.objects.create(
         type=EMAIL_TYPES[template_name],

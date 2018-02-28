@@ -383,7 +383,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
         'to_user_id': user_profile.id,
         'from_name': from_name,
         'from_address': from_address,
-        'reply_to_email': formataddr((reply_to_name, reply_to_address)),
+        'reply_to_email': formataddr((reply_to_name, reply_to_address)),  # type: ignore  # typeshed issue? (accepts None)
         'context': context}
     queue_json_publish("email_senders", email_dict)
 

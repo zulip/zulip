@@ -41,8 +41,9 @@ parser.add_argument('--linecoverage-report', action='store_true',
 parser.add_argument('--no-disallow-untyped-defs',
                     dest='disallow_untyped_defs', action='store_false',
                     help="don't pass --disallow-untyped-defs to mypy")
-parser.add_argument('--strict-optional', action='store_true',
-                    help="pass --strict-optional to mypy")
+parser.add_argument('--no-strict-optional', action='store_false',
+                    dest='strict_optional',
+                    help="don't pass --strict-optional to mypy")
 parser.add_argument('--warn-unused-ignores', action='store_true',
                     help="pass --warn-unused-ignores to mypy")
 parser.add_argument('--no-ignore-missing-imports',

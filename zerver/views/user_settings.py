@@ -56,7 +56,7 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
 @has_request_variables
 def json_change_ui_settings(
         request: HttpRequest, user_profile: UserProfile,
-        default_desktop_notifications: Optional[bool]=REQ(validator=check_bool, default=None)
+        default_desktop_notifications: Optional[bool]=REQ(validator=check_bool, default=None, type=bool)
 ) -> HttpResponse:
     result = {}
 
@@ -126,13 +126,13 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
 @has_request_variables
 def update_display_settings_backend(
         request: HttpRequest, user_profile: UserProfile,
-        twenty_four_hour_time: Optional[bool]=REQ(validator=check_bool, default=None),
-        high_contrast_mode: Optional[bool]=REQ(validator=check_bool, default=None),
-        night_mode: Optional[bool]=REQ(validator=check_bool, default=None),
-        default_language: Optional[bool]=REQ(validator=check_string, default=None),
-        left_side_userlist: Optional[bool]=REQ(validator=check_bool, default=None),
-        emojiset: Optional[str]=REQ(validator=check_string, default=None),
-        timezone: Optional[str]=REQ(validator=check_string, default=None)) -> HttpResponse:
+        twenty_four_hour_time: Optional[bool]=REQ(validator=check_bool, default=None, type=bool),
+        high_contrast_mode: Optional[bool]=REQ(validator=check_bool, default=None, type=bool),
+        night_mode: Optional[bool]=REQ(validator=check_bool, default=None, type=bool),
+        default_language: Optional[bool]=REQ(validator=check_string, default=None, type=bool),
+        left_side_userlist: Optional[bool]=REQ(validator=check_bool, default=None, type=bool),
+        emojiset: Optional[str]=REQ(validator=check_string, default=None, type=str),
+        timezone: Optional[str]=REQ(validator=check_string, default=None, type=str)) -> HttpResponse:
 
     if (default_language is not None and
             default_language not in get_available_language_codes()):
@@ -159,19 +159,22 @@ def update_display_settings_backend(
 @has_request_variables
 def json_change_notify_settings(
         request: HttpRequest, user_profile: UserProfile,
-        enable_stream_desktop_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
-        enable_stream_email_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
-        enable_stream_push_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
-        enable_stream_sounds: Optional[bool]=REQ(validator=check_bool, default=None),
-        enable_desktop_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
-        enable_sounds: Optional[bool]=REQ(validator=check_bool, default=None),
-        enable_offline_email_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
-        enable_offline_push_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
-        enable_online_push_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
-        enable_digest_emails: Optional[bool]=REQ(validator=check_bool, default=None),
-        pm_content_in_desktop_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
-        realm_name_in_notifications: Optional[bool]=REQ(validator=check_bool, default=None)) \
-        -> HttpResponse:
+        enable_stream_desktop_notifications: Optional[bool]=REQ(validator=check_bool,
+                                                                default=None, type=bool),
+        enable_stream_email_notifications: Optional[bool]=REQ(validator=check_bool, default=None, type=bool),
+        enable_stream_push_notifications: Optional[bool]=REQ(validator=check_bool, default=None, type=bool),
+        enable_stream_sounds: Optional[bool]=REQ(validator=check_bool, default=None, type=bool),
+        enable_desktop_notifications: Optional[bool]=REQ(validator=check_bool, default=None, type=bool),
+        enable_sounds: Optional[bool]=REQ(validator=check_bool, default=None, type=bool),
+        enable_offline_email_notifications: Optional[bool]=REQ(validator=check_bool,
+                                                               default=None, type=bool),
+        enable_offline_push_notifications: Optional[bool]=REQ(validator=check_bool, default=None, type=bool),
+        enable_online_push_notifications: Optional[bool]=REQ(validator=check_bool, default=None, type=bool),
+        enable_digest_emails: Optional[bool]=REQ(validator=check_bool, default=None, type=bool),
+        pm_content_in_desktop_notifications: Optional[bool]=REQ(validator=check_bool,
+                                                                default=None, type=bool),
+        realm_name_in_notifications: Optional[bool]=REQ(validator=check_bool, default=None, type=bool)
+) -> HttpResponse:
     result = {}
 
     # Stream notification settings.
