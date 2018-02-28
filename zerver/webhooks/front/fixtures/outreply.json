@@ -1,0 +1,185 @@
+{
+    "_links": {
+        "self": "https://api2.frontapp.com/events/evt_11b2d0h"
+    },
+    "id": "evt_11b2d0h",
+    "type": "out_reply",
+    "emitted_at": 1509004406.491,
+    "conversation": {
+        "_links": {
+            "self": "https://api2.frontapp.com/conversations/cnv_a73yq9",
+            "related": {
+                "events": "https://api2.frontapp.com/conversations/cnv_a73yq9/events",
+                "followers": "https://api2.frontapp.com/conversations/cnv_a73yq9/followers",
+                "messages": "https://api2.frontapp.com/conversations/cnv_a73yq9/messages",
+                "comments": "https://api2.frontapp.com/conversations/cnv_a73yq9/comments",
+                "inboxes": "https://api2.frontapp.com/conversations/cnv_a73yq9/inboxes"
+            }
+        },
+        "id": "cnv_a73yq9",
+        "subject": "Re: Welcome to Front!",
+        "status": "assigned",
+        "assignee": {
+            "_links": {
+                "self": "https://api2.frontapp.com/teammates/tea_2q21",
+                "related": {
+                    "inboxes": "https://api2.frontapp.com/teammates/tea_2q21/inboxes",
+                    "conversations": "https://api2.frontapp.com/teammates/tea_2q21/conversations"
+                }
+            },
+            "id": "tea_2q21",
+            "email": "www.rrawat555@gmail.com",
+            "username": "www_rrawat555",
+            "first_name": "Rishabh",
+            "last_name": "Rawat",
+            "is_admin": true,
+            "is_available": true
+        },
+        "recipient": {
+            "_links": {
+                "related": {
+                    "contact": "https://api2.frontapp.com/contacts/ctc_4l7ip5"
+                }
+            },
+            "handle": "team@frontapp.com",
+            "role": "to"
+        },
+        "tags": [],
+        "last_message": {
+            "_links": {
+                "self": "https://api2.frontapp.com/messages/msg_i3wjvd",
+                "related": {
+                    "conversation": "https://api2.frontapp.com/conversations/cnv_a73yq9",
+                    "message_replied_to": "https://api2.frontapp.com/messages/msg_i3rc2h"
+                }
+            },
+            "id": "msg_i3wjvd",
+            "type": "email",
+            "is_inbound": false,
+            "created_at": 1509004406.491,
+            "blurb": "hiii.... ",
+            "body": "<div>hiii....</div><br><div class=\"front-signature fa-uid_1696a197c79fb781b8b1f86d9d3121bf\">—<br />Rishabh Rawat<br />Sent with <a href=\"https://frontapp.com/?ref=signature\" target=\"_blank\">Front</a></div><br><blockquote type=\"cite\" class=\"front-blockquote\">On Thu, Oct 26, 2017 at 12:14 pm,  &lt;<a href=\"mailto:team@frontapp.com\" target=\"_blank\">team@frontapp.com</a>&gt; Mathilde Collin wrote:<br /><br /><div id=\"fae_i3wjvd-bv9rai\">Hi there, <br />\n<br />\nI’m so glad you decided to try Front! <br />\n<br />\nLearning Front is quick and easy: we've kept the simplicity of email, with powerful workflow and collaboration features. To show you how it works, we've setup a demo inbox. You have five messages waiting for you from Cailen, our Head of Customer Experience. He’ll show you around <img front-emoji-shortcode=\":smiley:\" src=\"https://dl.frontapp.com/emoji-data-idx256/img-apple-64/1f603.png\" alt=\"smiling face\" style=\"width: 1.4em; height: 1.4em; vertical-align: text-bottom; Margin-bottom: -1px; width: 1.4em; height: 1.4em; vertical-align: text-bottom; Margin-bottom: -1px; width: 1.4em; height: 1.4em; vertical-align: text-bottom; Margin-bottom: -1px;\" /> <br />\n<br />\nHave fun! <br />\n<br />\nMathilde <br />\nCEO, Front\n</div></blockquote>",
+            "text": "hiii....\n",
+            "metadata": {},
+            "author": {
+                "_links": {
+                    "self": "https://api2.frontapp.com/teammates/tea_2q21",
+                    "related": {
+                        "inboxes": "https://api2.frontapp.com/teammates/tea_2q21/inboxes",
+                        "conversations": "https://api2.frontapp.com/teammates/tea_2q21/conversations"
+                    }
+                },
+                "id": "tea_2q21",
+                "email": "www.rrawat555@gmail.com",
+                "username": "www_rrawat555",
+                "first_name": "Rishabh",
+                "last_name": "Rawat",
+                "is_admin": true,
+                "is_available": true
+            },
+            "recipients": [
+                {
+                    "_links": {
+                        "related": {
+                            "contact": "https://api2.frontapp.com/contacts/ctc_4l69bd"
+                        }
+                    },
+                    "handle": "3gvl-i_mtheowner2904@in.frontapp.com",
+                    "role": "from"
+                },
+                {
+                    "_links": {
+                        "related": {
+                            "contact": "https://api2.frontapp.com/contacts/ctc_4l7ip5"
+                        }
+                    },
+                    "handle": "team@frontapp.com",
+                    "role": "to"
+                }
+            ],
+            "attachments": []
+        },
+        "created_at": 1509000851.604
+    },
+    "source": {
+        "_meta": {
+            "type": "inboxes"
+        },
+        "data": [
+            {
+                "_links": {
+                    "self": "https://api2.frontapp.com/inboxes/inb_3qmx",
+                    "related": {
+                        "channels": "https://api2.frontapp.com/inboxes/inb_3qmx/channels",
+                        "conversations": "https://api2.frontapp.com/inboxes/inb_3qmx/conversations",
+                        "teammates": "https://api2.frontapp.com/inboxes/inb_3qmx/teammates"
+                    }
+                },
+                "id": "inb_3qmx",
+                "address": "3gvl-i_mtheowner2904@in.frontapp.com",
+                "send_as": "3gvl-i_mtheowner2904@in.frontapp.com",
+                "name": "Demo Inbox",
+                "type": "smtp"
+            }
+        ]
+    },
+    "target": {
+        "_meta": {
+            "type": "message"
+        },
+        "data": {
+            "_links": {
+                "self": "https://api2.frontapp.com/messages/msg_i3wjvd",
+                "related": {
+                    "conversation": "https://api2.frontapp.com/conversations/cnv_a73yq9",
+                    "message_replied_to": "https://api2.frontapp.com/messages/msg_i3rc2h"
+                }
+            },
+            "id": "msg_i3wjvd",
+            "type": "email",
+            "is_inbound": false,
+            "created_at": 1509004406.491,
+            "blurb": "hiii.... ",
+            "body": "<div>hiii....</div><br><div class=\"front-signature fa-uid_1696a197c79fb781b8b1f86d9d3121bf\">—<br />Rishabh Rawat<br />Sent with <a href=\"https://frontapp.com/?ref=signature\" target=\"_blank\">Front</a></div><br><blockquote type=\"cite\" class=\"front-blockquote\">On Thu, Oct 26, 2017 at 12:14 pm,  &lt;<a href=\"mailto:team@frontapp.com\" target=\"_blank\">team@frontapp.com</a>&gt; Mathilde Collin wrote:<br /><br /><div id=\"fae_i3wjvd-bv9rai\">Hi there, <br />\n<br />\nI’m so glad you decided to try Front! <br />\n<br />\nLearning Front is quick and easy: we've kept the simplicity of email, with powerful workflow and collaboration features. To show you how it works, we've setup a demo inbox. You have five messages waiting for you from Cailen, our Head of Customer Experience. He’ll show you around <img front-emoji-shortcode=\":smiley:\" src=\"https://dl.frontapp.com/emoji-data-idx256/img-apple-64/1f603.png\" alt=\"smiling face\" style=\"width: 1.4em; height: 1.4em; vertical-align: text-bottom; Margin-bottom: -1px; width: 1.4em; height: 1.4em; vertical-align: text-bottom; Margin-bottom: -1px; width: 1.4em; height: 1.4em; vertical-align: text-bottom; Margin-bottom: -1px;\" /> <br />\n<br />\nHave fun! <br />\n<br />\nMathilde <br />\nCEO, Front\n</div></blockquote>",
+            "text": "hiii....\n",
+            "metadata": {},
+            "author": {
+                "_links": {
+                    "self": "https://api2.frontapp.com/teammates/tea_2q21",
+                    "related": {
+                        "inboxes": "https://api2.frontapp.com/teammates/tea_2q21/inboxes",
+                        "conversations": "https://api2.frontapp.com/teammates/tea_2q21/conversations"
+                    }
+                },
+                "id": "tea_2q21",
+                "email": "www.rrawat555@gmail.com",
+                "username": "www_rrawat555",
+                "first_name": "Rishabh",
+                "last_name": "Rawat",
+                "is_admin": true,
+                "is_available": true
+            },
+            "recipients": [
+                {
+                    "_links": {
+                        "related": {
+                            "contact": "https://api2.frontapp.com/contacts/ctc_4l69bd"
+                        }
+                    },
+                    "handle": "3gvl-i_mtheowner2904@in.frontapp.com",
+                    "role": "from"
+                },
+                {
+                    "_links": {
+                        "related": {
+                            "contact": "https://api2.frontapp.com/contacts/ctc_4l7ip5"
+                        }
+                    },
+                    "handle": "team@frontapp.com",
+                    "role": "to"
+                }
+            ],
+            "attachments": []
+        }
+    }
+}
