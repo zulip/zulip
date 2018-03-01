@@ -67,6 +67,7 @@ class Versions:
 
 
 class Paths:
+    UUID = '?'
     ZULIP = _zulip_path
     NODE_MODULES_CACHE = NODE_MODULES_CACHE_PATH
 
@@ -205,9 +206,6 @@ def check_prerequisites() -> None:
     # test symlink permissions
     test_symlink()
 
-UUID_VAR_PATH = get_dev_uuid_var_path(create_if_missing=True)
-run(["mkdir", "-p", UUID_VAR_PATH])
-
 
 LOUD = dict(_out=sys.stdout, _err=sys.stderr)
 
@@ -320,7 +318,7 @@ def rebuild_database() -> None:
     django.setup()
     from zerver.lib.test_fixtures import is_template_database_current
 
-    migration_status_path = os.path.join(UUID_VAR_PATH, "migration_status_dev")
+    migration_status_path = os.path.join(Paths.UUID, "migration_status_dev")
     if options.is_force or not is_template_database_current(
             migration_status=migration_status_path,
             settings="zproject.settings",
@@ -351,7 +349,7 @@ def compile_translations() -> None:
         with open(path, 'rb') as file_to_hash:
             sha1sum.update(file_to_hash.read())
 
-    compilemessages_hash_path = os.path.join(UUID_VAR_PATH, "last_compilemessages_hash")
+    compilemessages_hash_path = os.path.join(Paths.UUID, "last_compilemessages_hash")
     new_hash = sha1sum.hexdigest()
     Path(compilemessages_hash_path).touch()
     with open(compilemessages_hash_path, 'r') as hash_file:
@@ -389,7 +387,7 @@ def _calculate_apt_progress_signature() -> Tuple[Any, Any, Any]:
 
     # get last dependency signature
     old_hash = None
-    apt_hash_file_path = os.path.join(UUID_VAR_PATH, "apt_dependencies_hash")
+    apt_hash_file_path = os.path.join(Paths.UUID, "apt_dependencies_hash")
     try:
         hash_file = open(apt_hash_file_path, 'r+')
         old_hash = hash_file.read()
@@ -424,6 +422,8 @@ def main(options: Any) -> int:
     # change to the root of Zulip, since yarn and management commands expect to
     # be run from the root of the project.
     os.chdir(Paths.ZULIP)
+    Paths.UUID = get_dev_uuid_var_path(create_if_missing=True)
+    make_directories()
     resume_apt_install()
     install_node_modules()
 
@@ -436,8 +436,6 @@ def main(options: Any) -> int:
     setup_shell_profile('~/.zprofile')
 
     run(["sudo", "cp", Paths.REPO_STOPWORDS, Paths.TSEARCH_STOPWORDS])
-
-    make_directories()
     build_emoji()
 
     # copy over static files from the zulip_bots package
@@ -460,7 +458,7 @@ def main(options: Any) -> int:
 
     run(["scripts/lib/clean-unused-caches"])
 
-    version_file = os.path.join(UUID_VAR_PATH, 'provision_version')
+    version_file = os.path.join(Paths.UUID, 'provision_version')
     print('writing to ' + version_file)
     with open(version_file, 'w') as f:
         f.write(Versions.PROVISION + '\n')
