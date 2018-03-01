@@ -43,6 +43,7 @@ npm-debug.log
 
 # Test / analysis tools
 .coverage
+.mypy_cache
 
 ## Files (or really symlinks) created in a prod deployment
 /zproject/prod_settings.py
