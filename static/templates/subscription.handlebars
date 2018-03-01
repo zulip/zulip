@@ -12,11 +12,24 @@
             <div class="stream-name">{{name}}</div>
             <div class="subscriber-count">
                 {{#if can_add_subscribers}}
+                <i class="icon-vector-user"></i>
                 <span class="subscriber-count-text">{{subscriber_count}}</span>
                 {{else}}
                 <i class="subscriber-count-lock icon-vector-lock"></i>
+                <span class="subscriber-count-text">{{subscriber_count}}</span>
                 {{/if}}
-                <i class="icon-vector-user"></i>
+            </div>
+            <div class="stream-message-count">
+                {{#if is_old_stream}}
+                    <i class="icon-vector-comments"></i>
+                    {{#if can_add_subscribers}}
+                    <span class="stream-message-count-text">{{stream_weekly_traffic}}/week</span>
+                    <div class="stream-message-hover-content">Average weekly traffic</div>
+                    {{/if}}
+                {{else}}
+                    <span class="stream-message-count-text">New stream</span>
+                    <div class="stream-message-hover-content">Newly created stream</div>
+                {{/if}}
             </div>
         </div>
         <div class="description" data-no-description="{{t 'No description.'}}">{{{rendered_description}}}</div>
