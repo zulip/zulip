@@ -90,7 +90,7 @@ def do_yarn_install(target_path, yarn_args, success_stamp, stdout=None, stderr=N
         if os.path.exists("node_modules"):
             cmds.append(["cp", "-R", "node_modules/", cached_node_modules])
         cd_exec = os.path.join(ZULIP_PATH, "scripts/lib/cd_exec")
-        cmds.append([cd_exec, target_path, YARN_BIN, "install", "--non-interactive"] +
+        cmds.append(['sudo', cd_exec, target_path, YARN_BIN, "install", "--non-interactive"] +
                     yarn_args)
     cmds.append(['touch', success_stamp])
 

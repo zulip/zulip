@@ -127,7 +127,13 @@ if [ "$VIRTUALENV_NEEDED" = "yes" ]; then
     "$ZULIP_PATH"/scripts/lib/create-production-venv "$ZULIP_PATH"
 fi
 
-"$ZULIP_PATH"/scripts/lib/install-node
+if [ CIRCLECI ]; then
+    # in circleci not running this script as sudo cause
+    # an permission error when node and yarn are upgraded
+    sudo "$ZULIP_PATH"/scripts/lib/install-node
+else
+    "$ZULIP_PATH"/scripts/lib/install-node
+fi
 
 # Generate /etc/zulip/zulip.conf .
 mkdir -p /etc/zulip
