@@ -49,34 +49,51 @@ function query_matches_language(query, lang) {
     return lang.indexOf(query) !== -1;
 }
 
+// This function match query with source's attributes.
+function query_matches_source_attrs(query, source, match_attrs, split_char) {
+    var match_for_all_attrs;
+    var i;
+    var j;
+    if (query.indexOf(split_char) > 0) {
+        var queries = query.split(split_char);
+        for (i = 0; i < queries.length - 1; i += 1) {
+            match_for_all_attrs = false;
+            for (j = 0; j < match_attrs.length; j += 1) {
+                match_for_all_attrs = match_for_all_attrs ||
+                                      (source[match_attrs[j]].toLowerCase().split(split_char)[i] ===
+                                       queries[i]);
+            }
+            if (!match_for_all_attrs) {
+                return false;
+            }
+        }
+        query = queries[i];
+    }
+    for (j = 0, match_for_all_attrs = false; j < match_attrs.length; j += 1) {
+        match_for_all_attrs = match_for_all_attrs ||
+                              (source[match_attrs[j]].toLowerCase().indexOf(query) !== -1);
+    }
+    return match_for_all_attrs;
+}
+
 function query_matches_person(query, person) {
     // Case-insensitive.
     query = query.toLowerCase();
-
-    return (person.email.toLowerCase().indexOf(query) !== -1
-            || person.full_name.toLowerCase().indexOf(query) !== -1);
+    return query_matches_source_attrs(query, person, ["full_name", "email"], " ");
 }
 
-function query_matches_user_group(query, user_group) {
+function query_matches_user_group_or_stream(query, user_group_or_stream) {
     // Case-insensitive.
     query = query.toLowerCase();
-
-    return (user_group.name.toLowerCase().indexOf(query) !== -1
-            || user_group.description.toLowerCase().indexOf(query) !== -1);
-}
-
-function query_matches_stream(query, stream) {
-    query = query.toLowerCase();
-
-    return (stream.name.toLowerCase().indexOf(query) !== -1
-            || stream.description.toLowerCase().indexOf(query) !== -1);
+    return query_matches_source_attrs(query, user_group_or_stream, ["name", "description"], " ");
 }
 
 // Case-insensitive
 function query_matches_emoji(query, emoji) {
     // replaces spaces with underscores
+    query = query.toLowerCase();
     query = query.split(" ").join("_");
-    return (emoji.emoji_name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
+    return query_matches_source_attrs(query, emoji, ["emoji_name"], "_");
 }
 
 // nextFocus is set on a keydown event to indicate where we should focus on keyup.
@@ -477,13 +494,13 @@ exports.compose_content_matcher = function (item) {
     } else if (this.completing === 'mention') {
         var matches;
         if (user_groups.is_user_group(item)) {
-            matches = query_matches_user_group(this.token, item);
+            matches = query_matches_user_group_or_stream(this.token, item);
         } else {
             matches = query_matches_person(this.token, item);
         }
         return matches;
     } else if (this.completing === 'stream') {
-        return query_matches_stream(this.token, item);
+        return query_matches_user_group_or_stream(this.token, item);
     } else if (this.completing === 'syntax') {
         return query_matches_language(this.token, item);
     }

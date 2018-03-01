@@ -54,6 +54,11 @@ var denmark_stream = {
     description: 'Vikings and boats, in a cold weather.',
     stream_id: 2,
 };
+var netherland_stream = {
+    name: 'The Netherlands',
+    description: 'The Netherlands, city of dream.',
+    stream_id: 3,
+};
 
 set_global('$', global.make_zjquery());
 
@@ -120,7 +125,6 @@ var backend = {
 
 global.user_groups.add(hamletcharacters);
 global.user_groups.add(backend);
-
 (function test_add_topic() {
     ct.add_topic('Denmark', 'civil fears');
     ct.add_topic('devel', 'fading');
@@ -1048,7 +1052,25 @@ global.user_groups.add(backend);
 }());
 
 (function test_typeahead_results() {
-    function compose_typeahead_results(completing,items,token) {
+    var all_items = [
+        {
+            special_item_text: 'all (Notify everyone)',
+            email: 'all',
+            pm_recipient_count: Infinity,
+            full_name: 'all',
+        },
+        {
+            special_item_text: 'everyone (Notify everyone)',
+            email: 'everyone',
+            pm_recipient_count: Infinity,
+            full_name: 'everyone',
+        },
+    ];
+    var people_with_all = global.people.get_realm_persons().concat(all_items);
+    var all_mentions = people_with_all.concat(global.user_groups.get_realm_user_groups());
+    var stream_list = [denmark_stream, sweden_stream, netherland_stream];
+
+    function compose_typeahead_results(completing, items, token) {
         // items -> emoji array, token -> simulates text in input
         var matcher = ct.compose_content_matcher.bind({completing: completing, token: token});
         var sorter = ct.compose_matches_sorter.bind({completing: completing, token: token});
@@ -1066,12 +1088,39 @@ global.user_groups.add(backend);
         var returned = compose_typeahead_results('emoji', emoji_list, input);
         assert.deepEqual(returned, expected);
     }
+    function assert_mentions_matches(input, expected) {
+        var returned = compose_typeahead_results('mention', all_mentions, input);
+        assert.deepEqual(returned, expected);
+    }
+    function assert_stream_matches(input, expected) {
+        var returned = compose_typeahead_results('stream', stream_list, input);
+        assert.deepEqual(returned, expected);
+    }
 
     assert_emoji_matches('da',[{emoji_name: "tada", emoji_url: "TBD"},
         {emoji_name: "panda_face", emoji_url: "TBD"}]);
-    assert_emoji_matches('da_', [{emoji_name: "panda_face", emoji_url: "TBD"}]);
-    assert_emoji_matches('da ', [{emoji_name: "panda_face", emoji_url: "TBD"}]);
+    assert_emoji_matches('da_', []);
+    assert_emoji_matches('da ', []);
+    assert_emoji_matches('panda ', [{emoji_name: "panda_face", emoji_url: "TBD"}]);
+    assert_emoji_matches('panda_', [{emoji_name: "panda_face", emoji_url: "TBD"}]);
     assert_emoji_matches('japanese_post_', [{emoji_name: "japanese_post_office", emoji_url: "TBD"}]);
     assert_emoji_matches('japanese post ', [{emoji_name: "japanese_post_office", emoji_url: "TBD"}]);
     assert_emoji_matches('notaemoji', []);
+    // Autocomplete user mentions by user name.
+    assert_mentions_matches('cordelia', [cordelia]);
+    assert_mentions_matches('cordelia le', [cordelia]);
+    assert_mentions_matches('cordelia le ', []);
+    // Autocomplete user group mentions by group name.
+    assert_mentions_matches('hamletchar', [hamletcharacters]);
+    // Autocomplete user group mentions by group descriptions.
+    assert_mentions_matches('characters ', [hamletcharacters]);
+    assert_mentions_matches('characters of ', [hamletcharacters]);
+    assert_mentions_matches('characters o ', []);
+    // Autocomplete stream by stream name or stream description.
+    assert_stream_matches('den', [denmark_stream, sweden_stream]);
+    assert_stream_matches('denmark ', [denmark_stream]);
+    assert_stream_matches('den ', []);
+    assert_stream_matches('cold', [sweden_stream, denmark_stream]);
+    assert_stream_matches('the ', [netherland_stream]);
+    assert_stream_matches('city', [netherland_stream]);
 }());
