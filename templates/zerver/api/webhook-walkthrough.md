@@ -1,7 +1,7 @@
 # Webhook walkthrough
 
-Below explains each part of a simple webhook integration, called **Hello
-World**. This webhook sends a "hello" message to the `test` stream and includes
+Below explains each part of a simple webhook integration, called **Hello World**.
+This webhook sends a "hello" message to the `test` stream and includes
 a link to the Wikipedia article of the day, which it formats from json data it
 receives in the http request.
 
@@ -47,8 +47,8 @@ some other kind of data. See [Step 4: Create tests](#step-4-create-tests) or
 In the `zerver/webhooks/` directory, create new subdirectory that will
 contain all of corresponding code.  In our example it will be
 `helloworld`. The new directory will be a python package, so you have
-to create an empty `__init__.py` file in that directory via e.g. `touch
-zerver/webhooks/helloworld/__init__.py`.
+to create an empty `__init__.py` file in that directory via e.g.
+`touch zerver/webhooks/helloworld/__init__.py`.
 
 ## Step 2: Create main webhook code
 
