@@ -104,41 +104,42 @@ webhook-walkthrough)**.
 For a quick guide, read on.
 
 * First, use <http://requestb.in/> or a similar site to capture an
-  example webhook payload from the service you're integrating.  You
-  can use these captured payloads to create a set of test fixtures for
-  your integration under `zerver/webhooks/mywebhook/fixtures/`.
+    example webhook payload from the service you're integrating.  You
+    can use these captured payloads to create a set of test fixtures
+    for your integration under `zerver/webhooks/mywebhook/fixtures/`.
 
-* Then write a draft webhook handler under `zerver/webhooks/`;
-  there are a lot of examples in that directory.  We recommend
-  templating off a short one (like `stash` or `zendesk`), since
-  the longer ones usually just have more complex parsing which can
-  obscure what's common to all webhook integrations.  In addition to
-  writing the integration itself, you'll need to create `Integration`
-  object and add it to `WEBHOOK_INTEGRATIONS` in
-  `zerver/lib/integrations.py;` search for `webhook` in that
-  file to find the existing ones (and please add yours in the
-  alphabetically correct place).
+* Then write a draft webhook handler under `zerver/webhooks/`; there
+    are a lot of examples in that directory.  We recommend templating
+    off a short one (like `stash` or `zendesk`), since the longer ones
+    usually just have more complex parsing which can obscure what's
+    common to all webhook integrations.  In addition to writing the
+    integration itself, you'll need to create `Integration` object and
+    add it to `WEBHOOK_INTEGRATIONS` in `zerver/lib/integrations.py;`
+    search for `webhook` in that file to find the existing ones (and
+    please add yours in the alphabetically correct place).
 
 * Then write a test for your fixture in the `tests.py` file in the
-  `zerver/webhooks/mywebhook` directory.  You can now iterate on
-  debugging the tests and webhooks handler until they work, all
-  without ever needing to post directly from the service you're
-  integrating with to your Zulip development machine.  You can run
-  just the tests for one integration like this:
-  ```
-  test-backend zerver/webhooks/pagerduty/
-  ```
+    `zerver/webhooks/mywebhook` directory.  You can now iterate on
+    debugging the tests and webhooks handler until they work, all
+    without ever needing to post directly from the service you're
+    integrating with to your Zulip development machine.  You can run
+    just the tests for one integration like this:
 
-  *Hint: See [this guide](https://zulip.readthedocs.io/en/latest/testing/testing.html)
-  for more details on the Zulip test runner.*
+    ```
+    test-backend zerver/webhooks/pagerduty/
+    ```
+
+    *Hint: See
+    [this guide](https://zulip.readthedocs.io/en/latest/testing/testing.html)
+    for more details on the Zulip test runner.*
 
 * Once you've gotten your webhook working and passing a test, capture
-  payloads for the other common types of posts the service's webhook
-  will make, and add tests for them; usually this part of the process
-  is pretty fast.  Webhook integration tests should all use fixtures
-  (as opposed to contacting the service), since otherwise the tests
-  can't run without Internet access and some sort of credentials for
-  the service.
+    payloads for the other common types of posts the service's webhook
+    will make, and add tests for them; usually this part of the
+    process is pretty fast.  Webhook integration tests should all use
+    fixtures (as opposed to contacting the service), since otherwise
+    the tests can't run without Internet access and some sort of
+    credentials for the service.
 
 * Finally, write documentation for the integration; there's a
   [detailed guide](integration-docs-guide).
