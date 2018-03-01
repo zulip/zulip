@@ -124,19 +124,20 @@ casper.then(function create_bot() {
 });
 
 var bot_email = '1-bot@zulip.zulipdev.com';
+var button_sel = '.download_bot_zuliprc[data-email="' + bot_email + '"]';
 
 casper.then(function () {
-    var button_sel = '.download_bot_zuliprc[data-email="' + bot_email + '"]';
-
     casper.waitUntilVisible(button_sel, function () {
         casper.click(button_sel);
+    });
+});
 
-        casper.waitUntilVisible(button_sel + '[href^="data:application"]', function () {
-            casper.test.assertMatch(
-                decodeURIComponent(casper.getElementsAttribute(button_sel, 'href')),
-                regex_zuliprc,
-                'Looks like a bot ~/.zuliprc file');
-        });
+casper.then(function () {
+    casper.waitUntilVisible(button_sel + '[href^="data:application"]', function () {
+        casper.test.assertMatch(
+            decodeURIComponent(casper.getElementsAttribute(button_sel, 'href')),
+            regex_zuliprc,
+            'Looks like a bot ~/.zuliprc file');
     });
 });
 
