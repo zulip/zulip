@@ -1754,6 +1754,19 @@ blockquote p {
     color: #fff;
 }
 
+.typeahead.dropdown-menu .unsubscribed_icon {
+    display: none;
+}
+
+.typeahead.dropdown-menu .active .unsubscribed_icon {
+    display: block;
+    float: right;
+    margin-top: 5px;
+    margin-right: -12px;
+    font-size: 0.8em;
+    color: hsl(96, 7%, 73%);
+}
+
 .nav .dropdown-menu:after {
     position: absolute;
     width: 0px;

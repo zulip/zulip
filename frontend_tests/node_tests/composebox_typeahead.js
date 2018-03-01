@@ -48,11 +48,13 @@ var sweden_stream = {
     name: 'Sweden',
     description: 'Cold, mountains and home decor.',
     stream_id: 1,
+    subscribed: true,
 };
 var denmark_stream = {
     name: 'Denmark',
-    description: 'Vikings and boats, in a cold weather.',
+    description: 'Vikings and boats, in a serene and cold weather.',
     stream_id: 2,
+    subscribed: true,
 };
 
 set_global('$', global.make_zjquery());
@@ -70,7 +72,7 @@ set_global('pygments_data', {langs:
 
 global.compile_template('typeahead_list_item');
 
-stream_data.subscribed_subs = function () {
+stream_data.get_streams_for_settings_page = function () {
     return stream_list;
 };
 
@@ -421,17 +423,17 @@ global.user_groups.add(backend);
         // corresponding parts in bold.
         options.query = 'oth';
         actual_value = options.highlighter(othello);
-        expected_value = '<strong>Othello, the Moor of Venice</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">othello@zulip.com</small>';
+        expected_value = '<strong>Othello, the Moor of Venice</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">othello@zulip.com</small>\n';
         assert.equal(actual_value, expected_value);
 
         options.query = 'Lear';
         actual_value = options.highlighter(cordelia);
-        expected_value = '<strong>Cordelia Lear</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">cordelia@zulip.com</small>';
+        expected_value = '<strong>Cordelia Lear</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">cordelia@zulip.com</small>\n';
         assert.equal(actual_value, expected_value);
 
         options.query = 'othello@zulip.com, co';
         actual_value = options.highlighter(cordelia);
-        expected_value = '<strong>Cordelia Lear</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">cordelia@zulip.com</small>';
+        expected_value = '<strong>Cordelia Lear</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">cordelia@zulip.com</small>\n';
         assert.equal(actual_value, expected_value);
 
         // options.matcher()
@@ -543,12 +545,12 @@ global.user_groups.add(backend);
         // content_highlighter.
         fake_this = { completing: 'mention', token: 'othello' };
         actual_value = options.highlighter.call(fake_this, othello);
-        expected_value = '<strong>Othello, the Moor of Venice</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">othello@zulip.com</small>';
+        expected_value = '<strong>Othello, the Moor of Venice</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">othello@zulip.com</small>\n';
         assert.equal(actual_value, expected_value);
 
         fake_this = { completing: 'mention', token: 'hamletcharacters' };
         actual_value = options.highlighter.call(fake_this, hamletcharacters);
-        expected_value = '<strong>hamletcharacters</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">Characters of Hamlet</small>';
+        expected_value = '<strong>hamletcharacters</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">Characters of Hamlet</small>\n';
         assert.equal(actual_value, expected_value);
 
         // options.matcher()
@@ -643,6 +645,33 @@ global.user_groups.add(backend);
         fake_this = { completing: 'syntax', token: 'ap' };
         actual_value = options.sorter.call(fake_this, ['abap', 'applescript']);
         expected_value = ['applescript', 'abap'];
+        assert.deepEqual(actual_value, expected_value);
+
+        var serbia_stream = {
+            name: 'Serbia',
+            description: 'Snow and cold',
+            stream_id: 3,
+            subscribed: false,
+        };
+        // Subscribed stream is active
+        stream_data.is_active = function () {
+            return false;
+        };
+        fake_this = { completing: 'stream', token: 's' };
+        actual_value = options.sorter.call(fake_this, [sweden_stream, serbia_stream]);
+        expected_value = [sweden_stream, serbia_stream];
+        assert.deepEqual(actual_value, expected_value);
+        // Subscribed stream is inactive
+        stream_data.is_active = function () {
+            return true;
+        };
+        actual_value = options.sorter.call(fake_this, [sweden_stream, serbia_stream]);
+        expected_value = [sweden_stream, serbia_stream];
+        assert.deepEqual(actual_value, expected_value);
+
+        fake_this = { completing: 'stream', token: 'ser' };
+        actual_value = options.sorter.call(fake_this, [denmark_stream, serbia_stream]);
+        expected_value = [serbia_stream, denmark_stream];
         assert.deepEqual(actual_value, expected_value);
 
         fake_this = { completing: 'non-existing-completion' };
