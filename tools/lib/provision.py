@@ -236,7 +236,7 @@ def install_apt_deps() -> None:
     # setup Zulip-specific apt repos, and run `apt-get update`
     run(["sudo", "./scripts/lib/setup-apt-repo"])
     # remove duplicates.
-    deps_to_install = list(set(APT_DEPENDENCIES[codename]))
+    deps_to_install = sorted(set(APT_DEPENDENCIES[codename]))
     run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + deps_to_install)
 
 
