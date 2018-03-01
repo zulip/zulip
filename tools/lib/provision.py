@@ -220,7 +220,7 @@ def check_prerequisites() -> None:
     test_symlink()
 
 
-LOUD = dict(_out=sys.stdout, _err=sys.stderr)
+# LOUD = dict(_out=sys.stdout, _err=sys.stderr)
 
 user_id = os.getuid()
 
