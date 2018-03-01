@@ -24,7 +24,7 @@
     <div class="app login-page split-view new-style flex full-page">
         <div class="inline-block">
             <div class="lead">
-                <h1 class="get-started">{{ _("Sign in to Zulip") }}</h1>
+                <h1 class="get-started">{{ _("Log in to Zulip") }}</h1>
             </div>
 
             <div class="app-main login-page-container white-box inline-block">
@@ -32,7 +32,7 @@
                     {# SSO users don't have a password. #}
 
                     <div class="login-sso">
-                        <a href="/accounts/login/sso" class="btn btn-large btn-primary">{{ _('Sign in with SSO') }}</a>
+                        <a href="/accounts/login/sso" class="btn btn-large btn-primary">{{ _('Log in with SSO') }}</a>
                     </div>
 
                 {% else %}
@@ -101,7 +101,7 @@
 
                                     {% if already_registered %}
                                     <div class="alert">
-                                        {{ _("You've already registered with this email address. Please sign in below.") }}
+                                        {{ _("You've already registered with this email address. Please log in below.") }}
                                     </div>
                                     {% endif %}
 
@@ -113,8 +113,9 @@
 
                                     <button type="submit" name="button" class="full-width">
                                         <img class="loader" src="/static/images/loader.svg" />
-                                        <span class="text">{{ _("Sign in") }}</span>
+                                        <span class="text">{{ _("Log in") }}</span>
                                     </button>
+
                                 </form>
 
                                 {% if any_oauth_backend_enabled %}
@@ -126,7 +127,7 @@
                             {% if google_auth_enabled %}
                             <div class="login-google">
                                 <form class="form-inline" action="{{ url('zerver.views.auth.start_google_oauth2') }}" method="get">
-                                    <button class="login-social-button login-google-button full-width">{{ _('Sign in with Google') }}</button>
+                                    <button class="login-social-button login-google-button full-width">{{ _('Log in with Google') }}</button>
                                 </form>
                             </div>
                             {% endif %}
@@ -134,7 +135,7 @@
                             {% if github_auth_enabled %}
                             <div class="login-github">
                                 <form class="form-inline github-wrapper" action="{{ url('login-social', args=('github',)) }}" method="get">
-                                    <button class="login-social-button login-github-button github">{{ _('Sign in with GitHub') }}</button>
+                                    <button class="login-social-button login-github-button github">{{ _('Log in with GitHub') }}</button>
                                 </form>
                             </div>
                             {% endif %}

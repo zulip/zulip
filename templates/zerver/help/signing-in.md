@@ -1,6 +1,6 @@
 # Signing in
 
-Zulip offers three ways to sign in: e-mail and password, Google
+Zulip offers three ways to log in: e-mail and password, Google
 credentials, and GitHub credentials. Your organization's administrator
 may choose to enable or disable any of these options. So don't worry
 if your login page doesn't have some of the options described here!
@@ -28,12 +28,12 @@ following a few simple steps.
         [Change your password](/help/change-your-password) page for
         instructions on how to reset it.
 
-## Signing in with your Google account
+## Logging in with your Google account
 
 If your organization has enabled Google authentication, you can sign
 into Zulip using your Google account by following a few simple steps.
 
-1. Click the **Sign in with Google** button located under the
+1. Click the **Log in with Google** button located under the
    **Login** button and **Forgot your password?** link.
 
     ![Zulip sign in Google](/static/images/help/signin-google.png)
@@ -57,12 +57,12 @@ into Zulip using your Google account by following a few simple steps.
     If you click the **Deny** button, Zulip cannot finish logging you
     in, and you will be redirected to the Zulip login page.
 
-## Signing in with your GitHub account
+## Logging in with your GitHub account
 
 If your organization has enabled GitHub authentication, you can sign into
 Zulip using your GitHub account by following a few simple steps.
 
-1. Click the **Sign in with GitHub** button located under the **Sign in with Google** button.
+1. Click the **Log in with GitHub** button located under the **Log in with Google** button.
 
     ![Zulip sign in GitHub](/static/images/help/signin-github.png)
 
@@ -71,7 +71,7 @@ Zulip using your GitHub account by following a few simple steps.
 
     ![Zulip sign in GitHub login](/static/images/help/github-login.png)
 
-3. If you're signing into Zulip with a GitHub account for the first
+3. If you're logging into Zulip with a GitHub account for the first
    time, you will be taken to a page titled **Authorize application**.
 
     ![Zulip sign in GitHub Request Permission](/static/images/help/github-request.png)
