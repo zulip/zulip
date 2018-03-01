@@ -4,10 +4,11 @@ import sys
 import logging
 import argparse
 import platform
+import hashlib
 from subprocess import CalledProcessError
 from glob import glob
-import hashlib
 from pathlib import Path
+from contextlib import contextmanager
 
 class DummyType(object):
     def __getitem__(self, key):  # type: ignore # 3.4
@@ -158,13 +159,21 @@ def check_platform() -> None:
                          "a " + bits + " version.")
         raise RuntimeError()
 
+@contextmanager
+def removing(path: str) -> Iterator[None]:
+    if os.path.exists(path):
+        os.remove(path)
+    try:
+        yield
+    finally:
+        if os.path.exists(path):
+            os.remove(path)
+
 def test_symlink() -> None:
     try:
         test_symlink_path = os.path.join(Paths.VAR, 'zulip-test-symlink')
-        if os.path.exists(test_symlink_path):
-            os.remove(test_symlink_path)
-        os.symlink(os.path.join(Paths.ZULIP, 'README.md'), test_symlink_path)
-        os.remove(test_symlink_path)
+        with removing(test_symlink_path):
+            os.symlink(os.path.join(Paths.ZULIP, 'README.md'), test_symlink_path)
     except OSError as err:
         print(FAIL + "Error: Unable to create symlinks."
               "Make sure you have permission to create symbolic links." + ENDC)
@@ -344,7 +353,7 @@ def compile_translations() -> None:
 
     compilemessages_hash_path = os.path.join(UUID_VAR_PATH, "last_compilemessages_hash")
     new_hash = sha1sum.hexdigest()
-    run(['touch', compilemessages_hash_path])
+    Path(compilemessages_hash_path).touch()
     with open(compilemessages_hash_path, 'r') as hash_file:
         old_hash = hash_file.read()
 
@@ -385,7 +394,7 @@ def _calculate_apt_progress_signature() -> Tuple[Any, Any, Any]:
         hash_file = open(apt_hash_file_path, 'r+')
         old_hash = hash_file.read()
     except IOError:
-        run(['touch', apt_hash_file_path])
+        Path(apt_hash_file_path).touch()
         hash_file = open(apt_hash_file_path, 'r+')
     return hash_file, new_hash, old_hash
 
