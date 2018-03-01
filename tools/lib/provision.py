@@ -5,7 +5,7 @@ import logging
 import argparse
 import platform
 from subprocess import CalledProcessError
-import glob
+from glob import glob
 import hashlib
 from pathlib import Path
 
@@ -334,9 +334,10 @@ def compile_translations() -> None:
     # files and `language-options.json`.
     sha1sum = hashlib.sha1()
     paths = ['zerver/management/commands/compilemessages.py']
-    paths += glob.glob('static/locale/*/LC_MESSAGES/*.po')
-    paths += glob.glob('static/locale/*/translations.json')
+    paths += glob('static/locale/*/LC_MESSAGES/*.po')
+    paths += glob('static/locale/*/translations.json')
 
+    # FIXME: where are the file boundaries?
     for path in paths:
         with open(path, 'rb') as file_to_hash:
             sha1sum.update(file_to_hash.read())
