@@ -338,14 +338,14 @@ def compile_translations() -> None:
             sha1sum.update(file_to_hash.read())
 
     compilemessages_hash_path = os.path.join(UUID_VAR_PATH, "last_compilemessages_hash")
-    new_compilemessages_hash = sha1sum.hexdigest()
+    new_hash = sha1sum.hexdigest()
     run(['touch', compilemessages_hash_path])
     with open(compilemessages_hash_path, 'r') as hash_file:
-        last_compilemessages_hash = hash_file.read()
+        old_hash = hash_file.read()
 
-    if options.is_force or (new_compilemessages_hash != last_compilemessages_hash):
+    if options.is_force or (new_hash != old_hash):
         with open(compilemessages_hash_path, 'w') as hash_file:
-            hash_file.write(new_compilemessages_hash)
+            hash_file.write(new_hash)
         run(["./manage.py", "compilemessages"])
     else:
         print("No need to run `manage.py compilemessages`.")
@@ -363,7 +363,7 @@ def really_deploy() -> None:
     run(["./manage.py", "create_realm_internal_bots"])
 
 
-def calculate_apt_progress_signature() -> Tuple[Any, Any, Any]:
+def _calculate_apt_progress_signature() -> Tuple[Any, Any, Any]:
     # hash the apt dependencies
     sha_sum = hashlib.sha1()
     # FIXME: add \n to avoid name collision
@@ -386,7 +386,7 @@ def calculate_apt_progress_signature() -> Tuple[Any, Any, Any]:
 
 
 def resume_apt_install() -> None:
-    hash_file, new_hash, old_hash = calculate_apt_progress_signature()
+    hash_file, new_hash, old_hash = _calculate_apt_progress_signature()
     if new_hash != old_hash:
         try:
             install_apt_deps()
