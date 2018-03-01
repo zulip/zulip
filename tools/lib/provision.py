@@ -54,56 +54,77 @@ if is_travis:
     # In Travis CI, we don't have root access
     EMOJI_CACHE_PATH = "/home/travis/zulip-emoji-cache"
 
-if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):
-    print(FAIL + "Error: No Zulip git repository present!" + ENDC)
-    print("To setup the Zulip development environment, you should clone the code")
-    print("from GitHub, rather than using a Zulip production release tarball.")
-    sys.exit(1)
+def ram_size_gb():
+    with open("/proc/meminfo") as meminfo:
+        ram_size = meminfo.readlines()[0].strip().split(" ")[-2]
+    return float(ram_size) / 1024.0 / 1024.0
 
-# Check the RAM on the user's system, and throw an effort if <1.5GB.
-# This avoids users getting segfaults running `pip install` that are
-# generally more annoying to debug.
-with open("/proc/meminfo") as meminfo:
-    ram_size = meminfo.readlines()[0].strip().split(" ")[-2]
-ram_gb = float(ram_size) / 1024.0 / 1024.0
-if ram_gb < 1.5:
-    print("You have insufficient RAM (%s GB) to run the Zulip development environment." % (
-        round(ram_gb, 2),))
-    print("We recommend at least 2 GB of RAM, and require at least 1.5 GB.")
-    sys.exit(1)
+def check_platform():
+    if platform.architecture()[0] == '64bit':
+        return 'amd64'
+    elif platform.architecture()[0] == '32bit':
+        return "i386"
+    else:
+        logging.critical("Only x86/64 is supported; ping "
+                         "zulip-devel@googlegroups.com if you want another "
+                         "architecture.")
+        sys.exit(1)
 
-try:
-    UUID_VAR_PATH = get_dev_uuid_var_path(create_if_missing=True)
-    run(["mkdir", "-p", UUID_VAR_PATH])
-    if os.path.exists(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink')):
+def test_symlink():
+    try:
+        if os.path.exists(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink')):
+            os.remove(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink'))
+        os.symlink(
+            os.path.join(ZULIP_PATH, 'README.md'),
+            os.path.join(VAR_DIR_PATH, 'zulip-test-symlink')
+        )
         os.remove(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink'))
-    os.symlink(
-        os.path.join(ZULIP_PATH, 'README.md'),
-        os.path.join(VAR_DIR_PATH, 'zulip-test-symlink')
-    )
-    os.remove(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink'))
-except OSError as err:
-    print(FAIL + "Error: Unable to create symlinks."
-          "Make sure you have permission to create symbolic links." + ENDC)
-    print("See this page for more information:")
-    print("  https://zulip.readthedocs.io/en/latest/development/setup-vagrant.html#os-symlink-error")
-    sys.exit(1)
+    except OSError as err:
+        print(FAIL + "Error: Unable to create symlinks."
+              "Make sure you have permission to create symbolic links." + ENDC)
+        print("See this page for more information:")
+        print("  https://zulip.readthedocs.io/en/latest/development/setup-vagrant.html#os-symlink-error")
+        sys.exit(1)
 
-if platform.architecture()[0] == '64bit':
-    arch = 'amd64'
-elif platform.architecture()[0] == '32bit':
-    arch = "i386"
-else:
-    logging.critical("Only x86 is supported;"
-                     "ping zulip-devel@googlegroups.com if you want another architecture.")
-    sys.exit(1)
 
-# Get vendor name and codename
-# Ideally we wouldn't need to install a dependency here, before we
-# know the codename.
-subprocess.check_call(["sudo", "apt-get", "install", "-y", "lsb-release"])
-vendor = subprocess_text_output(["lsb_release", "-is"])
-codename = subprocess_text_output(["lsb_release", "-cs"])
+def check_prerequisites():
+    # check .git
+    if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):
+        print(FAIL + "Error: No Zulip git repository present!" + ENDC)
+        print("To setup the Zulip development environment, you should clone "
+              "the code from GitHub, rather than using a Zulip production "
+              "release tarball.")
+        sys.exit(1)
+
+    # Check the RAM on the user's system, and throw an effort if <1.5GB.
+    # This avoids users getting segfaults running `pip install` that are
+    # generally more annoying to debug.
+    ram_gb = ram_size_gb()
+    if ram_gb < 1.5:
+        print("You have insufficient RAM (%d GB) to run the Zulip development "
+              "environment." % round(ram_gb, 2))
+        print("We recommend at least 2 GB of RAM, and require at least 1.5 GB.")
+        sys.exit(1)
+
+    # check x86/64 platform
+    check_platform()
+    # test symlink permissions
+    test_symlink()
+
+UUID_VAR_PATH = get_dev_uuid_var_path(create_if_missing=True)
+run(["mkdir", "-p", UUID_VAR_PATH])
+
+
+def vendor_codename():
+    # Get vendor name and codename
+    # Ideally we wouldn't need to install a dependency here, before we
+    # know the codename.
+    subprocess.check_call(["sudo", "apt-get", "install", "-y", "lsb-release"])
+    vendor = subprocess_text_output(["lsb_release", "-is"])
+    codename = subprocess_text_output(["lsb_release", "-cs"])
+    return vendor, codename
+
+vendor, codename = vendor_codename()
 if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor]):
     logging.critical("Unsupported platform: {} {}".format(vendor, codename))
     sys.exit(1)
@@ -201,56 +222,15 @@ def setup_shell_profile(shell_profile):
 
 def install_apt_deps():
     # type: () -> None
-    # setup-apt-repo does an `apt-get update`
+    # setup Zulip-specific apt repos, and run `apt-get update`
     run(["sudo", "./scripts/lib/setup-apt-repo"])
-    # By doing list -> set -> list conversion we remove duplicates.
+    # remove duplicates.
     deps_to_install = list(set(APT_DEPENDENCIES[codename]))
     run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + deps_to_install)
 
-def main(options):
-    # type: (Any) -> int
 
-    # change to the root of Zulip, since yarn and management commands expect to
-    # be run from the root of the project.
-    os.chdir(ZULIP_PATH)
-
-    # setup-apt-repo does an `apt-get update`
-    # hash the apt dependencies
-    sha_sum = hashlib.sha1()
-
-    for apt_depedency in APT_DEPENDENCIES[codename]:
-        sha_sum.update(apt_depedency.encode('utf8'))
-    # hash the content of setup-apt-repo
-    sha_sum.update(open('scripts/lib/setup-apt-repo', 'rb').read())
-
-    new_apt_dependencies_hash = sha_sum.hexdigest()
-    last_apt_dependencies_hash = None
-    apt_hash_file_path = os.path.join(UUID_VAR_PATH, "apt_dependencies_hash")
-    try:
-        hash_file = open(apt_hash_file_path, 'r+')
-        last_apt_dependencies_hash = hash_file.read()
-    except IOError:
-        run(['touch', apt_hash_file_path])
-        hash_file = open(apt_hash_file_path, 'r+')
-
-    if (new_apt_dependencies_hash != last_apt_dependencies_hash):
-        try:
-            install_apt_deps()
-        except subprocess.CalledProcessError:
-            # Might be a failure due to network connection issues. Retrying...
-            print(WARNING + "`apt-get -y install` failed while installing dependencies; retrying..." + ENDC)
-            # Since a common failure mode is for the caching in
-            # `setup-apt-repo` to optimize the fast code path to skip
-            # running `apt-get update` when the target apt repository
-            # is out of date, we run it explicitly here so that we
-            # recover automatically.
-            run(['sudo', 'apt-get', 'update'])
-            install_apt_deps()
-        hash_file.write(new_apt_dependencies_hash)
-    else:
-        print("No changes to apt dependencies, so skipping apt operations.")
-
-    # Here we install node.
+def install_node_modules():
+    """Here we install node and the modules."""
     run(["sudo", "scripts/lib/install-node"])
 
     # This is a wrapper around `yarn`, which we run last since
@@ -267,16 +247,8 @@ def main(options):
         print(WARNING + "`yarn install` failed; retrying..." + ENDC)
         setup_node_modules()
 
-    # Import tools/setup_venv.py instead of running it so that we get an
-    # activated virtualenv for the rest of the provisioning process.
-    from tools.setup import setup_venvs
-    setup_venvs.main()
 
-    setup_shell_profile('~/.bash_profile')
-    setup_shell_profile('~/.zprofile')
-
-    run(["sudo", "cp", REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH])
-
+def make_directories():
     # create log directory `zulip/var/log`
     run(["mkdir", "-p", LOG_DIR_PATH])
     # create upload directory `var/uploads`
@@ -290,7 +262,9 @@ def main(options):
     # create linecoverage directory `var/node-coverage`
     run(["mkdir", "-p", NODE_TEST_COVERAGE_DIR_PATH])
 
-    # build emoji
+
+def build_emoji():
+    """Build emoji."""
     # `build_emoji` script requires `emoji-datasource` package which we install
     # via npm and hence it should be executed after we are done installing npm
     # packages.
@@ -298,6 +272,164 @@ def main(options):
         run(["sudo", "mkdir", EMOJI_CACHE_PATH])
     run(["sudo", "chown", "%s:%s" % (user_id, user_id), EMOJI_CACHE_PATH])
     run(["tools/setup/emoji/build_emoji"])
+
+
+def restart_ci_services():
+    run(["sudo", "service", "rabbitmq-server", "restart"])
+    run(["sudo", "service", "redis-server", "restart"])
+    run(["sudo", "service", "memcached", "restart"])
+    run(["sudo", "service", "postgresql", "restart"])
+
+def restart_docker_services():
+    run(["sudo", "service", "rabbitmq-server", "restart"])
+    run(["sudo", "pg_dropcluster", "--stop", POSTGRES_VERSION, "main"])
+    run(["sudo", "pg_createcluster", "-e", "utf8", "--start", POSTGRES_VERSION, "main"])
+    run(["sudo", "service", "redis-server", "restart"])
+    run(["sudo", "service", "memcached", "restart"])
+
+
+def configure_rabbit_mq():
+    try:
+        from zerver.lib.queue import SimpleQueueClient
+        SimpleQueueClient()
+        rabbitmq_is_configured = True
+    except Exception:
+        rabbitmq_is_configured = False
+
+    if options.is_force or not rabbitmq_is_configured:
+        run(["scripts/setup/configure-rabbitmq"])
+    else:
+        print("RabbitMQ is already configured.")
+
+
+def rebuild_database():
+    # Need to set up Django before using is_template_database_current
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
+    import django
+    django.setup()
+    from zerver.lib.test_fixtures import is_template_database_current
+
+    migration_status_path = os.path.join(UUID_VAR_PATH, "migration_status_dev")
+    if options.is_force or not is_template_database_current(
+            migration_status=migration_status_path,
+            settings="zproject.settings",
+            database_name="zulip",
+    ):
+        run(["tools/setup/postgres-init-dev-db"])
+        run(["tools/do-destroy-rebuild-database"])
+    else:
+        print("No need to regenerate the dev DB.")
+
+    if options.is_force or not is_template_database_current():
+        run(["tools/setup/postgres-init-test-db"])
+        run(["tools/do-destroy-rebuild-test-database"])
+    else:
+        print("No need to regenerate the test DB.")
+
+
+def compile_translations():
+    # Consider updating generated translations data: both `.mo`
+    # files and `language-options.json`.
+    sha1sum = hashlib.sha1()
+    paths = ['zerver/management/commands/compilemessages.py']
+    paths += glob.glob('static/locale/*/LC_MESSAGES/*.po')
+    paths += glob.glob('static/locale/*/translations.json')
+
+    for path in paths:
+        with open(path, 'rb') as file_to_hash:
+            sha1sum.update(file_to_hash.read())
+
+    compilemessages_hash_path = os.path.join(UUID_VAR_PATH, "last_compilemessages_hash")
+    new_compilemessages_hash = sha1sum.hexdigest()
+    run(['touch', compilemessages_hash_path])
+    with open(compilemessages_hash_path, 'r') as hash_file:
+        last_compilemessages_hash = hash_file.read()
+
+    if options.is_force or (new_compilemessages_hash != last_compilemessages_hash):
+        with open(compilemessages_hash_path, 'w') as hash_file:
+            hash_file.write(new_compilemessages_hash)
+        run(["./manage.py", "compilemessages"])
+    else:
+        print("No need to run `manage.py compilemessages`.")
+
+
+def really_deploy():
+    # The following block is skipped for the production Travis
+    # suite, because that suite doesn't make use of these elements
+    # of the development environment (it just uses the development
+    # environment to build a release tarball).
+    configure_rabbit_mq()
+    rebuild_database()
+    compile_translations()
+    # Creates realm internal bots if required.
+    run(["./manage.py", "create_realm_internal_bots"])
+
+
+def calculate_apt_progress_signature():
+    # hash the apt dependencies
+    sha_sum = hashlib.sha1()
+    # FIXME: add \n to avoid name collision
+    for apt_depedency in APT_DEPENDENCIES[codename]:
+        sha_sum.update(apt_depedency.encode('utf8'))
+    # hash the content of setup-apt-repo
+    sha_sum.update(open('scripts/lib/setup-apt-repo', 'rb').read())
+    new_hash = sha_sum.hexdigest()
+
+    # get last dependency signature
+    old_hash = None
+    apt_hash_file_path = os.path.join(UUID_VAR_PATH, "apt_dependencies_hash")
+    try:
+        hash_file = open(apt_hash_file_path, 'r+')
+        old_hash = hash_file.read()
+    except IOError:
+        run(['touch', apt_hash_file_path])
+        hash_file = open(apt_hash_file_path, 'r+')
+    return hash_file, new_hash, old_hash
+
+
+def resume_apt_install():
+    hash_file, new_hash, old_hash = calculate_apt_progress_signature()
+    if new_hash != old_hash:
+        try:
+            install_apt_deps()
+        except subprocess.CalledProcessError:
+            # Might be a failure due to network connection issues. Retrying...
+            print(WARNING + "`apt-get -y install` failed while installing dependencies; retrying..." + ENDC)
+            # Since a common failure mode is for the caching in
+            # `setup-apt-repo` to optimize the fast code path to skip
+            # running `apt-get update` when the target apt repository
+            # is out of date, we run it explicitly here so that we
+            # recover automatically.
+            run(['sudo', 'apt-get', 'update'])
+            install_apt_deps()
+        hash_file.write(new_hash)
+    else:
+        print("No changes to apt dependencies, so skipping apt operations.")
+
+
+def main(options):
+    # type: (Any) -> int
+
+    check_prerequisites()
+
+    # change to the root of Zulip, since yarn and management commands expect to
+    # be run from the root of the project.
+    os.chdir(ZULIP_PATH)
+    resume_apt_install()
+    install_node_modules()
+
+    # Import tools/setup_venv.py instead of running it so that we get an
+    # activated virtualenv for the rest of the provisioning process.
+    from tools.setup import setup_venvs
+    setup_venvs.main()
+
+    setup_shell_profile('~/.bash_profile')
+    setup_shell_profile('~/.zprofile')
+
+    run(["sudo", "cp", REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH])
+
+    make_directories()
+    build_emoji()
 
     # copy over static files from the zulip_bots package
     run(["tools/setup/generate_zulip_bots_static_files"])
@@ -308,92 +440,21 @@ def main(options):
     run(["tools/update-authors-json", "--use-fixture"])
     run(["tools/inline-email-css"])
     if is_circleci or (is_travis and not options.is_production_travis):
-        run(["sudo", "service", "rabbitmq-server", "restart"])
-        run(["sudo", "service", "redis-server", "restart"])
-        run(["sudo", "service", "memcached", "restart"])
-        run(["sudo", "service", "postgresql", "restart"])
+        restart_ci_services()
     elif options.is_docker:
-        run(["sudo", "service", "rabbitmq-server", "restart"])
-        run(["sudo", "pg_dropcluster", "--stop", POSTGRES_VERSION, "main"])
-        run(["sudo", "pg_createcluster", "-e", "utf8", "--start", POSTGRES_VERSION, "main"])
-        run(["sudo", "service", "redis-server", "restart"])
-        run(["sudo", "service", "memcached", "restart"])
+        restart_docker_services()
+
     if not options.is_production_travis:
-        # The following block is skipped for the production Travis
-        # suite, because that suite doesn't make use of these elements
-        # of the development environment (it just uses the development
-        # environment to build a release tarball).
-
-        # Need to set up Django before using is_template_database_current
-        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
-        import django
-        django.setup()
-
-        from zerver.lib.test_fixtures import is_template_database_current
-
-        try:
-            from zerver.lib.queue import SimpleQueueClient
-            SimpleQueueClient()
-            rabbitmq_is_configured = True
-        except Exception:
-            rabbitmq_is_configured = False
-
-        if options.is_force or not rabbitmq_is_configured:
-            run(["scripts/setup/configure-rabbitmq"])
-        else:
-            print("RabbitMQ is already configured.")
-
-        migration_status_path = os.path.join(UUID_VAR_PATH, "migration_status_dev")
-        if options.is_force or not is_template_database_current(
-                migration_status=migration_status_path,
-                settings="zproject.settings",
-                database_name="zulip",
-        ):
-            run(["tools/setup/postgres-init-dev-db"])
-            run(["tools/do-destroy-rebuild-database"])
-        else:
-            print("No need to regenerate the dev DB.")
-
-        if options.is_force or not is_template_database_current():
-            run(["tools/setup/postgres-init-test-db"])
-            run(["tools/do-destroy-rebuild-test-database"])
-        else:
-            print("No need to regenerate the test DB.")
-
-        # Consider updating generated translations data: both `.mo`
-        # files and `language-options.json`.
-        sha1sum = hashlib.sha1()
-        paths = ['zerver/management/commands/compilemessages.py']
-        paths += glob.glob('static/locale/*/LC_MESSAGES/*.po')
-        paths += glob.glob('static/locale/*/translations.json')
-
-        for path in paths:
-            with open(path, 'rb') as file_to_hash:
-                sha1sum.update(file_to_hash.read())
-
-        compilemessages_hash_path = os.path.join(UUID_VAR_PATH, "last_compilemessages_hash")
-        new_compilemessages_hash = sha1sum.hexdigest()
-        run(['touch', compilemessages_hash_path])
-        with open(compilemessages_hash_path, 'r') as hash_file:
-            last_compilemessages_hash = hash_file.read()
-
-        if options.is_force or (new_compilemessages_hash != last_compilemessages_hash):
-            with open(compilemessages_hash_path, 'w') as hash_file:
-                hash_file.write(new_compilemessages_hash)
-            run(["./manage.py", "compilemessages"])
-        else:
-            print("No need to run `manage.py compilemessages`.")
-
-        run(["./manage.py", "create_realm_internal_bots"])  # Creates realm internal bots if required.
+        # instead of building a tarball, we deploy Zulip
+        really_deploy()
 
     run(["scripts/lib/clean-unused-caches"])
 
     version_file = os.path.join(UUID_VAR_PATH, 'provision_version')
-    print('writing to %s\n' % (version_file,))
+    print('writing to ' + version_file)
     open(version_file, 'w').write(PROVISION_VERSION + '\n')
 
-    print()
-    print(OKBLUE + "Zulip development environment setup succeeded!" + ENDC)
+    print('\n' + OKBLUE + 'Zulip development environment setup succeeded!' + ENDC)
     return 0
 
 if __name__ == "__main__":
