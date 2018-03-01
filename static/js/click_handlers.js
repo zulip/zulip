@@ -739,6 +739,7 @@ $(function () {
         $settings_overlay_container.find(".settings-header.mobile").addClass("slide-left");
 
         settings.set_settings_header($(this).attr("data-section"));
+        $("#organization-status").hide();
     });
 
     $(".settings-header.mobile .icon-vector-chevron-left").on("click", function () {
