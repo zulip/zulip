@@ -153,7 +153,7 @@ def release_deployment_lock():
 def run(args, **kwargs):
     # type: (Sequence[str], **Any) -> None
     # Output what we're doing in the `set -x` style
-    print("+ %s" % (" ".join(args)))
+    print("$ %s" % (" ".join(args)))
 
     if kwargs.get('shell'):
         # With shell=True we can only pass string to Popen
