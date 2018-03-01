@@ -3,16 +3,11 @@ import ujson
 
 from django.http import HttpResponse
 from mock import patch
-from typing import Any, Dict
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.stream_topic import StreamTopicTarget
 
 from zerver.models import (
-    get_realm,
     get_stream,
-    get_stream_recipient,
-    get_user,
     UserProfile,
 )
 

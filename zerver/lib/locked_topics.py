@@ -1,18 +1,7 @@
-from typing import Any, Callable, Dict, List, Optional, Text
+from typing import List, Text
 
 from zerver.models import (
-    get_stream_recipient,
-    get_stream,
     LockedTopic,
-    UserProfile
-)
-from sqlalchemy.sql import (
-    and_,
-    column,
-    func,
-    not_,
-    or_,
-    Selectable
 )
 
 def add_locked_topic(stream_id: int, topic_name: str) -> None:
