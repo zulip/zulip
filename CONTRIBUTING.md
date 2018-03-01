@@ -119,8 +119,10 @@ Other notes:
   than a bigger one. Many first contributions have fewer than 10 lines of
   changes (not counting changes to tests).
 * The full list of issues looking for a contributor can be found with the
+  [good first issue](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
+  and
   [help wanted](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
-  label.
+  labels.
 * For most new contributors, there's a lot to learn while making your first
   pull request. It's OK if it takes you a while; that's normal! You'll be
   able to work a lot faster as you build experience.
@@ -132,6 +134,12 @@ the issue thread. [Zulipbot](https://github.com/zulip/zulipbot) is a GitHub
 workflow bot; it will assign you to the issue and label the issue as "in
 progress". Some additional notes:
 
+* You can only claim issues with the
+  [good first issue](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
+  or
+  [help wanted](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
+  labels. Zulipbot will give you an error if you try to claim an issue
+  without one of those labels.
 * You're encouraged to ask questions on how to best implement or debug your
   changes -- the Zulip maintainers are excited to answer questions to help
   you stay unblocked and working efficiently. You can ask questions on
