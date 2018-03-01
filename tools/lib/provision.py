@@ -9,6 +9,19 @@ import glob
 import hashlib
 from pathlib import Path
 
+class DummyType(object):
+    def __getitem__(self, key):  # type: ignore # 3.4
+        return self
+
+try:
+    from typing import Any, Tuple, Iterable, Iterator, Optional
+except ImportError:
+    Any = DummyType()  # type: ignore # 3.4
+    Tuple = DummyType()  # type: ignore # 3.4
+    Iterable = DummyType()  # type: ignore # 3.4
+    Iterator = DummyType()  # type: ignore # 3.4
+    Optional = DummyType()  # type: ignore # 3.4
+
 os.environ["PYTHONUNBUFFERED"] = "y"
 
 ZULIP_PATH = str(Path(__file__).absolute().parent.parent.parent)
