@@ -877,6 +877,10 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 continue
             try:
                 extracted_data = link_preview.link_embed_data_from_cache(url)
+                try:
+                    found_url.family.child.text = extracted_data['title']
+                except KeyError:
+                    pass
             except NotFoundInCache:
                 current_message.links_for_preview.add(url)
                 continue
