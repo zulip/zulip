@@ -104,9 +104,17 @@ var deactivated_user = {
     user_id: 103,
     full_name: "Deactivated User",
 };
+var lear = {
+    email: 'lear@zulip.com',
+    user_id: 104,
+    full_name: "King Lear",
+};
 
+
+global.people.add_in_realm(hamlet);
 global.people.add_in_realm(othello);
 global.people.add_in_realm(cordelia);
+global.people.add_in_realm(lear);
 global.people.add(deactivated_user);
 
 var hamletcharacters = {
@@ -416,7 +424,7 @@ global.user_groups.add(backend);
     $('#private_message_recipient').typeahead = function (options) {
         // This should match the users added at the beginning of this test file.
         var actual_value = options.source();
-        var expected_value = [othello, cordelia];
+        var expected_value = [hamlet, othello, cordelia, lear];
         assert.deepEqual(actual_value, expected_value);
 
         // Even though the items passed to .highlighter() are the full
@@ -1110,6 +1118,9 @@ global.user_groups.add(backend);
     assert_mentions_matches('cordelia', [cordelia]);
     assert_mentions_matches('cordelia le', [cordelia]);
     assert_mentions_matches('cordelia le ', []);
+    assert_mentions_matches('King ', [hamlet, lear]);
+    assert_mentions_matches('King H', [hamlet]);
+    assert_mentions_matches('King L', [lear]);
     assert_mentions_matches('delia lear', []);
     // Autocomplete user group mentions by group name.
     assert_mentions_matches('hamletchar', [hamletcharacters]);
@@ -1121,7 +1132,8 @@ global.user_groups.add(backend);
     assert_mentions_matches('of hamlet', []);
     // Autocomplete stream by stream name or stream description.
     assert_stream_matches('den', [denmark_stream, sweden_stream]);
-    assert_stream_matches('denmark ', [denmark_stream]);
+    assert_stream_matches('denmark', [denmark_stream]);
+    assert_stream_matches('denmark ', []);
     assert_stream_matches('den ', []);
     assert_stream_matches('cold', [sweden_stream, denmark_stream]);
     assert_stream_matches('the ', [netherland_stream]);
