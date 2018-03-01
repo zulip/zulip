@@ -2,7 +2,7 @@ var feature_flags = (function () {
 
 var exports = {};
 
-exports.load_server_counts = false;
+exports.load_server_counts = true;
 
 // Experimental modification to support much wider message views.
 exports.full_width = false;
