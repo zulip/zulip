@@ -49,31 +49,34 @@ function query_matches_language(query, lang) {
     return lang.indexOf(query) !== -1;
 }
 
-// This function match query with source's attributes.
+// This function attempts to match a query with source's attributes.
+// * query is the user-entered search query
+// * Source is the object we're matching from, e.g. a user object
+// * match_attrs are the values associated with the target object that
+// the entered string might be trying to match, e.g. for a user
+// account, there might be 2 attrs: their full name and their email.
+// * split_char is the separator for this syntax (e.g. ' ').
 function query_matches_source_attrs(query, source, match_attrs, split_char) {
-    var match_for_all_attrs;
-    var i;
-    var j;
-    if (query.indexOf(split_char) > 0) {
-        var queries = query.split(split_char);
-        for (i = 0; i < queries.length - 1; i += 1) {
-            match_for_all_attrs = false;
-            for (j = 0; j < match_attrs.length; j += 1) {
-                match_for_all_attrs = match_for_all_attrs ||
-                                      (source[match_attrs[j]].toLowerCase().split(split_char)[i] ===
-                                       queries[i]);
+    // If query doesn't contain a separator, we just want an exact
+    // match where query is a substring of one of the target characers.
+    return _.any(match_attrs, function (attr) {
+        var source_str = source[attr].toLowerCase();
+        if (query.indexOf(split_char) > 0) {
+            // If there's a whitespace character in the query, then we
+            // require a perfect prefix match (e.g. for 'ab cd ef',
+            // query needs to be e.g. 'ab c', not 'cd ef' or 'b cd
+            // ef', etc.).
+            var queries = query.split(split_char);
+            var i;
+            for (i = 0; i < queries.length - 1; i += 1) {
+                if (source_str.split(split_char)[i] !== queries[i]) {
+                    return false;
+                }
             }
-            if (!match_for_all_attrs) {
-                return false;
-            }
+            return true;
         }
-        query = queries[i];
-    }
-    for (j = 0, match_for_all_attrs = false; j < match_attrs.length; j += 1) {
-        match_for_all_attrs = match_for_all_attrs ||
-                              (source[match_attrs[j]].toLowerCase().indexOf(query) !== -1);
-    }
-    return match_for_all_attrs;
+        return source_str.indexOf(query) !== -1;
+    });
 }
 
 function query_matches_person(query, person) {
