@@ -528,6 +528,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     is_mirror_dummy = models.BooleanField(default=False)  # type: bool
     bot_owner = models.ForeignKey('self', null=True, on_delete=models.SET_NULL)  # type: Optional[UserProfile]
     long_term_idle = models.BooleanField(default=False, db_index=True)  # type: bool
+    next_bankruptcy_reminder=models.DateTimeField(default=timezone_now) #type=datetime.datetime
 
     USERNAME_FIELD = 'email'
     MAX_NAME_LENGTH = 100
