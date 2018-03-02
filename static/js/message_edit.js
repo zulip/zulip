@@ -16,6 +16,12 @@ var editability_types = {
 };
 exports.editability_types = editability_types;
 
+var current_edited_message_id;
+exports.current_edited_message_id = current_edited_message_id;
+
+var current_edited_message;
+exports.current_edited_message = current_edited_message;
+
 function get_editability(message, edit_limit_seconds_buffer) {
     edit_limit_seconds_buffer = edit_limit_seconds_buffer || 0;
     if (!(message && message.sent_by_me)) {
@@ -328,7 +334,16 @@ function start_edit_with_content(row, content, edit_box_open_callback) {
 }
 
 exports.start = function (row, edit_box_open_callback) {
+
+    if (current_edited_message !== undefined) {
+        return;
+    }
+
     var message = current_msg_list.get(rows.id(row));
+
+    current_edited_message = row;
+    current_edited_message_id = message.id;
+
     if (message === undefined) {
         blueslip.error("Couldn't find message ID for edit " + rows.id(row));
         return;
@@ -369,6 +384,22 @@ exports.is_editing = function (id) {
     return currently_editing_messages[id] !== undefined;
 };
 
+exports.on_change = function () {
+    var selected_message_id = current_msg_list.selected_message().id;
+
+    if (current_edited_message === undefined) {
+        return;
+    }
+
+    if (current_edited_message_id === undefined) {
+        return;
+    }
+
+    if (selected_message_id !== current_edited_message_id) {
+        message_edit.end(current_edited_message);
+    }
+};
+
 exports.end = function (row) {
     var message = current_msg_list.get(rows.id(row));
     if (message !== undefined &&
@@ -396,6 +427,7 @@ exports.end = function (row) {
 
     // We have to blur out text fields, or else hotkeys.js
     // thinks we are still editing.
+    current_edited_message = undefined;
     row.find(".message_edit").blur();
 };
 

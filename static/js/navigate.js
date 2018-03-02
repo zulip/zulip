@@ -14,6 +14,7 @@ exports.up = function () {
     var next_row = rows.prev_visible(current_msg_list.selected_row());
     if (next_row.length !== 0) {
         go_to_row(next_row);
+        message_edit.on_change();
     }
 };
 
@@ -22,6 +23,7 @@ exports.down = function (with_centering) {
     var next_row = rows.next_visible(current_msg_list.selected_row());
     if (next_row.length !== 0) {
         go_to_row(next_row);
+        message_edit.on_change();
     }
     if (with_centering && (next_row.length === 0)) {
         // At the last message, scroll to the bottom so we have
