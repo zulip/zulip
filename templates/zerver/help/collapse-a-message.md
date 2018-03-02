@@ -6,8 +6,8 @@ clutter.
 {!message-actions.md!}
 {!down-chevron.md!}
 
-3. Click on the **Collapse** option from the actions dropdown to collapse a
-message.
+3. To collapse a message, click on the **Collapse** option from the actions 
+dropdown or press the `-` key.
 
 !!! tip ""
     To uncollapse a message, click the **[More...]** hyperlink near the
