@@ -36,8 +36,8 @@ set_global('templates', {
     settings_org.populate_realm_domains();
     settings_org.reset_realm_default_language();
     settings_org.toggle_allow_message_editing_pencil();
-    settings_org.toggle_name_change_display();
-    settings_org.toggle_email_change_display();
+    settings_org.update_name_change_display();
+    settings_org.update_email_change_display();
     settings_org.update_realm_description();
     settings_org.update_message_retention_days();
     settings_org.populate_auth_methods();
@@ -528,29 +528,29 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     page_params.is_admin = false;
 
     page_params.realm_name_changes_disabled = false;
-    settings_org.toggle_name_change_display();
+    settings_org.update_name_change_display();
     assert.equal($('#full_name').prop('disabled'), false);
 
     page_params.realm_name_changes_disabled = true;
-    settings_org.toggle_name_change_display();
+    settings_org.update_name_change_display();
     assert.equal($('#full_name').prop('disabled'), true);
 
     page_params.realm_email_changes_disabled = false;
-    settings_org.toggle_email_change_display();
+    settings_org.update_email_change_display();
     assert.equal($("#change_email .button").prop('disabled'), false);
 
     page_params.realm_email_changes_disabled = true;
-    settings_org.toggle_email_change_display();
+    settings_org.update_email_change_display();
     assert.equal($("#change_email .button").prop('disabled'), true);
 
     // Test should't toggle name display or email display for org admins.
     page_params.is_admin = true;
     $('#full_name').prop('disabled', false);
-    settings_org.toggle_name_change_display();
+    settings_org.update_name_change_display();
     assert.equal($('#full_name').prop('disabled'), false);
 
     $('#change_email .button').prop('disabled', false);
-    settings_org.toggle_email_change_display();
+    settings_org.update_email_change_display();
     assert.equal($("#change_email .button").prop('disabled'), false);
 
     page_params.realm_description = 'realm description';
