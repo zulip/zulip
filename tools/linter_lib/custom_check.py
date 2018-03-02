@@ -466,7 +466,7 @@ def build_custom_checkers(by_lang):
          'good_lines': ['if my_django_model.id == 42', 'self.user_profile._meta.pk'],
          'bad_lines': ['if my_django_model.pk == 42']},
     ]) + whitespace_rules + comma_whitespace_rule
-    bash_rules = [
+    bash_rules = cast(RuleList, [
         {'pattern': '#!.*sh [-xe]',
          'description': 'Fix shebang line with proper call to /usr/bin/env for Bash path, change -x|-e switches'
                         ' to set -x|set -e'},
@@ -479,7 +479,7 @@ def build_custom_checkers(by_lang):
              'scripts/setup/terminate-psql-sessions',
              'scripts/setup/configure-rabbitmq'
          ]), },
-    ] + whitespace_rules[0:1]  # type: RuleList
+    ]) + whitespace_rules[0:1]
     css_rules = cast(RuleList, [
         {'pattern': 'calc\([^+]+\+[^+]+\)',
          'description': "Avoid using calc with '+' operator. See #8403 : in CSS.",
