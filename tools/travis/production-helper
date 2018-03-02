@@ -42,7 +42,10 @@ NOREPLY_EMAIL_ADDRESS = 'noreply@travis.example.com'
 ALLOWED_HOSTS = []
 EOF
 
+
 su zulip -c /home/zulip/deployments/current/scripts/setup/initialize-database
+
+echo -e "\nFOO 1 2 = " >> /etc/zulip/settings.py
 
 echo; echo "Now testing that the supervisord jobs are running properly"; echo
 sleep 15 # Guaranteed to have a working supervisord process get an extra digit
