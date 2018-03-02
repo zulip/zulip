@@ -721,15 +721,21 @@ button.login-google-button {
 }
 
 #registration #id_team_subdomain.subdomain + .realm_subdomain_label {
-    float: right;
     margin-top: 12px;
-    margin-left: 10px;
+    margin-left: 190px;
+    display: inline-block;
 
     font-weight: normal;
+    font-size: inherit;
 }
 
 #registration #id_team_subdomain.subdomain {
     margin-top: 0px;
+}
+
+#registration #subdomain_section .inline-block {
+    width: 100%;
+    overflow-x: scroll;
 }
 
 #registration #subdomain_section .or {

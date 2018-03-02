@@ -140,7 +140,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                                 value="{% if form.realm_subdomain.value() %}{{ form.realm_subdomain.value() }}{% endif %}"
                                 name="realm_subdomain" maxlength={{ MAX_REALM_SUBDOMAIN_LENGTH }}
                                 {% if root_domain_landing_page %}required{% endif %} />
-                            <p class="realm_subdomain_label">.{{ external_host }}</p>
+                            <label for="id_team_subdomain" class="realm_subdomain_label">.{{ external_host }}</label>
                             <p id="id_team_subdomain_error_client" class="error help-inline text-error"></p>
                         </div>
                         {% if form.realm_subdomain.errors %}
