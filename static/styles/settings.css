@@ -820,8 +820,27 @@ input[type=checkbox].inline-block {
     transition: all 0.3s ease;
 }
 
-#user-settings-avatar:hover {
-    -webkit-filter: brightness(0.5);
+#user-settings-avatar:hover #user-avatar-block {
+    -webkit-filter: brightness(0.4);
+}
+
+#user-settings-avatar:hover #user-avatar-source {
+    visibility: visible;
+}
+
+#user-avatar-source {
+    margin-left: 10px;
+    width: 200px;
+    height: 20px;
+    position: absolute;
+    bottom: 19%;
+    left: 0%;
+    font-size: 0.9em;
+    visibility: hidden;
+}
+
+.white-color {
+    color: white;
 }
 
 #realm-settings-icon {
