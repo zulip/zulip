@@ -95,6 +95,10 @@ IGNORED_PHRASES = [
     r'activation key',
     # this is used as a topic
     r'^hello$',
+    # These are used as example short names (e.g. an uncapitalized context):
+    r"^marketing$",
+    r"^cookie$",
+    r"^new_emoji$",
 
     # TO CLEAN UP
     # Just want to avoid churning login.html right now
