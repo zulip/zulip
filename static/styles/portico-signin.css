@@ -717,19 +717,25 @@ button.login-google-button {
     position: relative;
     padding-right: 10px;
 
-    width: 156px;
+    width: 150px;
 }
 
 #registration #id_team_subdomain.subdomain + .realm_subdomain_label {
-    float: right;
     margin-top: 12px;
-    margin-left: 10px;
+    margin-left: 180px;
+    display: inline-block;
 
     font-weight: normal;
+    font-size: inherit;
 }
 
 #registration #id_team_subdomain.subdomain {
     margin-top: 0px;
+}
+
+#registration #subdomain_section .inline-block {
+    width: 100%;
+    overflow-x: auto;
 }
 
 #registration #subdomain_section .or {
