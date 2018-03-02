@@ -1471,6 +1471,22 @@ class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
 
         return lines
 
+
+class SmylesToEmojiProcessor(markdown.preprocessors.Preprocessor):
+    SMYLES_MAP = {
+        ":-)": ":slightly_smiling_face:",
+        ":-(": ":disappointed:",
+        ";-(": ":cry:"
+    }
+
+    def run(self, lines):
+        # type: (Iterable[text_type]) -> Iterable[text_type]
+        source = '\n'.join(lines)
+        for smyle, emoji in self.SMYLES_MAP.items():
+            source = source.replace(smyle, emoji)
+        return source.split('\n')
+
+
 # This prevents realm_filters from running on the content of a
 # Markdown link, breaking up the link.  This is a monkey-patch, but it
 # might be worth sending a version of this change upstream.
@@ -1520,6 +1536,7 @@ class Bugdown(markdown.Extension):
             pass
 
         md.preprocessors.add("custom_text_notifications", AlertWordsNotificationProcessor(md), "_end")
+        md.preprocessors.add("smyles_to_emoji", SmylesToEmojiProcessor(md), "_end")
 
         # Inline code block without whitespace stripping
         md.inlinePatterns.add(
@@ -1657,7 +1674,7 @@ class Bugdown(markdown.Extension):
                 if k not in ["inline_interesting_links", "inline", "rewrite_to_https"]:
                     del md.treeprocessors[k]
             for k in list(md.preprocessors.keys()):
-                if k not in ["custom_text_notifications"]:
+                if k not in ["custom_text_notifications", "smyles_to_emoji"]:
                     del md.preprocessors[k]
             for k in list(md.parser.blockprocessors.keys()):
                 if k not in ["paragraph"]:
