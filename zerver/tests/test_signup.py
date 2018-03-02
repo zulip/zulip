@@ -1112,6 +1112,50 @@ class MultiuseInviteTest(ZulipTestCase):
         self.check_user_able_to_register(email2, invite_link)
         self.check_user_subscribed_only_to_streams(name2, streams)
 
+    def test_create_multiuse_link_api_call(self) -> None:
+        self.login(self.example_email('iago'))
+
+        result = self.client_post('/json/invites/multiuse')
+        self.assert_json_success(result)
+
+        invite_link = result.json()["invite_link"]
+        self.check_user_able_to_register(self.nonreg_email("test"), invite_link)
+
+    def test_create_multiuse_link_with_specified_streams_api_call(self) -> None:
+        self.login(self.example_email('iago'))
+        stream_names = ["Rome", "Scotland", "Venice"]
+        streams = [get_stream(stream_name, self.realm) for stream_name in stream_names]
+        stream_ids = [stream.id for stream in streams]
+
+        result = self.client_post('/json/invites/multiuse',
+                                  {"stream_ids": ujson.dumps(stream_ids)})
+        self.assert_json_success(result)
+
+        invite_link = result.json()["invite_link"]
+        self.check_user_able_to_register(self.nonreg_email("test"), invite_link)
+        self.check_user_subscribed_only_to_streams("test", streams)
+
+    def test_only_admin_can_create_multiuse_link_api_call(self) -> None:
+        self.login(self.example_email('iago'))
+        self.realm.invite_by_admins_only = True
+        self.realm.save()
+
+        result = self.client_post('/json/invites/multiuse')
+        self.assert_json_success(result)
+
+        invite_link = result.json()["invite_link"]
+        self.check_user_able_to_register(self.nonreg_email("test"), invite_link)
+
+        self.login(self.example_email('hamlet'))
+        result = self.client_post('/json/invites/multiuse')
+        self.assert_json_error(result, "Must be a realm administrator")
+
+    def test_create_multiuse_link_invalid_stream_api_call(self) -> None:
+        self.login(self.example_email('iago'))
+        result = self.client_post('/json/invites/multiuse',
+                                  {"stream_ids": ujson.dumps([54321])})
+        self.assert_json_error(result, "Invalid stream id 54321. No invites were sent.")
+
 class EmailUnsubscribeTests(ZulipTestCase):
     def test_error_unsubscribe(self) -> None:
 
