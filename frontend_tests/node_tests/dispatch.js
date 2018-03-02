@@ -32,11 +32,14 @@ set_global('settings_emoji', {
     update_custom_emoji_ui: noop,
 });
 
+set_global('settings_account', {
+    update_email_change_display: noop,
+    update_name_change_display: noop,
+});
+
 set_global('settings_org', {
     reset_realm_default_language: noop,
     toggle_allow_message_editing_pencil: noop,
-    update_email_change_display: noop,
-    update_name_change_display: noop,
     update_message_retention_days: noop,
     update_realm_description: noop,
 });

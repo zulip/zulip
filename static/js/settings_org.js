@@ -70,26 +70,6 @@ exports.reset_realm_default_language = function () {
     $("#id_realm_default_language").val(page_params.realm_default_language);
 };
 
-exports.update_name_change_display = function () {
-    if (page_params.realm_name_changes_disabled && !page_params.is_admin) {
-        $('#full_name').prop('disabled', true);
-        $(".change_name_tooltip").show();
-    } else {
-        $('#full_name').prop('disabled', false);
-        $(".change_name_tooltip").hide();
-    }
-};
-
-exports.update_email_change_display = function () {
-    if (page_params.realm_email_changes_disabled && !page_params.is_admin) {
-        $('#change_email .button').prop('disabled', true);
-        $(".change_email_tooltip").show();
-    } else {
-        $('#change_email .button').prop('disabled', false);
-        $(".change_email_tooltip").hide();
-    }
-};
-
 exports.toggle_allow_message_editing_pencil = function () {
     if (!meta.loaded) {
         return;
