@@ -149,6 +149,9 @@ v1_api_and_json_patterns = [
     url(r'^invites/(?P<prereg_id>[0-9]+)/resend$', rest_dispatch,
         {'POST': 'zerver.views.invite.resend_user_invite_email'}),
 
+    # invites/multiuse -> zerver.views.invite
+    url(r'^invites/multiuse$', rest_dispatch,
+        {'POST': 'zerver.views.invite.generate_multiuse_invite_backend'}),
     # mark messages as read (in bulk)
     url(r'^mark_all_as_read$', rest_dispatch,
         {'POST': 'zerver.views.messages.mark_all_as_read'}),

@@ -7,11 +7,11 @@ from typing import List, Optional, Set, Text
 
 from zerver.decorator import require_realm_admin, to_non_negative_int
 from zerver.lib.actions import do_invite_users, do_revoke_user_invite, do_resend_user_invite_email, \
-    get_default_subs, do_get_user_invites
+    get_default_subs, do_get_user_invites, do_create_multiuse_invite_link
 from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error, json_response
-from zerver.lib.streams import access_stream_by_name
-from zerver.lib.validator import check_string, check_list, check_bool
+from zerver.lib.streams import access_stream_by_name, access_stream_by_id
+from zerver.lib.validator import check_string, check_list, check_bool, check_int
 from zerver.models import PreregistrationUser, Stream, UserProfile
 
 import re
@@ -96,3 +96,21 @@ def resend_user_invite_email(request: HttpRequest, user_profile: UserProfile,
 
     timestamp = do_resend_user_invite_email(prereg_user)
     return json_success({'timestamp': timestamp})
+
+@has_request_variables
+def generate_multiuse_invite_backend(request: HttpRequest, user_profile: UserProfile,
+                                     stream_ids: List[int]=REQ(validator=check_list(check_int),
+                                                               default=[])) -> HttpResponse:
+    if user_profile.realm.invite_by_admins_only and not user_profile.is_realm_admin:
+        return json_error(_("Must be a realm administrator"))
+
+    streams = []
+    for stream_id in stream_ids:
+        try:
+            (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
+        except JsonableError:
+            return json_error(_("Invalid stream id {}. No invites were sent.".format(stream_id)))
+        streams.append(stream)
+
+    invite_link = do_create_multiuse_invite_link(user_profile, streams)
+    return json_success({'invite_link': invite_link})
