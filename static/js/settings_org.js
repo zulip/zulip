@@ -72,7 +72,9 @@ exports.reset_realm_default_language = function () {
 
 
 exports.toggle_name_change_display = function () {
-    if (!meta.loaded) {
+    // If user is an org admin, return. Cause org admin can change
+    // name or email even name changes or email changes are disabled in org.
+    if (!meta.loaded || page_params.is_admin) {
         return;
     }
 
@@ -85,7 +87,7 @@ exports.toggle_name_change_display = function () {
 };
 
 exports.toggle_email_change_display = function () {
-    if (!meta.loaded) {
+    if (!meta.loaded || page_params.is_admin) {
         return;
     }
 
