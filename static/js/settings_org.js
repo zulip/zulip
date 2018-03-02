@@ -70,15 +70,8 @@ exports.reset_realm_default_language = function () {
     $("#id_realm_default_language").val(page_params.realm_default_language);
 };
 
-
 exports.update_name_change_display = function () {
-    // If user is an org admin, return. Cause org admin can change
-    // name or email even name changes or email changes are disabled in org.
-    if (page_params.is_admin) {
-        return;
-    }
-
-    if (page_params.realm_name_changes_disabled) {
+    if (page_params.realm_name_changes_disabled && !page_params.is_admin) {
         $('#full_name').prop('disabled', true);
         $(".change_name_tooltip").show();
     } else {
@@ -88,11 +81,7 @@ exports.update_name_change_display = function () {
 };
 
 exports.update_email_change_display = function () {
-    if (page_params.is_admin) {
-        return;
-    }
-
-    if (page_params.realm_email_changes_disabled) {
+    if (page_params.realm_email_changes_disabled && !page_params.is_admin) {
         $('#change_email .button').prop('disabled', true);
         $(".change_email_tooltip").show();
     } else {
