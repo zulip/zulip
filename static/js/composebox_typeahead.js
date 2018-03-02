@@ -71,11 +71,6 @@ function query_matches_source_attrs(query, source, match_attrs, split_char) {
             var i;
 
             for (i = 0; i < queries.length - 1; i += 1) {
-                // This covers cases where the query is longer than
-                // the target source word.
-                if (sources[i] === undefined) {
-                    return false;
-                }
                 if (sources[i] !== queries[i]) {
                     return false;
                 }
