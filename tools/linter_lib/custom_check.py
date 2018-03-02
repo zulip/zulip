@@ -538,7 +538,6 @@ def build_custom_checkers(by_lang):
          'description': "`placeholder` value should be translatable.",
          'exclude_line': [('templates/zerver/register.html', 'placeholder="acme"'),
                           ('templates/zerver/register.html', 'placeholder="Acme or Aκμή"')],
-         'exclude': set(["static/templates/settings/bot-settings.handlebars"]),
          'good_lines': ['<input class="stream-list-filter" type="text" placeholder="{{ _(\'Search streams\') }}" />'],
          'bad_lines': ['<input placeholder="foo">']},
         {'pattern': "placeholder='[^{]",
