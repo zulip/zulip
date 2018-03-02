@@ -78,12 +78,13 @@ exports.toggle_name_change_display = function () {
         return;
     }
 
-    if ($('#full_name').attr('disabled')) {
-        $('#full_name').prop('disabled', false);
+    if (page_params.realm_name_changes_disabled) {
+        $('#full_name').prop('disabled', true);
+        $(".change_name_tooltip").show();
     } else {
-        $('#full_name').attr('disabled', 'disabled');
+        $('#full_name').prop('disabled', false);
+        $(".change_name_tooltip").hide();
     }
-    $(".change_name_tooltip").toggle();
 };
 
 exports.toggle_email_change_display = function () {
@@ -91,12 +92,13 @@ exports.toggle_email_change_display = function () {
         return;
     }
 
-    if ($('#change_email .button').attr('disabled')) {
-        $('#change_email .button').prop('disabled', false);
+    if (page_params.realm_email_changes_disabled) {
+        $('#change_email .button').prop('disabled', true);
+        $(".change_email_tooltip").show();
     } else {
-        $('#change_email .button').attr('disabled', 'disabled');
+        $('#change_email .button').prop('disabled', false);
+        $(".change_email_tooltip").hide();
     }
-    $(".change_email_tooltip").toggle();
 };
 
 exports.toggle_allow_message_editing_pencil = function () {

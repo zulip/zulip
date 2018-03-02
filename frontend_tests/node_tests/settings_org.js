@@ -526,45 +526,32 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     assert.equal($('#id_realm_default_language').val(), 'es');
 
     page_params.is_admin = false;
-    var name_toggled;
-    $('.change_name_tooltip').toggle = function () {
-        name_toggled = true;
-    };
 
-    name_toggled = false;
-
-    $('#full_name').attr('disabled', 'disabled');
+    page_params.realm_name_changes_disabled = false;
     settings_org.toggle_name_change_display();
     assert.equal($('#full_name').prop('disabled'), false);
-    assert(name_toggled);
 
+    page_params.realm_name_changes_disabled = true;
     settings_org.toggle_name_change_display();
-    assert.equal($('#full_name').attr('disabled'), 'disabled');
-    assert(name_toggled);
+    assert.equal($('#full_name').prop('disabled'), true);
 
-    var email_tooltip_toggled;
-    $('.change_email_tooltip').toggle = function () {
-        email_tooltip_toggled = true;
-    };
-
-    $('#change_email .button').attr('disabled', false);
+    page_params.realm_email_changes_disabled = false;
     settings_org.toggle_email_change_display();
-    assert.equal($("#change_email .button").attr('disabled'), 'disabled');
-    assert(email_tooltip_toggled);
+    assert.equal($("#change_email .button").prop('disabled'), false);
+
+    page_params.realm_email_changes_disabled = true;
+    settings_org.toggle_email_change_display();
+    assert.equal($("#change_email .button").prop('disabled'), true);
 
     // Test should't toggle name display or email display for org admins.
     page_params.is_admin = true;
-    name_toggled = false;
-    $('#full_name').attr('disabled', false);
+    $('#full_name').prop('disabled', false);
     settings_org.toggle_name_change_display();
     assert.equal($('#full_name').prop('disabled'), false);
-    assert(!name_toggled);
 
-    email_tooltip_toggled = false;
-    $('#change_email .button').attr('disabled', false);
+    $('#change_email .button').prop('disabled', false);
     settings_org.toggle_email_change_display();
-    assert.equal($("#change_email .button").attr('disabled'), false);
-    assert(!email_tooltip_toggled);
+    assert.equal($("#change_email .button").prop('disabled'), false);
 
     page_params.realm_description = 'realm description';
     settings_org.update_realm_description();
