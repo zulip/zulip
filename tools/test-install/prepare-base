@@ -41,6 +41,8 @@ run passwd -d root
 
 run apt-get update
 
+run apt-get dist-upgrade -y
+
 # As an optimization, we install a bunch of packages the installer
 # would install for itself.
 run apt-get install -y --no-install-recommends \
