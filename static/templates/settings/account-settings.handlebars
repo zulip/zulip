@@ -131,7 +131,12 @@
             <h3>{{t "User avatar" }}</h3>
 
             <div class="inline-block">
-                <img id="user-settings-avatar" src="{{ page_params.avatar_url_medium }}" />
+                <div id="user-settings-avatar">
+                    <img id="user-avatar-block" src="{{ page_params.avatar_url_medium }}" />
+                    <div id="user-avatar-source">
+                        <a href="https://en.gravatar.com/" target="_blank" class="white-color">{{t "Avatar from Gravatar" }}</a>
+                    </div>
+                </div>
                 <div id="user_avatar_file_input_error" class="text-error"></div>
                 <input type="file" name="user_avatar_file_input" class="notvisible" id="user_avatar_file_input" value="{{t 'Upload avatar' }}" />
                 <div id="upload_avatar_spinner"></div>

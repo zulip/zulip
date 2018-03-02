@@ -311,6 +311,8 @@ exports.set_up = function () {
             form_data.append('file-'+i, file);
         });
 
+        $("#user-avatar-source").hide();
+
         var spinner = $("#upload_avatar_spinner").expectOne();
         loading.make_indicator(spinner, {text: 'Uploading avatar.'});
 
@@ -324,6 +326,12 @@ exports.set_up = function () {
                 loading.destroy_indicator($("#upload_avatar_spinner"));
                 $("#user-settings-avatar").expectOne().attr("src", data.avatar_url);
                 $("#user_avatar_delete_button").show();
+                $("#user-avatar-source").hide();
+            },
+            error: function () {
+                if (page_params.avatar_source === 'G') {
+                    $("#user-avatar-source").show();
+                }
             },
         });
 
