@@ -681,6 +681,9 @@ def build_custom_checkers(by_lang):
          'strip': '\n',
          'exclude': set(['zerver/webhooks/']),
          'description': 'Fix tab-based whitespace'},
+        {'pattern': ':[\"\[\{]',
+         'exclude': set(['zerver/webhooks/', 'zerver/fixtures/']),
+         'description': 'Require space after : in JSON'},
     ]  # type: RuleList
     markdown_rules = markdown_whitespace_rules + prose_style_rules + [
         {'pattern': '\[(?P<url>[^\]]+)\]\((?P=url)\)',
