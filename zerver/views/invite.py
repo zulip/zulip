@@ -101,7 +101,7 @@ def resend_user_invite_email(request: HttpRequest, user_profile: UserProfile,
 def generate_multiuse_invite_backend(request: HttpRequest, user_profile: UserProfile,
                                      stream_ids: List[int]=REQ(validator=check_list(check_int),
                                                                default=[])) -> HttpResponse:
-    if user_profile.realm.invite_by_admins_only and not user_profile.is_realm_admin:
+    if not user_profile.is_realm_admin:
         return json_error(_("Must be a realm administrator"))
 
     streams = []

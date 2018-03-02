@@ -1137,7 +1137,9 @@ class MultiuseInviteTest(ZulipTestCase):
 
     def test_only_admin_can_create_multiuse_link_api_call(self) -> None:
         self.login(self.example_email('iago'))
-        self.realm.invite_by_admins_only = True
+        # Only admins should be able to create multiuse invites even if
+        # invite_by_admins_only is set to False.
+        self.realm.invite_by_admins_only = False
         self.realm.save()
 
         result = self.client_post('/json/invites/multiuse')
