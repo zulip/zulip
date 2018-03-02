@@ -528,27 +528,27 @@ function test_change_allow_subdomains(change_allow_subdomains) {
 
     page_params.realm_name_changes_disabled = false;
     settings_account.update_name_change_display();
-    assert.equal($('#full_name').prop('disabled'), false);
+    assert.equal($('#full_name').attr('disabled'), false);
 
     page_params.realm_name_changes_disabled = true;
     settings_account.update_name_change_display();
-    assert.equal($('#full_name').prop('disabled'), true);
+    assert.equal($('#full_name').attr('disabled'), 'disabled');
 
     page_params.realm_email_changes_disabled = false;
     settings_account.update_email_change_display();
-    assert.equal($("#change_email .button").prop('disabled'), false);
+    assert.equal($("#change_email .button").attr('disabled'), false);
 
     page_params.realm_email_changes_disabled = true;
     settings_account.update_email_change_display();
-    assert.equal($("#change_email .button").prop('disabled'), true);
+    assert.equal($("#change_email .button").attr('disabled'), 'disabled');
 
     // If organization admin, these UI elements are never disabled.
     page_params.is_admin = true;
     settings_account.update_name_change_display();
-    assert.equal($('#full_name').prop('disabled'), false);
+    assert.equal($('#full_name').attr('disabled'), false);
 
     settings_account.update_email_change_display();
-    assert.equal($("#change_email .button").prop('disabled'), false);
+    assert.equal($("#change_email .button").attr('disabled'), false);
 
     page_params.realm_description = 'realm description';
     settings_org.update_realm_description();

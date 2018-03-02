@@ -27,20 +27,20 @@ exports.update_full_name = function (new_full_name) {
 
 exports.update_name_change_display = function () {
     if (page_params.realm_name_changes_disabled && !page_params.is_admin) {
-        $('#full_name').prop('disabled', true);
+        $('#full_name').attr('disabled', 'disabled');
         $(".change_name_tooltip").show();
     } else {
-        $('#full_name').prop('disabled', false);
+        $('#full_name').attr('disabled', false);
         $(".change_name_tooltip").hide();
     }
 };
 
 exports.update_email_change_display = function () {
     if (page_params.realm_email_changes_disabled && !page_params.is_admin) {
-        $('#change_email .button').prop('disabled', true);
+        $('#change_email .button').attr('disabled', 'disabled');
         $(".change_email_tooltip").show();
     } else {
-        $('#change_email .button').prop('disabled', false);
+        $('#change_email .button').attr('disabled', false);
         $(".change_email_tooltip").hide();
     }
 };
