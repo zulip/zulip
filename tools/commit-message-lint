@@ -12,4 +12,9 @@ else
     range="upstream/master..HEAD"
 fi
 
-gitlint --commits $range
+commits=$(git log "$range" | wc -l)
+if [ "$commits" -gt 0 ]; then
+    # Only run gitlint with non-empty commit lists, to avoid a printed
+    # warning.
+    gitlint --commits "$range"
+fi
