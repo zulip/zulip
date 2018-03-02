@@ -352,6 +352,17 @@ def build_custom_checkers(by_lang):
          'description': 'Used % comprehension without a tuple',
          'good_lines': ['"foo %s bar" % ("baz",)"'],
          'bad_lines': ['"foo %s bar" % ("baz")']},
+        {'pattern': 'sudo',
+         'include_only': set(['scripts/']),
+         'exclude': set(['scripts/lib/setup_venv.py']),
+         'exclude_line': set([
+             ('scripts/lib/zulip_tools.py', '# We need sudo here, since the path will be under /srv/ in the'),
+             ('scripts/lib/zulip_tools.py', 'subprocess.check_call(["sudo", "/bin/bash", "-c",'),
+             ('scripts/lib/zulip_tools.py', 'subprocess.check_call(["sudo", "rm", "-rf", directory])'),
+         ]),
+         'description': 'Most scripts are intended to run on systems without sudo.',
+         'good_lines': ['subprocess.check_call(["ls"])'],
+         'bad_lines': ['subprocess.check_call(["sudo", "ls"])']},
         {'pattern': 'django.utils.translation',
          'include_only': set(['test/']),
          'description': 'Test strings should not be tagged for translation',
@@ -459,6 +470,15 @@ def build_custom_checkers(by_lang):
         {'pattern': '#!.*sh [-xe]',
          'description': 'Fix shebang line with proper call to /usr/bin/env for Bash path, change -x|-e switches'
                         ' to set -x|set -e'},
+        {'pattern': 'sudo',
+         'description': 'Most scripts are intended to work on systems without sudo',
+         'include_only': set(['scripts/']),
+         'exclude': set([
+             'scripts/lib/install',
+             'scripts/lib/create-zulip-admin',
+             'scripts/setup/terminate-psql-sessions',
+             'scripts/setup/configure-rabbitmq'
+         ]), },
     ] + whitespace_rules[0:1]  # type: RuleList
     css_rules = cast(RuleList, [
         {'pattern': 'calc\([^+]+\+[^+]+\)',
