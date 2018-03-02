@@ -4,6 +4,12 @@
 
 You can add custom linkification filters to your organization that
 automatically turn phrases in messages into links to other pages.
+This is helpful if you frequently discuss items on external sites
+that can be referenced easily by a number or short string. For
+example, you might want to make numbers appearing after a `#` link
+to the GitHub issue with that number, or you might want to make
+strings of letters and numbers preceded by an `@` link to the
+Twitter profile with that username.
 
 {!go-to-the.md!} [Filter settings](/#organization/filter-settings)
 {!admin.md!}
