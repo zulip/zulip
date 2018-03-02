@@ -286,16 +286,20 @@ class BugdownTest(ZulipTestCase):
         converted = bugdown_convert(msg)
         self.assertEqual(converted, '<p>To <a href="bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa" target="_blank" title="bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa">bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa</a> or not to bitcoin</p>')
 
-    def test_inline_youtube(self) -> None:
+    @mock.patch('requests.get')
+    def test_inline_youtube(self, get: Any) -> None:
+        get.return_value = response = mock.Mock()
+        response.text = "<title>Final Presidential Debate 2012 Complete - Mitt Romney, Barack Obama on Foreign Policy - YouTube</title>"
+
         msg = 'Check out the debate: http://www.youtube.com/watch?v=hx1mjT73xYE'
         converted = bugdown_convert(msg)
 
-        self.assertEqual(converted, '<p>Check out the debate: <a href="http://www.youtube.com/watch?v=hx1mjT73xYE" target="_blank" title="http://www.youtube.com/watch?v=hx1mjT73xYE">http://www.youtube.com/watch?v=hx1mjT73xYE</a></p>\n<div class="youtube-video message_inline_image"><a data-id="hx1mjT73xYE" href="http://www.youtube.com/watch?v=hx1mjT73xYE" target="_blank" title="http://www.youtube.com/watch?v=hx1mjT73xYE"><img src="https://i.ytimg.com/vi/hx1mjT73xYE/default.jpg"></a></div>')
+        self.assertEqual(converted, '<p>Check out the debate: <a href="http://www.youtube.com/watch?v=hx1mjT73xYE" target="_blank" title="http://www.youtube.com/watch?v=hx1mjT73xYE">Final Presidential Debate 2012 Complete - Mitt Romney, Barack Obama on Foreign Policy - YouTube</a></p>\n<div class="youtube-video message_inline_image"><a data-id="hx1mjT73xYE" href="http://www.youtube.com/watch?v=hx1mjT73xYE" target="_blank" title="http://www.youtube.com/watch?v=hx1mjT73xYE"><img src="https://i.ytimg.com/vi/hx1mjT73xYE/default.jpg"></a></div>')
 
         msg = 'http://www.youtube.com/watch?v=hx1mjT73xYE'
         converted = bugdown_convert(msg)
 
-        self.assertEqual(converted, '<p><a href="http://www.youtube.com/watch?v=hx1mjT73xYE" target="_blank" title="http://www.youtube.com/watch?v=hx1mjT73xYE">http://www.youtube.com/watch?v=hx1mjT73xYE</a></p>\n<div class="youtube-video message_inline_image"><a data-id="hx1mjT73xYE" href="http://www.youtube.com/watch?v=hx1mjT73xYE" target="_blank" title="http://www.youtube.com/watch?v=hx1mjT73xYE"><img src="https://i.ytimg.com/vi/hx1mjT73xYE/default.jpg"></a></div>')
+        self.assertEqual(converted, '<p><a href="http://www.youtube.com/watch?v=hx1mjT73xYE" target="_blank" title="http://www.youtube.com/watch?v=hx1mjT73xYE">Final Presidential Debate 2012 Complete - Mitt Romney, Barack Obama on Foreign Policy - YouTube</a></p>\n<div class="youtube-video message_inline_image"><a data-id="hx1mjT73xYE" href="http://www.youtube.com/watch?v=hx1mjT73xYE" target="_blank" title="http://www.youtube.com/watch?v=hx1mjT73xYE"><img src="https://i.ytimg.com/vi/hx1mjT73xYE/default.jpg"></a></div>')
 
     def test_inline_vimeo(self) -> None:
         msg = 'Check out the debate: https://vimeo.com/246979354'
