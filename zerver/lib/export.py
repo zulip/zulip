@@ -16,6 +16,7 @@ import shutil
 import subprocess
 import tempfile
 from zerver.lib.avatar_hash import user_avatar_hash, user_avatar_path_from_ids
+from zerver.lib.upload import S3UploadBackend, LocalUploadBackend
 from zerver.lib.create_user import random_api_key
 from zerver.lib.bulk_create import bulk_create_users
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
@@ -1311,8 +1312,10 @@ def import_uploads_local(import_dir: Path, processing_avatars: bool=False) -> No
             # new server's avatar salt
             avatar_path = user_avatar_path_from_ids(record['user_profile_id'], record['realm_id'])
             file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", avatar_path)
+            is_image_original = False
             if record['s3_path'].endswith('.original'):
                 file_path += '.original'
+                is_image_original = True
             else:
                 file_path += '.png'
         else:
@@ -1322,6 +1325,11 @@ def import_uploads_local(import_dir: Path, processing_avatars: bool=False) -> No
         if not os.path.exists(os.path.dirname(file_path)):
             subprocess.check_call(["mkdir", "-p", os.path.dirname(file_path)])
         shutil.copy(orig_file_path, file_path)
+
+        if is_image_original:
+            user_profile = get_user_profile_by_id(record['user_profile_id'])
+            # If medium sized avatar does not exist, this creates it using the original image
+            LocalUploadBackend().ensure_medium_avatar_image(user_profile=user_profile)
 
 def import_uploads_s3(bucket_name: str, import_dir: Path, processing_avatars: bool=False) -> None:
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
@@ -1357,6 +1365,9 @@ def import_uploads_s3(bucket_name: str, import_dir: Path, processing_avatars: bo
         headers = {'Content-Type': record['content_type']}
 
         key.set_contents_from_filename(os.path.join(import_dir, record['path']), headers=headers)
+
+        if processing_avatars:
+            S3UploadBackend().ensure_medium_avatar_image(user_profile=user_profile)
 
 def import_uploads(import_dir: Path, processing_avatars: bool=False) -> None:
     if processing_avatars:

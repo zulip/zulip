@@ -18,6 +18,7 @@ from zerver.models import UserProfile, Realm, Stream, UserMessage, \
 from zerver.forms import check_subdomain_available
 from zerver.lib.slack_message_conversion import convert_to_zulip_markdown, \
     get_user_full_name
+from zerver.lib.avatar_hash import user_avatar_path_from_ids
 
 # stubs
 ZerverFieldsT = Dict[str, Any]
@@ -50,13 +51,15 @@ def allocate_ids(model_class: Any, count: int) -> List[int]:
 def slack_workspace_to_realm(REALM_ID: int, user_list: List[ZerverFieldsT],
                              realm_subdomain: str, fixtures_path: str,
                              slack_data_dir: str) -> Tuple[ZerverFieldsT, AddedUsersT,
-                                                           AddedRecipientsT, AddedChannelsT]:
+                                                           AddedRecipientsT, AddedChannelsT,
+                                                           List[ZerverFieldsT]]:
     """
     Returns:
     1. realm, Converted Realm data
     2. added_users, which is a dictionary to map from slack user id to zulip user id
     3. added_recipient, which is a dictionary to map from channel name to zulip recipient_id
     4. added_channels, which is a dictionary to map from channel name to zulip stream_id
+    5. avatars, which is list to map avatars to zulip avatard records.json
     """
     DOMAIN_NAME = settings.EXTERNAL_HOST
     NOW = float(timezone_now().timestamp())
@@ -80,11 +83,8 @@ def slack_workspace_to_realm(REALM_ID: int, user_list: List[ZerverFieldsT],
                  zerver_realmfilter=[],
                  zerver_realmemoji=[])
 
-    zerver_userprofile, added_users = users_to_zerver_userprofile(slack_data_dir,
-                                                                  user_list,
-                                                                  REALM_ID,
-                                                                  int(NOW),
-                                                                  DOMAIN_NAME)
+    zerver_userprofile, avatars, added_users = users_to_zerver_userprofile(
+        slack_data_dir, user_list, REALM_ID, int(NOW), DOMAIN_NAME)
     channels_to_zerver_stream_fields = channels_to_zerver_stream(slack_data_dir,
                                                                  REALM_ID,
                                                                  added_users,
@@ -100,7 +100,7 @@ def slack_workspace_to_realm(REALM_ID: int, user_list: List[ZerverFieldsT],
     added_channels = channels_to_zerver_stream_fields[2]
     added_recipient = channels_to_zerver_stream_fields[5]
 
-    return realm, added_users, added_recipient, added_channels
+    return realm, added_users, added_recipient, added_channels, avatars
 
 def build_zerver_realm(fixtures_path: str, REALM_ID: int, realm_subdomain: str,
                        time: float) -> List[ZerverFieldsT]:
@@ -116,16 +116,19 @@ def build_zerver_realm(fixtures_path: str, REALM_ID: int, realm_subdomain: str,
 
 def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT], realm_id: int,
                                 timestamp: Any, domain_name: str) -> Tuple[List[ZerverFieldsT],
+                                                                           List[ZerverFieldsT],
                                                                            AddedUsersT]:
     """
     Returns:
     1. zerver_userprofile, which is a list of user profile
-    2. added_users, which is a dictionary to map from slack user id to zulip
+    2. avatar_list, which is list to map avatars to zulip avatard records.json
+    3. added_users, which is a dictionary to map from slack user id to zulip
        user id
     """
     logging.info('######### IMPORTING USERS STARTED #########\n')
     total_users = len(users)
     zerver_userprofile = []
+    avatar_list = []  # type: List[ZerverFieldsT]
     added_users = {}
 
     user_id_list = allocate_ids(UserProfile, total_users)
@@ -139,7 +142,6 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
 
     for user in users:
         slack_user_id = user['id']
-        profile = user['profile']
         DESKTOP_NOTIFICATION = True
 
         if user.get('is_primary_owner', False):
@@ -150,12 +152,14 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
         # email
         email = get_user_email(user, domain_name)
 
-        # check if user is the admin
-        realm_admin = get_admin(user)
-
         # avatar
         # ref: https://chat.zulip.org/help/change-your-avatar
-        avatar_source = get_user_avatar_source(profile['image_32'])
+        avatar_url = build_avatar_url(slack_user_id, user['team_id'],
+                                      user['profile']['avatar_hash'])
+        avatar_list = build_avatar(user_id, realm_id, email, avatar_url, timestamp, avatar_list)
+
+        # check if user is the admin
+        realm_admin = get_admin(user)
 
         # timezone
         timezone = get_user_timezone(user)
@@ -163,7 +167,7 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
         userprofile = dict(
             enable_desktop_notifications=DESKTOP_NOTIFICATION,
             is_staff=False,  # 'staff' is for server administrators, which don't exist in Slack.
-            avatar_source=avatar_source,
+            avatar_source='U',
             is_bot=user.get('is_bot', False),
             avatar_version=1,
             default_desktop_notifications=True,
@@ -224,7 +228,7 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
 
         logging.info(u"{} -> {}".format(user['name'], userprofile['email']))
     logging.info('######### IMPORTING USERS FINISHED #########\n')
-    return zerver_userprofile, added_users
+    return zerver_userprofile, avatar_list, added_users
 
 def get_user_email(user: ZerverFieldsT, domain_name: str) -> str:
     if 'email' not in user['profile']:
@@ -234,6 +238,25 @@ def get_user_email(user: ZerverFieldsT, domain_name: str) -> str:
         email = user['profile']['email']
     return email
 
+def build_avatar_url(slack_user_id: str, team_id: str, avatar_hash: str) -> str:
+    avatar_url = "https://ca.slack-edge.com/{}-{}-{}".format(team_id, slack_user_id,
+                                                             avatar_hash)
+    return avatar_url
+
+def build_avatar(zulip_user_id: int, realm_id: int, email: str, avatar_url: str,
+                 timestamp: Any, avatar_list: List[ZerverFieldsT]) -> List[ZerverFieldsT]:
+    avatar = dict(
+        path=avatar_url,  # Save slack's url here, which is used later while processing
+        realm_id=realm_id,
+        content_type=None,
+        user_profile_id=zulip_user_id,
+        last_modified=timestamp,
+        user_profile_email=email,
+        s3_path="",
+        size="")
+    avatar_list.append(avatar)
+    return avatar_list
+
 def get_admin(user: ZerverFieldsT) -> bool:
     admin = user.get('is_admin', False)
     owner = user.get('is_owner', False)
@@ -242,14 +265,6 @@ def get_admin(user: ZerverFieldsT) -> bool:
     if admin or owner or primary_owner:
         return True
     return False
-
-def get_user_avatar_source(image_url: str) -> str:
-    if 'gravatar.com' in image_url:
-        # use the avatar from gravatar
-        avatar_source = 'G'
-    else:
-        avatar_source = 'U'
-    return avatar_source
 
 def get_user_timezone(user: ZerverFieldsT) -> str:
     _default_timezone = "America/New_York"
@@ -639,14 +654,18 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str, 
     REALM_ID = allocate_ids(Realm, 1)[0]
 
     user_list = get_user_data(token)
-    realm, added_users, added_recipient, added_channels = slack_workspace_to_realm(REALM_ID,
-                                                                                   user_list,
-                                                                                   realm_subdomain,
-                                                                                   fixtures_path,
-                                                                                   slack_data_dir)
+    realm, added_users, added_recipient, added_channels, avatar_list = slack_workspace_to_realm(
+        REALM_ID, user_list, realm_subdomain, fixtures_path, slack_data_dir)
+
     message_json = convert_slack_workspace_messages(slack_data_dir, user_list, REALM_ID,
                                                     added_users, added_recipient, added_channels,
                                                     realm)
+
+    avatar_folder = os.path.join(output_dir, 'avatars')
+    avatar_realm_folder = os.path.join(avatar_folder, str(REALM_ID))
+
+    os.makedirs(avatar_realm_folder, exist_ok=True)
+    avatar_records = process_avatars(avatar_list, avatar_folder, REALM_ID)
 
     zerver_attachment = []  # type: List[ZerverFieldsT]
     attachment = {"zerver_attachment": zerver_attachment}
@@ -656,7 +675,7 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str, 
     # IO message.json
     create_converted_data_files(message_json, output_dir, '/messages-000001.json', False)
     # IO avatar records
-    create_converted_data_files([], output_dir, '/avatars/records.json', True)
+    create_converted_data_files(avatar_records, output_dir, '/avatars/records.json', False)
     # IO uploads TODO
     create_converted_data_files([], output_dir, '/uploads/records.json', True)
     # IO attachments
@@ -668,6 +687,45 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str, 
 
     logging.info('######### DATA CONVERSION FINISHED #########\n')
     logging.info("Zulip data dump created at %s" % (output_dir))
+
+def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str,
+                    realm_id: int) -> List[ZerverFieldsT]:
+    """
+    This function gets the avatar of size 512 px and saves it in the
+    user's avatar directory with both the extensions
+    '.png' and '.original'
+    """
+    logging.info('######### GETTING AVATARS #########\n')
+    avatar_original_list = []
+    for avatar in avatar_list:
+        avatar_hash = user_avatar_path_from_ids(avatar['user_profile_id'], realm_id)
+        slack_avatar_url = avatar['path']
+        avatar_original = dict(avatar)
+
+        image_path = ('%s/%s.png' % (avatar_dir, avatar_hash))
+        original_image_path = ('%s/%s.original' % (avatar_dir, avatar_hash))
+
+        # Fetch the avatars from the url
+        get_avatar(slack_avatar_url, image_path, original_image_path)
+        image_size = os.stat(image_path).st_size
+
+        avatar['path'] = image_path
+        avatar['s3_path'] = image_path
+        avatar['size'] = image_size
+
+        avatar_original['path'] = original_image_path
+        avatar_original['s3_path'] = original_image_path
+        avatar_original['size'] = image_size
+        avatar_original_list.append(avatar_original)
+    logging.info('######### GETTING AVATARS FINISHED #########\n')
+    return avatar_list + avatar_original_list
+
+def get_avatar(slack_avatar_url: str, image_path: str, original_image_path: str) -> None:
+    # get avatar of size 512
+    response = requests.get(slack_avatar_url + '-512', stream=True)
+    with open(image_path, 'wb') as image_file:
+        shutil.copyfileobj(response.raw, image_file)
+    shutil.copy(image_path, original_image_path)
 
 def get_data_file(path: str) -> Any:
     data = json.load(open(path))
