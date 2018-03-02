@@ -654,7 +654,8 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         ('img.png', 'png_resized.png'),
         ('img.jpg', None),  # jpeg resizing is platform-dependent
         ('img.gif', 'gif_resized.png'),
-        ('img.tif', 'tif_resized.png')
+        ('img.tif', 'tif_resized.png'),
+        ('cmyk.jpg', None)
     ]
     corrupt_files = ['text.txt', 'corrupt.png', 'corrupt.gif']
 
@@ -821,7 +822,8 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         ('img.png', 'png_resized.png'),
         ('img.jpg', None),  # jpeg resizing is platform-dependent
         ('img.gif', 'gif_resized.png'),
-        ('img.tif', 'tif_resized.png')
+        ('img.tif', 'tif_resized.png'),
+        ('cmyk.jpg', None)
     ]
     corrupt_files = ['text.txt', 'corrupt.png', 'corrupt.gif']
 

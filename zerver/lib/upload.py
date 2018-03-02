@@ -88,6 +88,8 @@ def resize_avatar(image_data: bytes, size: int=DEFAULT_AVATAR_SIZE) -> bytes:
     except IOError:
         raise BadImageError("Could not decode image; did you upload an image file?")
     out = io.BytesIO()
+    if im.mode == 'CMYK':
+        im = im.convert('RGB')
     im.save(out, format='png')
     return out.getvalue()
 
