@@ -260,14 +260,21 @@ def access_user_by_api_key(request: HttpRequest, api_key: Text, email: Optional[
 
     return user_profile
 
-def log_exception_to_webhook_logger(request: HttpRequest, user_profile: UserProfile) -> None:
+def log_exception_to_webhook_logger(request: HttpRequest, user_profile: UserProfile,
+                                    request_body: Optional[Text]=None) -> None:
+    if request_body is not None:
+        payload = request_body
+    else:
+        payload = request.body
+
     if request.content_type == 'application/json':
         try:
-            request_body = ujson.dumps(ujson.loads(request.body), indent=4)
+            payload = ujson.dumps(ujson.loads(payload), indent=4)
         except ValueError:
-            request_body = str(request.body)
+            request_body = str(payload)
     else:
-        request_body = str(request.body)
+        request_body = str(payload)
+
     message = """
 user: {email} ({realm})
 client: {client_name}
@@ -280,7 +287,7 @@ body:
         email=user_profile.email,
         realm=user_profile.realm.string_id,
         client_name=request.client.name,
-        body=request_body,
+        body=payload,
         path_info=request.META.get('PATH_INFO', None),
         content_type=request.content_type,
     )
@@ -446,7 +453,18 @@ def authenticated_api_view(is_webhook: bool=False) -> WrappedViewFuncT:
             user_profile = validate_api_key(request, email, api_key, is_webhook)
             # Apply rate limiting
             limited_func = rate_limit()(view_func)
-            return limited_func(request, user_profile, *args, **kwargs)
+            try:
+                return limited_func(request, user_profile, *args, **kwargs)
+            except Exception as err:
+                if is_webhook:
+                    # In this case, request_body is passed explicitly because the body
+                    # of the request has already been read in has_request_variables and
+                    # can't be read/accessed more than once, so we just access it from
+                    # the request.POST QueryDict.
+                    log_exception_to_webhook_logger(request, user_profile,
+                                                    request_body=request.POST.get('payload'))
+                raise err
+
         return _wrapped_func_arguments
     return _wrapped_view_func
 
