@@ -70,7 +70,7 @@ exports.activate = function (raw_operators, opts) {
     } else if (filter.has_operator("is")) {
         exports.narrow_title = filter.operands("is")[0];
     } else if (filter.has_operator("pm-with")) {
-        exports.narrow_title = "private";
+        exports.narrow_title = "(Private) " + people.get_by_email(filter._operators[0].operand).full_name;
     } else if (filter.has_operator("group-pm-with")) {
         exports.narrow_title = "private group";
     }
