@@ -53,11 +53,10 @@ sudo -i  # If not already root
     --email=YOUR_EMAIL --hostname=YOUR_HOSTNAME
 ```
 
-This will take a while to run, since it will install a large number of
-dependencies from the PyPI and NPM repositories.
+This takes a few minutes to run, as it installs Zulip's dependencies.
+For more on what the installer does, [see details below](#installer-details).
 
-If the script gives an error, consult
-[Troubleshooting](#troubleshooting) below.
+If the script gives an error, consult [Troubleshooting](#troubleshooting) below.
 
 #### Installer options
 
@@ -83,21 +82,6 @@ If the script gives an error, consult
 [doc-settings]: ../production/settings.html
 [doc-certbot]: ../production/ssl-certificates.html#certbot-recommended
 [doc-ssl-manual]: ../production/ssl-certificates.html#manual-install
-
-#### What the installer does
-
-The install script does several things:
-* Creates the `zulip` user, which the various Zulip servers will run as.
-* Creates `/home/zulip/deployments/`, which the Zulip code for this
-deployment (and future deployments when you upgrade) goes into.  At the
-very end of the install process, the script moves the Zulip code tree
-it's running from (which you unpacked from a tarball above) to a
-directory there, and makes `/home/zulip/deployments/current` as a
-symbolic link to it.
-* Installs Zulip's various dependencies.
-* Configures the various third-party services Zulip uses, including
-Postgres, RabbitMQ, Memcached and Redis.
-* Initializes Zulip's database.
 
 ## Step 3: Create a Zulip organization and log in
 
@@ -147,6 +131,24 @@ new releases, security issues, etc.
 * [Learn about maintaining a production Zulip server](../production/maintain-secure-upgrade.html).
 
 [realm-admin-docs]: https://zulipchat.com/help/getting-your-organization-started-with-zulip
+
+```eval_rst
+.. _installer-details:
+```
+## Details: What the installer does
+
+The install script does several things:
+* Creates the `zulip` user, which the various Zulip servers will run as.
+* Creates `/home/zulip/deployments/`, which the Zulip code for this
+deployment (and future deployments when you upgrade) goes into.  At the
+very end of the install process, the script moves the Zulip code tree
+it's running from (which you unpacked from a tarball above) to a
+directory there, and makes `/home/zulip/deployments/current` as a
+symbolic link to it.
+* Installs Zulip's various dependencies.
+* Configures the various third-party services Zulip uses, including
+Postgres, RabbitMQ, Memcached and Redis.
+* Initializes Zulip's database.
 
 ## Troubleshooting
 
