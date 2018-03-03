@@ -83,23 +83,17 @@ If the script gives an error, consult [Troubleshooting](#troubleshooting) below.
 [doc-certbot]: ../production/ssl-certificates.html#certbot-recommended
 [doc-ssl-manual]: ../production/ssl-certificates.html#manual-install
 
-## Step 3: Create a Zulip organization and log in
+## Step 3: Create a Zulip organization, and log in
 
-When the install script successfully completes, it prints a secure
-one-time-use link that allows creation of a new Zulip organization on
-your server.
+On success, the install script prints a link.  Open the link in a
+browser.  Follow the prompts to set up your organization, and your own
+user account as an administrator.  Then, log in!
 
-Open that link with your web browser. You'll see the "Create
-organization" page ([screenshot here](../_static/zulip-create-realm.png)).
-Enter your email address and click *Create organization*.
-
-You'll be prompted to finish setting up your organization, and your
-own user account as the initial administrator of the organization
-([screenshot here](../_static/zulip-create-user-and-org.png)).
-Complete this form and log in!
-
-**Congratulations!** You are logged in as an organization
-administrator for your new Zulip organization.
+The link is a secure one-time-use link.  If you need another
+later, you can generate a new one by running `manage.py
+generate_realm_creation_link` on the server.  See also our doc on
+running [multiple organizations on the same server](multiple-organizations.html)
+if that's what you're planning to do.
 
 ## Step 4: Configure outgoing email
 
