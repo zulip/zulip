@@ -5,6 +5,22 @@ like, we recommend creating an account on the
 [Zulip community server](../contributing/chat-zulip-org.html), or creating a test
 organization on <https://zulipchat.com>.
 
+## Summary
+
+To run a Zulip server, you will need:
+* A dedicated machine or VM
+* A supported OS:
+  * Ubuntu 16.04 Xenial 64-bit
+  * Ubuntu 14.04 Trusty 64-bit (not recommended for new installations)
+* At least 2GB RAM, and 10GB disk space
+  * If you expect 100+ users: 4GB RAM, and 2 CPUs
+* A hostname in DNS
+* An SSL certificate; for most users, you can just use our handy
+  `--certbot` option to obtain one
+* Credentials for sending email
+
+For details on each of these requirements, see below.
+
 ## Server
 
 #### General
