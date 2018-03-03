@@ -34,8 +34,12 @@ from zerver.lib.avatar_hash import (
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
+from zerver.lib.test_helpers import (
+    get_test_image_file,
+)
 from zerver.models import (
     Realm,
+    UserProfile,
     get_realm,
 )
 from zerver.lib import mdiff
@@ -56,17 +60,21 @@ def remove_folder(path: str) -> None:
 # This method will be used by the mock to replace requests.get
 def mocked_requests_get(*args: List[str], **kwargs: List[str]) -> mock.Mock:
     class MockResponse:
-        def __init__(self, json_data: Dict[str, Any], status_code: int) -> None:
+        def __init__(self, json_data: Dict[str, Any], status_code: int, raw: Any) -> None:
             self.json_data = json_data
             self.status_code = status_code
+            self.raw = raw
 
         def json(self) -> Dict[str, Any]:
             return self.json_data
 
     if args[0] == 'https://slack.com/api/users.list?token=valid-token':
-        return MockResponse({"members": "user_data"}, 200)
+        return MockResponse({"members": "user_data"}, 200, None)
+    elif args[0] == 'https://ca.slack-edge.com/T5YFFM2QY-U6006P1CN-gd41c3c33cbe-512':
+        test_image_data = open(get_test_image_file('img.png').name, 'rb')
+        return MockResponse(None, 200, test_image_data)
     else:
-        return MockResponse(None, 404)
+        return MockResponse(None, 404, None)
 
 class SlackImporter(ZulipTestCase):
     logger = logging.getLogger()
@@ -506,25 +514,51 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(message_json['zerver_message'], zerver_message1 + zerver_message2)
         self.assertEqual(message_json['zerver_usermessage'], zerver_usermessage1 + zerver_usermessage2)
 
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.build_avatar_url")
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.build_avatar", return_value = [])
+    @mock.patch('requests.get', side_effect=mocked_requests_get)
+    @mock.patch("zerver.lib.slack_data_to_zulip_data.build_avatar")
+    @mock.patch("zerver.lib.slack_data_to_zulip_data.allocate_ids")
     @mock.patch("zerver.lib.slack_data_to_zulip_data.get_user_data")
     def test_slack_import_to_existing_database(self, mock_get_user_data: mock.Mock,
-                                               mock_build_avatar_url: mock.Mock,
-                                               mock_build_avatar: mock.Mock) -> None:
+                                               mock_allocate_ids: mock.Mock,
+                                               mock_build_avatar: mock.Mock,
+                                               mock_reuqests: mock.Mock) -> None:
         test_slack_zip_file = os.path.join(settings.DEPLOY_ROOT, "zerver", "fixtures",
                                            "slack_fixtures", "test_slack_importer.zip")
         test_realm_subdomain = 'test-slack-import'
         output_dir = '/tmp/test-slack-importer-data'
+        realm_id_list = allocate_ids(Realm, 1)
+        user_id_list = allocate_ids(UserProfile, 5)
+
         token = 'valid-token'
+        avatar_data = [{'s3_path': '',
+                        'realm_id': realm_id_list[0],
+                        'user_profile_id': user_id_list[0],
+                        'path': 'https://ca.slack-edge.com/T5YFFM2QY-U6006P1CN-gd41c3c33cbe'}]
 
         user_data_fixture = os.path.join(settings.DEPLOY_ROOT, "zerver", "fixtures",
                                          "slack_fixtures", "user_data.json")
         mock_get_user_data.return_value = ujson.load(open(user_data_fixture))['members']
+        mock_build_avatar.return_value = avatar_data
+
+        # Side effect to return Realm id as the value 'realm_id'
+        # arg2 is added corresponding to the data of that object in /fixtures/slack_fixtures
+        def allocate_ids_side_effect(arg1: Any, arg2: int) -> List[int]:
+            if arg1 == Realm and arg2 == 1:
+                return realm_id_list
+            elif arg1 == UserProfile and arg2 == 5:
+                return user_id_list
+            else:
+                return allocate_ids(arg1, arg2)
+        mock_allocate_ids.side_effect = allocate_ids_side_effect
 
         do_convert_data(test_slack_zip_file, test_realm_subdomain, output_dir, token)
         self.assertTrue(os.path.exists(output_dir))
         self.assertTrue(os.path.exists(output_dir + '/realm.json'))
+
+        # To check if avatar files exist
+        avatar_hash = user_avatar_path_from_ids(user_id_list[0], realm_id_list[0])
+        self.assertTrue(os.path.exists((output_dir + '/avatars/%s.png') % (avatar_hash)))
+        self.assertTrue(os.path.exists((output_dir + '/avatars/%s.original') % (avatar_hash)))
 
         # test import of the converted slack data into an existing database
         do_import_realm(output_dir)
