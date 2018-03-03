@@ -294,6 +294,6 @@ EOF
     exit 0
 fi
 
-sudo -u zulip /home/zulip/deployments/current/scripts/setup/initialize-database --quiet
+su zulip -c '/home/zulip/deployments/current/scripts/setup/initialize-database --quiet'
 
-sudo -u zulip /home/zulip/deployments/current/manage.py generate_realm_creation_link
+su zulip -c '/home/zulip/deployments/current/manage.py generate_realm_creation_link'
