@@ -408,23 +408,11 @@ function _set_up() {
     exports.set_add_emoji_permission_dropdown();
 
     $("#id_realm_invite_required").change(function () {
-        if (this.checked) {
-            $("#id_realm_invite_by_admins_only").prop("disabled", false);
-            $("#id_realm_invite_by_admins_only_label").parent().removeClass("control-label-disabled");
-        } else {
-            $("#id_realm_invite_by_admins_only").attr("disabled", true);
-            $("#id_realm_invite_by_admins_only_label").parent().addClass("control-label-disabled");
-        }
+        settings_ui.disable_sub_setting_onchange(this.checked, "id_realm_invite_by_admins_only", true);
     });
 
     $("#id_realm_allow_message_editing").change(function () {
-        if (this.checked) {
-            $("#id_realm_message_content_edit_limit_minutes").prop("disabled", false);
-            $("#id_realm_message_content_edit_limit_minutes_label").parent().removeClass("control-label-disabled");
-        } else {
-            $("#id_realm_message_content_edit_limit_minutes").attr("disabled", true);
-            $("#id_realm_message_content_edit_limit_minutes_label").parent().addClass("control-label-disabled");
-        }
+        settings_ui.disable_sub_setting_onchange(this.checked, "id_realm_message_content_edit_limit_minutes", true);
     });
 
     exports.save_organization_settings = function () {
