@@ -95,34 +95,24 @@ generate_realm_creation_link` on the server.  See also our doc on
 running [multiple organizations on the same server](multiple-organizations.html)
 if that's what you're planning to do.
 
-## Step 4: Configure outgoing email
+## Step 4: Configure and use
 
-Zulip needs to be able to send email in order to confirm new users'
-email addresses, and to send email notifications.  You'll need to
-provide Zulip with credentials on an email server it can use for
-outgoing messages.
+To really see Zulip in action, you'll need to get the people you work
+together with using it with you.
+* [Set up outgoing email](email.html) so Zulip can confirm new users'
+  email addresses and send notifications.
+* Learn how to [get your organization started][realm-admin-docs] using
+  Zulip at its best.
 
-See [our guide for outgoing email](email.html) for detailed
-instructions, including references to free outgoing-email services if
-you don't have one already.  You'll set the host and username in
-`/etc/zulip/settings.py` and the password in
-`/etc/zulip/zulip-secrets.conf`, then restart Zulip to pick up the new
-configuration.
+Learning more:
 
-When you're done, [be sure to
-test](email.html#testing-and-troubleshooting) your new email
-configuration.
-
-## Step 5: Next steps
-
-* Subscribe to the extremely low-traffic
+* Subscribe to the
 [Zulip announcements email list](https://groups.google.com/forum/#!forum/zulip-announce)
-to get important announcements for Zulip server administrators about
-new releases, security issues, etc.
-* [Follow Zulip on Twitter](https://twitter.com/zulip) to get Zulip news.
-* [Learn how to setup your new Zulip organization][realm-admin-docs].
-* [Learn how configure your Zulip server settings](settings.html).
-* [Learn about maintaining a production Zulip server](../production/maintain-secure-upgrade.html).
+for server administrators.  This extremely low-traffic list is for
+important announcements, including new releases and security issues.
+* Follow [Zulip on Twitter](https://twitter.com/zulip).
+* Learn how to [configure your Zulip server settings](settings.html).
+* Learn about [maintaining a production Zulip server](maintain-secure-upgrade.html).
 
 [realm-admin-docs]: https://zulipchat.com/help/getting-your-organization-started-with-zulip
 
