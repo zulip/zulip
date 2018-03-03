@@ -148,7 +148,7 @@ casper.then(function () {
             content: 'Test Private Message',
         }, "Private message box filled with draft content");
         common.pm_recipient.expect('cordelia@zulip.com,hamlet@zulip.com');
-        casper.test.assertSelectorHasText('title', 'private - Zulip Dev - Zulip', 'Narrowed to huddle');
+        casper.test.assertSelectorHasText('title', 'Cordelia Lear, King Hamlet - Zulip Dev - Zulip', 'Narrowed to huddle');
     });
 });
 

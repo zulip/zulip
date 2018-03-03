@@ -89,10 +89,14 @@ exports.activate = function (raw_operators, opts) {
         }
     } else if (filter.has_operator("is")) {
         exports.narrow_title = filter.operands("is")[0];
-    } else if (filter.has_operator("pm-with")) {
-        exports.narrow_title = "private";
-    } else if (filter.has_operator("group-pm-with")) {
-        exports.narrow_title = "private group";
+    } else if (filter.has_operator("pm-with") || filter.has_operator("group-pm-with")) {
+        var emails = filter.public_operators()[0].operand;
+        var names = people.get_recipients(people.emails_strings_to_user_ids_string(emails));
+        if (filter.has_operator("pm-with")) {
+            exports.narrow_title = names;
+        } else {
+            exports.narrow_title = names + " and others";
+        }
     }
 
     notifications.redraw_title();
