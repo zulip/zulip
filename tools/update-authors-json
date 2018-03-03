@@ -8,7 +8,7 @@ JSON data for the /team page contributors section.
 from lib import sanity_check
 sanity_check.check_venv(__file__)
 
-from typing import Any, Dict, List, Optional, Union, Text
+from typing import Any, Dict, List, Optional, Union, Text, cast
 from mypy_extensions import TypedDict
 
 import os
@@ -27,6 +27,7 @@ from django.conf import settings
 from zerver.lib.utils import split_by
 
 FIXTURE_FILE = os.path.join(os.path.dirname(__file__), '../zerver/fixtures/authors.json')
+duplicate_commits_file = os.path.join(os.path.dirname(__file__), '../zerver/fixtures/duplicate_commits.json')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--max-retries', type=int, default=3,
@@ -49,7 +50,6 @@ ContributorsJSON = TypedDict('ContributorsJSON', {
 def fetch_contributors(repo_link: str) -> Optional[List[Dict[str, Dict[str, Any]]]]:
     r = requests.get(repo_link)  # type: requests.Response
     return r.json() if r.status_code == 200 else None
-
 
 def write_to_disk(json_data: ContributorsJSON, out_file: str) -> None:
     with open(out_file, 'w') as f:
@@ -97,6 +97,18 @@ def run_production() -> None:
                         contribs_list[username].update(contrib_data)
                     else:
                         contribs_list[username] = contrib_data
+
+        # remove duplicate contributions count
+        # find commits at the time of split and substract from zulip-server
+        with open(duplicate_commits_file, 'r') as f:
+            duplicate_commits = json.loads(f.read())
+            for committer in duplicate_commits:
+                if contribs_list[committer].get('server'):
+                    total_commits = cast(int, contribs_list[committer]['server'])
+                    duplicate_commits_count = duplicate_commits[committer]
+                    original_commits = total_commits - duplicate_commits_count
+                    contribs_list[committer]['server'] = original_commits
+
         for repo in repos_done:
             del repositories[repo]
 
