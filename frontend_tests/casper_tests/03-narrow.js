@@ -245,7 +245,7 @@ casper.then(function () {
 
 expect_huddle();
 
-casper.then(check_narrow_title('private - Zulip Dev - Zulip'));
+casper.then(check_narrow_title('Cordelia Lear, King Hamlet - Zulip Dev - Zulip'));
 
 casper.then(function () {
     // Un-narrow by clicking "Zulip"
@@ -261,7 +261,7 @@ search_and_check('Verona', 'Stream', expect_stream,
                  'Verona - Zulip Dev - Zulip');
 
 search_and_check('Cordelia', 'Private', expect_1on1,
-                 'private - Zulip Dev - Zulip');
+                 'Cordelia Lear - Zulip Dev - Zulip');
 
 // Test operators
 search_and_check('stream:Verona', '', expect_stream,
