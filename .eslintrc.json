@@ -52,6 +52,7 @@
         "settings_sections": false,
         "settings_emoji": false,
         "settings_org": false,
+        "settings_ui": false,
         "settings_users": false,
         "settings_streams": false,
         "settings_filters": false,
