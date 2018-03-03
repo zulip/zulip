@@ -281,15 +281,11 @@ if [ -n "$NO_INIT_DB" ]; then
     set +x
     cat <<EOF
 
- Installation complete!
+ Success!
 
- Now edit /etc/zulip/settings.py and fill in the mandatory values.
+ Stopping because --no-init-db was passed.  To complete the installation, run:
 
- Once you've done that, please run:
-
- su zulip -c /home/zulip/deployments/current/scripts/setup/initialize-database
-
- To configure the initial database.
+   su zulip -c /home/zulip/deployments/current/scripts/setup/initialize-database
 EOF
     exit 0
 fi
