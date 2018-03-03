@@ -1798,6 +1798,10 @@ input.new-organization-button {
     .app.help .sidebar.show ~ .markdown {
         -webkit-filter: brightness(0.7);
     }
+
+    .app.help .sidebar:not(.show) .ps__scrollbar-y-rail {
+        display: none; /* Hide y-scrollbar on collapsed sidebar view */
+    }
 }
 
 @media (max-width: 950px) {
