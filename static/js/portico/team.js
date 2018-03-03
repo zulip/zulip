@@ -32,6 +32,7 @@ export default function render_tabs() {
     var total_tab_html = _.chain(contributors_list)
         .map(function (c) {
             return {
+                fullname: c.fullname,
                 name: c.name,
                 avatar: c.avatar,
                 commits: contrib_total_commits(c),
@@ -53,6 +54,7 @@ export default function render_tabs() {
             .reverse()
             .map(function (c) {
                 return template({
+                    fullname: c.fullname,
                     name: c.name,
                     avatar: c.avatar,
                     commits: c[repo],

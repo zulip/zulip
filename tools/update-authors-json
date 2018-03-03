@@ -28,6 +28,8 @@ from zerver.lib.utils import split_by
 
 FIXTURE_FILE = os.path.join(os.path.dirname(__file__), '../zerver/fixtures/authors.json')
 
+authors_full_names_file = os.path.join(os.path.dirname(__file__),
+                                       '../zerver/fixtures/authors_full_names.json')
 parser = argparse.ArgumentParser()
 parser.add_argument('--max-retries', type=int, default=3,
                     help='Number of times to retry fetching data from Github')
@@ -54,7 +56,7 @@ def fetch_contributors(repo_link: str) -> Optional[List[Dict[str, Dict[str, Any]
 def write_to_disk(json_data: ContributorsJSON, out_file: str) -> None:
     with open(out_file, 'w') as f:
         try:
-            f.write("{}\n".format(json.dumps(json_data)))
+            f.write("{}\n".format(json.dumps(json_data, indent=4)))
         except IOError as e:
             print(e)
             sys.exit(1)
@@ -78,6 +80,9 @@ def run_production() -> None:
     data = dict(date=str(date.today()), contrib=[])  # type: ContributorsJSON
     contribs_list = {}  # type: Dict[str, Dict[str, Union[str, int]]]
 
+    with open(authors_full_names_file, "r") as f:
+        full_names = json.loads(f.read())
+
     for _ in range(args.max_retries):
         repos_done = []
         for name, link in repositories.items():
@@ -93,6 +98,16 @@ def run_production() -> None:
                         'avatar': contrib.get('author').get('avatar_url'),
                         name: contrib.get('total'),
                     }
+                    if full_names.get(username):
+                        contrib_data["fullname"] = full_names[username]
+                    else:
+                        user_details = requests.get('https://api.github.com/users/' + username).json()
+                        user_full_name = user_details.get('name')
+                        if not user_full_name:
+                            user_full_name = username
+                        full_names[username] = user_full_name
+                        contrib_data["fullname"] = user_full_name
+
                     if username in contribs_list:
                         contribs_list[username].update(contrib_data)
                     else:
@@ -114,6 +129,7 @@ def run_production() -> None:
         contributor_data['name'] = contributor_name
         data['contrib'].append(contributor_data)
 
+    write_to_disk(full_names, authors_full_names_file)
     write_to_disk(data, settings.CONTRIBUTORS_DATA)
 
 
