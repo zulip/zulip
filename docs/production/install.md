@@ -56,6 +56,9 @@ sudo -i  # If not already root
 This will take a while to run, since it will install a large number of
 dependencies from the PyPI and NPM repositories.
 
+If the script gives an error, consult
+[Troubleshooting](#troubleshooting) below.
+
 #### Installer options
 
 * `--email=you@example.com`: The email address of the person or team
@@ -95,17 +98,6 @@ symbolic link to it.
 * Configures the various third-party services Zulip uses, including
 Postgres, RabbitMQ, Memcached and Redis.
 * Initializes Zulip's database.
-
-#### Troubleshooting install failures
-
-The Zulip install script is designed to be idempotent.  This means
-that if it fails, then once you've corrected the cause of the failure,
-you can just rerun the script.
-
-The install script automatically logs a transcript to
-`/var/log/zulip/install.log`.  In case of failure, you might find the
-log handy for resolving the issue.  Please include a copy of this log
-file in any bug reports.
 
 ## Step 3: Create a Zulip organization and log in
 
@@ -154,9 +146,22 @@ new releases, security issues, etc.
 * [Learn how configure your Zulip server settings](settings.html).
 * [Learn about maintaining a production Zulip server](../production/maintain-secure-upgrade.html).
 
+[realm-admin-docs]: https://zulipchat.com/help/getting-your-organization-started-with-zulip
+
 ## Troubleshooting
 
-* The `zulip` user's password.  By default, the `zulip` user doesn't
+**Install script.**
+The Zulip install script is designed to be idempotent.  This means
+that if it fails, then once you've corrected the cause of the failure,
+you can just rerun the script.
+
+The install script automatically logs a transcript to
+`/var/log/zulip/install.log`.  In case of failure, you might find the
+log handy for resolving the issue.  Please include a copy of this log
+file in any bug reports.
+
+**The `zulip` user's password.**
+By default, the `zulip` user doesn't
 have a password, and is intended to be accessed by `su zulip` from the
 `root` user (or via SSH keys or a password, if you want to set those
 up, but that's up to you as the system administrator).  Most people
@@ -164,17 +169,17 @@ who are prompted for a password when running `su zulip` turn out to
 already have switched to the `zulip` user earlier in their session,
 and can just skip that step.
 
-* If you get an error after `scripts/setup/install` completes, check
+**After the install script.**
+If you get an error after `scripts/setup/install` completes, check
 the bottom of `/var/log/zulip/errors.log` for a traceback, and consult
 the [troubleshooting section](troubleshooting.html) for advice on
 how to debug.
 
-* If that doesn't help, please visit
+**Community.**
+If the tips above don't help, please visit
 [#production help](https://chat.zulip.org/#narrow/stream/production.20help)
 in the [Zulip development community server](../contributing/chat-zulip-org.html) for
 realtime help or email zulip-help@googlegroups.com with the full
 traceback, and we'll try to help you out!  Please provide details like
 the full traceback from the bottom of `/var/log/zulip/errors.log` in
 your report.
-
-[realm-admin-docs]: https://zulipchat.com/help/getting-your-organization-started-with-zulip
