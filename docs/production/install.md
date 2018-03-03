@@ -7,11 +7,10 @@ instead like to test or develop a new feature, we recommend the
 You will need an Ubuntu system that satisfies
 [the installation requirements](../production/requirements.html).  In short,
 you need:
-* Either a dedicated machine, or a fresh VM on an existing machine.
-* Ubuntu 16.04 Xenial or Ubuntu 14.04 Trusty, 64-bit.  If you have a
-  choice, install on Xenial, since Trusty is approaching its
-  end-of-life and you'll save yourself the work of upgrading a
-  production installation.
+* A dedicated machine or VM.
+* A supported OS:
+  * Ubuntu 16.04 Xenial 64-bit
+  * Ubuntu 14.04 Trusty 64-bit (not recommended for new installations)
 * At least 2GB RAM and 10 GB disk space (4GB and 2 CPUs recommended for 100+ users).
 * A DNS name, an SSL certificate, and credentials for sending email.
   For most users, you can just use our handy `--certbot` option to
