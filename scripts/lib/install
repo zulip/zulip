@@ -4,19 +4,24 @@ set -e
 usage() {
     cat <<EOF
 Usage:
-  install [--hostname=zulip.example.com] [--email=admin@example.com] [options...]
+  install --hostname=zulip.example.com --email=admin@example.com [options...]
   install --help
 
 Other options:
-  --certbot (requires --hostname and --email)
+  --certbot
   --self-signed-cert
+  --no-init-db
+
+The --hostname and --email options are required,
+unless --no-init-db is set and --certbot is not.
+
 EOF
     exit 0
 };
 
 # Shell option parsing.  Over time, we'll want to move some of the
 # environment variables below into this self-documenting system.
-args="$(getopt -o '' --long help,self-signed-cert,certbot,hostname:,email:,express -n "$0" -- "$@")"
+args="$(getopt -o '' --long help,no-init-db,self-signed-cert,certbot,hostname:,email: -n "$0" -- "$@")"
 eval "set -- $args"
 while true; do
     case "$1" in
@@ -25,8 +30,7 @@ while true; do
         --certbot) USE_CERTBOT=1; shift;;
         --hostname) EXTERNAL_HOST="$2"; shift; shift;;
         --email) ZULIP_ADMINISTRATOR="$2"; shift; shift;;
-        --express)  # experimental, not documented
-            EXPRESS_SETUP=1; shift;;
+        --no-init-db) NO_INIT_DB=1; shift;;
         --) shift; break;;
     esac
 done
@@ -55,14 +59,10 @@ if [ -n "$SELF_SIGNED_CERT" ] && [ -n "$USE_CERTBOT" ]; then
     usage
 fi
 
-if [ -n "$USE_CERTBOT" ] \
-       && { [ -z "$EXTERNAL_HOST" ] || [ -z "$ZULIP_ADMINISTRATOR" ]; }; then
-    usage
-fi
-
-if [ -n "$EXPRESS_SETUP" ] \
-       && { [ -z "$EXTERNAL_HOST" ] || [ -z "$ZULIP_ADMINISTRATOR" ]; }; then
-    usage
+if [ -z "$EXTERNAL_HOST" ] || [ -z "$ZULIP_ADMINISTRATOR" ]; then
+    if [ -n "$USE_CERTBOT" ] || [ -z "$NO_INIT_DB" ]; then
+        usage
+    fi
 fi
 
 # Do set -x after option parsing is complete
@@ -277,7 +277,7 @@ if [ -e "/var/run/supervisor.sock" ]; then
     chown zulip:zulip /var/run/supervisor.sock
 fi
 
-if [ -z "$EXPRESS_SETUP" ]; then
+if [ -n "$NO_INIT_DB" ]; then
     set +x
     cat <<EOF
 

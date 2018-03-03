@@ -95,6 +95,7 @@ symbolic link to it.
 * Installs Zulip's various dependencies.
 * Configures the various third-party services Zulip uses, including
 Postgres, RabbitMQ, Memcached and Redis.
+* Initializes Zulip's database.
 
 #### Troubleshooting install failures
 
@@ -107,70 +108,43 @@ The install script automatically logs a transcript to
 log handy for resolving the issue.  Please include a copy of this log
 file in any bug reports.
 
-## Step 3: Configure outgoing email
+## Step 3: Create a Zulip organization and log in
 
-Configure the Zulip server instance by editing
-`/etc/zulip/settings.py` to enable your server's ability to send
-outgoing emails:
+When the install script successfully completes, it prints a secure
+one-time-use link that allows creation of a new Zulip organization on
+your server.
 
-- `EMAIL_HOST`, `EMAIL_HOST_USER`: credentials for an outgoing email
-  (aka "SMTP") server that Zulip can use to send emails.  See
-  [our guide for outgoing email](email.html) for help configuring
-  this.
-
-## Step 4: Test email configuration
-
-[Test your outgoing email configuration](email.html#testing-and-troubleshooting).
-This is important to test now, because email configuration errors are
-common, and your outgoing email configuration needs to be working in
-order for you to complete the installation.
-
-## Step 5: Initialize Zulip database
-
-At this point, you are done doing things as root. The remaining
-commands are run as the `zulip` user. Change to the `zulip` user
-and initialize the Zulip database for your production install:
-
-```
-su zulip # If you weren't already the zulip user
-/home/zulip/deployments/current/scripts/setup/initialize-database
-```
-
-The `initialize-database` script will report an error if you did not
-fill in all the mandatory settings from `/etc/zulip/settings.py`.  It
-is safe to rerun it after correcting the problem if that happens.
-
-This completes the process of installing Zulip on your server.
-However, in order to use Zulip, you'll need to create an organization
-in your Zulip installation.
-
-## Step 6: Create a Zulip organization and login
-
-* Run the organization (realm) creation [management
-command](../production/maintain-secure-upgrade.html#management-commands) :
-
-  ```
-  su zulip # If you weren't already the zulip user
-  /home/zulip/deployments/current/manage.py generate_realm_creation_link
-  ```
-
-  This will print out a secure one-time-use link that allows creation of a
-  new Zulip organization on your server.
-
-* Open the generated link with your web browser. You'll see the "Create
+Open that link with your web browser. You'll see the "Create
 organization" page ([screenshot here](../_static/zulip-create-realm.png)).
 Enter your email address and click *Create organization*.
 
-* Check your email to find the confirmation email and click the
-link. You'll be prompted to finish setting up your organization and
-initial administrator user ([screenshot
-here](../_static/zulip-create-user-and-org.png)).  Complete this form and
-log in!
+You'll be prompted to finish setting up your organization, and your
+own user account as the initial administrator of the organization
+([screenshot here](../_static/zulip-create-user-and-org.png)).
+Complete this form and log in!
 
 **Congratulations!** You are logged in as an organization
 administrator for your new Zulip organization.
 
-## Step 7: Next steps
+## Step 4: Configure outgoing email
+
+Zulip needs to be able to send email in order to confirm new users'
+email addresses, and to send email notifications.  You'll need to
+provide Zulip with credentials on an email server it can use for
+outgoing messages.
+
+See [our guide for outgoing email](email.html) for detailed
+instructions, including references to free outgoing-email services if
+you don't have one already.  You'll set the host and username in
+`/etc/zulip/settings.py` and the password in
+`/etc/zulip/zulip-secrets.conf`, then restart Zulip to pick up the new
+configuration.
+
+When you're done, [be sure to
+test](email.html#testing-and-troubleshooting) your new email
+configuration.
+
+## Step 5: Next steps
 
 * Subscribe to the extremely low-traffic
 [Zulip announcements email list](https://groups.google.com/forum/#!forum/zulip-announce)
