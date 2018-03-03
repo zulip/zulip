@@ -4,6 +4,7 @@ set_global('i18n', global.stub_i18n);
 zrequire('stream_data');
 zrequire('settings_account');
 zrequire('settings_org');
+zrequire('settings_ui');
 
 var noop = function () {};
 
@@ -328,11 +329,11 @@ function test_change_message_editing(change_message_editing) {
 
     change_message_editing.apply({checked: false});
     assert(parent_elem.hasClass('control-label-disabled'));
-    assert.equal($('#id_realm_message_content_edit_limit_minutes').attr('disabled'), true);
+    assert.equal($('#id_realm_message_content_edit_limit_minutes').attr('disabled'), 'disabled');
 
     change_message_editing.apply({checked: true});
     assert(!parent_elem.hasClass('control-label-disabled'));
-    assert.equal($('#id_realm_message_content_edit_limit_minutes').prop('disabled'), false);
+    assert.equal($('#id_realm_message_content_edit_limit_minutes').attr('disabled'), false);
 }
 
 function test_change_invite_required(change_invite_required) {
@@ -342,11 +343,11 @@ function test_change_invite_required(change_invite_required) {
 
     change_invite_required.apply({checked: false});
     assert(parent_elem.hasClass('control-label-disabled'));
-    assert.equal($('#id_realm_invite_by_admins_only').attr('disabled'), true);
+    assert.equal($('#id_realm_invite_by_admins_only').attr('disabled'), 'disabled');
 
     change_invite_required.apply({checked: true});
     assert(!parent_elem.hasClass('control-label-disabled'));
-    assert.equal($('#id_realm_invite_by_admins_only').prop('disabled'), false);
+    assert.equal($('#id_realm_invite_by_admins_only').attr('disabled'), false);
 }
 
 function test_disable_notifications_stream(disable_notifications_stream) {

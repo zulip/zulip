@@ -82,23 +82,11 @@ exports.set_up = function () {
     });
 
     $("#enable_desktop_notifications").change(function () {
-        if (this.checked) {
-            $("#pm_content_in_desktop_notifications").prop("disabled", false);
-            $("#pm_content_in_desktop_notifications_label").parent().removeClass("control-label-disabled");
-        } else {
-            $("#pm_content_in_desktop_notifications").prop("disabled", true);
-            $("#pm_content_in_desktop_notifications_label").parent().addClass("control-label-disabled");
-        }
+        settings_ui.disable_sub_setting_onchange(this.checked, "pm_content_in_desktop_notifications", true);
     });
 
     $("#enable_offline_push_notifications").change(function () {
-        if (this.checked) {
-            $("#enable_online_push_notifications").prop("disabled", false);
-            $("#enable_online_push_notifications_label").parent().removeClass("control-label-disabled");
-        } else {
-            $("#enable_online_push_notifications").prop("disabled", true);
-            $("#enable_online_push_notifications_label").parent().addClass("control-label-disabled");
-        }
+        settings_ui.disable_sub_setting_onchange(this.checked, "enable_online_push_notifications", true);
     });
 };
 
