@@ -388,6 +388,10 @@ exports.on_narrow = function (opts) {
     // We use force_close when jumping between PM narrows with the "p" key,
     // so that we don't have an open compose box that makes it difficult
     // to cycle quickly through unread messages.
+
+    $("#left_bar_compose_reply_button_big").attr('disabled', false);
+    $("#left_bar_compose_reply_button_big").attr('title', 'Reply (r)');
+
     if (opts.force_close) {
         // This closes the compose box if it was already open, and it is
         // basically a noop otherwise.

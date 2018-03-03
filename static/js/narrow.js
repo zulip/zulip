@@ -442,6 +442,9 @@ exports.deactivate = function () {
     unnarrow_times = {start_time: new Date()};
     blueslip.debug("Unnarrowed");
 
+    $("#left_bar_compose_reply_button_big").attr('disabled', false);
+    $("#left_bar_compose_reply_button_big").attr('title', 'Reply (r)');
+
     if (ui.actively_scrolling()) {
         // There is no way to intercept in-flight scroll events, and they will
         // cause you to end up in the wrong place if you are actively scrolling
@@ -532,6 +535,9 @@ exports.restore_home_state = function () {
 };
 
 function pick_empty_narrow_banner() {
+    $("#left_bar_compose_reply_button_big").attr('disabled', 'disabled');
+    $("#left_bar_compose_reply_button_big").attr('title', 'There are no messages to reply to yet.');
+
     var default_banner = $('#empty_narrow_message');
 
     var current_filter = narrow_state.get_current_filter();
