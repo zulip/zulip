@@ -19,6 +19,7 @@ import functools
 import ujson
 import xml.etree.cElementTree as etree
 from xml.etree.cElementTree import Element, SubElement
+import xml.etree.ElementTree as ET
 
 from collections import deque, defaultdict
 
@@ -49,6 +50,10 @@ from zerver.models import (
     UserProfile,
     UserGroup,
     UserGroupMembership,
+    get_user_profile_by_id,
+    UserMessage,
+    Recipient,
+    Stream,
 )
 import zerver.lib.mention as mention
 from zerver.lib.tex import render_tex
@@ -280,6 +285,46 @@ def add_vimeo_preview(root: Element, link: Text, extracted_data: Dict[Text, Any]
         anchor.set("title", link)
         img = markdown.util.etree.SubElement(anchor, "img")
         img.set("src", img_link)
+
+
+def add_quoted_message_preview(sender: UserProfile, root: Element, link: Text, message_id: Text) -> None:
+    from zerver.lib.message import access_message
+
+    container = markdown.util.etree.SubElement(root, "div")
+    blockquote_element = markdown.util.etree.SubElement(container, 'blockquote')
+    element_string = '<root>' +\
+        (access_message(sender, int(message_id))[0].rendered_content).replace('\n', ' ').replace('\r', '') \
+        .replace('<br>', '<br></br>').replace('"></a>', '"></img></a>') + \
+        '</root>'
+    xml_element_string = '<?xml version="1.0"?>' + '\n' + element_string
+    xml_element = ET.fromstring(xml_element_string)
+    blockquote_element.append(xml_element)
+
+def maybe_quote_message(sender: UserProfile, quoted_id: Text, current_message: Message) -> bool:
+    from zerver.lib.message import access_message
+
+    if quoted_id is not None:
+        recipient = current_message.recipient
+        user_message = access_message(sender, int(quoted_id))[1]
+        to_be_quoted_message = access_message(sender, int(quoted_id))[0]
+        if user_message is not None:
+            if (recipient.type == 2):
+                if to_be_quoted_message.recipient.type == 1 or to_be_quoted_message.recipient.type == 3:
+                    return False
+                else:
+                    quoted_message_stream = Stream.objects.get(id=to_be_quoted_message.recipient.type_id)
+                    if quoted_message_stream.is_public():
+                        return True
+                    else:
+                        return False
+
+            if (recipient.type == 1):
+                recipient_user = UserProfile.objects.get(id = recipient.type_id)
+                if access_message(recipient_user, int(quoted_id))[1] is not None:
+                    return True
+                else:
+                    return False
+    return False
 
 @cache_with_key(lambda tweet_id: tweet_id, cache_name="database", with_statsd_key="tweet_data")
 def fetch_tweet_data(tweet_id: Text) -> Optional[Dict[Text, Any]]:
@@ -567,6 +612,20 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if vm_id is not None:
             return "http://i.vimeocdn.com/video/%s.jpg" % (vm_id,)
         return None
+
+    def message_quote_id(self, url: Text) -> Optional[Text]:
+        url_split = url.split('/')
+
+        if not (url_split[url_split.__len__() - 2] == 'near'):
+            return None
+        return url_split[url_split.__len__() - 1]
+
+    def message_quote(self, url: Text) -> bool:
+        m_id = self.message_quote_id(url)
+
+        if m_id is not None:
+            return True
+        return False
 
     def twitter_text(self, text: Text,
                      urls: List[Dict[Text, Text]],
@@ -888,6 +947,12 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                     continue
                 else:
                     add_embed(root, url, extracted_data)
+
+            quoted_message = self.message_quote(url)
+            if quoted_message is not None:
+                to_quote_message_id = self.message_quote_id(url)
+                if maybe_quote_message(current_message.sender, to_quote_message_id, current_message):
+                    add_quoted_message_preview(current_message.sender, root, url, to_quote_message_id)
 
 
 class Avatar(markdown.inlinepatterns.Pattern):
