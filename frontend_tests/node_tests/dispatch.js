@@ -854,15 +854,22 @@ with_overrides(function (override) {
 // mark_message_as_read requires message_store and these dependencies.
 zrequire('unread_ops');
 zrequire('unread');
+zrequire('topic_data');
+zrequire('stream_list');
 set_global('message_store', {});
 
 with_overrides(function (override) {
     // delete_message
     var event = event_fixtures.delete_message;
     message_store.get = function (msg_id) {
-        return {id: msg_id, reactions: []};
+        return { id: msg_id,
+             reactions: [],
+             stream_id: 99,
+             subject: 'topic1',
+             type: 'stream'};
     };
 
+    override('stream_list.update_streams_sidebar', noop);
     global.with_stub(function (stub) {
         override('ui.remove_message', stub.f);
         dispatch(event);
@@ -874,5 +881,12 @@ with_overrides(function (override) {
         dispatch(event);
         var args = stub.get_args('message');
         assert_same(args.message.id, 1337);
+    });
+    global.with_stub(function (stub) {
+        override('topic_data.remove_message', stub.f);
+        dispatch(event);
+        var args = stub.get_args('opts');
+        assert_same(args.opts.stream_id, 99);
+        assert_same(args.opts.topic_name, 'topic1');
     });
 });
