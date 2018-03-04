@@ -38,8 +38,7 @@ exports.can_lock_topic = function (stream, topic) {
     if (!page_params.is_admin) {
         return false;
     }
-    var sub_dict = locked_topics.get(stream);
-    return !sub_dict || !sub_dict.get(topic);
+    return !exports.is_topic_locked(stream, topic);
 };
 
 exports.can_unlock_topic = function (stream, topic) {
