@@ -417,7 +417,7 @@ zrequire('marked', 'third/marked/lib/marked');
     stream_data.add_sub('private_stream', private_stream);
 
     var names = stream_data.get_non_default_stream_names();
-    assert.deepEqual(names, ['public']);
+    assert.deepEqual(names, ['public', 'private']);
 }());
 
 (function test_delete_sub() {
