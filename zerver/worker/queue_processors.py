@@ -309,7 +309,7 @@ class EmailSendingWorker(QueueProcessingWorker):
         send_email_from_dict(copied_event)
 
 @assign_queue('missedmessage_email_senders')
-class MissedMessageSendingWorker(EmailSendingWorker):
+class MissedMessageSendingWorker(EmailSendingWorker):  # nocoverage
     """
     Note: Class decorators are not inherited.
 
