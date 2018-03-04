@@ -143,9 +143,6 @@ exports.get_non_default_stream_names = function () {
     subs = _.reject(subs, function (sub) {
         return exports.is_default_stream_id(sub.stream_id);
     });
-    subs = _.reject(subs, function (sub) {
-        return sub.invite_only;
-    });
     var names = _.pluck(subs, 'name');
     return names;
 };
