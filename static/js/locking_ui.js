@@ -5,9 +5,9 @@ exports.rerender = function () {
     stream_list.update_streams_sidebar();
 };
 
-exports.persist_lock = function (stream_name, topic_name) {
+exports.persist_lock = function (stream_id, topic_name) {
     var data = {
-        stream: stream_name,
+        stream: stream_id,
         topic: topic_name,
         op: 'add',
     };
@@ -18,9 +18,9 @@ exports.persist_lock = function (stream_name, topic_name) {
     });
 };
 
-exports.persist_unlock = function (stream_name, topic_name) {
+exports.persist_unlock = function (stream_id, topic_name) {
     var data = {
-        stream: stream_name,
+        stream: stream_id,
         topic: topic_name,
         op: 'remove',
     };
@@ -31,17 +31,17 @@ exports.persist_unlock = function (stream_name, topic_name) {
     });
 };
 
-exports.lock_topic = function (stream, topic) {
+exports.lock_topic = function (stream_id, topic) {
     stream_popover.hide_topic_popover();
-    locking.add_locked_topic(stream, topic);
-    exports.persist_lock(stream, topic);
+    locking.add_locked_topic(stream_id, topic);
+    exports.persist_lock(stream_id, topic);
     exports.rerender();
 };
 
-exports.unlock_topic = function (stream, topic) {
+exports.unlock_topic = function (stream_id, topic) {
     stream_popover.hide_topic_popover();
-    locking.remove_locked_topic(stream, topic);
-    exports.persist_unlock(stream, topic);
+    locking.remove_locked_topic(stream_id, topic);
+    exports.persist_unlock(stream_id, topic);
     exports.rerender();
 };
 

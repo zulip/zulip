@@ -128,7 +128,7 @@ var event_fixtures = {
 
     locked_topics: {
         type: 'locked_topics',
-        locked_topics: [['devel', 'js'], ['lunch', 'burritos']],
+        locked_topics: [[1, 'js'], [2, 'burritos']],
     },
 
     muted_topics: {

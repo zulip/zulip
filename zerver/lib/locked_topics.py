@@ -1,4 +1,4 @@
-from typing import List, Text
+from typing import List, Text, Dict, Any
 
 from zerver.models import (
     LockedTopic,
@@ -24,12 +24,12 @@ def topic_is_locked(stream_id: int, topic_name: Text) -> bool:
     ).exists()
     return is_locked
 
-def get_locked_topics() -> List[List[Text]]:
+def get_locked_topics() -> List[Dict[Text, Any]]:
     rows = LockedTopic.objects.values(
-        'stream__name',
+        'stream_id',
         'topic_name'
     )
     return [
-        [row['stream__name'], row['topic_name']]
+        {'stream_id': row['stream_id'], 'topic': row['topic_name']}
         for row in rows
     ]

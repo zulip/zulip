@@ -1179,7 +1179,10 @@ class EventsRegisterTest(ZulipTestCase):
     def test_locked_topics_events(self) -> None:
         locked_topics_checker = self.check_events_dict([
             ('type', equals('locked_topics')),
-            ('locked_topics', check_list(check_list(check_string, 2))),
+            ('locked_topics', check_list(check_dict_only([
+                ('stream_id', check_int),
+                ('topic', check_string)
+            ]))),
         ])
         stream = get_stream('Denmark', self.user_profile.realm)
         events = self.do_test(lambda: do_lock_topic(

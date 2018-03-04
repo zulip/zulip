@@ -2,7 +2,7 @@ var locking = (function () {
 
 var exports = {};
 
-var locked_topics = new Dict({fold_case: true});
+var locked_topics = new Dict();
 
 exports.add_locked_topic = function (stream, topic) {
     var sub_dict = locked_topics.get(stream);
@@ -20,14 +20,14 @@ exports.remove_locked_topic = function (stream, topic) {
     }
 };
 
-exports.set_locked_topics = function (tuples) {
-    locked_topics = new Dict({fold_case: true});
+exports.set_locked_topics = function (topics) {
+    locked_topics = new Dict();
 
-    _.each(tuples, function (tuple) {
-        var stream = tuple[0];
-        var topic = tuple[1];
+    _.each(topics, function (topic) {
+        var stream = topic.stream_id;
+        var topic_name = topic.topic;
 
-        exports.add_locked_topic(stream, topic);
+        exports.add_locked_topic(stream, topic_name);
     });
 };
 

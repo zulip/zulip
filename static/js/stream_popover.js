@@ -145,8 +145,8 @@ function build_topic_popover(e) {
     var is_muted = muting.is_topic_muted(sub.name, topic_name);
     var can_mute_topic = !is_muted;
     var can_unmute_topic = is_muted;
-    var can_lock_topic = locking.can_lock_topic(sub.name, topic_name);
-    var can_unlock_topic = locking.can_unlock_topic(sub.name, topic_name);
+    var can_lock_topic = locking.can_lock_topic(sub.stream_id, topic_name);
+    var can_unlock_topic = locking.can_unlock_topic(sub.stream_id, topic_name);
 
     var content = templates.render('topic_sidebar_actions', {
         stream_name: sub.name,
@@ -378,7 +378,7 @@ exports.register_topic_handlers = function () {
             return;
         }
         var topic = $(e.currentTarget).attr('data-topic-name');
-        locking_ui.lock_topic(sub.name, topic);
+        locking_ui.lock_topic(sub.stream_id, topic);
         e.stopPropagation();
         e.preventDefault();
     });
@@ -390,7 +390,7 @@ exports.register_topic_handlers = function () {
             return;
         }
         var topic = $(e.currentTarget).attr('data-topic-name');
-        locking_ui.unlock_topic(sub.name, topic);
+        locking_ui.unlock_topic(sub.stream_id, topic);
         e.stopPropagation();
         e.preventDefault();
     });

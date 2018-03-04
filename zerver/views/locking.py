@@ -8,12 +8,12 @@ from zerver.lib.actions import do_lock_topic, do_unlock_topic
 from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_success, json_error
 from zerver.lib.locked_topics import topic_is_locked
-from zerver.lib.streams import access_stream_by_name
+from zerver.lib.streams import access_stream_by_id
 from zerver.models import Stream, UserProfile
 
-def lock_topic(user_profile: UserProfile, stream_name: str,
+def lock_topic(user_profile: UserProfile, stream_id: int,
                topic_name: str) -> HttpResponse:
-    (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
+    (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
 
     if topic_is_locked(stream.id, topic_name):
         return json_error(_("Topic already locked"))
@@ -21,10 +21,10 @@ def lock_topic(user_profile: UserProfile, stream_name: str,
     do_lock_topic(user_profile, stream, topic_name)
     return json_success()
 
-def unlock_topic(user_profile: UserProfile, stream_name: str,
+def unlock_topic(user_profile: UserProfile, stream_id: int,
                  topic_name: str) -> HttpResponse:
     error = _("Topic is not there in the locked_topics list")
-    (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
+    (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
 
     if not topic_is_locked(stream.id, topic_name):
         return json_error(error)
@@ -34,7 +34,7 @@ def unlock_topic(user_profile: UserProfile, stream_name: str,
 
 @require_realm_admin
 @has_request_variables
-def update_locked_topic(request: HttpRequest, user_profile: UserProfile, stream: str=REQ(),
+def update_locked_topic(request: HttpRequest, user_profile: UserProfile, stream: int=REQ(),
                         topic: str=REQ(), op: str=REQ()) -> HttpResponse:
 
     if op == 'add':

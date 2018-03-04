@@ -24,11 +24,11 @@ class LockedTopicsTests(ZulipTestCase):
         self.login(email)
         stream = get_stream(u'Verona', user.realm)
         url = '/api/v1/lock_topic'
-        data = {'stream': 'Verona', 'topic': 'Verona3', 'op': 'add'}
+        data = {'stream': stream.id, 'topic': 'Verona3', 'op': 'add'}
         result = self.api_patch(email, url, data)
 
         self.assert_json_success(result)
-        self.assertIn([u'Verona', u'Verona3'], get_locked_topics())
+        self.assertIn({'stream_id': stream.id, 'topic': u'Verona3'}, get_locked_topics())
         self.assertTrue(topic_is_locked(stream.id, 'Verona3'))
 
     def test_remove_locked_topic(self) -> None:
@@ -39,26 +39,36 @@ class LockedTopicsTests(ZulipTestCase):
         add_locked_topic(stream.id, u'Verona3')
 
         url = '/api/v1/lock_topic'
-        data = {'stream': 'Verona', 'topic': 'Verona3', 'op': 'remove'}
+        data = {'stream': stream.id, 'topic': 'Verona3', 'op': 'remove'}
         result = self.api_patch(email, url, data)
 
         self.assert_json_success(result)
-        self.assertNotIn([u'Verona', u'Verona3'], get_locked_topics())
+        self.assertNotIn({'stream_id': stream.id, 'topic': u'Verona3'}, get_locked_topics())
         self.assertFalse(topic_is_locked(stream.id, 'Verona3'))
 
     def test_add_locked_topic_no_admin(self) -> None:
-        email = self.example_email('hamlet')
+        user = self.example_user('hamlet')
+        email = user.email
         self.login(email)
+
+        realm = user.realm
+        stream = get_stream(u'Verona', realm)
+
         url = '/api/v1/lock_topic'
-        data = {'stream': 'Verona', 'topic': 'Verona3', 'op': 'add'}
+        data = {'stream': stream.id, 'topic': 'Verona3', 'op': 'add'}
         result = self.api_patch(email, url, data)
         self.assert_json_error(result, 'Must be an organization administrator')
 
     def test_remove_locked_topic_no_admin(self) -> None:
-        email = self.example_email('hamlet')
+        user = self.example_user('hamlet')
+        email = user.email
         self.login(email)
+
+        realm = user.realm
+        stream = get_stream(u'Verona', realm)
+
         url = '/api/v1/lock_topic'
-        data = {'stream': 'Verona', 'topic': 'Verona3', 'op': 'remove'}
+        data = {'stream': stream.id, 'topic': 'Verona3', 'op': 'remove'}
         result = self.api_patch(email, url, data)
         self.assert_json_error(result, 'Must be an organization administrator')
 
@@ -72,7 +82,7 @@ class LockedTopicsTests(ZulipTestCase):
         add_locked_topic(stream.id, u'Verona3')
 
         url = '/api/v1/lock_topic'
-        data = {'stream': 'Verona', 'topic': 'Verona3', 'op': 'add'}
+        data = {'stream': stream.id, 'topic': 'Verona3', 'op': 'add'}
         result = self.api_patch(email, url, data)
         self.assert_json_error(result, "Topic already locked")
 
@@ -81,15 +91,18 @@ class LockedTopicsTests(ZulipTestCase):
         email = user.email
         self.login(email)
 
-        url = '/api/v1/lock_topic'
-        data = {'stream': 'BOGUS', 'topic': 'Verona3', 'op': 'remove'}
-        result = self.api_patch(email, url, data)
-        self.assert_json_error(result, "Invalid stream name 'BOGUS'")
+        realm = user.realm
+        stream = get_stream(u'Verona', realm)
 
-        data = {'stream': 'Verona', 'topic': 'BOGUS', 'op': 'remove'}
+        url = '/api/v1/lock_topic'
+        data = {'stream': 10000, 'topic': 'Verona3', 'op': 'remove'}
+        result = self.api_patch(email, url, data)
+        self.assert_json_error(result, "Invalid stream id")
+
+        data = {'stream': stream.id, 'topic': 'BOGUS', 'op': 'remove'}
         result = self.api_patch(email, url, data)
         self.assert_json_error(result, "Topic is not there in the locked_topics list")
 
-        data = {'stream': 'Verona', 'topic': 'Verona3', 'op': 'remove'}
+        data = {'stream': stream.id, 'topic': 'Verona3', 'op': 'remove'}
         result = self.api_patch(email, url, data)
         self.assert_json_error(result, "Topic is not there in the locked_topics list")

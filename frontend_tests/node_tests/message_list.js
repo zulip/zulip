@@ -371,6 +371,10 @@ var with_overrides = global.with_overrides; // make lint happy
             return "breakfast";
         });
 
+        override("stream_data.get_stream_id", function () {
+            return 101;
+        });
+
         global.with_stub(function (render_stub) {
             global.with_stub(function (is_locked_stub) {
                 list.view.render_locked_bookend = render_stub.f;
@@ -380,7 +384,7 @@ var with_overrides = global.with_overrides; // make lint happy
                 assert.equal(bookend.content, expected);
                 var is_locked_args = is_locked_stub.get_args('stream', 'topic');
                 var valid_args = {
-                    stream: 'social',
+                    stream: 101,
                     topic: 'breakfast',
                 };
                 assert.deepEqual(is_locked_args, valid_args);

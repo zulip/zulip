@@ -68,8 +68,8 @@ zrequire('topic_list');
         return false;
     };
 
-    locking.is_topic_locked = function (stream_name, topic_name) {
-        assert.equal(stream_name, 'devel');
+    locking.is_topic_locked = function (stream, topic_name) {
+        assert.equal(stream, stream_id);
         assert.equal(topic_name, 'coding');
         checked_locked = true;
         return false;

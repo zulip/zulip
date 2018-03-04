@@ -425,7 +425,8 @@ exports.MessageList.prototype = {
         if (stream_name === undefined || topic === undefined) {
             return;
         }
-        var locked = locking.is_topic_locked(stream_name, topic);
+        var stream_id = stream_data.get_stream_id(stream_name);
+        var locked = locking.is_topic_locked(stream_id, topic);
         if (!locked) {
             return;
         }

@@ -234,11 +234,17 @@ people.add(bob);
             override('locking.is_topic_locked', stub.f);
             compose_state.subject('Denmark3');
             $("#subject").select(noop);
+            var sub = {
+                stream_id: 101,
+                name: 'Denmark',
+                subscribed: true,
+            };
+            stream_data.add_sub('Denmark', sub);
             assert(!compose.validate());
             assert.equal($('#compose-error-msg').html(), i18n.t('The topic is locked.'));
             var args = stub.get_args('stream', 'topic');
             var valid_args = {
-                stream: 'Denmark',
+                stream: 101,
                 topic: 'Denmark3',
             };
             assert.deepEqual(args, valid_args);

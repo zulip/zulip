@@ -542,8 +542,8 @@ function validate_stream_message() {
         compose_error(i18n.t("Please specify a topic"), $("#subject"));
         return false;
     }
-
-    if (locking.is_topic_locked(stream_name, topic)) {
+    var stream_id = stream_data.get_stream_id(stream_name);
+    if (locking.is_topic_locked(stream_id, topic)) {
         compose_error(i18n.t("The topic is locked."));
         return false;
     }
