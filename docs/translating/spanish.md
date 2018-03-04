@@ -49,6 +49,8 @@ Zulip friendly and usable.
   *channel limited by invitation*)
 * Public stream - **Canal público**
 * Bot - **Bot**
+* Embedded bot - **Bot integrado**
+* Interactive bot - **Bot interactivo**
 * Integration - **Integración**
 * Notification - **Notificación**
 * Alert word - **Alerta**: this is only *alert*. Nonetheless, adding *word* may
@@ -58,6 +60,9 @@ Zulip friendly and usable.
 * Filter - **Filtro**: as used with narrowing (see below).
 * Home - **Inicio**: we never use the term "Hogar" (literally home) in Spanish.
 * Emoji - **Emoticono** (plural: **emoticonos**)
+* Slash command - **/comando**
+* Webhook - **Webhook**
+* Endpoint - **Endpoint**
 
 ## Frases
 * Subscribe/Unsubscribe to a stream - **Suscribir a/Desuscribir de un canal**
