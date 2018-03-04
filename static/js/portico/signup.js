@@ -67,6 +67,9 @@ $(function () {
     var show_subdomain_section = function (bool) {
         var action = bool ? "hide" : "show";
         $("#subdomain_section")[action]();
+        var w2 = $("#subdomain_section").width();
+        var w1 = $("#subdomain_section .realm_subdomain_label").width();
+        $("#id_team_subdomain").css("width", w2-w1-50);
     };
 
     $("#realm_in_root_domain").change(function () {

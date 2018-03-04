@@ -716,8 +716,8 @@ button.login-google-button {
     text-align: right;
     position: relative;
     padding-right: 10px;
-
-    width: 156px;
+    max-width: 156px;
+    min-width: 45px;
 }
 
 #registration #id_team_subdomain.subdomain + .realm_subdomain_label {
