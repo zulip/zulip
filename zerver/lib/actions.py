@@ -3686,7 +3686,7 @@ def get_streams_traffic(streams: Optional[Iterable[Stream]]=None) -> Dict[int, i
     if streams is not None:
         query = query.filter(stream__in=streams)
 
-    traffic_list = query.values('stream_id').annotate(value=Count('value'))
+    traffic_list = query.values('stream_id').annotate(value=Sum('value'))
     traffic_dict = {}
     for traffic in traffic_list:
         traffic_dict[traffic["stream_id"]] = traffic["value"]
