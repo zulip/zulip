@@ -2,14 +2,25 @@ var settings_display = (function () {
 
 var exports = {};
 
+
+exports.set_margin = function () {
+  $('.loading_indicator_spinner').css("margin-top","1px");
+  $('.loading_indicator_text').css("margin-top","1px");
+};
+
+exports.display_checkmark = function (opts) {
+  var check_mark = document.createElement("img");
+  check_mark.src = "/static/images/checkbox-green.svg";
+  opts.prepend(check_mark);
+  opts.css("width","13px");
+};
+
 exports.set_night_mode = function (bool) {
     var night_mode = bool;
     var data = { night_mode: JSON.stringify(night_mode) };
-    var context = {
-        enable_text: data.night_mode === "true" ?
-            i18n.t("enabled") :
-            i18n.t("disabled"),
-    };
+    var spinner = $("#display-settings-status").expectOne();
+    loading.make_indicator(spinner, {text: 'Saving ...'});
+    exports.set_margin();
 
     channel.patch({
         url: '/json/settings/display',
@@ -17,13 +28,13 @@ exports.set_night_mode = function (bool) {
         success: function () {
             page_params.night_mode = night_mode;
             if (overlays.settings_open()) {
-                ui_report.success(i18n.t("Night mode __enable_text__!", context),
-                                  $('#display-settings-status').expectOne());
+                ui_report.success(i18n.t("Saved."), $('#display-settings-status').expectOne());
+                exports.display_checkmark(spinner);
             }
         },
         error: function (xhr) {
             if (overlays.settings_open()) {
-                ui_report.error(i18n.t("Error updating night mode setting."), xhr, $('#display-settings-status').expectOne());
+                ui_report.error(i18n.t("Save failed"), xhr, $('#display-settings-status').expectOne());
             }
         },
     });
@@ -54,16 +65,23 @@ exports.set_up = function () {
 
         var context = {};
         context.lang = new_language;
+        var spinner = $("#language-settings-status").expectOne();
+        loading.make_indicator(spinner, {text: 'Saving ...'});
+        exports.set_margin();
 
         channel.patch({
             url: '/json/settings/display',
             data: data,
             success: function () {
-                ui_report.success(i18n.t("__lang__ is now the default language!  You will need to reload the window for your changes to take effect", context),
-                                  $('#display-settings-status').expectOne());
+                ui_report.success(i18n.t("Saved. Please <a>reload</a> for the change to take effect."),
+                                  $('#language-settings-status').expectOne());
+                exports.display_checkmark(spinner);
+                $('#language-settings-status').click(function () {
+                    window.location.reload();
+                });
             },
             error: function (xhr) {
-                ui_report.error(i18n.t("Error updating default language setting"), xhr, $('#display-settings-status').expectOne());
+                ui_report.error(i18n.t("Save failed"), xhr, $('#language-settings-status').expectOne());
             },
         });
     });
@@ -84,16 +102,19 @@ exports.set_up = function () {
         } else {
             context.enabled_or_disabled = i18n.t('Disabled');
         }
+        var spinner = $("#display-settings-status").expectOne();
+        loading.make_indicator(spinner, {text: 'Saving ...'});
+        exports.set_margin();
 
         channel.patch({
             url: '/json/settings/display',
             data: data,
             success: function () {
-                ui_report.success(i18n.t("High contrast mode __enabled_or_disabled__!", context),
-                                  $('#display-settings-status').expectOne());
+                ui_report.success(i18n.t("Saved."), $('#display-settings-status').expectOne());
+                exports.display_checkmark(spinner);
             },
             error: function (xhr) {
-                ui_report.error(i18n.t("Error updating high contrast setting"), xhr, $('#display-settings-status').expectOne());
+                ui_report.error(i18n.t("Save failed"), xhr, $('#display-settings-status').expectOne());
             },
         });
     });
@@ -112,16 +133,23 @@ exports.set_up = function () {
         } else {
             context.side = i18n.t('right');
         }
+        var spinner = $("#display-settings-status").expectOne();
+        loading.make_indicator(spinner, {text: 'Saving ...'});
+        exports.set_margin();
 
         channel.patch({
             url: '/json/settings/display',
             data: data,
             success: function () {
-                ui_report.success(i18n.t("User list will appear on the __side__ hand side! You will need to reload the window for your changes to take effect.", context),
+                ui_report.success(i18n.t("Saved. Please <a>reload</a> for the change to take effect."),
                                   $('#display-settings-status').expectOne());
+                exports.display_checkmark(spinner);
+                $('#display-settings-status').click(function () {
+                    window.location.reload();
+                });
             },
             error: function (xhr) {
-                ui_report.error(i18n.t("Error updating user list placement setting"), xhr, $('#display-settings-status').expectOne());
+                ui_report.error(i18n.t("Save failed"), xhr, $('#display-settings-status').expectOne());
             },
         });
     });
@@ -136,16 +164,19 @@ exports.set_up = function () {
         } else {
             context.format = '12';
         }
+        var spinner = $("#time-settings-status").expectOne();
+        loading.make_indicator(spinner, {text: 'Saving ...'});
+        exports.set_margin();
 
         channel.patch({
             url: '/json/settings/display',
             data: data,
             success: function () {
-                ui_report.success(i18n.t("Time will now be displayed in the __format__-hour format!", context),
-                                  $('#display-settings-status').expectOne());
+                ui_report.success(i18n.t("Saved."), $('#time-settings-status').expectOne());
+                exports.display_checkmark(spinner);
             },
             error: function (xhr) {
-                ui_report.error(i18n.t("Error updating time format setting"), xhr, $('#display-settings-status').expectOne());
+                ui_report.error(i18n.t("Save failed"), xhr, $('#time-settings-status').expectOne());
             },
         });
     });
@@ -154,15 +185,19 @@ exports.set_up = function () {
         var data = {};
         var timezone = this.value;
         data.timezone = JSON.stringify(timezone);
+        var spinner = $("#time-settings-status").expectOne();
+        loading.make_indicator(spinner, {text: 'Saving ...'});
+        exports.set_margin();
 
         channel.patch({
             url: '/json/settings/display',
             data: data,
             success: function () {
-                ui_report.success(i18n.t("Your time zone have been set to __timezone__", {timezone: timezone}), $('#display-settings-status').expectOne());
+                ui_report.success(i18n.t("Saved."), $('#time-settings-status').expectOne());
+                exports.display_checkmark(spinner);
             },
             error: function (xhr) {
-                ui_report.error(i18n.t("Error updating time zone"), xhr, $('#display-settings-status').expectOne());
+                ui_report.error(i18n.t("Save failed"), xhr, $('#time-settings-status').expectOne());
             },
         });
     });
@@ -171,16 +206,17 @@ exports.set_up = function () {
         var emojiset = $(this).val();
         var data = {};
         data.emojiset = JSON.stringify(emojiset);
+        var spinner = $("#emoji-settings-status").expectOne();
+        loading.make_indicator(spinner, {text: 'Saving ...'});
+        exports.set_margin();
 
         channel.patch({
             url: '/json/settings/display',
             data: data,
             success: function () {
-                var spinner = $("#emojiset_spinner").expectOne();
-                loading.make_indicator(spinner, {text: 'Changing emojiset.'});
             },
             error: function (xhr) {
-                ui_report.error(i18n.t("Error changing emojiset."), xhr, $('#display-settings-status').expectOne());
+                ui_report.error(i18n.t("Save failed"), xhr, $('#emoji-settings-status').expectOne());
             },
         });
     });
@@ -188,11 +224,13 @@ exports.set_up = function () {
 
 exports.report_emojiset_change = function () {
     function emoji_success() {
-        if ($("#display-settings-status").length) {
+        if ($("#emoji-settings-status").length) {
             loading.destroy_indicator($("#emojiset_spinner"));
             $("#emojiset_select").val(page_params.emojiset);
             ui_report.success(i18n.t("Emojiset changed successfully!"),
-                              $('#display-settings-status').expectOne());
+                              $('#emoji-settings-status').expectOne());
+            var spinner = $("#emoji-settings-status").expectOne();
+            exports.display_checkmark(spinner);
         }
     }
 
