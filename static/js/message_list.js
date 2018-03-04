@@ -415,23 +415,27 @@ exports.MessageList.prototype = {
         }
     },
 
-    update_locked_bookend: function MessageList_update_locked_bookend() {
-        this.view.clear_locked_bookend();
+    _needs_topic_locked_bookend: function MessageList__needs_topic_locked_bookend() {
+        // Telling whether the topic is locked or not makes no sense
+        // when the list is not narrowed to a specific topic
         if (!this.narrowed) {
-            return;
+            return false;
         }
         var stream_name = narrow_state.stream();
         var topic = narrow_state.topic();
         if (stream_name === undefined || topic === undefined) {
-            return;
+            return false;
         }
         var stream_id = stream_data.get_stream_id(stream_name);
         var locked = locking.is_topic_locked(stream_id, topic);
         if (!locked) {
-            return;
+            return false;
         }
-        var trailing_bookend_content = i18n.t("The topic is locked");
-        this.view.render_locked_bookend(trailing_bookend_content);
+        return true;
+    },
+
+    update_locked_bookend: function MessageList_update_locked_bookend() {
+        this.view.update_locked_bookend(this._needs_topic_locked_bookend());
     },
 
     unmuted_messages: function MessageList_unmuted_messages(messages) {

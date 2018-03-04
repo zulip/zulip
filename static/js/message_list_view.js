@@ -981,6 +981,14 @@ MessageListView.prototype = {
         rows.get_table(this.table_name).append(rendered_trailing_bookend);
     },
 
+    update_locked_bookend: function MessageListView_update_trailing_bookend(needs_bookend) {
+        this.clear_locked_bookend();
+        if (needs_bookend) {
+            var trailing_bookend_content = i18n.t("The topic is locked");
+            this.render_locked_bookend(trailing_bookend_content);
+        }
+    },
+
     render_locked_bookend: function MessageListView_render_trailing_bookend(content) {
         var rendered_bookend = $(templates.render('bookend', {
             bookend_content: content,
