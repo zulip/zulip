@@ -508,19 +508,6 @@ set_global('people', {
             assert.equal(opts.data.delete, '[4]');
 
             (function test_post_success() {
-                var user_group_remove_called = false;
-                var user_group_add_called = false;
-                user_groups.remove = function (data) {
-                    assert.equal(data.name, 'Mobile');
-                    assert.equal(data.id, 1);
-                    user_group_remove_called = true;
-                };
-                user_groups.add = function (data) {
-                    assert.equal(data.name, 'Mobile');
-                    assert.equal(data.id, 1);
-                    assert.deepEqual(data.members, [2, 31]);
-                    user_group_add_called = true;
-                };
                 fake_this.text(i18n.t('fake-text'));
                 fake_this.delay = function (time) {
                     assert.equal(time, 200);
@@ -535,8 +522,6 @@ set_global('people', {
                 };
                 opts.success();
                 assert(save_btn_fade_out_called);
-                assert(user_group_remove_called);
-                assert(user_group_add_called);
                 assert.equal(fake_this.html(), '<i class="fa fa-check" aria-hidden="true"></i>');
                 assert.equal(fake_this.text(), 'translated: Saved!');
             }());

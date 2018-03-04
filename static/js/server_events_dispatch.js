@@ -370,10 +370,13 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
     case 'user_group':
         if (event.op === 'add') {
             user_groups.add(event.group);
-            settings_user_groups.reload();
+        } else if (event.op === 'add_members') {
+            user_groups.add_members(event.group_id, event.user_ids);
+        } else if (event.op === 'remove_members') {
+            user_groups.remove_members(event.group_id, event.user_ids);
         }
+        settings_user_groups.reload();
         break;
-
     }
 };
 

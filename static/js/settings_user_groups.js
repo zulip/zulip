@@ -122,13 +122,6 @@ exports.populate_user_groups = function () {
                     delete: JSON.stringify(removed),
                 },
                 success: function () {
-                    original_group = _.reject(original_group, function (e) {
-                        return removed.includes(e);
-                    });
-                    original_group = original_group.concat(added);
-                    group_data.members = original_group;
-                    user_groups.remove(group_data);
-                    user_groups.add(group_data);
                     btn.text(i18n.t("Saved!")).delay(200).fadeOut(function () {
                         $(this).html('<i class="fa fa-check" aria-hidden="true"></i>');
                     });

@@ -49,6 +49,20 @@ exports.is_member_of = function (user_group_id, user_id) {
     return user_group.members.has(user_id);
 };
 
+exports.add_members = function (user_group_id, user_ids) {
+    var user_group = user_group_by_id_dict.get(user_group_id);
+    _.each(user_ids, function (user_id) {
+        user_group.members.set(user_id, true);
+    });
+};
+
+exports.remove_members = function (user_group_id, user_ids) {
+    var user_group = user_group_by_id_dict.get(user_group_id);
+    _.each(user_ids, function (user_id) {
+        user_group.members.del(user_id);
+    });
+};
+
 exports.initialize = function () {
     _.each(page_params.realm_user_groups, function (user_group) {
         exports.add(user_group);
