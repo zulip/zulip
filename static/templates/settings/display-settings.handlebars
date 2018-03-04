@@ -78,7 +78,21 @@
             </select>
         </div>
 
-        <h3>Emoji style</h3>
+        <h3 class="light">Emoji style</h3>
+
+        <div class="input-group side-padded-container">
+            <label class="checkbox">
+                <input type="checkbox" name="translate_emoticons" id="translate_emoticons"
+                       {{#if page_params.translate_emoticons}}
+                       checked="checked"
+                       {{/if}} />
+                <span></span>
+            </label>
+            <label for="translate_emoticons" class="inline-block">
+                {{t "Translate emoticons (convert :) to 😃 in messages)" }}
+            </label>
+        </div>
+
         <div class="input-group side-padded-container">
             <div class="emojiset_choices grey-box">
                 {{#each page_params.emojiset_choices }}

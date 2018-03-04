@@ -588,6 +588,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     default_language = models.CharField(default=u'en', max_length=MAX_LANGUAGE_ID_LENGTH)  # type: Text
     high_contrast_mode = models.BooleanField(default=False)  # type: bool
     night_mode = models.BooleanField(default=False)  # type: bool
+    translate_emoticons = models.BooleanField(default=False)  # type: bool
 
     # Hours to wait before sending another email to a user
     EMAIL_REMINDER_WAITPERIOD = 24
@@ -650,6 +651,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         twenty_four_hour_time=bool,
         high_contrast_mode=bool,
         night_mode=bool,
+        translate_emoticons=bool,
     )
 
     notification_setting_types = dict(

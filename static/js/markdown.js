@@ -358,6 +358,16 @@ exports.initialize = function () {
         return fenced_code.process_fenced_code(src);
     }
 
+    function preprocess_translate_emoticons(src) {
+        if (!page_params.translate_emoticons) {
+            return src;
+        }
+
+        // In this scenario, the message has to be from the user, so the only
+        // requirement should be that they have the setting on.
+        return emoji.translate_emoticons_to_names(src);
+    }
+
     // Disable ordered lists
     // We used GFM + tables, so replace the list start regex for that ruleset
     // We remove the |[\d+]\. that matches the numbering in a numbered list
@@ -406,7 +416,11 @@ exports.initialize = function () {
         realmFilterHandler: handleRealmFilter,
         texHandler: handleTex,
         renderer: r,
-        preprocessors: [preprocess_code_blocks, preprocess_auto_olists],
+        preprocessors: [
+            preprocess_code_blocks,
+            preprocess_auto_olists,
+            preprocess_translate_emoticons,
+        ],
     });
 
 };

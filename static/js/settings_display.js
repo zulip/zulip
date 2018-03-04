@@ -184,6 +184,30 @@ exports.set_up = function () {
             },
         });
     });
+
+    $("#translate_emoticons").change(function () {
+        var data = {};
+        var setting_value = $("#translate_emoticons").is(":checked");
+        data.translate_emoticons = JSON.stringify(setting_value);
+        var context = {};
+        if (data.translate_emoticons === "true") {
+            context.new_mode = i18n.t("be");
+        } else {
+            context.new_mode = i18n.t("not be");
+        }
+
+        channel.patch({
+            url: '/json/settings/display',
+            data: data,
+            success: function () {
+                ui_report.success(i18n.t("Emoticons will now __new_mode__ translated!", context),
+                                  $('#display-settings-status').expectOne());
+            },
+            error: function (xhr) {
+                ui_report.error(i18n.t("Error updating emoticon translation setting"), xhr, $('#display-settings-status').expectOne());
+            },
+        });
+    });
 };
 
 exports.report_emojiset_change = function () {
@@ -214,6 +238,7 @@ function _update_page() {
     $("#twenty_four_hour_time").prop('checked', page_params.twenty_four_hour_time);
     $("#left_side_userlist").prop('checked', page_params.left_side_userlist);
     $("#default_language_name").text(page_params.default_language_name);
+    $("#translate_emoticons").prop('checked', page_params.translate_emoticons);
 }
 
 exports.update_page = function () {
