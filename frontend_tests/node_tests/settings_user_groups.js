@@ -250,12 +250,6 @@ set_global('people', {
     assert.equal(typeof($('#user-groups').get_on_handler('click', '.save-group-changes')), 'function');
 }());
 
-(function test_reset() {
-    settings_user_groups.reset();
-    var result = settings_user_groups.populate_user_groups();
-    assert.equal(result, undefined);
-}());
-
 (function test_reload() {
     $('#user-groups').html('Some text');
     var populate_user_groups_called = false;
@@ -265,6 +259,12 @@ set_global('people', {
     settings_user_groups.reload();
     assert(populate_user_groups_called);
     assert.equal($('#user-groups').html(), '');
+}());
+
+(function test_reset() {
+    settings_user_groups.reset();
+    var result = settings_user_groups.reload();
+    assert.equal(result, undefined);
 }());
 
 (function test_on_events() {

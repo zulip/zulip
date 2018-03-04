@@ -11,16 +11,16 @@ exports.reset = function () {
 };
 
 exports.reload = function () {
+    if (!meta.loaded) {
+        return;
+    }
+
     var user_groups_section = $('#user-groups').expectOne();
     user_groups_section.html('');
     exports.populate_user_groups();
 };
 
 exports.populate_user_groups = function () {
-    if (!meta.loaded) {
-        return;
-    }
-
     var user_groups_section = $('#user-groups').expectOne();
     var user_groups_array = user_groups.get_realm_user_groups();
 
