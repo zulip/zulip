@@ -67,39 +67,39 @@ function make_textbox(s) {
     };
     compose_ui.insert_syntax_and_focus(':octopus:');
     assert.equal($('#compose-textarea').caret(), 4);
-    assert.equal($('#compose-textarea').val(), 'xyz :octopus:');
+    assert.equal($('#compose-textarea').val(), 'xyz :octopus: ');
     assert($("#compose-textarea").is_focused());
 
 }());
 
 (function test_smart_insert() {
-    var textbox = make_textbox('abc ');
+    var textbox = make_textbox('abc');
     textbox.caret(4);
 
     compose_ui.smart_insert(textbox, ':smile:');
     assert.equal(textbox.insert_pos, 4);
-    assert.equal(textbox.insert_text, ':smile:');
-    assert.equal(textbox.val(), 'abc :smile:');
+    assert.equal(textbox.insert_text, ' :smile: ');
+    assert.equal(textbox.val(), 'abc :smile: ');
     assert(textbox.focused);
 
     textbox.blur();
     compose_ui.smart_insert(textbox, ':airplane:');
-    assert.equal(textbox.insert_text, ' :airplane:');
-    assert.equal(textbox.val(), 'abc :smile: :airplane:');
+    assert.equal(textbox.insert_text, ':airplane: ');
+    assert.equal(textbox.val(), 'abc :smile: :airplane: ');
     assert(textbox.focused);
 
     textbox.caret(0);
     textbox.blur();
     compose_ui.smart_insert(textbox, ':octopus:');
     assert.equal(textbox.insert_text, ':octopus: ');
-    assert.equal(textbox.val(), ':octopus: abc :smile: :airplane:');
+    assert.equal(textbox.val(), ':octopus: abc :smile: :airplane: ');
     assert(textbox.focused);
 
     textbox.caret(textbox.val().length);
     textbox.blur();
     compose_ui.smart_insert(textbox, ':heart:');
-    assert.equal(textbox.insert_text, ' :heart:');
-    assert.equal(textbox.val(), ':octopus: abc :smile: :airplane: :heart:');
+    assert.equal(textbox.insert_text, ':heart: ');
+    assert.equal(textbox.val(), ':octopus: abc :smile: :airplane: :heart: ');
     assert(textbox.focused);
 
     // Note that we don't have any special logic for strings that are
