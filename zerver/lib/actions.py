@@ -4443,11 +4443,12 @@ def do_update_bot_config_data(bot_profile: UserProfile,
                               config_data: Dict[Text, Text]) -> None:
     for key, value in config_data.items():
         set_bot_config(bot_profile, key, value)
+    updated_config_data = get_bot_config(bot_profile)
     send_event(dict(type='realm_bot',
                     op='update',
                     bot=dict(email=bot_profile.email,
                              user_id=bot_profile.id,
-                             services = [dict(config_data=config_data)],
+                             services = [dict(config_data=updated_config_data)],
                              ),
                     ),
                bot_owner_user_ids(bot_profile))
