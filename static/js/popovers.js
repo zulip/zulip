@@ -189,7 +189,7 @@ function show_user_group_info_popover(element, group, message) {
         var args = {
             group_name: group.name,
             group_description: group.description,
-            members: sort_group_members(fetch_group_members(group.members)),
+            members: sort_group_members(fetch_group_members(group.members.keys())),
         };
         elt.popover({
             placement: calculate_info_popover_placement(popover_size, elt),

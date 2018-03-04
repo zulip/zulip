@@ -36,7 +36,7 @@ exports.populate_user_groups = function () {
         var pill_container = $('.pill-container[data-group-pills="' + data.name + '"]');
         var pills = input_pill(pill_container);
 
-        data.members.forEach(function (user_id) {
+        data.members.keys().forEach(function (user_id) {
             var user = people.get_person_from_user_id(user_id);
 
             if (user) {
@@ -47,7 +47,7 @@ exports.populate_user_groups = function () {
         });
 
         function update_save_state(draft_group) {
-            var original_group = user_groups.get_user_group_from_id(data.id).members;
+            var original_group = user_groups.get_user_group_from_id(data.id).members.keys();
             var same_groups = _.isEqual(_.sortBy(draft_group), _.sortBy(original_group));
             var save_changes = pill_container.siblings('.save-member-changes');
             var save_hidden = save_changes.css('display') === 'none';
@@ -110,7 +110,7 @@ exports.populate_user_groups = function () {
         $('#user-groups #' + data.id).on('click', '.save-member-changes', function () {
             var draft_group = pills.keys();
             var group_data = user_groups.get_user_group_from_id(data.id);
-            var original_group = group_data.members;
+            var original_group = group_data.members.keys();
             var added = _.difference(draft_group, original_group);
             var removed = _.difference(original_group, draft_group);
             var btn = $(this);

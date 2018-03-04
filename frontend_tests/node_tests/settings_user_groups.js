@@ -1,3 +1,4 @@
+zrequire('dict');
 zrequire('settings_user_groups');
 
 set_global('$', global.make_zjquery());
@@ -28,7 +29,7 @@ set_global('people', {
         id: 1,
         name: 'Mobile',
         description: 'All mobile people',
-        members: [2, 4],
+        members: Dict.from_array([2, 4]),
     };
     var iago = {
         email: 'iago@zulip.com',
@@ -226,7 +227,7 @@ set_global('people', {
     };
 
     pills.onPillRemove = function (handler) {
-        realm_user_group.members = [2, 31];
+        realm_user_group.members = Dict.from_array([2, 31]);
         fade_to_called = false;
         fade_out_called = false;
         handler();
@@ -493,7 +494,7 @@ set_global('people', {
             id: 1,
             name: 'Mobile',
             description: 'All mobile people',
-            members: [2, 4],
+            members: Dict.from_array([2, 4]),
         };
         var fake_this = $.create('fake-#user-groups_click_save_member_changes');
         user_groups.get_user_group_from_id = function (id) {

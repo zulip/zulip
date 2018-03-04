@@ -16,6 +16,9 @@ exports.init = function () {
 exports.init();
 
 exports.add = function (user_group) {
+    // Reformat the user group members structure to be a dict.
+    user_group.members = Dict.from_array(user_group.members);
+
     user_group_name_dict.set(user_group.name, user_group);
     user_group_by_id_dict.set(user_group.id, user_group);
 };
@@ -43,7 +46,7 @@ exports.get_realm_user_groups = function () {
 
 exports.is_member_of = function (user_group_id, user_id) {
     var user_group = user_group_by_id_dict.get(user_group_id);
-    return user_group.members.indexOf(user_id) !== -1;
+    return user_group.members.has(user_id);
 };
 
 exports.initialize = function () {
