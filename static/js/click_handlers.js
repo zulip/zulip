@@ -200,15 +200,8 @@ $(function () {
 
     $('body').on('click', '.edit_content_button', function (e) {
         var row = current_msg_list.get_row(rows.id($(this).closest(".message_row")));
-        var row_id = rows.id(row);
-        current_msg_list.select_id(row_id);
+        current_msg_list.select_id(rows.id(row));
         message_edit.start(row);
-        $('#message_edit_content_' + row_id).closest('#message_edit_form').filedrop(
-            upload.options({
-                mode: 'edit',
-                row: row_id,
-            })
-        );
         e.stopPropagation();
         popovers.hide_all();
     });
