@@ -1435,7 +1435,17 @@ class EventsRegisterTest(ZulipTestCase):
                 ('user', check_string),
                 ('setting', validator),
             ])
-            error = schema_checker('events[0]', events[0])
+            language_schema_checker = self.check_events_dict([
+                ('type', equals('update_display_settings')),
+                ('language_name', check_string),
+                ('setting_name', equals(setting_name)),
+                ('user', check_string),
+                ('setting', validator),
+            ])
+            if setting_name == "default_language":
+                error = language_schema_checker('events[0]', events[0])
+            else:
+                error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
             timezone_schema_checker = self.check_events_dict([

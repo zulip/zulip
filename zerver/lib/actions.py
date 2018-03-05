@@ -107,6 +107,7 @@ from zerver.lib.cache import cache_with_key, cache_set, \
 from zerver.decorator import statsd_increment
 from zerver.lib.utils import log_statsd_event, statsd
 from zerver.lib.html_diff import highlight_html_differences
+from zerver.lib.i18n import get_language_name
 from zerver.lib.alert_words import user_alert_words, add_user_alert_words, \
     remove_user_alert_words, set_user_alert_words
 from zerver.lib.notifications import clear_scheduled_emails, \
@@ -2977,6 +2978,10 @@ def do_set_user_display_setting(user_profile: UserProfile,
              'user': user_profile.email,
              'setting_name': setting_name,
              'setting': setting_value}
+    if setting_name == "default_language":
+        assert isinstance(setting_value, str)
+        event['language_name'] = get_language_name(setting_value)
+
     send_event(event, [user_profile.id])
 
     # Updates to the timezone display setting are sent to all users

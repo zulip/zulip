@@ -149,10 +149,7 @@ exports.report_emojiset_change = function () {
 function _update_page() {
     $("#twenty_four_hour_time").prop('checked', page_params.twenty_four_hour_time);
     $("#left_side_userlist").prop('checked', page_params.left_side_userlist);
-    // TODO: We destroy the pencil when doing this, and also there's a
-    // problematic mismatch in field name between the event and the
-    // page_params default structure; page_params.default_language
-    // vs. page_params.default_language_name.
+    // TODO: We destroy the pencil when doing this
     $("#default_language_name").text(page_params.default_language_name);
     $("#translate_emoticons").prop('checked', page_params.translate_emoticons);
     $("#night_mode").prop('checked', page_params.night_mode);

@@ -293,6 +293,10 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         if (_.contains(user_display_settings, event.setting_name)) {
             page_params[event.setting_name] = event.setting;
         }
+        if (event.setting_name === 'default_language') {
+            // We additionally need to set the language name.
+            page_params.default_language_name = event.language_name;
+        }
         if (event.setting_name === 'twenty_four_hour_time') {
             // Rerender the whole message list UI
             home_msg_list.rerender();

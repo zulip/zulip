@@ -396,6 +396,7 @@ var event_fixtures = {
         type: 'update_display_settings',
         setting_name: 'default_language',
         setting: 'fr',
+        language_name: 'French',
     },
 
     update_display_settings__left_side_userlist: {
