@@ -71,11 +71,11 @@ exports.reset_realm_default_language = function () {
 };
 
 exports.update_message_topic_editing_pencil = function () {
-    if (!meta.loaded) {
-        return;
+    if (page_params.realm_allow_message_editing) {
+        $(".on_hover_topic_edit, .always_visible_topic_edit").show();
+    } else {
+        $(".on_hover_topic_edit, .always_visible_topic_edit").hide();
     }
-
-    $(".on_hover_topic_edit").toggle();
 };
 
 exports.update_realm_description = function () {
