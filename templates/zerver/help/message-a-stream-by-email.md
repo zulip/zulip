@@ -6,7 +6,7 @@ You can send a message to a stream by email by following the following steps.
 {!filter-streams.md!}
 
 2. Select the stream that you want to message by email in the
-[Streams](/#streams) page; {!stream-settings.md!}
+{{ subscriptions_html|safe }}; {!stream-settings.md!}
 
 3. To send a message to a stream by email, simply send an email to the stream's
 email address displayed in the **Email address** section. Your email subject
@@ -15,3 +15,5 @@ contents.
 
 4. After you send an email to the stream's email address, your email will be
 forwarded to the stream and sent as a message.
+
+Note: Sending message to a stream by email is currently not configured on [zulip](chat.zulip.org).
