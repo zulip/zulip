@@ -66,6 +66,8 @@ IGNORED_PHRASES = [
     r"images",
     r"enabled",
     r"disabled",
+    r"be",
+    r"^not be$",
 
     # Fragments of larger strings
     (r'your subscriptions on your Streams page'),
