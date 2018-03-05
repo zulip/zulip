@@ -459,6 +459,7 @@ function test_change_allow_subdomains(change_allow_subdomains) {
 
     $('#id_realm_create_stream_permission').change = set_callback('realm_create_stream_permission');
     $('#id_realm_invite_required').change = set_callback('change_invite_required');
+    $('#id_realm_restricted_to_domain').change = set_callback('id_realm_restricted_to_domain');
     $('#id_realm_allow_message_editing').change = set_callback('change_message_editing');
     $('#submit-add-realm-domain').click = set_callback('add_realm_domain');
     $('.notifications-stream-disable').click = set_callback('disable_notifications_stream');

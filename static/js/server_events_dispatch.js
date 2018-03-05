@@ -61,6 +61,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             default_language: settings_org.reset_realm_default_language,
             description: settings_org.update_realm_description,
             email_changes_disabled: settings_account.update_email_change_display,
+            disallow_disposable_email_addresses: noop,
             inline_image_preview: noop,
             inline_url_embed_preview: noop,
             invite_by_admins_only: noop,
