@@ -191,3 +191,6 @@ stripe==1.77.2
 
 # Needed for serving uploaded files from nginx but perform auth checks in django.
 django-sendfile==0.3.11
+
+# For checking whether email of the user is from a disposable email provider.
+disposable-email-domains==0.0.20
