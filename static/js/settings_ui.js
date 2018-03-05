@@ -2,6 +2,13 @@ var settings_ui = (function () {
 
 var exports = {};
 
+exports.display_checkmark = function ($elem) {
+    var check_mark = document.createElement("img");
+    check_mark.src = "/static/images/checkbox-green.svg";
+    $elem.prepend(check_mark);
+    $(check_mark).css("width", "13px");
+};
+
 // This function is used to disable sub-setting when main setting is checked or unchecked
 // or two settings are inter-dependent on their values values.
 // * is_checked is boolean, shows if the main setting is checked or not.

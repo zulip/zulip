@@ -7,13 +7,6 @@ var exports = {};
 // string within it.
 var strings = {};
 
-exports.display_checkmark = function ($elem) {
-  var check_mark = document.createElement("img");
-  check_mark.src = "/static/images/checkbox-green.svg";
-  $elem.prepend(check_mark);
-  $(check_mark).css("width","13px");
-};
-
 function change_display_setting(data, status_element, success_msg) {
     var spinner = $(status_element).expectOne();
     loading.make_indicator(spinner, {text: strings.saving});
@@ -26,7 +19,7 @@ function change_display_setting(data, status_element, success_msg) {
         data: data,
         success: function () {
             ui_report.success(success_msg, $(status_element).expectOne());
-            exports.display_checkmark(spinner);
+            settings_ui.display_checkmark(spinner);
         },
         error: function (xhr) {
             ui_report.error(strings.failure, xhr, $(status_element).expectOne());
@@ -151,7 +144,7 @@ exports.report_emojiset_change = function () {
             ui_report.success(i18n.t("Emojiset changed successfully!"),
                               $('#emoji-settings-status').expectOne());
             var spinner = $("#emoji-settings-status").expectOne();
-            exports.display_checkmark(spinner);
+            settings_ui.display_checkmark(spinner);
         }
     }
 
