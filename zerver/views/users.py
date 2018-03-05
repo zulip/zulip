@@ -286,7 +286,7 @@ def add_bot_backend(
     form = CreateUserForm({'full_name': full_name, 'email': email})
 
     if bot_type == UserProfile.EMBEDDED_BOT:
-        if not settings.EMBEDDED_BOTS_ENABLED:
+        if not (settings.EMBEDDED_BOTS_ENABLED or user_profile.realm.subdomain == 'recurse'):
             return json_error(_("Embedded bots are not enabled."))
         if service_name not in [bot.name for bot in EMBEDDED_BOTS]:
             return json_error(_("Invalid embedded bot name."))

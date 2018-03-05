@@ -730,7 +730,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             UserProfile.INCOMING_WEBHOOK_BOT,
             UserProfile.OUTGOING_WEBHOOK_BOT,
         ]
-        if settings.EMBEDDED_BOTS_ENABLED:
+        if settings.EMBEDDED_BOTS_ENABLED or self.realm.subdomain == 'recurse':
             allowed_bot_types.append(UserProfile.EMBEDDED_BOT)
         return allowed_bot_types
 
