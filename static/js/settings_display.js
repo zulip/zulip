@@ -2,6 +2,10 @@ var settings_display = (function () {
 
 var exports = {};
 
+var meta = {
+    loaded: false,
+};
+
 function change_display_setting(data, status_element, success_msg) {
     settings_ui.do_settings_change('/json/settings/display', data, status_element, success_msg);
 }
@@ -13,6 +17,7 @@ exports.set_night_mode = function (bool) {
 };
 
 exports.set_up = function () {
+    meta.loaded = true;
     $("#display-settings-status").hide();
 
     $("#user_timezone").val(page_params.timezone);

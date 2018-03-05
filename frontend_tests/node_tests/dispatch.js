@@ -36,6 +36,9 @@ set_global('settings_account', {
     update_email_change_display: noop,
     update_name_change_display: noop,
 });
+set_global('settings_display', {
+    update_page: noop,
+});
 
 set_global('settings_org', {
     reset_realm_default_language: noop,

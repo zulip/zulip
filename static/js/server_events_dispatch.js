@@ -331,9 +331,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 message_list.narrowed.rerender();
             }
         }
-        if ($("#settings.tab-pane.active").length) {
-            settings_display.update_page();
-        }
+        settings_display.update_page();
         break;
 
     case 'update_global_notifications':
