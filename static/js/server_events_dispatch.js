@@ -110,7 +110,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             realm_logo.rerender();
         } else if (event.op === 'deactivated') {
             window.location.href = "/accounts/deactivated/";
-
+        }
         break;
 
     case 'realm_bot':
