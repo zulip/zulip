@@ -181,6 +181,7 @@ class AdminCreateUserTest(ZulipTestCase):
 
         admin = self.example_user('hamlet')
         admin_email = admin.email
+        realm = admin.realm
         self.login(admin_email)
         do_change_is_admin(admin, True)
 
@@ -223,8 +224,6 @@ class AdminCreateUserTest(ZulipTestCase):
                                "Email 'romeo@not-zulip.com' not allowed for realm 'zulip'")
 
         RealmDomain.objects.create(realm=get_realm('zulip'), domain='zulip.net')
-
-        # HAPPY PATH STARTS HERE
         valid_params = dict(
             email='romeo@zulip.net',
             password='xxxx',
@@ -239,11 +238,19 @@ class AdminCreateUserTest(ZulipTestCase):
         self.assertEqual(new_user.full_name, 'Romeo Montague')
         self.assertEqual(new_user.short_name, 'Romeo')
 
-        # One more error condition to test--we can't create
-        # the same user twice.
+        # we can't create the same user twice.
         result = self.client_post("/json/users", valid_params)
         self.assert_json_error(result,
                                "Email 'romeo@zulip.net' already in use")
+
+        # Don't allow user to sign up with disposable email.
+        realm.restricted_to_domain = False
+        realm.disallow_disposable_email_addresses = True
+        realm.save()
+
+        valid_params["email"] = "abc@mailnator.com"
+        result = self.client_post("/json/users", valid_params)
+        self.assert_json_error(result, "Disposable emails are not allowed for realm 'zulip'")
 
 class UserProfileTest(ZulipTestCase):
     def test_get_emails_from_user_ids(self) -> None:

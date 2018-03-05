@@ -791,6 +791,31 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.assertEqual(result.status_code, 200)
         self.assert_in_response("only allows users with e-mail", result)
 
+    def test_disposable_emails_before_closing(self) -> None:
+        """
+        If you invite someone with a disposable email when
+        `disallow_disposable_email_addresses = False`, but
+        later changes to true, the invitation should succeed
+        but the invitee's signup attempt should fail.
+        """
+        zulip_realm = get_realm("zulip")
+        zulip_realm.restricted_to_domain = False
+        zulip_realm.disallow_disposable_email_addresses = False
+        zulip_realm.save()
+
+        self.login(self.example_email("hamlet"))
+        external_address = "foo@mailnator.com"
+
+        self.assert_json_success(self.invite(external_address, ["Denmark"]))
+        self.check_sent_emails([external_address])
+
+        zulip_realm.disallow_disposable_email_addresses = True
+        zulip_realm.save()
+
+        result = self.submit_reg_form_for_user("foo@mailnator.com", "password")
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_response("ask for a new invite to a real e-mail address", result)
+
     def test_invite_with_non_ascii_streams(self) -> None:
         """
         Inviting someone to streams with non-ASCII characters succeeds.
@@ -1838,6 +1863,18 @@ class UserSignUpTest(ZulipTestCase):
         form = HomepageForm({'email': email}, realm=realm)
         self.assertIn("Your email address, {}, is not in one of the domains".format(email),
                       form.errors['email'][0])
+
+    def test_failed_signup_due_to_disposable_email(self) -> None:
+        realm = get_realm('zulip')
+        realm.restricted_to_domain = False
+        realm.disallow_disposable_email_addresses = True
+        realm.save()
+
+        request = HostRequestMock(host = realm.host)
+        request.session = {}  # type: ignore
+        email = 'abc@mailnator.com'
+        form = HomepageForm({'email': email}, realm=realm)
+        self.assertIn("Please use your real email address", form.errors['email'][0])
 
     def test_failed_signup_due_to_invite_required(self) -> None:
         realm = get_realm('zulip')

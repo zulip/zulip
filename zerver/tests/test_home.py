@@ -117,6 +117,7 @@ class HomeTest(ZulipTestCase):
             "realm_default_stream_groups",
             "realm_default_streams",
             "realm_description",
+            "realm_disallow_disposable_email_addresses",
             "realm_domains",
             "realm_email_auth_enabled",
             "realm_email_changes_disabled",
