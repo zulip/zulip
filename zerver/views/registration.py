@@ -14,7 +14,7 @@ from django.core import validators
 from zerver.context_processors import get_realm_from_request
 from zerver.models import UserProfile, Realm, Stream, MultiuseInvite, \
     name_changes_disabled, email_to_username, email_allowed_for_realm, \
-    get_realm, get_user, get_default_stream_groups
+    get_realm, get_user, get_default_stream_groups, disposable_email_check
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
@@ -88,8 +88,14 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                 request, ConfirmationKeyException(ConfirmationKeyException.DOES_NOT_EXIST))
 
         if not email_allowed_for_realm(email, realm):
-            return render(request, "zerver/closed_realm.html",
-                          context={"closed_domain_name": realm.name})
+            return render(request, "zerver/invalid_email.html",
+                          context={"realm_name": realm.name, "closed_domain": True})
+
+        try:
+            disposable_email_check(realm, email)
+        except ValidationError:
+            return render(request, "zerver/invalid_email.html",
+                          context={"realm_name": realm.name, "disposable_emails_not_allowed": True})
 
         if realm.deactivated:
             # The user is trying to register for a deactivated realm. Advise them to

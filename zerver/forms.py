@@ -24,8 +24,8 @@ from zerver.lib.request import JsonableError
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain, is_root_domain_available
 from zerver.lib.users import check_full_name
-from zerver.models import Realm, get_user, UserProfile, \
-    get_realm, email_to_domain, email_allowed_for_realm
+from zerver.models import Realm, get_user, UserProfile, get_realm, email_to_domain, \
+    email_allowed_for_realm, disposable_email_check
 from zproject.backends import email_auth_enabled
 
 import logging
@@ -151,6 +151,7 @@ class HomepageForm(forms.Form):
                   "that are allowed to register for accounts in this organization.").format(
                       string_id=realm.string_id, email=email))
 
+        disposable_email_check(realm, email)
         validate_email_for_realm(realm, email)
 
         if realm.is_zephyr_mirror_realm:
