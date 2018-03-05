@@ -17,15 +17,15 @@ if [ "$release" = "trusty" ] || [ "$release" = "xenial" ] || [ "$release" = "zes
     cat >/etc/apt/sources.list.d/zulip.list <<EOF
 deb http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
 deb http://ppa.launchpad.net/tabbott/zulip/ubuntu $release main
-deb-src http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
-deb-src http://ppa.launchpad.net/tabbott/zulip/ubuntu $release main
+# deb-src http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
+# deb-src http://ppa.launchpad.net/tabbott/zulip/ubuntu $release main
 EOF
 elif [ "$release" = "stretch" ]; then
     apt-get install -y -V apt-transport-https
     apt-key add "$SCRIPTS_PATH"/setup/pgroonga-debian.asc
     cat >/etc/apt/sources.list.d/zulip.list <<EOF
 deb https://packages.groonga.org/debian/ stretch main
-deb-src https://packages.groonga.org/debian/ stretch main
+# deb-src https://packages.groonga.org/debian/ stretch main
 EOF
 else
     echo "Unsupported release $release."
