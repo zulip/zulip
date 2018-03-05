@@ -60,6 +60,8 @@ function _setup_page() {
         realm_icon_url: page_params.realm_icon_url,
         realm_mandatory_topics: page_params.realm_mandatory_topics,
         realm_send_welcome_emails: page_params.realm_send_welcome_emails,
+        realm_disallow_disposable_email_addresses:
+            page_params.realm_disallow_disposable_email_addresses,
     };
 
     var admin_tab = templates.render('admin_tab', options);

@@ -297,6 +297,11 @@ function _set_up() {
                 checked_msg: i18n.t("New users must be invited by e-mail!"),
                 unchecked_msg: i18n.t("New users may sign up online!"),
             },
+            disallow_disposable_email_addresses: {
+                type: 'bool',
+                checked_msg: i18n.t("Users cannot sign up using disposable email addresses!"),
+                unchecked_msg: i18n.t("Users can sign up using disposable email adresses!"),
+            },
             invite_by_admins_only: {
                 type: 'bool',
                 checked_msg: i18n.t("New users must be invited by an admin!"),
@@ -379,6 +384,16 @@ function _set_up() {
 
     exports.set_create_stream_permission_dropdwon();
     exports.set_add_emoji_permission_dropdown();
+
+    $("#id_realm_restricted_to_domain").change(function () {
+        if (this.checked) {
+            $("#id_realm_disallow_disposable_email_addresses").attr("disabled", true);
+            $("#id_realm_disallow_disposable_email_addresses_label").parent().addClass("control-label-disabled");
+        } else {
+            $("#id_realm_disallow_disposable_email_addresses").prop("disabled", false);
+            $("#id_realm_disallow_disposable_email_addresses_label").parent().removeClass("control-label-disabled");
+        }
+    });
 
     $("#id_realm_invite_required").change(function () {
         settings_ui.disable_sub_setting_onchange(this.checked, "id_realm_invite_by_admins_only", true);
