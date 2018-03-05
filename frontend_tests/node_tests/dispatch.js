@@ -39,7 +39,7 @@ set_global('settings_account', {
 
 set_global('settings_org', {
     reset_realm_default_language: noop,
-    toggle_allow_message_editing_pencil: noop,
+    update_message_topic_editing_pencil: noop,
     update_message_retention_days: noop,
     update_realm_description: noop,
 });

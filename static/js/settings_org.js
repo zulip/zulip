@@ -70,7 +70,7 @@ exports.reset_realm_default_language = function () {
     $("#id_realm_default_language").val(page_params.realm_default_language);
 };
 
-exports.toggle_allow_message_editing_pencil = function () {
+exports.update_message_topic_editing_pencil = function () {
     if (!meta.loaded) {
         return;
     }

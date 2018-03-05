@@ -94,7 +94,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             _.each(event.data, function (value, key) {
                 page_params['realm_' + key] = value;
                 if (key === 'allow_message_editing') {
-                    settings_org.toggle_allow_message_editing_pencil();
+                    settings_org.update_message_topic_editing_pencil();
                 }
             });
             if (event.data.authentication_methods !== undefined) {
